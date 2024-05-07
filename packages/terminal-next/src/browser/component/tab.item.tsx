@@ -14,6 +14,7 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
@@ -30,6 +31,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
   const styles_tab_item_selected = useDesignStyles(styles.tab_item_selected, 'tab_item_selected');
   const styles_item_info_name = useDesignStyles(styles.item_info_name, 'item_info_name');
   const styles_tab_close_icon = useDesignStyles(styles.tab_close_icon, 'tab_close_icon');
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
   const handleOnKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && props.onInputEnter && props.id) {
@@ -65,7 +67,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         [styles_item_container]: true,
         [styles_tab_item_selected]: !!props.selected,
       })}
-      style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}
+      style={{ height: layoutViewSize.panelTitleBarHeight }}
       onClick={() => handleSelect()}
       onContextMenu={(event) => props.onContextMenu && props.onContextMenu(event)}
     >

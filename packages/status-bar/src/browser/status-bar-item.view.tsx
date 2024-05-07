@@ -6,7 +6,9 @@ import {
   IOpenerService,
   replaceLocalizePlaceholder,
   toMarkdown,
+  toMarkdownHtml,
   transformLabelWithCodicon,
+  transformLabelWithCodiconHtml,
 } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
@@ -84,7 +86,9 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
       return <StatusBarPopover contents={hoverContents} />;
     }
     if (tooltip && (tooltip as IMarkdownString).value) {
-      return toMarkdown((tooltip as IMarkdownString).value, openerService);
+      const html = toMarkdownHtml((tooltip as IMarkdownString).value);
+      const value = transformLabelWithCodiconHtml(html, iconService.fromString.bind(iconService));
+      return toMarkdown(value, openerService, undefined, true);
     }
     return (
       isString(tooltip) && (
@@ -124,7 +128,7 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
         id={`${entryId}-popover`}
         content={popoverContent}
         trigger={PopoverTriggerType.hover}
-        delay={200}
+        delay={0.2}
         position={PopoverPosition.top}
         disable={disablePopover}
       >

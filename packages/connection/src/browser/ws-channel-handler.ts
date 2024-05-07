@@ -1,4 +1,4 @@
-import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+import { Barrier, Deferred, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
@@ -10,11 +10,16 @@ import { WSChannel, parse, pingMessage } from '../common/ws-channel';
  */
 export class WSChannelHandler {
   private channelMap: Map<string, WSChannel> = new Map();
-  private channelCloseEventMap: Map<string, WSCloseInfo> = new Map();
+  private channelCloseEventMap = new MultiMap<string, WSCloseInfo>();
   private logger = console;
   public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timeout | null;
   private reporterService: IReporterService;
+
+  /**
+   * 保证在连接建立后再执行后续操作
+   */
+  private openingBarrier = new Barrier();
 
   LOG_TAG: string;
 
@@ -64,15 +69,8 @@ export class WSChannelHandler {
     });
 
     const reopenExistsChannel = () => {
-      if (this.channelMap.size) {
+      if (this.channelMap.size > 0) {
         this.channelMap.forEach((channel) => {
-          channel.onOpen(() => {
-            const closeInfo = this.channelCloseEventMap.get(channel.id);
-            this.reporterService &&
-              this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT, REPORT_NAME.CHANNEL_RECONNECT, closeInfo);
-            this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
-          });
-
           channel.open(channel.channelPath, this.clientId);
           // 针对前端需要重新设置下后台状态的情况
           channel.fireReopen();
@@ -80,51 +78,72 @@ export class WSChannelHandler {
       }
     };
 
-    await new Promise<void>((resolve) => {
-      if (this.connection.isOpen()) {
-        this.heartbeatMessage();
-        resolve();
+    this.connection.onClose((code, reason) => {
+      this.channelMap.forEach((channel) => {
+        channel.close(code ?? 1000, reason ?? '');
+      });
+    });
+
+    if (this.connection.isOpen()) {
+      this.heartbeatMessage();
+      this.openingBarrier.open();
+    }
+
+    this.connection.onOpen(() => {
+      this.heartbeatMessage();
+      // 说明是重连
+      if (this.openingBarrier.isOpen()) {
         reopenExistsChannel();
       } else {
-        this.connection.onOpen(() => {
-          this.heartbeatMessage();
-          resolve();
-          reopenExistsChannel();
-        });
+        this.openingBarrier.open();
       }
     });
 
-    this.connection.onceClose((code, reason) => {
-      if (this.channelMap.size) {
-        this.channelMap.forEach((channel) => {
-          channel.close(code ?? 1000, reason ?? '');
-        });
-      }
-    });
+    await this.openingBarrier.wait();
   }
+
   public async openChannel(channelPath: string) {
-    const channelId = `${this.clientId}:${channelPath}`;
     const channel = new WSChannel(this.connection, {
-      id: channelId,
+      id: `${this.clientId}:${channelPath}`,
       logger: this.logger,
     });
-
     this.channelMap.set(channel.id, channel);
 
-    await new Promise<void>((resolve) => {
-      channel.onOpen(() => {
-        resolve();
-      });
-      channel.onceClose((code: number, reason: string) => {
-        this.channelCloseEventMap.set(channelId, {
-          channelPath,
-          closeEvent: { code, reason },
-          connectInfo: (navigator as any).connection as ConnectionInfo,
+    channel.onOpen(() => {
+      const closeInfo = this.channelCloseEventMap.get(channel.id);
+      if (closeInfo) {
+        closeInfo.forEach((info) => {
+          this.reporterService &&
+            this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT, REPORT_NAME.CHANNEL_RECONNECT, info);
         });
-        this.logger.log(this.LOG_TAG, 'channel close: ', `code: ${code}, reason: ${reason}`);
-      });
-      channel.open(channelPath, this.clientId);
+
+        this.channelCloseEventMap.delete(channel.id);
+
+        this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
+      } else {
+        this.logger.log(this.LOG_TAG, `channel open ${this.clientId}:${channel.channelPath}`);
+      }
     });
+
+    channel.onClose((code: number, reason: string) => {
+      this.channelCloseEventMap.set(channel.id, {
+        channelPath,
+        closeEvent: { code, reason },
+        connectInfo: (navigator as any).connection as ConnectionInfo,
+      });
+      this.logger.log(this.LOG_TAG, 'channel close: ', `code: ${code}, reason: ${reason}`);
+    });
+
+    const deferred = new Deferred<void>();
+
+    const dispose = channel.onOpen(() => {
+      deferred.resolve();
+      dispose.dispose();
+    });
+
+    channel.open(channelPath, this.clientId);
+
+    await deferred.promise;
 
     return channel;
   }

@@ -275,6 +275,14 @@ export interface IThemedCssStyle extends IDisposable {
   overviewRulerColor?: string | IThemeColor;
 }
 
+export interface IThemedCssStyleCollection {
+  default: IThemedCssStyle;
+  light: IThemedCssStyle | null;
+  dark: IThemedCssStyle | null;
+
+  dispose(): void;
+}
+
 export const IEditorDecorationCollectionService = Symbol('IEditorDecorationCollectionService');
 
 export class EditorSelectionChangeEvent extends BasicEvent<IEditorSelectionChangeEventPayload> {}

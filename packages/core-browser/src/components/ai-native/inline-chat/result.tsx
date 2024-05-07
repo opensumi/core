@@ -6,14 +6,14 @@ import { Thumbs } from '../thumbs';
 
 import styles from './styles.module.less';
 
-export interface IAiInlineResultIconItemsProps {
+export interface IAIInlineResultIconItemsProps {
   text: string | React.ReactNode;
   onClick: () => void;
   icon?: string;
 }
 
 export interface IAIInlineResultProps {
-  iconItems: IAiInlineResultIconItemsProps[];
+  iconItems: IAIInlineResultIconItemsProps[];
   isRenderThumbs?: boolean;
   isRenderClose?: boolean;
   closeClick?: () => void;

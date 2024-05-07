@@ -1,26 +1,21 @@
 import debounce from 'lodash/debounce';
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { message } from '@opensumi/ide-components';
-import { AINativeConfigService, ClientAppContribution } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, ClientAppContribution, MERGE_CONFLICT_COMMANDS } from '@opensumi/ide-core-browser';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import {
-  AIBackSerivcePath,
   CancelResponse,
   CancellationTokenSource,
   ChatResponse,
-  Command,
   CommandContribution,
   CommandRegistry,
   Constants,
-  ConstructorOf,
   Disposable,
   Domain,
   Emitter,
   ErrorResponse,
   Event,
   ExtensionActivatedEvent,
-  IAIBackService,
   IConflictContentMetadata,
   IEventBus,
   IInternalResolveConflictRegistry,
@@ -34,48 +29,32 @@ import {
   Uri,
   localize,
 } from '@opensumi/ide-core-common';
+import { GitCommands } from '@opensumi/ide-core-common/lib/commands/git';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import {
+  CommitType,
+  DocumentMergeConflict,
+  MergeConflictParser,
+} from '@opensumi/ide-editor/lib/browser/merge-conflict';
 import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco';
-import { BaseInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
+  ACCEPT_CURRENT_ACTIONS,
   AI_RESOLVE_REGENERATE_ACTIONS,
   IConflictActionsEvent,
   IGNORE_ACTIONS,
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
-import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
 import styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
+import { IWidgetFactory, WidgetFactory } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/facotry';
 import { StopWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/stop-widget';
+import { IMergeEditorShape } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/types';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
-import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
-import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
-import { CacheConflict, DocumentMergeConflict } from './cache-conflicts';
 import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
-import { CommitType } from './types';
-export namespace MERGE_CONFLICT {
-  const CATEGORY = 'MergeConflict';
-  export const AI_ACCEPT: Command = {
-    id: 'merge-conflict.ai.accept',
-    category: CATEGORY,
-  };
-  export const ALL_RESET: Command = {
-    id: 'merge-conflict.ai.all-reset',
-    category: CATEGORY,
-  };
-  export const AI_ALL_ACCEPT: Command = {
-    id: 'merge-conflict.ai.all-accept',
-    category: CATEGORY,
-  };
-  export const AI_ALL_ACCEPT_STOP: Command = {
-    id: 'merge-conflict.ai.all-accept-stop',
-    category: CATEGORY,
-  };
-}
 
 const MERGE_CONFLICT_CODELENS_STYLE = 'merge-conflict-codelens-style';
 
@@ -127,16 +106,17 @@ function loadStyleString(load: boolean) {
   }
 }
 
-interface IWidgetFactory {
-  hideWidget(id?: string): void;
-  addWidget(range: LineRange): void;
-  hasWidget(range: LineRange): boolean;
-}
-
-interface ICacheResolvedConflicts extends IValidEditOperation {
+interface ICacheResolvedConflicts {
+  /**
+   * 冲突的所有文本范围（包含 incoming 和 current）
+   */
   newRange: IRange;
   id: string;
   conflictText: string;
+  /**
+   * 解决冲突后的文本
+   */
+  text: string;
   metadata: IConflictContentMetadata;
   isAccept?: boolean;
   isClosed?: boolean;
@@ -147,58 +127,15 @@ interface IRequestCancel {
   type: 'cancel';
 }
 
-class WidgetFactory implements IWidgetFactory {
-  private widgetMap: Map<string, BaseInlineContentWidget>;
-
-  constructor(
-    private contentWidget: ConstructorOf<BaseInlineContentWidget>,
-    private editor: ResultCodeEditor,
-    private injector: Injector,
-  ) {
-    this.widgetMap = new Map();
-  }
-
-  hasWidget(range: LineRange): boolean {
-    return this.widgetMap.get(range.id) !== undefined;
-  }
-
-  public hideWidget(id?: string): void {
-    if (id) {
-      const widget = this.widgetMap.get(id);
-      if (widget) {
-        widget.hide();
-        this.widgetMap.delete(id);
-      }
-      return;
-    }
-
-    this.widgetMap.forEach((widget) => {
-      widget.hide();
-    });
-    this.widgetMap.clear();
-  }
-
-  public addWidget(range: LineRange): void {
-    const id = range.id;
-    if (this.widgetMap.has(id)) {
-      return;
-    }
-
-    const position = new Position(range.endLineNumberExclusive, 1);
-
-    const widget = this.injector.get(this.contentWidget, [this.editor, range]);
-    widget.show({ position });
-
-    this.widgetMap.set(id, widget);
-  }
-}
-
 interface IReportData extends Partial<MergeConflictRT> {
   relationId?: string;
 }
 
 @Domain(CommandContribution, ClientAppContribution)
-export class MergeConflictContribution extends Disposable implements CommandContribution, ClientAppContribution {
+export class MergeConflictContribution
+  extends Disposable
+  implements CommandContribution, ClientAppContribution, IMergeEditorShape
+{
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -212,10 +149,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private readonly aiNativeConfigService: AINativeConfigService;
 
   @Autowired()
-  private readonly cacheConflicts: CacheConflict;
-
-  @Autowired(AIBackSerivcePath)
-  private aiBackService: IAIBackService;
+  private readonly conflictParser: MergeConflictParser;
 
   @Autowired(MergeConflictReportService)
   private readonly mergeConflictReportService: MergeConflictReportService;
@@ -236,7 +170,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   public readonly onRequestsCancel: Event<IRequestCancel[]> = this._onRequestsCancel.event;
 
   // for widget
-  private editor: ICodeEditor;
+  editor: ICodeEditor;
+
   // for codelens loading
   private loadingRange: Set<IRange> = new Set();
   // for report
@@ -249,7 +184,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     super.dispose();
     this.cancelRequestToken();
     this.mergeConflictReportService.dispose();
-    this.cacheConflicts.dispose();
+    this.conflictParser.dispose();
   }
 
   onDidStart(): MaybePromise<void> {
@@ -436,22 +371,26 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   }
 
   private reportConflictData() {
+    if (!this.editor) {
+      return;
+    }
+
     const uri = this.getUri();
     const reportData = this.currentReportMap.get(uri);
     if (reportData) {
-      this.mergeConflictReportService.report(this.getUri(), this.reportData);
+      this.mergeConflictReportService.report(uri, this.reportData);
     }
   }
 
   private updateReportData() {
-    const allConflictCache = this.cacheConflicts.getAllConflictsByUri(this.getUri());
+    const allConflictCache = this.conflictParser.getAllConflictsByUri(this.getUri());
     let conflictPointNum = 0;
-    let useAiConflictPointNum = 0;
+    let useAIConflictPointNum = 0;
     let receiveNum = 0;
     conflictPointNum = allConflictCache?.length || 0;
     allConflictCache?.forEach((cacheConflict) => {
       if (cacheConflict.isResolved) {
-        useAiConflictPointNum += 1;
+        useAIConflictPointNum += 1;
       }
     });
     // 内部修改 删除态无法统计
@@ -460,7 +399,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         // 统计当前文件
         if (uri === this.getModel().uri.toString()) {
           // 计算当前文件采纳数量
-          const aiResult = cacheResolvedConflicts.textChange.newText;
+          const aiResult = cacheResolvedConflicts.text;
           const currentResult = this.getModel()?.getValueInRange(cacheResolvedConflicts.newRange);
           if (aiResult.trim() === currentResult.trim()) {
             cacheResolvedConflicts.isAccept = true;
@@ -473,7 +412,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
     this.reportData = {
       conflictPointNum,
-      useAiConflictPointNum,
+      useAiConflictPointNum: useAIConflictPointNum,
       receiveNum,
     };
   }
@@ -492,7 +431,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
       if (!value.isClosed) {
         const lineRange = this.toLineRange(value.newRange, id);
-        this.resolveResultWidgetManager.addWidget(lineRange);
+        this.resolveResultWidgetManager.addWidget(lineRange, value.newRange, value.text);
       }
     }
   }
@@ -502,7 +441,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   }
 
   private getUri(): string {
-    return this.getModel().uri.toString();
+    return this.getModel()?.uri.toString();
   }
 
   /* cache widget */
@@ -550,7 +489,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private toLineRange(range: IRange, id?: string) {
     const lineRange = new LineRange(range.startLineNumber, range.endLineNumber);
     if (id) {
-      // @ts-ignore
       lineRange.setId(id);
     }
     return lineRange;
@@ -580,14 +518,14 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   registerCommands(commands: CommandRegistry): void {
     this.disposables.push(
-      commands.registerCommand(MERGE_CONFLICT.AI_ACCEPT, {
+      commands.registerCommand(MERGE_CONFLICT_COMMANDS.AI_ACCEPT, {
         execute: async (type: CommitType, conflict: DocumentMergeConflict) => {
           this.conflictAIAccept(conflict);
         },
       }),
-      commands.registerCommand(MERGE_CONFLICT.ALL_RESET, {
+      commands.registerCommand(MERGE_CONFLICT_COMMANDS.ALL_RESET, {
         execute: async (uri: Uri) => {
-          const content = this.cacheConflicts.getConflictText(uri.toString());
+          const content = this.conflictParser.getConflictText(uri.toString());
           this.cancelRequestToken();
           if (content) {
             if (this.editorService.currentEditor?.currentUri?.toString() === uri.toString()) {
@@ -595,7 +533,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
               if (editor) {
                 const model = editor.getModel();
                 model?.setValue(content);
-                this.cacheConflicts.deleteConflictText(uri.toString());
+                this.conflictParser.deleteConflictText(uri.toString());
                 this.cleanAllCache();
               }
             }
@@ -603,13 +541,13 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         },
       }),
 
-      commands.registerCommand(MERGE_CONFLICT.AI_ALL_ACCEPT, {
+      commands.registerCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT, {
         execute: async () => {
           const document = this.getModel();
           if (!document) {
             return Promise.resolve();
           }
-          const conflicts = this.cacheConflicts.scanDocument(document as monaco.editor.ITextModel);
+          const conflicts = this.conflictParser.scanDocument(document as monaco.editor.ITextModel);
           if (!conflicts?.length) {
             return Promise.resolve();
           }
@@ -620,16 +558,16 @@ export class MergeConflictContribution extends Disposable implements CommandCont
           await this.acceptAllConflict();
         },
       }),
-      commands.registerCommand(MERGE_CONFLICT.AI_ALL_ACCEPT_STOP, {
+      commands.registerCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT_STOP, {
         execute: async () => {
           this.cancelRequestToken();
         },
       }),
-      commands.afterExecuteCommand('git.stage', (args) => {
+      commands.afterExecuteCommand(GitCommands.Stage, (args) => {
         this.reportConflictData();
         return args;
       }),
-      commands.afterExecuteCommand('git.stageAllMerge', (args) => {
+      commands.afterExecuteCommand(GitCommands.StageAllMerge, (args) => {
         this.reportConflictData();
         return args;
       }),
@@ -648,12 +586,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     const currentEditor = editor;
     if (currentEditor && monacoEditor && !this.editor) {
       this.editor = monacoEditor;
-      this.resolveResultWidgetManager = new WidgetFactory(
-        ResolveResultWidget,
-        this as unknown as ResultCodeEditor,
-        this.injector,
-      );
-      this.stopWidgetManager = new WidgetFactory(StopWidget, this as unknown as ResultCodeEditor, this.injector);
+      this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
+      this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
       this.init();
     }
   }
@@ -662,35 +596,35 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     document: monaco.editor.ITextModel,
     _token: monaco.CancellationToken,
   ): Promise<monaco.languages.CodeLens[] | null> {
-    const conflicts = this.cacheConflicts.scanDocument(document);
+    const conflicts = this.conflictParser.scanDocument(document);
     if (!conflicts.length) {
       return null;
     }
     const items: monaco.languages.CodeLens[] = [];
     conflicts.forEach((conflict) => {
       const aiAcceptCommand = {
-        id: MERGE_CONFLICT.AI_ACCEPT.id,
-        title: `$(ai-magic) ${localize('mergeEditor.conflict.resolve.all')}`,
+        id: MERGE_CONFLICT_COMMANDS.AI_ACCEPT.id,
+        title: `$(ai-magic) ${localize('mergeEditor.conflict.ai.resolve.all')}`,
         arguments: ['know-conflict', conflict],
-        tooltip: localize('mergeEditor.conflict.resolve.all'),
+        tooltip: localize('mergeEditor.conflict.ai.resolve.all'),
       };
       // loading 效果
       this.loadingRange.forEach((range) => {
         if (conflict.range.equalsRange(range)) {
-          aiAcceptCommand.title = `$(loading~spin) ${localize('mergeEditor.conflict.resolve.all')}`;
+          aiAcceptCommand.title = `$(loading~spin) ${localize('mergeEditor.conflict.ai.resolve.all')}`;
         }
       });
       items.push({
         range: conflict.range,
         command: aiAcceptCommand,
-        id: MERGE_CONFLICT.AI_ACCEPT.id,
+        id: MERGE_CONFLICT_COMMANDS.AI_ACCEPT.id,
       });
     });
 
     return Promise.resolve(items);
   }
 
-  private async conflictAIAccept(conflict?: DocumentMergeConflict, lineRan?: LineRange, isRegenerate?: boolean) {
+  private async conflictAIAccept(conflict?: DocumentMergeConflict, _lineRange?: LineRange, isRegenerate?: boolean) {
     if (!this.editorService.currentEditor?.monacoEditor) {
       return;
     }
@@ -710,37 +644,36 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         incomingName: conflict.incoming.name,
       };
     } else {
-      lineRange = lineRan!;
+      lineRange = _lineRange!;
     }
-    const range = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
-    const skeletonDecorationDispose = this.renderSkeletonDecoration(range, [
+    const newRange = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
+    const skeletonDecorationDispose = this.renderSkeletonDecoration(newRange, [
       styles.skeleton_decoration,
       styles.skeleton_decoration_background_black,
     ]);
     this.stopWidgetManager.addWidget(lineRange);
 
-    let codeAssemble = this.getModel()?.getValueInRange(lineRange.toRange(1, range.endColumn)) ?? '';
+    let conflictText = this.getModel()?.getValueInRange(lineRange.toRange(1, newRange.endColumn)) ?? '';
     if (isRegenerate) {
       const cache = this.getCacheResolvedConflicts().get(lineRange.id);
-      codeAssemble = cache?.conflictText ?? '';
+      conflictText = cache?.conflictText ?? '';
       conflictMetadata = cache?.metadata;
     }
 
     let resolveConflictResult: ChatResponse | undefined;
     try {
-      this.loadingRange.add(range);
+      this.loadingRange.add(newRange);
       this.reportData = {
         clickNum: this.reportData.clickNum! + 1,
       };
 
-      resolveConflictResult = await this.requestAiResolveConflict(conflictMetadata!, lineRange, isRegenerate);
+      resolveConflictResult = await this.requestAIResolveConflict(conflictMetadata!, lineRange, isRegenerate);
     } catch (error) {
       throw new Error(`AI resolve conflict error: ${error.toString()}`);
     } finally {
       skeletonDecorationDispose();
       this.stopWidgetManager.hideWidget(lineRange.id);
-      this.loadingRange.delete(range);
-      this.updateCodeLensProvider();
+      this.loadingRange.delete(newRange);
     }
 
     if (ReplyResponse.is(resolveConflictResult)) {
@@ -748,65 +681,48 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         aiOutputNum: this.reportData.aiOutputNum! + 1,
       };
 
-      const { text, lineNumber, lines } = this.resolveEndLineEOL(resolveConflictResult!.message!);
-      const endLineNumber = lineRange.startLineNumber + lineNumber - 1;
-      const endColumn = lines[lines.length - 1].length + 1;
-      const newRange = new monaco.Range(lineRange.startLineNumber, 1, endLineNumber, endColumn);
-      const edit = {
-        range,
-        text,
-      };
-      let validEditOperation: IValidEditOperation[] = [];
-      const selections = this.getModel()?.pushEditOperations(null, [edit], (operation) => {
-        validEditOperation = operation;
-        const selections: monaco.Selection[] = [];
-        operation.forEach((op) => {
-          selections.push(
-            new monaco.Selection(
-              op.range.startLineNumber,
-              op.range.startColumn,
-              op.range.endLineNumber,
-              op.range.endColumn,
-            ),
-          );
-        });
-        return selections;
-      });
-      selections!.forEach((selection) => {
-        const decorationDispose = this.renderSkeletonDecoration(selection, [styles.skeleton_decoration_complete]);
-        this.decorationId2Dispose.set(lineRange.id, decorationDispose);
-        this.decorationId2Range.set(lineRange.id, selection);
-      });
+      const { text } = this.resolveEndLineEOL(resolveConflictResult!.message!);
 
-      const newLineRange = this.toLineRange(newRange, lineRange.id);
-      this.resolveResultWidgetManager.addWidget(newLineRange);
-      this.setCacheResolvedConflict(newLineRange.id, {
-        ...validEditOperation[0],
+      const decorationDispose = this.renderSkeletonDecoration(newRange, [styles.skeleton_decoration_complete]);
+      this.decorationId2Dispose.set(lineRange.id, decorationDispose);
+      this.decorationId2Range.set(lineRange.id, newRange);
+
+      const widgetLineRange = this.toLineRange(
+        {
+          ...newRange,
+          endLineNumber: newRange.endLineNumber + 1,
+        },
+        lineRange.id,
+      );
+
+      this.resolveResultWidgetManager.addWidget(widgetLineRange, newRange, text);
+      this.setCacheResolvedConflict(lineRange.id, {
         newRange,
-        id: newLineRange.id,
+        id: lineRange.id,
         metadata: conflictMetadata!,
         // 保留原始冲突文本
-        conflictText: (isRegenerate && codeAssemble) || validEditOperation[0].text,
+        conflictText,
+        text,
         isAccept: true,
       });
       if (!isRegenerate) {
         // 记录处理数量 非重新生成 conflict 存在
         const uri = this.getModel().uri.toString();
-        const cacheConflictRanges = this.cacheConflicts.getAllConflictsByUri(uri);
+        const cacheConflictRanges = this.conflictParser.getAllConflictsByUri(uri);
         if (cacheConflictRanges) {
           const cacheConflict = cacheConflictRanges.find((cacheConflict) => {
             if (cacheConflict.isResolved) {
               return false;
             }
-            if (cacheConflict.range.equalsRange(range)) {
+            if (cacheConflict.range.equalsRange(newRange)) {
               return true;
             }
-            if (cacheConflict.text === codeAssemble) {
+            if (cacheConflict.text === conflictText) {
               return true;
             }
           });
           if (cacheConflict && !cacheConflict.isResolved) {
-            this.cacheConflicts.setConflictResolved(uri, cacheConflict.id);
+            this.conflictParser.setConflictResolved(uri, cacheConflict.id);
           }
         }
       }
@@ -822,7 +738,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       }
 
       if (ErrorResponse.is(resolveConflictResult)) {
-        this.loadingRange.delete(range);
+        this.loadingRange.delete(newRange);
         return Promise.resolve(resolveConflictResult);
       }
     }
@@ -848,7 +764,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     if (!document) {
       return Promise.resolve();
     }
-    const conflicts = this.cacheConflicts.scanDocument(document);
+    const conflicts = this.conflictParser.scanDocument(document);
     if (!conflicts.length) {
       return Promise.resolve();
     }
@@ -890,7 +806,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     });
   }
 
-  private async requestAiResolveConflict(
+  private async requestAIResolveConflict(
     metadata: IConflictContentMetadata,
     range: LineRange,
     isRegenerate = false,
@@ -947,30 +863,49 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   public launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
     const { range, action } = eventData;
-    if (action === REVOKE_ACTIONS) {
-      const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
-      if (cacheConflict) {
-        const edit = {
-          range: cacheConflict.newRange,
-          text: cacheConflict.conflictText || cacheConflict.text,
-        };
-        this.getModel()?.pushEditOperations(null, [edit], () => null);
+
+    switch (action) {
+      case ACCEPT_CURRENT_ACTIONS:
+        {
+          const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
+          if (cacheConflict) {
+            const edit = {
+              range: cacheConflict.newRange,
+              text: cacheConflict.text,
+            };
+            this.getModel()?.pushEditOperations(null, [edit], () => null);
+          }
+          this.cleanWidget(range.id);
+          this.deleteCacheResolvedConflicts(range.id);
+          this.cleanDecoration(range.id);
+        }
+        break;
+      case REVOKE_ACTIONS: {
+        this.cleanWidget(range.id);
+        this.deleteCacheResolvedConflicts(range.id);
+        this.cleanDecoration(range.id);
+        break;
       }
-      this.cleanWidget(range.id);
-      this.deleteCacheResolvedConflicts(range.id);
-      this.cleanDecoration(range.id);
-    } else if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
-      this.cleanWidget(range.id);
-      this.conflictAIAccept(undefined, range, true);
-      this.cleanDecoration(range.id);
-    } else if (action === IGNORE_ACTIONS) {
-      this.cleanWidget(range.id);
-      // this.deleteCacheResolvedConflicts(range.id);
-      const resolvedConflict = this.getCacheResolvedConflicts().get(range.id)!;
-      this.setCacheResolvedConflict(range.id, {
-        ...resolvedConflict,
-        isClosed: true,
-      });
+      case AI_RESOLVE_REGENERATE_ACTIONS: {
+        const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
+        if (cacheConflict) {
+          const lineRange = this.toLineRange(cacheConflict.newRange, range.id);
+          this.conflictAIAccept(undefined, lineRange, true);
+        }
+        this.cleanWidget(range.id);
+        this.cleanDecoration(range.id);
+        break;
+      }
+      case IGNORE_ACTIONS: {
+        this.cleanWidget(range.id);
+        this.cleanDecoration(range.id);
+        const resolvedConflict = this.getCacheResolvedConflicts().get(range.id)!;
+        this.setCacheResolvedConflict(range.id, {
+          ...resolvedConflict,
+          isClosed: true,
+        });
+        break;
+      }
     }
   }
 
@@ -999,6 +934,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     if (this.decorationId2Range.has(id)) {
       this.decorationId2Range.delete(id);
     }
+
+    this.updateCodeLensProvider();
   }
 
   // 强制刷新 codelens

@@ -1,48 +1,60 @@
 import React, { ReactNode, useCallback, useMemo } from 'react';
 
 import { Injectable } from '@opensumi/di';
-import { Button, MessageType, PopoverTriggerType } from '@opensumi/ide-components';
+import { Button, MessageType } from '@opensumi/ide-components';
 import { DialogContent, Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { AIInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
-import { IAiInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
+import { IAIInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { localize, uuid } from '@opensumi/ide-core-common';
 
-import { BaseInlineContentWidget } from '../../../ai-native/BaseInlineContentWidget';
+import { ReactInlineContentWidget } from '../../../ai-native/BaseInlineContentWidget';
 import { LineRange } from '../model/line-range';
-import { AI_RESOLVE_REGENERATE_ACTIONS, AiResolveConflictContentWidget, REVOKE_ACTIONS } from '../types';
-import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
+import {
+  AIResolveConflictContentWidget,
+  AI_RESOLVE_REGENERATE_ACTIONS,
+  ECompleteReason,
+  REVOKE_ACTIONS,
+} from '../types';
 
-interface IWrapperAiInlineResultProps {
-  iconItems: IAiInlineResultIconItemsProps[];
+import { IMergeEditorShape } from './types';
+
+interface IWrapperAIInlineResultProps {
+  id: string;
+  iconItems: IAIInlineResultIconItemsProps[];
   isRenderThumbs: boolean;
-  codeEditor: ResultCodeEditor;
+  codeEditor: IMergeEditorShape;
   range: LineRange;
   closeClick?: () => void;
   isRenderClose?: boolean;
+  /**
+   * 不展示 popover 确认框，用户点击后直接执行 re-generate
+   */
   disablePopover?: boolean;
 }
 
-export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
-  const { iconItems, isRenderThumbs, codeEditor, range, closeClick, isRenderClose, disablePopover = false } = props;
+export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
+  const { iconItems, isRenderThumbs, codeEditor, range, id, disablePopover = false } = props;
   const [isVisiablePopover, setIsVisiablePopover] = React.useState(false);
   const uid = useMemo(() => uuid(4), []);
 
-  const onCancel = useCallback(
-    (event) => {
-      setIsVisiablePopover(false);
+  const hidePopover = useCallback(
+    (event: React.MouseEvent<HTMLElement>) => {
       event.stopPropagation();
       event.preventDefault();
+
+      setIsVisiablePopover(false);
     },
     [isVisiablePopover],
   );
 
   const onOk = useCallback(
-    (event) => {
-      onCancel(event);
-      execGenerate();
+    (event: React.MouseEvent<HTMLElement>) => {
       event.stopPropagation();
       event.preventDefault();
+
+      hidePopover(event);
+      execGenerate();
     },
     [isVisiablePopover],
   );
@@ -51,9 +63,10 @@ export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
     codeEditor.launchConflictActionsEvent({
       range,
       action: AI_RESOLVE_REGENERATE_ACTIONS,
+      reason: ECompleteReason.UserManual,
     });
-    codeEditor.hideResolveResultWidget();
-  }, [range, codeEditor]);
+    codeEditor.hideResolveResultWidget(id);
+  }, [range, codeEditor, id]);
 
   const popoverContent = useMemo(
     () => (
@@ -61,7 +74,7 @@ export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
         <DialogContent
           type='confirm'
           buttons={[
-            <Button size='small' onClick={onCancel} type='secondary'>
+            <Button size='small' onClick={hidePopover} type='secondary'>
               {localize('ButtonCancel')}
             </Button>,
             <Button size='small' onClick={onOk}>
@@ -84,14 +97,8 @@ export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
 
   const renderGenerate = useCallback(
     () => (
-      <Popover
-        trigger={PopoverTriggerType.program}
-        display={isVisiablePopover}
-        id={uid}
-        content={popoverContent}
-        position={PopoverPosition.bottom}
-      >
-        {localize('aiNative.operate.afresh.title')}
+      <Popover visible={isVisiablePopover} id={uid} content={popoverContent} position={PopoverPosition.bottom}>
+        <span>{localize('aiNative.operate.afresh.title')}</span>
       </Popover>
     ),
     [isVisiablePopover],
@@ -100,20 +107,21 @@ export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
   const handleRenerate = useCallback(() => {
     const intelligentStateModel = range.getIntelligentStateModel();
     const preAnswerCode = intelligentStateModel.answerCode;
-    const currentCode = codeEditor.getModel()?.getValueInRange(range.toRange()) || '';
+    const currentCode = codeEditor.editor.getModel()?.getValueInRange(range.toRange()) || '';
 
     // 如果内容有变化，说明用户有修改，需要弹出确认框
     if (preAnswerCode.trim() === currentCode.trim()) {
       execGenerate();
     } else {
       if (disablePopover) {
+        execGenerate();
         return;
       }
       setIsVisiablePopover(true);
     }
   }, [range, codeEditor, isVisiablePopover, disablePopover]);
 
-  const iconResultItems: IAiInlineResultIconItemsProps[] = useMemo(
+  const iconResultItems: IAIInlineResultIconItemsProps[] = useMemo(
     () =>
       iconItems.concat([
         {
@@ -129,10 +137,12 @@ export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
 };
 
 @Injectable({ multiple: true })
-export class ResolveResultWidget extends BaseInlineContentWidget {
-  protected uid: string = uuid(4);
-
-  constructor(protected readonly codeEditor: ResultCodeEditor, protected readonly lineRange: LineRange) {
+export class ResolveResultWidget extends ReactInlineContentWidget {
+  constructor(
+    protected uid: string,
+    protected readonly codeEditor: IMergeEditorShape,
+    protected readonly lineRange: LineRange,
+  ) {
     super(codeEditor.editor);
   }
 
@@ -140,7 +150,7 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
     return true;
   }
 
-  protected iconItems(): IAiInlineResultIconItemsProps[] {
+  protected iconItems(): IAIInlineResultIconItemsProps[] {
     return [
       {
         icon: 'discard',
@@ -149,6 +159,7 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
             action: REVOKE_ACTIONS,
+            reason: ECompleteReason.UserManual,
           });
           this.codeEditor.hideResolveResultWidget();
         },
@@ -162,7 +173,8 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
 
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
-        <WapperAiInlineResult
+        <WapperAIInlineResult
+          id={this.uid}
           iconItems={iconResultItems}
           isRenderThumbs={isRenderThumbs}
           codeEditor={this.codeEditor}
@@ -173,6 +185,6 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
   }
 
   public id(): string {
-    return `${AiResolveConflictContentWidget}_${this.uid}`;
+    return `${AIResolveConflictContentWidget}_${this.uid}`;
   }
 }

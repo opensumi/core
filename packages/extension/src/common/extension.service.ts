@@ -1,3 +1,4 @@
+import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { Deferred } from '@opensumi/ide-core-common';
 
@@ -17,6 +18,7 @@ export interface IExtensionChangeEvent {
 abstract class BaseExtProcessService {
   public ready: Deferred<void>;
   abstract protocol: IRPCProtocol;
+  abstract connection: BaseConnection<Uint8Array>;
   abstract disposeApiFactory(): void;
   abstract disposeProcess(): void | Promise<void>;
   abstract activate(): Promise<IRPCProtocol>;

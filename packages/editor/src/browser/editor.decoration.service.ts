@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, IDisposable, IEventBus, URI } from '@opensumi/ide-core-browser';
+import { DisposableStore, IDisposable, IEventBus, URI } from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
@@ -15,6 +15,7 @@ import {
   IEditorDecorationCollectionService,
   IEditorDecorationProvider,
   IThemedCssStyle,
+  IThemedCssStyleCollection,
 } from './types';
 
 @Injectable()
@@ -34,8 +35,6 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   private readonly eventBus: IEventBus;
 
   private tempId = 0;
-
-  constructor() {}
 
   getNextTempId() {
     this.tempId++;
@@ -69,55 +68,75 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   }
 
   private resolveDecoration(key: string, options: IDecorationRenderOptions): IDynamicModelDecorationProperty {
+    const theme = this.createThemeCSSStyleCollection(key, options);
+
     const dec = {
-      default: this.addedThemeDecorationToCSSStyleSheet(key, options),
-      light: options.light ? this.addedThemeDecorationToCSSStyleSheet(key + '-light', options.light) : null,
-      dark: options.dark ? this.addedThemeDecorationToCSSStyleSheet(key + '-dark', options.dark) : null,
+      default: theme.default,
+      light: theme.light,
+      dark: theme.dark,
       isWholeLine: options.isWholeLine || false,
       overviewRulerLane: options.overviewRulerLane,
       dispose: () => {
-        dec.default.dispose();
-        if (dec.light) {
-          dec.light.dispose();
-        }
-        if (dec.dark) {
-          dec.dark.dispose();
-        }
+        theme.dispose();
       },
     };
 
     return dec;
   }
 
-  private addedThemeDecorationToCSSStyleSheet(key, options: IThemeDecorationRenderOptions): IThemedCssStyle {
+  private createThemeCSSStyleCollection(key: string, options: IDecorationRenderOptions): IThemedCssStyleCollection {
+    const disposer = new DisposableStore();
+
+    const defaultStyle = this.addedThemeDecorationToCSSStyleSheet(key, options);
+    const result = {
+      default: defaultStyle,
+      light: null,
+      dark: null,
+      dispose: () => {
+        disposer.dispose();
+      },
+    } as IThemedCssStyleCollection;
+
+    if (options.light) {
+      const lightStyle = this.addedThemeDecorationToCSSStyleSheet(key + '-light', options.light);
+      result.light = lightStyle;
+      disposer.add(lightStyle);
+    }
+    if (options.dark) {
+      const darkStyle = this.addedThemeDecorationToCSSStyleSheet(key + '-dark', options.dark);
+      result.dark = darkStyle;
+      disposer.add(darkStyle);
+    }
+
+    return result;
+  }
+
+  private addedThemeDecorationToCSSStyleSheet(key: string, options: IDecorationRenderOptions): IThemedCssStyle {
     const className = key;
     const inlineClassName = key + '-inline';
-    const disposer = new Disposable();
-    let afterContentClassName;
-    let beforeContentClassName;
-    let glyphMarginClassName;
+    const disposer = new DisposableStore();
+    let afterContentClassName: string | undefined;
+    let beforeContentClassName: string | undefined;
+    let glyphMarginClassName: string | undefined;
+
+    const inlineBlockSelector = this.createInlineBlockCSSStyleIfNeeded();
+
     const styles = this.resolveCSSStyle(options);
 
     const inlineStyles = this.resolveInlineCSSStyle(options);
-    disposer.addDispose(this.cssManager.addClass(className, styles));
-    disposer.addDispose(this.cssManager.addClass(inlineClassName, inlineStyles));
+    disposer.add(this.cssManager.addClass(className, styles));
+    disposer.add(this.cssManager.addClass(inlineClassName, inlineStyles));
     if (options.after) {
+      const afterClassName = `${key}-after`;
       const styles = this.resolveContentCSSStyle(options.after);
-      disposer.addDispose(this.cssManager.addClass(key + '-after::after', styles));
-      afterContentClassName = key + '-after';
-      // 最新版chrome 中 document.caretRangeFromRange 的行为有所改变
-      // 如果目标位置命中的是两个inline元素之间, 它会认为是前一个元素的内容。
-      // 在之前这个结果是属于公共父级
-      // 这个改变会使得monaco中hitTest返回错误的结果，导致点击decoration的空白区域时会错误选中文本
-      // 临时修复:
-      // 此处将before和after的父级span display强制设置为inline-block, 可以避免这个问题, 是否会带来其他风险未知
-      disposer.addDispose(this.cssManager.addClass(afterContentClassName, { display: 'inline-block' } as any));
+      disposer.add(this.cssManager.addClass(afterClassName + '::after', styles));
+      afterContentClassName = `${inlineBlockSelector} ${afterClassName}`;
     }
     if (options.before) {
+      const beforeClassName = `${key}-before`;
       const styles = this.resolveContentCSSStyle(options.before);
-      disposer.addDispose(this.cssManager.addClass(key + '-before::before', styles));
-      beforeContentClassName = key + '-before';
-      disposer.addDispose(this.cssManager.addClass(beforeContentClassName, { display: 'inline-block' } as any));
+      disposer.add(this.cssManager.addClass(beforeClassName + '::before', styles));
+      beforeContentClassName = `${inlineBlockSelector} ${beforeClassName}`;
     }
     if (options.gutterIconPath) {
       const glyphMarginStyle = this.resolveCSSStyle({
@@ -125,7 +144,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
         backgroundIcon: options.gutterIconPath.toString(),
       });
       glyphMarginClassName = key + '-glyphMargin';
-      disposer.addDispose(this.cssManager.addClass(glyphMarginClassName, glyphMarginStyle));
+      disposer.add(this.cssManager.addClass(glyphMarginClassName, glyphMarginStyle));
     }
 
     return {
@@ -194,11 +213,33 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       textDecoration: styles.textDecoration,
       color: this.themeService.getColorVar(styles.color),
       backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
-
       margin: styles.margin,
       width: styles.width,
       height: styles.height,
     } as CSSStyleDeclaration;
+  }
+
+  static DISPLAY_INLINE_BLOCK_CLS = 'display-inline-block-decoration';
+  private inlineBlockDecorationDisposer: IDisposable | undefined;
+
+  /**
+   * 最新版chrome 中 document.caretRangeFromRange 的行为有所改变
+   * 如果目标位置命中的是两个 inline 元素之间, 它会认为是前一个元素的内容。
+   * 在之前这个结果是属于公共父级
+   * 这个改变会使得 monaco 中 hitTest 返回错误的结果，导致点击 decoration 的空白区域时会错误选中文本
+   * 此处将 before 和 after 的父级 span display 强制设置为 inline-block, 可以避免这个问题, 是否会带来其他风险未知
+   * @returns
+   */
+  private createInlineBlockCSSStyleIfNeeded(): string {
+    if (this.inlineBlockDecorationDisposer) {
+      return EditorDecorationCollectionService.DISPLAY_INLINE_BLOCK_CLS;
+    }
+
+    this.inlineBlockDecorationDisposer = this.cssManager.addClass(
+      EditorDecorationCollectionService.DISPLAY_INLINE_BLOCK_CLS,
+      { display: 'inline-block' },
+    );
+    return EditorDecorationCollectionService.DISPLAY_INLINE_BLOCK_CLS;
   }
 
   registerDecorationProvider(provider: IEditorDecorationProvider): IDisposable {

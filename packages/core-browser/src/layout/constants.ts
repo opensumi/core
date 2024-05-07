@@ -1,3 +1,10 @@
+import merge from 'lodash/merge';
+
+import { Injectable } from '@opensumi/di';
+import { IDesignLayoutConfig, isMacintosh } from '@opensumi/ide-core-common';
+
+import { electronEnv } from '../utils/electron';
+
 export interface ILayoutViewSize {
   menubarHeight: number;
   editorTabsHeight: number;
@@ -18,6 +25,7 @@ export const DEFAULT_LAYOUT_VIEW_SIZE: ILayoutViewSize = {
   accordionHeaderSizeHeight: 24,
 };
 
+@Injectable()
 export class LayoutViewSizeConfig implements ILayoutViewSize {
   #menubarHeight: number;
   #editorTabsHeight: number;
@@ -27,17 +35,21 @@ export class LayoutViewSizeConfig implements ILayoutViewSize {
   #statusBarHeight: number;
   #accordionHeaderSizeHeight: number;
 
-  constructor(private readonly layoutViewSize?: Partial<ILayoutViewSize>) {
-    this.#menubarHeight = this.layoutViewSize?.menubarHeight || DEFAULT_LAYOUT_VIEW_SIZE.menubarHeight;
-    this.#editorTabsHeight = this.layoutViewSize?.editorTabsHeight || DEFAULT_LAYOUT_VIEW_SIZE.editorTabsHeight;
-    this.#bigSurTitleBarHeight =
-      this.layoutViewSize?.bigSurTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.bigSurTitleBarHeight;
-    this.#titleBarHeight = this.layoutViewSize?.titleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.titleBarHeight;
-    this.#panelTitleBarHeight =
-      this.layoutViewSize?.panelTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.panelTitleBarHeight;
-    this.#statusBarHeight = this.layoutViewSize?.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
+  private inited = false;
+  init(layoutViewSize: Partial<ILayoutViewSize> = {}) {
+    if (this.inited) {
+      return;
+    }
+    this.inited = true;
+
+    this.#menubarHeight = layoutViewSize.menubarHeight || DEFAULT_LAYOUT_VIEW_SIZE.menubarHeight;
+    this.#editorTabsHeight = layoutViewSize.editorTabsHeight || DEFAULT_LAYOUT_VIEW_SIZE.editorTabsHeight;
+    this.#bigSurTitleBarHeight = layoutViewSize.bigSurTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.bigSurTitleBarHeight;
+    this.#titleBarHeight = layoutViewSize.titleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.titleBarHeight;
+    this.#panelTitleBarHeight = layoutViewSize.panelTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.panelTitleBarHeight;
+    this.#statusBarHeight = layoutViewSize.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
     this.#accordionHeaderSizeHeight =
-      this.layoutViewSize?.accordionHeaderSizeHeight || DEFAULT_LAYOUT_VIEW_SIZE.accordionHeaderSizeHeight;
+      layoutViewSize.accordionHeaderSizeHeight || DEFAULT_LAYOUT_VIEW_SIZE.accordionHeaderSizeHeight;
   }
 
   get menubarHeight(): number {
@@ -87,5 +99,47 @@ export class LayoutViewSizeConfig implements ILayoutViewSize {
   }
   setAccordionHeaderSizeHeight(value: number) {
     this.#accordionHeaderSizeHeight = value;
+  }
+
+  protected supportNewMacHeaderBar = electronEnv.osRelease ? parseFloat(electronEnv.osRelease) >= 20 : false;
+
+  calcElectronHeaderHeight(): number {
+    if (isMacintosh) {
+      // Big Sur increases title bar height
+      return this.supportNewMacHeaderBar ? this.bigSurTitleBarHeight : this.titleBarHeight;
+    }
+    return this.menubarHeight;
+  }
+
+  calcOnlyTitleBarHeight(): number {
+    if (isMacintosh && this.supportNewMacHeaderBar) {
+      return this.bigSurTitleBarHeight;
+    }
+    return this.titleBarHeight;
+  }
+}
+
+@Injectable()
+export class DesignLayoutConfig implements IDesignLayoutConfig {
+  private internalLayout: Required<IDesignLayoutConfig> = {
+    useMergeRightWithLeftPanel: false,
+    useMenubarView: true,
+    menubarLogo: '',
+  };
+
+  setLayout(...value: (Partial<IDesignLayoutConfig> | undefined)[]): void {
+    this.internalLayout = merge(this.internalLayout, ...value.filter(Boolean));
+  }
+
+  get useMergeRightWithLeftPanel(): boolean {
+    return this.internalLayout.useMergeRightWithLeftPanel;
+  }
+
+  get useMenubarView(): boolean {
+    return this.internalLayout.useMenubarView;
+  }
+
+  get menubarLogo(): string {
+    return this.internalLayout.menubarLogo;
   }
 }

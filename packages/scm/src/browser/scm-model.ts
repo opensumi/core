@@ -280,14 +280,17 @@ export class ViewModelContext extends Disposable {
         // https://github.com/microsoft/vscode/blob/5ea57c3b481522195786cf1b669cd6ad8bda3381/extensions/git/src/repository.ts#L808
         if (elements.some((e: ISCMResourceGroup) => e.id === 'merge')) {
           const mergeChanges: Uri[] = [];
+          const mergeChangesObj: Record<string, boolean> = {};
           elements.forEach((repository: ISCMResourceGroup) => {
             if (Array.isArray(repository.elements)) {
               repository.elements.forEach((state) => {
                 mergeChanges.push(state.sourceUri);
+                mergeChangesObj[state.sourceUri.toString()] = true;
               });
             }
           });
           this.commandService.executeCommand('setContext', 'git.mergeChanges', mergeChanges);
+          this.commandService.executeCommand('setContext', 'git.mergeChangesObj', mergeChangesObj);
         }
         if (repository.provider.rootUri) {
           // 只处理存在工作区路径的 SCMList

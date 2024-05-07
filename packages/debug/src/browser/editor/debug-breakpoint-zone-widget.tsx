@@ -39,6 +39,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   private _wrapper: HTMLDivElement;
   private _selection: HTMLDivElement;
   private _input: HTMLDivElement;
+  private cssRenderDisposable: monaco.IDisposable | undefined;
 
   protected readonly _onDidChangeBreakpoint = new Emitter<BreakpointChangeData>();
   readonly onDidChangeBreakpoint: Event<BreakpointChangeData> = this._onDidChangeBreakpoint.event;
@@ -195,7 +196,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     this.clearPlaceholder();
 
     const content = `'${this.placeholder}' !important`;
-    this.cssManager.addClass(DebugBreakpointZoneWidget.INPUT_PLACEHOLDER_AFTER, { content });
+    this.cssRenderDisposable = this.cssManager.addClass(DebugBreakpointZoneWidget.INPUT_PLACEHOLDER_AFTER, { content });
   }
 
   private ensureRenderPlaceholder() {
@@ -216,7 +217,10 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   }
 
   private clearPlaceholder() {
-    this.cssManager.removeClass(DebugBreakpointZoneWidget.INPUT_PLACEHOLDER_AFTER);
+    if (this.cssRenderDisposable) {
+      this.cssRenderDisposable.dispose();
+      this.cssRenderDisposable = undefined;
+    }
   }
 
   applyClass() {

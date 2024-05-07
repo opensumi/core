@@ -149,7 +149,7 @@ export enum EditorType {
 }
 
 /**
- * 一个IEditor代表了一个最小的编辑器单元，可以是CodeEditor中的一个，也可以是DiffEditor中的两个
+ * 一个IEditor代表了一个最小的编辑器单元，可以是 CodeEditor 中的一个，也可以是 DiffEditor 中的两个
  */
 export interface IEditor {
   /**
@@ -567,6 +567,8 @@ export interface IResourceOpenOptions {
 
   /**
    * @deprecated use focus instead
+   *
+   * An optional flag that when `true` will stop the editor from taking focus.
    */
   preserveFocus?: boolean;
 

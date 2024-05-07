@@ -29,7 +29,10 @@ export const RenderWrapper = (props: { html: string; opener?: IOpenerShape }) =>
    * 拦截 a 标签的点击事件，触发 commands
    */
   const listenClick = (event: PointerEvent) => {
-    const target = event.target as HTMLElement;
+    let target = event.target as HTMLElement;
+    if (target.className.includes('codicon')) {
+      target = target.parentNode as HTMLElement;
+    }
     if (target.tagName.toLowerCase() === 'a' && target.hasAttribute(DATA_SET_COMMAND)) {
       const dataCommand = target.getAttribute(DATA_SET_COMMAND);
       if (dataCommand && opener) {

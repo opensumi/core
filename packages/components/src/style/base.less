@@ -38,6 +38,12 @@ input::-ms-reveal {
 //    we force a non-overlapping, non-auto-hiding scrollbar to counteract.
 // 6. Change the default tap highlight to be completely transparent in iOS.
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box; // 1
+}
+
 @{html-selector} {
   font-family: sans-serif; // 2
   line-height: 1.15; // 3
@@ -90,6 +96,7 @@ hr {
   box-sizing: content-box; // 1
   height: 0; // 1
   overflow: visible; // 2
+  margin-bottom: 0.5em;
 }
 
 //
@@ -115,10 +122,10 @@ h6 {
 // Reset margins on paragraphs
 //
 // Similarly, the top margin on `<p>`s get reset. However, we also reset the
-// bottom margin to use `em` units instead of `em`.
+// bottom margin to use `em` units instead of `px`.
 p {
   margin-top: 0;
-  margin-bottom: 1em;
+  margin-bottom: 0.5em;
 }
 
 // Abbreviations

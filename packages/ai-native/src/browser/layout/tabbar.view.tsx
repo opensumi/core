@@ -1,13 +1,7 @@
 import cls from 'classnames';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
-import {
-  AINativeConfigService,
-  ComponentRegistryInfo,
-  SlotLocation,
-  useContextMenus,
-  useInjectable,
-} from '@opensumi/ide-core-browser';
+import { ComponentRegistryInfo, SlotLocation, useContextMenus, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection } from '@opensumi/ide-core-browser/lib/components';
 import {
   EnhanceIcon,
@@ -15,6 +9,7 @@ import {
   EnhancePopover,
   HorizontalVertical,
 } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { localize } from '@opensumi/ide-core-common';
 import { DesignLeftTabRenderer, DesignRightTabRenderer } from '@opensumi/ide-design/lib/browser/layout/tabbar.view';
@@ -61,7 +56,14 @@ export const AIChatTabRenderer = ({
     className={cls(className, `${AI_CHAT_VIEW_ID}-slot`)}
     components={components}
     TabbarView={() => <ChatTabbarRenderer />}
-    TabpanelView={() => <BaseTabPanelView PanelView={ContainerView} />}
+    TabpanelView={() => (
+      <BaseTabPanelView
+        PanelView={ContainerView}
+        PanelViewProps={{
+          className: styles.ai_chat_view_container,
+        }}
+      />
+    )}
   />
 );
 
@@ -100,14 +102,19 @@ const AILeftTabbarRenderer: React.FC = () => {
       renderOtherVisibleContainers={renderOtherVisibleContainers}
       isRenderExtraTopMenus={false}
       renderExtraMenus={
-        navMenu.length === 0 ? null : (
-          <EnhanceIconWithCtxMenu
-            wrapperClassName={styles.extra_bottom_icon}
-            iconClass={navMenu[0].icon}
-            menuNodes={navMenu[0].children}
-            skew={{ x: -8, y: -4 }}
-          />
-        )
+        <div className={styles.extra_bottom_icon_container}>
+          {navMenu.length >= 0
+            ? navMenu.map((menu) => (
+                <EnhanceIconWithCtxMenu
+                  key={menu.id}
+                  wrapperClassName={styles.extra_bottom_icon}
+                  iconClass={menu.icon}
+                  menuNodes={menu.children}
+                  skew={{ x: -8, y: -4 }}
+                />
+              ))
+            : null}
+        </div>
       }
     />
   );
@@ -121,7 +128,7 @@ export const AIRightTabRenderer = ({
   components: ComponentRegistryInfo[];
 }) => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
-  const aiNativeConfigService: AINativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const designLayoutConfig = useInjectable<DesignLayoutConfig>(DesignLayoutConfig);
 
   const handleClose = useCallback(() => {
     tabbarService.updateCurrentContainerId('');
@@ -151,8 +158,8 @@ export const AIRightTabRenderer = ({
   }, []);
 
   const rightTabRenderClassName = useMemo(
-    () => (aiNativeConfigService.layout!.useMergeRightWithLeftPanel ? styles.right_tab_renderer : ''),
-    [aiNativeConfigService],
+    () => (designLayoutConfig.useMergeRightWithLeftPanel ? styles.right_tab_renderer : ''),
+    [designLayoutConfig],
   );
 
   return (

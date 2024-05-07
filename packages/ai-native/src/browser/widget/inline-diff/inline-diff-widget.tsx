@@ -43,16 +43,16 @@ const diffEditorOptions: IDiffEditorOptions = {
 interface IDiffContentProviderProps {
   dto:
     | {
-        selection: monaco.Selection;
+        range: monaco.IRange;
         modifiedValue: string;
       }
     | undefined;
-  onMaxLincCount: (n) => void;
+  onMaxLineCount: (n) => void;
   editor: ICodeEditor;
 }
 
 const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
-  const { dto, onMaxLincCount, editor } = props;
+  const { dto, onMaxLineCount, editor } = props;
   const monacoService: MonacoService = useInjectable(MonacoService);
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -67,9 +67,9 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       return;
     }
 
-    const { selection, modifiedValue } = dto;
+    const { range, modifiedValue } = dto;
 
-    const codeValueInRange = model.getValueInRange(selection);
+    const codeValueInRange = model.getValueInRange(range);
     const diffEditor = monacoService.createDiffEditor(editorRef.current!, {
       ...diffEditorOptions,
       lineDecorationsWidth: editor.getLayoutInfo().decorationsWidth,
@@ -86,9 +86,9 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       original: originalModel,
       modified: modifiedModel,
     });
-    diffEditor.revealLine(selection.startLineNumber, monaco.editor.ScrollType.Immediate);
+    diffEditor.revealLine(range.startLineNumber, monaco.editor.ScrollType.Immediate);
 
-    if (onMaxLincCount) {
+    if (onMaxLineCount) {
       const originalEditor = diffEditor.getOriginalEditor();
       const modifiedEditor = diffEditor.getModifiedEditor();
 
@@ -99,7 +99,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       const modifiedLineCount =
         modifiedContentHeight / modifiedEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
 
-      onMaxLincCount(Math.max(originLineCount, modifiedLineCount) + 1);
+      onMaxLineCount(Math.max(originLineCount, modifiedLineCount) + 1);
     }
 
     return () => {
@@ -113,15 +113,16 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
 });
 
 @Injectable({ multiple: true })
-export class AIDiffWidget extends ZoneWidget {
+export class InlineDiffWidget extends ZoneWidget {
   public static readonly _hideId = 'overlayDiff';
 
   @Autowired(AppConfig)
   private configContext: AppConfig;
-  private readonly _onMaxLincCount = new Emitter<number>();
-  public readonly onMaxLincCount: Event<number> = this._onMaxLincCount.event;
 
-  private selection: monaco.Selection;
+  private readonly _onMaxLineCount = new Emitter<number>();
+  public readonly onMaxLineCount: Event<number> = this._onMaxLineCount.event;
+
+  private range: monaco.IRange;
   private modifiedValue: string;
   private root: ReactDOMClient.Root | null;
 
@@ -129,19 +130,19 @@ export class AIDiffWidget extends ZoneWidget {
   protected applyStyle(): void {}
 
   protected _fillContainer(container: HTMLElement): void {
-    this.setCssClass('ai_diff-widget');
+    this.setCssClass('inline-diff-widget');
     this.root = ReactDOMClient.createRoot(container);
 
     this.root.render(
       <ConfigProvider value={this.configContext}>
         <div className={styles.ai_diff_editor_container}>
           <DiffContentProvider
-            dto={{ selection: this.selection, modifiedValue: this.modifiedValue }}
+            dto={{ range: this.range, modifiedValue: this.modifiedValue }}
             editor={this.editor}
-            onMaxLincCount={(n) => {
+            onMaxLineCount={(n) => {
               if (n) {
                 this._relayout(n);
-                this._onMaxLincCount.fire(n);
+                this._onMaxLineCount.fire(n);
               }
             }}
           />
@@ -150,16 +151,17 @@ export class AIDiffWidget extends ZoneWidget {
     );
   }
 
-  constructor(editor: ICodeEditor, selection: monaco.Selection, modifiedValue: string) {
+  constructor(editor: ICodeEditor, selection: monaco.IRange, modifiedValue: string) {
     super(editor, {
       showArrow: false,
       showFrame: false,
       arrowColor: undefined,
       frameColor: undefined,
       keepEditorSelection: true,
+      showInHiddenAreas: true,
     });
 
-    this.selection = selection;
+    this.range = selection;
     this.modifiedValue = modifiedValue;
   }
 
@@ -188,7 +190,7 @@ export class AIDiffWidget extends ZoneWidget {
   }
 
   public override hide(): void {
-    this.editor.setHiddenAreas([], AIDiffWidget._hideId);
+    this.editor.setHiddenAreas([], InlineDiffWidget._hideId);
     super.hide();
     if (this.root) {
       this.root.unmount();
@@ -197,8 +199,7 @@ export class AIDiffWidget extends ZoneWidget {
 
   public showByLine(line: number, lineNumber = 20): void {
     /**
-     * 由于 monaco 在最新的版本中支持了 showInHiddenAreas 选项（见：https://github.com/microsoft/vscode/pull/181029），具备了在空白行显示 zonewidget 的能力
-     * 所以这里暂时通过 hack 的方式使其能让 zonewidget 在空白处显示出来，后续需要升级 monaco 来实现
+     * 暂时通过 hack 的方式使其能让 zonewidget 在空白处显示出来
      */
     // @ts-ignore
     this.editor._modelData.viewModel.coordinatesConverter.modelPositionIsVisible = () => true;

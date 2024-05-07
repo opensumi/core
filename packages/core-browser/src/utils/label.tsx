@@ -57,3 +57,42 @@ export function transformLabelWithCodicon(
     }
   });
 }
+
+export function transformLabelWithCodiconHtml(
+  label: string,
+  transformer?: (str: string) => string | undefined,
+): string {
+  const ICON_REGX = /\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)/gi;
+  const ICON_WITH_ANIMATE_REGX = /\$\(([a-z.]+\/)?([a-z-]+)~([a-z]+)\)/gi;
+  // some string like $() $(~spin)
+  const ICON_ERROR_REGX = /\$\(([a-z.]+\/)?([a-z-]+)?(~[a-z]+)?\)/gi;
+
+  const splitLabel = label.split(SEPERATOR);
+  const length = splitLabel.length;
+
+  return splitLabel
+    .map((e, index) => {
+      if (!transformer) {
+        return e;
+      }
+      const icon = transformer(e);
+      if (icon) {
+        return `<span class="kt-icon ${icon}" style="font-size: 14px;" ></span>`;
+      } else if (ICON_REGX.test(e)) {
+        if (e.includes('~')) {
+          const [, , icon, animate] = ICON_WITH_ANIMATE_REGX.exec(e) || [];
+          if (animate && icon) {
+            return `<span class="kt-icon ${icon} codicon-animation-${animate}" style="font-size: 14px;" ></span>`;
+          }
+        }
+        const newStr = e.replaceAll(ICON_REGX, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
+        return transformLabelWithCodiconHtml(newStr, transformer);
+      } else if (ICON_ERROR_REGX.test(e)) {
+        return transformLabelWithCodiconHtml(e.replaceAll(ICON_ERROR_REGX, ''), transformer);
+      } else {
+        const withSeperator = e + (index === length - 1 ? '' : SEPERATOR);
+        return withSeperator;
+      }
+    })
+    .join(SEPERATOR);
+}

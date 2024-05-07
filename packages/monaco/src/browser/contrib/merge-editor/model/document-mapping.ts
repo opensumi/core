@@ -3,7 +3,6 @@ import { Disposable } from '@opensumi/ide-core-common';
 
 import { DetailedLineRangeMapping } from '../../../../common/diff';
 import { EDiffRangeTurn } from '../types';
-import { flatModified, flatOriginal } from '../utils';
 
 import { LineRange } from './line-range';
 
@@ -14,11 +13,9 @@ import { LineRange } from './line-range';
  * 例: 点击左侧视图的 accept 操作，导致 result 视图的文本增加了 3 行（e.g 第 3 行到第 6 行增加了文本）, 那么这第 3 行之后的所有源数据的 lineRange offset 都需要增加 3
  * 这样再后续处理其他的 conflict 操作时才能计算正确
  *
- * @param diffRangeTurn
- * ORIGIN: 表示 current editor view 与 result editor view 的 lineRangeMapping 映射关系
- * MODIFIED: 表示 result editor view 与 incoming editor view 的 lineRangeMapping 映射关系
+ * @param diffRangeTurn {@link EDiffRangeTurn} 用于区分当前的映射关系
  */
-@Injectable({ multiple: false })
+@Injectable({ multiple: true })
 export class DocumentMapping extends Disposable {
   public adjacentComputeRangeMap: Map<string, LineRange> = new Map();
   public computeRangeMap: Map<string, LineRange> = new Map();
@@ -74,16 +71,17 @@ export class DocumentMapping extends Disposable {
   }
 
   public inputComputeResultRangeMapping(changes: readonly DetailedLineRangeMapping[]): void {
-    const [originalRange, modifiedRange] = [flatOriginal(changes), flatModified(changes)];
-
-    if (this.diffRangeTurn === EDiffRangeTurn.MODIFIED) {
-      modifiedRange.forEach((range, idx) => {
-        this.addRange(range, originalRange[idx]);
-      });
-    } else if (this.diffRangeTurn === EDiffRangeTurn.ORIGIN) {
-      originalRange.forEach((range, idx) => {
-        this.addRange(range, modifiedRange[idx]);
-      });
+    switch (this.diffRangeTurn) {
+      case EDiffRangeTurn.ORIGIN:
+        changes.forEach(({ modified, original }) => {
+          this.addRange(original as LineRange, modified as LineRange);
+        });
+        break;
+      case EDiffRangeTurn.MODIFIED:
+        changes.forEach(({ modified, original }) => {
+          this.addRange(modified as LineRange, original as LineRange);
+        });
+        break;
     }
   }
 

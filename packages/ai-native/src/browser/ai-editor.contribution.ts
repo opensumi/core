@@ -4,6 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
+  AIInlineChatContentWidgetId,
   AINativeSettingSectionsId,
   AISerivceType,
   CancelResponse,
@@ -32,8 +33,6 @@ import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
 
-import { AIInlineChatContentWidget } from '../common';
-
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
@@ -44,7 +43,7 @@ import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService, EInlineChatStatus } from './widget/inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from './widget/inline-chat/inline-content-widget';
-import { AIDiffWidget } from './widget/inline-diff/inline-diff-widget';
+import { InlineDiffWidget } from './widget/inline-diff/inline-diff-widget';
 
 @Injectable()
 export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -106,7 +105,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
-  private aiDiffWidget: AIDiffWidget;
+  private aiDiffWidget: InlineDiffWidget;
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
@@ -239,7 +238,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       monacoEditor.onMouseUp((event) => {
         const target = event.target;
         const detail = (target as any).detail;
-        if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidget) {
+        if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidgetId) {
           needShowInlineChat = false;
         } else {
           needShowInlineChat = true;
@@ -454,7 +453,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiInlineChatService.onThumbs((isLike: boolean) => {
         this.aiReporter.end(relationId, { isLike });
       }),
-      this.aiDiffWidget.onMaxLincCount((count) => {
+      this.aiDiffWidget.onMaxLineCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model!.getLineCount()) {
             const lineHeight = monacoEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
@@ -483,13 +482,13 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const indent = leadingWhitespaceMatch ? leadingWhitespaceMatch[0] : '  ';
     return answer
       .split('\n')
-      .map((line, index) => (index === 0 ? line : `${indent}${line}`))
+      .map((line) => `${indent}${line}`)
       .join('\n');
   }
 
   private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
-    monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
-    this.aiDiffWidget = this.injector.get(AIDiffWidget, [monacoEditor, crossSelection, answer]);
+    monacoEditor.setHiddenAreas([crossSelection], InlineDiffWidget._hideId);
+    this.aiDiffWidget = this.injector.get(InlineDiffWidget, [monacoEditor, crossSelection, answer]);
     this.aiDiffWidget.create();
     this.aiDiffWidget.showByLine(
       crossSelection.startLineNumber - 1,

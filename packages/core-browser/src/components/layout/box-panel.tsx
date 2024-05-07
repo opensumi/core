@@ -1,9 +1,9 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { useInjectable } from '../../react-hooks';
 import { AppConfig } from '../../react-providers';
-import { useDesignStyles } from '../../utils';
+import { useDesignStyles } from '../../utils/react-hooks';
 
 import { Layout } from './layout';
 import styles from './styles.module.less';
@@ -49,7 +49,7 @@ type ChildComponent = React.ReactElement<IChildComponentProps>;
 /**
  * 包裹放入其中的元素，并为每个元素创建一个 div
  *
- * 可以通过修改传入的 children 的 props 来定义一些属性，props 的定义可见：{ @link ChildComponent }
+ * 可以通过修改传入的 children 的 props 来定义一些属性，props 的定义可见：{@link ChildComponent}
  */
 export const BoxPanel: React.FC<{
   children?: ChildComponent | ChildComponent[];
@@ -63,37 +63,41 @@ export const BoxPanel: React.FC<{
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const styles_box_panel = useDesignStyles(styles['box-panel'], 'box-panel');
 
+  useEffect(() => {
+    if (appConfig.didRendered) {
+      appConfig.didRendered();
+    }
+  }, []);
+
+  const directionStyle = Layout.getStyleProperties(direction);
   return (
     <div
-      ref={() => {
-        if (appConfig.didRendered) {
-          appConfig.didRendered();
-        }
-      }}
       {...restProps}
       className={cls(styles_box_panel, className)}
-      style={{ flexDirection: Layout.getFlexDirection(direction), zIndex: restProps['z-index'] }}
+      style={{
+        flexDirection: directionStyle.direction,
+        zIndex: restProps.zIndex || restProps['z-index'],
+      }}
     >
-      {arrayChildren.map((child, index) => (
-        <div
-          key={index}
-          id={child['props']?.['data-wrapper-id']}
-          className={cls(styles.wrapper, child['props']?.['data-wrapper-class'])}
-          style={
-            child['props']
-              ? {
-                  flex: child['props'].flex,
-                  overflow: child['props'].overflow,
-                  zIndex: child['props'].zIndex || child['props']['z-index'],
-                  [Layout.getMinSizeProperty(direction)]: child['props'].defaultSize,
-                  backgroundColor: child['props'].backgroundColor,
-                }
-              : {}
-          }
-        >
-          {child}
-        </div>
-      ))}
+      {arrayChildren.map((child, index) => {
+        const props = child['props'] || {};
+        return (
+          <div
+            key={index}
+            id={props['data-wrapper-id']}
+            className={cls(styles.wrapper, props['data-wrapper-class'])}
+            style={{
+              flex: props.flex,
+              overflow: props.overflow,
+              zIndex: props.zIndex || props['z-index'],
+              [directionStyle.minSize]: props.defaultSize,
+              backgroundColor: props.backgroundColor,
+            }}
+          >
+            {child}
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -48,7 +48,7 @@ import {
 } from '../../../common/vscode/models';
 
 @Injectable({ multiple: true })
-export class MainthreadComments implements IDisposable, IMainThreadComments {
+export class MainThreadComments implements IDisposable, IMainThreadComments {
   @Autowired(ICommentsService)
   private commentsService: ICommentsService;
 

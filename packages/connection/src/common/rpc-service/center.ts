@@ -1,4 +1,5 @@
 import { Deferred } from '@opensumi/ide-core-common';
+import { addElement } from '@opensumi/ide-utils/lib/arrays';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { TSumiProtocol } from '../rpc';
@@ -54,15 +55,14 @@ export class RPCServiceCenter {
 
     this.protocolRegistry.applyTo(connection.io);
 
-    const index = this.proxies.length - 1;
     const proxy = new ProxySumi(this.serviceRegistry, this.logger);
     proxy.listen(connection);
 
-    this.proxies.push(proxy);
+    const remove = addElement(this.proxies, proxy);
 
     return {
       dispose: () => {
-        this.proxies.splice(index, 1);
+        remove.dispose();
         proxy.dispose();
       },
     };
@@ -73,16 +73,14 @@ export class RPCServiceCenter {
       this.deferred.resolve();
     }
 
-    const index = this.proxies.length - 1;
-
     const proxy = new ProxyJson(this.serviceRegistry, this.logger);
     proxy.listen(connection);
 
-    this.proxies.push(proxy);
+    const remove = addElement(this.proxies, proxy);
 
     return {
       dispose: () => {
-        this.proxies.splice(index, 1);
+        remove.dispose();
         proxy.dispose();
       },
     };

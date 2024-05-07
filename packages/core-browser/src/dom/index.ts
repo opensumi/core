@@ -1,5 +1,7 @@
 import { Event as BaseEvent, Disposable, Emitter, IDisposable, isWebKit } from '@opensumi/ide-core-common';
 
+export * from './event';
+
 export const EventType = {
   // Mouse
   CLICK: 'click',

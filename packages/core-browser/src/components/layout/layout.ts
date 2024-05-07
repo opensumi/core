@@ -51,6 +51,10 @@ export namespace Layout {
 
   export type alignment = 'horizontal' | 'vertical';
 
+  export function getStyleProperties(direction: Layout.direction) {
+    return flexDirectionMap[direction];
+  }
+
   export function getFlexDirection(direction: Layout.direction) {
     return flexDirectionMap[direction].direction;
   }

@@ -1,5 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
+import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
 import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
@@ -8,10 +9,12 @@ import { Disposable, IDisposable, path, toDisposable } from '@opensumi/ide-core-
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractWorkerExtProcessService } from '../common/extension.service';
+import { knownProtocols } from '../common/vscode/protocols';
 
 import { getWorkerBootstrapUrl } from './loader';
-import { createSumiApiFactory } from './sumi/main.thread.api.impl';
+import { createSumiAPIFactory } from './sumi/main.thread.api.impl';
 import { initWorkerThreadAPIProxy } from './vscode/api/main.thread.api.impl';
+import { initSharedAPIProxy } from './vscode/api/main.thread.api.shared-impl';
 import { startInsideIframe } from './workerHostIframe';
 
 const { posix } = path;
@@ -57,9 +60,12 @@ export class WorkerExtProcessService
     if (this.protocol) {
       this.ready.resolve();
       this.logger.log('[Worker Host] init worker thread api proxy');
+      const apiProxy = initSharedAPIProxy(this.protocol, this.injector);
+      await apiProxy.setup();
       this.apiFactoryDisposable.push(
-        toDisposable(await initWorkerThreadAPIProxy(this.protocol, this.injector, this)),
-        toDisposable(createSumiApiFactory(this.protocol, this.injector)),
+        apiProxy,
+        toDisposable(initWorkerThreadAPIProxy(this.protocol, this.injector, this)),
+        toDisposable(createSumiAPIFactory(this.protocol, this.injector)),
       );
       this.addDispose(this.apiFactoryDisposable);
 
@@ -194,12 +200,14 @@ export class WorkerExtProcessService
     });
   }
 
+  connection: BaseConnection<Uint8Array>;
   private createProtocol(port: MessagePort) {
-    const msgPortConnection = new MessagePortConnection(port);
+    this.connection = new MessagePortConnection(port);
 
-    const protocol = new SumiConnectionMultiplexer(msgPortConnection, {
+    const protocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'worker-ext-host',
+      knownProtocols,
     });
 
     this.logger.log('[Worker Host] web worker extension host ready');

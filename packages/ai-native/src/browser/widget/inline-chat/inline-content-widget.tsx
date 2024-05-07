@@ -1,16 +1,15 @@
 import React from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IAIInlineChatService } from '@opensumi/ide-core-browser';
-import { Emitter } from '@opensumi/ide-core-common';
+import { IAIInlineChatService, StackingLevelStr } from '@opensumi/ide-core-browser';
+import { AIInlineChatContentWidgetId, Emitter } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
-  BaseInlineContentWidget,
+  ReactInlineContentWidget,
   ShowAIContentOptions,
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 
-import { AIInlineChatContentWidget } from '../../../common/index';
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { AIInlineChatController } from './inline-chat-controller';
@@ -19,7 +18,7 @@ import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable({ multiple: true })
-export class AIInlineContentWidget extends BaseInlineContentWidget {
+export class AIInlineContentWidget extends ReactInlineContentWidget {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -74,9 +73,10 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
 
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
-    domNode.style.padding = '6px';
-    domNode.style.zIndex = '999';
-    domNode.style.paddingRight = '50px';
+    requestAnimationFrame(() => {
+      domNode.style.padding = '6px';
+      domNode.style.zIndex = StackingLevelStr.OverlayTop;
+    });
     return domNode;
   }
 
@@ -105,14 +105,15 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
 
   public offsetTop(top: number): void {
     if (this.originTop === 0) {
-      this.originTop = this.domNode.style.top ? parseInt(this.domNode.style.top, 10) : 0;
+      const top = this.domNode.style.top;
+      this.originTop = top ? parseInt(top, 10) : 0;
     }
 
     this.domNode.style.top = `${this.originTop + top}px`;
   }
 
   id(): string {
-    return AIInlineChatContentWidget;
+    return AIInlineChatContentWidgetId;
   }
 
   override getPosition(): monaco.editor.IContentWidgetPosition | null {
@@ -127,12 +128,31 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     }
 
     const { selection } = this.options;
-    return selection ? this.computerPosition(selection) : null;
+    if (!selection) {
+      return null;
+    }
+    const target = this.computePosition(selection);
+    if (target) {
+      return target;
+    }
+
+    return null;
   }
 
+  /**
+   * 获取指定行的最后一个非空白字符的列数
+   */
   private safeGetLineLastNonWhitespaceColumn(line: number) {
-    const model = this.editor.getModel();
-    return model!.getLineLastNonWhitespaceColumn(Math.min(Math.max(1, line), model!.getLineCount()));
+    const model = this.editor.getModel()!;
+    if (line < 1) {
+      line = 1;
+    }
+    const lineCount = model.getLineCount();
+    if (line > lineCount) {
+      line = lineCount;
+    }
+
+    return model.getLineLastNonWhitespaceColumn(line);
   }
 
   private toAbovePosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
@@ -212,7 +232,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
    * 2. 靠近光标处周围没有字符的空白区域作为要显示的区域
    * 3. 显示的区域方向在右侧，左侧不考虑
    */
-  private computerPosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
+  private computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
     const startPosition = selection.getStartPosition();
     const endPosition = selection.getEndPosition();
     const model = this.editor.getModel();
@@ -227,16 +247,20 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     let targetLine: number | null = null;
     let direction: 'above' | 'below' | null = null;
 
+    // 用户只选中了一行
     if (startPosition.lineNumber === endPosition.lineNumber) {
       return this.recheckPosition(cursorPosition.lineNumber, cursorPosition.column);
     }
 
+    // 用户选中了多行，光标在选中的开始位置
     if (cursorPosition.equals(startPosition)) {
       const getMaxLastWhitespaceColumn = Math.max(
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 1),
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 2),
       );
 
+      // 如果上面两行的最后一个非空白字符的列数小于当前行的最后一个非空白字符的列数 + 10
+      // 则直接显示在上面
       if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn + 10) {
         return this.toAbovePosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
       }

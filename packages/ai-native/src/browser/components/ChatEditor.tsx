@@ -1,5 +1,5 @@
 import capitalize from 'lodash/capitalize';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
 import { IClipboardService, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
@@ -8,6 +8,8 @@ import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native
 import { ChatFeatureRegistryToken, IAIReporter, localize, runWhenIdle } from '@opensumi/ide-core-common';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { ITheme, IThemeService } from '@opensumi/ide-theme';
+import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 
@@ -20,10 +22,30 @@ export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);
+  const workbenchThemeService = useInjectable<WorkbenchThemeService>(IThemeService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
 
   const [isCoping, setIsCoping] = useState<boolean>(false);
   const useUUID = useMemo(() => uuid(12), [ref, ref.current]);
+
+  useEffect(() => {
+    const doToggleTheme = (newTheme: ITheme) => {
+      if (newTheme.type === 'dark' || newTheme.type === 'hcDark') {
+        import('highlight.js/styles/a11y-dark.css');
+      } else if (newTheme.type === 'light' || newTheme.type === 'hcLight') {
+        import('highlight.js/styles/a11y-light.css');
+      }
+    };
+
+    const dispose = workbenchThemeService.onThemeChange((newTheme) => {
+      doToggleTheme(newTheme);
+    });
+
+    const currentTheme = workbenchThemeService.getCurrentThemeSync();
+    doToggleTheme(currentTheme);
+
+    return () => dispose.dispose();
+  }, []);
 
   const handleCopy = useCallback(async () => {
     setIsCoping(true);

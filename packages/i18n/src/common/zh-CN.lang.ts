@@ -2,6 +2,7 @@ import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { browserViews } from './contributes/zh-CN.lang';
 import { editorLocalizations } from './editor/zh-CN';
+import { zhCN as mergeConflicts } from './merge-conflicts/zh-CN.lang';
 
 export const localizationBundle = {
   languageId: LOCALE_TYPES.ZH_CN,
@@ -254,7 +255,7 @@ export const localizationBundle = {
     'debug.action.add.smartAddConfiguration': '智能添加配置',
     'debug.action.add.configuration': '添加配置',
     'debug.action.edit.configuration': '编辑配置',
-    'debug.action.open.launch.editor': '在 launch 编辑器中打开',
+    'debug.action.open.launch.editor': '使用 UI 模式编辑',
     'debug.action.open.configuration': '打开 launch.json',
     'debug.action.debug.console': '调试控制台',
     'debug.action.step-into': '单步跳入',
@@ -1203,13 +1204,14 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.continue': '继续合并',
     'mergeEditor.conflict.action.apply.confirm.complete': '确认保存并更改',
     'mergeEditor.action.button.apply': '应用更改',
+    'mergeEditor.action.button.apply-and-stash': '应用并暂存',
     'mergeEditor.action.button.accept.left': '接受左边',
     'mergeEditor.action.button.accept.right': '接受右边',
     'mergeEditor.open.3way': '3-way 编辑器',
     'mergeEditor.conflict.prev': '上一处冲突',
     'mergeEditor.conflict.next': '下一处冲突',
-    'mergeEditor.conflict.resolve.all': 'AI一键解决',
-    'mergeEditor.conflict.resolve.all.stop': '全部停止',
+    'mergeEditor.conflict.ai.resolve.all': 'AI 解决',
+    'mergeEditor.conflict.ai.resolve.all.stop': '全部停止',
     'mergeEditor.open.tradition': '传统编辑器',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 
@@ -1259,5 +1261,6 @@ export const localizationBundle = {
 
     ...browserViews,
     ...editorLocalizations,
+    ...mergeConflicts,
   },
 };

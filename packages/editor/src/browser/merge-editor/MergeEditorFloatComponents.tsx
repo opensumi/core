@@ -5,43 +5,65 @@ import {
   AINativeConfigService,
   CommandRegistry,
   CommandService,
-  IContextKeyService,
+  DisposableStore,
+  MERGE_CONFLICT_COMMANDS,
   SCM_COMMANDS,
   URI,
-  Uri,
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
+import { formatLocalize } from '@opensumi/ide-core-common';
+import { MergeConflictCommands } from '@opensumi/ide-core-common/lib/commands/git';
 
-import styles from '../editor.module.less';
+import { useEditorDocumentModelRef } from '../hooks/useEditor';
+import { useInMergeChanges } from '../hooks/useInMergeChanges';
+import { DocumentMergeConflict, MergeConflictParser } from '../merge-conflict';
 import { ReactEditorComponent } from '../types';
+
+import styles from './merge-editor.module.less';
 
 export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({ resource }) => {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
-  const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
+  const mergeConflictParser: MergeConflictParser = useInjectable(MergeConflictParser);
+
+  const editorModel = useEditorDocumentModelRef(resource.uri);
 
   const [isVisiable, setIsVisiable] = useState(false);
+  const [conflicts, setConflicts] = useState<DocumentMergeConflict[]>([]);
 
-  const gitMergeChangesSet = new Set(['git.mergeChanges']);
+  const inMergeChanges = useInMergeChanges(resource.uri.toString());
 
   useEffect(() => {
-    const run = () => {
-      const mergeChanges = contextKeyService.getValue<Uri[]>('git.mergeChanges') || [];
-      setIsVisiable(mergeChanges.some((value) => value.toString() === resource.uri.toString()));
-    };
+    const disposables = new DisposableStore();
 
-    const disposed = contextKeyService.onDidChangeContext(({ payload }) => {
-      if (payload.affectsSome(gitMergeChangesSet)) {
-        run();
-      }
-    });
-    run();
-    return () => disposed.dispose();
-  }, [resource]);
+    if (editorModel) {
+      const { instance } = editorModel;
+      const run = () => {
+        const conflicts = mergeConflictParser.scanDocument(instance.getMonacoModel());
+        if (conflicts.length > 0) {
+          setIsVisiable(true);
+          setConflicts(conflicts);
+        } else {
+          setIsVisiable(false);
+          setConflicts([]);
+        }
+      };
 
-  const [isAiResolving, setIsAiResolving] = useState(false);
+      disposables.add(
+        editorModel.instance.getMonacoModel().onDidChangeContent(() => {
+          run();
+        }),
+      );
+      run();
+      return () => {
+        disposables.dispose();
+      };
+    }
+  }, [editorModel]);
+
+  const [isAIResolving, setIsAIResolving] = useState(false);
   const handleOpenMergeEditor = useCallback(async () => {
     const { uri } = resource;
 
@@ -52,31 +74,35 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
     });
   }, [resource]);
 
-  const isSupportAiResolve = useCallback(
+  const isSupportAIResolve = useCallback(
     () => aiNativeConfigService.capabilities.supportsConflictResolve,
     [aiNativeConfigService],
   );
 
-  const handlePrev = () => {
-    commandService.tryExecuteCommand('merge-conflict.previous');
-  };
+  const handlePrev = useCallback(() => {
+    commandService.tryExecuteCommand(MergeConflictCommands.Previous).then(() => {
+      // TODO: 编辑器向上滚动一行
+    });
+  }, []);
 
-  const handleNext = () => {
-    commandService.tryExecuteCommand('merge-conflict.next');
-  };
+  const handleNext = useCallback(() => {
+    commandService.tryExecuteCommand(MergeConflictCommands.Next).then(() => {
+      // TODO: 编辑器向上滚动一行
+    });
+  }, []);
 
   const handleAIResolve = useCallback(async () => {
-    setIsAiResolving(true);
-    if (isAiResolving) {
-      await commandService.executeCommand('merge-conflict.ai.all-accept-stop', resource.uri);
+    setIsAIResolving(true);
+    if (isAIResolving) {
+      await commandService.executeCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT_STOP.id, resource.uri);
     } else {
-      await commandService.executeCommand('merge-conflict.ai.all-accept', resource.uri);
+      await commandService.executeCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT.id, resource.uri);
     }
-    setIsAiResolving(false);
-  }, [resource, isAiResolving]);
+    setIsAIResolving(false);
+  }, [resource, isAIResolving]);
 
   const handleReset = useCallback(() => {
-    commandService.executeCommand('merge-conflict.ai.all-reset', resource.uri);
+    commandService.executeCommand(MERGE_CONFLICT_COMMANDS.ALL_RESET.id, resource.uri);
   }, [resource]);
 
   if (!isVisiable) {
@@ -85,50 +111,62 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
 
   return (
     <div className={styles.merge_editor_float_container}>
-      <div id='merge.editor.action.button.accept'>
-        <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handlePrev}>
-          <Icon icon={'left'} />
-          <span>{localize('mergeEditor.conflict.prev')}</span>
-        </Button>
-        <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleNext}>
-          <span>{localize('mergeEditor.conflict.next')}</span>
-          <Icon icon={'right'} />
-        </Button>
+      <div className={styles.merge_editor_float_container_info}>
+        {formatLocalize('merge-conflicts.merge.conflict.remain', conflicts.length)}
       </div>
-      <span className={styles.line_vertical}></span>
-      <Button
-        id='merge.editor.open.tradition'
-        className={styles.merge_conflict_bottom_btn}
-        size='large'
-        onClick={handleOpenMergeEditor}
-      >
-        <Icon icon={'swap'} />
-        <span>{localize('mergeEditor.open.3way')}</span>
-      </Button>
-      <Button id='merge.editor.rest' className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
-        <Icon icon={'discard'} />
-        <span>{localize('mergeEditor.reset')}</span>
-      </Button>
-      {isSupportAiResolve() && (
+      <div className={styles.merge_editor_float_container_operation_bar}>
+        <div id='merge.editor.action.button.nav'>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handlePrev}>
+            <Icon icon={'left'} />
+            <span>{localize('mergeEditor.conflict.prev')}</span>
+          </Button>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleNext}>
+            <span>{localize('mergeEditor.conflict.next')}</span>
+            <Icon icon={'right'} />
+          </Button>
+        </div>
+        <span className={styles.line_vertical}></span>
+        {inMergeChanges && (
+          <Button
+            id='merge.editor.open.tradition'
+            className={styles.merge_conflict_bottom_btn}
+            size='default'
+            onClick={handleOpenMergeEditor}
+          >
+            <Icon icon={'swap'} />
+            <span>{localize('mergeEditor.open.3way')}</span>
+          </Button>
+        )}
         <Button
-          id='merge.editor.conflict.resolve.all'
-          size='large'
-          className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
-          onClick={handleAIResolve}
+          id='merge.editor.rest'
+          className={styles.merge_conflict_bottom_btn}
+          size='default'
+          onClick={handleReset}
         >
-          {isAiResolving ? (
-            <>
-              <Icon icon={'circle-pause'} />
-              <span>{localize('mergeEditor.conflict.resolve.all.stop')}</span>
-            </>
-          ) : (
-            <>
-              <Icon icon={'magic-wand'} />
-              <span>{localize('mergeEditor.conflict.resolve.all')}</span>
-            </>
-          )}
+          <Icon icon={'discard'} />
+          <span>{localize('mergeEditor.reset')}</span>
         </Button>
-      )}
+        {isSupportAIResolve() && (
+          <Button
+            id='merge.editor.conflict.resolve.all'
+            size='default'
+            className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
+            onClick={handleAIResolve}
+          >
+            {isAIResolving ? (
+              <>
+                <Icon icon={'circle-pause'} />
+                <span>{localize('mergeEditor.conflict.ai.resolve.all.stop')}</span>
+              </>
+            ) : (
+              <>
+                <Icon icon={'magic-wand'} />
+                <span>{localize('mergeEditor.conflict.ai.resolve.all')}</span>
+              </>
+            )}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

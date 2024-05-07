@@ -29,19 +29,38 @@
     left: 0;
     background: var(--kt-panelTab-activeBackground);
     box-shadow: inset 1px 1px 3px 0px var(--kt-panelTab-border);
-    padding: 16px 28px;
+    padding: 12px;
     // minimap's z-index is 5
     z-index: 6;
+    display: flex;
+    flex-direction: column;
+
+    .action_category {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .merge_info {
+      display: flex;
+      width: 100%;
+    }
 
     .container_box {
       display: flex;
       float: right;
       white-space: nowrap;
+      width: 100%;
+      justify-content: flex-end;
+      white-space: nowrap;
+      padding-top: 6px;
+      padding-right: 20px;
 
       .merge_conflict_bottom_btn {
         border: 1px solid var(--kt-button-disableForeground);
         border-radius: 8px;
         background: var(--editor-background);
+        color: var(--editor-foreground);
+
         margin: 0 4px;
         cursor: pointer;
 

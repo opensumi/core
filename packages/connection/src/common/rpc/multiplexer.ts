@@ -1,6 +1,7 @@
 import { BaseConnection } from '../connection';
 
 import { ISumiConnectionOptions, SumiConnection } from './connection';
+import { TSumiProtocol } from './types';
 
 export class ProxyIdentifier<T = any> {
   public static count = 0;
@@ -15,6 +16,13 @@ export class ProxyIdentifier<T = any> {
   static for(serviceId: string) {
     return new ProxyIdentifier(serviceId);
   }
+}
+
+export interface ISumiMultiplexerConnectionOptions extends ISumiConnectionOptions {
+  /**
+   * Known protocols that will be loaded automatically when a proxy is created.
+   */
+  knownProtocols?: Record<string, TSumiProtocol>;
 }
 
 export const IRPCProtocol = Symbol('IRPCProtocol');
@@ -46,11 +54,13 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
 
   protected readonly _locals: Map<string, any>;
   protected readonly _proxies: Map<string, any>;
+  protected _knownProtocols: Record<string, TSumiProtocol>;
 
-  constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
+  constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiMultiplexerConnectionOptions = {}) {
     super(socket, options);
     this._locals = new Map();
     this._proxies = new Map();
+    this._knownProtocols = options.knownProtocols || {};
 
     this.onRequestNotFound((rpcName: string, args: any[]) => this._doInvokeHandler(rpcName, args));
 
@@ -60,7 +70,13 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
   }
 
   public set<T>(identifier: ProxyIdentifier<T>, instance: any) {
-    this._locals.set(SumiConnectionMultiplexer.normalizeServiceId(identifier.serviceId), instance);
+    const id = SumiConnectionMultiplexer.normalizeServiceId(identifier.serviceId);
+    this._locals.set(id, instance);
+    const protocol = this._knownProtocols[identifier.serviceId];
+    if (protocol) {
+      this.loadProtocol(id, protocol);
+    }
+
     return instance;
   }
 
@@ -68,10 +84,21 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
     return this._locals.get(SumiConnectionMultiplexer.normalizeServiceId(identifier.serviceId));
   }
 
+  protected loadProtocol(rpcId: string, protocol: TSumiProtocol) {
+    this.io.loadProtocol(protocol, {
+      nameConverter: (str: string) => SumiConnectionMultiplexer.getRPCName(rpcId, str),
+    });
+  }
+
   public getProxy<T>(proxyId: ProxyIdentifier<T>) {
     const serviceId = SumiConnectionMultiplexer.normalizeServiceId(proxyId.serviceId);
 
     if (!this._proxies.has(serviceId)) {
+      const protocol = this._knownProtocols[proxyId.serviceId];
+      if (protocol) {
+        this.loadProtocol(serviceId, protocol);
+      }
+
       this._proxies.set(serviceId, this._createProxy(serviceId));
     }
 
@@ -110,5 +137,9 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
     }
 
     return method.apply(actor, args);
+  }
+
+  getSocket() {
+    return this.socket;
   }
 }

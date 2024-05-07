@@ -1,6 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   AppConfig,
   Deferred,
@@ -21,9 +22,11 @@ import {
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractNodeExtProcessService } from '../common/extension.service';
 import { ExtHostAPIIdentifier } from '../common/vscode';
+import { knownProtocols } from '../common/vscode/protocols';
 
-import { createSumiApiFactory } from './sumi/main.thread.api.impl';
-import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.thread.api.impl';
+import { createSumiAPIFactory } from './sumi/main.thread.api.impl';
+import { initNodeThreadAPIProxy } from './vscode/api/main.thread.api.impl';
+import { initSharedAPIProxy } from './vscode/api/main.thread.api.shared-impl';
 
 @Injectable()
 export class NodeExtProcessService implements AbstractNodeExtProcessService<IExtensionHostService> {
@@ -119,9 +122,12 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   }
 
   private async createBrowserMainThreadAPI(protocol: IRPCProtocol) {
+    const apiProxy = initSharedAPIProxy(this.protocol, this.injector);
+    await apiProxy.setup();
     this._apiFactoryDisposables.push(
-      toDisposable(await createVSCodeAPIFactory(protocol, this.injector, this)),
-      toDisposable(createSumiApiFactory(protocol, this.injector)),
+      apiProxy,
+      toDisposable(initNodeThreadAPIProxy(protocol, this.injector, this)),
+      toDisposable(createSumiAPIFactory(protocol, this.injector)),
     );
   }
 
@@ -144,13 +150,17 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     return this.initExtProtocol();
   }
 
+  connection: BaseConnection<Uint8Array>;
   private async initExtProtocol() {
     const channelHandler = this.injector.get(IWSChannelHandler);
     const channel = await channelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
 
-    const mainThreadProtocol = new SumiConnectionMultiplexer(channel.createConnection(), {
+    this.connection = channel.createConnection();
+
+    const mainThreadProtocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'node-ext-host',
+      knownProtocols,
     });
 
     // 重启/重连时直接覆盖前一个连接

@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { formatLocalize, uuid } from '@opensumi/ide-core-common';
+import { formatLocalize, isString, uuid } from '@opensumi/ide-core-common';
 
 import {
   ArgumentProcessor,
@@ -68,13 +68,18 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
     ['statusBarItem.warningBackground', new ThemeColor('statusBarItem.warningForeground')],
   ]);
 
+  private static ALLOWED_BACKGROUND_CSS_VARS = new Map<string, string>([
+    ['var(--statusBarItem-errorBackground)', 'var(--statusBarItem-errorForeground)'],
+    ['var(--statusBarItem-warningBackground)', 'var(--statusBarItem-warningForeground)'],
+  ]);
+
   private readonly _entryId = StatusBarItemImpl.nextId();
 
   private _text = '';
   private _tooltip?: string | vscode.MarkdownString;
   private _name?: string;
   private _color: string | ThemeColor | undefined;
-  private _backgroundColor: ThemeColor | undefined;
+  private _backgroundColor: string | ThemeColor | undefined;
   private _command: string | vscode.Command | undefined;
 
   private _isVisible: boolean;
@@ -143,12 +148,18 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
     this.update();
   }
 
-  public get backgroundColor(): ThemeColor | undefined {
+  public get backgroundColor(): string | ThemeColor | undefined {
     return this._backgroundColor;
   }
 
-  public set backgroundColor(color: ThemeColor | undefined) {
-    if (color && !StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.has(color.id)) {
+  public set backgroundColor(color: string | ThemeColor | undefined) {
+    if (!color) {
+      color = undefined;
+    } else if (isString(color)) {
+      if (!StatusBarItemImpl.ALLOWED_BACKGROUND_CSS_VARS.has(color)) {
+        color = undefined;
+      }
+    } else if (!StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.has(color.id)) {
       color = undefined;
     }
 
@@ -225,7 +236,11 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
       // If a background color is set, the foreground is determined
       let color = this._color;
       if (this._backgroundColor) {
-        color = StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id)!;
+        if (isString(this._backgroundColor)) {
+          color = StatusBarItemImpl.ALLOWED_BACKGROUND_CSS_VARS.get(this._backgroundColor);
+        } else {
+          color = StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id);
+        }
       }
 
       // Set to status bar

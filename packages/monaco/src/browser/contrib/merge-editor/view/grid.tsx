@@ -1,10 +1,13 @@
+import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
   AINativeConfigService,
   CommandService,
   EDITOR_COMMANDS,
+  ILogger,
   URI,
+  formatLocalize,
   localize,
   runWhenIdle,
   useInjectable,
@@ -17,10 +20,12 @@ import {
   IOpenMergeEditorArgs,
   MergeEditorInputData,
 } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { MergeConflictCommands } from '@opensumi/ide-core-common/lib/commands/git';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { MappingManagerDataStore } from '../mapping-manager.store';
 import { MergeEditorService } from '../merge-editor.service';
-import { EditorViewType } from '../types';
+import { ECompleteReason, EditorViewType } from '../types';
 
 import styles from './merge-editor.module.less';
 import { MiniMap } from './mini-map';
@@ -100,70 +105,180 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
   );
 };
 
-const MergeActions: React.FC = () => {
+const MergeActions: React.FC = observer(() => {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const commandService = useInjectable<CommandService>(CommandService);
-  const [isAiResolving, setIsAiResolving] = useState(false);
+  const logger = useInjectable<ILogger>(ILogger);
+  const dataStore = useInjectable<MappingManagerDataStore>(MappingManagerDataStore);
+  const [isAIResolving, setIsAIResolving] = useState(false);
 
-  const isSupportAiResolve = useCallback(
+  const isSupportAIResolve = useCallback(
     () => aiNativeConfigService.capabilities.supportsConflictResolve,
     [aiNativeConfigService],
   );
 
   useEffect(() => {
     const dispose = mergeEditorService.onHasIntelligentLoadingChange((isLoading) => {
-      setIsAiResolving(isLoading);
+      setIsAIResolving(isLoading);
     });
 
     return () => dispose.dispose();
   }, [mergeEditorService]);
 
-  const handleApply = useCallback(() => {
-    mergeEditorService.accept();
-  }, [mergeEditorService]);
+  const [applyLoading, setApplyLoading] = useState(false);
 
-  const handleAcceptLeft = useCallback(() => {
-    mergeEditorService.acceptLeft();
-  }, [mergeEditorService]);
-
-  const handleAcceptRight = useCallback(() => {
-    mergeEditorService.acceptRight();
-  }, [mergeEditorService]);
-
-  const handleOpenTradition = useCallback(() => {
-    const uri = mergeEditorService.getResultEditor()?.getModel()?.uri;
-    if (uri) {
-      const fileUri = uri.with({ scheme: 'file', path: uri.path, query: '' });
-      commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, fileUri);
+  const handleApply = useCallback(async () => {
+    setApplyLoading(true);
+    try {
+      const result = await mergeEditorService.accept();
+      if (result) {
+      }
+    } catch (e) {
+      logger.error(e);
+    } finally {
+      setApplyLoading(false);
     }
   }, [mergeEditorService]);
 
+  const handleAcceptLeft = useCallback(() => {
+    mergeEditorService.acceptLeft(false, ECompleteReason.UserManual);
+  }, [mergeEditorService]);
+
+  const handleAcceptRight = useCallback(() => {
+    mergeEditorService.acceptRight(false, ECompleteReason.UserManual);
+  }, [mergeEditorService]);
+
+  const handleOpenTradition = useCallback(() => {
+    let uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
+    if (!uri) {
+      return;
+    }
+
+    if (uri.scheme === 'git') {
+      // replace git:// with file://
+      uri = uri.with({
+        scheme: 'file',
+        path: uri.path,
+        query: '',
+      });
+    }
+
+    if (uri.scheme !== 'file') {
+      // ignore other scheme
+      logger.warn('Unsupported scheme', uri.scheme);
+      return;
+    }
+
+    commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
+  }, [mergeEditorService]);
+
   const handleReset = useCallback(async () => {
-    await mergeEditorService.stopAllAiResolveConflict();
+    await mergeEditorService.stopAllAIResolveConflict();
     runWhenIdle(() => {
       commandService.executeCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET.id);
     });
   }, [mergeEditorService]);
 
   const handleAIResolve = useCallback(() => {
-    if (isAiResolving) {
-      mergeEditorService.stopAllAiResolveConflict();
+    if (isAIResolving) {
+      mergeEditorService.stopAllAIResolveConflict();
     } else {
-      mergeEditorService.handleAiResolveConflict();
+      mergeEditorService.handleAIResolveConflict();
     }
-  }, [mergeEditorService, isAiResolving]);
+  }, [mergeEditorService, isAIResolving]);
+
+  const handlePrev = useCallback(() => {
+    commandService.tryExecuteCommand(MergeConflictCommands.Previous);
+  }, []);
+
+  const handleNext = useCallback(() => {
+    commandService.tryExecuteCommand(MergeConflictCommands.Next);
+  }, []);
+
+  const conflictsCount = dataStore.conflictsCount;
+  const nonConflictingChangesResolvedCount = dataStore.nonConflictingChangesResolvedCount;
+
+  const conflictsAllResolved = conflictsCount.lefted === 0 && conflictsCount.resolved === conflictsCount.total;
+  const conflictsProgressHint = conflictsAllResolved
+    ? localize('merge-conflicts.conflicts.all-resolved')
+    : formatLocalize('merge-conflicts.conflicts.partial-resolved', conflictsCount.resolved, conflictsCount.lefted);
+
+  let nonConflictHint = localize('merge-conflicts.merge.type.auto');
+  if (nonConflictingChangesResolvedCount.userManualResolveNonConflicts) {
+    nonConflictHint = localize('merge-conflicts.merge.type.manual');
+  }
+
+  const nonConflictHintInfos = [] as string[];
+  if (nonConflictingChangesResolvedCount.total > 0) {
+    nonConflictHintInfos.push(
+      formatLocalize(
+        'merge-conflicts.non-conflicts.progress',
+        nonConflictingChangesResolvedCount.total,
+        nonConflictHint,
+      ),
+    );
+
+    const branchInfos = [] as string[];
+
+    if (nonConflictingChangesResolvedCount.left > 0) {
+      branchInfos.push(
+        formatLocalize('merge-conflicts.non-conflicts.from.left', nonConflictingChangesResolvedCount.left),
+      );
+    }
+    if (nonConflictingChangesResolvedCount.right > 0) {
+      branchInfos.push(
+        formatLocalize('merge-conflicts.non-conflicts.from.right', nonConflictingChangesResolvedCount.right),
+      );
+    }
+    if (nonConflictingChangesResolvedCount.both > 0) {
+      branchInfos.push(
+        formatLocalize('merge-conflicts.non-conflicts.from.base', nonConflictingChangesResolvedCount.both),
+      );
+    }
+
+    if (branchInfos.length > 0) {
+      const branchInfoString = branchInfos.join('；');
+      nonConflictHintInfos.push(` (${branchInfoString})`);
+    }
+  }
+
+  const nonConflictHintString = nonConflictHintInfos.join('');
+
+  const mergeInfo = [
+    formatLocalize('merge-conflicts.conflicts.summary', conflictsCount.total, conflictsProgressHint),
+    conflictsCount.nonConflicts > 0
+      ? formatLocalize('merge-conflicts.non-conflicts.summary', conflictsCount.nonConflicts)
+      : '',
+    nonConflictHintString,
+  ]
+    .filter(Boolean)
+    .join(' | ');
 
   return (
     <div className={styles.merge_editor_float_container}>
+      <div className={styles.merge_info}>{mergeInfo}</div>
       <div className={styles.container_box}>
-        <div id='merge.editor.action.button.accept'>
-          <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptLeft}>
+        <div id='merge.editor.action.button.accept' className={styles.action_category}>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptLeft}>
             <Icon icon={'left'} />
             <span>{localize('mergeEditor.action.button.accept.left')}</span>
           </Button>
-          <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptRight}>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptRight}>
             <span>{localize('mergeEditor.action.button.accept.right')}</span>
+            <Icon icon={'right'} />
+          </Button>
+        </div>
+
+        <span className={styles.line_vertical}></span>
+
+        <div id='merge.editor.action.button.nav' className={styles.action_category}>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handlePrev}>
+            <Icon icon={'left'} />
+            <span>{localize('mergeEditor.conflict.prev')}</span>
+          </Button>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleNext}>
+            <span>{localize('mergeEditor.conflict.next')}</span>
             <Icon icon={'right'} />
           </Button>
         </div>
@@ -173,49 +288,55 @@ const MergeActions: React.FC = () => {
         <Button
           id='merge.editor.open.tradition'
           className={styles.merge_conflict_bottom_btn}
-          size='large'
+          size='default'
           onClick={handleOpenTradition}
         >
           <Icon icon={'swap'} />
           <span>{localize('mergeEditor.open.tradition')}</span>
         </Button>
-        <Button id='merge.editor.rest' className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
+        <Button
+          id='merge.editor.rest'
+          className={styles.merge_conflict_bottom_btn}
+          size='default'
+          onClick={handleReset}
+        >
           <Icon icon={'discard'} />
           <span>{localize('mergeEditor.reset')}</span>
         </Button>
-        {isSupportAiResolve() && (
+        {isSupportAIResolve() && (
           <Button
             id='merge.editor.conflict.resolve.all'
-            size='large'
+            size='default'
             className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
             onClick={handleAIResolve}
           >
-            {isAiResolving ? (
+            {isAIResolving ? (
               <>
                 <Icon icon={'circle-pause'} />
-                <span>{localize('mergeEditor.conflict.resolve.all.stop')}</span>
+                <span>{localize('mergeEditor.conflict.ai.resolve.all.stop')}</span>
               </>
             ) : (
               <>
                 <Icon icon={'magic-wand'} />
-                <span>{localize('mergeEditor.conflict.resolve.all')}</span>
+                <span>{localize('mergeEditor.conflict.ai.resolve.all')}</span>
               </>
             )}
           </Button>
         )}
         <span className={styles.line_vertical}></span>
         <Button
+          loading={applyLoading}
           id='merge.editor.action.button.apply'
-          size='large'
+          size='default'
           className={styles.merge_editor_apply_btn}
           onClick={handleApply}
         >
-          {localize('mergeEditor.action.button.apply')}
+          {localize('mergeEditor.action.button.apply-and-stash')}
         </Button>
       </div>
     </div>
   );
-};
+});
 
 export const Grid = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
@@ -230,6 +351,7 @@ export const Grid = () => {
       resultEditorContainer.current,
       incomingEditorContainer.current,
     ];
+
     if (current && result && incoming) {
       mergeEditorService.instantiationCodeEditor(current, result, incoming);
     }
@@ -259,13 +381,9 @@ export const Grid = () => {
         <div className={styles.editor_container_arrange}>
           <TitleHead contrastType={EditorViewType.RESULT}></TitleHead>
           <div className={styles.editor_container}>
-            <WithViewStickinessConnectComponent
-              contrastType={EditorViewType.CURRENT}
-            ></WithViewStickinessConnectComponent>
+            <WithViewStickinessConnectComponent contrastType={EditorViewType.CURRENT} />
             <div className={styles.editor_container} ref={resultEditorContainer}></div>
-            <WithViewStickinessConnectComponent
-              contrastType={EditorViewType.INCOMING}
-            ></WithViewStickinessConnectComponent>
+            <WithViewStickinessConnectComponent contrastType={EditorViewType.INCOMING} />
           </div>
         </div>
         <div className={styles.editor_container_arrange}>

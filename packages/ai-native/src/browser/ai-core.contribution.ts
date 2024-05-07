@@ -9,11 +9,14 @@ import {
   CommandRegistry,
   ComponentContribution,
   ComponentRegistry,
+  ComponentRegistryImpl,
   ContributionProvider,
   Domain,
+  IEditorExtensionContribution,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
+  MonacoContribution,
   PreferenceService,
   SlotLocation,
   SlotRendererContribution,
@@ -28,8 +31,9 @@ import {
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
+  AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
   CommandService,
@@ -39,20 +43,23 @@ import {
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
+import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
+import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 
-import { AI_CHAT_CONTAINER_ID, AI_CHAT_VIEW_ID, AI_MENU_BAR_DEBUG_TOOLBAR } from '../common';
+import { AI_CHAT_CONTAINER_ID, AI_CHAT_LOGO_AVATAR_ID, AI_CHAT_VIEW_ID, AI_MENU_BAR_DEBUG_TOOLBAR } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
 import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { AIChatLayoutConfig, AIMenubarLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
+import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
+import { OpenSumiLightBulbWidget } from './light-bulb-widget';
 import { AIRunToolbar } from './run/toolbar/run-toolbar';
 import {
   AINativeCoreContribution,
@@ -71,6 +78,7 @@ import {
   KeybindingContribution,
   ComponentContribution,
   SlotRendererContribution,
+  MonacoContribution,
 )
 export class AINativeBrowserContribution
   implements
@@ -80,7 +88,8 @@ export class AINativeBrowserContribution
     SettingContribution,
     KeybindingContribution,
     ComponentContribution,
-    SlotRendererContribution
+    SlotRendererContribution,
+    MonacoContribution
 {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -112,6 +121,9 @@ export class AINativeBrowserContribution
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
 
+  @Autowired(DesignLayoutConfig)
+  private readonly designLayoutConfig: DesignLayoutConfig;
+
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
 
@@ -134,35 +146,19 @@ export class AINativeBrowserContribution
   initialize() {
     this.aiNativeConfigService.enableCapabilities();
 
-    const { supportsChatAssistant, supportsOpenSumiDesign } = this.aiNativeConfigService.capabilities;
-    const { useMenubarView } = this.aiNativeConfigService.layout;
-
-    let layoutConfig = this.appConfig.layoutConfig;
-    const layoutViewSize = this.appConfig.layoutViewSize as LayoutViewSizeConfig;
+    const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
 
     if (supportsChatAssistant) {
-      layoutConfig = {
-        ...layoutConfig,
-        ...AIChatLayoutConfig,
-      };
+      ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, AI_CHAT_VIEW_ID, AI_CHAT_CONTAINER_ID);
+      ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, DESIGN_MENU_BAR_RIGHT, AI_CHAT_LOGO_AVATAR_ID);
     }
+  }
 
-    if (useMenubarView) {
-      layoutViewSize.setMenubarHeight(48);
-      layoutConfig = {
-        ...layoutConfig,
-        ...AIMenubarLayoutConfig,
-      };
+  registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
+    const { supportsInlineChat } = this.aiNativeConfigService.capabilities;
+    if (supportsInlineChat) {
+      register(OpenSumiLightBulbWidget.ID, OpenSumiLightBulbWidget, EditorContributionInstantiation.Lazy);
     }
-
-    if (supportsOpenSumiDesign) {
-      layoutViewSize.setEditorTabsHeight(36);
-      layoutViewSize.setStatusBarHeight(36);
-      layoutViewSize.setAccordionHeaderSizeHeight(36);
-    }
-
-    this.appConfig.layoutConfig = layoutConfig;
-    this.appConfig.layoutViewSize = layoutViewSize;
   }
 
   onDidStart() {
@@ -200,7 +196,7 @@ export class AINativeBrowserContribution
   registerSetting(registry: ISettingRegistry) {
     registry.registerSettingGroup({
       id: AI_NATIVE_SETTING_GROUP_ID,
-      title: AI_NATIVE_SETTING_GROUP_ID,
+      title: AI_NATIVE_SETTING_GROUP_TITLE,
       iconClass: getIcon('magic-wand'),
     });
 
@@ -284,7 +280,7 @@ export class AINativeBrowserContribution
 
   registerRenderer(registry: SlotRendererRegistry): void {
     registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer);
-    if (this.aiNativeConfigService.layout.useMergeRightWithLeftPanel) {
+    if (this.designLayoutConfig.useMergeRightWithLeftPanel) {
       registry.registerSlotRenderer(SlotLocation.left, AILeftTabRenderer);
       registry.registerSlotRenderer(SlotLocation.right, AIRightTabRenderer);
     }
@@ -298,6 +294,10 @@ export class AINativeBrowserContribution
     registry.register(AI_MENU_BAR_DEBUG_TOOLBAR, {
       id: AI_MENU_BAR_DEBUG_TOOLBAR,
       component: AIRunToolbar,
+    });
+    registry.register(AI_CHAT_LOGO_AVATAR_ID, {
+      id: AI_CHAT_LOGO_AVATAR_ID,
+      component: AIChatLogoAvatar,
     });
   }
 

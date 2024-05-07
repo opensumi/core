@@ -204,7 +204,7 @@ export class DebugContribution
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorSideWidget({
       id: DEBUG_FLOATING_CLICK_WIDGET,
-      component: FloatingClickWidget as any,
+      component: FloatingClickWidget,
       displaysOnResource: (r) => {
         const { configUri } = this.preferences.resolve('launch');
         if (!configUri) {

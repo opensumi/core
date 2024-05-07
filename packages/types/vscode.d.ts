@@ -47,3 +47,5 @@
 /// <reference path='./vscode/typings/vscode.proposed.codeActionAI.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.codeActionRanges.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.newSymbolNamesProvider.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.env.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.terminalDataWriteEvent.d.ts' />

@@ -13,21 +13,21 @@ import styles from './inline-chat.module.less';
 import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
 export interface IAIInlineOperationProps {
-  hanldeActions: (id: string) => void;
+  handleActions: (id: string) => void;
   onClose?: () => void;
 }
 
 const AIInlineOperation = (props: IAIInlineOperationProps) => {
-  const { hanldeActions, onClose } = props;
+  const { handleActions, onClose } = props;
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
 
   const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
 
   const handleClickActions = useCallback(
     (id: string) => {
-      hanldeActions(id);
+      handleActions(id);
     },
-    [hanldeActions],
+    [handleActions],
   );
 
   const handleClose = useCallback(() => {
@@ -166,7 +166,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       );
     }
 
-    return <AIInlineOperation hanldeActions={handleClickActions} onClose={onClose} />;
+    return <AIInlineOperation handleActions={handleClickActions} onClose={onClose} />;
   }, [status]);
 
   return <div style={translateY}>{renderContent()}</div>;

@@ -13,6 +13,7 @@ import {
   APPEND_ACTIONS,
   CONFLICT_ACTIONS_ICON,
   DECORATIONS_CLASSNAME,
+  ECompleteReason,
   EditorViewType,
   IActionsDescription,
   IConflictActionsEvent,
@@ -81,10 +82,8 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   public override launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
-    const { range, action } = eventData;
     super.launchConflictActionsEvent({
-      range,
-      action,
+      ...eventData,
       withViewType: EditorViewType.CURRENT,
     });
   }
@@ -116,6 +115,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
           this.launchConflictActionsEvent({
             range,
             action: actionType,
+            reason: ECompleteReason.UserManual,
           });
         }
       },

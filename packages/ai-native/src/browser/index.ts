@@ -27,7 +27,6 @@ import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
 import { InterfaceNavigationContribution } from './interface-navigation/interface-navigation.contribution';
 import { LanguageParserService } from './languages/service';
-import { AIMenuBarContribution } from './layout/menu-bar/menu-bar.contribution';
 import { MergeConflictContribution } from './merge-conflict';
 import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
 import { RenameCandidatesProviderRegistry } from './rename/rename.feature.registry';
@@ -41,7 +40,6 @@ export class AINativeModule extends BrowserModule {
   providers: Provider[] = [
     AINativeBrowserContribution,
     InterfaceNavigationContribution,
-    AIMenuBarContribution,
     TerminalAIContribution,
     MergeConflictContribution,
     {

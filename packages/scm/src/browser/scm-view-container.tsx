@@ -3,6 +3,7 @@ import React, { FC, memo, useCallback, useEffect, useMemo, useRef, useState } fr
 
 import { AppConfig, IContextKeyService, View, ViewState, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IContextMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DisposableCollection, localize } from '@opensumi/ide-core-common';
 import { AccordionContainer } from '@opensumi/ide-main-layout/lib/browser/accordion/accordion.view';
@@ -157,6 +158,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const selectedRepo: ISCMRepository | undefined = viewModel.selectedRepo;
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
   const [repoList, setRepoList] = useState<ISCMRepository[]>([]);
 
@@ -228,7 +230,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
     <div className={styles.view}>
       <TitleBar
         title={panelTitle}
-        height={appConfig.layoutViewSize!.panelTitleBarHeight}
+        height={layoutViewSize.panelTitleBarHeight}
         menubar={
           !hasMultiRepos && titleMenu ? (
             <InlineMenuBar
@@ -242,7 +244,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
       <AccordionContainer
         views={views}
         containerId={scmContainerId}
-        style={{ height: `calc(100% - ${appConfig.layoutViewSize!.panelTitleBarHeight}px)` }}
+        style={{ height: `calc(100% - ${layoutViewSize.panelTitleBarHeight}px)` }}
       />
     </div>
   );

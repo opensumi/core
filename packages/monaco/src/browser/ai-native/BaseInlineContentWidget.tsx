@@ -1,8 +1,9 @@
+import throttle from 'lodash/throttle';
 import React from 'react';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
+import { AppConfig, ConfigProvider, StackingLevelStr } from '@opensumi/ide-core-browser';
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
 
 import * as monaco from '../../common';
@@ -21,12 +22,12 @@ export interface ShowAIContentOptions {
 }
 
 @Injectable({ multiple: true })
-export abstract class BaseInlineContentWidget extends Disposable implements IInlineContentWidget {
+export abstract class ReactInlineContentWidget extends Disposable implements IInlineContentWidget {
   @Autowired(AppConfig)
-  private configContext: AppConfig;
+  private appConfig: AppConfig;
 
-  allowEditorOverflow?: boolean | undefined = false;
-  suppressMouseDown?: boolean | undefined = true;
+  allowEditorOverflow = false;
+  suppressMouseDown = true;
 
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
@@ -38,7 +39,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
     this.addDispose(
       runWhenIdle(() => {
         this.root = ReactDOMClient.createRoot(this.getDomNode());
-        this.root.render(<ConfigProvider value={this.configContext}>{this.renderView()}</ConfigProvider>);
+        this.root.render(<ConfigProvider value={this.appConfig}>{this.renderView()}</ConfigProvider>);
         this.layoutContentWidget();
       }),
     );
@@ -88,9 +89,25 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
   getDomNode(): HTMLElement {
     if (!this.domNode) {
       this.domNode = document.createElement('div');
-      this.domNode.classList.add(this.getId());
-      this.domNode.style.zIndex = '1';
+      requestAnimationFrame(() => {
+        this.domNode.classList.add(this.getId());
+        this.domNode.style.zIndex = StackingLevelStr.Overlay;
+      });
     }
+
+    const throttled = throttle(() => {
+      requestAnimationFrame(() => this.layoutContentWidget());
+    }, 16 * 3);
+
+    const id = monaco.createLayoutEventType(this.id());
+
+    this.domNode.addEventListener(id, throttled);
+
+    this.addDispose(
+      Disposable.create(() => {
+        this.domNode.removeEventListener(id, throttled);
+      }),
+    );
     return this.domNode;
   }
 

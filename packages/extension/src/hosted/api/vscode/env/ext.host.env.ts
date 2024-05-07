@@ -13,7 +13,6 @@ export class ExtHostEnv implements IExtHostEnv {
 
   readonly logLevelChangeEmitter = new Emitter<LogLevel>();
   logLevel: LogLevel;
-
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);

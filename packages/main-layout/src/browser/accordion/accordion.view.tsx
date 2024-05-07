@@ -1,8 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import React, { useMemo } from 'react';
 
-import { AppConfig, View, useInjectable } from '@opensumi/ide-core-browser';
+import { View, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection, Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { AccordionService, AccordionServiceFactory, SectionState } from './accordion.service';
@@ -32,9 +33,9 @@ export const AccordionContainer = observer(
     style,
   }: AccordionContainerProps) => {
     const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
-    const appConfig: AppConfig = useInjectable(AppConfig);
+    const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
-    const layoutHeaderSize = useMemo(() => headerSize || appConfig.layoutViewSize?.accordionHeaderSizeHeight!, [headerSize]);
+    const layoutHeaderSize = useMemo(() => headerSize || layoutViewSize.accordionHeaderSizeHeight!, [headerSize]);
 
     React.useEffect(() => {
       // 解决视图在渲染前注册的问题

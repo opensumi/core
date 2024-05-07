@@ -62,6 +62,7 @@ export function createWindowApiFactory(
     extensionId: extension.extensionId,
     isBuiltin: extension.isBuiltin,
   };
+  const _onDidWriteTerminalData = new Emitter<vscode.TerminalDataWriteEvent>();
   return {
     // @deprecated
     withScmProgress<R>(task: (progress: vscode.Progress<number>) => Thenable<R>) {
@@ -168,6 +169,7 @@ export function createWindowApiFactory(
     onDidChangeTextEditorVisibleRanges: extHostEditors.onDidChangeTextEditorVisibleRanges,
     onDidChangeTextEditorOptions: extHostEditors.onDidChangeTextEditorOptions,
     onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
+    onDidWriteTerminalData: _onDidWriteTerminalData.event,
     showTextDocument(
       documentOrUri: vscode.TextDocument | Uri,
       columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions,

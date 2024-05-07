@@ -5,10 +5,6 @@ export * from './reporter';
 
 export interface IAINativeCapabilities {
   /**
-   * Use opensumi design UI style
-   */
-  supportsOpenSumiDesign?: boolean;
-  /**
    * Problem panel uses ai capabilities
    */
   supportsMarkers?: boolean;
@@ -42,18 +38,24 @@ export interface IAINativeCapabilities {
   supportsTerminalCommandSuggest?: boolean;
 }
 
-export interface IAINativeLayout {
-  // Use Merge right panel with left panel
+export interface IDesignLayoutConfig {
+  /**
+   * merge right panel with left panel
+   */
   useMergeRightWithLeftPanel?: boolean;
-  // Use ai manubar view
+  /**
+   * use new manubar view
+   */
   useMenubarView?: boolean;
-  // set menubar logo
+  /**
+   * set menubar logo
+   */
   menubarLogo?: string;
 }
 
 export interface IAINativeConfig {
   capabilities?: IAINativeCapabilities;
-  layout?: IAINativeLayout;
+  layout?: IDesignLayoutConfig;
 }
 
 export interface IAICompletionResultModel {
@@ -160,15 +162,29 @@ export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
  * Contribute Registry
  */
 export interface IConflictContentMetadata {
+  /**
+   * @threeWay 当前分支的代码
+   * @transitional 当前分支的代码
+   */
   current: string;
+  /**
+   * @threeWay 基础分支的代码
+   * @transitional 无
+   */
   base: string;
+  /**
+   * @threeWay 远程分支的代码
+   * @transitional 远程分支的代码
+   */
   incoming: string;
 
-  // 各分支的名称
   currentName?: string;
   baseName?: string;
   incomingName?: string;
 
+  /**
+   * 如果是用户要求 regenerate 的话，这个字段代表上一次 AI 生成的结果
+   */
   resultContent?: string;
 }
 export interface IResolveConflictHandler {

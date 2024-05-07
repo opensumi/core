@@ -20,6 +20,7 @@ import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import { IExtensionHostService, KT_APP_CONFIG_KEY, KT_PROCESS_SOCK_OPTION_KEY, ProcessMessageType } from '../common';
 import { CommandHandler } from '../common/vscode';
+import { knownProtocols } from '../common/vscode/protocols';
 
 import { setPerformance } from './api/vscode/language/util';
 import { ExtensionLogger2 } from './extension-log2';
@@ -89,6 +90,7 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
 
   const extProtocol = new SumiConnectionMultiplexer(new NetSocketConnection(socket), {
     timeout: appConfig.rpcMessageTimeout,
+    knownProtocols,
   });
 
   return { extProtocol, logger };
