@@ -649,7 +649,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     const modified = this.modifiedDocModel.getMonacoModel();
     const key = `${original.uri.toString()}-${modified.uri.toString()}`;
     let model = this.diffEditorModelCache.get(key);
-    if (!model) {
+    if (!model || (model as any)._store.isDisposed) {
       model = this.monacoDiffEditor.createViewModel({ original, modified });
       this.diffEditorModelCache.set(key, model);
     }
@@ -733,7 +733,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
       readOnly,
       renderMarginRevertIcon: !readOnly,
     });
-
     if (this.currentUri) {
       this.eventBus.fire(
         new ResourceDecorationNeedChangeEvent({
