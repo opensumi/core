@@ -70,11 +70,11 @@ export class SumiReadableStream<T> implements IReadableStream<T> {
     return this.errorQueue.on(cb);
   }
 
-  emit(buffer: T) {
+  emitData(buffer: T) {
     this.dataQueue.push(buffer);
   }
 
-  error(err: Error) {
+  emitError(err: Error) {
     this.errorQueue.push(err);
   }
 

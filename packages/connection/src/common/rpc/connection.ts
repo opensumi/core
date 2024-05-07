@@ -256,11 +256,11 @@ export class SumiConnection implements IDisposable {
             }
 
             if (err) {
-              activeReq.error(err);
+              activeReq.emitError(err);
               break;
             }
 
-            activeReq.emit(result);
+            activeReq.emitData(result);
             break;
           }
 
