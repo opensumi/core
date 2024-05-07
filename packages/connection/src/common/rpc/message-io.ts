@@ -40,6 +40,13 @@ export const HeadersProto = {
   }),
 } as const;
 
+const PacketPrefix = {
+  Request: (OperationType.Request << 8) | ProtoVersionV1,
+  Notification: (OperationType.Notification << 8) | ProtoVersionV1,
+  Response: (OperationType.Response << 8) | ProtoVersionV1,
+  Cancel: (OperationType.Cancel << 8) | ProtoVersionV1,
+} as const;
+
 class SumiProtocolSerializer implements IProtocolSerializer {
   request: TSerializer;
   result: TSerializer;
@@ -164,7 +171,7 @@ export class MessageIO {
     const { writer } = this;
     writer.reset();
 
-    writer.uint16((OperationType.Notification << 8) | ProtoVersionV1);
+    writer.uint16(PacketPrefix.Notification);
     writer.uint32(requestId);
 
     writer.stringOfVarUInt32(method);
@@ -178,7 +185,7 @@ export class MessageIO {
     const { writer } = this;
     writer.reset();
 
-    writer.uint16((OperationType.Request << 8) | ProtoVersionV1);
+    writer.uint16(PacketPrefix.Request);
     writer.uint32(requestId);
 
     writer.stringOfVarUInt32(method);
@@ -192,7 +199,7 @@ export class MessageIO {
     const { writer } = this;
     writer.reset();
 
-    writer.uint16((OperationType.Cancel << 8) | ProtoVersionV1);
+    writer.uint16(PacketPrefix.Cancel);
     writer.uint32(requestId);
 
     return writer.dump();
@@ -202,7 +209,7 @@ export class MessageIO {
     const { writer } = this;
     writer.reset();
 
-    writer.uint16((OperationType.Response << 8) | ProtoVersionV1);
+    writer.uint16(PacketPrefix.Response);
     writer.uint32(requestId);
     writer.stringOfVarUInt32(method);
     writer.uint16(Status.OK);
@@ -216,7 +223,7 @@ export class MessageIO {
     const { writer } = this;
     writer.reset();
 
-    writer.uint16((OperationType.Response << 8) | ProtoVersionV1);
+    writer.uint16(PacketPrefix.Response);
     writer.uint32(requestId);
     writer.stringOfVarUInt32(method);
     writer.uint16(Status.Err);
