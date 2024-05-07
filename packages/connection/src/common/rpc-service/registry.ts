@@ -1,4 +1,5 @@
-import { Emitter } from '@opensumi/ide-core-common';
+import { DisposableStore, Emitter } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-monaco/__mocks__/monaco/language';
 
 import { MessageIO, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
 import { RPCServiceMethod } from '../types';
@@ -31,12 +32,13 @@ export function getServiceMethods(service: any): string[] {
 /**
  * Store all executable services, and provide a way to invoke them.
  */
-export class ServiceRegistry {
-  protected emitter = new Emitter<string[]>();
+export class ServiceRegistry implements IDisposable {
+  private _disposables = new DisposableStore();
+
+  protected emitter = this._disposables.add(new Emitter<string[]>());
+  onServicesUpdate = this.emitter.event;
 
   private serviceMethodMap = new Map<PropertyKey, RPCServiceMethod>();
-
-  onServicesUpdate = this.emitter.event;
 
   register(name: string, methodFn: RPCServiceMethod) {
     this.serviceMethodMap.set(name, methodFn);
@@ -78,14 +80,19 @@ export class ServiceRegistry {
   methods() {
     return Array.from(this.serviceMethodMap.keys());
   }
+
+  dispose() {
+    this._disposables.dispose();
+  }
 }
 
 export class ProtocolRegistry {
-  protected emitter = new Emitter<string[]>();
+  protected _disposables = new DisposableStore();
+
+  protected emitter = this._disposables.add(new Emitter<string[]>());
+  onProtocolUpdate = this.emitter.event;
 
   private protocolMap = new Map<PropertyKey, TSumiProtocolMethod>();
-
-  onProtocolUpdate = this.emitter.event;
 
   addProtocol(
     protocol: TSumiProtocol,
@@ -118,13 +125,19 @@ export class ProtocolRegistry {
       io.loadProtocolMethod(protocol);
     }
 
-    this.onProtocolUpdate((methods) => {
-      for (const method of methods) {
-        const protocol = this.protocolMap.get(method);
-        if (protocol) {
-          io.loadProtocolMethod(protocol);
+    this._disposables.add(
+      this.onProtocolUpdate((methods) => {
+        for (const method of methods) {
+          const protocol = this.protocolMap.get(method);
+          if (protocol) {
+            io.loadProtocolMethod(protocol);
+          }
         }
-      }
-    });
+      }),
+    );
+  }
+
+  dispose() {
+    this._disposables.dispose();
   }
 }
