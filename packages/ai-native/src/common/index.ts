@@ -3,11 +3,11 @@ import {
   AISerivceType,
   CancellationToken,
   Event,
-  FileType,
   IDisposable,
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
+import { IChatContent, IChatProgress } from '@opensumi/ide-core-common/src/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 
 export const IAINativeService = Symbol('IAINativeService');
@@ -87,6 +87,8 @@ export const IChatInternalService = Symbol('IChatInternalService');
 export const IChatManagerService = Symbol('IChatManagerService');
 export const IChatAgentService = Symbol('IChatAgentService');
 
+export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
+
 export interface IChatAgentService {
   readonly onDidChangeAgents: Event<void>;
   readonly onDidSendMessage: Event<IChatContent>;
@@ -152,47 +154,6 @@ export const enum ChatMessageRole {
   Assistant,
   Function,
 }
-
-export interface IChatContent {
-  content: string;
-  kind: 'content';
-}
-
-export interface IChatMarkdownContent {
-  content: IMarkdownString;
-  kind: 'markdownContent';
-}
-
-export interface IChatAsyncContent {
-  content: string;
-  resolvedContent: Promise<string | IMarkdownString | IChatTreeData>;
-  kind: 'asyncContent';
-}
-
-export interface IChatProgressMessage {
-  content: string;
-  kind: 'progressMessage';
-}
-
-export interface IChatResponseProgressFileTreeData {
-  label: string;
-  uri: Uri;
-  type?: FileType;
-  children?: IChatResponseProgressFileTreeData[];
-}
-
-export interface IChatTreeData {
-  treeData: IChatResponseProgressFileTreeData;
-  kind: 'treeData';
-}
-
-export interface IChatComponent {
-  component: string;
-  value?: unknown;
-  kind: 'component';
-}
-
-export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
 
 export interface IChatResponseErrorDetails {
   message: string;

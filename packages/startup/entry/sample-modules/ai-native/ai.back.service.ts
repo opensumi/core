@@ -1,4 +1,5 @@
 import { Readable } from 'stream';
+import util from 'util';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
@@ -56,7 +57,7 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<T> {
-    const { sessionId } = options;
+    const { requestId } = options;
 
     // 模拟 stream 数据,包含一段 TypeScript 代码
     const streamData = [
@@ -89,52 +90,51 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
 
     // 创建可读流
     const stream = new Readable({
-      read() {},
+      read() { },
     });
 
     // 模拟数据事件
     streamData.forEach((chunk, index) => {
       setTimeout(() => {
-        stream.push(
-          JSON.stringify({
-            id: sessionId,
-            choices: [
-              {
-                delta: {
-                  content: chunk,
-                  role: 'user',
-                },
-                finish_reason: length - 1 === index ? 'stop' : null,
-              },
-            ],
-          }),
-        );
+        if (length - 1 === index) {
+          stream.push(null);
+          this.client?.complete(requestId!);
+          return;
+        }
+
+        // const obj = { kind: 'content', content: chunk.toString() };
+        // const objToString = util.format('%j', obj)
+        stream.push({ kind: 'content', content: chunk.toString() });
       }, index * 300);
     });
 
-    if (sessionId) {
-      this.streamSessionIdMap.set(sessionId, stream);
+    if (requestId) {
+      this.streamSessionIdMap.set(requestId, stream);
     }
 
     // 在数据事件中处理数据
-    stream.on('data', (chunk) => {
-      this.logger.log(`Received chunk: ${chunk}`);
-      this.client?.onMessage(chunk, sessionId);
-    });
-
+    // stream.on('data', (chunk: Buffer) => {
+    //   this.logger.log(`Received chunk: ${chunk}`);
+    //   this.client?.sendMessage({ kind: 'content', content: chunk.toString() }, requestId!);
+    // });
+    stream.on('error', (error) => {
+      this.logger.log('Stream error.', error);
+    })
     // 在结束事件中进行清理
     stream.on('close', () => {
       this.logger.log('Stream ended.');
-      if (sessionId) {
-        this.streamSessionIdMap.delete(sessionId);
+      if (requestId) {
+        this.streamSessionIdMap.delete(requestId);
       }
     });
 
     // 触发结束事件
     setTimeout(() => {
       stream.push(null);
+      this.client?.complete(requestId!);
     }, streamData.length * 1000);
 
-    return void 0 as T;
+
+    return stream as T;
   }
 }

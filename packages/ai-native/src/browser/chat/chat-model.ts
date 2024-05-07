@@ -3,17 +3,16 @@ import { Disposable, Emitter, ILogger, uuid } from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
-  AI_SLASH,
   IChatAsyncContent,
-  IChatComponent,
+  IChatComponent, IChatMarkdownContent, IChatProgress, IChatTreeData
+} from '@opensumi/ide-core-common/src/types/ai-native';
+import {
+  AI_SLASH,
   IChatFollowup,
-  IChatMarkdownContent,
   IChatModel,
-  IChatProgress,
   IChatRequestMessage,
   IChatRequestModel,
   IChatResponseErrorDetails,
-  IChatTreeData,
   IChatWelcomeMessageContent,
   ISampleQuestions,
 } from '../../common';
@@ -222,9 +221,9 @@ export class ChatModel extends Disposable implements IChatModel {
     return this.#sessionId;
   }
 
-  #requests: ChatRequestModel[] = [];
+  #requests: Map<string, ChatRequestModel> = new Map();
   get requests(): ChatRequestModel[] {
-    return this.#requests;
+    return Array.from(this.#requests.values());
   }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
@@ -232,7 +231,7 @@ export class ChatModel extends Disposable implements IChatModel {
     const response = new ChatResponseModel(requestId, this, message.agentId);
     const request = new ChatRequestModel(requestId, this, message, response);
 
-    this.#requests.push(request);
+    this.#requests.set(requestId, request)
     return request;
   }
 
@@ -250,6 +249,10 @@ export class ChatModel extends Disposable implements IChatModel {
     } else {
       this.logger.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
     }
+  }
+
+  getRequest(requestId: string): ChatRequestModel | undefined {
+    return this.#requests.get(requestId);
   }
 
   override dispose(): void {

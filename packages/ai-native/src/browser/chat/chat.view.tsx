@@ -457,6 +457,7 @@ export const AIChatView = observer(() => {
     aiChatService.cancelChatViewToken();
     aiChatService.destroyStreamRequest(msgStreamManager.currentSessionId);
     aiChatService.clearSessionModel();
+    chatApiService.clearHistoryMessages();
     containerRef?.current?.classList.remove(SCROLL_CLASSNAME);
     dispatchMessage({ type: 'init', payload: [firstMsg] });
   }, [messageListData]);

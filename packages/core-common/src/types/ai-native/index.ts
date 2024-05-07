@@ -1,4 +1,6 @@
-import { CancellationToken, MaybePromise } from '../../utils';
+import { CancellationToken, MaybePromise, Uri } from '../../utils';
+import { FileType } from '../file';
+import { IMarkdownString } from '../markdown';
 
 import { IAIReportCompletionOption } from './reporter';
 export * from './reporter';
@@ -78,7 +80,7 @@ export interface IAIBackServiceOption {
   type?: string;
   model?: string;
   enableGptCache?: boolean;
-  sessionId?: string;
+  requestId?: string;
 }
 
 export interface IAICompletionOption {
@@ -198,3 +200,52 @@ export interface IInternalResolveConflictRegistry {
   getThreeWayHandler(): IResolveConflictHandler | undefined;
   getTraditionalHandler(): IResolveConflictHandler | undefined;
 }
+
+/**
+ * Chat Proxy RPCService
+ */
+export interface IChatProxyRPCService {
+  sendMessage(msg: IChatProgress, requestId: string): void;
+  complete(requestId: string): void;
+}
+
+export interface IChatContent {
+  content: string;
+  kind: 'content';
+}
+
+export interface IChatMarkdownContent {
+  content: IMarkdownString;
+  kind: 'markdownContent';
+}
+
+export interface IChatAsyncContent {
+  content: string;
+  resolvedContent: Promise<string | IMarkdownString | IChatTreeData>;
+  kind: 'asyncContent';
+}
+
+export interface IChatProgressMessage {
+  content: string;
+  kind: 'progressMessage';
+}
+
+export interface IChatResponseProgressFileTreeData {
+  label: string;
+  uri: Uri;
+  type?: FileType;
+  children?: IChatResponseProgressFileTreeData[];
+}
+
+export interface IChatTreeData {
+  treeData: IChatResponseProgressFileTreeData;
+  kind: 'treeData';
+}
+
+export interface IChatComponent {
+  component: string;
+  value?: unknown;
+  kind: 'component';
+}
+
+export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;

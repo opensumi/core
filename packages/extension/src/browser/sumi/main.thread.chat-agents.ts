@@ -2,12 +2,10 @@ import { Injectable, Injector } from '@opensumi/di';
 import {
   IChatAgentService,
   IChatAgentWelcomeMessage,
-  IChatContent,
   IChatFollowup,
-  IChatProgress,
   IChatReplyFollowup,
-  IChatTreeData,
 } from '@opensumi/ide-ai-native/lib/common';
+import { IChatContent, IChatProgress, IChatTreeData } from '@opensumi/ide-core-common/src/types/ai-native';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Deferred, IMarkdownString } from '@opensumi/ide-core-common';
 

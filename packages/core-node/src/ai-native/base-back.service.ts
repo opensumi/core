@@ -10,15 +10,12 @@ import {
   IAICompletionOption,
   IAICompletionResultModel,
   IAIReportCompletionOption,
+  IChatProxyRPCService,
 } from '@opensumi/ide-core-common';
-
-interface IRPCGptService {
-  onMessage(msg: string, sessionId?: string): void;
-}
 
 @Injectable()
 export class BaseAIBackService
-  extends RPCService<IRPCGptService>
+  extends RPCService<IChatProxyRPCService>
   implements IAIBackService<IAIBackServiceResponse, Readable>
 {
   async request<T = IAIBackServiceResponse<string>>(

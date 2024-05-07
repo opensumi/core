@@ -1,7 +1,8 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { CancellationToken, CancellationTokenSource, Disposable, DisposableMap } from '@opensumi/ide-core-common';
 
-import { ChatMessageRole, IChatAgentService, IChatMessage, IChatProgress } from '../../common';
+import { ChatMessageRole, IChatAgentService, IChatMessage } from '../../common';
+import { IChatProgress } from '@opensumi/ide-core-common/src/types/ai-native';
 
 import { ChatModel, ChatRequestModel } from './chat-model';
 

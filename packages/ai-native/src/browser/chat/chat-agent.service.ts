@@ -19,17 +19,13 @@ import {
   IChatAgentRequest,
   IChatAgentResult,
   IChatAgentService,
-  IChatContent,
   IChatFollowup,
-  IChatInternalService,
   IChatMessage,
-  IChatMessageStructure,
-  IChatProgress,
-} from '../../common';
+  IChatMessageStructure} from '../../common';
+import { IChatContent, IChatProgress } from '@opensumi/ide-core-common/src/types/ai-native';
 import { IChatFeatureRegistry } from '../types';
 
 import { ChatService } from './chat.api.service';
-import { ChatInternalService } from './chat.internal.service';
 
 @Injectable()
 export class ChatAgentService extends Disposable implements IChatAgentService {

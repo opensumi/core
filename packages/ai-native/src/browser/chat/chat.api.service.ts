@@ -15,8 +15,17 @@ export class ChatService extends Disposable {
   private readonly _onChatReplyMessageLaunch = new Emitter<string>();
   public readonly onChatReplyMessageLaunch: Event<string> = this._onChatReplyMessageLaunch.event;
 
+  constructor () {
+    super();
+    this.addDispose(this.msgHistoryManager);
+  }
+
   public sendMessage(data: IChatMessageStructure) {
     this._onChatMessageLaunch.fire(data);
+  }
+
+  public clearHistoryMessages() {
+    this.msgHistoryManager.clearMessages();
   }
 
   /**

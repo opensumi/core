@@ -25,6 +25,15 @@ export class MsgHistoryManager extends Disposable {
   private readonly _onMessageChange = new Emitter<IHistoryChatMessage[]>();
   public readonly onMessageChange: Event<IHistoryChatMessage[]> = this._onMessageChange.event;
 
+  override dispose(): void {
+    this.clearMessages();
+    super.dispose();
+  }
+
+  public clearMessages() {
+    this.messageMap.clear();
+  }
+
   private doAddMessage(message: IExcludeMessage): string {
     const id = uuid(6);
     const order = this.messageMap.size;

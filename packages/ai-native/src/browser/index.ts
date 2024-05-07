@@ -13,7 +13,7 @@ import {
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-browser';
 
-import { IAINativeService, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
+import { IAINativeService, IChatAgentService, IChatInternalService, IChatManagerService, ChatProxyServiceToken } from '../common';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
@@ -33,6 +33,7 @@ import { RenameCandidatesProviderRegistry } from './rename/rename.feature.regist
 import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { ChatProxyService } from './chat/chat-proxy.service';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
@@ -83,6 +84,10 @@ export class AINativeModule extends BrowserModule {
       useClass: ChatInternalService,
     },
     {
+      token: ChatProxyServiceToken,
+      useClass: ChatProxyService,
+    },
+    {
       token: ChatServiceToken,
       useClass: ChatService,
     },
@@ -100,7 +105,7 @@ export class AINativeModule extends BrowserModule {
     {
       servicePath: AIBackSerivcePath,
       token: AIBackSerivceToken,
-      clientToken: IChatInternalService,
+      clientToken: ChatProxyServiceToken,
     },
   ];
 }
