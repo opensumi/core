@@ -18,7 +18,11 @@ export enum ProtocolType {
 }
 
 export class AnySerializer {
-  constructor(protected writer: BinaryWriter, protected reader: BinaryReader) {}
+  constructor(
+    protected writer: BinaryWriter,
+    protected reader: BinaryReader,
+    protected objectTransfer?: IObjectTransfer,
+  ) {}
 
   write(data: any) {
     const { writer } = this;
@@ -70,7 +74,7 @@ export class AnySerializer {
           writer.buffer(data);
         } else {
           writer.uint8(ProtocolType.JSONObject);
-          writer.stringOfVarUInt32(JSON.stringify(data));
+          writer.stringOfVarUInt32(JSON.stringify(data, this.objectTransfer?.replacer));
         }
         break;
       default:
@@ -99,7 +103,7 @@ export class AnySerializer {
         return reader.double();
       case ProtocolType.JSONObject: {
         const json = reader.stringOfVarUInt32();
-        return JSON.parse(json);
+        return JSON.parse(json, this.objectTransfer?.reviver);
       }
       case ProtocolType.BigInt:
         return reader.int64();
@@ -132,10 +136,19 @@ export class AnySerializer {
 }
 
 enum EObjectTransferType {
-  CODE_URI = 'CODE_URI',
+  CODE_URI = 'CodeURI',
+  BUFFER = 'Buffer',
 }
 
-class ObjectTransfer {
+export interface IObjectTransfer {
+  replacer(key: string | undefined, value: any): any;
+  reviver(key: string | undefined, value: any): any;
+}
+
+/**
+ * For transfering object between brower and extension
+ */
+export class ExtObjectTransfer {
   static replacer(key: string | undefined, value: any) {
     if (value) {
       switch (value.$mid) {
@@ -148,6 +161,24 @@ class ObjectTransfer {
           };
         }
       }
+
+      if (value instanceof Uint8Array || value instanceof Uint32Array || value instanceof Uint16Array) {
+        return {
+          $type: 'Buffer',
+          data: Array.from(value),
+        };
+      } else if (value instanceof ArrayBuffer) {
+        return {
+          $type: 'Buffer',
+          data: Array.from(new Uint8Array(value)),
+        };
+      } else if (value.type === 'Buffer') {
+        // https://nodejs.org/api/buffer.html#buftojson
+        return {
+          $type: 'Buffer',
+          data: value.data,
+        };
+      }
     }
 
     return value;
@@ -157,6 +188,8 @@ class ObjectTransfer {
       switch (value.$type) {
         case EObjectTransferType.CODE_URI:
           return Uri.parse(value.data);
+        case EObjectTransferType.BUFFER:
+          return Uint8Array.from(value.data);
       }
     }
     return value;

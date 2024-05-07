@@ -1,6 +1,7 @@
 import { BaseConnection } from '../connection';
 
 import { ISumiConnectionOptions, SumiConnection } from './connection';
+import { AnyProtocolForExtSerializer } from './message-io';
 import { TSumiProtocol } from './types';
 
 export class ProxyIdentifier<T = any> {
@@ -61,6 +62,7 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
     this._locals = new Map();
     this._proxies = new Map();
     this._knownProtocols = options.knownProtocols || {};
+    this.io.setAnySerializer(new AnyProtocolForExtSerializer(this.io.writer, this.io.reader));
 
     this.onRequestNotFound((rpcName: string, args: any[]) => this._doInvokeHandler(rpcName, args));
 
