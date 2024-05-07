@@ -4,7 +4,7 @@ import { FileUri, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@o
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { ExtensionService } from '@opensumi/ide-extension';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
-import { MainthreadTasks } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.tasks';
+import { MainThreadTasks } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.tasks';
 import { MainThreadWorkspace } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.workspace';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { ShellExecution, Task } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
@@ -123,7 +123,7 @@ describe('MainThreadTask Test Suite', () => {
 
   const testProvider = new TestTaskProvider();
   let extHostTask: ExtHostTasks;
-  let mainthreadTask: MainthreadTasks;
+  let mainthreadTask: MainThreadTasks;
   let extHostTaskApi: ReturnType<typeof createTaskApiFactory>;
   const workspaceService = injector.get<MockWorkspaceService>(IWorkspaceService);
 
@@ -157,7 +157,7 @@ describe('MainThreadTask Test Suite', () => {
     const extHostTerminal = new ExtHostTerminal(rpcProtocolExt);
     const extHostWorkspace = new ExtHostWorkspace(rpcProtocolExt, extHostMessage, extHostDocs);
     extHostTask = new ExtHostTasks(rpcProtocolExt, extHostTerminal, extHostWorkspace);
-    mainthreadTask = injector.get(MainthreadTasks, [rpcProtocolMain]);
+    mainthreadTask = injector.get(MainThreadTasks, [rpcProtocolMain]);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostWorkspace, extHostWorkspace);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTasks, extHostTask);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStorage, new ExtHostStorage(rpcProtocolExt));

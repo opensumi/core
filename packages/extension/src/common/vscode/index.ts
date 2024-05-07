@@ -23,7 +23,7 @@ import {
   IMainThreadCustomEditor,
   IMainThreadEditorsService,
 } from './editor';
-import { IExtHostEditorTabs, IExtHostEditorTabsLegacyProposed, IMainThreadEditorTabsShape } from './editor-tabs';
+import { IExtHostEditorTabs, IMainThreadEditorTabsShape } from './editor-tabs';
 import { IExtHostEnv, IMainThreadEnv } from './env';
 import { IMainThreadFileSystemShape } from './file-system';
 import { IMainThreadLanguages } from './languages';

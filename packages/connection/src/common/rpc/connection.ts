@@ -385,7 +385,6 @@ export class SumiConnection implements IDisposable {
 
   private traceRequestError(requestId: number, method: string, args: any[], error: any) {
     this.capturer.captureSendRequestFail(requestId, method, error);
-    this.logger.error(`Error handling request ${method} with args `, args, error);
   }
 }
 

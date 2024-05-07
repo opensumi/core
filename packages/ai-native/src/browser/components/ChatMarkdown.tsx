@@ -88,7 +88,9 @@ export const ChatMarkdown = (props: MarkdownProps) => {
     return () => {
       if (codeRenderedElements.size > 0) {
         codeRenderedElements.forEach(({ root }) => {
-          root.unmount();
+          requestAnimationFrame(() => {
+            root.unmount();
+          });
         });
       }
     };
