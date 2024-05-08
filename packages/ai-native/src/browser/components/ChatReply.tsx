@@ -22,9 +22,10 @@ import {
   ChatServiceToken,
   FileType,
   IAIReporter,
+  IChatContent,
+  IChatResponseProgressFileTreeData,
   URI,
 } from '@opensumi/ide-core-common';
-import { IChatContent, IChatResponseProgressFileTreeData } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 

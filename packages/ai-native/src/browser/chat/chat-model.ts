@@ -1,12 +1,15 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, Emitter, ILogger, uuid } from '@opensumi/ide-core-common';
 import {
+  Disposable,
+  Emitter,
   IChatAsyncContent,
   IChatComponent,
   IChatMarkdownContent,
   IChatProgress,
   IChatTreeData,
-} from '@opensumi/ide-core-common/lib/types/ai-native';
+  ILogger,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {

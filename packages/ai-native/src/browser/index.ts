@@ -13,7 +13,13 @@ import {
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-browser';
 
-import { IAINativeService, IChatAgentService, IChatInternalService, IChatManagerService, ChatProxyServiceToken } from '../common';
+import {
+  ChatProxyServiceToken,
+  IAINativeService,
+  IChatAgentService,
+  IChatInternalService,
+  IChatManagerService,
+} from '../common';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
@@ -21,6 +27,7 @@ import { TerminalAIContribution } from './ai-terminal/terminal-ai.contributon';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
+import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
@@ -33,7 +40,6 @@ import { RenameCandidatesProviderRegistry } from './rename/rename.feature.regist
 import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
-import { ChatProxyService } from './chat/chat-proxy.service';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {

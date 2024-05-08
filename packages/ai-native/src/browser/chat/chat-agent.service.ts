@@ -7,11 +7,12 @@ import {
   ChatServiceToken,
   Disposable,
   Emitter,
+  IChatContent,
+  IChatProgress,
   IDisposable,
   ILogger,
   toDisposable,
 } from '@opensumi/ide-core-common';
-import { IChatContent, IChatProgress } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import {
   IChatAgent,

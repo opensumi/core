@@ -3,11 +3,12 @@ import {
   AISerivceType,
   CancellationToken,
   Event,
+  IChatContent,
+  IChatProgress,
   IDisposable,
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
-import { IChatContent, IChatProgress } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 
 export const IAINativeService = Symbol('IAINativeService');

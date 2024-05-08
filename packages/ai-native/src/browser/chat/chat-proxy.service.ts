@@ -21,7 +21,6 @@ import {
   IChatAgentWelcomeMessage,
   IChatMessage,
 } from '../../common';
-import { IChatSlashCommandHandler } from '../types';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
 
@@ -101,7 +100,8 @@ export class ChatProxyService extends Disposable {
           await this.chatDeferred.promise;
           return {};
         },
-        provideSlashCommands: async (token: CancellationToken): Promise<IChatAgentCommand[]> => this.chatFeatureRegistry
+        provideSlashCommands: async (token: CancellationToken): Promise<IChatAgentCommand[]> =>
+          this.chatFeatureRegistry
             .getAllSlashCommand()
             .map((s) => ({ ...s, name: s.name, description: s.description || '' })),
         provideChatWelcomeMessage: async (token: CancellationToken): Promise<IChatAgentWelcomeMessage | undefined> =>
