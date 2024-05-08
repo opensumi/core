@@ -1479,6 +1479,10 @@ export const localizationBundle = {
 
     'preference.ai.native.inlineChat.title': 'Inline Chat',
     'preference.ai.native.chat.title': 'Chat',
+    'preference.ai.native.interface.quick.title': 'Interface Quick Navigation',
+    'preference.ai.native.interface.quick.navigation':
+      'Click the icon on the left side of the editor to quickly jump to the interface implementation.',
+    'preference.ai.native.interface.quick.navigation.hover': 'Go to implementation',
     'preference.ai.native.inlineChat.auto.visible': 'Does Inline Chat automatically appear when code are selected?',
     'preference.ai.native.inlineChat.codeAction.enabled':
       'Does Inline Chat related code actions automatically appear when code are selected?',

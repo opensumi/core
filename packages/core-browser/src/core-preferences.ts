@@ -305,6 +305,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: true,
     },
+    [AINativeSettingSectionsId.INTERFACE_QUICK_NAVIGATION_ENABLED]: {
+      type: 'boolean',
+      default: true,
+    },
     [AINativeSettingSectionsId.CHAT_VISIBLE_TYPE]: {
       type: 'string',
       enum: ['never', 'always', 'default'],

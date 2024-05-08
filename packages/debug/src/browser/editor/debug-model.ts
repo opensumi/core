@@ -723,7 +723,7 @@ export class DebugModel implements IDebugModel {
     if (Array.isArray(decoration)) {
       for (const { options } of decoration) {
         const gcln = options.glyphMarginClassName;
-        if (gcln && gcln.includes('testing-run-glyph')) {
+        if (gcln && (gcln.includes('testing-run-glyph') || gcln.includes('interface-navigation-glyph'))) {
           return false;
         }
       }

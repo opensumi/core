@@ -31,6 +31,10 @@ export class LanguageParser implements IDisposable {
     return this.parserLoaded.promise;
   }
 
+  public getParser(): Parser {
+    return this.parser;
+  }
+
   private async initializeParser() {
     this.parser = await this.wasmModuleManager.initParser();
     // Load grammar
