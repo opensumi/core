@@ -85,43 +85,44 @@ export const getDefaultClientAppOpts = ({
 }: {
   modules?: ConstructorOf<BrowserModule>[];
   opts?: Partial<IClientAppOpts>;
-}): IClientAppOpts => ({
-  modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule, ...modules],
-  layoutConfig: {
-    ...defaultConfig,
-    ...{
+}): IClientAppOpts => {
+  const { layoutConfig, ...restOpt } = opts;
+
+  return {
+    modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule, ...modules],
+    layoutConfig: {
+      ...defaultConfig,
       [SlotLocation.top]: {
         modules: ['menubar', 'toolbar'],
       },
-    },
-    ...{
       [SlotLocation.action]: {
         modules: ['@opensumi/ide-toolbar-action'],
       },
+      ...layoutConfig,
     },
-  },
-  useCdnIcon: true,
-  useExperimentalShadowDom: true,
-  defaultPreferences: {
-    'general.language': defaultLanguage,
-    'general.theme': 'opensumi-dark',
-    'general.icon': 'vscode-icons',
-    'general.productIconTheme': 'opensumi-icons',
-    'application.confirmExit': 'never',
-    'editor.quickSuggestionsDelay': 100,
-  },
-  defaultPanels: {
-    bottom: '@opensumi/ide-terminal-next',
-    right: '',
-  },
-  // 当 `.sumi` 下不存在配置文件时，默认采用 `.vscode` 下的配置
-  useVSCodeWorkspaceConfiguration: true,
-  // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
-  devtools: true,
-  designLayout: {
-    useMenubarView: true,
-    useMergeRightWithLeftPanel: true,
-  },
-  layoutComponent: AILayout,
-  ...opts,
-});
+    useCdnIcon: true,
+    useExperimentalShadowDom: true,
+    defaultPreferences: {
+      'general.language': defaultLanguage,
+      'general.theme': 'opensumi-design-dark-theme',
+      'general.icon': 'vscode-icons',
+      'general.productIconTheme': 'opensumi-icons',
+      'application.confirmExit': 'never',
+      'editor.quickSuggestionsDelay': 100,
+    },
+    defaultPanels: {
+      bottom: '@opensumi/ide-terminal-next',
+      right: '',
+    },
+    // 当 `.sumi` 下不存在配置文件时，默认采用 `.vscode` 下的配置
+    useVSCodeWorkspaceConfiguration: true,
+    // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
+    devtools: true,
+    designLayout: {
+      useMenubarView: true,
+      useMergeRightWithLeftPanel: true,
+    },
+    layoutComponent: AILayout,
+    ...restOpt,
+  };
+};

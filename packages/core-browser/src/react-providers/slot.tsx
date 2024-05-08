@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import React, { PropsWithChildren } from 'react';
 
 import { Button } from '@opensumi/ide-components';
@@ -101,8 +102,8 @@ export const SlotDecorator: React.FC<{
   color?: string;
   id?: string;
   children: React.ReactChild;
-  backgroundColor?: string;
-}> = ({ slot, id, ...props }) => {
+  className?: string;
+}> = ({ slot, id, children, className }) => {
   const ref = React.useRef<HTMLElement | null>();
   React.useEffect(() => {
     if (ref.current) {
@@ -110,8 +111,8 @@ export const SlotDecorator: React.FC<{
     }
   }, [ref]);
   return (
-    <div id={id} ref={(ele) => (ref.current = ele)} className='resize-wrapper'>
-      {props.children}
+    <div id={id} ref={(ele) => (ref.current = ele)} className={cls('resize-wrapper', className)}>
+      {children}
     </div>
   );
 };
