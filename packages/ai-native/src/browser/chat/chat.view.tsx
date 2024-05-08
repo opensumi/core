@@ -71,8 +71,6 @@ export const AIChatView = observer(() => {
   );
 
   const [loading, setLoading] = React.useState(false);
-  const [loading2, setLoading2] = React.useState(false);
-
   const [agentId, setAgentId] = React.useState('');
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
@@ -92,9 +90,9 @@ export const AIChatView = observer(() => {
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
       if (event === EMsgStreamStatus.DONE || event === EMsgStreamStatus.ERROR) {
-        setLoading2(false);
+        setLoading(false);
       } else if (event === EMsgStreamStatus.THINKING) {
-        setLoading2(true);
+        setLoading(true);
       }
 
       requestAnimationFrame(() => {
@@ -132,7 +130,7 @@ export const AIChatView = observer(() => {
 
   React.useEffect(() => {
     scrollToBottom();
-  }, [loading, loading2]);
+  }, [loading]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -140,7 +138,7 @@ export const AIChatView = observer(() => {
     disposer.addDispose(
       chatApiService.onChatMessageLaunch(async (message) => {
         if (message.immediate !== false) {
-          if (loading || loading2) {
+          if (loading) {
             return;
           }
           await handleSend(message);
@@ -372,7 +370,7 @@ export const AIChatView = observer(() => {
   }, [messageListData]);
 
   const handleShortcutCommandClick = (commandModel: ChatSlashCommandItemModel) => {
-    if (loading || loading2) {
+    if (loading) {
       return;
     }
     setTheme(commandModel.nameWithSlash);
@@ -422,16 +420,6 @@ export const AIChatView = observer(() => {
               // @ts-ignore
               dataSource={messageListData}
             />
-            {loading && (
-              <div className={styles.chat_loading_msg_box}>
-                <SystemMessage
-                  title={aiAssistantName}
-                  className={styles.smsg}
-                  // @ts-ignore
-                  text={<ChatThinking status={EMsgStreamStatus.THINKING} />}
-                />
-              </div>
-            )}
           </div>
           <div className={styles.chat_input_wrap}>
             <div className={styles.header_operate}>
@@ -452,7 +440,7 @@ export const AIChatView = observer(() => {
             </div>
             <ChatInputWrapperRender
               onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
-              disabled={loading || loading2}
+              disabled={loading}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
