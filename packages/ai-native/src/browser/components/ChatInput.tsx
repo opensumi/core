@@ -20,7 +20,6 @@ import { ChatProxyService } from '../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { IChatSlashCommandItem } from '../types';
 
-
 import styles from './components.module.less';
 
 const MAX_WRAPPER_HEIGHT = 160;
@@ -253,8 +252,13 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       const { value: newValue, nameWithSlash } = chatFeatureRegistry.parseSlashCommand(value);
 
       if (nameWithSlash) {
+        const commandModel = chatFeatureRegistry.getSlashCommandBySlashName(nameWithSlash);
         setValue(newValue);
         setTheme(nameWithSlash);
+        if (commandModel) {
+          setAgentId(commandModel.agentId!);
+          setCommand(commandModel.command!);
+        }
         return;
       }
     }
@@ -312,7 +316,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     }
 
     const handleSendLogic = (newValue: string = value) => {
-      onSend(value, agentId, command);
+      onSend(newValue, agentId, command);
       setValue('');
       setTheme('');
       setAgentId('');
@@ -323,16 +327,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       const chatCommandHandler = chatFeatureRegistry.getSlashCommandHandler(command);
       if (chatCommandHandler && chatCommandHandler.execute) {
         const editor = monacoCommandRegistry.getActiveCodeEditor();
-        await chatCommandHandler.execute(
-          value,
-          (newValue: string) => {
-            handleSendLogic(newValue);
-            // setValue('');
-            // onSend(theme + newValue);
-            // setTheme('');
-          },
-          editor,
-        );
+        await chatCommandHandler.execute(value, (newValue: string) => handleSendLogic(newValue), editor);
         return;
       }
     }
@@ -434,6 +429,40 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     }
   }, [isExpand]);
 
+  const renderAddonAfter = useMemo(() => (
+      <div className={styles.input_icon_container}>
+        <div
+          className={cls(
+            styles.send_chat_btn,
+            focus && styles.active,
+            disabled && styles.disabled,
+            props.sendBtnClassName,
+          )}
+        >
+          {disabled ? (
+            <div className={styles.ai_loading}>
+              <div className={styles.loader}></div>
+              <div className={styles.loader}></div>
+              <div className={styles.loader}></div>
+            </div>
+          ) : (
+            <Popover
+              id={`ai_chat_input_send_${uuid(4)}`}
+              content={localize('aiNative.chat.enter.send')}
+              position={PopoverPosition.left}
+              disable={disabled}
+            >
+              <EnhanceIcon
+                wrapperClassName={styles.send_icon}
+                className={getIcon('send-solid')}
+                onClick={() => handleSend()}
+              />
+            </Popover>
+          )}
+        </div>
+      </div>
+    ), [focus, disabled, props.sendBtnClassName, handleSend]);
+
   return (
     <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
       {isShowOptions && (
@@ -472,39 +501,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         onValueChange={handleInputChange}
         disabled={disabled}
         className={styles.input_wrapper}
-        addonAfter={
-          <div className={styles.input_icon_container}>
-            <div
-              className={cls(
-                styles.send_chat_btn,
-                focus && styles.active,
-                disabled && styles.disabled,
-                props.sendBtnClassName,
-              )}
-            >
-              {disabled ? (
-                <div className={styles.ai_loading}>
-                  <div className={styles.loader}></div>
-                  <div className={styles.loader}></div>
-                  <div className={styles.loader}></div>
-                </div>
-              ) : (
-                <Popover
-                  id={`ai_chat_input_send_${uuid(4)}`}
-                  content={localize('aiNative.chat.enter.send')}
-                  position={PopoverPosition.left}
-                  disable={disabled}
-                >
-                  <EnhanceIcon
-                    wrapperClassName={styles.send_icon}
-                    className={getIcon('send-solid')}
-                    onClick={() => handleSend()}
-                  />
-                </Popover>
-              )}
-            </div>
-          </div>
-        }
+        addonAfter={renderAddonAfter}
       />
     </div>
   );

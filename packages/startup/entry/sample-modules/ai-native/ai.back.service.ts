@@ -19,7 +19,7 @@ export interface ReqeustResponse extends IAIBackServiceResponse {
 }
 
 @Injectable()
-export class AiBackService extends BaseAIBackService implements IAIBackService<ReqeustResponse, Readable> {
+export class AiBackService extends BaseAIBackService implements IAIBackService<ReqeustResponse, ChatReadableStream> {
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
@@ -32,31 +32,27 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
     }
   }
 
-  override async request<T = IAIBackServiceResponse<string>>(
-    input: string,
-    options: IAIBackServiceOption,
-    cancelToken?: CancellationToken,
-  ): Promise<T> {
+  override async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
 
     if (options.type === 'rename') {
       return Promise.resolve({
         errorCode: 0,
         data: '```typescript\nnewName\nhaha```',
-      } as T);
+      });
     }
 
     return Promise.resolve({
       errorCode: 0,
       data: 'Hello OpenSumi!',
-    } as T);
+    });
   }
 
-  override async requestStream<T = IAIBackServiceResponse<string>>(
+  override async requestStream(
     input: string,
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
-  ): Promise<T> {
+  ): Promise<ChatReadableStream> {
     const { requestId } = options;
 
     // 模拟 stream 数据,包含一段 TypeScript 代码
@@ -106,7 +102,6 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
       }, index * 300);
     });
 
-    // return stream as T;
-    return chatReadableStream as T;
+    return chatReadableStream;
   }
 }

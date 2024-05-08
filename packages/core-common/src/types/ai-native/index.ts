@@ -1,4 +1,5 @@
 import { CancellationToken, MaybePromise, Uri } from '@opensumi/ide-utils';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
@@ -99,7 +100,7 @@ export interface IAIRenameSuggestionOption {
 
 export interface IAIBackService<
   BaseResponse extends IAIBackServiceResponse = IAIBackServiceResponse,
-  StreamResponse extends NodeJS.ReadableStream = NodeJS.ReadableStream,
+  StreamResponse extends SumiReadableStream<IChatProgress> = SumiReadableStream<IChatProgress>,
   CompletionResponse = IAICompletionResultModel,
 > {
   request<O extends IAIBackServiceOption>(
