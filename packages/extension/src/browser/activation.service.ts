@@ -1,7 +1,7 @@
 import pm from 'picomatch';
 
 import { Injectable } from '@opensumi/di';
-import { IDisposable, MaybePromise } from '@opensumi/ide-core-common';
+import { IDisposable, MaybePromise, MultiMap } from '@opensumi/ide-core-common';
 
 import { IActivationEventService } from './types';
 
@@ -16,13 +16,17 @@ import { IActivationEventService } from './types';
 @Injectable()
 export class ActivationEventServiceImpl implements IActivationEventService {
   private eventListeners: Map<string, IActivationEventListener[]> = new Map();
+  private collectTopicData: MultiMap<string, string> = new MultiMap();
 
   private wildCardTopics: Set<string> = new Set();
-
   public activatedEventSet: Set<string> = new Set();
 
   constructor() {
     this.wildCardTopics.add('workspaceContains');
+  }
+
+  getTopicsData(topic: string): string[] {
+    return this.collectTopicData.get(topic) || [];
   }
 
   async fireEvent(topic: string, data = ''): Promise<void> {
@@ -76,6 +80,8 @@ export class ActivationEventServiceImpl implements IActivationEventService {
    * @param listener
    */
   private addListener(topic: string, listener: IActivationEventListener): IDisposable {
+    this.collectTopicData.set(listener.topic, listener.data);
+
     if (this.wildCardTopics.has(topic)) {
       if (!this.eventListeners.has(topic)) {
         this.eventListeners.set(topic, []);

@@ -24,6 +24,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModel } from '../../common/editor';
@@ -62,7 +63,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   private readonly hashCalculateService: IHashCalculateService;
 
   @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
+  protected readonly fileSystem: FileServiceClient;
 
   private storage: IStorage;
 
@@ -276,14 +277,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     let provider = await this.contentRegistry.getProvider(uri);
 
     if (!provider) {
-      const providerSchema = await Promise.race([
-        Event.toPromise(
-          Event.filter(this.fileSystem.onFileProviderChanged, (schema: string[]) => schema.includes(uri.scheme)),
-        ),
-        timeout(6000),
-      ]);
-
-      if (!isUndefined(providerSchema)) {
+      const providerReady = await this.fileSystem.shouldWaitProvider(uri.scheme);
+      if (providerReady) {
         provider = await this.contentRegistry.getProvider(uri);
       }
     }

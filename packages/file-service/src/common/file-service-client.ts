@@ -17,6 +17,7 @@ import {
   FileSetContentOptions,
   FileStat,
   FileSystemProvider,
+  IFileSystemProviderActivationEvent,
   IFileSystemProviderCapabilitiesChangeEvent,
   IFileSystemProviderRegistrationEvent,
   TextDocumentContentChangeEvent,
@@ -103,6 +104,8 @@ export interface IFileServiceClient {
   readonly onDidChangeFileSystemProviderRegistrations: Event<IFileSystemProviderRegistrationEvent>;
 
   readonly onDidChangeFileSystemProviderCapabilities: Event<IFileSystemProviderCapabilitiesChangeEvent>;
+
+  readonly onWillActivateFileSystemProvider: Event<IFileSystemProviderActivationEvent>;
 }
 
 export interface IBrowserFileSystemRegistry {

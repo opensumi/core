@@ -473,3 +473,7 @@ export interface IFileSystemProviderCapabilitiesChangeEvent {
   provider: FileSystemProvider;
   scheme: string;
 }
+
+export interface IFileSystemProviderActivationEvent {
+  readonly scheme: string;
+}
