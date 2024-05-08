@@ -94,7 +94,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
 renderApp({
   useExperimentalShadowDom: true,
   defaultPreferences: {
-    'general.theme': 'opensumi-dark',
+    'general.theme': 'opensumi-design-dark-theme',
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
