@@ -89,16 +89,13 @@ export const getDefaultClientAppOpts = ({
   modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule, ...modules],
   layoutConfig: {
     ...defaultConfig,
-    ...{
-      [SlotLocation.top]: {
-        modules: ['menubar', 'toolbar'],
-      },
+    [SlotLocation.top]: {
+      modules: ['menubar', 'toolbar'],
     },
-    ...{
-      [SlotLocation.action]: {
-        modules: ['@opensumi/ide-toolbar-action'],
-      },
+    [SlotLocation.action]: {
+      modules: ['@opensumi/ide-toolbar-action'],
     },
+    ...opts.layoutConfig,
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,

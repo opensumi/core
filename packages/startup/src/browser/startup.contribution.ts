@@ -23,6 +23,7 @@ import { ISCMProvider } from '@opensumi/ide-scm';
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
 import { ExampleEditorTopWidget } from './editor-top-example';
 import { ExamplePopover } from './exmaple-popover';
+import { MENU_BAR_FEATURE_TIP, MenuBarHelpIcon } from './menu-bar-help-icon';
 
 @Domain(
   ClientAppContribution,
@@ -79,7 +80,12 @@ export class StartupContribution
     });
   }
 
-  registerComponent(registry: ComponentRegistry) {}
+  registerComponent(registry: ComponentRegistry) {
+    registry.register(MENU_BAR_FEATURE_TIP, {
+      id: MENU_BAR_FEATURE_TIP,
+      component: MenuBarHelpIcon,
+    });
+  }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(
