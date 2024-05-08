@@ -135,11 +135,15 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
   protected isOutOfArea(): boolean {
     const visibleWidth = 270;
     const contentLeftWith = this.editor.getLayoutInfo().contentLeft;
-    const minimapWith = this.editor.getLayoutInfo().minimap.minimapWidth;
+    const minimapWith = this.getMiniMapWidth();
     if (this.editor.getLayoutInfo().width - contentLeftWith - minimapWith < visibleWidth) {
       return true;
     }
     return false;
+  }
+
+  getMiniMapWidth(): number {
+    return this.editor.getLayoutInfo().minimap.minimapWidth;
   }
 
   getLineHeight(): number {

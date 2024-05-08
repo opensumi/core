@@ -72,19 +72,6 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
 
   private inlineDiffWidget: InlineDiffWidget;
 
-  private showDiffWidget(element: React.JSX.Element): void {
-    if (this.inlineDiffWidget) {
-      this.inlineDiffWidget.dispose();
-    }
-
-    const { range } = this;
-
-    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [this.uid, this.codeEditor.editor, range, this.text]);
-    this.inlineDiffWidget.setResolveResultWidget(element);
-    this.inlineDiffWidget.create();
-    this.inlineDiffWidget.show(range, range.endLineNumber - range.startLineNumber - 1);
-  }
-
   override hide(): void {
     super.hide();
     this.codeEditor.editor.setHiddenAreas([], this.uid);
@@ -105,8 +92,11 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
 
     // 渲染在下一行空行上，但是通过 css 下移 1/2 行
     const halfLineHeight = this.getLineHeight() / 2;
+
     const resultWidget = (
-      <ContentWidgetContainerPanel style={{ transform: `translateY(${halfLineHeight}px)` }}>
+      <ContentWidgetContainerPanel
+        style={{ transform: `translateY(${halfLineHeight}px)`, right: 16, display: 'flex', position: 'absolute' }}
+      >
         <WapperAIInlineResult
           id={this.uid}
           iconItems={iconResultItems}
@@ -119,8 +109,24 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
         />
       </ContentWidgetContainerPanel>
     );
-    this.showDiffWidget(resultWidget);
 
+    if (this.inlineDiffWidget) {
+      this.inlineDiffWidget.dispose();
+    }
+
+    const { range } = this;
+
+    // hidden full conflict area, but only show diff for current and the ai response
+    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [
+      this.uid,
+      this.codeEditor.editor,
+      range,
+      this.text,
+      this.lineRange.toInclusiveRange(),
+    ]);
+    this.inlineDiffWidget.setResolveResultWidget(resultWidget);
+    this.inlineDiffWidget.create();
+    this.inlineDiffWidget.show(range, range.endLineNumber - range.startLineNumber + 1);
     return null;
   }
   public id(): string {

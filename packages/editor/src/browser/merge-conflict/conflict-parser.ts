@@ -113,7 +113,7 @@ export class MergeConflictParser extends Disposable {
 
         // Create a full descriptor from the lines that we matched. This can return
         // null if the descriptor could not be completed.
-        const completeDescriptor = scanItemTolMergeConflictDescriptor(document, currentConflict);
+        const completeDescriptor = scanItemToMergeConflictDescriptor(document, currentConflict);
 
         if (completeDescriptor !== null) {
           conflictDescriptors.push(completeDescriptor);
@@ -174,7 +174,7 @@ export class MergeConflictParser extends Disposable {
   }
 }
 
-function scanItemTolMergeConflictDescriptor(
+function scanItemToMergeConflictDescriptor(
   document: monaco.editor.ITextModel,
   scanned: IScanMergedConflict,
 ): IDocumentMergeConflictDescriptor | null {

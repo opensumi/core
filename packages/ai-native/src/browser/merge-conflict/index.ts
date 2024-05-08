@@ -19,6 +19,7 @@ import {
   IConflictContentMetadata,
   IEventBus,
   IInternalResolveConflictRegistry,
+  ILogger,
   IRange,
   MaybePromise,
   MergeConflictEditorMode,
@@ -140,6 +141,9 @@ export class MergeConflictContribution
 {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
@@ -663,6 +667,8 @@ export class MergeConflictContribution
       conflictMetadata = cache?.metadata;
     }
 
+    this.logger.log('start ai resolve conflict:', conflictMetadata);
+
     let resolveConflictResult: ChatResponse | undefined;
     try {
       this.loadingRange.add(newRange);
@@ -698,7 +704,7 @@ export class MergeConflictContribution
         lineRange.id,
       );
 
-      this.resolveResultWidgetManager.addWidget(widgetLineRange, newRange, text);
+      this.resolveResultWidgetManager.addWidget(widgetLineRange, conflictMetadata!.currentRange, text);
       this.setCacheResolvedConflict(lineRange.id, {
         fullRange: newRange,
         currentRange: conflictMetadata!.currentRange,
@@ -773,7 +779,7 @@ export class MergeConflictContribution
       return Promise.resolve();
     }
     let isCancelAll = false;
-    // TODO 优化
+    // TODO: 优化
     this.disposables.push(
       this.onRequestsCancel(() => {
         isCancelAll = true;

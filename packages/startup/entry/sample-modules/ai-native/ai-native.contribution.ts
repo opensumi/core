@@ -240,8 +240,8 @@ export class AiNativeContribution implements AINativeCoreContribution {
               reject(new DOMException('Aborted', 'AbortError'));
             });
           });
-
-          return new ReplyResponse('Resolved successfully!');
+          const finalData = `:) ${contentMetadata.current} Hello, AI Native`;
+          return new ReplyResponse(finalData);
         } catch (error) {
           if (error.name === 'AbortError') {
             return new CancelResponse();
@@ -279,7 +279,9 @@ export class AiNativeContribution implements AINativeCoreContribution {
             });
           });
 
-          return new ReplyResponse('Resolved successfully!');
+          const finalData = `:) ${contentMetadata.current} Hello, AI Native`;
+
+          return new ReplyResponse(finalData);
         } catch (error) {
           if (error.name === 'AbortError') {
             return new CancelResponse();

@@ -28,7 +28,7 @@ const diffEditorOptions: IDiffEditorOptions = {
   scrollbar: { useShadows: false, alwaysConsumeMouseWheel: false, vertical: 'hidden' },
   scrollBeyondLastLine: false,
   renderMarginRevertIcon: true,
-  renderOverviewRuler: true,
+  renderOverviewRuler: false,
   rulers: undefined,
   overviewRulerBorder: undefined,
   overviewRulerLanes: 0,
@@ -140,21 +140,25 @@ export class InlineDiffWidget extends ZoneWidget {
   private modifiedValue: string;
   private root: ReactDOMClient.Root | null;
   private diffWidgetHandler: IDiffWidgetHandler | null = null;
+  private resultContainer: HTMLDivElement | null = null;
+  hiddenArea: monaco.languages.IRange;
 
   protected _fillContainer(container: HTMLElement): void {
     this.setCssClass('inline-diff-widget');
     this.root = ReactDOMClient.createRoot(container);
-    const layoutInfo = this.editor.getLayoutInfo();
 
     let portal: React.ReactNode | null = null;
 
     if (this._resolveResultWidget) {
       if (container.parentNode) {
         const resultContainer = document.createElement('div');
-        resultContainer.className = styles.ai_diff_editor_resolve_result_widget;
-        resultContainer.style.left = `${layoutInfo.contentLeft}px`;
+        requestAnimationFrame(() => {
+          resultContainer.className = styles.ai_diff_editor_resolve_result_widget;
+          resultContainer.style.width = `${this.computeResultWidgetWidth()}px`;
+        });
         container.parentNode.appendChild(resultContainer);
         portal = createPortal(this._resolveResultWidget, resultContainer);
+        this.resultContainer = resultContainer;
       } else {
         throw new Error('[impossible path] container.parentNode is null');
       }
@@ -180,6 +184,20 @@ export class InlineDiffWidget extends ZoneWidget {
     );
   }
 
+  computeResultWidgetWidth(): number {
+    const layoutInfo = this.editor.getLayoutInfo();
+    return layoutInfo.contentWidth + layoutInfo.contentLeft;
+  }
+
+  override _onWidth(widthInPixel: number): void {
+    super._onWidth(widthInPixel);
+    requestAnimationFrame(() => {
+      if (this.resultContainer) {
+        this.resultContainer.style.width = `${this.computeResultWidgetWidth()}px`;
+      }
+    });
+  }
+
   getModifiedValue(): string {
     if (this.diffWidgetHandler) {
       return this.diffWidgetHandler.getModifiedValue();
@@ -187,7 +205,13 @@ export class InlineDiffWidget extends ZoneWidget {
     return this.modifiedValue;
   }
 
-  constructor(protected id: string, editor: ICodeEditor, selection: monaco.IRange, modifiedValue: string) {
+  constructor(
+    protected id: string,
+    editor: ICodeEditor,
+    selection: monaco.IRange,
+    modifiedValue: string,
+    hiddenArea?: monaco.IRange,
+  ) {
     super(editor, {
       showArrow: false,
       showFrame: false,
@@ -199,8 +223,9 @@ export class InlineDiffWidget extends ZoneWidget {
 
     this.range = selection;
     this.modifiedValue = modifiedValue;
+    this.hiddenArea = hiddenArea || selection;
 
-    editor.setHiddenAreas([selection], this.id);
+    editor.setHiddenAreas([this.hiddenArea], this.id);
   }
 
   // // 覆写 revealRange 函数，使其在 show 的时候编辑器不会定位到对应位置
