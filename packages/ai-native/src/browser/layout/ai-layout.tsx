@@ -15,7 +15,6 @@ export const AILayout = () => {
         id='main-horizontal-ai'
         flex={1}
         direction={'left-to-right'}
-        useDomSize={true}
         resizeHandleClassName={'design-slot_resize_horizontal'}
       >
         <SplitPanel
@@ -23,7 +22,6 @@ export const AILayout = () => {
           flex={1}
           flexGrow={1}
           direction={'left-to-right'}
-          useDomSize={true}
           resizeHandleClassName={'design-slot_resize_horizontal'}
         >
           <SlotRenderer
