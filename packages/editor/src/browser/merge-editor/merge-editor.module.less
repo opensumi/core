@@ -12,7 +12,37 @@
   .merge_editor_float_container_info {
     width: 100%;
     display: flex;
-    padding-left: 20px;
+    align-items: center;
+    padding-left: 14px;
+
+    .merge_editor_nav_operator {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      &_btn {
+        cursor: pointer;
+        user-select: none;
+        &:hover {
+          color: var(--kt-defaultButton-hoverForeground);
+        }
+      }
+    }
+
+    .vertical-divider {
+      display: inline-block;
+      width: 2px;
+      display: list-item;
+      background-color: var(--menu-separatorBackground);
+      pointer-events: none;
+      overflow: hidden;
+      margin: 1px 4px;
+
+      &::marker {
+        content: '';
+        unicode-bidi: initial;
+      }
+    }
   }
 
   .merge_editor_float_container_operation_bar {
@@ -63,10 +93,17 @@
   }
 
   .line_vertical {
-    background-color: var(--design-borderColor-common);
+    background-color: var(--design-borderColor);
     width: 1px;
     min-width: 1px;
     height: 24px;
     margin: 4px;
+    pointer-events: none;
+    overflow: hidden;
+
+    &::marker {
+      content: '';
+      unicode-bidi: initial;
+    }
   }
 }

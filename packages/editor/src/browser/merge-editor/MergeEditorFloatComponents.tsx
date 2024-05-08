@@ -112,31 +112,55 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
   return (
     <div className={styles.merge_editor_float_container}>
       <div className={styles.merge_editor_float_container_info}>
-        {formatLocalize('merge-conflicts.merge.conflict.remain', conflicts.length)}
+        <div className={styles.merge_editor_nav_operator}>
+          <div
+            className={styles.merge_editor_nav_operator_btn}
+            style={{
+              paddingRight: 4,
+            }}
+            onClick={handlePrev}
+          >
+            {localize('mergeEditor.conflict.prev')}
+          </div>
+          <div className={styles['vertical-divider']} />
+          <div
+            className={styles.merge_editor_nav_operator_btn}
+            style={{
+              paddingLeft: 4,
+            }}
+            onClick={handleNext}
+          >
+            {localize('mergeEditor.conflict.next')}
+          </div>
+        </div>
+        <div
+          style={{
+            marginLeft: 10,
+          }}
+        >
+          {formatLocalize('merge-conflicts.merge.conflict.remain', conflicts.length)}
+        </div>
       </div>
       <div className={styles.merge_editor_float_container_operation_bar}>
-        <div id='merge.editor.action.button.nav'>
-          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handlePrev}>
-            <Icon icon={'left'} />
-            <span>{localize('mergeEditor.conflict.prev')}</span>
-          </Button>
-          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleNext}>
-            <span>{localize('mergeEditor.conflict.next')}</span>
-            <Icon icon={'right'} />
-          </Button>
-        </div>
-        <span className={styles.line_vertical}></span>
         {inMergeChanges && (
           <Button
             id='merge.editor.open.tradition'
             className={styles.merge_conflict_bottom_btn}
             size='default'
             onClick={handleOpenMergeEditor}
+            style={{
+              alignSelf: 'flex-start',
+            }}
           >
             <Icon icon={'swap'} />
             <span>{localize('mergeEditor.open.3way')}</span>
           </Button>
         )}
+        <div
+          style={{
+            flex: 1,
+          }}
+        />
         <Button
           id='merge.editor.rest'
           className={styles.merge_conflict_bottom_btn}
