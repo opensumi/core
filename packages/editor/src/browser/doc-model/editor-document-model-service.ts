@@ -16,6 +16,7 @@ import {
   StorageProvider,
   URI,
   WithEventBus,
+  isUndefined,
   mapToSerializable,
   memoize,
   serializableToMap,
@@ -275,8 +276,16 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     let provider = await this.contentRegistry.getProvider(uri);
 
     if (!provider) {
-      await Promise.race([Event.toPromise(this.fileSystem.onFileProviderChanged), timeout(6000)]);
-      provider = await this.contentRegistry.getProvider(uri);
+      const providerSchema = await Promise.race([
+        Event.toPromise(
+          Event.filter(this.fileSystem.onFileProviderChanged, (schema: string[]) => schema.includes(uri.scheme)),
+        ),
+        timeout(6000),
+      ]);
+
+      if (!isUndefined(providerSchema)) {
+        provider = await this.contentRegistry.getProvider(uri);
+      }
     }
 
     if (!provider) {
