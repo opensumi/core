@@ -456,6 +456,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiDiffWidget.onMaxLineCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model!.getLineCount()) {
+            // 如果用户是选中了最后一行，直接显示在最后一行
             const lineHeight = monacoEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
             this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
           }
@@ -487,8 +488,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
-    monacoEditor.setHiddenAreas([crossSelection], InlineDiffWidget._hideId);
-    this.aiDiffWidget = this.injector.get(InlineDiffWidget, [monacoEditor, crossSelection, answer]);
+    this.aiDiffWidget = this.injector.get(InlineDiffWidget, ['ai-diff-widget', monacoEditor, crossSelection, answer]);
     this.aiDiffWidget.create();
     this.aiDiffWidget.showByLine(
       crossSelection.startLineNumber - 1,

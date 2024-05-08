@@ -1,17 +1,20 @@
 import { useEffect, useRef } from 'react';
 
-function createRootElement(id: string) {
+function createRootElement(id: string, className?: string) {
   const rootContainer = document.createElement('div');
-  rootContainer.setAttribute('id', id);
+  rootContainer.id = id;
+  if (className) {
+    rootContainer.className = className;
+  }
   return rootContainer;
 }
 
-export function usePortal(id: string) {
+export function usePortal(id: string, className?: string) {
   const rootElemRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const existingParent = document.querySelector(`#${id}`);
-    const parentElem = existingParent || createRootElement(id);
+    const parentElem = existingParent || createRootElement(id, className);
 
     if (!existingParent) {
       document.body.appendChild(parentElem);

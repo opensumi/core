@@ -54,7 +54,7 @@ import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 
-import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
+import { DiffResolveResultWidget } from './override-resolve-result-widget';
 
 const MERGE_CONFLICT_CODELENS_STYLE = 'merge-conflict-codelens-style';
 
@@ -586,7 +586,7 @@ export class MergeConflictContribution
     const currentEditor = editor;
     if (currentEditor && monacoEditor && !this.editor) {
       this.editor = monacoEditor;
-      this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
+      this.resolveResultWidgetManager = new WidgetFactory(DiffResolveResultWidget, this, this.injector);
       this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
       this.init();
     }

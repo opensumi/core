@@ -22,7 +22,7 @@ import {
 import { InlineDiffWidget } from '../widget/inline-diff/inline-diff-widget';
 
 @Injectable({ multiple: true })
-export class OverrideResolveResultWidget extends ResolveResultWidget {
+export class DiffResolveResultWidget extends ResolveResultWidget {
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
 
@@ -69,19 +69,22 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
 
   private inlineDiffWidget: InlineDiffWidget;
 
-  private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, range: monaco.IRange, answer: string): void {
+  private showDiffWidget(element: React.JSX.Element): void {
     if (this.inlineDiffWidget) {
       this.inlineDiffWidget.dispose();
     }
 
-    monacoEditor.setHiddenAreas([range], InlineDiffWidget._hideId);
-    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [monacoEditor, range, answer]);
+    const { range } = this;
+
+    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [this.uid, this.codeEditor.editor, range, this.text]);
+    this.inlineDiffWidget.setResolveResultWidget(element);
     this.inlineDiffWidget.create();
     this.inlineDiffWidget.showByLine(range.startLineNumber + 2, range.endLineNumber - range.startLineNumber + 2);
   }
 
   override hide(): void {
     super.hide();
+    this.codeEditor.editor.setHiddenAreas([], this.uid);
     this.inlineDiffWidget?.dispose();
   }
 
@@ -97,10 +100,10 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
       });
     };
 
-    this.visibleDiffWidget(this.codeEditor.editor, this.range, this.text);
-
-    return (
-      <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
+    // 渲染在下一行空行上，但是通过 css 下移 1/2 行
+    const halfLineHeight = this.getLineHeight() / 2;
+    const resultWidget = (
+      <ContentWidgetContainerPanel style={{ transform: `translateY(${halfLineHeight}px)` }}>
         <WapperAIInlineResult
           id={this.uid}
           iconItems={iconResultItems}
@@ -113,6 +116,9 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
         />
       </ContentWidgetContainerPanel>
     );
+    this.showDiffWidget(resultWidget);
+
+    return null;
   }
   public id(): string {
     return `${AIResolveConflictContentWidget}_${this.uid}`;

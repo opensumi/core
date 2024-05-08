@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
@@ -47,7 +48,10 @@ interface IDiffContentProviderProps {
         modifiedValue: string;
       }
     | undefined;
-  onMaxLineCount: (n) => void;
+  /**
+   * 获取最大行数
+   */
+  onMaxLineCount: (n: number) => void;
   editor: ICodeEditor;
 }
 
@@ -114,8 +118,6 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
 
 @Injectable({ multiple: true })
 export class InlineDiffWidget extends ZoneWidget {
-  public static readonly _hideId = 'overlayDiff';
-
   @Autowired(AppConfig)
   private configContext: AppConfig;
 
@@ -126,12 +128,24 @@ export class InlineDiffWidget extends ZoneWidget {
   private modifiedValue: string;
   private root: ReactDOMClient.Root | null;
 
-  protected applyClass(): void {}
-  protected applyStyle(): void {}
-
   protected _fillContainer(container: HTMLElement): void {
     this.setCssClass('inline-diff-widget');
     this.root = ReactDOMClient.createRoot(container);
+    const layoutInfo = this.editor.getLayoutInfo();
+
+    let portal: React.ReactNode | null = null;
+
+    if (this._resolveResultWidget) {
+      if (container.parentNode) {
+        const resultContainer = document.createElement('div');
+        resultContainer.className = styles.ai_diff_editor_resolve_result_widget;
+        resultContainer.style.left = `${layoutInfo.contentLeft}px`;
+        container.parentNode.appendChild(resultContainer);
+        portal = createPortal(this._resolveResultWidget, resultContainer);
+      } else {
+        throw new Error('[impossible path] container.parentNode is null');
+      }
+    }
 
     this.root.render(
       <ConfigProvider value={this.configContext}>
@@ -147,11 +161,12 @@ export class InlineDiffWidget extends ZoneWidget {
             }}
           />
         </div>
+        {portal}
       </ConfigProvider>,
     );
   }
 
-  constructor(editor: ICodeEditor, selection: monaco.IRange, modifiedValue: string) {
+  constructor(protected id: string, editor: ICodeEditor, selection: monaco.IRange, modifiedValue: string) {
     super(editor, {
       showArrow: false,
       showFrame: false,
@@ -163,6 +178,8 @@ export class InlineDiffWidget extends ZoneWidget {
 
     this.range = selection;
     this.modifiedValue = modifiedValue;
+
+    editor.setHiddenAreas([selection], this.id);
   }
 
   // // 覆写 revealRange 函数，使其在 show 的时候编辑器不会定位到对应位置
@@ -190,7 +207,7 @@ export class InlineDiffWidget extends ZoneWidget {
   }
 
   public override hide(): void {
-    this.editor.setHiddenAreas([], InlineDiffWidget._hideId);
+    this.editor.setHiddenAreas([], this.id);
     super.hide();
     if (this.root) {
       this.root.unmount();
@@ -213,5 +230,10 @@ export class InlineDiffWidget extends ZoneWidget {
       },
       lineNumber,
     );
+  }
+
+  protected _resolveResultWidget: React.ReactElement | null = null;
+  setResolveResultWidget(widget: React.ReactElement) {
+    this._resolveResultWidget = widget;
   }
 }
