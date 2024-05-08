@@ -1,4 +1,5 @@
 import { CancellationToken, MaybePromise } from '../../utils';
+import { IRange } from '../editor';
 
 import { IAIReportCompletionOption } from './reporter';
 export * from './reporter';
@@ -167,6 +168,8 @@ export interface IConflictContentMetadata {
    * @transitional 当前分支的代码
    */
   current: string;
+  currentRange: IRange;
+
   /**
    * @threeWay 基础分支的代码
    * @transitional 无

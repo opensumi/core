@@ -10,6 +10,7 @@ import {
   ACCEPT_CURRENT_ACTIONS,
   AIResolveConflictContentWidget,
   ECompleteReason,
+  IAcceptConflictActionsEvent,
   IGNORE_ACTIONS,
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
@@ -46,11 +47,13 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
         icon: 'check',
         text: localize('aiNative.inline.chat.operate.check.title'),
         onClick: () => {
+          const modifiedValue = this.inlineDiffWidget.getModifiedValue();
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
             action: ACCEPT_CURRENT_ACTIONS,
             reason: ECompleteReason.UserManual,
-          });
+            value: modifiedValue,
+          } as IAcceptConflictActionsEvent);
         },
       },
       {
@@ -79,7 +82,7 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
     this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [this.uid, this.codeEditor.editor, range, this.text]);
     this.inlineDiffWidget.setResolveResultWidget(element);
     this.inlineDiffWidget.create();
-    this.inlineDiffWidget.showByLine(range.startLineNumber + 2, range.endLineNumber - range.startLineNumber + 2);
+    this.inlineDiffWidget.show(range, range.endLineNumber - range.startLineNumber - 1);
   }
 
   override hide(): void {

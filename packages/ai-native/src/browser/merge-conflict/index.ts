@@ -42,6 +42,7 @@ import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor
 import {
   ACCEPT_CURRENT_ACTIONS,
   AI_RESOLVE_REGENERATE_ACTIONS,
+  IAcceptConflictActionsEvent,
   IConflictActionsEvent,
   IGNORE_ACTIONS,
   REVOKE_ACTIONS,
@@ -110,7 +111,8 @@ interface ICacheResolvedConflicts {
   /**
    * 冲突的所有文本范围（包含 incoming 和 current）
    */
-  newRange: IRange;
+  fullRange: IRange;
+  currentRange: IRange;
   id: string;
   conflictText: string;
   /**
@@ -244,7 +246,7 @@ export class MergeConflictContribution
             const { startLineNumber, endLineNumber, offset } = edits;
 
             for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
-              const { newRange } = value;
+              const { fullRange: newRange } = value;
               const {
                 startLineNumber: newStartLineNumber,
                 endLineNumber: newEndLineNumber,
@@ -265,7 +267,7 @@ export class MergeConflictContribution
                 );
                 map.set(id, {
                   ...value,
-                  newRange,
+                  fullRange: newRange,
                 });
                 continue;
               }
@@ -400,7 +402,7 @@ export class MergeConflictContribution
         if (uri === this.getModel().uri.toString()) {
           // 计算当前文件采纳数量
           const aiResult = cacheResolvedConflicts.text;
-          const currentResult = this.getModel()?.getValueInRange(cacheResolvedConflicts.newRange);
+          const currentResult = this.getModel()?.getValueInRange(cacheResolvedConflicts.fullRange);
           if (aiResult.trim() === currentResult.trim()) {
             cacheResolvedConflicts.isAccept = true;
             receiveNum += 1;
@@ -421,7 +423,7 @@ export class MergeConflictContribution
   getAllDiffRanges() {
     const rangeLines: IRange[] = [];
     for (const [, value] of this.getCacheResolvedConflicts().entries()) {
-      rangeLines.push(value.newRange);
+      rangeLines.push(value.fullRange);
     }
     return rangeLines;
   }
@@ -430,8 +432,8 @@ export class MergeConflictContribution
     this.hideResolveResultWidget();
     for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
       if (!value.isClosed) {
-        const lineRange = this.toLineRange(value.newRange, id);
-        this.resolveResultWidgetManager.addWidget(lineRange, value.newRange, value.text);
+        const lineRange = this.toLineRange(value.fullRange, id);
+        this.resolveResultWidgetManager.addWidget(lineRange, value.fullRange, value.text);
       }
     }
   }
@@ -638,6 +640,7 @@ export class MergeConflictContribution
       conflictMetadata = {
         base: '',
         current: model.getValueInRange(conflict.current.content),
+        currentRange: conflict.current.content,
         incoming: model.getValueInRange(conflict.incoming.content),
 
         currentName: conflict.current.name,
@@ -697,7 +700,8 @@ export class MergeConflictContribution
 
       this.resolveResultWidgetManager.addWidget(widgetLineRange, newRange, text);
       this.setCacheResolvedConflict(lineRange.id, {
-        newRange,
+        fullRange: newRange,
+        currentRange: conflictMetadata!.currentRange,
         id: lineRange.id,
         metadata: conflictMetadata!,
         // 保留原始冲突文本
@@ -867,14 +871,16 @@ export class MergeConflictContribution
     switch (action) {
       case ACCEPT_CURRENT_ACTIONS:
         {
+          const newValue = (eventData as IAcceptConflictActionsEvent).value;
           const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
           if (cacheConflict) {
             const edit = {
-              range: cacheConflict.newRange,
-              text: cacheConflict.text,
+              range: cacheConflict.fullRange,
+              text: newValue || cacheConflict.text,
             };
             this.getModel()?.pushEditOperations(null, [edit], () => null);
           }
+
           this.cleanWidget(range.id);
           this.deleteCacheResolvedConflicts(range.id);
           this.cleanDecoration(range.id);
@@ -889,7 +895,7 @@ export class MergeConflictContribution
       case AI_RESOLVE_REGENERATE_ACTIONS: {
         const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
         if (cacheConflict) {
-          const lineRange = this.toLineRange(cacheConflict.newRange, range.id);
+          const lineRange = this.toLineRange(cacheConflict.fullRange, range.id);
           this.conflictAIAccept(undefined, lineRange, true);
         }
         this.cleanWidget(range.id);
@@ -935,7 +941,7 @@ export class MergeConflictContribution
       this.decorationId2Range.delete(id);
     }
 
-    this.updateCodeLensProvider();
+    // this.updateCodeLensProvider();
   }
 
   // 强制刷新 codelens

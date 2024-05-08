@@ -48,15 +48,15 @@ export class WidgetFactory implements IWidgetFactory {
     this.widgetMap.clear();
   }
 
-  public addWidget(range: LineRange, ...args: any[]): void {
-    const id = range.id;
+  public addWidget(lineRange: LineRange, ...args: any[]): void {
+    const id = lineRange.id;
     if (this.widgetMap.has(id)) {
       return;
     }
 
-    const position = this.positionFactory(range);
+    const position = this.positionFactory(lineRange);
 
-    const widget = this.injector.get(this.contentWidget, [id, this.editor, range, ...args]);
+    const widget = this.injector.get(this.contentWidget, [id, this.editor, lineRange, ...args]);
     widget.show({ position });
 
     this.widgetMap.set(id, widget);

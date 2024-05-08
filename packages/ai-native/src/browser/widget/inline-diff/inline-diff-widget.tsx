@@ -18,17 +18,17 @@ import styles from './inline-diff-widget.module.less';
 
 const diffEditorOptions: IDiffEditorOptions = {
   fixedOverflowWidgets: true,
-  readOnly: true,
+  readOnly: false,
   enableSplitViewResizing: true,
-  ignoreTrimWhitespace: false,
+  ignoreTrimWhitespace: true,
   renderSideBySide: true,
   lineNumbers: 'on',
   glyphMargin: true,
 
   scrollbar: { useShadows: false, alwaysConsumeMouseWheel: false, vertical: 'hidden' },
   scrollBeyondLastLine: false,
-  renderMarginRevertIcon: false,
-  renderOverviewRuler: false,
+  renderMarginRevertIcon: true,
+  renderOverviewRuler: true,
   rulers: undefined,
   overviewRulerBorder: undefined,
   overviewRulerLanes: 0,
@@ -37,9 +37,12 @@ const diffEditorOptions: IDiffEditorOptions = {
   diffCodeLens: false,
   stickyScroll: { enabled: false },
   minimap: { enabled: false },
-  renderLineHighlight: 'all',
   automaticLayout: true,
 };
+
+interface IDiffWidgetHandler {
+  getModifiedValue: () => string;
+}
 
 interface IDiffContentProviderProps {
   dto:
@@ -52,11 +55,14 @@ interface IDiffContentProviderProps {
    * 获取最大行数
    */
   onMaxLineCount: (n: number) => void;
+
+  onReady?: (handler: IDiffWidgetHandler) => void;
+
   editor: ICodeEditor;
 }
 
 const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
-  const { dto, onMaxLineCount, editor } = props;
+  const { dto, onMaxLineCount, editor, onReady } = props;
   const monacoService: MonacoService = useInjectable(MonacoService);
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +97,12 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       modified: modifiedModel,
     });
     diffEditor.revealLine(range.startLineNumber, monaco.editor.ScrollType.Immediate);
+
+    if (onReady) {
+      onReady({
+        getModifiedValue: () => modifiedModel.getValue(),
+      });
+    }
 
     if (onMaxLineCount) {
       const originalEditor = diffEditor.getOriginalEditor();
@@ -127,6 +139,7 @@ export class InlineDiffWidget extends ZoneWidget {
   private range: monaco.IRange;
   private modifiedValue: string;
   private root: ReactDOMClient.Root | null;
+  private diffWidgetHandler: IDiffWidgetHandler | null = null;
 
   protected _fillContainer(container: HTMLElement): void {
     this.setCssClass('inline-diff-widget');
@@ -159,11 +172,19 @@ export class InlineDiffWidget extends ZoneWidget {
                 this._onMaxLineCount.fire(n);
               }
             }}
+            onReady={(handler) => (this.diffWidgetHandler = handler)}
           />
         </div>
         {portal}
       </ConfigProvider>,
     );
+  }
+
+  getModifiedValue(): string {
+    if (this.diffWidgetHandler) {
+      return this.diffWidgetHandler.getModifiedValue();
+    }
+    return this.modifiedValue;
   }
 
   constructor(protected id: string, editor: ICodeEditor, selection: monaco.IRange, modifiedValue: string) {
@@ -214,7 +235,12 @@ export class InlineDiffWidget extends ZoneWidget {
     }
   }
 
-  public showByLine(line: number, lineNumber = 20): void {
+  /**
+   *
+   * @param line 视图区域的起始行号
+   * @param heightInLines 视图区域的高度（以行数表示）
+   */
+  public showByLine(line: number, heightInLines = 20): void {
     /**
      * 暂时通过 hack 的方式使其能让 zonewidget 在空白处显示出来
      */
@@ -228,7 +254,7 @@ export class InlineDiffWidget extends ZoneWidget {
         endLineNumber: line,
         endColumn: Number.MAX_SAFE_INTEGER,
       },
-      lineNumber,
+      heightInLines,
     );
   }
 

@@ -445,7 +445,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.aiInlineChatOperationDisposed.addDispose([
       this.aiInlineChatService.onAccept(() => {
         this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
-        monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: answer! }], () => null);
+        const newValue = this.aiDiffWidget?.getModifiedValue() || answer!;
+
+        monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: newValue }], () => null);
         runWhenIdle(() => {
           this.disposeAllWidget();
         });
