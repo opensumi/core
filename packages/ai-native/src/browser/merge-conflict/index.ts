@@ -109,11 +109,11 @@ function loadStyleString(load: boolean) {
 }
 
 interface ICacheResolvedConflicts {
+  conflict: DocumentMergeConflict;
   /**
    * 冲突的所有文本范围（包含 incoming 和 current）
    */
   fullRange: IRange;
-  currentRange: IRange;
   id: string;
   conflictText: string;
   /**
@@ -531,6 +531,7 @@ export class MergeConflictContribution
       }),
       commands.registerCommand(MERGE_CONFLICT_COMMANDS.ALL_RESET, {
         execute: async (uri: Uri) => {
+          this.cleanAllCache();
           const content = this.conflictParser.getConflictText(uri.toString());
           this.cancelRequestToken();
           if (content) {
@@ -540,7 +541,6 @@ export class MergeConflictContribution
                 const model = editor.getModel();
                 model?.setValue(content);
                 this.conflictParser.deleteConflictText(uri.toString());
-                this.cleanAllCache();
               }
             }
           }
@@ -630,42 +630,31 @@ export class MergeConflictContribution
     return Promise.resolve(items);
   }
 
-  private async conflictAIAccept(conflict?: DocumentMergeConflict, _lineRange?: LineRange, isRegenerate?: boolean) {
+  private async conflictAIAccept(conflict: DocumentMergeConflict, previousId?: string) {
     if (!this.editorService.currentEditor?.monacoEditor) {
       return;
     }
-    let lineRange: LineRange;
-    let conflictMetadata: IConflictContentMetadata | undefined;
 
     const model = this.getModel();
 
-    if (conflict) {
-      lineRange = this.toLineRange(conflict.range);
-      conflictMetadata = {
-        base: '',
-        current: model.getValueInRange(conflict.current.content),
-        currentRange: conflict.current.content,
-        incoming: model.getValueInRange(conflict.incoming.content),
+    const lineRange = this.toLineRange(conflict.range, previousId);
+    const conflictMetadata: IConflictContentMetadata = {
+      base: '',
+      current: model.getValueInRange(conflict.current.content),
+      incoming: model.getValueInRange(conflict.incoming.content),
 
-        currentName: conflict.current.name,
-        incomingName: conflict.incoming.name,
-      };
-    } else {
-      lineRange = _lineRange!;
-    }
-    const newRange = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
-    const skeletonDecorationDispose = this.renderSkeletonDecoration(newRange, [
+      currentName: conflict.current.name,
+      incomingName: conflict.incoming.name,
+    };
+
+    const newRange = lineRange.toRange(1, conflict.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
+    const removeSkeletonDecoration = this.renderSkeletonDecoration(newRange, [
       styles.skeleton_decoration,
       styles.skeleton_decoration_background_black,
     ]);
     this.stopWidgetManager.addWidget(lineRange);
 
-    let conflictText = this.getModel()?.getValueInRange(lineRange.toRange(1, newRange.endColumn)) ?? '';
-    if (isRegenerate) {
-      const cache = this.getCacheResolvedConflicts().get(lineRange.id);
-      conflictText = cache?.conflictText ?? '';
-      conflictMetadata = cache?.metadata;
-    }
+    const conflictText = model.getValueInRange(conflict.range) ?? '';
 
     this.logger.log('start ai resolve conflict:', conflictMetadata);
 
@@ -676,11 +665,11 @@ export class MergeConflictContribution
         clickNum: this.reportData.clickNum! + 1,
       };
 
-      resolveConflictResult = await this.requestAIResolveConflict(conflictMetadata!, lineRange, isRegenerate);
+      resolveConflictResult = await this.requestAIResolveConflict(conflictMetadata, lineRange, Boolean(previousId));
     } catch (error) {
       throw new Error(`AI resolve conflict error: ${error.toString()}`);
     } finally {
-      skeletonDecorationDispose();
+      removeSkeletonDecoration();
       this.stopWidgetManager.hideWidget(lineRange.id);
       this.loadingRange.delete(newRange);
     }
@@ -704,18 +693,18 @@ export class MergeConflictContribution
         lineRange.id,
       );
 
-      this.resolveResultWidgetManager.addWidget(widgetLineRange, conflictMetadata!.currentRange, text);
+      this.resolveResultWidgetManager.addWidget(widgetLineRange, conflict.current.content, text);
       this.setCacheResolvedConflict(lineRange.id, {
+        conflict,
         fullRange: newRange,
-        currentRange: conflictMetadata!.currentRange,
         id: lineRange.id,
-        metadata: conflictMetadata!,
+        metadata: conflictMetadata,
         // 保留原始冲突文本
         conflictText,
         text,
-        isAccept: true,
       });
-      if (!isRegenerate) {
+
+      if (!previousId) {
         // 记录处理数量 非重新生成 conflict 存在
         const uri = this.getModel().uri.toString();
         const cacheConflictRanges = this.conflictParser.getAllConflictsByUri(uri);
@@ -736,8 +725,6 @@ export class MergeConflictContribution
           }
         }
       }
-      this.updateReportData();
-      this.reportConflictData();
       return Promise.resolve(resolveConflictResult);
     } else {
       if (CancelResponse.is(resolveConflictResult)) {
@@ -782,24 +769,24 @@ export class MergeConflictContribution
     // TODO: 优化
     this.disposables.push(
       this.onRequestsCancel(() => {
+        this.logger.log('cancel all conflict');
         isCancelAll = true;
         return;
       }),
       // 取消一个后取消所有
       this.onRequestCancel(() => {
+        this.logger.log('cancel all conflict');
         isCancelAll = true;
         return;
       }),
     );
-    return this.conflictAIAccept(conflicts[0]).then((res) => {
+
+    for (const conflict of conflicts) {
       if (isCancelAll) {
-        return Promise.resolve();
+        break;
       }
-      if (!ErrorResponse.is(res)) {
-        return Promise.resolve();
-      }
-      return this.acceptAllConflict();
-    });
+      await this.conflictAIAccept(conflict);
+    }
   }
 
   private registerCodeLensProvider() {
@@ -844,11 +831,19 @@ export class MergeConflictContribution
   }
 
   public hideResolveResultWidget(id?: string) {
-    this.resolveResultWidgetManager.hideWidget(id);
+    if (id) {
+      this.resolveResultWidgetManager.hideWidget(id);
+    } else {
+      this.resolveResultWidgetManager.hideAll();
+    }
   }
 
   public hideStopWidget(id?: string) {
-    this.stopWidgetManager.hideWidget(id);
+    if (id) {
+      this.stopWidgetManager.hideWidget(id);
+    } else {
+      this.stopWidgetManager.hideAll();
+    }
   }
 
   public cancelRequestToken(id?: string) {
@@ -885,11 +880,17 @@ export class MergeConflictContribution
               text: newValue || cacheConflict.text,
             };
             this.getModel()?.pushEditOperations(null, [edit], () => null);
+
+            this.getCacheResolvedConflicts().set(range.id, {
+              ...cacheConflict,
+              isAccept: true,
+            });
           }
 
           this.cleanWidget(range.id);
           this.deleteCacheResolvedConflicts(range.id);
           this.cleanDecoration(range.id);
+          this.updateCodeLens();
         }
         break;
       case REVOKE_ACTIONS: {
@@ -899,13 +900,14 @@ export class MergeConflictContribution
         break;
       }
       case AI_RESOLVE_REGENERATE_ACTIONS: {
-        const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
-        if (cacheConflict) {
-          const lineRange = this.toLineRange(cacheConflict.fullRange, range.id);
-          this.conflictAIAccept(undefined, lineRange, true);
-        }
         this.cleanWidget(range.id);
         this.cleanDecoration(range.id);
+
+        const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
+        if (cacheConflict) {
+          this.conflictAIAccept(cacheConflict.conflict, range.id);
+        }
+
         break;
       }
       case IGNORE_ACTIONS: {
@@ -919,14 +921,18 @@ export class MergeConflictContribution
         break;
       }
     }
+
+    this.updateReportData();
+    this.reportConflictData();
   }
 
   private cleanAllCache() {
+    this.getCacheResolvedConflicts().clear();
     this.hideStopWidget();
     this.hideResolveResultWidget();
-    this.getCacheResolvedConflicts().clear();
     this.decorationId2Dispose.clear();
     this.decorationId2Range.clear();
+    this.updateCodeLens();
   }
 
   private cleanWidget(id: string) {
@@ -938,6 +944,7 @@ export class MergeConflictContribution
     this.hideStopWidget();
     this.hideResolveResultWidget();
   }
+
   private cleanDecoration(id: string) {
     if (this.decorationId2Dispose.has(id)) {
       this.decorationId2Dispose.get(id)?.call(this);
@@ -946,15 +953,19 @@ export class MergeConflictContribution
     if (this.decorationId2Range.has(id)) {
       this.decorationId2Range.delete(id);
     }
-
-    // this.updateCodeLensProvider();
   }
 
-  // 强制刷新 codelens
-  private updateCodeLensProvider = debounce(() => {
+  private updateCodeLensDebounce = debounce(() => {
+    this.updateCodeLens();
+  }, 2000);
+
+  /**
+   * 刷新 codelens
+   */
+  private updateCodeLens() {
     if (this.getModel().uri) {
       // @ts-ignore
       languageFeaturesService.codeLensProvider._onDidChange.fire();
     }
-  }, 2000);
+  }
 }

@@ -116,11 +116,19 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public hideResolveResultWidget(id?: string) {
-    this.resolveResultWidgetManager.hideWidget(id);
+    if (id) {
+      this.resolveResultWidgetManager.hideWidget(id);
+    } else {
+      this.resolveResultWidgetManager.hideAll();
+    }
   }
 
   public hideStopWidget(id?: string) {
-    this.stopWidgetManager.hideWidget(id);
+    if (id) {
+      this.stopWidgetManager.hideWidget(id);
+    } else {
+      this.stopWidgetManager.hideAll();
+    }
   }
 
   public renderSkeletonDecoration(range: LineRange, classNames: string[]): () => void {
