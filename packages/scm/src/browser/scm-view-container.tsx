@@ -108,7 +108,6 @@ export const SCMResourcesView: FC<{
       <div className={styles.scm} style={{ paddingTop: SCM_EXTRA_PADDING_TOP }}>
         <SCMResourceInput repository={repository} menus={menus} />
         <SCMResourceTree
-          width={viewState.width}
           height={
             viewState.height -
             SCM_INPUT_HEIGHT -

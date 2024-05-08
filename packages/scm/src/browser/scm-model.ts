@@ -215,9 +215,14 @@ export class ViewModelContext extends Disposable {
   private readonly logger: ILogger;
 
   private onDidSelectedRepoChangeEmitter: Emitter<ISCMRepository> = new Emitter();
+  private onAlwaysShowActionsChangeEmitter: Emitter<boolean> = new Emitter();
 
   get onDidSelectedRepoChange() {
     return this.onDidSelectedRepoChangeEmitter.event;
+  }
+
+  get onAlwaysShowActionsChange() {
+    return this.onAlwaysShowActionsChangeEmitter.event;
   }
 
   public get menus(): ISCMMenus {
@@ -242,7 +247,6 @@ export class ViewModelContext extends Disposable {
   @observable
   public selectedRepos = observable.array<ISCMRepository>([]);
 
-  @observable
   public alwaysShowActions: boolean;
 
   constructor() {
@@ -348,9 +352,9 @@ export class ViewModelContext extends Disposable {
     });
   }
 
-  @action
   private updateAlwaysShowActions(value: boolean) {
     this.alwaysShowActions = value;
+    this.onAlwaysShowActionsChangeEmitter.fire(value);
   }
 
   private spliceSCMList = (workspace: Uri, start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {

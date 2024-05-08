@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree, TreeModel, TreeNodeType } from '@opensumi/ide-components';
@@ -17,30 +16,39 @@ import { SCMTreeService } from './scm-tree.service';
 export const TREE_FIELD_NAME = 'SCM_TREE_TREE_FIELD';
 
 export const SCMResourceTree: FC<{
-  width: number;
   height: number;
-}> = observer(({ height }) => {
+}> = memo(({ height }) => {
   const [isReady, setIsReady] = useState<boolean>(false);
   const [model, setModel] = useState<TreeModel>();
-
+  const isDisposed = useRef<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
 
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
+  const [alwaysShowActions, setAlwaysShowActions] = useState<boolean>(viewModel.alwaysShowActions);
 
-  // effects
+  const initTreeModel = useCallback(async () => {
+    scmTreeModelService.init();
+    await scmTreeModelService.whenReady;
+    if (scmTreeModelService.treeModel) {
+      await scmTreeModelService.treeModel.ensureReady;
+    }
+    if (isDisposed.current) {
+      return;
+    }
+    setIsReady(true);
+  }, [isReady, scmTreeModelService]);
+
   useEffect(() => {
-    // ensure ready
-    (async () => {
-      await scmTreeModelService.whenReady;
-      if (scmTreeModelService.treeModel) {
-        // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-        // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-        await scmTreeModelService.treeModel.ensureReady;
-      }
-      setIsReady(true);
-    })();
+    const dispose = viewModel.onAlwaysShowActionsChange((value) => {
+      setAlwaysShowActions(value);
+    });
+    initTreeModel();
+    return () => {
+      isDisposed.current = true;
+      dispose.dispose();
+    };
   }, []);
 
   useEffect(() => {
@@ -48,7 +56,6 @@ export const SCMResourceTree: FC<{
       setModel(scmTreeModelService.treeModel);
       scmTreeModelService.onDidTreeModelChange(async (model) => {
         if (model) {
-          // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
           await model.ensureReady;
         }
         setModel(model);
@@ -67,7 +74,6 @@ export const SCMResourceTree: FC<{
     };
   }, [wrapperRef.current]);
 
-  // event handlers
   const handleTreeReady = useCallback((handle: IRecycleTreeHandle) => {
     scmTreeModelService.handleTreeHandler({
       ...handle,
@@ -77,7 +83,6 @@ export const SCMResourceTree: FC<{
   }, []);
 
   const hasShiftMask = useCallback((event: React.MouseEvent): boolean => {
-    // Ctrl/Cmd 权重更高
     if (hasCtrlCmdMask(event)) {
       return false;
     }
@@ -91,7 +96,6 @@ export const SCMResourceTree: FC<{
 
   const handleItemClick = useCallback(
     (event: React.MouseEvent, item: SCMResourceFile | SCMResourceGroup, type: TreeNodeType) => {
-      // 阻止点击事件冒泡
       event.stopPropagation();
 
       if (!item) {
@@ -113,14 +117,12 @@ export const SCMResourceTree: FC<{
   );
 
   const handleTwistierClick = useCallback((ev: React.MouseEvent, item: SCMResourceFolder) => {
-    // 阻止点击事件冒泡
     ev.stopPropagation();
 
     scmTreeModelService.toggleDirectory(item);
   }, []);
 
   const handleItemDoubleClick = useCallback((event: React.MouseEvent, item: SCMResourceNotRoot, type: TreeNodeType) => {
-    // 阻止点击事件冒泡
     event.stopPropagation();
 
     if (!item) {
@@ -136,7 +138,7 @@ export const SCMResourceTree: FC<{
 
   return (
     <div
-      className={cls(styles.scm_tree_container, { 'scm-show-actions': viewModel.alwaysShowActions })}
+      className={cls(styles.scm_tree_container, { 'scm-show-actions': alwaysShowActions })}
       tabIndex={-1}
       ref={wrapperRef}
       data-name={TREE_FIELD_NAME}
