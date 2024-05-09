@@ -657,6 +657,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
       userManualResolveNonConflicts,
     });
 
+    this.dataStore.emitChange();
+
     if (this.supportAIConflictResolve) {
       changesResult
         .filter((range) => range.isConflictPoint)

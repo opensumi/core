@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -173,6 +174,21 @@ export const Grid = () => {
   ]);
   const dataStore = useInjectable<MappingManagerDataStore>(MappingManagerDataStore);
 
+  const [summary, setSummary] = useState<string>('');
+  useEffect(() => {
+    const debounced = debounce(() => {
+      setSummary(dataStore.summary());
+    }, 16 * 5);
+
+    const dispose = dataStore.onDataChange(() => {
+      debounced();
+    });
+
+    setSummary(dataStore.summary());
+
+    return () => dispose.dispose();
+  }, [dataStore]);
+
   const handleReset = useCallback(async () => {
     await mergeEditorService.stopAllAIResolveConflict();
     runWhenIdle(() => {
@@ -213,7 +229,7 @@ export const Grid = () => {
       <MergeActions
         containerClassName={styles.merge_editor_float_container}
         editorType='3way'
-        summary={dataStore.summary()}
+        summary={summary}
         onReset={handleReset}
         onSwitchEditor={() => {
           let uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
