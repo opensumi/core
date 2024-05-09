@@ -591,7 +591,6 @@ export default {
     'kt.accentForeground': '#FFFFFF',
     'kt.actionbar.disableForeground': '#5F656B',
     'kt.actionbar.foreground': '#151b21a6',
-    'kt.actionbar.selectionBackground': '#1B2F44',
     'kt.actionbar.selectionBorder': '#1A66AC',
     'kt.actionbar.separatorBackground': '#5F656B40',
     'kt.activityBar.dropUpBackground': '#1F507D',
