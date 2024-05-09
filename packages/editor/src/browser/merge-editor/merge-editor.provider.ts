@@ -22,8 +22,6 @@ export class MergeEditorResourceProvider extends WithEventBus implements IResour
       const resultEditorUri = new URI(output);
       const icon = this.labelService.getIcon(resultEditorUri);
       return {
-        // 如果设置为 true，再打开时没有找到对应的 provider 会报错
-        // TODO: 需要增加一个标记，说明这个资源要在某个插件加载后才能 revive
         supportsRevive: true,
         name,
         icon,
