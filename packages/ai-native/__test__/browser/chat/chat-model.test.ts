@@ -1,3 +1,4 @@
+import { IChatContent } from '@opensumi/ide-core-common';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
@@ -6,7 +7,7 @@ import {
   ChatWelcomeMessageModel,
 } from '../../../lib/browser/chat/chat-model';
 import { IChatSlashCommandItem } from '../../../lib/browser/types';
-import { IChatContent, IChatModel, IChatRequestMessage } from '../../../lib/common';
+import { IChatModel, IChatRequestMessage } from '../../../lib/common';
 import { ChatModel, ChatResponseModel } from '../../../src/browser/chat/chat-model';
 
 describe('ChatResponseModel', () => {
