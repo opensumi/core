@@ -37,14 +37,10 @@ export interface IDocumentMergeConflictDescriptor {
   splitter: monaco.Range;
 }
 
-// 存储初始化内容
 export interface ICacheDocumentMergeConflict extends IDocumentMergeConflictDescriptor {
-  incomingContent: string;
-  currentContent: string;
-  bothContent: string;
   aiContent?: string;
-  defaultContent: string;
 }
+
 export interface IDocumentMergeConflictTracker {
   getConflicts(document: monaco.editor.ITextModel): PromiseLike<IDocumentMergeConflict[]>;
   isPending(document: monaco.editor.ITextModel): boolean;

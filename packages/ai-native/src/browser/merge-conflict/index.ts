@@ -9,7 +9,6 @@ import {
   ChatResponse,
   CommandContribution,
   CommandRegistry,
-  Constants,
   Disposable,
   Domain,
   Emitter,
@@ -110,10 +109,6 @@ function loadStyleString(load: boolean) {
 
 interface ICacheResolvedConflicts {
   conflict: DocumentMergeConflict;
-  /**
-   * 冲突的所有文本范围（包含 incoming 和 current）
-   */
-  newRange: IRange;
   id: string;
   conflictText: string;
   /**
@@ -250,12 +245,8 @@ export class MergeConflictContribution
             const { startLineNumber, endLineNumber, offset } = edits;
 
             for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
-              const { newRange } = value;
-              const {
-                startLineNumber: newStartLineNumber,
-                endLineNumber: newEndLineNumber,
-                endColumn: newEndColumn,
-              } = newRange;
+              const { range: newRange } = value.conflict;
+              const { startLineNumber: newStartLineNumber, endLineNumber: newEndLineNumber } = newRange;
               // 在冲突位置下方改动 不处理
               if (newEndLineNumber < startLineNumber) {
                 map.set(id, value);
@@ -263,16 +254,12 @@ export class MergeConflictContribution
               }
               // 在冲突位置上方改动 偏移
               if (startLineNumber < newStartLineNumber && endLineNumber < newEndLineNumber) {
-                const newRange = new monaco.Range(
-                  newStartLineNumber + offset,
-                  1,
-                  newEndLineNumber + offset,
-                  newEndColumn,
-                );
-                map.set(id, {
-                  ...value,
-                  newRange,
-                });
+                value.conflict.range = newRange.delta(offset);
+                value.conflict.current.content = value.conflict.current.content.delta(offset);
+                value.conflict.incoming.content = value.conflict.incoming.content.delta(offset);
+                value.conflict.splitter = value.conflict.splitter.delta(offset);
+
+                map.set(id, value);
                 continue;
               }
               // 包含冲突位置 删除
@@ -406,7 +393,7 @@ export class MergeConflictContribution
         if (uri === this.getModel().uri.toString()) {
           // 计算当前文件采纳数量
           const aiResult = cacheResolvedConflicts.text;
-          const currentResult = this.getModel()?.getValueInRange(cacheResolvedConflicts.newRange);
+          const currentResult = this.getModel()?.getValueInRange(cacheResolvedConflicts.conflict.range);
           if (aiResult.trim() === currentResult.trim()) {
             cacheResolvedConflicts.isAccept = true;
             receiveNum += 1;
@@ -427,7 +414,7 @@ export class MergeConflictContribution
   getAllDiffRanges() {
     const rangeLines: IRange[] = [];
     for (const [, value] of this.getCacheResolvedConflicts().entries()) {
-      rangeLines.push(value.newRange);
+      rangeLines.push(value.conflict.range);
     }
     return rangeLines;
   }
@@ -436,10 +423,11 @@ export class MergeConflictContribution
     this.hideResolveResultWidget();
     for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
       if (!value.isClosed) {
-        const lineRange = this.toLineRange(value.newRange, id);
-        this.resolveResultWidgetManager.addWidget(lineRange, value.newRange, value.text);
+        const lineRange = this.toLineRange(value.conflict.range, id);
+        this.resolveResultWidgetManager.addWidget(lineRange, value.conflict.current.content, value.text);
       }
     }
+    this.updateCodeLensDebounce();
   }
 
   private getModel(): ITextModel {
@@ -450,7 +438,6 @@ export class MergeConflictContribution
     return this.getModel()?.uri.toString();
   }
 
-  /* cache widget */
   private getCacheResolvedConflicts(currentUri?: string) {
     if (!currentUri) {
       currentUri = this.getModel().uri.toString();
@@ -493,7 +480,7 @@ export class MergeConflictContribution
   }
 
   private toLineRange(range: IRange, id?: string) {
-    const lineRange = new LineRange(range.startLineNumber, range.endLineNumber);
+    const lineRange = new LineRange(range.startLineNumber, range.endLineNumber + 1);
     if (id) {
       lineRange.setId(id);
     }
@@ -647,8 +634,7 @@ export class MergeConflictContribution
       incomingName: conflict.incoming.name,
     };
 
-    const newRange = lineRange.toRange(1, conflict.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
-    const removeSkeletonDecoration = this.renderSkeletonDecoration(newRange, [
+    const removeSkeletonDecoration = this.renderSkeletonDecoration(conflict.range, [
       styles.skeleton_decoration,
       styles.skeleton_decoration_background_black,
     ]);
@@ -660,7 +646,7 @@ export class MergeConflictContribution
 
     let resolveConflictResult: ChatResponse | undefined;
     try {
-      this.loadingRange.add(newRange);
+      this.loadingRange.add(conflict.range);
       this.reportData = {
         clickNum: this.reportData.clickNum! + 1,
       };
@@ -671,7 +657,7 @@ export class MergeConflictContribution
     } finally {
       removeSkeletonDecoration();
       this.stopWidgetManager.hideWidget(lineRange.id);
-      this.loadingRange.delete(newRange);
+      this.loadingRange.delete(conflict.range);
     }
 
     if (ReplyResponse.is(resolveConflictResult)) {
@@ -681,22 +667,15 @@ export class MergeConflictContribution
 
       const { text } = this.resolveEndLineEOL(resolveConflictResult!.message!);
 
-      const decorationDispose = this.renderSkeletonDecoration(newRange, [styles.skeleton_decoration_complete]);
+      const decorationDispose = this.renderSkeletonDecoration(conflict.range, [styles.skeleton_decoration_complete]);
       this.decorationId2Dispose.set(lineRange.id, decorationDispose);
-      this.decorationId2Range.set(lineRange.id, newRange);
+      this.decorationId2Range.set(lineRange.id, conflict.range);
 
-      const widgetLineRange = this.toLineRange(
-        {
-          ...newRange,
-          endLineNumber: newRange.endLineNumber + 1,
-        },
-        lineRange.id,
-      );
+      const widgetLineRange = this.toLineRange(conflict.range, lineRange.id);
 
       this.resolveResultWidgetManager.addWidget(widgetLineRange, conflict.current.content, text);
       this.setCacheResolvedConflict(lineRange.id, {
         conflict,
-        newRange,
         id: lineRange.id,
         metadata: conflictMetadata,
         // 保留原始冲突文本
@@ -713,7 +692,7 @@ export class MergeConflictContribution
             if (cacheConflict.isResolved) {
               return false;
             }
-            if (cacheConflict.range.equalsRange(newRange)) {
+            if (cacheConflict.range.equalsRange(conflict.range)) {
               return true;
             }
             if (cacheConflict.text === conflictText) {
@@ -735,7 +714,7 @@ export class MergeConflictContribution
       }
 
       if (ErrorResponse.is(resolveConflictResult)) {
-        this.loadingRange.delete(newRange);
+        this.loadingRange.delete(conflict.range);
         return Promise.resolve(resolveConflictResult);
       }
     }
@@ -876,7 +855,7 @@ export class MergeConflictContribution
           const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
           if (cacheConflict) {
             const edit = {
-              range: cacheConflict.newRange,
+              range: cacheConflict.conflict.range,
               text: newValue || cacheConflict.text,
             };
             this.getModel()?.pushEditOperations(null, [edit], () => null);

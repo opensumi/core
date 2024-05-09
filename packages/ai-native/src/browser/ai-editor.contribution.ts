@@ -281,6 +281,14 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     );
   }
 
+  shouldAbortRequest(model: monaco.ITextModel) {
+    if (model.uri.scheme !== Schemes.file) {
+      return true;
+    }
+
+    return false;
+  }
+
   protected inlineChatInUsing = false;
   protected async showInlineChat(editor: IEditor): Promise<void> {
     if (!this.aiNativeConfigService.capabilities.supportsInlineChat) {
@@ -548,6 +556,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           this.modelSessionDisposable.addDispose(
             monacoApi.languages.registerInlineCompletionsProvider(languageId, {
               provideInlineCompletions: async (model, position, context, token) => {
+                if (this.shouldAbortRequest(model)) {
+                  return;
+                }
+
                 if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
                   this.aiCompletionsService.setMiddlewareComplete(
                     this.latestMiddlewareCollector?.language?.provideInlineCompletions,
@@ -596,6 +608,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const disposable = new Disposable();
 
     const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
+      if (this.shouldAbortRequest(model)) {
+        return;
+      }
+
       this.lastModelRequestRenameSessionId = undefined;
 
       const startTime = +new Date();
@@ -669,7 +685,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     const { monacoEditor } = editor;
-    const { languageParserService, inlineChatFeatureRegistry } = this;
+    const { languageParserService, inlineChatFeatureRegistry, shouldAbortRequest } = this;
 
     let codeActionDispose: IDisposable | undefined;
 
@@ -702,6 +718,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
       codeActionDispose = monacoApi.languages.registerCodeActionProvider(languageId, {
         provideCodeActions: async (model) => {
+          if (shouldAbortRequest(model)) {
+            return;
+          }
+
           if (!prefInlineChatActionEnabled) {
             return;
           }

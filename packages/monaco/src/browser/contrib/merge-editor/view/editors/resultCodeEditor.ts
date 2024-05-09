@@ -274,12 +274,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
             }
 
             const allRanges = this.mappingManagerService.getAllDiffRanges();
-            const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
+            const lineRange = LineRange.fromPositions(mousePosition.lineNumber);
 
-            const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
+            const isTouches = allRanges.some((range) => range.isTouches(lineRange));
 
             if (isTouches) {
-              const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
+              const targetInRange = allRanges.find((range) => range.isTouches(lineRange));
 
               if (!targetInRange) {
                 return;
@@ -335,17 +335,17 @@ export class ResultCodeEditor extends BaseCodeEditor {
           deltaEdits.forEach((edits) => {
             const { startLineNumber, endLineNumber, offset } = edits;
 
-            const toLineRange = LineRange.fromPositions(startLineNumber, endLineNumber + Math.max(0, offset));
+            const lineRange = LineRange.fromPositions(startLineNumber, endLineNumber + Math.max(0, offset));
             const { [EditorViewType.CURRENT]: includeLeftRange, [EditorViewType.INCOMING]: includeRightRange } =
-              this.mappingManagerService.findIncludeRanges(toLineRange);
+              this.mappingManagerService.findIncludeRanges(lineRange);
             /**
-             * 这里需要处理 touch 的情况（也就是 toLineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分）
+             * 这里需要处理 touch 的情况（也就是 lineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分）
              * 那么就要以当前 touch range 的结果作为要 delta 的起点
              */
             const { [EditorViewType.CURRENT]: touchTurnLeftRange, [EditorViewType.INCOMING]: touchTurnRightRange } =
-              this.mappingManagerService.findTouchesRanges(toLineRange);
+              this.mappingManagerService.findTouchesRanges(lineRange);
             const { [EditorViewType.CURRENT]: nextTurnLeftRange, [EditorViewType.INCOMING]: nextTurnRightRange } =
-              this.mappingManagerService.findNextLineRanges(toLineRange);
+              this.mappingManagerService.findNextLineRanges(lineRange);
 
             if (includeLeftRange) {
               this.mappingManagerService.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);

@@ -47,7 +47,7 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
         icon: 'check',
         text: localize('aiNative.inline.chat.operate.check.title'),
         onClick: () => {
-          const modifiedValue = this.inlineDiffWidget.getModifiedValue();
+          const modifiedValue = this.inlineDiffWidget?.getModifiedValue();
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
             action: ACCEPT_CURRENT_ACTIONS,
@@ -70,12 +70,13 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
     ];
   }
 
-  private inlineDiffWidget: InlineDiffWidget;
+  private inlineDiffWidget: InlineDiffWidget | undefined;
 
   override hide(): void {
     super.hide();
     this.codeEditor.editor.setHiddenAreas([], this.uid);
     this.inlineDiffWidget?.dispose();
+    this.inlineDiffWidget = undefined;
   }
 
   public override renderView(): ReactNode {
@@ -95,7 +96,7 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
 
     const resultWidget = (
       <ContentWidgetContainerPanel
-        style={{ transform: `translateY(${halfLineHeight}px)`, right: 16, display: 'flex', position: 'absolute' }}
+        style={{ transform: `translateY(${halfLineHeight}px)`, left: 2, display: 'flex', position: 'absolute' }}
       >
         <WapperAIInlineResult
           id={this.uid}

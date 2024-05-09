@@ -154,7 +154,9 @@ export class InlineDiffWidget extends ZoneWidget {
         const resultContainer = document.createElement('div');
         requestAnimationFrame(() => {
           resultContainer.className = styles.ai_diff_editor_resolve_result_widget;
-          resultContainer.style.width = `${this.computeResultWidgetWidth()}px`;
+          const layoutInfo = this.editor.getLayoutInfo();
+          resultContainer.style.width = `${layoutInfo.contentWidth}px`;
+          resultContainer.style.left = `${layoutInfo.contentLeft}px`;
         });
         container.parentNode.appendChild(resultContainer);
         portal = createPortal(this._resolveResultWidget, resultContainer);
