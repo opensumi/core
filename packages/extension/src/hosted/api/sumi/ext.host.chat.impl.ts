@@ -4,11 +4,11 @@ import {
   IChatAgentResult,
   IChatAgentWelcomeMessage,
   IChatFollowup,
-  IChatMessage,
   IChatReplyFollowup,
 } from '@opensumi/ide-ai-native/lib/common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationToken, Emitter, Progress, getDebugLogger, raceCancellation } from '@opensumi/ide-core-common';
+import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IChatProgressChunk, IExtHostChatAgents, IMainThreadChatAgents } from '../../../common/sumi/chat-agents';

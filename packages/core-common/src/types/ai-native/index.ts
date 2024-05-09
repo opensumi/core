@@ -1,4 +1,8 @@
-import { CancellationToken, MaybePromise } from '../../utils';
+import { CancellationToken, MaybePromise, Uri } from '@opensumi/ide-utils';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+
+import { FileType } from '../file';
+import { IMarkdownString } from '../markdown';
 
 import { IAIReportCompletionOption } from './reporter';
 export * from './reporter';
@@ -76,9 +80,8 @@ export interface IAIBackServiceResponse<T = string> {
 
 export interface IAIBackServiceOption {
   type?: string;
-  model?: string;
-  enableGptCache?: boolean;
-  sessionId?: string;
+  requestId?: string;
+  history?: IHistoryChatMessage[];
 }
 
 export interface IAICompletionOption {
@@ -96,7 +99,7 @@ export interface IAIRenameSuggestionOption {
 
 export interface IAIBackService<
   BaseResponse extends IAIBackServiceResponse = IAIBackServiceResponse,
-  StreamResponse extends NodeJS.ReadableStream = NodeJS.ReadableStream,
+  StreamResponse extends SumiReadableStream<IChatProgress> = SumiReadableStream<IChatProgress>,
   CompletionResponse = IAICompletionResultModel,
 > {
   request<O extends IAIBackServiceOption>(
@@ -197,4 +200,72 @@ export interface IResolveConflictHandler {
 export interface IInternalResolveConflictRegistry {
   getThreeWayHandler(): IResolveConflictHandler | undefined;
   getTraditionalHandler(): IResolveConflictHandler | undefined;
+}
+export interface IChatContent {
+  content: string;
+  kind: 'content';
+}
+
+export interface IChatMarkdownContent {
+  content: IMarkdownString;
+  kind: 'markdownContent';
+}
+
+export interface IChatAsyncContent {
+  content: string;
+  resolvedContent: Promise<string | IMarkdownString | IChatTreeData>;
+  kind: 'asyncContent';
+}
+
+export interface IChatProgressMessage {
+  content: string;
+  kind: 'progressMessage';
+}
+
+export interface IChatResponseProgressFileTreeData {
+  label: string;
+  uri: Uri;
+  type?: FileType;
+  children?: IChatResponseProgressFileTreeData[];
+}
+
+export interface IChatTreeData {
+  treeData: IChatResponseProgressFileTreeData;
+  kind: 'treeData';
+}
+
+export interface IChatComponent {
+  component: string;
+  value?: unknown;
+  kind: 'component';
+}
+
+export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
+
+export interface IChatMessage {
+  readonly role: ChatMessageRole;
+  readonly content: string;
+  readonly name?: string;
+}
+
+export const enum ChatMessageRole {
+  System,
+  User,
+  Assistant,
+  Function,
+}
+
+export interface IHistoryChatMessage extends IChatMessage {
+  id: string;
+  order: number;
+
+  type?: 'string' | 'component';
+  relationId?: string;
+  component?: React.ReactNode;
+  componentProps?: {
+    [key in string]: any;
+  };
+
+  agentId?: string;
+  agentCommand?: string;
 }
