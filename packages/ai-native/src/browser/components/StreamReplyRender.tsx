@@ -25,9 +25,8 @@ interface IStreamMsgWrapperProps {
 
 const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
   const { sessionId, prompt, startTime = 0, onRegenerate, renderContent } = props;
-
-  const [chunk, setChunk] = React.useState('');
   const [content, setContent] = React.useState<string>('');
+  const contentRef = React.useRef<string>(content);
   const [isError, setIsError] = React.useState<boolean>(false);
   const [isDone, setIsDone] = React.useState<boolean>(false);
   const [status, setStatus] = React.useState(EMsgStreamStatus.THINKING);
@@ -41,7 +40,8 @@ const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
       msgStreamManager.onMsgListChange(sessionId)((msg: IMsgStreamChoices) => {
         if (msg && msgStreamManager.currentSessionId === sessionId) {
           const { delta } = msg;
-          setChunk(delta.content);
+          contentRef.current = contentRef.current + delta.content;
+          setContent(contentRef.current);
         }
       }),
     );
@@ -62,20 +62,12 @@ const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
   }, [sessionId]);
 
   const reset = useCallback(() => {
-    setChunk('');
     setContent('');
+    contentRef.current = '';
     setIsError(false);
     setIsDone(false);
     setStatus(EMsgStreamStatus.THINKING);
   }, []);
-
-  useEffect(() => {
-    if (!chunk) {
-      return;
-    }
-
-    setContent(content + chunk);
-  }, [chunk]);
 
   const report = useCallback(
     (success: boolean, stop: boolean) => {
