@@ -300,4 +300,8 @@ export class URI {
     });
     return values.join('&');
   }
+
+  with(parsed: Partial<UriComponents>): URI {
+    return new URI(Uri.from({ ...this.codeUri.toJSON(), ...parsed }));
+  }
 }

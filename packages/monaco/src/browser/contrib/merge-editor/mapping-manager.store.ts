@@ -1,6 +1,7 @@
 import { action, computed, makeAutoObservable, observable } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
+import { formatLocalize, localize } from '@opensumi/ide-core-browser';
 
 export interface IConflictsCount {
   total: number;
@@ -94,5 +95,68 @@ export class MappingManagerDataStore {
     if (typeof data.userManualResolveNonConflicts !== 'undefined') {
       this.userManualResolveNonConflicts = data.userManualResolveNonConflicts;
     }
+  }
+
+  summary() {
+    const conflictsCount = this.conflictsCount;
+    const nonConflictingChangesResolvedCount = this.nonConflictingChangesResolvedCount;
+
+    const conflictsAllResolved = conflictsCount.lefted === 0 && conflictsCount.resolved === conflictsCount.total;
+    const conflictsProgressHint = conflictsAllResolved
+      ? localize('merge-conflicts.conflicts.all-resolved')
+      : formatLocalize('merge-conflicts.conflicts.partial-resolved', conflictsCount.resolved, conflictsCount.lefted);
+
+    let nonConflictHint = localize('merge-conflicts.merge.type.auto');
+    if (nonConflictingChangesResolvedCount.userManualResolveNonConflicts) {
+      nonConflictHint = localize('merge-conflicts.merge.type.manual');
+    }
+
+    const nonConflictHintInfos = [] as string[];
+    if (nonConflictingChangesResolvedCount.total > 0) {
+      nonConflictHintInfos.push(
+        formatLocalize(
+          'merge-conflicts.non-conflicts.progress',
+          nonConflictingChangesResolvedCount.total,
+          nonConflictHint,
+        ),
+      );
+
+      const branchInfos = [] as string[];
+
+      if (nonConflictingChangesResolvedCount.left > 0) {
+        branchInfos.push(
+          formatLocalize('merge-conflicts.non-conflicts.from.left', nonConflictingChangesResolvedCount.left),
+        );
+      }
+      if (nonConflictingChangesResolvedCount.right > 0) {
+        branchInfos.push(
+          formatLocalize('merge-conflicts.non-conflicts.from.right', nonConflictingChangesResolvedCount.right),
+        );
+      }
+      if (nonConflictingChangesResolvedCount.both > 0) {
+        branchInfos.push(
+          formatLocalize('merge-conflicts.non-conflicts.from.base', nonConflictingChangesResolvedCount.both),
+        );
+      }
+
+      if (branchInfos.length > 0) {
+        const branchInfoString = branchInfos.join('；');
+        nonConflictHintInfos.push(` (${branchInfoString})`);
+      }
+    }
+
+    const nonConflictHintString = nonConflictHintInfos.join('');
+
+    const mergeInfo = [
+      formatLocalize('merge-conflicts.conflicts.summary', conflictsCount.total, conflictsProgressHint),
+      conflictsCount.nonConflicts > 0
+        ? formatLocalize('merge-conflicts.non-conflicts.summary', conflictsCount.nonConflicts)
+        : '',
+      nonConflictHintString,
+    ]
+      .filter(Boolean)
+      .join(' | ');
+
+    return mergeInfo;
   }
 }

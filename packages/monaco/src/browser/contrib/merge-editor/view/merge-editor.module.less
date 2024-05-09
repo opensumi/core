@@ -45,69 +45,47 @@
       width: 100%;
     }
 
-    .container_box {
-      display: flex;
-      float: right;
-      white-space: nowrap;
-      width: 100%;
-      justify-content: flex-end;
-      white-space: nowrap;
-      padding-top: 6px;
-      padding-right: 20px;
-      user-select: none;
+    .merge_conflict_bottom_btn {
+      border: 1px solid var(--kt-button-disableForeground);
+      border-radius: 8px;
+      background: var(--editor-background);
+      color: var(--editor-foreground);
 
-      .merge_conflict_bottom_btn {
-        border: 1px solid var(--kt-button-disableForeground);
-        border-radius: 8px;
-        background: var(--editor-background);
-        color: var(--editor-foreground);
+      margin: 0 4px;
+      cursor: pointer;
 
-        margin: 0 4px;
-        cursor: pointer;
-
-        // 第一个子元素
-        :first-child {
-          margin-right: 8px;
-        }
-
-        span {
-          white-space: nowrap;
-        }
+      // 第一个子元素
+      :first-child {
+        margin-right: 8px;
       }
 
-      .magic_btn {
-        background-image: radial-gradient(circle at -21% -22%, #19cfff, #8429ff);
-        border: none;
-        font-weight: 500;
-
-        span {
-          color: #fff;
-        }
-
-        :global {
-          .kt-icon {
-            color: #fff;
-            font-size: 12px;
-          }
-        }
-      }
-
-      .merge_editor_apply_btn {
-        border-radius: 8px;
-        margin-left: 4px;
+      span {
         white-space: nowrap;
+      }
+    }
+    .magic_btn {
+      background-image: radial-gradient(circle at -21% -22%, #19cfff, #8429ff);
+      border: none;
+      font-weight: 500;
 
-        :first-child {
-          margin-right: 8px;
-        }
+      span {
+        color: #fff;
       }
 
-      .line_vertical {
-        background-color: var(--design-borderColor);
-        width: 1px;
-        min-width: 1px;
-        height: 24px;
-        margin: 4px;
+      :global {
+        .kt-icon {
+          color: #fff;
+          font-size: 12px;
+        }
+      }
+    }
+    .merge_editor_apply_btn {
+      border-radius: 8px;
+      margin-left: 4px;
+      white-space: nowrap;
+
+      :first-child {
+        margin-right: 8px;
       }
     }
   }
