@@ -129,13 +129,18 @@ export class SCMTreeModelService {
 
   constructor() {
     makeObservable(this);
+  }
+
+  init() {
     this.showProgress((this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode)));
-    this.disposableCollection.push(
-      this.scmTreeService.onDidTreeModeChange((isTreeMode) => {
-        // 展示进度条
-        this.showProgress((this._whenReady = this.initTreeModel(isTreeMode)));
-      }),
-    );
+    this._whenReady.then(() => {
+      this.disposableCollection.push(
+        this.scmTreeService.onDidTreeModeChange((isTreeMode) => {
+          // 展示进度条
+          this.showProgress((this._whenReady = this.initTreeModel(isTreeMode)));
+        }),
+      );
+    });
 
     this.disposableCollection.push(
       this.viewModel.onDidSelectedRepoChange((repo: ISCMRepository) => {
