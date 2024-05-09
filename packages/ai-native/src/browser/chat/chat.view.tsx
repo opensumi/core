@@ -3,7 +3,7 @@ import * as React from 'react';
 import { MessageList, SystemMessage } from 'react-chat-elements';
 
 import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
-import { Popover } from '@opensumi/ide-core-browser/lib/components';
+import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   AISerivceType,
@@ -489,6 +489,7 @@ export const AIChatView = observer(() => {
           <Popover
             overlayClassName={styles.popover_icon}
             id={'ai-chat-header-close'}
+            position={PopoverPosition.left}
             title={localize('aiNative.operate.close.title')}
           >
             <EnhanceIcon
