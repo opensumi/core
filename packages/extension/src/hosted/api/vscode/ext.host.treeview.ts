@@ -8,6 +8,7 @@ import {
   IDisposable,
   Uri,
   asPromise,
+  isString,
   toDisposable,
 } from '@opensumi/ide-core-common';
 
@@ -622,7 +623,8 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
           }
           // 生成ID用于存储缓存
           const id =
-            treeItem.id || `${treeItemId || 'root'}/${index}:${typeof label === 'string' ? label : label?.label}`;
+            treeItem.id ||
+            `${treeItemId || 'root'}:${index}${isString(label) ? `:${label}` : label?.label ? `:${label?.label}` : ''}`;
           this.id2Element.set(id, value);
 
           const treeViewItem = this.toTreeViewItem(treeItem, {
