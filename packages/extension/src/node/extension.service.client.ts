@@ -4,7 +4,7 @@ import path from 'path';
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { AppConfig, INodeLogger, Uri, retry, uuid } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, Uri, pMemoize, retry, uuid } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 
 import {
@@ -62,24 +62,35 @@ export class ExtensionServiceClientImpl
     return this.extensionService.getExtProcessId(this.clientId);
   }
 
+  @pMemoize()
   public infoProcessNotExist() {
     if (this.client) {
-      retry(
+      return retry(
         async () => {
           if (!this.client) {
             throw new Error('Client not exist');
           }
+          const pid = await this.pid();
+          if (pid) {
+            this.logger.log('Process exist, clientId:', this.clientId, 'pid:', pid);
+            return true;
+          }
 
+          this.logger.log('Process not exist, try to restart, clientId:', this.clientId);
           const result = await this.client.$processNotExist(this.clientId);
           if (result === 'ok') {
+            this.logger.log('Process restart success, clientId:', this.clientId);
             return true;
           } else {
             throw new Error('Process not exist');
           }
         },
         {
-          delay: 300,
-          retries: 20,
+          delay: 1000,
+          retries: 60 * 20,
+          onFailedAttempt: (error) => {
+            this.logger.error('error when info browser that process not exists', error);
+          },
         },
       );
     }

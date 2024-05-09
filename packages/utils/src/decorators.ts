@@ -5,6 +5,7 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/decorators.ts
 
 import { isPromise } from './types';
+import { randomString } from './uuid';
 
 export function createDecorator(mapFn: (fn: Function, key: string) => Function): Function {
   return (target: any, key: string, descriptor: any) => {
@@ -170,7 +171,7 @@ export function es5ClassCompat(target: any): any {
 /**
  * Store promises so that only one promise exists at a time
  */
-export function pMemoize(hashFn: (...params: any[]) => string) {
+export function pMemoize(hashFn?: (...params: any[]) => string) {
   return function (target: any, key: string, descriptor: any) {
     let fnKey: string | null = null;
     let fn: (() => any) | null = null;
@@ -187,9 +188,11 @@ export function pMemoize(hashFn: (...params: any[]) => string) {
       throw new Error('not supported');
     }
 
+    const hashFnResult = hashFn || (() => randomString(4));
+
     descriptor[fnKey!] = function (...args: any[]) {
       const self = this;
-      const memoizeKey = `$memoizedPromise:${hashFn(...args)}:${key}`;
+      const memoizeKey = `$memoizedPromise:${hashFnResult(...args)}:${key}`;
 
       if (!this.hasOwnProperty(memoizeKey)) {
         const promise = fn!.apply(this, args);
