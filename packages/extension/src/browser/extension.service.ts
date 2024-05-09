@@ -148,7 +148,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     super();
 
     this.addDispose(
-      this.fileServiceClient.onWillActivateFileSystemProvider((e) => this.activationEventService.getTopicsData('onFileSystem')),
+      this.fileServiceClient.onWillActivateFileSystemProvider(async (e) => {
+        if (!this.extensionMetaDataArr) {
+          await this.initExtensionMetaData();
+        }
+        return this.activationEventService.getTopicsData('onFileSystem');
+      }),
     );
   }
 
@@ -614,7 +619,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     this.logger.log('extensions count:', this.extensionMetaDataArr.length);
-
     return this.extensionMetaDataArr;
   }
 
