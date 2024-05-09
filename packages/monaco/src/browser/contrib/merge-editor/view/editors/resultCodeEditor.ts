@@ -809,6 +809,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
           return range;
         }
       }
+      return allConflicts[0];
     } else {
       // 向下查找
       const lastVisibleRange = visibleRanges[visibleRanges.length - 1];
@@ -823,6 +824,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
           return range;
         }
       }
+
+      return allConflicts[allConflicts.length - 1];
     }
   }
 
@@ -832,7 +835,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
       return;
     }
 
-    this.editor.revealLineInCenterIfOutsideViewport(range.startLineNumber);
+    this.editor.revealLineInCenter(range.startLineNumber);
   }
 
   public navigateForwards(): void {
