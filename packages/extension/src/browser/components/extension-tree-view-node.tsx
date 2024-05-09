@@ -88,7 +88,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
         }
       }
     },
-    [itemType, onTwistierClick, onClick],
+    [item, itemType, onTwistierClick, onClick],
   );
 
   const handleContextMenu = useCallback(

@@ -812,10 +812,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
                 // 说明此节点为非折叠节点时不处理
                 continue;
               }
-              if ((child as CompositeTreeNode).isExpanded) {
-                // 说明该展开路径对应的节点确实已不存在
-                continue;
-              }
               (child as CompositeTreeNode).isExpanded = true;
               // 加载路径包含当前判断路径，尝试加载该节点再匹配
               const extraExpandedPaths = await (child as CompositeTreeNode).resolveChildrens(token);

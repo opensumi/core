@@ -536,9 +536,9 @@ export class ExtensionTreeViewModel {
 
   toggleDirectory = async (item: ExtensionCompositeTreeNode) => {
     if (item.expanded) {
-      this.extensionTreeHandle.collapseNode(item);
+      await this.extensionTreeHandle.collapseNode(item);
     } else {
-      this.extensionTreeHandle.expandNode(item);
+      await this.extensionTreeHandle.expandNode(item);
     }
   };
 
