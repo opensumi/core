@@ -31,6 +31,13 @@ module.exports = {
         configFile: tsConfigPath,
       }),
     ],
+    fallback: {
+      net: false,
+      path: false,
+      os: false,
+      crypto: false,
+      fs: false,
+    },
   },
   bail: true,
   mode: nodeEnv,
