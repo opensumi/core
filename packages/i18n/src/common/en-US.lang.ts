@@ -1456,7 +1456,7 @@ export const localizationBundle = {
     'aiNative.chat.code.copy.success': 'Copied successfully',
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
-    'aiNative.chat.enter.send': 'Enter send',
+    'aiNative.chat.enter.send': 'Send',
 
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',

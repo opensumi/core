@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
-import { Icon, Popover, TextArea, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, PopoverPosition, TextArea, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ChatFeatureRegistryToken, localize, runWhenIdle, uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
@@ -476,7 +476,8 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
               ) : (
                 <Popover
                   id={`ai_chat_input_send_${uuid(4)}`}
-                  title={localize('aiNative.chat.enter.send')}
+                  content={localize('aiNative.chat.enter.send')}
+                  position={PopoverPosition.left}
                   disable={disabled}
                 >
                   <EnhanceIcon
