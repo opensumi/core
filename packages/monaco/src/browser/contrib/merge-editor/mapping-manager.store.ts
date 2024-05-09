@@ -1,7 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { formatLocalize, localize } from '@opensumi/ide-core-browser';
-
-import { Emitter } from '../../monaco-api/types';
+import { Emitter, formatLocalize, localize } from '@opensumi/ide-core-browser';
 
 export interface IConflictsCount {
   total: number;

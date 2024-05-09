@@ -1,4 +1,4 @@
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -103,12 +103,9 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
   );
 };
 
-export const Grid = () => {
+const BottomBar: React.FC = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
 
-  const incomingEditorContainer = React.useRef<HTMLDivElement | null>(null);
-  const currentEditorContainer = React.useRef<HTMLDivElement | null>(null);
-  const resultEditorContainer = React.useRef<HTMLDivElement | null>(null);
   const commandService = useInjectable<CommandService>(CommandService);
   const [applyLoading, setApplyLoading] = useState(false);
 
@@ -152,26 +149,6 @@ export const Grid = () => {
     }
   }, [mergeEditorService, isAIResolving]);
 
-  useEffect(() => {
-    const [current, result, incoming] = [
-      currentEditorContainer.current,
-      resultEditorContainer.current,
-      incomingEditorContainer.current,
-    ];
-
-    if (current && result && incoming) {
-      mergeEditorService.instantiationCodeEditor(current, result, incoming);
-    }
-
-    return () => {
-      mergeEditorService.dispose();
-    };
-  }, [
-    incomingEditorContainer.current,
-    currentEditorContainer.current,
-    resultEditorContainer.current,
-    mergeEditorService,
-  ]);
   const dataStore = useInjectable<MappingManagerDataStore>(MappingManagerDataStore);
 
   const [summary, setSummary] = useState<string>('');
@@ -195,6 +172,101 @@ export const Grid = () => {
       commandService.executeCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET.id);
     });
   }, [mergeEditorService]);
+
+  return (
+    <MergeActions
+      containerClassName={styles.merge_editor_float_container}
+      editorType='3way'
+      summary={summary}
+      onReset={handleReset}
+      onSwitchEditor={() => {
+        let uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
+        if (!uri) {
+          return;
+        }
+
+        if (uri.scheme === 'git') {
+          // replace git:// with file://
+          uri = uri.with({
+            scheme: 'file',
+            path: uri.path,
+            query: '',
+          });
+        }
+
+        if (uri.scheme !== 'file') {
+          // ignore other scheme
+          logger.warn('Unsupported scheme', uri.scheme);
+          return;
+        }
+
+        commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
+      }}
+      handlePrev={() => {
+        mergeEditorService.resultView.navigateForwards();
+      }}
+      handleNext={() => {
+        mergeEditorService.resultView.navigateBackwards();
+      }}
+      isAIResolving={isAIResolving}
+      onAIResolve={handleAIResolve}
+      beforeAddons={
+        <div id='merge.editor.action.button.accept' className={styles.action_category}>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptLeft}>
+            <Icon icon={'left'} />
+            <span>{localize('mergeEditor.action.button.accept.left')}</span>
+          </Button>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptRight}>
+            <span>{localize('mergeEditor.action.button.accept.right')}</span>
+            <Icon icon={'right'} />
+          </Button>
+        </div>
+      }
+      afterAddons={
+        <Button
+          loading={applyLoading}
+          id='merge.editor.action.button.apply'
+          size='default'
+          className={styles.merge_editor_apply_btn}
+          onClick={handleApply}
+        >
+          {localize('mergeEditor.action.button.apply-and-stash')}
+        </Button>
+      }
+    />
+  );
+};
+
+/**
+ * ! 这个组件不能进行二次渲染，否则会导致 Monaco Editor 无法出现
+ */
+export const Grid = () => {
+  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
+
+  const incomingEditorContainer = React.useRef<HTMLDivElement | null>(null);
+  const currentEditorContainer = React.useRef<HTMLDivElement | null>(null);
+  const resultEditorContainer = React.useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const [current, result, incoming] = [
+      currentEditorContainer.current,
+      resultEditorContainer.current,
+      incomingEditorContainer.current,
+    ];
+
+    if (current && result && incoming) {
+      mergeEditorService.instantiationCodeEditor(current, result, incoming);
+    }
+
+    return () => {
+      mergeEditorService.dispose();
+    };
+  }, [
+    incomingEditorContainer.current,
+    currentEditorContainer.current,
+    resultEditorContainer.current,
+    mergeEditorService,
+  ]);
 
   return (
     <div className={styles.merge_editor_container}>
@@ -226,66 +298,7 @@ export const Grid = () => {
           </div>
         </div>
       </SplitPanel>
-      <MergeActions
-        containerClassName={styles.merge_editor_float_container}
-        editorType='3way'
-        summary={summary}
-        onReset={handleReset}
-        onSwitchEditor={() => {
-          let uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
-          if (!uri) {
-            return;
-          }
-
-          if (uri.scheme === 'git') {
-            // replace git:// with file://
-            uri = uri.with({
-              scheme: 'file',
-              path: uri.path,
-              query: '',
-            });
-          }
-
-          if (uri.scheme !== 'file') {
-            // ignore other scheme
-            logger.warn('Unsupported scheme', uri.scheme);
-            return;
-          }
-
-          commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
-        }}
-        handlePrev={() => {
-          mergeEditorService.resultView.navigateForwards();
-        }}
-        handleNext={() => {
-          mergeEditorService.resultView.navigateBackwards();
-        }}
-        isAIResolving={isAIResolving}
-        onAIResolve={handleAIResolve}
-        beforeAddons={
-          <div id='merge.editor.action.button.accept' className={styles.action_category}>
-            <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptLeft}>
-              <Icon icon={'left'} />
-              <span>{localize('mergeEditor.action.button.accept.left')}</span>
-            </Button>
-            <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptRight}>
-              <span>{localize('mergeEditor.action.button.accept.right')}</span>
-              <Icon icon={'right'} />
-            </Button>
-          </div>
-        }
-        afterAddons={
-          <Button
-            loading={applyLoading}
-            id='merge.editor.action.button.apply'
-            size='default'
-            className={styles.merge_editor_apply_btn}
-            onClick={handleApply}
-          >
-            {localize('mergeEditor.action.button.apply-and-stash')}
-          </Button>
-        }
-      />
+      <BottomBar />
     </div>
   );
 };
