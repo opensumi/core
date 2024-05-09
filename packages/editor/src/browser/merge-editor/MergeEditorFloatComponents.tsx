@@ -80,6 +80,7 @@ export const MergeActions = ({
         <div className={styles['vertical-divider']} />
         <div>{summary}</div>
       </div>
+      <div className={styles['horizontal-divider']} />
       <div className={styles.merge_editor_float_container_operation_bar}>
         {editorType === 'text' && inMergeChanges && (
           <Button
