@@ -85,6 +85,7 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
       name,
       icon,
       uri,
+      supportsRevive: true,
       metadata: {
         original: originalUri,
         modified: modifiedUri,

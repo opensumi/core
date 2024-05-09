@@ -18,7 +18,7 @@ import {
   parseGlob,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
-import { FileSystemProviderCapabilities, IEventBus, Schemes } from '@opensumi/ide-core-common';
+import { FileSystemProviderCapabilities, IEventBus, Schemes, isUndefined } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
@@ -40,6 +40,7 @@ import {
   IFileServiceClient,
   IFileServiceWatcher,
   IFileSystemProvider,
+  IFileSystemProviderActivationEvent,
   IFileSystemProviderCapabilitiesChangeEvent,
   IFileSystemProviderRegistrationEvent,
   TextDocumentContentChangeEvent,
@@ -77,6 +78,9 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
   protected readonly _onDidChangeFileSystemProviderRegistrations = new Emitter<IFileSystemProviderRegistrationEvent>();
   readonly onDidChangeFileSystemProviderRegistrations = this._onDidChangeFileSystemProviderRegistrations.event;
+
+  private readonly _onWillActivateFileSystemProvider = new Emitter<IFileSystemProviderActivationEvent>();
+  readonly onWillActivateFileSystemProvider = this._onWillActivateFileSystemProvider.event;
 
   private readonly _onDidChangeFileSystemProviderCapabilities =
     new Emitter<IFileSystemProviderCapabilitiesChangeEvent>();
@@ -541,6 +545,26 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
         this.filesExcludesMatcherList.push(parseGlob(str));
       }
     });
+  }
+
+  public async shouldWaitProvider(scheme: string): Promise<boolean> {
+    const activateSchema = await this._onWillActivateFileSystemProvider.fireAndAwait<string[]>({
+      scheme,
+    });
+
+    const { result } = activateSchema[0];
+
+    if (result && result.includes(scheme)) {
+      const providerSchema = await Event.toPromise(
+        Event.filter(this.onFileProviderChanged, (schema: string[]) => schema.includes(scheme)),
+      );
+
+      if (!isUndefined(providerSchema)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private async getProvider<T extends string>(

@@ -20,6 +20,7 @@ import {
   serializableToMap,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModel } from '../../common/editor';
@@ -29,7 +30,6 @@ import {
   EditorDocumentModelCreationEvent,
   EditorDocumentModelOptionExternalUpdatedEvent,
   IEditorDocumentModelContentRegistry,
-  IEditorDocumentModelCreationEventPayload,
   IEditorDocumentModelService,
   IPreferredModelOptions,
 } from './types';
@@ -57,6 +57,9 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
 
   private storage: IStorage;
 
@@ -267,7 +270,14 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   private async doCreateModel(uriString: string, encoding?: string): Promise<EditorDocumentModel> {
     const uri = new URI(uriString);
-    const provider = await this.contentRegistry.getProvider(uri);
+    let provider = await this.contentRegistry.getProvider(uri);
+
+    if (!provider) {
+      const providerReady = await this.fileSystem.shouldWaitProvider(uri.scheme);
+      if (providerReady) {
+        provider = await this.contentRegistry.getProvider(uri);
+      }
+    }
 
     if (!provider) {
       throw new Error(`No document provider found for ${uri.toString()}`);

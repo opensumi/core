@@ -30,6 +30,7 @@ import {
 import { DebugConfigurationsReadyEvent } from '@opensumi/ide-debug';
 import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -51,6 +52,7 @@ import {
 } from '../common/extension.service';
 import { MainThreadAPIIdentifier } from '../common/vscode';
 
+import { ActivationEventServiceImpl } from './activation.service';
 import { Extension } from './extension';
 import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import {
@@ -80,7 +82,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private readonly commandRegistry: CommandRegistry;
 
   @Autowired(IActivationEventService)
-  private readonly activationEventService: IActivationEventService;
+  private readonly activationEventService: ActivationEventServiceImpl;
 
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
@@ -138,6 +140,17 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(IFileServiceClient)
+  protected fileServiceClient: IFileServiceClient;
+
+  constructor() {
+    super();
+
+    this.addDispose(
+      this.fileServiceClient.onWillActivateFileSystemProvider((e) => this.activationEventService.getTopicsData('onFileSystem')),
+    );
+  }
 
   /**
    * 这里的 ready 是区分环境，将 node/worker 区分开使用

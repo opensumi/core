@@ -17,6 +17,7 @@ import {
   FileSetContentOptions,
   FileStat,
   FileSystemProvider,
+  IFileSystemProviderActivationEvent,
   IFileSystemProviderCapabilitiesChangeEvent,
   IFileSystemProviderRegistrationEvent,
   TextDocumentContentChangeEvent,
@@ -26,6 +27,8 @@ import { IFileServiceWatcher } from './watcher';
 export const IFileServiceClient = IFileServiceClientToken;
 
 export interface IFileServiceClient {
+  shouldWaitProvider(scheme: string): Promise<boolean>;
+
   onFilesChanged: Event<FileChangeEvent>;
 
   onFileProviderChanged: Event<string[]>;
@@ -103,6 +106,8 @@ export interface IFileServiceClient {
   readonly onDidChangeFileSystemProviderRegistrations: Event<IFileSystemProviderRegistrationEvent>;
 
   readonly onDidChangeFileSystemProviderCapabilities: Event<IFileSystemProviderCapabilitiesChangeEvent>;
+
+  readonly onWillActivateFileSystemProvider: Event<IFileSystemProviderActivationEvent>;
 }
 
 export interface IBrowserFileSystemRegistry {
