@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { MessageList, SystemMessage } from 'react-chat-elements';
+import { MessageList } from 'react-chat-elements';
 
 import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
@@ -23,7 +23,6 @@ import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
-import { ChatThinking } from '../components/ChatThinking';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
@@ -279,7 +278,7 @@ export const AIChatView = observer(() => {
         message: value.message,
       });
 
-      msgHistoryManager.addAgentMessage({
+      msgHistoryManager.addUserMessage({
         content: message,
         agentId: agentId!,
         agentCommand: command!,
@@ -314,11 +313,6 @@ export const AIChatView = observer(() => {
         }
       }
 
-      const aiMsgId = msgHistoryManager.addAssistantMessage({
-        content: '',
-        relationId,
-      });
-
       const aiMessage = createMessageByAI({
         id: uuid(6),
         relationId,
@@ -328,9 +322,6 @@ export const AIChatView = observer(() => {
             relationId={relationId}
             request={request}
             startTime={startTime}
-            onDidChange={(content) => {
-              msgHistoryManager.updateAssistantMessage(aiMsgId, { content });
-            }}
             onRegenerate={() => {
               msgStreamManager.sendThinkingStatue();
               aiChatService.sendRequest(request, true);

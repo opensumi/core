@@ -80,9 +80,8 @@ export interface IAIBackServiceResponse<T = string> {
 
 export interface IAIBackServiceOption {
   type?: string;
-  model?: string;
-  enableGptCache?: boolean;
   requestId?: string;
+  history?: IHistoryChatMessage[];
 }
 
 export interface IAICompletionOption {
@@ -242,3 +241,31 @@ export interface IChatComponent {
 }
 
 export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
+
+export interface IChatMessage {
+  readonly role: ChatMessageRole;
+  readonly content: string;
+  readonly name?: string;
+}
+
+export const enum ChatMessageRole {
+  System,
+  User,
+  Assistant,
+  Function,
+}
+
+export interface IHistoryChatMessage extends IChatMessage {
+  id: string;
+  order: number;
+
+  type?: 'string' | 'component';
+  relationId?: string;
+  component?: React.ReactNode;
+  componentProps?: {
+    [key in string]: any;
+  };
+
+  agentId?: string;
+  agentCommand?: string;
+}

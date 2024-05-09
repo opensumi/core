@@ -13,6 +13,7 @@ import {
   ILogger,
   toDisposable,
 } from '@opensumi/ide-core-common';
+import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import {
   IChatAgent,
@@ -22,7 +23,6 @@ import {
   IChatAgentResult,
   IChatAgentService,
   IChatFollowup,
-  IChatMessage,
   IChatMessageStructure,
 } from '../../common';
 import { IChatFeatureRegistry } from '../types';

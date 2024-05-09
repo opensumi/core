@@ -6,8 +6,10 @@ import {
   DisposableMap,
   IChatProgress,
 } from '@opensumi/ide-core-common';
+import { ChatMessageRole } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
-import { ChatMessageRole, IChatAgentService, IChatMessage } from '../../common';
+import { IChatAgentService } from '../../common';
 
 import { ChatModel, ChatRequestModel } from './chat-model';
 

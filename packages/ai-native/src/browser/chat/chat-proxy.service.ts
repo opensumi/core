@@ -3,6 +3,7 @@ import {
   AIBackSerivcePath,
   CancellationToken,
   ChatFeatureRegistryToken,
+  ChatServiceToken,
   Deferred,
   Disposable,
   IAIBackService,
@@ -10,6 +11,7 @@ import {
   IChatProgress,
   uuid,
 } from '@opensumi/ide-core-common';
+import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
@@ -19,9 +21,9 @@ import {
   IChatAgentResult,
   IChatAgentService,
   IChatAgentWelcomeMessage,
-  IChatMessage,
 } from '../../common';
 
+import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
 
 /**
@@ -43,6 +45,9 @@ export class ChatProxyService extends Disposable {
 
   @Autowired(MonacoCommandRegistry)
   private readonly monacoCommandRegistry: MonacoCommandRegistry;
+
+  @Autowired(ChatServiceToken)
+  private aiChatService: ChatService;
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
@@ -78,6 +83,7 @@ export class ChatProxyService extends Disposable {
             prompt,
             {
               requestId: request.requestId,
+              history: this.aiChatService.getHistoryMessages(),
             },
             token,
           );

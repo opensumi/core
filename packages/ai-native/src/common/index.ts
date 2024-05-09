@@ -9,6 +9,7 @@ import {
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
+import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 
 export const IAINativeService = Symbol('IAINativeService');
@@ -150,13 +151,6 @@ export interface IChatAgentRequest {
   regenerate?: boolean;
 }
 
-export const enum ChatMessageRole {
-  System,
-  User,
-  Assistant,
-  Function,
-}
-
 export interface IChatResponseErrorDetails {
   message: string;
 }
@@ -186,12 +180,6 @@ export interface IChatResponseCommandFollowup {
 }
 
 export type IChatFollowup = IChatReplyFollowup | IChatResponseCommandFollowup;
-
-export interface IChatMessage {
-  readonly role: ChatMessageRole;
-  readonly content: string;
-  readonly name?: string;
-}
 
 export interface IChatRequestMessage {
   prompt: string;

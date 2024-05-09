@@ -34,6 +34,7 @@ import { ChatRequestModel } from '../chat/chat-model';
 import { ChatService } from '../chat/chat.api.service';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
+import { MsgHistoryManager } from '../model/msg-history-manager';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatAgentViewService } from '../types';
 
@@ -47,7 +48,6 @@ interface IChatReplyProps {
   request: ChatRequestModel;
   startTime?: number;
   onRegenerate?: () => void;
-  onDidChange?: (content: string) => void;
 }
 
 const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) => {
@@ -157,7 +157,7 @@ const ComponentRender = (props: { component: string; value?: unknown }) => {
 };
 
 export const ChatReply = (props: IChatReplyProps) => {
-  const { relationId, request, startTime = 0, onRegenerate, onDidChange } = props;
+  const { relationId, request, startTime = 0, onRegenerate } = props;
 
   const [, update] = useReducer((num) => (num + 1) % 1_000_000, 0);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
@@ -168,17 +168,25 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const msgHistoryManager = useInjectable<MsgHistoryManager>(MsgHistoryManager);
 
   const isLastReply = msgStreamManager.currentSessionId === relationId;
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
 
+    let msgId = '';
+
     disposableCollection.push(
       request.response.onDidChange(() => {
-        if (onDidChange) {
-          onDidChange(request.response.responseText);
+        if (!msgId) {
+          msgId = msgHistoryManager.addAssistantMessage({
+            content: '',
+            relationId,
+          });
         }
+
+        msgHistoryManager.updateAssistantMessage(msgId, { content: request.response.responseText });
 
         if (request.response.isComplete) {
           aiReporter.end(relationId, {
@@ -204,7 +212,7 @@ export const ChatReply = (props: IChatReplyProps) => {
     );
 
     return () => disposableCollection.dispose();
-  }, [relationId, onDidChange]);
+  }, [relationId]);
 
   const handleRegenerate = useCallback(() => {
     request.response.reset();
