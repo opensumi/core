@@ -4,7 +4,7 @@ import { BinaryReader, BinaryWriter } from '@furyjs/fury/dist/lib/type';
 
 import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
-import { AnySerializer, ExtObjectTransfer } from '../fury-extends/any';
+import { AnySerializer, IObjectTransfer } from '../fury-extends/any';
 import { furyFactory } from '../fury-extends/shared';
 
 import {
@@ -87,8 +87,8 @@ class SumiProtocolSerializer implements IProtocolSerializer {
 export class AnyProtocolSerializer implements IProtocolSerializer {
   protected anySerializer: AnySerializer;
 
-  constructor(public writer: BinaryWriter, public reader: BinaryReader) {
-    this.anySerializer = new AnySerializer(this.writer, this.reader);
+  constructor(public writer: BinaryWriter, public reader: BinaryReader, objectTransfer?: IObjectTransfer) {
+    this.anySerializer = new AnySerializer(this.writer, this.reader, objectTransfer);
   }
 
   writeRequest(args: any[]): void {
@@ -102,13 +102,6 @@ export class AnyProtocolSerializer implements IProtocolSerializer {
   }
   readResponse<T = any>(): T {
     return this.anySerializer.read();
-  }
-}
-
-export class AnyProtocolForExtSerializer extends AnyProtocolSerializer {
-  constructor(public writer: BinaryWriter, public reader: BinaryReader) {
-    super(writer, reader);
-    this.anySerializer = new AnySerializer(this.writer, this.reader, ExtObjectTransfer);
   }
 }
 
