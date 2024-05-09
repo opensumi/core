@@ -19,6 +19,9 @@ import { IFileServiceWatcher } from '../src/common/watcher';
 
 @Injectable()
 export class MockFileServiceClient implements IFileServiceClient {
+  shouldWaitProvider(scheme: string): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
   listCapabilities() {
     return [];
   }
