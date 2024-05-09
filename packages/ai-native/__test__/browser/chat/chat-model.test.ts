@@ -5,10 +5,10 @@ import {
   ChatRequestModel,
   ChatSlashCommandItemModel,
   ChatWelcomeMessageModel,
-} from '../../../lib/browser/chat/chat-model';
-import { IChatSlashCommandItem } from '../../../lib/browser/types';
-import { IChatModel, IChatRequestMessage } from '../../../lib/common';
+} from '../../../src/browser/chat/chat-model';
 import { ChatModel, ChatResponseModel } from '../../../src/browser/chat/chat-model';
+import { IChatSlashCommandItem } from '../../../src/browser/types';
+import { IChatModel, IChatRequestMessage } from '../../../src/common';
 
 describe('ChatResponseModel', () => {
   let chatResponseModel: ChatResponseModel;
