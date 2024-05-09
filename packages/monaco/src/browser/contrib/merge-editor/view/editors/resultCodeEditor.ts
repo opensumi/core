@@ -787,4 +787,63 @@ export class ResultCodeEditor extends BaseCodeEditor {
       });
     });
   }
+
+  private findDiffRange(direction: NavigationDirection) {
+    const visibleRanges = this.editor.getVisibleRanges();
+    if (visibleRanges.length === 0) {
+      return;
+    }
+
+    const allConflicts = this.mappingManagerService.getAllDiffRanges();
+
+    if (direction === NavigationDirection.Forwards) {
+      // 向上查找
+      const firstVisibleRange = visibleRanges[0];
+      const firstVisibleLineNumber = firstVisibleRange.startLineNumber;
+
+      // 找到 diff 的第一行比当前可视区域的第一行还要小的 range
+      for (let i = allConflicts.length - 1; i >= 0; i--) {
+        const range = allConflicts[i];
+
+        if (range.startLineNumber < firstVisibleLineNumber) {
+          return range;
+        }
+      }
+    } else {
+      // 向下查找
+      const lastVisibleRange = visibleRanges[visibleRanges.length - 1];
+      const lastVisibleLineNumber = lastVisibleRange.endLineNumber;
+
+      // 找到 diff 的第一行比当前可视区域的最后一行还要大的 range
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < allConflicts.length; i++) {
+        const range = allConflicts[i];
+
+        if (range.startLineNumber > lastVisibleLineNumber) {
+          return range;
+        }
+      }
+    }
+  }
+
+  private navigate(direction: NavigationDirection): void {
+    const range = this.findDiffRange(direction);
+    if (!range) {
+      return;
+    }
+
+    this.editor.revealLineInCenterIfOutsideViewport(range.startLineNumber);
+  }
+
+  public navigateForwards(): void {
+    this.navigate(NavigationDirection.Forwards);
+  }
+  public navigateBackwards(): void {
+    this.navigate(NavigationDirection.Backwards);
+  }
+}
+
+enum NavigationDirection {
+  Forwards,
+  Backwards,
 }

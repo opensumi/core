@@ -238,8 +238,12 @@ export const Grid = () => {
 
           commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
         }}
-        handlePrev={() => {}}
-        handleNext={() => {}}
+        handlePrev={() => {
+          mergeEditorService.resultView.navigateForwards();
+        }}
+        handleNext={() => {
+          mergeEditorService.resultView.navigateBackwards();
+        }}
         isAIResolving={isAIResolving}
         onAIResolve={handleAIResolve}
         beforeAddons={

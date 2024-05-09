@@ -54,8 +54,9 @@ export class MergeEditorService extends Disposable {
   @Autowired(MergeConflictReportService)
   private readonly mergeConflictReportService: MergeConflictReportService;
 
+  public resultView: ResultCodeEditor;
+
   private currentView: CurrentCodeEditor;
-  private resultView: ResultCodeEditor;
   private incomingView: IncomingCodeEditor;
 
   private computerDiffModel: ComputerDiffModel;
