@@ -21,6 +21,9 @@ export const getExtensions: () => Promise<IExtensionMetaData[]> = () => {
 
 @Injectable()
 export class ExtensionClientService implements IExtensionNodeClientService {
+  pid(): Promise<number | null> {
+    throw new Error('Method not implemented.');
+  }
   setupNLSConfig(languageId: string, storagePath: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
