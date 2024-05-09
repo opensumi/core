@@ -164,14 +164,8 @@ export class InterfaceNavigationDecorationsContribution implements IEditorFeatur
       // 检查当前节点是否是接口声明
       if (node.type === 'interface_declaration') {
         const interfaceNode = node.children.find((n) => n.type === 'type_identifier');
-        const body = node.children.find((n) => n.type === 'interface_body');
-
-        const members = body?.children
-          .filter((child) => child.type === 'property_signature' || child.type === 'method_signature')
-          .map((memberNode) => memberNode.children.find((n) => n.type === 'property_identifier'))
-          .filter((it) => !!it) as Parser.SyntaxNode[];
-
-        interfaces.push({ interfaceNode, members });
+        // TS 场景只处理 Interface 声明
+        interfaces.push({ interfaceNode, members: [] });
       }
 
       // 递归遍历所有子节点
