@@ -144,13 +144,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
       },
     });
 
-    const preDecorationsIds = this.getModel()!.deltaDecorations(
+    const preDecorationsIds = this.getModel()?.deltaDecorations(
       [],
       classNames.map((cls) => renderSkeletonDecoration(cls)),
     );
 
     return () => {
-      this.getModel()!.deltaDecorations(preDecorationsIds, []);
+      if (preDecorationsIds) {
+        this.getModel()?.deltaDecorations(preDecorationsIds, []);
+      }
     };
   }
 

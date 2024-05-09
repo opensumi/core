@@ -518,7 +518,7 @@ export class MergeConflictContribution
       ) || [];
 
     return () => {
-      model!.deltaDecorations(preDecorationsIds, []);
+      model?.deltaDecorations(preDecorationsIds, []);
     };
   }
 
