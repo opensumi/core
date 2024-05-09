@@ -760,7 +760,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     // if browser receive the message, means the connection is keep alive
     // so we still need to restart the ext process
     this.logger.log('[ext-restart]: receive the command from the node side that the process does not exist');
-    await this.$restartExtProcess();
+    this.$restartExtProcess();
+    return 'ok';
   }
 
   public async showReloadWindow() {

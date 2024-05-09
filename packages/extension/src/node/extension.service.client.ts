@@ -4,7 +4,7 @@ import path from 'path';
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { AppConfig, INodeLogger, Uri, uuid } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, Uri, retry, uuid } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 
 import {
@@ -21,7 +21,7 @@ import * as lp from './languagePack';
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.sumi');
 
 interface IRPCExtensionService {
-  $processNotExist(id: string): void;
+  $processNotExist(id: string): Promise<string>;
   $processCrashRestart(id: string): void;
   $restartExtProcess(): void;
 }
@@ -64,7 +64,24 @@ export class ExtensionServiceClientImpl
 
   public infoProcessNotExist() {
     if (this.client) {
-      this.client.$processNotExist(this.clientId);
+      retry(
+        async () => {
+          if (!this.client) {
+            throw new Error('Client not exist');
+          }
+
+          const result = await this.client.$processNotExist(this.clientId);
+          if (result === 'ok') {
+            return true;
+          } else {
+            throw new Error('Process not exist');
+          }
+        },
+        {
+          delay: 300,
+          retries: 20,
+        },
+      );
     }
   }
 
