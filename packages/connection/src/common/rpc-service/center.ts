@@ -1,4 +1,4 @@
-import { Deferred } from '@opensumi/ide-core-common';
+import { Deferred, DisposableStore, IDisposable, randomString } from '@opensumi/ide-core-common';
 import { addElement } from '@opensumi/ide-utils/lib/arrays';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
@@ -12,21 +12,21 @@ import { ProtocolRegistry, ServiceRegistry } from './registry';
 
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
-const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
+export class RPCServiceCenter implements IDisposable {
+  private _disposables = new DisposableStore();
 
-export class RPCServiceCenter {
   public uid: string;
 
   private proxies: ProxyBase<any>[] = [];
 
-  private serviceRegistry = new ServiceRegistry();
-  private protocolRegistry = new ProtocolRegistry();
+  private serviceRegistry = this._disposables.add(new ServiceRegistry());
+  private protocolRegistry = this._disposables.add(new ProtocolRegistry());
 
   private deferred = new Deferred<void>();
   private logger: ILogger;
 
   constructor(private bench?: IBench, logger?: ILogger) {
-    this.uid = 'RPCServiceCenter:' + safeProcess.pid;
+    this.uid = randomString(6);
     this.logger = logger || console;
   }
 
@@ -124,6 +124,10 @@ export class RPCServiceCenter {
     // but actually we should throw an error to tell user that no remote service can handle this call.
     // or just return `undefined`.
     return result.length === 1 ? result[0] : result;
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
 

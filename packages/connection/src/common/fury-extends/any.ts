@@ -6,11 +6,9 @@ export enum ProtocolType {
   String,
   Buffer,
   Number,
-  Int32,
   JSONObject,
   BigInt,
   Array,
-  Union,
   Object,
   Undefined,
   Null,
@@ -18,63 +16,66 @@ export enum ProtocolType {
 }
 
 export class AnySerializer {
-  constructor(protected writer: BinaryWriter, protected reader: BinaryReader) {}
+  constructor(
+    protected writer: BinaryWriter,
+    protected reader: BinaryReader,
+    protected objectTransfer?: IObjectTransfer,
+  ) {}
 
   write(data: any) {
     const { writer } = this;
     const type = typeof data;
     writer.reserve(1);
 
-    switch (type) {
-      case 'undefined':
-        writer.uint8(ProtocolType.Undefined);
-        break;
-      case 'string':
-        writer.uint8(ProtocolType.String);
-        writer.stringOfVarUInt32(data);
-        break;
-      case 'boolean':
-        writer.reserve(1);
-        writer.uint8(ProtocolType.Boolean);
-        writer.uint8(data ? 1 : 0);
-        break;
-      case 'number':
-        writer.reserve(8);
-        if ((data | 0) === data) {
-          writer.uint8(ProtocolType.Int32);
-          writer.int32(data);
-        } else {
-          writer.uint8(ProtocolType.Number);
-          writer.double(data);
-        }
-        break;
-      case 'bigint':
-        writer.reserve(8);
-        writer.uint8(ProtocolType.BigInt);
-        writer.int64(data);
-        break;
-      case 'object':
-        if (data === null) {
-          writer.uint8(ProtocolType.Null);
-        } else if (Array.isArray(data)) {
-          writer.reserve(4);
-          writer.uint8(ProtocolType.Array);
-          writer.varUInt32(data.length);
-          for (const element of data) {
-            this.write(element);
-          }
-        } else if (isUint8Array(data)) {
-          writer.reserve(4);
-          writer.uint8(ProtocolType.Buffer);
-          writer.varUInt32(data.byteLength);
-          writer.buffer(data);
-        } else {
-          writer.uint8(ProtocolType.JSONObject);
-          writer.stringOfVarUInt32(JSON.stringify(data, ObjectTransfer.replacer));
-        }
-        break;
+    switch (data) {
+      case null:
+        writer.uint8(ProtocolType.Null);
+        return;
       default:
-        throw new Error(`Unknown type ${type}`);
+        switch (type) {
+          case 'undefined':
+            writer.uint8(ProtocolType.Undefined);
+            break;
+          case 'string':
+            writer.uint8(ProtocolType.String);
+            writer.stringOfVarUInt32(data);
+            break;
+          case 'boolean':
+            writer.reserve(1);
+            writer.uint8(ProtocolType.Boolean);
+            writer.uint8(data ? 1 : 0);
+            break;
+          case 'number':
+            writer.reserve(8);
+            writer.uint8(ProtocolType.Number);
+            writer.double(data);
+            break;
+          case 'bigint':
+            writer.reserve(8);
+            writer.uint8(ProtocolType.BigInt);
+            writer.int64(data);
+            break;
+          case 'object':
+            if (Array.isArray(data)) {
+              writer.reserve(4);
+              writer.uint8(ProtocolType.Array);
+              writer.varUInt32(data.length);
+              for (const element of data) {
+                this.write(element);
+              }
+            } else if (isUint8Array(data)) {
+              writer.reserve(4);
+              writer.uint8(ProtocolType.Buffer);
+              writer.varUInt32(data.byteLength);
+              writer.buffer(data);
+            } else {
+              writer.uint8(ProtocolType.JSONObject);
+              writer.stringOfVarUInt32(JSON.stringify(data, this.objectTransfer?.replacer));
+            }
+            break;
+          default:
+            throw new Error(`Unknown type ${type}`);
+        }
     }
   }
 
@@ -93,13 +94,11 @@ export class AnySerializer {
         const length = reader.varUInt32();
         return reader.buffer(length);
       }
-      case ProtocolType.Int32:
-        return reader.int32();
       case ProtocolType.Number:
         return reader.double();
       case ProtocolType.JSONObject: {
         const json = reader.stringOfVarUInt32();
-        return JSON.parse(json, ObjectTransfer.reviver);
+        return JSON.parse(json, this.objectTransfer?.reviver);
       }
       case ProtocolType.BigInt:
         return reader.int64();
@@ -132,10 +131,19 @@ export class AnySerializer {
 }
 
 enum EObjectTransferType {
-  CODE_URI = 'CODE_URI',
+  CODE_URI = 'CodeURI',
+  BUFFER = 'Buffer',
 }
 
-class ObjectTransfer {
+export interface IObjectTransfer {
+  replacer(key: string | undefined, value: any): any;
+  reviver(key: string | undefined, value: any): any;
+}
+
+/**
+ * For transfering object between browser and extension
+ */
+export class ExtObjectTransfer {
   static replacer(key: string | undefined, value: any) {
     if (value) {
       switch (value.$mid) {
@@ -148,6 +156,24 @@ class ObjectTransfer {
           };
         }
       }
+
+      if (value instanceof Uint8Array || value instanceof Uint32Array || value instanceof Uint16Array) {
+        return {
+          $type: 'Buffer',
+          data: Array.from(value),
+        };
+      } else if (value instanceof ArrayBuffer) {
+        return {
+          $type: 'Buffer',
+          data: Array.from(new Uint8Array(value)),
+        };
+      } else if (value.type === 'Buffer') {
+        // https://nodejs.org/api/buffer.html#buftojson
+        return {
+          $type: 'Buffer',
+          data: value.data,
+        };
+      }
     }
 
     return value;
@@ -157,6 +183,8 @@ class ObjectTransfer {
       switch (value.$type) {
         case EObjectTransferType.CODE_URI:
           return Uri.parse(value.data);
+        case EObjectTransferType.BUFFER:
+          return Uint8Array.from(value.data);
       }
     }
     return value;

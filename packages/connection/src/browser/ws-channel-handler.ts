@@ -131,7 +131,7 @@ export class WSChannelHandler {
         closeEvent: { code, reason },
         connectInfo: (navigator as any).connection as ConnectionInfo,
       });
-      this.logger.log(this.LOG_TAG, 'channel close: ', `code: ${code}, reason: ${reason}`);
+      this.logger.log(this.LOG_TAG, `channel close: code: ${code}, reason: ${reason}`);
     });
 
     const deferred = new Deferred<void>();

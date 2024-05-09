@@ -358,8 +358,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     const doRestart = async (token: CancellationToken) => {
-      const policy = this.isExtProcessWaitingForRestart || restartPolicy;
-
       if (this.pCrashMessageModel) {
         // crash message model is still open, close it
         this.pCrashMessageModel.cancel?.();
@@ -372,45 +370,46 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         this.isExtProcessWaitingForRestart = undefined;
       });
 
-      switch (policy) {
-        // @ts-expect-error Need fall-through
-        case ERestartPolicy.WhenExit:
-          // if we can get the pid, then the process is still running, no need to restart.
-          // if pid is null, it means the process is exited, then we need to start it.
-          if (await this.getExtProcessPID(token)) {
-            break;
-          }
-        case ERestartPolicy.Always:
-          if (token.isCancellationRequested) {
-            break;
-          }
-          try {
-            await this.startExtProcess(false);
-          } catch (err) {
-            this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
-          }
-          break;
+      try {
+        await this.startExtProcess(false);
+      } catch (err) {
+        this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
       }
 
       this.isExtProcessRestarting = false;
       this.isExtProcessWaitingForRestart = undefined;
     };
 
-    const restartProgress = () => {
+    const restartProgress = async () => {
       this.logger.log('[ext-restart]: restart ext process, restart policy', restartPolicy);
-      this.progressService.withProgress(
-        {
-          location: ProgressLocation.Notification,
-          title: localize('extension.exthostRestarting.content'),
-        },
-        async () => {
-          if (this.extProcessRestartPromise) {
-            this.extProcessRestartPromise.cancel();
+      const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+
+      switch (policy) {
+        // @ts-expect-error Need fall-through
+        case ERestartPolicy.WhenExit:
+          // if we can get the pid, then the process is still running, no need to restart.
+          // if pid is null, it means the process is exited, then we need to start it.
+          if (await this.getExtProcessPID()) {
+            this.logger.log('[ext-restart]: ext process is still running, skip');
+            break;
           }
-          this.extProcessRestartPromise = createCancelablePromise(doRestart);
-          await this.extProcessRestartPromise;
-        },
-      );
+        case ERestartPolicy.Always:
+          this.progressService.withProgress(
+            {
+              location: ProgressLocation.Notification,
+              title: localize('extension.exthostRestarting.content'),
+            },
+            async () => {
+              if (this.extProcessRestartPromise) {
+                this.extProcessRestartPromise.cancel();
+              }
+              this.extProcessRestartPromise = createCancelablePromise(doRestart);
+              await this.extProcessRestartPromise;
+            },
+          );
+
+          break;
+      }
     };
 
     this.isExtProcessRestarting = true;
@@ -427,12 +426,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
   }
 
-  private async getExtProcessPID(token: CancellationToken): Promise<number | null> {
-    return await Promise.race([
-      this.extensionNodeClient.pid(),
-      sleep(1000).then(() => null),
-      CancellationToken.resolveIfCancelled(token, null),
-    ]);
+  private async getExtProcessPID(): Promise<number | null> {
+    return await Promise.race([this.extensionNodeClient.pid(), sleep(300).then(() => null)]);
   }
 
   private async startExtProcess(init: boolean) {
@@ -463,7 +458,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
         this.activationEventService.activatedEventSet.clear();
 
-        await Promise.all(
+        await Promise.allSettled(
           activatedEventArr.map((event) => {
             const { topic, data } = JSON.parse(event);
             this.logger.verbose('fireEvent', 'event.topic', topic, 'event.data', data);
@@ -779,6 +774,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async $processNotExist() {
+    // if browser receive the message, means the connection is keep alive
+    // so we still need to restart the ext process
+    this.logger.log('[ext-restart]: receive the command from the node side that the process does not exist');
+    this.$restartExtProcess();
+    return 'ok';
+  }
+
+  public async showReloadWindow() {
     const okText = localize('extension.invalidExthostReload.confirm.ok');
     const options = [okText];
     const ifRequiredReload = this.invalidReloadStrategy === 'ifRequired';

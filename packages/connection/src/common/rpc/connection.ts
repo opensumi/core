@@ -40,6 +40,10 @@ export interface ISumiConnectionOptions {
   name?: string;
 }
 
+const chunkedResponseHeaders: IResponseHeaders = {
+  chunked: true,
+};
+
 export class SumiConnection implements IDisposable {
   protected disposable = new DisposableStore();
 
@@ -310,18 +314,15 @@ export class SumiConnection implements IDisposable {
                 this.capturer.captureOnRequestResult(requestId, method, result);
 
                 if (isReadableStream(result)) {
-                  const responseHeaders: IResponseHeaders = {
-                    chunked: true,
-                  };
                   listenReadable(result, {
                     onData: (data) => {
-                      this.socket.send(this.io.Response(requestId, method, responseHeaders, data));
+                      this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, data));
                     },
                     onEnd: () => {
-                      this.socket.send(this.io.Response(requestId, method, responseHeaders, null));
+                      this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, null));
                     },
                     onError: (err) => {
-                      this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
+                      this.socket.send(this.io.Error(requestId, method, chunkedResponseHeaders, err));
                     },
                   });
                 } else {

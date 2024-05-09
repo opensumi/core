@@ -586,3 +586,34 @@ export function disposableTimeout(handler: () => void, timeout = 0): IDisposable
 export function sleep(time: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, time));
 }
+
+export const retry = async <T>(
+  task: () => Promise<T>,
+  options: {
+    delay: number;
+    retries: number;
+    onFailedAttempt?: (error: any) => void;
+    timeout?: number;
+  },
+): Promise<T> => {
+  const { delay, retries, onFailedAttempt, timeout } = options;
+  try {
+    if (timeout) {
+      const result = await raceTimeout(task(), timeout || 0);
+      if (result === undefined) {
+        throw new Error('Timeout');
+      }
+      return result;
+    }
+    return task();
+  } catch (error) {
+    if (retries === 0) {
+      throw error;
+    }
+    if (onFailedAttempt) {
+      onFailedAttempt(error);
+    }
+    await sleep(delay);
+    return retry(task, { delay, retries: retries - 1, onFailedAttempt, timeout });
+  }
+};
