@@ -2863,7 +2863,6 @@ __metadata:
     "@opensumi/ide-testing": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-toolbar": "workspace:*"
-    "@opensumi/ide-userstorage": "workspace:*"
     "@opensumi/ide-variable": "workspace:*"
     "@opensumi/ide-webview": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
@@ -3002,16 +3001,6 @@ __metadata:
 "@opensumi/ide-toolbar@workspace:*, @opensumi/ide-toolbar@workspace:packages/toolbar":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-toolbar@workspace:packages/toolbar"
-  dependencies:
-    "@opensumi/ide-core-browser": "workspace:*"
-    "@opensumi/ide-core-common": "workspace:*"
-    "@opensumi/ide-dev-tool": "workspace:*"
-  languageName: unknown
-  linkType: soft
-
-"@opensumi/ide-userstorage@workspace:*, @opensumi/ide-userstorage@workspace:packages/userstorage":
-  version: 0.0.0-use.local
-  resolution: "@opensumi/ide-userstorage@workspace:packages/userstorage"
   dependencies:
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"

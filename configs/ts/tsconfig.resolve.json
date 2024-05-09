@@ -109,8 +109,6 @@
       "@opensumi/ide-toolbar/lib/*": ["../packages/toolbar/src/*"],
       "@opensumi/sumi": ["../packages/types/src/index.ts"],
       "@opensumi/sumi/lib/*": ["../packages/types/src/*"],
-      "@opensumi/ide-userstorage": ["../packages/userstorage/src/index.ts"],
-      "@opensumi/ide-userstorage/lib/*": ["../packages/userstorage/src/*"],
       "@opensumi/ide-variable": ["../packages/variable/src/index.ts"],
       "@opensumi/ide-variable/lib/*": ["../packages/variable/src/*"],
       "@opensumi/ide-webview": ["../packages/webview/src/index.ts"],

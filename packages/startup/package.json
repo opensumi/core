@@ -107,7 +107,6 @@
     "@opensumi/ide-testing": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-toolbar": "workspace:*",
-    "@opensumi/ide-userstorage": "workspace:*",
     "@opensumi/ide-variable": "workspace:*",
     "@opensumi/ide-webview": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
