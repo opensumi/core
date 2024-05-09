@@ -22,6 +22,7 @@ export class MockFileServiceClient implements IFileServiceClient {
   listCapabilities() {
     return [];
   }
+  onWillActivateFileSystemProvider = Event.None;
   onDidChangeFileSystemProviderRegistrations = Event.None;
   onDidChangeFileSystemProviderCapabilities = Event.None;
 
