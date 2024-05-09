@@ -23,7 +23,6 @@ import { ICodeEditor, IDiffEditorOptions, IEditorOptions, IModelDeltaDecoration 
 import { StandaloneServices } from '../../monaco-api/services';
 import { IPosition, Position } from '../../monaco-api/types';
 
-import { MappingManagerService } from './mapping-manager.service';
 import { MergeEditorService } from './merge-editor.service';
 import { EditorViewType, IMergeEditorViewState } from './types';
 import { Grid } from './view/grid';
@@ -47,15 +46,12 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   @Autowired(MergeEditorService)
   private readonly mergeEditorService: MergeEditorService;
 
-  @Autowired(MappingManagerService)
-  private readonly mappingManagerService: MappingManagerService;
-
   private readonly _id: number;
   private readonly viewStateMap: Map<string, IMergeEditorViewState> = new Map();
   private outputUri: URI | undefined;
 
   constructor(
-    private readonly rootHtmlElement: HTMLElement,
+    private readonly container: HTMLElement,
     private readonly options: IMergeEditorEditorConstructionOptions,
     overrides: { [key in string]: any },
   ) {
@@ -73,7 +69,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
           this.outputUri = undefined;
 
           /**
-           * 解决完成后重置回原来的文档内容
+           * 重置回原来的文档内容
            */
           const nutrition = this.mergeEditorService.getNutrition();
           if (nutrition) {
@@ -145,7 +141,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   }
 
   onDidDispose(listener: () => void): IDisposable {
-    return this;
+    return this.onDispose(listener);
   }
 
   getId(): string {
@@ -165,9 +161,9 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   onHide(): void {}
 
   layout(dimension?: IDimension): void {
-    ReactDOM.createRoot(this.rootHtmlElement).render(
+    ReactDOM.createRoot(this.container).render(
       <ConfigProvider value={this.configContext}>
-        <Grid></Grid>
+        <Grid />
       </ConfigProvider>,
     );
   }
