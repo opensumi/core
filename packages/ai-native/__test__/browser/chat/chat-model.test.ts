@@ -208,7 +208,7 @@ describe('ChatSlashCommandItemModel', () => {
     const AI_SLASH = '/';
     const expectedNameWithSlash = chatCommand.name.startsWith(AI_SLASH)
       ? chatCommand.name
-      : `${AI_SLASH}${chatCommand.name} `;
+      : `${AI_SLASH} ${chatCommand.name}`;
     expect(chatSlashCommandItemModel.nameWithSlash).toBe(expectedNameWithSlash);
   });
 });
