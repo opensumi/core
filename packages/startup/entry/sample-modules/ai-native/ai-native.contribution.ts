@@ -32,6 +32,8 @@ import {
 import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
+import { SlashCommand } from './SlashCommand';
+
 enum EInlineOperation {
   Comments = 'Comments',
   Optimize = 'Optimize',
@@ -77,7 +79,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
       {
         id: 'ai-comments',
         name: EInlineOperation.Comments,
-        title: '添加注释',
+        title: 'add comments',
         renderType: 'button',
         codeAction: {},
       },
@@ -169,12 +171,12 @@ export class AiNativeContribution implements AINativeCoreContribution {
   registerChatFeature(registry: IChatFeatureRegistry): void {
     registry.registerWelcome(
       new MarkdownString(`<img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
-      嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考</br>您可以提问我一些关于代码的问题`),
+      Hello, I am your dedicated AI assistant, here to answer questions about code and help you think. You can ask me some questions about code.`),
       [
         {
           icon: getIcon('send-hollow'),
-          title: '生成 Java 快速排序算法',
-          message: '生成 Java 快速排序算法',
+          title: 'Generate a Java Quicksort Algorithm',
+          message: 'Generate a Java Quicksort Algorithm',
         },
       ],
     );
@@ -182,13 +184,14 @@ export class AiNativeContribution implements AINativeCoreContribution {
     registry.registerSlashCommand(
       {
         name: 'Explain',
-        description: '解释代码',
+        description: 'Explain',
         isShortcut: true,
-        tooltip: '解释代码',
+        tooltip: 'Explain',
       },
       {
+        providerRender: SlashCommand,
         providerInputPlaceholder(value, editor) {
-          return '请输入或者粘贴代码';
+          return 'Please enter or paste the code.';
         },
         providerPrompt(value, editor) {
           return `Explain code: \`\`\`\n${value}\n\`\`\``;
@@ -202,7 +205,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
     registry.registerSlashCommand(
       {
         name: 'Test',
-        description: '生成单测',
+        description: 'Test',
       },
       {
         execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {

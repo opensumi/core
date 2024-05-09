@@ -11,17 +11,17 @@ export interface IReadableStream<T> {
 }
 
 export function isReadableStream(stream: any): stream is Readable {
-  return stream && typeof stream.read === 'function';
+  return stream && (typeof stream.read === 'function' || stream instanceof SumiReadableStream);
 }
 
-export interface IListenReadableOptions {
-  onData(data: Uint8Array): void;
+export interface IListenReadableOptions<T> {
+  onData(data: T): void;
   onEnd(): void;
   onError?(error: Error): void;
 }
 
-export function listenReadable(stream: IReadableStream<Uint8Array>, options: IListenReadableOptions): void {
-  stream.on('data', (chunk: Uint8Array) => {
+export function listenReadable<T = Uint8Array>(stream: IReadableStream<T>, options: IListenReadableOptions<T>): void {
+  stream.on('data', (chunk: T) => {
     options.onData(chunk);
   });
   stream.on('error', (error: Error) => {

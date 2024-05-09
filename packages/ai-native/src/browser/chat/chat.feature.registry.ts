@@ -1,10 +1,11 @@
 import { Injectable } from '@opensumi/di';
 import { Disposable, getDebugLogger } from '@opensumi/ide-core-common';
 
-import { AI_SLASH, IChatWelcomeMessageContent, ISampleQuestions } from '../../common';
+import { IChatWelcomeMessageContent, ISampleQuestions, SLASH_SYMBOL } from '../../common';
 import { IChatFeatureRegistry, IChatSlashCommandHandler, IChatSlashCommandItem } from '../types';
 
 import { ChatSlashCommandItemModel, ChatWelcomeMessageModel } from './chat-model';
+import { ChatProxyService } from './chat-proxy.service';
 
 @Injectable()
 export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegistry {
@@ -32,7 +33,7 @@ export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegis
       return;
     }
 
-    this.slashCommandsMap.set(name, new ChatSlashCommandItemModel(command));
+    this.slashCommandsMap.set(name, new ChatSlashCommandItemModel(command, name, ChatProxyService.AGENT_ID));
     this.slashCommandsHandlerMap.set(name, handler);
   }
 
@@ -71,7 +72,7 @@ export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegis
   }
 
   public parseSlashCommand(value: string): { value: string; nameWithSlash: string } {
-    if (value.startsWith(AI_SLASH)) {
+    if (value.startsWith(SLASH_SYMBOL)) {
       const allSlashCommands = this.getAllSlashCommand();
 
       for (const command of allSlashCommands) {

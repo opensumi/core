@@ -50,10 +50,17 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 
-import { AI_CHAT_CONTAINER_ID, AI_CHAT_LOGO_AVATAR_ID, AI_CHAT_VIEW_ID, AI_MENU_BAR_DEBUG_TOOLBAR } from '../common';
+import {
+  AI_CHAT_CONTAINER_ID,
+  AI_CHAT_LOGO_AVATAR_ID,
+  AI_CHAT_VIEW_ID,
+  AI_MENU_BAR_DEBUG_TOOLBAR,
+  ChatProxyServiceToken,
+} from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
+import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
@@ -139,6 +146,9 @@ export class AINativeBrowserContribution
   @Autowired(IMainLayoutService)
   private readonly layoutService: IMainLayoutService;
 
+  @Autowired(ChatProxyServiceToken)
+  private readonly chatProxyService: ChatProxyService;
+
   constructor() {
     this.registerFeature();
   }
@@ -151,6 +161,7 @@ export class AINativeBrowserContribution
     if (supportsChatAssistant) {
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, AI_CHAT_VIEW_ID, AI_CHAT_CONTAINER_ID);
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, DESIGN_MENU_BAR_RIGHT, AI_CHAT_LOGO_AVATAR_ID);
+      this.chatProxyService.registerDefaultAgent();
     }
   }
 

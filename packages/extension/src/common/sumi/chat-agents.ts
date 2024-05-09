@@ -6,13 +6,11 @@ import type {
   IChatAgentRequest,
   IChatAgentResult,
   IChatAgentWelcomeMessage,
-  IChatAsyncContent,
-  IChatContent,
   IChatFollowup,
-  IChatMessage,
-  IChatProgress,
   IChatReplyFollowup,
 } from '@opensumi/ide-ai-native/lib/common';
+import type { IChatAsyncContent, IChatContent, IChatProgress } from '@opensumi/ide-core-common';
+import type { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 export interface IExtensionChatAgentMetadata extends IChatAgentMetadata {
   hasSlashCommands?: boolean;

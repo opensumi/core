@@ -2,14 +2,11 @@ import { Injectable, Injector } from '@opensumi/di';
 import {
   IChatAgentService,
   IChatAgentWelcomeMessage,
-  IChatContent,
   IChatFollowup,
-  IChatProgress,
   IChatReplyFollowup,
-  IChatTreeData,
 } from '@opensumi/ide-ai-native/lib/common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Deferred, IMarkdownString } from '@opensumi/ide-core-common';
+import { Deferred, IChatContent, IChatProgress, IChatTreeData, IMarkdownString } from '@opensumi/ide-core-common';
 
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import {

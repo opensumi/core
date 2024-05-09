@@ -4,6 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   BaseAIBackService,
   CancellationToken,
+  ChatReadableStream,
   IAIBackService,
   IAIBackServiceOption,
   IAIBackServiceResponse,
@@ -18,7 +19,7 @@ export interface ReqeustResponse extends IAIBackServiceResponse {
 }
 
 @Injectable()
-export class AiBackService extends BaseAIBackService implements IAIBackService<ReqeustResponse, Readable> {
+export class AiBackService extends BaseAIBackService implements IAIBackService<ReqeustResponse, ChatReadableStream> {
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
@@ -31,32 +32,28 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
     }
   }
 
-  override async request<T = IAIBackServiceResponse<string>>(
-    input: string,
-    options: IAIBackServiceOption,
-    cancelToken?: CancellationToken,
-  ): Promise<T> {
+  override async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
 
     if (options.type === 'rename') {
       return Promise.resolve({
         errorCode: 0,
         data: '```typescript\nnewName\nhaha```',
-      } as T);
+      });
     }
 
     return Promise.resolve({
       errorCode: 0,
       data: 'Hello OpenSumi!',
-    } as T);
+    });
   }
 
-  override async requestStream<T = IAIBackServiceResponse<string>>(
+  override async requestStream(
     input: string,
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
-  ): Promise<T> {
-    const { sessionId } = options;
+  ): Promise<ChatReadableStream> {
+    const { requestId } = options;
 
     // 模拟 stream 数据,包含一段 TypeScript 代码
     const streamData = [
@@ -87,54 +84,24 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
 
     const length = streamData.length;
 
-    // 创建可读流
-    const stream = new Readable({
-      read() {},
+    const chatReadableStream = new ChatReadableStream();
+
+    cancelToken?.onCancellationRequested(() => {
+      chatReadableStream.end();
     });
 
     // 模拟数据事件
     streamData.forEach((chunk, index) => {
       setTimeout(() => {
-        stream.push(
-          JSON.stringify({
-            id: sessionId,
-            choices: [
-              {
-                delta: {
-                  content: chunk,
-                  role: 'user',
-                },
-                finish_reason: length - 1 === index ? 'stop' : null,
-              },
-            ],
-          }),
-        );
+        if (length - 1 === index || cancelToken?.isCancellationRequested) {
+          chatReadableStream.end();
+          return;
+        }
+
+        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
       }, index * 300);
     });
 
-    if (sessionId) {
-      this.streamSessionIdMap.set(sessionId, stream);
-    }
-
-    // 在数据事件中处理数据
-    stream.on('data', (chunk) => {
-      this.logger.log(`Received chunk: ${chunk}`);
-      this.client?.onMessage(chunk, sessionId);
-    });
-
-    // 在结束事件中进行清理
-    stream.on('close', () => {
-      this.logger.log('Stream ended.');
-      if (sessionId) {
-        this.streamSessionIdMap.delete(sessionId);
-      }
-    });
-
-    // 触发结束事件
-    setTimeout(() => {
-      stream.push(null);
-    }, streamData.length * 1000);
-
-    return void 0 as T;
+    return chatReadableStream;
   }
 }

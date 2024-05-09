@@ -1,21 +1,26 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, Emitter, ILogger, uuid } from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  Emitter,
+  IChatAsyncContent,
+  IChatComponent,
+  IChatMarkdownContent,
+  IChatProgress,
+  IChatTreeData,
+  ILogger,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
-  AI_SLASH,
-  IChatAsyncContent,
-  IChatComponent,
   IChatFollowup,
-  IChatMarkdownContent,
   IChatModel,
-  IChatProgress,
   IChatRequestMessage,
   IChatRequestModel,
   IChatResponseErrorDetails,
-  IChatTreeData,
   IChatWelcomeMessageContent,
   ISampleQuestions,
+  SLASH_SYMBOL,
 } from '../../common';
 import { IChatSlashCommandItem } from '../types';
 
@@ -222,9 +227,9 @@ export class ChatModel extends Disposable implements IChatModel {
     return this.#sessionId;
   }
 
-  #requests: ChatRequestModel[] = [];
+  #requests: Map<string, ChatRequestModel> = new Map();
   get requests(): ChatRequestModel[] {
-    return this.#requests;
+    return Array.from(this.#requests.values());
   }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
@@ -232,7 +237,7 @@ export class ChatModel extends Disposable implements IChatModel {
     const response = new ChatResponseModel(requestId, this, message.agentId);
     const request = new ChatRequestModel(requestId, this, message, response);
 
-    this.#requests.push(request);
+    this.#requests.set(requestId, request);
     return request;
   }
 
@@ -250,6 +255,10 @@ export class ChatModel extends Disposable implements IChatModel {
     } else {
       this.logger.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
     }
+  }
+
+  getRequest(requestId: string): ChatRequestModel | undefined {
+    return this.#requests.get(requestId);
   }
 
   override dispose(): void {
@@ -308,6 +317,6 @@ export class ChatSlashCommandItemModel extends Disposable implements IChatSlashC
   }
 
   get nameWithSlash() {
-    return this.name.startsWith(AI_SLASH) ? this.name : `${AI_SLASH}${this.name} `;
+    return this.name.startsWith(SLASH_SYMBOL) ? this.name : `${SLASH_SYMBOL} ${this.name}`;
   }
 }

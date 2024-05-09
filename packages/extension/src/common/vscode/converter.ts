@@ -1,12 +1,6 @@
 import { Position as P, Range as R, SymbolKind as S, SymbolInformation } from 'vscode-languageserver-types';
 
-import {
-  ChatMessageRole as ChatMessageRoleEnum,
-  IChatFollowup,
-  IChatMessage,
-  IChatReplyFollowup,
-  IChatResponseCommandFollowup,
-} from '@opensumi/ide-ai-native/lib/common';
+import { IChatFollowup, IChatReplyFollowup, IChatResponseCommandFollowup } from '@opensumi/ide-ai-native/lib/common';
 import { createMarkedRenderer, toMarkdownHtml } from '@opensumi/ide-components/lib/utils';
 import {
   IMarkdownString,
@@ -28,6 +22,8 @@ import {
   path,
   randomString,
 } from '@opensumi/ide-core-common';
+import { ChatMessageRole as ChatMessageRoleEnum } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import {

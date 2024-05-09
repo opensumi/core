@@ -1,8 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { IChatMessageStructure } from '../../common';
-import { IHistoryChatMessage, MsgHistoryManager } from '../model/msg-history-manager';
+import { MsgHistoryManager } from '../model/msg-history-manager';
 
 @Injectable()
 export class ChatService extends Disposable {
@@ -15,8 +16,17 @@ export class ChatService extends Disposable {
   private readonly _onChatReplyMessageLaunch = new Emitter<string>();
   public readonly onChatReplyMessageLaunch: Event<string> = this._onChatReplyMessageLaunch.event;
 
+  constructor() {
+    super();
+    this.addDispose(this.msgHistoryManager);
+  }
+
   public sendMessage(data: IChatMessageStructure) {
     this._onChatMessageLaunch.fire(data);
+  }
+
+  public clearHistoryMessages() {
+    this.msgHistoryManager.clearMessages();
   }
 
   /**

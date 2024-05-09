@@ -1,47 +1,43 @@
-import { Readable } from 'stream';
-
 import { Injectable } from '@opensumi/di';
-import { RPCService } from '@opensumi/ide-connection';
 import {
   CancellationToken,
   IAIBackService,
   IAIBackServiceOption,
   IAIBackServiceResponse,
   IAICompletionOption,
-  IAICompletionResultModel,
   IAIReportCompletionOption,
+  IChatProgress,
 } from '@opensumi/ide-core-common';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
-interface IRPCGptService {
-  onMessage(msg: string, sessionId?: string): void;
-}
+export class ChatReadableStream extends SumiReadableStream<IChatProgress> {}
 
 @Injectable()
-export class BaseAIBackService
-  extends RPCService<IRPCGptService>
-  implements IAIBackService<IAIBackServiceResponse, Readable>
-{
-  async request<T = IAIBackServiceResponse<string>>(
+export class BaseAIBackService implements IAIBackService<IAIBackServiceResponse, ChatReadableStream> {
+  async request(
     input: string,
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
-  ): Promise<T> {
-    return void 0 as T;
+  ): Promise<IAIBackServiceResponse<string>> {
+    return {};
   }
 
-  async requestStream<T = IAIBackServiceResponse<string>>(
+  async requestStream(
     input: string,
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
-  ): Promise<T> {
-    return void 0 as T;
+  ): Promise<ChatReadableStream> {
+    return new ChatReadableStream();
   }
 
-  async requestCompletion<T = IAICompletionResultModel>(input: IAICompletionOption, cancelToken?: CancellationToken) {
-    return void 0 as T;
+  async requestCompletion(input: IAICompletionOption, cancelToken?: CancellationToken) {
+    return {
+      sessionId: '',
+      codeModelList: [{ content: '' }],
+    };
   }
 
-  async reportCompletion<T = IAIReportCompletionOption>(input: IAIReportCompletionOption) {}
+  async reportCompletion(input: IAIReportCompletionOption) {}
 
   async destroyStreamRequest(sessionId: string) {}
 }

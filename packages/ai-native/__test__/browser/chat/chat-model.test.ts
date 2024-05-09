@@ -1,13 +1,14 @@
+import { IChatContent } from '@opensumi/ide-core-common';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
   ChatRequestModel,
   ChatSlashCommandItemModel,
   ChatWelcomeMessageModel,
-} from '../../../lib/browser/chat/chat-model';
-import { IChatSlashCommandItem } from '../../../lib/browser/types';
-import { IChatContent, IChatModel, IChatRequestMessage } from '../../../lib/common';
+} from '../../../src/browser/chat/chat-model';
 import { ChatModel, ChatResponseModel } from '../../../src/browser/chat/chat-model';
+import { IChatSlashCommandItem } from '../../../src/browser/types';
+import { IChatModel, IChatRequestMessage } from '../../../src/common';
 
 describe('ChatResponseModel', () => {
   let chatResponseModel: ChatResponseModel;
@@ -207,7 +208,7 @@ describe('ChatSlashCommandItemModel', () => {
     const AI_SLASH = '/';
     const expectedNameWithSlash = chatCommand.name.startsWith(AI_SLASH)
       ? chatCommand.name
-      : `${AI_SLASH}${chatCommand.name} `;
+      : `${AI_SLASH} ${chatCommand.name}`;
     expect(chatSlashCommandItemModel.nameWithSlash).toBe(expectedNameWithSlash);
   });
 });

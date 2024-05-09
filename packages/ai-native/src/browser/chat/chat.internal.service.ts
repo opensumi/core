@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAIReporter, PreferenceService } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancelResponse,
@@ -13,7 +13,7 @@ import {
   ReplyResponse,
 } from '@opensumi/ide-core-common';
 
-import { IChatManagerService, IChatMessage, IChatMessageStructure } from '../../common';
+import { IChatManagerService } from '../../common';
 import { MsgStreamManager } from '../model/msg-stream-manager';
 
 import { ChatManagerService } from './chat-manager.service';
@@ -32,9 +32,6 @@ export class ChatInternalService extends Disposable {
 
   @Autowired(MsgStreamManager)
   private readonly msgStreamManager: MsgStreamManager;
-
-  @Autowired(IAIReporter)
-  private readonly aiReporter: IAIReporter;
 
   @Autowired(IChatManagerService)
   private chatManagerService: ChatManagerService;
@@ -68,33 +65,6 @@ export class ChatInternalService extends Disposable {
     if (this.aiBackService.destroyStreamRequest) {
       await this.aiBackService.destroyStreamRequest(sessionId);
       this.msgStreamManager.sendDoneStatue();
-    }
-  }
-
-  /**
-   * by backend service
-   * @param message
-   */
-  public onMessage(message: string, sessionId: string) {
-    try {
-      const msgObj = JSON.parse(message);
-
-      if (msgObj.id && msgObj.choices) {
-        const { id, choices } = msgObj;
-        this.msgStreamManager.recordMessage(id, choices[0]);
-      } else {
-        this.msgStreamManager.sendErrorStatue();
-      }
-
-      if (msgObj.errorCode && sessionId) {
-        const errMsg = msgObj.errorMsg || '';
-        this.aiReporter.end(sessionId, {
-          message: errMsg,
-          success: false,
-        });
-      }
-    } catch (error) {
-      throw new Error(`onMessage error: ${error}`);
     }
   }
 

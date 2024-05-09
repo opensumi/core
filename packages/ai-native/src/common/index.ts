@@ -3,11 +3,13 @@ import {
   AISerivceType,
   CancellationToken,
   Event,
-  FileType,
+  IChatContent,
+  IChatProgress,
   IDisposable,
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
+import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 
 export const IAINativeService = Symbol('IAINativeService');
@@ -27,7 +29,8 @@ export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
  */
 export const AI_MENUBAR_CONTAINER_VIEW_ID = DESIGN_MENUBAR_CONTAINER_VIEW_ID;
 
-export const AI_SLASH = '/';
+export const SLASH_SYMBOL = '/';
+export const AT_SIGN_SYMBOL = '@';
 
 export interface IChatMessageStructure {
   /**
@@ -86,6 +89,8 @@ export interface ChatCompletionRequestMessage {
 export const IChatInternalService = Symbol('IChatInternalService');
 export const IChatManagerService = Symbol('IChatManagerService');
 export const IChatAgentService = Symbol('IChatAgentService');
+
+export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 
 export interface IChatAgentService {
   readonly onDidChangeAgents: Event<void>;
@@ -146,54 +151,6 @@ export interface IChatAgentRequest {
   regenerate?: boolean;
 }
 
-export const enum ChatMessageRole {
-  System,
-  User,
-  Assistant,
-  Function,
-}
-
-export interface IChatContent {
-  content: string;
-  kind: 'content';
-}
-
-export interface IChatMarkdownContent {
-  content: IMarkdownString;
-  kind: 'markdownContent';
-}
-
-export interface IChatAsyncContent {
-  content: string;
-  resolvedContent: Promise<string | IMarkdownString | IChatTreeData>;
-  kind: 'asyncContent';
-}
-
-export interface IChatProgressMessage {
-  content: string;
-  kind: 'progressMessage';
-}
-
-export interface IChatResponseProgressFileTreeData {
-  label: string;
-  uri: Uri;
-  type?: FileType;
-  children?: IChatResponseProgressFileTreeData[];
-}
-
-export interface IChatTreeData {
-  treeData: IChatResponseProgressFileTreeData;
-  kind: 'treeData';
-}
-
-export interface IChatComponent {
-  component: string;
-  value?: unknown;
-  kind: 'component';
-}
-
-export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
-
 export interface IChatResponseErrorDetails {
   message: string;
 }
@@ -223,12 +180,6 @@ export interface IChatResponseCommandFollowup {
 }
 
 export type IChatFollowup = IChatReplyFollowup | IChatResponseCommandFollowup;
-
-export interface IChatMessage {
-  readonly role: ChatMessageRole;
-  readonly content: string;
-  readonly name?: string;
-}
 
 export interface IChatRequestMessage {
   prompt: string;
