@@ -15,6 +15,7 @@ import {
   SupportLogNamespace,
   getDebugLogger,
   isUndefined,
+  pMemoize,
   timeout,
 } from '@opensumi/ide-core-common';
 import { findFreePort } from '@opensumi/ide-core-common/lib/node/port';
@@ -260,6 +261,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     });
   }
 
+  @pMemoize((clientId: string) => clientId)
   private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
     let preloadPath: string;
     let forkOptions: cp.ForkOptions = {

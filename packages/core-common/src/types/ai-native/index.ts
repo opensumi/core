@@ -170,6 +170,7 @@ export interface IConflictContentMetadata {
    * @transitional 当前分支的代码
    */
   current: string;
+
   /**
    * @threeWay 基础分支的代码
    * @transitional 无

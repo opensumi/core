@@ -14,6 +14,10 @@ export const StackingLevel = {
   Toolbar: 2,
   ToolbarDropdown: 10,
 
+  ResizeHandle: 12,
+
+  EditorFloatingContainer: 20,
+
   /**
    * 一级弹窗
    */

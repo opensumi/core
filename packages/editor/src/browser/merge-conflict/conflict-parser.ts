@@ -59,7 +59,7 @@ export class MergeConflictParser extends Disposable {
   private _conflictRangeCaches = new Map<string, IConflictCache[]>();
 
   private static createCacheKey(document: monaco.editor.ITextModel) {
-    return `${document.uri.toString()}-${document.getAlternativeVersionId()}`;
+    return `${document.uri.toString()}-${document.getVersionId()}`;
   }
 
   scanDocument(document: monaco.editor.ITextModel) {
@@ -113,7 +113,7 @@ export class MergeConflictParser extends Disposable {
 
         // Create a full descriptor from the lines that we matched. This can return
         // null if the descriptor could not be completed.
-        const completeDescriptor = scanItemTolMergeConflictDescriptor(document, currentConflict);
+        const completeDescriptor = scanItemToMergeConflictDescriptor(document, currentConflict);
 
         if (completeDescriptor !== null) {
           conflictDescriptors.push(completeDescriptor);
@@ -174,7 +174,7 @@ export class MergeConflictParser extends Disposable {
   }
 }
 
-function scanItemTolMergeConflictDescriptor(
+function scanItemToMergeConflictDescriptor(
   document: monaco.editor.ITextModel,
   scanned: IScanMergedConflict,
 ): IDocumentMergeConflictDescriptor | null {
@@ -302,17 +302,15 @@ function shiftBackOneCharacter(
 }
 
 export class DocumentMergeConflict implements ICacheDocumentMergeConflict {
+  /**
+   * full range of the conflict, including header, splitter, footer
+   */
   public range: monaco.Range;
   public current: IMergeRegion;
   public incoming: IMergeRegion;
   public commonAncestors: IMergeRegion[];
   public splitter: monaco.Range;
-  public incomingContent: string;
-  public currentContent: string;
-  public bothContent: string;
-  public aiContent?: string;
-  public defaultContent: string;
-  private applied = false;
+
   constructor(descriptor: IDocumentMergeConflictDescriptor) {
     this.range = descriptor.range;
     this.current = descriptor.current;

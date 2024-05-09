@@ -5,23 +5,54 @@
   box-shadow: inset 1px 1px 3px 0px var(--kt-panelTab-border);
   justify-content: space-between;
   white-space: nowrap;
-  // minimap's z-index is 5
-  z-index: 6;
-  padding: 10px;
+  z-index: var(--stacking-level-editor-floating-container, 15);
 
   .merge_editor_float_container_info {
     width: 100%;
     display: flex;
-    padding-left: 20px;
+    align-items: center;
+    padding: 6px 0;
+    padding-left: 14px;
+
+    .merge_editor_nav_operator {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      &_btn {
+        cursor: pointer;
+        user-select: none;
+        &:hover {
+          color: var(--kt-defaultButton-hoverForeground);
+        }
+      }
+    }
+
+    .vertical-divider {
+      display: inline-block;
+      width: 2px;
+      display: list-item;
+      background-color: var(--menu-separatorBackground);
+      pointer-events: none;
+      overflow: hidden;
+      margin: 1px 8px;
+
+      &::marker {
+        content: '';
+        unicode-bidi: initial;
+      }
+    }
   }
 
   .merge_editor_float_container_operation_bar {
+    user-select: none;
     width: 100%;
     display: flex;
     justify-content: flex-end;
     white-space: nowrap;
     padding-top: 4px;
     padding-right: 20px;
+    padding: 10px;
   }
 
   .merge_conflict_bottom_btn {
@@ -62,10 +93,32 @@
   }
 
   .line_vertical {
-    background-color: var(--design-borderColor-common);
+    background-color: var(--design-borderColor);
     width: 1px;
     min-width: 1px;
     height: 24px;
     margin: 4px;
+    pointer-events: none;
+    overflow: hidden;
+
+    &::marker {
+      content: '';
+      unicode-bidi: initial;
+    }
+  }
+
+  .horizontal-divider {
+    display: inline-block;
+    width: 100%;
+    display: list-item;
+    background-color: var(--design-borderColor);
+    pointer-events: none;
+    overflow: hidden;
+    height: 1.5px;
+
+    &::marker {
+      content: '';
+      unicode-bidi: initial;
+    }
   }
 }

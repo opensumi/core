@@ -10,6 +10,7 @@ import {
   ACCEPT_CURRENT_ACTIONS,
   AIResolveConflictContentWidget,
   ECompleteReason,
+  IAcceptConflictActionsEvent,
   IGNORE_ACTIONS,
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
@@ -22,7 +23,7 @@ import {
 import { InlineDiffWidget } from '../widget/inline-diff/inline-diff-widget';
 
 @Injectable({ multiple: true })
-export class OverrideResolveResultWidget extends ResolveResultWidget {
+export class DiffResolveResultWidget extends ResolveResultWidget {
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
 
@@ -46,11 +47,13 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
         icon: 'check',
         text: localize('aiNative.inline.chat.operate.check.title'),
         onClick: () => {
+          const modifiedValue = this.inlineDiffWidget?.getModifiedValue();
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
             action: ACCEPT_CURRENT_ACTIONS,
             reason: ECompleteReason.UserManual,
-          });
+            value: modifiedValue,
+          } as IAcceptConflictActionsEvent);
         },
       },
       {
@@ -67,22 +70,13 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
     ];
   }
 
-  private inlineDiffWidget: InlineDiffWidget;
-
-  private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, range: monaco.IRange, answer: string): void {
-    if (this.inlineDiffWidget) {
-      this.inlineDiffWidget.dispose();
-    }
-
-    monacoEditor.setHiddenAreas([range], InlineDiffWidget._hideId);
-    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [monacoEditor, range, answer]);
-    this.inlineDiffWidget.create();
-    this.inlineDiffWidget.showByLine(range.startLineNumber + 2, range.endLineNumber - range.startLineNumber + 2);
-  }
+  private inlineDiffWidget: InlineDiffWidget | undefined;
 
   override hide(): void {
     super.hide();
+    this.codeEditor.editor.setHiddenAreas([], this.uid);
     this.inlineDiffWidget?.dispose();
+    this.inlineDiffWidget = undefined;
   }
 
   public override renderView(): ReactNode {
@@ -97,10 +91,13 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
       });
     };
 
-    this.visibleDiffWidget(this.codeEditor.editor, this.range, this.text);
+    // 渲染在下一行空行上，但是通过 css 下移 1/2 行
+    const halfLineHeight = this.getLineHeight() / 2;
 
-    return (
-      <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
+    const resultWidget = (
+      <ContentWidgetContainerPanel
+        style={{ transform: `translateY(${halfLineHeight}px)`, left: 2, display: 'flex', position: 'absolute' }}
+      >
         <WapperAIInlineResult
           id={this.uid}
           iconItems={iconResultItems}
@@ -113,6 +110,25 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
         />
       </ContentWidgetContainerPanel>
     );
+
+    if (this.inlineDiffWidget) {
+      this.inlineDiffWidget.dispose();
+    }
+
+    const { range } = this;
+
+    // hidden full conflict area, but only show diff for current and the ai response
+    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [
+      this.uid,
+      this.codeEditor.editor,
+      range,
+      this.text,
+      this.lineRange.toInclusiveRange(),
+    ]);
+    this.inlineDiffWidget.setResolveResultWidget(resultWidget);
+    this.inlineDiffWidget.create();
+    this.inlineDiffWidget.show(range, range.endLineNumber - range.startLineNumber + 1);
+    return null;
   }
   public id(): string {
     return `${AIResolveConflictContentWidget}_${this.uid}`;

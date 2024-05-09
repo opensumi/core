@@ -52,7 +52,7 @@ export async function createConnectionService(
     onOpen();
   });
 
-  channelHandler.connection.onceClose(() => {
+  channelHandler.connection.onClose(() => {
     stateService.reachedState('core_module_initialized').then(() => {
       eventBus.fire(new BrowserConnectionCloseEvent());
     });

@@ -7,7 +7,9 @@ import { ResolveResultWidget } from './resolve-result-widget';
 import { IMergeEditorShape } from './types';
 
 export interface IWidgetFactory {
-  hideWidget(id?: string): void;
+  hideWidget(id: string): void;
+  hideAll(): void;
+
   addWidget(range: LineRange, ...args: any[]): void;
   hasWidget(range: LineRange): boolean;
 }
@@ -32,31 +34,30 @@ export class WidgetFactory implements IWidgetFactory {
     return this.widgetMap.get(range.id) !== undefined;
   }
 
-  public hideWidget(id?: string): void {
-    if (id) {
-      const widget = this.widgetMap.get(id);
-      if (widget) {
-        widget.hide();
-        this.widgetMap.delete(id);
-      }
-      return;
-    }
-
+  public hideAll() {
     this.widgetMap.forEach((widget) => {
       widget.hide();
     });
     this.widgetMap.clear();
   }
 
-  public addWidget(range: LineRange, ...args: any[]): void {
-    const id = range.id;
+  public hideWidget(id: string): void {
+    const widget = this.widgetMap.get(id);
+    if (widget) {
+      widget.hide();
+      this.widgetMap.delete(id);
+    }
+  }
+
+  public addWidget(lineRange: LineRange, ...args: any[]): void {
+    const id = lineRange.id;
     if (this.widgetMap.has(id)) {
-      return;
+      this.hideWidget(id);
     }
 
-    const position = this.positionFactory(range);
+    const position = this.positionFactory(lineRange);
 
-    const widget = this.injector.get(this.contentWidget, [id, this.editor, range, ...args]);
+    const widget = this.injector.get(this.contentWidget, [id, this.editor, lineRange, ...args]);
     widget.show({ position });
 
     this.widgetMap.set(id, widget);

@@ -1,10 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
-import { localize, uuid } from '@opensumi/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 
 import { IAIInlineChatService } from '../../../ai-native';
 import { Popover } from '../../../components';
-import { useInjectable } from '../../../react-hooks';
+import { useInjectable, useUUID } from '../../../react-hooks';
 import { KTICON_OWNER, getExternalIcon } from '../../../style/icon/icon';
 import { EnhanceIcon } from '../enhanceIcon';
 
@@ -41,21 +41,31 @@ export const Thumbs = (props: ThumbsProps) => {
         report(true);
       }
 
+      if (type === 'up' && thumbsupIcon === 'thumbs-fill') {
+        setThumbsupIcon('thumbs');
+        setThumbsdownIcon('thumbsdown');
+      }
+
       if (type === 'down' && thumbsdownIcon === 'thumbsdown') {
         setThumbsdownIcon('thumbsdown-fill');
         setThumbsupIcon(false);
         report(false);
       }
+
+      if (type === 'down' && thumbsdownIcon === 'thumbsdown-fill') {
+        setThumbsdownIcon('thumbsdown');
+        setThumbsupIcon('thumbs');
+      }
     },
     [thumbsupIcon, thumbsdownIcon],
   );
 
-  const useUUID = useMemo(() => uuid(6), []);
+  const id = useUUID();
 
   return (
     <>
       {typeof thumbsupIcon === 'string' && (
-        <Popover id={`ai-chat-thumbsup-${useUUID}`} title={localize('aiNative.inline.chat.operate.thumbsup.title')}>
+        <Popover id={`ai-chat-thumbsup-${id}`} title={localize('aiNative.inline.chat.operate.thumbsup.title')}>
           <EnhanceIcon
             wrapperClassName={wrapperClassName}
             onClick={() => handleClick('up')}
@@ -64,7 +74,7 @@ export const Thumbs = (props: ThumbsProps) => {
         </Popover>
       )}
       {typeof thumbsdownIcon === 'string' && (
-        <Popover id={`ai-chat-thumbsdown-${useUUID}`} title={localize('aiNative.inline.chat.operate.thumbsdown.title')}>
+        <Popover id={`ai-chat-thumbsdown-${id}`} title={localize('aiNative.inline.chat.operate.thumbsdown.title')}>
           <EnhanceIcon
             wrapperClassName={wrapperClassName}
             onClick={() => handleClick('down')}

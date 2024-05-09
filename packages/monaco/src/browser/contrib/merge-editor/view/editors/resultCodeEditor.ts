@@ -116,11 +116,19 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public hideResolveResultWidget(id?: string) {
-    this.resolveResultWidgetManager.hideWidget(id);
+    if (id) {
+      this.resolveResultWidgetManager.hideWidget(id);
+    } else {
+      this.resolveResultWidgetManager.hideAll();
+    }
   }
 
   public hideStopWidget(id?: string) {
-    this.stopWidgetManager.hideWidget(id);
+    if (id) {
+      this.stopWidgetManager.hideWidget(id);
+    } else {
+      this.stopWidgetManager.hideAll();
+    }
   }
 
   public renderSkeletonDecoration(range: LineRange, classNames: string[]): () => void {
@@ -136,13 +144,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
       },
     });
 
-    const preDecorationsIds = this.getModel()!.deltaDecorations(
+    const preDecorationsIds = this.getModel()?.deltaDecorations(
       [],
       classNames.map((cls) => renderSkeletonDecoration(cls)),
     );
 
     return () => {
-      this.getModel()!.deltaDecorations(preDecorationsIds, []);
+      if (preDecorationsIds) {
+        this.getModel()?.deltaDecorations(preDecorationsIds, []);
+      }
     };
   }
 
@@ -264,12 +274,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
             }
 
             const allRanges = this.mappingManagerService.getAllDiffRanges();
-            const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
+            const lineRange = LineRange.fromPositions(mousePosition.lineNumber);
 
-            const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
+            const isTouches = allRanges.some((range) => range.isTouches(lineRange));
 
             if (isTouches) {
-              const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
+              const targetInRange = allRanges.find((range) => range.isTouches(lineRange));
 
               if (!targetInRange) {
                 return;
@@ -325,17 +335,17 @@ export class ResultCodeEditor extends BaseCodeEditor {
           deltaEdits.forEach((edits) => {
             const { startLineNumber, endLineNumber, offset } = edits;
 
-            const toLineRange = LineRange.fromPositions(startLineNumber, endLineNumber + Math.max(0, offset));
+            const lineRange = LineRange.fromPositions(startLineNumber, endLineNumber + Math.max(0, offset));
             const { [EditorViewType.CURRENT]: includeLeftRange, [EditorViewType.INCOMING]: includeRightRange } =
-              this.mappingManagerService.findIncludeRanges(toLineRange);
+              this.mappingManagerService.findIncludeRanges(lineRange);
             /**
-             * 这里需要处理 touch 的情况（也就是 toLineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分）
+             * 这里需要处理 touch 的情况（也就是 lineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分）
              * 那么就要以当前 touch range 的结果作为要 delta 的起点
              */
             const { [EditorViewType.CURRENT]: touchTurnLeftRange, [EditorViewType.INCOMING]: touchTurnRightRange } =
-              this.mappingManagerService.findTouchesRanges(toLineRange);
+              this.mappingManagerService.findTouchesRanges(lineRange);
             const { [EditorViewType.CURRENT]: nextTurnLeftRange, [EditorViewType.INCOMING]: nextTurnRightRange } =
-              this.mappingManagerService.findNextLineRanges(toLineRange);
+              this.mappingManagerService.findNextLineRanges(lineRange);
 
             if (includeLeftRange) {
               this.mappingManagerService.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
@@ -647,6 +657,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
       userManualResolveNonConflicts,
     });
 
+    this.dataStore.emitChange();
+
     if (this.supportAIConflictResolve) {
       changesResult
         .filter((range) => range.isConflictPoint)
@@ -779,4 +791,66 @@ export class ResultCodeEditor extends BaseCodeEditor {
       });
     });
   }
+
+  private findDiffRange(direction: NavigationDirection) {
+    const visibleRanges = this.editor.getVisibleRanges();
+    if (visibleRanges.length === 0) {
+      return;
+    }
+
+    const allConflicts = this.mappingManagerService.getAllDiffRanges();
+
+    if (direction === NavigationDirection.Forwards) {
+      // 向上查找
+      const firstVisibleRange = visibleRanges[0];
+      const firstVisibleLineNumber = firstVisibleRange.startLineNumber;
+
+      // 找到 diff 的第一行比当前可视区域的第一行还要小的 range
+      for (let i = allConflicts.length - 1; i >= 0; i--) {
+        const range = allConflicts[i];
+
+        if (range.startLineNumber < firstVisibleLineNumber) {
+          return range;
+        }
+      }
+      return allConflicts[0];
+    } else {
+      // 向下查找
+      const lastVisibleRange = visibleRanges[visibleRanges.length - 1];
+      const lastVisibleLineNumber = lastVisibleRange.endLineNumber;
+
+      // 找到 diff 的第一行比当前可视区域的最后一行还要大的 range
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < allConflicts.length; i++) {
+        const range = allConflicts[i];
+
+        if (range.startLineNumber > lastVisibleLineNumber) {
+          return range;
+        }
+      }
+
+      return allConflicts[allConflicts.length - 1];
+    }
+  }
+
+  private navigate(direction: NavigationDirection): void {
+    const range = this.findDiffRange(direction);
+    if (!range) {
+      return;
+    }
+
+    this.editor.revealLineInCenter(range.startLineNumber);
+  }
+
+  public navigateForwards(): void {
+    this.navigate(NavigationDirection.Forwards);
+  }
+  public navigateBackwards(): void {
+    this.navigate(NavigationDirection.Backwards);
+  }
+}
+
+enum NavigationDirection {
+  Forwards,
+  Backwards,
 }

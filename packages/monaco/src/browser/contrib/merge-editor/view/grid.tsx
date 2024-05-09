@@ -1,13 +1,11 @@
-import { observer } from 'mobx-react-lite';
+import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
-  AINativeConfigService,
   CommandService,
   EDITOR_COMMANDS,
   ILogger,
   URI,
-  formatLocalize,
   localize,
   runWhenIdle,
   useInjectable,
@@ -20,9 +18,9 @@ import {
   IOpenMergeEditorArgs,
   MergeEditorInputData,
 } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { MergeConflictCommands } from '@opensumi/ide-core-common/lib/commands/git';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { MergeActions } from '../components/merge-actions';
 import { MappingManagerDataStore } from '../mapping-manager.store';
 import { MergeEditorService } from '../merge-editor.service';
 import { ECompleteReason, EditorViewType } from '../types';
@@ -105,18 +103,14 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
   );
 };
 
-const MergeActions: React.FC = observer(() => {
-  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+const BottomBar: React.FC = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
-  const commandService = useInjectable<CommandService>(CommandService);
-  const logger = useInjectable<ILogger>(ILogger);
-  const dataStore = useInjectable<MappingManagerDataStore>(MappingManagerDataStore);
-  const [isAIResolving, setIsAIResolving] = useState(false);
 
-  const isSupportAIResolve = useCallback(
-    () => aiNativeConfigService.capabilities.supportsConflictResolve,
-    [aiNativeConfigService],
-  );
+  const commandService = useInjectable<CommandService>(CommandService);
+  const [applyLoading, setApplyLoading] = useState(false);
+
+  const [isAIResolving, setIsAIResolving] = useState(false);
+  const logger = useInjectable<ILogger>(ILogger);
 
   useEffect(() => {
     const dispose = mergeEditorService.onHasIntelligentLoadingChange((isLoading) => {
@@ -125,8 +119,6 @@ const MergeActions: React.FC = observer(() => {
 
     return () => dispose.dispose();
   }, [mergeEditorService]);
-
-  const [applyLoading, setApplyLoading] = useState(false);
 
   const handleApply = useCallback(async () => {
     setApplyLoading(true);
@@ -149,37 +141,6 @@ const MergeActions: React.FC = observer(() => {
     mergeEditorService.acceptRight(false, ECompleteReason.UserManual);
   }, [mergeEditorService]);
 
-  const handleOpenTradition = useCallback(() => {
-    let uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
-    if (!uri) {
-      return;
-    }
-
-    if (uri.scheme === 'git') {
-      // replace git:// with file://
-      uri = uri.with({
-        scheme: 'file',
-        path: uri.path,
-        query: '',
-      });
-    }
-
-    if (uri.scheme !== 'file') {
-      // ignore other scheme
-      logger.warn('Unsupported scheme', uri.scheme);
-      return;
-    }
-
-    commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
-  }, [mergeEditorService]);
-
-  const handleReset = useCallback(async () => {
-    await mergeEditorService.stopAllAIResolveConflict();
-    runWhenIdle(() => {
-      commandService.executeCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET.id);
-    });
-  }, [mergeEditorService]);
-
   const handleAIResolve = useCallback(() => {
     if (isAIResolving) {
       mergeEditorService.stopAllAIResolveConflict();
@@ -188,77 +149,68 @@ const MergeActions: React.FC = observer(() => {
     }
   }, [mergeEditorService, isAIResolving]);
 
-  const handlePrev = useCallback(() => {
-    commandService.tryExecuteCommand(MergeConflictCommands.Previous);
-  }, []);
+  const dataStore = useInjectable<MappingManagerDataStore>(MappingManagerDataStore);
 
-  const handleNext = useCallback(() => {
-    commandService.tryExecuteCommand(MergeConflictCommands.Next);
-  }, []);
+  const [summary, setSummary] = useState<string>('');
+  useEffect(() => {
+    const debounced = debounce(() => {
+      setSummary(dataStore.summary());
+    }, 16 * 5);
 
-  const conflictsCount = dataStore.conflictsCount;
-  const nonConflictingChangesResolvedCount = dataStore.nonConflictingChangesResolvedCount;
+    const dispose = dataStore.onDataChange(() => {
+      debounced();
+    });
 
-  const conflictsAllResolved = conflictsCount.lefted === 0 && conflictsCount.resolved === conflictsCount.total;
-  const conflictsProgressHint = conflictsAllResolved
-    ? localize('merge-conflicts.conflicts.all-resolved')
-    : formatLocalize('merge-conflicts.conflicts.partial-resolved', conflictsCount.resolved, conflictsCount.lefted);
+    setSummary(dataStore.summary());
 
-  let nonConflictHint = localize('merge-conflicts.merge.type.auto');
-  if (nonConflictingChangesResolvedCount.userManualResolveNonConflicts) {
-    nonConflictHint = localize('merge-conflicts.merge.type.manual');
-  }
+    return () => dispose.dispose();
+  }, [dataStore]);
 
-  const nonConflictHintInfos = [] as string[];
-  if (nonConflictingChangesResolvedCount.total > 0) {
-    nonConflictHintInfos.push(
-      formatLocalize(
-        'merge-conflicts.non-conflicts.progress',
-        nonConflictingChangesResolvedCount.total,
-        nonConflictHint,
-      ),
-    );
-
-    const branchInfos = [] as string[];
-
-    if (nonConflictingChangesResolvedCount.left > 0) {
-      branchInfos.push(
-        formatLocalize('merge-conflicts.non-conflicts.from.left', nonConflictingChangesResolvedCount.left),
-      );
-    }
-    if (nonConflictingChangesResolvedCount.right > 0) {
-      branchInfos.push(
-        formatLocalize('merge-conflicts.non-conflicts.from.right', nonConflictingChangesResolvedCount.right),
-      );
-    }
-    if (nonConflictingChangesResolvedCount.both > 0) {
-      branchInfos.push(
-        formatLocalize('merge-conflicts.non-conflicts.from.base', nonConflictingChangesResolvedCount.both),
-      );
-    }
-
-    if (branchInfos.length > 0) {
-      const branchInfoString = branchInfos.join('；');
-      nonConflictHintInfos.push(` (${branchInfoString})`);
-    }
-  }
-
-  const nonConflictHintString = nonConflictHintInfos.join('');
-
-  const mergeInfo = [
-    formatLocalize('merge-conflicts.conflicts.summary', conflictsCount.total, conflictsProgressHint),
-    conflictsCount.nonConflicts > 0
-      ? formatLocalize('merge-conflicts.non-conflicts.summary', conflictsCount.nonConflicts)
-      : '',
-    nonConflictHintString,
-  ]
-    .filter(Boolean)
-    .join(' | ');
+  const handleReset = useCallback(async () => {
+    await mergeEditorService.stopAllAIResolveConflict();
+    runWhenIdle(() => {
+      commandService.executeCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET.id);
+    });
+  }, [mergeEditorService]);
 
   return (
-    <div className={styles.merge_editor_float_container}>
-      <div className={styles.merge_info}>{mergeInfo}</div>
-      <div className={styles.container_box}>
+    <MergeActions
+      containerClassName={styles.merge_editor_float_container}
+      editorType='3way'
+      summary={summary}
+      onReset={handleReset}
+      onSwitchEditor={() => {
+        let uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
+        if (!uri) {
+          return;
+        }
+
+        if (uri.scheme === 'git') {
+          // replace git:// with file://
+          uri = uri.with({
+            scheme: 'file',
+            path: uri.path,
+            query: '',
+          });
+        }
+
+        if (uri.scheme !== 'file') {
+          // ignore other scheme
+          logger.warn('Unsupported scheme', uri.scheme);
+          return;
+        }
+
+        commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
+      }}
+      handlePrev={() => {
+        mergeEditorService.resultView.navigateForwards();
+      }}
+      handleNext={() => {
+        mergeEditorService.resultView.navigateBackwards();
+      }}
+      isAIResolving={isAIResolving}
+      onAIResolve={handleAIResolve}
+      beforeAddons={
         <div id='merge.editor.action.button.accept' className={styles.action_category}>
           <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptLeft}>
             <Icon icon={'left'} />
@@ -269,61 +221,8 @@ const MergeActions: React.FC = observer(() => {
             <Icon icon={'right'} />
           </Button>
         </div>
-
-        <span className={styles.line_vertical}></span>
-
-        <div id='merge.editor.action.button.nav' className={styles.action_category}>
-          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handlePrev}>
-            <Icon icon={'left'} />
-            <span>{localize('mergeEditor.conflict.prev')}</span>
-          </Button>
-          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleNext}>
-            <span>{localize('mergeEditor.conflict.next')}</span>
-            <Icon icon={'right'} />
-          </Button>
-        </div>
-
-        <span className={styles.line_vertical}></span>
-
-        <Button
-          id='merge.editor.open.tradition'
-          className={styles.merge_conflict_bottom_btn}
-          size='default'
-          onClick={handleOpenTradition}
-        >
-          <Icon icon={'swap'} />
-          <span>{localize('mergeEditor.open.tradition')}</span>
-        </Button>
-        <Button
-          id='merge.editor.rest'
-          className={styles.merge_conflict_bottom_btn}
-          size='default'
-          onClick={handleReset}
-        >
-          <Icon icon={'discard'} />
-          <span>{localize('mergeEditor.reset')}</span>
-        </Button>
-        {isSupportAIResolve() && (
-          <Button
-            id='merge.editor.conflict.resolve.all'
-            size='default'
-            className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
-            onClick={handleAIResolve}
-          >
-            {isAIResolving ? (
-              <>
-                <Icon icon={'circle-pause'} />
-                <span>{localize('mergeEditor.conflict.ai.resolve.all.stop')}</span>
-              </>
-            ) : (
-              <>
-                <Icon icon={'magic-wand'} />
-                <span>{localize('mergeEditor.conflict.ai.resolve.all')}</span>
-              </>
-            )}
-          </Button>
-        )}
-        <span className={styles.line_vertical}></span>
+      }
+      afterAddons={
         <Button
           loading={applyLoading}
           id='merge.editor.action.button.apply'
@@ -333,11 +232,14 @@ const MergeActions: React.FC = observer(() => {
         >
           {localize('mergeEditor.action.button.apply-and-stash')}
         </Button>
-      </div>
-    </div>
+      }
+    />
   );
-});
+};
 
+/**
+ * ! 这个组件不能进行二次渲染，否则会导致 Monaco Editor 无法出现
+ */
 export const Grid = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
 
@@ -396,7 +298,7 @@ export const Grid = () => {
           </div>
         </div>
       </SplitPanel>
-      <MergeActions />
+      <BottomBar />
     </div>
   );
 };

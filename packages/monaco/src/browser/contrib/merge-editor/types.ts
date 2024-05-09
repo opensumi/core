@@ -184,6 +184,11 @@ export interface IConflictActionsEvent {
   reason: ECompleteReason;
 }
 
+export interface IAcceptConflictActionsEvent extends IConflictActionsEvent {
+  action: typeof ACCEPT_CURRENT_ACTIONS;
+  value?: string;
+}
+
 /**
  * Time Machine
  */

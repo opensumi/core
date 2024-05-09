@@ -281,6 +281,14 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     );
   }
 
+  shouldAbortRequest(model: monaco.ITextModel) {
+    if (model.uri.scheme !== Schemes.file) {
+      return true;
+    }
+
+    return false;
+  }
+
   protected inlineChatInUsing = false;
   protected async showInlineChat(editor: IEditor): Promise<void> {
     if (!this.aiNativeConfigService.capabilities.supportsInlineChat) {
@@ -445,7 +453,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.aiInlineChatOperationDisposed.addDispose([
       this.aiInlineChatService.onAccept(() => {
         this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
-        monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: answer! }], () => null);
+        const newValue = this.aiDiffWidget?.getModifiedValue() || answer!;
+
+        monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: newValue }], () => null);
         runWhenIdle(() => {
           this.disposeAllWidget();
         });
@@ -456,6 +466,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiDiffWidget.onMaxLineCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model!.getLineCount()) {
+            // 如果用户是选中了最后一行，直接显示在最后一行
             const lineHeight = monacoEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
             this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
           }
@@ -487,8 +498,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
-    monacoEditor.setHiddenAreas([crossSelection], InlineDiffWidget._hideId);
-    this.aiDiffWidget = this.injector.get(InlineDiffWidget, [monacoEditor, crossSelection, answer]);
+    this.aiDiffWidget = this.injector.get(InlineDiffWidget, ['ai-diff-widget', monacoEditor, crossSelection, answer]);
     this.aiDiffWidget.create();
     this.aiDiffWidget.showByLine(
       crossSelection.startLineNumber - 1,
@@ -546,6 +556,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           this.modelSessionDisposable.addDispose(
             monacoApi.languages.registerInlineCompletionsProvider(languageId, {
               provideInlineCompletions: async (model, position, context, token) => {
+                if (this.shouldAbortRequest(model)) {
+                  return;
+                }
+
                 if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
                   this.aiCompletionsService.setMiddlewareComplete(
                     this.latestMiddlewareCollector?.language?.provideInlineCompletions,
@@ -594,6 +608,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const disposable = new Disposable();
 
     const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
+      if (this.shouldAbortRequest(model)) {
+        return;
+      }
+
       this.lastModelRequestRenameSessionId = undefined;
 
       const startTime = +new Date();
@@ -667,7 +685,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     const { monacoEditor } = editor;
-    const { languageParserService, inlineChatFeatureRegistry } = this;
+    const { languageParserService, inlineChatFeatureRegistry, shouldAbortRequest } = this;
 
     let codeActionDispose: IDisposable | undefined;
 
@@ -700,6 +718,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
       codeActionDispose = monacoApi.languages.registerCodeActionProvider(languageId, {
         provideCodeActions: async (model) => {
+          if (shouldAbortRequest(model)) {
+            return;
+          }
+
           if (!prefInlineChatActionEnabled) {
             return;
           }

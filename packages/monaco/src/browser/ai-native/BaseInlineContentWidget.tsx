@@ -127,4 +127,26 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
 
     return null;
   }
+
+  /**
+   * 判断编辑器区域宽度小于 270px
+   * 不包括左侧 content width 和右侧的 minimap width
+   */
+  protected isOutOfArea(): boolean {
+    const visibleWidth = 270;
+    const contentLeftWith = this.editor.getLayoutInfo().contentLeft;
+    const minimapWith = this.getMiniMapWidth();
+    if (this.editor.getLayoutInfo().width - contentLeftWith - minimapWith < visibleWidth) {
+      return true;
+    }
+    return false;
+  }
+
+  getMiniMapWidth(): number {
+    return this.editor.getLayoutInfo().minimap.minimapWidth;
+  }
+
+  getLineHeight(): number {
+    return this.editor.getOption(monaco.EditorOption.lineHeight);
+  }
 }

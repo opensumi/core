@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { IContextKeyService, useInjectable } from '@opensumi/ide-core-browser';
+import { IContextKeyService } from '../../context-key';
+import { useInjectable } from '../injectable-hooks';
 
 const contextKey = 'git.mergeChangesObj';
 

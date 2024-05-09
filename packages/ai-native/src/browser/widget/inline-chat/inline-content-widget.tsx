@@ -85,20 +85,6 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     super.hide();
   }
 
-  /**
-   * 如果编辑器区域宽度小于 270px，则不显示
-   * 不包括左侧 content width 和右侧的 minimap width
-   */
-  private isOutOfArea(): boolean {
-    const visibleWidth = 270;
-    const contentLeftWith = this.editor.getOption(monaco.editor.EditorOption.layoutInfo).contentLeft;
-    const minimapWith = this.editor.getOption(monaco.editor.EditorOption.layoutInfo).minimap.minimapWidth;
-    if (this.editor.getLayoutInfo().width - contentLeftWith - minimapWith < visibleWidth) {
-      return true;
-    }
-    return false;
-  }
-
   public setOptions(options: ShowAIContentOptions): void {
     this.options = options;
   }

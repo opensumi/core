@@ -1,6 +1,5 @@
-import { action, computed, makeAutoObservable, observable } from 'mobx';
-
 import { Injectable } from '@opensumi/di';
+import { Emitter, formatLocalize, localize } from '@opensumi/ide-core-browser';
 
 export interface IConflictsCount {
   total: number;
@@ -19,20 +18,18 @@ export interface INonConflictingChangesResolvedCount {
 
 @Injectable()
 export class MappingManagerDataStore {
-  constructor() {
-    makeAutoObservable(this);
-  }
+  private _onDataChangeEmitter = new Emitter<void>();
+  onDataChange = this._onDataChangeEmitter.event;
 
-  @observable
-  conflictsTotal = 0;
+  protected conflictsTotal = 0;
+  protected nonConflictsUnresolvedCount = 0;
+  protected conflictsResolvedCount = 0;
+  protected nonConflictingChangesResolvedTotal = 0;
+  protected nonConflictingChangesResolvedLeft = 0;
+  protected nonConflictingChangesResolvedRight = 0;
+  protected nonConflictingChangesResolvedBoth = 0;
+  protected userManualResolveNonConflicts = false;
 
-  @observable
-  nonConflictsUnresolvedCount = 0;
-
-  @observable
-  conflictsResolvedCount = 0;
-
-  @computed
   get conflictsCount(): IConflictsCount {
     return {
       total: this.conflictsTotal,
@@ -42,18 +39,6 @@ export class MappingManagerDataStore {
     };
   }
 
-  @observable
-  protected nonConflictingChangesResolvedTotal = 0;
-  @observable
-  protected nonConflictingChangesResolvedLeft = 0;
-  @observable
-  protected nonConflictingChangesResolvedRight = 0;
-  @observable
-  protected nonConflictingChangesResolvedBoth = 0;
-  @observable
-  protected userManualResolveNonConflicts = false;
-
-  @action
   updateConflictsCount(data: Partial<Omit<IConflictsCount, 'lefted'>>) {
     if (typeof data.total !== 'undefined') {
       this.conflictsTotal = data.total;
@@ -66,7 +51,6 @@ export class MappingManagerDataStore {
     }
   }
 
-  @computed
   get nonConflictingChangesResolvedCount(): INonConflictingChangesResolvedCount {
     return {
       total: this.nonConflictingChangesResolvedTotal,
@@ -77,7 +61,6 @@ export class MappingManagerDataStore {
     };
   }
 
-  @action
   updateNonConflictingChangesResolvedCount(data: Partial<INonConflictingChangesResolvedCount>) {
     if (typeof data.total !== 'undefined') {
       this.nonConflictingChangesResolvedTotal = data.total;
@@ -94,5 +77,72 @@ export class MappingManagerDataStore {
     if (typeof data.userManualResolveNonConflicts !== 'undefined') {
       this.userManualResolveNonConflicts = data.userManualResolveNonConflicts;
     }
+  }
+
+  emitChange() {
+    this._onDataChangeEmitter.fire();
+  }
+
+  summary() {
+    const conflictsCount = this.conflictsCount;
+    const nonConflictingChangesResolvedCount = this.nonConflictingChangesResolvedCount;
+
+    const conflictsAllResolved = conflictsCount.lefted === 0 && conflictsCount.resolved === conflictsCount.total;
+    const conflictsProgressHint = conflictsAllResolved
+      ? localize('merge-conflicts.conflicts.all-resolved')
+      : formatLocalize('merge-conflicts.conflicts.partial-resolved', conflictsCount.resolved, conflictsCount.lefted);
+
+    let nonConflictHint = localize('merge-conflicts.merge.type.auto');
+    if (nonConflictingChangesResolvedCount.userManualResolveNonConflicts) {
+      nonConflictHint = localize('merge-conflicts.merge.type.manual');
+    }
+
+    const nonConflictHintInfos = [] as string[];
+    if (nonConflictingChangesResolvedCount.total > 0) {
+      nonConflictHintInfos.push(
+        formatLocalize(
+          'merge-conflicts.non-conflicts.progress',
+          nonConflictingChangesResolvedCount.total,
+          nonConflictHint,
+        ),
+      );
+
+      const branchInfos = [] as string[];
+
+      if (nonConflictingChangesResolvedCount.left > 0) {
+        branchInfos.push(
+          formatLocalize('merge-conflicts.non-conflicts.from.left', nonConflictingChangesResolvedCount.left),
+        );
+      }
+      if (nonConflictingChangesResolvedCount.right > 0) {
+        branchInfos.push(
+          formatLocalize('merge-conflicts.non-conflicts.from.right', nonConflictingChangesResolvedCount.right),
+        );
+      }
+      if (nonConflictingChangesResolvedCount.both > 0) {
+        branchInfos.push(
+          formatLocalize('merge-conflicts.non-conflicts.from.base', nonConflictingChangesResolvedCount.both),
+        );
+      }
+
+      if (branchInfos.length > 0) {
+        const branchInfoString = branchInfos.join('；');
+        nonConflictHintInfos.push(` (${branchInfoString})`);
+      }
+    }
+
+    const nonConflictHintString = nonConflictHintInfos.join('');
+
+    const mergeInfo = [
+      formatLocalize('merge-conflicts.conflicts.summary', conflictsCount.total, conflictsProgressHint),
+      conflictsCount.nonConflicts > 0
+        ? formatLocalize('merge-conflicts.non-conflicts.summary', conflictsCount.nonConflicts)
+        : '',
+      nonConflictHintString,
+    ]
+      .filter(Boolean)
+      .join(' | ');
+
+    return mergeInfo;
   }
 }
