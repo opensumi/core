@@ -27,6 +27,8 @@ import { IFileServiceWatcher } from './watcher';
 export const IFileServiceClient = IFileServiceClientToken;
 
 export interface IFileServiceClient {
+  shouldWaitProvider(scheme: string): Promise<boolean>;
+
   onFilesChanged: Event<FileChangeEvent>;
 
   onFileProviderChanged: Event<string[]>;

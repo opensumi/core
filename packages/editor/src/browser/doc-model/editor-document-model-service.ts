@@ -1,7 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   Dispatcher,
-  Event,
   IDisposable,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
@@ -16,15 +15,12 @@ import {
   StorageProvider,
   URI,
   WithEventBus,
-  isUndefined,
   mapToSerializable,
   memoize,
   serializableToMap,
-  timeout,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModel } from '../../common/editor';
@@ -63,7 +59,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   private readonly hashCalculateService: IHashCalculateService;
 
   @Autowired(IFileServiceClient)
-  protected readonly fileSystem: FileServiceClient;
+  protected readonly fileSystem: IFileServiceClient;
 
   private storage: IStorage;
 
