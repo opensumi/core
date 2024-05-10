@@ -15,10 +15,8 @@ module.exports = {
     path: distDir,
   },
   target: 'webworker',
-  node: {
-    net: 'empty',
-  },
-  devtool: 'none',
+  node: false,
+  devtool: false,
   mode: 'production',
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
@@ -27,6 +25,12 @@ module.exports = {
         configFile: tsConfigPath,
       }),
     ],
+    fallback: {
+      net: false,
+      path: false,
+      os: false,
+      crypto: false,
+    },
   },
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
@@ -48,7 +52,7 @@ module.exports = {
   },
   plugins: [
     new NodePolyfillPlugin({
-      includeAliases: ['process', 'util'],
+      includeAliases: ['process', 'util', 'Buffer'],
     }),
   ],
 };

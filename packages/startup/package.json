@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-startup",
-  "version": "2.27.2",
+  "version": "3.0.0-alpha.0",
   "files": [
     "lib",
     "src"
@@ -107,7 +107,6 @@
     "@opensumi/ide-testing": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-toolbar": "workspace:*",
-    "@opensumi/ide-userstorage": "workspace:*",
     "@opensumi/ide-variable": "workspace:*",
     "@opensumi/ide-webview": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",

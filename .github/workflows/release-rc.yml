@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'A valid ref, eg: v2.xx, main'
+        description: 'A valid ref, eg: v3.xx, main'
         required: true
         default: 'main'
 
