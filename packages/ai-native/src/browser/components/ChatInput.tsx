@@ -59,7 +59,7 @@ const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatAgentViewService = useInjectable<ChatAgentViewService>(ChatAgentViewServiceToken);
 
-  const agentOptions = useMemo(() => {
+  const options = useMemo(() => {
     if (trigger === AT_SIGN_SYMBOL) {
       return chatAgentViewService.getRenderAgents().map(
         (a) =>
@@ -101,11 +101,15 @@ const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId
     [onClick],
   );
 
+  if (options.length === 0) {
+    return null;
+  }
+
   return (
     <div className={styles.instruction_options_container} style={{ bottom: bottom + 'px' }}>
       <div className={styles.options}>
         <ul>
-          {agentOptions.map(({ icon, name, nameWithSlash, description, agentId, command }) => (
+          {options.map(({ icon, name, nameWithSlash, description, agentId, command }) => (
             <li key={`${agentId || ''}-${name}`} onMouseDown={() => handleClick(nameWithSlash, agentId, command)}>
               <Block
                 icon={icon}
@@ -429,7 +433,8 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     }
   }, [isExpand]);
 
-  const renderAddonAfter = useMemo(() => (
+  const renderAddonAfter = useMemo(
+    () => (
       <div className={styles.input_icon_container}>
         <div
           className={cls(
@@ -461,7 +466,9 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
           )}
         </div>
       </div>
-    ), [focus, disabled, props.sendBtnClassName, handleSend]);
+    ),
+    [focus, disabled, props.sendBtnClassName, handleSend],
+  );
 
   return (
     <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
