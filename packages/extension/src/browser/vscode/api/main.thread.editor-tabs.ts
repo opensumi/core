@@ -7,7 +7,6 @@ import {
   IDiffResource,
   IMergeEditorResource,
   IResource,
-  ResourceDecorationChangeEvent,
   WorkbenchEditorService,
 } from '@opensumi/ide-editor';
 import { EditorGroup, WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -39,7 +38,7 @@ export class MainThreadEditorTabsService extends Disposable implements IMainThre
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
-  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol, mainThreadWebviews: MainThreadWebview) {
+  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEditorTabs);
 
@@ -56,22 +55,6 @@ export class MainThreadEditorTabsService extends Disposable implements IMainThre
     this.workbenchEditorService.contributionsReady.promise.then(() => {
       this.updateGroups();
     });
-
-    this.addDispose(
-      this.eventBus.on(ResourceDecorationChangeEvent, (e) => {
-        this.tabStore.getByResourceUri(e.payload.uri).forEach((data) => {
-          const isChanged = data.tryUpdate();
-          if (isChanged) {
-            this.proxy.$acceptTabOperation({
-              kind: TabModelOperationKind.TAB_UPDATE,
-              tabDto: data.dto,
-              index: data.index,
-              groupId: data.group.groupId,
-            });
-          }
-        });
-      }),
-    );
   }
 
   $initializeState() {
@@ -173,8 +156,12 @@ export class MainThreadEditorTabsService extends Disposable implements IMainThre
 class EditorTabDtoData {
   private _dto: IEditorTabDto;
 
-  constructor(public readonly group: EditorGroup, public readonly resource: IResource) {
+  constructor(public readonly group: EditorGroup, public resource: IResource) {
     this.tryUpdate();
+  }
+
+  updateResource(resource: IResource) {
+    this.resource = resource;
   }
   /**
    * @param updateDto
@@ -281,6 +268,8 @@ class EditorTabDtoDataStore {
       }
       this.mapByUri.get(uriString)!.set(tabId, data);
       this.all.set(tabId, data);
+    } else {
+      this.all.get(tabId)!.updateResource(resource);
     }
     return this.all.get(tabId)!;
   }
