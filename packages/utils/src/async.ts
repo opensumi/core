@@ -1,6 +1,7 @@
 import { CancellationToken, CancellationTokenSource } from './cancellation';
 import { IDisposable, toDisposable } from './disposable';
 import { canceled } from './errors';
+import { LinkedList } from './linked-list';
 
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
@@ -617,3 +618,42 @@ export const retry = async <T>(
     return retry(task, { delay, retries: retries - 1, onFailedAttempt, timeout });
   }
 };
+
+type WaitGroupCallback = () => void;
+
+export class WaitGroup {
+  private _pending: number;
+  private callbacks = new LinkedList<WaitGroupCallback>();
+
+  constructor() {
+    this._pending = 0;
+  }
+
+  private _resolve() {
+    while (!this.callbacks.isEmpty()) {
+      const cb = this.callbacks.shift();
+      cb && cb();
+    }
+  }
+
+  add(delta: number = 1): void {
+    this._pending += delta;
+  }
+
+  done(): void {
+    this._pending--;
+    if (this._pending === 0) {
+      this._resolve();
+    }
+  }
+
+  wait(cb: WaitGroupCallback) {
+    return this.callbacks.push(cb);
+  }
+
+  await(): Promise<void> {
+    return new Promise((resolve) => {
+      this.wait(resolve);
+    });
+  }
+}

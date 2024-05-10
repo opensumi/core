@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IReporter, REPORT_HOST, ReporterService } from '@opensumi/ide-core-common';
+import { IReporter, REPORT_HOST, ReporterService, WaitGroup } from '@opensumi/ide-core-common';
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import { ExtHostSumiAPIIdentifier } from '../../../common/sumi';
@@ -21,11 +21,13 @@ export function createAPIFactory(
   extensionService: IExtensionHostService | IExtensionWorkerHost,
   type: string,
   reporterEmitter: IReporter,
+  onReady: () => void,
 ) {
   if (type === 'worker') {
     rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
   }
 
+  const waitGroup = new WaitGroup();
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands);
   const extHostEditors = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostEditors) as ExtensionHostEditorService;
   const extHostWebview = rpcProtocol.set(
@@ -58,6 +60,7 @@ export function createAPIFactory(
     new ExtHostChatAgents(rpcProtocol),
   ) as ExtHostChatAgents;
 
+  waitGroup.wait(onReady);
   return (extension: IExtensionDescription) => {
     const reporter = new ReporterService(reporterEmitter, {
       extensionId: extension.extensionId,

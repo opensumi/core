@@ -14,6 +14,7 @@ export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService | IExtensionWorkerHost,
   _type: string,
+  onReady: () => void,
 ) {
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands) as ExtHostCommands;
   const extHostEditors = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostEditors) as ExtensionHostEditorService;

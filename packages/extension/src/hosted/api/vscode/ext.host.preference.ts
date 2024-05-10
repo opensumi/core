@@ -18,7 +18,7 @@
 import cloneDeep from 'lodash/cloneDeep';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, PreferenceScope, isObject, isUndefined, mixin } from '@opensumi/ide-core-common';
+import { Deferred, Emitter, Event, PreferenceScope, isObject, isUndefined, mixin } from '@opensumi/ide-core-common';
 
 import {
   ConfigurationTarget,
@@ -68,17 +68,24 @@ export class ExtHostPreference implements IExtHostPreference {
   private readonly _onDidChangeConfiguration = new Emitter<ConfigurationChangeEvent>();
   readonly onDidChangeConfiguration: Event<ConfigurationChangeEvent> = this._onDidChangeConfiguration.event;
 
+  private deferred = new Deferred<void>();
+
   constructor(rpcProtocol: IRPCProtocol, private readonly workspace: IExtHostWorkspace) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadPreference);
   }
 
-  init(data: PreferenceData): void {
+  protected init(data: PreferenceData): void {
     this._preferences = this.parse(data);
+  }
+
+  ready(): Promise<void> {
+    return this.deferred.promise;
   }
 
   $initializeConfiguration(data: any): void {
     this.init(data);
+    this.deferred.resolve();
   }
 
   $acceptConfigurationChanged(data: { [key: string]: any }, eventData: PreferenceChangeExt[]) {

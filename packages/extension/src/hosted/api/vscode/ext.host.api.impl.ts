@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, Emitter, Event, WaitGroup } from '@opensumi/ide-core-common';
 import { DEFAULT_VSCODE_ENGINE_VERSION } from '@opensumi/ide-core-common/lib/const';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
@@ -60,7 +60,9 @@ export function createApiFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService,
   appConfig: ExtHostAppConfig,
+  onReady: () => void,
 ) {
+  const waitGroup = new WaitGroup();
   const builtinCommands = appConfig.builtinCommands;
   const customDebugChildProcess = appConfig.customDebugChildProcess;
 
@@ -101,10 +103,14 @@ export function createApiFactory(
     ExtHostAPIIdentifier.ExtHostWorkspace,
     new ExtHostWorkspace(rpcProtocol, extHostMessage, extHostDocs),
   ) as ExtHostWorkspace;
-  const extHostPreference = rpcProtocol.set(
-    ExtHostAPIIdentifier.ExtHostPreference,
-    new ExtHostPreference(rpcProtocol, extHostWorkspace),
-  ) as ExtHostPreference;
+
+  const preference = new ExtHostPreference(rpcProtocol, extHostWorkspace);
+  waitGroup.add(1);
+  preference.ready().then(() => {
+    waitGroup.done();
+  });
+
+  const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, preference) as ExtHostPreference;
   const extHostTreeView = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostTreeView,
     new ExtHostTreeViews(rpcProtocol, extHostCommands),
@@ -189,6 +195,10 @@ export function createApiFactory(
   ) as ExtHostLocalization;
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
+
+  waitGroup.wait(() => {
+    onReady();
+  });
 
   return (extension: IExtensionDescription) => ({
     authentication: createAuthenticationApiFactory(extension, extHostAuthentication),

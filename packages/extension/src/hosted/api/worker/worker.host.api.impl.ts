@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationTokenSource, DefaultReporter, Emitter, Event } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, DefaultReporter, Emitter, Event, WaitGroup } from '@opensumi/ide-core-common';
 import { DEFAULT_VSCODE_ENGINE_VERSION } from '@opensumi/ide-core-common/lib/const';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
@@ -53,8 +53,11 @@ import type * as vscode from 'vscode';
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService | IExtensionWorkerHost,
+  onReady: () => void,
 ) {
   rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
+
+  const waitGroup = new WaitGroup();
 
   const extHostDocs = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostDocuments,
@@ -94,10 +97,15 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostFileSystemEvent,
     new ExtHostFileSystemEvent(rpcProtocol, extHostDocs),
   );
-  const extHostPreference = rpcProtocol.set(
-    ExtHostAPIIdentifier.ExtHostPreference,
-    new ExtHostPreference(rpcProtocol, extHostWorkspace),
-  ) as ExtHostPreference;
+
+  const preference = new ExtHostPreference(rpcProtocol, extHostWorkspace);
+
+  waitGroup.add(1);
+  preference.ready().then(() => {
+    waitGroup.done();
+  });
+
+  const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, preference) as ExtHostPreference;
   const extHostOutput = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostOutput,
     new ExtHostOutput(rpcProtocol),
@@ -169,7 +177,15 @@ export function createAPIFactory(
 
   // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
   const reporter = new DefaultReporter();
-  const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
+
+  waitGroup.add(1);
+  const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter, () => {
+    waitGroup.done();
+  });
+
+  waitGroup.wait(() => {
+    onReady();
+  });
 
   return (extension: IExtensionDescription) => ({
     ...workerExtTypes,

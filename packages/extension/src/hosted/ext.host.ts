@@ -1,6 +1,7 @@
 import { Injector } from '@opensumi/di';
 import { ProxyIdentifier, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import {
+  Deferred,
   Emitter,
   IExtensionLogger,
   IExtensionProps,
@@ -78,6 +79,8 @@ abstract class ApiImplFactory {
     injector: Injector,
   ): any;
 
+  abstract init(): Promise<void>;
+
   public load(extension: IExtensionDescription | undefined, addonImpl?: any) {
     if (!extension) {
       return;
@@ -102,28 +105,52 @@ abstract class ApiImplFactory {
 }
 
 class VSCodeAPIImpl extends ApiImplFactory {
+  defered = new Deferred<void>();
+
   override createAPIFactory(
     rpcProtocol: SumiConnectionMultiplexer,
     extHost: IExtensionHostService,
     injector: Injector,
   ) {
-    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(AppConfig));
+    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(AppConfig), () => {
+      this.defered.resolve();
+    });
+  }
+
+  override async init() {
+    await this.defered.promise;
   }
 }
 
 class OpenSumiAPIImpl extends ApiImplFactory {
+  defered = new Deferred<void>();
+
   override createAPIFactory(
     rpcProtocol: SumiConnectionMultiplexer,
     extHost: IExtensionHostService,
     injector: Injector,
   ) {
-    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter));
+    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter), () => {
+      this.defered.resolve();
+    });
+  }
+
+  override async init() {
+    await this.defered.promise;
   }
 }
 
 class TelemetryAPIImpl extends ApiImplFactory {
+  defered = new Deferred<void>();
+
   override createAPIFactory(rpcProtocol: SumiConnectionMultiplexer, extHost: IExtensionHostService) {
-    return createTelemetryAPIFactory(rpcProtocol, extHost, 'node');
+    return createTelemetryAPIFactory(rpcProtocol, extHost, 'node', () => {
+      this.defered.resolve();
+    });
+  }
+
+  override async init() {
+    await this.defered.promise;
   }
 }
 
@@ -188,6 +215,9 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async init() {
+    await this.vscodeAPIImpl.init();
+    await this.openSumiAPIImpl.init();
+    await this.telemetryAPIImpl.init();
     this.extensionsActivator = new ExtensionsActivator(this.logger);
     this.defineAPI();
   }
