@@ -149,7 +149,7 @@ export abstract class IMenuRegistry {
   readonly onDidChangeMenu: Event<string>;
 
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
-  abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<ISumiMenuExtendInfo>): void;
+  abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<ISumiMenuExtendInfo>): IDisposable;
   abstract registerMenuItem(
     menuId: MenuId | string,
     item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem,
