@@ -1,4 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { WaitGroup } from '@opensumi/ide-core-common';
 
 import { IExtensionHostService, IExtensionWorkerHost } from '../../../common';
 import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
@@ -16,6 +17,7 @@ export function createAPIFactory(
   _type: string,
   onReady: () => void,
 ) {
+  const waitGroup = new WaitGroup();
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands) as ExtHostCommands;
   const extHostEditors = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostEditors) as ExtensionHostEditorService;
   const logger = extensionService.logger;
@@ -41,6 +43,8 @@ export function createAPIFactory(
 
   const instrumentSimpleOperation = (operationName: string, cb: (...args: any[]) => any, thisArg?: any) =>
     instrumentOperation(operationName, async (operationId, ...args) => await cb.apply(thisArg, args), thisArg);
+
+  waitGroup.wait(onReady);
 
   return (extension: IExtensionDescription) => ({
     instrumentOperation,
