@@ -1,4 +1,5 @@
 import { Autowired } from '@opensumi/di';
+import { getIcon } from '@opensumi/ide-components';
 import {
   CommandContribution,
   CommandRegistry,
@@ -106,13 +107,41 @@ export class ClientCommonContribution
   }
 
   registerMenus(menus: IMenuRegistry): void {
-    menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file'), order: 1 });
-    menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit'), order: 2 });
-    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection'), order: 3 });
-    menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view'), order: 4 });
-    menus.registerMenubarItem(MenuId.MenubarGoMenu, { label: localize('menu-bar.title.go'), order: 5 });
-    menus.registerMenubarItem(MenuId.MenubarTerminalMenu, { label: localize('menu-bar.title.terminal'), order: 5 });
-    menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
+    menus.registerMenubarItem(MenuId.MenubarFileMenu, {
+      label: localize('menu-bar.title.file'),
+      order: 1,
+      iconClass: getIcon('menubar-file'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarEditMenu, {
+      label: localize('menu-bar.title.edit'),
+      order: 2,
+      iconClass: getIcon('menubar-edit'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, {
+      label: localize('menu-bar.title.selection'),
+      order: 3,
+      iconClass: getIcon('menubar-selection'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarViewMenu, {
+      label: localize('menu-bar.title.view'),
+      order: 4,
+      iconClass: getIcon('menubar-view'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarGoMenu, {
+      label: localize('menu-bar.title.go'),
+      order: 5,
+      iconClass: getIcon('menubar-go'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarTerminalMenu, {
+      label: localize('menu-bar.title.terminal'),
+      order: 5,
+      iconClass: getIcon('terminal'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarHelpMenu, {
+      label: localize('menu-bar.title.help'),
+      order: 999,
+      iconClass: getIcon('question-circle'),
+    });
 
     // File 菜单
     menus.registerMenuItems(MenuId.MenubarFileMenu, [

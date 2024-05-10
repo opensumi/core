@@ -22,6 +22,9 @@ export class DesignMenuBarContribution extends Disposable implements ComponentCo
 
     this.addDispose(
       this.menubarStore.onDidMenuBarChange((menubarItems: IMenubarItem[]) => {
+        this.menuRegistry.deleteAllItemsForMenuId(MenuId.DesignMenuBarTopExtra);
+        this.menuRegistry.unregisterMenuId(MenuId.DesignMenuBarTopExtra);
+
         this.menuRegistry.registerMenuItems(
           MenuId.DesignMenuBarTopExtra,
           menubarItems.map(
@@ -30,8 +33,8 @@ export class DesignMenuBarContribution extends Disposable implements ComponentCo
                 label: item.label,
                 submenu: item.id,
                 iconClass: item.iconClass,
-                group: '1_navigation',
-                order: 100,
+                group: item.group || '1_navigation',
+                order: item.order || 100,
               } as ISubmenuItem),
           ),
         );

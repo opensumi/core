@@ -138,6 +138,9 @@ export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
   readonly onDidChangeMenubar: Event<string>;
+  /**
+   * 注册菜单栏项
+   */
   abstract registerMenubarItem(menuId: string, item: PartialBy<IMenubarItem, 'id'>): IDisposable;
   abstract removeMenubarItem(menuId: string): void;
   abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
@@ -146,23 +149,36 @@ export abstract class IMenuRegistry {
   readonly onDidChangeMenu: Event<string>;
 
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
-  abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<ISumiMenuExtendInfo>);
+  abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<ISumiMenuExtendInfo>): IDisposable;
   abstract registerMenuItem(
     menuId: MenuId | string,
     item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem,
   ): IDisposable;
   abstract unregisterMenuItem(menuId: MenuId | string, menuItemId: string): void;
+  /**
+   * Register multiple menu items at once
+   */
   abstract registerMenuItems(
     menuId: MenuId | string,
     items: Array<IMenuItem | ISubmenuItem | IInternalComponentMenuItem>,
   ): IDisposable;
+  /**
+   * 反注册 menuId, 会在页面上不展示这个 menuId, 但不会删掉已注册的 menu item
+   * 如有需要，请和 {@link deleteAllItemsForMenuId} 配合使用
+   */
   abstract unregisterMenuId(menuId: string): IDisposable;
+  /**
+   * 删除掉 registry 中指定 menu id 的所有 menu item, 不会通知页面更新
+   * 如有需要，请和 {@link unregisterMenuId} 配合使用
+   */
+  abstract deleteAllItemsForMenuId(menuId: string): void;
   abstract getMenuItems(menuId: MenuId | string): Array<IMenuItem | ISubmenuItem | IComponentMenuItem>;
 }
 
 export interface IMenubarItem {
   id: string; // 作为 menu-id 注册进来
   label: string;
+  group?: string;
   order?: number;
   nativeRole?: string; // electron menu 使用
   iconClass?: string;
@@ -303,6 +319,11 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
         this._onDidChangeMenu.fire(menuId);
       }
     });
+  }
+
+  deleteAllItemsForMenuId(menuId: string) {
+    this._menuItems.delete(menuId);
+    this._menuExtendInfo.delete(menuId);
   }
 
   getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem | IComponentMenuItem> {
