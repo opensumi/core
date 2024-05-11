@@ -1,7 +1,7 @@
 import { Type } from '@furyjs/fury';
 
 import { EventEmitter } from '@opensumi/events';
-import { DisposableCollection } from '@opensumi/ide-core-common';
+import { DisposableCollection, DisposableStore, EventQueue } from '@opensumi/ide-core-common';
 
 import { IConnectionShape } from './connection/types';
 import { oneOf7 } from './fury-extends/one-of';
@@ -89,13 +89,18 @@ export interface IWSChannelCreateOptions {
 }
 
 export class WSChannel {
-  protected emitter = new EventEmitter<{
-    message: [data: string];
-    open: [id: string];
-    reopen: [];
-    close: [code?: number, reason?: string];
-    binary: [data: Uint8Array];
-  }>();
+  protected _disposables = new DisposableStore();
+  protected emitter = this._disposables.add(
+    new EventEmitter<{
+      message: [data: string];
+      open: [id: string];
+      reopen: [];
+      close: [code?: number, reason?: string];
+      binary: [data: Uint8Array];
+    }>(),
+  );
+
+  protected binaryQueue = this._disposables.add(new EventQueue<Uint8Array>());
 
   public id: string;
 
@@ -130,13 +135,15 @@ export class WSChannel {
     if (logger) {
       this.logger = logger;
     }
+
+    this._disposables.add(this.emitter.on('binary', (data) => this.binaryQueue.push(data)));
   }
 
   onMessage(cb: (data: string) => any) {
     return this.emitter.on('message', cb);
   }
   onBinary(cb: (data: Uint8Array) => any) {
-    return this.emitter.on('binary', cb);
+    return this.binaryQueue.on(cb);
   }
   onOpen(cb: (id: string) => void) {
     return this.emitter.on('open', cb);
@@ -230,7 +237,7 @@ export class WSChannel {
   }
 
   dispose() {
-    this.emitter.dispose();
+    this._disposables.dispose();
   }
 }
 

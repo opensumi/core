@@ -9,7 +9,6 @@ import { commonChannelPathHandler } from '@opensumi/ide-connection/lib/node';
 import {
   Emitter,
   Event,
-  EventQueue,
   ExtensionConnectModeOption,
   ExtensionConnectOption,
   IReporterTimer,
@@ -171,7 +170,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private setExtProcessConnectionForward() {
     this.logger.log('setExtProcessConnectionForward', this.instanceId);
     this._setMainThreadConnection(async (connectionResult) => {
-      const { channel, clientId, queue } = connectionResult;
+      const { channel, clientId } = connectionResult;
 
       if (this.clientExtProcessExtConnectionDeferredMap.get(clientId)) {
         // means that we are creating the ext process or the ext process is created.
@@ -206,7 +205,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         channel.sendBinary(data);
       });
 
-      const disposable2 = queue.on((data) => {
+      const disposable2 = channel.onBinary((data) => {
         extConnection.send(data);
       });
 
@@ -484,16 +483,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   private async _setMainThreadConnection(
-    handler: (connectionResult: { channel: WSChannel; clientId: string; queue: EventQueue<Uint8Array> }) => void,
+    handler: (connectionResult: { channel: WSChannel; clientId: string }) => void,
   ) {
     commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
       handler: (channel: WSChannel, clientId: string) => {
-        const queue = new EventQueue<Uint8Array>();
-
-        channel.onBinary((data) => {
-          queue.push(data);
-        });
-
         channel.onceClose(() => {
           channel.dispose();
           this.logger.log(`The connection client ${clientId} closed`);
@@ -512,7 +505,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         handler({
           channel,
           clientId,
-          queue,
         });
       },
       dispose: () => {},
