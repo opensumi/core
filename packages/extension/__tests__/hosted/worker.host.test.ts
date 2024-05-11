@@ -48,10 +48,10 @@ describe('Extension Worker Thread Test Suites', () => {
     await preferenceProxy.$initializeConfiguration({
       [PreferenceScope.Folder]: {},
     });
+    await extHostImpl.$updateExtHostData();
   });
 
   it('init extensions', async () => {
-    await extHostImpl.$updateExtHostData();
     const extensions = extHostImpl.getExtensions();
     const ext = extHostImpl.getExtension(mockExtensionProps.id);
     expect(extensions.length).toBe(2);

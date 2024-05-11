@@ -1,10 +1,17 @@
 import { ProxyIdentifier } from '@opensumi/ide-connection';
-import { Deferred, ILoggerManagerClient, IReporter } from '@opensumi/ide-core-common';
-import { REPORT_NAME } from '@opensumi/ide-core-common';
+import {
+  Deferred,
+  ILoggerManagerClient,
+  IReporter,
+  PreferenceScope,
+  REPORT_NAME,
+  sleep,
+} from '@opensumi/ide-core-common';
 import { AppConfig, DefaultReporter } from '@opensumi/ide-core-node';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../../../tools/dev-tool/src/mock-injector';
+import { MainThreadEditorTabsService } from '../../../../__mocks__/api/editor.tab';
 import { MainThreadExtensionLog } from '../../../../__mocks__/api/mainthread.extension.log';
 import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../../../../__mocks__/api/mathread.storage';
@@ -43,6 +50,7 @@ describe('Extension process test', () => {
       rpcProtocolExt.set(ProxyIdentifier.for('MainThreadExtensionService'), new MainThreadExtensionService());
       rpcProtocolExt.set(ProxyIdentifier.for('MainThreadStorage'), new MainThreadStorage());
       rpcProtocolExt.set(ProxyIdentifier.for('MainThreadExtensionLog'), new MainThreadExtensionLog());
+      rpcProtocolExt.set(ProxyIdentifier.for('MainThreadEditorTabs'), new MainThreadEditorTabsService());
 
       extHostImpl = new ExtensionHostServiceImpl(
         rpcProtocolMain,
@@ -53,6 +61,14 @@ describe('Extension process test', () => {
       const localization = rpcProtocolMain.get<IExtHostLocalization>(ExtHostAPIIdentifier.ExtHostLocalization);
       localization.$setCurrentLanguage('en');
       await extHostImpl.init();
+
+      const preferenceProxy = rpcProtocolExt.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
+
+      await sleep(100);
+      await preferenceProxy.$initializeConfiguration({
+        [PreferenceScope.Folder]: {},
+      });
+
       await extHostImpl.$updateExtHostData();
     });
 
