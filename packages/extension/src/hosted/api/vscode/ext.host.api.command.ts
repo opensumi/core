@@ -613,7 +613,7 @@ export const newCommands: ApiCommand[] = [
       ApiCommandArgument.Uri,
       new ApiCommandArgument<
         vscode.ViewColumn | typeConverters.TextEditorOpenOptions | undefined,
-        [number?, ITextEditorOptions?] | undefined
+        [vscode.ViewColumn?, ITextEditorOptions?] | undefined
       >(
         'columnOrOptions',
         'Either the column in which to open or editor options, see vscode.TextDocumentShowOptions',
@@ -622,7 +622,7 @@ export const newCommands: ApiCommand[] = [
           !v
             ? v
             : typeof v === 'number'
-            ? [v, undefined]
+            ? [typeConverters.ViewColumn.from(v), undefined]
             : [typeConverters.ViewColumn.from(v.viewColumn), typeConverters.TextEditorOpenOptions.from(v)],
       ).optional(),
       ApiCommandArgument.String.with('label', '').optional(),

@@ -327,13 +327,36 @@ export class ExtensionCommandContribution implements CommandContribution {
       },
     });
 
+    // 在 VSCode 中，只有插件进程会有这个命令 `vscode.open`，插件进程调用这个命令会被转为 `_workbench.open`
+    // 我们是直接在 browser 层注册了命令，所以会有代码直接在 browser 层调用该命令，入参需要和插件进程调用的入参一致
     registry.registerCommand(VSCodeBuiltinCommands.OPEN, {
       execute: (
         uriComponents: UriComponents,
-        columnAndOptions?: [ViewColumn?, TextDocumentShowOptions?],
+        columnOrOptions?: ViewColumn | TextDocumentShowOptions | [ViewColumn?, TextDocumentShowOptions?],
         label?: string,
       ) => {
         const uri = URI.from(uriComponents);
+        const columnAndOptions = [undefined, undefined] as [ViewColumn?, TextDocumentShowOptions?];
+
+        if (columnOrOptions) {
+          const inputType = typeof columnOrOptions;
+
+          switch (inputType) {
+            case 'number':
+              columnAndOptions[0] = columnOrOptions as unknown as number as ViewColumn;
+              break;
+            case 'object':
+              if (Array.isArray(columnOrOptions)) {
+                columnAndOptions[0] = columnOrOptions[0];
+                columnAndOptions[1] = columnOrOptions[1];
+              } else {
+                // must not be a number
+                columnAndOptions[1] = columnOrOptions as TextDocumentShowOptions;
+              }
+              break;
+          }
+        }
+
         return this.doOpenWith(uri, columnAndOptions, label, undefined);
       },
     });
