@@ -16,6 +16,7 @@ import { ILogger } from '../types';
 
 import { MethodTimeoutError } from './errors';
 import { MessageIO, OperationType, Status } from './message-io';
+import { runInNextTick } from './ral';
 import {
   IRequestHeaders,
   IResponseHeaders,
@@ -128,16 +129,18 @@ export class SumiConnection implements IDisposable {
 
       this.capturer.captureSendRequest(requestId, method, args);
 
-      this.socket.send(
-        this.io.Request(
-          requestId,
-          method,
-          {
-            cancelable: Boolean(cancellationToken) || undefined,
-          },
-          args,
-        ),
-      );
+      runInNextTick(() => {
+        this.socket.send(
+          this.io.Request(
+            requestId,
+            method,
+            {
+              cancelable: Boolean(cancellationToken) || undefined,
+            },
+            args,
+          ),
+        );
+      });
     });
   }
 

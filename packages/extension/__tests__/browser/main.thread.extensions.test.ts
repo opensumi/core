@@ -1,14 +1,19 @@
 import { Injectable, Injector } from '@opensumi/di';
+import { ProxyIdentifier } from '@opensumi/ide-connection';
 import { AppConfig, IContextKeyService } from '@opensumi/ide-core-browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import * as ideCoreCommon from '@opensumi/ide-core-common';
 import { DefaultReporter, IReporter } from '@opensumi/ide-core-common';
 import { AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { MockWorkbenchEditorService } from '@opensumi/ide-editor/src/common/mocks/workbench-editor.service';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { IGlobalStorageServer } from '@opensumi/ide-storage';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
@@ -18,10 +23,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspacePreferences } from '@opensumi/ide-workspace/lib/browser/workspace-preferences';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockWorkbenchEditorService } from '../../../editor/src/common/mocks/workbench-editor.service';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+import { MainThreadEditorTabsService } from '../../__mocks__/api/editor.tab';
 import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
 import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
 import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
@@ -184,12 +186,22 @@ describe('MainThreadExtensions Test Suites', () => {
       extHostInjector,
     );
     mainthreadService = new MainThreadExtensionService();
+    rpcProtocolMain.set(ProxyIdentifier.for('MainThreadEditorTabs'), new MainThreadEditorTabsService());
     rpcProtocolMain.set(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog, []));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [rpcProtocolMain]));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadExtensionService, mainthreadService);
     rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionHostService);
     // await mainthreadService.activate();
     await extensionHostService.init();
+
+    const preferenceProxy = rpcProtocolMain.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
+
+    await ideCoreCommon.sleep(100);
+    await preferenceProxy.$initializeConfiguration({
+      [ideCoreCommon.PreferenceScope.Folder]: {},
+    });
+    await ideCoreCommon.sleep(100);
+
     await extensionHostService.$updateExtHostData();
     extHostExtension = createExtensionsApiFactory(extensionHostService);
   });
