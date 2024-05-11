@@ -113,7 +113,7 @@ const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId
             <li key={`${agentId || ''}-${name}`} onMouseDown={() => handleClick(nameWithSlash, agentId, command)}>
               <Block
                 icon={icon}
-                name={nameWithSlash}
+                name={name}
                 description={description}
                 agentId={agentId}
                 command={command}
