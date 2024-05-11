@@ -402,6 +402,15 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
             }
             this.extProcessRestartPromise = createCancelablePromise(doRestart);
             await this.extProcessRestartPromise;
+          } catch (err) {
+            this.logger.error(`[Extension Restart Error], \n ${err.message || err}`);
+            const refresh = localize('preference.general.language.change.refresh.now');
+            const result = await this.messageService.error(localize('extension.invalidExthostReload.confirm.content'), [
+              refresh,
+            ]);
+            if (result === refresh) {
+              this.clientApp.fireOnReload();
+            }
           } finally {
             statusBar.dispose();
           }
