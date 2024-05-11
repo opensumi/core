@@ -32,7 +32,7 @@ export function initNodeThreadAPIProxy(
   const MainThreadDebugAPI = injector.get(MainThreadDebug, [rpcProtocol, MainThreadConnectionAPI]);
   const MainThreadTerminalAPI = injector.get(MainThreadTerminal, [rpcProtocol]);
   const MainThreadTasksAPI = injector.get(MainThreadTasks, [rpcProtocol]);
-  const MainthreadTestAPI = injector.get(MainThreadTestsImpl, [rpcProtocol]);
+  const MainThreadTestAPI = injector.get(MainThreadTestsImpl, [rpcProtocol]);
 
   rpcProtocol.set<MainThreadTreeView>(MainThreadAPIIdentifier.MainThreadTreeView, MainThreadTreeViewAPI);
   rpcProtocol.set<MainThreadWindowState>(MainThreadAPIIdentifier.MainThreadWindowState, MainThreadWindowStateAPI);
@@ -42,7 +42,7 @@ export function initNodeThreadAPIProxy(
   rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, MainThreadTerminalAPI);
   rpcProtocol.set<IMainThreadTasks>(MainThreadAPIIdentifier.MainThreadTasks, MainThreadTasksAPI);
 
-  rpcProtocol.set<IMainThreadTesting>(MainThreadAPIIdentifier.MainThreadTests, MainthreadTestAPI);
+  rpcProtocol.set<IMainThreadTesting>(MainThreadAPIIdentifier.MainThreadTests, MainThreadTestAPI);
 
   return () => {
     MainThreadTreeViewAPI.dispose();
@@ -52,7 +52,7 @@ export function initNodeThreadAPIProxy(
     MainThreadDebugAPI.dispose();
     MainThreadTerminalAPI.dispose();
     MainThreadTasksAPI.dispose();
-    MainthreadTestAPI.dispose();
+    MainThreadTestAPI.dispose();
   };
 }
 

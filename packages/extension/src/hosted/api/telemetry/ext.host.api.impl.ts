@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { WaitGroup } from '@opensumi/ide-core-common';
+import { WaitGroup, randomString } from '@opensumi/ide-core-common';
 
 import { IExtensionHostService, IExtensionWorkerHost } from '../../../common';
 import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
@@ -22,7 +22,7 @@ export function createAPIFactory(
   const extHostEditors = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostEditors) as ExtensionHostEditorService;
   const logger = extensionService.logger;
 
-  const createUuid = () => Math.random();
+  const createUuid = () => randomString(8);
 
   const sendOperationStart = (operationId: string, operationName: string) => {
     logger.warn('Method not implemented.');

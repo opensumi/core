@@ -149,6 +149,7 @@ export function initSharedAPIProxy(rpcProtocol: IRPCProtocol, injector: Injector
   return {
     setup: async () => {
       await MainThreadWebviewAPI.init();
+      await MainThreadCommandsAPI.init();
     },
     dispose: () => {
       MainThreadLanguagesAPI.dispose();

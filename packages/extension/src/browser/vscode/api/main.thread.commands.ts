@@ -1,7 +1,7 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CommandRegistry, IContextKeyService, IDisposable, ILogger } from '@opensumi/ide-core-browser';
-import { Disposable, IExtensionInfo, URI, arrays } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, IExtensionInfo, URI, arrays } from '@opensumi/ide-core-common';
 import { ICommandServiceToken, IMonacoCommandService } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 
 import { ArgumentProcessor, ExtHostAPIIdentifier, IExtHostCommands, IMainThreadCommands } from '../../../common/vscode';
@@ -33,11 +33,23 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   private disposable = new Disposable();
 
+  private _defered = new Deferred<void>();
+
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
-    this.proxy.$registerBuiltInCommands();
-    this.proxy.$registerCommandConverter();
+
+    this.doInitialize();
     this.registerUriArgProcessor();
+  }
+
+  private async doInitialize() {
+    // need await here, because this is a rpc call
+    await this.proxy.$registerBuiltInCommands();
+    this._defered.resolve();
+  }
+
+  async init() {
+    await this._defered.promise;
   }
 
   private registerUriArgProcessor() {

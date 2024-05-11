@@ -64,22 +64,29 @@ abstract class ApiImplFactory {
   private apiFactory: any;
   private extAPIImpl: Map<string, any>;
 
+  protected defered = new Deferred<void>();
+
   constructor(
     readonly rpcProtocol: SumiConnectionMultiplexer,
     readonly extHost: IExtensionHostService,
     readonly injector: Injector,
   ) {
-    this.apiFactory = this.createAPIFactory(rpcProtocol, extHost, injector);
+    this.apiFactory = this.createAPIFactory(rpcProtocol, extHost, injector, () => {
+      this.defered.resolve();
+    });
     this.extAPIImpl = new Map();
+  }
+
+  async init() {
+    await this.defered.promise;
   }
 
   abstract createAPIFactory(
     rpcProtocol: SumiConnectionMultiplexer,
     extHost: IExtensionHostService,
     injector: Injector,
+    onReady: () => void,
   ): any;
-
-  abstract init(): Promise<void>;
 
   public load(extension: IExtensionDescription | undefined, addonImpl?: any) {
     if (!extension) {
@@ -105,52 +112,35 @@ abstract class ApiImplFactory {
 }
 
 class VSCodeAPIImpl extends ApiImplFactory {
-  defered = new Deferred<void>();
-
   override createAPIFactory(
     rpcProtocol: SumiConnectionMultiplexer,
     extHost: IExtensionHostService,
     injector: Injector,
+    onReady: () => void,
   ) {
-    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(AppConfig), () => {
-      this.defered.resolve();
-    });
-  }
-
-  override async init() {
-    await this.defered.promise;
+    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(AppConfig), onReady);
   }
 }
 
 class OpenSumiAPIImpl extends ApiImplFactory {
-  defered = new Deferred<void>();
-
   override createAPIFactory(
     rpcProtocol: SumiConnectionMultiplexer,
     extHost: IExtensionHostService,
     injector: Injector,
+    onReady: () => void,
   ) {
-    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter), () => {
-      this.defered.resolve();
-    });
-  }
-
-  override async init() {
-    await this.defered.promise;
+    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter), onReady);
   }
 }
 
 class TelemetryAPIImpl extends ApiImplFactory {
-  defered = new Deferred<void>();
-
-  override createAPIFactory(rpcProtocol: SumiConnectionMultiplexer, extHost: IExtensionHostService) {
-    return createTelemetryAPIFactory(rpcProtocol, extHost, 'node', () => {
-      this.defered.resolve();
-    });
-  }
-
-  override async init() {
-    await this.defered.promise;
+  override createAPIFactory(
+    rpcProtocol: SumiConnectionMultiplexer,
+    extHost: IExtensionHostService,
+    _: Injector,
+    onReady: () => void,
+  ) {
+    return createTelemetryAPIFactory(rpcProtocol, extHost, 'node', onReady);
   }
 }
 
@@ -215,11 +205,14 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async init() {
+    this.extensionsActivator = new ExtensionsActivator(this.logger);
+    this.defineAPI();
+  }
+
+  protected async apiInited() {
     await this.vscodeAPIImpl.init();
     await this.openSumiAPIImpl.init();
     await this.telemetryAPIImpl.init();
-    this.extensionsActivator = new ExtensionsActivator(this.logger);
-    this.defineAPI();
   }
 
   public getExtensions(): KTExtension[] {
@@ -266,6 +259,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async $updateExtHostData() {
+    await this.apiInited();
+
     const extensions: IExtensionProps[] = await this.rpcProtocol
       .getProxy(MainThreadAPIIdentifier.MainThreadExtensionService)
       .$getExtensions();

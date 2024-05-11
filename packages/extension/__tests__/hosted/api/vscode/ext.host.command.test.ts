@@ -1,5 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IExtensionInfo, Uri } from '@opensumi/ide-core-common';
+import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import {
   CommandHandler,
   IMainThreadCommands,
@@ -13,8 +14,6 @@ import {
   createCommandsApiFactory,
 } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-
-import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 
 import type vscode from 'vscode';
 
@@ -279,7 +278,6 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     beforeEach(async () => {
       mockMainThreadFunc = jest.spyOn(mainService, '$executeCommand');
       await extCommand.$registerBuiltInCommands();
-      await extCommand.$registerCommandConverter();
     });
 
     it('vscode.executeFormatDocumentProvider', async () => {

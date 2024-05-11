@@ -619,6 +619,8 @@ export const retry = async <T>(
   }
 };
 
+const noop = () => {};
+
 type WaitGroupCallback = () => void;
 
 export class WaitGroup {
@@ -629,10 +631,12 @@ export class WaitGroup {
     this._pending = 0;
   }
 
-  private _resolve() {
-    while (!this.callbacks.isEmpty()) {
-      const cb = this.callbacks.shift();
-      cb && cb();
+  private _check() {
+    if (this._pending === 0) {
+      while (!this.callbacks.isEmpty()) {
+        const cb = this.callbacks.shift();
+        cb && cb();
+      }
     }
   }
 
@@ -642,12 +646,15 @@ export class WaitGroup {
 
   done(): void {
     this._pending--;
-    if (this._pending === 0) {
-      this._resolve();
-    }
+    this._check();
   }
 
   wait(cb: WaitGroupCallback) {
+    if (this._pending === 0) {
+      cb();
+      return noop;
+    }
+
     return this.callbacks.push(cb);
   }
 

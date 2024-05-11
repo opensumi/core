@@ -9,6 +9,7 @@ import { commonChannelPathHandler } from '@opensumi/ide-connection/lib/node';
 import {
   Emitter,
   Event,
+  EventQueue,
   ExtensionConnectModeOption,
   ExtensionConnectOption,
   IReporterTimer,
@@ -170,7 +171,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private setExtProcessConnectionForward() {
     this.logger.log('setExtProcessConnectionForward', this.instanceId);
     this._setMainThreadConnection(async (connectionResult) => {
-      const { channel, clientId } = connectionResult;
+      const { channel, clientId, queue } = connectionResult;
+
+      if (this.clientExtProcessExtConnectionDeferredMap.get(clientId)) {
+        // means that we are creating the ext process or the ext process is created.
+        await this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.promise;
+      }
 
       await this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.promise;
 
@@ -196,16 +202,18 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
 
-      extConnection.onMessage((data) => {
+      const disposable1 = extConnection.onMessage((data) => {
         channel.sendBinary(data);
       });
 
-      extConnection.onceClose(() => {
-        channel.close();
+      const disposable2 = queue.on((data) => {
+        extConnection.send(data);
       });
 
-      channel.onBinary((data) => {
-        extConnection.send(data);
+      extConnection.onceClose(() => {
+        disposable1.dispose();
+        disposable2.dispose();
+        channel.close();
       });
 
       // 连接恢复后清除销毁的定时器
@@ -476,13 +484,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   private async _setMainThreadConnection(
-    handler: (connectionResult: { channel: WSChannel; clientId: string }) => void,
+    handler: (connectionResult: { channel: WSChannel; clientId: string; queue: EventQueue<Uint8Array> }) => void,
   ) {
     commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
       handler: (channel: WSChannel, clientId: string) => {
-        handler({
-          channel,
-          clientId,
+        const queue = new EventQueue<Uint8Array>();
+
+        channel.onBinary((data) => {
+          queue.push(data);
         });
 
         channel.onceClose(() => {
@@ -498,6 +507,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
             }
           }
           this.closeExtProcessWhenConnectionClose(clientId);
+        });
+
+        handler({
+          channel,
+          clientId,
+          queue,
         });
       },
       dispose: () => {},

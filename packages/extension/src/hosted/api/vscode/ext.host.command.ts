@@ -148,17 +148,6 @@ export class ExtHostCommands implements IExtHostCommands {
     });
   }
 
-  // 需要在 $registerBuiltInCommands 一起注册 避免插件进程启动但浏览器未启动时报错
-  public $registerCommandConverter() {
-    this.converter = new CommandsConverter(this, (id) => {
-      // API commands that have no return type (void) can be
-      // converted to their internal command and don't need
-      // any indirection commands
-      const candidate = this._apiCommands.get(id);
-      return candidate?.result === ApiCommandResult.Void ? candidate : undefined;
-    });
-  }
-
   public $registerBuiltInCommands() {
     if (this.buildInCommands) {
       this.logger.log('register builtIn commands');
@@ -172,6 +161,14 @@ export class ExtHostCommands implements IExtHostCommands {
     for (const command of newCommands) {
       this.registerApiCommand(command);
     }
+
+    this.converter = new CommandsConverter(this, (id) => {
+      // API commands that have no return type (void) can be
+      // converted to their internal command and don't need
+      // any indirection commands
+      const candidate = this._apiCommands.get(id);
+      return candidate?.result === ApiCommandResult.Void ? candidate : undefined;
+    });
   }
 
   registerApiCommand(apiCommand: ApiCommand): Disposable {
