@@ -1272,7 +1272,7 @@ export const localizationBundle = {
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'extension.crashedExthostReload.confirm': 'Extension Host Process is crashed, do you want to restart the process?',
-    'extension.exthostRestarting.content': 'Extension Host Process is restarting',
+    'extension.exthostRestarting.content': 'Restarting Extension Host',
     'extension.host.restart': 'Restart Extension Host Process',
 
     'extension.no.view.found':
