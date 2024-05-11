@@ -41,7 +41,7 @@ export class ActivationEventServiceImpl implements IActivationEventService {
       listeners = this.eventListeners.get(topic + ':' + data);
     }
     if (listeners) {
-      await Promise.all(listeners.map((listener) => this.tryRun(topic, data, listener)));
+      await Promise.allSettled(listeners.map((listener) => this.tryRun(topic, data, listener)));
     }
   }
 
