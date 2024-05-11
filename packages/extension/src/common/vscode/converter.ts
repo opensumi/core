@@ -22,8 +22,7 @@ import {
   path,
   randomString,
 } from '@opensumi/ide-core-common';
-import { ChatMessageRole as ChatMessageRoleEnum } from '@opensumi/ide-core-common/lib/types/ai-native';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatMessageRole as ChatMessageRoleEnum, IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import {
@@ -132,7 +131,7 @@ export namespace Range {
 }
 
 /**
- * @deprecated 之后使用 vscode 的形式 Range.from 代替
+ * @deprecated 请使用 `Range.from` 代替
  * @param range
  */
 export function fromRange(range: undefined): undefined;
@@ -142,7 +141,7 @@ export function fromRange(range: vscode.Range | undefined): model.Range | undefi
 }
 
 /**
- * @deprecated 之后使用 vscode 的形式 Range.to 代替
+ * @deprecated 请使用 `Range.to` 代替
  * @param range
  */
 export function toRange(range: model.Range): types.Range {

@@ -214,7 +214,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       document: document.document,
       contentChanges: changes.map((change) => ({
         ...change,
-        range: toRange(change.range) as any,
+        range: toRange(change.range),
       })),
       reason,
     });
