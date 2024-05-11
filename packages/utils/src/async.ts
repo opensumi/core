@@ -644,6 +644,15 @@ export class WaitGroup {
     this._pending += delta;
   }
 
+  async addPromise<T>(promise: Promise<T>): Promise<T> {
+    this.add();
+    try {
+      return await promise;
+    } finally {
+      this.done();
+    }
+  }
+
   done(): void {
     this._pending--;
     this._check();

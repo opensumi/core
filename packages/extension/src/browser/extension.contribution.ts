@@ -327,8 +327,6 @@ export class ExtensionCommandContribution implements CommandContribution {
       },
     });
 
-    // 在 VSCode 中，只有插件进程会有这个命令 `vscode.open`，插件进程调用这个命令会被转为 `_workbench.open`
-    // 我们是直接在 browser 层注册了命令，命令会直接调用到这个命令上，入参需要和插件进程调用的入参一致
     registry.registerCommand(VSCodeBuiltinCommands.OPEN, {
       execute: (
         uriComponents: UriComponents,

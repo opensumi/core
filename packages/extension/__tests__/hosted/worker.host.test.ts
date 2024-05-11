@@ -1,8 +1,10 @@
 import { Injector } from '@opensumi/di';
 import { ProxyIdentifier } from '@opensumi/ide-connection';
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
-import { DefaultReporter, IReporter } from '@opensumi/ide-core-common';
+import { DefaultReporter, IReporter, PreferenceScope, sleep } from '@opensumi/ide-core-common';
+import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 
+import { MainThreadEditorTabsService } from '../../__mocks__/api/editor.tab';
 import { MainThreadExtensionLog } from '../../__mocks__/api/mainthread.extension.log';
 import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../../__mocks__/api/mathread.storage';
@@ -19,7 +21,8 @@ import { ExtensionWorkerHost } from '../../src/hosted/worker.host';
 
 describe('Extension Worker Thread Test Suites', () => {
   let extHostImpl: ExtensionWorkerHost;
-  let rpcProtocol: SumiConnectionMultiplexer;
+  let rpcProtocolMain: SumiConnectionMultiplexer;
+  let rpcProtocolExt: SumiConnectionMultiplexer;
 
   beforeAll(async () => {
     const injector = new Injector();
@@ -28,14 +31,23 @@ describe('Extension Worker Thread Test Suites', () => {
       useValue: new DefaultReporter(),
     });
 
-    const { rpcProtocolExt, rpcProtocolMain } = await createMockPairRPCProtocol();
+    const pair = await createMockPairRPCProtocol();
+    rpcProtocolMain = pair.rpcProtocolMain;
+    rpcProtocolExt = pair.rpcProtocolExt;
 
     rpcProtocolExt.set(ProxyIdentifier.for('MainThreadExtensionService'), new MainThreadExtensionService());
     rpcProtocolExt.set(ProxyIdentifier.for('MainThreadStorage'), new MainThreadStorage());
     rpcProtocolExt.set(ProxyIdentifier.for('MainThreadExtensionLog'), new MainThreadExtensionLog());
+    rpcProtocolExt.set(ProxyIdentifier.for('MainThreadEditorTabs'), new MainThreadEditorTabsService());
 
-    rpcProtocol = rpcProtocolMain;
-    extHostImpl = new ExtensionWorkerHost(rpcProtocol, injector);
+    extHostImpl = new ExtensionWorkerHost(rpcProtocolMain, injector);
+
+    const preferenceProxy = rpcProtocolExt.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
+
+    await sleep(100);
+    await preferenceProxy.$initializeConfiguration({
+      [PreferenceScope.Folder]: {},
+    });
   });
 
   it('init extensions', async () => {
@@ -80,7 +92,7 @@ describe('Extension Worker Thread Test Suites', () => {
     const id = mockExtensionProps2.id;
     await extHostImpl.$activateExtension(id);
     const EXTENSION_EXTEND_SERVICE_PREFIX = 'extension_extend_service';
-    const proxies = rpcProtocol.getProxy({
+    const proxies = rpcProtocolMain.getProxy({
       serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${id}:FakeComponentId`,
     } as ProxyIdentifier<any>);
     // 这里其实没法覆盖到，因为 getProxy 永远都返回不为空..
