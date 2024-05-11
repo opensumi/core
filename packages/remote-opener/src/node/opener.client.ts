@@ -14,9 +14,6 @@ export class RemoteOpenerClientImpl implements IRemoteOpenerClient {
   private readonly logger: INodeLogger;
 
   setRemoteOpenerServiceInstance(clientId: string, service: IRemoteOpenerService): void {
-    if (this.remoteOpenerServices.has(clientId)) {
-      this.logger.error(`Remote opener service instance for client ${clientId} already set.`);
-    }
     this.remoteOpenerServices.set(clientId, service);
   }
 

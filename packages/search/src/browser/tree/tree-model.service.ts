@@ -345,20 +345,20 @@ export class SearchModelService extends Disposable {
   }
 
   activate() {
-    if (this.searchTreeService.contextKey) {
+    this.searchTreeService.viewReady.then(() => {
       this.searchTreeService.contextKey.searchViewVisibleKey.set(true);
-    }
 
-    if (this.treeIsDirty) {
-      this.refresh();
-      this.treeIsDirty = false;
-    }
+      if (this.treeIsDirty) {
+        this.refresh();
+        this.treeIsDirty = false;
+      }
+    });
   }
 
   deactivate() {
-    if (this.searchTreeService.contextKey) {
+    this.searchTreeService.viewReady.then(() => {
       this.searchTreeService.contextKey.searchViewVisibleKey.set(false);
-    }
+    });
   }
 
   dispose() {
