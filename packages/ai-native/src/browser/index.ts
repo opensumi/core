@@ -12,6 +12,7 @@ import {
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-browser';
+import { TerminalRegistryToken } from '@opensumi/ide-core-common';
 
 import {
   ChatProxyServiceToken,
@@ -24,6 +25,7 @@ import {
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
 import { TerminalAIContribution } from './ai-terminal/terminal-ai.contributon';
+import { TerminalFeatureRegistry } from './ai-terminal/terminal.feature.registry';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -100,6 +102,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: RenameCandidatesProviderRegistryToken,
       useClass: RenameCandidatesProviderRegistry,
+    },
+    {
+      token: TerminalRegistryToken,
+      useClass: TerminalFeatureRegistry,
     },
     {
       token: LanguageParserService,

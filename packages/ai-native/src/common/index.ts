@@ -216,3 +216,11 @@ export interface IChatAgentWelcomeMessage {
   content: IChatWelcomeMessageContent;
   sampleQuestions?: IChatReplyFollowup[];
 }
+
+/**
+ * Terminal type
+ */
+export interface ITerminalCommandSuggestionDesc {
+  description: string;
+  command: string;
+}

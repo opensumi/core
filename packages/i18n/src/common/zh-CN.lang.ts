@@ -731,22 +731,6 @@ export const localizationBundle = {
     'terminal.ai.inputHint': '输入自然语言生成命令，示例：展示当前进程 pid',
     'terminal.ai.inputSharpToGetHint': '输入 # 来获取 AI 建议命令',
     'terminal.ai.cannotGetTerminalConnection': '无法获取终端连接，请到用户群反馈',
-    'terminal.ai.modelPrompt': `
-    你是一个 Shell 脚本专家，现在我需要使用 Shell 来完成一些操作，但是我不熟悉 Shell 命令，因此我需要通过自然语言描述生成终端命令，只需生成 1 到 5 个命令。
-    提示：使用 . 来表示当前文件夹
-
-    下面是自然语言描述和其对应的终端命令：
-    提问: 查看机器内存
-    回答:
-    #Command#: free -m
-    #Description#: 查看机器内存
-
-    提问: 查看当前进程的 pid
-    回答:
-    #Command#: echo$$
-    #Description#: 查看当前进程的 pid
-
-    提问: `,
 
     'debugger.menu.setValue': '设置变量',
     'debugger.menu.setValue.param': '请输入你要改变变量的值',

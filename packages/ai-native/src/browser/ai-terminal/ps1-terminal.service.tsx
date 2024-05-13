@@ -1,18 +1,18 @@
 import domAlign from 'dom-align';
 import React from 'react';
 import { Root, createRoot } from 'react-dom/client';
-import { v4 as uuid } from 'uuid';
 import { IDecoration, IDisposable, IMarker, Terminal } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { localize } from '@opensumi/ide-core-browser';
-import { Disposable, IAIReporter } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, Disposable, IAIReporter, TerminalRegistryToken } from '@opensumi/ide-core-common';
 import { ITerminalConnection, ITerminalController } from '@opensumi/ide-terminal-next';
+import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
-import { ChatInternalService } from '../chat/chat.internal.service';
-import { MsgStreamManager } from '../model/msg-stream-manager';
+import { ITerminalCommandSuggestionDesc } from '../../common';
 
-import { AITerminalPrompt, SmartCommandDesc } from './component/terminal-command-suggest-controller';
+import { AITerminalPrompt } from './component/terminal-command-suggest-controller';
+import { TerminalFeatureRegistry } from './terminal.feature.registry';
 
 // 基于 PS1 Hack 的终端 AI 能力集成
 
@@ -27,11 +27,8 @@ export class PS1TerminalService extends Disposable {
   @Autowired(ITerminalController)
   private terminalController: ITerminalController;
 
-  @Autowired(ChatInternalService)
-  private readonly aiChatService: ChatInternalService;
-
-  @Autowired(MsgStreamManager)
-  private readonly msgStreamManager: MsgStreamManager;
+  @Autowired(TerminalRegistryToken)
+  private readonly terminalFeatureRegistry: TerminalFeatureRegistry;
 
   @Autowired(IAIReporter)
   aiReporter: IAIReporter;
@@ -43,7 +40,7 @@ export class PS1TerminalService extends Disposable {
   private promptEndReactRoot: Root | undefined;
   private onDataDisposable: IDisposable;
 
-  private currentSessionId: string;
+  private cancelToken = new CancellationTokenSource();
 
   public active() {
     this.initContainer();
@@ -216,92 +213,37 @@ export class PS1TerminalService extends Disposable {
   }
 
   private async stopAIStreamRequest() {
-    if (this.currentSessionId) {
-      await this.aiChatService.destroyStreamRequest(this.currentSessionId);
-      this.aiChatService.cancelChatViewToken();
-    }
+    this.cancelToken.cancel();
+    this.cancelToken = new CancellationTokenSource();
   }
 
   // 获取 AI 命令建议
   private async getAICommandSuggestions(
     commandDescription: string,
-    statCallback: (stat: number) => void,
-    suggestionCallback: (suggestions: SmartCommandDesc[]) => void,
+    doneCallback: () => void,
+    _thinkingCallback: () => void,
+    suggestionCallback: (suggestions: ITerminalCommandSuggestionDesc[]) => void,
   ) {
-    // 根据国际化配置调整 AI Prompt 的提示语
-    const aiPrompt = `${localize('terminal.ai.modelPrompt')} ${commandDescription}`;
-
-    // 如果已有 AI 请求发出，那就取消这个 AI 请求
     await this.stopAIStreamRequest();
 
     const reportRelationId = this.aiReporter.start('terminalAICommand', { message: commandDescription });
-    const sessionId = uuid();
-    await this.aiChatService.messageWithStream(aiPrompt, {}, sessionId);
 
-    this.currentSessionId = sessionId;
+    const terminalReadableStream = await this.terminalFeatureRegistry.readableCommandSuggestions(
+      commandDescription,
+      this.cancelToken.token,
+    );
 
-    let buffer = ''; // 用于累积数据片段的缓冲区
-    const aiCommandSuggestions: SmartCommandDesc[] = [];
-    let currentObj = {} as SmartCommandDesc;
+    const aiCommandSuggestions: ITerminalCommandSuggestionDesc[] = [];
 
-    // 流式解析大模型返回的每行数据
-    const processLine = (lineBuffer: string) => {
-      const firstCommandIndex = lineBuffer.indexOf('#Command#:');
-      let line = lineBuffer;
-
-      if (firstCommandIndex !== -1) {
-        // 找到了第一个#Command#:，截取它及之后的内容
-        line = lineBuffer.substring(firstCommandIndex);
-      }
-
-      // 解析命令和描述
-      if (line.startsWith('#Command#:')) {
-        if (currentObj.command) {
-          // 如果currentObj中已有命令，则将其添加到结果数组中，并开始新的对象
-          currentObj = {} as SmartCommandDesc;
-        }
-        currentObj.command = line.substring('#Command#:'.length).trim();
-      } else if (line.startsWith('#Description#:')) {
-        currentObj.description = line.substring('#Description#:'.length).trim();
-        aiCommandSuggestions.push(currentObj);
-        if (aiCommandSuggestions.length > 4) {
-          // 如果 AI 返回的命令超过 5 个，就停止 AI 生成 (这种情况下往往是模型不稳定或者出现了幻觉)
-          this.stopAIStreamRequest();
-        }
-        suggestionCallback(aiCommandSuggestions); // 每拿到一个结果就回调一次，优化用户体感
-      }
-    };
-
-    // 大模型 Stream 流式返回监听，缓存处理，然后按行解析
-    this.msgStreamManager.onMsgListChange(sessionId)((msg) => {
-      if (msg && this.msgStreamManager.currentSessionId === sessionId) {
-        const { delta, finish_reason } = msg;
-        const chunk = delta.content;
-
-        buffer += chunk;
-        if (finish_reason === 'stop') {
-          buffer += '\n';
-        }
-        let newlineIndex = buffer.indexOf('\n');
-        while (newlineIndex !== -1) {
-          const line = buffer.substring(0, newlineIndex).trim();
-          buffer = buffer.substring(newlineIndex + 1);
-          processLine(line);
-          newlineIndex = buffer.indexOf('\n');
-        }
-      }
-    });
-
-    // 大模型 Stream 状态监听
-    this.msgStreamManager.onMsgStatus((status) => {
-      if (this.msgStreamManager.currentSessionId === sessionId) {
-        statCallback(status);
-        if (status === 2) {
-          // AI 思考完成
-          this.aiReporter.end(reportRelationId, { message: commandDescription, success: true });
-          this.currentSessionId = '';
-        }
-      }
+    listenReadable<ITerminalCommandSuggestionDesc>(terminalReadableStream, {
+      onData: (data) => {
+        aiCommandSuggestions.push(data);
+        suggestionCallback(aiCommandSuggestions);
+      },
+      onEnd: (): void => {
+        doneCallback();
+        this.aiReporter.end(reportRelationId, { message: commandDescription, success: true });
+      },
     });
   }
 }

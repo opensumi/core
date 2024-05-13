@@ -32,6 +32,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { TerminalRegistryToken } from '@opensumi/ide-core-common';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
@@ -75,6 +76,7 @@ import {
   IInlineChatFeatureRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
+  ITerminalProviderRegistry,
 } from './types';
 
 @Domain(
@@ -121,6 +123,9 @@ export class AINativeBrowserContribution
 
   @Autowired(RenameCandidatesProviderRegistryToken)
   private readonly renameCandidatesProviderRegistry: IRenameCandidatesProviderRegistry;
+
+  @Autowired(TerminalRegistryToken)
+  private readonly terminalProviderRegistry: ITerminalProviderRegistry;
 
   @Autowired(AINativeService)
   private readonly aiNativeService: AINativeService;
@@ -200,6 +205,9 @@ export class AINativeBrowserContribution
       }
       if (contribution.registerChatRender) {
         contribution.registerChatRender(this.chatRenderRegistry);
+      }
+      if (contribution.registerTerminalProvider) {
+        contribution.registerTerminalProvider(this.terminalProviderRegistry);
       }
     });
   }
