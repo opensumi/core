@@ -14,7 +14,9 @@ import {
   IInlineChatFeatureRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
+  ITerminalProviderRegistry,
   TChatSlashCommandSend,
+  TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
@@ -319,6 +321,24 @@ export class AiNativeContribution implements AINativeCoreContribution {
           tags: [NewSymbolNameTag.AIGenerated],
         }));
       }
+    });
+  }
+
+  registerTerminalProvider(register: ITerminalProviderRegistry): void {
+    register.registerCommandSuggestionsProvider(async (message, token) => {
+      const stream = TerminalSuggestionReadableStream.create();
+
+      setTimeout(() => {
+        stream.emitData({
+          command: 'Terminal Command Suggestion',
+          description: '✨ This is a terminal command suggestion',
+        });
+      }, 1000);
+
+      setTimeout(() => {
+        stream.end();
+      }, 2000);
+      return stream;
     });
   }
 }
