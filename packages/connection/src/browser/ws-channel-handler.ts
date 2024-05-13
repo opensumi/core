@@ -72,8 +72,6 @@ export class WSChannelHandler {
       if (this.channelMap.size > 0) {
         this.channelMap.forEach((channel) => {
           channel.open(channel.channelPath, this.clientId);
-          // 针对前端需要重新设置下后台状态的情况
-          channel.fireReopen();
         });
       }
     };
@@ -109,6 +107,8 @@ export class WSChannelHandler {
     });
     this.channelMap.set(channel.id, channel);
 
+    let channelOpenCount = 0;
+
     channel.onOpen(() => {
       const closeInfo = this.channelCloseEventMap.get(channel.id);
       if (closeInfo) {
@@ -118,11 +118,16 @@ export class WSChannelHandler {
         });
 
         this.channelCloseEventMap.delete(channel.id);
+      }
 
+      if (channelOpenCount > 0) {
         this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
+        channel.fireReopen();
       } else {
         this.logger.log(this.LOG_TAG, `channel open ${this.clientId}:${channel.channelPath}`);
       }
+
+      channelOpenCount++;
     });
 
     channel.onClose((code: number, reason: string) => {

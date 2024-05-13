@@ -9,10 +9,8 @@ import { IActivationEventService } from './types';
  * 管理和发出插件 activateEvents
  * event 格式
  * topic:data
+ * topic可能支持data通配符，比如workspaceContains: **\/a.json
  */
-
-// topic可能支持data通配符，比如workspaceContains: **/a.json
-
 @Injectable()
 export class ActivationEventServiceImpl implements IActivationEventService {
   private eventListeners: Map<string, IActivationEventListener[]> = new Map();
