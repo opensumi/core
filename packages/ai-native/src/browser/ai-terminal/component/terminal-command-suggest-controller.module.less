@@ -1,26 +1,26 @@
 .container {
   position: absolute;
-  // background-color: #262626;
   background-color: var(--editorGroupHeader-tabsBackground);
   bottom: 0;
   left: 0;
   z-index: 3;
-  height: 80px;
   width: 500px;
   padding: 8px 10px 8px 14px;
   border-radius: 12px;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
   display: flex;
   flex-direction: row;
   font-size: 14px;
+  padding-bottom: 12px;
 }
 
 .statusContainer {
-  position: absolute;
-  bottom: 0;
-  right: 12px;
+  text-align: right;
   font-size: 8px;
   opacity: 0.5;
 }
@@ -32,13 +32,7 @@
 }
 
 .input {
-  flex: 1;
-  width: 100%;
-  color: var(--design-title-foreground);
   border: none;
-  padding: 10px;
-  font-size: 14px;
-  height: 28px;
   padding-left: 0;
   background-color: transparent;
 }

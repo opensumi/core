@@ -2,15 +2,12 @@ import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Emitter, localize } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Input, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 
-import styles from './terminal-command-suggest-controller.module.less';
+import { ITerminalCommandSuggestionDesc } from '../../../common';
 
-export interface SmartCommandDesc {
-  description: string;
-  command: string;
-}
+import styles from './terminal-command-suggest-controller.module.less';
 
 // 支持键盘选择的列表
 export const KeyboardSelectableList = (props: {
@@ -106,8 +103,9 @@ interface CommandLineInterfaceProps {
   onDescription?: (description: string) => void;
   getAICommandSuggestions: (
     commandDescription: string,
-    statCallback: (stat: number) => void,
-    suggestionCallback: (suggestions: SmartCommandDesc[]) => void,
+    doneCallback: () => void,
+    thinkingCallback: () => void,
+    suggestionCallback: (suggestions: ITerminalCommandSuggestionDesc[]) => void,
   ) => void;
   cancelAIRequst?: () => void;
 }
@@ -115,31 +113,32 @@ interface CommandLineInterfaceProps {
 export const AITerminalPrompt = (props: CommandLineInterfaceProps) => {
   const { onEscTriggered, onSuggestionClick, getAICommandSuggestions, cancelAIRequst } = props;
   const [input, setInput] = useState('');
-  const [suggestions, setSuggestions] = useState<SmartCommandDesc[]>([]);
+  const [suggestions, setSuggestions] = useState<ITerminalCommandSuggestionDesc[]>([]);
   const [loading, setLoading] = useState(false);
   const [statMsg, setStatMsg] = useState(localize('terminal.ai.escClose'));
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const searchAICommands = async (desc: string) => {
-    setLoading(true);
-    setStatMsg(localize('terminal.ai.requesting'));
-    getAICommandSuggestions(
-      desc,
-      (stat) => {
-        if (stat === 2) {
+  const searchAICommands = useCallback(
+    async (desc: string) => {
+      setLoading(true);
+      setStatMsg(localize('terminal.ai.requesting'));
+      getAICommandSuggestions(
+        desc,
+        () => {
           setLoading(false);
           setStatMsg(localize('terminal.ai.selectHint'));
-        }
-        if (stat === 1) {
+        },
+        () => {
           setLoading(true);
           setStatMsg(localize('terminal.ai.thinking'));
-        }
-      },
-      (suggestions) => {
-        setSuggestions([...suggestions].reverse());
-      },
-    );
-  };
+        },
+        (suggestions) => {
+          setSuggestions([...suggestions].reverse());
+        },
+      );
+    },
+    [suggestions],
+  );
 
   const debouncedSearch = useCallback(
     debounce((desc: string) => {
@@ -193,10 +192,9 @@ export const AITerminalPrompt = (props: CommandLineInterfaceProps) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(() => {
     searchAICommands(input);
-  };
+  }, [input]);
 
   const handleSuggestionClick = (command: string) => {
     // 处理点击建议命令，这里只是简单地填充输入
@@ -216,8 +214,6 @@ export const AITerminalPrompt = (props: CommandLineInterfaceProps) => {
           />
         </div>
       </div>
-      <div className={styles.statusContainer}>{statMsg}</div>
-      <div style={{ height: '12px' }} />
       <div style={{ position: 'relative', marginLeft: '-14px' }}>
         {suggestions.length > 0 && (
           <KeyboardSelectableList items={suggestions} handleSuggestionClick={handleSuggestionClick} />
@@ -225,22 +221,21 @@ export const AITerminalPrompt = (props: CommandLineInterfaceProps) => {
       </div>
 
       <div className={styles.inputContainer}>
-        <form onSubmit={handleSubmit} style={{ flex: '1' }}>
-          <input
-            type='text'
-            value={input}
-            onKeyDown={(event) => {
-              if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-                // 阻止默认的键盘上下方向键
-                event.preventDefault();
-              }
-            }}
-            onChange={handleInputChange}
-            placeholder={localize('terminal.ai.inputHint')}
-            className={styles.input}
-            autoFocus
-          />
-        </form>
+        <Input
+          type='text'
+          value={input}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+              // 阻止默认的键盘上下方向键
+              event.preventDefault();
+            }
+          }}
+          onChange={handleInputChange}
+          onPressEnter={() => handleSubmit()}
+          placeholder={localize('terminal.ai.inputHint')}
+          className={styles.input}
+          autoFocus
+        />
         {loading ? (
           <div className={styles.ai_loading}>
             <div className={styles.loader}></div>
@@ -252,11 +247,13 @@ export const AITerminalPrompt = (props: CommandLineInterfaceProps) => {
             wrapperClassName={styles.send_icon}
             className={getIcon('send-solid')}
             onClick={() => {
-              searchAICommands(input);
+              debouncedSearch(input);
             }}
           />
         )}
       </div>
+
+      <div className={styles.statusContainer}>{statMsg}</div>
     </div>
   );
 };

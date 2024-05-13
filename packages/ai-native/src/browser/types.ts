@@ -14,8 +14,9 @@ import {
   ReplyResponse,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
-import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
+import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
 import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
@@ -135,6 +136,21 @@ export interface IRenameCandidatesProviderRegistry {
   getRenameSuggestionsProviders(): NewSymbolNamesProviderFn[];
 }
 
+export class TerminalSuggestionReadableStream extends SumiReadableStream<ITerminalCommandSuggestionDesc> {
+  static create() {
+    return new TerminalSuggestionReadableStream();
+  }
+}
+
+export type TTerminalCommandSuggestionsProviderFn = (
+  message: string,
+  token: CancellationToken,
+) => MaybePromise<ITerminalCommandSuggestionDesc[] | TerminalSuggestionReadableStream>;
+
+export interface ITerminalProviderRegistry {
+  registerCommandSuggestionsProvider(provider: TTerminalCommandSuggestionsProviderFn): void;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
@@ -164,6 +180,10 @@ export interface AINativeCoreContribution {
    * 注册智能重命名相关功能
    */
   registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
+  /**
+   * 注册智能终端相关功能
+   */
+  registerTerminalProvider?(registry: ITerminalProviderRegistry): void;
 }
 
 export interface IChatComponentConfig {

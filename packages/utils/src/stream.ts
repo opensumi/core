@@ -32,6 +32,27 @@ export function listenReadable<T = Uint8Array>(stream: IReadableStream<T>, optio
   });
 }
 
+export function listenGroupReadable<T = Uint8Array>(
+  streams: IReadableStream<T>[],
+  options: IListenReadableOptions<T>,
+): void {
+  let endCount = streams.length;
+
+  streams.map((stream) => {
+    listenReadable(stream, {
+      onData: options.onData.bind(options),
+      onError: options.onError?.bind(options),
+      onEnd: () => {
+        endCount--;
+
+        if (endCount === 0) {
+          options.onEnd();
+        }
+      },
+    });
+  });
+}
+
 export class SumiReadableStream<T> implements IReadableStream<T> {
   protected dataQueue = new EventQueue<T>();
   protected endQueue = new EventQueue<void>();
