@@ -27,7 +27,9 @@ export interface IMainLayoutService {
   viewReady: Deferred<void>;
 
   didMount(): void;
-  // 切换tabbar位置的slot，支持left、right、bottom
+  /**
+   * 切换tabbar位置的slot，传 slot id
+   */
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   /**
    * 获取注册到tabbar位置视图的handler，封装了常用的layout操作
