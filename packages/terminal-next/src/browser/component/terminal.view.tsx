@@ -1,4 +1,5 @@
 import cls from 'classnames';
+import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -49,18 +50,24 @@ export default observer(() => {
     setThemeBackground(themeBackground);
   });
 
+  const [errors, setErrors] = React.useState(errorService.errors);
+  const func = debounce(() => {
+    setErrors(errorService.errors);
+  }, 16 * 3);
+  useEventEffect(errorService.onErrorsChange, func);
+
   const renderWidget = React.useCallback(
     (widget: IWidget, index: number) => {
       const client = controller.findClientFromWidgetId(widget.id);
       let error: ITerminalError | undefined;
       if (client) {
-        error = !network.shouldReconnect(client.id) ? errorService.errors.get(client.id) : undefined;
+        error = !network.shouldReconnect(client.id) ? errors.get(client.id) : undefined;
       } else {
-        error = errorService.errors.get(widget.id);
+        error = errors.get(widget.id);
       }
       return <TerminalWidget show={currentGroupIndex === index} error={error} widget={widget} />;
     },
-    [currentGroupIndex, controller, errorService.errors, network, view],
+    [currentGroupIndex, controller, errors, network, view],
   );
 
   const [isVisible, setIsVisible] = React.useState(searchService.isVisible);

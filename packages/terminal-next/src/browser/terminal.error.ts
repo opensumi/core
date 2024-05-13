@@ -1,6 +1,5 @@
-import { makeObservable, observable, runInAction } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
+import { Emitter } from '@opensumi/ide-core-common';
 
 import {
   IPtyExitEvent,
@@ -13,8 +12,10 @@ import {
 
 @Injectable()
 export class TerminalErrorService implements ITerminalErrorService {
-  @observable
   errors: Map<string, ITerminalError> = new Map();
+
+  protected _onErrorsChangeEmitter = new Emitter<void>();
+  onErrorsChange = this._onErrorsChangeEmitter.event;
 
   @Autowired(ITerminalService)
   protected readonly service: ITerminalService;
@@ -26,11 +27,9 @@ export class TerminalErrorService implements ITerminalErrorService {
   protected readonly view: ITerminalGroupViewService;
 
   constructor() {
-    makeObservable(this);
     this.service.onError((error) => {
-      runInAction(() => {
-        this.errors.set(error.id, error);
-      });
+      this.errors.set(error.id, error);
+      this._onErrorsChangeEmitter.fire();
     });
 
     this.service.onExit((event: IPtyExitEvent) => {
@@ -45,9 +44,8 @@ export class TerminalErrorService implements ITerminalErrorService {
     });
 
     this.controller.onDidCloseTerminal((e) => {
-      runInAction(() => {
-        this.errors.delete(e.id);
-      });
+      this.errors.delete(e.id);
+      this._onErrorsChangeEmitter.fire();
     });
   }
 
@@ -55,9 +53,9 @@ export class TerminalErrorService implements ITerminalErrorService {
     const client = this.controller.findClientFromWidgetId(clientId);
     if (client) {
       await 0; // 使后面的 delete 发生在下一个 microTask 中，避免在迭代过程中修改 this.errors
-      runInAction(() => {
-        this.errors.delete(clientId);
-      });
+      this.errors.delete(clientId);
+      this._onErrorsChangeEmitter.fire();
+
       client.reset();
       return client.attached.promise;
     }
