@@ -1,6 +1,6 @@
 import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
-import { ChannelMessage, WSChannel, parse, pongMessage } from './ws-channel';
+import { ChannelMessage, WSChannel, WSServerChannel, parse, pongMessage } from './ws-channel';
 
 export interface IPathHandler {
   dispose: (channel: WSChannel, connectionId: string) => void;
@@ -137,7 +137,7 @@ export abstract class BaseCommonChannelHandler {
             clientId = msg.clientId;
             this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
 
-            const channel = new WSChannel(connection, { id, logger: this.logger });
+            const channel = new WSServerChannel(connection, { id, logger: this.logger });
             this.channelMap.set(id, channel);
 
             commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
@@ -148,7 +148,7 @@ export abstract class BaseCommonChannelHandler {
             const { id } = msg;
             const channel = this.channelMap.get(id);
             if (channel) {
-              channel.dispatchChannelMessage(msg);
+              channel.dispatch(msg);
             } else {
               this.logger.warn(`channel ${id} is not found`);
             }
