@@ -26,14 +26,13 @@ export default observer(() => {
   const searchService = useInjectable<ITerminalSearchService>(ITerminalSearchService);
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const network = useInjectable<ITerminalNetwork>(ITerminalNetwork);
-  const { errors } = errorService;
   const { groups, currentGroupIndex, currentGroupId } = view;
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    const dispose = searchService.onOpen(() => {
-      if (inputRef.current) {
+    const dispose = searchService.onVisibleChange((show) => {
+      if (show && inputRef.current) {
         inputRef.current.focus();
 
         if (inputRef.current.value.length > 0) {
@@ -55,19 +54,27 @@ export default observer(() => {
       const client = controller.findClientFromWidgetId(widget.id);
       let error: ITerminalError | undefined;
       if (client) {
-        error = !network.shouldReconnect(client.id) ? errors.get(client.id) : undefined;
+        error = !network.shouldReconnect(client.id) ? errorService.errors.get(client.id) : undefined;
       } else {
-        error = errors.get(widget.id);
+        error = errorService.errors.get(widget.id);
       }
       return <TerminalWidget show={currentGroupIndex === index} error={error} widget={widget} />;
     },
-    [currentGroupIndex, controller, errors, network, view],
+    [currentGroupIndex, controller, errorService.errors, network, view],
   );
+
+  const [isVisible, setIsVisible] = React.useState(searchService.isVisible);
+  useEventEffect(searchService.onVisibleChange, (visible) => {
+    setIsVisible(visible);
+  });
+
+  const [inputText, setInputText] = React.useState('');
 
   const searchInput = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      searchService.input = event.target.value;
+      searchService.text = event.target.value;
       searchService.search();
+      setInputText(event.target.value);
     },
     [searchService],
   );
@@ -100,14 +107,14 @@ export default observer(() => {
       style={{ backgroundColor: themeBackground }}
       data-group-current={currentGroupId}
     >
-      {searchService.show && (
+      {isVisible && (
         <div className={styles.terminalSearch}>
           <div className='kt-input-box'>
             <input
               autoFocus
               ref={inputRef}
               placeholder={localize('common.find')}
-              value={searchService.input}
+              value={inputText}
               onChange={searchInput}
               onKeyDown={searchKeyDown}
             />
