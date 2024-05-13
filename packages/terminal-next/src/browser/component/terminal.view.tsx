@@ -1,8 +1,7 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, localize, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
   ITerminalController,
@@ -20,7 +19,7 @@ import TerminalWidget from './terminal.widget';
 
 import 'xterm/css/xterm.css';
 
-export default observer(() => {
+export default () => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const searchService = useInjectable<ITerminalSearchService>(ITerminalSearchService);
@@ -43,6 +42,12 @@ export default observer(() => {
     });
     return () => dispose.dispose();
   }, [searchService, inputRef.current]);
+
+  const [themeBackground, setThemeBackground] = React.useState(controller.themeBackground);
+
+  useEventEffect(controller.onThemeBackgroundChange, (themeBackground) => {
+    setThemeBackground(themeBackground);
+  });
 
   const renderWidget = React.useCallback(
     (widget: IWidget, index: number) => {
@@ -91,7 +96,7 @@ export default observer(() => {
     <div
       ref={wrapperRef}
       className={styles.terminalWrapper}
-      style={{ backgroundColor: controller.themeBackground }}
+      style={{ backgroundColor: themeBackground }}
       data-group-current={currentGroupId}
     >
       {searchService.show && (
@@ -135,4 +140,4 @@ export default observer(() => {
       })}
     </div>
   );
-});
+};

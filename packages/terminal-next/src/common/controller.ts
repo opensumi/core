@@ -102,6 +102,7 @@ export interface ITerminalController extends Disposable {
   onDidCloseTerminal: Event<ITerminalExitEvent>;
   onDidTerminalTitleChange: Event<ITerminalTitleChangeEvent>;
   onDidChangeActiveTerminal: Event<string>;
+  onThemeBackgroundChange: Event<string>;
 
   requestStartExtensionTerminal(
     proxy: ITerminalProcessExtHostProxy,
