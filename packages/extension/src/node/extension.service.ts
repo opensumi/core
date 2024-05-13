@@ -174,7 +174,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this._setMainThreadConnection(async (connectionResult) => {
       const { channel, clientId } = connectionResult;
 
-      await this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.promise;
+      if (this.clientExtProcessExtConnectionDeferredMap.get(clientId)) {
+        // means that we are creating the ext process or the ext process is created.
+        await this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.promise;
+      }
 
       const extProcessId = this.clientExtProcessMap.get(clientId);
       const extProcessNotExist =
@@ -198,16 +201,18 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
 
-      extConnection.onMessage((data) => {
+      const disposable1 = extConnection.onMessage((data) => {
         channel.sendBinary(data);
       });
 
-      extConnection.onceClose(() => {
-        channel.close();
+      const disposable2 = channel.onBinary((data) => {
+        extConnection.send(data);
       });
 
-      channel.onBinary((data) => {
-        extConnection.send(data);
+      extConnection.onceClose(() => {
+        disposable1.dispose();
+        disposable2.dispose();
+        channel.close();
       });
 
       // 连接恢复后清除销毁的定时器
