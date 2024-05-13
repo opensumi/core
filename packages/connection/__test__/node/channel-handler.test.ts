@@ -23,7 +23,7 @@ describe('channel handler', () => {
     nodeChannelHandler.listen();
 
     commonChannelPathHandler.register('test', {
-      handler(channel, connectionId, params) {
+      handler(channel) {
         channel.onMessage((msg) => {
           if (msg === 'hello') {
             channel.send('world');
@@ -34,7 +34,7 @@ describe('channel handler', () => {
     });
 
     commonChannelPathHandler.register('test2', {
-      handler(channel, connectionId, params) {
+      handler(channel) {
         channel.onMessage((msg) => {
           if (msg === 'ping') {
             channel.send('pong');

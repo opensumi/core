@@ -86,6 +86,8 @@ export interface IWSChannelCreateOptions {
    */
   id: string;
   logger?: ILogger;
+
+  ensureServerReady?: boolean;
 }
 
 export class WSChannel {
@@ -102,8 +104,9 @@ export class WSChannel {
 
   protected onBinaryQueue = this._disposables.add(new EventQueue<Uint8Array>());
 
-  protected sendQueue: Uint8Array[];
+  protected sendQueue: Uint8Array[] = [];
   protected _isServerReady = false;
+  protected _ensureServerReady: boolean | undefined;
 
   public id: string;
 
@@ -128,25 +131,27 @@ export class WSChannel {
   }
 
   constructor(public connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
-    const { id, logger } = options;
+    const { id, logger, ensureServerReady } = options;
     this.id = id;
 
     if (logger) {
       this.logger = logger;
     }
 
+    this._ensureServerReady = Boolean(ensureServerReady);
+
     this._disposables.add(this.emitter.on('binary', (data) => this.onBinaryQueue.push(data)));
   }
 
   protected inqueue(data: Uint8Array) {
-    if (this._isServerReady) {
-      this.connection.send(data);
-    } else {
+    if (this._ensureServerReady && !this._isServerReady) {
       if (!this.sendQueue) {
         this.sendQueue = [];
       }
       this.sendQueue.push(data);
+      return;
     }
+    this.connection.send(data);
   }
 
   onMessage(cb: (data: string) => any) {

@@ -104,6 +104,7 @@ export class WSChannelHandler {
     const channel = new WSChannel(this.connection, {
       id: `${this.clientId}:${channelPath}`,
       logger: this.logger,
+      ensureServerReady: true,
     });
     this.channelMap.set(channel.id, channel);
 
