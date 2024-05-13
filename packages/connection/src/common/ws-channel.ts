@@ -138,7 +138,7 @@ export class WSChannel {
     this._disposables.add(this.emitter.on('binary', (data) => this.onBinaryQueue.push(data)));
   }
 
-  protected doSend(data: Uint8Array) {
+  protected inqueue(data: Uint8Array) {
     if (this._isServerReady) {
       this.connection.send(data);
     } else {
@@ -191,7 +191,7 @@ export class WSChannel {
 
   open(path: string, clientId: string) {
     this.channelPath = path;
-    this.doSend(
+    this.connection.send(
       stringify({
         kind: 'open',
         id: this.id,
@@ -202,7 +202,7 @@ export class WSChannel {
   }
 
   send(content: string) {
-    this.doSend(
+    this.inqueue(
       stringify({
         kind: 'data',
         id: this.id,
@@ -212,7 +212,7 @@ export class WSChannel {
   }
 
   sendBinary(data: Uint8Array) {
-    this.doSend(
+    this.inqueue(
       stringify({
         kind: 'binary',
         id: this.id,

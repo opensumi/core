@@ -7,7 +7,7 @@ import { IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../src/comm
 import { MOCK_EXTENSIONS, setupExtensionServiceInjector } from './extension-service-mock-helper';
 
 describe('Extension service', () => {
-  jest.setTimeout(2000000 * 1000);
+  jest.setTimeout(20 * 1000);
 
   let workerService: WorkerExtProcessService;
   let injector: MockInjector;
