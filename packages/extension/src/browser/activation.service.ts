@@ -1,7 +1,7 @@
 import pm from 'picomatch';
 
-import { Injectable } from '@opensumi/di';
-import { IDisposable, MaybePromise, MultiMap } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IDisposable, ILogger, MaybePromise, MultiMap } from '@opensumi/ide-core-common';
 
 import { IActivationEventService } from './types';
 
@@ -20,6 +20,9 @@ export class ActivationEventServiceImpl implements IActivationEventService {
 
   private wildCardTopics: Set<string> = new Set();
   public activatedEventSet: Set<string> = new Set();
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   constructor() {
     this.wildCardTopics.add('workspaceContains');
@@ -41,7 +44,13 @@ export class ActivationEventServiceImpl implements IActivationEventService {
       listeners = this.eventListeners.get(topic + ':' + data);
     }
     if (listeners) {
-      await Promise.all(listeners.map((listener) => this.tryRun(topic, data, listener)));
+      const result = await Promise.allSettled(listeners.map((listener) => this.tryRun(topic, data, listener)));
+
+      for (const item of result) {
+        if (item.status === 'rejected') {
+          this.logger.error(`fire event ${topic}:${data} error: ${item.reason}`);
+        }
+      }
     }
   }
 
