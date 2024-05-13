@@ -1,7 +1,7 @@
 import { Injectable, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
-import { AiNativeContribution } from './ai-native/ai-native.contribution';
+import { AINativeContribution } from './ai-native/ai-native.contribution';
 import { DebugConfigurationContribution } from './debug-configuration.contribution';
 import { EditorEmptyComponentContribution } from './editor-empty-component.contribution';
 import { MenuBarContribution } from './menu-bar/menu-bar.contribution';
@@ -13,7 +13,7 @@ export class SampleModule extends BrowserModule {
     MenuBarContribution,
     EditorEmptyComponentContribution,
     StatusBarContribution,
-    AiNativeContribution,
+    AINativeContribution,
     DebugConfigurationContribution,
   ];
 }

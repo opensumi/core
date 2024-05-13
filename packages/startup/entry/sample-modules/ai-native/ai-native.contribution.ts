@@ -8,6 +8,7 @@ import {
   TSCMatcher,
 } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
 import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/utils/ansi-parser';
+import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -25,6 +26,7 @@ import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancelResponse,
+  ChatServiceToken,
   ErrorResponse,
   IAIBackService,
   MergeConflictEditorMode,
@@ -39,10 +41,11 @@ import { SlashCommand } from './SlashCommand';
 enum EInlineOperation {
   Comments = 'Comments',
   Optimize = 'Optimize',
+  Explain = 'Explain',
 }
 
 @Domain(AINativeCoreContribution)
-export class AiNativeContribution implements AINativeCoreContribution {
+export class AINativeContribution implements AINativeCoreContribution {
   @Autowired(AIBackSerivcePath)
   private readonly aiBackService: IAIBackService;
 
@@ -54,6 +57,9 @@ export class AiNativeContribution implements AINativeCoreContribution {
 
   @Autowired(MergeConflictPromptManager)
   mergeConflictPromptManager: MergeConflictPromptManager;
+
+  @Autowired(ChatServiceToken)
+  private readonly aiChatService: ChatService;
 
   logger = getDebugLogger();
 
@@ -83,7 +89,10 @@ export class AiNativeContribution implements AINativeCoreContribution {
         name: EInlineOperation.Comments,
         title: 'add comments',
         renderType: 'button',
-        codeAction: {},
+        codeAction: {
+          isPreferred: true,
+          kind: 'refactor.rewrite',
+        },
       },
       {
         providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
@@ -110,7 +119,10 @@ export class AiNativeContribution implements AINativeCoreContribution {
         id: 'ai-optimize',
         name: EInlineOperation.Optimize,
         renderType: 'dropdown',
-        codeAction: {},
+        codeAction: {
+          isPreferred: true,
+          kind: 'refactor.rewrite',
+        },
       },
       {
         providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
@@ -128,6 +140,31 @@ export class AiNativeContribution implements AINativeCoreContribution {
           }
 
           return new ReplyResponse(result.data!);
+        },
+      },
+    );
+
+    registry.registerEditorInlineChat(
+      {
+        id: 'ai-explain',
+        name: EInlineOperation.Explain,
+        renderType: 'button',
+        codeAction: {
+          isPreferred: true,
+        },
+      },
+      {
+        execute: async (editor: ICodeEditor, token) => {
+          const model = editor.getModel();
+          if (!model) {
+            return;
+          }
+
+          const crossCode = this.getCrossCode(editor);
+          this.aiChatService.sendMessage({
+            message: `Explain code: \`\`\`\n${crossCode}\n\`\`\``,
+            prompt: `Help me, Explain code: \`\`\`\n${crossCode}\n\`\`\``,
+          });
         },
       },
     );
