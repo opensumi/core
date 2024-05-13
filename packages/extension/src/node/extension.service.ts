@@ -87,6 +87,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
   private clientServiceMap: Map<string, IExtensionNodeClientService> = new Map();
+  private maybeZombieClients: Set<string> = new Set();
   // 最新的插件进程的对应的进程 Id
   private latestExtProcessId: number = -1;
 
@@ -173,7 +174,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this.logger.log('setExtProcessConnectionForward', this.instanceId);
     this._setMainThreadConnection(async (connectionResult) => {
       const { channel, clientId } = connectionResult;
-
+      this.maybeZombieClients.delete(clientId);
       await this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.promise;
 
       const extProcessId = this.clientExtProcessMap.get(clientId);
@@ -265,6 +266,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   @pMemoize((clientId: string) => clientId)
   private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
+    // 在新进程创建前销毁可能存在的僵尸进程
+    this.destoryZombineClients();
     let preloadPath: string;
     let forkOptions: cp.ForkOptions = {
       // 防止 childProcess.stdout 为 null
@@ -398,7 +401,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this.clientExtProcessMap.set(clientId, extProcessId);
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
-
     this.processHandshake(extProcessId, forkTimer, clientId);
   }
 
@@ -499,6 +501,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
               extConnection.destroy();
             }
           }
+          this.maybeZombieClients.add(clientId);
           this.closeExtProcessWhenConnectionClose(clientId);
         });
       },
@@ -510,9 +513,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (this.clientExtProcessMap.has(connectionClientId)) {
       if (isElectronNode()) {
         // in electron, if current connection is closed, kill the ext process immediately
-        this.disposeClientExtProcess(connectionClientId).catch((e) => {
-          this.logger.error(`Close extension host process when connection throw error\n${e.message}`);
-        });
+        this.disposeClientExtProcess(connectionClientId);
       } else {
         // 为了保证体验，最后一个创建的插件进程断连后不杀死
         // https://github.com/opensumi/core/issues/3653
@@ -524,14 +525,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
          */
         const timer = global.setTimeout(() => {
           this.logger.log(`Dispose client by connectionClientId ${connectionClientId}`);
-          this.disposeClientExtProcess(connectionClientId).catch((e) => {
-            this.logger.error(`Close extension host process when connection throw error\n${e.message}`);
-          });
+          this.disposeClientExtProcess(connectionClientId);
         }, this.appConfig.processCloseExitThreshold ?? ExtensionNodeServiceImpl.ProcessCloseExitThreshold);
         this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
       }
     }
   }
+
+  private clean;
 
   private infoProcessNotExist(clientId: string) {
     if (this.clientServiceMap.has(clientId)) {
@@ -558,41 +559,45 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   public async disposeClientExtProcess(clientId: string, info = true, killProcess = true) {
     const extProcessId = this.clientExtProcessMap.get(clientId);
-
-    if (!isUndefined(extProcessId)) {
-      if (await this.extensionHostManager.isRunning(extProcessId)) {
-        await this.extensionHostManager.send(extProcessId, 'close');
-        // deactivate
-        // subscription
-        if (this.clientExtProcessFinishDeferredMap.has(clientId)) {
-          await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
+    try {
+      if (!isUndefined(extProcessId)) {
+        if (await this.extensionHostManager.isRunning(extProcessId)) {
+          await this.extensionHostManager.send(extProcessId, 'close');
+          // deactivate
+          // subscription
+          if (this.clientExtProcessFinishDeferredMap.has(clientId)) {
+            await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
+          }
         }
-      }
 
-      // extServer 关闭
-      if (this.clientExtProcessExtConnectionServer.has(clientId)) {
-        this.clientExtProcessExtConnectionServer.get(clientId)!.close();
-        this.clientExtProcessExtConnectionServer.delete(clientId);
-      }
-      // connect 关闭
-      if (this.clientExtProcessExtConnection.has(clientId)) {
-        this.clientExtProcessExtConnection.get(clientId)!.destroy();
-        this.clientExtProcessExtConnection.delete(clientId);
-      }
+        // extServer 关闭
+        if (this.clientExtProcessExtConnectionServer.has(clientId)) {
+          this.clientExtProcessExtConnectionServer.get(clientId)!.close();
+          this.clientExtProcessExtConnectionServer.delete(clientId);
+        }
+        // connect 关闭
+        if (this.clientExtProcessExtConnection.has(clientId)) {
+          this.clientExtProcessExtConnection.get(clientId)!.destroy();
+          this.clientExtProcessExtConnection.delete(clientId);
+        }
 
-      this.clientExtProcessExtConnectionDeferredMap.delete(clientId);
-      this.clientExtProcessFinishDeferredMap.delete(clientId);
-      this.clientExtProcessInitDeferredMap.delete(clientId);
-      this.clientExtProcessMap.delete(clientId);
+        this.clientExtProcessExtConnectionDeferredMap.delete(clientId);
+        this.clientExtProcessFinishDeferredMap.delete(clientId);
+        this.clientExtProcessInitDeferredMap.delete(clientId);
+        this.clientExtProcessMap.delete(clientId);
+        this.maybeZombieClients.delete(clientId);
 
-      if (killProcess) {
-        await this.extensionHostManager.treeKill(extProcessId);
-        await this.extensionHostManager.disposeProcess(extProcessId);
+        if (killProcess) {
+          await this.extensionHostManager.treeKill(extProcessId);
+          await this.extensionHostManager.disposeProcess(extProcessId);
+        }
+        if (info) {
+          this.infoProcessNotExist(clientId);
+        }
+        this.logger.log(`Extension host process disposed by clientId ${clientId}`);
       }
-      if (info) {
-        this.infoProcessNotExist(clientId);
-      }
-      this.logger.log(`Extension host process disposed by clientId ${clientId}`);
+    } catch (e) {
+      this.logger.error(`Close extension host process when connection throw error\n${e.message}`);
     }
   }
 
@@ -606,5 +611,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   public async disposeAllClientExtProcess(): Promise<void> {
     await this.extensionHostManager.dispose();
+  }
+
+  private destoryZombineClients() {
+    for (const clientId of this.maybeZombieClients) {
+      this.disposeClientExtProcess(clientId);
+    }
   }
 }
