@@ -104,10 +104,6 @@ export class PS1TerminalService extends Disposable {
     aiHinitDecoration?.onRender((element) => {
       element.innerText = localize('terminal.ai.inputSharpToGetHint');
       element.style.opacity = '0.3';
-      // 提示框点击也可以触发 AI 弹窗
-      element.onclick = () => {
-        this.showAICommandPopup(xterm, xOffset2);
-      };
     });
 
     this.onDataDisposable = xterm.onData((e) => {

@@ -12,6 +12,9 @@ export const StackingLevel = {
   WorkbenchEditor: 1,
 
   Toolbar: 2,
+
+  XtermDecoration: 8, // xterm.css 中 decoration 的 z-index 是 7，所以这里要比它大一点
+
   ToolbarDropdown: 10,
 
   ResizeHandle: 12,
