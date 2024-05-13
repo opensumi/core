@@ -38,6 +38,7 @@ export class TerminalSearchService implements ITerminalSearchService {
 
   clear() {
     this.client?.closeSearch();
+    this.text = '';
   }
 
   text = '';
