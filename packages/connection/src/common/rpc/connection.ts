@@ -16,7 +16,6 @@ import { ILogger } from '../types';
 
 import { MethodTimeoutError } from './errors';
 import { MessageIO, OperationType, Status } from './message-io';
-import { runImmediate } from './ral';
 import {
   IRequestHeaders,
   IResponseHeaders,
@@ -79,9 +78,7 @@ export class SumiConnection implements IDisposable {
   }
 
   protected _send(data: Uint8Array) {
-    runImmediate(() => {
-      this.socket.send(data);
-    });
+    this.socket.send(data);
   }
 
   sendNotification(method: string, ...args: any[]) {
