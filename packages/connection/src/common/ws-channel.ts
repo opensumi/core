@@ -100,7 +100,10 @@ export class WSChannel {
     }>(),
   );
 
-  protected binaryQueue = this._disposables.add(new EventQueue<Uint8Array>());
+  protected onBinaryQueue = this._disposables.add(new EventQueue<Uint8Array>());
+
+  protected sendQueue: Uint8Array[];
+  protected _isServerReady = false;
 
   public id: string;
 
@@ -114,17 +117,13 @@ export class WSChannel {
 
     disposable.push(
       connection.onMessage((data) => {
-        channel.dispatchChannelMessage(parse(data));
-      }),
-    );
-    disposable.push(channel);
-
-    disposable.push(
-      connection.onceClose(() => {
-        disposable.dispose();
+        channel.dispatch(parse(data));
       }),
     );
 
+    connection.onceClose(() => {
+      disposable.dispose();
+    });
     return channel;
   }
 
@@ -136,14 +135,25 @@ export class WSChannel {
       this.logger = logger;
     }
 
-    this._disposables.add(this.emitter.on('binary', (data) => this.binaryQueue.push(data)));
+    this._disposables.add(this.emitter.on('binary', (data) => this.onBinaryQueue.push(data)));
+  }
+
+  protected doSend(data: Uint8Array) {
+    if (this._isServerReady) {
+      this.connection.send(data);
+    } else {
+      if (!this.sendQueue) {
+        this.sendQueue = [];
+      }
+      this.sendQueue.push(data);
+    }
   }
 
   onMessage(cb: (data: string) => any) {
     return this.emitter.on('message', cb);
   }
   onBinary(cb: (data: Uint8Array) => any) {
-    return this.binaryQueue.on(cb);
+    return this.onBinaryQueue.on(cb);
   }
   onOpen(cb: (id: string) => void) {
     return this.emitter.on('open', cb);
@@ -151,19 +161,23 @@ export class WSChannel {
   onReopen(cb: () => void) {
     return this.emitter.on('reopen', cb);
   }
-
-  serverReady() {
-    this.connection.send(
-      stringify({
-        kind: 'server-ready',
-        id: this.id,
-      }),
-    );
+  onClose(cb: (code: number, reason: string) => void) {
+    return this.emitter.on('close', cb);
+  }
+  onceClose(cb: (code: number, reason: string) => void) {
+    return this.emitter.once('close', cb);
   }
 
-  dispatchChannelMessage(msg: ChannelMessage) {
+  dispatch(msg: ChannelMessage) {
     switch (msg.kind) {
       case 'server-ready':
+        this._isServerReady = true;
+        if (this.sendQueue) {
+          for (const item of this.sendQueue) {
+            this.connection.send(item);
+          }
+          this.sendQueue = [];
+        }
         this.emitter.emit('open', msg.id);
         break;
       case 'data':
@@ -177,7 +191,7 @@ export class WSChannel {
 
   open(path: string, clientId: string) {
     this.channelPath = path;
-    this.connection.send(
+    this.doSend(
       stringify({
         kind: 'open',
         id: this.id,
@@ -188,7 +202,7 @@ export class WSChannel {
   }
 
   send(content: string) {
-    this.connection.send(
+    this.doSend(
       stringify({
         kind: 'data',
         id: this.id,
@@ -198,7 +212,7 @@ export class WSChannel {
   }
 
   sendBinary(data: Uint8Array) {
-    this.connection.send(
+    this.doSend(
       stringify({
         kind: 'binary',
         id: this.id,
@@ -206,18 +220,12 @@ export class WSChannel {
       }),
     );
   }
-  onError() {}
   close(code?: number, reason?: string) {
+    this._isServerReady = false;
     this.emitter.emit('close', code, reason);
   }
   fireReopen() {
     this.emitter.emit('reopen');
-  }
-  onClose(cb: (code: number, reason: string) => void) {
-    return this.emitter.on('close', cb);
-  }
-  onceClose(cb: (code: number, reason: string) => void) {
-    return this.emitter.once('close', cb);
   }
 
   createConnection() {
@@ -238,6 +246,20 @@ export class WSChannel {
 
   dispose() {
     this._disposables.dispose();
+  }
+}
+
+/**
+ * The server side channel, it will send a `server-ready` message after it receive a `open` message.
+ */
+export class WSServerChannel extends WSChannel {
+  serverReady() {
+    this.connection.send(
+      stringify({
+        kind: 'server-ready',
+        id: this.id,
+      }),
+    );
   }
 }
 

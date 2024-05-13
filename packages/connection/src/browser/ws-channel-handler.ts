@@ -44,7 +44,7 @@ export class WSChannelHandler {
     this.heartbeatMessageTimer = global.setTimeout(() => {
       this.connection.send(pingMessage);
       this.heartbeatMessage();
-    }, 5000);
+    }, 10 * 1000);
   }
 
   public async initHandler() {
@@ -60,7 +60,7 @@ export class WSChannelHandler {
         default: {
           const channel = this.channelMap.get(msg.id);
           if (channel) {
-            channel.dispatchChannelMessage(msg);
+            channel.dispatch(msg);
           } else {
             this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
           }
