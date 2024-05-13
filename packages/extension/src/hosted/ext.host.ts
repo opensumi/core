@@ -77,7 +77,7 @@ abstract class ApiImplFactory {
     this.extAPIImpl = new Map();
   }
 
-  async init() {
+  async whenReady() {
     await this.defered.promise;
   }
 
@@ -209,10 +209,12 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.defineAPI();
   }
 
-  protected async apiInited() {
-    await this.vscodeAPIImpl.init();
-    await this.openSumiAPIImpl.init();
-    await this.telemetryAPIImpl.init();
+  protected async apiWhenReady() {
+    await Promise.all([
+      this.vscodeAPIImpl.whenReady(),
+      this.openSumiAPIImpl.whenReady(),
+      this.telemetryAPIImpl.whenReady(),
+    ]);
   }
 
   public getExtensions(): KTExtension[] {
@@ -259,7 +261,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async $updateExtHostData() {
-    await this.apiInited();
+    await this.apiWhenReady();
 
     const extensions: IExtensionProps[] = await this.rpcProtocol
       .getProxy(MainThreadAPIIdentifier.MainThreadExtensionService)

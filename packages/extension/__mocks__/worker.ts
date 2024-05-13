@@ -68,6 +68,9 @@ export class MockWorker {
           userAgent: 'Node.js Sandbox',
         },
         setTimeout,
+        clearTimeout,
+        setInterval,
+        clearInterval,
         attachEvent: () => {},
         addEventListener: () => {},
       };

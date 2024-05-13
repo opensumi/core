@@ -68,7 +68,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private reporterService: IReporterService;
 
-  private apiInited = new Deferred<void>();
+  private apiWhenReady = new Deferred<void>();
 
   constructor(private rpcProtocol: SumiConnectionMultiplexer, private injector: Injector) {
     const reporter = this.injector.get(IReporter);
@@ -76,7 +76,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);
     this.sumiAPIFactory = createAPIFactory(this.rpcProtocol, this, () => {
-      this.apiInited.resolve();
+      this.apiWhenReady.resolve();
     });
     this.mainThreadExtensionService = this.rpcProtocol.getProxy<SumiWorkerExtensionService>(
       MainThreadAPIIdentifier.MainThreadExtensionService,
@@ -93,7 +93,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   private async init() {
-    await this.apiInited.promise;
+    await this.apiWhenReady.promise;
     this.staticServicePath = await this.mainThreadExtensionService.$getStaticServicePath();
   }
 

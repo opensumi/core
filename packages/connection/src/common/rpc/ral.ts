@@ -12,7 +12,7 @@ const globals =
     : ({} as any);
 
 let _wrapper: ((callback: (...args: any[]) => void) => void) | null = null;
-export function runInNextTick(callback: (...args: any[]) => void): void {
+export function runImmediate(callback: (...args: any[]) => void): void {
   if (_wrapper === null) {
     if (globals.setImmediate) {
       _wrapper = globals.setImmediate.bind(globals);
