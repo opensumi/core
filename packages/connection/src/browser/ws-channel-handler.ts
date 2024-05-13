@@ -44,7 +44,7 @@ export class WSChannelHandler {
     this.heartbeatMessageTimer = global.setTimeout(() => {
       this.connection.send(pingMessage);
       this.heartbeatMessage();
-    }, 5000);
+    }, 10 * 1000);
   }
 
   public async initHandler() {
@@ -54,17 +54,11 @@ export class WSChannelHandler {
 
       const msg = parse(message);
 
-      switch (msg.kind) {
-        case 'pong':
-          break;
-        default: {
-          const channel = this.channelMap.get(msg.id);
-          if (channel) {
-            channel.dispatchChannelMessage(msg);
-          } else {
-            this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
-          }
-        }
+      const channel = this.channelMap.get(msg.id);
+      if (channel) {
+        channel.dispatch(msg);
+      } else {
+        this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
       }
     });
 
@@ -72,8 +66,6 @@ export class WSChannelHandler {
       if (this.channelMap.size > 0) {
         this.channelMap.forEach((channel) => {
           channel.open(channel.channelPath, this.clientId);
-          // 针对前端需要重新设置下后台状态的情况
-          channel.fireReopen();
         });
       }
     };
@@ -106,10 +98,24 @@ export class WSChannelHandler {
     const channel = new WSChannel(this.connection, {
       id: `${this.clientId}:${channelPath}`,
       logger: this.logger,
+      ensureServerReady: true,
     });
     this.channelMap.set(channel.id, channel);
 
+    let channelOpenedCount = 0;
+
     channel.onOpen(() => {
+      channelOpenedCount++;
+      if (channelOpenedCount > 1) {
+        channel.fireReopen();
+        this.logger.log(
+          this.LOG_TAG,
+          `channel reconnect ${this.clientId}:${channel.channelPath}, count: ${channelOpenedCount}`,
+        );
+      } else {
+        this.logger.log(this.LOG_TAG, `channel open ${this.clientId}:${channel.channelPath}`);
+      }
+
       const closeInfo = this.channelCloseEventMap.get(channel.id);
       if (closeInfo) {
         closeInfo.forEach((info) => {
@@ -118,10 +124,6 @@ export class WSChannelHandler {
         });
 
         this.channelCloseEventMap.delete(channel.id);
-
-        this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
-      } else {
-        this.logger.log(this.LOG_TAG, `channel open ${this.clientId}:${channel.channelPath}`);
       }
     });
 
