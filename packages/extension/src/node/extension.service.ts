@@ -532,8 +532,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
   }
 
-  private clean;
-
   private infoProcessNotExist(clientId: string) {
     if (this.clientServiceMap.has(clientId)) {
       (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessNotExist();
