@@ -1,5 +1,3 @@
-import { makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter, Event, debounce } from '@opensumi/ide-core-common';
 
@@ -7,11 +5,14 @@ import { ITerminalClient, ITerminalController, ITerminalGroupViewService, ITermi
 
 @Injectable()
 export class TerminalSearchService implements ITerminalSearchService {
-  @observable
-  show: boolean;
-
-  @observable
-  input = '';
+  protected _isVisible: boolean = false;
+  get isVisible() {
+    return this._isVisible;
+  }
+  set isVisible(value: boolean) {
+    this._isVisible = value;
+    this._onVisibleChange.fire(value);
+  }
 
   @Autowired(ITerminalController)
   controller: ITerminalController;
@@ -19,35 +20,31 @@ export class TerminalSearchService implements ITerminalSearchService {
   @Autowired(ITerminalGroupViewService)
   terminalView: ITerminalGroupViewService;
 
-  protected _onOpen = new Emitter<void>();
-
-  onOpen: Event<void> = this._onOpen.event;
-
-  constructor() {
-    makeObservable(this);
-  }
+  protected _onVisibleChange = new Emitter<boolean>();
+  onVisibleChange: Event<boolean> = this._onVisibleChange.event;
 
   get client(): ITerminalClient | undefined {
     return this.controller.findClientFromWidgetId(this.terminalView.currentWidget.id);
   }
 
   open() {
-    this.show = true;
-    this._onOpen.fire();
+    this.isVisible = true;
   }
 
   close() {
     this.client?.closeSearch();
-    this.show = false;
+    this.isVisible = false;
   }
 
   clear() {
     this.client?.closeSearch();
-    this.input = '';
+    this.text = '';
   }
+
+  text = '';
 
   @debounce(150)
   search() {
-    this.client?.findNext(this.input);
+    this.client?.findNext(this.text);
   }
 }

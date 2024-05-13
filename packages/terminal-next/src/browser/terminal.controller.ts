@@ -1,5 +1,3 @@
-import { makeObservable, observable } from 'mobx';
-
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AppConfig, ResizeEvent, getSlotLocation } from '@opensumi/ide-core-browser';
 import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
@@ -154,8 +152,20 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    */
   private terminalContextKey: TerminalContextKey;
 
-  @observable
-  themeBackground: string;
+  private _onThemeBackgroundChangeEmitter = new Emitter<string>();
+  onThemeBackgroundChange = this._onThemeBackgroundChangeEmitter.event;
+
+  private _themeBackground: string;
+  get themeBackground() {
+    return this._themeBackground;
+  }
+
+  set themeBackground(value: string) {
+    if (value !== this._themeBackground) {
+      this._themeBackground = value;
+      this._onThemeBackgroundChangeEmitter.fire(value);
+    }
+  }
 
   get clients() {
     return this._clients;
@@ -250,7 +260,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   constructor() {
     super();
-    makeObservable(this);
     this._focus = false;
     this._clients = new Map();
   }

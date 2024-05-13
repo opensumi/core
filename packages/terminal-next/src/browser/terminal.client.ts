@@ -1,5 +1,3 @@
-import { makeObservable, observable } from 'mobx';
-
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IEventBus, QuickPickService, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
@@ -160,7 +158,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   constructor() {
     super();
-    makeObservable(this);
     this.init();
   }
 
@@ -329,8 +326,20 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._attachAfterRender();
   }
 
-  @observable
-  name = '';
+  protected _onNameChangeEmitter = new Emitter<string>();
+  onNameChange = this._onNameChangeEmitter.event;
+
+  protected _name = '';
+  get name() {
+    return this._name;
+  }
+
+  set name(name: string) {
+    if (this._name !== name) {
+      this._name = name;
+      this._onNameChangeEmitter.fire(name);
+    }
+  }
 
   get term() {
     return this.xterm.raw;

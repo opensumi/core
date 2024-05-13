@@ -1,8 +1,9 @@
 import cls from 'classnames';
+import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, localize, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
   ITerminalController,
@@ -26,14 +27,13 @@ export default observer(() => {
   const searchService = useInjectable<ITerminalSearchService>(ITerminalSearchService);
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const network = useInjectable<ITerminalNetwork>(ITerminalNetwork);
-  const { errors } = errorService;
   const { groups, currentGroupIndex, currentGroupId } = view;
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    const dispose = searchService.onOpen(() => {
-      if (inputRef.current) {
+    const dispose = searchService.onVisibleChange((show) => {
+      if (show && inputRef.current) {
         inputRef.current.focus();
 
         if (inputRef.current.value.length > 0) {
@@ -43,6 +43,18 @@ export default observer(() => {
     });
     return () => dispose.dispose();
   }, [searchService, inputRef.current]);
+
+  const [themeBackground, setThemeBackground] = React.useState(controller.themeBackground);
+
+  useEventEffect(controller.onThemeBackgroundChange, (themeBackground) => {
+    setThemeBackground(themeBackground);
+  });
+
+  const [errors, setErrors] = React.useState(errorService.errors);
+  const func = debounce(() => {
+    setErrors(errorService.errors);
+  }, 16 * 3);
+  useEventEffect(errorService.onErrorsChange, func);
 
   const renderWidget = React.useCallback(
     (widget: IWidget, index: number) => {
@@ -58,10 +70,18 @@ export default observer(() => {
     [currentGroupIndex, controller, errors, network, view],
   );
 
+  const [isVisible, setIsVisible] = React.useState(searchService.isVisible);
+  useEventEffect(searchService.onVisibleChange, (visible) => {
+    setIsVisible(visible);
+  });
+
+  const [inputText, setInputText] = React.useState('');
+
   const searchInput = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      searchService.input = event.target.value;
+      searchService.text = event.target.value;
       searchService.search();
+      setInputText(event.target.value);
     },
     [searchService],
   );
@@ -91,17 +111,17 @@ export default observer(() => {
     <div
       ref={wrapperRef}
       className={styles.terminalWrapper}
-      style={{ backgroundColor: controller.themeBackground }}
+      style={{ backgroundColor: themeBackground }}
       data-group-current={currentGroupId}
     >
-      {searchService.show && (
+      {isVisible && (
         <div className={styles.terminalSearch}>
           <div className='kt-input-box'>
             <input
               autoFocus
               ref={inputRef}
               placeholder={localize('common.find')}
-              value={searchService.input}
+              value={inputText}
               onChange={searchInput}
               onKeyDown={searchKeyDown}
             />

@@ -91,7 +91,7 @@ export class TerminalCommandContribution implements CommandContribution {
       },
       {
         execute: () => {
-          if (this.search.show) {
+          if (this.search.isVisible) {
             this.search.close();
             return;
           }
@@ -140,7 +140,7 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.SEARCH_NEXT, {
       execute: () => {
-        if (this.search.show) {
+        if (this.search.isVisible) {
           this.search.search();
         } else {
           this.search.open();
