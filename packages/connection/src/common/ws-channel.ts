@@ -168,16 +168,24 @@ export class WSChannel {
     return this.emitter.on('reopen', cb);
   }
 
+  pause() {
+    this._isServerReady = false;
+  }
+
+  resume() {
+    this._isServerReady = true;
+    if (this.sendQueue) {
+      for (const item of this.sendQueue) {
+        this.connection.send(item);
+      }
+      this.sendQueue = [];
+    }
+  }
+
   dispatch(msg: ChannelMessage) {
     switch (msg.kind) {
       case 'server-ready':
-        this._isServerReady = true;
-        if (this.sendQueue) {
-          for (const item of this.sendQueue) {
-            this.connection.send(item);
-          }
-          this.sendQueue = [];
-        }
+        this.resume();
         this.emitter.emit('open', msg.id);
         break;
       case 'data':
@@ -222,7 +230,7 @@ export class WSChannel {
   }
   onError() {}
   close(code?: number, reason?: string) {
-    this._isServerReady = false;
+    this.pause();
     this.emitter.emit('close', code, reason);
   }
   fireReopen() {

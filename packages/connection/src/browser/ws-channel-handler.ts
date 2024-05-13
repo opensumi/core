@@ -54,17 +54,11 @@ export class WSChannelHandler {
 
       const msg = parse(message);
 
-      switch (msg.kind) {
-        case 'pong':
-          break;
-        default: {
-          const channel = this.channelMap.get(msg.id);
-          if (channel) {
-            channel.dispatch(msg);
-          } else {
-            this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
-          }
-        }
+      const channel = this.channelMap.get(msg.id);
+      if (channel) {
+        channel.dispatch(msg);
+      } else {
+        this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
       }
     });
 
