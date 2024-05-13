@@ -87,7 +87,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
   private clientServiceMap: Map<string, IExtensionNodeClientService> = new Map();
-  // 最新的插件进程的对应的 clientId
+  // 最新的插件进程的对应的进程 Id
   private latestExtProcessId: number = -1;
 
   private inspectPort = 9889;
