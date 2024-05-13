@@ -65,7 +65,7 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
     this._knownProtocols = options.knownProtocols || {};
     this.io.setAnySerializer(new AnyProtocolSerializer(this.io.writer, this.io.reader, ExtObjectTransfer));
 
-    this.onRequestNotFound((rpcName: string, args: any[]) => this._doInvokeHandler(rpcName, args));
+    this.onRequestNotFound((rpcName: string, args: any[]) => this.invoke(rpcName, args));
 
     // call `listen` implicitly
     // compatible behavior with the RPCProtocol
@@ -127,7 +127,7 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
     return new Proxy(Object.create(null), handler);
   }
 
-  protected async _doInvokeHandler(rpcName: string, args: any[]): Promise<any> {
+  public async invoke(rpcName: string, args: any[]): Promise<any> {
     const [rpcId, methodName] = SumiConnectionMultiplexer.extractServiceAndMethod(rpcName);
 
     const actor = this._locals.get(rpcId);

@@ -65,7 +65,7 @@ describe('connection', () => {
       const msgObj = parse(msg);
       if (msgObj.kind === 'server-ready') {
         if (msgObj.id === 'TEST_CHANNEL_ID') {
-          channel.dispatchChannelMessage(msgObj);
+          channel.dispatch(msgObj);
         }
       }
     });
