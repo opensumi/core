@@ -23,7 +23,6 @@ export class DesignMenuBarContribution extends Disposable implements ComponentCo
     this.addDispose(
       this.menubarStore.onDidMenuBarChange((menubarItems: IMenubarItem[]) => {
         this.menuRegistry.deleteAllItemsForMenuId(MenuId.DesignMenuBarTopExtra);
-        this.menuRegistry.unregisterMenuId(MenuId.DesignMenuBarTopExtra);
 
         this.menuRegistry.registerMenuItems(
           MenuId.DesignMenuBarTopExtra,
