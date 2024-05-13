@@ -1,4 +1,5 @@
 import cls from 'classnames';
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { getIcon, localize, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
@@ -19,7 +20,7 @@ import TerminalWidget from './terminal.widget';
 
 import 'xterm/css/xterm.css';
 
-export default () => {
+export default observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const searchService = useInjectable<ITerminalSearchService>(ITerminalSearchService);
@@ -140,4 +141,4 @@ export default () => {
       })}
     </div>
   );
-};
+});
