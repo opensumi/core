@@ -434,7 +434,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   private async getExtProcessPID(): Promise<number | null> {
-    return await Promise.race([this.extensionNodeClient.pid(), sleep(300).then(() => null)]);
+    return await Promise.race([
+      this.extensionNodeClient.pid().catch(async (err) => {
+        this.logger.error(`[ext-restart]: get ext process pid error, ${err}`);
+        await sleep(200);
+        return null;
+      }),
+      sleep(1000).then(() => null),
+    ]);
   }
 
   private async startExtProcess(init: boolean) {
