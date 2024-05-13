@@ -87,6 +87,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
   private clientServiceMap: Map<string, IExtensionNodeClientService> = new Map();
+  // 最新的插件进程的对应的进程 Id
+  private latestExtProcessId: number = -1;
 
   private inspectPort = 9889;
 
@@ -360,8 +362,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       ...forkOptions,
       ...this.appConfig.extHostForkOptions,
     });
+    this.latestExtProcessId = extProcessId;
     this.logger.log(`Fork extension host process with id ${extProcessId}`);
-
     // 监听进程输出，用于获取调试端口
     this.extensionHostManager.onOutput(extProcessId, (output) => {
       const inspectorUrlMatch = output.data && output.data.match(/ws:\/\/([^\s]+:(\d+)\/[^\s]+)/);
@@ -512,6 +514,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           this.logger.error(`Close extension host process when connection throw error\n${e.message}`);
         });
       } else {
+        // 为了保证体验，最后一个创建的插件进程断连后不杀死
+        // https://github.com/opensumi/core/issues/3653
+        if (this.clientExtProcessMap.get(connectionClientId) === this.latestExtProcessId) {
+          return;
+        }
         /**
          * in web, if current connection is closed, kill the ext process after a threshold
          */
