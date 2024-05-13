@@ -118,10 +118,11 @@ export class ExtHostCommands implements IExtHostCommands {
   private readonly _apiCommands = new Map<string, ApiCommand>();
   public converter: CommandsConverter;
 
-  constructor(rpcProtocol: IRPCProtocol, private buildInCommands?: IBuiltInCommand[]) {
+  constructor(rpcProtocol: IRPCProtocol, private builtinCommands?: IBuiltInCommand[]) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
     this.registerUriArgProcessor();
+    this.registerBuiltInCommands();
   }
 
   private registerUriArgProcessor() {
@@ -148,10 +149,10 @@ export class ExtHostCommands implements IExtHostCommands {
     });
   }
 
-  public $registerBuiltInCommands() {
-    if (this.buildInCommands) {
+  public registerBuiltInCommands() {
+    if (this.builtinCommands) {
       this.logger.log('register builtIn commands');
-      for (const command of this.buildInCommands) {
+      for (const command of this.builtinCommands) {
         const { id, handler } = command;
         this.logger.verbose(`register builtIn command ${id}`);
         this.register(id, handler);

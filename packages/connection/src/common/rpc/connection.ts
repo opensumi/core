@@ -78,11 +78,17 @@ export class SumiConnection implements IDisposable {
     this.disposable.add(this.capturer);
   }
 
+  protected _send(data: Uint8Array) {
+    runInNextTick(() => {
+      this.socket.send(data);
+    });
+  }
+
   sendNotification(method: string, ...args: any[]) {
     const requestId = this._requestId++;
 
     this.capturer.captureSendNotification(requestId, method, args);
-    this.socket.send(this.io.Notification(requestId, method, nullHeaders, args));
+    this._send(this.io.Notification(requestId, method, nullHeaders, args));
   }
 
   sendRequest(method: string, ...args: any[]) {
@@ -129,23 +135,21 @@ export class SumiConnection implements IDisposable {
 
       this.capturer.captureSendRequest(requestId, method, args);
 
-      runInNextTick(() => {
-        this.socket.send(
-          this.io.Request(
-            requestId,
-            method,
-            {
-              cancelable: Boolean(cancellationToken) || undefined,
-            },
-            args,
-          ),
-        );
-      });
+      this._send(
+        this.io.Request(
+          requestId,
+          method,
+          {
+            cancelable: Boolean(cancellationToken) || undefined,
+          },
+          args,
+        ),
+      );
     });
   }
 
   cancelRequest(requestId: number) {
-    this.socket.send(this.io.Cancel(requestId));
+    this._send(this.io.Cancel(requestId));
   }
 
   private _handleTimeout(method: string, requestId: number) {
@@ -319,17 +323,17 @@ export class SumiConnection implements IDisposable {
                 if (isReadableStream(result)) {
                   listenReadable(result, {
                     onData: (data) => {
-                      this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, data));
+                      this._send(this.io.Response(requestId, method, chunkedResponseHeaders, data));
                     },
                     onEnd: () => {
-                      this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, null));
+                      this._send(this.io.Response(requestId, method, chunkedResponseHeaders, null));
                     },
                     onError: (err) => {
-                      this.socket.send(this.io.Error(requestId, method, chunkedResponseHeaders, err));
+                      this._send(this.io.Error(requestId, method, chunkedResponseHeaders, err));
                     },
                   });
                 } else {
-                  this.socket.send(this.io.Response(requestId, method, nullHeaders, result));
+                  this._send(this.io.Response(requestId, method, nullHeaders, result));
                 }
 
                 this._cancellationTokenSources.delete(requestId);
@@ -338,7 +342,7 @@ export class SumiConnection implements IDisposable {
               const onError = (err: Error) => {
                 this.traceRequestError(requestId, method, args, err);
 
-                this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
+                this._send(this.io.Error(requestId, method, nullHeaders, err));
                 this._cancellationTokenSources.delete(requestId);
               };
 

@@ -100,7 +100,7 @@ export function createAPIFactory(
 
   const preference = new ExtHostPreference(rpcProtocol, extHostWorkspace);
 
-  waitGroup.addPromise(preference.ready());
+  waitGroup.addPromise(preference.whenReady());
 
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, preference) as ExtHostPreference;
   const extHostOutput = rpcProtocol.set(

@@ -57,7 +57,6 @@ export interface IExtHostCommands {
     extensionInfo: IExtensionInfo,
     ...args: any[]
   ): Promise<T | undefined>;
-  $registerBuiltInCommands(): void;
 }
 
 export interface ICommandHandlerDescription {

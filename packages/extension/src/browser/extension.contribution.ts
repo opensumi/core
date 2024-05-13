@@ -330,31 +330,10 @@ export class ExtensionCommandContribution implements CommandContribution {
     registry.registerCommand(VSCodeBuiltinCommands.OPEN, {
       execute: (
         uriComponents: UriComponents,
-        columnOrOptions?: ViewColumn | TextDocumentShowOptions | [ViewColumn?, TextDocumentShowOptions?],
+        columnAndOptions?: [ViewColumn?, TextDocumentShowOptions?],
         label?: string,
       ) => {
         const uri = URI.from(uriComponents);
-        const columnAndOptions = [undefined, undefined] as [ViewColumn?, TextDocumentShowOptions?];
-
-        if (columnOrOptions) {
-          const inputType = typeof columnOrOptions;
-
-          switch (inputType) {
-            case 'number':
-              columnAndOptions[0] = columnOrOptions as unknown as number as ViewColumn;
-              break;
-            case 'object':
-              if (Array.isArray(columnOrOptions)) {
-                columnAndOptions[0] = columnOrOptions[0];
-                columnAndOptions[1] = columnOrOptions[1];
-              } else {
-                // must not be a number
-                columnAndOptions[1] = columnOrOptions as TextDocumentShowOptions;
-              }
-              break;
-          }
-        }
-
         return this.doOpenWith(uri, columnAndOptions, label, undefined);
       },
     });

@@ -43,8 +43,6 @@ export class MainThreadCommands implements IMainThreadCommands {
   }
 
   private async doInitialize() {
-    // need await here, because this is a rpc call
-    await this.proxy.$registerBuiltInCommands();
     this._defered.resolve();
   }
 

@@ -107,7 +107,7 @@ export class WSChannelHandler {
     });
     this.channelMap.set(channel.id, channel);
 
-    let channelOpenCount = 0;
+    let channelOpenedCount = 0;
 
     channel.onOpen(() => {
       const closeInfo = this.channelCloseEventMap.get(channel.id);
@@ -120,14 +120,14 @@ export class WSChannelHandler {
         this.channelCloseEventMap.delete(channel.id);
       }
 
-      if (channelOpenCount > 0) {
+      if (channelOpenedCount > 0) {
         this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
         channel.fireReopen();
       } else {
         this.logger.log(this.LOG_TAG, `channel open ${this.clientId}:${channel.channelPath}`);
       }
 
-      channelOpenCount++;
+      channelOpenedCount++;
     });
 
     channel.onClose((code: number, reason: string) => {

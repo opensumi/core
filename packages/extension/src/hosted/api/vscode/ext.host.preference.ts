@@ -79,7 +79,7 @@ export class ExtHostPreference implements IExtHostPreference {
     this._preferences = this.parse(data);
   }
 
-  ready(): Promise<void> {
+  whenReady(): Promise<void> {
     return this.deferred.promise;
   }
 

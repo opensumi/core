@@ -161,14 +161,12 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     });
 
     it('execute a builtin command', async () => {
-      extCommand.$registerBuiltInCommands();
       const commandId = 'test:builtinCommand';
       const result = await extCommand.executeCommand(commandId);
       expect(result).toBe('bingo!');
     });
 
     it('execute a builtin command will not permitted', async () => {
-      extCommand.$registerBuiltInCommands();
       const commandId = 'test:builtinCommand:unpermitted';
       expect(() => vscodeCommand.executeCommand(commandId)).rejects.toThrow(
         new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
@@ -176,7 +174,6 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     });
 
     it('execute a builtin command with permitted', async () => {
-      extCommand.$registerBuiltInCommands();
       const commandId = 'test:builtinCommand:permitted';
       const result = await vscodeCommand.executeCommand(commandId);
       expect(result).toBe('permitted!');
@@ -277,7 +274,6 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     let mockMainThreadFunc;
     beforeEach(async () => {
       mockMainThreadFunc = jest.spyOn(mainService, '$executeCommand');
-      await extCommand.$registerBuiltInCommands();
     });
 
     it('vscode.executeFormatDocumentProvider', async () => {
