@@ -68,10 +68,15 @@ export const WelcomeMessage = () => {
     );
   }
 
+  const allSampleQuestions = React.useMemo(
+    () => welcomeSampleQuestions.concat(sampleQuestions),
+    [welcomeSampleQuestions, sampleQuestions],
+  );
+
   const welcomeRender = React.useMemo(() => {
     if (chatRenderRegistry.chatWelcomeRender) {
       const Render = chatRenderRegistry.chatWelcomeRender;
-      return <Render message={welcomeMessage} sampleQuestions={welcomeSampleQuestions} />;
+      return <Render message={welcomeMessage} sampleQuestions={allSampleQuestions} />;
     }
 
     return (
@@ -80,7 +85,7 @@ export const WelcomeMessage = () => {
           {isMarkdownString(welcomeMessage) ? <ChatMarkdown markdown={welcomeMessage} /> : welcomeMessage}
         </div>
         <div className={styles.chat_container_content}>
-          {welcomeSampleQuestions.concat(sampleQuestions).map((data: any, index) => {
+          {allSampleQuestions.map((data: any, index) => {
             const node = (
               <a
                 className={styles.link_item}
@@ -103,7 +108,7 @@ export const WelcomeMessage = () => {
         </div>
       </div>
     );
-  }, [chatRenderRegistry.chatWelcomeRender, welcomeMessage, welcomeSampleQuestions]);
+  }, [chatRenderRegistry.chatWelcomeRender, welcomeMessage, allSampleQuestions]);
 
   return welcomeRender as React.JSX.Element;
 };
