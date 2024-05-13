@@ -102,6 +102,7 @@ export interface ITerminalController extends Disposable {
   onDidCloseTerminal: Event<ITerminalExitEvent>;
   onDidTerminalTitleChange: Event<ITerminalTitleChangeEvent>;
   onDidChangeActiveTerminal: Event<string>;
+  onThemeBackgroundChange: Event<string>;
 
   requestStartExtensionTerminal(
     proxy: ITerminalProcessExtHostProxy,
@@ -115,13 +116,15 @@ export interface ITerminalController extends Disposable {
 
 export const ITerminalSearchService = Symbol('ITerminalSearchService');
 export interface ITerminalSearchService {
-  show: boolean;
-  input: string;
+  isVisible: boolean;
+  onVisibleChange: Event<boolean>;
+
+  text: string;
+
   open(): void;
   clear(): void;
   close(): void;
   search(): void;
-  onOpen: Event<void>;
 }
 
 export const ITerminalGroupViewService = Symbol('ITerminalGroupViewService');

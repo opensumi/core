@@ -1,4 +1,6 @@
-import { IShellLaunchConfig } from '..';
+import { Event } from '@opensumi/ide-core-common';
+
+import type { IShellLaunchConfig } from './pty';
 
 export enum ETerminalErrorType {
   CREATE_FAIL = 0,
@@ -40,5 +42,6 @@ export function isTerminalError(data: any): data is ITerminalError {
 export const ITerminalErrorService = Symbol('ITerminalErrorService');
 export interface ITerminalErrorService {
   errors: Map<string, ITerminalError>;
+  onErrorsChange: Event<void>;
   fix(clientId: string): Promise<void>;
 }

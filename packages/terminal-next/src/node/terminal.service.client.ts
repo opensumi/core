@@ -68,6 +68,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   processChange(clientId: string, processName: string): void {
     if (this.client) {
+      this.logger.log(`processChange ${clientId} ${processName}`);
       this.client.$processChange(clientId, processName);
     }
   }
