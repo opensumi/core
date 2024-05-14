@@ -386,3 +386,13 @@ export const OPEN_MERGEEDITOR: Command = {
   delegate: EDITOR_COMMANDS.OPEN_MERGEEDITOR.id,
   label: 'Open Merge Editor',
 };
+
+export const DEBUG_START: Command = {
+  id: 'workbench.action.debug.selectandstart',
+  delegate: 'debug.start',
+};
+
+export const DEBUG_ADD: Command = {
+  id: 'debug.addConfiguration',
+  delegate: 'debug.showAllAutomaticDebugConfigurations',
+};
