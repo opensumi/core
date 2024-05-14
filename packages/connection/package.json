@@ -17,12 +17,12 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@bytemain/reconnecting-websocket": "^4.4.0",
     "@furyjs/fury": "0.5.9-beta",
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
     "path-to-regexp": "^6.2.1",
-    "reconnecting-websocket": "^4.4.0",
     "ws": "^8.16.0"
   },
   "devDependencies": {
