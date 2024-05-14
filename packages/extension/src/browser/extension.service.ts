@@ -398,6 +398,17 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
             {
               location: ProgressLocation.Notification,
               title: localize('extension.exthostRestarting.content'),
+              buttons: [
+                {
+                  id: 'extension.reload',
+                  label: localize('preference.general.language.change.refresh.now'),
+                  primary: true,
+                  run: async () => {
+                    this.clientApp.fireOnReload();
+                  },
+                  dispose: () => {},
+                },
+              ],
             },
             async () => {
               if (this.extProcessRestartPromise) {
