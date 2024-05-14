@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { ComponentContribution, ComponentRegistry, Disposable, Domain } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry, Disposable, Domain, IDisposable } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, IMenubarItem, ISubmenuItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenubarStore } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.store';
 
@@ -20,11 +20,15 @@ export class DesignMenuBarContribution extends Disposable implements ComponentCo
 
     this.menubarStore.unregisterMenusBarByCompact(MenuId.DesignMenuBarTopExtra);
 
+    let toDispose: IDisposable | undefined;
+
     this.addDispose(
       this.menubarStore.onDidMenuBarChange((menubarItems: IMenubarItem[]) => {
-        this.menuRegistry.deleteAllItemsForMenuId(MenuId.DesignMenuBarTopExtra);
+        if (toDispose) {
+          toDispose.dispose();
+        }
 
-        this.menuRegistry.registerMenuItems(
+        toDispose = this.menuRegistry.registerMenuItems(
           MenuId.DesignMenuBarTopExtra,
           menubarItems.map(
             (item: IMenubarItem) =>
