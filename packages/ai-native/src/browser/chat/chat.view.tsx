@@ -27,7 +27,6 @@ import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
 import { MsgHistoryManager } from '../model/msg-history-manager';
-import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { TSlashCommandCustomRender } from '../types';
 
 import { ChatSlashCommandItemModel } from './chat-model';
@@ -40,11 +39,15 @@ import { ChatRenderRegistry } from './chat.render.registry';
 
 const SCROLL_CLASSNAME = 'chat_scroll';
 
+interface TDispatchAction {
+  type: 'add' | 'clear' | 'init';
+  payload?: MessageData[];
+}
+
 export const AIChatView = observer(() => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
-  const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
@@ -53,21 +56,18 @@ export const AIChatView = observer(() => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
 
-  const [messageListData, dispatchMessage] = React.useReducer(
-    (state: MessageData[], action: { type: 'add' | 'clear' | 'init'; payload?: MessageData[] }) => {
-      switch (action.type) {
-        case 'add':
-          return [...state, ...(action.payload || [])];
-        case 'clear':
-          return [];
-        case 'init':
-          return Array.isArray(action.payload) ? action.payload : [];
-        default:
-          return state;
-      }
-    },
-    [],
-  );
+  const [messageListData, dispatchMessage] = React.useReducer((state: MessageData[], action: TDispatchAction) => {
+    switch (action.type) {
+      case 'add':
+        return [...state, ...(action.payload || [])];
+      case 'clear':
+        return [];
+      case 'init':
+        return Array.isArray(action.payload) ? action.payload : [];
+      default:
+        return state;
+    }
+  }, []);
 
   const [loading, setLoading] = React.useState(false);
   const [agentId, setAgentId] = React.useState('');
@@ -85,23 +85,6 @@ export const AIChatView = observer(() => {
     }
     return ChatInput;
   }, [chatRenderRegistry.chatInputRender]);
-
-  React.useEffect(() => {
-    msgStreamManager.onMsgStatus((event) => {
-      if (event === EMsgStreamStatus.DONE || event === EMsgStreamStatus.ERROR) {
-        setLoading(false);
-      } else if (event === EMsgStreamStatus.THINKING) {
-        setLoading(true);
-      }
-
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
-    });
-    return () => {
-      msgStreamManager.dispose();
-    };
-  }, []);
 
   const firstMsg = React.useMemo(
     () =>
@@ -123,8 +106,18 @@ export const AIChatView = observer(() => {
     }
   }, [containerRef]);
 
+  const handleDispatchMessage = React.useCallback(
+    (dispatch: TDispatchAction) => {
+      dispatchMessage(dispatch);
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    },
+    [dispatchMessage, scrollToBottom],
+  );
+
   React.useEffect(() => {
-    dispatchMessage({ type: 'init', payload: [firstMsg] });
+    handleDispatchMessage({ type: 'init', payload: [firstMsg] });
   }, []);
 
   React.useEffect(() => {
@@ -164,7 +157,7 @@ export const AIChatView = observer(() => {
 
         if (chatRenderRegistry.chatAIRoleRender) {
           const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
-          renderContent = <ChatAIRoleRender content={chunk} status={EMsgStreamStatus.DONE} />;
+          renderContent = <ChatAIRoleRender content={chunk} />;
         }
 
         msgHistoryManager.addAssistantMessage({
@@ -178,7 +171,7 @@ export const AIChatView = observer(() => {
           className: styles.chat_with_more_actions,
         });
 
-        dispatchMessage({ type: 'add', payload: [aiMessage] });
+        handleDispatchMessage({ type: 'add', payload: [aiMessage] });
       }),
     );
 
@@ -203,15 +196,12 @@ export const AIChatView = observer(() => {
           {
             id: uuid(6),
             relationId,
-            text: <ChatNotify relationId={relationId} chunk={chunk} />,
+            text: <ChatNotify requestId={aiChatService.latestRequestId} chunk={chunk} />,
           },
           styles.chat_notify,
         );
 
-        dispatchMessage({ type: 'add', payload: [notifyMessage] });
-        requestAnimationFrame(() => {
-          scrollToBottom();
-        });
+        handleDispatchMessage({ type: 'add', payload: [notifyMessage] });
       }),
     );
 
@@ -223,16 +213,17 @@ export const AIChatView = observer(() => {
     );
 
     return () => disposer.dispose();
-  }, [chatAgentService, msgHistoryManager]);
+  }, [chatAgentService, msgHistoryManager, aiChatService]);
 
   const handleSlashCustomRender = React.useCallback(
     async (value: {
       userMessage: string;
       render: TSlashCommandCustomRender;
       relationId: string;
+      requestId: string;
       startTime: number;
     }) => {
-      const { userMessage, relationId, render, startTime } = value;
+      const { userMessage, relationId, requestId, render, startTime } = value;
 
       msgHistoryManager.addAssistantMessage({
         type: 'component',
@@ -248,16 +239,13 @@ export const AIChatView = observer(() => {
             userMessage={userMessage}
             startTime={startTime}
             relationId={relationId}
+            requestId={requestId}
             renderContent={render}
           />
         ),
       });
 
-      dispatchMessage({ type: 'add', payload: [aiMessage] });
-
-      if (containerRef && containerRef.current) {
-        containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
-      }
+      handleDispatchMessage({ type: 'add', payload: [aiMessage] });
     },
     [containerRef, msgHistoryManager],
   );
@@ -265,12 +253,16 @@ export const AIChatView = observer(() => {
   const handleAgentReply = React.useCallback(
     async (value: IChatMessageStructure) => {
       const { message, agentId, command } = value;
-      const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
       const request = aiChatService.createRequest(message, agentId!, command);
       if (!request) {
         return;
       }
+
+      setLoading(true);
+      aiChatService.setLatestRequestId(request.requestId);
+
+      const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
       const startTime = Date.now();
       const relationId = aiReporter.start(AISerivceType.Agent, {
@@ -299,15 +291,17 @@ export const AIChatView = observer(() => {
         styles.chat_message_code,
       );
 
-      dispatchMessage({ type: 'add', payload: [userMessage] });
+      handleDispatchMessage({ type: 'add', payload: [userMessage] });
 
       if (agentId === ChatProxyService.AGENT_ID && command) {
         const commandHandler = chatFeatureRegistry.getSlashCommandHandler(command);
         if (commandHandler && commandHandler.providerRender) {
+          setLoading(false);
           return handleSlashCustomRender({
             userMessage: message,
             render: commandHandler.providerRender,
             relationId,
+            requestId: request.requestId,
             startTime,
           });
         }
@@ -322,26 +316,23 @@ export const AIChatView = observer(() => {
             relationId={relationId}
             request={request}
             startTime={startTime}
+            onDidChange={() => {
+              scrollToBottom();
+            }}
+            onDone={() => {
+              setLoading(false);
+            }}
             onRegenerate={() => {
-              msgStreamManager.sendThinkingStatue();
               aiChatService.sendRequest(request, true);
             }}
           />
         ),
       });
 
-      msgStreamManager.setCurrentSessionId(relationId);
-      msgStreamManager.sendThinkingStatue();
-      aiChatService.setLatestSessionId(relationId);
       aiChatService.sendRequest(request);
-
-      dispatchMessage({ type: 'add', payload: [aiMessage] });
-
-      if (containerRef && containerRef.current) {
-        containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
-      }
+      handleDispatchMessage({ type: 'add', payload: [aiMessage] });
     },
-    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager],
+    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom],
   );
 
   const handleSend = React.useCallback(async (value: IChatMessageStructure) => {
@@ -352,12 +343,10 @@ export const AIChatView = observer(() => {
   }, []);
 
   const handleClear = React.useCallback(() => {
-    aiChatService.cancelChatViewToken();
-    aiChatService.destroyStreamRequest(msgStreamManager.currentSessionId);
     aiChatService.clearSessionModel();
     chatApiService.clearHistoryMessages();
     containerRef?.current?.classList.remove(SCROLL_CLASSNAME);
-    dispatchMessage({ type: 'init', payload: [firstMsg] });
+    handleDispatchMessage({ type: 'init', payload: [firstMsg] });
   }, [messageListData]);
 
   const handleShortcutCommandClick = (commandModel: ChatSlashCommandItemModel) => {
