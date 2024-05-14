@@ -20,7 +20,6 @@ import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestio
 
 import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
-import { EMsgStreamStatus } from './model/msg-stream-manager';
 
 export interface IEditorInlineChatHandler {
   /**
@@ -75,10 +74,7 @@ export type ChatWelcomeRender = (props: {
   message: IChatWelcomeMessageContent;
   sampleQuestions: ISampleQuestions[];
 }) => React.ReactElement | React.JSX.Element;
-export type ChatAIRoleRender = (props: {
-  content: string;
-  status: EMsgStreamStatus;
-}) => React.ReactElement | React.JSX.Element;
+export type ChatAIRoleRender = (props: { content: string }) => React.ReactElement | React.JSX.Element;
 export type ChatUserRoleRender = (props: {
   content: string;
   agentId?: string;
