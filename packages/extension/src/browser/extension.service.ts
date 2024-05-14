@@ -173,7 +173,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   // 插件进程是否正在等待重启，页面不可见的时候被设置
   private isExtProcessWaitingForRestart: ERestartPolicy | undefined;
   private pCrashMessageModel: MayCancelablePromise<string | undefined> | undefined;
-  private pReloadMessageModel: MayCancelablePromise<string | undefined> | undefined;
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
@@ -368,12 +367,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       // crash message model is still open, close it
       this.pCrashMessageModel.cancel?.();
       this.pCrashMessageModel = undefined;
-    }
-
-    if (this.pReloadMessageModel) {
-      // reload message model is still open, close it
-      this.pReloadMessageModel.cancel?.();
-      this.pReloadMessageModel = undefined;
     }
   }
 
