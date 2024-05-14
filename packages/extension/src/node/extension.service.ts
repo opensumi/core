@@ -183,10 +183,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       const extProcessId = this.clientExtProcessMap.get(clientId);
       const extProcessNotExist =
-        isUndefined(extProcessId) ||
-        !(
-          (await this.extensionHostManager.isRunning(extProcessId)) && this.clientExtProcessExtConnection.has(clientId)
-        );
+        isUndefined(extProcessId) || !(await this.extensionHostManager.isRunning(extProcessId));
 
       if (extProcessNotExist) {
         this.logger.error(`${clientId} clientId process connection not exists, try to notify client to restart`);
@@ -227,6 +224,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     });
   }
 
+  @pMemoize((clientId: string) => clientId)
   public async createProcess(clientId: string, options?: ICreateProcessOptions) {
     this.logger.log('createProcess instanceId', this.instanceId);
     this.logger.log('appconfig exthost', this.appConfig.extHost);
@@ -251,10 +249,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const extServer = net.createServer();
     this.clientExtProcessExtConnectionServer.set(clientId, extServer);
 
-    extServer.on('connection', (connection) => {
+    extServer.on('connection', (socket) => {
       this.logger.log('_setupExtHostConnection ext host connected');
 
-      this.clientExtProcessExtConnection.set(clientId, new NetSocketConnection(connection));
+      this.clientExtProcessExtConnection.set(clientId, new NetSocketConnection(socket));
       this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.resolve();
     });
 
@@ -270,7 +268,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     });
   }
 
-  @pMemoize((clientId: string) => clientId)
   private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
     // 在新进程创建前销毁可能存在的僵尸进程
     this.destoryZombineClients();
@@ -499,14 +496,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           channel.dispose();
           this.logger.log(`The connection client ${clientId} closed`);
 
-          if (this.clientExtProcessExtConnection.has(clientId)) {
-            const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
-            if (extConnection) {
-              this.clientExtProcessExtConnection.delete(clientId);
-              extConnection.dispose();
-              extConnection.destroy();
-            }
-          }
           this.maybeZombieClients.add(clientId);
           this.closeExtProcessWhenConnectionClose(clientId);
         });
@@ -579,8 +568,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           this.clientExtProcessExtConnectionServer.get(clientId)!.close();
           this.clientExtProcessExtConnectionServer.delete(clientId);
         }
+
         // connect 关闭
         if (this.clientExtProcessExtConnection.has(clientId)) {
+          this.clientExtProcessExtConnection.get(clientId)!.dispose();
           this.clientExtProcessExtConnection.get(clientId)!.destroy();
           this.clientExtProcessExtConnection.delete(clientId);
         }
