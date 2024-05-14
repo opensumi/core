@@ -185,7 +185,7 @@ export class WSChannel {
     }
   }
 
-  stateTracer = new StateTracer();
+  stateTracer = this._disposables.add(new StateTracer());
 
   /**
    * @param connectionToken 一个 connection token 用于在全链路中追踪一个 channel 的生命周期，防止 channel 被重复打开

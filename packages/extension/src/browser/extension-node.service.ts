@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IRPCProtocol, SumiConnectionMultiplexer, WSChannel } from '@opensumi/ide-connection';
-import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   AppConfig,
@@ -45,8 +45,8 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
 
-  @Autowired(IWSChannelHandler)
-  private readonly channelHandler: IWSChannelHandler;
+  @Autowired(WSChannelHandler)
+  private readonly channelHandler: WSChannelHandler;
 
   private _apiFactoryDisposables = new DisposableStore();
 

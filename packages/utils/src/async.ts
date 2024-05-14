@@ -655,4 +655,11 @@ export class StateTracer {
   public reachedAnyState(...states: string[]): Promise<void> {
     return Promise.race(states.map((s) => this.reachedState(s)));
   }
+
+  public dispose() {
+    Object.keys(this.deferred).forEach((key) => {
+      this.deferred[key].reject(new Error('Disposed'));
+    });
+    this.deferred = {};
+  }
 }

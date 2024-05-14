@@ -1,6 +1,8 @@
 import debounce from 'lodash/debounce';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   AppConfig,
   CommandRegistry,
@@ -176,6 +178,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
+
+  @Autowired(WSChannelHandler)
+  private readonly channelHandler: WSChannelHandler;
 
   /**
    * @internal 提供获取所有运行中的插件的列表数据
@@ -391,6 +396,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
       this.disposeAllOverlayWindow();
     };
+
+    await this.channelHandler.awaitChannelReady(RPCServiceChannelPath);
 
     const policy = this.isExtProcessWaitingForRestart || restartPolicy;
     this.logger.log('[ext-restart]: restart ext process, restart policy:', policy);

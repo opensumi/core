@@ -1,4 +1,5 @@
-import { Barrier, Deferred, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
+import { EventEmitter } from '@opensumi/events';
+import { Barrier, Deferred, DisposableStore, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
@@ -9,6 +10,13 @@ import { ErrorMessageCode, WSChannel, parse, pingMessage } from '../common/ws-ch
  * Channel Handler in browser
  */
 export class WSChannelHandler {
+  private _disposables = new DisposableStore();
+
+  private _onChannelCreatedEmitter = this._disposables.add(new EventEmitter<Record<string, [WSChannel]>>());
+  public onChannelCreated(path: string, listener: (channel: WSChannel) => void) {
+    return this._onChannelCreatedEmitter.on(path, listener);
+  }
+
   private channelMap: Map<string, WSChannel> = new Map();
   private channelCloseEventMap = new MultiMap<string, WSCloseInfo>();
   private logger = console;
@@ -116,12 +124,18 @@ export class WSChannelHandler {
     await this.openingBarrier.wait();
   }
 
-  public async openChannel(channelPath: string) {
-    const key = `${this.clientId}:${channelPath}`;
-    if (this.channelMap.has(key)) {
-      const channel = this.channelMap.get(key)!;
-      channel.dispose();
+  private fillKey(channelPath: string) {
+    return `${this.clientId}:${channelPath}`;
+  }
 
+  public getChannel(channelPath: string) {
+    return this.channelMap.get(this.fillKey(channelPath));
+  }
+
+  public async openChannel(channelPath: string) {
+    const key = this.fillKey(channelPath);
+    if (this.channelMap.has(key)) {
+      this.channelMap.get(key)!.dispose();
       this.logger.log(this.LOG_TAG, `channel ${key} already exists, dispose it`);
     }
 
@@ -131,6 +145,7 @@ export class WSChannelHandler {
       ensureServerReady: true,
     });
     this.channelMap.set(channel.id, channel);
+    this._onChannelCreatedEmitter.emit(channelPath, channel);
 
     let channelOpenedCount = 0;
 
@@ -184,5 +199,24 @@ export class WSChannelHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
+    this._disposables.dispose();
+  }
+
+  awaitChannelReady(channelPath: string) {
+    const channel = this.getChannel(channelPath);
+    const deferred = new Deferred<void>();
+    if (channel) {
+      channel.onServerReady(() => {
+        deferred.resolve();
+      });
+    } else {
+      const dispose = this.onChannelCreated(channelPath, (channel) => {
+        channel.onServerReady(() => {
+          deferred.resolve();
+        });
+        dispose.dispose();
+      });
+    }
+    return deferred.promise;
   }
 }
