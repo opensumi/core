@@ -183,7 +183,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       const extProcessId = this.clientExtProcessMap.get(clientId);
       const extProcessNotExist =
-        isUndefined(extProcessId) || !(await this.extensionHostManager.isRunning(extProcessId));
+        isUndefined(extProcessId) ||
+        !(
+          (await this.extensionHostManager.isRunning(extProcessId)) && this.clientExtProcessExtConnection.has(clientId)
+        );
 
       if (extProcessNotExist) {
         this.logger.error(`${clientId} clientId process connection not exists, try to notify client to restart`);
