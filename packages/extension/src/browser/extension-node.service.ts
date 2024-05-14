@@ -66,7 +66,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   }
 
   public async activate(): Promise<IRPCProtocol> {
-    this.protocol = await this.createExtProcess();
+    await this.createExtProcess();
     if (this.protocol) {
       this.ready.resolve();
       this.logger.verbose('init node thread api proxy', this.protocol);
@@ -147,23 +147,26 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       extensionConnectOption: this.appConfig.extensionConnectOption,
     });
 
-    return this.initExtProtocol();
+    await this.initExtProtocol();
   }
 
   connection: BaseConnection<Uint8Array>;
+  /**
+   * 仅需要创建一次 WSChannel 即可，因为我们的 WSChannel 只会和 Node 进程通信
+   */
   private async initExtProtocol() {
+    if (this.protocol) {
+      return;
+    }
     const channelHandler = this.injector.get(IWSChannelHandler);
     const channel = await channelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
 
     this.connection = channel.createConnection();
 
-    const mainThreadProtocol = new SumiConnectionMultiplexer(this.connection, {
+    this.protocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'node-ext-host',
       knownProtocols,
     });
-
-    // 重启/重连时直接覆盖前一个连接
-    return mainThreadProtocol;
   }
 }

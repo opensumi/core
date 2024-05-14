@@ -24,6 +24,7 @@ import {
   WithEventBus,
   createCancelablePromise,
   getLanguageId,
+  isPromiseCanceledError,
   localize,
   sleep,
 } from '@opensumi/ide-core-common';
@@ -168,6 +169,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   // 插件进程是否正在等待重启，页面不可见的时候被设置
   private isExtProcessWaitingForRestart: ERestartPolicy | undefined;
   private pCrashMessageModel: MayCancelablePromise<string | undefined> | undefined;
+  private pReloadMessageModel: MayCancelablePromise<string | undefined> | undefined;
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
@@ -348,6 +350,20 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   private extProcessRestartPromise: CancelablePromise<void> | undefined;
 
+  private disposeAllOverlayWindow() {
+    if (this.pCrashMessageModel) {
+      // crash message model is still open, close it
+      this.pCrashMessageModel.cancel?.();
+      this.pCrashMessageModel = undefined;
+    }
+
+    if (this.pReloadMessageModel) {
+      // reload message model is still open, close it
+      this.pReloadMessageModel.cancel?.();
+      this.pReloadMessageModel = undefined;
+    }
+  }
+
   private async extProcessRestartHandler(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
     if (this.isExtProcessRestarting && restartPolicy !== ERestartPolicy.Always) {
       this.logger.log('[ext-restart]: ext process is restarting, skip');
@@ -355,11 +371,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     const doRestart = async (token: CancellationToken) => {
-      if (this.pCrashMessageModel) {
-        // crash message model is still open, close it
-        this.pCrashMessageModel.cancel?.();
-        this.pCrashMessageModel = undefined;
-      }
+      this.disposeAllOverlayWindow();
 
       token.onCancellationRequested(() => {
         this.logger.log('[ext-restart]: ext process restart canceled');
@@ -375,6 +387,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
       this.isExtProcessRestarting = false;
       this.isExtProcessWaitingForRestart = undefined;
+
+      this.disposeAllOverlayWindow();
     };
 
     const restartProgress = async () => {
@@ -404,10 +418,17 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
             await this.extProcessRestartPromise;
           } catch (err) {
             this.logger.error(`[Extension Restart Error], \n ${err.message || err}`);
+
+            if (isPromiseCanceledError(err)) {
+              return;
+            }
+
             const refresh = localize('preference.general.language.change.refresh.now');
-            const result = await this.messageService.error(localize('extension.invalidExthostReload.confirm.content'), [
-              refresh,
-            ]);
+            this.pReloadMessageModel = this.messageService.error(
+              localize('extension.invalidExthostReload.confirm.content'),
+              [refresh],
+            );
+            const result = await this.pReloadMessageModel;
             if (result === refresh) {
               this.clientApp.fireOnReload();
             }

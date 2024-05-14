@@ -220,7 +220,7 @@ export class SumiConnection implements IDisposable {
           const runCallback = (headers: IResponseHeaders, error?: any, result?: any) => {
             const callback = this._callbacks.get(requestId);
             if (!callback) {
-              this.logger.error(`Cannot find callback for request ${requestId}`);
+              this.logger.error(`Cannot find callback for request ${requestId}: ${method}, status: ${status}`);
               return;
             }
 

@@ -54,11 +54,18 @@ export class WSChannelHandler {
 
       const msg = parse(message);
 
-      const channel = this.channelMap.get(msg.id);
-      if (channel) {
-        channel.dispatch(msg);
-      } else {
-        this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+      switch (msg.kind) {
+        case 'pong':
+          // pong 没有 msg.id, 且不需要分发, 不处理
+          break;
+        default: {
+          const channel = this.channelMap.get(msg.id);
+          if (channel) {
+            channel.dispatch(msg);
+          } else {
+            this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+          }
+        }
       }
     });
 
@@ -95,8 +102,13 @@ export class WSChannelHandler {
   }
 
   public async openChannel(channelPath: string) {
+    const key = `${this.clientId}:${channelPath}`;
+    if (this.channelMap.has(key)) {
+      return this.channelMap.get(key)!;
+    }
+
     const channel = new WSChannel(this.connection, {
-      id: `${this.clientId}:${channelPath}`,
+      id: key,
       logger: this.logger,
       ensureServerReady: true,
     });
