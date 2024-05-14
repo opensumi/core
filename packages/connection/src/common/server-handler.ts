@@ -1,6 +1,16 @@
+import { MultiMap } from '@opensumi/ide-core-common';
+
 import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
-import { ChannelMessage, WSChannel, WSServerChannel, parse, pongMessage } from './ws-channel';
+import {
+  ChannelMessage,
+  ErrorMessageCode,
+  WSChannel,
+  WSServerChannel,
+  parse,
+  pongMessage,
+  stringify,
+} from './ws-channel';
 
 export interface IPathHandler {
   dispose: (channel: WSChannel, connectionId: string) => void;
@@ -68,7 +78,7 @@ export class CommonChannelPathHandler {
       });
     });
   }
-  dispatchChannelOpen(path: string, channel: WSChannel, clientId: string) {
+  openChannel(path: string, channel: WSChannel, clientId: string) {
     // 根据 path 拿到注册的 handler
     let handlerArr = this.get(path);
     let params: Record<string, string> | undefined;
@@ -99,29 +109,37 @@ export const commonChannelPathHandler = new CommonChannelPathHandler();
 
 export abstract class BaseCommonChannelHandler {
   protected channelMap: Map<string, WSServerChannel> = new Map();
+  protected messageQueue = new MultiMap<string, ChannelMessage>();
 
-  heartbeatTimer: NodeJS.Timeout | null = null;
+  protected heartbeatTimer: NodeJS.Timeout | null = null;
 
   constructor(public handlerId: string, protected logger: ILogger = console) {}
 
   abstract doHeartbeat(connection: any): void;
 
   private heartbeat(connection: any) {
-    const timer = global.setTimeout(() => {
-      this.doHeartbeat(connection);
-      this.heartbeat(connection);
-    }, 5000);
-
     if (this.heartbeatTimer) {
       clearTimeout(this.heartbeatTimer);
     }
 
-    this.heartbeatTimer = timer;
+    this.heartbeatTimer = global.setTimeout(() => {
+      this.doHeartbeat(connection);
+      this.heartbeat(connection);
+    }, 5000);
   }
 
   receiveConnection(connection: IConnectionShape<Uint8Array>) {
     let clientId: string;
     this.heartbeat(connection);
+
+    const getOrCreateChannel = (id: string, clientId: string) => {
+      let channel = this.channelMap.get(id);
+      if (!channel) {
+        channel = new WSServerChannel(connection, { id, clientId, logger: this.logger });
+        this.channelMap.set(id, channel);
+      }
+      return channel;
+    };
 
     connection.onMessage((data: Uint8Array) => {
       let msg: ChannelMessage;
@@ -133,24 +151,41 @@ export abstract class BaseCommonChannelHandler {
             connection.send(pongMessage);
             break;
           case 'open': {
-            const { id, path } = msg;
+            const { id, path, connectionToken } = msg;
 
             clientId = msg.clientId;
             this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
 
-            const channel = new WSServerChannel(connection, { id, clientId, logger: this.logger });
-            this.channelMap.set(id, channel);
+            const channel = getOrCreateChannel(id, clientId);
+            const messages = this.messageQueue.get(id);
+            if (messages) {
+              messages.forEach((message) => {
+                channel.dispatch(message);
+              });
+              this.messageQueue.delete(id);
+            }
 
-            commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
-            channel.serverReady();
+            commonChannelPathHandler.openChannel(path, channel, clientId);
+            channel.serverReady(connectionToken);
             break;
           }
           default: {
             const { id } = msg;
+
             const channel = this.channelMap.get(id);
             if (channel) {
               channel.dispatch(msg);
             } else {
+              this.messageQueue.set(id, msg);
+              connection.send(
+                stringify({
+                  kind: 'error',
+                  id,
+                  code: ErrorMessageCode.ChannelNotFound,
+                  message: `channel ${id} not found`,
+                }),
+              );
+
               this.logger.warn(`channel ${id} is not found`);
             }
           }
@@ -161,6 +196,7 @@ export abstract class BaseCommonChannelHandler {
     });
 
     connection.onceClose(() => {
+      this.logger.log(`connection ${clientId} is closed, dispose all channels`);
       commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
 
       Array.from(this.channelMap.values())

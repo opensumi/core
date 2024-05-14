@@ -1,6 +1,7 @@
 import { CancellationToken, CancellationTokenSource } from './cancellation';
 import { IDisposable, toDisposable } from './disposable';
 import { canceled } from './errors';
+import { Deferred } from './promises';
 
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
@@ -617,3 +618,41 @@ export const retry = async <T>(
     return retry(task, { delay, retries: retries - 1, onFailedAttempt, timeout });
   }
 };
+
+export class StateTracer {
+  protected deferred: { [state: string]: Deferred<void> } = {};
+
+  public has(state: string): boolean {
+    return this.deferred[state] !== undefined;
+  }
+
+  public delete(state: string): void {
+    delete this.deferred[state];
+  }
+
+  public record(state: string): void {
+    if (this.deferred[state] === undefined) {
+      this.deferred[state] = new Deferred();
+    }
+  }
+
+  public fulfill(state: string): void {
+    if (this.deferred[state] !== undefined) {
+      this.deferred[state].resolve();
+    } else {
+      this.deferred[state] = new Deferred();
+      this.deferred[state].resolve();
+    }
+  }
+
+  public reachedState(state: string): Promise<void> {
+    if (this.deferred[state] === undefined) {
+      this.deferred[state] = new Deferred();
+    }
+    return this.deferred[state].promise;
+  }
+
+  public reachedAnyState(...states: string[]): Promise<void> {
+    return Promise.race(states.map((s) => this.reachedState(s)));
+  }
+}

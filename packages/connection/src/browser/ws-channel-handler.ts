@@ -3,7 +3,7 @@ import { Barrier, Deferred, IReporterService, MultiMap, REPORT_NAME } from '@ope
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
 import { ConnectionInfo, WSCloseInfo } from '../common/types';
-import { WSChannel, parse, pingMessage } from '../common/ws-channel';
+import { ErrorMessageCode, WSChannel, parse, pingMessage } from '../common/ws-channel';
 
 /**
  * Channel Handler in browser
@@ -58,6 +58,21 @@ export class WSChannelHandler {
         case 'pong':
           // pong 没有 msg.id, 且不需要分发, 不处理
           break;
+        case 'error':
+          this.logger.error(this.LOG_TAG, `receive error: id: ${msg.id}, code: ${msg.code}, error: ${msg.message}`);
+          switch (msg.code) {
+            case ErrorMessageCode.ChannelNotFound:
+              if (this.channelMap.has(msg.id)) {
+                // 如果远程报错 channel 不存在但是本机存在，则重新打开
+                const channel = this.channelMap.get(msg.id)!;
+                if (channel.channelPath) {
+                  channel.pause();
+                  channel.open(channel.channelPath, this.clientId);
+                }
+              }
+              break;
+          }
+          break;
         default: {
           const channel = this.channelMap.get(msg.id);
           if (channel) {
@@ -79,7 +94,7 @@ export class WSChannelHandler {
 
     this.connection.onClose((code, reason) => {
       this.channelMap.forEach((channel) => {
-        channel.close(code ?? 1000, reason ?? '');
+        channel.close(code, reason);
       });
     });
 

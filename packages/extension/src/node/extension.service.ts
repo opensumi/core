@@ -3,7 +3,7 @@ import path from 'path';
 import util from 'util';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { WSChannel } from '@opensumi/ide-connection';
+import { WSServerChannel } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { commonChannelPathHandler } from '@opensumi/ide-connection/lib/node';
 import {
@@ -214,7 +214,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       extConnection.onceClose(() => {
         disposable1.dispose();
         disposable2.dispose();
-        channel.close();
       });
 
       // 连接恢复后清除销毁的定时器
@@ -486,10 +485,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   private async _setMainThreadConnection(
-    handler: (connectionResult: { channel: WSChannel; clientId: string }) => void,
+    handler: (connectionResult: { channel: WSServerChannel; clientId: string }) => void,
   ) {
     commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
-      handler: (channel: WSChannel, clientId: string) => {
+      handler: (channel: WSServerChannel, clientId: string) => {
         handler({
           channel,
           clientId,
