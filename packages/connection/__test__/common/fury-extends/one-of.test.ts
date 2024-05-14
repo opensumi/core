@@ -35,7 +35,6 @@ describe('oneOf', () => {
       clientId: '123',
       id: '456',
       path: '/test',
-      skipIfOpened: true,
     };
 
     testIt(obj3);

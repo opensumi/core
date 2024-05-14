@@ -36,11 +36,6 @@ export interface OpenMessage {
   id: string;
   path: string;
   clientId: string;
-
-  /**
-   * 如果有这个标，而且 server 已经 ready，那么就不需要再发送 open 消息了
-   */
-  skipIfOpened?: boolean;
 }
 
 /**
@@ -191,6 +186,9 @@ export class WSChannel {
     switch (msg.kind) {
       case 'server-ready':
         this.resume();
+        if (this.timer) {
+          clearTimeout(this.timer);
+        }
         this.emitter.emit('open', msg.id);
         break;
       case 'data':
@@ -202,7 +200,7 @@ export class WSChannel {
     }
   }
 
-  open(path: string, clientId: string, skipIfOpened?: boolean) {
+  open(path: string, clientId: string) {
     this.channelPath = path;
     this.connection.send(
       stringify({
@@ -210,7 +208,6 @@ export class WSChannel {
         id: this.id,
         path,
         clientId,
-        skipIfOpened,
       }),
     );
 
@@ -232,8 +229,8 @@ export class WSChannel {
         return;
       }
 
-      this.open(path, clientId, true);
-    }, 100);
+      this.open(path, clientId);
+    }, 500);
   }
 
   send(content: string) {
@@ -287,14 +284,27 @@ export class WSChannel {
   }
 
   dispose() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+    this.sendQueue = [];
     this._disposables.dispose();
   }
+}
+
+interface IWSServerChannelCreateOptions extends IWSChannelCreateOptions {
+  clientId: string;
 }
 
 /**
  * The server side channel, it will send a `server-ready` message after it receive a `open` message.
  */
 export class WSServerChannel extends WSChannel {
+  clientId: string;
+  constructor(public connection: IConnectionShape<Uint8Array>, options: IWSServerChannelCreateOptions) {
+    super(connection, options);
+    this.clientId = options.clientId;
+  }
   serverReady() {
     this.connection.send(
       stringify({
@@ -318,7 +328,6 @@ export const OpenProtocol = Type.object('open', {
   clientId: Type.string(),
   id: Type.string(),
   path: Type.string(),
-  skipIfOpened: Type.bool(),
 });
 
 export const ServerReadyProtocol = Type.object('server-ready', {

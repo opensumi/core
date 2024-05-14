@@ -1,13 +1,12 @@
+import { IDisposable } from '@opensumi/ide-core-common';
 import ReconnectingWebSocket, {
   Options as ReconnectingWebSocketOptions,
   UrlProvider,
-} from '@bytemain/reconnecting-websocket';
-
-import { IDisposable } from '@opensumi/ide-core-common';
+} from '@opensumi/reconnecting-websocket';
 
 import { BaseConnection } from './base';
 
-import type { ErrorEvent } from '@bytemain/reconnecting-websocket';
+import type { ErrorEvent } from '@opensumi/reconnecting-websocket';
 
 export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> {
   constructor(private socket: ReconnectingWebSocket) {

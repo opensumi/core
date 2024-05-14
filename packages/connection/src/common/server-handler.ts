@@ -98,7 +98,7 @@ export class CommonChannelPathHandler {
 export const commonChannelPathHandler = new CommonChannelPathHandler();
 
 export abstract class BaseCommonChannelHandler {
-  protected channelMap: Map<string, WSChannel> = new Map();
+  protected channelMap: Map<string, WSServerChannel> = new Map();
 
   heartbeatTimer: NodeJS.Timeout | null = null;
 
@@ -133,16 +133,12 @@ export abstract class BaseCommonChannelHandler {
             connection.send(pongMessage);
             break;
           case 'open': {
-            const { id, path, skipIfOpened } = msg;
-            if (skipIfOpened && this.channelMap.has(id)) {
-              this.logger.log(`${id} is already opened, skip open again.`);
-              return;
-            }
+            const { id, path } = msg;
 
             clientId = msg.clientId;
             this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
 
-            const channel = new WSServerChannel(connection, { id, logger: this.logger });
+            const channel = new WSServerChannel(connection, { id, clientId, logger: this.logger });
             this.channelMap.set(id, channel);
 
             commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
@@ -168,7 +164,7 @@ export abstract class BaseCommonChannelHandler {
       commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
 
       Array.from(this.channelMap.values())
-        .filter((channel) => channel.id.toString().indexOf(clientId) !== -1)
+        .filter((channel) => channel.clientId === clientId)
         .forEach((channel) => {
           channel.close(1, 'close');
           channel.dispose();

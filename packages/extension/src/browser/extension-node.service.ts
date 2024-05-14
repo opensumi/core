@@ -1,12 +1,12 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
+import { IRPCProtocol, SumiConnectionMultiplexer, WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   AppConfig,
   Deferred,
+  DisposableStore,
   IApplicationService,
-  IDisposable,
   IExtensionProps,
   ILogger,
   toDisposable,
@@ -45,7 +45,10 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
 
-  private _apiFactoryDisposables: IDisposable[] = [];
+  @Autowired(IWSChannelHandler)
+  private readonly channelHandler: IWSChannelHandler;
+
+  private _apiFactoryDisposables = new DisposableStore();
 
   public ready: Deferred<void> = new Deferred();
   private _extHostUpdated: Deferred<void> = new Deferred();
@@ -54,10 +57,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   public protocol: IRPCProtocol;
 
   public disposeApiFactory() {
-    this._apiFactoryDisposables.forEach((disposable) => {
-      disposable.dispose();
-    });
-    this._apiFactoryDisposables = [];
+    this._apiFactoryDisposables.clear();
   }
 
   public async disposeProcess() {
@@ -69,8 +69,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     await this.createExtProcess();
     if (this.protocol) {
       this.ready.resolve();
-      this.logger.verbose('init node thread api proxy', this.protocol);
-      await this.createBrowserMainThreadAPI(this.protocol);
+      await this.createBrowserMainThreadAPI();
 
       const proxy = await this.getProxy();
       await proxy.$updateExtHostData();
@@ -121,14 +120,12 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     return this.protocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
   }
 
-  private async createBrowserMainThreadAPI(protocol: IRPCProtocol) {
+  private async createBrowserMainThreadAPI() {
     const apiProxy = initSharedAPIProxy(this.protocol, this.injector);
+    this._apiFactoryDisposables.add(apiProxy);
+    this._apiFactoryDisposables.add(toDisposable(initNodeThreadAPIProxy(this.protocol, this.injector, this)));
+    this._apiFactoryDisposables.add(toDisposable(createSumiAPIFactory(this.protocol, this.injector)));
     await apiProxy.setup();
-    this._apiFactoryDisposables.push(
-      apiProxy,
-      toDisposable(initNodeThreadAPIProxy(protocol, this.injector, this)),
-      toDisposable(createSumiAPIFactory(protocol, this.injector)),
-    );
   }
 
   public async getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
@@ -151,15 +148,21 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   }
 
   connection: BaseConnection<Uint8Array>;
+  channel: WSChannel;
 
   /**
    * 这个 protocol 需要每次都重新创建，因为服务端是会在该 channel 连上后才开始进行插件进程相关的逻辑的
    */
   private async initExtProtocol() {
-    const channelHandler = this.injector.get(IWSChannelHandler);
-    const channel = await channelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
+    if (this.channel) {
+      this.channel.dispose();
+    }
+    if (this.protocol) {
+      (this.protocol as SumiConnectionMultiplexer).dispose?.();
+    }
 
-    this.connection = channel.createConnection();
+    this.channel = await this.channelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
+    this.connection = this.channel.createConnection();
 
     this.protocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,

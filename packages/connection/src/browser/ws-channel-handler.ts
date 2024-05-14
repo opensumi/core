@@ -103,6 +103,12 @@ export class WSChannelHandler {
 
   public async openChannel(channelPath: string) {
     const key = `${this.clientId}:${channelPath}`;
+    if (this.channelMap.has(key)) {
+      const channel = this.channelMap.get(key)!;
+      channel.dispose();
+
+      this.logger.log(this.LOG_TAG, `channel ${key} already exists, dispose it`);
+    }
 
     const channel = new WSChannel(this.connection, {
       id: key,
