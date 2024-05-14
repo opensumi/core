@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
   CommandRegistry,
@@ -8,10 +8,9 @@ import {
   ExtensionActivateEvent,
   IClientApp,
   ILogger,
-  IStatusBarService,
   PreferenceService,
-  StatusBarAlignment,
 } from '@opensumi/ide-core-browser';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
   CancelablePromise,
   CancellationToken,
@@ -20,6 +19,7 @@ import {
   GeneralSettingsId,
   MayCancelablePromise,
   OnEvent,
+  ProgressLocation,
   URI,
   WithEventBus,
   createCancelablePromise,
@@ -90,8 +90,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(IExtensionStorageService)
   private readonly extensionStorageService: IExtensionStorageService;
 
-  @Autowired(IStatusBarService)
-  private readonly statusBarService: IStatusBarService;
+  @Autowired(IProgressService)
+  private readonly progressService: IProgressService;
 
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
@@ -137,6 +137,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(IExtensionStoragePathServer)
   private readonly extensionStoragePathServer: IExtensionStoragePathServer;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
@@ -390,32 +393,33 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
             this.logger.log('[ext-restart]: ext process is still running, skip');
             break;
           }
-        case ERestartPolicy.Always: {
-          const statusBar = this.statusBarService.addElement('extension.exthostRestarting', {
-            text: `$(sync~spin) ${localize('extension.exthostRestarting.content')}`,
-            priority: Number.MIN_SAFE_INTEGER,
-            alignment: StatusBarAlignment.RIGHT,
-          });
-          try {
-            if (this.extProcessRestartPromise) {
-              this.extProcessRestartPromise.cancel();
-            }
-            this.extProcessRestartPromise = createCancelablePromise(doRestart);
-            await this.extProcessRestartPromise;
-          } catch (err) {
-            this.logger.error(`[Extension Restart Error], \n ${err.message || err}`);
-            const refresh = localize('preference.general.language.change.refresh.now');
-            const result = await this.messageService.error(localize('extension.invalidExthostReload.confirm.content'), [
-              refresh,
-            ]);
-            if (result === refresh) {
-              this.clientApp.fireOnReload();
-            }
-          } finally {
-            statusBar.dispose();
-          }
+        case ERestartPolicy.Always:
+          this.progressService.withProgress(
+            {
+              location: ProgressLocation.Notification,
+              title: localize('extension.exthostRestarting.content'),
+              buttons: [
+                {
+                  id: 'extension.reload',
+                  label: localize('preference.general.language.change.refresh.now'),
+                  primary: true,
+                  run: async () => {
+                    this.clientApp.fireOnReload();
+                  },
+                  dispose: () => {},
+                },
+              ],
+            },
+            async () => {
+              if (this.extProcessRestartPromise) {
+                this.extProcessRestartPromise.cancel();
+              }
+              this.extProcessRestartPromise = createCancelablePromise(doRestart);
+              await this.extProcessRestartPromise;
+            },
+          );
+
           break;
-        }
       }
     };
 
