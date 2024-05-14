@@ -10,17 +10,18 @@ import { TSlashCommandCustomRender } from '../types';
 // slash command 自定义渲染组件
 export const SlashCustomRender = (props: {
   userMessage: string;
+  requestId: string;
   relationId: string;
   renderContent: TSlashCommandCustomRender;
   startTime: number;
 }) => {
-  const { userMessage, relationId, renderContent, startTime } = props;
+  const { userMessage, relationId, requestId, renderContent, startTime } = props;
 
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
 
   React.useEffect(() => {
-    aiChatService.setLatestSessionId(relationId);
+    aiChatService.setLatestRequestId(requestId);
 
     aiReporter.end(relationId, {
       message: userMessage,
@@ -28,7 +29,7 @@ export const SlashCustomRender = (props: {
       success: true,
       isStop: false,
     });
-  }, [renderContent, relationId]);
+  }, [renderContent, requestId, relationId]);
 
   return <div>{renderContent({ userMessage })}</div>;
 };
