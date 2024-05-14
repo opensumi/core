@@ -133,7 +133,12 @@ export abstract class BaseCommonChannelHandler {
             connection.send(pongMessage);
             break;
           case 'open': {
-            const { id, path } = msg;
+            const { id, path, skipIfOpened } = msg;
+            if (skipIfOpened && this.channelMap.has(id)) {
+              this.logger.log(`${id} is already opened, skip open again.`);
+              return;
+            }
+
             clientId = msg.clientId;
             this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
 

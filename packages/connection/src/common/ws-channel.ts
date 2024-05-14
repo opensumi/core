@@ -36,6 +36,11 @@ export interface OpenMessage {
   id: string;
   path: string;
   clientId: string;
+
+  /**
+   * 如果有这个标，而且 server 已经 ready，那么就不需要再发送 open 消息了
+   */
+  skipIfOpened?: boolean;
 }
 
 /**
@@ -197,7 +202,7 @@ export class WSChannel {
     }
   }
 
-  open(path: string, clientId: string) {
+  open(path: string, clientId: string, skipIfOpened?: boolean) {
     this.channelPath = path;
     this.connection.send(
       stringify({
@@ -205,8 +210,30 @@ export class WSChannel {
         id: this.id,
         path,
         clientId,
+        skipIfOpened,
       }),
     );
+
+    if (this._ensureServerReady) {
+      this.ensureOpenSend(path, clientId);
+    }
+  }
+
+  protected timer: NodeJS.Timeout;
+  /**
+   * 启动定时器，确保 server-ready 消息在一定时间内到达
+   */
+  protected ensureOpenSend(path: string, clientId: string) {
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+    this.timer = setTimeout(() => {
+      if (this._isServerReady) {
+        return;
+      }
+
+      this.open(path, clientId, true);
+    }, 100);
   }
 
   send(content: string) {
@@ -291,6 +318,7 @@ export const OpenProtocol = Type.object('open', {
   clientId: Type.string(),
   id: Type.string(),
   path: Type.string(),
+  skipIfOpened: Type.bool(),
 });
 
 export const ServerReadyProtocol = Type.object('server-ready', {

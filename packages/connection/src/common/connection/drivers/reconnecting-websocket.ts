@@ -12,7 +12,6 @@ import type { ErrorEvent } from '@bytemain/reconnecting-websocket';
 export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> {
   constructor(private socket: ReconnectingWebSocket) {
     super();
-    (window as any).rws = socket;
   }
 
   send(data: Uint8Array): void {
