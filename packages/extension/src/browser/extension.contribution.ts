@@ -441,6 +441,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.API_OPEN_DIFF_EDITOR_COMMAND_ID,
       VSCodeBuiltinCommands.API_OPEN_WITH_EDITOR_COMMAND_ID,
       // debug builtin commands
+      VSCodeBuiltinCommands.DEBUG_START,
+      VSCodeBuiltinCommands.DEBUG_ADD,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_INTO,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_OVER,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_OUT,
