@@ -103,9 +103,6 @@ export class WSChannelHandler {
 
   public async openChannel(channelPath: string) {
     const key = `${this.clientId}:${channelPath}`;
-    if (this.channelMap.has(key)) {
-      return this.channelMap.get(key)!;
-    }
 
     const channel = new WSChannel(this.connection, {
       id: key,
