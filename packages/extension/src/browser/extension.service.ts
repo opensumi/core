@@ -354,7 +354,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (document.visibilityState === 'visible') {
       this.extProcessRestartHandler(restartPolicy);
     } else {
-      this.logger.log('[ext-restart]: page is not visible, waiting for restart');
+      this.logger.log('[ext-restart]: page is not visible, waiting for restart, policy:', restartPolicy);
       this.isExtProcessWaitingForRestart = restartPolicy;
     }
   }
@@ -397,8 +397,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       this.disposeAllOverlayWindow();
     };
 
-    this.logger.log('[ext-restart]: restart ext process, restart policy', restartPolicy);
     const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+    this.logger.log('[ext-restart]: restart ext process, restart policy:', policy);
 
     switch (policy) {
       // @ts-expect-error Need fall-through
