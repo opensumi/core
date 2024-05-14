@@ -554,13 +554,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bytemain/reconnecting-websocket@npm:^4.4.0":
-  version: 4.4.0
-  resolution: "@bytemain/reconnecting-websocket@npm:4.4.0"
-  checksum: 10/a50fad61d805ebafda65af8809eea1bbca8349db668d219559b7a60c63584e1d8ea060f3fe0e34f43a2c376029b479fc70f38657da030b36e024b3a154319991
-  languageName: node
-  linkType: hard
-
 "@commitlint/cli@npm:^19.2.1":
   version: 19.2.2
   resolution: "@commitlint/cli@npm:19.2.2"
@@ -2164,13 +2157,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-connection@workspace:packages/connection"
   dependencies:
-    "@bytemain/reconnecting-websocket": "npm:^4.4.0"
     "@furyjs/fury": "npm:0.5.9-beta"
     "@opensumi/events": "npm:^1.0.0"
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/mock-socket": "npm:^9.3.1"
+    "@opensumi/reconnecting-websocket": "npm:^4.4.0"
     "@opensumi/vscode-jsonrpc": "npm:^8.0.0-next.2"
     path-to-regexp: "npm:^6.2.1"
     ws: "npm:^8.16.0"
@@ -3108,6 +3101,13 @@ __metadata:
     typescript: "npm:4.9.3"
   languageName: unknown
   linkType: soft
+
+"@opensumi/reconnecting-websocket@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "@opensumi/reconnecting-websocket@npm:4.4.0"
+  checksum: 10/0ec91f1779e359a0ce0689c79059dbe171732dfa15392b7b2f21ac58ea2bed4ab3f40aa84366cb1ed1371086ab0ab934e66f731fd9c15f62ec87e0217f9ae0c2
+  languageName: node
+  linkType: hard
 
 "@opensumi/remote-cli@workspace:packages/remote-cli":
   version: 0.0.0-use.local
