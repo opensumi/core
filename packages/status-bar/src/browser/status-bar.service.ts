@@ -51,18 +51,28 @@ export class StatusBarService extends Disposable implements IStatusBarService {
     makeObservable(this);
   }
 
-  /**
-   * 获取背景颜色
-   */
-  getBackgroundColor(): string | undefined {
+  @computed
+  get color() {
+    return this.foreground;
+  }
+
+  @computed
+  get backgroundColor() {
     if (this.appConfig.extensionDevelopmentHost) {
       return 'var(--kt-statusBar-extensionDebuggingBackground)';
     }
     return this.background;
   }
 
+  /**
+   * 获取背景颜色
+   */
+  getBackgroundColor(): string | undefined {
+    return this.backgroundColor;
+  }
+
   getColor() {
-    return this.foreground;
+    return this.color;
   }
 
   /**

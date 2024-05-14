@@ -18,8 +18,8 @@ export const StatusBarView = memo(
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
     const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
-    const backgroundColor = statusBar.getBackgroundColor();
-    const color = statusBar.getColor();
+    const backgroundColor = statusBar.backgroundColor;
+    const color = statusBar.color;
 
     const handleCtxMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
       e.preventDefault();

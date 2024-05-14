@@ -151,13 +151,11 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   }
 
   connection: BaseConnection<Uint8Array>;
+
   /**
-   * 仅需要创建一次 WSChannel 即可，因为我们的 WSChannel 只会和 Node 进程通信
+   * 这个 protocol 需要每次都重新创建，因为服务端是会在该 channel 连上后才开始进行插件进程相关的逻辑的
    */
   private async initExtProtocol() {
-    if (this.protocol) {
-      return;
-    }
     const channelHandler = this.injector.get(IWSChannelHandler);
     const channel = await channelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
 

@@ -5,7 +5,15 @@ import { IMenu } from '../menu/next';
 export const IStatusBarService = Symbol('IStatusBarService');
 
 export interface IStatusBarService {
+  backgroundColor: string | undefined;
+  color: string | undefined;
+  /**
+   * @deprecated please use `backgroundColor` instead.
+   */
   getBackgroundColor(): string | undefined;
+  /**
+   * @deprecated please use `color` instead.
+   */
   getColor(): string | undefined;
   setBackgroundColor(color?: string): void;
   setColor(color?: string): void;

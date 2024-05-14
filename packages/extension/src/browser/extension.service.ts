@@ -1,3 +1,5 @@
+import { debounce } from 'lodash';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   AppConfig,
@@ -235,6 +237,15 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     // 监听页面展示状态，当页面状态变为可见且插件进程待重启的时候执行
     const onPageVisibilitychange = () => {
+      this.logger.log(
+        '[ext-restart]: page visibility change, current:',
+        document.visibilityState,
+        'is waiting:',
+        this.isExtProcessWaitingForRestart,
+        'is restarting:',
+        this.isExtProcessRestarting,
+      );
+
       if (
         document.visibilityState === 'visible' &&
         this.isExtProcessWaitingForRestart &&
@@ -364,12 +375,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
   }
 
-  private async extProcessRestartHandler(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
-    if (this.isExtProcessRestarting && restartPolicy !== ERestartPolicy.Always) {
-      this.logger.log('[ext-restart]: ext process is restarting, skip');
-      return;
-    }
-
+  restartProgress = async (restartPolicy: ERestartPolicy = ERestartPolicy.Always) => {
     const doRestart = async (token: CancellationToken) => {
       this.disposeAllOverlayWindow();
 
@@ -391,54 +397,65 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       this.disposeAllOverlayWindow();
     };
 
-    const restartProgress = async () => {
-      this.logger.log('[ext-restart]: restart ext process, restart policy', restartPolicy);
-      const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+    this.logger.log('[ext-restart]: restart ext process, restart policy', restartPolicy);
+    const policy = this.isExtProcessWaitingForRestart || restartPolicy;
 
-      switch (policy) {
-        // @ts-expect-error Need fall-through
-        case ERestartPolicy.WhenExit:
-          // if we can get the pid, then the process is still running, no need to restart.
-          // if pid is null, it means the process is exited, then we need to start it.
-          if (await this.getExtProcessPID()) {
-            this.logger.log('[ext-restart]: ext process is still running, skip');
-            break;
-          }
-        case ERestartPolicy.Always: {
-          const statusBar = this.statusBarService.addElement('extension.exthostRestarting', {
-            text: `$(sync~spin) ${localize('extension.exthostRestarting.content')}`,
-            priority: Number.MIN_SAFE_INTEGER,
-            alignment: StatusBarAlignment.RIGHT,
-          });
-          try {
-            if (this.extProcessRestartPromise) {
-              this.extProcessRestartPromise.cancel();
-            }
-            this.extProcessRestartPromise = createCancelablePromise(doRestart);
-            await this.extProcessRestartPromise;
-          } catch (err) {
-            this.logger.error(`[Extension Restart Error], \n ${err.message || err}`);
-
-            if (isPromiseCanceledError(err)) {
-              return;
-            }
-
-            const refresh = localize('preference.general.language.change.refresh.now');
-            this.pReloadMessageModel = this.messageService.error(
-              localize('extension.invalidExthostReload.confirm.content'),
-              [refresh],
-            );
-            const result = await this.pReloadMessageModel;
-            if (result === refresh) {
-              this.clientApp.fireOnReload();
-            }
-          } finally {
-            statusBar.dispose();
-          }
+    switch (policy) {
+      // @ts-expect-error Need fall-through
+      case ERestartPolicy.WhenExit:
+        // if we can get the pid, then the process is still running, no need to restart.
+        // if pid is null, it means the process is exited, then we need to start it.
+        if (await this.getExtProcessPID()) {
+          this.logger.log('[ext-restart]: ext process is still running, skip');
           break;
         }
+      case ERestartPolicy.Always: {
+        const statusBar = this.statusBarService.addElement('extension.exthostRestarting', {
+          text: `$(sync~spin) ${localize('extension.exthostRestarting.content')}`,
+          priority: Number.MIN_SAFE_INTEGER,
+          alignment: StatusBarAlignment.RIGHT,
+        });
+        try {
+          if (this.extProcessRestartPromise) {
+            this.extProcessRestartPromise.cancel();
+          }
+          this.extProcessRestartPromise = createCancelablePromise(doRestart);
+          await this.extProcessRestartPromise;
+        } catch (err) {
+          this.logger.error(`[Extension Restart Error], \n ${err.message || err}`);
+
+          if (isPromiseCanceledError(err)) {
+            break;
+          }
+
+          const refresh = localize('preference.general.language.change.refresh.now');
+          this.pReloadMessageModel = this.messageService.error(
+            localize('extension.invalidExthostReload.confirm.content'),
+            [refresh],
+          );
+          const result = await this.pReloadMessageModel;
+          if (result === refresh) {
+            this.clientApp.fireOnReload();
+          }
+        } finally {
+          statusBar.dispose();
+        }
+        break;
       }
-    };
+    }
+
+    this.isExtProcessRestarting = false;
+  };
+
+  restartDebounced = debounce(async () => {
+    await this.restartProgress();
+  }, 500);
+
+  private async extProcessRestartHandler(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
+    if (this.isExtProcessRestarting && restartPolicy !== ERestartPolicy.Always) {
+      this.logger.log('[ext-restart]: ext process is restarting, skip');
+      return;
+    }
 
     this.isExtProcessRestarting = true;
 
@@ -448,9 +465,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
        * 目前观察到页面从不可见恢复至可见状态后，可能出现 socket 堆积的现象，因此延迟 1000ms 后再进行重启操作
        * 这里延时并不能保证一定能够正确重启，只是降低失败的可能性。在解决了 socket 堆积的情况后，可以直接去掉
        */
-      setTimeout(restartProgress, 1000);
+      this.restartDebounced();
     } else {
-      restartProgress();
+      this.restartProgress(restartPolicy);
     }
   }
 
