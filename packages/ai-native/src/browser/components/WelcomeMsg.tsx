@@ -19,7 +19,6 @@ import { ChatRenderRegistry } from '../chat/chat.render.registry';
 import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatThinking } from '../components/ChatThinking';
 import { extractIcon } from '../components/utils';
-import { EMsgStreamStatus } from '../model/msg-stream-manager';
 
 import styles from './components.module.less';
 
@@ -59,13 +58,7 @@ export const WelcomeMessage = () => {
   }, []);
 
   if (!welcomeMessage) {
-    return (
-      <ChatThinking
-        status={EMsgStreamStatus.THINKING}
-        showStop={false}
-        thinkingText={localize('aiNative.chat.welcome.loading.text')}
-      />
-    );
+    return <ChatThinking showStop={false} thinkingText={localize('aiNative.chat.welcome.loading.text')} />;
   }
 
   const allSampleQuestions = React.useMemo(
