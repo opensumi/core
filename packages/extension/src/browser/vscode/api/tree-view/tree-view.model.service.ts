@@ -535,10 +535,11 @@ export class ExtensionTreeViewModel {
   };
 
   toggleDirectory = async (item: ExtensionCompositeTreeNode) => {
+    await this.treeHandlerReadyDeffer.promise;
     if (item.expanded) {
-      await this.extensionTreeHandle.collapseNode(item);
+      await this.extensionTreeHandle?.collapseNode(item);
     } else {
-      await this.extensionTreeHandle.expandNode(item);
+      await this.extensionTreeHandle?.expandNode(item);
     }
   };
 
