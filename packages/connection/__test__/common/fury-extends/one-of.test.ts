@@ -1,6 +1,13 @@
 /* eslint-disable no-console */
 
-import { OpenMessage, PingMessage, PongMessage, parse, stringify } from '../../../src/common/ws-channel';
+import {
+  OpenMessage,
+  PingMessage,
+  PongMessage,
+  ServerReadyMessage,
+  parse,
+  stringify,
+} from '../../../src/common/ws-channel';
 
 describe('oneOf', () => {
   function testIt(obj: any) {
@@ -40,9 +47,10 @@ describe('oneOf', () => {
 
     testIt(obj3);
 
-    const obj4 = {
+    const obj4: ServerReadyMessage = {
       kind: 'server-ready',
       id: '456',
+      token: '',
     };
 
     testIt(obj4);
