@@ -380,6 +380,11 @@ export abstract class WorkbenchEditorService {
   abstract getAllOpenedUris(): URI[];
 
   /**
+   * 获得当前打开的文档资源
+   */
+  abstract getAllOpenedDocuments(): Promise<IEditorDocumentModel[]>;
+
+  /**
    * 创建一个带待存的资源
    * @param options
    */

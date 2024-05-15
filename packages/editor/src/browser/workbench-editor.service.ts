@@ -99,6 +99,7 @@ import {
   EditorVisibleChangeEvent,
   GridResizeEvent,
   IEditorComponent,
+  IEditorDocumentModel,
   IMergeEditorResource,
   RegisterEditorComponentEvent,
   ResoucesOfActiveComponentChangedEvent,
@@ -228,6 +229,25 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       }
     }
     return uris;
+  }
+
+  async getAllOpenedDocuments() {
+    const documents: IEditorDocumentModel[] = [];
+    for (const group of this.editorGroups) {
+      for (const resource of group.resources) {
+        if (resource.uri.scheme !== 'file') {
+          continue;
+        }
+        const index = documents.findIndex((u) => u.uri.isEqual(resource.uri));
+        if (index === -1) {
+          const doc = await group.getDocumentModelRef(resource.uri);
+          if (doc) {
+            documents.push(doc.instance);
+          }
+        }
+      }
+    }
+    return documents;
   }
 
   async saveAll(includeUntitled?: boolean, reason?: SaveReason) {

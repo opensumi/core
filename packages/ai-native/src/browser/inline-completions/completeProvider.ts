@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AI_INLINE_COMPLETION_REPORTER } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { WithEventBus, uuid } from '@opensumi/ide-core-common';
+import { URI, WithEventBus, uuid } from '@opensumi/ide-core-common';
 import { IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
@@ -8,12 +8,13 @@ import * as monaco from '@opensumi/ide-monaco';
 
 import { AINativeContextKey } from '../contextkey/ai-native.contextkey.service';
 
+import { DEFAULT_COMPLECTION_MODEL } from './constants';
 import { CompletionRequestBean, InlayList, InlineCompletionItem } from './model/competionModel';
 import { PromptCache } from './promptCache';
-import { prePromptHandler, preSuffixHandler } from './provider';
+import { getPrefixPrompt, getSuffixPrompt } from './provider';
 import { AICompletionsService } from './service/ai-completions.service';
+import { ICompletionContext } from './types';
 
-let lastRequestId: any;
 let timer: any;
 let accept = 0;
 
@@ -29,7 +30,7 @@ export const getAcceptText = (cuont: number) => {
   accept = accept + cuont;
 };
 
-class RequestImp {
+class CompletionRequest {
   isCancelFlag: boolean;
   // todo
   constructor(
@@ -37,6 +38,7 @@ class RequestImp {
     public _isManual: boolean,
     public aiCompletionsService: AICompletionsService,
     public promptCache: PromptCache,
+    public injector: Injector,
   ) {
     this.isCancelFlag = false;
   }
@@ -48,18 +50,12 @@ class RequestImp {
     token: monaco.CancellationToken,
   ) {
     const { model: editor } = this;
-    const beginRequestTime = Date.now();
     if (!editor) {
       return [];
     }
 
     const startRange = new monaco.Range(0, 0, position.lineNumber, position.column);
-    let prompt = model.getValueInRange(startRange!);
-
-    // 如果是空白页面,默认加个回车符?
-    if (this.model.getValue() === '') {
-      prompt += '\n';
-    }
+    const prefix = model.getValueInRange(startRange);
 
     const endRange = new monaco.Range(
       position.lineNumber,
@@ -69,19 +65,18 @@ class RequestImp {
     );
     let suffix = model.getValueInRange(endRange);
 
-    // 改用analysisCodeFuseLanguage  现在目前后端需要语言小写
     const languageId = model.getLanguageId();
-    // if (completionRtModel !== undefined && completionRtModel.sessionId === null) {
-    //     //此处未采纳上一个补全结果,那么设置endtime,并提交到服务端
-    //     completionRtModel.endRenderingTime = Date.now();
-    //     submitCompleteRtData(completionRtModel);
-    // }
-    // TODO 缺少数据前处理
-    // prompt = prePromptHandler(prompt);
-    // suffix = preSuffixHandler(suffix);
+    const context: ICompletionContext = {
+      filename: model.uri.toString().split('/').pop()!,
+      language: languageId,
+      prefix,
+      suffix,
+      prompt: '',
+      uri: URI.from(model.uri),
+    };
 
-    prompt = prePromptHandler(prompt);
-    suffix = preSuffixHandler(suffix);
+    const prompt = await getPrefixPrompt(context, DEFAULT_COMPLECTION_MODEL, this.injector, token);
+    suffix = await getSuffixPrompt(context, DEFAULT_COMPLECTION_MODEL, this.injector, token);
 
     // 组装请求参数,向远程发起请求
     const completionRequestBean: CompletionRequestBean = {
@@ -94,7 +89,6 @@ class RequestImp {
 
     this.aiCompletionsService.updateStatusBarItem('running', true);
     const beginAlgTime = Date.now();
-    let status = 0; // 0: 远程请求的结果 1: 网络缓存中的结果
     if (this.isCancelFlag) {
       return [];
     }
@@ -107,7 +101,6 @@ class RequestImp {
     // 如果存在缓存
     if (cacheData) {
       rs = cacheData;
-      status = 1;
     } else {
       try {
         rs = await this.aiCompletionsService.complete(completionRequestBean, model, position, token);
@@ -120,7 +113,6 @@ class RequestImp {
         this.aiCompletionsService.hideStatusBarItem();
         return [];
       }
-      status = 0;
     }
 
     if (!(rs && rs.sessionId)) {
@@ -146,11 +138,6 @@ class RequestImp {
     if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
       this.promptCache.setCache(prompt, rs);
     }
-    let codeModelSize = 0;
-    if (rs.codeModelList !== null) {
-      codeModelSize = rs.codeModelList.length;
-    }
-
     // 返回补全结果为空直接返回
     if (rs.codeModelList.length === 0) {
       this.aiCompletionsService.reporterEnd(relationId, {
@@ -225,7 +212,6 @@ class RequestImp {
         },
       });
     }
-    lastRequestId = rs.sessionId;
     return result;
   }
   cancelRequest() {
@@ -238,7 +224,7 @@ class ReqStack {
   constructor(private readonly aiReporter) {
     this.queue = [];
   }
-  addReq(reqRequest: RequestImp) {
+  addReq(reqRequest: CompletionRequest) {
     this.queue.push(reqRequest);
   }
   runReq(position: monaco.Position, model: monaco.editor.ITextModel, token: monaco.CancellationToken) {
@@ -287,7 +273,6 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     this.reqStack = new ReqStack(this.aiReporter);
   }
 
-  // 取消请求
   cancelRequest() {
     this.aiCompletionsService.cancelRequest();
     if (this.reqStack) {
@@ -349,7 +334,13 @@ export class AIInlineCompletionsProvider extends WithEventBus {
       };
     }
     // 放入队列
-    const requestImp = new RequestImp(model, _isManual, this.aiCompletionsService, this.promptCache);
+    const requestImp = new CompletionRequest(
+      model,
+      _isManual,
+      this.aiCompletionsService,
+      this.promptCache,
+      this.injector,
+    );
     this.reqStack.addReq(requestImp);
     // 如果是自动补全等待300ms
     if (!_isManual) {

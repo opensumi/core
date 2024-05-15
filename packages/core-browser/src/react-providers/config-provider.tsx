@@ -264,6 +264,9 @@ export interface AppConfig {
    * AI Native 相关的配置项
    */
   AINativeConfig?: IAINativeConfig;
+  /**
+   * OpenSumi Design 布局相关的配置项
+   */
   designLayout?: IDesignLayoutConfig;
   /**
    * Collaboration Client Options

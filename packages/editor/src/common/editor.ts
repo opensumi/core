@@ -441,7 +441,7 @@ export abstract class WorkbenchEditorService {
   editorGroups: IEditorGroup[];
 
   /**
-   *
+   * 排序后的编辑器组
    */
   sortedEditorGroups: IEditorGroup[];
 
@@ -502,6 +502,11 @@ export abstract class WorkbenchEditorService {
    * 获得当前打开的 uri
    */
   abstract getAllOpenedUris(): URI[];
+
+  /**
+   * 获得当前打开的文档资源
+   */
+  abstract getAllOpenedDocuments(): Promise<IEditorDocumentModel[]>;
 
   /**
    * 创建一个带待存的资源
