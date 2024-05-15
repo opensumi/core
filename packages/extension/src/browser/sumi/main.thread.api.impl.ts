@@ -44,6 +44,5 @@ export function createSumiAPIFactory(rpcProtocol: IRPCProtocol, injector: Inject
 
   return () => {
     disposer.dispose();
-    // do dispose
   };
 }

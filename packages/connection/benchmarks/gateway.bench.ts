@@ -4,12 +4,15 @@ import crypto from 'crypto';
 // @ts-ignore
 import { Bench } from 'tinybench';
 
-import { oneOf7 } from '../src/common/fury-extends/one-of';
+import { oneOf } from '../src/common/fury-extends/one-of';
 import {
   BinaryProtocol,
   ChannelMessage,
   CloseProtocol,
   DataProtocol,
+  ErrorMessage,
+  ErrorMessageCode,
+  ErrorProtocol,
   OpenProtocol,
   PingMessage,
   PingProtocol,
@@ -22,7 +25,7 @@ const bench = new Bench({
   time: 2000,
 });
 
-const serializer = oneOf7([
+const serializer = oneOf([
   PingProtocol,
   PongProtocol,
   OpenProtocol,
@@ -30,6 +33,7 @@ const serializer = oneOf7([
   DataProtocol,
   BinaryProtocol,
   CloseProtocol,
+  ErrorProtocol,
 ]);
 
 export function parse(input: Uint8Array): ChannelMessage {
@@ -79,12 +83,20 @@ const obj6 = {
   binary: crypto.randomBytes(10 * 1024),
 };
 
+const obj7 = {
+  kind: 'error',
+  code: ErrorMessageCode.ChannelNotFound,
+  id: '456',
+  message: 'not found',
+} as ErrorMessage;
+
 const serialized1 = serializer.serialize(obj);
 const serialized2 = serializer.serialize(obj2);
 const serialized3 = serializer.serialize(obj3);
 const serialized4 = serializer.serialize(obj4);
 const serialized5 = serializer.serialize(obj5);
 const serialized6 = serializer.serialize(obj6);
+const serialized7 = serializer.serialize(obj7);
 
 const stringified1 = JSON.stringify(obj);
 const stringified2 = JSON.stringify(obj2);
@@ -92,6 +104,7 @@ const stringified3 = JSON.stringify(obj3);
 const stringified4 = JSON.stringify(obj4);
 const stringified5 = JSON.stringify(obj5);
 const stringified6 = JSON.stringify(obj6);
+const stringified7 = JSON.stringify(obj7);
 
 bench
   .add('[gateway] fury', () => {
@@ -101,6 +114,7 @@ bench
     testIt(obj4);
     testIt(obj5);
     testIt(obj6);
+    testIt(obj7);
   })
   .add('[gateway] json', () => {
     testItJson(obj);
@@ -109,6 +123,7 @@ bench
     testItJson(obj4);
     testItJson(obj5);
     testItJson(obj6);
+    testItJson(obj7);
   })
   .add('[gateway] fury serialize', () => {
     serializer.serialize(obj);
@@ -117,6 +132,7 @@ bench
     serializer.serialize(obj4);
     serializer.serialize(obj5);
     serializer.serialize(obj6);
+    serializer.serialize(obj7);
   })
   .add('[gateway] json stringify', () => {
     JSON.stringify(obj);
@@ -125,6 +141,7 @@ bench
     JSON.stringify(obj4);
     JSON.stringify(obj5);
     JSON.stringify(obj6);
+    JSON.stringify(obj7);
   })
   .add('[gateway] fury serialize without buffer', () => {
     serializer.serialize(obj);
@@ -147,6 +164,7 @@ bench
     parse(serialized4);
     parse(serialized5);
     parse(serialized6);
+    parse(serialized7);
   })
   .add('[gateway] json parse', () => {
     JSON.parse(stringified1);
@@ -155,6 +173,7 @@ bench
     JSON.parse(stringified4);
     JSON.parse(stringified5);
     JSON.parse(stringified6);
+    JSON.parse(stringified7);
   });
 
 async function main() {

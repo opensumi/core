@@ -195,186 +195,185 @@ export class SumiConnection implements IDisposable {
   listen() {
     const { reader } = this.io;
 
-    const toDispose = this.socket.onMessage((data) => {
-      reader.reset(data);
-      // skip version, currently only have version 1
-      reader.skip(1);
+    this.disposable.add(
+      this.socket.onMessage((data) => {
+        reader.reset(data);
+        // skip version, currently only have version 1
+        reader.skip(1);
 
-      const opType = reader.uint8() as OperationType;
-      const requestId = reader.uint32();
+        const opType = reader.uint8() as OperationType;
+        const requestId = reader.uint32();
 
-      if (this._timeoutHandles.has(requestId)) {
-        // Ignore some jest test scenarios where clearTimeout is not defined.
-        if (typeof clearTimeout === 'function') {
-          // @ts-ignore
-          clearTimeout(this._timeoutHandles.get(requestId));
-        }
-        this._timeoutHandles.delete(requestId);
-      }
-
-      switch (opType) {
-        case OperationType.Response: {
-          const method = reader.stringOfVarUInt32();
-          const status = reader.uint16();
-
-          const runCallback = (headers: IResponseHeaders, error?: any, result?: any) => {
-            const callback = this._callbacks.get(requestId);
-            if (!callback) {
-              this.logger.error(`Cannot find callback for request ${requestId}`);
-              return;
-            }
-
-            this._callbacks.delete(requestId);
-
-            callback(headers, error, result);
-          };
-
-          const headers = this.io.responseHeadersSerializer.read();
-          let err: any;
-          let result: any;
-          if (status === Status.Err) {
-            // todo: move to processor
-            const content = reader.stringOfVarUInt32();
-            err = parseError(content);
-          } else {
-            result = this.io.getProcessor(method).readResponse();
+        if (this._timeoutHandles.has(requestId)) {
+          // Ignore some jest test scenarios where clearTimeout is not defined.
+          if (typeof clearTimeout === 'function') {
+            // @ts-ignore
+            clearTimeout(this._timeoutHandles.get(requestId));
           }
+          this._timeoutHandles.delete(requestId);
+        }
 
-          if (headers && headers.chunked) {
-            let activeReq: SumiReadableStream<any>;
-            if (this.activeRequestPool.has(requestId)) {
-              activeReq = this.activeRequestPool.get(requestId)!;
+        switch (opType) {
+          case OperationType.Response: {
+            const method = reader.stringOfVarUInt32();
+            const status = reader.uint16();
+
+            const runCallback = (headers: IResponseHeaders, error?: any, result?: any) => {
+              const callback = this._callbacks.get(requestId);
+              if (!callback) {
+                this.logger.error(`Cannot find callback for request ${requestId}: ${method}, status: ${status}`);
+                return;
+              }
+
+              this._callbacks.delete(requestId);
+
+              callback(headers, error, result);
+            };
+
+            const headers = this.io.responseHeadersSerializer.read();
+            let err: any;
+            let result: any;
+            if (status === Status.Err) {
+              // todo: move to processor
+              const content = reader.stringOfVarUInt32();
+              err = parseError(content);
             } else {
-              // new stream request
-              activeReq = new SumiReadableStream();
-              this.activeRequestPool.set(requestId, activeReq);
-              // resolve `activeReq` to caller
-              runCallback(headers, undefined, activeReq);
+              result = this.io.getProcessor(method).readResponse();
             }
 
-            if (result === null) {
-              // when result is null, it means the stream is ended.
-              activeReq.end();
-              this.activeRequestPool.delete(requestId);
+            if (headers && headers.chunked) {
+              let activeReq: SumiReadableStream<any>;
+              if (this.activeRequestPool.has(requestId)) {
+                activeReq = this.activeRequestPool.get(requestId)!;
+              } else {
+                // new stream request
+                activeReq = new SumiReadableStream();
+                this.activeRequestPool.set(requestId, activeReq);
+                // resolve `activeReq` to caller
+                runCallback(headers, undefined, activeReq);
+              }
+
+              if (result === null) {
+                // when result is null, it means the stream is ended.
+                activeReq.end();
+                this.activeRequestPool.delete(requestId);
+                break;
+              }
+
+              if (err) {
+                activeReq.emitError(err);
+                break;
+              }
+
+              activeReq.emitData(result);
               break;
             }
 
-            if (err) {
-              activeReq.emitError(err);
-              break;
-            }
-
-            activeReq.emitData(result);
+            runCallback(headers, err, result);
             break;
           }
+          case OperationType.Notification:
+          // fall through
+          case OperationType.Request: {
+            const method = reader.stringOfVarUInt32();
+            const headers = this.io.requestHeadersSerializer.read() as IRequestHeaders;
+            const args = this.io.getProcessor(method).readRequest();
 
-          runCallback(headers, err, result);
-          break;
-        }
-        case OperationType.Notification:
-        // fall through
-        case OperationType.Request: {
-          const method = reader.stringOfVarUInt32();
-          const headers = this.io.requestHeadersSerializer.read() as IRequestHeaders;
-          const args = this.io.getProcessor(method).readRequest();
+            if (headers.cancelable) {
+              const tokenSource = new CancellationTokenSource();
+              this._cancellationTokenSources.set(requestId, tokenSource);
+              args.push(tokenSource.token);
 
-          if (headers.cancelable) {
-            const tokenSource = new CancellationTokenSource();
-            this._cancellationTokenSources.set(requestId, tokenSource);
-            args.push(tokenSource.token);
-
-            if (this._knownCanceledRequests.has(requestId)) {
-              tokenSource.cancel();
-              this._knownCanceledRequests.delete(requestId);
+              if (this._knownCanceledRequests.has(requestId)) {
+                tokenSource.cancel();
+                this._knownCanceledRequests.delete(requestId);
+              }
             }
-          }
 
-          switch (opType) {
-            case OperationType.Request: {
-              this.capturer.captureOnRequest(requestId, method, args);
+            switch (opType) {
+              case OperationType.Request: {
+                this.capturer.captureOnRequest(requestId, method, args);
 
-              let promise: Promise<any>;
+                let promise: Promise<any>;
 
-              try {
-                let result: any;
+                try {
+                  let result: any;
 
-                const handler = this._requestHandlers.get(method);
+                  const handler = this._requestHandlers.get(method);
+                  if (handler) {
+                    result = handler(...args);
+                  } else if (this._starRequestHandler) {
+                    result = this._starRequestHandler(method, args);
+                  }
+
+                  promise = Promise.resolve(result);
+                } catch (err) {
+                  promise = Promise.reject(err);
+                }
+
+                const onSuccess = (result: any) => {
+                  this.capturer.captureOnRequestResult(requestId, method, result);
+
+                  if (isReadableStream(result)) {
+                    listenReadable(result, {
+                      onData: (data) => {
+                        this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, data));
+                      },
+                      onEnd: () => {
+                        this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, null));
+                      },
+                      onError: (err) => {
+                        this.socket.send(this.io.Error(requestId, method, chunkedResponseHeaders, err));
+                      },
+                    });
+                  } else {
+                    this.socket.send(this.io.Response(requestId, method, nullHeaders, result));
+                  }
+
+                  this._cancellationTokenSources.delete(requestId);
+                };
+
+                const onError = (err: Error) => {
+                  this.traceRequestError(requestId, method, args, err);
+
+                  this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
+                  this._cancellationTokenSources.delete(requestId);
+                };
+
+                promise.then(onSuccess).catch(onError);
+                break;
+              }
+              case OperationType.Notification: {
+                this.capturer.captureOnNotification(requestId, method, args);
+
+                const handler = this._notificationHandlers.get(method);
+
                 if (handler) {
-                  result = handler(...args);
-                } else if (this._starRequestHandler) {
-                  result = this._starRequestHandler(method, args);
+                  handler(...args);
+                } else if (this._starNotificationHandler) {
+                  this._starNotificationHandler(method, args);
                 }
-
-                promise = Promise.resolve(result);
-              } catch (err) {
-                promise = Promise.reject(err);
+                break;
               }
-
-              const onSuccess = (result: any) => {
-                this.capturer.captureOnRequestResult(requestId, method, result);
-
-                if (isReadableStream(result)) {
-                  listenReadable(result, {
-                    onData: (data) => {
-                      this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, data));
-                    },
-                    onEnd: () => {
-                      this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, null));
-                    },
-                    onError: (err) => {
-                      this.socket.send(this.io.Error(requestId, method, chunkedResponseHeaders, err));
-                    },
-                  });
-                } else {
-                  this.socket.send(this.io.Response(requestId, method, nullHeaders, result));
-                }
-
-                this._cancellationTokenSources.delete(requestId);
-              };
-
-              const onError = (err: Error) => {
-                this.traceRequestError(requestId, method, args, err);
-
-                this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
-                this._cancellationTokenSources.delete(requestId);
-              };
-
-              promise.then(onSuccess).catch(onError);
-              break;
             }
-            case OperationType.Notification: {
-              this.capturer.captureOnNotification(requestId, method, args);
 
-              const handler = this._notificationHandlers.get(method);
-
-              if (handler) {
-                handler(...args);
-              } else if (this._starNotificationHandler) {
-                this._starNotificationHandler(method, args);
-              }
-              break;
+            break;
+          }
+          case OperationType.Cancel: {
+            const cancellationTokenSource = this._cancellationTokenSources.get(requestId);
+            if (cancellationTokenSource) {
+              cancellationTokenSource.cancel();
+            } else {
+              this._knownCanceledRequests.add(requestId);
             }
+            break;
           }
-
-          break;
-        }
-        case OperationType.Cancel: {
-          const cancellationTokenSource = this._cancellationTokenSources.get(requestId);
-          if (cancellationTokenSource) {
-            cancellationTokenSource.cancel();
-          } else {
-            this._knownCanceledRequests.add(requestId);
+          default: {
+            break;
           }
-          break;
         }
-        default: {
-          break;
-        }
-      }
-    });
-    if (toDispose) {
-      this.disposable.add(toDispose);
-    }
+      }),
+    );
   }
 
   dispose(): void {

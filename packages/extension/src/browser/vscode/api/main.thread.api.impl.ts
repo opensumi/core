@@ -41,7 +41,6 @@ export function initNodeThreadAPIProxy(
   rpcProtocol.set<MainThreadDebug>(MainThreadAPIIdentifier.MainThreadDebug, MainThreadDebugAPI);
   rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, MainThreadTerminalAPI);
   rpcProtocol.set<IMainThreadTasks>(MainThreadAPIIdentifier.MainThreadTasks, MainThreadTasksAPI);
-
   rpcProtocol.set<IMainThreadTesting>(MainThreadAPIIdentifier.MainThreadTests, MainthreadTestAPI);
 
   return () => {
