@@ -1,7 +1,6 @@
 import { CancellationToken, CancellationTokenSource } from './cancellation';
 import { IDisposable, toDisposable } from './disposable';
 import { canceled } from './errors';
-import { Deferred } from './promises';
 
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
@@ -308,6 +307,11 @@ export class Barrier {
 
   wait(): Promise<boolean> {
     return this._promise;
+  }
+
+  reject(): void {
+    this._isOpen = false;
+    this._completePromise(false);
   }
 }
 
@@ -620,7 +624,7 @@ export const retry = async <T>(
 };
 
 export class StateTracer {
-  protected deferred: { [state: string]: Deferred<void> } = {};
+  protected deferred: { [state: string]: Barrier } = {};
 
   public has(state: string): boolean {
     return this.deferred[state] !== undefined;
@@ -632,33 +636,33 @@ export class StateTracer {
 
   public record(state: string): void {
     if (this.deferred[state] === undefined) {
-      this.deferred[state] = new Deferred();
+      this.deferred[state] = new Barrier();
     }
   }
 
   public fulfill(state: string): void {
     if (this.deferred[state] !== undefined) {
-      this.deferred[state].resolve();
+      this.deferred[state].open();
     } else {
-      this.deferred[state] = new Deferred();
-      this.deferred[state].resolve();
+      this.deferred[state] = new Barrier();
+      this.deferred[state].open();
     }
   }
 
-  public reachedState(state: string): Promise<void> {
+  public reachedState(state: string): Promise<boolean> {
     if (this.deferred[state] === undefined) {
-      this.deferred[state] = new Deferred();
+      this.deferred[state] = new Barrier();
     }
-    return this.deferred[state].promise;
+    return this.deferred[state].wait();
   }
 
-  public reachedAnyState(...states: string[]): Promise<void> {
+  public reachedAnyState(...states: string[]): Promise<boolean> {
     return Promise.race(states.map((s) => this.reachedState(s)));
   }
 
   public dispose() {
     Object.keys(this.deferred).forEach((key) => {
-      this.deferred[key].reject(new Error('Disposed'));
+      this.deferred[key].reject();
     });
     this.deferred = {};
   }

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { PingMessage, PongMessage, parse, stringify } from '../../../src/common/ws-channel';
+import { OpenMessage, PingMessage, PongMessage, parse, stringify } from '../../../src/common/ws-channel';
 
 describe('oneOf', () => {
   function testIt(obj: any) {
@@ -30,11 +30,12 @@ describe('oneOf', () => {
 
     testIt(obj2);
 
-    const obj3 = {
+    const obj3: OpenMessage = {
       kind: 'open',
       clientId: '123',
       id: '456',
       path: '/test',
+      connectionToken: 'abc',
     };
 
     testIt(obj3);
