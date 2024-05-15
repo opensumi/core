@@ -1,5 +1,3 @@
-import { MultiMap } from '@opensumi/ide-core-common';
-
 import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
 import {
@@ -109,7 +107,6 @@ export const commonChannelPathHandler = new CommonChannelPathHandler();
 
 export abstract class BaseCommonChannelHandler {
   protected channelMap: Map<string, WSServerChannel> = new Map();
-  protected messageQueue = new MultiMap<string, ChannelMessage>();
 
   protected heartbeatTimer: NodeJS.Timeout | null = null;
 
@@ -152,19 +149,9 @@ export abstract class BaseCommonChannelHandler {
             break;
           case 'open': {
             const { id, path, connectionToken } = msg;
-
             clientId = msg.clientId;
             this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
-
             const channel = getOrCreateChannel(id, clientId);
-            const messages = this.messageQueue.get(id);
-            if (messages) {
-              messages.forEach((message) => {
-                channel.dispatch(message);
-              });
-              this.messageQueue.delete(id);
-            }
-
             commonChannelPathHandler.openChannel(path, channel, clientId);
             channel.serverReady(connectionToken);
             break;
@@ -176,7 +163,6 @@ export abstract class BaseCommonChannelHandler {
             if (channel) {
               channel.dispatch(msg);
             } else {
-              this.messageQueue.set(id, msg);
               connection.send(
                 stringify({
                   kind: 'error',
