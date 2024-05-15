@@ -715,15 +715,15 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       const model = monacoEditor.getModel()!;
 
       const providerId = `AI_CODE_ACTION_${languageId}`;
-      const hasCodeActionProvider = languageFeaturesService.codeActionProvider.all(model).some((provider) => provider.displayName === providerId);
-
-      if (hasCodeActionProvider) {
-        return;
-      }
+      const hasCodeActionProvider = languageFeaturesService.codeActionProvider
+        .all(model)
+        .some((provider) => provider.displayName === providerId);
 
       if (codeActionDispose) {
         codeActionDispose.dispose();
         codeActionDispose = undefined;
+      } else if (hasCodeActionProvider) {
+        return;
       }
 
       codeActionDispose = languageFeaturesService.codeActionProvider.register(languageId, {
