@@ -1,12 +1,3 @@
-export enum TokenizerName {
-  cl100k_base = 'cl100k_base',
-  gpt2 = 'gpt2',
-  r50k_base = 'r50k_base',
-  p50k_base = 'p50k_base',
-  p50k_edit = 'p50k_edit',
-  o200k_base = 'o200k_base',
-}
-
 export const LANGUAGE_COMMENT_MARKERS: {
   [key: string]: {
     start: string;

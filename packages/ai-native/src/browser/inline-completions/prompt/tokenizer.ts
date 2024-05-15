@@ -1,6 +1,7 @@
+// @ts-ignore
 import { Tiktoken, getEncoding } from 'js-tiktoken';
 
-import { TokenizerName } from './const';
+import { TokenizerName } from '../types';
 
 const TOKENIZER_CACHE = new Map<TokenizerName, Tiktoken>();
 

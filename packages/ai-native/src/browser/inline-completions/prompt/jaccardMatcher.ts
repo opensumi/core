@@ -1,6 +1,5 @@
-import { ResourceDocument } from '../types';
+import { ResourceDocument, TokenizerName } from '../types';
 
-import { TokenizerName } from './const';
 import { WindowedMatcher, computeScore } from './matcher';
 import { getTokenizer } from './tokenizer';
 
