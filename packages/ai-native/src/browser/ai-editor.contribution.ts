@@ -31,6 +31,7 @@ import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/ov
 import { EditorSelectionChangeEvent, IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
 
 import { AINativeService } from './ai-native.service';
@@ -711,12 +712,22 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     return disposable;
 
     function register() {
+      const model = monacoEditor.getModel()!;
+
+      const providerId = `AI_CODE_ACTION_${languageId}`;
+      const hasCodeActionProvider = languageFeaturesService.codeActionProvider.all(model).some((provider) => provider.displayName === providerId);
+
+      if (hasCodeActionProvider) {
+        return;
+      }
+
       if (codeActionDispose) {
         codeActionDispose.dispose();
         codeActionDispose = undefined;
       }
 
-      codeActionDispose = monacoApi.languages.registerCodeActionProvider(languageId, {
+      codeActionDispose = languageFeaturesService.codeActionProvider.register(languageId, {
+        displayName: providerId,
         provideCodeActions: async (model) => {
           if (shouldAbortRequest(model)) {
             return;
