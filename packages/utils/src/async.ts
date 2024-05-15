@@ -308,6 +308,11 @@ export class Barrier {
   wait(): Promise<boolean> {
     return this._promise;
   }
+
+  reject(): void {
+    this._isOpen = false;
+    this._completePromise(false);
+  }
 }
 
 /**
@@ -617,3 +622,48 @@ export const retry = async <T>(
     return retry(task, { delay, retries: retries - 1, onFailedAttempt, timeout });
   }
 };
+
+export class StateTracer {
+  protected deferred: { [state: string]: Barrier } = {};
+
+  public has(state: string): boolean {
+    return this.deferred[state] !== undefined;
+  }
+
+  public delete(state: string): void {
+    delete this.deferred[state];
+  }
+
+  public record(state: string): void {
+    if (this.deferred[state] === undefined) {
+      this.deferred[state] = new Barrier();
+    }
+  }
+
+  public fulfill(state: string): void {
+    if (this.deferred[state] !== undefined) {
+      this.deferred[state].open();
+    } else {
+      this.deferred[state] = new Barrier();
+      this.deferred[state].open();
+    }
+  }
+
+  public reachedState(state: string): Promise<boolean> {
+    if (this.deferred[state] === undefined) {
+      this.deferred[state] = new Barrier();
+    }
+    return this.deferred[state].wait();
+  }
+
+  public reachedAnyState(...states: string[]): Promise<boolean> {
+    return Promise.race(states.map((s) => this.reachedState(s)));
+  }
+
+  public dispose() {
+    Object.keys(this.deferred).forEach((key) => {
+      this.deferred[key].reject();
+    });
+    this.deferred = {};
+  }
+}

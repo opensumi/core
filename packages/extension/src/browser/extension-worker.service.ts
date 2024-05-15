@@ -4,7 +4,7 @@ import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
 import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
-import { Disposable, IDisposable, path, toDisposable } from '@opensumi/ide-core-common';
+import { Disposable, DisposableStore, path, toDisposable } from '@opensumi/ide-core-common';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
@@ -40,18 +40,20 @@ export class WorkerExtProcessService
 
   public protocol: IRPCProtocol;
 
-  private apiFactoryDisposable: IDisposable[] = [];
+  private apiFactoryDisposable = new DisposableStore();
 
   public disposeApiFactory() {
-    this.apiFactoryDisposable.forEach((disposable) => {
-      disposable.dispose();
-    });
-    this.apiFactoryDisposable = [];
+    this.apiFactoryDisposable.clear();
+    if (this.protocol) {
+      (this.protocol as SumiConnectionMultiplexer).dispose?.();
+    }
+    if (this.connection) {
+      this.connection.dispose();
+    }
   }
 
   public disposeProcess() {
     this.disposeApiFactory();
-    return;
   }
 
   public async activate(ignoreCors?: boolean): Promise<IRPCProtocol> {
@@ -61,14 +63,11 @@ export class WorkerExtProcessService
       this.ready.resolve();
       this.logger.log('[Worker Host] init worker thread api proxy');
       const apiProxy = initSharedAPIProxy(this.protocol, this.injector);
-      await apiProxy.setup();
-      this.apiFactoryDisposable.push(
-        apiProxy,
-        toDisposable(initWorkerThreadAPIProxy(this.protocol, this.injector, this)),
-        toDisposable(createSumiAPIFactory(this.protocol, this.injector)),
-      );
-      this.addDispose(this.apiFactoryDisposable);
+      this.apiFactoryDisposable.add(apiProxy);
+      this.apiFactoryDisposable.add(toDisposable(initWorkerThreadAPIProxy(this.protocol, this.injector, this)));
+      this.apiFactoryDisposable.add(toDisposable(createSumiAPIFactory(this.protocol, this.injector)));
 
+      await apiProxy.setup();
       await this.getProxy().$updateExtHostData();
       this._extHostUpdated.resolve();
     }
@@ -238,5 +237,10 @@ export class WorkerExtProcessService
     ).toString();
 
     return Object.assign({}, extension.toJSON(), { workerScriptPath });
+  }
+
+  dispose(): void {
+    super.dispose();
+    this.disposeApiFactory();
   }
 }

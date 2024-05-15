@@ -1,10 +1,16 @@
 import { Type } from '@furyjs/fury';
 
 import { EventEmitter } from '@opensumi/events';
-import { DisposableCollection, DisposableStore, EventQueue } from '@opensumi/ide-core-common';
+import {
+  DisposableCollection,
+  DisposableStore,
+  EventQueue,
+  StateTracer,
+  randomString,
+} from '@opensumi/ide-core-common';
 
 import { IConnectionShape } from './connection/types';
-import { oneOf7 } from './fury-extends/one-of';
+import { oneOf } from './fury-extends/one-of';
 import { ISumiConnectionOptions, SumiConnection } from './rpc/connection';
 import { ILogger } from './types';
 
@@ -24,27 +30,6 @@ export interface PongMessage {
   kind: 'pong';
   id: string;
   clientId: string;
-}
-
-/**
- * `open` message is used to open a new channel.
- * `path` is used to identify which handler should be used to handle the channel.
- * `clientId` is used to identify the client.
- */
-export interface OpenMessage {
-  kind: 'open';
-  id: string;
-  path: string;
-  clientId: string;
-}
-
-/**
- * when server receive a `open` message, it should reply a `server-ready` message.
- * this is indicate that the channel is ready to use.
- */
-export interface ServerReadyMessage {
-  kind: 'server-ready';
-  id: string;
 }
 
 /**
@@ -69,15 +54,6 @@ export interface CloseMessage {
   code: number;
   reason: string;
 }
-
-export type ChannelMessage =
-  | PingMessage
-  | PongMessage
-  | OpenMessage
-  | ServerReadyMessage
-  | DataMessage
-  | BinaryMessage
-  | CloseMessage;
 
 export interface IWSChannelCreateOptions {
   /**
@@ -172,6 +148,14 @@ export class WSChannel {
     this._isServerReady = false;
   }
 
+  onServerReady(cb: () => void) {
+    if (this._isServerReady) {
+      cb();
+      return;
+    }
+    return this.emitter.on('open', cb);
+  }
+
   resume() {
     this._isServerReady = true;
     if (this.sendQueue) {
@@ -185,7 +169,11 @@ export class WSChannel {
   dispatch(msg: ChannelMessage) {
     switch (msg.kind) {
       case 'server-ready':
+        this.stateTracer.fulfill(msg.token);
         this.resume();
+        if (this.timer) {
+          clearTimeout(this.timer);
+        }
         this.emitter.emit('open', msg.id);
         break;
       case 'data':
@@ -197,16 +185,55 @@ export class WSChannel {
     }
   }
 
-  open(path: string, clientId: string) {
+  stateTracer = this._disposables.add(new StateTracer());
+
+  /**
+   * @param connectionToken 一个 connection token 用于在全链路中追踪一个 channel 的生命周期，防止 channel 被重复打开
+   */
+  open(path: string, clientId: string, connectionToken = randomString(16)) {
     this.channelPath = path;
+
+    if (this.stateTracer.has(connectionToken)) {
+      this.logger.warn(
+        `channel already opened or in progress, path: ${path}, clientId: ${clientId}, connectionToken: ${connectionToken}`,
+      );
+      return;
+    }
+
+    this.stateTracer.record(connectionToken);
+
     this.connection.send(
       stringify({
         kind: 'open',
         id: this.id,
         path,
         clientId,
+        connectionToken,
       }),
     );
+
+    if (this._ensureServerReady) {
+      this.ensureOpenSend(path, clientId, connectionToken);
+    }
+
+    return connectionToken;
+  }
+
+  protected timer: NodeJS.Timeout;
+  /**
+   * 启动定时器，确保 server-ready 消息在一定时间内到达
+   */
+  protected ensureOpenSend(path: string, clientId: string, connectionToken: string) {
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+    this.timer = setTimeout(() => {
+      if (this._isServerReady) {
+        return;
+      }
+      this.stateTracer.delete(connectionToken);
+      this.open(path, clientId, connectionToken);
+    }, 500);
   }
 
   send(content: string) {
@@ -260,23 +287,61 @@ export class WSChannel {
   }
 
   dispose() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+    this.sendQueue = [];
     this._disposables.dispose();
   }
+}
+
+interface IWSServerChannelCreateOptions extends IWSChannelCreateOptions {
+  clientId: string;
 }
 
 /**
  * The server side channel, it will send a `server-ready` message after it receive a `open` message.
  */
 export class WSServerChannel extends WSChannel {
-  serverReady() {
+  messageQueue: ChannelMessage[] = [];
+
+  clientId: string;
+  constructor(public connection: IConnectionShape<Uint8Array>, options: IWSServerChannelCreateOptions) {
+    super(connection, options);
+    this.clientId = options.clientId;
+  }
+  serverReady(token: string) {
     this.connection.send(
       stringify({
         kind: 'server-ready',
         id: this.id,
+        token,
       }),
     );
   }
+
+  dispatch(msg: ChannelMessage) {
+    switch (msg.kind) {
+      case 'data':
+        this.emitter.emit('message', msg.content);
+        break;
+      case 'binary':
+        this.emitter.emit('binary', msg.binary);
+        break;
+    }
+  }
 }
+
+export type ChannelMessage =
+  | PingMessage
+  | PongMessage
+  | OpenMessage
+  | ServerReadyMessage
+  | DataMessage
+  | BinaryMessage
+  | CloseMessage
+  | ErrorMessage;
+
 export const PingProtocol = Type.object('ping', {
   clientId: Type.string(),
   id: Type.string(),
@@ -287,14 +352,56 @@ export const PongProtocol = Type.object('pong', {
   id: Type.string(),
 });
 
+/**
+ * `open` message is used to open a new channel.
+ * `path` is used to identify which handler should be used to handle the channel.
+ * `clientId` is used to identify the client.
+ */
+export interface OpenMessage {
+  kind: 'open';
+  id: string;
+  path: string;
+  clientId: string;
+  connectionToken: string;
+}
+
 export const OpenProtocol = Type.object('open', {
   clientId: Type.string(),
   id: Type.string(),
   path: Type.string(),
+  connectionToken: Type.string(),
 });
+
+/**
+ * when server receive a `open` message, it should reply a `server-ready` message.
+ * this is indicate that the channel is ready to use.
+ */
+export interface ServerReadyMessage {
+  kind: 'server-ready';
+  id: string;
+  token: string;
+}
 
 export const ServerReadyProtocol = Type.object('server-ready', {
   id: Type.string(),
+  token: Type.string(),
+});
+
+export enum ErrorMessageCode {
+  ChannelNotFound = 1,
+}
+
+export interface ErrorMessage {
+  kind: 'error';
+  id: string;
+  code: ErrorMessageCode;
+  message: string;
+}
+
+export const ErrorProtocol = Type.object('error', {
+  id: Type.string(),
+  code: Type.uint16(),
+  message: Type.string(),
 });
 
 export const DataProtocol = Type.object('data', {
@@ -313,7 +420,7 @@ export const CloseProtocol = Type.object('close', {
   reason: Type.string(),
 });
 
-const serializer = oneOf7([
+const serializer = oneOf([
   PingProtocol,
   PongProtocol,
   OpenProtocol,
@@ -321,6 +428,7 @@ const serializer = oneOf7([
   DataProtocol,
   BinaryProtocol,
   CloseProtocol,
+  ErrorProtocol,
 ]);
 
 export function stringify(obj: ChannelMessage): Uint8Array {

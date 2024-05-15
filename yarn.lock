@@ -2163,9 +2163,9 @@ __metadata:
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/mock-socket": "npm:^9.3.1"
+    "@opensumi/reconnecting-websocket": "npm:^4.4.0"
     "@opensumi/vscode-jsonrpc": "npm:^8.0.0-next.2"
     path-to-regexp: "npm:^6.2.1"
-    reconnecting-websocket: "npm:^4.4.0"
     ws: "npm:^8.16.0"
   languageName: unknown
   linkType: soft
@@ -3101,6 +3101,13 @@ __metadata:
     typescript: "npm:4.9.3"
   languageName: unknown
   linkType: soft
+
+"@opensumi/reconnecting-websocket@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "@opensumi/reconnecting-websocket@npm:4.4.0"
+  checksum: 10/0ec91f1779e359a0ce0689c79059dbe171732dfa15392b7b2f21ac58ea2bed4ab3f40aa84366cb1ed1371086ab0ab934e66f731fd9c15f62ec87e0217f9ae0c2
+  languageName: node
+  linkType: hard
 
 "@opensumi/remote-cli@workspace:packages/remote-cli":
   version: 0.0.0-use.local
@@ -17004,13 +17011,6 @@ __metadata:
   dependencies:
     resolve: "npm:^1.20.0"
   checksum: 10/ad3caed8afdefbc33fbc30e6d22b86c35b3d51c2005546f4e79bcc03c074df804b3640ad18945e6bef9ed12caedc035655ec1082f64a5e94c849ff939dc0a788
-  languageName: node
-  linkType: hard
-
-"reconnecting-websocket@npm:^4.4.0":
-  version: 4.4.0
-  resolution: "reconnecting-websocket@npm:4.4.0"
-  checksum: 10/542b09b4604c4050833017e9602867d2dd76631de1790d46238e5a5857a41183e09faf38d373406e4ed7fef8614b43bf43c89aac677104997ccbbf6fa071338c
   languageName: node
   linkType: hard
 

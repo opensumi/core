@@ -2,9 +2,15 @@ import { IDisposable, IMarkdownString, IThemeColor, StatusBarHoverCommand } from
 
 import { IMenu } from '../menu/next';
 
+import type { EventEmitter } from '@opensumi/events';
+
 export const IStatusBarService = Symbol('IStatusBarService');
 
 export interface IStatusBarService {
+  emitter: EventEmitter<{
+    backgroundColor: [string?];
+    color: [string?];
+  }>;
   getBackgroundColor(): string | undefined;
   getColor(): string | undefined;
   setBackgroundColor(color?: string): void;

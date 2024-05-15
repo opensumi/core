@@ -2,7 +2,7 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { memo, useCallback } from 'react';
 
-import { StatusBarEntry } from '@opensumi/ide-core-browser';
+import { StatusBarEntry, useEventDrivenState } from '@opensumi/ide-core-browser';
 import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { ICtxMenuRenderer, generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -18,8 +18,10 @@ export const StatusBarView = memo(
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
     const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
-    const backgroundColor = statusBar.getBackgroundColor();
-    const color = statusBar.getColor();
+    const backgroundColor = useEventDrivenState(statusBar.emitter, 'backgroundColor', () =>
+      statusBar.getBackgroundColor(),
+    );
+    const foregroundColor = useEventDrivenState(statusBar.emitter, 'color', () => statusBar.getColor());
 
     const handleCtxMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
       e.preventDefault();
@@ -43,14 +45,20 @@ export const StatusBarView = memo(
         <div className={cls(styles.area, styles.left)}>
           {statusBar.leftEntries.length
             ? statusBar.leftEntries.map((entry: StatusBarEntry, index: number) => (
-                <StatusBarItem key={`${entry.entryId}-${index}`} {...{ ...entry, color: color ?? entry.color }} />
+                <StatusBarItem
+                  key={`${entry.entryId}-${index}`}
+                  {...{ ...entry, color: foregroundColor ?? entry.color }}
+                />
               ))
             : null}
         </div>
         <div className={cls(styles.area, styles.right)}>
           {statusBar.rightEntries.length
             ? statusBar.rightEntries.map((entry: StatusBarEntry, index: number) => (
-                <StatusBarItem key={`${entry.entryId}-${index}`} {...{ ...entry, color: color ?? entry.color }} />
+                <StatusBarItem
+                  key={`${entry.entryId}-${index}`}
+                  {...{ ...entry, color: foregroundColor ?? entry.color }}
+                />
               ))
             : null}
         </div>

@@ -1,14 +1,22 @@
-import { Barrier, Deferred, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
+import { EventEmitter } from '@opensumi/events';
+import { Barrier, Deferred, DisposableStore, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
 import { ConnectionInfo, WSCloseInfo } from '../common/types';
-import { WSChannel, parse, pingMessage } from '../common/ws-channel';
+import { ErrorMessageCode, WSChannel, parse, pingMessage } from '../common/ws-channel';
 
 /**
  * Channel Handler in browser
  */
 export class WSChannelHandler {
+  private _disposables = new DisposableStore();
+
+  private _onChannelCreatedEmitter = this._disposables.add(new EventEmitter<Record<string, [WSChannel]>>());
+  public onChannelCreated(path: string, listener: (channel: WSChannel) => void) {
+    return this._onChannelCreatedEmitter.on(path, listener);
+  }
+
   private channelMap: Map<string, WSChannel> = new Map();
   private channelCloseEventMap = new MultiMap<string, WSCloseInfo>();
   private logger = console;
@@ -54,11 +62,33 @@ export class WSChannelHandler {
 
       const msg = parse(message);
 
-      const channel = this.channelMap.get(msg.id);
-      if (channel) {
-        channel.dispatch(msg);
-      } else {
-        this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+      switch (msg.kind) {
+        case 'pong':
+          // pong 没有 msg.id, 且不需要分发, 不处理
+          break;
+        case 'error':
+          this.logger.error(this.LOG_TAG, `receive error: id: ${msg.id}, code: ${msg.code}, error: ${msg.message}`);
+          switch (msg.code) {
+            case ErrorMessageCode.ChannelNotFound:
+              if (this.channelMap.has(msg.id)) {
+                // 如果远程报错 channel 不存在但是本机存在，则重新打开
+                const channel = this.channelMap.get(msg.id)!;
+                if (channel.channelPath) {
+                  channel.pause();
+                  channel.open(channel.channelPath, this.clientId);
+                }
+              }
+              break;
+          }
+          break;
+        default: {
+          const channel = this.channelMap.get(msg.id);
+          if (channel) {
+            channel.dispatch(msg);
+          } else {
+            this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+          }
+        }
       }
     });
 
@@ -72,7 +102,7 @@ export class WSChannelHandler {
 
     this.connection.onClose((code, reason) => {
       this.channelMap.forEach((channel) => {
-        channel.close(code ?? 1000, reason ?? '');
+        channel.close(code, reason);
       });
     });
 
@@ -94,13 +124,28 @@ export class WSChannelHandler {
     await this.openingBarrier.wait();
   }
 
+  private fillKey(channelPath: string) {
+    return `${this.clientId}:${channelPath}`;
+  }
+
+  public getChannel(channelPath: string) {
+    return this.channelMap.get(this.fillKey(channelPath));
+  }
+
   public async openChannel(channelPath: string) {
+    const key = this.fillKey(channelPath);
+    if (this.channelMap.has(key)) {
+      this.channelMap.get(key)!.dispose();
+      this.logger.log(this.LOG_TAG, `channel ${key} already exists, dispose it`);
+    }
+
     const channel = new WSChannel(this.connection, {
-      id: `${this.clientId}:${channelPath}`,
+      id: key,
       logger: this.logger,
       ensureServerReady: true,
     });
     this.channelMap.set(channel.id, channel);
+    this._onChannelCreatedEmitter.emit(channelPath, channel);
 
     let channelOpenedCount = 0;
 
@@ -133,7 +178,7 @@ export class WSChannelHandler {
         closeEvent: { code, reason },
         connectInfo: (navigator as any).connection as ConnectionInfo,
       });
-      this.logger.log(this.LOG_TAG, `channel close: code: ${code}, reason: ${reason}`);
+      this.logger.log(this.LOG_TAG, `channel ${channelPath} closed, code: ${code}, reason: ${reason}`);
     });
 
     const deferred = new Deferred<void>();
@@ -154,5 +199,24 @@ export class WSChannelHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
+    this._disposables.dispose();
+  }
+
+  awaitChannelReady(channelPath: string) {
+    const channel = this.getChannel(channelPath);
+    const deferred = new Deferred<void>();
+    if (channel) {
+      channel.onServerReady(() => {
+        deferred.resolve();
+      });
+    } else {
+      const dispose = this.onChannelCreated(channelPath, (channel) => {
+        channel.onServerReady(() => {
+          deferred.resolve();
+        });
+        dispose.dispose();
+      });
+    }
+    return deferred.promise;
   }
 }
