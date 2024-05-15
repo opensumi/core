@@ -1,8 +1,8 @@
-import { MarkerSeverity, URI } from '@opensumi/ide-core-common';
+import { MarkerSeverity, Uri } from '@opensumi/ide-core-common';
 
 import { reviveMarker } from '../../../src/browser/language/language.service';
 describe('browser/language/language.service', () => {
-  const testUri = URI.parse('https://opensumi.com');
+  const testUri = Uri.parse('https://opensumi.com');
   const rawMarker = {
     code: '1234',
     message: 'hello',
