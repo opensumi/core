@@ -29,6 +29,7 @@ describe('connection browser', () => {
               stringify({
                 id: msgObj.id,
                 kind: 'server-ready',
+                token: '',
               }),
             );
           } else if (msgObj.kind === 'data') {
@@ -72,6 +73,7 @@ describe('connection browser', () => {
       channel.dispatch({
         kind: 'server-ready',
         id: 'test',
+        token: '',
       });
       await sleep(500);
       // message queue flushed

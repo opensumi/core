@@ -3,7 +3,7 @@ import path from 'path';
 import util from 'util';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { WSChannel } from '@opensumi/ide-connection';
+import { WSServerChannel } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { commonChannelPathHandler } from '@opensumi/ide-connection/lib/node';
 import {
@@ -214,7 +214,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       extConnection.onceClose(() => {
         disposable1.dispose();
         disposable2.dispose();
-        channel.close();
       });
 
       // 连接恢复后清除销毁的定时器
@@ -227,6 +226,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     });
   }
 
+  @pMemoize((clientId: string) => clientId)
   public async createProcess(clientId: string, options?: ICreateProcessOptions) {
     this.logger.log('createProcess instanceId', this.instanceId);
     this.logger.log('appconfig exthost', this.appConfig.extHost);
@@ -251,10 +251,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const extServer = net.createServer();
     this.clientExtProcessExtConnectionServer.set(clientId, extServer);
 
-    extServer.on('connection', (connection) => {
+    extServer.on('connection', (socket) => {
       this.logger.log('_setupExtHostConnection ext host connected');
 
-      this.clientExtProcessExtConnection.set(clientId, new NetSocketConnection(connection));
+      this.clientExtProcessExtConnection.set(clientId, new NetSocketConnection(socket));
       this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.resolve();
     });
 
@@ -270,7 +270,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     });
   }
 
-  @pMemoize((clientId: string) => clientId)
   private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
     // 在新进程创建前销毁可能存在的僵尸进程
     this.destoryZombineClients();
@@ -486,10 +485,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   private async _setMainThreadConnection(
-    handler: (connectionResult: { channel: WSChannel; clientId: string }) => void,
+    handler: (connectionResult: { channel: WSServerChannel; clientId: string }) => void,
   ) {
     commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
-      handler: (channel: WSChannel, clientId: string) => {
+      handler: (channel: WSServerChannel, clientId: string) => {
         handler({
           channel,
           clientId,
@@ -499,14 +498,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           channel.dispose();
           this.logger.log(`The connection client ${clientId} closed`);
 
-          if (this.clientExtProcessExtConnection.has(clientId)) {
-            const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
-            if (extConnection) {
-              this.clientExtProcessExtConnection.delete(clientId);
-              extConnection.dispose();
-              extConnection.destroy();
-            }
-          }
           this.maybeZombieClients.add(clientId);
           this.closeExtProcessWhenConnectionClose(clientId);
         });
@@ -579,8 +570,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           this.clientExtProcessExtConnectionServer.get(clientId)!.close();
           this.clientExtProcessExtConnectionServer.delete(clientId);
         }
+
         // connect 关闭
         if (this.clientExtProcessExtConnection.has(clientId)) {
+          this.clientExtProcessExtConnection.get(clientId)!.dispose();
           this.clientExtProcessExtConnection.get(clientId)!.destroy();
           this.clientExtProcessExtConnection.delete(clientId);
         }
