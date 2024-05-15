@@ -1,5 +1,4 @@
-import { Uri } from '@opensumi/ide-core-common';
-import { isEmptyObject } from '@opensumi/ide-utils';
+import { Uri, isEmptyObject } from '@opensumi/ide-utils';
 
 export interface MapMap<V> {
   [key: string]: { [key: string]: V };
