@@ -31,20 +31,20 @@ export const createMessageByUser = (message: UserMessageData, className?: string
 export const createMessageByAI = (message: AIMessageData, className?: string) =>
   createMessage({ ...message, position: 'left', title: '', className, role: ChatMessageRole.Assistant });
 
-export const extractIcon = (question: IChatReplyFollowup): ISampleQuestions => {
+export const extractIcon = (question: ISampleQuestions): ISampleQuestions => {
   let { title } = question;
   const { message, tooltip } = question;
 
+  let icon = question.icon || '';
+
   if (!title) {
     return {
-      icon: '',
+      icon,
       title: message,
       message,
       tooltip,
     };
   }
-
-  let icon;
 
   const iconMatched = title.match(/^\$\(([a-z.]+\/)?([a-z0-9-]+)(~[a-z]+)?\)/i);
   if (iconMatched) {
@@ -56,6 +56,7 @@ export const extractIcon = (question: IChatReplyFollowup): ISampleQuestions => {
     }
     title = title.slice(matchedStr.length);
   }
+
   return {
     icon,
     title,

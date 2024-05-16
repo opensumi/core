@@ -206,8 +206,8 @@ export interface IChatModel {
 export type IChatWelcomeMessageContent = string | IMarkdownString;
 
 export interface ISampleQuestions {
-  title: string;
   message: string;
+  title?: string;
   icon?: string;
   tooltip?: string;
 }
