@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IEventBus, QuickPickService, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
+import { IEventBus, QuickPickService, TerminalClientAttachEvent, localize } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import {
   Deferred,
@@ -537,6 +537,45 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
       }
     }
+  }
+
+  // 检查 Terminal Client 对应的后端 Shell 进程是否存活
+  public async checkHealthy() {
+    return await this.internalService.check([this.id]);
+  }
+
+  // 输出终端已经被 Kill 的提醒
+  public displayUnHealthyMessage() {
+    const xtermRaw = this.term;
+
+    // 基于 Xterm Theme 的颜色来输出用户提示
+    const currentTheme = xtermRaw.options.theme;
+
+    // 根据当前主题设置输出样式的函数
+    const printStyledMessage = (message: string, foreground: string, background: string): void => {
+      const padding = '    '; // 四个空格作为左右边距
+      const paddedMessage = message
+        .split('\n')
+        .map((line) => padding + line + padding)
+        .join('\n');
+      const styledMessage = `\x1b[48;2;${hexToRgb(foreground)};38;2;${hexToRgb(background)}m${paddedMessage}\x1b[0m`;
+      xtermRaw.writeln('\n');
+      xtermRaw.writeln('\n' + styledMessage + '\n'); // 在输出前后添加空行
+    };
+
+    // 辅助函数：将十六进制颜色转换为 RGB 字符串
+    const hexToRgb = (hex: string): string => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `${r};${g};${b}`;
+    };
+
+    printStyledMessage(
+      localize('terminal.process.unHealthy'),
+      currentTheme?.foreground || '#d7dbdeff',
+      currentTheme?.background || '#151b21ff',
+    );
   }
 
   reset() {

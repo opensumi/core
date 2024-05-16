@@ -93,7 +93,7 @@ export class PS1TerminalService extends Disposable {
       this.onDataDisposable.dispose();
     }
 
-    const aiHinitDecoration = xterm.registerDecoration({
+    const aiHintDecoration = xterm.registerDecoration({
       marker: this.promptEndMarker,
       width: xterm.cols,
       height: 1,
@@ -101,7 +101,7 @@ export class PS1TerminalService extends Disposable {
       layer: 'top',
     });
 
-    aiHinitDecoration?.onRender((element) => {
+    aiHintDecoration?.onRender((element) => {
       element.innerText = localize('terminal.ai.inputSharpToGetHint');
       element.style.opacity = '0.3';
     });
@@ -115,7 +115,7 @@ export class PS1TerminalService extends Disposable {
       const cursorY = buffer.cursorY;
 
       // 用户有输入时，就隐藏掉提示框
-      aiHinitDecoration?.dispose();
+      aiHintDecoration?.dispose();
 
       if (
         e === '#' &&
