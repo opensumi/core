@@ -46,7 +46,7 @@ import { AIInlineChatService, EInlineChatStatus } from './widget/inline-chat/inl
 import { AIInlineContentWidget } from './widget/inline-chat/inline-content-widget';
 import { InlineDiffWidget } from './widget/inline-diff/inline-diff-widget';
 
-@Injectable()
+@Injectable({ multiple: false })
 export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -75,17 +75,17 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
 
-  @Autowired(AINativeCoreContribution)
-  private readonly contributions: ContributionProvider<AINativeCoreContribution>;
+  // @Autowired(AINativeCoreContribution)
+  // private readonly contributions: ContributionProvider<AINativeCoreContribution>;
 
-  @Autowired(AIInlineCompletionsProvider)
-  private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
+  // @Autowired(AIInlineCompletionsProvider)
+  // private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
 
   @Autowired(RenameSuggestionsService)
   private readonly renameSuggestionService: RenameSuggestionsService;
 
-  @Autowired(AICompletionsService)
-  private aiCompletionsService: AICompletionsService;
+  // @Autowired(AICompletionsService)
+  // private aiCompletionsService: AICompletionsService;
 
   @Autowired(IEventBus)
   protected eventBus: IEventBus;
@@ -96,7 +96,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired()
   monacoTelemetryService: MonacoTelemetryService;
 
-  private latestMiddlewareCollector: IAIMiddleware;
+  // private latestMiddlewareCollector: IAIMiddleware;
+  private instantiated: boolean = false;
 
   private logger: ILogServiceClient;
 
@@ -110,6 +111,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
+  private aiCodeActionDisposed: Disposable = new Disposable();
 
   private modelSessionDisposable: Disposable;
 
@@ -128,6 +130,11 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   contribute(editor: IEditor): IDisposable {
+    if (this.instantiated) {
+      return this;
+    }
+    this.instantiated = true;
+
     if (!editor) {
       return this;
     }
@@ -137,7 +144,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    this.contributeInlineCompletionFeature(editor);
+    // this.contributeInlineCompletionFeature(editor);
     this.contributeInlineChatFeature(editor);
     this.registerLanguageFeatures(editor);
 
@@ -154,61 +161,61 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     return this;
   }
 
-  protected contributeInlineCompletionFeature(editor: IEditor): void {
-    const { monacoEditor } = editor;
-    // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
-    const selectionChange = () => {
-      this.aiCompletionsService.hideStatusBarItem();
-      const selection = monacoEditor.getSelection();
-      if (!selection) {
-        return;
-      }
+  // protected contributeInlineCompletionFeature(editor: IEditor): void {
+  //   const { monacoEditor } = editor;
+  //   // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
+  //   const selectionChange = () => {
+  //     this.aiCompletionsService.hideStatusBarItem();
+  //     const selection = monacoEditor.getSelection();
+  //     if (!selection) {
+  //       return;
+  //     }
 
-      // 判断是否选中区域
-      if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
-        this.aiInlineCompletionsProvider.cancelRequest();
-      }
-      requestAnimationFrame(() => {
-        this.aiCompletionsService.setVisibleCompletion(false);
-      });
-    };
+  //     // 判断是否选中区域
+  //     if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
+  //       this.aiInlineCompletionsProvider.cancelRequest();
+  //     }
+  //     requestAnimationFrame(() => {
+  //       this.aiCompletionsService.setVisibleCompletion(false);
+  //     });
+  //   };
 
-    const debouncedSelectionChange = debounce(selectionChange, 50, {
-      maxWait: 200,
-      leading: true,
-      trailing: true,
-    });
+  //   const debouncedSelectionChange = debounce(selectionChange, 50, {
+  //     maxWait: 200,
+  //     leading: true,
+  //     trailing: true,
+  //   });
 
-    this.disposables.push(
-      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
-        if (e.payload.source === 'mouse') {
-          debouncedSelectionChange();
-        } else {
-          debouncedSelectionChange.cancel();
-          selectionChange();
-        }
-      }),
-      monacoEditor.onDidChangeModelContent((e) => {
-        const changes = e.changes;
-        for (const change of changes) {
-          if (change.text === '') {
-            this.aiInlineCompletionsProvider.isDelEvent = true;
-            this.aiInlineCompletionsProvider.cancelRequest();
-          } else {
-            this.aiInlineCompletionsProvider.isDelEvent = false;
-          }
-        }
-      }),
-      monacoEditor.onWillChangeModel(() => {
-        this.aiCompletionsService.hideStatusBarItem();
-        this.disposeAllWidget();
-      }),
-      monacoEditor.onDidBlurEditorText(() => {
-        this.aiCompletionsService.hideStatusBarItem();
-        this.aiCompletionsService.setVisibleCompletion(false);
-      }),
-    );
-  }
+  //   this.disposables.push(
+  //     this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+  //       if (e.payload.source === 'mouse') {
+  //         debouncedSelectionChange();
+  //       } else {
+  //         debouncedSelectionChange.cancel();
+  //         selectionChange();
+  //       }
+  //     }),
+  //     monacoEditor.onDidChangeModelContent((e) => {
+  //       const changes = e.changes;
+  //       for (const change of changes) {
+  //         if (change.text === '') {
+  //           this.aiInlineCompletionsProvider.isDelEvent = true;
+  //           this.aiInlineCompletionsProvider.cancelRequest();
+  //         } else {
+  //           this.aiInlineCompletionsProvider.isDelEvent = false;
+  //         }
+  //       }
+  //     }),
+  //     monacoEditor.onWillChangeModel(() => {
+  //       this.aiCompletionsService.hideStatusBarItem();
+  //       this.disposeAllWidget();
+  //     }),
+  //     monacoEditor.onDidBlurEditorText(() => {
+  //       this.aiCompletionsService.hideStatusBarItem();
+  //       this.aiCompletionsService.setVisibleCompletion(false);
+  //     }),
+  //   );
+  // }
 
   protected contributeInlineChatFeature(editor: IEditor): void {
     const { monacoEditor } = editor;
@@ -541,55 +548,55 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         const languageId = model.getLanguageId();
 
-        if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-          this.contributions.getContributions().forEach((contribution) => {
-            if (contribution.middleware) {
-              this.latestMiddlewareCollector = contribution.middleware;
-            }
-          });
+        // if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+        //   this.contributions.getContributions().forEach((contribution) => {
+        //     if (contribution.middleware) {
+        //       this.latestMiddlewareCollector = contribution.middleware;
+        //     }
+        //   });
 
-          this.aiInlineCompletionsProvider.registerEditor(editor);
-          this.modelSessionDisposable.addDispose({
-            dispose: () => {
-              this.aiInlineCompletionsProvider.dispose();
-            },
-          });
-          this.modelSessionDisposable.addDispose(
-            monacoApi.languages.registerInlineCompletionsProvider(languageId, {
-              provideInlineCompletions: async (model, position, context, token) => {
-                if (this.shouldAbortRequest(model)) {
-                  return;
-                }
+        //   this.aiInlineCompletionsProvider.registerEditor(editor);
+        //   this.modelSessionDisposable.addDispose({
+        //     dispose: () => {
+        //       this.aiInlineCompletionsProvider.dispose();
+        //     },
+        //   });
+        //   this.modelSessionDisposable.addDispose(
+        //     monacoApi.languages.registerInlineCompletionsProvider(languageId, {
+        //       provideInlineCompletions: async (model, position, context, token) => {
+        //         if (this.shouldAbortRequest(model)) {
+        //           return;
+        //         }
 
-                if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
-                  this.aiCompletionsService.setMiddlewareComplete(
-                    this.latestMiddlewareCollector?.language?.provideInlineCompletions,
-                  );
-                }
+        //         if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
+        //           this.aiCompletionsService.setMiddlewareComplete(
+        //             this.latestMiddlewareCollector?.language?.provideInlineCompletions,
+        //           );
+        //         }
 
-                const list = await this.aiInlineCompletionsProvider.provideInlineCompletionItems(
-                  model,
-                  position,
-                  context,
-                  token,
-                );
+        //         const list = await this.aiInlineCompletionsProvider.provideInlineCompletionItems(
+        //           model,
+        //           position,
+        //           context,
+        //           token,
+        //         );
 
-                this.logger.log(
-                  'provideInlineCompletions: ',
-                  list.items.map((data) => data.insertText),
-                );
+        //         this.logger.log(
+        //           'provideInlineCompletions: ',
+        //           list.items.map((data) => data.insertText),
+        //         );
 
-                return list;
-              },
-              freeInlineCompletions() {},
-              handleItemDidShow: (completions) => {
-                if (completions.items.length > 0) {
-                  this.aiCompletionsService.setVisibleCompletion(true);
-                }
-              },
-            }),
-          );
-        }
+        //         return list;
+        //       },
+        //       freeInlineCompletions() {},
+        //       handleItemDidShow: (completions) => {
+        //         if (completions.items.length > 0) {
+        //           this.aiCompletionsService.setVisibleCompletion(true);
+        //         }
+        //       },
+        //     }),
+        //   );
+        // }
 
         if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
           this.modelSessionDisposable.addDispose(this.contributeRenameFeature(languageId));
@@ -687,47 +694,13 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     const { monacoEditor } = editor;
     const { languageParserService, inlineChatFeatureRegistry, shouldAbortRequest } = this;
-
-    let codeActionDispose: IDisposable | undefined;
-
-    disposable.addDispose(
-      this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
-        ({ newValue }) => {
-          prefInlineChatActionEnabled = newValue;
-          if (newValue) {
-            register();
-          } else {
-            if (codeActionDispose) {
-              codeActionDispose.dispose();
-              codeActionDispose = undefined;
-            }
-          }
-        },
-      ),
-    );
-
-    register();
-
-    return disposable;
-
-    function register() {
-      const model = monacoEditor.getModel()!;
-
-      const providerId = `AI_CODE_ACTION_${languageId}`;
-      const hasCodeActionProvider = languageFeaturesService.codeActionProvider
-        .all(model)
-        .some((provider) => provider.displayName === providerId);
-
-      if (codeActionDispose) {
-        codeActionDispose.dispose();
-        codeActionDispose = undefined;
-      } else if (hasCodeActionProvider) {
+    
+    const register = () => {
+      if (!this.aiCodeActionDisposed.disposed) {
         return;
       }
 
-      codeActionDispose = languageFeaturesService.codeActionProvider.register(languageId, {
-        displayName: providerId,
+      this.aiCodeActionDisposed.addDispose(languageFeaturesService.codeActionProvider.register('*', {
         provideCodeActions: async (model) => {
           if (shouldAbortRequest(model)) {
             return;
@@ -804,10 +777,28 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
             return constructCodeActions(rangeInfo);
           }
         },
-      });
-
-      disposable.addDispose(codeActionDispose);
+      }));
     }
+
+    disposable.addDispose(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+        ({ newValue }) => {
+          prefInlineChatActionEnabled = newValue;
+          if (newValue) {
+            register();
+          } else {
+            if (this.aiCodeActionDisposed) {
+              this.aiCodeActionDisposed.dispose();
+            }
+          }
+        },
+      ),
+    );
+
+    register();
+
+    return disposable;
   }
 
   dispose(): void {

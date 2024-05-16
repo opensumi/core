@@ -8,6 +8,7 @@ import {
   IAIBackService,
   IAIBackServiceOption,
   IAIBackServiceResponse,
+  IAICompletionOption,
   INodeLogger,
   sleep,
 } from '@opensumi/ide-core-node';
@@ -46,6 +47,17 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
       errorCode: 0,
       data: 'Hello OpenSumi!',
     });
+  }
+
+  async requestCompletion(input: IAICompletionOption, cancelToken?: CancellationToken | undefined): Promise<{ sessionId: string; codeModelList: { content: string; }[]; }> {
+    return {
+      sessionId: '123',
+      codeModelList: [
+        {
+          content: 'Hello OpenSumi!'
+        }
+      ]
+    }
   }
 
   override async requestStream(

@@ -53,6 +53,7 @@ export class EditorFeatureRegistryImpl implements IEditorFeatureRegistry {
   runOneContribution(editor: IEditor, contribution: IEditorFeatureContribution) {
     try {
       const disposer = contribution.contribute(editor);
+      console.log('registerEditorFeatureContribution:>>> ', editor);
       editor.onDispose(() => {
         disposer.dispose();
       });

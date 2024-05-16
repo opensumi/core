@@ -154,6 +154,9 @@ export class AINativeBrowserContribution
   @Autowired(ChatProxyServiceToken)
   private readonly chatProxyService: ChatProxyService;
 
+  @Autowired(AIEditorContribution)
+  private readonly aiEditorFeatureContribution: AIEditorContribution;
+
   constructor() {
     this.registerFeature();
   }
@@ -259,8 +262,7 @@ export class AINativeBrowserContribution
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => {
-        const aiEditorContribution = this.injector.get(AIEditorContribution, [editor]);
-        return aiEditorContribution.contribute(editor);
+        return this.aiEditorFeatureContribution.contribute(editor);
       },
     });
   }
