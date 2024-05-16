@@ -437,7 +437,11 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         // createDiffEditor
         expect(createDiffEditorSpy).toHaveBeenCalledTimes(1);
         expect((createDiffEditorSpy.mock.calls[0][0] as HTMLDivElement).tagName).toBe('DIV');
-        expect(createDiffEditorSpy.mock.calls[0][1]).toEqual({ automaticLayout: true, renderSideBySide: false });
+        expect(createDiffEditorSpy.mock.calls[0][1]).toEqual({
+          automaticLayout: true,
+          renderSideBySide: false,
+          hideUnchangedRegions: { enabled: false },
+        });
 
         // editor.compare
         expect(mockCompare).toHaveBeenCalledTimes(1);
