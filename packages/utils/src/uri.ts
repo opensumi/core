@@ -248,7 +248,11 @@ export class URI {
   }
 
   toJSON() {
-    return this.codeUri.toJSON();
+    return {
+      ...this.codeUri.toJSON(),
+      // `$mid === 1` will cause URI to be deserialized as a Uri
+      $mid: undefined,
+    };
   }
 
   isEqualOrParent(uri: URI): boolean {
