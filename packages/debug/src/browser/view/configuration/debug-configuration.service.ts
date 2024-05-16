@@ -9,10 +9,10 @@ import {
   DEFAULT_ADD_CONFIGURATION_KEY,
   DEFAULT_CONFIGURATION_INDEX_SEPARATOR,
   DEFAULT_CONFIGURATION_NAME_SEPARATOR,
+  DebugConfiguration,
   DebugConfigurationsReadyEvent,
   DebugSessionOptions,
 } from '../../../common';
-import { DebugConfiguration } from '../../../common';
 import { IDebugSessionManager } from '../../../common/debug-session';
 import { DebugConfigurationManager, DebugConfigurationType } from '../../debug-configuration-manager';
 import { DebugSessionManager } from '../../debug-session-manager';
@@ -93,8 +93,8 @@ export class DebugConfigurationService {
         }
       }
     });
-    this.eventBus.on(DebugConfigurationsReadyEvent, async (event) => {
-      this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    this.eventBus.on(DebugConfigurationsReadyEvent, () => {
+      this.updateDynamicConfigurations();
     });
     await this.updateWorkspaceState();
     // onWorkspaceLocationChanged 事件不能满足实时更新workspaceRoots的需求
@@ -111,6 +111,11 @@ export class DebugConfigurationService {
       this.isMultiRootWorkspace = this.workspaceService.isMultiRootWorkspaceOpened;
       this.workspaceRoots = roots;
     });
+  }
+
+  @action
+  async updateDynamicConfigurations() {
+    this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
   }
 
   @action
@@ -133,7 +138,7 @@ export class DebugConfigurationService {
     } else {
       this.updateCurrentValue(DEFAULT_ADD_CONFIGURATION_KEY);
     }
-    this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    this.updateDynamicConfigurations();
   }
 
   start = async () => {
