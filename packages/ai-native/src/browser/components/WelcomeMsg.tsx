@@ -36,7 +36,7 @@ export const WelcomeMessage = () => {
     }
 
     const { sampleQuestions = [] } = chatFeatureRegistry.chatWelcomeMessageModel;
-    return (sampleQuestions as IChatReplyFollowup[]).map(extractIcon);
+    return sampleQuestions.map(extractIcon);
   }, [chatFeatureRegistry.chatWelcomeMessageModel?.sampleQuestions]);
 
   const welcomeMessage = React.useMemo(() => {
