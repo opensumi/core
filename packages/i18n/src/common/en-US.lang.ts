@@ -1056,6 +1056,8 @@ export const localizationBundle = {
     'terminal.relaunch': 'Relaunch Terminal',
     'terminal.toggleTerminal': 'Toggle Terminal',
     'terminal.killProcess': 'Kill Process',
+    'terminal.process.unHealthy':
+      '*This terminal session has been timed out and killed by the system. Please open a new terminal session to proceed with operations.',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',

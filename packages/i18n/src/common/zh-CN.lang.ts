@@ -715,6 +715,7 @@ export const localizationBundle = {
     'terminal.openFolder': '在新窗口中打开文件夹',
     'terminal.toggleTerminal': '切换终端面板',
     'terminal.killProcess': '结束进程',
+    'terminal.process.unHealthy': '*此终端会话已被系统超时回收，请打开新的终端会话来进行操作',
 
     'view.command.show': '打开 {0}',
 

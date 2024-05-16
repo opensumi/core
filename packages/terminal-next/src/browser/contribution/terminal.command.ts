@@ -2,6 +2,7 @@ import { Autowired } from '@opensumi/di';
 import {
   AppConfig,
   COMMON_COMMANDS,
+  ClientAppContribution,
   CommandContribution,
   CommandRegistry,
   CommandService,
@@ -30,8 +31,8 @@ import { TerminalKeyBoardInputService } from '../terminal.input';
 
 import { EnvironmentVariableServiceToken } from './../../common/environmentVariable';
 
-@Domain(CommandContribution)
-export class TerminalCommandContribution implements CommandContribution {
+@Domain(CommandContribution, ClientAppContribution)
+export class TerminalCommandContribution implements CommandContribution, ClientAppContribution {
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
 
@@ -76,6 +77,11 @@ export class TerminalCommandContribution implements CommandContribution {
 
   onReconnect() {
     this.terminalController.reconnect();
+  }
+
+  onDisposeSideEffects() {
+    // TODO 销毁 Node.js 端的 Terminal Client
+    // 目前的情况下，想要终端重连后正常工作的话，会导致一些内存泄漏
   }
 
   private setDefaultTerminalType(type: string) {

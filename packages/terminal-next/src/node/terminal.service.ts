@@ -261,9 +261,10 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   }
 
   dispose() {
-    this.serviceClientMap.forEach((client) => {
-      client.dispose();
-    });
+    // TODO 后续需要一个合理的 Dispose 逻辑，暂时不要 Dispose，避免重连时终端不可用
+    // this.serviceClientMap.forEach((client) => {
+    //   client.dispose();
+    // });
   }
 
   private getTerminal(id: string) {
