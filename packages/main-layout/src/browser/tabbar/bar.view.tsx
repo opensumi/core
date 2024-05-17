@@ -23,8 +23,7 @@ import { TabbarConfig } from './renderer.view';
 import styles from './styles.module.less';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 
-function splitVisibleTabs(containers: ComponentRegistryInfo[], tabSize: number, availableSize: number) {
-  const visibleCount = Math.floor(availableSize / tabSize);
+function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: number) {
   if (visibleCount >= containers.length) {
     return [containers, []];
   }
@@ -42,6 +41,10 @@ export interface ITabbarViewProps {
   // 包含tab的内外边距的总尺寸，用于控制溢出隐藏逻辑
   tabSize: number;
   MoreTabView: React.FC;
+  /**
+   * 禁用自动检测高度或者宽度变化后自动调整显示 tab 的数量
+   */
+  disableAutoAdjust?: boolean;
   panelBorderSize?: number;
   tabClassName?: string;
   className?: string;
@@ -71,6 +74,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
     tabSize,
     canHideTabbar,
     renderOtherVisibleContainers = () => null,
+    disableAutoAdjust,
   } = props;
   const { side, direction, fullSize } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -95,11 +99,13 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
     tabbarService.resizeHandle?.setSize(0);
   }
 
+  const visibleCount = disableAutoAdjust ? Number.MAX_SAFE_INTEGER : Math.floor(fullSize - (margin || 0) / tabSize);
+
   const [visibleContainers, hideContainers] = splitVisibleTabs(
     tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
-    tabSize,
-    fullSize - (margin || 0),
+    visibleCount,
   );
+
   hideContainers.forEach((componentInfo) => {
     tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
   });
@@ -317,7 +323,8 @@ export const LeftTabbarRenderer: React.FC<{
   }>;
   isRenderExtraTopMenus?: boolean;
   renderExtraMenus?: React.ReactNode;
-}> = ({ renderOtherVisibleContainers, isRenderExtraTopMenus = true, renderExtraMenus }) => {
+  tabbarViewProps?: Partial<ITabbarViewProps>;
+}> = ({ renderOtherVisibleContainers, isRenderExtraTopMenus = true, renderExtraMenus, tabbarViewProps }) => {
   const { side } = React.useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -347,6 +354,7 @@ export const LeftTabbarRenderer: React.FC<{
         margin={90}
         panelBorderSize={1}
         renderOtherVisibleContainers={renderOtherVisibleContainers}
+        {...tabbarViewProps}
       />
       {renderExtraMenus || <InlineMenuBar className={styles.vertical_icons} menus={extraMenus} />}
     </div>
