@@ -13,6 +13,7 @@ import {
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IThemeContribution, IThemeService, IThemeStore } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
+import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 
 import { DesignCoreContribution } from './design.contribution';
 import { DesignMenuBarContribution } from './menu-bar/menu-bar.contribution';
@@ -71,6 +72,16 @@ export class DesignModule extends BrowserModule {
               document.body.classList.add(lightTheme.designThemeType);
             }
             return newTheme;
+          }
+        },
+        override: true,
+        isDefault: true,
+      },
+      {
+        token: IThemeService,
+        useClass: class extends WorkbenchThemeService {
+          override async ensureValidTheme(): Promise<string> {
+            return super.ensureValidTheme(defaultTheme.id);
           }
         },
         override: true,

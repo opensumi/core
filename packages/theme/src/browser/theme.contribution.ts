@@ -83,11 +83,12 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
    */
   private registerDefaultColorTheme() {
     const themeId = this.preferenceService.get<string>(GeneralSettingsId.Theme);
-    const shouldApplyDefaultThemeId = !themeId || themeId.includes('dark');
 
-    if (shouldApplyDefaultThemeId) {
-      this.themeService.applyTheme(DEFAULT_THEME_ID);
-    }
+    this.themeService.ensureValidTheme().then((validTheme) => {
+      if (themeId !== validTheme) {
+        this.themeService.applyTheme(validTheme);
+      }
+    });
   }
 
   private registerDefaultTokenModifier() {
