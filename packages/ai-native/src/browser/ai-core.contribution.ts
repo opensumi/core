@@ -32,7 +32,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { TerminalRegistryToken } from '@opensumi/ide-core-common';
+import { Disposable, Schemes, TerminalRegistryToken } from '@opensumi/ide-core-common';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
@@ -154,6 +154,9 @@ export class AINativeBrowserContribution
   @Autowired(ChatProxyServiceToken)
   private readonly chatProxyService: ChatProxyService;
 
+  @Autowired(AIEditorContribution)
+  private readonly aiEditorFeatureContribution: AIEditorContribution;
+
   constructor() {
     this.registerFeature();
   }
@@ -258,10 +261,7 @@ export class AINativeBrowserContribution
 
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
     registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => {
-        const aiEditorContribution = this.injector.get(AIEditorContribution, [editor]);
-        return aiEditorContribution.contribute(editor);
-      },
+      contribute: (editor: IEditor) => this.aiEditorFeatureContribution.contribute(editor),
     });
   }
 

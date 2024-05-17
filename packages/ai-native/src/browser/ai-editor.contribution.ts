@@ -28,7 +28,10 @@ import {
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent, IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import { BrowserCodeEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
@@ -88,13 +91,16 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   private aiCompletionsService: AICompletionsService;
 
   @Autowired(IEventBus)
-  protected eventBus: IEventBus;
+  private eventBus: IEventBus;
 
   @Autowired(LanguageParserService)
-  protected languageParserService: LanguageParserService;
+  private languageParserService: LanguageParserService;
+
+  @Autowired(WorkbenchEditorService)
+  private workbenchEditorService: WorkbenchEditorServiceImpl;
 
   @Autowired()
-  monacoTelemetryService: MonacoTelemetryService;
+  private monacoTelemetryService: MonacoTelemetryService;
 
   private latestMiddlewareCollector: IAIMiddleware;
 
@@ -112,6 +118,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
 
   private modelSessionDisposable: Disposable;
+  private initialized: boolean = false;
 
   private disposeAllWidget() {
     [
@@ -128,18 +135,25 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   contribute(editor: IEditor): IDisposable {
-    if (!editor) {
+    if (!(editor instanceof BrowserCodeEditor) || this.initialized) {
       return this;
     }
 
-    const { monacoEditor, currentUri } = editor;
-    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
-      return this;
-    }
+    this.disposables.push(
+      editor.onRefOpen((e) => {
+        const { uri } = e.instance;
+        if (uri.codeUri.scheme !== Schemes.file) {
+          return;
+        }
 
-    this.contributeInlineCompletionFeature(editor);
-    this.contributeInlineChatFeature(editor);
-    this.registerLanguageFeatures(editor);
+        this.initialized = true;
+        this.contributeInlineCompletionFeature(editor);
+        this.contributeInlineChatFeature(editor);
+        this.registerLanguageFeatures(editor);
+      }),
+    );
+
+    const { monacoEditor } = editor;
 
     this.disposables.push(
       monacoEditor.onDidScrollChange(() => {
@@ -223,6 +237,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       }),
       // 通过 code actions 来透出我们 inline chat 的功能
       this.inlineChatFeatureRegistry.onCodeActionRun(({ id, range }) => {
+        const currentEditor = this.workbenchEditorService.currentEditor;
+
+        if (currentEditor?.currentUri !== editor.currentUri) {
+          return;
+        }
+
         monacoEditor.setSelection(range);
         this.showInlineChat(editor);
         if (this.aiInlineContentWidget) {
