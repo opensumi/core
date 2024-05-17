@@ -23,7 +23,7 @@ import { TabbarConfig } from './renderer.view';
 import styles from './styles.module.less';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 
-function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount) {
+function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: number) {
   if (visibleCount >= containers.length) {
     return [containers, []];
   }
