@@ -67,7 +67,7 @@ export function reviveMarker(marker: IMarkerData): Diagnostic {
       typeof marker.codeHref !== 'undefined'
         ? {
             value: String(marker.code),
-            target: marker.codeHref.codeUri,
+            target: marker.codeHref,
           }
         : marker.code,
     severity: reviveSeverity(marker.severity) as any,

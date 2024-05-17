@@ -1056,6 +1056,8 @@ export const localizationBundle = {
     'terminal.relaunch': 'Relaunch Terminal',
     'terminal.toggleTerminal': 'Toggle Terminal',
     'terminal.killProcess': 'Kill Process',
+    'terminal.process.unHealthy':
+      '*This terminal session has been timed out and killed by the system. Please open a new terminal session to proceed with operations.',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
@@ -1256,7 +1258,7 @@ export const localizationBundle = {
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'extension.crashedExthostReload.confirm': 'Extension Host Process is crashed, do you want to restart the process?',
-    'extension.exthostRestarting.content': 'Restarting Extension Host',
+    'extension.exthostRestarting.content': 'Extension Host Process is restarting',
     'extension.host.restart': 'Restart Extension Host Process',
 
     'extension.no.view.found':

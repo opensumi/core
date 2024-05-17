@@ -532,12 +532,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   async reconnect() {
     const clients = Array.from(this._clients.values());
-    const canReconnected = await this.service.check(clients.map((client) => client.id));
 
-    if (!canReconnected) {
-      this.terminalView.clear();
-      this._reset();
-    }
+    // 在重连的时候检查终端的健康状态，如果不健康的话，展示相关信息提示用户
+    clients.forEach(async (client) => {
+      const clientHealthy = await client.checkHealthy();
+
+      if (!clientHealthy) {
+        client.displayUnHealthyMessage();
+      }
+    });
   }
 
   focus() {

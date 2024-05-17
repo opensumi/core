@@ -715,6 +715,7 @@ export const localizationBundle = {
     'terminal.openFolder': '在新窗口中打开文件夹',
     'terminal.toggleTerminal': '切换终端面板',
     'terminal.killProcess': '结束进程',
+    'terminal.process.unHealthy': '*此终端会话已被系统超时回收，请打开新的终端会话来进行操作',
 
     'view.command.show': '打开 {0}',
 
@@ -856,7 +857,7 @@ export const localizationBundle = {
     'extension.invalidExthostReload.confirm.ok': '刷新',
     'extension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'extension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
-    'extension.exthostRestarting.content': '插件进程重启中',
+    'extension.exthostRestarting.content': '插件进程重启中...',
     'extension.host.restart': '重启插件主进程',
 
     'extension.no.view.found': '找不到插件 {0} 注册的视图组件。\n 请确保插件中已经导出名为 {1} 的组件。',

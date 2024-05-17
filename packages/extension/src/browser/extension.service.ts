@@ -1,4 +1,8 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import debounce from 'lodash/debounce';
+
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   AppConfig,
   CommandRegistry,
@@ -8,10 +12,9 @@ import {
   ExtensionActivateEvent,
   IClientApp,
   ILogger,
-  IStatusBarService,
   PreferenceService,
-  StatusBarAlignment,
 } from '@opensumi/ide-core-browser';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
   CancelablePromise,
   CancellationToken,
@@ -20,6 +23,7 @@ import {
   GeneralSettingsId,
   MayCancelablePromise,
   OnEvent,
+  ProgressLocation,
   URI,
   WithEventBus,
   createCancelablePromise,
@@ -90,8 +94,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(IExtensionStorageService)
   private readonly extensionStorageService: IExtensionStorageService;
 
-  @Autowired(IStatusBarService)
-  private readonly statusBarService: IStatusBarService;
+  @Autowired(IProgressService)
+  private readonly progressService: IProgressService;
 
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
@@ -138,6 +142,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(IExtensionStoragePathServer)
   private readonly extensionStoragePathServer: IExtensionStoragePathServer;
 
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
 
@@ -171,6 +178,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
+
+  @Autowired(WSChannelHandler)
+  private readonly channelHandler: WSChannelHandler;
 
   /**
    * @internal 提供获取所有运行中的插件的列表数据
@@ -233,6 +243,15 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     // 监听页面展示状态，当页面状态变为可见且插件进程待重启的时候执行
     const onPageVisibilitychange = () => {
+      this.logger.log(
+        '[ext-restart]: page visibility change, current:',
+        document.visibilityState,
+        'is waiting:',
+        this.isExtProcessWaitingForRestart,
+        'is restarting:',
+        this.isExtProcessRestarting,
+      );
+
       if (
         document.visibilityState === 'visible' &&
         this.isExtProcessWaitingForRestart &&
@@ -341,25 +360,24 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (document.visibilityState === 'visible') {
       this.extProcessRestartHandler(restartPolicy);
     } else {
-      this.logger.log('[ext-restart]: page is not visible, waiting for restart');
+      this.logger.log('[ext-restart]: page is not visible, waiting for restart, policy:', restartPolicy);
       this.isExtProcessWaitingForRestart = restartPolicy;
     }
   }
 
   private extProcessRestartPromise: CancelablePromise<void> | undefined;
 
-  private async extProcessRestartHandler(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
-    if (this.isExtProcessRestarting && restartPolicy !== ERestartPolicy.Always) {
-      this.logger.log('[ext-restart]: ext process is restarting, skip');
-      return;
+  private disposeAllOverlayWindow() {
+    if (this.pCrashMessageModel) {
+      // crash message model is still open, close it
+      this.pCrashMessageModel.cancel?.();
+      this.pCrashMessageModel = undefined;
     }
+  }
 
+  restartProgress = async (restartPolicy: ERestartPolicy = ERestartPolicy.Always) => {
     const doRestart = async (token: CancellationToken) => {
-      if (this.pCrashMessageModel) {
-        // crash message model is still open, close it
-        this.pCrashMessageModel.cancel?.();
-        this.pCrashMessageModel = undefined;
-      }
+      this.disposeAllOverlayWindow();
 
       token.onCancellationRequested(() => {
         this.logger.log('[ext-restart]: ext process restart canceled');
@@ -375,49 +393,65 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
       this.isExtProcessRestarting = false;
       this.isExtProcessWaitingForRestart = undefined;
+
+      this.disposeAllOverlayWindow();
     };
 
-    const restartProgress = async () => {
-      this.logger.log('[ext-restart]: restart ext process, restart policy', restartPolicy);
-      const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+    await this.channelHandler.awaitChannelReady(RPCServiceChannelPath);
 
-      switch (policy) {
-        // @ts-expect-error Need fall-through
-        case ERestartPolicy.WhenExit:
-          // if we can get the pid, then the process is still running, no need to restart.
-          // if pid is null, it means the process is exited, then we need to start it.
-          if (await this.getExtProcessPID()) {
-            this.logger.log('[ext-restart]: ext process is still running, skip');
-            break;
-          }
-        case ERestartPolicy.Always: {
-          const statusBar = this.statusBarService.addElement('extension.exthostRestarting', {
-            text: `$(sync~spin) ${localize('extension.exthostRestarting.content')}`,
-            priority: Number.MIN_SAFE_INTEGER,
-            alignment: StatusBarAlignment.RIGHT,
-          });
-          try {
+    const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+    this.logger.log('[ext-restart]: restart ext process, restart policy:', policy);
+
+    switch (policy) {
+      // @ts-expect-error Need fall-through
+      case ERestartPolicy.WhenExit:
+        // if we can get the pid, then the process is still running, no need to restart.
+        // if pid is null, it means the process is exited, then we need to start it.
+        if (await this.getExtProcessPID()) {
+          this.logger.log('[ext-restart]: ext process is still running, skip');
+          break;
+        }
+      case ERestartPolicy.Always:
+        this.progressService.withProgress(
+          {
+            location: ProgressLocation.Notification,
+            title: localize('extension.exthostRestarting.content'),
+            buttons: [
+              {
+                id: 'extension.reload',
+                label: localize('preference.general.language.change.refresh.now'),
+                primary: true,
+                run: async () => {
+                  this.clientApp.fireOnReload();
+                },
+                dispose: () => {},
+              },
+            ],
+          },
+          async () => {
             if (this.extProcessRestartPromise) {
               this.extProcessRestartPromise.cancel();
             }
             this.extProcessRestartPromise = createCancelablePromise(doRestart);
             await this.extProcessRestartPromise;
-          } catch (err) {
-            this.logger.error(`[Extension Restart Error], \n ${err.message || err}`);
-            const refresh = localize('preference.general.language.change.refresh.now');
-            const result = await this.messageService.error(localize('extension.invalidExthostReload.confirm.content'), [
-              refresh,
-            ]);
-            if (result === refresh) {
-              this.clientApp.fireOnReload();
-            }
-          } finally {
-            statusBar.dispose();
-          }
-          break;
-        }
-      }
-    };
+          },
+        );
+
+        break;
+    }
+
+    this.isExtProcessRestarting = false;
+  };
+
+  restartDebounced = debounce(async () => {
+    await this.restartProgress();
+  }, 500);
+
+  private async extProcessRestartHandler(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
+    if (this.isExtProcessRestarting && restartPolicy !== ERestartPolicy.Always) {
+      this.logger.log('[ext-restart]: ext process is restarting, skip');
+      return;
+    }
 
     this.isExtProcessRestarting = true;
 
@@ -427,9 +461,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
        * 目前观察到页面从不可见恢复至可见状态后，可能出现 socket 堆积的现象，因此延迟 1000ms 后再进行重启操作
        * 这里延时并不能保证一定能够正确重启，只是降低失败的可能性。在解决了 socket 堆积的情况后，可以直接去掉
        */
-      setTimeout(restartProgress, 1000);
+      this.restartDebounced();
     } else {
-      restartProgress();
+      this.restartProgress(restartPolicy);
     }
   }
 
