@@ -6,14 +6,19 @@ import {
   PreferenceService,
 } from '@opensumi/ide-core-browser';
 import {
+  AppLifeCycleServiceToken,
   ContributionProvider,
   Deferred,
   DisposableCollection,
   Emitter,
   Event,
   ExtensionDidContributes,
+  GeneralSettingsId,
+  IAppLifeCycleService,
   IThemeColor,
+  LifeCyclePhase,
   OnEvent,
+  PreferenceScope,
   URI,
   WithEventBus,
   isFunction,
@@ -116,10 +121,42 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   @Autowired(ThemeContributionProvider)
   protected readonly themeContributionProvider: ContributionProvider<ThemeContributionProvider>;
 
+  @Autowired(AppLifeCycleServiceToken)
+  private readonly appLifeCycleService: IAppLifeCycleService;
+
   constructor() {
     super();
     this.listen();
     this.applyPlatformClass();
+  }
+
+  async ensureValidTheme(defaultThemeId = DEFAULT_THEME_ID): Promise<string> {
+    await Event.toPromise(
+      Event.filter(this.appLifeCycleService.onDidLifeCyclePhaseChange, (phase) => phase === LifeCyclePhase.Ready),
+    );
+
+    const themeInfos = this.getAvailableThemeInfos();
+    // scope 优先级从高到低匹配有效主题
+    const scopes = PreferenceScope.getReversedScopes();
+
+    let validThemeId = '';
+
+    for (const scope of scopes) {
+      const provider = this.preferenceService.getProvider(scope);
+      const scopeThemeId = provider!.get<string>(GeneralSettingsId.Theme);
+
+      if (themeInfos.some((info) => info.themeId === scopeThemeId)) {
+        validThemeId = scopeThemeId!;
+        break;
+      }
+    }
+
+    // 做最后兜底
+    if (!validThemeId) {
+      return defaultThemeId;
+    }
+
+    return validThemeId;
   }
 
   @OnEvent(ExtensionDidContributes)
