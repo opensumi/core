@@ -8,7 +8,7 @@ import {
 } from '@opensumi/ide-ai-native/lib/common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationToken, Emitter, Progress, getDebugLogger, raceCancellation } from '@opensumi/ide-core-common';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IChatMessage, IChatProgress } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IChatProgressChunk, IExtHostChatAgents, IMainThreadChatAgents } from '../../../common/sumi/chat-agents';
@@ -40,11 +40,29 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
     return agent.apiAgent;
   }
 
-  sendMessage(extension: IExtensionDescription, chunk: sumi.ChatAgentContent) {
-    this.proxy.$sendMessage({
-      kind: 'content',
-      content: chunk.content,
-    });
+  sendMessage(extension: IExtensionDescription, chunk: sumi.ChatAgentCustomReplyMessage) {
+    let messagePayload: IChatProgress | undefined;
+
+    if ('content' in chunk) {
+      messagePayload =
+        typeof chunk.content === 'string'
+          ? { content: chunk.content, kind: 'content' }
+          : { content: typeConverters.MarkdownString.from(chunk.content), kind: 'markdownContent' };
+    }
+
+    if ('component' in chunk) {
+      messagePayload = {
+        component: `${extension.identifier.value}:${chunk.component}`,
+        value: chunk.value,
+        kind: 'component',
+      };
+    }
+
+    if (!messagePayload) {
+      return;
+    }
+
+    this.proxy.$sendMessage(messagePayload);
   }
 
   async $invokeAgent(

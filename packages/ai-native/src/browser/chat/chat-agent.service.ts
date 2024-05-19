@@ -38,7 +38,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   private readonly _onDidChangeAgents = new Emitter<void>();
   readonly onDidChangeAgents = this._onDidChangeAgents.event;
 
-  private readonly _onDidSendMessage = new Emitter<IChatContent>();
+  private readonly _onDidSendMessage = new Emitter<IChatProgress>();
   public readonly onDidSendMessage = this._onDidSendMessage.event;
 
   @Autowired(ILogger)
@@ -180,7 +180,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     return flatMap(result);
   }
 
-  sendMessage(chunk: IChatContent): void {
+  sendMessage(chunk: IChatProgress): void {
     this._onDidSendMessage.fire(chunk);
   }
 

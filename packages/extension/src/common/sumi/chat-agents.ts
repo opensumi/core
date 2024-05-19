@@ -9,7 +9,7 @@ import type {
   IChatFollowup,
   IChatReplyFollowup,
 } from '@opensumi/ide-ai-native/lib/common';
-import type { IChatAsyncContent, IChatContent, IChatProgress } from '@opensumi/ide-core-common';
+import type { IChatAsyncContent, IChatProgress } from '@opensumi/ide-core-common';
 import type { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 export interface IExtensionChatAgentMetadata extends IChatAgentMetadata {
@@ -37,7 +37,7 @@ export interface IMainThreadChatAgents {
     responsePartHandle?: number,
   ): Promise<number | void>;
   $populateChatInput: (handle: number, param: IChatInputParam) => void;
-  $sendMessage: (chunk: IChatContent) => void;
+  $sendMessage: (chunk: IChatProgress) => void;
 }
 
 export interface IExtHostChatAgents {
