@@ -345,7 +345,7 @@ export const ChatNotify = (props: IChatNotifyProps) => {
 
   return (
     <ChatThinkingResult hasMessage requestId={props.requestId} showRegenerate={false}>
-      {contentNode}
+      <div className={styles.ai_chat_response_container}>{contentNode}</div>
     </ChatThinkingResult>
   );
 };
