@@ -3,7 +3,6 @@ import {
   AISerivceType,
   CancellationToken,
   Event,
-  IChatContent,
   IChatProgress,
   IDisposable,
   IMarkdownString,
@@ -94,7 +93,7 @@ export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 
 export interface IChatAgentService {
   readonly onDidChangeAgents: Event<void>;
-  readonly onDidSendMessage: Event<IChatContent>;
+  readonly onDidSendMessage: Event<IChatProgress>;
   registerAgent(agent: IChatAgent): IDisposable;
   invokeAgent(
     id: string,
@@ -114,7 +113,7 @@ export interface IChatAgentService {
   getSampleQuestions(id: string, token: CancellationToken): Promise<IChatFollowup[]>;
   getAllSampleQuestions(): Promise<IChatReplyFollowup[]>;
   getDefaultAgentId(): undefined | string;
-  sendMessage(chunk: IChatContent): void;
+  sendMessage(chunk: IChatProgress): void;
 }
 
 export interface IChatAgent extends IChatAgentData {

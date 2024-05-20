@@ -162,7 +162,7 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
     });
   }
 
-  $sendMessage(chunk: IChatContent) {
+  $sendMessage(chunk: IChatProgress) {
     if (!this.chatAgentService) {
       return;
     }
