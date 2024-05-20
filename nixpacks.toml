@@ -6,7 +6,7 @@ NIXPACKS_NODE_VERSION = "18"
 
 [phases.setup]
 nixPkgs = ["...", "libsecret"]
-aptPkgs = ["...", "build-essential", "libstdc++6", "libsecret-1-dev"]
+aptPkgs = ["...", "build-essential", "libsecret-1-dev"]
 
 [phases.build]
 cmds = ["yarn build:all", "yarn bundle:preview", "yarn download-extension"]
