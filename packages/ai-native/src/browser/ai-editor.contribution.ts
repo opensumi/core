@@ -542,84 +542,82 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   private async registerLanguageFeatures(editor: IEditor): Promise<void> {
     const { monacoEditor } = editor;
 
-    this.disposables.push(
-      Event.debounce(
-        monacoEditor.onWillChangeModel,
-        (_, e) => e,
-        300,
-      )(async () => {
-        if (this.modelSessionDisposable) {
-          this.modelSessionDisposable.dispose();
-        }
+    const doRegister = async () => {
+      if (this.modelSessionDisposable) {
+        this.modelSessionDisposable.dispose();
+      }
 
-        const model = monacoEditor.getModel();
-        if (!model) {
-          return;
-        }
+      const model = monacoEditor.getModel();
+      if (!model) {
+        return;
+      }
 
-        this.modelSessionDisposable = new Disposable();
+      this.modelSessionDisposable = new Disposable();
 
-        const languageId = model.getLanguageId();
+      const languageId = model.getLanguageId();
 
-        if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-          this.contributions.getContributions().forEach((contribution) => {
-            if (contribution.middleware) {
-              this.latestMiddlewareCollector = contribution.middleware;
-            }
-          });
+      if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+        this.contributions.getContributions().forEach((contribution) => {
+          if (contribution.middleware) {
+            this.latestMiddlewareCollector = contribution.middleware;
+          }
+        });
 
-          this.aiInlineCompletionsProvider.registerEditor(editor);
-          this.modelSessionDisposable.addDispose({
-            dispose: () => {
-              this.aiInlineCompletionsProvider.dispose();
+        this.aiInlineCompletionsProvider.registerEditor(editor);
+        this.modelSessionDisposable.addDispose({
+          dispose: () => {
+            this.aiInlineCompletionsProvider.dispose();
+          },
+        });
+        this.modelSessionDisposable.addDispose(
+          monacoApi.languages.registerInlineCompletionsProvider(languageId, {
+            provideInlineCompletions: async (model, position, context, token) => {
+              if (this.shouldAbortRequest(model)) {
+                return;
+              }
+
+              if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
+                this.aiCompletionsService.setMiddlewareComplete(
+                  this.latestMiddlewareCollector?.language?.provideInlineCompletions,
+                );
+              }
+
+              const list = await this.aiInlineCompletionsProvider.provideInlineCompletionItems(
+                model,
+                position,
+                context,
+                token,
+              );
+
+              this.logger.log(
+                'provideInlineCompletions: ',
+                list.items.map((data) => data.insertText),
+              );
+
+              return list;
             },
-          });
-          this.modelSessionDisposable.addDispose(
-            monacoApi.languages.registerInlineCompletionsProvider(languageId, {
-              provideInlineCompletions: async (model, position, context, token) => {
-                if (this.shouldAbortRequest(model)) {
-                  return;
-                }
+            freeInlineCompletions() {},
+            handleItemDidShow: (completions) => {
+              if (completions.items.length > 0) {
+                this.aiCompletionsService.setVisibleCompletion(true);
+              }
+            },
+          }),
+        );
+      }
 
-                if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
-                  this.aiCompletionsService.setMiddlewareComplete(
-                    this.latestMiddlewareCollector?.language?.provideInlineCompletions,
-                  );
-                }
+      if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+        this.modelSessionDisposable.addDispose(this.contributeRenameFeature(languageId));
+      }
 
-                const list = await this.aiInlineCompletionsProvider.provideInlineCompletionItems(
-                  model,
-                  position,
-                  context,
-                  token,
-                );
+      if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+        this.modelSessionDisposable.addDispose(this.contributeCodeActionFeature(languageId, editor));
+      }
+    };
 
-                this.logger.log(
-                  'provideInlineCompletions: ',
-                  list.items.map((data) => data.insertText),
-                );
+    this.disposables.push(Event.debounce(monacoEditor.onWillChangeModel, (_, e) => e, 300)(doRegister.bind(this)));
 
-                return list;
-              },
-              freeInlineCompletions() {},
-              handleItemDidShow: (completions) => {
-                if (completions.items.length > 0) {
-                  this.aiCompletionsService.setVisibleCompletion(true);
-                }
-              },
-            }),
-          );
-        }
-
-        if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
-          this.modelSessionDisposable.addDispose(this.contributeRenameFeature(languageId));
-        }
-
-        if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-          this.modelSessionDisposable.addDispose(this.contributeCodeActionFeature(languageId, editor));
-        }
-      }),
-    );
+    doRegister();
   }
 
   lastModelRequestRenameEndTime: number | undefined;
@@ -732,22 +730,20 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     return disposable;
 
     function register() {
-      const model = monacoEditor.getModel()!;
+      // const model = monacoEditor.getModel()!;
 
-      const providerId = `AI_CODE_ACTION_${languageId}`;
-      const hasCodeActionProvider = languageFeaturesService.codeActionProvider
-        .all(model)
-        .some((provider) => provider.displayName === providerId);
+      // const providerId = `AI_CODE_ACTION_${languageId}`;
+      // const hasCodeActionProvider = languageFeaturesService.codeActionProvider
+      //   .all(model)
+      //   .some((provider) => provider.displayName === providerId);
 
       if (codeActionDispose) {
         codeActionDispose.dispose();
         codeActionDispose = undefined;
-      } else if (hasCodeActionProvider) {
-        return;
       }
 
-      codeActionDispose = languageFeaturesService.codeActionProvider.register(languageId, {
-        displayName: providerId,
+      codeActionDispose = languageFeaturesService.codeActionProvider.register('*', {
+        // displayName: providerId,
         provideCodeActions: async (model) => {
           if (shouldAbortRequest(model)) {
             return;
