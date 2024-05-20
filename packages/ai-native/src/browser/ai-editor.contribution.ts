@@ -134,6 +134,14 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.inlineChatInUsing = false;
   }
 
+  dispose(): void {
+    super.dispose();
+    this.initialized = false;
+    if (this.modelSessionDisposable) {
+      this.modelSessionDisposable.dispose();
+    }
+  }
+
   contribute(editor: IEditor): IDisposable {
     if (!(editor instanceof BrowserCodeEditor) || this.initialized) {
       return this;
@@ -142,7 +150,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.disposables.push(
       editor.onRefOpen((e) => {
         const { uri } = e.instance;
-        if (uri.codeUri.scheme !== Schemes.file) {
+        if (uri.codeUri.scheme !== Schemes.file || this.initialized) {
           return;
         }
 
@@ -815,13 +823,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       });
 
       disposable.addDispose(codeActionDispose);
-    }
-  }
-
-  dispose(): void {
-    super.dispose();
-    if (this.modelSessionDisposable) {
-      this.modelSessionDisposable.dispose();
     }
   }
 }
