@@ -1,7 +1,6 @@
 [build]
 builder = "NIXPACKS"
-nixpacksConfigPath = "nixpacks.toml"
-nixpacksPlan = { "providers" = ["node", "python"] }
+nixpacksConfigPath = "./nixpacks.toml"
 
 [deploy]
 numReplicas = 1
