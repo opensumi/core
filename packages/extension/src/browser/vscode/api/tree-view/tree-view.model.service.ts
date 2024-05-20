@@ -1051,13 +1051,13 @@ export class ExtensionTreeViewModel {
         await this.refresh();
       }
 
-      if (options.nodeChain && options.nodeChain.length > 0) {
-        // 要把节点链上的所有节点都展开（因为在 main thread 上都没有这些结点链的信息，还要去获取）
-        for (let idx = options.nodeChain.length - 1; idx >= 0; idx--) {
-          const element = options.nodeChain[idx];
-          await this.reveal(element, options);
-        }
-      }
+      // if (options.nodeChain && options.nodeChain.length > 0) {
+      //   // 要把节点链上的所有节点都展开（因为在 main thread 上都没有这些结点链的信息，还要去获取）
+      //   for (let idx = options.nodeChain.length - 1; idx >= 0; idx--) {
+      //     const element = options.nodeChain[idx];
+      //     await this.reveal(element, options);
+      //   }
+      // }
 
       const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(treeItemId);
       if (!id) {

@@ -523,24 +523,24 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
       // if the parent of the given element is not revealed in the main thread, the element id will never be found in the main thread
       // so we need to reveal the parent first, here we collect all the parents of the given element, send them to the main thread
 
-      const parentChain = await this.resolveParentChain(element);
+      // const parentChain = await this.resolveParentChain(element);
 
-      const nodeIds = [] as string[];
-      for (let index = parentChain.length - 1; index >= 0; index--) {
-        const parent = parentChain[index];
-        let treeViewItem = this.element2TreeViewItem.get(parent);
-        if (!treeViewItem) {
-          treeViewItem = await this.cacheElement(parent);
-        }
+      // const nodeIds = [] as string[];
+      // for (let index = parentChain.length - 1; index >= 0; index--) {
+      //   const parent = parentChain[index];
+      //   let treeViewItem = this.element2TreeViewItem.get(parent);
+      //   if (!treeViewItem) {
+      //     treeViewItem = await this.cacheElement(parent);
+      //   }
 
-        nodeIds.push(treeViewItem.id);
-      }
+      //   nodeIds.push(treeViewItem.id);
+      // }
 
       const revealOptions = {
         expand: options?.expand,
         focus: options?.focus,
         select: options?.select,
-        nodeChain: nodeIds,
+        // nodeChain: nodeIds,
       } as ITreeViewRevealOptions;
 
       await this.proxy.$reveal(this.treeViewId, elementId, revealOptions);

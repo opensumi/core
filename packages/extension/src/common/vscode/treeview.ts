@@ -11,7 +11,7 @@ export interface ITreeViewRevealOptions {
   select?: boolean;
   focus?: boolean;
   expand?: boolean | number;
-  nodeChain?: string[];
+  // nodeChain?: string[];
 }
 
 export interface IMainThreadTreeView {
