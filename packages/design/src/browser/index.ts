@@ -73,6 +73,9 @@ export class DesignModule extends BrowserModule {
             }
             return newTheme;
           }
+          override getDefaultThemeID(): string {
+            return defaultTheme.id;
+          }
         },
         override: true,
         isDefault: true,

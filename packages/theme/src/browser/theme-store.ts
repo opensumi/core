@@ -2,7 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { URI, getDebugLogger } from '@opensumi/ide-core-common';
 
 import { IThemeStore } from '../common/';
-import { IThemeContribution, IThemeData, getThemeId } from '../common/theme.service';
+import { DEFAULT_THEME_ID, IThemeContribution, IThemeData, getThemeId } from '../common/theme.service';
 
 import { ThemeData } from './theme-data';
 
@@ -28,7 +28,7 @@ export class ThemeStore implements IThemeStore {
   }
 
   private async initThemeData(id: string, themeName: string, themeBase: string, themeLocation: URI) {
-    let themeData = this.getTheme(id);
+    let themeData: ThemeData = this.getTheme(id);
     if (!themeData) {
       themeData = this.injector.get(IThemeData);
       await themeData.initializeThemeData(id, themeName, themeBase, themeLocation);
@@ -38,9 +38,13 @@ export class ThemeStore implements IThemeStore {
 
   loadDefaultTheme(): IThemeData {
     getDebugLogger().warn('The default theme extension is not detected, and the default theme style is used.');
-    const theme = this.injector.get(IThemeData);
+    const theme: ThemeData = this.injector.get(IThemeData);
     theme.initializeFromData(theme.getDefaultTheme());
     return theme;
+  }
+
+  public getDefaultThemeID(): string {
+    return DEFAULT_THEME_ID;
   }
 
   public async tryLoadLatestTheme() {

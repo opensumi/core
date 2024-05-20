@@ -119,6 +119,7 @@ export const IThemeStore = Symbol('IThemeStore');
 
 export interface IThemeStore {
   getThemeData(contribution?: IThemeContribution, basePath?: URI): Promise<IThemeData>;
+  getDefaultThemeID(): string;
 }
 
 export interface IThemeService {
