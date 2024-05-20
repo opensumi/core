@@ -25,11 +25,14 @@ import {
   IIconService,
   IProductIconService,
   IThemeService,
+  IThemeStore,
   IconThemeInfo,
   ThemeInfo,
   getThemeTypeName,
 } from '../common';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
+
+import { ThemeStore } from './theme-store';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
@@ -66,6 +69,9 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
   @Autowired(ISemanticTokenRegistry)
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
+  @Autowired(IThemeStore)
+  private themeStore: ThemeStore;
+
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
@@ -86,7 +92,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     const shouldApplyDefaultThemeId = !themeId || themeId.includes('dark');
 
     if (shouldApplyDefaultThemeId) {
-      this.themeService.applyTheme(DEFAULT_THEME_ID);
+      this.themeService.applyTheme(this.themeStore.getDefaultThemeID());
     }
 
     this.themeService.ensureValidTheme().then((validTheme) => {
