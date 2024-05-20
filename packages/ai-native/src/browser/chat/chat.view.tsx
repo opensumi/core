@@ -12,6 +12,8 @@ import {
   ChatServiceToken,
   Disposable,
   IAIReporter,
+  IChatComponent,
+  IChatContent,
   localize,
   uuid,
 } from '@opensumi/ide-core-common';
@@ -183,20 +185,17 @@ export const AIChatView = observer(() => {
 
     disposer.addDispose(
       chatAgentService.onDidSendMessage((chunk) => {
+        const newChunk = chunk as IChatComponent | IChatContent;
         const relationId = aiReporter.start(AISerivceType.Agent, {
           msgType: AISerivceType.Agent,
           message: '',
-        });
-
-        msgHistoryManager.addAssistantMessage({
-          content: chunk.content,
         });
 
         const notifyMessage = createMessageByAI(
           {
             id: uuid(6),
             relationId,
-            text: <ChatNotify requestId={aiChatService.latestRequestId} chunk={chunk} />,
+            text: <ChatNotify requestId={aiChatService.latestRequestId} chunk={newChunk} />,
           },
           styles.chat_notify,
         );

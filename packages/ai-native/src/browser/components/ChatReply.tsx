@@ -22,6 +22,7 @@ import {
   ChatServiceToken,
   FileType,
   IAIReporter,
+  IChatComponent,
   IChatContent,
   IChatResponseProgressFileTreeData,
   URI,
@@ -326,10 +327,25 @@ export const ChatReply = (props: IChatReplyProps) => {
 
 interface IChatNotifyProps {
   requestId: string;
-  chunk: IChatContent;
+  chunk: IChatContent | IChatComponent;
 }
-export const ChatNotify = (props: IChatNotifyProps) => (
-  <ChatThinkingResult hasMessage requestId={props.requestId} showRegenerate={false}>
-    <ChatMarkdown markdown={props.chunk.content} relationId={props.requestId} />
-  </ChatThinkingResult>
-);
+export const ChatNotify = (props: IChatNotifyProps) => {
+  const { chunk } = props;
+
+  const contentNode = React.useMemo(() => {
+    let node: ReactNode;
+
+    if (chunk.kind === 'component') {
+      node = <ComponentRender component={chunk.component} value={chunk.value} />;
+    } else {
+      node = <ChatMarkdown markdown={chunk.content} relationId={props.requestId} />;
+    }
+    return node;
+  }, [chunk]);
+
+  return (
+    <ChatThinkingResult hasMessage requestId={props.requestId} showRegenerate={false}>
+      <div className={styles.ai_chat_response_container}>{contentNode}</div>
+    </ChatThinkingResult>
+  );
+};
