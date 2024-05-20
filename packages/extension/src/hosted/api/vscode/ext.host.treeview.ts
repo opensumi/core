@@ -9,6 +9,7 @@ import {
   Uri,
   asPromise,
   isString,
+  randomString,
   toDisposable,
 } from '@opensumi/ide-core-common';
 
@@ -132,7 +133,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
   /**
    * 获取子节点
    * @param treeViewId
-   * @param treeItemId
+   * @param treeItemId 可选参数，如果不传则获取根节点
    */
   async $getChildren(treeViewId: string, treeItemId?: string): Promise<TreeViewItem[] | undefined> {
     const treeView = this.treeViews.get(treeViewId);
@@ -506,16 +507,85 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     // 在缓存中查找对应节点
     let elementId = element.id;
     if (!elementId) {
-      this.id2Element.forEach((el, id) => {
-        if (Object.is(el, element)) {
-          elementId = id;
-        }
-      });
+      const treeViewItem = this.element2TreeViewItem.get(element);
+      if (treeViewItem) {
+        elementId = treeViewItem.id;
+      }
     }
 
-    if (elementId) {
-      return this.proxy.$reveal(this.treeViewId, elementId, options);
+    if (typeof this.dataProvider.getParent !== 'function') {
+      throw new Error("Required registered TreeDataProvider to implement 'getParent' method to access 'reveal' method");
     }
+
+    await this.refreshPromise;
+
+    if (elementId) {
+      // if the parent of the given element is not revealed in the main thread, the element id will never be found in the main thread
+      // so we need to reveal the parent first, here we collect all the parents of the given element, send them to the main thread
+
+      const parentChain = await this.resolveParentChain(element);
+
+      const nodeIds = [] as string[];
+      for (let index = parentChain.length - 1; index >= 0; index--) {
+        const parent = parentChain[index];
+        let treeViewItem = this.element2TreeViewItem.get(parent);
+        if (!treeViewItem) {
+          treeViewItem = await this.cacheElement(parent);
+        }
+
+        nodeIds.push(treeViewItem.id);
+      }
+
+      const revealOptions = {
+        expand: options?.expand,
+        focus: options?.focus,
+        select: options?.select,
+        nodeChain: nodeIds,
+      } as ITreeViewRevealOptions;
+
+      await this.proxy.$reveal(this.treeViewId, elementId, revealOptions);
+    } else {
+      // need reveal the root
+      await this.proxy.$reveal(this.treeViewId, undefined, options);
+    }
+  }
+
+  getViewTreeId(value: T, treeItem: vscode.TreeItem): string {
+    let id = value.id || treeItem.id;
+    if (!id) {
+      // 获取Label属性
+      let label: string | ITreeItemLabel | undefined;
+      const treeItemLabel: string | vscode.TreeItemLabel | undefined = treeItem.label;
+      if (treeItemLabel) {
+        label = treeItemLabel;
+      }
+
+      // 当没有指定label时尝试使用resourceUri
+      if (!label && treeItem.resourceUri) {
+        label = treeItem.resourceUri.path.toString();
+        label = decodeURIComponent(label);
+        if (label.indexOf('/') >= 0) {
+          label = label.substring(label.lastIndexOf('/') + 1);
+        }
+      }
+
+      const _label = isString(label) ? label : label?.label;
+      id = [this.treeViewId, _label, randomString(4)].filter(Boolean).join(':');
+    }
+
+    return id;
+  }
+
+  private async resolveParentChain(element: T): Promise<T[]> {
+    const parentChain: T[] = [];
+
+    // will receive `null` or `undefined` if `element` is a child of root.
+    let parent = await this.dataProvider.getParent!(element);
+    while (parent) {
+      parentChain.push(parent);
+      parent = await this.dataProvider.getParent!(parent);
+    }
+    return parentChain;
   }
 
   getTreeItem(treeItemId?: string): T | undefined {
@@ -587,63 +657,75 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     return;
   }
 
+  /**
+   * Get the children of `element` or root if no element is passed.
+   *
+   * @param element The element from which the provider gets children. Can be `undefined`.
+   * @return Children of `element` or root if no element is passed.
+   */
+  async resolveChildren(element?: T): Promise<TreeViewItem[] | undefined> {
+    const treeItems: TreeViewItem[] = [];
+
+    const results = await this.dataProvider.getChildren(element);
+    if (!results) {
+      return;
+    }
+
+    for (const value of results.values()) {
+      // 遍历treeDataProvider获取的值生成节点
+      if (this._refreshCancellationSource.token.isCancellationRequested) {
+        return;
+      }
+      const treeViewItem = await this.cacheElement(value);
+      treeItems.push(treeViewItem);
+    }
+
+    return treeItems;
+  }
+
+  async cacheElement(value: T): Promise<TreeViewItem> {
+    const treeItem = await this.dataProvider.getTreeItem(value);
+
+    const id = this.getViewTreeId(value, treeItem);
+    this.id2Element.set(id, value);
+
+    const treeViewItem = this.toTreeViewItem(treeItem, {
+      id,
+    });
+    this.element2TreeViewItem.set(value, treeViewItem);
+    this.element2VSCodeTreeItem.set(value, treeItem);
+
+    return treeViewItem;
+  }
+
+  /**
+   * @param treeItemId 可选参数，如果不传则获取根节点
+   */
   async getChildren(treeItemId?: string): Promise<TreeViewItem[] | undefined> {
     // 缓存中获取节点
     const cachedElement = this.getTreeItem(treeItemId);
-    // 如果存在缓存数据，优先从缓存中获取子节点
+
+    // 没有 cachedElement 时，获取根节点，如果根节点已经初始化则直接返回
     if (!cachedElement && this.roots) {
       return this.roots;
     }
+
     let children: TreeViewItem[] | undefined;
-    const results = await this.dataProvider.getChildren(cachedElement);
     if (this._refreshCancellationSource.token.isCancellationRequested) {
       children = undefined;
     } else {
+      const results = await this.resolveChildren(cachedElement);
       if (results) {
-        const treeItems: TreeViewItem[] = [];
-        for (const [index, value] of results.entries()) {
-          // 遍历treeDataProvider获取的值生成节点
-          const treeItem = await this.dataProvider.getTreeItem(value);
-          if (this._refreshCancellationSource.token.isCancellationRequested) {
-            return;
-          }
-          // 获取Label属性
-          let label: string | ITreeItemLabel | undefined;
-          const treeItemLabel: string | vscode.TreeItemLabel | undefined = treeItem.label;
-          if (treeItemLabel) {
-            label = treeItemLabel;
-          }
-          // 当没有指定label时尝试使用resourceUri
-          if (!label && treeItem.resourceUri) {
-            label = treeItem.resourceUri.path.toString();
-            label = decodeURIComponent(label);
-            if (label.indexOf('/') >= 0) {
-              label = label.substring(label.lastIndexOf('/') + 1);
-            }
-          }
-          // 生成ID用于存储缓存
-          const id =
-            treeItem.id ||
-            `${treeItemId || 'root'}:${index}${isString(label) ? `:${label}` : label?.label ? `:${label?.label}` : ''}`;
-          this.id2Element.set(id, value);
-
-          const treeViewItem = this.toTreeViewItem(treeItem, {
-            id,
-          });
-          this.element2TreeViewItem.set(value, treeViewItem);
-          this.element2VSCodeTreeItem.set(value, treeItem);
-          treeItems.push(treeViewItem);
-        }
-
         if (this._refreshCancellationSource.token.isCancellationRequested) {
           children = undefined;
         } else {
-          children = treeItems;
+          children = results;
         }
       } else {
         children = undefined;
       }
     }
+
     if (!cachedElement) {
       this.roots = children;
     } else {
