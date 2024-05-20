@@ -540,9 +540,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private async registerLanguageFeatures(editor: IEditor): Promise<void> {
-    const doRegister = async () => {
-      const { monacoEditor } = editor;
+    const { monacoEditor } = editor;
 
+    const doRegister = async () => {
       if (this.modelSessionDisposable) {
         this.modelSessionDisposable.dispose();
       }
@@ -735,7 +735,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         codeActionDispose = undefined;
       }
 
-      codeActionDispose = languageFeaturesService.codeActionProvider.register('*', {
+      codeActionDispose = languageFeaturesService.codeActionProvider.register(languageId, {
         provideCodeActions: async (model) => {
           if (shouldAbortRequest(model)) {
             return;
