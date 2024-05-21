@@ -113,6 +113,7 @@ export interface IChatRenderRegistry {
    */
   registerUserRoleRender(render: ChatUserRoleRender): void;
   registerThinkingRender(render: ChatThinkingRender): void;
+  registerThinkingResultRender(render: ChatThinkingResultRender): void;
   /**
    * 输入框渲染
    */
