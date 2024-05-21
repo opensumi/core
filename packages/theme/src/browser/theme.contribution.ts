@@ -96,9 +96,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     }
 
     this.themeService.ensureValidTheme().then((validTheme) => {
-      if (themeId !== validTheme) {
-        this.themeService.applyTheme(validTheme);
-      }
+      this.themeService.applyTheme(validTheme);
     });
   }
 

@@ -28,6 +28,11 @@ export interface IColorRegistry {
   getColors(): ColorContribution[];
 
   /**
+   * Get color contributions by id
+   */
+  getColor(id: string): ColorContribution;
+
+  /**
    * Gets the default color of the given id
    */
   resolveDefaultColor(id: ColorIdentifier, theme: ITheme): Color | undefined;
@@ -65,6 +70,10 @@ class ColorRegistry implements IColorRegistry {
 
   public getColors(): ColorContribution[] {
     return Object.keys(this.colorsById).map((id) => this.colorsById[id]);
+  }
+
+  public getColor(id: string): ColorContribution {
+    return this.colorsById[id];
   }
 
   public resolveDefaultColor(id: ColorIdentifier, theme: ITheme): Color | undefined {
