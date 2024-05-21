@@ -274,10 +274,10 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
     }
   }
 
-  async $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions) {
+  async $reveal(treeViewId: string, treeItemId?: string, options?: ITreeViewRevealOptions) {
     this.mainLayoutService.revealView(treeViewId);
     const treeModel = this.treeModels.get(treeViewId);
-    if (treeModel) {
+    if (treeModel && treeItemId) {
       treeModel.reveal(treeItemId, options);
     }
   }
