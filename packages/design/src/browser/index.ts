@@ -21,8 +21,9 @@ import { DesignEditorTabService } from './override/editor-tab.service';
 import { DesignBrowserCtxMenuService } from './override/menu.service';
 import { DesignSplitPanelService } from './override/split-panel.service';
 import designStyles from './style/design.module.less';
-import defaultTheme from './theme/default-theme';
+import darkTheme from './theme/default-theme';
 import lightTheme from './theme/light-theme';
+import { doOverrideColorToken } from './theme/override.token';
 
 @Injectable()
 export class DesignModule extends BrowserModule {
@@ -34,13 +35,15 @@ export class DesignModule extends BrowserModule {
     const designStyleService: IDesignStyleService = injector.get(IDesignStyleService);
     designStyleService.setStyles(designStyles);
 
+    doOverrideColorToken();
+
     const appLifeCycleService: IAppLifeCycleService = injector.get(AppLifeCycleServiceToken);
 
     Event.once(Event.filter(appLifeCycleService.onDidLifeCyclePhaseChange, (phase) => phase === LifeCyclePhase.Ready))(
       () => {
         const themeService: IThemeService = injector.get(IThemeService);
 
-        [defaultTheme, lightTheme].forEach((theme) => {
+        [darkTheme, lightTheme].forEach((theme) => {
           themeService.registerThemes(
             [
               {
@@ -64,17 +67,14 @@ export class DesignModule extends BrowserModule {
           override async getThemeData(contribution?: IThemeContribution, basePath?: URI) {
             const newTheme = await super.getThemeData(contribution, basePath);
             document.body.classList.remove(lightTheme.designThemeType);
-            document.body.classList.remove(defaultTheme.designThemeType);
+            document.body.classList.remove(darkTheme.designThemeType);
 
-            if (defaultTheme.id === contribution?.id) {
-              document.body.classList.add(defaultTheme.designThemeType);
+            if (darkTheme.id === contribution?.id) {
+              document.body.classList.add(darkTheme.designThemeType);
             } else if (lightTheme.id === contribution?.id) {
               document.body.classList.add(lightTheme.designThemeType);
             }
             return newTheme;
-          }
-          override getDefaultThemeID(): string {
-            return defaultTheme.id;
           }
         },
         override: true,
@@ -84,7 +84,7 @@ export class DesignModule extends BrowserModule {
         token: IThemeService,
         useClass: class extends WorkbenchThemeService {
           override async ensureValidTheme(): Promise<string> {
-            return super.ensureValidTheme(defaultTheme.id);
+            return super.ensureValidTheme(darkTheme.id);
           }
         },
         override: true,
