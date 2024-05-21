@@ -3,14 +3,16 @@
   "version": "3.0.1",
   "files": [
     "lib",
-    "src"
+    "src",
+    "worker"
   ],
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "yarn run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.monaco.json"
+    "prepublishOnly": "yarn build",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.monaco.json && yarn build:worker",
+    "build:worker": "../../node_modules/.bin/webpack --config webpack.config.js"
   },
   "dependencies": {
     "@opensumi/ide-core-browser": "workspace:*",

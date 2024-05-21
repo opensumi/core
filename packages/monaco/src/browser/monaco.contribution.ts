@@ -22,6 +22,7 @@ import {
   PreferenceService,
   ServiceNames,
 } from '@opensumi/ide-core-browser';
+import { IRendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
 import {
   IMenuItem,
   IMenuRegistry,
@@ -90,6 +91,23 @@ import { KEY_CODE_MAP } from './monaco.keycode-map';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { MonacoTelemetryService } from './telemetry.service';
 
+export interface Environment {
+  /**
+   * A web worker factory.
+   * NOTE: If `getWorker` is defined, `getWorkerUrl` is not invoked.
+   */
+  getWorker?(workerId: string, label: string): Promise<Worker> | Worker;
+  /**
+   * Return the location for web worker scripts.
+   * NOTE: If `getWorker` is defined, `getWorkerUrl` is not invoked.
+   */
+  getWorkerUrl?(workerId: string, label: string): string;
+}
+
+interface Window {
+  MonacoEnvironment?: Environment | undefined;
+}
+
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution
   implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution
@@ -150,6 +168,9 @@ export class MonacoClientContribution
 
   @Autowired(KeybindingRegistry)
   private readonly keybindings: KeybindingRegistry;
+
+  @Autowired(IRendererRuntime)
+  private rendererRuntime: IRendererRuntime;
 
   get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
     return EditorExtensionsRegistry;
@@ -215,6 +236,9 @@ export class MonacoClientContribution
     // 监听 preferences 更新事件，同步更新 mime
     this.setPreferencesChangeListener();
 
+    // 注册 monaco environment
+    this.registerMonacoEnvironment();
+
     // 修改一些 Monaco 内置 Services 的行为
     this.patchMonacoInternalServices();
 
@@ -226,6 +250,12 @@ export class MonacoClientContribution
 
     // 在快捷键被用户修改时，同步更新编辑器内的快捷键展示
     this.keybindings.onKeybindingsChanged(() => this.updateMonacoKeybindings());
+  }
+
+  registerMonacoEnvironment() {
+    (window as Window).MonacoEnvironment = {
+      getWorkerUrl: (moduleId, label) => this.rendererRuntime.provideMonacoWorkerUrl(moduleId, label),
+    };
   }
 
   private registerOverrideServices() {

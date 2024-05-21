@@ -274,6 +274,7 @@ export interface AppConfig {
    * Define the default size (height) of each layout block in the IDE
    */
   layoutViewSize?: Partial<ILayoutViewSize>;
+  resourceProvider?: IStaticResourceProvider;
 }
 
 export interface ICollaborationClientOpts {
@@ -305,3 +306,32 @@ export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig
 }
 
 export type TComponentCDNType = 'unpkg' | 'jsdelivr' | 'alipay' | 'npmmirror';
+
+type IComponentCDNTypeMap = Record<TComponentCDNType, string>;
+
+const CDN_TYPE_MAP: IComponentCDNTypeMap = {
+  alipay: 'https://gw.alipayobjects.com/os/lib',
+  npmmirror: 'https://registry.npmmirror.com',
+  unpkg: 'https://unpkg.com/browse',
+  jsdelivr: 'https://cdn.jsdelivr.net/npm',
+};
+
+export function getCdnHref(
+  packageName: string,
+  filePath: string,
+  version: string,
+  cdnType: TComponentCDNType = 'alipay',
+) {
+  if (cdnType === 'alipay') {
+    return `${CDN_TYPE_MAP['alipay']}/${packageName.slice(1)}/${version}/${filePath}`;
+  } else if (cdnType === 'npmmirror') {
+    return `${CDN_TYPE_MAP['npmmirror']}/${packageName}/${version}/files/${filePath}`;
+  } else {
+    return `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`;
+  }
+}
+
+export interface IStaticResourceProvider {
+  provideResourceUri?(resource: string): Promise<string>;
+  provideMonacoWorkerUrl?(workerId: string, label: string): string;
+}

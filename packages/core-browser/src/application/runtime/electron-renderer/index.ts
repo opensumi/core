@@ -9,7 +9,7 @@ import { EKnownResources, IRendererRuntime } from '../types';
 import { injectElectronInnerProviders } from './inner-providers-electron';
 
 @Injectable()
-export class ElectronRendererRuntime implements IRendererRuntime {
+export class ElectronRendererRuntime extends IRendererRuntime {
   @Autowired(AppConfig)
   appConfig: AppConfig;
 
@@ -21,11 +21,12 @@ export class ElectronRendererRuntime implements IRendererRuntime {
   registerRuntimeInnerProviders(injector: Injector): void {
     injectElectronInnerProviders(injector);
   }
-  mergeAppConfig(meta: AppConfig): AppConfig {
+
+  override mergeAppConfig(meta: AppConfig): AppConfig {
     return mergeElectronMetadata(meta);
   }
 
-  async provideResourceUri(resource: EKnownResources): Promise<string> {
+  override async provideResourceUri(resource: EKnownResources): Promise<string> {
     switch (resource) {
       case EKnownResources.OnigWasm:
         return electronEnv.onigWasmUri || this.appConfig.onigWasmUri || onigWasmCDNUri;
