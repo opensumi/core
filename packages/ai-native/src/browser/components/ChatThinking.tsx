@@ -83,6 +83,7 @@ export const ChatThinkingResult = ({
 }: ITinkingProps) => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const [latestRequestId, setLatestRequestId] = useState(aiChatService.latestRequestId);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
   useEffect(() => {
     const dispose = aiChatService.onChangeRequestId((id) => {
@@ -92,6 +93,11 @@ export const ChatThinkingResult = ({
     return () => dispose.dispose();
   }, [aiChatService]);
 
+  const CustomThinkingResultRender = useMemo(
+    () => chatRenderRegistry.chatThinkingResultRender,
+    [chatRenderRegistry, chatRenderRegistry.chatThinkingResultRender],
+  );
+
   const handleRegenerate = useCallback(() => {
     if (onRegenerate) {
       onRegenerate();
@@ -100,7 +106,11 @@ export const ChatThinkingResult = ({
 
   const renderContent = useCallback(() => {
     if (typeof hasMessage === 'boolean' ? !hasMessage : !message?.trim()) {
-      return <span>{localize('aiNative.chat.stop.immediately')}</span>;
+      const stopimmediately = localize('aiNative.chat.stop.immediately');
+      if (CustomThinkingResultRender) {
+        return <CustomThinkingResultRender thinkingResult={stopimmediately} />;
+      }
+      return <span>{stopimmediately}</span>;
     }
 
     return children;
