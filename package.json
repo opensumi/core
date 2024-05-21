@@ -134,8 +134,7 @@
     "tsx": "^4.7.1",
     "typescript": "4.9.3",
     "webpack": "^5.90.0",
-    "webpack-manifest-plugin": "^5.0.0",
-    "webpack-nano": "^1.1.1"
+    "webpack-manifest-plugin": "^5.0.0"
   },
   "workspaces": [
     "packages/*",

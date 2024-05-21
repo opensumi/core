@@ -284,7 +284,7 @@ export class MonacoClientContribution
         );
 
         if (result.scheme === Schemes.monaco) {
-          throw new Error("You haven't configure monaco worker resources, which might cause UI freezes.");
+          throw new Error(`Unsupported monaco worker: ${moduleId}:${label}`);
         }
 
         return result.toString();
