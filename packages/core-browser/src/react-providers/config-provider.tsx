@@ -223,7 +223,7 @@ export interface AppConfig {
    */
   workspaceSuffixName?: string;
   /**
-   * 视图组件内默认的组件样式资源 CDN 来源
+   * 视图组件/内部使用的资源 CDN 来源
    * 默认值为 'alipay'
    */
   componentCDNType?: TComponentCDNType;

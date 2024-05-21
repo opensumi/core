@@ -1,5 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
+  AppConfig,
   ClientAppContribution,
   CommandContribution,
   ContributionProvider,
@@ -21,7 +22,9 @@ import {
   PreferenceScope,
   PreferenceService,
   ServiceNames,
+  StaticResourceContribution,
   StaticResourceService,
+  getCdnHref,
 } from '@opensumi/ide-core-browser';
 import {
   IMenuItem,
@@ -109,9 +112,22 @@ interface Window {
   MonacoEnvironment?: Environment | undefined;
 }
 
-@Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
+const packageName = '@opensumi/ide-monaco';
+
+@Domain(
+  ClientAppContribution,
+  CommandContribution,
+  MenuContribution,
+  KeybindingContribution,
+  StaticResourceContribution,
+)
 export class MonacoClientContribution
-  implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution
+  implements
+    ClientAppContribution,
+    CommandContribution,
+    MenuContribution,
+    KeybindingContribution,
+    StaticResourceContribution
 {
   @Autowired(MonacoContribution)
   private readonly monacoContributionProvider: ContributionProvider<MonacoContribution>;
@@ -172,6 +188,9 @@ export class MonacoClientContribution
 
   @Autowired(StaticResourceService)
   private readonly staticResourceService: StaticResourceService;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
     return EditorExtensionsRegistry;
@@ -575,6 +594,32 @@ export class MonacoClientContribution
       this.logger.error(e);
       return false;
     }
+  }
+
+  registerStaticResolver(service: StaticResourceService): void {
+    service.registerStaticResourceProvider({
+      scheme: Schemes.monaco,
+      resolveStaticResource: (uri) => {
+        const path = uri.codeUri.path;
+
+        switch (path) {
+          case 'worker': {
+            const query = uri.query;
+            if (query) {
+              const { moduleId } = JSON.parse(query);
+              if (moduleId === 'workerMain.js') {
+                return URI.parse(
+                  getCdnHref(packageName, 'worker/editor.worker.bundle.js', '3.0.1', this.appConfig.componentCDNType),
+                );
+              }
+            }
+            break;
+          }
+        }
+
+        return uri;
+      },
+    });
   }
 }
 
