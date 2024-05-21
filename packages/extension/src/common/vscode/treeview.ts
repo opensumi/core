@@ -18,7 +18,7 @@ export interface IMainThreadTreeView {
   $registerTreeDataProvider<T>(treeViewId: string, options: TreeViewBaseOptions): Promise<void>;
   $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): Promise<void>;
   $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): Promise<void>;
-  $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions): Promise<any>;
+  $reveal(treeViewId: string, treeItemId?: string, options?: ITreeViewRevealOptions): Promise<any>;
   $setTitle(treeViewId: string, message: string): Promise<void>;
   $setDescription(treeViewId: string, message: string): Promise<void>;
   $setMessage(treeViewId: string, message: string): Promise<void>;
@@ -102,7 +102,7 @@ export class TreeViewItem {
   accessibilityInformation?: IAccessibilityInformation;
 }
 
-export interface TreeView<T> extends IDisposable {
+export interface TreeView<T> extends vscode.TreeView<T> {
   /**
    * 当节点展开时触发的事件
    */
@@ -148,6 +148,8 @@ export interface TreeView<T> extends IDisposable {
    * **NOTE:** 需要在实现TreeDataProvider.getParent接口情况下该接口才可用.
    */
   reveal(element: T, options?: { select?: boolean; focus?: boolean; expand?: boolean | number }): PromiseLike<void>;
+
+  dispose(): void;
 }
 
 export interface TreeViewBaseOptions {
