@@ -81,6 +81,7 @@ export type ChatUserRoleRender = (props: {
   command?: string;
 }) => React.ReactElement | React.JSX.Element;
 export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactElement | React.JSX.Element;
+export type ChatThinkingResultRender = (props: { thinkingResult?: string }) => React.ReactElement | React.JSX.Element;
 export type ChatInputRender = (props: {
   onSend: (value: string, agentId?: string, command?: string) => void;
   onValueChange?: (value: string) => void;
@@ -112,6 +113,7 @@ export interface IChatRenderRegistry {
    */
   registerUserRoleRender(render: ChatUserRoleRender): void;
   registerThinkingRender(render: ChatThinkingRender): void;
+  registerThinkingResultRender(render: ChatThinkingResultRender): void;
   /**
    * 输入框渲染
    */
