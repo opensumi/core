@@ -27,4 +27,5 @@ module.exports = {
         }
       : {},
   plugins: [new WebpackManifestPlugin({})],
+  stats: process.env.CI ? 'errors-only' : 'normal',
 };

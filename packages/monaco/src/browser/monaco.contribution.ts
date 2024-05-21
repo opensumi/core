@@ -609,7 +609,12 @@ export class MonacoClientContribution
               const { moduleId } = JSON.parse(query);
               if (moduleId === 'workerMain.js') {
                 return URI.parse(
-                  getCdnHref(packageName, 'worker/editor.worker.bundle.js', '3.0.1', this.appConfig.componentCDNType),
+                  getCdnHref(
+                    packageName,
+                    'worker/editor.worker.bundle.js',
+                    '3.0.2-next-1716279955.0',
+                    this.appConfig.componentCDNType,
+                  ),
                 );
               }
             }
