@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 
-import { AppConfig, IStaticResourceProvider } from '../../react-providers/config-provider';
+import { AppConfig } from '../../react-providers/config-provider';
 
 import { type ESupportRuntime, onigWasmCDNUri, treeSitterWasmCDNUri } from './constants';
 
@@ -13,7 +13,7 @@ export enum EKnownResources {
 }
 
 @Injectable()
-export abstract class IRendererRuntime implements Required<IStaticResourceProvider> {
+export abstract class IRendererRuntime {
   @Autowired(AppConfig)
   appConfig: AppConfig;
 
@@ -21,14 +21,6 @@ export abstract class IRendererRuntime implements Required<IStaticResourceProvid
 
   abstract registerRuntimeInnerProviders(injector: Injector): void;
   abstract registerRuntimeModuleProviders(injector: Injector, module: BrowserModule): void;
-
-  provideMonacoWorkerUrl(workerId: string, label: string): string {
-    if (this.appConfig.resourceProvider && this.appConfig.resourceProvider.provideMonacoWorkerUrl) {
-      return this.appConfig.resourceProvider!.provideMonacoWorkerUrl!(workerId, label);
-    }
-
-    throw new Error('MonacoEnvironment.getWorkerUrl is not implemented, which might cause UI freezes.');
-  }
 
   mergeAppConfig(meta: AppConfig): AppConfig {
     return meta;

@@ -46,4 +46,8 @@ export namespace Schemes {
   export const userStorage = 'user_storage';
 
   export const design = 'design';
+
+  export const wasm = 'wasm';
+
+  export const monaco = 'monaco';
 }

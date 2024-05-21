@@ -274,7 +274,6 @@ export interface AppConfig {
    * Define the default size (height) of each layout block in the IDE
    */
   layoutViewSize?: Partial<ILayoutViewSize>;
-  resourceProvider?: IStaticResourceProvider;
 }
 
 export interface ICollaborationClientOpts {
@@ -329,9 +328,4 @@ export function getCdnHref(
   } else {
     return `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`;
   }
-}
-
-export interface IStaticResourceProvider {
-  provideResourceUri?(resource: string): Promise<string>;
-  provideMonacoWorkerUrl?(workerId: string, label: string): string;
 }

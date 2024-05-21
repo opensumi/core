@@ -21,8 +21,8 @@ import {
   PreferenceScope,
   PreferenceService,
   ServiceNames,
+  StaticResourceService,
 } from '@opensumi/ide-core-browser';
-import { IRendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
 import {
   IMenuItem,
   IMenuRegistry,
@@ -34,6 +34,7 @@ import {
   CommandService,
   DisposableCollection,
   ILogger,
+  Schemes,
   URI,
   isOSX,
   isString,
@@ -169,8 +170,8 @@ export class MonacoClientContribution
   @Autowired(KeybindingRegistry)
   private readonly keybindings: KeybindingRegistry;
 
-  @Autowired(IRendererRuntime)
-  private rendererRuntime: IRendererRuntime;
+  @Autowired(StaticResourceService)
+  private readonly staticResourceService: StaticResourceService;
 
   get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
     return EditorExtensionsRegistry;
@@ -254,7 +255,21 @@ export class MonacoClientContribution
 
   registerMonacoEnvironment() {
     (window as Window).MonacoEnvironment = {
-      getWorkerUrl: (moduleId, label) => this.rendererRuntime.provideMonacoWorkerUrl(moduleId, label),
+      getWorkerUrl: (moduleId, label) => {
+        const result = this.staticResourceService.resolveStaticResource(
+          URI.from({
+            scheme: Schemes.monaco,
+            path: 'worker',
+            query: JSON.stringify({ moduleId, label }),
+          }),
+        );
+
+        if (result.scheme === Schemes.monaco) {
+          throw new Error("You haven't configure monaco worker resources, which might cause UI freezes.");
+        }
+
+        return result.toString();
+      },
     };
   }
 
