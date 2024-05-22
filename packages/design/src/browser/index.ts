@@ -39,26 +39,26 @@ export class DesignModule extends BrowserModule {
 
     const appLifeCycleService: IAppLifeCycleService = injector.get(AppLifeCycleServiceToken);
 
-    Event.once(Event.filter(appLifeCycleService.onDidLifeCyclePhaseChange, (phase) => phase === LifeCyclePhase.Ready))(
-      () => {
-        const themeService: IThemeService = injector.get(IThemeService);
+    Event.once(
+      Event.filter(appLifeCycleService.onDidLifeCyclePhaseChange, (phase) => phase === LifeCyclePhase.Starting),
+    )(() => {
+      const themeService: IThemeService = injector.get(IThemeService);
 
-        [darkTheme, lightTheme].forEach((theme) => {
-          themeService.registerThemes(
-            [
-              {
-                id: theme.id,
-                label: theme.name,
-                path: '',
-                extensionId: theme.id,
-                uiTheme: theme.base,
-              },
-            ],
-            URI.parse(`${theme.id}.json`).withQuery(theme.id).withScheme(Schemes.design),
-          );
-        });
-      },
-    );
+      [darkTheme, lightTheme].forEach((theme) => {
+        themeService.registerThemes(
+          [
+            {
+              id: theme.id,
+              label: theme.name,
+              path: '',
+              extensionId: theme.id,
+              uiTheme: theme.base,
+            },
+          ],
+          URI.parse(`${theme.id}.json`).withQuery(theme.id).withScheme(Schemes.design),
+        );
+      });
+    });
 
     injector.overrideProviders(
       {
