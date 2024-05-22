@@ -25,6 +25,7 @@ import {
   StaticResourceContribution,
   StaticResourceService,
   getCdnHref,
+  getWorkerBootstrapUrl,
 } from '@opensumi/ide-core-browser';
 import {
   IMenuItem,
@@ -287,7 +288,7 @@ export class MonacoClientContribution
           throw new Error(`Unsupported monaco worker: ${moduleId}:${label}`);
         }
 
-        return result.toString();
+        return getWorkerBootstrapUrl(result.toString(), `${moduleId}:${label}`);
       },
     };
   }
