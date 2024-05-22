@@ -96,6 +96,8 @@ import { KEY_CODE_MAP } from './monaco.keycode-map';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { MonacoTelemetryService } from './telemetry.service';
 
+const pkgJson = require('../../package.json');
+
 export interface Environment {
   /**
    * A web worker factory.
@@ -113,7 +115,8 @@ interface Window {
   MonacoEnvironment?: Environment | undefined;
 }
 
-const packageName = '@opensumi/ide-monaco';
+const packageName = pkgJson.name;
+const packageVersion = pkgJson.version;
 
 @Domain(
   ClientAppContribution,
@@ -615,7 +618,7 @@ export class MonacoClientContribution
                   getCdnHref(
                     packageName,
                     'worker/editor.worker.bundle.js',
-                    '3.0.2-next-1716281731.0',
+                    packageVersion,
                     this.appConfig.componentCDNType,
                   ),
                 );
