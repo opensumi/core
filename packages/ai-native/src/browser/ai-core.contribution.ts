@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired } from '@opensumi/di';
 import {
   AINativeConfigService,
   AINativeSettingSectionsId,
@@ -32,7 +32,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { Disposable, Schemes, TerminalRegistryToken } from '@opensumi/ide-core-common';
+import { TerminalRegistryToken } from '@opensumi/ide-core-common';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
@@ -100,9 +100,6 @@ export class AINativeBrowserContribution
     SlotRendererContribution,
     MonacoContribution
 {
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 

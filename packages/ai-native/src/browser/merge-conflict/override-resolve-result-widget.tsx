@@ -47,7 +47,7 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
         icon: 'check',
         text: localize('aiNative.inline.chat.operate.check.title'),
         onClick: () => {
-          const modifiedValue = this.inlineDiffWidget?.getModifiedValue();
+          const modifiedValue = this.inlineDiffWidget?.getModifiedModel()?.getValue();
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
             action: ACCEPT_CURRENT_ACTIONS,
@@ -120,10 +120,12 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
     // hidden full conflict area, but only show diff for current and the ai response
     this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [
       this.uid,
-      this.codeEditor.editor,
-      range,
-      this.text,
-      this.lineRange.toInclusiveRange(),
+      {
+        editor: this.codeEditor.editor,
+        selection: range,
+        modifiedValue: this.text,
+        hiddenArea: this.lineRange.toInclusiveRange(),
+      },
     ]);
     this.inlineDiffWidget.setResolveResultWidget(resultWidget);
     this.inlineDiffWidget.create();

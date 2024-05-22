@@ -12,7 +12,7 @@ import {
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
-import { AIInlineChatController } from './inline-chat-controller';
+import { AIInlineChatController } from './inline-chat-actions';
 import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';

@@ -209,3 +209,14 @@ export function stringifyError(error: any): string {
 export function parseError(value: string): any {
   return JSON.parse(value, errorReviver);
 }
+
+export class AbortError extends Error {
+  static is(e: any): boolean {
+    return e instanceof Error && e.name === 'AbortError';
+  }
+
+  constructor() {
+    super('');
+    super.name = 'AbortError';
+  }
+}
