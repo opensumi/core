@@ -18,7 +18,7 @@ import {
   getDebugLogger,
   parseWithComments,
 } from '@opensumi/ide-core-browser';
-import { EKnownResources, IRendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
+import { EKnownResources, RendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
 import { Disposable, URI, isObject } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
@@ -111,8 +111,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   @Autowired(IEditorDocumentModelService)
   editorDocumentModelService: IEditorDocumentModelService;
 
-  @Autowired(IRendererRuntime)
-  private rendererRuntime: IRendererRuntime;
+  @Autowired(RendererRuntime)
+  private rendererRuntime: RendererRuntime;
 
   public grammarRegistry: Registry;
 

@@ -13,9 +13,9 @@ export enum EKnownResources {
 }
 
 @Injectable()
-export abstract class IRendererRuntime {
+export abstract class RendererRuntime {
   @Autowired(AppConfig)
-  appConfig: AppConfig;
+  protected appConfig: AppConfig;
 
   abstract runtimeName: ESupportRuntime;
 

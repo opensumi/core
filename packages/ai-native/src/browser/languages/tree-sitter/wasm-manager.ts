@@ -1,7 +1,7 @@
 import Parser from 'web-tree-sitter';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { EKnownResources, IRendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
+import { EKnownResources, RendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
 import { Deferred } from '@opensumi/ide-utils';
 
 /**
@@ -13,8 +13,8 @@ export class WasmModuleManager {
 
   private cachedRuntime: Map<string, Deferred<ArrayBuffer>> = new Map();
 
-  @Autowired(IRendererRuntime)
-  rendererRuntime: IRendererRuntime;
+  @Autowired(RendererRuntime)
+  rendererRuntime: RendererRuntime;
 
   private async resolveResourceUri() {
     const uri = await this.rendererRuntime.provideResourceUri(EKnownResources.TreeSitterWasmDirectory);

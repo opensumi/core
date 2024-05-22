@@ -1,18 +1,14 @@
-import { Autowired, Injectable, Injector } from '@opensumi/di';
+import { Injectable, Injector } from '@opensumi/di';
 
 import { BrowserModule } from '../../../browser-module';
-import { AppConfig } from '../../../react-providers';
 import { ESupportRuntime } from '../constants';
-import { IRendererRuntime } from '../types';
+import { RendererRuntime } from '../types';
 
 import { injectBrowserInnerProviders } from './inner-providers-browser';
 
 @Injectable()
-export class BrowserRuntime extends IRendererRuntime {
+export class BrowserRuntime extends RendererRuntime {
   runtimeName = ESupportRuntime.Web;
-
-  @Autowired(AppConfig)
-  appConfig: AppConfig;
 
   registerRuntimeModuleProviders(injector: Injector, instance: BrowserModule<any>): void {
     instance.webProviders && injector.addProviders(...instance.webProviders);

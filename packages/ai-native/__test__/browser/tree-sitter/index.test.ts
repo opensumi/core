@@ -4,11 +4,11 @@ import { Injector } from '@opensumi/di';
 import { LanguageParserService } from '@opensumi/ide-ai-native/lib/browser/languages/service';
 import { AppConfig, BrowserModule } from '@opensumi/ide-core-browser';
 import { ESupportRuntime } from '@opensumi/ide-core-browser/lib/application/runtime';
-import { IRendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
+import { RendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
 import { Uri } from '@opensumi/ide-core-common';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-class MockRendererRuntime extends IRendererRuntime {
+class MockRendererRuntime extends RendererRuntime {
   runtimeName = 'web' as ESupportRuntime;
   mergeAppConfig(meta: AppConfig): AppConfig {
     throw new Error('Method not implemented.');
@@ -34,7 +34,7 @@ describe.skip('tree sitter', () => {
         useClass: LanguageParserService,
       },
     ]);
-    injector.mockService(IRendererRuntime, new MockRendererRuntime());
+    injector.mockService(RendererRuntime, new MockRendererRuntime());
   });
 
   it('parser', async () => {
