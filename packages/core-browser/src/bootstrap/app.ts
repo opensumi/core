@@ -29,6 +29,7 @@ import {
   StorageProvider,
   StorageResolverContribution,
   SupportLogNamespace,
+  URI,
   UrlProvider,
   asExtensionCandidate,
   createContributionProvider,
@@ -49,7 +50,7 @@ import { ESupportRuntime, ElectronConnectionHelper, WebConnectionHelper } from '
 import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
-import { IRendererRuntime } from '../application/runtime/types';
+import { RendererRuntime } from '../application/runtime/types';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
 import { CorePreferences, injectCorePreferences } from '../core-preferences';
@@ -156,7 +157,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
 
     this.runtime = isDesktop ? this.injector.get(ElectronRendererRuntime) : this.injector.get(BrowserRuntime);
-    this.injector.addProviders({ token: IRendererRuntime, useValue: this.runtime });
+    this.injector.addProviders({ token: RendererRuntime, useValue: this.runtime });
 
     if (this.config.devtools) {
       // set a global so the opensumi devtools can identify that
@@ -586,7 +587,7 @@ export class ClientApp implements IClientApp, IDisposable {
     });
     injector.addProviders({
       token: StorageProvider,
-      useFactory: () => (storageId) => injector.get(DefaultStorageProvider).get(storageId),
+      useFactory: (injector) => (storageId: URI) => injector.get(DefaultStorageProvider).get(storageId),
     });
     createContributionProvider(injector, StorageResolverContribution);
   }

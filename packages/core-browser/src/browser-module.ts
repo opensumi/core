@@ -19,6 +19,7 @@ export abstract class BrowserModule<T = any> extends BasicModule {
   protected app: IClientApp;
   public preferences?: (inject: Injector) => void;
   public component?: React.ComponentType<T>;
-  // 脱离于layout渲染的模块
+
+  // 脱离于文档流的模块
   public isOverlay?: boolean;
 }

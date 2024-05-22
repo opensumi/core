@@ -46,4 +46,14 @@ export namespace Schemes {
   export const userStorage = 'user_storage';
 
   export const design = 'design';
+
+  /**
+   * Scheme used for loading the WebAssembly files.
+   */
+  export const wasm = 'wasm';
+
+  /**
+   * Scheme used to loading the monaco utilities.
+   */
+  export const monaco = 'monaco';
 }

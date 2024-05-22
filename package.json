@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "preinstall": "node scripts/preinstall.js && husky install",
-    "clean": "rimraf \"./packages/*/lib\"",
+    "clean": "rimraf \"./packages/*/lib\" && lerna run clean",
     "check:dep": "tsx ./scripts/depcheck",
     "init": "yarn run clean && yarn run build:all",
     "start": "yarn run rebuild:node && cross-env HOST=127.0.0.1 WS_PATH=ws://127.0.0.1:8000 NODE_ENV=development tsx ./scripts/start",
@@ -19,11 +19,12 @@
     "add:node": "tsx ./scripts/add-node",
     "add:browser": "tsx ./scripts/add-browser",
     "build": "yarn run compile",
-    "build:all": "yarn run build && yarn run build:worker-host && yarn run build:ext-host && yarn run build:components",
+    "build:all": "yarn run build && yarn run build:worker-host && yarn run build:ext-host && yarn run build:components && yarn build:monaco-worker",
     "compile": "cross-env NODE_ENV=production tsx ./scripts/build",
     "build:worker-host": "cd packages/extension && yarn run compile:worker",
     "build:ext-host": "cd packages/extension && yarn run build:ext-host",
     "build:cli-engine": "cd tools/cli-engine && yarn run build",
+    "build:monaco-worker": "cd packages/monaco && yarn run build:worker",
     "watch:ext-host": "cd packages/extension && yarn run watch:ext-host",
     "watch:worker-host": "cd packages/extension && yarn run watch:worker",
     "watch": "yarn run rebuild:node && cross-env NODE_ENV=production tsx ./scripts/watch",
@@ -133,7 +134,8 @@
     "tslib": "^2.6.2",
     "tsx": "^4.7.1",
     "typescript": "4.9.3",
-    "webpack": "^5.90.0"
+    "webpack": "^5.90.0",
+    "webpack-manifest-plugin": "^5.0.0"
   },
   "workspaces": [
     "packages/*",

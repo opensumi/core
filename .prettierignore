@@ -4,6 +4,7 @@ node_modules
 **/tools/extensions/**
 **/tools/**/vendor/
 tools/cli-engine/src/browser/worker-host.js
+packages/monaco/worker/**
 
 **/typings/**
 packages/*/lib/**

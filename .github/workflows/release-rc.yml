@@ -8,6 +8,9 @@ on:
         required: true
         default: 'main'
 
+env:
+  NODE_ENV: production
+
 jobs:
   rc-version:
     name: RC Version
