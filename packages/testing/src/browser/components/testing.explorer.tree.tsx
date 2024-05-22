@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 
 import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
-import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-browser';
+import { CommandService, Event, map, transformLabelWithCodicon, useInjectable } from '@opensumi/ide-core-browser';
+import { IIconService } from '@opensumi/ide-theme';
 
 import { ITestService, TestServiceToken } from '../../common';
 import { DebugTestCommand, GoToTestCommand, RuntTestCommand } from '../../common/commands';
@@ -19,6 +20,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const testViewModel = useInjectable<TestTreeViewModelImpl>(TestTreeViewModelToken);
   const testService = useInjectable<ITestService>(TestServiceToken);
   const commandService = useInjectable<CommandService>(CommandService);
+  const iconService = useInjectable<IIconService>(IIconService);
 
   const [treeData, setTreeData] = useState<ITestTreeData[]>([]);
 
@@ -27,6 +29,15 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const asTreeData = React.useCallback(
     (item: TestTreeItem): ITestTreeData => ({
       label: item.label,
+      renderLabel: transformLabelWithCodicon(
+        item.label,
+        {
+          verticalAlign: 'middle',
+          marginRight: '4px',
+          marginLeft: '4px',
+        },
+        iconService.fromString.bind(iconService),
+      ),
       icon: '',
       get iconClassName() {
         return getItemIcon(item);
@@ -112,7 +123,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
   };
 
   return (
-    <div>
+    <div className='monaco-workbench monaco-component'>
       {treeData.length > 0 && (
         <BasicRecycleTree
           treeData={treeData}

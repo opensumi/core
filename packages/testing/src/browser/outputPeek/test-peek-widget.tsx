@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { FC } from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, ConfigProvider, IContextKeyService } from '@opensumi/ide-core-browser';
+import { AppConfig, ConfigProvider, IContextKeyService, ViewState } from '@opensumi/ide-core-browser';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -22,6 +22,17 @@ import { TestTreeContainer } from './test-tree-container';
 import type { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import './test-peek-widget.less';
+
+// 注册在底部 Component 的话，可以拿到 ViewState，进而拿到动态宽高
+// eslint-disable-next-line arrow-body-style
+export const TestResultPanel: FC<{ viewState?: ViewState }> = ({ viewState }) => {
+  return (
+    <SplitPanel overflow='hidden' id='testing-message-horizontal' flex={1} style={{ height: '100%' }}>
+      <TestMessageContainer />
+      <TestTreeContainer viewState={viewState} />
+    </SplitPanel>
+  );
+};
 
 @Injectable({ multiple: true })
 export class TestingOutputPeek extends PeekViewWidget {

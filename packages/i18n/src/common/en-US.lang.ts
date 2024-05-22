@@ -1379,6 +1379,8 @@ export const localizationBundle = {
     'test.title': 'Testing',
     'test.result.runFinished': 'Test run at {0}',
     'test.task.unnamed': 'Unnamed Task',
+    'test.results': 'Test Results',
+
     // #endregion
     'menu.missing.command': 'menuId {0} register command not exist: {1}',
     'menu.missing.altCommand': 'menuId {0} register altCommand not exist: {1}',

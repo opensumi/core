@@ -1151,6 +1151,7 @@ export const localizationBundle = {
     'test.title': '测试管理器',
     'test.result.runFinished': '测试运行完成于 {0}',
     'test.task.unnamed': '未命名任务',
+    'test.results': '测试结果',
 
     // Menu
     'menu.missing.command': '菜单{0} 要执行的命令不存在：{1}',
