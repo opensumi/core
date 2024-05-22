@@ -439,8 +439,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.aiDiffWidget?.dispose();
     this.aiInlineChatOperationDisposed.dispose();
-
-    const crossCode = model!.getValueInRange(crossSelection);
     this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING));
 
     const startTime = Date.now();
@@ -449,46 +447,15 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     if (InlineChatController.is(response)) {
       this.visibleDiffWidget(
         monacoEditor,
-        { crossSelection, answer: '', controller: response as InlineChatController },
+        { crossSelection, controller: response as InlineChatController },
         { relationId, startTime, isRetry },
       );
     } else {
-      if (this.aiInlineChatDisposed.disposed || CancelResponse.is(response)) {
-        this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY));
-        this.aiReporter.end(relationId, {
-          message: (response as CancelResponse).message,
-          success: true,
-          replytime: Date.now() - startTime,
-          isStop: true,
-          isRetry,
-        });
-        return;
-      }
-
-      if (ErrorResponse.is(response)) {
-        this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.ERROR));
-        this.aiReporter.end(relationId, {
-          message: (response as ErrorResponse).message,
-          success: false,
-          replytime: Date.now() - startTime,
-          isRetry,
-        });
-        return;
-      }
-
-      this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.DONE));
-
-      this.aiReporter.end(relationId, {
-        message: (response as ReplyResponse).message,
-        success: true,
-        replytime: Date.now() - startTime,
-        isRetry,
-      });
-
-      let answer = (response as ReplyResponse).message;
-      answer = this.formatAnswer(answer, crossCode);
-
-      this.visibleDiffWidget(monacoEditor, { crossSelection, answer }, { relationId, startTime, isRetry });
+      this.visibleDiffWidget(
+        monacoEditor,
+        { crossSelection, chatResponse: response as ChatResponse },
+        { relationId, startTime, isRetry },
+      );
     }
 
     this.aiInlineChatOperationDisposed.addDispose([
@@ -525,11 +492,33 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       .join('\n');
   }
 
+  private convertInlineChatStatus(
+    status: EInlineChatStatus,
+    reportInfo: {
+      relationId: string;
+      message: string;
+      startTime: number;
+      isRetry?: boolean;
+      isStop?: boolean;
+    },
+  ): void {
+    const { relationId, message, startTime, isRetry, isStop } = reportInfo;
+
+    this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(status));
+    this.aiReporter.end(relationId, {
+      message,
+      success: status !== EInlineChatStatus.ERROR,
+      replytime: Date.now() - startTime,
+      isStop,
+      isRetry,
+    });
+  }
+
   private visibleDiffWidget(
     monacoEditor: monaco.ICodeEditor,
     options: {
       crossSelection: monaco.Selection;
-      answer: string;
+      chatResponse?: ChatResponse;
       controller?: InlineChatController;
     },
     reportInfo: {
@@ -538,7 +527,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       isRetry: boolean;
     },
   ): void {
-    const { crossSelection, answer, controller } = options;
+    const { crossSelection, controller, chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
     this.aiDiffWidget = this.injector.get(InlineDiffWidget, [
@@ -546,7 +535,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       {
         editor: monacoEditor,
         selection: crossSelection,
-        modifiedValue: '',
       },
     ]);
     this.aiDiffWidget.create();
@@ -587,25 +575,23 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
             onError: (error) => {
               if (AbortError.is(error)) {
                 isAbort = true;
-                this.aiInlineChatDisposed.addDispose(
-                  this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY),
-                );
-                this.aiReporter.end(relationId, {
+
+                this.convertInlineChatStatus(EInlineChatStatus.READY, {
+                  relationId,
                   message: 'abort',
-                  success: true,
-                  replytime: Date.now() - startTime,
-                  isStop: true,
+                  startTime,
                   isRetry,
+                  isStop: true,
                 });
                 return;
               }
 
               isAbort = false;
-              this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.ERROR));
-              this.aiReporter.end(relationId, {
+
+              this.convertInlineChatStatus(EInlineChatStatus.ERROR, {
+                relationId,
                 message: error.message,
-                success: false,
-                replytime: Date.now() - startTime,
+                startTime,
                 isRetry,
               });
             },
@@ -615,11 +601,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                 return;
               }
 
-              this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.DONE));
-              this.aiReporter.end(relationId, {
-                message: modifiedModel.getValue(),
-                success: true,
-                replytime: Date.now() - startTime,
+              this.convertInlineChatStatus(EInlineChatStatus.DONE, {
+                relationId,
+                message: '',
+                startTime,
                 isRetry,
               });
             },
@@ -627,6 +612,40 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         }),
       );
     } else {
+      const model = monacoEditor.getModel();
+      const crossCode = model!.getValueInRange(crossSelection);
+
+      if (this.aiInlineChatDisposed.disposed || CancelResponse.is(chatResponse)) {
+        this.convertInlineChatStatus(EInlineChatStatus.READY, {
+          relationId,
+          message: (chatResponse as CancelResponse).message || '',
+          startTime,
+          isRetry,
+          isStop: true,
+        });
+        return;
+      }
+
+      if (ErrorResponse.is(chatResponse)) {
+        this.convertInlineChatStatus(EInlineChatStatus.ERROR, {
+          relationId,
+          message: (chatResponse as ErrorResponse).message || '',
+          startTime,
+          isRetry,
+        });
+        return;
+      }
+
+      this.convertInlineChatStatus(EInlineChatStatus.DONE, {
+        relationId,
+        message: '',
+        startTime,
+        isRetry,
+      });
+
+      let answer = (chatResponse as ReplyResponse).message;
+      answer = this.formatAnswer(answer, crossCode);
+
       this.aiInlineChatOperationDisposed.addDispose(
         this.aiDiffWidget.onReady(() => {
           const modifiedModel = this.aiDiffWidget.getModifiedModel();

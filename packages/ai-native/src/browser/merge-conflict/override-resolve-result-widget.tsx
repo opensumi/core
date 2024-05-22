@@ -123,12 +123,21 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
       {
         editor: this.codeEditor.editor,
         selection: range,
-        modifiedValue: this.text,
         hiddenArea: this.lineRange.toInclusiveRange(),
       },
     ]);
     this.inlineDiffWidget.setResolveResultWidget(resultWidget);
     this.inlineDiffWidget.create();
+
+    this.addDispose(
+      this.inlineDiffWidget.onReady(() => {
+        const modifiedModel = this.inlineDiffWidget!.getModifiedModel();
+        if (modifiedModel) {
+          modifiedModel.setValue(this.text);
+        }
+      }),
+    );
+
     this.inlineDiffWidget.show(range, range.endLineNumber - range.startLineNumber + 1);
     return null;
   }

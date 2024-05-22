@@ -14,8 +14,6 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
-import { InlineChatController } from '../inline-chat/inline-chat-controller';
-
 import styles from './inline-diff-widget.module.less';
 
 const diffEditorOptions: IDiffEditorOptions = {
@@ -50,12 +48,7 @@ interface IDiffWidgetHandler {
 }
 
 interface IDiffContentProviderProps {
-  dto:
-    | {
-        range: monaco.IRange;
-        modifiedValue: string;
-      }
-    | undefined;
+  range: monaco.IRange;
   /**
    * 获取最大行数
    */
@@ -67,12 +60,12 @@ interface IDiffContentProviderProps {
 }
 
 const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
-  const { dto, onMaxLineCount, editor, onReady } = props;
+  const { range, onMaxLineCount, editor, onReady } = props;
   const monacoService: MonacoService = useInjectable(MonacoService);
   const diffEditorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!dto) {
+    if (!range) {
       return;
     }
 
@@ -81,8 +74,6 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     if (!model) {
       return;
     }
-
-    const { range, modifiedValue } = dto;
 
     const codeValueInRange = model.getValueInRange(range);
     const diffEditor = monacoService.createDiffEditor(diffEditorRef.current!, {
@@ -95,7 +86,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
 
     const originalModel = modelService.createModel(codeValueInRange, languageSelection);
-    const modifiedModel = modelService.createModel(modifiedValue, languageSelection);
+    const modifiedModel = modelService.createModel('', languageSelection);
 
     const layout = () => {
       if (onMaxLineCount) {
@@ -135,7 +126,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
         diffEditor.dispose();
       }
     };
-  }, [dto]);
+  }, [range, editor]);
 
   return <div ref={diffEditorRef} className={styles.diff_editor_widget}></div>;
 });
@@ -152,7 +143,6 @@ export class InlineDiffWidget extends ZoneWidget {
   public readonly onReady: Event<void> = this._onReady.event;
 
   private range: monaco.IRange;
-  private modifiedValue: string;
   private root: ReactDOMClient.Root | null;
   private diffWidgetHandler: IDiffWidgetHandler | null = null;
   private resultContainer: HTMLDivElement | null = null;
@@ -185,7 +175,7 @@ export class InlineDiffWidget extends ZoneWidget {
       <ConfigProvider value={this.configContext}>
         <div className={styles.ai_diff_editor_container}>
           <DiffContentProvider
-            dto={{ range: this.range, modifiedValue: this.modifiedValue }}
+            range={this.range}
             editor={this.editor}
             onMaxLineCount={(n) => {
               if (n) {
@@ -231,7 +221,6 @@ export class InlineDiffWidget extends ZoneWidget {
     options: {
       editor: ICodeEditor;
       selection: monaco.IRange;
-      modifiedValue: string;
       hiddenArea?: monaco.IRange;
     },
   ) {
@@ -244,10 +233,9 @@ export class InlineDiffWidget extends ZoneWidget {
       showInHiddenAreas: true,
     });
 
-    const { selection, modifiedValue, hiddenArea, editor } = options;
+    const { selection, hiddenArea, editor } = options;
 
     this.range = selection;
-    this.modifiedValue = modifiedValue;
     this.hiddenArea = hiddenArea || selection;
 
     editor.setHiddenAreas([this.hiddenArea], this.id);
