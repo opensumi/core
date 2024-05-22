@@ -5,3 +5,5 @@ export * from './capturer';
 export * from './ws-channel';
 export * from './connect';
 export * from './types';
+export * from './connection';
+export * from './serializer';

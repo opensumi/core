@@ -1,9 +1,9 @@
+import { furySerializer } from '@opensumi/ide-connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import { sleep } from '@opensumi/ide-core-common';
 import { Server, WebSocket } from '@opensumi/mock-socket';
 
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
-import { parse, stringify } from '../../src/common/ws-channel';
 (global as any).WebSocket = WebSocket;
 
 const randomPortFn = () => Math.floor(Math.random() * 10000) + 10000;
@@ -23,10 +23,10 @@ describe('connection browser', () => {
 
       mockServer.on('connection', (socket) => {
         socket.on('message', (msg) => {
-          const msgObj = parse(msg as Uint8Array);
+          const msgObj = furySerializer.deserialize(msg as Uint8Array);
           if (msgObj.kind === 'open') {
             socket.send(
-              stringify({
+              furySerializer.serialize({
                 id: msgObj.id,
                 kind: 'server-ready',
                 token: '',

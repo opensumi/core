@@ -1,5 +1,5 @@
 import { Injector, Provider } from '@opensumi/di';
-import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
+import { ISerializer, RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { IRuntimeSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
@@ -28,12 +28,15 @@ export async function createConnectionService(
   onReconnect: () => void,
   connection: IRuntimeSocketConnection<Uint8Array>,
   clientId: string,
+  serializer?: ISerializer<any, any>,
 ) {
   const reporterService: IReporterService = injector.get(IReporterService);
   const eventBus = injector.get(IEventBus);
   const stateService = injector.get(ClientAppStateService);
 
-  const channelHandler = new WSChannelHandler(connection, initialLogger, clientId);
+  const channelHandler = new WSChannelHandler(connection, initialLogger, clientId, {
+    serializer,
+  });
   channelHandler.setReporter(reporterService);
 
   const onOpen = () => {
