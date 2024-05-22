@@ -1,6 +1,7 @@
 const path = require('path');
 
 const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 
 /**
@@ -26,6 +27,11 @@ module.exports = {
           minimizer: [new TerserPlugin()],
         }
       : {},
-  plugins: [new WebpackManifestPlugin({})],
+  plugins: [
+    new WebpackManifestPlugin({}),
+    new webpack.optimize.LimitChunkCountPlugin({
+      maxChunks: 1,
+    }),
+  ],
   stats: process.env.CI ? 'errors-only' : 'normal',
 };

@@ -12,6 +12,9 @@ on:
         description: 'The release branch, eg: v3.xx, main'
         required: false
 
+env:
+  NODE_ENV: production
+
 jobs:
   release:
     name: Release
