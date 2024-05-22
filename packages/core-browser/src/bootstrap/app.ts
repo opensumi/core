@@ -6,8 +6,7 @@ import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 
 import { Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
+import { IRuntimeSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   AppLifeCycleServiceToken,
   CommandRegistry,
@@ -257,16 +256,11 @@ export class ClientApp implements IClientApp, IDisposable {
 
     switch (type) {
       case ESupportRuntime.Electron:
-        connectionHelper = this.injector.get(ElectronConnectionHelper, [
-          {
-            clientId: this.config.clientId,
-          },
-        ]);
+        connectionHelper = this.injector.get(ElectronConnectionHelper);
         break;
       case ESupportRuntime.Web:
         connectionHelper = this.injector.get(WebConnectionHelper, [
           {
-            clientId: this.config.clientId,
             connectionPath: this.connectionPath,
             connectionProtocols: this.opts.connectionProtocols,
           },
@@ -281,7 +275,7 @@ export class ClientApp implements IClientApp, IDisposable {
       useValue: connectionHelper,
     });
 
-    const connection: ReconnectingWebSocketConnection | NetSocketConnection = connectionHelper.createConnection();
+    const connection: IRuntimeSocketConnection<Uint8Array> = connectionHelper.createConnection();
     const clientId: string = this.config.clientId ?? connectionHelper.getDefaultClientId();
 
     await createConnectionService(

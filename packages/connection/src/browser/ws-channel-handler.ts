@@ -1,8 +1,7 @@
 import { EventEmitter } from '@opensumi/events';
 import { Barrier, Deferred, DisposableStore, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
 
-import { NetSocketConnection } from '../common/connection';
-import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
+import { IRuntimeSocketConnection } from '../common/connection';
 import { ConnectionInfo, WSCloseInfo } from '../common/types';
 import { ErrorMessageCode, WSChannel, parse, pingMessage } from '../common/ws-channel';
 
@@ -31,7 +30,7 @@ export class WSChannelHandler {
 
   LOG_TAG: string;
 
-  constructor(public connection: ReconnectingWebSocketConnection | NetSocketConnection, logger: any, clientId: string) {
+  constructor(public connection: IRuntimeSocketConnection<Uint8Array>, logger: any, clientId: string) {
     this.logger = logger || this.logger;
     this.clientId = clientId;
     this.LOG_TAG = `[WSChannelHandler] [client-id:${this.clientId}]`;
