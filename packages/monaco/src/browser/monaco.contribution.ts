@@ -612,7 +612,7 @@ export class MonacoClientContribution
                   getCdnHref(
                     packageName,
                     'worker/editor.worker.bundle.js',
-                    '3.0.2-next-1716279955.0',
+                    '3.0.2-next-1716281731.0',
                     this.appConfig.componentCDNType,
                   ),
                 );
