@@ -111,7 +111,7 @@ export interface ITestResult {
 
   getStateById(testExtId: string): TestResultItem | undefined;
 
-  getOutput(): Promise<string>;
+  getOutput(): string;
 
   toJSON(): ISerializedTestResults | undefined;
 
@@ -140,6 +140,7 @@ export class TestResultImpl implements ITestResult {
   public readonly onChange = this.changeEmitter.event;
   public readonly onComplete = this.completeEmitter.event;
   public readonly counts: { [K in TestResultState]: number } = makeEmptyCounts();
+  public readonly outputs: string[] = [];
 
   public get completedAt() {
     return this._completedAt;
@@ -241,8 +242,8 @@ export class TestResultImpl implements ITestResult {
     return this.testById.get(testExtId);
   }
 
-  getOutput(): Promise<string> {
-    throw new Error('Method not implemented.');
+  getOutput(): string {
+    return this.outputs.join('');
   }
   toJSON(): ISerializedTestResults | undefined {
     throw new Error('Method not implemented.');
@@ -276,7 +277,8 @@ export class TestResultImpl implements ITestResult {
     });
   }
   appendOutput(output: string, taskId: string, location?: IRichLocation, testId?: string): void {
-    throw new Error('Method not implemented.');
+    // 其他参数暂时没有完全实现，先满足顺序输出
+    this.outputs.push(output);
   }
   addTestChainToRun(controllerId: string, chain: readonly ITestItem[]): void {
     let parent = this.testById.get(chain[0].extId);
