@@ -6,6 +6,7 @@ import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 
 import { Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { IRuntimeSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   AppLifeCycleServiceToken,
   CommandRegistry,
@@ -44,7 +45,7 @@ import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/ele
 
 import { ClientAppStateService } from '../application';
 import { ESupportRuntime, ElectronConnectionHelper, WebConnectionHelper } from '../application/runtime';
-import { CONNECTION_HELPER_TOKEN, RuntimeSocketConnection } from '../application/runtime/base-socket';
+import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
 import { IRendererRuntime } from '../application/runtime/types';
@@ -273,7 +274,7 @@ export class ClientApp implements IClientApp, IDisposable {
       useValue: connectionHelper,
     });
 
-    const connection: RuntimeSocketConnection<Uint8Array> = connectionHelper.createConnection();
+    const connection: IRuntimeSocketConnection<Uint8Array> = connectionHelper.createConnection();
     const clientId: string = this.config.clientId ?? connectionHelper.getDefaultClientId();
 
     await createConnectionService(

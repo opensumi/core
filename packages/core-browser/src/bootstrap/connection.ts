@@ -1,6 +1,7 @@
 import { Injector, Provider } from '@opensumi/di';
 import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { IRuntimeSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   BasicModule,
@@ -14,7 +15,6 @@ import {
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
-import { RuntimeSocketConnection } from '../application/runtime/base-socket';
 
 import { ModuleConstructor } from './app.interface';
 
@@ -26,7 +26,7 @@ export async function createConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
   onReconnect: () => void,
-  connection: RuntimeSocketConnection<Uint8Array>,
+  connection: IRuntimeSocketConnection<Uint8Array>,
   clientId: string,
 ) {
   const reporterService: IReporterService = injector.get(IReporterService);
