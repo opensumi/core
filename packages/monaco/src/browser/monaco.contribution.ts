@@ -274,6 +274,7 @@ export class MonacoClientContribution
   }
 
   registerMonacoEnvironment() {
+    const defaultEnvironment = (window as Window).MonacoEnvironment || ({} as Environment);
     (window as Window).MonacoEnvironment = {
       getWorkerUrl: (moduleId, label) => {
         const result = this.staticResourceService.resolveStaticResource(
@@ -290,6 +291,7 @@ export class MonacoClientContribution
 
         return getWorkerBootstrapUrl(result.toString(), `${moduleId}:${label}`);
       },
+      ...defaultEnvironment,
     };
   }
 
