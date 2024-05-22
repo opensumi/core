@@ -8,8 +8,8 @@ import { IRendererRuntime } from '@opensumi/ide-core-browser/lib/application/run
 import { Uri } from '@opensumi/ide-core-common';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-class MockRendererRuntime implements IRendererRuntime {
-  runtimeName: ESupportRuntime;
+class MockRendererRuntime extends IRendererRuntime {
+  runtimeName = 'web' as ESupportRuntime;
   mergeAppConfig(meta: AppConfig): AppConfig {
     throw new Error('Method not implemented.');
   }
