@@ -195,7 +195,11 @@ export interface IGridResizeEventPayload {
   gridId: string;
 }
 
-export class GridResizeEvent extends BasicEvent<IGridResizeEventPayload> {}
+export class GridResizeEvent extends BasicEvent<IGridResizeEventPayload> {
+  static createDirective(uid: string) {
+    return `grid-resize-${uid}`;
+  }
+}
 
 export class EditorGroupOpenEvent extends BasicEvent<{ group: IEditorGroup; resource: IResource }> {}
 export class EditorGroupCloseEvent extends BasicEvent<{ group: IEditorGroup; resource: IResource }> {}

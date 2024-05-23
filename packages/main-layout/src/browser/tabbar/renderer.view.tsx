@@ -73,14 +73,12 @@ export const TabRendererBase: FC<{
     if (rootRef.current) {
       handleResize();
       let dispose: IDisposable | null;
-      eventBus.on(ResizeEvent, (e) => {
-        if (e.payload.slotLocation === side) {
-          if (dispose) {
-            dispose.dispose();
-            dispose = null;
-          }
-          dispose = runWhenIdle(handleResize);
+      eventBus.onDirective(ResizeEvent.createDirective(side), () => {
+        if (dispose) {
+          dispose.dispose();
+          dispose = null;
         }
+        dispose = runWhenIdle(handleResize);
       });
     }
   }, []);

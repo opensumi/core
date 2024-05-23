@@ -1,3 +1,4 @@
+import fastdom from 'fastdom';
 import debounce from 'lodash/debounce';
 import { action, makeObservable, observable, runInAction } from 'mobx';
 
@@ -376,12 +377,14 @@ export class AccordionService extends WithEventBus {
     if (e.payload.slotLocation) {
       if (this.state[e.payload.slotLocation]) {
         const id = e.payload.slotLocation;
-        // get dom of viewId
-        const sectionDom = document.getElementById(id);
-        if (sectionDom) {
-          this.state[id].size = sectionDom.clientHeight;
-          this.storeState();
-        }
+        fastdom.measure(() => {
+          // get dom of viewId
+          const sectionDom = document.getElementById(id);
+          if (sectionDom) {
+            this.state[id].size = sectionDom.clientHeight;
+            this.storeState();
+          }
+        });
       }
     }
   }
