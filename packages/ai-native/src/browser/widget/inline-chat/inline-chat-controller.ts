@@ -1,7 +1,9 @@
 import {
   AbortError,
   ChatResponse,
+  Emitter,
   ErrorResponse,
+  Event,
   IChatContent,
   IChatProgress,
   ReplyResponse,
@@ -25,12 +27,21 @@ export class InlineChatController {
     return controller instanceof InlineChatController && typeof controller.mountReadable === 'function';
   }
 
-  private stream: SumiReadableStream<ChatResponse>;
+  private readonly _onData = new Emitter<ReplyResponse>();
+  public readonly onData: Event<ReplyResponse> = this._onData.event;
+
+  private readonly _onEnd = new Emitter<void>();
+  public readonly onEnd: Event<void> = this._onEnd.event;
+
+  private readonly _onAbort = new Emitter<void>();
+  public readonly onAbort: Event<void> = this._onAbort.event;
+
+  private readonly _onError = new Emitter<ErrorResponse>();
+  public readonly onError: Event<ErrorResponse> = this._onError.event;
+
   private isInCodeBlock = false;
 
-  constructor(readonly options?: InlineChatControllerOptions) {
-    this.stream = new SumiReadableStream<ChatResponse>();
-  }
+  constructor(readonly options?: InlineChatControllerOptions) {}
 
   private fencedCodeBlocks(content: string): string {
     let _content = content;
@@ -64,24 +75,20 @@ export class InlineChatController {
     listenReadable<IChatProgress>(stream, {
       onData: (data) => {
         reply.updateMessage(this.fencedCodeBlocks((data as IChatContent).content));
-        this.stream.emitData(reply);
+        this._onData.fire(reply);
       },
       onEnd: () => {
         this.isInCodeBlock = false;
-        this.stream.end();
+        this._onEnd.fire();
       },
       onError: (error) => {
         this.isInCodeBlock = false;
         if (AbortError.is(error)) {
-          this.stream.abort();
+          this._onAbort.fire();
         } else {
-          this.stream.emitData(new ErrorResponse(error));
+          this._onError.fire(new ErrorResponse(error));
         }
       },
     });
-  }
-
-  public getStream(): SumiReadableStream<ChatResponse> {
-    return this.stream;
   }
 }

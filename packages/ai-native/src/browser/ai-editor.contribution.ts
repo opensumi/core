@@ -560,8 +560,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
           let isAbort = false;
 
-          listenReadable<ChatResponse>(controller.getStream(), {
-            onData: (data) => {
+          this.aiInlineChatOperationDisposed.addDispose([
+            controller.onData((data) => {
               if (ReplyResponse.is(data)) {
                 isAbort = false;
                 const { message } = data;
@@ -578,44 +578,33 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                 modifiedModel.pushEditOperations(null, [edit], () => null);
                 this.aiDiffWidget.layout();
               }
-            },
-            onError: (error) => {
-              if (AbortError.is(error)) {
-                isAbort = true;
-
-                this.convertInlineChatStatus(EInlineChatStatus.READY, {
-                  relationId,
-                  message: 'abort',
-                  startTime,
-                  isRetry,
-                  isStop: true,
-                });
-                return;
-              }
-
-              isAbort = false;
-
+            }),
+            controller.onError((error) => {
               this.convertInlineChatStatus(EInlineChatStatus.ERROR, {
                 relationId,
-                message: error.message,
+                message: error.message || '',
                 startTime,
                 isRetry,
               });
-            },
-            onEnd: () => {
-              if (isAbort) {
-                isAbort = false;
-                return;
-              }
-
+            }),
+            controller.onAbort(() => {
+              this.convertInlineChatStatus(EInlineChatStatus.READY, {
+                relationId,
+                message: 'abort',
+                startTime,
+                isRetry,
+                isStop: true,
+              });
+            }),
+            controller.onEnd(() => {
               this.convertInlineChatStatus(EInlineChatStatus.DONE, {
                 relationId,
                 message: '',
                 startTime,
                 isRetry,
               });
-            },
-          });
+            }),
+          ]);
         }),
       );
     } else {
