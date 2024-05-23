@@ -86,13 +86,15 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const requestFrame = React.useRef<number>();
 
   const setSize = (prev: number, next: number) => {
-    const parentWidth = ref.current!.parentElement!.offsetWidth;
     const prevEle = props.findPrevElement ? props.findPrevElement() : prevElement.current!;
     const nextEle = props.findNextElement ? props.findNextElement() : nextElement.current!;
 
     if ((prevEle && prevEle.classList.contains(RESIZE_LOCK)) || (nextEle && nextEle.classList.contains(RESIZE_LOCK))) {
       return;
     }
+
+    const parentWidth = ref.current!.parentElement!.offsetWidth;
+
     const prevMinResize = Number(prevEle?.dataset.minResize || 0);
     const nextMinResize = Number(nextEle?.dataset.minResize || 0);
 
@@ -108,6 +110,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
         return;
       }
     }
+
     if (nextEle) {
       nextEle.style.width = next * 100 + '%';
     }
@@ -314,11 +317,12 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     if (requestFrame.current) {
       window.cancelAnimationFrame(requestFrame.current);
     }
-    const parentWidth = ref.current!.parentElement!.offsetWidth;
+
     requestFrame.current = window.requestAnimationFrame(() => {
       if (props.flexMode) {
         flexModeSetSize(prevWidth, nextWidth);
       } else {
+        const parentWidth = ref.current!.parentElement!.offsetWidth;
         setSize(prevWidth / parentWidth, nextWidth / parentWidth);
       }
     });
