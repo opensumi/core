@@ -1,4 +1,5 @@
 import cls from 'classnames';
+import fastdom from 'fastdom';
 import React from 'react';
 
 import styles from './resize.module.less';
@@ -245,32 +246,39 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   };
 
   const setAbsoluteSize = (size: number, isLatter?: boolean) => {
-    const currentPrev = prevElement.current!.clientWidth;
-    const currentNext = nextElement.current!.clientWidth;
-    const totalSize = currentPrev + currentNext;
-    if (props.flexMode) {
-      const prevWidth = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
-      const nextWidth = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
-      flexModeSetSize(prevWidth, nextWidth, true);
-    } else {
-      const currentTotalWidth =
-        +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
-      if (isLatter) {
-        nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
-        prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
-      } else {
-        prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
-        nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
-      }
-    }
-    if (isLatter) {
-      handleZeroSize(totalSize - size, size);
-    } else {
-      handleZeroSize(size, totalSize - size);
-    }
-    if (props.onResize) {
-      props.onResize(prevElement.current!, nextElement.current!);
-    }
+    fastdom.measure(() => {
+      const currentPrev = prevElement.current!.clientWidth;
+      const currentNext = nextElement.current!.clientWidth;
+
+      const nextTotolWidth = +nextElement.current!.style.width!.replace('%', '');
+      const prevTotalWidth = +prevElement.current!.style.width!.replace('%', '');
+      fastdom.mutate(() => {
+        const totalSize = currentPrev + currentNext;
+        if (props.flexMode) {
+          const prevWidth = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
+          const nextWidth = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
+          flexModeSetSize(prevWidth, nextWidth, true);
+        } else {
+          const currentTotalWidth = nextTotolWidth + prevTotalWidth;
+
+          if (isLatter) {
+            nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+            prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
+          } else {
+            prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+            nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
+          }
+        }
+        if (isLatter) {
+          handleZeroSize(totalSize - size, size);
+        } else {
+          handleZeroSize(size, totalSize - size);
+        }
+        if (props.onResize) {
+          props.onResize(prevElement.current!, nextElement.current!);
+        }
+      });
+    });
   };
 
   const getAbsoluteSize = (isLatter?: boolean) => {
@@ -465,7 +473,6 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     let currentTotalHeight;
     if (props.flexMode) {
       currentTotalHeight = ((prevEle.offsetHeight + nextEle.offsetHeight) / prevEle.parentElement!.offsetHeight) * 100;
-      // flexModeSetSize(prev / (prev + next) * totalHeight, next / (prev + next) * totalHeight, true);
     } else {
       currentTotalHeight = +nextEle.style.height!.replace('%', '') + +prevEle.style.height!.replace('%', '');
     }

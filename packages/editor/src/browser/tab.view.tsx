@@ -1,4 +1,5 @@
 import cls from 'classnames';
+import fastdom from 'fastdom';
 import React, {
   DragEvent,
   HTMLAttributes,
@@ -165,20 +166,20 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   const scrollToCurrent = useCallback(() => {
-    if (tabContainer.current) {
-      if (group.currentResource) {
-        try {
+    fastdom.measure(() => {
+      try {
+        if (tabContainer.current && group.currentResource) {
           const currentTab = tabContainer.current.querySelector(
             '.' + styles.kt_editor_tab + "[data-uri='" + group.currentResource.uri.toString() + "']",
           );
           if (currentTab) {
             currentTab.scrollIntoView();
           }
-        } catch (e) {
-          // noop
         }
+      } catch (e) {
+        // noop
       }
-    }
+    });
   }, [group, tabContainer.current]);
 
   const updateTabMarginRight = useCallback(() => {
