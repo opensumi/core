@@ -22,6 +22,7 @@ export const AI_CHAT_VIEW_ID = 'AI-Chat';
 export const AI_CHAT_CONTAINER_ID = 'AI-Chat-Container';
 export const AI_CHAT_LOGO_AVATAR_ID = 'AI-Chat-Logo-Avatar';
 export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
+export const AI_DIFF_WIDGET_ID = 'AI-DIFF-WIDGET';
 
 /**
  * @deprecated Use {@link DESIGN_MENUBAR_CONTAINER_VIEW_ID} instead
@@ -30,6 +31,7 @@ export const AI_MENUBAR_CONTAINER_VIEW_ID = DESIGN_MENUBAR_CONTAINER_VIEW_ID;
 
 export const SLASH_SYMBOL = '/';
 export const AT_SIGN_SYMBOL = '@';
+export const BACK_QUOTE_3_SYMBOL = '```';
 
 export interface IChatMessageStructure {
   /**

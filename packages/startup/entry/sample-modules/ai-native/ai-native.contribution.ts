@@ -19,21 +19,26 @@ import {
   TChatSlashCommandSend,
   TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
+import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
 import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
 import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
 import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
+  AbortError,
   CancelResponse,
   ChatServiceToken,
   ErrorResponse,
   IAIBackService,
+  IChatContent,
+  IChatProgress,
   MergeConflictEditorMode,
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
+import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
@@ -87,7 +92,7 @@ export class AINativeContribution implements AINativeCoreContribution {
       {
         id: 'ai-comments',
         name: EInlineOperation.Comments,
-        title: 'add comments',
+        title: 'add comments（readable stream example）',
         renderType: 'button',
         codeAction: {
           isPreferred: true,
@@ -99,17 +104,11 @@ export class AINativeContribution implements AINativeCoreContribution {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
-          const result = await this.aiBackService.request(prompt, {}, token);
+          const controller = new InlineChatController({ enableCodeblockRender: true });
+          const stream = await this.aiBackService.requestStream(prompt, {}, token);
+          controller.mountReadable(stream);
 
-          if (result.isCancel) {
-            return new CancelResponse();
-          }
-
-          if (result.errorCode !== 0) {
-            return new ErrorResponse('');
-          }
-
-          return new ReplyResponse(result.data!);
+          return controller;
         },
       },
     );
@@ -139,7 +138,10 @@ export class AINativeContribution implements AINativeCoreContribution {
             return new ErrorResponse('');
           }
 
-          return new ReplyResponse(result.data!);
+          const reply: ReplyResponse = new ReplyResponse(result.data!);
+          reply.updateMessage(reply.extractCodeContent());
+
+          return reply;
         },
       },
     );

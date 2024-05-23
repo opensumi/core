@@ -1,12 +1,13 @@
 import { IDisposable } from './disposable';
+import { AbortError } from './errors';
 import { EventQueue } from './event';
 
 import type { Readable } from 'stream';
 
-export interface IReadableStream<T> {
+export interface IReadableStream<T, E extends Error = Error> {
   on(event: 'data', listener: (chunk: T) => void): this;
   on(event: 'end', listener: () => void): this;
-  on(event: 'error', listener: (err: Error) => void): this;
+  on(event: 'error', listener: (err: E) => void): this;
   on(event: string, listener: (...args: any[]) => void): this;
 }
 
@@ -14,17 +15,20 @@ export function isReadableStream(stream: any): stream is Readable {
   return stream && (typeof stream.read === 'function' || stream instanceof SumiReadableStream);
 }
 
-export interface IListenReadableOptions<T> {
+export interface IListenReadableOptions<T, E> {
   onData(data: T): void;
   onEnd(): void;
-  onError?(error: Error): void;
+  onError?(error: E): void;
 }
 
-export function listenReadable<T = Uint8Array>(stream: IReadableStream<T>, options: IListenReadableOptions<T>): void {
+export function listenReadable<T = Uint8Array, E extends Error = Error>(
+  stream: IReadableStream<T, E>,
+  options: IListenReadableOptions<T, E>,
+): void {
   stream.on('data', (chunk: T) => {
     options.onData(chunk);
   });
-  stream.on('error', (error: Error) => {
+  stream.on('error', (error: E) => {
     options.onError?.(error);
   });
   stream.on('end', () => {
@@ -32,9 +36,9 @@ export function listenReadable<T = Uint8Array>(stream: IReadableStream<T>, optio
   });
 }
 
-export function listenGroupReadable<T = Uint8Array>(
-  streams: IReadableStream<T>[],
-  options: IListenReadableOptions<T>,
+export function listenGroupReadable<T = Uint8Array, E extends Error = Error>(
+  streams: IReadableStream<T, E>[],
+  options: IListenReadableOptions<T, E>,
 ): void {
   let endCount = streams.length;
 
@@ -53,19 +57,19 @@ export function listenGroupReadable<T = Uint8Array>(
   });
 }
 
-export class SumiReadableStream<T> implements IReadableStream<T> {
+export class SumiReadableStream<T, E extends Error = Error> implements IReadableStream<T, E> {
   protected dataQueue = new EventQueue<T>();
   protected endQueue = new EventQueue<void>();
-  protected errorQueue = new EventQueue<Error>();
+  protected errorQueue = new EventQueue<E>();
 
-  on(event: 'error', listener: (err: Error) => void): this;
+  on(event: 'error', listener: (err: E) => void): this;
   on(event: 'data', listener: (chunk: T) => void): this;
   on(event: 'end', listener: () => void): this;
   on(event: string, listener: (...args: any[]) => void): this;
   on(event: unknown, listener: unknown): this {
     switch (event) {
       case 'error':
-        this.onError(listener as (err: Error) => void);
+        this.onError(listener as (err: E) => void);
         break;
       case 'data':
         this.onData(listener as (chunk: T) => void);
@@ -87,7 +91,7 @@ export class SumiReadableStream<T> implements IReadableStream<T> {
     return this.endQueue.on(cb);
   }
 
-  onError(cb: (err: Error) => void): IDisposable {
+  onError(cb: (err: E) => void): IDisposable {
     return this.errorQueue.on(cb);
   }
 
@@ -95,7 +99,7 @@ export class SumiReadableStream<T> implements IReadableStream<T> {
     this.dataQueue.push(buffer);
   }
 
-  emitError(err: Error) {
+  emitError(err: E) {
     this.errorQueue.push(err);
   }
 
@@ -103,5 +107,11 @@ export class SumiReadableStream<T> implements IReadableStream<T> {
     this.dataQueue.dispose();
     this.endQueue.push(undefined);
     this.endQueue.dispose();
+  }
+
+  abort() {
+    this.dataQueue.dispose();
+    this.errorQueue.push(new AbortError() as E);
+    this.errorQueue.dispose();
   }
 }
