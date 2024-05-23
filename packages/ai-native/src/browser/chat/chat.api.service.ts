@@ -21,7 +21,7 @@ export class ChatService extends Disposable {
   public readonly onChatReplyMessageLaunch: Event<string> = this._onChatReplyMessageLaunch.event;
 
   private readonly _onChatMessageListLaunch = new Emitter<any>();
-  public readonly onChatReplyMessageListLaunch: Event<any> = this._onChatReplyMessageLaunch.event;
+  public readonly onChatMessageListLaunch: Event<any> = this._onChatMessageListLaunch.event;
 
   private readonly _onScrollToBottom = new Emitter<void>();
   public readonly onScrollToBottom: Event<void> = this._onScrollToBottom.event;

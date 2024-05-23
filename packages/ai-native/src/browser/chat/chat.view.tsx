@@ -186,7 +186,7 @@ export const AIChatView = observer(() => {
     );
 
     disposer.addDispose(
-      chatApiService.onChatReplyMessageListLaunch((list) => {
+      chatApiService.onChatMessageListLaunch((list) => {
         const messageList: any = [];
 
         list.forEach((item) => {
@@ -198,10 +198,6 @@ export const AIChatView = observer(() => {
           });
 
           if (role === 'assistant') {
-            const relationId = aiReporter.start(AISerivceType.CustomReplay, {
-              msgType: AISerivceType.CustomReplay,
-              message: '',
-            });
             const newChunk = item as IChatComponent | IChatContent;
 
             messageList.push(
@@ -209,7 +205,7 @@ export const AIChatView = observer(() => {
                 {
                   id: uuid(6),
                   relationId,
-                  text: <ChatNotify requestId={aiChatService.latestRequestId} chunk={newChunk} />,
+                  text: <ChatNotify requestId={relationId} chunk={newChunk} />,
                 },
                 styles.chat_notify,
               ),
