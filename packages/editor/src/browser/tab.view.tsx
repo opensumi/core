@@ -209,17 +209,13 @@ export const Tabs = ({ group }: ITabsProps) => {
         disposer.addDispose(new DomListener(tabContainer.current, 'mousewheel', preventNavigation));
       }
       disposer.addDispose(
-        eventBus.on(ResizeEvent, (event) => {
-          if (event.payload.slotLocation === slotLocation) {
-            scrollToCurrent();
-          }
+        eventBus.onDirective(ResizeEvent.createDirective(slotLocation), () => {
+          scrollToCurrent();
         }),
       );
       disposer.addDispose(
-        eventBus.on(GridResizeEvent, (event) => {
-          if (event.payload.gridId === group.grid.uid) {
-            scrollToCurrent();
-          }
+        eventBus.onDirective(GridResizeEvent.createDirective(group.grid.uid), () => {
+          scrollToCurrent();
         }),
       );
       return () => {
@@ -260,10 +256,8 @@ export const Tabs = ({ group }: ITabsProps) => {
   useEffect(() => {
     const disposable = new DisposableCollection();
     disposable.push(
-      eventBus.on(ResizeEvent, (e) => {
-        if (e.payload.slotLocation === slotLocation) {
-          layoutLastInRow();
-        }
+      eventBus.onDirective(ResizeEvent.createDirective(slotLocation), () => {
+        layoutLastInRow();
       }),
     );
     disposable.push(

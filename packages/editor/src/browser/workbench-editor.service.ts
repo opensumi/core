@@ -788,11 +788,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string, public readonly groupId: number) {
     super();
-    this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
-      if (e.payload.slotLocation === getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)) {
+    this.eventBus.onDirective(
+      ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
+      () => {
         this.doLayoutEditors();
-      }
-    });
+      },
+    );
     this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
       if (e.payload.gridId === this.grid.uid) {
         this.doLayoutEditors();

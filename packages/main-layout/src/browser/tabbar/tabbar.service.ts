@@ -14,7 +14,6 @@ import {
   IContextKeyService,
   IScopedContextKeyService,
   KeybindingRegistry,
-  OnEvent,
   ResizeEvent,
   SlotLocation,
   ViewContextKeyRegistry,
@@ -164,6 +163,10 @@ export class TabbarService extends WithEventBus {
       this.registerPanelCommands();
       this.registerPanelMenus();
     }
+
+    this.eventBus.onDirective(ResizeEvent.createDirective(this.location), () => {
+      this.onResize();
+    });
   }
 
   get onDidRegisterContainer() {
@@ -842,18 +845,15 @@ export class TabbarService extends WithEventBus {
     return info && info.options && info.options.expanded;
   }
 
-  @OnEvent(ResizeEvent)
-  protected onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === this.location) {
-      if (!this.currentContainerId || !this.resizeHandle) {
-        // 折叠时不监听变化
-        return;
-      }
-      const size = this.resizeHandle.getSize();
-      if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
-        this.prevSize = size;
-        this.onSizeChangeEmitter.fire({ size });
-      }
+  protected onResize() {
+    if (!this.currentContainerId || !this.resizeHandle) {
+      // 折叠时不监听变化
+      return;
+    }
+    const size = this.resizeHandle.getSize();
+    if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
+      this.prevSize = size;
+      this.onSizeChangeEmitter.fire({ size });
     }
   }
 
