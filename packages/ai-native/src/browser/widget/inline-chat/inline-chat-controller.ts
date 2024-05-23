@@ -1,4 +1,3 @@
-import { BACK_QUOTE_3_SYMBOL } from '@opensumi/ide-ai-native/lib/common/index';
 import {
   AbortError,
   ChatResponse,
@@ -8,6 +7,8 @@ import {
   ReplyResponse,
 } from '@opensumi/ide-core-common';
 import { SumiReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
+
+import { BACK_QUOTE_3_SYMBOL } from '../../../common';
 
 export interface InlineChatControllerOptions {
   /**
