@@ -1,3 +1,4 @@
+import fastdom from 'fastdom';
 import debounce from 'lodash/debounce';
 import { action, makeObservable, observable, reaction, runInAction } from 'mobx';
 
@@ -846,15 +847,18 @@ export class TabbarService extends WithEventBus {
   }
 
   protected onResize() {
-    if (!this.currentContainerId || !this.resizeHandle) {
-      // 折叠时不监听变化
-      return;
-    }
-    const size = this.resizeHandle.getSize();
-    if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
-      this.prevSize = size;
-      this.onSizeChangeEmitter.fire({ size });
-    }
+    fastdom.measure(() => {
+      if (!this.currentContainerId || !this.resizeHandle) {
+        // 折叠时不监听变化
+        return;
+      }
+
+      const size = this.resizeHandle.getSize();
+      if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
+        this.prevSize = size;
+        this.onSizeChangeEmitter.fire({ size });
+      }
+    });
   }
 
   protected listenCurrentChange() {
