@@ -37,7 +37,7 @@ import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
-import { isReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
+import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
@@ -444,19 +444,11 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const startTime = Date.now();
     const response = await strategy(monacoEditor, this.aiNativeService.cancelIndicator.token);
 
-    if (InlineChatController.is(response)) {
-      this.visibleDiffWidget(
-        monacoEditor,
-        { crossSelection, controller: response as InlineChatController },
-        { relationId, startTime, isRetry },
-      );
-    } else {
-      this.visibleDiffWidget(
-        monacoEditor,
-        { crossSelection, chatResponse: response as ChatResponse },
-        { relationId, startTime, isRetry },
-      );
-    }
+    this.visibleDiffWidget(
+      monacoEditor,
+      { crossSelection, chatResponse: response },
+      { relationId, startTime, isRetry },
+    );
 
     this.aiInlineChatOperationDisposed.addDispose([
       this.aiInlineChatService.onAccept(() => {
@@ -518,8 +510,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     monacoEditor: monaco.ICodeEditor,
     options: {
       crossSelection: monaco.Selection;
-      chatResponse?: ChatResponse;
-      controller?: InlineChatController;
+      chatResponse?: ChatResponse | InlineChatController;
     },
     reportInfo: {
       relationId: string;
@@ -527,7 +518,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       isRetry: boolean;
     },
   ): void {
-    const { crossSelection, controller, chatResponse } = options;
+    const { crossSelection, chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
     this.aiDiffWidget = this.injector.get(InlineDiffWidget, [
@@ -543,7 +534,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
     );
 
-    if (controller) {
+    if (InlineChatController.is(chatResponse)) {
+      const controller = chatResponse as InlineChatController;
+
       this.aiInlineChatOperationDisposed.addDispose(
         this.aiDiffWidget.onReady(() => {
           const modifiedModel = this.aiDiffWidget.getModifiedModel();
