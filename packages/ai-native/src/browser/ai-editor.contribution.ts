@@ -39,6 +39,8 @@ import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco
 import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
+import { AI_DIFF_WIDGET_ID } from '../common';
+
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
@@ -442,6 +444,18 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING));
 
     const startTime = Date.now();
+
+    if (this.aiNativeService.cancelIndicator.token.isCancellationRequested) {
+      this.convertInlineChatStatus(EInlineChatStatus.READY, {
+        relationId,
+        message: 'abort',
+        startTime,
+        isRetry,
+        isStop: true,
+      });
+      return;
+    }
+
     const response = await strategy(monacoEditor, this.aiNativeService.cancelIndicator.token);
 
     this.visibleDiffWidget(
@@ -522,7 +536,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const { relationId, startTime, isRetry } = reportInfo;
 
     this.aiDiffWidget = this.injector.get(InlineDiffWidget, [
-      'ai-diff-widget',
+      AI_DIFF_WIDGET_ID,
       {
         editor: monacoEditor,
         selection: crossSelection,
