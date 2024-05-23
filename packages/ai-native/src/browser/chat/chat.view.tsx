@@ -185,6 +185,72 @@ export const AIChatView = observer(() => {
       }),
     );
 
+    disposer.addDispose(
+      chatApiService.onChatReplyMessageListLaunch((list) => {
+        const messageList: any = [];
+
+        list.forEach((item) => {
+          const { role } = item;
+
+          const relationId = aiReporter.start(AISerivceType.Agent, {
+            msgType: AISerivceType.Agent,
+            message: '',
+          });
+
+          if (role === 'assistant') {
+            const relationId = aiReporter.start(AISerivceType.CustomReplay, {
+              msgType: AISerivceType.CustomReplay,
+              message: '',
+            });
+            const newChunk = item as IChatComponent | IChatContent;
+
+            messageList.push(
+              createMessageByAI(
+                {
+                  id: uuid(6),
+                  relationId,
+                  text: <ChatNotify requestId={aiChatService.latestRequestId} chunk={newChunk} />,
+                },
+                styles.chat_notify,
+              ),
+            );
+          }
+
+          if (role === 'user') {
+            const { message, command } = item;
+            const agentId = item.agentId ? item.agentId : ChatProxyService.AGENT_ID;
+            const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
+            const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
+
+            messageList.push(
+              createMessageByUser(
+                {
+                  id: uuid(6),
+                  relationId,
+                  text: ChatUserRoleRender ? (
+                    <ChatUserRoleRender content={message} agentId={visibleAgentId} command={command} />
+                  ) : (
+                    <CodeBlockWrapperInput
+                      relationId={relationId}
+                      text={message}
+                      agentId={visibleAgentId}
+                      command={command}
+                    />
+                  ),
+                },
+                styles.chat_message_code,
+              ),
+            );
+          }
+        });
+
+        // eslint-disable-next-line no-console
+        console.log(`messageList: ${messageList}`);
+
+        handleDispatchMessage({ type: 'add', payload: messageList });
+      }),
+    );
+
     return () => disposer.dispose();
   }, [chatApiService, chatRenderRegistry.chatAIRoleRender, msgHistoryManager]);
 

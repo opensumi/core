@@ -20,6 +20,9 @@ export class ChatService extends Disposable {
   private readonly _onChatReplyMessageLaunch = new Emitter<string>();
   public readonly onChatReplyMessageLaunch: Event<string> = this._onChatReplyMessageLaunch.event;
 
+  private readonly _onChatMessageListLaunch = new Emitter<any>();
+  public readonly onChatReplyMessageListLaunch: Event<any> = this._onChatReplyMessageLaunch.event;
+
   private readonly _onScrollToBottom = new Emitter<void>();
   public readonly onScrollToBottom: Event<void> = this._onScrollToBottom.event;
 
@@ -49,6 +52,10 @@ export class ChatService extends Disposable {
    */
   public sendReplyMessage(data: string) {
     this._onChatReplyMessageLaunch.fire(data);
+  }
+
+  public sendMessageList(list: any) {
+    this._onChatMessageListLaunch.fire(list);
   }
 
   public getHistoryMessages(): IHistoryChatMessage[] {
