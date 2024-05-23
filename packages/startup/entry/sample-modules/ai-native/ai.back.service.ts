@@ -45,7 +45,7 @@ const streamData = [
 ];
 
 @Injectable()
-export class AiBackService implements IAIBackService<ReqeustResponse, ChatReadableStream> {
+export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadableStream> {
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
@@ -61,7 +61,6 @@ export class AiBackService implements IAIBackService<ReqeustResponse, ChatReadab
 
     return Promise.resolve({
       errorCode: 0,
-      // data: 'Hello OpenSumi!',
       data: streamData.join(''),
     });
   }
