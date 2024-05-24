@@ -244,11 +244,13 @@ export const AIChatView = observer(() => {
         console.log(`messageList: ${messageList}`);
 
         handleDispatchMessage({ type: 'add', payload: messageList });
+
+        setTimeout(scrollToBottom, 0);
       }),
     );
 
     return () => disposer.dispose();
-  }, [chatApiService, chatRenderRegistry.chatAIRoleRender, msgHistoryManager]);
+  }, [chatApiService, chatRenderRegistry.chatAIRoleRender, msgHistoryManager, scrollToBottom]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
