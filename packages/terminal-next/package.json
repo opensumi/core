@@ -41,6 +41,7 @@
     "@opensumi/ide-variable": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
     "@types/http-proxy": "^1.17.2",
+    "@withfig/autocomplete-types": "^1.28.0",
     "http-proxy": "^1.18.0"
   }
 }

@@ -2960,6 +2960,7 @@ __metadata:
     "@opensumi/ide-variable": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     "@types/http-proxy": "npm:^1.17.2"
+    "@withfig/autocomplete-types": "npm:^1.28.0"
     http-proxy: "npm:^1.18.0"
     node-pty: "npm:1.0.0"
     os-locale: "npm:^4.0.0"
@@ -4742,6 +4743,13 @@ __metadata:
     webpack-dev-server:
       optional: true
   checksum: 10/20424e5c1e664e4d7ab11facee7033bb729f6acd86493138069532934c1299c1426da72942822dedb00caca8fc60cc8aec1626e610ee0e8a9679e3614f555860
+  languageName: node
+  linkType: hard
+
+"@withfig/autocomplete-types@npm:^1.28.0":
+  version: 1.31.0
+  resolution: "@withfig/autocomplete-types@npm:1.31.0"
+  checksum: 10/9468d9022f397934eb42b0c1ea485e71dbb90da127c1b27005c43dc15a63d77ff2202ce98f80ef027ea78e9c27f655ad91f9120dc0492c77f0604ab4687efde6
   languageName: node
   linkType: hard
 

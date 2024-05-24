@@ -25,6 +25,6 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "lib": ["dom", "esnext", "webworker"],
-    "typeRoots": ["../../node_modules/@types", "../../typings"]
+    "typeRoots": ["../../node_modules/@types", "../../typings", "../../node_modules/@withfig"]
   }
 }

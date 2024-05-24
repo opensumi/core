@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { IDecoration, IDisposable, IMarker, Terminal } from 'xterm';
@@ -5,11 +6,9 @@ import { IDecoration, IDisposable, IMarker, Terminal } from 'xterm';
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, FileType, Uri } from '@opensumi/ide-core-common';
 import { DiskFileServicePath, IDiskFileProvider } from '@opensumi/ide-file-service';
-import {
-  ITerminalConnection,
-  ITerminalController,
-} from '@opensumi/ide-terminal-next';
 
+import { ITerminalController } from '../../common/controller';
+import { ITerminalConnection } from '../../common/index';
 import { TerminalIntellCommandController } from '../component/terminal-intell-command-controller';
 
 import { getSuggestions } from './runtime/runtime';
@@ -22,7 +21,7 @@ import { fsAsyncStub } from './runtime/template';
 enum IstermOscPt {
   PromptStarted = 'PS',
   PromptEnded = 'PE',
-  CurrentWorkingDirectory = 'CWD'
+  CurrentWorkingDirectory = 'CWD',
 }
 
 @Injectable()
@@ -49,11 +48,7 @@ export class IntellTerminalService extends Disposable {
   private currentSessionId: string;
 
   public active() {
-    this.disposables.push(
-      this.terminalController.onDidOpenTerminal(({ id }) =>
-        this.listenTerminalEvent(id),
-      ),
-    );
+    this.disposables.push(this.terminalController.onDidOpenTerminal(({ id }) => this.listenTerminalEvent(id)));
   }
 
   private listenTerminalEvent(clientId: string) {
@@ -111,8 +106,6 @@ export class IntellTerminalService extends Disposable {
     if (this.onDataDisposable) {
       this.onDataDisposable.dispose();
     }
-
-    window.getSuggestions = getSuggestions;
 
     // HACK: 这里拿去 TerminalConnection 的方式很 Hack，看看有没有更好的办法？
     // @ts-ignore
@@ -181,11 +174,7 @@ export class IntellTerminalService extends Disposable {
       const cursorY = buffer.cursorY;
 
       const lineData = buffer.getLine(this.promptEndMarker?.line || 0);
-      const lineDataString = lineData?.translateToString(
-        false,
-        xOffset2,
-        cursorX,
-      );
+      const lineDataString = lineData?.translateToString(false, xOffset2, cursorX);
       console.log('lineDataString', lineDataString);
 
       // 避免 上下方向键导致重复渲染
@@ -199,32 +188,22 @@ export class IntellTerminalService extends Disposable {
       }
 
       if (lineDataString && this.promptEndMarker) {
-
         fsAsyncStub.setProxy({
           readdir: async (cwd: string, options: { withFileTypes: true }) => {
             const res = await this.diskFileProvider.readDirectory(Uri.file(cwd));
             const files = res.map(([name, type]) => ({
-                name,
-                isFile: () => type === FileType.File,
-                isDirectory: () => type === FileType.Directory,
-              }));
+              name,
+              isFile: () => type === FileType.File,
+              isDirectory: () => type === FileType.Directory,
+            }));
             console.log('readdir', cwd, options, res, files);
             return files;
           },
-
         });
 
-        const suggestionBlob = await getSuggestions(
-          lineDataString,
-          '/home/admin/retrox.jcy/cloud-ide/api-server',
-        );
+        const suggestionBlob = await getSuggestions(lineDataString, '/home/admin/retrox.jcy/cloud-ide/api-server');
 
-        console.log(
-          'suggestionBlob',
-          suggestionBlob,
-          'lineDataString',
-          JSON.stringify(lineDataString),
-        );
+        console.log('suggestionBlob', suggestionBlob, 'lineDataString', JSON.stringify(lineDataString));
         this.promptEndDecoration?.dispose();
 
         if (suggestionBlob && suggestionBlob.suggestions) {
@@ -237,10 +216,12 @@ export class IntellTerminalService extends Disposable {
             x: cursorX,
           });
           console.log('render termianl intell react component');
-          const suggestionsViewModel = [...suggestionBlob.suggestions.map((suggestion) => ({
+          const suggestionsViewModel = [
+            ...suggestionBlob.suggestions.map((suggestion) => ({
               description: suggestion.description || '',
               command: suggestion.name,
-            }))];
+            })),
+          ];
           this.promptEndDecoration?.onRender((element) => {
             ReactDOM.render(
               <TerminalIntellCommandController

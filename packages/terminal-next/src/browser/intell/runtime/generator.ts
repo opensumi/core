@@ -1,45 +1,64 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/quotes */
+/* eslint-disable arrow-body-style */
+
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import log from "../utils/log";
-import { runTemplates } from "./template";
+import log from '../utils/log';
+
+import { runTemplates } from './template';
 // import { buildExecuteShellCommand } from "./utils.js";
 
 const getGeneratorContext = (cwd: string): Fig.GeneratorContext => {
   return {
-    environmentVariables: Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] != null)),
+    environmentVariables: Object.fromEntries(
+      Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] != null),
+    ),
     currentWorkingDirectory: cwd,
-    currentProcess: "", // TODO: define current process
-    sshPrefix: "", // deprecated, should be empty
+    currentProcess: '', // TODO: define current process
+    sshPrefix: '', // deprecated, should be empty
     isDangerous: false,
-    searchTerm: "", // TODO: define search term
+    searchTerm: '', // TODO: define search term
   };
 };
 
 const buildExecuteShellCommand = (args: any): any => {
-  console.error("buildExecuteShellCommand not implemented", args);
+  console.error('buildExecuteShellCommand not implemented', args);
   // throw new Error("Function not implemented.");
   return (shellInput: any) => {
     console.log('shellInput', shellInput);
     return {
-      stdout: ''
-    }
-  }
-}
+      stdout: '',
+    };
+  };
+};
 
 // TODO: add support for caching, trigger, & getQueryTerm
-export const runGenerator = async (generator: Fig.Generator, tokens: string[], cwd: string): Promise<Fig.Suggestion[]> => {
+export const runGenerator = async (
+  generator: Fig.Generator,
+  tokens: string[],
+  cwd: string,
+): Promise<Fig.Suggestion[]> => {
   // TODO: support trigger
   const { script, postProcess, scriptTimeout, splitOn, custom, template, filterTemplateSuggestions } = generator;
-  console.log("runGenerator", { script, postProcess, scriptTimeout, splitOn, custom, template, filterTemplateSuggestions });
+  console.log('runGenerator', {
+    script,
+    postProcess,
+    scriptTimeout,
+    splitOn,
+    custom,
+    template,
+    filterTemplateSuggestions,
+  });
 
   const executeShellCommand = buildExecuteShellCommand(scriptTimeout ?? 5000);
-  const suggestions = [];
+  const suggestions: Fig.Suggestion[] = [];
   try {
     if (script) {
-      const shellInput = typeof script === "function" ? script(tokens) : script;
+      const shellInput = typeof script === 'function' ? script(tokens) : script;
       const scriptOutput = Array.isArray(shellInput)
-        ? await executeShellCommand({ command: shellInput.at(0) ?? "", args: shellInput.slice(1) })
+        ? await executeShellCommand({ command: shellInput.at(0) ?? '', args: shellInput.slice(1) })
         : await executeShellCommand(shellInput);
 
       if (postProcess) {
@@ -67,7 +86,7 @@ export const runGenerator = async (generator: Fig.Generator, tokens: string[], c
     }
     return suggestions;
   } catch (e) {
-    log.debug({ msg: "generator failed", e, script, splitOn, template });
+    log.debug({ msg: 'generator failed', e, script, splitOn, template });
   }
   return suggestions;
 };
