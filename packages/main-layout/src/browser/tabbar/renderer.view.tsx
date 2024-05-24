@@ -11,15 +11,7 @@ import React, {
   useState,
 } from 'react';
 
-import {
-  ComponentRegistryInfo,
-  IDisposable,
-  IEventBus,
-  ResizeEvent,
-  SlotLocation,
-  runWhenIdle,
-  useInjectable,
-} from '@opensumi/ide-core-browser';
+import { ComponentRegistryInfo, IEventBus, ResizeEvent, SlotLocation, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection, PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -63,22 +55,22 @@ export const TabRendererBase: FC<{
     tabbarService.ensureViewReady();
   }, [components]);
 
-  const handleResize = useCallback(() => {
+  const refreshFullSize = useCallback(() => {
     if (rootRef.current) {
       setFullSize(rootRef.current[Layout.getDomSizeProperty(direction)]);
     }
-  }, [fullSize, rootRef.current]);
+  }, []);
 
   useEffect(() => {
     if (rootRef.current) {
-      handleResize();
-      let dispose: IDisposable | null;
+      refreshFullSize();
+      let taskId: number | null;
       eventBus.onDirective(ResizeEvent.createDirective(side), () => {
-        if (dispose) {
-          dispose.dispose();
-          dispose = null;
+        if (taskId) {
+          cancelAnimationFrame(taskId);
+          taskId = null;
         }
-        dispose = runWhenIdle(handleResize);
+        taskId = requestAnimationFrame(refreshFullSize);
       });
     }
   }, []);

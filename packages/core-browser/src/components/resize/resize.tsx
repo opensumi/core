@@ -46,6 +46,8 @@ export interface IResizeHandleDelegate {
 export function preventWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
   const webviews = document.getElementsByTagName('webview');
+  const shadowRootHost = document.getElementsByClassName('shadow-root-host');
+
   for (const webview of webviews as unknown as HTMLElement[]) {
     webview.classList.add('none-pointer-event');
   }
@@ -53,7 +55,6 @@ export function preventWebviewCatchMouseEvents() {
     iframe.classList.add('none-pointer-event');
   }
 
-  const shadowRootHost = document.getElementsByClassName('shadow-root-host');
   for (const host of shadowRootHost as unknown as HTMLElement[]) {
     host?.classList.add('none-pointer-event');
   }
@@ -62,6 +63,8 @@ export function preventWebviewCatchMouseEvents() {
 export function allowWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
   const webviews = document.getElementsByTagName('webview');
+  const shadowRootHost = document.getElementsByClassName('shadow-root-host');
+
   for (const webview of webviews as unknown as HTMLElement[]) {
     webview.classList.remove('none-pointer-event');
   }
@@ -69,7 +72,6 @@ export function allowWebviewCatchMouseEvents() {
     iframe.classList.remove('none-pointer-event');
   }
 
-  const shadowRootHost = document.getElementsByClassName('shadow-root-host');
   for (const host of shadowRootHost as unknown as HTMLElement[]) {
     host?.classList.remove('none-pointer-event');
   }
@@ -329,29 +331,42 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   };
   const onMouseUp = (e) => {
     resizing.current = false;
-    ref.current?.classList.remove(styles.active);
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
-    // 结束拖拽时恢复拖拽区域滚动条
-    restoreScrollBar(prevElement.current!);
-    restoreScrollBar(nextElement.current!);
+
     if (props.onFinished) {
       props.onFinished();
     }
-    allowWebviewCatchMouseEvents();
+
+    fastdom.mutate(() => {
+      ref.current?.classList.remove(styles.active);
+
+      // 结束拖拽时恢复拖拽区域滚动条
+      restoreScrollBar(prevElement.current!);
+      restoreScrollBar(nextElement.current!);
+
+      allowWebviewCatchMouseEvents();
+    });
   };
   const onMouseDown = (e) => {
     resizing.current = true;
-    ref.current?.classList.add(styles.active);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     startX.current = e.pageX;
-    startPrevWidth.current = prevElement.current!.offsetWidth;
-    startNextWidth.current = nextElement.current!.offsetWidth;
-    // 开始拖拽时隐藏拖拽区域滚动条
-    hideScrollBar(prevElement.current!);
-    hideScrollBar(nextElement.current!);
-    preventWebviewCatchMouseEvents();
+
+    fastdom.measure(() => {
+      startPrevWidth.current = prevElement.current!.offsetWidth;
+      startNextWidth.current = nextElement.current!.offsetWidth;
+
+      fastdom.mutate(() => {
+        ref.current?.classList.add(styles.active);
+
+        // 开始拖拽时隐藏拖拽区域滚动条
+        hideScrollBar(prevElement.current!);
+        hideScrollBar(nextElement.current!);
+        preventWebviewCatchMouseEvents();
+      });
+    });
   };
 
   React.useEffect(() => {
