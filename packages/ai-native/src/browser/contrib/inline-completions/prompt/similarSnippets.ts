@@ -3,7 +3,7 @@ import { Injector } from '@opensumi/di';
 import { IEditorDocumentModel, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { isDocumentValid } from '../../../common/utils';
+import { isDocumentValid } from '../../../../common/utils';
 import {
   ICompletionContext,
   MatchSimilarSnippet,

@@ -2,12 +2,12 @@ import { Injectable } from '@opensumi/di';
 import { CancellationToken, Disposable } from '@opensumi/ide-core-common';
 import { IReadableStream, isReadableStream, listenGroupReadable, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
-import { ITerminalCommandSuggestionDesc } from '../../common/index';
+import { ITerminalCommandSuggestionDesc } from '../../../common/index';
 import {
   ITerminalProviderRegistry,
   TTerminalCommandSuggestionsProviderFn,
   TerminalSuggestionReadableStream,
-} from '../types';
+} from '../../types';
 
 @Injectable()
 export class TerminalFeatureRegistry extends Disposable implements ITerminalProviderRegistry {

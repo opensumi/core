@@ -5,7 +5,7 @@ import { Emitter, localize } from '@opensumi/ide-core-browser';
 import { Input, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 
-import { ITerminalCommandSuggestionDesc } from '../../../common';
+import { ITerminalCommandSuggestionDesc } from '../../../../common';
 
 import styles from './terminal-command-suggest-controller.module.less';
 

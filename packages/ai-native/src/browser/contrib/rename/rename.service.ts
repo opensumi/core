@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { CancellationToken, RenameCandidatesProviderRegistryToken } from '@opensumi/ide-core-common';
 import { IRange, ITextModel, NewSymbolName } from '@opensumi/ide-monaco';
 
-import { IRenameCandidatesProviderRegistry } from '../types';
+import { IRenameCandidatesProviderRegistry } from '../../types';
 
 @Injectable()
 export class RenameSuggestionsService {

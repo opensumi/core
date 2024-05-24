@@ -5,7 +5,7 @@ import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-nativ
 import { Disposable, InlineChatFeatureRegistryToken } from '@opensumi/ide-core-common';
 import { ITerminalController } from '@opensumi/ide-terminal-next';
 
-import { InlineChatFeatureRegistry } from '../widget/inline-chat/inline-chat.feature.registry';
+import { InlineChatFeatureRegistry } from '../../widget/inline-chat/inline-chat.feature.registry';
 
 import { AITerminalDecorationService } from './decoration/terminal-decoration';
 import { BaseTerminalDetectionLineMatcher, LineRecord, MatcherType } from './matcher';

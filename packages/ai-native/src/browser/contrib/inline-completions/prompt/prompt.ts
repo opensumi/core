@@ -3,8 +3,8 @@ import { Tiktoken } from 'js-tiktoken';
 
 import { Injector } from '@opensumi/di';
 
-import { LanguageParser } from '../../languages/parser';
-import { LanguageParserService } from '../../languages/service';
+import { LanguageParser } from '../../../languages/parser';
+import { LanguageParserService } from '../../../languages/service';
 import { StrategyType, WishListAttributeName } from '../types';
 
 import { LANGUAGE_COMMENT_MARKERS } from './const';

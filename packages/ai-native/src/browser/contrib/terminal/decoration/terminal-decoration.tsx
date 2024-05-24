@@ -7,7 +7,7 @@ import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-nativ
 import { Disposable, InlineChatFeatureRegistryToken, runWhenIdle } from '@opensumi/ide-core-common';
 import { ITerminalController } from '@opensumi/ide-terminal-next';
 
-import { InlineChatFeatureRegistry } from '../../widget/inline-chat/inline-chat.feature.registry';
+import { InlineChatFeatureRegistry } from '../../../widget/inline-chat/inline-chat.feature.registry';
 import {
   TerminalInlineWidgetForDetection,
   TerminalInlineWidgetForSelection,

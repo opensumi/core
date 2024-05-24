@@ -1,4 +1,5 @@
 import { Autowired } from '@opensumi/di';
+import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   BaseTerminalDetectionLineMatcher,
   JavaMatcher,
@@ -6,9 +7,8 @@ import {
   NodeMatcher,
   ShellMatcher,
   TSCMatcher,
-} from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
-import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/utils/ansi-parser';
-import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
+} from '@opensumi/ide-ai-native/lib/browser/terminal/matcher';
+import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/terminal/utils/ansi-parser';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
