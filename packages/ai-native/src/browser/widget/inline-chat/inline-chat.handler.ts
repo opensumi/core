@@ -36,7 +36,7 @@ import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 import { AIInlineContentWidget } from './inline-content-widget';
 
 @Injectable()
-export class InlineChatEditorContribution extends Disposable implements IEditorFeatureContribution {
+export class InlineChatHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -78,7 +78,7 @@ export class InlineChatEditorContribution extends Disposable implements IEditorF
   }
 
   contribute(editor: IEditor): IDisposable {
-    this.contributeInlineChatFeature(editor);
+    this.registerInlineChatFeature(editor);
     return this;
   }
 
@@ -97,7 +97,7 @@ export class InlineChatEditorContribution extends Disposable implements IEditorF
 
   protected inlineChatInUsing = false;
 
-  protected contributeInlineChatFeature(editor: IEditor): void {
+  public registerInlineChatFeature(editor: IEditor): IDisposable {
     const { monacoEditor } = editor;
 
     this.disposables.push(
@@ -177,6 +177,8 @@ export class InlineChatEditorContribution extends Disposable implements IEditorF
         this.showInlineChat(editor);
       }),
     );
+
+    return this;
   }
 
   protected async showInlineChat(editor: IEditor): Promise<void> {

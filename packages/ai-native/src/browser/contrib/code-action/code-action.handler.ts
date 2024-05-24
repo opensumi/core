@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, IDisposable, PreferenceService } from '@opensumi/ide-core-browser';
 import { AINativeSettingSectionsId, InlineChatFeatureRegistryToken, Schemes } from '@opensumi/ide-core-common';
-import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 
