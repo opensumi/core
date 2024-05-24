@@ -20,14 +20,6 @@ export class CodeActionHandler extends Disposable {
   @Autowired(LanguageParserService)
   private readonly languageParserService: LanguageParserService;
 
-  private shouldAbortRequest(model: monaco.ITextModel) {
-    if (model.uri.scheme !== Schemes.file) {
-      return true;
-    }
-
-    return false;
-  }
-
   public registerCodeActionFeature(languageId: string, editor: IEditor): IDisposable {
     const disposable = new Disposable();
 
@@ -41,7 +33,7 @@ export class CodeActionHandler extends Disposable {
     }
 
     const { monacoEditor } = editor;
-    const { languageParserService, inlineChatFeatureRegistry, shouldAbortRequest } = this;
+    const { languageParserService, inlineChatFeatureRegistry } = this;
 
     let codeActionDispose: IDisposable | undefined;
 
@@ -74,10 +66,6 @@ export class CodeActionHandler extends Disposable {
 
       codeActionDispose = languageFeaturesService.codeActionProvider.register(languageId, {
         provideCodeActions: async (model) => {
-          if (shouldAbortRequest(model)) {
-            return;
-          }
-
           if (!prefInlineChatActionEnabled) {
             return;
           }

@@ -21,22 +21,10 @@ export class RenameHandler extends Disposable {
   private lastModelRequestRenameEndTime: number | undefined;
   private lastModelRequestRenameSessionId: string | undefined;
 
-  private shouldAbortRequest(model: monaco.ITextModel) {
-    if (model.uri.scheme !== Schemes.file) {
-      return true;
-    }
-
-    return false;
-  }
-
   public registerRenameFeature(languageId: string): IDisposable {
     const disposable = new Disposable();
 
     const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
-      if (this.shouldAbortRequest(model)) {
-        return;
-      }
-
       this.lastModelRequestRenameSessionId = undefined;
 
       const startTime = +new Date();

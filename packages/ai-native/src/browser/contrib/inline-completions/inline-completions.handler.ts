@@ -23,14 +23,6 @@ export class InlineCompletionHandler extends Disposable {
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
 
-  private shouldAbortRequest(model: monaco.ITextModel) {
-    if (model.uri.scheme !== Schemes.file) {
-      return true;
-    }
-
-    return false;
-  }
-
   public registerInlineCompletionFeature(editor: IEditor): IDisposable {
     const { monacoEditor } = editor;
     // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
@@ -97,10 +89,6 @@ export class InlineCompletionHandler extends Disposable {
     disposable.addDispose(
       monacoApi.languages.registerInlineCompletionsProvider(languageId, {
         provideInlineCompletions: async (model, position, context, token) => {
-          if (this.shouldAbortRequest(model)) {
-            return;
-          }
-
           if (middlewareCollector?.language?.provideInlineCompletions) {
             this.aiCompletionsService.setMiddlewareComplete(middlewareCollector?.language?.provideInlineCompletions);
           }
