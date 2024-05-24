@@ -21,8 +21,8 @@ import { SumiReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stre
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
-import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
-import { CompletionRequestBean } from './inline-completions/model/competionModel';
+import { CompletionRequestBean } from './contrib/inline-completions/model/competionModel';
+import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
 export interface IEditorInlineChatHandler {

@@ -20,7 +20,7 @@ import {
   WapperAIInlineResult,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/resolve-result-widget';
 
-import { InlineDiffWidget } from '../widget/inline-diff/inline-diff-widget';
+import { InlineDiffWidget } from '../../widget/inline-diff/inline-diff-widget';
 
 @Injectable({ multiple: true })
 export class DiffResolveResultWidget extends ResolveResultWidget {

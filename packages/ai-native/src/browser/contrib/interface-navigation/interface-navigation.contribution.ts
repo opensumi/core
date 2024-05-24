@@ -23,8 +23,8 @@ import { MouseTargetType } from '@opensumi/ide-monaco/lib/browser/monaco-exports
 import { IIconService, IThemeService, IconType } from '@opensumi/ide-theme';
 import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
-import { LanguageParserService } from '../languages/service';
-import { toMonacoRange } from '../languages/tree-sitter/common';
+import { LanguageParserService } from '../../languages/service';
+import { toMonacoRange } from '../../languages/tree-sitter/common';
 
 import styles from './interface-navigation.module.less';
 

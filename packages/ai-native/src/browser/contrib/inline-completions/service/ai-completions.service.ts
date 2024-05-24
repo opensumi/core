@@ -10,7 +10,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 
-import { IProvideInlineCompletionsSignature } from '../../types';
+import { IProvideInlineCompletionsSignature } from '../../../types';
 import { CompletionRequestBean } from '../model/competionModel';
 
 @Injectable()

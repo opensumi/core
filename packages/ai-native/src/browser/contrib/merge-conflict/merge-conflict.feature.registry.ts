@@ -6,7 +6,7 @@ import {
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
 
-import { IResolveConflictRegistry } from '../types';
+import { IResolveConflictRegistry } from '../../types';
 
 @Injectable()
 export class ResolveConflictRegistry
