@@ -60,7 +60,17 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.initialized = true;
 
+        this.addDispose(
+          Event.debounce(
+            monacoEditor.onWillChangeModel,
+            (_, e) => e,
+            300,
+          )(() => {
+            this.registerLanguageFeatures(editor);
+          }),
+        );
         this.registerLanguageFeatures(editor);
+
         this.addDispose(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
         this.addDispose(this.inlineChatHandler.registerInlineChatFeature(editor));
       }),
@@ -82,44 +92,38 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   private async registerLanguageFeatures(editor: IEditor): Promise<void> {
     const { monacoEditor } = editor;
 
-    const doRegister = async () => {
-      if (this.modelSessionDisposable) {
-        this.modelSessionDisposable.dispose();
-      }
+    if (this.modelSessionDisposable) {
+      this.modelSessionDisposable.dispose();
+    }
 
-      const model = monacoEditor.getModel();
-      if (!model) {
-        return;
-      }
+    const model = monacoEditor.getModel();
+    if (!model) {
+      return;
+    }
 
-      this.modelSessionDisposable = new Disposable();
-      const languageId = model.getLanguageId();
+    this.modelSessionDisposable = new Disposable();
+    const languageId = model.getLanguageId();
 
-      if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-        let latestMiddlewareCollector: IAIMiddleware | undefined;
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+      let latestMiddlewareCollector: IAIMiddleware | undefined;
 
-        this.contributions.getContributions().forEach((contribution) => {
-          if (contribution.middleware) {
-            latestMiddlewareCollector = contribution.middleware;
-          }
-        });
+      this.contributions.getContributions().forEach((contribution) => {
+        if (contribution.middleware) {
+          latestMiddlewareCollector = contribution.middleware;
+        }
+      });
 
-        this.modelSessionDisposable.addDispose(
-          this.inlineCompletionHandler.registerProvider(editor, languageId, latestMiddlewareCollector),
-        );
-      }
+      this.modelSessionDisposable.addDispose(
+        this.inlineCompletionHandler.registerProvider(editor, languageId, latestMiddlewareCollector),
+      );
+    }
 
-      if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
-        this.modelSessionDisposable.addDispose(this.renameHandler.registerRenameFeature(languageId));
-      }
+    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+      this.modelSessionDisposable.addDispose(this.renameHandler.registerRenameFeature(languageId));
+    }
 
-      if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-        this.modelSessionDisposable.addDispose(this.codeActionHandler.registerCodeActionFeature(languageId, editor));
-      }
-    };
-
-    this.addDispose(Event.debounce(monacoEditor.onWillChangeModel, (_, e) => e, 300)(doRegister.bind(this)));
-
-    doRegister();
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+      this.modelSessionDisposable.addDispose(this.codeActionHandler.registerCodeActionFeature(languageId, editor));
+    }
   }
 }
