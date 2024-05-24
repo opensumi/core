@@ -610,15 +610,21 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
 
   const onMouseDown = (e) => {
     resizing.current = true;
-    ref.current?.classList.add(styles.active);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     startY.current = e.pageY;
     cachedNextElement.current = nextElement.current;
     cachedPrevElement.current = prevElement.current;
-    startPrevHeight.current = prevElement.current!.offsetHeight;
-    startNextHeight.current = nextElement.current!.offsetHeight;
-    preventWebviewCatchMouseEvents();
+
+    fastdom.measure(() => {
+      startPrevHeight.current = prevElement.current!.offsetHeight;
+      startNextHeight.current = nextElement.current!.offsetHeight;
+
+      fastdom.mutate(() => {
+        ref.current?.classList.add(styles.active);
+        preventWebviewCatchMouseEvents();
+      });
+    });
   };
 
   const onMouseMove = (e: MouseEvent) => {
@@ -659,26 +665,32 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
           return;
         }
       }
-      if (props.flexMode === ResizeFlexMode.Prev || props.flexMode === ResizeFlexMode.Next) {
-        flexModeSetSize(prevHeight, nextHeight);
-      } else if (props.flexMode === ResizeFlexMode.Percentage) {
-        const parentHeight = ref.current!.parentElement!.offsetHeight;
-        setSize(prevHeight / parentHeight, nextHeight / parentHeight);
-      } else {
-        setDomSize(prevHeight, nextHeight, cachedPrevElement.current!, cachedNextElement.current!);
-      }
+
+      fastdom.mutate(() => {
+        if (props.flexMode === ResizeFlexMode.Prev || props.flexMode === ResizeFlexMode.Next) {
+          flexModeSetSize(prevHeight, nextHeight);
+        } else if (props.flexMode === ResizeFlexMode.Percentage) {
+          const parentHeight = ref.current!.parentElement!.offsetHeight;
+          setSize(prevHeight / parentHeight, nextHeight / parentHeight);
+        } else {
+          setDomSize(prevHeight, nextHeight, cachedPrevElement.current!, cachedNextElement.current!);
+        }
+      });
     });
   };
 
   const onMouseUp = (e) => {
     resizing.current = false;
-    ref.current?.classList.remove(styles.active);
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
-    if (props.onFinished) {
-      props.onFinished();
-    }
-    allowWebviewCatchMouseEvents();
+
+    fastdom.mutate(() => {
+      ref.current?.classList.remove(styles.active);
+      if (props.onFinished) {
+        props.onFinished();
+      }
+      allowWebviewCatchMouseEvents();
+    });
   };
 
   React.useEffect(() => {
