@@ -130,6 +130,14 @@ export const AIChatView = observer(() => {
     const disposer = new Disposable();
 
     disposer.addDispose(
+      chatApiService.onScrollToBottom(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      }),
+    );
+
+    disposer.addDispose(
       chatApiService.onChatMessageLaunch(async (message) => {
         if (message.immediate !== false) {
           if (loading) {
