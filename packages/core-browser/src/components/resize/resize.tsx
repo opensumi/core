@@ -1,6 +1,7 @@
 import cls from 'classnames';
-import fastdom from 'fastdom';
 import React from 'react';
+
+import { IDisposable, fastdom } from '@opensumi/ide-core-browser';
 
 import styles from './resize.module.less';
 
@@ -85,7 +86,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const startNextWidth = React.useRef<number>(0);
   const prevElement = React.useRef<HTMLElement | null>();
   const nextElement = React.useRef<HTMLElement | null>();
-  const requestFrame = React.useRef<number>();
+  const requestFrameToDispose = React.useRef<IDisposable>();
 
   const setSize = (prev: number, next: number) => {
     const prevEle = props.findPrevElement ? props.findPrevElement() : prevElement.current!;
@@ -316,11 +317,11 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     }
     const prevWidth = startPrevWidth.current + e.pageX - startX.current;
     const nextWidth = startNextWidth.current - (e.pageX - startX.current);
-    if (requestFrame.current) {
-      window.cancelAnimationFrame(requestFrame.current);
+    if (requestFrameToDispose.current) {
+      requestFrameToDispose.current.dispose();
     }
 
-    requestFrame.current = window.requestAnimationFrame(() => {
+    requestFrameToDispose.current = fastdom.mutate(() => {
       if (props.flexMode) {
         flexModeSetSize(prevWidth, nextWidth);
       } else {
@@ -329,7 +330,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       }
     });
   };
-  const onMouseUp = (e) => {
+  const onMouseUp = () => {
     resizing.current = false;
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
@@ -422,7 +423,6 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   const cachedPrevElement = React.useRef<HTMLElement>();
   const cachedNextElement = React.useRef<HTMLElement>();
 
-  const requestFrame = React.useRef<number>();
   // direction: true 为向下，false 为向上
   const setSize = (prev: number, next: number, direction?: boolean) => {
     const prevEle = props.findPrevElement ? props.findPrevElement(direction) : prevElement.current!;
@@ -632,32 +632,30 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     if (ref.current && ref.current.classList.contains('no-resize')) {
       return;
     }
-    const direction = e.pageY > startY.current;
-    // 若上层未传入findNextElement，dynamicNext为null，否则找不到符合要求的panel时返回undefined
-    const dynamicNext = props.findNextElement ? props.findNextElement(direction) : null;
-    const dynamicPrev = props.findPrevElement ? props.findPrevElement(direction) : null;
-    // 作用元素变化重新初始化当前位置，传入findNextElement时默认已传入findPrevElement
-    if (
-      (dynamicNext !== null && cachedNextElement.current !== dynamicNext) ||
-      (dynamicPrev !== null && cachedPrevElement.current !== dynamicPrev)
-    ) {
-      if (!dynamicNext || !dynamicPrev) {
-        return;
+
+    fastdom.measure(() => {
+      const direction = e.pageY > startY.current;
+      // 若上层未传入findNextElement，dynamicNext为null，否则找不到符合要求的panel时返回undefined
+      const dynamicNext = props.findNextElement ? props.findNextElement(direction) : null;
+      const dynamicPrev = props.findPrevElement ? props.findPrevElement(direction) : null;
+      // 作用元素变化重新初始化当前位置，传入findNextElement时默认已传入findPrevElement
+      if (
+        (dynamicNext !== null && cachedNextElement.current !== dynamicNext) ||
+        (dynamicPrev !== null && cachedPrevElement.current !== dynamicPrev)
+      ) {
+        if (!dynamicNext || !dynamicPrev) {
+          return;
+        }
+        cachedNextElement.current = dynamicNext!;
+        cachedPrevElement.current = dynamicPrev!;
+        startY.current = e.pageY;
+        startPrevHeight.current = cachedPrevElement.current!.offsetHeight;
+        startNextHeight.current = cachedNextElement.current!.offsetHeight;
       }
-      cachedNextElement.current = dynamicNext!;
-      cachedPrevElement.current = dynamicPrev!;
-      startY.current = e.pageY;
-      startPrevHeight.current = cachedPrevElement.current!.offsetHeight;
-      startNextHeight.current = cachedNextElement.current!.offsetHeight;
-    }
 
-    const prevHeight = startPrevHeight.current + e.pageY - startY.current;
-    const nextHeight = startNextHeight.current - (e.pageY - startY.current);
-    if (requestFrame.current) {
-      window.cancelAnimationFrame(requestFrame.current);
-    }
+      const prevHeight = startPrevHeight.current + e.pageY - startY.current;
+      const nextHeight = startNextHeight.current - (e.pageY - startY.current);
 
-    requestFrame.current = window.requestAnimationFrame(() => {
       const prevMinResize = Number(cachedPrevElement.current!.dataset.minResize || 0);
       const nextMinResize = Number(cachedNextElement.current!.dataset.minResize || 0);
       if (prevMinResize || nextMinResize) {

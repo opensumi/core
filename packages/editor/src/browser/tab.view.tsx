@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import fastdom from 'fastdom';
 import React, {
   DragEvent,
   HTMLAttributes,
@@ -26,6 +25,7 @@ import {
   PreferenceService,
   ResizeEvent,
   URI,
+  fastdom,
   getExternalIcon,
   getIcon,
   getSlotLocation,
@@ -188,9 +188,12 @@ export const Tabs = ({ group }: ITabsProps) => {
       editorActionUpdateTimer.current = null;
     }
     const timer = setTimeout(() => {
-      if (editorActionRef.current?.offsetWidth !== lastMarginRight) {
-        setLastMarginRight(editorActionRef.current?.offsetWidth);
-      }
+      fastdom.measure(() => {
+        const _marginReight = editorActionRef.current?.offsetWidth;
+        if (_marginReight !== lastMarginRight) {
+          setLastMarginRight(_marginReight);
+        }
+      });
     }, 200);
     editorActionUpdateTimer.current = timer;
   }, [editorActionRef.current, editorActionUpdateTimer.current, lastMarginRight]);
@@ -226,27 +229,29 @@ export const Tabs = ({ group }: ITabsProps) => {
   }, [wrapMode]);
 
   const layoutLastInRow = useCallback(() => {
-    if (contentRef.current && wrapMode) {
-      const newMap: Map<number, boolean> = new Map();
+    fastdom.measureAtNextFrame(() => {
+      if (contentRef.current && wrapMode) {
+        const newMap: Map<number, boolean> = new Map();
 
-      let currentTabY: number | undefined;
-      let lastTab: HTMLDivElement | undefined;
-      const tabs = Array.from(contentRef.current.children);
-      // 最后一个元素是editorAction
-      tabs.pop();
-      tabs.forEach((child: HTMLDivElement) => {
-        if (child.offsetTop !== currentTabY) {
-          currentTabY = child.offsetTop;
-          if (lastTab) {
-            newMap.set(tabs.indexOf(lastTab), true);
+        let currentTabY: number | undefined;
+        let lastTab: HTMLDivElement | undefined;
+        const tabs = Array.from(contentRef.current.children);
+        // 最后一个元素是editorAction
+        tabs.pop();
+        tabs.forEach((child: HTMLDivElement) => {
+          if (child.offsetTop !== currentTabY) {
+            currentTabY = child.offsetTop;
+            if (lastTab) {
+              newMap.set(tabs.indexOf(lastTab), true);
+            }
           }
-        }
-        lastTab = child;
-        newMap.set(tabs.indexOf(child), false);
-      });
-      // 最后一个 tab 不做 grow 处理
-      setTabMap(newMap);
-    }
+          lastTab = child;
+          newMap.set(tabs.indexOf(child), false);
+        });
+        // 最后一个 tab 不做 grow 处理
+        setTabMap(newMap);
+      }
+    });
   }, [contentRef.current, wrapMode]);
 
   useEffect(() => {
@@ -271,7 +276,7 @@ export const Tabs = ({ group }: ITabsProps) => {
     // 当前选中的group变化时宽度变化
     disposable.push(
       editorService.onDidCurrentEditorGroupChanged(() => {
-        window.requestAnimationFrame(updateTabMarginRight);
+        updateTabMarginRight();
       }),
     );
     // editorMenu变化时宽度可能变化
@@ -281,7 +286,7 @@ export const Tabs = ({ group }: ITabsProps) => {
         () => {},
         200,
       )(() => {
-        window.requestAnimationFrame(updateTabMarginRight);
+        updateTabMarginRight();
       }),
     );
 
