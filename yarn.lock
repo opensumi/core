@@ -2183,7 +2183,7 @@ __metadata:
     "@vscode/codicons": "npm:0.0.35"
     ajv: "npm:^6.10.0"
     classnames: "npm:2.5.1"
-    fastdom: "npm:^1.0.12"
+    data-structure-typed: "npm:^1.52.0"
     font-awesome: "npm:^4.7.0"
     fuzzy: "npm:^0.1.3"
     jsonc-parser: "npm:^2.1.0"
@@ -7367,6 +7367,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"data-structure-typed@npm:^1.52.0":
+  version: 1.52.0
+  resolution: "data-structure-typed@npm:1.52.0"
+  checksum: 10/9adddcbd0aae44311e866ac093c353fe7f092c19216152329261ea85b5e5e33413ec0605d4766c2ed2939d0b5d1a41576f8c0d21c5c6fe407a7bbdd9b2b2f159
+  languageName: node
+  linkType: hard
+
 "data-urls@npm:^3.0.2":
   version: 3.0.2
   resolution: "data-urls@npm:3.0.2"
@@ -9106,15 +9113,6 @@ __metadata:
   version: 2.0.6
   resolution: "fast-levenshtein@npm:2.0.6"
   checksum: 10/eb7e220ecf2bab5159d157350b81d01f75726a4382f5a9266f42b9150c4523b9795f7f5d9fbbbeaeac09a441b2369f05ee02db48ea938584205530fe5693cfe1
-  languageName: node
-  linkType: hard
-
-"fastdom@npm:^1.0.12":
-  version: 1.0.12
-  resolution: "fastdom@npm:1.0.12"
-  dependencies:
-    strictdom: "npm:^1.0.1"
-  checksum: 10/e87d67aaed413de24680c9ec735231b6568b62e2b7740f320c3c9f0bc57ed8079ed16aaf8c83a1c27e14948f1a87a7dab98d83a375b85bf77f8bffc2ae55777f
   languageName: node
   linkType: hard
 
@@ -18266,13 +18264,6 @@ __metadata:
   version: 0.1.1
   resolution: "streamifier@npm:0.1.1"
   checksum: 10/67a8285c4d71ae1fa0ed5e0966a0483d962f5140bab28ad04657f57de521ab4e9d929c2ec8c51a4393c838ce664db2e398de3ee9bd9da727a4f35bb85915ed2d
-  languageName: node
-  linkType: hard
-
-"strictdom@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "strictdom@npm:1.0.1"
-  checksum: 10/e9e030dd9b14eaee81e698044e405aaaceec6e09f32c920fa24c2ee9fe8153bf30780a06028b6c185dc6348b54cc803addb4bfa498246b9d26583b23b359b9fa
   languageName: node
   linkType: hard
 

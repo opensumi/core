@@ -1,5 +1,7 @@
 import { Event as BaseEvent, Disposable, Emitter, IDisposable, isWebKit } from '@opensumi/ide-core-common';
 
+import fastdom from './fastdom';
+
 export * from './event';
 
 export const EventType = {
@@ -175,3 +177,5 @@ export class FocusTracker extends Disposable {
 export function trackFocus(element: HTMLElement | Window): IFocusTracker {
   return new FocusTracker(element);
 }
+
+export { fastdom };

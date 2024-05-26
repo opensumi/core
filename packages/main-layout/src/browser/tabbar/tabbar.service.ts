@@ -1,4 +1,3 @@
-import fastdom from 'fastdom';
 import debounce from 'lodash/debounce';
 import { action, makeObservable, observable, reaction, runInAction } from 'mobx';
 
@@ -20,6 +19,7 @@ import {
   ViewContextKeyRegistry,
   WithEventBus,
   createFormatLocalizedStr,
+  fastdom,
   formatLocalize,
   getTabbarCtxKey,
   isDefined,
@@ -847,7 +847,7 @@ export class TabbarService extends WithEventBus {
   }
 
   protected onResize() {
-    fastdom.measure(() => {
+    fastdom.measureAtNextFrame(() => {
       if (!this.currentContainerId || !this.resizeHandle) {
         // 折叠时不监听变化
         return;

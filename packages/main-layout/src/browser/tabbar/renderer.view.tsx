@@ -11,7 +11,15 @@ import React, {
   useState,
 } from 'react';
 
-import { ComponentRegistryInfo, IEventBus, ResizeEvent, SlotLocation, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  ComponentRegistryInfo,
+  IDisposable,
+  IEventBus,
+  ResizeEvent,
+  SlotLocation,
+  fastdom,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { EDirection, PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -62,17 +70,21 @@ export const TabRendererBase: FC<{
   }, []);
 
   useEffect(() => {
-    if (rootRef.current) {
+    fastdom.measure(() => {
       refreshFullSize();
-      let taskId: number | null;
-      eventBus.onDirective(ResizeEvent.createDirective(side), () => {
-        if (taskId) {
-          cancelAnimationFrame(taskId);
-          taskId = null;
-        }
-        taskId = requestAnimationFrame(refreshFullSize);
+    });
+
+    let toDispose: IDisposable | undefined;
+
+    eventBus.onDirective(ResizeEvent.createDirective(side), () => {
+      if (toDispose) {
+        toDispose.dispose();
+      }
+
+      toDispose = fastdom.measureAtNextFrame(() => {
+        refreshFullSize();
       });
-    }
+    });
   }, []);
 
   return (

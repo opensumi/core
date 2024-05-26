@@ -1,4 +1,3 @@
-import fastdom from 'fastdom';
 import debounce from 'lodash/debounce';
 import { action, makeObservable, observable, runInAction } from 'mobx';
 
@@ -18,6 +17,7 @@ import {
   View,
   ViewContextKeyRegistry,
   WithEventBus,
+  fastdom,
   isDefined,
   localize,
 } from '@opensumi/ide-core-browser';
@@ -377,7 +377,7 @@ export class AccordionService extends WithEventBus {
     if (e.payload.slotLocation) {
       if (this.state[e.payload.slotLocation]) {
         const id = e.payload.slotLocation;
-        fastdom.measure(() => {
+        fastdom.measureAtNextFrame(() => {
           // get dom of viewId
           const sectionDom = document.getElementById(id);
           if (sectionDom) {

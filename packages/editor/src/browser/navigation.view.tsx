@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import fastdom from 'fastdom';
 import { action, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { memo, useCallback, useEffect, useRef } from 'react';
@@ -9,6 +8,7 @@ import { Icon, Scrollbars } from '@opensumi/ide-components';
 import {
   Disposable,
   DomListener,
+  fastdom,
   getIcon,
   useDesignStyles,
   useInjectable,

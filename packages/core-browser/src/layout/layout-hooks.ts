@@ -1,7 +1,7 @@
-import fastdom from 'fastdom';
 import throttle from 'lodash/throttle';
 import React from 'react';
 
+import { fastdom } from '@opensumi/ide-core-browser';
 import { IEventBus } from '@opensumi/ide-core-common';
 
 import { useInjectable } from '../react-hooks';
@@ -47,7 +47,7 @@ export const useViewState = (
   React.useEffect(() => {
     const disposer = eventBus.onDirective(ResizeEvent.createDirective(location), () => {
       if (!manualObserve) {
-        fastdom.measure(() => {
+        fastdom.measureAtNextFrame(() => {
           if (containerRef.current) {
             const height = containerRef.current.clientHeight;
             const width = containerRef.current.clientWidth;
