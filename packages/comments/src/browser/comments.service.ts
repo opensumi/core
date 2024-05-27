@@ -88,6 +88,8 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private threadsCommentChangeEmitter = new Emitter<ICommentsThread>();
 
+  private commentRangeProviderChangeEmitter = new Emitter<void>();
+
   private threadsCreatedEmitter = new Emitter<ICommentsThread>();
 
   private rangeProviderMap = new Map<string, ICommentRangeProvider>();
@@ -95,6 +97,11 @@ export class CommentsService extends Disposable implements ICommentsService {
   private rangeOwner = new Map<string, IRange[]>();
 
   private providerDecorationCache = new LRUCache<string, Deferred<IRange[]>>(10000);
+
+  private _commentingRangeAmountReserved = 0;
+  private _commentingRangeSpaceReserved = false;
+
+  private commentRangeDecoration: string[] | null;
 
   // 默认在 file 协议和 git 协议中显示评论数据
   private shouldShowCommentsSchemes = new Set(['file', 'git']);
@@ -132,6 +139,10 @@ export class CommentsService extends Disposable implements ICommentsService {
     return this.threadsCreatedEmitter.event;
   }
 
+  get onCommentRangeProviderChange() {
+    return this.commentRangeProviderChangeEmitter.event;
+  }
+
   /**
    * -------------------------------- IMPORTANT --------------------------------
    * 需要注意区分 model.IModelDecorationOptions 与 monaco.editor.IModelDecorationOptions 两个类型
@@ -146,12 +157,19 @@ export class CommentsService extends Disposable implements ICommentsService {
     const avatar =
       thread.comments.length === 0 ? this.currentAuthorAvatar : thread.comments[0].author.iconPath?.toString();
     const icon = avatar
-      ? this.iconService.fromIcon('', avatar, IconType.Background)
-      : this.iconService.fromString('$(comment-unresolved)');
+      ? `${this.iconService.fromIcon('', avatar, IconType.Background)} avatar-icon`
+      : this.iconService.fromString('$(comment)');
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'comments-thread-decoration',
-      // 创建评论显示在 glyph margin 处
-      glyphMarginClassName: ['comments-decoration', 'comments-thread', icon].join(' '),
+      linesDecorationsClassName: ['comment-range', 'comment-thread', icon].join(' '),
+    };
+    return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
+  }
+
+  private createDottedRangeDecoration(): model.IModelDecorationOptions {
+    const decorationOptions: model.IModelDecorationOptions = {
+      description: 'comments-multiline-hover-decoration',
+      linesDecorationsClassName: ['comment-range', 'multiline-add'].join(' '),
     };
     return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
   }
@@ -159,7 +177,15 @@ export class CommentsService extends Disposable implements ICommentsService {
   private createHoverDecoration(): model.IModelDecorationOptions {
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'comments-hover-decoration',
-      linesDecorationsClassName: ['comments-decoration', 'comments-add', getIcon('add-comments')].join(' '),
+      linesDecorationsClassName: ['comment-range', 'line-hover', 'comment-add'].join(' '),
+    };
+    return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
+  }
+
+  private createCommentRangeDecoration(): model.IModelDecorationOptions {
+    const decorationOptions: model.IModelDecorationOptions = {
+      description: 'comments-range-decoration',
+      linesDecorationsClassName: ['comment-range', 'comment-diff-added'].join(' '),
     };
     return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
   }
@@ -191,7 +217,12 @@ export class CommentsService extends Disposable implements ICommentsService {
     this.registerDecorationProvider();
   }
 
+  private startCommentRange: IRange | null;
+  private endCommentRange: IRange | null;
+  private editor: IEditor | null;
+
   public handleOnCreateEditor(editor: IEditor) {
+    this.editor = editor;
     const disposer = new Disposable();
 
     disposer.addDispose(
@@ -199,36 +230,27 @@ export class CommentsService extends Disposable implements ICommentsService {
         if (
           event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
           event.target.element &&
-          event.target.element.className.indexOf('comments-add') > -1
+          event.target.element.className.indexOf('comment-add') > -1
         ) {
           const { target } = event;
           if (target && target.range) {
             const { range } = target;
-            // 如果已经存在一个待输入的评论组件，则不创建新的
-            if (
-              !this.commentsThreads.some(
-                (thread) =>
-                  thread.comments.length === 0 &&
-                  thread.uri.isEqual(editor.currentUri!) &&
-                  thread.range.startLineNumber === range.startLineNumber,
-              )
-            ) {
-              const thread = this.createThread(editor.currentUri!, range);
-              thread.show(editor);
-            }
+            this.startCommentRange = range;
             event.event.stopPropagation();
           }
         } else if (
-          event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN &&
+          event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
           event.target.element &&
-          event.target.element.className.indexOf('comments-thread') > -1
+          event.target.element.className.indexOf('comment-thread') > -1
         ) {
           const { target } = event;
           if (target && target.range) {
             const { range } = target;
             const threads = this.commentsThreads.filter(
               (thread) =>
-                thread.uri.isEqual(editor.currentUri!) && thread.range.startLineNumber === range.startLineNumber,
+                thread.uri.isEqual(editor.currentUri!) &&
+                thread.range.startLineNumber === range.startLineNumber &&
+                thread.range.endLineNumber === range.endLineNumber,
             );
             if (threads.length) {
               // 判断当前 widget 是否是显示的
@@ -245,36 +267,369 @@ export class CommentsService extends Disposable implements ICommentsService {
         }
       }),
     );
+
+    disposer.addDispose(
+      editor.monacoEditor.onMouseUp((event) => {
+        if (
+          event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+          event.target.element &&
+          (event.target.element.className.indexOf('comment-range') > -1 || this.startCommentRange)
+        ) {
+          const { target } = event;
+          let range: IRange | undefined;
+          if (this.startCommentRange) {
+            range = this.startCommentRange;
+            if (this.endCommentRange) {
+              range.endColumn = this.endCommentRange.endColumn;
+              range.endLineNumber = this.endCommentRange.endLineNumber;
+            }
+          } else if (target && target.range) {
+            range = target.range;
+          }
+          if (range) {
+            if (
+              !this.commentsThreads.some(
+                (thread) =>
+                  thread.comments.length === 0 &&
+                  thread.uri.isEqual(editor.currentUri!) &&
+                  thread.range.startLineNumber === range.startLineNumber &&
+                  thread.range.endLineNumber === range.endLineNumber,
+              )
+            ) {
+              const thread = this.createThread(editor.currentUri!, range);
+              thread.show(editor);
+            }
+            event.event.stopPropagation();
+          }
+        }
+        this.startCommentRange = null;
+        this.endCommentRange = null;
+      }),
+    );
+
     let oldDecorations: string[] = [];
     disposer.addDispose(
-      editor.monacoEditor.onMouseMove(
-        debounce(async (event) => {
-          const uri = editor.currentUri;
-
-          const range = event.target.range;
+      editor.monacoEditor.onMouseMove(async (event) => {
+        const uri = editor.currentUri;
+        const range = event.target.range;
+        // 多行评论
+        if (this.startCommentRange) {
+          if (uri && range) {
+            const selection = {
+              startLineNumber: this.startCommentRange.startLineNumber,
+              endLineNumber: range.endLineNumber,
+              startColumn: this.startCommentRange.startColumn,
+              endColumn: range.endColumn,
+            };
+            this.renderCommentRange(editor, selection);
+            this.endCommentRange = range;
+          }
+        } else {
           if (uri && range && (await this.shouldShowHoverDecoration(uri, range))) {
-            oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, [
+            const newDecorations = [
               {
                 range: positionToRange(range.startLineNumber),
                 options: this.createHoverDecoration() as unknown as monaco.editor.IModelDecorationOptions,
               },
-            ]);
-          } else {
-            oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, []);
+            ];
+            oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, newDecorations);
           }
-        }, 10),
-      ),
+        }
+      }),
     );
 
     disposer.addDispose(
       editor.monacoEditor.onMouseLeave(
-        debounce(() => {
-          oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, []);
-        }, 10),
+        debounce(async (event) => {
+          const range = event.target?.range;
+          if (this.startCommentRange) {
+          } else {
+            const newDecorations = [
+              {
+                range: positionToRange(range.startLineNumber),
+                options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+              },
+            ];
+            oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, newDecorations);
+          }
+        }, 5),
       ),
     );
 
+    disposer.addDispose(
+      editor.monacoEditor.onDidChangeModel(() => {
+        this.renderCommentRange(editor);
+        this.tryUpdateReservedSpace();
+      }),
+    );
+
+    disposer.addDispose(
+      this.onCommentRangeProviderChange(() => {
+        this.renderCommentRange(editor);
+      }),
+    );
+
+    disposer.addDispose(
+      Event.any(
+        this.onThreadsChanged,
+        this.onThreadsCommentChange,
+        this.onThreadsCreated,
+      )(() => {
+        this.renderCommentRange(editor);
+      }),
+    );
+    this.tryUpdateReservedSpace();
     return disposer;
+  }
+
+  private ensureCommentingRangeReservedAmount(editor: IEditor) {
+    const existing = this.getExistingCommentEditorOptions(editor);
+    if (existing.lineDecorationsWidth !== this._commentingRangeAmountReserved) {
+      editor.updateOptions({
+        lineDecorationsWidth: this.getWithCommentsLineDecorationWidth(editor, existing.lineDecorationsWidth),
+      });
+    }
+  }
+
+  private async tryUpdateReservedSpace(uri?: URI) {
+    if (!this.editor || (!uri && !this.editor.currentUri)) {
+      return;
+    }
+
+    uri = uri ?? (this.editor.currentUri || undefined);
+    const hasCommentsOrRangesInInfo = uri ? this.shouldShowCommentsSchemes.has(uri.scheme) : false;
+
+    const hasCommentsOrRanges = hasCommentsOrRangesInInfo;
+    if (hasCommentsOrRanges) {
+      if (!this._commentingRangeSpaceReserved) {
+        this._commentingRangeSpaceReserved = true;
+        const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(this.editor);
+        const newOptions = this.getWithCommentsEditorOptions(this.editor, extraEditorClassName, lineDecorationsWidth);
+        this.updateEditorLayoutOptions(this.editor, newOptions.extraEditorClassName, newOptions.lineDecorationsWidth);
+      } else {
+        this.ensureCommentingRangeReservedAmount(this.editor);
+      }
+    } else if (!hasCommentsOrRanges && this._commentingRangeSpaceReserved) {
+      this._commentingRangeSpaceReserved = false;
+      const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(this.editor);
+      const newOptions = this.getWithoutCommentsEditorOptions(this.editor, extraEditorClassName, lineDecorationsWidth);
+      this.updateEditorLayoutOptions(this.editor, newOptions.extraEditorClassName, newOptions.lineDecorationsWidth);
+    }
+  }
+
+  private getExistingCommentEditorOptions(editor: IEditor) {
+    const lineDecorationsWidth: number = editor.monacoEditor.getOption(monaco.EditorOption.lineDecorationsWidth);
+    let extraEditorClassName: string[] = [];
+    const configuredExtraClassName = editor.monacoEditor.getRawOptions().extraEditorClassName;
+    if (configuredExtraClassName) {
+      extraEditorClassName = configuredExtraClassName.split(' ');
+    }
+    return { lineDecorationsWidth, extraEditorClassName };
+  }
+
+  private getWithoutCommentsEditorOptions(
+    editor: IEditor,
+    extraEditorClassName: string[],
+    startingLineDecorationsWidth: number,
+  ) {
+    let lineDecorationsWidth = startingLineDecorationsWidth;
+    const inlineCommentPos = extraEditorClassName.findIndex((name) => name === 'inline-comment');
+    if (inlineCommentPos >= 0) {
+      extraEditorClassName.splice(inlineCommentPos, 1);
+    }
+
+    const options = editor.monacoEditor.getOptions();
+    if (options.get(monaco.EditorOption.folding) && options.get(monaco.EditorOption.showFoldingControls) !== 'never') {
+      lineDecorationsWidth += 11; // 11 comes from https://github.com/microsoft/vscode/blob/94ee5f58619d59170983f453fe78f156c0cc73a3/src/vs/workbench/contrib/comments/browser/media/review.css#L485
+    }
+    lineDecorationsWidth -= 24;
+    return { extraEditorClassName, lineDecorationsWidth };
+  }
+
+  private updateEditorLayoutOptions(editor: IEditor, extraEditorClassName: string[], lineDecorationsWidth: number) {
+    editor.updateOptions({
+      extraEditorClassName: extraEditorClassName.join(' '),
+      lineDecorationsWidth,
+    });
+  }
+
+  private getWithCommentsEditorOptions(
+    editor: IEditor,
+    extraEditorClassName: string[],
+    startingLineDecorationsWidth: number,
+  ) {
+    extraEditorClassName.push('inline-comment');
+    return {
+      lineDecorationsWidth: this.getWithCommentsLineDecorationWidth(editor, startingLineDecorationsWidth),
+      extraEditorClassName,
+    };
+  }
+
+  private getWithCommentsLineDecorationWidth(editor: IEditor, startingLineDecorationsWidth: number) {
+    let lineDecorationsWidth = startingLineDecorationsWidth;
+    const options = editor.monacoEditor.getOptions();
+    if (options.get(monaco.EditorOption.folding) && options.get(monaco.EditorOption.showFoldingControls) !== 'never') {
+      lineDecorationsWidth -= 11;
+    }
+    lineDecorationsWidth += 24;
+    this._commentingRangeAmountReserved = lineDecorationsWidth;
+    return this._commentingRangeAmountReserved;
+  }
+
+  private async renderCommentRange(
+    editor: IEditor,
+    selection: IRange = {
+      startLineNumber: 0,
+      endLineNumber: 0,
+      startColumn: 0,
+      endColumn: 0,
+    },
+  ) {
+    if (!editor.currentUri) {
+      return;
+    }
+    if (this.commentRangeDecoration) {
+      editor.monacoEditor.deltaDecorations(this.commentRangeDecoration, []);
+    }
+    const contributionRanges = await this.getContributionRanges(editor.currentUri);
+    if (contributionRanges.length > 0) {
+      contributionRanges.map((contributionRange) => {
+        if (
+          selection.startColumn <= contributionRange.startLineNumber &&
+          selection.endLineNumber >= contributionRange.endLineNumber
+        ) {
+          const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
+            [],
+            [
+              {
+                range: contributionRange,
+                options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+              },
+            ],
+          );
+          this.commentRangeDecoration = commentRangeDecoration;
+        }
+        if (selection.endLineNumber >= contributionRange.endLineNumber) {
+          if (selection.startLineNumber <= contributionRange.endLineNumber) {
+            // 存在交集
+            const selectionRange = {
+              startLineNumber: selection.startLineNumber,
+              endLineNumber: contributionRange.endLineNumber,
+              startColumn: selection.startColumn,
+              endColumn: contributionRange.endColumn,
+            };
+            const topCommentRange = {
+              startLineNumber: contributionRange.startLineNumber,
+              endLineNumber: selectionRange.startLineNumber - 1,
+              startColumn: contributionRange.startColumn,
+              endColumn: selectionRange.endColumn,
+            };
+            const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
+              [],
+              [
+                {
+                  range: topCommentRange,
+                  options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                },
+                {
+                  range: contributionRange,
+                  options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                },
+              ],
+            );
+            this.commentRangeDecoration = commentRangeDecoration;
+          } else {
+            const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
+              [],
+              [
+                {
+                  range: contributionRange,
+                  options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                },
+              ],
+            );
+            this.commentRangeDecoration = commentRangeDecoration;
+          }
+        } else if (selection.endLineNumber < contributionRange.endLineNumber) {
+          if (selection.endLineNumber >= contributionRange.startLineNumber) {
+            // 存在交集
+            if (selection.startLineNumber >= contributionRange.startLineNumber) {
+              const topCommentRange = {
+                startLineNumber: contributionRange.startLineNumber,
+                startColumn: contributionRange.startColumn,
+                endLineNumber: selection.startLineNumber - 1,
+                endColumn: selection.startColumn,
+              };
+              const bottomCommentRange = {
+                startLineNumber: selection.endLineNumber + 1,
+                startColumn: selection.endColumn,
+                endLineNumber: contributionRange.endLineNumber,
+                endColumn: contributionRange.endColumn,
+              };
+              const decorations =
+                selection.startLineNumber !== contributionRange.startLineNumber
+                  ? [
+                      {
+                        range: topCommentRange,
+                        options:
+                          this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                      },
+                    ]
+                  : [];
+              decorations.push({
+                range: selection,
+                options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+              });
+              decorations.push({
+                range: bottomCommentRange,
+                options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+              });
+              this.commentRangeDecoration = editor.monacoEditor.deltaDecorations([], decorations);
+            } else {
+              const selectionRange = {
+                startLineNumber: contributionRange.startLineNumber,
+                startColumn: contributionRange.startColumn,
+                endLineNumber: selection.endLineNumber,
+                endColumn: selection.endColumn,
+              };
+              const bottomCommentRange = {
+                startLineNumber: selectionRange.endLineNumber + 1,
+                startColumn: selectionRange.endColumn,
+                endLineNumber: contributionRange.endLineNumber,
+                endColumn: contributionRange.endColumn,
+              };
+              const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
+                [],
+                [
+                  {
+                    range: selectionRange,
+                    options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                  },
+                  {
+                    range: bottomCommentRange,
+                    options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                  },
+                ],
+              );
+              this.commentRangeDecoration = commentRangeDecoration;
+            }
+          } else {
+            const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
+              [],
+              [
+                {
+                  range: contributionRange,
+                  options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                },
+              ],
+            );
+            this.commentRangeDecoration = commentRangeDecoration;
+          }
+        }
+      });
+    } else {
+      this.commentRangeDecoration = null;
+    }
   }
 
   private async shouldShowHoverDecoration(uri: URI, range: IRange) {
@@ -305,7 +660,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     },
   ) {
     // 获取当前 range 的 providerId，用于 commentController contextKey 的生成
-    const providerId = this.getProviderIdsByLine(range.startLineNumber)[0];
+    const providerId = this.getProviderIdsByLine(range.endLineNumber)[0];
     const thread = this.injector.get(CommentsThread, [uri, range, providerId, options]);
     thread.onDispose(() => {
       this.threads.delete(thread.id);
@@ -367,12 +722,16 @@ export class CommentsService extends Disposable implements ICommentsService {
     for (const thread of (parent as CommentFileNode).threads) {
       const [first] = thread.comments;
       const comment = typeof first.body === 'string' ? first.body : first.body.value;
+      let description = `[Ln ${thread.range.startLineNumber}]`;
+      if (thread.range.startLineNumber !== thread.range.endLineNumber) {
+        description = `[Ln ${thread.range.startLineNumber}-${thread.range.endLineNumber}]`;
+      }
       childs.push(
         new CommentContentNode(
           this,
           thread,
           comment,
-          `[Ln ${thread.range.startLineNumber}]`,
+          description,
           first.author.iconPath
             ? (this.iconService.fromIcon('', first.author.iconPath.toString(), IconType.Background) as string)
             : getIcon('message'),
@@ -444,13 +803,16 @@ export class CommentsService extends Disposable implements ICommentsService {
       return await cache.promise;
     }
 
-    const model = this.documentService.getModelReference(uri, 'get-contribution-rages');
+    const model = this.documentService.getModelReference(uri, 'Get Comment Range');
     const rangePromise: Promise<IRange[] | undefined>[] = [];
     for (const rangeProvider of this.rangeProviderMap) {
       const [id, provider] = rangeProvider;
       rangePromise.push(
         (async () => {
-          const ranges = await provider.getCommentingRanges(model?.instance!);
+          if (!model?.instance) {
+            return;
+          }
+          const ranges = await provider.getCommentingRanges(model.instance);
           if (ranges && ranges.length) {
             // FIXME: ranges 会被 Diff uri 的两个 range 互相覆盖，导致可能根据行查不到 provider
             this.rangeOwner.set(id, ranges);
@@ -503,7 +865,12 @@ export class CommentsService extends Disposable implements ICommentsService {
             return isCurrentThread;
           })
           .map((thread) => ({
-            range: thread.range,
+            range: {
+              startLineNumber: thread.range.endLineNumber,
+              endLineNumber: thread.range.endLineNumber,
+              startColumn: thread.range.endColumn,
+              endColumn: thread.range.endColumn,
+            },
             options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
           })),
     });
@@ -543,6 +910,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     this.rangeProviderMap.set(id, provider);
     // 注册一个新的 range provider 后清理掉之前的缓存
     this.providerDecorationCache.clear();
+    this.commentRangeProviderChangeEmitter.fire();
     return Disposable.create(() => {
       this.rangeProviderMap.delete(id);
       this.rangeOwner.delete(id);
@@ -568,7 +936,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     }
     for (const rangeOwner of this.rangeOwner) {
       const [id, ranges] = rangeOwner;
-      if (ranges && ranges.some((range) => range.startLineNumber <= line && line <= range.endLineNumber)) {
+      if (ranges && ranges.some((range) => range.endLineNumber <= line && line <= range.endLineNumber)) {
         result.push(id);
       }
     }

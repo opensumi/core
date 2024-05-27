@@ -72,7 +72,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   React.useEffect(() => {
     const disposer = widget.onFirstDisplay(() => {
       setTimeout(() => {
-        widget.coreEditor.monacoEditor.revealLine(thread.range.startLineNumber + 1);
+        widget.coreEditor.monacoEditor.revealLine(thread.range.endLineNumber + 1);
       }, 0);
     });
     return () => {

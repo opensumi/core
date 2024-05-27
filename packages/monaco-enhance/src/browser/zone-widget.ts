@@ -117,7 +117,7 @@ class Arrow {
 
     if (where.startColumn === 1) {
       // the arrow isn't pretty at column 1 and we need to push it out a little
-      where = { ...where, startLineNumber: where.startLineNumber, startColumn: 2 };
+      where = { ...where, startLineNumber: where.endLineNumber, startColumn: 2 };
     }
 
     this._decorations.set([
@@ -171,7 +171,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
 
   private _showImpl(where: monaco.IRange, heightInLines: number) {
     const position = where;
-    const { startLineNumber: lineNumber, startColumn: column } = where;
+    const { endLineNumber: lineNumber, endColumn: column } = where;
     const viewZoneDomNode = document.createElement('div');
     const layoutInfo = this.editor.getLayoutInfo();
     const lineHeight = this.editor.getOption(EditorOption.lineHeight);

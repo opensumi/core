@@ -312,6 +312,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   public isEqual(thread: ICommentsThread): boolean {
-    return thread.uri.isEqual(this.uri) && thread.range.startLineNumber === this.range.startLineNumber;
+    return (
+      thread.uri.isEqual(this.uri) &&
+      thread.range.startLineNumber === this.range.startLineNumber &&
+      thread.range.endLineNumber === this.range.endLineNumber
+    );
   }
 }
