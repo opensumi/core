@@ -112,13 +112,7 @@ const AI_NAME = 'AI 研发助手';
 const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
 
-const defaultSampleQuestions = [
-  {
-    icon: getIcon('send2'),
-    title: '生成 Java 快速排序算法',
-    message: '生成 Java 快速排序算法',
-  },
-];
+const defaultSampleQuestions = [];
 
 const InitMsgComponent = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
