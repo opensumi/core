@@ -3,7 +3,7 @@ import React from 'react';
 
 import { getIcon, Icon } from '@opensumi/ide-components';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 
 export const Loading = React.memo((props: { className?: string }) => (
   <Icon className={cls(props.className, styles.loading_indicator)} iconClass={getIcon('loading')} />

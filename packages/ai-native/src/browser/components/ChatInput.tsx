@@ -10,7 +10,7 @@ import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-c
 
 import { InstructionEnum, IChatAgentService } from '../../common';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 
 const MAX_WRAPPER_HEIGHT = 160;
 const SHOW_EXPEND_HEIGHT = 68;

@@ -27,7 +27,7 @@ import { ChatRequestModel } from '../chat-model';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatAgentViewService } from '../types';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 import { Loading } from './Loading';
 import { Markdown } from './Markdown';
 import { Thinking, ThinkingResult } from './Thinking';

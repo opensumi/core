@@ -12,7 +12,7 @@ import { Loading } from '../components/Loading';
 import { IInlineChatFeatureRegistry } from '../types';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
-import * as styles from './inline-chat.module.less';
+import styles from './inline-chat.module.less';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
 export interface IAiInlineOperationProps {

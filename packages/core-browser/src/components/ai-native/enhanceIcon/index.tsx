@@ -6,7 +6,7 @@ import { MenuNode } from '../../../menu/next/base';
 import { IBrowserCtxMenu } from '../../../menu/next/renderer/ctxmenu/browser';
 import { useInjectable } from '../../../react-hooks';
 
-import * as styles from './styles.module.less';
+import styles from './styles.module.less';
 
 interface IEnhanceIconProps extends IconProps {
   wrapperStyle?: React.CSSProperties;

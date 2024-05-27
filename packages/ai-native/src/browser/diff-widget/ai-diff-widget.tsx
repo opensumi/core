@@ -13,7 +13,7 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
-import * as styles from './diff-widget.module.less';
+import styles from './diff-widget.module.less';
 
 const diffEditorOptions: IDiffEditorOptions = {
   fixedOverflowWidgets: true,

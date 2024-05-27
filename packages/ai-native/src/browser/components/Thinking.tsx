@@ -10,7 +10,7 @@ import { AiResponseTips } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 interface ITinkingProps {
   children?: React.ReactNode;
   status?: EMsgStreamStatus;

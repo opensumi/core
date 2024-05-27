@@ -14,7 +14,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
-import * as styles from './menu-bar.module.less';
+import styles from './menu-bar.module.less';
 
 const AiMenuBarRender = () => {
   const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);

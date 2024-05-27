@@ -6,7 +6,7 @@ import { Popover } from '@opensumi/ide-core-browser/lib/components';
 import { uuid } from '@opensumi/ide-core-common';
 import { EditorTabService } from '@opensumi/ide-editor/lib/browser/editor.tab.service';
 
-import * as styles from './override.module.less';
+import styles from './override.module.less';
 
 const EditorTabCloseComponent = (props) => {
   const { children } = props;

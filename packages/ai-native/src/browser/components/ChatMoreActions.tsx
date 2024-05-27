@@ -6,7 +6,7 @@ import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
 import { AiChatService } from '../ai-chat.service';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 
 export interface IChatMoreActionsProps {
   children: React.ReactNode;

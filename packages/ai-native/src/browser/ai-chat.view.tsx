@@ -26,7 +26,7 @@ import {
   IChatReplyFollowup,
 } from '../common';
 
-import * as styles from './ai-chat.module.less';
+import styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
@@ -112,7 +112,13 @@ const AI_NAME = 'AI 研发助手';
 const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
 
-const defaultSampleQuestions = [];
+const defaultSampleQuestions = [
+  {
+    icon: getIcon('send2'),
+    title: '生成 Java 快速排序算法',
+    message: '生成 Java 快速排序算法',
+  },
+];
 
 const InitMsgComponent = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);

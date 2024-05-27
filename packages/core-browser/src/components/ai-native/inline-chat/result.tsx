@@ -4,7 +4,7 @@ import { EnhanceIcon } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';
 import { Thumbs } from '../thumbs';
 
-import * as styles from './styles.module.less';
+import styles from './styles.module.less';
 
 export interface IAiInlineResultIconItemsProps {
   text: string | React.ReactNode;

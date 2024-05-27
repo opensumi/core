@@ -5,7 +5,7 @@ import { IChildComponentProps, SplitPanel, getStorageValue } from '@opensumi/ide
 
 import { Ai_CHAT_CONTAINER_VIEW_ID, AI_CHAT_DEFAULT_SIZE } from '../../../common';
 
-import * as styles from './layout.module.less';
+import styles from './layout.module.less';
 
 export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
   const { layout } = getStorageValue();

@@ -7,7 +7,7 @@ import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { AiResponseTips } from '../../common';
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 import { Thinking, ThinkingResult } from './Thinking';
 
 interface IStreamMsgWrapperProps {

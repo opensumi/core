@@ -9,7 +9,7 @@ import { escape } from '@opensumi/ide-utils/lib/strings';
 import { MarkdownString, IMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { CodeEditorWithHighlight } from './ChatEditor';
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 
 interface MarkdownProps {
   markdown: IMarkdownString | string;

@@ -23,7 +23,7 @@ import { TabbarService, TabbarServiceFactory } from '@opensumi/ide-main-layout/l
 
 import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
 
-import * as styles from './layout.module.less';
+import styles from './layout.module.less';
 
 // 将注册在 right bar 的组件渲染到 left bar
 const AiLeftTabbarRenderer: React.FC = () => {

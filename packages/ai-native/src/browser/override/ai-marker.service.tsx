@@ -1,4 +1,3 @@
-
 import cls from 'classnames';
 import React, { ReactNode } from 'react';
 
@@ -14,7 +13,7 @@ import { MarkerGroupNode, MarkerNode } from '@opensumi/ide-markers/lib/browser/t
 import { InstructionEnum } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 
-import * as styles from './override.module.less';
+import styles from './override.module.less';
 
 @Injectable()
 export class AiMarkerService extends MarkerService {

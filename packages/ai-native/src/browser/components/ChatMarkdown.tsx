@@ -2,7 +2,7 @@ import React from 'react';
 
 import { DefaultMarkedRenderer, Markdown } from '@opensumi/ide-components/lib/markdown';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 
 const renderSearchLinkBlock = new (class extends DefaultMarkedRenderer {
   link(href: string | null, title: string | null, text: string): string {
@@ -13,7 +13,7 @@ const renderSearchLinkBlock = new (class extends DefaultMarkedRenderer {
 })();
 
 export const ChatMarkdown = ({ content }: { content: string }) => (
-    <div className={styles.ai_chat_markdown_container}>
-      <Markdown value={content} renderer={renderSearchLinkBlock}></Markdown>
-    </div>
-  );
+  <div className={styles.ai_chat_markdown_container}>
+    <Markdown value={content} renderer={renderSearchLinkBlock}></Markdown>
+  </div>
+);

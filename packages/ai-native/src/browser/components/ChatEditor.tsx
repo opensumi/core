@@ -13,7 +13,7 @@ import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-c
 
 import { InstructionEnum, highLightLanguageSupport } from '../../common/index';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 import './highlightTheme.less';
 
 const ChatEditor = ({ input, language }) => {
