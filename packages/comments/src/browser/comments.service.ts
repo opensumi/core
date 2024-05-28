@@ -1,4 +1,3 @@
-import debounce from 'lodash/debounce';
 import flattenDeep from 'lodash/flattenDeep';
 import groupBy from 'lodash/groupBy';
 
@@ -7,7 +6,6 @@ import {
   AppConfig,
   Deferred,
   Disposable,
-  DisposableCollection,
   Emitter,
   Event,
   IDisposable,
@@ -104,7 +102,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   private _commentingRangeAmountReserved = 0;
   private _commentingRangeSpaceReserved = false;
 
-  private commentRangeDecoration: string[] | null;
+  private commentRangeDecorationMap: Map<string, string[]> = new Map();
 
   // 默认在 file 协议和 git 协议中显示评论数据
   private shouldShowCommentsSchemes = new Set(['file', 'git']);
@@ -178,12 +176,11 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   private currentThreadCollapseStateListener: IDisposable | undefined;
-  private threadCollapseStateListeners: DisposableCollection | undefined;
   private activeThreadDecorationIds: string[] = [];
-  private threadDecorationIds: string[] = [];
 
   private updateActiveThreadDecoration(thread?: ICommentsThread) {
-    if (!this.editor || (thread?.uri && thread.uri?.toString() !== this.editor.currentUri?.toString())) {
+    const editor = this.getCurrentEditor(thread?.uri);
+    if (!editor) {
       return;
     }
     this.currentThreadCollapseStateListener?.dispose();
@@ -206,44 +203,10 @@ export class CommentsService extends Disposable implements ICommentsService {
         });
       }
     }
-    this.activeThreadDecorationIds = this.editor?.monacoEditor.deltaDecorations(
+    this.activeThreadDecorationIds = editor.monacoEditor.deltaDecorations(
       this.activeThreadDecorationIds,
       newDecoration,
     );
-  }
-
-  private updateThreadDecoration(threads?: ICommentsThread[]) {
-    if (!this.editor) {
-      return;
-    }
-    this.threadCollapseStateListeners?.dispose();
-    this.threadCollapseStateListeners = new DisposableCollection();
-    const newDecoration: {
-      range: IRange;
-      options: model.IModelDecorationOptions;
-    }[] = [];
-
-    if (threads) {
-      for (const thread of threads) {
-        if (thread) {
-          const range = thread.range;
-          if (!thread.isCollapsed) {
-            this.threadCollapseStateListeners.push(
-              thread.onDidChangeCollapsibleState((state) => {
-                if (state === CommentThreadCollapsibleState.Collapsed) {
-                  this.updateThreadDecoration(undefined);
-                }
-              }),
-            );
-            newDecoration.push({
-              range,
-              options: this.createThreadRangeDecoration(),
-            });
-          }
-        }
-      }
-    }
-    this.threadDecorationIds = this.editor?.monacoEditor.deltaDecorations(this.threadDecorationIds, newDecoration);
   }
 
   private createDottedRangeDecoration(): model.IModelDecorationOptions {
@@ -324,10 +287,25 @@ export class CommentsService extends Disposable implements ICommentsService {
   private startCommentRange: IRange | null;
   private endCommentRange: IRange | null;
   private editor: IEditor | null;
+  private allEditors: IEditor[] = [];
+
+  getCurrentEditor(uri?: URI) {
+    if (uri) {
+      for (const editor of this.allEditors) {
+        if (editor.currentUri?.isEqual(uri)) {
+          this.editor = editor;
+          return editor;
+        }
+      }
+    }
+    return this.editor;
+  }
 
   public handleOnCreateEditor(editor: IEditor) {
+    this.allEditors.push(editor);
     this.editor = editor;
     const disposer = new Disposable();
+    let commentRangeDecorationIds: string[] = [];
 
     disposer.addDispose(
       editor.monacoEditor.onMouseDown((event) => {
@@ -374,22 +352,34 @@ export class CommentsService extends Disposable implements ICommentsService {
 
     disposer.addDispose(
       editor.monacoEditor.onMouseUp((event) => {
-        if (
+        if (this.startCommentRange) {
+          const range = this.startCommentRange;
+          if (this.endCommentRange) {
+            range.endColumn = this.endCommentRange.endColumn;
+            range.endLineNumber = this.endCommentRange.endLineNumber;
+          }
+          if (range) {
+            if (
+              !this.commentsThreads.some(
+                (thread) =>
+                  thread.comments.length === 0 &&
+                  thread.uri.isEqual(editor.currentUri!) &&
+                  thread.range.startLineNumber === range.startLineNumber &&
+                  thread.range.endLineNumber === range.endLineNumber,
+              )
+            ) {
+              const thread = this.createThread(editor.currentUri!, range);
+              thread.show(editor);
+            }
+            event.event.stopPropagation();
+          }
+        } else if (
           event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
           event.target.element &&
-          (event.target.element.className.indexOf('comment-range') > -1 || this.startCommentRange)
+          event.target.element.className.indexOf('comment-range') > -1
         ) {
           const { target } = event;
-          let range: IRange | undefined;
-          if (this.startCommentRange) {
-            range = this.startCommentRange;
-            if (this.endCommentRange) {
-              range.endColumn = this.endCommentRange.endColumn;
-              range.endLineNumber = this.endCommentRange.endLineNumber;
-            }
-          } else if (target && target.range) {
-            range = target.range;
-          }
+          const range: IRange | undefined = target.range;
           if (range) {
             if (
               !this.commentsThreads.some(
@@ -411,7 +401,6 @@ export class CommentsService extends Disposable implements ICommentsService {
       }),
     );
 
-    let oldDecorations: string[] = [];
     disposer.addDispose(
       editor.monacoEditor.onMouseMove(async (event) => {
         const uri = editor.currentUri;
@@ -436,33 +425,33 @@ export class CommentsService extends Disposable implements ICommentsService {
                 options: this.createHoverDecoration() as unknown as monaco.editor.IModelDecorationOptions,
               },
             ];
-            oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, newDecorations);
+            commentRangeDecorationIds = editor.monacoEditor.deltaDecorations(commentRangeDecorationIds, newDecorations);
           }
         }
       }),
     );
 
     disposer.addDispose(
-      editor.monacoEditor.onMouseLeave(
-        debounce(async (event) => {
-          const range = event.target?.range;
-          if (!this.startCommentRange && range) {
-            const newDecorations = [
-              {
-                range: positionToRange(range.startLineNumber),
-                options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
-              },
-            ];
-            oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, newDecorations);
-          }
-        }, 5),
-      ),
+      editor.monacoEditor.onMouseLeave(async (event) => {
+        const range = event.target?.range;
+        const newDecorations: {
+          range: IRange;
+          options: monaco.editor.IModelDecorationOptions;
+        }[] = [];
+        if (!this.startCommentRange && range) {
+          newDecorations.push({
+            range: positionToRange(range.startLineNumber),
+            options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+          });
+        }
+        commentRangeDecorationIds = editor.monacoEditor.deltaDecorations(commentRangeDecorationIds, newDecorations);
+      }),
     );
 
     disposer.addDispose(
       editor.monacoEditor.onDidChangeModel(() => {
         this.renderCommentRange(editor);
-        this.tryUpdateReservedSpace();
+        this.tryUpdateReservedSpace(editor);
       }),
     );
 
@@ -477,9 +466,11 @@ export class CommentsService extends Disposable implements ICommentsService {
         this.onThreadsChanged,
         this.onThreadsCommentChange,
         this.onThreadsCreated,
-      )(() => {
-        this.updateThreadDecoration(this.commentsThreads);
-        this.renderCommentRange(editor);
+      )((thread) => {
+        const editor = this.getCurrentEditor(thread.uri);
+        if (editor) {
+          this.renderCommentRange(editor);
+        }
         this.updateActiveThreadDecoration(undefined);
       }),
     );
@@ -490,7 +481,7 @@ export class CommentsService extends Disposable implements ICommentsService {
       }),
     );
 
-    this.tryUpdateReservedSpace();
+    this.tryUpdateReservedSpace(editor);
     return disposer;
   }
 
@@ -503,29 +494,30 @@ export class CommentsService extends Disposable implements ICommentsService {
     }
   }
 
-  private async tryUpdateReservedSpace(uri?: URI) {
-    if (!this.editor || (!uri && !this.editor.currentUri)) {
+  private async tryUpdateReservedSpace(editor: IEditor) {
+    if (!editor) {
       return;
     }
 
-    uri = uri ?? (this.editor.currentUri || undefined);
-    const hasCommentsOrRangesInInfo = uri ? this.shouldShowCommentsSchemes.has(uri.scheme) : false;
+    const hasCommentsOrRangesInInfo = editor.currentUri
+      ? this.shouldShowCommentsSchemes.has(editor.currentUri.scheme)
+      : false;
 
     const hasCommentsOrRanges = hasCommentsOrRangesInInfo;
     if (hasCommentsOrRanges) {
       if (!this._commentingRangeSpaceReserved) {
         this._commentingRangeSpaceReserved = true;
-        const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(this.editor);
-        const newOptions = this.getWithCommentsEditorOptions(this.editor, extraEditorClassName, lineDecorationsWidth);
-        this.updateEditorLayoutOptions(this.editor, newOptions.extraEditorClassName, newOptions.lineDecorationsWidth);
+        const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(editor);
+        const newOptions = this.getWithCommentsEditorOptions(editor, extraEditorClassName, lineDecorationsWidth);
+        this.updateEditorLayoutOptions(editor, newOptions.extraEditorClassName, newOptions.lineDecorationsWidth);
       } else {
-        this.ensureCommentingRangeReservedAmount(this.editor);
+        this.ensureCommentingRangeReservedAmount(editor);
       }
     } else if (!hasCommentsOrRanges && this._commentingRangeSpaceReserved) {
       this._commentingRangeSpaceReserved = false;
-      const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(this.editor);
-      const newOptions = this.getWithoutCommentsEditorOptions(this.editor, extraEditorClassName, lineDecorationsWidth);
-      this.updateEditorLayoutOptions(this.editor, newOptions.extraEditorClassName, newOptions.lineDecorationsWidth);
+      const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(editor);
+      const newOptions = this.getWithoutCommentsEditorOptions(editor, extraEditorClassName, lineDecorationsWidth);
+      this.updateEditorLayoutOptions(editor, newOptions.extraEditorClassName, newOptions.lineDecorationsWidth);
     }
   }
 
@@ -600,28 +592,35 @@ export class CommentsService extends Disposable implements ICommentsService {
     if (!editor.currentUri) {
       return;
     }
-    if (this.commentRangeDecoration) {
-      editor.monacoEditor.deltaDecorations(this.commentRangeDecoration, []);
-    }
     const contributionRanges = await this.getContributionRanges(editor.currentUri);
     if (contributionRanges.length > 0) {
+      const newDecorations: {
+        range: IRange;
+        options: monaco.editor.IModelDecorationOptions;
+      }[] = [];
       contributionRanges.map((contributionRange) => {
-        if (
-          selection.startColumn <= contributionRange.startLineNumber &&
+        if (selection.startLineNumber === 0 && selection.endLineNumber === 0) {
+          newDecorations.push({
+            range: contributionRange,
+            options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+          });
+        } else if (
+          selection.startLineNumber <= contributionRange.startLineNumber &&
           selection.endLineNumber >= contributionRange.endLineNumber
         ) {
-          const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
-            [],
-            [
+          newDecorations.push(
+            ...[
               {
                 range: contributionRange,
                 options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
               },
+              {
+                range: contributionRange,
+                options: this.createThreadRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+              },
             ],
           );
-          this.commentRangeDecoration = commentRangeDecoration;
-        }
-        if (selection.endLineNumber >= contributionRange.endLineNumber) {
+        } else if (selection.endLineNumber >= contributionRange.endLineNumber) {
           if (selection.startLineNumber <= contributionRange.endLineNumber) {
             // 存在交集
             const selectionRange = {
@@ -636,9 +635,8 @@ export class CommentsService extends Disposable implements ICommentsService {
               startColumn: contributionRange.startColumn,
               endColumn: selectionRange.endColumn,
             };
-            const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
-              [],
-              [
+            newDecorations.push(
+              ...[
                 {
                   range: topCommentRange,
                   options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
@@ -647,20 +645,17 @@ export class CommentsService extends Disposable implements ICommentsService {
                   range: contributionRange,
                   options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
                 },
-              ],
-            );
-            this.commentRangeDecoration = commentRangeDecoration;
-          } else {
-            const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
-              [],
-              [
                 {
                   range: contributionRange,
-                  options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                  options: this.createThreadRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
                 },
               ],
             );
-            this.commentRangeDecoration = commentRangeDecoration;
+          } else {
+            newDecorations.push({
+              range: contributionRange,
+              options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+            });
           }
         } else if (selection.endLineNumber < contributionRange.endLineNumber) {
           if (selection.endLineNumber >= contributionRange.startLineNumber) {
@@ -693,10 +688,14 @@ export class CommentsService extends Disposable implements ICommentsService {
                 options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
               });
               decorations.push({
+                range: selection,
+                options: this.createThreadRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+              });
+              decorations.push({
                 range: bottomCommentRange,
                 options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
               });
-              this.commentRangeDecoration = editor.monacoEditor.deltaDecorations([], decorations);
+              newDecorations.push(...decorations);
             } else {
               const selectionRange = {
                 startLineNumber: contributionRange.startLineNumber,
@@ -710,12 +709,15 @@ export class CommentsService extends Disposable implements ICommentsService {
                 endLineNumber: contributionRange.endLineNumber,
                 endColumn: contributionRange.endColumn,
               };
-              const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
-                [],
-                [
+              newDecorations.push(
+                ...[
                   {
                     range: selectionRange,
                     options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                  },
+                  {
+                    range: selectionRange,
+                    options: this.createThreadRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
                   },
                   {
                     range: bottomCommentRange,
@@ -723,24 +725,22 @@ export class CommentsService extends Disposable implements ICommentsService {
                   },
                 ],
               );
-              this.commentRangeDecoration = commentRangeDecoration;
             }
           } else {
-            const commentRangeDecoration = editor.monacoEditor.deltaDecorations(
-              [],
-              [
-                {
-                  range: contributionRange,
-                  options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
-                },
-              ],
-            );
-            this.commentRangeDecoration = commentRangeDecoration;
+            newDecorations.push({
+              range: contributionRange,
+              options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+            });
           }
         }
       });
+      const commentRangeDecorationIds = this.commentRangeDecorationMap.get(editor.currentUri.toString()) || [];
+      this.commentRangeDecorationMap.set(
+        editor.currentUri.toString(),
+        editor.monacoEditor.deltaDecorations(commentRangeDecorationIds, newDecorations),
+      );
     } else {
-      this.commentRangeDecoration = null;
+      this.commentRangeDecorationMap.set(editor.currentUri.toString(), []);
     }
   }
 
@@ -758,7 +758,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const isShowHoverToSingleLine =
       this.isMultiCommentsForSingleLine ||
       !this.commentsThreads.some(
-        (thread) => thread.uri.isEqual(uri) && thread.range.startLineNumber === range.startLineNumber,
+        (thread) => thread.uri.isEqual(uri) && thread.range.endLineNumber === range.endLineNumber,
       );
     return isProviderRanges && isShowHoverToSingleLine;
   }
