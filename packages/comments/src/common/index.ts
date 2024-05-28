@@ -512,6 +512,10 @@ export interface ICommentsThread extends IDisposable {
    */
   contextKeyService: IContextKeyService;
   /**
+   * 评论面板的折叠状态变化事件
+   */
+  onDidChangeCollapsibleState: Event<CommentThreadCollapsibleState>;
+  /**
    * 更新当前 thread 的评论列表
    * @param comments
    */
@@ -622,6 +626,11 @@ export interface ICommentsService extends ITree {
    * 初始化函数
    */
   init(): void;
+  /**
+   * 设置当前用户激活的 thread
+   * @param thread
+   */
+  setCurrentCommentThread(thread?: ICommentsThread): void;
   /**
    * 编辑器创建后的处理函数
    * @param editor 当前编辑器

@@ -7,6 +7,7 @@ import {
   AppConfig,
   Deferred,
   Disposable,
+  DisposableCollection,
   Emitter,
   Event,
   IDisposable,
@@ -36,6 +37,7 @@ import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/mo
 
 import {
   CommentPanelId,
+  CommentThreadCollapsibleState,
   ICommentRangeProvider,
   ICommentsFeatureRegistry,
   ICommentsService,
@@ -89,6 +91,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   private threadsCommentChangeEmitter = new Emitter<ICommentsThread>();
 
   private commentRangeProviderChangeEmitter = new Emitter<void>();
+  private onDidChangeCurrentCommentThreadEmitter = new Emitter<ICommentsThread | undefined>();
 
   private threadsCreatedEmitter = new Emitter<ICommentsThread>();
 
@@ -143,6 +146,14 @@ export class CommentsService extends Disposable implements ICommentsService {
     return this.commentRangeProviderChangeEmitter.event;
   }
 
+  get onDidChangeCurrentCommentThread() {
+    return this.onDidChangeCurrentCommentThreadEmitter.event;
+  }
+
+  public setCurrentCommentThread(thread: ICommentsThread) {
+    this.onDidChangeCurrentCommentThreadEmitter.fire(thread);
+  }
+
   /**
    * -------------------------------- IMPORTANT --------------------------------
    * 需要注意区分 model.IModelDecorationOptions 与 monaco.editor.IModelDecorationOptions 两个类型
@@ -166,6 +177,75 @@ export class CommentsService extends Disposable implements ICommentsService {
     return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
   }
 
+  private currentThreadCollapseStateListener: IDisposable | undefined;
+  private threadCollapseStateListeners: DisposableCollection | undefined;
+  private activeThreadDecorationIds: string[] = [];
+  private threadDecorationIds: string[] = [];
+
+  private updateActiveThreadDecoration(thread?: ICommentsThread) {
+    if (!this.editor || (thread?.uri && thread.uri?.toString() !== this.editor.currentUri?.toString())) {
+      return;
+    }
+    this.currentThreadCollapseStateListener?.dispose();
+    const newDecoration: {
+      range: IRange;
+      options: model.IModelDecorationOptions;
+    }[] = [];
+
+    if (thread) {
+      const range = thread.range;
+      if (!thread.isCollapsed) {
+        this.currentThreadCollapseStateListener = thread.onDidChangeCollapsibleState((state) => {
+          if (state === CommentThreadCollapsibleState.Collapsed) {
+            this.updateActiveThreadDecoration(undefined);
+          }
+        });
+        newDecoration.push({
+          range,
+          options: this.createThreadRangeActiveDecoration(),
+        });
+      }
+    }
+    this.activeThreadDecorationIds = this.editor?.monacoEditor.deltaDecorations(
+      this.activeThreadDecorationIds,
+      newDecoration,
+    );
+  }
+
+  private updateThreadDecoration(threads?: ICommentsThread[]) {
+    if (!this.editor) {
+      return;
+    }
+    this.threadCollapseStateListeners?.dispose();
+    this.threadCollapseStateListeners = new DisposableCollection();
+    const newDecoration: {
+      range: IRange;
+      options: model.IModelDecorationOptions;
+    }[] = [];
+
+    if (threads) {
+      for (const thread of threads) {
+        if (thread) {
+          const range = thread.range;
+          if (!thread.isCollapsed) {
+            this.threadCollapseStateListeners.push(
+              thread.onDidChangeCollapsibleState((state) => {
+                if (state === CommentThreadCollapsibleState.Collapsed) {
+                  this.updateThreadDecoration(undefined);
+                }
+              }),
+            );
+            newDecoration.push({
+              range,
+              options: this.createThreadRangeDecoration(),
+            });
+          }
+        }
+      }
+    }
+    this.threadDecorationIds = this.editor?.monacoEditor.deltaDecorations(this.threadDecorationIds, newDecoration);
+  }
+
   private createDottedRangeDecoration(): model.IModelDecorationOptions {
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'comments-multiline-hover-decoration',
@@ -180,6 +260,30 @@ export class CommentsService extends Disposable implements ICommentsService {
       linesDecorationsClassName: ['comment-range', 'line-hover', 'comment-add'].join(' '),
     };
     return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
+  }
+
+  private createThreadRangeActiveDecoration(): model.IModelDecorationOptions {
+    const activeDecorationOptions: model.IModelDecorationOptions = {
+      description: 'comments-thread-range-active-decoration',
+      isWholeLine: false,
+      zIndex: 20,
+      className: 'comment-thread-range-current',
+      shouldFillLineOnLineBreak: true,
+    };
+
+    return textModel.ModelDecorationOptions.createDynamic(activeDecorationOptions);
+  }
+
+  private createThreadRangeDecoration(): model.IModelDecorationOptions {
+    const activeDecorationOptions: model.IModelDecorationOptions = {
+      description: 'comments-thread-range-decoration',
+      isWholeLine: false,
+      zIndex: 20,
+      className: 'comment-thread-range',
+      shouldFillLineOnLineBreak: true,
+    };
+
+    return textModel.ModelDecorationOptions.createDynamic(activeDecorationOptions);
   }
 
   private createCommentRangeDecoration(): model.IModelDecorationOptions {
@@ -342,8 +446,7 @@ export class CommentsService extends Disposable implements ICommentsService {
       editor.monacoEditor.onMouseLeave(
         debounce(async (event) => {
           const range = event.target?.range;
-          if (this.startCommentRange) {
-          } else {
+          if (!this.startCommentRange && range) {
             const newDecorations = [
               {
                 range: positionToRange(range.startLineNumber),
@@ -375,9 +478,18 @@ export class CommentsService extends Disposable implements ICommentsService {
         this.onThreadsCommentChange,
         this.onThreadsCreated,
       )(() => {
+        this.updateThreadDecoration(this.commentsThreads);
         this.renderCommentRange(editor);
+        this.updateActiveThreadDecoration(undefined);
       }),
     );
+
+    disposer.addDispose(
+      this.onDidChangeCurrentCommentThread((thread) => {
+        this.updateActiveThreadDecoration(thread);
+      }),
+    );
+
     this.tryUpdateReservedSpace();
     return disposer;
   }
@@ -732,7 +844,7 @@ export class CommentsService extends Disposable implements ICommentsService {
           thread,
           comment,
           description,
-          first.author.iconPath
+          first.author.iconPath && (first.author.iconPath as URI)?.authority
             ? (this.iconService.fromIcon('', first.author.iconPath.toString(), IconType.Background) as string)
             : getIcon('message'),
           first.author,

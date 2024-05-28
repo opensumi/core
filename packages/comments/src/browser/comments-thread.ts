@@ -6,6 +6,7 @@ import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/re
 import { EditorCollectionService, IEditor } from '@opensumi/ide-editor';
 
 import {
+  CommentThreadCollapsibleState,
   IComment,
   ICommentsService,
   ICommentsThread,
@@ -46,12 +47,18 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   public data: any;
 
+  private onDidChangeCollapsibleStateEmitter: Emitter<CommentThreadCollapsibleState> = new Emitter();
+
   set contextValue(value: string | undefined) {
     this._contextKeyService.createKey<string>('thread', value);
   }
 
   get contextValue() {
     return this._contextKeyService.getContextValue('thread');
+  }
+
+  get onDidChangeCollapsibleState() {
+    return this.onDidChangeCollapsibleStateEmitter.event;
   }
 
   private widgets = new Map<IEditor, CommentsZoneWidget>();
@@ -277,12 +284,15 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   public showAll() {
+    this.isCollapsed = false;
     for (const [, widget] of this.widgets) {
       widget.show();
     }
+    this.onDidChangeCollapsibleStateEmitter.fire(CommentThreadCollapsibleState.Expanded);
   }
 
   public hideAll(isDospose?: boolean) {
+    this.isCollapsed = true;
     for (const [editor, widget] of this.widgets) {
       if (isDospose) {
         // 如果 thread 出现在当前 editor 则不隐藏
@@ -291,6 +301,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
         widget.hide();
       }
     }
+    this.onDidChangeCollapsibleStateEmitter.fire(CommentThreadCollapsibleState.Collapsed);
   }
 
   public addComment(...comments: IComment[]) {

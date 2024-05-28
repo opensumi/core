@@ -80,8 +80,31 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
     };
   }, []);
 
+  const handleMouseOver = React.useCallback(() => {
+    commentsZoneService.setCurrentCommentThread(commentsZoneService.thread);
+  }, []);
+
+  const handleMouseOut = React.useCallback(() => {
+    commentsZoneService.setCurrentCommentThread(undefined);
+  }, []);
+
+  const handleFocus = React.useCallback(() => {
+    commentsZoneService.setCurrentCommentThread(commentsZoneService.thread);
+  }, []);
+
+  const handleBlur = React.useCallback(() => {
+    commentsZoneService.setCurrentCommentThread(undefined);
+  }, []);
+
   return (
-    <div className={cls(thread.options.threadClassName, styles.comment_container)}>
+    <div
+      tabIndex={-1}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      className={cls(thread.options.threadClassName, styles.comment_container)}
+    >
       <div className={cls(thread.options.threadHeadClassName, styles.head)}>
         <div className={styles.review_title}>{threadHeaderTitle}</div>
         <InlineActionBar<ICommentThreadTitle>

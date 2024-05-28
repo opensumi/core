@@ -566,6 +566,7 @@ export default {
     errorForeground: '#D21F28',
     focusBorder: '#151b2129',
     foreground: '#151b21d9',
+    'editorCommentsWidget.unresolvedBorder': '#4d9ded',
     'gitDecoration.addedResourceForeground': '#52c41a',
     'gitDecoration.modifiedResourceForeground': '#faad14',
     'gitDecoration.deletedResourceForeground': '#fa541c',
