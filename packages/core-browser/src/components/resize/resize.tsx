@@ -260,7 +260,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
 
       const nextTotolWidth = +nextElement.current!.style.width!.replace('%', '');
       const prevTotalWidth = +prevElement.current!.style.width!.replace('%', '');
-      fastdom.mutate(() => {
+      fastdom.monacoMutate(() => {
         const totalSize = currentPrev + currentNext;
         if (props.flexMode) {
           const prevWidth = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
@@ -323,7 +323,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       requestFrameToDispose.current.dispose();
     }
 
-    requestFrameToDispose.current = fastdom.mutate(() => {
+    requestFrameToDispose.current = fastdom.monacoMutate(() => {
       if (props.flexMode) {
         flexModeSetSize(prevWidth, nextWidth);
       } else {
@@ -341,7 +341,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       props.onFinished();
     }
 
-    fastdom.mutate(() => {
+    fastdom.monacoMutate(() => {
       ref.current?.classList.remove(styles.active);
 
       // 结束拖拽时恢复拖拽区域滚动条
@@ -361,7 +361,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       startPrevWidth.current = prevElement.current!.offsetWidth;
       startNextWidth.current = nextElement.current!.offsetWidth;
 
-      fastdom.mutate(() => {
+      fastdom.monacoMutate(() => {
         ref.current?.classList.add(styles.active);
 
         // 开始拖拽时隐藏拖拽区域滚动条
@@ -622,7 +622,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       startPrevHeight.current = prevElement.current!.offsetHeight;
       startNextHeight.current = nextElement.current!.offsetHeight;
 
-      fastdom.mutate(() => {
+      fastdom.monacoMutate(() => {
         ref.current?.classList.add(styles.active);
         preventWebviewCatchMouseEvents();
       });
@@ -666,7 +666,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
         }
       }
 
-      fastdom.mutate(() => {
+      fastdom.monacoMutate(() => {
         if (props.flexMode === ResizeFlexMode.Prev || props.flexMode === ResizeFlexMode.Next) {
           flexModeSetSize(prevHeight, nextHeight);
         } else if (props.flexMode === ResizeFlexMode.Percentage) {
@@ -684,7 +684,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
 
-    fastdom.mutate(() => {
+    fastdom.monacoMutate(() => {
       ref.current?.classList.remove(styles.active);
       if (props.onFinished) {
         props.onFinished();
