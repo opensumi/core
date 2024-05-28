@@ -355,8 +355,13 @@ export class CommentsService extends Disposable implements ICommentsService {
         if (this.startCommentRange) {
           const range = this.startCommentRange;
           if (this.endCommentRange) {
-            range.endColumn = this.endCommentRange.endColumn;
-            range.endLineNumber = this.endCommentRange.endLineNumber;
+            if (this.endCommentRange.startLineNumber < this.startCommentRange.startLineNumber) {
+              range.startColumn = this.endCommentRange.startColumn;
+              range.startLineNumber = this.endCommentRange.startLineNumber;
+            } else {
+              range.endColumn = this.endCommentRange.endColumn;
+              range.endLineNumber = this.endCommentRange.endLineNumber;
+            }
           }
           if (range) {
             if (
@@ -408,12 +413,20 @@ export class CommentsService extends Disposable implements ICommentsService {
         // 多行评论
         if (this.startCommentRange) {
           if (uri && range) {
-            const selection = {
+            let selection = {
               startLineNumber: this.startCommentRange.startLineNumber,
               endLineNumber: range.endLineNumber,
               startColumn: this.startCommentRange.startColumn,
               endColumn: range.endColumn,
             };
+            if (this.startCommentRange.startLineNumber > range.startLineNumber) {
+              selection = {
+                startLineNumber: range.startLineNumber,
+                endLineNumber: this.startCommentRange.endLineNumber,
+                startColumn: range.startColumn,
+                endColumn: this.startCommentRange.endColumn,
+              };
+            }
             this.renderCommentRange(editor, selection);
             this.endCommentRange = range;
           }
