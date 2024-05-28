@@ -13,6 +13,7 @@ import {
   RecentFilesManager,
   ResizeEvent,
   ServiceNames,
+  fastdom,
   getSlotLocation,
   toMarkdown,
 } from '@opensumi/ide-core-browser';
@@ -788,10 +789,17 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string, public readonly groupId: number) {
     super();
+    let toDispose: IDisposable | undefined;
     this.eventBus.onDirective(
       ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
       () => {
-        this.doLayoutEditors();
+        if (toDispose) {
+          toDispose.dispose();
+        }
+
+        toDispose = fastdom.mutate(() => {
+          this._layoutEditorWorker();
+        });
       },
     );
     this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
@@ -855,8 +863,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  @debounce(100)
-  doLayoutEditors() {
+  private _layoutEditorWorker() {
     if (this.codeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
         this.codeEditor.layout();
@@ -881,6 +888,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this._mergeEditorPendingLayout = true;
       }
     }
+  }
+
+  @debounce(100)
+  doLayoutEditors() {
+    this._layoutEditorWorker();
   }
 
   setContextKeys() {

@@ -15,17 +15,18 @@ import {
   MaybeNull,
   URI,
 } from '@opensumi/ide-core-common';
-
-// eslint-disable-next-line import/no-restricted-paths
-import { IDocModelUpdateOptions } from '../browser/doc-model/types';
+import { IDimension } from '@opensumi/ide-monaco';
 
 import { IResource } from './resource';
+import { IDocModelUpdateOptions } from './types';
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { EOL, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-// eslint-disable-next-line import/no-restricted-paths
-import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import type { ITextModel, ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type {
+  EOL,
+  IEditorOptions,
+  ICodeEditor as IMonacoCodeEditor,
+  ITextModel,
+  ITextModelUpdateOptions,
+} from '@opensumi/ide-monaco';
 
 export { ShowLightbulbIconMode } from '@opensumi/ide-monaco';
 
@@ -119,7 +120,8 @@ export interface IEditorDocumentModel extends IDisposable {
   updateEncoding(encoding: string): Promise<void>;
 
   // setEncoding(encoding: string, preferredEncoding, mode: EncodingMode): Promise<void>;
-  updateOptions(options: IDocModelUpdateOptions);
+
+  updateOptions(options: IDocModelUpdateOptions): void;
 }
 
 export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
@@ -222,7 +224,7 @@ export interface IUndoStopOptions {
 }
 
 export interface ICodeEditor extends IEditor, IDisposable {
-  layout(): void;
+  layout(dimension?: IDimension, postponeRendering?: boolean): void;
 
   /**
    * 打开一个 document
