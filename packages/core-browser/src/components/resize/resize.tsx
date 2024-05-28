@@ -1,7 +1,9 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { IDisposable, fastdom } from '@opensumi/ide-core-browser';
+import { IDisposable } from '@opensumi/ide-core-common';
+
+import { fastdom } from '../../dom';
 
 import styles from './resize.module.less';
 

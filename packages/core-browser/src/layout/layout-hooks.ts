@@ -1,9 +1,9 @@
 import throttle from 'lodash/throttle';
 import React from 'react';
 
-import { fastdom } from '@opensumi/ide-core-browser';
 import { IEventBus } from '@opensumi/ide-core-common';
 
+import { fastdom } from '../dom';
 import { useInjectable } from '../react-hooks';
 
 import { ResizeEvent } from './layout.interface';
