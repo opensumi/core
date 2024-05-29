@@ -7,6 +7,7 @@ import { CommandToken } from "./parser";
 import { runGenerator } from "./generator";
 import { runTemplates } from "./template";
 import { Suggestion, SuggestionBlob } from "./model";
+import log from "../utils/log";
 
 enum SuggestionIcons {
   File = "📄",
@@ -20,7 +21,11 @@ enum SuggestionIcons {
   Default = "📀",
 }
 
-const getIcon = (suggestionType?: Fig.SuggestionType | undefined): string => {
+const getIcon = (icon: string | undefined, suggestionType: Fig.SuggestionType | undefined): string => {
+  // TODO: enable fig icons once spacing is better
+  // if (icon && /[^\u0000-\u00ff]/.test(icon)) {
+  //   return icon;
+  // }
   switch (suggestionType) {
     case "arg":
       return SuggestionIcons.Argument;
@@ -46,15 +51,20 @@ const getLong = (suggestion: Fig.SingleOrArray<string>): string => {
   return suggestion instanceof Array ? suggestion.reduce((p, c) => (p.length > c.length ? p : c)) : suggestion;
 };
 
+const getPathy = (type: Fig.SuggestionType | undefined): boolean => {
+  return type === "file" || type === "folder";
+};
+
 const toSuggestion = (suggestion: Fig.Suggestion, name?: string, type?: Fig.SuggestionType): Suggestion | undefined => {
   if (suggestion.name == null) return;
   return {
     name: name ?? getLong(suggestion.name),
     description: suggestion.description,
-    icon: getIcon(type ?? suggestion.type),
+    icon: getIcon(suggestion.icon, type ?? suggestion.type),
     allNames: suggestion.name instanceof Array ? suggestion.name : [suggestion.name],
     priority: suggestion.priority ?? 50,
     insertValue: suggestion.insertValue,
+    pathy: getPathy(suggestion.type),
   };
 };
 
@@ -77,10 +87,11 @@ function filter<T extends Fig.BaseSuggestion & { name?: Fig.SingleOrArray<string
               ? {
                   name: matchedName,
                   description: s.description,
-                  icon: getIcon(s.type ?? suggestionType),
+                  icon: getIcon(s.icon, s.type ?? suggestionType),
                   allNames: s.name,
                   priority: s.priority ?? 50,
                   insertValue: s.insertValue,
+                  pathy: getPathy(s.type),
                 }
               : undefined;
           }
@@ -88,10 +99,11 @@ function filter<T extends Fig.BaseSuggestion & { name?: Fig.SingleOrArray<string
             ? {
                 name: s.name,
                 description: s.description,
-                icon: getIcon(s.type ?? suggestionType),
+                icon: getIcon(s.icon, s.type ?? suggestionType),
                 allNames: [s.name],
                 priority: s.priority ?? 50,
                 insertValue: s.insertValue,
+                pathy: getPathy(s.type),
               }
             : undefined;
         })
@@ -106,10 +118,11 @@ function filter<T extends Fig.BaseSuggestion & { name?: Fig.SingleOrArray<string
               ? {
                   name: matchedName,
                   description: s.description,
-                  icon: getIcon(s.type ?? suggestionType),
+                  icon: getIcon(s.icon, s.type ?? suggestionType),
                   allNames: s.name,
                   insertValue: s.insertValue,
                   priority: s.priority ?? 50,
+                  pathy: getPathy(s.type),
                 }
               : undefined;
           }
@@ -117,10 +130,11 @@ function filter<T extends Fig.BaseSuggestion & { name?: Fig.SingleOrArray<string
             ? {
                 name: s.name,
                 description: s.description,
-                icon: getIcon(s.type ?? suggestionType),
+                icon: getIcon(s.icon, s.type ?? suggestionType),
                 allNames: [s.name],
                 insertValue: s.insertValue,
                 priority: s.priority ?? 50,
+                pathy: getPathy(s.type),
               }
             : undefined;
         })
@@ -139,8 +153,14 @@ const generatorSuggestions = async (
 ): Promise<Suggestion[]> => {
   const generators = generator instanceof Array ? generator : generator ? [generator] : [];
   const tokens = acceptedTokens.map((t) => t.token);
+  if (partialCmd) tokens.push(partialCmd);
   const suggestions = (await Promise.all(generators.map((gen) => runGenerator(gen, tokens, cwd)))).flat();
-  return filter<Fig.Suggestion>(suggestions, filterStrategy, partialCmd, undefined);
+  return filter<Fig.Suggestion>(
+    suggestions.map((suggestion) => ({ ...suggestion, priority: suggestion.priority ?? 60 })),
+    filterStrategy,
+    partialCmd,
+    undefined,
+  );
 };
 
 const templateSuggestions = async (
@@ -180,6 +200,17 @@ const optionSuggestions = (
   return filter<Fig.Option>(validOptions ?? [], filterStrategy, partialCmd, "option");
 };
 
+const getEscapedPath = (value?: string): string | undefined => {
+  return value?.replaceAll(" ", "\\ ");
+};
+
+function adjustPathSuggestions(suggestions: Suggestion[], partialToken?: CommandToken): Suggestion[] {
+  if (partialToken == null || partialToken.isQuoted) return suggestions;
+  return suggestions.map((s) =>
+    s.pathy ? { ...s, insertValue: getEscapedPath(s.insertValue), name: s.insertValue == null ? getEscapedPath(s.name)! : s.name } : s,
+  );
+}
+
 const removeAcceptedSuggestions = (suggestions: Suggestion[], acceptedTokens: CommandToken[]): Suggestion[] => {
   const seen = new Set<string>(acceptedTokens.map((t) => t.token));
   return suggestions.filter((s) => s.allNames.every((n) => !seen.has(n)));
@@ -209,6 +240,7 @@ export const getSubcommandDrivenRecommendation = async (
   acceptedTokens: CommandToken[],
   cwd: string,
 ): Promise<SuggestionBlob | undefined> => {
+  log.debug({ msg: "suggestion point", subcommand, persistentOptions, partialToken, argsDepleted, argsFromSubcommand, acceptedTokens, cwd });
   if (argsDepleted && argsFromSubcommand) {
     return;
   }
@@ -222,21 +254,24 @@ export const getSubcommandDrivenRecommendation = async (
   const allOptions = persistentOptions.concat(subcommand.options ?? []);
 
   if (!argsFromSubcommand) {
-    suggestions.push.apply(suggestions, subcommandSuggestions(subcommand.subcommands, subcommand.filterStrategy, partialCmd));
-    suggestions.push.apply(suggestions, optionSuggestions(allOptions, acceptedTokens, subcommand.filterStrategy, partialCmd));
+    suggestions.push(...subcommandSuggestions(subcommand.subcommands, subcommand.filterStrategy, partialCmd));
+    suggestions.push(...optionSuggestions(allOptions, acceptedTokens, subcommand.filterStrategy, partialCmd));
   }
   if (argLength != 0) {
     const activeArg = subcommand.args instanceof Array ? subcommand.args[0] : subcommand.args;
-    suggestions.push.apply(suggestions, await generatorSuggestions(activeArg?.generators, acceptedTokens, activeArg?.filterStrategy, partialCmd, cwd));
-    suggestions.push.apply(suggestions, suggestionSuggestions(activeArg?.suggestions, activeArg?.filterStrategy, partialCmd));
-    suggestions.push.apply(suggestions, await templateSuggestions(activeArg?.template, activeArg?.filterStrategy, partialCmd, cwd));
+    suggestions.push(...(await generatorSuggestions(activeArg?.generators, acceptedTokens, activeArg?.filterStrategy, partialCmd, cwd)));
+    suggestions.push(...suggestionSuggestions(activeArg?.suggestions, activeArg?.filterStrategy, partialCmd));
+    suggestions.push(...(await templateSuggestions(activeArg?.template, activeArg?.filterStrategy, partialCmd, cwd)));
   }
 
   return {
     suggestions: removeDuplicateSuggestion(
       removeEmptySuggestion(
         removeAcceptedSuggestions(
-          suggestions.sort((a, b) => b.priority - a.priority),
+          adjustPathSuggestions(
+            suggestions.sort((a, b) => b.priority - a.priority),
+            partialToken,
+          ),
           acceptedTokens,
         ),
       ),
@@ -260,30 +295,25 @@ export const getArgDrivenRecommendation = async (
 
   const activeArg = args[0];
   const allOptions = persistentOptions.concat(subcommand.options ?? []);
-  const suggestions: Suggestion[] = [];
-
-  const generatorSuggs = await generatorSuggestions(args[0].generators, acceptedTokens, activeArg?.filterStrategy, partialCmd, cwd);
-  suggestions.push(...generatorSuggs);
-
-  const suggestionSuggs = suggestionSuggestions(args[0].suggestions, activeArg?.filterStrategy, partialCmd);
-  suggestions.push(...suggestionSuggs);
-
-  const templateSuggs = await templateSuggestions(args[0].template, activeArg?.filterStrategy, partialCmd, cwd);
-  suggestions.push(...templateSuggs);
+  const suggestions = [
+    ...(await generatorSuggestions(args[0].generators, acceptedTokens, activeArg?.filterStrategy, partialCmd, cwd)),
+    ...suggestionSuggestions(args[0].suggestions, activeArg?.filterStrategy, partialCmd),
+    ...(await templateSuggestions(args[0].template, activeArg?.filterStrategy, partialCmd, cwd)),
+  ];
 
   if (activeArg.isOptional || (activeArg.isVariadic && variadicArgBound)) {
-    const subcommandSuggs = subcommandSuggestions(subcommand.subcommands, activeArg?.filterStrategy, partialCmd);
-    suggestions.push(...subcommandSuggs);
-
-    const optionSuggs = optionSuggestions(allOptions, acceptedTokens, activeArg?.filterStrategy, partialCmd);
-    suggestions.push(...optionSuggs);
+    suggestions.push(...subcommandSuggestions(subcommand.subcommands, activeArg?.filterStrategy, partialCmd));
+    suggestions.push(...optionSuggestions(allOptions, acceptedTokens, activeArg?.filterStrategy, partialCmd));
   }
 
   return {
     suggestions: removeDuplicateSuggestion(
       removeEmptySuggestion(
         removeAcceptedSuggestions(
-          suggestions.sort((a, b) => b.priority - a.priority),
+          adjustPathSuggestions(
+            suggestions.sort((a, b) => b.priority - a.priority),
+            partialToken,
+          ),
           acceptedTokens,
         ),
       ),

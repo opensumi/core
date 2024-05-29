@@ -1,3 +1,5 @@
+/* eslint-disable arrow-body-style */
+/* eslint-disable curly */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
@@ -13,10 +15,9 @@ import { path } from '@opensumi/ide-core-common';
 // import ls from '@withfig/autocomplete/build/ls';
 
 import suggestionBundle from './bundle.js';
-
-import { parseCommand, CommandToken } from "./parser";
-import { getArgDrivenRecommendation, getSubcommandDrivenRecommendation } from "./suggestion";
 import { SuggestionBlob } from "./model";
+import { CommandToken, parseCommand } from "./parser";
+import { getArgDrivenRecommendation, getSubcommandDrivenRecommendation } from "./suggestion";
 import { resolveCwd } from "./utils";
 
 const speclist = [
@@ -80,7 +81,7 @@ const loadSpec = async (cmd: CommandToken[]): Promise<Fig.Spec | undefined> => {
     return loadedSpecs[rootToken.token];
   }
   if (specSet[rootToken.token]) {
-    const spec = suggestionBundle[rootToken.token]
+    const spec = suggestionBundle[rootToken.token];
     // const spec = ls;
 
     loadedSpecs[rootToken.token] = spec;
@@ -100,11 +101,12 @@ const lazyLoadSpecLocation = async (location: Fig.SpecLocation): Promise<Fig.Spe
 };
 
 export const getSuggestions = async (cmd: string, cwd: string): Promise<SuggestionBlob | undefined> => {
-  const activeCmd = parseCommand(cmd);
+  let activeCmd = parseCommand(cmd);
   const rootToken = activeCmd.at(0);
   if (activeCmd.length === 0 || !rootToken?.complete) {
     return;
   }
+  // activeCmd = aliasExpand(activeCmd);
 
   const spec = await loadSpec(activeCmd);
   if (spec == null) return;
@@ -125,6 +127,10 @@ export const getSuggestions = async (cmd: string, cwd: string): Promise<Suggesti
     charactersToDrop = pathyComplete ? 0 : path.basename(lastCommand?.token ?? "").length;
   }
   return { ...result, charactersToDrop };
+};
+
+export const getSpecNames = (): string[] => {
+  return Object.keys(specSet).filter((spec) => !spec.startsWith("@") && spec != "-");
 };
 
 const getPersistentOptions = (persistentOptions: Fig.Option[], options?: Fig.Option[]) => {
@@ -153,22 +159,15 @@ const getSubcommand = (spec?: Fig.Spec): Fig.Subcommand | undefined => {
 
 const executeShellCommand = (args: any): any => {
   console.log('fake executeShellCommand', args);
-}
+};
 
 const genSubcommand = async (command: string, parentCommand: Fig.Subcommand): Promise<Fig.Subcommand | undefined> => {
-  const subcommandIdx = parentCommand.subcommands?.findIndex((s) => {
-    if (Array.isArray(s.name)) {
-      // 如果 s.name 是数组，检查数组中是否包含 command
-      return s.name.includes(command);
-    } else {
-      // 如果 s.name 是字符串，直接比较
-      return s.name === command;
-    }
-  });
-  
-  if (subcommandIdx == null) return;
-  const subcommand = parentCommand.subcommands?.at(subcommandIdx);
-  if (subcommand == null) return;
+  if (!parentCommand.subcommands || parentCommand.subcommands.length === 0) return;
+
+  const subcommandIdx = parentCommand.subcommands.findIndex((s) => (Array.isArray(s.name) ? s.name.includes(command) : s.name === command));
+
+  if (subcommandIdx === -1) return;
+  const subcommand = parentCommand.subcommands[subcommandIdx];
 
   // this pulls in the spec from the load spec and overwrites the subcommand in the parent with the loaded spec.
   // then it returns the subcommand and clears the loadSpec field so that it doesn't get called again
@@ -193,17 +192,29 @@ const genSubcommand = async (command: string, parentCommand: Fig.Subcommand): Pr
         };
         return (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx];
       } else {
-        (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = { ...subcommand, ...partSpec, loadSpec: undefined };
+        (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = {
+          ...subcommand,
+          ...partSpec,
+          loadSpec: undefined,
+        };
         return (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx];
       }
     }
     case "string": {
       const spec = await lazyLoadSpec(subcommand.loadSpec as string);
-      (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = { ...subcommand, ...(getSubcommand(spec) ?? []), loadSpec: undefined };
+      (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = {
+        ...subcommand,
+        ...(getSubcommand(spec) ?? []),
+        loadSpec: undefined,
+      };
       return (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx];
     }
     case "object": {
-      (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = { ...subcommand, ...(subcommand.loadSpec ?? {}), loadSpec: undefined };
+      (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = {
+        ...subcommand,
+        ...(subcommand.loadSpec ?? {}),
+        loadSpec: undefined,
+      };
       return (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx];
     }
     case "undefined": {
@@ -241,7 +252,16 @@ const runOption = async (
     const args = option.args instanceof Array ? option.args : [option.args];
     return runArg(tokens.slice(1), args, subcommand, cwd, persistentOptions, acceptedTokens.concat(activeToken), true, false);
   }
-  return runSubcommand(tokens.slice(1), subcommand, cwd, persistentOptions, acceptedTokens.concat({ ...activeToken, isPersistent }));
+  return runSubcommand(
+    tokens.slice(1),
+    subcommand,
+    cwd,
+    persistentOptions,
+    acceptedTokens.concat({
+      ...activeToken,
+      isPersistent,
+    }),
+  );
 };
 
 const runArg = async (

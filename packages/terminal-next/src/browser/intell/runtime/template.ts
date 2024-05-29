@@ -75,7 +75,7 @@ class FSAsyncHack implements FSAsyncReadDir {
     } else return this.proxy.readdir(cwd, options)
   }
   setProxy(proxy: FSAsyncReadDir) {
-    this.proxy = proxy
+    this.proxy = proxy;
   }
 }
 

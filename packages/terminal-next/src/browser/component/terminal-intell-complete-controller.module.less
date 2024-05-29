@@ -1,0 +1,91 @@
+.suggestions {
+  display: flex;
+  background-color: transparent;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+
+  // TODO 考虑动态设置字体
+  font-family: Menlo, Monaco, 'Courier New', monospace;
+  z-index: 9;
+}
+
+.suggestionList {
+  display: flex;
+  flex-direction: column;
+  max-height: 200px;
+  width: 350px;
+  overflow-y: scroll;
+  border-radius: 8px;
+  background-color: var(--vscode-editorSuggestWidget-background);
+  color: var(--vscode-editorSuggestWidget-foreground);
+  // TODO 适配白色主题
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 -6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.suggestionItem {
+  padding: 8px 10px 8px 8px;
+  cursor: pointer;
+}
+
+.suggestionItemContainer {
+  display: flex;
+  align-items: center;
+}
+
+.suggestionDesc {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.suggestionIcon {
+  margin-right: 8px;
+}
+
+.suggestionCmd {
+  font-size: 12px;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.suggestionItem:hover {
+  // filter: brightness(110%);
+  // background-color: var(--selection-background);
+}
+
+// 选中时旁边展示详情的容器
+.suggestionItemExtraContainer {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  width: 200px;
+
+  position: fixed; /* 全局定位 */
+  top: 0;
+  transform: translateY(0); /* 修正浮动层位置 */
+
+  &.extraContainerLeft {
+    left: 100%; /* 在列表项的右侧 */
+    margin-left: 10px;
+  }
+
+  &.extraContainerRight {
+    right: 100%; /* 在列表项的左侧 */
+    margin-right: 10px;
+  }
+}
+
+.suggestionItemExtraCommand {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.suggestionItemExtraDescription {
+  opacity: 0.6;
+}
