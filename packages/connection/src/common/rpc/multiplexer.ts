@@ -34,6 +34,12 @@ export interface IRPCProtocol {
   get<T>(identifier: ProxyIdentifier<T>): T;
 }
 
+function createExtMessageIO() {
+  const io = new MessageIO();
+  io.setAnySerializer(new AnyProtocolSerializer(io.writer, io.reader, ExtObjectTransfer));
+  return io;
+}
+
 /**
  * A connection multiplexer that allows to register multiple local RPC services and to create proxies for them.
  */
@@ -60,12 +66,13 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
   io: MessageIO;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiMultiplexerConnectionOptions = {}) {
-    super(socket, options);
+    super(socket, {
+      ...options,
+      io: createExtMessageIO(),
+    });
     this._locals = new Map();
     this._proxies = new Map();
     this._knownProtocols = options.knownProtocols || {};
-    this.io = new MessageIO();
-    this.io.setAnySerializer(new AnyProtocolSerializer(this.io.writer, this.io.reader, ExtObjectTransfer));
 
     this.onRequestNotFound((rpcName: string, args: any[]) => this.invoke(rpcName, args));
 
