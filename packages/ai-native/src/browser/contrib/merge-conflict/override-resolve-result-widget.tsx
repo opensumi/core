@@ -20,7 +20,7 @@ import {
   WapperAIInlineResult,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/resolve-result-widget';
 
-import { InlineDiffWidget } from '../widget/inline-diff/inline-diff-widget';
+import { InlineDiffWidget } from '../../widget/inline-diff/inline-diff-widget';
 
 @Injectable({ multiple: true })
 export class DiffResolveResultWidget extends ResolveResultWidget {
@@ -47,7 +47,7 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
         icon: 'check',
         text: localize('aiNative.inline.chat.operate.check.title'),
         onClick: () => {
-          const modifiedValue = this.inlineDiffWidget?.getModifiedValue();
+          const modifiedValue = this.inlineDiffWidget?.getModifiedModel()?.getValue();
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
             action: ACCEPT_CURRENT_ACTIONS,
@@ -120,13 +120,24 @@ export class DiffResolveResultWidget extends ResolveResultWidget {
     // hidden full conflict area, but only show diff for current and the ai response
     this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [
       this.uid,
-      this.codeEditor.editor,
-      range,
-      this.text,
-      this.lineRange.toInclusiveRange(),
+      {
+        editor: this.codeEditor.editor,
+        selection: range,
+        hiddenArea: this.lineRange.toInclusiveRange(),
+      },
     ]);
     this.inlineDiffWidget.setResolveResultWidget(resultWidget);
     this.inlineDiffWidget.create();
+
+    this.addDispose(
+      this.inlineDiffWidget.onReady(() => {
+        const modifiedModel = this.inlineDiffWidget!.getModifiedModel();
+        if (modifiedModel) {
+          modifiedModel.setValue(this.text);
+        }
+      }),
+    );
+
     this.inlineDiffWidget.show(range, range.endLineNumber - range.startLineNumber + 1);
     return null;
   }

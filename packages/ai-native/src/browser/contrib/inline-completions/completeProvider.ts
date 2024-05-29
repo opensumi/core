@@ -6,7 +6,7 @@ import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/
 import { IEditor } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/ide-monaco';
 
-import { AINativeContextKey } from '../contextkey/ai-native.contextkey.service';
+import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { DEFAULT_COMPLECTION_MODEL } from './constants';
 import { CompletionRequestBean, InlayList, InlineCompletionItem } from './model/competionModel';

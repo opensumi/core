@@ -1,6 +1,6 @@
 import { Injectable } from '@opensumi/di';
 
-import { IRenameCandidatesProviderRegistry, NewSymbolNamesProviderFn } from '../types';
+import { IRenameCandidatesProviderRegistry, NewSymbolNamesProviderFn } from '../../types';
 
 @Injectable()
 export class RenameCandidatesProviderRegistry implements IRenameCandidatesProviderRegistry {

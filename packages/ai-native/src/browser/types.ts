@@ -2,24 +2,28 @@ import React from 'react';
 
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
+  AbortError,
   CancelResponse,
   CancellationToken,
   Deferred,
   ErrorResponse,
   IAICompletionResultModel,
+  IChatProgress,
   IDisposable,
   IResolveConflictHandler,
   MaybePromise,
   MergeConflictEditorMode,
   ReplyResponse,
 } from '@opensumi/ide-core-common';
+import { ChatResponse } from '@opensumi/ide-core-common';
 import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
-import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+import { SumiReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
-import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
-import { CompletionRequestBean } from './inline-completions/model/competionModel';
+import { CompletionRequestBean } from './contrib/inline-completions/model/competionModel';
+import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
+import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
 export interface IEditorInlineChatHandler {
   /**
@@ -32,7 +36,7 @@ export interface IEditorInlineChatHandler {
   providerDiffPreviewStrategy?: (
     editor: ICodeEditor,
     cancelToken: CancellationToken,
-  ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>;
+  ) => MaybePromise<ChatResponse | InlineChatController>;
 }
 
 export interface ITerminalInlineChatHandler {

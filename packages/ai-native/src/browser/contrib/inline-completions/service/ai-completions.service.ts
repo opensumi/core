@@ -10,7 +10,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 
-import { IProvideInlineCompletionsSignature } from '../../types';
+import { IProvideInlineCompletionsSignature } from '../../../types';
 import { CompletionRequestBean } from '../model/competionModel';
 
 @Injectable()
@@ -50,6 +50,10 @@ export class AICompletionsService extends Disposable {
 
   public async complete(data: CompletionRequestBean, model, position, token): Promise<IAICompletionResultModel | null> {
     const doCompletion = async (data: CompletionRequestBean) => {
+      if (!this.aiBackService.requestCompletion) {
+        return null;
+      }
+
       try {
         this.isDefaultCompletionModel = true;
         const now = Date.now();
@@ -77,6 +81,10 @@ export class AICompletionsService extends Disposable {
   }
 
   public async report(data: IAIReportCompletionOption) {
+    if (!this.aiBackService.reportCompletion) {
+      return;
+    }
+
     const { relationId, accept } = data;
 
     data.renderingTime = Date.now() - this.lastRenderTime;

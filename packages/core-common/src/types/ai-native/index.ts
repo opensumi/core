@@ -112,19 +112,32 @@ export interface IAIBackService<
     options: O,
     cancelToken?: CancellationToken,
   ): Promise<StreamResponse>;
-  requestCompletion<I extends IAICompletionOption>(
+  requestCompletion?<I extends IAICompletionOption>(
     input: I,
     cancelToken?: CancellationToken,
   ): Promise<CompletionResponse>;
-  reportCompletion<I extends IAIReportCompletionOption>(input: I): Promise<void>;
-  destroyStreamRequest?: (sessionId: string) => Promise<void>;
+  reportCompletion?<I extends IAIReportCompletionOption>(input: I): Promise<void>;
 }
 
 export class ReplyResponse {
-  constructor(readonly message: string) {}
+  public get message(): string {
+    return this._message;
+  }
+
+  constructor(private _message: string) {}
 
   static is(response: any): boolean {
     return response instanceof ReplyResponse || (typeof response === 'object' && response.message !== undefined);
+  }
+
+  extractCodeContent(): string {
+    const regex = /```\w*([\s\S]+?)\s*```/;
+    const match = regex.exec(this.message);
+    return match ? match[1].trim() : this.message.trim();
+  }
+
+  updateMessage(msg: string): void {
+    this._message = msg;
   }
 }
 
@@ -196,7 +209,7 @@ export interface IResolveConflictHandler {
     contentMetadata: IConflictContentMetadata,
     options: { isRegenerate: boolean },
     token: CancellationToken,
-  ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>;
+  ) => MaybePromise<ChatResponse>;
 }
 export interface IInternalResolveConflictRegistry {
   getThreeWayHandler(): IResolveConflictHandler | undefined;

@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired } from '@opensumi/di';
 import {
   AINativeConfigService,
   AINativeSettingSectionsId,
@@ -32,7 +32,6 @@ import {
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { Disposable, Schemes, TerminalRegistryToken } from '@opensumi/ide-core-common';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
@@ -41,6 +40,7 @@ import {
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
+  TerminalRegistryToken,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -63,12 +63,11 @@ import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
-import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
-import { AICompletionsService } from './inline-completions/service/ai-completions.service';
+import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
+import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
+import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
-import { OpenSumiLightBulbWidget } from './light-bulb-widget';
-import { AIRunToolbar } from './run/toolbar/run-toolbar';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -78,6 +77,7 @@ import {
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
 } from './types';
+import { SumiLightBulbWidget } from './widget/light-bulb';
 
 @Domain(
   ClientAppContribution,
@@ -100,9 +100,6 @@ export class AINativeBrowserContribution
     SlotRendererContribution,
     MonacoContribution
 {
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -176,7 +173,7 @@ export class AINativeBrowserContribution
   registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
     const { supportsInlineChat } = this.aiNativeConfigService.capabilities;
     if (supportsInlineChat) {
-      register(OpenSumiLightBulbWidget.ID, OpenSumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+      register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
     }
   }
 

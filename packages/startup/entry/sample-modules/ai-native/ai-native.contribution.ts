@@ -1,4 +1,5 @@
 import { Autowired } from '@opensumi/di';
+import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   BaseTerminalDetectionLineMatcher,
   JavaMatcher,
@@ -6,9 +7,8 @@ import {
   NodeMatcher,
   ShellMatcher,
   TSCMatcher,
-} from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
-import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/utils/ansi-parser';
-import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
+} from '@opensumi/ide-ai-native/lib/browser/contrib/terminal/matcher';
+import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/contrib/terminal/utils/ansi-parser';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -19,6 +19,7 @@ import {
   TChatSlashCommandSend,
   TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
+import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
 import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
 import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
@@ -87,7 +88,7 @@ export class AINativeContribution implements AINativeCoreContribution {
       {
         id: 'ai-comments',
         name: EInlineOperation.Comments,
-        title: 'add comments',
+        title: 'add comments（readable stream example）',
         renderType: 'button',
         codeAction: {
           isPreferred: true,
@@ -99,17 +100,11 @@ export class AINativeContribution implements AINativeCoreContribution {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
-          const result = await this.aiBackService.request(prompt, {}, token);
+          const controller = new InlineChatController({ enableCodeblockRender: true });
+          const stream = await this.aiBackService.requestStream(prompt, {}, token);
+          controller.mountReadable(stream);
 
-          if (result.isCancel) {
-            return new CancelResponse();
-          }
-
-          if (result.errorCode !== 0) {
-            return new ErrorResponse('');
-          }
-
-          return new ReplyResponse(result.data!);
+          return controller;
         },
       },
     );
@@ -139,7 +134,10 @@ export class AINativeContribution implements AINativeCoreContribution {
             return new ErrorResponse('');
           }
 
-          return new ReplyResponse(result.data!);
+          const reply: ReplyResponse = new ReplyResponse(result.data!);
+          reply.updateMessage(reply.extractCodeContent());
+
+          return reply;
         },
       },
     );

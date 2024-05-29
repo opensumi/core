@@ -9,7 +9,7 @@ import { CancellationTokenSource, Disposable, IAIReporter, TerminalRegistryToken
 import { ITerminalConnection, ITerminalController } from '@opensumi/ide-terminal-next';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
-import { ITerminalCommandSuggestionDesc } from '../../common';
+import { ITerminalCommandSuggestionDesc } from '../../../common';
 
 import { AITerminalPrompt } from './component/terminal-command-suggest-controller';
 import { TerminalFeatureRegistry } from './terminal.feature.registry';

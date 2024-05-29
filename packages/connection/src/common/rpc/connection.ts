@@ -303,16 +303,17 @@ export class SumiConnection implements IDisposable {
                       },
                       onEnd: () => {
                         this.socket.send(this.io.Response(requestId, method, chunkedResponseHeaders, null));
+                        this._cancellationTokenSources.delete(requestId);
                       },
                       onError: (err) => {
                         this.socket.send(this.io.Error(requestId, method, chunkedResponseHeaders, err));
+                        this._cancellationTokenSources.delete(requestId);
                       },
                     });
                   } else {
                     this.socket.send(this.io.Response(requestId, method, nullHeaders, result));
+                    this._cancellationTokenSources.delete(requestId);
                   }
-
-                  this._cancellationTokenSources.delete(requestId);
                 };
 
                 const onError = (err: Error) => {
