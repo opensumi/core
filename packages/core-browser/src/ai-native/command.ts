@@ -13,3 +13,7 @@ export const AI_INLINE_COMPLETION_REPORTER = {
 export const AI_CHAT_VISIBLE = {
   id: 'ai.chat.visible',
 };
+
+export const AI_CODE_ACTION = {
+  id: 'ai.code.action',
+};

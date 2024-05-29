@@ -1,18 +1,19 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, IDisposable, PreferenceService } from '@opensumi/ide-core-browser';
-import { AINativeSettingSectionsId, InlineChatFeatureRegistryToken, Schemes } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 
 import { LanguageParserService } from '../../languages/service';
 import { ICodeBlockInfo } from '../../languages/tree-sitter/language-facts/base';
-import { InlineChatFeatureRegistry } from '../../widget/inline-chat/inline-chat.feature.registry';
+
+import { CodeActionService } from './code-action.service';
 
 @Injectable()
 export class CodeActionHandler extends Disposable {
-  @Autowired(InlineChatFeatureRegistryToken)
-  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
+  @Autowired(CodeActionService)
+  private readonly codeActionService: CodeActionService;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -33,7 +34,7 @@ export class CodeActionHandler extends Disposable {
     }
 
     const { monacoEditor } = editor;
-    const { languageParserService, inlineChatFeatureRegistry } = this;
+    const { languageParserService, codeActionService } = this;
 
     let codeActionDispose: IDisposable | undefined;
 
@@ -74,7 +75,7 @@ export class CodeActionHandler extends Disposable {
           if (!parser) {
             return;
           }
-          const actions = inlineChatFeatureRegistry.getCodeActions();
+          const actions = codeActionService.getCodeActions();
           if (!actions || actions.length === 0) {
             return;
           }
@@ -90,7 +91,7 @@ export class CodeActionHandler extends Disposable {
                 const command = {} as monaco.Command;
                 if (v.command) {
                   command.id = v.command.id;
-                  command.arguments = [info.range];
+                  command.arguments = [info.range, ...v.command.arguments];
                 }
 
                 let title = v.title;

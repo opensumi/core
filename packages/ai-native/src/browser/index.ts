@@ -32,6 +32,7 @@ import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
+import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
 import { InterfaceNavigationContribution } from './contrib/interface-navigation/interface-navigation.contribution';
 import { MergeConflictContribution } from './contrib/merge-conflict';
 import { ResolveConflictRegistry } from './contrib/merge-conflict/merge-conflict.feature.registry';
@@ -51,6 +52,7 @@ export class AINativeModule extends BrowserModule {
     InterfaceNavigationContribution,
     TerminalAIContribution,
     MergeConflictContribution,
+    AICodeActionContribution,
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,

@@ -21,13 +21,14 @@ import {
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { AI_DIFF_WIDGET_ID } from '../../../common';
 import { AINativeService } from '../../ai-native.service';
+import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 
 import { InlineChatController } from './inline-chat-controller';
@@ -63,6 +64,9 @@ export class InlineChatHandler extends Disposable {
 
   @Autowired(ILoggerManagerClient)
   private readonly loggerManagerClient: ILoggerManagerClient;
+
+  @Autowired(CodeActionService)
+  private readonly codeActionService: CodeActionService;
 
   private logger: ILogServiceClient;
 
@@ -109,8 +113,7 @@ export class InlineChatHandler extends Disposable {
           this.disposeAllWidget();
         }
       }),
-      // 通过 code actions 来透出我们 inline chat 的功能
-      this.inlineChatFeatureRegistry.onCodeActionRun(({ id, range }) => {
+      this.codeActionService.onCodeActionRun(({ id, range }) => {
         const currentEditor = this.workbenchEditorService.currentEditor;
 
         if (currentEditor?.currentUri !== editor.currentUri) {
