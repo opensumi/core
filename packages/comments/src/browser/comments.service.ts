@@ -1069,12 +1069,11 @@ export class CommentsService extends Disposable implements ICommentsService {
   public getProviderIdsByLine(line: number): string[] {
     const result: string[] = [];
     if (this.rangeOwner.size === 1) {
-      // 只有一个provider，直接返回
       return [this.rangeOwner.keys().next().value];
     }
     for (const rangeOwner of this.rangeOwner) {
       const [id, ranges] = rangeOwner;
-      if (ranges && ranges.some((range) => range.endLineNumber <= line && line <= range.endLineNumber)) {
+      if (ranges && ranges.some((range) => range.startLineNumber <= line && line <= range.endLineNumber)) {
         result.push(id);
       }
     }
