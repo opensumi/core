@@ -306,6 +306,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     this.editor = editor;
     const disposer = new Disposable();
     let commentRangeDecorationIds: string[] = [];
+    let hasHiddenArea = false;
 
     disposer.addDispose(
       editor.monacoEditor.onMouseDown((event) => {
@@ -353,6 +354,13 @@ export class CommentsService extends Disposable implements ICommentsService {
     disposer.addDispose(
       editor.monacoEditor.onMouseUp((event) => {
         if (this.startCommentRange) {
+          if (hasHiddenArea) {
+            this.renderCommentRange(editor);
+            hasHiddenArea = false;
+            this.startCommentRange = null;
+            this.endCommentRange = null;
+            return;
+          }
           const range = this.startCommentRange;
           if (this.endCommentRange) {
             if (this.endCommentRange.startLineNumber < this.startCommentRange.startLineNumber) {
@@ -413,6 +421,10 @@ export class CommentsService extends Disposable implements ICommentsService {
         const range = event.target.range;
         // 多行评论
         if (this.startCommentRange) {
+          if (!event.target.element?.className) {
+            // 当多行评论跨过折叠代码时，不创建评论
+            hasHiddenArea = true;
+          }
           if (uri && range) {
             let selection = {
               startLineNumber: this.startCommentRange.startLineNumber,
