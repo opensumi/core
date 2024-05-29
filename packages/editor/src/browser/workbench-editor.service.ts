@@ -852,15 +852,17 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   layoutEditors() {
-    if (this._domNode) {
-      const currentWidth = this._domNode.offsetWidth;
-      const currentHeight = this._domNode.offsetHeight;
-      if (currentWidth !== this._prevDomWidth || currentHeight !== this._prevDomHeight) {
-        this.doLayoutEditors();
+    fastdom.measure(() => {
+      if (this._domNode) {
+        const currentWidth = this._domNode.offsetWidth;
+        const currentHeight = this._domNode.offsetHeight;
+        if (currentWidth !== this._prevDomWidth || currentHeight !== this._prevDomHeight) {
+          this.doLayoutEditors();
+        }
+        this._prevDomWidth = currentWidth;
+        this._prevDomHeight = currentHeight;
       }
-      this._prevDomWidth = currentWidth;
-      this._prevDomHeight = currentHeight;
-    }
+    });
   }
 
   private _layoutEditorWorker() {
@@ -1134,9 +1136,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
+
     setTimeout(() => {
       this.codeEditor.layout();
     });
+    this.addDispose(
+      this.codeEditor.onRefOpen(() => {
+        this.codeEditor.layout();
+      }),
+    );
     this.toDispose.push(
       this.codeEditor.onCursorPositionChanged((e) => {
         this._onCurrentEditorCursorChange.fire(e);
