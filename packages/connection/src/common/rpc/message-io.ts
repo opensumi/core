@@ -123,7 +123,7 @@ export interface RPCResponseMessage {
   kind: OperationType.Response;
   requestId: number;
   method: string;
-  headers: Record<string, any>;
+  headers: IResponseHeaders;
   result: any;
 }
 
@@ -131,7 +131,7 @@ export interface RPCErrorMessage {
   kind: OperationType.Error;
   requestId: number;
   method: string;
-  headers: Record<string, any>;
+  headers: IResponseHeaders;
   error: any;
 }
 
@@ -147,7 +147,7 @@ export type RPCMessage =
   | RPCErrorMessage
   | RPCCancelMessage;
 
-export abstract class BaseMessageIO<T = any> {
+export abstract class IMessageIO<T = any> {
   abstract loadProtocolMethod?(
     methodProtocol: TSumiProtocolMethod,
     options?: { nameConverter?: (str: string) => string },
@@ -159,10 +159,10 @@ export abstract class BaseMessageIO<T = any> {
   abstract Response(requestId: number, method: string, headers: Record<string, any>, result: any): T;
   abstract Error(requestId: number, method: string, headers: Record<string, any>, error: any): T;
 
-  abstract readMessage(data: T): RPCMessage;
+  abstract parse(data: T): RPCMessage;
 }
 
-export class MessageIO extends BaseMessageIO<PlatformBuffer> {
+export class MessageIO extends IMessageIO<PlatformBuffer> {
   fury: Fury;
   reader: BinaryReader;
   writer: BinaryWriter;
@@ -293,7 +293,7 @@ export class MessageIO extends BaseMessageIO<PlatformBuffer> {
     return writer.dump();
   }
 
-  readMessage(data: PlatformBuffer): RPCMessage {
+  parse(data: PlatformBuffer): RPCMessage {
     const { reader } = this;
     reader.reset(data);
 

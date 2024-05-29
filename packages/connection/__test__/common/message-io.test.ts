@@ -30,7 +30,7 @@ describe('message io', () => {
     const buf = repo.Response(0, protocols.add.protocol.method, {}, 3);
     expect(buf.byteLength).toBeGreaterThan(20);
 
-    const response = repo.readMessage(buf) as RPCResponseMessage;
+    const response = repo.parse(buf) as RPCResponseMessage;
 
     const { method, headers, result } = response;
 

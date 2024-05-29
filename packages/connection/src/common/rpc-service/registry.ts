@@ -1,6 +1,6 @@
 import { DisposableStore, Emitter, IDisposable } from '@opensumi/ide-core-common';
 
-import { BaseMessageIO, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
+import { IMessageIO, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
 import { RPCServiceMethod } from '../types';
 
 const skipMethods = new Set(['constructor']);
@@ -119,7 +119,7 @@ export class ProtocolRegistry {
     this.emitter.fire(serviceNames);
   }
 
-  applyTo(io: BaseMessageIO) {
+  applyTo(io: IMessageIO) {
     if (!io.loadProtocolMethod) {
       return;
     }

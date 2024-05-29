@@ -14,7 +14,7 @@ import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
 
 import { MethodTimeoutError } from './errors';
-import { BaseMessageIO, MessageIO, OperationType, RPCErrorMessage, RPCResponseMessage } from './message-io';
+import { IMessageIO, MessageIO, OperationType, RPCErrorMessage, RPCResponseMessage } from './message-io';
 import {
   IResponseHeaders,
   TGenericNotificationHandler,
@@ -37,7 +37,7 @@ export interface ISumiConnectionOptions {
    */
   name?: string;
 
-  io?: BaseMessageIO;
+  io?: IMessageIO;
 }
 
 const chunkedResponseHeaders: IResponseHeaders = {
@@ -55,13 +55,13 @@ export class SumiConnection implements IDisposable {
   private _requestId = 0;
   private _callbacks = new Map<number, TRequestCallback>();
 
-  private readonly _timeoutHandles = new Map<number, NodeJS.Timeout | number>();
+  private readonly _reqTimeoutHandles = new Map<number, NodeJS.Timeout | number>();
   private readonly _cancellationTokenSources = new Map<number, CancellationTokenSource>();
   private readonly _knownCanceledRequests = new Set<number>();
 
   protected activeRequestPool = new Map<number, SumiReadableStream<any>>();
 
-  public io: BaseMessageIO;
+  public io: IMessageIO;
   protected logger: ILogger;
 
   protected capturer: Capturer;
@@ -115,7 +115,7 @@ export class SumiConnection implements IDisposable {
         const timeoutHandle = setTimeout(() => {
           this._handleTimeout(method, requestId);
         }, this.options.timeout);
-        this._timeoutHandles.set(requestId, timeoutHandle);
+        this._reqTimeoutHandles.set(requestId, timeoutHandle);
       }
 
       const cancellationToken: CancellationToken | undefined =
@@ -148,13 +148,13 @@ export class SumiConnection implements IDisposable {
   }
 
   private _handleTimeout(method: string, requestId: number) {
-    if (!this._callbacks.has(requestId) || !this._timeoutHandles.has(requestId)) {
+    if (!this._callbacks.has(requestId) || !this._reqTimeoutHandles.has(requestId)) {
       return;
     }
 
     const callback = this._callbacks.get(requestId)!;
     this._callbacks.delete(requestId);
-    this._timeoutHandles.delete(requestId);
+    this._reqTimeoutHandles.delete(requestId);
     callback(nullHeaders, new MethodTimeoutError(method));
   }
 
@@ -197,14 +197,10 @@ export class SumiConnection implements IDisposable {
   listen() {
     this.disposable.add(
       this.socket.onMessage((data) => {
-        const message = this.io.readMessage(data);
+        const message = this.io.parse(data);
+
         const opType = message.kind;
         const requestId = message.requestId;
-
-        if (this._timeoutHandles.has(requestId)) {
-          clearTimeout(this._timeoutHandles.get(requestId));
-          this._timeoutHandles.delete(requestId);
-        }
 
         switch (opType) {
           case OperationType.Error:
@@ -212,6 +208,11 @@ export class SumiConnection implements IDisposable {
             const { headers, method } = message;
             const err = (message as RPCErrorMessage).error;
             const result = (message as RPCResponseMessage).result;
+
+            if (this._reqTimeoutHandles.has(requestId)) {
+              clearTimeout(this._reqTimeoutHandles.get(requestId));
+              this._reqTimeoutHandles.delete(requestId);
+            }
 
             const runCallback = (headers: IResponseHeaders, error?: any, result?: any) => {
               const callback = this._callbacks.get(requestId);
