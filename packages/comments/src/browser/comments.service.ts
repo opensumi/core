@@ -381,7 +381,8 @@ export class CommentsService extends Disposable implements ICommentsService {
         } else if (
           event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
           event.target.element &&
-          event.target.element.className.indexOf('comment-range') > -1
+          event.target.element.className.indexOf('comment-range') > -1 &&
+          event.target.element.className.indexOf('comment-thread') < 0
         ) {
           const { target } = event;
           const range: IRange | undefined = target.range;

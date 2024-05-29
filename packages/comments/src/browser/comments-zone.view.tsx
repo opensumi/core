@@ -176,7 +176,10 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   public onHide: Event<void> = this._onHide.event;
 
   constructor(editor: IEditor, thread: ICommentsThread, options?: IOptions) {
-    super(editor.monacoEditor, thread.range, options);
+    super(editor.monacoEditor, thread.range, {
+      ...options,
+      showInHiddenAreas: true,
+    });
     this._editor = editor;
     this._wrapper = document.createElement('div');
     this._isShow = !thread.isCollapsed;
