@@ -152,7 +152,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     super();
 
     this.addDispose(
-      this.fileServiceClient.onWillActivateFileSystemProvider(async (e) => {
+      this.fileServiceClient.onWillActivateFileSystemProvider(async () => {
         if (!this.extensionMetaDataArr) {
           await this.initExtensionMetaData();
         }
