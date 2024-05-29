@@ -8,3 +8,4 @@ export * from './connect';
 export * from './types';
 export * from './connection';
 export * from './serializer';
+export * from './channel';
