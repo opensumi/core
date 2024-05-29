@@ -350,3 +350,52 @@ export class MessageIO extends IMessageIO<PlatformBuffer> {
     }
   }
 }
+
+export class RawMessageIO implements IMessageIO<RPCMessage> {
+  Request(requestId: number, method: string, headers: IRequestHeaders, args: any[]): RPCRequestMessage {
+    return {
+      kind: OperationType.Request,
+      requestId,
+      method,
+      headers,
+      args,
+    };
+  }
+  Notification(requestId: number, method: string, headers: IRequestHeaders, args: any[]): RPCNotificationMessage {
+    return {
+      kind: OperationType.Notification,
+      requestId,
+      method,
+      headers,
+      args,
+    };
+  }
+  Cancel(requestId: number): RPCCancelMessage {
+    return {
+      kind: OperationType.Cancel,
+      requestId,
+    };
+  }
+  Response(requestId: number, method: string, headers: Record<string, any>, result: any): RPCResponseMessage {
+    return {
+      kind: OperationType.Response,
+      requestId,
+      headers,
+      method,
+      result,
+    };
+  }
+  Error(requestId: number, method: string, headers: Record<string, any>, error: any): RPCErrorMessage {
+    return {
+      kind: OperationType.Error,
+      requestId,
+      method,
+      headers,
+      error,
+    };
+  }
+
+  parse(data: any): RPCMessage {
+    return data;
+  }
+}
