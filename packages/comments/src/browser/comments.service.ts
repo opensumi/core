@@ -99,13 +99,10 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private providerDecorationCache = new LRUCache<string, Deferred<IRange[]>>(10000);
 
-  private _commentingRangeAmountReserved = 0;
-  private _commentingRangeSpaceReserved = false;
-
   private commentRangeDecorationMap: Map<string, string[]> = new Map();
 
   // 默认在 file 协议和 git 协议中显示评论数据
-  private shouldShowCommentsSchemes = new Set(['file', 'git']);
+  private shouldShowCommentsSchemes = new Set(['file', 'git', 'diff']);
 
   private decorationProviderDisposer = Disposable.NULL;
 
@@ -422,8 +419,10 @@ export class CommentsService extends Disposable implements ICommentsService {
         // 多行评论
         if (this.startCommentRange) {
           if (!event.target.element?.className) {
-            // 当多行评论跨过折叠代码时，不创建评论
-            hasHiddenArea = true;
+            if (event.target.element?.offsetParent?.className.includes('diff-hidden-lines')) {
+              // 当多行评论跨过折叠代码时，不创建评论
+              hasHiddenArea = true;
+            }
           }
           if (uri && range) {
             let selection = {
@@ -475,13 +474,6 @@ export class CommentsService extends Disposable implements ICommentsService {
     );
 
     disposer.addDispose(
-      editor.monacoEditor.onDidChangeModel(() => {
-        this.renderCommentRange(editor);
-        this.tryUpdateReservedSpace(editor);
-      }),
-    );
-
-    disposer.addDispose(
       this.onCommentRangeProviderChange(() => {
         this.renderCommentRange(editor);
       }),
@@ -508,12 +500,23 @@ export class CommentsService extends Disposable implements ICommentsService {
     );
 
     this.tryUpdateReservedSpace(editor);
+
+    disposer.addDispose(
+      editor.monacoEditor.onDidChangeModel(() => {
+        this.renderCommentRange(editor);
+        this.tryUpdateReservedSpace(editor);
+      }),
+    );
     return disposer;
   }
 
+  private editorCommentingRangeSpaceReservedMap: Map<string, boolean> = new Map();
+  private editorLineDecorationsWidthMap: Map<string, number> = new Map();
+
   private ensureCommentingRangeReservedAmount(editor: IEditor) {
     const existing = this.getExistingCommentEditorOptions(editor);
-    if (existing.lineDecorationsWidth !== this._commentingRangeAmountReserved) {
+    const lineDecorationsWidth = this.editorLineDecorationsWidthMap.get(editor.getId());
+    if (existing.lineDecorationsWidth !== lineDecorationsWidth) {
       editor.updateOptions({
         lineDecorationsWidth: this.getWithCommentsLineDecorationWidth(editor, existing.lineDecorationsWidth),
       });
@@ -524,27 +527,30 @@ export class CommentsService extends Disposable implements ICommentsService {
     if (!editor) {
       return;
     }
+    let commentingRangeSpaceReserved = this.editorCommentingRangeSpaceReservedMap.get(editor.getId()) || false;
+    const shouldShowComments = editor.currentUri ? this.shouldShowCommentsSchemes.has(editor.currentUri.scheme) : false;
 
-    const hasCommentsOrRangesInInfo = editor.currentUri
-      ? this.shouldShowCommentsSchemes.has(editor.currentUri.scheme)
-      : false;
+    const hasComments = this.commentsThreads.some(
+      (thread) => thread.uri.isEqual(editor.currentUri!) && thread.comments.length > 0,
+    );
 
-    const hasCommentsOrRanges = hasCommentsOrRangesInInfo;
+    const hasCommentsOrRanges = shouldShowComments || hasComments;
     if (hasCommentsOrRanges) {
-      if (!this._commentingRangeSpaceReserved) {
-        this._commentingRangeSpaceReserved = true;
+      if (!commentingRangeSpaceReserved) {
+        commentingRangeSpaceReserved = true;
         const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(editor);
         const newOptions = this.getWithCommentsEditorOptions(editor, extraEditorClassName, lineDecorationsWidth);
         this.updateEditorLayoutOptions(editor, newOptions.extraEditorClassName, newOptions.lineDecorationsWidth);
       } else {
         this.ensureCommentingRangeReservedAmount(editor);
       }
-    } else if (!hasCommentsOrRanges && this._commentingRangeSpaceReserved) {
-      this._commentingRangeSpaceReserved = false;
+    } else if (!hasCommentsOrRanges && commentingRangeSpaceReserved) {
+      commentingRangeSpaceReserved = false;
       const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(editor);
       const newOptions = this.getWithoutCommentsEditorOptions(editor, extraEditorClassName, lineDecorationsWidth);
       this.updateEditorLayoutOptions(editor, newOptions.extraEditorClassName, newOptions.lineDecorationsWidth);
     }
+    this.editorCommentingRangeSpaceReservedMap.set(editor.getId(), commentingRangeSpaceReserved);
   }
 
   private getExistingCommentEditorOptions(editor: IEditor) {
@@ -602,8 +608,8 @@ export class CommentsService extends Disposable implements ICommentsService {
       lineDecorationsWidth -= 11;
     }
     lineDecorationsWidth += 24;
-    this._commentingRangeAmountReserved = lineDecorationsWidth;
-    return this._commentingRangeAmountReserved;
+    this.editorLineDecorationsWidthMap.set(editor.getId(), lineDecorationsWidth);
+    return lineDecorationsWidth;
   }
 
   private async renderCommentRange(
