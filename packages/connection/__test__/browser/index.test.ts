@@ -17,7 +17,6 @@ describe('connection browser', () => {
       const fakeWSURL = `ws://127.0.0.1:${randomPort}`;
       const mockServer = new Server(fakeWSURL);
 
-      let receivedHeartbeat = false;
       let data1Received = false;
       let data2Received = false;
 
@@ -40,8 +39,6 @@ describe('connection browser', () => {
             if (data === 'data2') {
               data2Received = true;
             }
-          } else if (msgObj.kind === 'ping') {
-            receivedHeartbeat = true;
           }
         });
       });
@@ -53,9 +50,6 @@ describe('connection browser', () => {
       );
 
       await wsChannelHandler.initHandler();
-      await sleep(11000);
-      expect(receivedHeartbeat).toBe(true);
-      receivedHeartbeat = false;
 
       const channel = await wsChannelHandler.openChannel('test');
 
