@@ -147,7 +147,7 @@ export class WSChannel {
             // 有 channelPath 说明该 channel 曾经被打开过
             // 重新打开 channel
             if (this.channelPath) {
-              // 暂停消息发送直到 server-ready
+              // 暂停消息发送, 直到收到 server-ready
               this.pause();
               this.open(this.channelPath, this.clientId);
             }
@@ -292,6 +292,7 @@ export class WSServerChannel extends WSChannel {
     super(connection, options);
     this.clientId = options.clientId;
   }
+
   serverReady(token: string) {
     this.connection.send({
       kind: 'server-ready',

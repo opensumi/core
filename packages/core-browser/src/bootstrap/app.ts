@@ -46,7 +46,7 @@ import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/ele
 
 import { ClientAppStateService } from '../application';
 import { ESupportRuntime, ElectronConnectionHelper, WebConnectionHelper } from '../application/runtime';
-import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
+import { BaseConnectionHelper } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
 import { RendererRuntime } from '../application/runtime/types';
@@ -252,7 +252,7 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected async createConnection(type: `${ESupportRuntime}`) {
-    let connectionHelper: ElectronConnectionHelper | WebConnectionHelper;
+    let connectionHelper: BaseConnectionHelper;
 
     switch (type) {
       case ESupportRuntime.Electron:
@@ -269,11 +269,6 @@ export class ClientApp implements IClientApp, IDisposable {
       default:
         throw new Error(`Unknown backend type: ${type}`);
     }
-
-    this.injector.addProviders({
-      token: CONNECTION_HELPER_TOKEN,
-      useValue: connectionHelper,
-    });
 
     const connection: IRuntimeSocketConnection<Uint8Array> = connectionHelper.createConnection();
     const clientId: string = this.config.clientId ?? connectionHelper.getDefaultClientId();

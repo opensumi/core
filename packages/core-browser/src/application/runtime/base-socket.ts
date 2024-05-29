@@ -5,5 +5,3 @@ export abstract class BaseConnectionHelper {
 
   abstract createConnection(): IRuntimeSocketConnection;
 }
-
-export const CONNECTION_HELPER_TOKEN = Symbol('CONNECTION_HELPER_TOKEN');

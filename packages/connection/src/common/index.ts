@@ -1,4 +1,5 @@
 export * from './rpc-service/proxy';
+export * from './rpc-service';
 export * from './rpc/multiplexer';
 export * from './rpcProtocol';
 export * from './capturer';
