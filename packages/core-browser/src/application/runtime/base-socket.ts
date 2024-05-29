@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { ISerializer, WSChannel } from '@opensumi/ide-connection';
+import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { IRuntimeSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { IReporterService, getDebugLogger } from '@opensumi/ide-core-common';
@@ -20,8 +20,6 @@ export abstract class BaseConnectionHelper {
   @Autowired(IReporterService)
   reporterService: IReporterService;
 
-  protected channelSerializer: ISerializer<any, any> | undefined = undefined;
-
   abstract getDefaultClientId(): string;
 
   abstract createConnection(): IRuntimeSocketConnection;
@@ -30,7 +28,6 @@ export abstract class BaseConnectionHelper {
     const connection: IRuntimeSocketConnection<Uint8Array> = this.createConnection();
     const clientId: string = this.appConfig.clientId ?? this.getDefaultClientId();
     const channelHandler = new WSChannelHandler(connection, clientId, {
-      channelSerializer: this.channelSerializer,
       logger: initialLogger,
     });
 

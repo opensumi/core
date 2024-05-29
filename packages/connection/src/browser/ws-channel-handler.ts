@@ -10,7 +10,7 @@ import { WSChannel } from '../common/ws-channel';
 
 export interface WSChannelHandlerOptions {
   logger?: ILogger;
-  channelSerializer?: ISerializer<ChannelMessage, any>;
+  serializer?: ISerializer<ChannelMessage, any>;
 }
 
 /**
@@ -48,7 +48,7 @@ export class WSChannelHandler {
     this.logger = options.logger || this.logger;
     this.clientId = clientId;
     this.LOG_TAG = `[WSChannelHandler] [client-id:${this.clientId}]`;
-    const serializer = options.channelSerializer || furySerializer;
+    const serializer = options.serializer || furySerializer;
     this.wrappedConnection = wrapSerializer(this.connection, serializer);
   }
   // 为解决建立连接之后，替换成可落盘的 logger
