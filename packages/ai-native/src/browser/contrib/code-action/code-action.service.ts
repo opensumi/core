@@ -27,6 +27,10 @@ export class CodeActionService extends Disposable {
     return Array.from(this.codeActionsMap.values());
   }
 
+  public deleteCodeActionById(id: string): void {
+    this.codeActionsMap.delete(id);
+  }
+
   public registerCodeAction(operational: AIActionItem): void {
     const { codeAction, id } = operational;
 

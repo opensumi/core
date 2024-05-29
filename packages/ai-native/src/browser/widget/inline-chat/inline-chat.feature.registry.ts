@@ -40,6 +40,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
   private removeCollectedActions(operational: AIActionItem): void {
     this.actionsMap.delete(operational.id);
+    this.codeActionService.deleteCodeActionById(operational.id);
   }
 
   public registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable {
