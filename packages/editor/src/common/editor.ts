@@ -151,7 +151,7 @@ export enum EditorType {
 }
 
 /**
- * 一个IEditor代表了一个最小的编辑器单元，可以是 CodeEditor 中的一个，也可以是 DiffEditor 中的两个
+ * 一个 IEditor 代表了一个最小的编辑器单元，可以是 CodeEditor 中的一个，也可以是 DiffEditor 中的两个
  */
 export interface IEditor {
   /**
