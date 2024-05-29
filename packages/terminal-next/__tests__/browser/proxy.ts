@@ -8,6 +8,7 @@ import * as pty from 'node-pty';
 import WebSocket from 'ws';
 
 import { WSChannel } from '@opensumi/ide-connection';
+import { createWSChannelForClient } from '@opensumi/ide-connection/__test__/common/ws-channel';
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { uuid } from '@opensumi/ide-core-browser';
 
@@ -146,7 +147,7 @@ export function handleStdinMessage(json: PtyStdIn) {
 export function createWsServer() {
   const server = new WebSocket.Server({ port: getPort() });
   server.on('connection', (socket) => {
-    const channel = WSChannel.forClient(new WSWebSocketConnection(socket), {
+    const channel = createWSChannelForClient(new WSWebSocketConnection(socket), {
       id: 'ws-server',
     });
 

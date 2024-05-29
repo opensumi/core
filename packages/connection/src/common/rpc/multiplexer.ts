@@ -63,6 +63,7 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
   protected readonly _locals: Map<string, any>;
   protected readonly _proxies: Map<string, any>;
   protected _knownProtocols: Record<string, TSumiProtocol>;
+
   io: MessageIO;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiMultiplexerConnectionOptions = {}) {

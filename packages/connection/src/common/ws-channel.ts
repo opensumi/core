@@ -1,16 +1,9 @@
 import { EventEmitter } from '@opensumi/events';
-import {
-  DisposableCollection,
-  DisposableStore,
-  EventQueue,
-  StateTracer,
-  randomString,
-} from '@opensumi/ide-core-common';
+import { DisposableStore, EventQueue, StateTracer, randomString } from '@opensumi/ide-core-common';
 
 import { ChannelMessage, ErrorMessageCode } from './channel/types';
 import { IConnectionShape } from './connection/types';
 import { ISumiConnectionOptions, SumiConnection } from './rpc/connection';
-import { furySerializer, wrapSerializer } from './serializer';
 import { ILogger } from './types';
 
 export interface IWSChannelCreateOptions {
@@ -51,24 +44,10 @@ export class WSChannel {
 
   logger: ILogger = console;
 
-  static forClient(connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
-    const disposable = new DisposableCollection();
-
-    const wrappedConnection = wrapSerializer(connection, furySerializer);
-    const channel = new WSChannel(wrappedConnection, options);
-    disposable.push(channel.listen());
-
-    connection.onceClose(() => {
-      disposable.dispose();
-    });
-
-    return channel;
-  }
-
   constructor(public connection: IConnectionShape<ChannelMessage>, options: IWSChannelCreateOptions) {
     const { id, logger, ensureServerReady } = options;
     this.id = id;
-    this.LOG_TAG = `[WSChannel id=${this.id}]`;
+    this.LOG_TAG = `[WSChannel id:${this.id}]`;
     if (logger) {
       this.logger = logger;
     }
@@ -253,12 +232,6 @@ export class WSChannel {
   createSumiConnection(options: ISumiConnectionOptions = {}) {
     const conn = new SumiConnection(this.createConnection(), options);
     return conn;
-  }
-
-  listen() {
-    return this.connection.onMessage((data) => {
-      this.dispatch(data);
-    });
   }
 
   dispose() {

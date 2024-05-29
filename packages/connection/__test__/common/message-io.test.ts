@@ -25,12 +25,12 @@ describe('message io', () => {
     expect(args).toEqual([1, 2]);
   });
   it('should be able to create a response', () => {
-    const repo = new MessageIO();
-    repo.loadProtocolMethod(protocols.add.protocol);
-    const buf = repo.Response(0, protocols.add.protocol.method, {}, 3);
+    const io = new MessageIO();
+    io.loadProtocolMethod(protocols.add.protocol);
+    const buf = io.Response(0, protocols.add.protocol.method, {}, 3);
     expect(buf.byteLength).toBeGreaterThan(20);
 
-    const response = repo.parse(buf) as RPCResponseMessage;
+    const response = io.parse(buf) as RPCResponseMessage;
 
     const { method, headers, result } = response;
 
@@ -40,10 +40,10 @@ describe('message io', () => {
     });
     expect(result).toEqual(3);
 
-    const buf2 = repo.Response(0, 'any1', {}, null);
+    const buf2 = io.Response(0, 'any1', {}, null);
     expect(buf2.byteLength).toBeGreaterThan(20);
 
-    const buf3 = repo.Response(0, 'any2', {}, new Uint8Array(10));
+    const buf3 = io.Response(0, 'any2', {}, new Uint8Array(10));
     expect(buf3.byteLength).toBeGreaterThan(20);
   });
 });
