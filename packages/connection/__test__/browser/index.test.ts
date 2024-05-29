@@ -45,7 +45,6 @@ describe('connection browser', () => {
 
       const wsChannelHandler = new WSChannelHandler(
         ReconnectingWebSocketConnection.forURL(fakeWSURL),
-        console,
         'test-client-id',
       );
 

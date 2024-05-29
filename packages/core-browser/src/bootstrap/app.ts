@@ -6,7 +6,6 @@ import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 
 import { Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { IRuntimeSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   AppLifeCycleServiceToken,
   CommandRegistry,
@@ -29,7 +28,6 @@ import {
   StorageResolverContribution,
   SupportLogNamespace,
   URI,
-  UrlProvider,
   asExtensionCandidate,
   createContributionProvider,
   getDebugLogger,
@@ -45,7 +43,7 @@ import {
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
 import { ClientAppStateService } from '../application';
-import { ESupportRuntime, ElectronConnectionHelper, WebConnectionHelper } from '../application/runtime';
+import { ConnectionHelperFactory, ESupportRuntime } from '../application/runtime';
 import { BaseConnectionHelper } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
@@ -74,7 +72,7 @@ import { electronEnv } from '../utils';
 
 import { IClientAppOpts, IPreferences, IconInfo, IconMap, LayoutConfig, ModuleConstructor } from './app.interface';
 import { IAppRenderer, renderClientApp } from './app.view';
-import { bindConnectionServiceDeprecated, createConnectionService } from './connection';
+import { bindConnectionServiceDeprecated } from './connection';
 import { injectInnerProviders } from './inner-providers';
 
 import './polyfills';
@@ -93,7 +91,6 @@ export class ClientApp implements IClientApp, IDisposable {
   public runtime: ElectronRendererRuntime | BrowserRuntime;
 
   private logger: ILogServiceClient;
-  private connectionPath: UrlProvider;
   private keybindingRegistry: KeybindingRegistry;
   private keybindingService: KeybindingService;
   private modules: ModuleConstructor[];
@@ -106,7 +103,6 @@ export class ClientApp implements IClientApp, IDisposable {
   constructor(protected opts: IClientAppOpts) {
     const {
       modules,
-      connectionPath,
       iconStyleSheets,
       useCdnIcon,
       editorBackgroundImage,
@@ -145,6 +141,8 @@ export class ClientApp implements IClientApp, IDisposable {
       rpcMessageTimeout: opts.rpcMessageTimeout || -1,
     };
 
+    this.config.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
+
     const layoutViewSizeConfig = this.injector.get(LayoutViewSizeConfig);
     layoutViewSizeConfig.init(opts.layoutViewSize);
     this.config.layoutViewSize = layoutViewSizeConfig;
@@ -176,7 +174,6 @@ export class ClientApp implements IClientApp, IDisposable {
 
     this.config = this.runtime.mergeAppConfig(this.config);
 
-    this.connectionPath = connectionPath || `${this.config.wsPath}/service`;
     this.initBaseProvider();
     this.initFields();
     this.appendIconStyleSheets(iconStyleSheets, useCdnIcon);
@@ -252,36 +249,12 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected async createConnection(type: `${ESupportRuntime}`) {
-    let connectionHelper: BaseConnectionHelper;
-
-    switch (type) {
-      case ESupportRuntime.Electron:
-        connectionHelper = this.injector.get(ElectronConnectionHelper);
-        break;
-      case ESupportRuntime.Web:
-        connectionHelper = this.injector.get(WebConnectionHelper, [
-          {
-            connectionPath: this.connectionPath,
-            connectionProtocols: this.opts.connectionProtocols,
-          },
-        ]);
-        break;
-      default:
-        throw new Error(`Unknown backend type: ${type}`);
-    }
-
-    const connection: IRuntimeSocketConnection<Uint8Array> = connectionHelper.createConnection();
-    const clientId: string = this.config.clientId ?? connectionHelper.getDefaultClientId();
-
-    await createConnectionService(
-      this.injector,
-      this.modules,
-      () => {
-        this.onReconnectContributions();
-      },
-      connection,
-      clientId,
-    );
+    const factory = this.injector.get(ConnectionHelperFactory) as ConnectionHelperFactory;
+    const connectionHelper: BaseConnectionHelper = factory(type);
+    const channel = await connectionHelper.createRPCServiceChannel(this.modules);
+    channel.onReopen(() => {
+      this.onReconnectContributions();
+    });
 
     // create logger after connection established
     this.logger = this.getLogger();

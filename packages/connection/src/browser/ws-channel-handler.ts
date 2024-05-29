@@ -5,11 +5,12 @@ import { ChannelMessage } from '../common/channel/types';
 import { IRuntimeSocketConnection } from '../common/connection';
 import { IConnectionShape } from '../common/connection/types';
 import { ISerializer, furySerializer, wrapSerializer } from '../common/serializer';
-import { ConnectionInfo, WSCloseInfo } from '../common/types';
+import { ConnectionInfo, ILogger, WSCloseInfo } from '../common/types';
 import { WSChannel } from '../common/ws-channel';
 
 export interface WSChannelHandlerOptions {
-  serializer?: ISerializer<ChannelMessage, any>;
+  logger?: ILogger;
+  channelSerializer?: ISerializer<ChannelMessage, any>;
 }
 
 /**
@@ -27,7 +28,7 @@ export class WSChannelHandler {
 
   private channelMap: Map<string, WSChannel> = new Map();
   private channelCloseEventMap = new MultiMap<string, WSCloseInfo>();
-  private logger = console;
+  private logger: ILogger = console;
   public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timeout | null;
   private reporterService: IReporterService;
@@ -41,14 +42,13 @@ export class WSChannelHandler {
 
   constructor(
     public connection: IRuntimeSocketConnection<Uint8Array>,
-    logger: any,
     clientId: string,
     options: WSChannelHandlerOptions = {},
   ) {
-    this.logger = logger || this.logger;
+    this.logger = options.logger || this.logger;
     this.clientId = clientId;
     this.LOG_TAG = `[WSChannelHandler] [client-id:${this.clientId}]`;
-    const serializer = options.serializer || furySerializer;
+    const serializer = options.channelSerializer || furySerializer;
     this.wrappedConnection = wrapSerializer(this.connection, serializer);
   }
   // 为解决建立连接之后，替换成可落盘的 logger
