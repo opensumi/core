@@ -2,6 +2,7 @@ import { Injector, Provider } from '@opensumi/di';
 import { ISerializer, RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { IRuntimeSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { ISumiConnectionOptions } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   BasicModule,
@@ -79,9 +80,14 @@ export async function createConnectionService(
   bindConnectionService(injector, modules, channel);
 }
 
-export function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
+export function bindConnectionService(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  channel: WSChannel,
+  options: ISumiConnectionOptions = {},
+) {
   const clientCenter = new RPCServiceCenter();
-  const disposable = clientCenter.setSumiConnection(channel.createSumiConnection());
+  const disposable = clientCenter.setSumiConnection(channel.createSumiConnection(options));
   initConnectionService(injector, modules, clientCenter);
   return disposable;
 }

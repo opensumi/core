@@ -10,6 +10,7 @@ import {
 import { ChannelMessage, ErrorMessageCode } from './channel/types';
 import { IConnectionShape } from './connection/types';
 import { ISumiConnectionOptions, SumiConnection } from './rpc/connection';
+import { furySerializer, wrapSerializer } from './serializer';
 import { ILogger } from './types';
 
 export interface IWSChannelCreateOptions {
@@ -50,9 +51,11 @@ export class WSChannel {
 
   logger: ILogger = console;
 
-  static forClient(connection: IConnectionShape<ChannelMessage>, options: IWSChannelCreateOptions) {
+  static forClient(connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
     const disposable = new DisposableCollection();
-    const channel = new WSChannel(connection, options);
+
+    const wrappedConnection = wrapSerializer(connection, furySerializer);
+    const channel = new WSChannel(wrappedConnection, options);
     disposable.push(channel.listen());
 
     connection.onceClose(() => {

@@ -4,8 +4,7 @@ import { Terminal } from 'xterm';
 import { Injectable } from '@opensumi/di';
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Disposable, PreferenceProvider, PreferenceResolveResult, PreferenceService } from '@opensumi/ide-core-browser';
 import { Deferred, Emitter, IDisposable, OperatingSystem, PreferenceScope, URI, uuid } from '@opensumi/ide-core-common';
 import { Color, RGBA } from '@opensumi/ide-theme/lib/common/color';
 

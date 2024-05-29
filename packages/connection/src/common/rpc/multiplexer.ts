@@ -2,7 +2,7 @@ import { BaseConnection } from '../connection';
 import { ExtObjectTransfer } from '../fury-extends/any';
 
 import { ISumiConnectionOptions, SumiConnection } from './connection';
-import { AnyProtocolSerializer } from './message-io';
+import { AnyProtocolSerializer, MessageIO } from './message-io';
 import { TSumiProtocol } from './types';
 
 export class ProxyIdentifier<T = any> {
@@ -57,12 +57,14 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
   protected readonly _locals: Map<string, any>;
   protected readonly _proxies: Map<string, any>;
   protected _knownProtocols: Record<string, TSumiProtocol>;
+  io: MessageIO;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiMultiplexerConnectionOptions = {}) {
     super(socket, options);
     this._locals = new Map();
     this._proxies = new Map();
     this._knownProtocols = options.knownProtocols || {};
+    this.io = new MessageIO();
     this.io.setAnySerializer(new AnyProtocolSerializer(this.io.writer, this.io.reader, ExtObjectTransfer));
 
     this.onRequestNotFound((rpcName: string, args: any[]) => this.invoke(rpcName, args));
