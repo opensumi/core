@@ -91,7 +91,7 @@ export class CodeActionHandler extends Disposable {
                 const command = {} as monaco.Command;
                 if (v.command) {
                   command.id = v.command.id;
-                  command.arguments = [info.range, ...v.command.arguments];
+                  command.arguments = [info.range, ...v.command.arguments!];
                 }
 
                 let title = v.title;
