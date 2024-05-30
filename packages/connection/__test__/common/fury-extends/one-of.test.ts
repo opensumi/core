@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
 
-import { furySerializer } from '@opensumi/ide-connection';
-
-import { OpenMessage, PingMessage, PongMessage, ServerReadyMessage } from '../../../lib';
+import { OpenMessage, PingMessage, PongMessage, ServerReadyMessage, furySerializer } from '@opensumi/ide-connection';
 
 const parse = furySerializer.deserialize;
 const stringify = furySerializer.serialize;
