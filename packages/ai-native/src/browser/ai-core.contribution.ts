@@ -12,6 +12,7 @@ import {
   ComponentRegistryImpl,
   ContributionProvider,
   Domain,
+  IAIInlineChatService,
   IEditorExtensionContribution,
   KeybindingContribution,
   KeybindingRegistry,
@@ -60,7 +61,6 @@ import {
 } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
-import { AINativeService } from './ai-native.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
@@ -77,6 +77,7 @@ import {
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
 } from './types';
+import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
 @Domain(
@@ -124,9 +125,6 @@ export class AINativeBrowserContribution
   @Autowired(TerminalRegistryToken)
   private readonly terminalProviderRegistry: ITerminalProviderRegistry;
 
-  @Autowired(AINativeService)
-  private readonly aiNativeService: AINativeService;
-
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
 
@@ -153,6 +151,9 @@ export class AINativeBrowserContribution
 
   @Autowired(AIEditorContribution)
   private readonly aiEditorFeatureContribution: AIEditorContribution;
+
+  @Autowired(IAIInlineChatService)
+  private readonly aiInlineChatService: AIInlineChatService;
 
   constructor() {
     this.registerFeature();
@@ -265,7 +266,7 @@ export class AINativeBrowserContribution
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
-        this.aiNativeService.launchInlineChatVisible(value);
+        this.aiInlineChatService._onInlineChatVisible.fire(value);
       },
     });
 

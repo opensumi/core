@@ -20,6 +20,9 @@ export class AIInlineChatService implements IAIInlineChatService {
     return this._status;
   }
 
+  public readonly _onInlineChatVisible = new Emitter<boolean>();
+  public readonly onInlineChatVisible: Event<boolean> = this._onInlineChatVisible.event;
+
   private readonly _onChatStatus = new Emitter<EInlineChatStatus>();
   public readonly onChatStatus: Event<EInlineChatStatus> = this._onChatStatus.event;
 

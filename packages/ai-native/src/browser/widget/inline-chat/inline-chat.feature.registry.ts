@@ -17,6 +17,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   private actionsMap: Map<string, AIActionItem> = new Map();
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
   private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
+  private interactiveInputHandler: IEditorInlineChatHandler | undefined;
 
   override dispose() {
     super.dispose();
@@ -74,6 +75,20 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
         this.removeCollectedActions(operational);
       },
     };
+  }
+
+  public registerInteractiveInput(handler: IEditorInlineChatHandler): IDisposable {
+    this.interactiveInputHandler = handler;
+
+    return {
+      dispose: () => {
+        this.interactiveInputHandler = undefined;
+      },
+    };
+  }
+
+  public getInteractiveInputHandler(): IEditorInlineChatHandler | undefined {
+    return this.interactiveInputHandler;
   }
 
   public getEditorActionButtons(): AIActionItem[] {

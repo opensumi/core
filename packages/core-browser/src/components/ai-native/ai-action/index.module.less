@@ -1,13 +1,22 @@
 .ai_action {
   display: flex;
   align-items: center;
-  height: 24px;
-  padding: 1px 8px;
+  padding: 0px 8px;
   background-color: var(--kt-modal-background);
   border-radius: 6px;
   box-shadow: 0px 9px 28px 8px var(--design-boxShadow-primary), 0px 3px 6px -4px var(--design-boxShadow-secondary),
     0px 6px 16px 0px var(--design-boxShadow-tertiary);
   font-size: 12px;
+
+  .stable_container {
+    display: flex;
+    align-items: center;
+  }
+
+  .close_container {
+    display: none;
+    align-items: center;
+  }
 
   .ai_action_icon {
     &:hover {
@@ -32,8 +41,7 @@
     }
   }
 
-  .operate_container,
-  .close_container {
+  .operate_container {
     display: flex;
     align-items: center;
     height: 100%;
@@ -50,18 +58,17 @@
       padding: 0 6px;
       border-radius: 4px;
     }
-
-    .close_container {
-      display: none;
-    }
   }
 
   &:hover {
-    .operate_container {
-      .close_container {
-        display: flex;
-      }
+    .close_container {
+      display: flex;
     }
+  }
+
+  .interactive_input_wrapper {
+    padding: 4px;
+    box-sizing: content-box;
   }
 }
 

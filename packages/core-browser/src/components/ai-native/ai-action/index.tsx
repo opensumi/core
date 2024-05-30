@@ -6,6 +6,7 @@ import { MenuNode } from '../../../menu/next/base';
 import { createLayoutEventType } from '../../../monaco';
 import { useChange, useHover } from '../../../react-hooks';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
+import { InteractiveInput } from '../interactive-input/index';
 import { LineVertical } from '../line-vertical';
 import { EnhancePopover } from '../popover';
 
@@ -51,6 +52,7 @@ export interface AIActionProps {
   operationList: AIActionItem[];
   moreOperation?: MenuNode[];
   showClose?: boolean;
+  showInteractiveInput?: boolean;
   onClickItem: (id: string) => void;
   onClose?: () => void;
 }
@@ -61,7 +63,7 @@ const layoutEvent = new CustomEvent(layoutEventType, {
 });
 
 export const AIAction = (props: AIActionProps) => {
-  const { operationList, moreOperation, showClose, onClickItem, onClose } = props;
+  const { operationList, moreOperation, showClose = true, onClickItem, onClose, showInteractiveInput } = props;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [ref, isHovered] = useHover<HTMLDivElement>();
@@ -78,11 +80,17 @@ export const AIAction = (props: AIActionProps) => {
     }
   });
 
-  return (
-    <div ref={containerRef} className={styles.ai_action}>
-      <AILogoAvatar className={styles.ai_action_icon} />
-      <LineVertical height='60%' margin='0px 4px 0 8px' />
-      <div ref={ref} className={styles.operate_container}>
+  const renderOperation = useCallback(() => {
+    if (showInteractiveInput) {
+      return (
+        <div className={styles.interactive_input_wrapper}>
+          <InteractiveInput size='small' placeholder='Hello OpenSumi!' width={180} />
+        </div>
+      );
+    }
+
+    return (
+      <React.Fragment>
         {operationList.map(({ name, title, id }, i) =>
           title ? (
             <EnhancePopover id={id} title={title} key={`popover_${i}`}>
@@ -107,18 +115,25 @@ export const AIAction = (props: AIActionProps) => {
             }}
           />
         ) : null}
-        {showClose !== false && (
-          <div
-            className={styles.close_container}
-            style={{
-              display: isHovered ? 'flex' : 'none',
-            }}
-          >
-            <LineVertical height='60%' margin='0px 4px 0 4px' />
-            <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
-          </div>
-        )}
+      </React.Fragment>
+    );
+  }, [showInteractiveInput, operationList, moreOperation]);
+
+  return (
+    <div ref={containerRef} className={styles.ai_action}>
+      <div className={styles.stable_container}>
+        <AILogoAvatar className={styles.ai_action_icon} />
+        <LineVertical height='100%' margin='0px 4px 0 8px' maxHeight={14} minHeight={14} />
       </div>
+      <div ref={ref} className={styles.operate_container}>
+        {renderOperation()}
+      </div>
+      {showClose && (
+        <div className={styles.close_container}>
+          <LineVertical height='100%' margin='0px 4px 0 4px' maxHeight={14} minHeight={14} />
+          <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
+        </div>
+      )}
     </div>
   );
 };

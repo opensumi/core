@@ -47,6 +47,10 @@ export interface ITerminalInlineChatHandler {
 export interface IInlineChatFeatureRegistry {
   registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
+  /**
+   * proposed api
+   */
+  registerInteractiveInput(handler: IEditorInlineChatHandler): IDisposable;
 }
 
 export interface IChatSlashCommandItem {

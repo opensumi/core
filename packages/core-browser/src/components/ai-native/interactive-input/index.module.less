@@ -1,0 +1,50 @@
+.interactive_input_container {
+  width: 100%;
+  border-radius: 8px;
+  padding: 8px 4px 8px 12px;
+  font-size: 12px;
+  position: relative;
+  background-color: transparent;
+  :global {
+    .kt-input-addon-after {
+      align-items: flex-end;
+      margin: 4px 4px 0 0;
+    }
+  }
+
+  &.active {
+    border-color: var(--design-inputOption-activeForeground) !important;
+  }
+
+  textarea {
+    resize: none;
+    line-height: 16px;
+    &::-webkit-scrollbar {
+      width: 4px;
+      &:hover {
+        width: 10px;
+      }
+    }
+  }
+
+  .input_icon_container {
+    .send_chat_btn {
+      .send_icon {
+        > span {
+          &::before {
+            font-size: 16px;
+            color: var(--design-inputOption-activeForeground);
+          }
+        }
+      }
+      &.active .send_icon,
+      .send_icon:hover {
+        > span {
+          &::before {
+            color: var(--kt-primaryButton-background);
+          }
+        }
+      }
+    }
+  }
+}

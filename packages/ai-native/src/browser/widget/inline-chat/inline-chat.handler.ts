@@ -6,6 +6,7 @@ import {
   AISerivceType,
   CancelResponse,
   CancellationToken,
+  CancellationTokenSource,
   ChatResponse,
   Disposable,
   ErrorResponse,
@@ -27,7 +28,6 @@ import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { AI_DIFF_WIDGET_ID } from '../../../common';
-import { AINativeService } from '../../ai-native.service';
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 
@@ -40,9 +40,6 @@ import { AIInlineContentWidget } from './inline-content-widget';
 export class InlineChatHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
-
-  @Autowired(AINativeService)
-  private readonly aiNativeService: AINativeService;
 
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
@@ -74,6 +71,7 @@ export class InlineChatHandler extends Disposable {
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
+  private cancelIndicator = new CancellationTokenSource();
 
   constructor() {
     super();
@@ -84,6 +82,11 @@ export class InlineChatHandler extends Disposable {
   contribute(editor: IEditor): IDisposable {
     this.registerInlineChatFeature(editor);
     return this;
+  }
+
+  private cancelToken() {
+    this.cancelIndicator.cancel();
+    this.cancelIndicator = new CancellationTokenSource();
   }
 
   private disposeAllWidget() {
@@ -105,11 +108,11 @@ export class InlineChatHandler extends Disposable {
     const { monacoEditor } = editor;
 
     this.disposables.push(
-      this.aiNativeService.onInlineChatVisible((value: boolean) => {
+      this.aiInlineChatService.onInlineChatVisible((value: boolean) => {
         if (value) {
           this.showInlineChat(editor);
         } else {
-          this.aiNativeService.cancelToken();
+          this.cancelToken();
           this.disposeAllWidget();
         }
       }),
@@ -412,7 +415,7 @@ export class InlineChatHandler extends Disposable {
 
     const startTime = Date.now();
 
-    if (this.aiNativeService.cancelIndicator.token.isCancellationRequested) {
+    if (this.cancelIndicator.token.isCancellationRequested) {
       this.convertInlineChatStatus(EInlineChatStatus.READY, {
         relationId,
         message: 'abort',
@@ -423,7 +426,7 @@ export class InlineChatHandler extends Disposable {
       return;
     }
 
-    const response = await strategy(monacoEditor, this.aiNativeService.cancelIndicator.token);
+    const response = await strategy(monacoEditor, this.cancelIndicator.token);
 
     this.visibleDiffWidget(
       monacoEditor,
