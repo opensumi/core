@@ -3,6 +3,7 @@ import { IConnectionShape } from '../connection/types';
 import { ISerializer } from './types';
 
 export * from './fury';
+export * from './raw';
 export * from './types';
 
 export const wrapSerializer = <FROM, TO>(
