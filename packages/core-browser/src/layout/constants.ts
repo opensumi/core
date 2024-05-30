@@ -123,7 +123,7 @@ export class LayoutViewSizeConfig implements ILayoutViewSize {
 export class DesignLayoutConfig implements IDesignLayoutConfig {
   private internalLayout: Required<IDesignLayoutConfig> = {
     useMergeRightWithLeftPanel: false,
-    useMenubarView: true,
+    useMenubarView: false,
     menubarLogo: '',
   };
 

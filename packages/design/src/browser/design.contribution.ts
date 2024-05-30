@@ -27,9 +27,6 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
   @Autowired()
   private readonly designThemeFileSystemProvider: DesignThemeFileSystemProvider;
 
-  @Autowired(AppConfig)
-  private appConfig: AppConfig;
-
   @Autowired(LayoutViewSizeConfig)
   private layoutViewSize: LayoutViewSizeConfig;
 
@@ -43,12 +40,6 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
 
     if (useMenubarView) {
       this.layoutViewSize.setMenubarHeight(48);
-
-      ComponentRegistryImpl.replaceLayoutModule(
-        this.appConfig.layoutConfig,
-        SlotLocation.top,
-        DESIGN_MENUBAR_CONTAINER_VIEW_ID,
-      );
     }
 
     this.layoutViewSize.setEditorTabsHeight(36);
