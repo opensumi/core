@@ -84,6 +84,12 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
+    registry.registerInteractiveInput({
+      execute(editor, value, token) {
+        // console.log('registerInteractiveInput: API:>>> ', editor, value)
+      },
+    });
+
     registry.registerEditorInlineChat(
       {
         id: 'ai-comments',

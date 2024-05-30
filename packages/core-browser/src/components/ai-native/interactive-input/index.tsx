@@ -15,7 +15,7 @@ export interface IInteractiveInputProps extends IInputBaseProps<HTMLTextAreaElem
   style?: React.CSSProperties;
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onHeightChange?: (height: number) => void;
-  onSend?: () => void;
+  onSend?: (value: string) => void;
   width?: number;
   height?: number;
   sendBtnClassName?: string;
@@ -83,17 +83,13 @@ export const InteractiveInput = React.forwardRef(
     }, [internalRef, internalValue, onHeightChange, wrapperHeight]);
 
     useEffect(() => {
-      if (onHeightChange) {
-        onHeightChange(wrapperHeight);
-      }
+      onHeightChange?.(wrapperHeight);
     }, [wrapperHeight]);
 
     const handleInputChange = useCallback(
       (value: string) => {
         setInternalValue(value);
-        if (onValueChange) {
-          onValueChange(value);
-        }
+        onValueChange?.(value);
       },
       [onValueChange],
     );
@@ -101,9 +97,7 @@ export const InteractiveInput = React.forwardRef(
     const handleFocus = useCallback(
       (e) => {
         setFocus(true);
-        if (onFocus) {
-          onFocus(e);
-        }
+        onFocus?.(e);
       },
       [onFocus],
     );
@@ -111,9 +105,7 @@ export const InteractiveInput = React.forwardRef(
     const handleBlur = useCallback(
       (e) => {
         setFocus(false);
-        if (onBlur) {
-          onBlur(e);
-        }
+        onBlur?.(e);
       },
       [onBlur],
     );
@@ -127,10 +119,25 @@ export const InteractiveInput = React.forwardRef(
         return;
       }
 
-      if (onSend) {
-        onSend();
-      }
-    }, [onSend, internalValue]);
+      onSend?.(internalValue);
+    }, [onSend, internalValue, disabled]);
+
+    const handleKeyDown = useCallback(
+      (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+          if (event.shiftKey) {
+            return;
+          }
+
+          event.preventDefault();
+          handleSend();
+          return;
+        }
+
+        onKeyDown?.(event);
+      },
+      [onKeyDown, handleSend],
+    );
 
     const renderAddonAfter = useMemo(
       () => (
@@ -154,14 +161,14 @@ export const InteractiveInput = React.forwardRef(
                 <EnhanceIcon
                   wrapperClassName={styles.send_icon}
                   className={getIcon('send-solid')}
-                  onClick={() => handleSend()}
+                  onClick={handleSend}
                 />
               </Popover>
             )}
           </div>
         </div>
       ),
-      [focus, disabled, props.sendBtnClassName],
+      [focus, disabled, sendBtnClassName, internalValue],
     );
 
     const wrapperWidth = useMemo(() => {
@@ -179,7 +186,7 @@ export const InteractiveInput = React.forwardRef(
         wrapperStyle={{ height: wrapperHeight + 'px', width: wrapperWidth }}
         style={{ height: wrapperHeight - 10 + 'px' }}
         value={internalValue}
-        onKeyDown={onKeyDown}
+        onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onValueChange={handleInputChange}

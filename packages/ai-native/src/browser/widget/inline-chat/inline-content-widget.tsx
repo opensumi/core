@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService, StackingLevelStr, useInjectable } from '@opensumi/ide-core-browser';
-import { AIAction, AIInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { AIAction, AIInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
@@ -19,7 +19,6 @@ import {
   ShowAIContentOptions,
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 
-import { Loading } from '../../components/Loading';
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
@@ -41,7 +40,7 @@ export interface IAIInlineChatControllerProps {
 }
 
 export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
-  const { onClickActions, onClose } = props;
+  const { onClickActions, onClose, onInteractiveInputSend } = props;
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
@@ -58,9 +57,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
 
   useEffect(() => {
     if (status === EInlineChatStatus.ERROR) {
-      if (onClose) {
-        onClose();
-      }
+      onClose?.();
     }
   }, [status, onClose]);
 
@@ -68,6 +65,10 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
   const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
+  const hasInteractiveInput = useMemo(
+    () => inlineChatFeatureRegistry.getInteractiveInputHandler(),
+    [inlineChatFeatureRegistry],
+  );
 
   const iconResultItems = useMemo(
     () => [
@@ -111,6 +112,14 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     }
   }, [onClose]);
 
+  const handleInteractiveInputSend = useCallback(
+    (value: string) => {
+      onInteractiveInputSend?.(value);
+      aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
+    },
+    [onInteractiveInputSend],
+  );
+
   const moreOperation = useMemo(
     () =>
       inlineChatFeatureRegistry.getEditorActionMenus().map(
@@ -127,13 +136,8 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     [inlineChatFeatureRegistry],
   );
 
-  if (operationList.length === 0 && moreOperation.length === 0) {
-    return null;
-  }
-
   const customOperationRender = useMemo(() => {
-    const hasInput = inlineChatFeatureRegistry.getInteractiveInputHandler();
-    if (!hasInput) {
+    if (!hasInteractiveInput) {
       return null;
     }
 
@@ -142,9 +146,10 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         size='small'
         placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
         width={320}
+        onSend={handleInteractiveInputSend}
       />
     );
-  }, [inlineChatFeatureRegistry]);
+  }, [hasInteractiveInput]);
 
   const translateY: React.CSSProperties | undefined = useMemo(() => {
     if (isDone) {
@@ -156,18 +161,12 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   }, [isDone]);
 
   const renderContent = useCallback(() => {
-    if (isError) {
+    if (operationList.length === 0 && moreOperation.length === 0) {
       return null;
     }
 
-    if (isLoading) {
-      return (
-        <ContentWidgetContainerPanel>
-          <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
-            <Loading className={styles.ai_inline_chat_loading} />
-          </EnhancePopover>
-        </ContentWidgetContainerPanel>
-      );
+    if (isError) {
+      return null;
     }
 
     if (isDone) {
@@ -184,10 +183,12 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         moreOperation={moreOperation}
         onClickItem={handleClickActions}
         onClose={handleClose}
+        loading={isLoading}
+        loadingShowOperation={false}
         customOperationRender={customOperationRender}
       />
     );
-  }, [status]);
+  }, [operationList, moreOperation, customOperationRender, iconResultItems, status, hasInteractiveInput]);
 
   return <div style={translateY}>{renderContent()}</div>;
 };

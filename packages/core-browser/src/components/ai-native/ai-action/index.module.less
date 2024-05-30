@@ -1,3 +1,5 @@
+@default_height: 24px;
+
 .ai_action {
   display: flex;
   align-items: center;
@@ -7,6 +9,12 @@
   box-shadow: 0px 9px 28px 8px var(--design-boxShadow-primary), 0px 3px 6px -4px var(--design-boxShadow-secondary),
     0px 6px 16px 0px var(--design-boxShadow-tertiary);
   font-size: 12px;
+
+  .loading_icon {
+    margin: 0 -4px;
+    height: @default_height;
+    line-height: @default_height !important;
+  }
 
   .stable_container {
     display: flex;

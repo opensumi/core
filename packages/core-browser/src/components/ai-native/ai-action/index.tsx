@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 
-import { AIInlineChatContentWidgetId } from '@opensumi/ide-core-common';
+import { AIInlineChatContentWidgetId, localize } from '@opensumi/ide-core-common';
 
 import { MenuNode } from '../../../menu/next/base';
 import { createLayoutEventType } from '../../../monaco';
 import { useChange, useHover } from '../../../react-hooks';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
-import { InteractiveInput } from '../interactive-input/index';
 import { LineVertical } from '../line-vertical';
+import { Loading } from '../loading';
 import { EnhancePopover } from '../popover';
 
 import styles from './index.module.less';
@@ -52,9 +52,14 @@ export interface AIActionProps {
   operationList: AIActionItem[];
   moreOperation?: MenuNode[];
   showClose?: boolean;
-  customOperationRender?: React.ReactNode;
   onClickItem: (id: string) => void;
   onClose?: () => void;
+  loading?: boolean;
+  customOperationRender?: React.ReactNode;
+  /**
+   * loading 的时候是否继续显示 operation
+   */
+  loadingShowOperation?: boolean;
 }
 
 const layoutEventType = createLayoutEventType(AIInlineChatContentWidgetId);
@@ -63,7 +68,16 @@ const layoutEvent = new CustomEvent(layoutEventType, {
 });
 
 export const AIAction = (props: AIActionProps) => {
-  const { operationList, moreOperation, showClose = true, onClickItem, onClose, customOperationRender } = props;
+  const {
+    operationList,
+    moreOperation,
+    showClose = true,
+    onClickItem,
+    onClose,
+    customOperationRender,
+    loading,
+    loadingShowOperation = false,
+  } = props;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [ref, isHovered] = useHover<HTMLDivElement>();
@@ -81,11 +95,7 @@ export const AIAction = (props: AIActionProps) => {
   });
 
   const renderOperation = useCallback(() => {
-    if (customOperationRender) {
-      return <div className={styles.custom_operation_wrapper}>{customOperationRender}</div>;
-    }
-
-    return (
+    const defaultOperationList = (
       <React.Fragment>
         {operationList.map(({ name, title, id }, i) =>
           title ? (
@@ -113,22 +123,38 @@ export const AIAction = (props: AIActionProps) => {
         ) : null}
       </React.Fragment>
     );
+
+    return (
+      <div ref={ref} className={styles.operate_container}>
+        {customOperationRender ? (
+          <div className={styles.custom_operation_wrapper}>{customOperationRender}</div>
+        ) : (
+          defaultOperationList
+        )}
+      </div>
+    );
   }, [customOperationRender, operationList, moreOperation]);
 
   return (
     <div ref={containerRef} className={styles.ai_action}>
-      <div className={styles.stable_container}>
-        <AILogoAvatar className={styles.ai_action_icon} />
-        <LineVertical height='100%' margin='0px 4px 0 8px' maxHeight={14} minHeight={14} />
-      </div>
-      <div ref={ref} className={styles.operate_container}>
-        {renderOperation()}
-      </div>
-      {showClose && (
-        <div className={styles.close_container}>
-          <LineVertical height='100%' margin='0px 4px 0 4px' maxHeight={14} minHeight={14} />
-          <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
-        </div>
+      {loading ? (
+        <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
+          <Loading className={styles.loading_icon} />
+        </EnhancePopover>
+      ) : (
+        <React.Fragment>
+          <div className={styles.stable_container}>
+            <AILogoAvatar className={styles.ai_action_icon} />
+            <LineVertical height='100%' margin='0px 4px 0 8px' maxHeight={14} minHeight={14} />
+          </div>
+          {renderOperation()}
+          {showClose && (
+            <div className={styles.close_container}>
+              <LineVertical height='100%' margin='0px 4px 0 4px' maxHeight={14} minHeight={14} />
+              <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
+            </div>
+          )}
+        </React.Fragment>
       )}
     </div>
   );

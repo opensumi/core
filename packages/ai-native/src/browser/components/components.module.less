@@ -212,12 +212,6 @@
   .input_wrapper {
     border: none;
   }
-
-  :global {
-    .kt-input-disabled {
-      background-color: var(--kt-input-disableBackground) !important;
-    }
-  }
 }
 
 // chat 面板的代码展示部分
@@ -314,26 +308,6 @@
 
 .ai_native_input_container {
   height: 32px;
-}
-
-/**
-* loading
-*/
-.loading_indicator {
-  background: linear-gradient(to right, #9c03ff, #00f6ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: spin 1.5s infinite linear;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 /**

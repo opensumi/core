@@ -368,12 +368,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   }, [inputHeight]);
 
   const handleKeyDown = (event) => {
-    if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
-      if (!event.shiftKey) {
-        event.preventDefault();
-        handleSend();
-      }
-    } else if (event.key === 'Backspace') {
+    if (event.key === 'Backspace') {
       if (textareaRef.current?.selectionEnd === 0 && textareaRef.current?.selectionStart === 0) {
         setTheme('');
 
