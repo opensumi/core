@@ -135,10 +135,6 @@ export class DesignLayoutConfig implements IDesignLayoutConfig {
     return this.internalLayout.useMergeRightWithLeftPanel;
   }
 
-  get useMenubarView(): boolean {
-    return this.internalLayout.useMenubarView;
-  }
-
   get menubarLogo(): string {
     return this.internalLayout.menubarLogo;
   }
