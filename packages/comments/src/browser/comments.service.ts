@@ -167,7 +167,9 @@ export class CommentsService extends Disposable implements ICommentsService {
       : this.iconService.fromString('$(comment)');
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'comments-thread-decoration',
-      linesDecorationsClassName: ['comment-range', 'comment-thread', icon].join(' '),
+      linesDecorationsClassName: avatar
+        ? ['comment-thread', icon].join(' ')
+        : ['comment-range', 'comment-thread', icon].join(' '),
     };
     return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
   }
