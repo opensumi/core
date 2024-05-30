@@ -4,7 +4,12 @@ import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-nativ
 import { Disposable, IDisposable, isUndefined } from '@opensumi/ide-core-common';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
-import { IEditorInlineChatHandler, IInlineChatFeatureRegistry, ITerminalInlineChatHandler } from '../../types';
+import {
+  IEditorInlineChatHandler,
+  IInlineChatFeatureRegistry,
+  IInteractiveInputHandler,
+  ITerminalInlineChatHandler,
+} from '../../types';
 
 @Injectable()
 export class InlineChatFeatureRegistry extends Disposable implements IInlineChatFeatureRegistry {
@@ -17,7 +22,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   private actionsMap: Map<string, AIActionItem> = new Map();
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
   private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
-  private interactiveInputHandler: IEditorInlineChatHandler | undefined;
+  private interactiveInputHandler: IInteractiveInputHandler | undefined;
 
   override dispose() {
     super.dispose();
@@ -77,7 +82,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     };
   }
 
-  public registerInteractiveInput(handler: IEditorInlineChatHandler): IDisposable {
+  public registerInteractiveInput(handler: IInteractiveInputHandler): IDisposable {
     this.interactiveInputHandler = handler;
 
     return {
@@ -87,7 +92,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     };
   }
 
-  public getInteractiveInputHandler(): IEditorInlineChatHandler | undefined {
+  public getInteractiveInputHandler(): IInteractiveInputHandler | undefined {
     return this.interactiveInputHandler;
   }
 

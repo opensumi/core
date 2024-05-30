@@ -34,88 +34,16 @@ export interface IAIInlineOperationProps {
   onClose?: () => void;
 }
 
-const AIInlineOperation = (props: IAIInlineOperationProps) => {
-  const { handleActions, onClose, status } = props;
-  const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
-  const [showInteractiveInput, setShowInteractiveInput] = useState(false);
-
-  const isLoading = useMemo(() => status === EInlineChatStatus.THINKING, [status]);
-
-  const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
-
-  const handleClickActions = useCallback(
-    (id: string) => {
-      handleActions(id);
-    },
-    [handleActions],
-  );
-
-  const handleClose = useCallback(() => {
-    if (onClose) {
-      onClose();
-    }
-  }, [onClose]);
-
-  const moreOperation = useMemo(
-    () =>
-      inlineChatFeatureRegistry.getEditorActionMenus().map(
-        (data) =>
-          new MenuNode({
-            id: `ai.menu.operation.${data.id}`,
-            label: data.name,
-            className: styles.more_operation_menu_item,
-            execute: () => {
-              handleClickActions(data.id);
-            },
-          }),
-      ),
-    [inlineChatFeatureRegistry],
-  );
-
-  if (operationList.length === 0 && moreOperation.length === 0) {
-    return null;
-  }
-
-  if (isLoading) {
-    return (
-      <ContentWidgetContainerPanel>
-        <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
-          <Loading className={styles.ai_inline_chat_loading} />
-        </EnhancePopover>
-      </ContentWidgetContainerPanel>
-    );
-  }
-
-  const customOperationRender = useMemo(
-    () => (
-      <InteractiveInput
-        size='small'
-        placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
-        width={320}
-      />
-    ),
-    [],
-  );
-
-  return (
-    <AIAction
-      operationList={operationList}
-      moreOperation={moreOperation}
-      onClickItem={handleClickActions}
-      onClose={handleClose}
-      customOperationRender={customOperationRender}
-    />
-  );
-};
-
 export interface IAIInlineChatControllerProps {
   onClickActions: (id: string) => void;
   onClose?: () => void;
+  onInteractiveInputSend?: (value: string) => void;
 }
 
 export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const { onClickActions, onClose } = props;
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
+  const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
 
   useEffect(() => {
@@ -136,8 +64,10 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     }
   }, [status, onClose]);
 
+  const isLoading = useMemo(() => status === EInlineChatStatus.THINKING, [status]);
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
+  const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
 
   const iconResultItems = useMemo(
     () => [
@@ -175,6 +105,47 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     [onClickActions],
   );
 
+  const handleClose = useCallback(() => {
+    if (onClose) {
+      onClose();
+    }
+  }, [onClose]);
+
+  const moreOperation = useMemo(
+    () =>
+      inlineChatFeatureRegistry.getEditorActionMenus().map(
+        (data) =>
+          new MenuNode({
+            id: `ai.menu.operation.${data.id}`,
+            label: data.name,
+            className: styles.more_operation_menu_item,
+            execute: () => {
+              handleClickActions(data.id);
+            },
+          }),
+      ),
+    [inlineChatFeatureRegistry],
+  );
+
+  if (operationList.length === 0 && moreOperation.length === 0) {
+    return null;
+  }
+
+  const customOperationRender = useMemo(() => {
+    const hasInput = inlineChatFeatureRegistry.getInteractiveInputHandler();
+    if (!hasInput) {
+      return null;
+    }
+
+    return (
+      <InteractiveInput
+        size='small'
+        placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
+        width={320}
+      />
+    );
+  }, [inlineChatFeatureRegistry]);
+
   const translateY: React.CSSProperties | undefined = useMemo(() => {
     if (isDone) {
       return {
@@ -189,6 +160,16 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       return null;
     }
 
+    if (isLoading) {
+      return (
+        <ContentWidgetContainerPanel>
+          <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
+            <Loading className={styles.ai_inline_chat_loading} />
+          </EnhancePopover>
+        </ContentWidgetContainerPanel>
+      );
+    }
+
     if (isDone) {
       return (
         <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
@@ -197,7 +178,15 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       );
     }
 
-    return <AIInlineOperation handleActions={handleClickActions} onClose={onClose} status={status} />;
+    return (
+      <AIAction
+        operationList={operationList}
+        moreOperation={moreOperation}
+        onClickItem={handleClickActions}
+        onClose={handleClose}
+        customOperationRender={customOperationRender}
+      />
+    );
   }, [status]);
 
   return <div style={translateY}>{renderContent()}</div>;
