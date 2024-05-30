@@ -52,7 +52,7 @@ export interface AIActionProps {
   operationList: AIActionItem[];
   moreOperation?: MenuNode[];
   showClose?: boolean;
-  showInteractiveInput?: boolean;
+  customOperationRender?: React.ReactNode;
   onClickItem: (id: string) => void;
   onClose?: () => void;
 }
@@ -63,7 +63,7 @@ const layoutEvent = new CustomEvent(layoutEventType, {
 });
 
 export const AIAction = (props: AIActionProps) => {
-  const { operationList, moreOperation, showClose = true, onClickItem, onClose, showInteractiveInput } = props;
+  const { operationList, moreOperation, showClose = true, onClickItem, onClose, customOperationRender } = props;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [ref, isHovered] = useHover<HTMLDivElement>();
@@ -81,12 +81,8 @@ export const AIAction = (props: AIActionProps) => {
   });
 
   const renderOperation = useCallback(() => {
-    if (showInteractiveInput) {
-      return (
-        <div className={styles.interactive_input_wrapper}>
-          <InteractiveInput size='small' placeholder='Hello OpenSumi!' width={180} />
-        </div>
-      );
+    if (customOperationRender) {
+      return <div className={styles.custom_operation_wrapper}>{customOperationRender}</div>;
     }
 
     return (
@@ -117,7 +113,7 @@ export const AIAction = (props: AIActionProps) => {
         ) : null}
       </React.Fragment>
     );
-  }, [showInteractiveInput, operationList, moreOperation]);
+  }, [customOperationRender, operationList, moreOperation]);
 
   return (
     <div ref={containerRef} className={styles.ai_action}>

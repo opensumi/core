@@ -4,6 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService, StackingLevelStr, useInjectable } from '@opensumi/ide-core-browser';
 import { AIAction, AIInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
+import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import {
   AIInlineChatContentWidgetId,
@@ -27,15 +28,18 @@ import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-
 export interface IAIInlineOperationProps {
   handleActions: (id: string) => void;
+  status: EInlineChatStatus;
   onClose?: () => void;
 }
 
 const AIInlineOperation = (props: IAIInlineOperationProps) => {
-  const { handleActions, onClose } = props;
+  const { handleActions, onClose, status } = props;
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
+  const [showInteractiveInput, setShowInteractiveInput] = useState(false);
+
+  const isLoading = useMemo(() => status === EInlineChatStatus.THINKING, [status]);
 
   const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
 
@@ -72,12 +76,34 @@ const AIInlineOperation = (props: IAIInlineOperationProps) => {
     return null;
   }
 
+  if (isLoading) {
+    return (
+      <ContentWidgetContainerPanel>
+        <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
+          <Loading className={styles.ai_inline_chat_loading} />
+        </EnhancePopover>
+      </ContentWidgetContainerPanel>
+    );
+  }
+
+  const customOperationRender = useMemo(
+    () => (
+      <InteractiveInput
+        size='small'
+        placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
+        width={320}
+      />
+    ),
+    [],
+  );
+
   return (
     <AIAction
       operationList={operationList}
       moreOperation={moreOperation}
       onClickItem={handleClickActions}
       onClose={handleClose}
+      customOperationRender={customOperationRender}
     />
   );
 };
@@ -110,7 +136,6 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     }
   }, [status, onClose]);
 
-  const isLoading = useMemo(() => status === EInlineChatStatus.THINKING, [status]);
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
 
@@ -172,17 +197,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       );
     }
 
-    if (isLoading) {
-      return (
-        <ContentWidgetContainerPanel>
-          <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
-            <Loading className={styles.ai_inline_chat_loading} />
-          </EnhancePopover>
-        </ContentWidgetContainerPanel>
-      );
-    }
-
-    return <AIInlineOperation handleActions={handleClickActions} onClose={onClose} />;
+    return <AIInlineOperation handleActions={handleClickActions} onClose={onClose} status={status} />;
   }, [status]);
 
   return <div style={translateY}>{renderContent()}</div>;

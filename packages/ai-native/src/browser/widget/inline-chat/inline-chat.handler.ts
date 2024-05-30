@@ -292,12 +292,9 @@ export class InlineChatHandler extends Disposable {
             return;
           }
 
-          let isAbort = false;
-
           this.aiInlineChatOperationDisposed.addDispose([
             controller.onData((data) => {
               if (ReplyResponse.is(data)) {
-                isAbort = false;
                 const { message } = data;
 
                 const lastLine = modifiedModel.getLineCount();
@@ -484,7 +481,7 @@ export class InlineChatHandler extends Disposable {
     const { execute, providerDiffPreviewStrategy } = handler;
 
     if (execute) {
-      await execute(monacoEditor);
+      await execute(monacoEditor, this.cancelIndicator.token);
       this.disposeAllWidget();
     }
 
