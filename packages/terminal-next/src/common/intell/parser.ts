@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-export type CommandToken = {
+export interface CommandToken {
   token: string;
   complete: boolean;
   isOption: boolean;

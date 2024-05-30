@@ -21,6 +21,7 @@ import {
   ITerminalTheme,
 } from '../common';
 import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
+import { ITerminalSuggestionProviderPath } from '../common/intell/runtime';
 import { ITerminalPreference } from '../common/preference';
 
 import {
@@ -140,6 +141,9 @@ export class TerminalNextModule extends BrowserModule {
     {
       servicePath: ITerminalProcessPath,
       clientToken: EnvironmentVariableServiceToken,
+    },
+    {
+      servicePath: ITerminalSuggestionProviderPath,
     },
   ];
 }

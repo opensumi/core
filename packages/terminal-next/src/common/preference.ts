@@ -344,7 +344,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
       enum: [RenderType.WebGL, RenderType.Canvas, RenderType.Dom],
       default: RenderType.WebGL,
     },
-    [CodeTerminalSettingId.PersistentSession]: {
+    [CodeTerminalSettingId.EnablePersistentSessions]: {
       type: 'boolean',
       description: '%preference.terminal.integrated.enablePersistentSessionDesc%',
       default: true,

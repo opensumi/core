@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-export type Suggestion = {
+export interface Suggestion  {
   name: string;
   allNames: string[];
   description?: string;
@@ -11,7 +11,7 @@ export type Suggestion = {
   pathy?: boolean;
 };
 
-export type SuggestionBlob = {
+export interface SuggestionBlob {
   suggestions: Suggestion[];
   argumentDescription?: string;
   charactersToDrop?: number;
