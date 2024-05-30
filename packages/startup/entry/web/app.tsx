@@ -9,6 +9,9 @@ renderApp(
   getDefaultClientAppOpts({
     modules: [...AIModules],
     opts: {
+      layoutViewSize: {
+        menubarHeight: 48,
+      },
       layoutConfig: {
         [DESIGN_MENU_BAR_RIGHT]: {
           modules: [MENU_BAR_FEATURE_TIP],
