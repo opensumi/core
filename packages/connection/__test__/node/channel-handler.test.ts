@@ -47,7 +47,7 @@ describe('channel handler', () => {
     const socket = new net.Socket();
     socket.connect(ipcPath);
     const connection = new NetSocketConnection(socket);
-    const browserChannel = new WSChannelHandler(connection, console, clientId);
+    const browserChannel = new WSChannelHandler(connection, clientId);
 
     await browserChannel.initHandler();
 

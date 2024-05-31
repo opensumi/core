@@ -5,7 +5,6 @@ import {
   DisposableStore,
   IDisposable,
   canceled,
-  parseError,
 } from '@opensumi/ide-utils';
 import { SumiReadableStream, isReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
@@ -15,9 +14,8 @@ import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
 
 import { MethodTimeoutError } from './errors';
-import { MessageIO, OperationType, Status } from './message-io';
+import { IMessageIO, MessageIO, OperationType, RPCErrorMessage, RPCResponseMessage } from './message-io';
 import {
-  IRequestHeaders,
   IResponseHeaders,
   TGenericNotificationHandler,
   TGenericRequestHandler,
@@ -38,6 +36,8 @@ export interface ISumiConnectionOptions {
    * The name of the connection, used for debugging(and can see in opensumi-devtools).
    */
   name?: string;
+
+  io?: IMessageIO;
 }
 
 const chunkedResponseHeaders: IResponseHeaders = {
@@ -55,13 +55,13 @@ export class SumiConnection implements IDisposable {
   private _requestId = 0;
   private _callbacks = new Map<number, TRequestCallback>();
 
-  private readonly _timeoutHandles = new Map<number, NodeJS.Timeout | number>();
+  private readonly _reqTimeoutHandles = new Map<number, NodeJS.Timeout | number>();
   private readonly _cancellationTokenSources = new Map<number, CancellationTokenSource>();
   private readonly _knownCanceledRequests = new Set<number>();
 
   protected activeRequestPool = new Map<number, SumiReadableStream<any>>();
 
-  public io = new MessageIO();
+  public io: IMessageIO;
   protected logger: ILogger;
 
   protected capturer: Capturer;
@@ -72,6 +72,8 @@ export class SumiConnection implements IDisposable {
     } else {
       this.logger = getDebugLogger();
     }
+
+    this.io = options.io || new MessageIO();
 
     this.capturer = new Capturer(options.name || 'sumi');
     this.disposable.add(this.capturer);
@@ -113,7 +115,7 @@ export class SumiConnection implements IDisposable {
         const timeoutHandle = setTimeout(() => {
           this._handleTimeout(method, requestId);
         }, this.options.timeout);
-        this._timeoutHandles.set(requestId, timeoutHandle);
+        this._reqTimeoutHandles.set(requestId, timeoutHandle);
       }
 
       const cancellationToken: CancellationToken | undefined =
@@ -146,13 +148,13 @@ export class SumiConnection implements IDisposable {
   }
 
   private _handleTimeout(method: string, requestId: number) {
-    if (!this._callbacks.has(requestId) || !this._timeoutHandles.has(requestId)) {
+    if (!this._callbacks.has(requestId) || !this._reqTimeoutHandles.has(requestId)) {
       return;
     }
 
     const callback = this._callbacks.get(requestId)!;
     this._callbacks.delete(requestId);
-    this._timeoutHandles.delete(requestId);
+    this._reqTimeoutHandles.delete(requestId);
     callback(nullHeaders, new MethodTimeoutError(method));
   }
 
@@ -193,35 +195,29 @@ export class SumiConnection implements IDisposable {
   }
 
   listen() {
-    const { reader } = this.io;
-
     this.disposable.add(
       this.socket.onMessage((data) => {
-        reader.reset(data);
-        // skip version, currently only have version 1
-        reader.skip(1);
+        const message = this.io.parse(data);
 
-        const opType = reader.uint8() as OperationType;
-        const requestId = reader.uint32();
-
-        if (this._timeoutHandles.has(requestId)) {
-          // Ignore some jest test scenarios where clearTimeout is not defined.
-          if (typeof clearTimeout === 'function') {
-            // @ts-ignore
-            clearTimeout(this._timeoutHandles.get(requestId));
-          }
-          this._timeoutHandles.delete(requestId);
-        }
+        const opType = message.kind;
+        const requestId = message.requestId;
 
         switch (opType) {
+          case OperationType.Error:
           case OperationType.Response: {
-            const method = reader.stringOfVarUInt32();
-            const status = reader.uint16();
+            const { headers, method } = message;
+            const err = (message as RPCErrorMessage).error;
+            const result = (message as RPCResponseMessage).result;
+
+            if (this._reqTimeoutHandles.has(requestId)) {
+              clearTimeout(this._reqTimeoutHandles.get(requestId));
+              this._reqTimeoutHandles.delete(requestId);
+            }
 
             const runCallback = (headers: IResponseHeaders, error?: any, result?: any) => {
               const callback = this._callbacks.get(requestId);
               if (!callback) {
-                this.logger.error(`Cannot find callback for request ${requestId}: ${method}, status: ${status}`);
+                this.logger.error(`Cannot find callback for request ${requestId}: ${method}`);
                 return;
               }
 
@@ -229,17 +225,6 @@ export class SumiConnection implements IDisposable {
 
               callback(headers, error, result);
             };
-
-            const headers = this.io.responseHeadersSerializer.read();
-            let err: any;
-            let result: any;
-            if (status === Status.Err) {
-              // todo: move to processor
-              const content = reader.stringOfVarUInt32();
-              err = parseError(content);
-            } else {
-              result = this.io.getProcessor(method).readResponse();
-            }
 
             if (headers && headers.chunked) {
               let activeReq: SumiReadableStream<any>;
@@ -275,9 +260,7 @@ export class SumiConnection implements IDisposable {
           case OperationType.Notification:
           // fall through
           case OperationType.Request: {
-            const method = reader.stringOfVarUInt32();
-            const headers = this.io.requestHeadersSerializer.read() as IRequestHeaders;
-            const args = this.io.getProcessor(method).readRequest();
+            const { method, headers, args } = message;
 
             if (headers.cancelable) {
               const tokenSource = new CancellationTokenSource();

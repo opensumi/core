@@ -1,13 +1,9 @@
 /* eslint-disable no-console */
 
-import {
-  OpenMessage,
-  PingMessage,
-  PongMessage,
-  ServerReadyMessage,
-  parse,
-  stringify,
-} from '../../../src/common/ws-channel';
+import { OpenMessage, PingMessage, PongMessage, ServerReadyMessage, furySerializer } from '@opensumi/ide-connection';
+
+const parse = furySerializer.deserialize;
+const stringify = furySerializer.serialize;
 
 describe('oneOf', () => {
   function testIt(obj: any) {
@@ -23,7 +19,6 @@ describe('oneOf', () => {
   it('should serialize and deserialize', () => {
     const obj = {
       kind: 'ping',
-      clientId: '123',
       id: '456',
     } as PingMessage;
 
@@ -31,7 +26,6 @@ describe('oneOf', () => {
 
     const obj2 = {
       kind: 'pong',
-      clientId: '123',
       id: '456',
     } as PongMessage;
 
