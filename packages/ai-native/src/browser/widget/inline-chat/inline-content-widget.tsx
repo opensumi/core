@@ -184,7 +184,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         onClickItem={handleClickActions}
         onClose={handleClose}
         loading={isLoading}
-        loadingShowOperation={false}
+        loadingShowOperation={true}
         customOperationRender={customOperationRender}
       />
     );

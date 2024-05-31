@@ -1,6 +1,6 @@
 @default_height: 24px;
 
-.ai_action {
+.ai_action_wrapper {
   display: flex;
   align-items: center;
   padding: 0px 8px;
@@ -10,8 +10,34 @@
     0px 6px 16px 0px var(--design-boxShadow-tertiary);
   font-size: 12px;
 
+  &.loading {
+    padding: 0px;
+
+    .close_container {
+      padding-right: 8px;
+    }
+  }
+
+  &.loading_show_operation {
+    padding: 0px 8px;
+
+    .close_container {
+      padding-right: 0;
+    }
+
+    .operate_container .loading_mask {
+      cursor: not-allowed;
+      position: absolute;
+      z-index: 1;
+      left: 18px;
+      right: 0;
+      height: 100%;
+      background-color: var(--kt-input-disableBackground);
+    }
+  }
+
   .loading_icon {
-    margin: 0 -4px;
+    width: @default_height;
     height: @default_height;
     line-height: @default_height !important;
   }
@@ -36,26 +62,12 @@
     color: var(--design-text-foreground);
   }
 
-  .logo-container {
-    .avatar {
-      width: 14px;
-      height: 14px;
-      background-image: radial-gradient(circle at 21% 21%, #00f6ff 0%, #9c03ff 95%);
-      border-radius: 12px;
-
-      img {
-        height: 10px;
-      }
-    }
-  }
-
   .operate_container {
     display: flex;
     align-items: center;
     height: 100%;
-  }
+    position: relative;
 
-  .operate_container {
     .operate_btn {
       padding: 3px 4px;
       border-radius: 4px;
@@ -75,8 +87,15 @@
   }
 
   .custom_operation_wrapper {
-    padding: 4px;
+    padding: 4px 0px;
     box-sizing: content-box;
+  }
+
+  .default_operation_wrapper {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-left: -4px;
   }
 }
 
