@@ -85,8 +85,16 @@ export class AINativeContribution implements AINativeCoreContribution {
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
     registry.registerInteractiveInput({
-      execute(editor, value, token) {
-        // console.log('registerInteractiveInput: API:>>> ', editor, value)
+      providerDiffPreviewStrategy: async (editor, value, token) => {
+        // console.log('registerInteractiveInput: API:>>> providerDiffPreviewStrategy', editor, value)
+        const crossCode = this.getCrossCode(editor);
+        const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
+
+        const controller = new InlineChatController({ enableCodeblockRender: true });
+        const stream = await this.aiBackService.requestStream(prompt, {}, token);
+        controller.mountReadable(stream);
+
+        return controller;
       },
     });
 

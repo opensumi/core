@@ -3,6 +3,7 @@ export const AI_REPORTER_NAME = 'AI';
 export enum AISerivceType {
   Chat = 'chat',
   InlineChat = 'inlineChat',
+  InlineChatInput = 'inlineChatInput',
   CustomReplay = 'customReplay',
   Completion = 'completion',
   Agent = 'agent',
@@ -102,7 +103,8 @@ export type ReportInfo =
   | ({ type: AISerivceType.Completion } & CompletionRT)
   | ({ type: AISerivceType.MergeConflict } & MergeConflictRT)
   | ({ type: AISerivceType.Rename } & RenameRT)
-  | ({ type: AISerivceType.InlineChat } & InlineChatRT);
+  | ({ type: AISerivceType.InlineChat } & InlineChatRT)
+  | ({ type: AISerivceType.InlineChatInput } & InlineChatRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 

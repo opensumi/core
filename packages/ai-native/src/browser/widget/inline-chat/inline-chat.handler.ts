@@ -5,7 +5,6 @@ import {
   AINativeSettingSectionsId,
   AISerivceType,
   CancelResponse,
-  CancellationToken,
   CancellationTokenSource,
   ChatResponse,
   Disposable,
@@ -217,8 +216,55 @@ export class InlineChatHandler extends Disposable {
     });
 
     this.aiInlineChatDisposed.addDispose(
-      this.aiInlineContentWidget.onActionClick((action) => {
-        this.runInlineChatAction(action, monacoEditor);
+      this.aiInlineContentWidget.onActionClick(({ actionId, source }) => {
+        const handler = this.inlineChatFeatureRegistry.getEditorHandler(actionId);
+        const action = this.inlineChatFeatureRegistry.getAction(actionId);
+        if (!handler || !action) {
+          return;
+        }
+
+        this.runInlineChatAction(
+          monacoEditor,
+          () => {
+            const relationId = this.aiReporter.start(action.name, {
+              message: action.name,
+              type: AISerivceType.InlineChat,
+              source,
+              runByCodeAction: source === 'codeAction',
+            });
+            return relationId;
+          },
+          handler.execute ? handler.execute!.bind(this, monacoEditor, this.cancelIndicator.token) : undefined,
+          handler.providerDiffPreviewStrategy
+            ? handler.providerDiffPreviewStrategy.bind(this, monacoEditor, this.cancelIndicator.token)
+            : undefined,
+        );
+      }),
+    );
+
+    this.aiInlineChatDisposed.addDispose(
+      this.aiInlineContentWidget.onInteractiveInputValue((value) => {
+        const handler = this.inlineChatFeatureRegistry.getInteractiveInputHandler();
+
+        if (!handler) {
+          return;
+        }
+
+        this.runInlineChatAction(
+          monacoEditor,
+          () => {
+            const relationId = this.aiReporter.start(AISerivceType.InlineChatInput, {
+              message: value,
+              type: AISerivceType.InlineChatInput,
+              source: 'input',
+            });
+            return relationId;
+          },
+          handler.execute ? handler.execute!.bind(this, monacoEditor, value, this.cancelIndicator.token) : undefined,
+          handler.providerDiffPreviewStrategy
+            ? handler.providerDiffPreviewStrategy.bind(this, monacoEditor, value, this.cancelIndicator.token)
+            : undefined,
+        );
       }),
     );
   }
@@ -396,14 +442,11 @@ export class InlineChatHandler extends Disposable {
 
   private async handleDiffPreviewStrategy(
     monacoEditor: monaco.ICodeEditor,
-    strategy: (
-      editor: monaco.ICodeEditor,
-      cancelToken: CancellationToken,
-    ) => MaybePromise<ChatResponse | InlineChatController>,
+    strategy: (...arg: any[]) => MaybePromise<ChatResponse | InlineChatController>,
     crossSelection: monaco.Selection,
     relationId: string,
     isRetry: boolean,
-  ): Promise<void> {
+  ) {
     const model = monacoEditor.getModel();
 
     this.aiDiffWidget?.dispose();
@@ -423,7 +466,7 @@ export class InlineChatHandler extends Disposable {
       return;
     }
 
-    const response = await strategy(monacoEditor, this.cancelIndicator.token);
+    const response = await strategy();
 
     this.visibleDiffWidget(
       monacoEditor,
@@ -457,31 +500,19 @@ export class InlineChatHandler extends Disposable {
   }
 
   private async runInlineChatAction(
-    {
-      actionId: id,
-      source,
-    }: {
-      actionId: string;
-      source: string;
-    },
     monacoEditor: monaco.ICodeEditor,
+    reporterFn: () => string,
+    execute?: () => MaybePromise<void>,
+    providerDiffPreviewStrategy?: () => MaybePromise<ChatResponse | InlineChatController>,
   ) {
-    const handler = this.inlineChatFeatureRegistry.getEditorHandler(id);
-    const action = this.inlineChatFeatureRegistry.getAction(id);
-    if (!handler || !action) {
-      return;
-    }
-
     const selection = monacoEditor.getSelection();
     if (!selection) {
       this.logger.error('No selection found, aborting inline chat action.');
       return;
     }
 
-    const { execute, providerDiffPreviewStrategy } = handler;
-
     if (execute) {
-      await execute(monacoEditor, this.cancelIndicator.token);
+      await execute();
       this.disposeAllWidget();
     }
 
@@ -490,12 +521,7 @@ export class InlineChatHandler extends Disposable {
         .setStartPosition(selection.startLineNumber, 1)
         .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
-      const relationId = this.aiReporter.start(action.name, {
-        message: action.name,
-        type: AISerivceType.InlineChat,
-        source,
-        runByCodeAction: source === 'codeAction',
-      });
+      const relationId = reporterFn();
 
       await this.handleDiffPreviewStrategy(
         monacoEditor,

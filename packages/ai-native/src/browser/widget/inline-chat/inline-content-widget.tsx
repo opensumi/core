@@ -146,19 +146,11 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         size='small'
         placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
         width={320}
+        disabled={isLoading}
         onSend={handleInteractiveInputSend}
       />
     );
-  }, [hasInteractiveInput]);
-
-  const translateY: React.CSSProperties | undefined = useMemo(() => {
-    if (isDone) {
-      return {
-        transform: 'translateY(-15px)',
-      };
-    }
-    return undefined;
-  }, [isDone]);
+  }, [isLoading, hasInteractiveInput]);
 
   const renderContent = useCallback(() => {
     if (operationList.length === 0 && moreOperation.length === 0) {
@@ -190,7 +182,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     );
   }, [operationList, moreOperation, customOperationRender, iconResultItems, status, hasInteractiveInput]);
 
-  return <div style={translateY}>{renderContent()}</div>;
+  return <div style={isDone ? { transform: 'translateY(-15px)' } : {}}>{renderContent()}</div>;
 };
 
 @Injectable({ multiple: true })
@@ -205,11 +197,11 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
 
   private originTop = 0;
 
-  private readonly _onActionClickEmitter = new Emitter<{
-    actionId: string;
-    source: string;
-  }>();
+  private readonly _onActionClickEmitter = new Emitter<{ actionId: string; source: string }>();
   public readonly onActionClick = this._onActionClickEmitter.event;
+
+  private readonly _onInteractiveInputValue = new Emitter<string>();
+  public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
@@ -238,6 +230,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
       <AIInlineChatController
         onClickActions={(id) => this.clickActionId(id, 'widget')}
         onClose={() => this.dispose()}
+        onInteractiveInputSend={(value) => this._onInteractiveInputValue.fire(value)}
       />
     );
   }
