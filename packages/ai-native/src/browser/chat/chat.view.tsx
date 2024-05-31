@@ -187,7 +187,7 @@ export const AIChatView = observer(() => {
 
     disposer.addDispose(
       chatApiService.onChatMessageListLaunch((list) => {
-        const messageList: any = [];
+        const messageList: MessageData[] = [];
 
         list.forEach((item) => {
           const { role } = item;
@@ -213,8 +213,8 @@ export const AIChatView = observer(() => {
           }
 
           if (role === 'user') {
-            const { message, command } = item;
-            const agentId = item.agentId ? item.agentId : ChatProxyService.AGENT_ID;
+            const { message } = item;
+            const agentId = ChatProxyService.AGENT_ID;
             const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
             const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
 
@@ -224,7 +224,7 @@ export const AIChatView = observer(() => {
                   id: uuid(6),
                   relationId,
                   text: ChatUserRoleRender ? (
-                    <ChatUserRoleRender content={message} agentId={visibleAgentId} command={command} />
+                    <ChatUserRoleRender content={message} agentId={visibleAgentId} />
                   ) : (
                     <CodeBlockWrapperInput
                       relationId={relationId}
@@ -240,9 +240,6 @@ export const AIChatView = observer(() => {
           }
         });
 
-        // eslint-disable-next-line no-console
-        console.log(`messageList: ${messageList}`);
-
         handleDispatchMessage({ type: 'add', payload: messageList });
 
         setTimeout(scrollToBottom, 0);
@@ -250,7 +247,7 @@ export const AIChatView = observer(() => {
     );
 
     return () => disposer.dispose();
-  }, [chatApiService, chatRenderRegistry.chatAIRoleRender, msgHistoryManager, scrollToBottom]);
+  }, [chatApiService, chatRenderRegistry.chatAIRoleRender, msgHistoryManager]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
