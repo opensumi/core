@@ -185,6 +185,67 @@ export const AIChatView = observer(() => {
       }),
     );
 
+    disposer.addDispose(
+      chatApiService.onChatMessageListLaunch((list) => {
+        const messageList: MessageData[] = [];
+
+        list.forEach((item) => {
+          const { role } = item;
+
+          const relationId = aiReporter.start(AISerivceType.Agent, {
+            msgType: AISerivceType.Agent,
+            message: '',
+          });
+
+          if (role === 'assistant') {
+            const newChunk = item as IChatComponent | IChatContent;
+
+            messageList.push(
+              createMessageByAI(
+                {
+                  id: uuid(6),
+                  relationId,
+                  text: <ChatNotify requestId={relationId} chunk={newChunk} />,
+                },
+                styles.chat_notify,
+              ),
+            );
+          }
+
+          if (role === 'user') {
+            const { message } = item;
+            const agentId = ChatProxyService.AGENT_ID;
+            const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
+            const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
+
+            messageList.push(
+              createMessageByUser(
+                {
+                  id: uuid(6),
+                  relationId,
+                  text: ChatUserRoleRender ? (
+                    <ChatUserRoleRender content={message} agentId={visibleAgentId} />
+                  ) : (
+                    <CodeBlockWrapperInput
+                      relationId={relationId}
+                      text={message}
+                      agentId={visibleAgentId}
+                      command={command}
+                    />
+                  ),
+                },
+                styles.chat_message_code,
+              ),
+            );
+          }
+        });
+
+        handleDispatchMessage({ type: 'add', payload: messageList });
+
+        setTimeout(scrollToBottom, 0);
+      }),
+    );
+
     return () => disposer.dispose();
   }, [chatApiService, chatRenderRegistry.chatAIRoleRender, msgHistoryManager]);
 

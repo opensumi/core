@@ -331,6 +331,7 @@ interface IChatNotifyProps {
 }
 export const ChatNotify = (props: IChatNotifyProps) => {
   const { chunk } = props;
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
   const contentNode = React.useMemo(() => {
     let node: ReactNode;
@@ -338,7 +339,14 @@ export const ChatNotify = (props: IChatNotifyProps) => {
     if (chunk.kind === 'component') {
       node = <ComponentRender component={chunk.component} value={chunk.value} />;
     } else {
-      node = <ChatMarkdown markdown={chunk.content} relationId={props.requestId} />;
+      let renderContent = <ChatMarkdown markdown={chunk.content} fillInIncompleteTokens />;
+
+      if (chatRenderRegistry.chatAIRoleRender) {
+        const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
+        renderContent = <ChatAIRoleRender content={chunk.content} />;
+      }
+
+      node = renderContent;
     }
     return node;
   }, [chunk]);

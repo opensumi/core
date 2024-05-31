@@ -3,6 +3,8 @@ import {
   AISerivceType,
   CancellationToken,
   Event,
+  IChatComponent,
+  IChatContent,
   IChatProgress,
   IDisposable,
   IMarkdownString,
@@ -57,6 +59,17 @@ export interface IChatMessageStructure {
    */
   immediate?: boolean;
 }
+
+export interface IChatMessageListUserItem {
+  role: 'user';
+  message: string;
+}
+
+export type IChatMessageListAssistantItem = (IChatComponent | IChatContent) & {
+  role: 'assistant';
+};
+
+export type IChatMessageListItem = IChatMessageListUserItem | IChatMessageListAssistantItem;
 
 export enum ChatCompletionRequestMessageRoleEnum {
   System = 'system',
