@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IRPCProtocol, SumiConnectionMultiplexer, WSChannel } from '@opensumi/ide-connection';
+import { IRPCProtocol, SumiConnectionMultiplexer, WSChannel, createExtMessageIO } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
@@ -167,7 +167,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     this.protocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'node-ext-host',
-      knownProtocols,
+      io: createExtMessageIO(knownProtocols),
     });
   }
 }

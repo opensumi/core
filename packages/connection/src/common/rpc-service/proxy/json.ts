@@ -127,16 +127,18 @@ export class ProxyJson extends ProxyBase<MessageConnection> {
   listen(connection: MessageConnection): void {
     super.listen(connection);
 
-    connection.onRequest((method) => {
-      if (!this.registry.has(method)) {
-        const requestId = this.nextRequestId();
-        this.capturer.captureOnRequest(requestId, method, []);
-        const result = {
-          data: METHOD_NOT_REGISTERED,
-        };
-        this.capturer.captureOnRequestFail(requestId, method, result.data);
-        return result;
-      }
-    });
+    this._disposables.add(
+      connection.onRequest((method) => {
+        if (!this.registry.has(method)) {
+          const requestId = this.nextRequestId();
+          this.capturer.captureOnRequest(requestId, method, []);
+          const result = {
+            data: METHOD_NOT_REGISTERED,
+          };
+          this.capturer.captureOnRequestFail(requestId, method, result.data);
+          return result;
+        }
+      }),
+    );
   }
 }
