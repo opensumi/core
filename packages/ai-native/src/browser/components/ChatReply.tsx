@@ -16,6 +16,7 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ChatAgentViewServiceToken,
   ChatRenderRegistryToken,
@@ -41,7 +42,6 @@ import { IChatAgentViewService } from '../types';
 import { ChatMarkdown } from './ChatMarkdown';
 import { ChatThinking, ChatThinkingResult } from './ChatThinking';
 import styles from './components.module.less';
-import { Loading } from './Loading';
 
 interface IChatReplyProps {
   relationId: string;

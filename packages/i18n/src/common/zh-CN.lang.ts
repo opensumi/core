@@ -1217,6 +1217,7 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.thumbsup.title': '赞',
     'aiNative.inline.chat.operate.thumbsdown.title': '踩',
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
+    'aiNative.inline.chat.input.placeholder.default': '可以问我任何问题，支持 shift + 回车换行',
 
     'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
     'aiNative.resolve.conflict.dialog.detection':

@@ -2,22 +2,17 @@ import React from 'react';
 
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
-  AbortError,
-  CancelResponse,
   CancellationToken,
+  ChatResponse,
   Deferred,
-  ErrorResponse,
   IAICompletionResultModel,
-  IChatProgress,
   IDisposable,
   IResolveConflictHandler,
   MaybePromise,
   MergeConflictEditorMode,
-  ReplyResponse,
 } from '@opensumi/ide-core-common';
-import { ChatResponse } from '@opensumi/ide-core-common';
 import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
-import { SumiReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
@@ -25,19 +20,21 @@ import { CompletionRequestBean } from './contrib/inline-completions/model/compet
 import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
-export interface IEditorInlineChatHandler {
+interface IBaseInlineChatHandler<T extends any[]> {
   /**
    * 直接执行 action 的操作，点击后 inline chat 立即消失
    */
-  execute?: (editor: ICodeEditor, ...args: any[]) => MaybePromise<void>;
+  execute?: (...args: T) => MaybePromise<void>;
   /**
    * 提供 diff editor 的预览策略
    */
-  providerDiffPreviewStrategy?: (
-    editor: ICodeEditor,
-    cancelToken: CancellationToken,
-  ) => MaybePromise<ChatResponse | InlineChatController>;
+  providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
 }
+
+export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
+export type IInteractiveInputHandler = IBaseInlineChatHandler<
+  [editor: ICodeEditor, value: string, token: CancellationToken]
+>;
 
 export interface ITerminalInlineChatHandler {
   triggerRules?: 'selection' | (BaseTerminalDetectionLineMatcher | typeof BaseTerminalDetectionLineMatcher)[];
@@ -47,6 +44,10 @@ export interface ITerminalInlineChatHandler {
 export interface IInlineChatFeatureRegistry {
   registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
+  /**
+   * proposed api
+   */
+  registerInteractiveInput(handler: IInteractiveInputHandler): IDisposable;
 }
 
 export interface IChatSlashCommandItem {

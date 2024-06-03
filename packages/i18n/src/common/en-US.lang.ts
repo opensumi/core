@@ -1444,12 +1444,13 @@ export const localizationBundle = {
     'aiNative.chat.code.copy.success': 'Copied successfully',
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
-    'aiNative.chat.enter.send': 'Send',
+    'aiNative.chat.enter.send': 'Send (Enter)',
 
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
+    'aiNative.inline.chat.input.placeholder.default': 'Ask Copilot（shift + enter newline）',
 
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':
