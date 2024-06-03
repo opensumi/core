@@ -351,7 +351,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     );
 
     disposer.addDispose(
-      editor.monacoEditor.onMouseUp((event) => {
+      editor.monacoEditor.onMouseUp(async (event) => {
         if (this.startCommentRange) {
           if (hasHiddenArea) {
             this.renderCommentRange(editor);
@@ -360,7 +360,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             this.endCommentRange = null;
             return;
           }
-          const range = this.startCommentRange;
+          let range = this.startCommentRange;
           if (this.endCommentRange) {
             if (this.endCommentRange.startLineNumber < this.startCommentRange.startLineNumber) {
               range.startColumn = this.endCommentRange.startColumn;
@@ -370,6 +370,7 @@ export class CommentsService extends Disposable implements ICommentsService {
               range.endLineNumber = this.endCommentRange.endLineNumber;
             }
           }
+          range = await this.getValidRange(range, editor.currentUri);
           if (range) {
             if (
               !this.commentsThreads.some(
@@ -514,6 +515,30 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private editorCommentingRangeSpaceReservedMap: Map<string, boolean> = new Map();
   private editorLineDecorationsWidthMap: Map<string, number> = new Map();
+
+  private async getValidRange(range: IRange, uri?: URI) {
+    if (!uri) {
+      return range;
+    }
+    const contributionRanges = await this.getContributionRanges(uri);
+    if (contributionRanges.length === 0) {
+      return range;
+    }
+    const validRange = contributionRanges.find((contributionRange) => {
+      if (
+        range.startLineNumber >= contributionRange.startLineNumber &&
+        range.startLineNumber <= contributionRange.endLineNumber
+      ) {
+        return true;
+      }
+    });
+    return {
+      startLineNumber: range.startLineNumber,
+      startColumn: range.startColumn,
+      endLineNumber: validRange?.endLineNumber,
+      endColumn: validRange?.endColumn,
+    };
+  }
 
   private ensureCommentingRangeReservedAmount(editor: IEditor) {
     const existing = this.getExistingCommentEditorOptions(editor);
@@ -676,11 +701,11 @@ export class CommentsService extends Disposable implements ICommentsService {
                   options: this.createCommentRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
                 },
                 {
-                  range: contributionRange,
+                  range: selectionRange,
                   options: this.createDottedRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
                 },
                 {
-                  range: contributionRange,
+                  range: selectionRange,
                   options: this.createThreadRangeDecoration() as unknown as monaco.editor.IModelDecorationOptions,
                 },
               ],
