@@ -27,7 +27,7 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
   private appConfig: AppConfig;
 
   allowEditorOverflow = false;
-  suppressMouseDown = true;
+  suppressMouseDown = false;
 
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;

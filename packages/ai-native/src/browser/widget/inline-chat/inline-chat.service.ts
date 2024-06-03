@@ -15,10 +15,20 @@ export class AIInlineChatService implements IAIInlineChatService {
   aiBackService: IAIBackService;
 
   private _status: EInlineChatStatus = EInlineChatStatus.READY;
-
   public get status(): EInlineChatStatus {
     return this._status;
   }
+
+  private _interactiveInputVisible: boolean = false;
+  public get interactiveInputVisible(): boolean {
+    return this._interactiveInputVisible;
+  }
+
+  public readonly _onInteractiveInputVisible = new Emitter<boolean>();
+  public readonly onInteractiveInputVisible: Event<boolean> = this._onInteractiveInputVisible.event;
+
+  public readonly _onInlineChatVisible = new Emitter<boolean>();
+  public readonly onInlineChatVisible: Event<boolean> = this._onInlineChatVisible.event;
 
   private readonly _onChatStatus = new Emitter<EInlineChatStatus>();
   public readonly onChatStatus: Event<EInlineChatStatus> = this._onChatStatus.event;
@@ -47,6 +57,13 @@ export class AIInlineChatService implements IAIInlineChatService {
     return runWhenIdle(() => {
       this._status = status;
       this._onChatStatus.fire(status);
+    });
+  }
+
+  public launchInputVisible(v: boolean) {
+    return runWhenIdle(() => {
+      this._interactiveInputVisible = v;
+      this._onInteractiveInputVisible.fire(v);
     });
   }
 }

@@ -102,6 +102,19 @@ export const desigInputForeground = registerColor(
   true,
 );
 
+// 输入框聚焦
+export const desigInputFocusForeground = registerColor(
+  'design.inputOption.activeForeground',
+  {
+    dark: new Color(new RGBA(60, 141, 255, 0.65)),
+    light: new Color(new RGBA(60, 141, 255, 0.65)),
+    hcDark: null,
+    hcLight: null,
+  },
+  '',
+  true,
+);
+
 // Tag 背景色，或者整块区域 hover 上去背景色
 export const designBlockHoverBackground = registerColor(
   'design.block.hoverBackground',
