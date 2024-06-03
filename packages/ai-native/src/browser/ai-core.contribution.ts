@@ -27,6 +27,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import {
   AI_CHAT_VISIBLE,
+  AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE,
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
@@ -270,6 +271,12 @@ export class AINativeBrowserContribution
       },
     });
 
+    commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE, {
+      execute: (value: boolean) => {
+        this.aiInlineChatService._onInteractiveInputVisible.fire(value);
+      },
+    });
+
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTER, {
       execute: (relationId: string, sessionId: string, accept: boolean) => {
         this.aiCompletionsService.report({ sessionId, accept, relationId });
@@ -336,6 +343,16 @@ export class AINativeBrowserContribution
         args: false,
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
       });
+      keybindings.registerKeybinding(
+        {
+          command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
+          keybinding: 'ctrlcmd+K',
+          args: true,
+          priority: 0,
+          when: `editorFocus && ${InlineChatIsVisible.raw}`,
+        },
+        KeybindingScope.USER,
+      );
     }
   }
 }
