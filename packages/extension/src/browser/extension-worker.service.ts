@@ -2,6 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
+import { RawMessageIO } from '@opensumi/ide-connection/lib/common/rpc';
 import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
 import { Disposable, DisposableStore, path, toDisposable } from '@opensumi/ide-core-common';
@@ -9,7 +10,6 @@ import { Disposable, DisposableStore, path, toDisposable } from '@opensumi/ide-c
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractWorkerExtProcessService } from '../common/extension.service';
-import { knownProtocols } from '../common/vscode/protocols';
 
 import { getWorkerBootstrapUrl } from './loader';
 import { createSumiAPIFactory } from './sumi/main.thread.api.impl';
@@ -206,7 +206,7 @@ export class WorkerExtProcessService
     const protocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'worker-ext-host',
-      knownProtocols,
+      io: new RawMessageIO(),
     });
 
     this.logger.log('[Worker Host] web worker extension host ready');

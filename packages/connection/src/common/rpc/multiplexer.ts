@@ -67,9 +67,10 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
   io: MessageIO;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiMultiplexerConnectionOptions = {}) {
+    const io = options?.io || createExtMessageIO();
     super(socket, {
       ...options,
-      io: createExtMessageIO(),
+      io,
     });
     this._locals = new Map();
     this._proxies = new Map();
