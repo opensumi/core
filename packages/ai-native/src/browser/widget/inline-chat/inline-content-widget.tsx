@@ -36,12 +36,13 @@ export interface IAIInlineOperationProps {
 
 export interface IAIInlineChatControllerProps {
   onClickActions: (id: string) => void;
+  onLayoutChange: (height: number) => void;
   onClose?: () => void;
   onInteractiveInputSend?: (value: string) => void;
 }
 
 export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
-  const { onClickActions, onClose, onInteractiveInputSend } = props;
+  const { onClickActions, onClose, onInteractiveInputSend, onLayoutChange } = props;
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
@@ -155,6 +156,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     return (
       <InteractiveInput
         ref={interactiveInputRef}
+        onHeightChange={(height) => onLayoutChange(height)}
         size='small'
         placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
         width={320}
@@ -188,7 +190,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         onClickItem={handleClickActions}
         onClose={handleClose}
         loading={isLoading}
-        loadingShowOperation={true}
+        loadingShowOperation={interactiveInputVisible}
         customOperationRender={customOperationRender}
       />
     );
@@ -250,6 +252,9 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
       <AIInlineChatController
         onClickActions={(id) => this.clickActionId(id, 'widget')}
         onClose={() => this.dispose()}
+        onLayoutChange={() => {
+          this.editor.layoutContentWidget(this);
+        }}
         onInteractiveInputSend={(value) => this._onInteractiveInputValue.fire(value)}
       />
     );
