@@ -1,5 +1,6 @@
 export * from './stub';
 export * from './center';
+export * from './registry';
 
 export abstract class RPCService<T = any> {
   rpcClient?: T[];

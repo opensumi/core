@@ -1,4 +1,4 @@
-import { ServiceRegistry, getServiceMethods } from '@opensumi/ide-connection/lib/common/rpc-service/registry';
+import { ServiceRegistry, getServiceMethods } from '@opensumi/ide-connection/src/common/rpc-service/registry';
 import { Deferred } from '@opensumi/ide-core-common';
 
 describe('registry should work', () => {

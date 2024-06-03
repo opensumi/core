@@ -1,7 +1,6 @@
-import { ExtObjectTransfer } from '@opensumi/ide-connection/lib/common/fury-extends/any';
+import { AnySerializer, ExtObjectTransfer } from '@opensumi/ide-connection/src/common/fury-extends/any';
 
-import { AnySerializer } from '../../../lib/common/fury-extends/any';
-import { furyFactory } from '../../../lib/common/fury-extends/shared';
+import { furyFactory } from '../../../src/common/fury-extends/shared';
 
 describe('any serializer', () => {
   it('can serialize and deserialize any type', () => {

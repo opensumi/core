@@ -1,5 +1,4 @@
 import { ConstructorOf } from '@opensumi/di';
-import { UrlProvider } from '@opensumi/ide-core-common';
 
 import { BrowserModule } from '../browser-module';
 import { ClientAppContribution } from '../common/common.define';
@@ -31,10 +30,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   contributions?: ContributionConstructor[];
   // 前端模块实例声明
   modulesInstances?: BrowserModule[];
-  // 自定义前后端通信路径
-  connectionPath?: UrlProvider;
-  // 支持的通信协议类型
-  connectionProtocols?: string[];
+
   // 定义用于 OpenSumi 视图插件内的图标集合
   iconStyleSheets?: IconInfo[];
   /**

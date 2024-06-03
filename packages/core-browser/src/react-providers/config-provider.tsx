@@ -277,6 +277,11 @@ export interface AppConfig {
    * Define the default size (height) of each layout block in the IDE
    */
   layoutViewSize?: Partial<ILayoutViewSize>;
+
+  // 自定义前后端通信路径
+  connectionPath?: UrlProvider;
+  // 支持的通信协议类型
+  connectionProtocols?: string[];
 }
 
 export interface ICollaborationClientOpts {

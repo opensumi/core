@@ -7,12 +7,12 @@ import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/n
 import { OpenerModule } from '@opensumi/ide-remote-opener/lib/node';
 
 import { CommonNodeModules } from '../../src/node/common-modules';
-import { AiBackService } from '../sample-modules/ai-native/ai.back.service';
+import { AIBackService } from '../sample-modules/ai-native/ai.back.service';
 
 const injector = new Injector([
   {
     token: AIBackSerivceToken,
-    useClass: AiBackService,
+    useClass: AIBackService,
   },
 ]);
 

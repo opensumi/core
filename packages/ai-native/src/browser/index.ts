@@ -24,8 +24,6 @@ import {
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
-import { TerminalAIContribution } from './ai-terminal/terminal-ai.contributon';
-import { TerminalFeatureRegistry } from './ai-terminal/terminal.feature.registry';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -34,11 +32,14 @@ import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
-import { InterfaceNavigationContribution } from './interface-navigation/interface-navigation.contribution';
+import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
+import { InterfaceNavigationContribution } from './contrib/interface-navigation/interface-navigation.contribution';
+import { MergeConflictContribution } from './contrib/merge-conflict';
+import { ResolveConflictRegistry } from './contrib/merge-conflict/merge-conflict.feature.registry';
+import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.feature.registry';
+import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
+import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
-import { MergeConflictContribution } from './merge-conflict';
-import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
-import { RenameCandidatesProviderRegistry } from './rename/rename.feature.registry';
 import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
@@ -51,6 +52,7 @@ export class AINativeModule extends BrowserModule {
     InterfaceNavigationContribution,
     TerminalAIContribution,
     MergeConflictContribution,
+    AICodeActionContribution,
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
