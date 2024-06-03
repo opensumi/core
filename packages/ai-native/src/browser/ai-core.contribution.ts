@@ -12,6 +12,7 @@ import {
   ComponentRegistryImpl,
   ContributionProvider,
   Domain,
+  IAIInlineChatService,
   IEditorExtensionContribution,
   KeybindingContribution,
   KeybindingRegistry,
@@ -26,13 +27,13 @@ import {
 } from '@opensumi/ide-core-browser';
 import {
   AI_CHAT_VISIBLE,
+  AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE,
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { TerminalRegistryToken } from '@opensumi/ide-core-common';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
@@ -41,6 +42,7 @@ import {
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
+  TerminalRegistryToken,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -60,15 +62,13 @@ import {
 } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
-import { AINativeService } from './ai-native.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
-import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
-import { AICompletionsService } from './inline-completions/service/ai-completions.service';
+import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
+import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
+import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
-import { OpenSumiLightBulbWidget } from './light-bulb-widget';
-import { AIRunToolbar } from './run/toolbar/run-toolbar';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -78,6 +78,9 @@ import {
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
 } from './types';
+import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
+import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { SumiLightBulbWidget } from './widget/light-bulb';
 
 @Domain(
   ClientAppContribution,
@@ -107,7 +110,7 @@ export class AINativeBrowserContribution
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
 
   @Autowired(InlineChatFeatureRegistryToken)
-  private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   @Autowired(ChatFeatureRegistryToken)
   private readonly chatFeatureRegistry: IChatFeatureRegistry;
@@ -123,9 +126,6 @@ export class AINativeBrowserContribution
 
   @Autowired(TerminalRegistryToken)
   private readonly terminalProviderRegistry: ITerminalProviderRegistry;
-
-  @Autowired(AINativeService)
-  private readonly aiNativeService: AINativeService;
 
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
@@ -154,6 +154,9 @@ export class AINativeBrowserContribution
   @Autowired(AIEditorContribution)
   private readonly aiEditorFeatureContribution: AIEditorContribution;
 
+  @Autowired(IAIInlineChatService)
+  private readonly aiInlineChatService: AIInlineChatService;
+
   constructor() {
     this.registerFeature();
   }
@@ -173,7 +176,7 @@ export class AINativeBrowserContribution
   registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
     const { supportsInlineChat } = this.aiNativeConfigService.capabilities;
     if (supportsInlineChat) {
-      register(OpenSumiLightBulbWidget.ID, OpenSumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+      register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
     }
   }
 
@@ -265,7 +268,13 @@ export class AINativeBrowserContribution
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
-        this.aiNativeService.launchInlineChatVisible(value);
+        this.aiInlineChatService._onInlineChatVisible.fire(value);
+      },
+    });
+
+    commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE, {
+      execute: (value: boolean) => {
+        this.aiInlineChatService._onInteractiveInputVisible.fire(value);
       },
     });
 
@@ -335,6 +344,19 @@ export class AINativeBrowserContribution
         args: false,
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
       });
+
+      if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+        keybindings.registerKeybinding(
+          {
+            command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
+            keybinding: 'ctrlcmd+K',
+            args: true,
+            priority: 0,
+            when: `editorFocus && ${InlineChatIsVisible.raw}`,
+          },
+          KeybindingScope.USER,
+        );
+      }
     }
   }
 }

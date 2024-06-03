@@ -1,14 +1,9 @@
+import { ChannelMessage, ErrorMessageCode } from './channel/types';
 import { IConnectionShape } from './connection/types';
+import { furySerializer, wrapSerializer } from './serializer';
+import { ISerializer } from './serializer/types';
 import { ILogger } from './types';
-import {
-  ChannelMessage,
-  ErrorMessageCode,
-  WSChannel,
-  WSServerChannel,
-  parse,
-  pongMessage,
-  stringify,
-} from './ws-channel';
+import { WSChannel, WSServerChannel } from './ws-channel';
 
 export interface IPathHandler {
   dispose: (channel: WSChannel, connectionId: string) => void;
@@ -105,12 +100,21 @@ export class CommonChannelPathHandler {
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
 
+export interface ChannelHandlerOptions {
+  serializer?: ISerializer<ChannelMessage, any>;
+}
+
 export abstract class BaseCommonChannelHandler {
   protected channelMap: Map<string, WSServerChannel> = new Map();
 
   protected heartbeatTimer: NodeJS.Timeout | null = null;
 
-  constructor(public handlerId: string, protected logger: ILogger = console) {}
+  serializer: ISerializer<ChannelMessage, any> = furySerializer;
+  constructor(public handlerId: string, protected logger: ILogger = console, options: ChannelHandlerOptions = {}) {
+    if (options.serializer) {
+      this.serializer = options.serializer;
+    }
+  }
 
   abstract doHeartbeat(connection: any): void;
 
@@ -129,24 +133,20 @@ export abstract class BaseCommonChannelHandler {
     let clientId: string;
     this.heartbeat(connection);
 
+    const wrappedConnection = wrapSerializer(connection, this.serializer);
+
     const getOrCreateChannel = (id: string, clientId: string) => {
       let channel = this.channelMap.get(id);
       if (!channel) {
-        channel = new WSServerChannel(connection, { id, clientId, logger: this.logger });
+        channel = new WSServerChannel(wrappedConnection, { id, clientId, logger: this.logger });
         this.channelMap.set(id, channel);
       }
       return channel;
     };
 
-    connection.onMessage((data: Uint8Array) => {
-      let msg: ChannelMessage;
+    wrappedConnection.onMessage((msg: ChannelMessage) => {
       try {
-        msg = parse(data);
-
         switch (msg.kind) {
-          case 'ping':
-            connection.send(pongMessage);
-            break;
           case 'open': {
             const { id, path, connectionToken } = msg;
             clientId = msg.clientId;
@@ -163,14 +163,12 @@ export abstract class BaseCommonChannelHandler {
             if (channel) {
               channel.dispatch(msg);
             } else {
-              connection.send(
-                stringify({
-                  kind: 'error',
-                  id,
-                  code: ErrorMessageCode.ChannelNotFound,
-                  message: `channel ${id} not found`,
-                }),
-              );
+              wrappedConnection.send({
+                kind: 'error',
+                id,
+                code: ErrorMessageCode.ChannelNotFound,
+                message: `channel ${id} not found`,
+              });
 
               this.logger.warn(`channel ${id} is not found`);
             }

@@ -4,22 +4,18 @@ import crypto from 'crypto';
 // @ts-ignore
 import { Bench } from 'tinybench';
 
+import { ChannelMessage, ErrorMessage, ErrorMessageCode, PingMessage, PongMessage } from '../src/common/channel';
 import { oneOf } from '../src/common/fury-extends/one-of';
 import {
   BinaryProtocol,
-  ChannelMessage,
   CloseProtocol,
   DataProtocol,
-  ErrorMessage,
-  ErrorMessageCode,
   ErrorProtocol,
   OpenProtocol,
-  PingMessage,
   PingProtocol,
-  PongMessage,
   PongProtocol,
   ServerReadyProtocol,
-} from '../src/common/ws-channel';
+} from '../src/common/serializer/fury';
 
 const bench = new Bench({
   time: 2000,
@@ -52,13 +48,11 @@ function testItJson(obj: any) {
 
 const obj = {
   kind: 'ping',
-  clientId: '123',
   id: '456',
 } as PingMessage;
 
 const obj2 = {
   kind: 'pong',
-  clientId: '123',
   id: '456',
 } as PongMessage;
 const obj3 = {

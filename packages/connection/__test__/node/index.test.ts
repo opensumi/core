@@ -2,13 +2,14 @@ import http from 'http';
 
 import WebSocket from 'ws';
 
+import { furySerializer, wrapSerializer } from '@opensumi/ide-connection/lib/common/serializer';
 import { WSWebSocketConnection } from '@opensumi/ide-connection/src/common/connection';
 import { SumiConnection } from '@opensumi/ide-connection/src/common/rpc/connection';
 import { Deferred } from '@opensumi/ide-core-common';
 
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
-import { WSChannel, parse } from '../../src/common/ws-channel';
+import { WSChannel } from '../../src/common/ws-channel';
 import { CommonChannelHandler, WebSocketServerRoute, commonChannelPathHandler } from '../../src/node';
 
 const wssPort = 7788;
@@ -58,11 +59,11 @@ describe('connection', () => {
     });
     const clientId = 'TEST_CLIENT';
     const wsConnection = new WSWebSocketConnection(connection);
-    const channel = new WSChannel(wsConnection, {
+    const channel = new WSChannel(wrapSerializer(wsConnection, furySerializer), {
       id: 'TEST_CHANNEL_ID',
     });
     connection.on('message', (msg: Uint8Array) => {
-      const msgObj = parse(msg);
+      const msgObj = furySerializer.deserialize(msg);
       if (msgObj.kind === 'server-ready') {
         if (msgObj.id === 'TEST_CHANNEL_ID') {
           channel.dispatch(msgObj);

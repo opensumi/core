@@ -1,12 +1,14 @@
+import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { AIInlineChatContentWidgetId } from '@opensumi/ide-core-common';
+import { AIInlineChatContentWidgetId, localize } from '@opensumi/ide-core-common';
 
 import { MenuNode } from '../../../menu/next/base';
 import { createLayoutEventType } from '../../../monaco';
 import { useChange, useHover } from '../../../react-hooks';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';
+import { Loading } from '../loading';
 import { EnhancePopover } from '../popover';
 
 import styles from './index.module.less';
@@ -53,6 +55,12 @@ export interface AIActionProps {
   showClose?: boolean;
   onClickItem: (id: string) => void;
   onClose?: () => void;
+  loading?: boolean;
+  customOperationRender?: React.ReactNode;
+  /**
+   * loading 的时候是否继续显示 operation
+   */
+  loadingShowOperation?: boolean;
 }
 
 const layoutEventType = createLayoutEventType(AIInlineChatContentWidgetId);
@@ -61,28 +69,46 @@ const layoutEvent = new CustomEvent(layoutEventType, {
 });
 
 export const AIAction = (props: AIActionProps) => {
-  const { operationList, moreOperation, showClose, onClickItem, onClose } = props;
+  const {
+    operationList,
+    moreOperation,
+    showClose = true,
+    onClickItem,
+    onClose,
+    customOperationRender,
+    loading,
+    loadingShowOperation = false,
+  } = props;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [ref, isHovered] = useHover<HTMLDivElement>();
 
   const handleClose = useCallback(() => {
-    if (onClose) {
-      onClose();
-    }
+    onClose?.();
   }, [onClose]);
 
   useChange(isHovered, () => {
-    if (containerRef.current) {
-      containerRef.current.dispatchEvent(layoutEvent);
-    }
+    containerRef.current?.dispatchEvent(layoutEvent);
   });
 
-  return (
-    <div ref={containerRef} className={styles.ai_action}>
-      <AILogoAvatar className={styles.ai_action_icon} />
-      <LineVertical height='60%' margin='0px 4px 0 8px' />
-      <div ref={ref} className={styles.operate_container}>
+  /**
+   * loading 的遮罩
+   */
+  const renderLoadingMask = useCallback(() => {
+    if (loading && loadingShowOperation) {
+      return <div className={styles.loading_mask}></div>;
+    }
+
+    return null;
+  }, [loading, loadingShowOperation]);
+
+  const renderOperation = useCallback(() => {
+    if (loading && !loadingShowOperation) {
+      return null;
+    }
+
+    const defaultOperationList = (
+      <React.Fragment>
         {operationList.map(({ name, title, id }, i) =>
           title ? (
             <EnhancePopover id={id} title={title} key={`popover_${i}`}>
@@ -107,18 +133,49 @@ export const AIAction = (props: AIActionProps) => {
             }}
           />
         ) : null}
-        {showClose !== false && (
-          <div
-            className={styles.close_container}
-            style={{
-              display: isHovered ? 'flex' : 'none',
-            }}
-          >
-            <LineVertical height='60%' margin='0px 4px 0 4px' />
+      </React.Fragment>
+    );
+
+    return (
+      <div ref={ref} className={styles.operate_container}>
+        {renderLoadingMask()}
+        <LineVertical height='100%' margin='0 8px' maxHeight={14} minHeight={14} />
+        {customOperationRender ? (
+          <div className={styles.custom_operation_wrapper}>{customOperationRender}</div>
+        ) : (
+          <div className={styles.default_operation_wrapper}>{defaultOperationList}</div>
+        )}
+      </div>
+    );
+  }, [customOperationRender, operationList, moreOperation, loading, loadingShowOperation]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={cls(
+        styles.ai_action_wrapper,
+        loading && styles.loading,
+        loadingShowOperation && styles.loading_show_operation,
+      )}
+    >
+      <React.Fragment>
+        <div className={styles.stable_container}>
+          {loading ? (
+            <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
+              <Loading className={styles.loading_icon} />
+            </EnhancePopover>
+          ) : (
+            <AILogoAvatar className={styles.ai_action_icon} />
+          )}
+        </div>
+        {renderOperation()}
+        {showClose && (
+          <div className={styles.close_container}>
+            <LineVertical height='100%' margin='0px 8px' maxHeight={14} minHeight={14} />
             <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
           </div>
         )}
-      </div>
+      </React.Fragment>
     </div>
   );
 };

@@ -1,8 +1,9 @@
 import Fury, { Serializer, Type, TypeDescription } from '@furyjs/fury';
 import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
+import { PlatformBuffer } from '@furyjs/fury/dist/lib/platformBuffer';
 import { BinaryReader, BinaryWriter } from '@furyjs/fury/dist/lib/type';
 
-import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
+import { parseError, stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
 import { AnySerializer, IObjectTransfer } from '../fury-extends/any';
 import { furyFactory } from '../fury-extends/shared';
@@ -24,11 +25,7 @@ export enum OperationType {
   Notification,
   Response,
   Cancel,
-}
-
-export enum Status {
-  OK,
-  Err,
+  Error,
 }
 
 export const HeadersProto = {
@@ -45,6 +42,7 @@ const PacketPrefix = {
   Notification: (OperationType.Notification << 8) | ProtoVersionV1,
   Response: (OperationType.Response << 8) | ProtoVersionV1,
   Cancel: (OperationType.Cancel << 8) | ProtoVersionV1,
+  Error: (OperationType.Error << 8) | ProtoVersionV1,
 } as const;
 
 class SumiProtocolSerializer implements IProtocolSerializer {
@@ -105,7 +103,66 @@ export class AnyProtocolSerializer implements IProtocolSerializer {
   }
 }
 
-export class MessageIO {
+export interface RPCRequestMessage {
+  kind: OperationType.Request;
+  requestId: number;
+  method: string;
+  headers: IRequestHeaders;
+  args: any[];
+}
+
+export interface RPCNotificationMessage {
+  kind: OperationType.Notification;
+  requestId: number;
+  method: string;
+  headers: IRequestHeaders;
+  args: any[];
+}
+
+export interface RPCResponseMessage {
+  kind: OperationType.Response;
+  requestId: number;
+  method: string;
+  headers: IResponseHeaders;
+  result: any;
+}
+
+export interface RPCErrorMessage {
+  kind: OperationType.Error;
+  requestId: number;
+  method: string;
+  headers: IResponseHeaders;
+  error: any;
+}
+
+export interface RPCCancelMessage {
+  kind: OperationType.Cancel;
+  requestId: number;
+}
+
+export type RPCMessage =
+  | RPCRequestMessage
+  | RPCNotificationMessage
+  | RPCResponseMessage
+  | RPCErrorMessage
+  | RPCCancelMessage;
+
+export abstract class IMessageIO<T = any> {
+  abstract loadProtocolMethod?(
+    methodProtocol: TSumiProtocolMethod,
+    options?: { nameConverter?: (str: string) => string },
+  ): void;
+
+  abstract Request(requestId: number, method: string, headers: IRequestHeaders, args: any[]): T;
+  abstract Notification(requestId: number, method: string, headers: IRequestHeaders, args: any[]): T;
+  abstract Cancel(requestId: number): T;
+  abstract Response(requestId: number, method: string, headers: Record<string, any>, result: any): T;
+  abstract Error(requestId: number, method: string, headers: Record<string, any>, error: any): T;
+
+  abstract parse(data: T): RPCMessage;
+}
+
+export class MessageIO extends IMessageIO<PlatformBuffer> {
   fury: Fury;
   reader: BinaryReader;
   writer: BinaryWriter;
@@ -118,6 +175,7 @@ export class MessageIO {
   responseHeadersSerializer: Serializer<IResponseHeaders, IRequestHeaders>;
 
   constructor() {
+    super();
     const fury = furyFactory();
     this.fury = fury.fury;
     this.reader = fury.reader;
@@ -216,7 +274,6 @@ export class MessageIO {
     writer.uint16(PacketPrefix.Response);
     writer.uint32(requestId);
     writer.stringOfVarUInt32(method);
-    writer.uint16(Status.OK);
     this.responseHeadersSerializer.write(headers);
     this.getProcessor(method).writeResponse(result);
 
@@ -227,13 +284,118 @@ export class MessageIO {
     const { writer } = this;
     writer.reset();
 
-    writer.uint16(PacketPrefix.Response);
+    writer.uint16(PacketPrefix.Error);
     writer.uint32(requestId);
     writer.stringOfVarUInt32(method);
-    writer.uint16(Status.Err);
     this.responseHeadersSerializer.write(headers);
     writer.stringOfVarUInt32(stringifyError(error));
 
     return writer.dump();
+  }
+
+  parse(data: PlatformBuffer): RPCMessage {
+    const { reader } = this;
+    reader.reset(data);
+
+    // skip version, currently only have version 1
+    reader.skip(1);
+    const opType = reader.uint8() as OperationType;
+    const requestId = reader.uint32();
+
+    switch (opType) {
+      case OperationType.Request:
+      case OperationType.Notification: {
+        const method = reader.stringOfVarUInt32();
+        const headers = this.requestHeadersSerializer.read() as IRequestHeaders;
+        const args = this.getProcessor(method).readRequest();
+        return {
+          kind: opType,
+          requestId,
+          method,
+          headers,
+          args,
+        };
+      }
+      case OperationType.Error: {
+        const method = reader.stringOfVarUInt32();
+        const headers = this.responseHeadersSerializer.read() as IResponseHeaders;
+        const error = parseError(reader.stringOfVarUInt32());
+        return {
+          kind: OperationType.Error,
+          requestId,
+          method,
+          headers,
+          error,
+        };
+      }
+      case OperationType.Response: {
+        const method = reader.stringOfVarUInt32();
+        const headers = this.responseHeadersSerializer.read() as IResponseHeaders;
+        const result = this.getProcessor(method).readResponse();
+        return {
+          kind: OperationType.Response,
+          requestId,
+          method,
+          headers,
+          result,
+        };
+      }
+      case OperationType.Cancel:
+        return {
+          kind: OperationType.Cancel,
+          requestId,
+        };
+      default:
+        throw new Error(`Unknown message type: ${opType}`);
+    }
+  }
+}
+
+export class RawMessageIO implements IMessageIO<RPCMessage> {
+  Request(requestId: number, method: string, headers: IRequestHeaders, args: any[]): RPCRequestMessage {
+    return {
+      kind: OperationType.Request,
+      requestId,
+      method,
+      headers,
+      args,
+    };
+  }
+  Notification(requestId: number, method: string, headers: IRequestHeaders, args: any[]): RPCNotificationMessage {
+    return {
+      kind: OperationType.Notification,
+      requestId,
+      method,
+      headers,
+      args,
+    };
+  }
+  Cancel(requestId: number): RPCCancelMessage {
+    return {
+      kind: OperationType.Cancel,
+      requestId,
+    };
+  }
+  Response(requestId: number, method: string, headers: Record<string, any>, result: any): RPCResponseMessage {
+    return {
+      kind: OperationType.Response,
+      requestId,
+      headers,
+      method,
+      result,
+    };
+  }
+  Error(requestId: number, method: string, headers: Record<string, any>, error: any): RPCErrorMessage {
+    return {
+      kind: OperationType.Error,
+      requestId,
+      method,
+      headers,
+      error,
+    };
+  }
+
+  parse(data: any): RPCMessage {
+    return data;
   }
 }

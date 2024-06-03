@@ -1,9 +1,9 @@
+import { furySerializer } from '@opensumi/ide-connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import { sleep } from '@opensumi/ide-core-common';
 import { Server, WebSocket } from '@opensumi/mock-socket';
 
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
-import { parse, stringify } from '../../src/common/ws-channel';
 (global as any).WebSocket = WebSocket;
 
 const randomPortFn = () => Math.floor(Math.random() * 10000) + 10000;
@@ -17,16 +17,15 @@ describe('connection browser', () => {
       const fakeWSURL = `ws://127.0.0.1:${randomPort}`;
       const mockServer = new Server(fakeWSURL);
 
-      let receivedHeartbeat = false;
       let data1Received = false;
       let data2Received = false;
 
       mockServer.on('connection', (socket) => {
         socket.on('message', (msg) => {
-          const msgObj = parse(msg as Uint8Array);
+          const msgObj = furySerializer.deserialize(msg as Uint8Array);
           if (msgObj.kind === 'open') {
             socket.send(
-              stringify({
+              furySerializer.serialize({
                 id: msgObj.id,
                 kind: 'server-ready',
                 token: '',
@@ -40,22 +39,16 @@ describe('connection browser', () => {
             if (data === 'data2') {
               data2Received = true;
             }
-          } else if (msgObj.kind === 'ping') {
-            receivedHeartbeat = true;
           }
         });
       });
 
       const wsChannelHandler = new WSChannelHandler(
         ReconnectingWebSocketConnection.forURL(fakeWSURL),
-        console,
         'test-client-id',
       );
 
       await wsChannelHandler.initHandler();
-      await sleep(11000);
-      expect(receivedHeartbeat).toBe(true);
-      receivedHeartbeat = false;
 
       const channel = await wsChannelHandler.openChannel('test');
 

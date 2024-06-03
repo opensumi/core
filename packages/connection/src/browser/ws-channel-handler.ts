@@ -1,9 +1,17 @@
 import { EventEmitter } from '@opensumi/events';
 import { Barrier, Deferred, DisposableStore, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
 
+import { ChannelMessage } from '../common/channel/types';
 import { IRuntimeSocketConnection } from '../common/connection';
-import { ConnectionInfo, WSCloseInfo } from '../common/types';
-import { ErrorMessageCode, WSChannel, parse, pingMessage } from '../common/ws-channel';
+import { IConnectionShape } from '../common/connection/types';
+import { ISerializer, furySerializer, wrapSerializer } from '../common/serializer';
+import { ConnectionInfo, ILogger, WSCloseInfo } from '../common/types';
+import { WSChannel } from '../common/ws-channel';
+
+export interface WSChannelHandlerOptions {
+  logger?: ILogger;
+  serializer?: ISerializer<ChannelMessage, any>;
+}
 
 /**
  * Channel Handler in browser
@@ -12,13 +20,15 @@ export class WSChannelHandler {
   private _disposables = new DisposableStore();
 
   private _onChannelCreatedEmitter = this._disposables.add(new EventEmitter<Record<string, [WSChannel]>>());
+
+  wrappedConnection: IConnectionShape<ChannelMessage>;
   public onChannelCreated(path: string, listener: (channel: WSChannel) => void) {
     return this._onChannelCreatedEmitter.on(path, listener);
   }
 
   private channelMap: Map<string, WSChannel> = new Map();
   private channelCloseEventMap = new MultiMap<string, WSCloseInfo>();
-  private logger = console;
+  private logger: ILogger = console;
   public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timeout | null;
   private reporterService: IReporterService;
@@ -30,10 +40,16 @@ export class WSChannelHandler {
 
   LOG_TAG: string;
 
-  constructor(public connection: IRuntimeSocketConnection<Uint8Array>, logger: any, clientId: string) {
-    this.logger = logger || this.logger;
+  constructor(
+    public connection: IRuntimeSocketConnection<Uint8Array>,
+    clientId: string,
+    options: WSChannelHandlerOptions = {},
+  ) {
+    this.logger = options.logger || this.logger;
     this.clientId = clientId;
     this.LOG_TAG = `[WSChannelHandler] [client-id:${this.clientId}]`;
+    const serializer = options.serializer || furySerializer;
+    this.wrappedConnection = wrapSerializer(this.connection, serializer);
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {
@@ -49,37 +65,24 @@ export class WSChannelHandler {
       clearTimeout(this.heartbeatMessageTimer);
     }
     this.heartbeatMessageTimer = global.setTimeout(() => {
-      this.connection.send(pingMessage);
+      this.channelMap.forEach((channel) => {
+        channel.ping();
+      });
+
       this.heartbeatMessage();
     }, 10 * 1000);
   }
 
   public async initHandler() {
-    this.connection.onMessage((message) => {
+    this.wrappedConnection.onMessage((msg) => {
       // 一个心跳周期内如果有收到消息，则不需要再发送心跳
       this.heartbeatMessage();
 
-      const msg = parse(message);
-
       switch (msg.kind) {
         case 'pong':
-          // pong 没有 msg.id, 且不需要分发, 不处理
+          // pong 不需要分发, 不处理
           break;
-        case 'error':
-          this.logger.error(this.LOG_TAG, `receive error: id: ${msg.id}, code: ${msg.code}, error: ${msg.message}`);
-          switch (msg.code) {
-            case ErrorMessageCode.ChannelNotFound:
-              if (this.channelMap.has(msg.id)) {
-                // 如果远程报错 channel 不存在但是本机存在，则重新打开
-                const channel = this.channelMap.get(msg.id)!;
-                if (channel.channelPath) {
-                  channel.pause();
-                  channel.open(channel.channelPath, this.clientId);
-                }
-              }
-              break;
-          }
-          break;
+
         default: {
           const channel = this.channelMap.get(msg.id);
           if (channel) {
@@ -138,7 +141,7 @@ export class WSChannelHandler {
       this.logger.log(this.LOG_TAG, `channel ${key} already exists, dispose it`);
     }
 
-    const channel = new WSChannel(this.connection, {
+    const channel = new WSChannel(this.wrappedConnection, {
       id: key,
       logger: this.logger,
       ensureServerReady: true,

@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IAIInlineChatService, StackingLevelStr } from '@opensumi/ide-core-browser';
-import { AIInlineChatContentWidgetId, Emitter } from '@opensumi/ide-core-common';
+import { IAIInlineChatService, StackingLevelStr, useInjectable } from '@opensumi/ide-core-browser';
+import { AIAction, AIInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
+import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
+import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
+import {
+  AIInlineChatContentWidgetId,
+  Disposable,
+  Emitter,
+  InlineChatFeatureRegistryToken,
+  localize,
+} from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
@@ -12,10 +22,182 @@ import {
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
-import { AIInlineChatController } from './inline-chat-actions';
+import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
+import styles from './inline-chat.module.less';
 import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
+export interface IAIInlineOperationProps {
+  handleActions: (id: string) => void;
+  status: EInlineChatStatus;
+  onClose?: () => void;
+}
+
+export interface IAIInlineChatControllerProps {
+  onClickActions: (id: string) => void;
+  onLayoutChange: (height: number) => void;
+  onClose?: () => void;
+  onInteractiveInputSend?: (value: string) => void;
+}
+
+export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
+  const { onClickActions, onClose, onInteractiveInputSend, onLayoutChange } = props;
+  const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
+  const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
+  const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
+  const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
+
+  const interactiveInputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    const dis = new Disposable();
+    dis.addDispose(
+      aiInlineChatService.onChatStatus((status) => {
+        setStatus(status);
+      }),
+    );
+
+    dis.addDispose(
+      aiInlineChatService.onInteractiveInputVisible((v) => {
+        setInteractiveInputVisible(v);
+      }),
+    );
+
+    return () => {
+      dis.dispose();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (interactiveInputVisible === true && interactiveInputRef.current) {
+      interactiveInputRef.current.focus();
+    }
+  }, [interactiveInputVisible, interactiveInputRef]);
+
+  useEffect(() => {
+    if (status === EInlineChatStatus.ERROR) {
+      onClose?.();
+    }
+  }, [status, onClose]);
+
+  const isLoading = useMemo(() => status === EInlineChatStatus.THINKING, [status]);
+  const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
+  const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
+  const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
+
+  const iconResultItems = useMemo(
+    () => [
+      {
+        icon: 'check',
+        text: localize('aiNative.inline.chat.operate.check.title'),
+        onClick: () => {
+          aiInlineChatService._onAccept.fire();
+        },
+      },
+      {
+        icon: 'discard',
+        text: localize('aiNative.operate.discard.title'),
+        onClick: () => {
+          aiInlineChatService._onDiscard.fire();
+        },
+      },
+      {
+        icon: 'afresh',
+        text: localize('aiNative.operate.afresh.title'),
+        onClick: () => {
+          aiInlineChatService._onRegenerate.fire();
+        },
+      },
+    ],
+    [],
+  );
+
+  const handleClickActions = useCallback(
+    (id: string) => {
+      onClickActions?.(id);
+    },
+    [onClickActions],
+  );
+
+  const handleClose = useCallback(() => {
+    onClose?.();
+  }, [onClose]);
+
+  const handleInteractiveInputSend = useCallback(
+    (value: string) => {
+      onInteractiveInputSend?.(value);
+      aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
+    },
+    [onInteractiveInputSend],
+  );
+
+  const moreOperation = useMemo(
+    () =>
+      inlineChatFeatureRegistry.getEditorActionMenus().map(
+        (data) =>
+          new MenuNode({
+            id: `ai.menu.operation.${data.id}`,
+            label: data.name,
+            className: styles.more_operation_menu_item,
+            execute: () => {
+              handleClickActions(data.id);
+            },
+          }),
+      ),
+    [inlineChatFeatureRegistry],
+  );
+
+  const customOperationRender = useMemo(() => {
+    if (!interactiveInputVisible) {
+      return null;
+    }
+
+    return (
+      <InteractiveInput
+        ref={interactiveInputRef}
+        onHeightChange={(height) => onLayoutChange(height)}
+        size='small'
+        placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
+        width={320}
+        disabled={isLoading}
+        onSend={handleInteractiveInputSend}
+      />
+    );
+  }, [isLoading, interactiveInputVisible]);
+
+  const renderContent = useCallback(() => {
+    if (operationList.length === 0 && moreOperation.length === 0) {
+      return null;
+    }
+
+    if (isError) {
+      return null;
+    }
+
+    if (isDone) {
+      return (
+        <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
+          <AIInlineResult iconItems={iconResultItems} />
+        </ContentWidgetContainerPanel>
+      );
+    }
+
+    return (
+      <AIAction
+        operationList={operationList}
+        moreOperation={moreOperation}
+        onClickItem={handleClickActions}
+        onClose={handleClose}
+        loading={isLoading}
+        loadingShowOperation={interactiveInputVisible}
+        customOperationRender={customOperationRender}
+      />
+    );
+  }, [operationList, moreOperation, customOperationRender, iconResultItems, status, interactiveInputVisible]);
+
+  return <div style={isDone ? { transform: 'translateY(-15px)' } : {}}>{renderContent()}</div>;
+};
 
 @Injectable({ multiple: true })
 export class AIInlineContentWidget extends ReactInlineContentWidget {
@@ -25,15 +207,18 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   @Autowired(IAIInlineChatService)
   private aiInlineChatService: AIInlineChatService;
 
+  @Autowired(InlineChatFeatureRegistryToken)
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
+
   private readonly aiNativeContextKey: AINativeContextKey;
 
   private originTop = 0;
 
-  private readonly _onActionClickEmitter = new Emitter<{
-    actionId: string;
-    source: string;
-  }>();
+  private readonly _onActionClickEmitter = new Emitter<{ actionId: string; source: string }>();
   public readonly onActionClick = this._onActionClickEmitter.event;
+
+  private readonly _onInteractiveInputValue = new Emitter<string>();
+  public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
@@ -53,7 +238,12 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     super.dispose();
   }
 
-  clickActionId(actionId: string, source: string): void {
+  public clickActionId(actionId: string, source: string): void {
+    if (actionId === this.inlineChatFeatureRegistry.getInteractiveInputId()) {
+      this.inlineChatFeatureRegistry._onChatClick.fire();
+      return;
+    }
+
     this._onActionClickEmitter.fire({ actionId, source });
   }
 
@@ -62,6 +252,10 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
       <AIInlineChatController
         onClickActions={(id) => this.clickActionId(id, 'widget')}
         onClose={() => this.dispose()}
+        onLayoutChange={() => {
+          this.editor.layoutContentWidget(this);
+        }}
+        onInteractiveInputSend={(value) => this._onInteractiveInputValue.fire(value)}
       />
     );
   }
