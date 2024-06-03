@@ -3,7 +3,7 @@ import { performance } from 'perf_hooks';
 import Stream from 'stream';
 
 import { ConstructorOf, Injector } from '@opensumi/di';
-import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
+import { SumiConnectionMultiplexer, createExtMessageIO } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   Emitter,
@@ -90,7 +90,7 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
 
   const extProtocol = new SumiConnectionMultiplexer(new NetSocketConnection(socket), {
     timeout: appConfig.rpcMessageTimeout,
-    knownProtocols,
+    io: createExtMessageIO(knownProtocols),
   });
 
   return { extProtocol, logger };
