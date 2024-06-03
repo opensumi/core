@@ -78,6 +78,7 @@ import {
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
 } from './types';
+import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
@@ -109,7 +110,7 @@ export class AINativeBrowserContribution
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
 
   @Autowired(InlineChatFeatureRegistryToken)
-  private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   @Autowired(ChatFeatureRegistryToken)
   private readonly chatFeatureRegistry: IChatFeatureRegistry;
@@ -343,16 +344,19 @@ export class AINativeBrowserContribution
         args: false,
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
       });
-      keybindings.registerKeybinding(
-        {
-          command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
-          keybinding: 'ctrlcmd+K',
-          args: true,
-          priority: 0,
-          when: `editorFocus && ${InlineChatIsVisible.raw}`,
-        },
-        KeybindingScope.USER,
-      );
+
+      if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+        keybindings.registerKeybinding(
+          {
+            command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
+            keybinding: 'ctrlcmd+K',
+            args: true,
+            priority: 0,
+            when: `editorFocus && ${InlineChatIsVisible.raw}`,
+          },
+          KeybindingScope.USER,
+        );
+      }
     }
   }
 }
