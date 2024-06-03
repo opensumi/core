@@ -8,6 +8,7 @@ import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-n
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import {
   AIInlineChatContentWidgetId,
+  Disposable,
   Emitter,
   InlineChatFeatureRegistryToken,
   localize,
@@ -44,11 +45,21 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
+  const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    const dis = aiInlineChatService.onChatStatus((status) => {
-      setStatus(status);
-    });
+    const dis = new Disposable();
+    dis.addDispose(
+      aiInlineChatService.onChatStatus((status) => {
+        setStatus(status);
+      }),
+    );
+
+    dis.addDispose(
+      aiInlineChatService.onInteractiveInputVisible((v) => {
+        setInteractiveInputVisible(v);
+      }),
+    );
 
     return () => {
       dis.dispose();
@@ -65,10 +76,6 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
   const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
-  const hasInteractiveInput = useMemo(
-    () => inlineChatFeatureRegistry.getInteractiveInputHandler(),
-    [inlineChatFeatureRegistry],
-  );
 
   const iconResultItems = useMemo(
     () => [
@@ -99,17 +106,13 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
 
   const handleClickActions = useCallback(
     (id: string) => {
-      if (onClickActions) {
-        onClickActions(id);
-      }
+      onClickActions?.(id);
     },
     [onClickActions],
   );
 
   const handleClose = useCallback(() => {
-    if (onClose) {
-      onClose();
-    }
+    onClose?.();
   }, [onClose]);
 
   const handleInteractiveInputSend = useCallback(
@@ -137,7 +140,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   );
 
   const customOperationRender = useMemo(() => {
-    if (!hasInteractiveInput) {
+    if (!interactiveInputVisible) {
       return null;
     }
 
@@ -150,7 +153,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         onSend={handleInteractiveInputSend}
       />
     );
-  }, [isLoading, hasInteractiveInput]);
+  }, [isLoading, interactiveInputVisible]);
 
   const renderContent = useCallback(() => {
     if (operationList.length === 0 && moreOperation.length === 0) {
@@ -180,7 +183,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         customOperationRender={customOperationRender}
       />
     );
-  }, [operationList, moreOperation, customOperationRender, iconResultItems, status, hasInteractiveInput]);
+  }, [operationList, moreOperation, customOperationRender, iconResultItems, status, interactiveInputVisible]);
 
   return <div style={isDone ? { transform: 'translateY(-15px)' } : {}}>{renderContent()}</div>;
 };
@@ -192,6 +195,9 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
 
   @Autowired(IAIInlineChatService)
   private aiInlineChatService: AIInlineChatService;
+
+  @Autowired(InlineChatFeatureRegistryToken)
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   private readonly aiNativeContextKey: AINativeContextKey;
 
@@ -221,7 +227,12 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     super.dispose();
   }
 
-  clickActionId(actionId: string, source: string): void {
+  public clickActionId(actionId: string, source: string): void {
+    if (actionId === this.inlineChatFeatureRegistry.getInteractiveInputId()) {
+      this.inlineChatFeatureRegistry._onChatClick.fire();
+      return;
+    }
+
     this._onActionClickEmitter.fire({ actionId, source });
   }
 

@@ -1,7 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Logger } from '@opensumi/ide-core-browser';
+import { Logger, SpecialCases } from '@opensumi/ide-core-browser';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { Disposable, IDisposable, isUndefined } from '@opensumi/ide-core-common';
+import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
+import { Disposable, Emitter, Event, IDisposable, isUndefined, uuid } from '@opensumi/ide-core-common';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import {
@@ -23,6 +24,10 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
   private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
   private interactiveInputHandler: IInteractiveInputHandler | undefined;
+  private interactiveInputId: string = `${InteractiveInput.displayName}:${uuid(4)}`;
+
+  public readonly _onChatClick = new Emitter<void>();
+  public readonly onChatClick: Event<void> = this._onChatClick.event;
 
   override dispose() {
     super.dispose();
@@ -39,6 +44,14 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
       return false;
     }
 
+    if (isUndefined(operational.renderType)) {
+      operational.renderType = 'button';
+    }
+
+    if (isUndefined(operational.order)) {
+      operational.order = 0;
+    }
+
     this.actionsMap.set(id, operational);
 
     return true;
@@ -47,6 +60,10 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   private removeCollectedActions(operational: AIActionItem): void {
     this.actionsMap.delete(operational.id);
     this.codeActionService.deleteCodeActionById(operational.id);
+  }
+
+  public getInteractiveInputId(): string {
+    return this.interactiveInputId;
   }
 
   public registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable {
@@ -85,6 +102,13 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   public registerInteractiveInput(handler: IInteractiveInputHandler): IDisposable {
     this.interactiveInputHandler = handler;
 
+    this.collectActions({
+      id: this.interactiveInputId,
+      name: `Chat(${SpecialCases.MACMETA}+K)`,
+      renderType: 'button',
+      order: Number.MAX_SAFE_INTEGER,
+    });
+
     return {
       dispose: () => {
         this.interactiveInputHandler = undefined;
@@ -97,12 +121,19 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   }
 
   public getEditorActionButtons(): AIActionItem[] {
-    return Array.from(this.editorHandlerMap.keys())
+    const actions = Array.from(this.editorHandlerMap.keys())
       .filter((id) => {
         const actions = this.actionsMap.get(id);
         return actions && actions.renderType === 'button';
       })
-      .map((id) => this.actionsMap.get(id)!);
+      .map((id) => this.actionsMap.get(id)!)
+      .sort((a, b) => a.order! - b.order!);
+
+    if (this.actionsMap.has(this.interactiveInputId)) {
+      actions.push(this.actionsMap.get(this.interactiveInputId)!);
+    }
+
+    return actions;
   }
 
   public getEditorActionMenus(): AIActionItem[] {

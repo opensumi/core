@@ -197,3 +197,5 @@ export const InteractiveInput = React.forwardRef(
     );
   },
 );
+
+InteractiveInput.displayName = 'interactiveInput';

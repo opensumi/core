@@ -216,6 +216,12 @@ export class InlineChatHandler extends Disposable {
     });
 
     this.aiInlineChatDisposed.addDispose(
+      this.inlineChatFeatureRegistry.onChatClick(() => {
+        this.aiInlineChatService.launchInputVisible(true);
+      }),
+    );
+
+    this.aiInlineChatDisposed.addDispose(
       this.aiInlineContentWidget.onActionClick(({ actionId, source }) => {
         const handler = this.inlineChatFeatureRegistry.getEditorHandler(actionId);
         const action = this.inlineChatFeatureRegistry.getAction(actionId);
