@@ -35,8 +35,10 @@ export class ProxySumi extends ProxyBase<SumiConnection> {
 
   listen(connection: SumiConnection): void {
     super.listen(connection);
-    connection.onRequestNotFound(() => {
-      throw METHOD_NOT_REGISTERED;
-    });
+    this._disposables.add(
+      connection.onRequestNotFound(() => {
+        throw METHOD_NOT_REGISTERED;
+      }),
+    );
   }
 }
