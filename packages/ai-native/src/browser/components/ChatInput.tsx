@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
-import { Icon, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import { ChatAgentViewServiceToken, ChatFeatureRegistryToken, localize, runWhenIdle } from '@opensumi/ide-core-common';
@@ -459,6 +459,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         sendBtnClassName={sendBtnClassName}
         onHeightChange={handleHeightChange}
         height={inputHeight}
+        popoverPosition={PopoverPosition.left}
       />
     </div>
   );

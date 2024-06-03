@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React, { MutableRefObject, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
-import { IInputBaseProps, Popover, TextArea, getIcon } from '@opensumi/ide-components';
+import { IInputBaseProps, Popover, PopoverPosition, TextArea, getIcon } from '@opensumi/ide-components';
 import { isUndefined, localize, uuid } from '@opensumi/ide-core-common';
 
 import { EnhanceIcon } from '../index';
@@ -19,6 +19,7 @@ export interface IInteractiveInputProps extends IInputBaseProps<HTMLTextAreaElem
   width?: number;
   height?: number;
   sendBtnClassName?: string;
+  popoverPosition?: PopoverPosition;
 }
 
 export const InteractiveInput = React.forwardRef(
@@ -36,6 +37,7 @@ export const InteractiveInput = React.forwardRef(
       height,
       width,
       sendBtnClassName,
+      popoverPosition,
     } = props;
 
     const internalRef = useRef<HTMLTextAreaElement>(null);
@@ -156,6 +158,7 @@ export const InteractiveInput = React.forwardRef(
                 id={`ai_chat_input_send_${uuid(4)}`}
                 content={localize('aiNative.chat.enter.send')}
                 delay={1500}
+                position={popoverPosition ?? PopoverPosition.top}
                 disable={disabled}
               >
                 <EnhanceIcon
@@ -168,7 +171,7 @@ export const InteractiveInput = React.forwardRef(
           </div>
         </div>
       ),
-      [focus, disabled, sendBtnClassName, internalValue],
+      [focus, disabled, sendBtnClassName, internalValue, popoverPosition],
     );
 
     const wrapperWidth = useMemo(() => {
