@@ -1,6 +1,7 @@
 import { Injector } from '@opensumi/di';
 import { ProxyIdentifier, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
+import { RawMessageIO } from '@opensumi/ide-connection/lib/common/rpc';
 import {
   Deferred,
   Emitter,
@@ -21,7 +22,6 @@ import {
   MainThreadAPIIdentifier,
   SumiWorkerExtensionService,
 } from '../common/vscode';
-import { knownProtocols } from '../common/vscode/protocols';
 
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
@@ -38,7 +38,7 @@ export function initRPCProtocol() {
   const msgPortConnection = new MessagePortConnection(channel.port1);
 
   const extProtocol = new SumiConnectionMultiplexer(msgPortConnection, {
-    knownProtocols,
+    io: new RawMessageIO(),
   });
 
   return extProtocol;
@@ -157,7 +157,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this._extHostErrorStackTraceExtended = true;
 
     Error.stackTraceLimit = 100;
-    Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
+    Error.prepareStackTrace = (error: Error, stackTrace: NodeJS.CallSite[]) => {
       let extension: IExtensionProps | undefined;
       let stackTraceMessage = '';
 
@@ -165,7 +165,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
         stackTraceMessage += `\n\tat ${call.toString()}`;
         if (call.isEval() && !extension) {
           const scriptPath = call.getEvalOrigin();
-          const maybeExtension = this.findExtensionFormScriptPath(scriptPath);
+          const maybeExtension = this.findExtensionFormScriptPath(scriptPath!);
           if (maybeExtension) {
             extension = maybeExtension;
             const columnNumber = call.getColumnNumber();
