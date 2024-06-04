@@ -87,8 +87,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   @Autowired(FileContextKey)
   private fileContextKey: FileContextKey;
 
-  private _cacheNodesMap: Map<string, File | Directory> = new Map();
-
   private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
 
   // 文件系统Change事件队列
@@ -590,13 +588,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     return /^file:\/\//.test(str);
   }
 
-  /**
-   *
-   * @param pathOrUri 路径或者URI对象
-   * @param compactMode 是否开启压缩模式查找
-   *
-   */
-  getNodeByPathOrUri(pathOrUri: string | URI) {
+  public getNodeByPathOrUri(pathOrUri: string | URI) {
     let path: string | undefined;
     let pathURI: URI | undefined;
     if (typeof pathOrUri !== 'string') {
