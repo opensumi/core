@@ -34,6 +34,7 @@ export class IntellTerminalService extends Disposable {
   private promptEndMarker: IMarker | undefined;
   private promptEndDecoration: IDecoration | undefined;
   private onDataDisposable: IDisposable;
+  private cwd: string = '';
 
   private completePopupRoot: Root | undefined;
   private completePopupDisposeTimeoutHandler: ReturnType<typeof setTimeout> | undefined;
@@ -50,7 +51,7 @@ export class IntellTerminalService extends Disposable {
 
   private initContainer() {
     this.popupContainer = document.createElement('div');
-    this.popupContainer.style.zIndex = "9";
+    this.popupContainer.style.zIndex = '9';
     document.body.appendChild(this.popupContainer);
   }
 
@@ -77,11 +78,18 @@ export class IntellTerminalService extends Disposable {
         case IstermOscPt.PromptEnded:
           this.handlePromptEnd(xterm);
           break;
+        case IstermOscPt.CurrentWorkingDirectory:
+          this.handleCwdUpdate(data);
+          break;
         default:
           return false;
       }
       return false;
     });
+  }
+
+  private handleCwdUpdate(data) {
+    this.cwd = data.split(';').at(1);
   }
 
   private handlePromptEnd(xterm: Terminal) {
@@ -163,7 +171,12 @@ export class IntellTerminalService extends Disposable {
     return notRender;
   }
 
-  private async renderSuggestions(xterm: Terminal, connection: ITerminalConnection, lineDataString: string, cursorX: number) {
+  private async renderSuggestions(
+    xterm: Terminal,
+    connection: ITerminalConnection,
+    lineDataString: string,
+    cursorX: number,
+  ) {
     // fsAsyncStub.setProxy({
     //   readdir: async (cwd: string, options: { withFileTypes: true }) => {
     //     const res = await this.diskFileProvider.readDirectory(Uri.file(cwd));
@@ -179,7 +192,7 @@ export class IntellTerminalService extends Disposable {
 
     this.promptEndDecoration?.dispose();
 
-    const suggestionBlob = await this.suggestionProvider.getSuggestions(lineDataString, '/home/admin/retrox.jcy/opensumi/core/tools/workspace');
+    const suggestionBlob = await this.suggestionProvider.getSuggestions(lineDataString, this.cwd);
 
     if (!suggestionBlob || !suggestionBlob.suggestions) {
       return;
@@ -194,13 +207,17 @@ export class IntellTerminalService extends Disposable {
     });
 
     console.log('suggestions: ', suggestionBlob.suggestions, 'hint: ', lineDataString);
-    const suggestionsViewModel = [...suggestionBlob.suggestions.map((suggestion) => ({
-      description: suggestion.description || '',
-      command: suggestion.name,
-      icon: suggestion.icon,
-    }))];
+    const suggestionsViewModel = [
+      ...suggestionBlob.suggestions.map((suggestion) => ({
+        description: suggestion.description || '',
+        command: suggestion.name,
+        icon: suggestion.icon,
+      })),
+    ];
 
-    this.promptEndDecoration?.onRender((element) => this.renderCompletePopup(element, suggestionsViewModel, suggestionBlob.charactersToDrop || 0, connection));
+    this.promptEndDecoration?.onRender((element) =>
+      this.renderCompletePopup(element, suggestionsViewModel, suggestionBlob.charactersToDrop || 0, connection),
+    );
 
     this.promptEndDecoration?.onDispose(() => {
       console.log('dispose react component');
@@ -234,7 +251,12 @@ export class IntellTerminalService extends Disposable {
     });
   }
 
-  private renderCompletePopup(element: HTMLElement, suggestionsViewModel: any, dropCharNum: number, connection: ITerminalConnection) {
+  private renderCompletePopup(
+    element: HTMLElement,
+    suggestionsViewModel: any,
+    dropCharNum: number,
+    connection: ITerminalConnection,
+  ) {
     const alignAndCheckVisibility = () => {
       const sourceStyle = window.getComputedStyle(element);
       if (sourceStyle.display === 'none' || sourceStyle.visibility === 'hidden') {
