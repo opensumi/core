@@ -9,7 +9,9 @@ import {
   isUndefined,
   path,
 } from '@opensumi/ide-utils';
+import { findCommonRoot, sortPathByDepth } from '@opensumi/ide-utils/lib/path';
 
+import { treePath } from '../path';
 import {
   IAccessibilityInformation,
   ICompositeTreeNode,
@@ -234,10 +236,10 @@ export class TreeNode implements ITreeNode {
   // 节点绝对路径
   get path(): string {
     if (!this._path) {
-      if (!this.parent) {
-        this._path = new Path(`${Path.separator}${this.name}`).toString();
+      if (this.parent) {
+        this._path = Path.joinPath(this.parent.path, this.name);
       } else {
-        this._path = new Path(this.parent.path).join(this.name).toString();
+        this._path = `${Path.separator}${this.name}`;
       }
     }
     return this._path;
@@ -1037,7 +1039,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (!CompositeTreeNode.isRoot(this)) {
       return;
     }
-    collapsedPaths = collapsedPaths.sort((a, b) => Path.pathDepth(a) - Path.pathDepth(b));
+    collapsedPaths = sortPathByDepth(collapsedPaths);
     let path;
     while (collapsedPaths.length > 0) {
       path = collapsedPaths.pop();
@@ -1055,10 +1057,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (!CompositeTreeNode.isRoot(this)) {
       return;
     }
-    expandedPaths = expandedPaths.sort((a, b) => Path.pathDepth(a) - Path.pathDepth(b));
-    let path;
+    expandedPaths = sortPathByDepth(expandedPaths);
+    let path: string;
     while (expandedPaths.length > 0) {
-      path = expandedPaths.pop();
+      path = expandedPaths.pop()!;
       const item = TreeNode.getTreeNodeByPath(path);
       if (CompositeTreeNode.is(item)) {
         (item as CompositeTreeNode).setCollapsed(true);
@@ -1229,24 +1231,24 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 转换节点路径
    */
   private transferItem(oldPath: string, newPath: string) {
-    const oldP = new Path(oldPath);
-    const from = oldP.dir.toString();
+    const oldP = treePath.parse(oldPath);
+    const from = oldP.dirname;
     if (from !== this.path) {
       return;
     }
-    const name = oldP.base.toString();
+    const name = oldP.basename;
     const item = this._children?.find((c) => c.name === name);
     if (!item) {
       return;
     }
-    const newP = new Path(newPath);
-    const to = newP.dir.toString();
+    const newP = treePath.parse(newPath);
+    const to = newP.dirname;
     const destDir = to === from ? this : TreeNode.getTreeNodeByPath(to);
     if (!CompositeTreeNode.is(destDir)) {
       this.unlinkItem(item);
       return;
     }
-    item.mv(destDir, newP.base.toString());
+    item.mv(destDir, newP.basename);
     return item;
   }
 
@@ -1462,11 +1464,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   public removeNode(path: string) {
-    const pathObject = new Path(path);
-    const dirName = pathObject.dir.toString();
-    const name = pathObject.base.toString();
-    if (dirName === this.path && !!this.children) {
-      const item = this.children.find((c) => c.name === name);
+    const { basename, dirname } = treePath.parse(path);
+    if (dirname === this.path && !!this.children) {
+      const item = this.children.find((c) => c.name === basename);
       if (item) {
         this.unlinkItem(item);
       }
@@ -1511,11 +1511,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
       case WatchEvent.Removed: {
         const { path } = event;
-        const pathObject = new Path(path);
-        const dirName = pathObject.dir.toString();
-        const name = pathObject.base.toString();
-        if (dirName === this.path && !!this.children) {
-          const item = this.children.find((c) => c.name === name);
+        const { basename, dirname } = treePath.parse(path);
+
+        if (dirname === this.path && !!this.children) {
+          const item = this.children.find((c) => c.name === basename);
           if (item) {
             this.unlinkItem(item);
           }
@@ -1582,39 +1581,20 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   private getRefreshNode() {
-    let paths = Array.from(this.toRefreshPathQueue);
+    const paths = sortPathByDepth(Array.from(this.toRefreshPathQueue));
     this.toRefreshPathQueue.clear();
     if (!paths.length) {
       return this.root;
     }
-    // 根据路径层级深度进行排序
-    paths = paths.sort((a, b) => {
-      const depthA = Path.pathDepth(a);
-      const depthB = Path.pathDepth(b);
-      return depthA - depthB;
-    });
     if (paths.length === 1 || Path.pathDepth(paths[0]) === 1) {
       // 说明刷新队列中包含根节点，直接返回根节点进行刷新
       return TreeNode.getTreeNodeByPath(paths[0]);
     }
-    const sortedPaths = paths.map((p) => new Path(p));
-    let rootPath = sortedPaths[0];
-    for (let i = 1, len = sortedPaths.length; i < len; i++) {
-      if (rootPath.isEqualOrParent(sortedPaths[i])) {
-        continue;
-      } else {
-        while (!rootPath.isRoot) {
-          rootPath = rootPath.dir;
-          if (!rootPath || rootPath.isEqualOrParent(sortedPaths[i])) {
-            break;
-          }
-        }
-      }
-    }
-    if (rootPath) {
-      return TreeNode.getTreeNodeByPath(rootPath.toString());
-    }
 
+    const rootPath = findCommonRoot(paths);
+    if (rootPath) {
+      return TreeNode.getTreeNodeByPath(rootPath);
+    }
     return this.root;
   }
 
@@ -1641,8 +1621,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   private transformToRelativePath(path: string): string[] {
-    const { splitPath } = Path;
-    const pathFlag = splitPath(path);
+    const pathFlag = Path.splitPath(path);
     pathFlag.shift();
     return pathFlag;
   }

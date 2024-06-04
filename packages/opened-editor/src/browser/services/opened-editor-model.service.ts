@@ -12,7 +12,6 @@ import {
   URI,
   formatLocalize,
   pSeries,
-  path,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -20,6 +19,7 @@ import { IEditorGroup, IResource, WorkbenchEditorService } from '@opensumi/ide-e
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { sortPathByDepth } from '@opensumi/ide-utils/lib/path';
 
 import { ExplorerOpenedEditorViewId } from '../../common/index';
 import { EditorFile, EditorFileGroup } from '../opened-editor-node.define';
@@ -29,8 +29,6 @@ import { OpenedEditorDecorationService } from './opened-editor-decoration.servic
 import { OpenedEditorEventService } from './opened-editor-event.service';
 import { OpenedEditorModel } from './opened-editor-model';
 import { OpenedEditorService } from './opened-editor-tree.service';
-
-const { Path } = path;
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -387,11 +385,9 @@ export class OpenedEditorModelService {
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
-    this._changeEventDispatchQueue.sort((pathA, pathB) => {
-      const pathADepth = Path.pathDepth(pathA);
-      const pathBDepth = Path.pathDepth(pathB);
-      return pathADepth - pathBDepth;
-    });
+
+    this._changeEventDispatchQueue = sortPathByDepth(this._changeEventDispatchQueue);
+
     const roots = [this._changeEventDispatchQueue[0]];
     for (const path of this._changeEventDispatchQueue) {
       if (roots.some((root) => path.indexOf(root) === 0)) {
