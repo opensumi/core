@@ -167,7 +167,7 @@ export class CommentsService extends Disposable implements ICommentsService {
       : this.iconService.fromString('$(comment)');
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'comments-thread-decoration',
-      linesDecorationsClassName: avatar
+      glyphMarginClassName: avatar
         ? ['comment-thread', icon].join(' ')
         : ['comment-range', 'comment-thread', icon].join(' '),
     };
@@ -321,7 +321,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             event.event.stopPropagation();
           }
         } else if (
-          event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+          event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN &&
           event.target.element &&
           event.target.element.className.indexOf('comment-thread') > -1
         ) {
@@ -329,15 +329,10 @@ export class CommentsService extends Disposable implements ICommentsService {
           if (target && target.range) {
             const { range } = target;
             const threads = this.commentsThreads.filter(
-              (thread) =>
-                thread.uri.isEqual(editor.currentUri!) &&
-                thread.range.startLineNumber === range.startLineNumber &&
-                thread.range.endLineNumber === range.endLineNumber,
+              (thread) => thread.uri.isEqual(editor.currentUri!) && thread.range.endLineNumber === range.endLineNumber,
             );
             if (threads.length) {
-              // 判断当前 widget 是否是显示的
               const isShowWidget = threads.some((thread) => thread.isShowWidget(editor));
-
               if (isShowWidget) {
                 threads.forEach((thread) => thread.hide(editor));
               } else {
@@ -370,7 +365,9 @@ export class CommentsService extends Disposable implements ICommentsService {
               range.endLineNumber = this.endCommentRange.endLineNumber;
             }
           }
-          range = await this.getValidRange(range, editor.currentUri);
+          if (editor.currentUri) {
+            range = await this.getValidRange(range, editor.currentUri);
+          }
           if (range) {
             if (
               !this.commentsThreads.some(
@@ -532,12 +529,20 @@ export class CommentsService extends Disposable implements ICommentsService {
         return true;
       }
     });
-    return {
-      startLineNumber: range.startLineNumber,
-      startColumn: range.startColumn,
-      endLineNumber: validRange?.endLineNumber,
-      endColumn: validRange?.endColumn,
-    };
+    if (validRange) {
+      if (validRange.endLineNumber < range.endLineNumber) {
+        return {
+          startLineNumber: range.startLineNumber,
+          startColumn: range.startColumn,
+          endLineNumber: validRange.endLineNumber,
+          endColumn: validRange.endColumn,
+        };
+      } else {
+        return range;
+      }
+    } else {
+      return range;
+    }
   }
 
   private ensureCommentingRangeReservedAmount(editor: IEditor) {
@@ -809,17 +814,9 @@ export class CommentsService extends Disposable implements ICommentsService {
     }
     const contributionRanges = await this.getContributionRanges(uri);
     const isProviderRanges = contributionRanges.some(
-      (contributionRange) =>
-        range.startLineNumber >= contributionRange.startLineNumber &&
-        range.startLineNumber <= contributionRange.endLineNumber,
+      (contributionRange) => range.startLineNumber <= contributionRange.endLineNumber,
     );
-    // 如果不支持对同一行进行多个评论，那么过滤掉当前有 thread 行号的 decoration
-    const isShowHoverToSingleLine =
-      this.isMultiCommentsForSingleLine ||
-      !this.commentsThreads.some(
-        (thread) => thread.uri.isEqual(uri) && thread.range.endLineNumber === range.endLineNumber,
-      );
-    return isProviderRanges && isShowHoverToSingleLine;
+    return isProviderRanges;
   }
 
   public createThread(
