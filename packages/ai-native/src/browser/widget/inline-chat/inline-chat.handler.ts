@@ -250,14 +250,14 @@ export class InlineChatHandler extends Disposable {
     );
 
     this.aiInlineChatDisposed.addDispose(
-      this.aiInlineContentWidget.onInteractiveInputValue((value) => {
+      this.aiInlineContentWidget.onInteractiveInputValue(async (value) => {
         const handler = this.inlineChatFeatureRegistry.getInteractiveInputHandler();
 
         if (!handler) {
           return;
         }
 
-        const strategy = this.inlineChatFeatureRegistry.getInteractiveInputStrategyHandler()(value);
+        const strategy = await this.inlineChatFeatureRegistry.getInteractiveInputStrategyHandler()(value);
 
         this.runInlineChatAction(
           monacoEditor,
