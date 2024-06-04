@@ -617,43 +617,14 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (this.root && rootStr) {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(pathURI)) {
-          let basePath = new Path(this.root.path);
-          if (this.isMultipleWorkspace) {
-            basePath = basePath.join(rootUri.displayName);
+          const relativePath = rootUri.relative(pathURI);
+          if (relativePath) {
+            path = new Path(this.root.path).join(relativePath.toString()).toString();
           }
-          path = basePath.join(rootUri.relative(pathURI)!.toString()).toString();
         }
       }
     }
-
     if (path) {
-      // 压缩模式下查找不到对应节点时，需要查看是否已有包含的文件夹存在
-      // 如当收到的变化是 /root/test_folder/test_file，而当前缓存中的路径只有/root/test_folder/test_folder2的情况
-      // 需要用当前缓存路径校验是否存在包含关系，这里/root/test_folder/test_folder2与/root/test_folder存在路径包含关系
-      // 此时应该重载/root下的文件，将test_folder目录折叠并清理缓存
-      if (this.isCompactMode && !this._cacheNodesMap.has(path)) {
-        const allNearestPath = Array.from(this._cacheNodesMap.keys()).filter((cache) => cache.indexOf(path!) >= 0);
-        let nearestPath;
-        for (const nextPath of allNearestPath) {
-          const depth = Path.pathDepth(nextPath);
-          if (nearestPath) {
-            if (depth < nearestPath.depth) {
-              nearestPath = {
-                path: nextPath,
-                depth,
-              };
-            }
-          } else {
-            nearestPath = {
-              path: nextPath,
-              depth,
-            };
-          }
-        }
-        if (nearestPath) {
-          return this.root?.getTreeNodeByPath(nearestPath.path) as File | Directory;
-        }
-      }
       return this.root?.getTreeNodeByPath(path) as File | Directory;
     }
   }
