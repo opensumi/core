@@ -13,14 +13,14 @@ export class AINativeConfigService {
   public layoutViewSize: LayoutViewSizeConfig;
 
   private internalCapabilities: Required<IAINativeCapabilities> = {
-    supportsMarkers: false,
-    supportsChatAssistant: false,
-    supportsInlineChat: false,
-    supportsInlineCompletion: false,
-    supportsConflictResolve: false,
-    supportsRenameSuggestions: false,
-    supportsTerminalDetection: false,
-    supportsTerminalCommandSuggest: false,
+    supportsMarkers: true,
+    supportsChatAssistant: true,
+    supportsInlineChat: true,
+    supportsInlineCompletion: true,
+    supportsConflictResolve: true,
+    supportsRenameSuggestions: true,
+    supportsTerminalDetection: true,
+    supportsTerminalCommandSuggest: true,
   };
 
   private setDefaultCapabilities(value: boolean): void {
