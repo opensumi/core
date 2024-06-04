@@ -28,6 +28,7 @@ import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { AI_DIFF_WIDGET_ID } from '../../../common';
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
+import { ERunStrategy } from '../../types';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 
 import { InlineChatController } from './inline-chat-controller';
@@ -256,6 +257,8 @@ export class InlineChatHandler extends Disposable {
           return;
         }
 
+        const strategy = this.inlineChatFeatureRegistry.getInteractiveInputStrategyHandler()(value);
+
         this.runInlineChatAction(
           monacoEditor,
           () => {
@@ -266,8 +269,10 @@ export class InlineChatHandler extends Disposable {
             });
             return relationId;
           },
-          handler.execute ? handler.execute!.bind(this, monacoEditor, value, this.cancelIndicator.token) : undefined,
-          handler.providerDiffPreviewStrategy
+          handler.execute && strategy === ERunStrategy.EXECUTE
+            ? handler.execute!.bind(this, monacoEditor, value, this.cancelIndicator.token)
+            : undefined,
+          handler.providerDiffPreviewStrategy && strategy === ERunStrategy.DIFF_PREVIEW
             ? handler.providerDiffPreviewStrategy.bind(this, monacoEditor, value, this.cancelIndicator.token)
             : undefined,
         );
@@ -473,6 +478,18 @@ export class InlineChatHandler extends Disposable {
     }
 
     const response = await strategy();
+
+    if (CancelResponse.is(response)) {
+      this.convertInlineChatStatus(EInlineChatStatus.READY, {
+        relationId,
+        message: 'abort',
+        startTime,
+        isRetry,
+        isStop: true,
+      });
+      this.disposeAllWidget();
+      return;
+    }
 
     this.visibleDiffWidget(
       monacoEditor,

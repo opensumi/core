@@ -11,6 +11,7 @@ import {
 import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/contrib/terminal/utils/ansi-parser';
 import {
   AINativeCoreContribution,
+  ERunStrategy,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
   IRenameCandidatesProviderRegistry,
@@ -84,19 +85,23 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
-    registry.registerInteractiveInput({
-      providerDiffPreviewStrategy: async (editor, value, token) => {
-        // console.log('registerInteractiveInput: API:>>> providerDiffPreviewStrategy', editor, value)
-        const crossCode = this.getCrossCode(editor);
-        const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
-
-        const controller = new InlineChatController({ enableCodeblockRender: true });
-        const stream = await this.aiBackService.requestStream(prompt, {}, token);
-        controller.mountReadable(stream);
-
-        return controller;
+    registry.registerInteractiveInput(
+      {
+        strategy: ERunStrategy.DIFF_PREVIEW,
       },
-    });
+      {
+        execute: async (editor, value, token) => {},
+        providerDiffPreviewStrategy: async (editor, value, token) => {
+          const crossCode = this.getCrossCode(editor);
+          const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
+          const controller = new InlineChatController({ enableCodeblockRender: true });
+          const stream = await this.aiBackService.requestStream(prompt, {}, token);
+          controller.mountReadable(stream);
+
+          return controller;
+        },
+      },
+    );
 
     registry.registerEditorInlineChat(
       {
@@ -139,7 +144,6 @@ export class AINativeContribution implements AINativeCoreContribution {
           const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
           const result = await this.aiBackService.request(prompt, {}, token);
-
           if (result.isCancel) {
             return new CancelResponse();
           }
