@@ -1,7 +1,8 @@
-import { Injectable, Provider } from '@opensumi/di';
+import { Autowired, Injectable, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
+  AINativeConfigService,
   BrowserModule,
   ChatAgentViewServiceToken,
   ChatFeatureRegistryToken,
@@ -39,6 +40,14 @@ import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
+  @Autowired(AINativeConfigService)
+  protected readonly aiNativeConfig: AINativeConfigService;
+
+  constructor() {
+    super();
+    this.aiNativeConfig.setAINativeModuleLoaded(true);
+  }
+
   contributionProvider = AINativeCoreContribution;
   providers: Provider[] = [
     AINativeBrowserContribution,

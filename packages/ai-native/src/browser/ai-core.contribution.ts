@@ -73,7 +73,6 @@ import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
   IChatRenderRegistry,
-  IInlineChatFeatureRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
@@ -162,8 +161,6 @@ export class AINativeBrowserContribution
   }
 
   initialize() {
-    this.aiNativeConfigService.enableCapabilities();
-
     const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
 
     if (supportsChatAssistant) {

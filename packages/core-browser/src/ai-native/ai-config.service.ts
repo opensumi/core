@@ -4,6 +4,22 @@ import { IAINativeCapabilities } from '@opensumi/ide-core-common';
 import { LayoutViewSizeConfig } from '../layout/constants';
 import { AppConfig } from '../react-providers/config-provider';
 
+const DEFAULT_CAPABILITIES: Required<IAINativeCapabilities> = {
+  supportsMarkers: true,
+  supportsChatAssistant: true,
+  supportsInlineChat: true,
+  supportsInlineCompletion: true,
+  supportsConflictResolve: true,
+  supportsRenameSuggestions: true,
+  supportsTerminalDetection: true,
+  supportsTerminalCommandSuggest: true,
+};
+
+const DISABLED_ALL_CAPABILITIES = {} as Required<IAINativeCapabilities>;
+Object.keys(DEFAULT_CAPABILITIES).forEach((key) => {
+  DISABLED_ALL_CAPABILITIES[key] = false;
+});
+
 @Injectable()
 export class AINativeConfigService {
   @Autowired(AppConfig)
@@ -12,16 +28,9 @@ export class AINativeConfigService {
   @Autowired(LayoutViewSizeConfig)
   public layoutViewSize: LayoutViewSizeConfig;
 
-  private internalCapabilities: Required<IAINativeCapabilities> = {
-    supportsMarkers: false,
-    supportsChatAssistant: false,
-    supportsInlineChat: false,
-    supportsInlineCompletion: false,
-    supportsConflictResolve: false,
-    supportsRenameSuggestions: false,
-    supportsTerminalDetection: false,
-    supportsTerminalCommandSuggest: false,
-  };
+  private aiModuleLoaded = false;
+
+  private internalCapabilities = DEFAULT_CAPABILITIES;
 
   private setDefaultCapabilities(value: boolean): void {
     for (const key in this.internalCapabilities) {
@@ -40,6 +49,10 @@ export class AINativeConfigService {
   }
 
   public get capabilities(): Required<IAINativeCapabilities> {
+    if (!this.aiModuleLoaded) {
+      return DISABLED_ALL_CAPABILITIES;
+    }
+
     const { AINativeConfig } = this.appConfig;
 
     if (AINativeConfig?.capabilities) {
@@ -47,5 +60,9 @@ export class AINativeConfigService {
     }
 
     return this.internalCapabilities;
+  }
+
+  setAINativeModuleLoaded(value: boolean): void {
+    this.aiModuleLoaded = value;
   }
 }
