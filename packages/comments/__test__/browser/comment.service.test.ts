@@ -8,16 +8,17 @@ import {
 } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, URI } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { EditorCollectionService, IEditor, ResourceService } from '@opensumi/ide-editor';
-import { IEditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser';
+import { IEditorDecorationCollectionService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
 import { positionToRange } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
 import { CommentMode, ICommentsService } from '../../src/common';
 
@@ -25,6 +26,7 @@ describe('comment service test', () => {
   let injector: MockInjector;
   let commentsService: ICommentsService;
   let currentEditor: IEditor;
+  const updateEditorLayoutOptions = jest.fn();
   beforeAll(() => {
     const monacoEditor = mockService({
       getConfiguration: () => ({
@@ -36,7 +38,7 @@ describe('comment service test', () => {
         minimapLeft: 10,
       }),
       getOption: () => 10,
-      createDecorationsCollection(decorations) {
+      createDecorationsCollection() {
         return {
           onDidChange: new Emitter().event,
           clear: () => {},
@@ -47,8 +49,34 @@ describe('comment service test', () => {
           has: () => true,
         };
       },
+      onMouseDown: () => Disposable.NULL,
+      onMouseUp: () => Disposable.NULL,
+      onMouseMove: () => Disposable.NULL,
+      onMouseLeave: () => Disposable.NULL,
+      getRawOptions: () => ({
+        extraEditorClassName: '',
+      }),
+      onDidChangeModel: () => Disposable.NULL,
+      getOptions: () => ({
+        get: (option: monaco.EditorOption) => {
+          switch (option) {
+            case monaco.EditorOption.folding:
+              return true;
+            case monaco.EditorOption.showFoldingControls:
+              return true;
+            case monaco.EditorOption.lineDecorationsWidth:
+              return 10;
+            default:
+              return 10;
+          }
+        },
+      }),
+      deltaDecorations: jest.fn(() => []),
     });
-    currentEditor = mockService({ monacoEditor });
+    currentEditor = mockService({
+      monacoEditor,
+      updateOptions: updateEditorLayoutOptions,
+    });
     injector = createBrowserInjector(
       [CommentsModule],
       new Injector([
@@ -71,6 +99,12 @@ describe('comment service test', () => {
           }),
         },
         {
+          token: IEditorDocumentModelService,
+          useValue: mockService({
+            getModelReference: () => null,
+          }),
+        },
+        {
           token: IEditorDecorationCollectionService,
           useValue: mockService({
             registerDecorationProvider: () => Disposable.NULL,
@@ -84,16 +118,15 @@ describe('comment service test', () => {
 
   afterEach(() => {
     commentsService['threads'].clear();
+    commentsService.handleOnCreateEditor(currentEditor);
   });
 
   it('create thread', () => {
     const uri = URI.file('/test');
-    act(() => {
-      const [thread] = createTestThreads(uri);
-      expect(thread.uri.isEqual(uri));
-      expect(thread.range.startLineNumber).toBe(1);
-      expect(thread.comments[0].body).toBe('Comment Text');
-    });
+    const [thread] = createTestThreads(uri);
+    expect(thread.uri.isEqual(uri));
+    expect(thread.range.startLineNumber).toBe(1);
+    expect(thread.comments[0].body).toBe('Comment Text');
   });
 
   it('get commentsThreads', () => {
@@ -247,6 +280,20 @@ describe('comment service test', () => {
       provideResource: () => mockService({}),
     });
     expect($registerDecorationProvider).toHaveBeenCalled();
+  });
+
+  it('editor should be layouted', () => {
+    expect(updateEditorLayoutOptions).toHaveBeenCalledWith({
+      extraEditorClassName: 'inline-comment',
+      lineDecorationsWidth: 23,
+    });
+  });
+
+  it('highlight range when current comment thread changed', () => {
+    const thread = createTestThreads(URI.file('/test'))[0];
+    jest.clearAllMocks();
+    commentsService.setCurrentCommentThread(thread);
+    expect(currentEditor.monacoEditor.deltaDecorations).toHaveBeenCalledTimes(11);
   });
 
   function createTestThreads(uri: URI) {

@@ -1,4 +1,4 @@
-import { action, autorun, computed, makeObservable, observable } from 'mobx';
+import { action, autorun, computed, makeObservable, observable, runInAction } from 'mobx';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, Emitter, IContextKeyService, IRange, URI, localize, uuid } from '@opensumi/ide-core-browser';
@@ -159,7 +159,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   set readOnly(readOnly: boolean) {
-    this._readOnly = readOnly;
+    runInAction(() => (this._readOnly = readOnly));
     this._contextKeyService.createKey<boolean>('readOnly', this._readOnly);
   }
 
@@ -283,6 +283,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     }
   }
 
+  @action
   public showAll() {
     this.isCollapsed = false;
     for (const [, widget] of this.widgets) {
@@ -291,6 +292,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this.onDidChangeCollapsibleStateEmitter.fire(CommentThreadCollapsibleState.Expanded);
   }
 
+  @action
   public hideAll(isDospose?: boolean) {
     this.isCollapsed = true;
     for (const [editor, widget] of this.widgets) {
@@ -304,6 +306,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this.onDidChangeCollapsibleStateEmitter.fire(CommentThreadCollapsibleState.Collapsed);
   }
 
+  @action
   public addComment(...comments: IComment[]) {
     this.comments.push(
       ...comments.map((comment) => ({
@@ -314,6 +317,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this.onDidChangeEmitter.fire();
   }
 
+  @action
   public removeComment(comment: IComment) {
     const index = this.comments.findIndex((c) => c === comment);
     if (index !== -1) {
