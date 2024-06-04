@@ -63,6 +63,9 @@ export class QuickOpenFeatureContribution
     commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN_VIEW, {
       execute: () => this.prefixQuickOpenService.open('view '),
     });
+    commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN_WITH_COMMAND, {
+      execute: (value?: string) => this.prefixQuickOpenService.open('>', value),
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
