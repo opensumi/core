@@ -465,7 +465,7 @@ export interface QuickPickService {
 
 export const PrefixQuickOpenService = Symbol('PrefixQuickOpenService');
 export interface PrefixQuickOpenService {
-  open(prefix: string): void;
+  open(prefix: string, value?: string): void;
 }
 
 export const IQuickInputService = Symbol('IQuickInputService');
