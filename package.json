@@ -1,5 +1,5 @@
 {
-  "name": "@opensumi/core",
+  "name": "@opensumi/core123",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -35,7 +35,7 @@
     "update-disttag": "tsx ./scripts/dist-tag",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "yarn run lint --fix",
-    "format": "yarn run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,html,css,less}\" --write",
+    "format": "yarn run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,md,html,css,less,json,yml}\" --write",
     "rebuild:node": "sumi rebuild",
     "test:module": "cross-env NODE_OPTIONS=--max-old-space-size=5120 tsx ./scripts/module-jest",
     "start:e2e": "yarn start --script=start:e2e",
@@ -134,7 +134,7 @@
     "tslib": "^2.6.2",
     "tsx": "^4.7.1",
     "typescript": "4.9.3",
-    "webpack": "^5.90.0",
+    "webpack": "^5.91.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
   "workspaces": [
