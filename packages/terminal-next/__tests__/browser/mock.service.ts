@@ -293,6 +293,10 @@ export class MockTerminalThemeService {
 export class MockPreferenceService implements PreferenceService {
   ready: Promise<void> = Promise.resolve();
 
+  has(preferenceName: string, resourceUri?: string | undefined, language?: string | undefined): boolean {
+    return true;
+  }
+
   hasLanguageSpecific(preferenceName: any, overrideIdentifier: string, resourceUri: string): boolean {
     return false;
   }
