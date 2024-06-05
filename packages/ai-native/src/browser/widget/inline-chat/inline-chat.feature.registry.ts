@@ -2,15 +2,46 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { Logger, SpecialCases } from '@opensumi/ide-core-browser';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
-import { Disposable, Emitter, Event, IDisposable, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, IDisposable, MaybePromise, isUndefined, uuid } from '@opensumi/ide-core-common';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import {
+  ERunStrategy,
   IEditorInlineChatHandler,
   IInlineChatFeatureRegistry,
   IInteractiveInputHandler,
+  IInteractiveInputRunStrategy,
   ITerminalInlineChatHandler,
 } from '../../types';
+
+type TRunStrategyFn = (value: string) => MaybePromise<ERunStrategy>;
+
+class InteractiveInputModel {
+  static ID: string = `${InteractiveInput.displayName}:${uuid(4)}`;
+
+  private _handler: IInteractiveInputHandler | undefined;
+  private _strategyHandler: TRunStrategyFn;
+
+  public setHandler(h: IInteractiveInputHandler): void {
+    this._handler = h;
+  }
+
+  public handler(): IInteractiveInputHandler | undefined {
+    return this._handler;
+  }
+
+  public setStrategyHandler(fn: TRunStrategyFn): void {
+    this._strategyHandler = fn;
+  }
+
+  public strategyHandler(): TRunStrategyFn {
+    return this._strategyHandler;
+  }
+
+  public dispose(): void {
+    this._handler = undefined;
+  }
+}
 
 @Injectable()
 export class InlineChatFeatureRegistry extends Disposable implements IInlineChatFeatureRegistry {
@@ -23,8 +54,8 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   private actionsMap: Map<string, AIActionItem> = new Map();
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
   private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
-  private interactiveInputHandler: IInteractiveInputHandler | undefined;
-  private interactiveInputId: string = `${InteractiveInput.displayName}:${uuid(4)}`;
+
+  private interactiveInputModel: InteractiveInputModel = new InteractiveInputModel();
 
   public readonly _onChatClick = new Emitter<void>();
   public readonly onChatClick: Event<void> = this._onChatClick.event;
@@ -63,7 +94,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   }
 
   public getInteractiveInputId(): string {
-    return this.interactiveInputId;
+    return InteractiveInputModel.ID;
   }
 
   public registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable {
@@ -99,11 +130,20 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     };
   }
 
-  public registerInteractiveInput(handler: IInteractiveInputHandler): IDisposable {
-    this.interactiveInputHandler = handler;
+  public registerInteractiveInput(
+    runStrategy: IInteractiveInputRunStrategy,
+    handler: IInteractiveInputHandler,
+  ): IDisposable {
+    this.interactiveInputModel.setHandler(handler);
+
+    if (runStrategy.handleStrategy) {
+      this.interactiveInputModel.setStrategyHandler(runStrategy.handleStrategy);
+    } else {
+      this.interactiveInputModel.setStrategyHandler(() => runStrategy.strategy || ERunStrategy.EXECUTE);
+    }
 
     this.collectActions({
-      id: this.interactiveInputId,
+      id: InteractiveInputModel.ID,
       name: `Chat(${SpecialCases.MACMETA}+K)`,
       renderType: 'button',
       order: Number.MAX_SAFE_INTEGER,
@@ -111,13 +151,17 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
     return {
       dispose: () => {
-        this.interactiveInputHandler = undefined;
+        this.interactiveInputModel.dispose();
       },
     };
   }
 
   public getInteractiveInputHandler(): IInteractiveInputHandler | undefined {
-    return this.interactiveInputHandler;
+    return this.interactiveInputModel.handler();
+  }
+
+  public getInteractiveInputStrategyHandler(): TRunStrategyFn {
+    return this.interactiveInputModel.strategyHandler();
   }
 
   public getEditorActionButtons(): AIActionItem[] {
@@ -129,8 +173,8 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
       .map((id) => this.actionsMap.get(id)!)
       .sort((a, b) => a.order! - b.order!);
 
-    if (this.actionsMap.has(this.interactiveInputId)) {
-      actions.push(this.actionsMap.get(this.interactiveInputId)!);
+    if (this.actionsMap.has(InteractiveInputModel.ID)) {
+      actions.push(this.actionsMap.get(InteractiveInputModel.ID)!);
     }
 
     return actions;

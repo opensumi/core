@@ -36,6 +36,25 @@ export type IInteractiveInputHandler = IBaseInlineChatHandler<
   [editor: ICodeEditor, value: string, token: CancellationToken]
 >;
 
+export enum ERunStrategy {
+  /**
+   * 正常执行，执行后 input 直接消失
+   */
+  EXECUTE = 'EXECUTE',
+  /**
+   * 预览 diff，执行后 input 保留，显示 diff editor
+   */
+  DIFF_PREVIEW = 'DIFF_PREVIEW',
+}
+
+/**
+ * 制定 inline chat interactive input 的执行策略
+ */
+export interface IInteractiveInputRunStrategy {
+  strategy?: ERunStrategy;
+  handleStrategy?: (value: string) => MaybePromise<ERunStrategy>;
+}
+
 export interface ITerminalInlineChatHandler {
   triggerRules?: 'selection' | (BaseTerminalDetectionLineMatcher | typeof BaseTerminalDetectionLineMatcher)[];
   execute: (stdout: string, stdin: string, rule?: BaseTerminalDetectionLineMatcher) => MaybePromise<void>;
@@ -47,7 +66,10 @@ export interface IInlineChatFeatureRegistry {
   /**
    * proposed api
    */
-  registerInteractiveInput(handler: IInteractiveInputHandler): IDisposable;
+  registerInteractiveInput(
+    strategyOptions: IInteractiveInputRunStrategy,
+    handler: IInteractiveInputHandler,
+  ): IDisposable;
 }
 
 export interface IChatSlashCommandItem {
