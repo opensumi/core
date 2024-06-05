@@ -20,9 +20,9 @@ export interface ReqeustResponse extends IAIBackServiceResponse {
 
 // 模拟 stream 数据,包含一段 TypeScript 代码
 const streamData = [
-  'Here is a simple TypeScript code snippet: \n',
-  '```typescript\n',
-  'interface Person {\n',
+  'Here is a simple TypeScript code ',
+  'snippet: \n```typescript\ne',
+  'xport class Person {\n',
   '  name: string;\n',
   '  age: number;\n',
   '}\n',

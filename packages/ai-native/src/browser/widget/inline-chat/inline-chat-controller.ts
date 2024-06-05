@@ -20,7 +20,8 @@ export interface InlineChatControllerOptions {
   enableCodeblockRender: boolean;
 }
 
-const rgCodeBlockBefore = /\n([^]+)?/g;
+const rgCodeBlockBefore = /```([a-zA-Z]+)?\n([\s\S]*)/;
+const rgCodeBlockAfter = /(.*)\n?```/;
 
 export class InlineChatController {
   static is(controller: any): boolean {
@@ -53,20 +54,26 @@ export class InlineChatController {
     if (_content.includes(BACK_QUOTE_3_SYMBOL)) {
       if (!this.isInCodeBlock) {
         // 第一次进入代码块时，去除反引号符号
-        const chunks = _content.split(rgCodeBlockBefore).filter(Boolean);
-        if (chunks.length >= 2) {
-          _content = chunks[1];
+        const match = _content.match(rgCodeBlockBefore);
+        if (match && match.length >= 3) {
+          _content = match[2];
+        }
+      } else {
+        const match = _content.match(rgCodeBlockAfter);
+        if (match && match.length >= 2) {
+          _content = match[1];
         }
       }
 
       this.isInCodeBlock = !this.isInCodeBlock;
+      return _content;
     }
 
-    if (!this.isInCodeBlock) {
-      _content = '';
+    if (this.isInCodeBlock) {
+      return _content;
     }
 
-    return _content;
+    return '';
   }
 
   public mountReadable(stream: SumiReadableStream<IChatProgress>): void {
