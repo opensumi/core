@@ -296,7 +296,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   /**
-   * 插叙是否有对应配置
+   * 查询是否有对应配置
    * @param {string} preferenceName
    * @param {string} [resourceUri]
    * @returns {boolean}
