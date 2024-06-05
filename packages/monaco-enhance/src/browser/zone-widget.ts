@@ -15,8 +15,6 @@ import { TrackedRangeStickiness } from '@opensumi/monaco-editor-core/esm/vs/edit
 
 import type { ICodeEditor, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-import './styles.less';
-
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
   public domNode: HTMLElement;
   public id: string = uuid(); // A valid zone id should be greater than 0
@@ -306,8 +304,9 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   }
 
   private _getWidth(info: monaco.editor.EditorLayoutInfo): number {
-    const minimapWidth = info.minimap ? info.minimap.minimapWidth : 0;
-    return info.width - minimapWidth - info.verticalScrollbarWidth;
+    // 增加部分与 Minimap 的边距，整体视觉效果更好
+    const minimapWidth = info.minimap ? info.minimap.minimapWidth + 5 : 0;
+    return info.width - minimapWidth;
   }
 
   protected _onViewZoneTop(top: number): void {
