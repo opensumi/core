@@ -69,6 +69,8 @@ export async function createConnectionService(
 
   const clientCenter = new RPCServiceCenter();
   clientCenter.setSumiConnection(channel.createSumiConnection(options));
+  clientCenter.setReporter(reporterService);
+
   initConnectionService(injector, modules, clientCenter);
 
   return channel;
