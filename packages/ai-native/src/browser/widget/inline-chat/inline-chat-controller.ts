@@ -79,22 +79,20 @@ export class InlineChatController {
     return '';
   }
 
-  public mountReadable(stream: SumiReadableStream<IChatProgress>): void {
+  public async mountReadable(stream: SumiReadableStream<IChatProgress>): Promise<void> {
+    await this.deffered.promise;
     const reply = new ReplyResponse('');
 
     listenReadable<IChatProgress>(stream, {
-      onData: async (data) => {
-        await this.deffered.promise;
+      onData: (data) => {
         reply.updateMessage(this.fencedCodeBlocks((data as IChatContent).content));
         this._onData.fire(reply);
       },
-      onEnd: async () => {
-        await this.deffered.promise;
+      onEnd: () => {
         this.isInCodeBlock = false;
         this._onEnd.fire();
       },
-      onError: async (error) => {
-        await this.deffered.promise;
+      onError: (error) => {
         this.isInCodeBlock = false;
         if (AbortError.is(error)) {
           this._onAbort.fire();
