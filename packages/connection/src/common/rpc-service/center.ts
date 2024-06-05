@@ -41,13 +41,13 @@ export class RPCServiceCenter implements IDisposable {
   }
 
   private _reporterService: IReporterService | undefined;
-  private _minimumReportThresholdTime: number = kDefaultMinimumReportThresholdTime;
+  private _reportThreshold: number = kDefaultMinimumReportThresholdTime;
   setReporter(
     reporterService: IReporterService,
     minimumReportThresholdTime: number = kDefaultMinimumReportThresholdTime,
   ) {
     this._reporterService = reporterService;
-    this._minimumReportThresholdTime = minimumReportThresholdTime;
+    this._reportThreshold = minimumReportThresholdTime;
   }
 
   registerService(serviceName: string, type: ServiceType): void {
@@ -149,7 +149,7 @@ export class RPCServiceCenter implements IDisposable {
             success: false,
           },
           {
-            minimumReportThresholdTime: this._minimumReportThresholdTime,
+            minimumReportThresholdTime: this._reportThreshold,
           },
         );
       }
@@ -164,7 +164,7 @@ export class RPCServiceCenter implements IDisposable {
           success: true,
         },
         {
-          minimumReportThresholdTime: this._minimumReportThresholdTime,
+          minimumReportThresholdTime: this._reportThreshold,
         },
       );
     }

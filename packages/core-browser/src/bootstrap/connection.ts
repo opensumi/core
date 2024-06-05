@@ -14,6 +14,7 @@ import {
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
+import { AppConfig } from '../react-providers/config-provider';
 
 import { ModuleConstructor } from './app.interface';
 
@@ -25,6 +26,7 @@ export async function createConnectionService(
   channelHandler: WSChannelHandler,
   options: ISumiConnectionOptions = {},
 ) {
+  const appConfig = injector.get(AppConfig) as AppConfig;
   const reporterService: IReporterService = injector.get(IReporterService);
   channelHandler.setReporter(reporterService);
 
@@ -69,7 +71,10 @@ export async function createConnectionService(
 
   const clientCenter = new RPCServiceCenter();
   clientCenter.setSumiConnection(channel.createSumiConnection(options));
-  clientCenter.setReporter(reporterService);
+
+  if (appConfig?.measure?.connection?.enable) {
+    clientCenter.setReporter(reporterService, appConfig?.measure?.connection?.minimumReportThresholdTime);
+  }
 
   initConnectionService(injector, modules, clientCenter);
 

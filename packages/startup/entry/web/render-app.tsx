@@ -68,7 +68,7 @@ export async function renderApp(opts: IClientAppOpts) {
     // eslint-disable-next-line no-console
     console.timeEnd('Render');
   };
-  registerLocalStorageProvider(GeneralSettingsId.Theme, opts.workspaceDir || '', 'prefix1');
+  registerLocalStorageProvider(GeneralSettingsId.Theme, opts.workspaceDir || '', 'sumi-dev');
 
   const app = new ClientApp(opts);
 

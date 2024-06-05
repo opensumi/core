@@ -18,7 +18,7 @@ export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
   /**
    * APP的名称
-   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `OPENSUMI`
+   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `OpenSumi`
    */
   appName?: string;
   /**
@@ -282,10 +282,21 @@ export interface AppConfig {
   connectionPath?: UrlProvider;
   // 支持的通信协议类型
   connectionProtocols?: string[];
+
+  measure?: IMeasureConfig;
 }
 
 export interface ICollaborationClientOpts {
   port?: number;
+}
+
+export interface IMeasureConfig {
+  connection?: IConnectionMeasureConfig;
+}
+
+export interface IConnectionMeasureConfig {
+  enable?: boolean;
+  minimumReportThresholdTime?: number;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
