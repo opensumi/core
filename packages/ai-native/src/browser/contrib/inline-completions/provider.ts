@@ -1,5 +1,6 @@
 import { Injector } from '@opensumi/di';
 
+import { lineBasedCompletionModelConfigs } from './constants';
 import { getImportedFile } from './prompt/importedFiles';
 import { getAfterPrompt, getBeforePrompt, getLanguageMarker, getPathMarker } from './prompt/prompt';
 import { getSimilarSnippets } from './prompt/similarSnippets';
@@ -110,3 +111,28 @@ export async function getSuffixPrompt(
 ): Promise<string> {
   return (await getAfterPrompt(context, promptConfig, injector, token)) || '';
 }
+
+function processPrefix(prompt: string): string {
+  // remove all empty lines
+  prompt = prompt.replace(/^s*[\n]/gm, '');
+  const arr = prompt.split('\n');
+  // if the number of lines is greater than n, take the last n lines
+  if (arr.length > lineBasedCompletionModelConfigs.completionPromptMaxLineSize) {
+    prompt = arr.slice(-lineBasedCompletionModelConfigs.completionPromptMaxLineSize).join('\n');
+  }
+  return prompt;
+}
+
+function processSuffix(suffix: string): string {
+  suffix = suffix.replace(/^s*[\n]/gm, '');
+  const arr = suffix.split('\n');
+  if (arr.length > lineBasedCompletionModelConfigs.completionSuffixMaxLineSize) {
+    suffix = arr.slice(-lineBasedCompletionModelConfigs.completionSuffixMaxLineSize).join('\n');
+  }
+  return suffix;
+}
+
+export const lineBasedPromptProcessor = {
+  processPrefix,
+  processSuffix,
+};

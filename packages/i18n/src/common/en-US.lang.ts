@@ -1476,6 +1476,10 @@ export const localizationBundle = {
     'preference.ai.native.inlineChat.codeAction.enabled':
       'Does Inline Chat related code actions automatically appear when code are selected?',
     'preference.ai.native.chat.visible.type': 'Control how the chat panel is displayed by default',
+
+    'preference.ai.native.inlineCompletions.title': 'Inline Completions',
+    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
+      'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
     // #endregion AI Native
 
     // #endregion merge editor

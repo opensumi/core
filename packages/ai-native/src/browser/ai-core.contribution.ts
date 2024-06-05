@@ -239,6 +239,18 @@ export class AINativeBrowserContribution
       ],
     });
 
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.inlineCompletions.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+            localized: 'preference.ai.native.inlineCompletions.promptEngineering.enabled',
+          },
+        ],
+      });
+    }
+
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
         title: localize('preference.ai.native.inlineChat.title'),
