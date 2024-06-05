@@ -125,9 +125,9 @@ export interface ICompletionModel {
 }
 
 export interface ICompletionContext {
-  prompt: string;
   prefix: string;
   suffix: string;
+  fileUrl: string;
   filename: string;
   language: string;
   uri: URI;

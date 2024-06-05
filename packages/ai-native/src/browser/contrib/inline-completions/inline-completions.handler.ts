@@ -2,9 +2,8 @@ import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, IDisposable } from '@opensumi/ide-core-browser';
-import { IEventBus, Schemes } from '@opensumi/ide-core-common';
+import { IEventBus } from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
-import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { IAIMiddleware } from '../../types';

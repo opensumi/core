@@ -5,6 +5,7 @@ import {
   CancellationTokenSource,
   Disposable,
   IAIBackService,
+  IAICompletionOption,
   IAICompletionResultModel,
   IAIReportCompletionOption,
 } from '@opensumi/ide-core-common';
@@ -58,9 +59,9 @@ export class AICompletionsService extends Disposable {
         this.isDefaultCompletionModel = true;
         const now = Date.now();
         const result = (await this.aiBackService.requestCompletion(
-          data as any,
+          data as IAICompletionOption,
           this.cancelIndicator.token,
-        )) as unknown as IAICompletionResultModel;
+        )) as IAICompletionResultModel;
         this.recordCompletionUseTime(now);
         return result;
       } catch (error) {

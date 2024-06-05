@@ -314,6 +314,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       enum: ['never', 'always', 'default'],
       default: 'default',
     },
+    [AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED]: {
+      type: 'boolean',
+      default: true,
+    },
     'editor.codeActionWidget.showHeaders': {
       type: 'boolean',
       default: true,

@@ -87,3 +87,8 @@ export const DEFAULT_COMPLECTION_MODEL: ICompletionModel = {
     },
   },
 };
+
+export const lineBasedCompletionModelConfigs = {
+  completionPromptMaxLineSize: 1024,
+  completionSuffixMaxLineSize: 500,
+};
