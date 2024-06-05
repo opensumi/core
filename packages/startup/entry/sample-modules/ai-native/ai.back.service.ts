@@ -88,12 +88,11 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
     // 模拟数据事件
     streamData.forEach((chunk, index) => {
       setTimeout(() => {
+        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
+
         if (length - 1 === index || cancelToken?.isCancellationRequested) {
           chatReadableStream.end();
-          return;
         }
-
-        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
       }, index * 300);
     });
 

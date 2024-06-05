@@ -1,6 +1,7 @@
 import {
   AbortError,
   ChatResponse,
+  Deferred,
   Emitter,
   ErrorResponse,
   Event,
@@ -21,7 +22,7 @@ export interface InlineChatControllerOptions {
 }
 
 const rgCodeBlockBefore = /```([a-zA-Z]+)?\n([\s\S]*)/;
-const rgCodeBlockAfter = /(.*)\n?```/;
+const rgCodeBlockAfter = /([\s\S]+)?\n?```/;
 
 export class InlineChatController {
   static is(controller: any): boolean {
@@ -43,6 +44,8 @@ export class InlineChatController {
   private isInCodeBlock = false;
 
   constructor(readonly options?: InlineChatControllerOptions) {}
+
+  public deffered: Deferred<void> = new Deferred();
 
   private fencedCodeBlocks(content: string): string {
     let _content = content;
@@ -66,7 +69,7 @@ export class InlineChatController {
       }
 
       this.isInCodeBlock = !this.isInCodeBlock;
-      return _content;
+      return _content || '';
     }
 
     if (this.isInCodeBlock) {
@@ -80,16 +83,19 @@ export class InlineChatController {
     const reply = new ReplyResponse('');
 
     listenReadable<IChatProgress>(stream, {
-      onData: (data) => {
+      onData: async (data) => {
         reply.updateMessage(this.fencedCodeBlocks((data as IChatContent).content));
+        await this.deffered.promise;
         this._onData.fire(reply);
       },
-      onEnd: () => {
+      onEnd: async () => {
         this.isInCodeBlock = false;
+        await this.deffered.promise;
         this._onEnd.fire();
       },
-      onError: (error) => {
+      onError: async (error) => {
         this.isInCodeBlock = false;
+        await this.deffered.promise;
         if (AbortError.is(error)) {
           this._onAbort.fire();
         } else {
