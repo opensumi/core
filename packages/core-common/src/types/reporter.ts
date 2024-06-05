@@ -81,11 +81,6 @@ export interface IReporterTimerEndOptions {
 }
 
 export interface IReporterTimer {
-  /**
-   * 获取经过的时间
-   */
-  getElapsedTime?(): number;
-
   timeEnd(msg?: string, extra?: any, options?: IReporterTimerEndOptions): number;
 }
 
