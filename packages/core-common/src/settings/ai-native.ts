@@ -7,7 +7,7 @@ export enum AINativeSettingSectionsId {
   /**
    * Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.
    */
-  INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED = 'ai.native.inlineCompletions.prompt.engineering.enabled',
+  INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED = 'ai.native.inlineCompletions.promptEngineering.enabled',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';

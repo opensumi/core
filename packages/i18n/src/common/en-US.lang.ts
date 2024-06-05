@@ -1478,7 +1478,7 @@ export const localizationBundle = {
     'preference.ai.native.chat.visible.type': 'Control how the chat panel is displayed by default',
 
     'preference.ai.native.inlineCompletions.title': 'Inline Completions',
-    'preference.ai.native.inlineCompletions.prompt.engineering.enabled':
+    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
     // #endregion AI Native
 

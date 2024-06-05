@@ -245,7 +245,7 @@ export class AINativeBrowserContribution
         preferences: [
           {
             id: AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
-            localized: 'preference.ai.native.inlineCompletions.prompt.engineering.enabled',
+            localized: 'preference.ai.native.inlineCompletions.promptEngineering.enabled',
           },
         ],
       });

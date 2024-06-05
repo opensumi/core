@@ -1243,7 +1243,7 @@ export const localizationBundle = {
       '是否启用在选中代码片段时显示 Inline Chat 相关的 Code Actions?',
     'preference.ai.native.chat.visible.type': '控制 Chat 面板默认的展示方式',
     'preference.ai.native.inlineCompletions.title': '内联补全',
-    'preference.ai.native.inlineCompletions.prompt.engineering.enabled':
+    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       '是否启用提示词工程，一些 LLM 模型在提示词工程上可能表现不佳。',
     // #endregion AI Native
 
