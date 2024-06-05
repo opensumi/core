@@ -22,7 +22,6 @@ renderApp(
       },
       measure: {
         connection: {
-          enable: true,
           minimumReportThresholdTime: 400,
         },
       },

@@ -72,8 +72,8 @@ export async function createConnectionService(
   const clientCenter = new RPCServiceCenter();
   clientCenter.setSumiConnection(channel.createSumiConnection(options));
 
-  if (appConfig?.measure?.connection?.enable) {
-    clientCenter.setReporter(reporterService, appConfig?.measure?.connection?.minimumReportThresholdTime);
+  if (appConfig?.measure?.connection) {
+    clientCenter.setReporter(reporterService, appConfig.measure.connection.minimumReportThresholdTime);
   }
 
   initConnectionService(injector, modules, clientCenter);

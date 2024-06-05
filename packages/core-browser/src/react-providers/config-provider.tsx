@@ -278,11 +278,18 @@ export interface AppConfig {
    */
   layoutViewSize?: Partial<ILayoutViewSize>;
 
-  // 自定义前后端通信路径
+  /**
+   * 自定义前后端通信路径
+   */
   connectionPath?: UrlProvider;
-  // 支持的通信协议类型
+  /**
+   * 支持的通信协议类型
+   */
   connectionProtocols?: string[];
 
+  /**
+   * 埋点上报的配置
+   */
   measure?: IMeasureConfig;
 }
 
@@ -291,11 +298,16 @@ export interface ICollaborationClientOpts {
 }
 
 export interface IMeasureConfig {
+  /**
+   * 是否开启连接性能监控
+   */
   connection?: IConnectionMeasureConfig;
 }
 
 export interface IConnectionMeasureConfig {
-  enable?: boolean;
+  /**
+   * 最低上报阈值时间，单位 ms
+   */
   minimumReportThresholdTime?: number;
 }
 
