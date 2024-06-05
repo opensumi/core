@@ -84,18 +84,18 @@ export class InlineChatController {
 
     listenReadable<IChatProgress>(stream, {
       onData: async (data) => {
-        reply.updateMessage(this.fencedCodeBlocks((data as IChatContent).content));
         await this.deffered.promise;
+        reply.updateMessage(this.fencedCodeBlocks((data as IChatContent).content));
         this._onData.fire(reply);
       },
       onEnd: async () => {
-        this.isInCodeBlock = false;
         await this.deffered.promise;
+        this.isInCodeBlock = false;
         this._onEnd.fire();
       },
       onError: async (error) => {
-        this.isInCodeBlock = false;
         await this.deffered.promise;
+        this.isInCodeBlock = false;
         if (AbortError.is(error)) {
           this._onAbort.fire();
         } else {
