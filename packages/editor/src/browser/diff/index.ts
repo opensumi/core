@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Domain, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
+import { AppConfig, Domain, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
@@ -28,6 +28,9 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
 
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
+
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
 
   scheme = DIFF_SCHEME;
 
@@ -85,7 +88,7 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
       name,
       icon,
       uri,
-      supportsRevive: true,
+      supportsRevive: this.appConfig.enableDiffRevive ?? true,
       metadata: {
         original: originalUri,
         modified: modifiedUri,

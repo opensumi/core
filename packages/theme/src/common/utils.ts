@@ -148,6 +148,16 @@ export function transparent(colorValue: ColorValue, factor: number): ColorFuncti
   };
 }
 
+export function opaque(colorValue: ColorValue, background: ColorValue): ColorFunction {
+  return (theme) => {
+    const backgroundColor = resolveColorValue(background, theme);
+    if (!backgroundColor) {
+      return resolveColorValue(colorValue, theme);
+    }
+    return resolveColorValue(colorValue, theme)?.makeOpaque(backgroundColor);
+  };
+}
+
 export function oneOf(...colorValues: ColorValue[]): ColorFunction {
   return (theme) => {
     for (const colorValue of colorValues) {

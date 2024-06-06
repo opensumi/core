@@ -272,16 +272,22 @@ export interface AppConfig {
    * Collaboration Client Options
    */
   collaborationOptions?: ICollaborationClientOpts;
-
   /**
    * Define the default size (height) of each layout block in the IDE
    */
   layoutViewSize?: Partial<ILayoutViewSize>;
-
-  // 自定义前后端通信路径
+  /**
+   * 自定义前后端通信路径
+   */
   connectionPath?: UrlProvider;
-  // 支持的通信协议类型
+  /**
+   * 支持的通信协议类型
+   */
   connectionProtocols?: string[];
+  /**
+   * 是否启用 Diff 协议文件自动恢复
+   */
+  enableDiffRevive?: boolean;
 }
 
 export interface ICollaborationClientOpts {
