@@ -1,3 +1,4 @@
+import { localize } from '@opensumi/ide-core-common';
 import { getColorRegistry, registerColor } from '@opensumi/ide-theme';
 
 import darkTheme from './default-theme';
@@ -21,4 +22,24 @@ export const doOverrideColorToken = () => {
       );
     }
   });
+};
+
+export const doOverrideMonacoColorToken = () => {
+  /**
+   * quickInputListFocusBackground token
+   */
+  registerColor(
+    'vscode.quickInputList.focusBackground',
+    { light: '#151b2114', dark: '#5F656B40', hcDark: null, hcLight: null },
+    'Quick picker background color for the focused item.',
+  );
+
+  /**
+   * quickInputListFocusForeground token
+   */
+  registerColor(
+    'quickInputList.focusForeground',
+    { dark: '#ffffff', light: '#151b21', hcDark: null, hcLight: null },
+    'Quick picker foreground color for the focused item.',
+  );
 };
