@@ -18,7 +18,7 @@ export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
   /**
    * APP的名称
-   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `OPENSUMI`
+   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `OpenSumi`
    */
   appName?: string;
   /**
@@ -285,6 +285,10 @@ export interface AppConfig {
    */
   connectionProtocols?: string[];
   /**
+   * 埋点上报的配置
+   */
+  measure?: IMeasureConfig;
+  /**
    * 是否启用 Diff 协议文件自动恢复
    */
   enableDiffRevive?: boolean;
@@ -292,6 +296,20 @@ export interface AppConfig {
 
 export interface ICollaborationClientOpts {
   port?: number;
+}
+
+export interface IMeasureConfig {
+  /**
+   * 是否开启连接性能监控
+   */
+  connection?: IConnectionMeasureConfig;
+}
+
+export interface IConnectionMeasureConfig {
+  /**
+   * 最低上报阈值时间，单位 ms
+   */
+  minimumReportThresholdTime?: number;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

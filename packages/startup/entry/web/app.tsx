@@ -20,6 +20,11 @@ renderApp(
           modules: [DESIGN_MENUBAR_CONTAINER_VIEW_ID],
         },
       },
+      measure: {
+        connection: {
+          minimumReportThresholdTime: 400,
+        },
+      },
     },
   }),
 );
