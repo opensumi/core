@@ -23,7 +23,7 @@ import { DesignSplitPanelService } from './override/split-panel.service';
 import designStyles from './style/design.module.less';
 import darkTheme from './theme/default-theme';
 import lightTheme from './theme/light-theme';
-import { doOverrideColorToken, doOverrideMonacoColorToken } from './theme/override.token';
+import { overrideColorToken, overrideMonacoColorToken } from './theme/override.token';
 
 @Injectable()
 export class DesignModule extends BrowserModule {
@@ -35,8 +35,8 @@ export class DesignModule extends BrowserModule {
     const designStyleService: IDesignStyleService = injector.get(IDesignStyleService);
     designStyleService.setStyles(designStyles);
 
-    doOverrideColorToken();
-    doOverrideMonacoColorToken();
+    overrideColorToken();
+    overrideMonacoColorToken();
 
     const appLifeCycleService: IAppLifeCycleService = injector.get(AppLifeCycleServiceToken);
 

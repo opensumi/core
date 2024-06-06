@@ -4,7 +4,7 @@ import { getColorRegistry, registerColor } from '@opensumi/ide-theme';
 import darkTheme from './default-theme';
 import lightTheme from './light-theme';
 
-export const doOverrideColorToken = () => {
+export const overrideColorToken = () => {
   const colorRegistry = getColorRegistry();
 
   colorRegistry.getColors().forEach(({ id }) => {
@@ -24,7 +24,7 @@ export const doOverrideColorToken = () => {
   });
 };
 
-export const doOverrideMonacoColorToken = () => {
+export const overrideMonacoColorToken = () => {
   /**
    * quickInputListFocusBackground token
    */
