@@ -5,6 +5,7 @@ import { Button } from '@opensumi/ide-components';
 import {
   IContextKeyService,
   IMarkdownString,
+  isString,
   isUndefined,
   localize,
   toLocalString,
@@ -225,7 +226,11 @@ export const CommentItem: React.FC<{
   const [replyText, setReplyText] = React.useState('');
   const [comment, ...replies] = thread.comments;
   const { author, label, body, mode, timestamp } = comment;
-  const iconUrl = author.iconPath?.toString();
+  const iconUrl = !isString(author.iconPath)
+    ? author.iconPath?.authority
+      ? author.iconPath?.toString()
+      : ''
+    : author.iconPath;
   const [textValue, setTextValue, onChangeTextArea, commentContext, commentTitleContext, handleDragFiles] =
     useCommentContext(contextKeyService, comment);
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
