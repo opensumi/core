@@ -349,6 +349,8 @@ export class InlineChatHandler extends Disposable {
             return;
           }
 
+          controller.deffered.resolve();
+
           this.aiInlineChatOperationDisposed.addDispose([
             controller.onData((data) => {
               if (ReplyResponse.is(data)) {
