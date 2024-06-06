@@ -376,6 +376,7 @@ export class InlineChatHandler extends Disposable {
                 startTime,
                 isRetry,
               });
+              this.aiDiffWidget.layout();
             }),
             controller.onAbort(() => {
               this.convertInlineChatStatus(EInlineChatStatus.READY, {
@@ -385,6 +386,7 @@ export class InlineChatHandler extends Disposable {
                 isRetry,
                 isStop: true,
               });
+              this.aiDiffWidget.layout();
             }),
             controller.onEnd(() => {
               this.convertInlineChatStatus(EInlineChatStatus.DONE, {
@@ -393,6 +395,7 @@ export class InlineChatHandler extends Disposable {
                 startTime,
                 isRetry,
               });
+              this.aiDiffWidget.layout();
             }),
           ]);
         }),
