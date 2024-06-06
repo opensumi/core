@@ -106,6 +106,7 @@ export const localizationBundle = {
     'editor.redo': '重做',
     'editor.saveCurrent': '保存当前文件',
     'editor.title.context.close': '关闭',
+    'editor.closeTab.title': '关闭 ({0})',
     'editor.closeCurrent': '关闭当前编辑窗口',
     'editor.openExternal': '使用外部软件打开',
     'editor.cannotOpenBinary': '我们无法在编辑器中展示这个文件。',

@@ -110,6 +110,7 @@ export const localizationBundle = {
     'editor.saveCodeActions.getting': 'Getting code actions from {0}.',
     'editor.saveCodeActions.saving': 'Saving "{0}"',
     'editor.title.context.close': 'Close',
+    'editor.closeTab.title': 'Close ({0})',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
     'editor.cannotOpenBinary': 'Cannot open binary file in this editor.',

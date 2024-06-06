@@ -1,14 +1,30 @@
 import cls from 'classnames';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useCallback, useMemo } from 'react';
 
 import { Injectable } from '@opensumi/di';
+import { Popover } from '@opensumi/ide-core-browser/lib/components';
+import { formatLocalize, isMacintosh, uuid } from '@opensumi/ide-core-common';
 import { EditorTabService } from '@opensumi/ide-editor/lib/browser/editor.tab.service';
 
 import styles from '../style/design.module.less';
 
 const EditorTabCloseComponent = (props) => {
   const { children } = props;
-  return children;
+  const [display, setDisplay] = React.useState(false);
+
+  const uid = useMemo(() => 'editor-tab-close-' + uuid(6), []);
+
+  const handleClick = useCallback(() => {
+    setDisplay(false);
+  }, []);
+
+  const title = useMemo(() => formatLocalize('editor.closeTab.title', isMacintosh ? '⌘W' : 'Ctrl+W'), []);
+
+  return (
+    <Popover delay={1000} id={uid} title={title} onClickAction={handleClick} display={display}>
+      {children}
+    </Popover>
+  );
 };
 
 @Injectable()
