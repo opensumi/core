@@ -10,6 +10,7 @@ import {
   IAIReportCompletionOption,
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { IProvideInlineCompletionsSignature } from '../../../types';
 import { CompletionRequestBean } from '../model/competionModel';
@@ -49,7 +50,12 @@ export class AICompletionsService extends Disposable {
     this.lastCompletionUseTime = Date.now() - preTime;
   }
 
-  public async complete(data: CompletionRequestBean, model, position, token): Promise<IAICompletionResultModel | null> {
+  public async complete(
+    data: CompletionRequestBean,
+    model: monaco.editor.ITextModel,
+    position: monaco.Position,
+    token: monaco.CancellationToken,
+  ): Promise<IAICompletionResultModel | null> {
     const doCompletion = async (data: CompletionRequestBean) => {
       if (!this.aiBackService.requestCompletion) {
         return null;

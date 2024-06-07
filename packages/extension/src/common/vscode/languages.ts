@@ -21,10 +21,7 @@ import { SymbolInformation } from 'vscode-languageserver-types';
 import { IMarkdownString, IMarkerData, IRange, UriComponents } from '@opensumi/ide-core-common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { InlineValue, InlineValueContext } from '@opensumi/ide-debug/lib/common/inline-values';
-// eslint-disable-next-line import/order
 import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
-
-// eslint-disable-next-line import/no-restricted-paths
 import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
@@ -74,9 +71,7 @@ import {
   WorkspaceEditDto,
 } from './model.api';
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { ITextModel, NewSymbolName } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-// eslint-disable-next-line import/no-restricted-paths
+import type { ITextModel, InlineCompletions, NewSymbolName } from '@opensumi/ide-monaco';
 import type {
   CodeActionContext,
   Command,
@@ -185,6 +180,7 @@ export interface IMainThreadLanguages {
   $emitInlayHintsEvent(eventHandle: number, event?: any): void;
   $setLanguageStatus(handle: number, status: ILanguageStatus): void;
   $removeLanguageStatus(handle: number): void;
+  $getNativeInlineCompletions(): Promise<InlineCompletions | undefined>;
 }
 
 export interface IExtHostLanguages {

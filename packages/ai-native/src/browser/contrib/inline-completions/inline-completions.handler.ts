@@ -9,6 +9,7 @@ import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IAIMiddleware } from '../../types';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
+import { InlineCompletions } from './model/competionModel';
 import { AICompletionsService } from './service/ai-completions.service';
 
 @Injectable()
@@ -79,6 +80,11 @@ export class InlineCompletionHandler extends Disposable {
     return this;
   }
 
+  private _completionResult: InlineCompletions | undefined;
+  public getCompletionResult() {
+    return this._completionResult;
+  }
+
   public registerProvider(editor: IEditor, languageId: string, middlewareCollector?: IAIMiddleware): IDisposable {
     const disposable = new Disposable();
 
@@ -98,10 +104,10 @@ export class InlineCompletionHandler extends Disposable {
             context,
             token,
           );
-
+          this._completionResult = list;
           return list;
         },
-        freeInlineCompletions() {},
+        freeInlineCompletions: () => {},
         handleItemDidShow: (completions) => {
           if (completions.items.length > 0) {
             this.aiCompletionsService.setVisibleCompletion(true);

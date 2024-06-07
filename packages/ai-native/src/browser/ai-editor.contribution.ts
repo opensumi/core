@@ -7,7 +7,7 @@ import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/br
 import { BrowserCodeEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 
 import { CodeActionHandler } from './contrib/code-action/code-action.handler';
-import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
+import { InlineCompletionHandler } from './contrib/inline-completions';
 import { RenameHandler } from './contrib/rename/rename.handler';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';

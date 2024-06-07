@@ -610,6 +610,10 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this._currentInlineCompletions;
   }
 
+  getNativeInlineCompletions() {
+    return this.proxy.$getNativeInlineCompletions();
+  }
+
   async $provideInlineCompletions(
     handle: number,
     resource: UriComponents,
