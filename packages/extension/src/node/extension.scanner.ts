@@ -4,7 +4,7 @@ import path from 'path';
 import * as fs from 'fs-extra';
 import semver from 'semver';
 
-import { Uri, getDebugLogger, getNodeRequire } from '@opensumi/ide-core-node';
+import { PromiseTasks, Uri, getDebugLogger, getNodeRequire } from '@opensumi/ide-core-node';
 
 import { IExtensionMetaData, IExtraMetaData } from '../common';
 
@@ -17,17 +17,40 @@ function resolvePath(path) {
   return path;
 }
 
+const debugLogger = getDebugLogger();
+
+async function readJSONIfExists(filePath?: string): Promise<
+  | { exists: true; json: any }
+  | {
+      exists: false;
+    }
+> {
+  if (!filePath) {
+    return { exists: false };
+  }
+
+  try {
+    const exists = await fs.pathExists(filePath);
+    if (exists) {
+      return { exists: true, json: await fs.readJSON(filePath) };
+    }
+  } catch (e) {
+    debugLogger.error('read file error', e);
+  }
+  return { exists: false };
+}
+
 export class ExtensionScanner {
   static async getExtension(
     extensionPath: string,
-    localization: string,
+    languageId: string,
     extraMetaData?: IExtraMetaData,
   ): Promise<IExtensionMetaData | undefined> {
-    // Electron 中，extensionPath 可能为一个 `.asar` 结尾的路径，这种情况下，fs-extra的pathExists 会判断为不存在
+    // Electron 中，extensionPath 可能为一个 `.asar` 结尾的路径，这种情况下，fs-extra 的 pathExists 会判断为不存在
     try {
       await fs.stat(extensionPath);
     } catch (e) {
-      getDebugLogger().error(`extension path ${extensionPath} does not exist`);
+      debugLogger.error(`extension path ${extensionPath} does not exist`);
       return;
     }
 
@@ -36,85 +59,80 @@ export class ExtensionScanner {
     const pkgNlsPath = await ExtensionScanner.getLocalizedExtraMetadataPath(
       'package.nls',
       extensionPath,
-      localization,
+      languageId,
       '.json',
     );
     const extendPath = path.join(extensionPath, 'kaitian.js');
-    const pkgExist = await fs.pathExists(pkgPath);
-    const defaultPkgNlsPathExist = await fs.pathExists(defaultPkgNlsPath);
-    const extendExist = await fs.pathExists(extendPath);
 
-    let pkgCheckResult = pkgExist;
-    const extendCheckResult = extendExist;
+    const [pkgData, pkgNlsData, defaultPkgNlsData, extendExists] = await Promise.all([
+      readJSONIfExists(pkgPath),
+      readJSONIfExists(pkgNlsPath),
+      readJSONIfExists(defaultPkgNlsPath),
+      fs.pathExists(extendPath),
+    ]);
 
-    if (pkgExist) {
-      try {
-        const packageJSON = await fs.readJSON(pkgPath);
-        if (!packageJSON.engines) {
-          pkgCheckResult = false;
-        } else if (!(packageJSON.engines.vscode || packageJSON.engines.kaitian)) {
-          pkgCheckResult = false;
-        }
-      } catch (e) {
-        getDebugLogger().error(e);
+    let pkgCheckResult = pkgData.exists;
+
+    if (pkgData.exists) {
+      if (!pkgData.json.engines) {
+        pkgCheckResult = false;
+      } else if (!(pkgData.json.engines.vscode || pkgData.json.engines.kaitian || pkgData.json.engines.opensumi)) {
         pkgCheckResult = false;
       }
     }
 
-    let pkgNlsJSON: { [key: string]: string } | undefined;
-    if (pkgNlsPath) {
-      pkgNlsJSON = await fs.readJSON(pkgNlsPath);
-    }
+    const pkgNlsJSON = pkgNlsData.exists ? pkgNlsData.json : undefined;
+    const defaultPkgNlsJSON = defaultPkgNlsData.exists ? defaultPkgNlsData.json : undefined;
 
-    let defaultPkgNlsJSON: { [key: string]: string } | undefined;
-    if (defaultPkgNlsPathExist) {
-      defaultPkgNlsJSON = await fs.readJSON(defaultPkgNlsPath);
-    }
-
-    if (!(pkgCheckResult || extendCheckResult)) {
+    if (!(pkgCheckResult || extendExists)) {
       return;
     }
 
     const extensionExtraMetaData = {};
-    let packageJSON = {} as any;
+    const packageJSON = pkgData.exists ? pkgData.json : {};
     try {
-      packageJSON = await fs.readJSON(pkgPath);
       if (extraMetaData) {
+        const tasks = new PromiseTasks<void>();
+
         for (const extraField of Object.keys(extraMetaData)) {
           try {
             const basename = path.basename(extraMetaData[extraField]);
             const suffix = path.extname(extraMetaData[extraField]);
             const prefix = basename.substr(0, basename.length - suffix.length);
 
-            const extraFieldFilePath = await ExtensionScanner.getLocalizedExtraMetadataPath(
-              prefix,
-              extensionPath,
-              localization,
-              suffix,
-            );
+            tasks.add(async () => {
+              const extraFieldFilePath = await ExtensionScanner.getLocalizedExtraMetadataPath(
+                prefix,
+                extensionPath,
+                languageId,
+                suffix,
+              );
 
-            extensionExtraMetaData[extraField] = await fs.readFile(
-              extraFieldFilePath || path.join(extensionPath, extraMetaData[extraField]),
-              'utf-8',
-            );
+              extensionExtraMetaData[extraField] = await fs.readFile(
+                extraFieldFilePath || path.join(extensionPath, extraMetaData[extraField]),
+                'utf-8',
+              );
+            });
           } catch (e) {
             extensionExtraMetaData[extraField] = null;
           }
         }
+
+        await tasks.allSettled();
       }
     } catch (e) {
-      getDebugLogger().error(e);
+      debugLogger.error(e);
       return;
     }
 
     let extendConfig = {};
-    if (await fs.pathExists(extendPath)) {
+    if (extendExists) {
       try {
         // 这里必须clear cache, 不然每次都一样
         delete getNodeRequire().cache[extendPath];
         extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
-        getDebugLogger().error(e);
+        debugLogger.error(e);
       }
     }
 
@@ -195,7 +213,7 @@ export class ExtensionScanner {
     return Array.from(this.availableExtensions.values());
   }
   private async scanDir(dir: string): Promise<void> {
-    getDebugLogger().info('scan directory: ', dir);
+    debugLogger.info('scan directory: ', dir);
     try {
       const extensionDirArr = await fs.readdir(dir);
       await Promise.all(
@@ -205,34 +223,35 @@ export class ExtensionScanner {
         }),
       );
     } catch (e) {
-      getDebugLogger().error(e);
+      debugLogger.error(e);
     }
   }
 
   static async getLocalizedExtraMetadataPath(
     prefix: string,
     extensionPath: string,
-    localization: string,
+    languageId: string,
     suffix: string,
   ): Promise<string | undefined> {
     const lowerCasePrefix = prefix.toLowerCase();
-    const lowerCaseLocalization = localization.toLowerCase();
+    const lowerCaseLanguageId = languageId.toLowerCase();
     const maybeExist = [
-      `${prefix}.${localization}${suffix}`, // {prefix}.zh-CN{suffix}
-      `${lowerCasePrefix}.${localization}${suffix}`,
-      `${prefix}.${lowerCaseLocalization}${suffix}`, // {prefix}.zh-cn{suffix}
-      `${lowerCasePrefix}.${lowerCaseLocalization}${suffix}`,
-      `${prefix}.${localization.split('-')[0]}${suffix}`, // {prefix}.zh{suffix}
-      `${lowerCasePrefix}.${localization.split('-')[0]}${suffix}`,
+      `${prefix}.${languageId}${suffix}`, // {prefix}.zh-CN{suffix}
+      `${lowerCasePrefix}.${languageId}${suffix}`,
+      `${prefix}.${lowerCaseLanguageId}${suffix}`, // {prefix}.zh-cn{suffix}
+      `${lowerCasePrefix}.${lowerCaseLanguageId}${suffix}`,
+      `${prefix}.${languageId.split('-')[0]}${suffix}`, // {prefix}.zh{suffix}
+      `${lowerCasePrefix}.${languageId.split('-')[0]}${suffix}`,
     ];
+
+    const tasks = new PromiseTasks<string | undefined>();
 
     for (const maybe of maybeExist) {
       const filepath = path.join(extensionPath, maybe);
-      if (await fs.pathExists(filepath)) {
-        return filepath;
-      }
+      tasks.addPromise(fs.pathExists(filepath).then((exists) => (exists ? filepath : undefined)));
     }
-    return undefined;
+
+    return await tasks.race();
   }
 
   private isLatestVersion(extension: IExtensionMetaData): boolean {
@@ -262,14 +281,14 @@ export class ExtensionScanner {
 
   public async getExtension(
     extensionPath: string,
-    localization: string,
+    languageId: string,
     extraMetaData?: IExtraMetaData,
   ): Promise<IExtensionMetaData | undefined> {
     if (this.results.has(extensionPath)) {
       return;
     }
 
-    const extension = await ExtensionScanner.getExtension(extensionPath, localization, {
+    const extension = await ExtensionScanner.getExtension(extensionPath, languageId, {
       ...this.extraMetaData,
       ...extraMetaData,
     });

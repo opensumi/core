@@ -117,7 +117,7 @@ export interface IExtensionNodeClientService {
   createProcess(clientId: string, options: ICreateProcessOptions): Promise<void>;
   getExtension(
     extensionPath: string,
-    localization: string,
+    languageId: string,
     extraMetaData?: IExtraMetaData,
   ): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
