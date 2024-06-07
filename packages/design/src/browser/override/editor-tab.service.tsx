@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { ReactNode, useCallback, useMemo } from 'react';
 
 import { Injectable } from '@opensumi/di';
-import { Popover } from '@opensumi/ide-core-browser/lib/components';
+import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { formatLocalize, isMacintosh, uuid } from '@opensumi/ide-core-common';
 import { EditorTabService } from '@opensumi/ide-editor/lib/browser/editor.tab.service';
 
@@ -21,8 +21,15 @@ const EditorTabCloseComponent = (props) => {
   const title = useMemo(() => formatLocalize('editor.closeTab.title', isMacintosh ? '⌘W' : 'Ctrl+W'), []);
 
   return (
-    <Popover delay={1000} id={uid} title={title} onClickAction={handleClick} display={display}>
-      {children}
+    <Popover
+      delay={1000}
+      position={PopoverPosition.bottom}
+      id={uid}
+      title={title}
+      onClickAction={handleClick}
+      display={display}
+    >
+      <span title=''>{children}</span>
     </Popover>
   );
 };
