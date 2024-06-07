@@ -604,20 +604,29 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
 
-  $provideInlineCompletions(
+  private _currentInlineCompletions: IdentifiableInlineCompletions | undefined;
+
+  getCurrentInlineCompletions() {
+    return this._currentInlineCompletions;
+  }
+
+  async $provideInlineCompletions(
     handle: number,
     resource: UriComponents,
     position: Position,
     context: InlineCompletionContext,
     token: CancellationToken,
   ): Promise<IdentifiableInlineCompletions | undefined> {
-    return this.withAdapter<InlineCompletionAdapterBase, IdentifiableInlineCompletions | undefined>(
+    this._currentInlineCompletions = undefined;
+    const completion = await this.withAdapter<InlineCompletionAdapterBase, IdentifiableInlineCompletions | undefined>(
       handle,
       InlineCompletionAdapterBase,
       (adapter) => adapter.provideInlineCompletions(Uri.revive(resource), position, context, token),
       undefined,
       undefined,
     );
+    this._currentInlineCompletions = completion;
+    return completion;
   }
   $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void {
     this.withAdapter(

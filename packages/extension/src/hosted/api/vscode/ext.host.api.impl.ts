@@ -19,6 +19,8 @@ import * as extTypes from '../../../common/vscode/ext-types';
 import * as fileSystemTypes from '../../../common/vscode/file-system';
 import { IExtHostLocalization } from '../../../common/vscode/localization';
 import { ExtHostAppConfig } from '../../ext.process-base';
+import { APIExtender, applyExtenders } from '../common/extender';
+import { createLanguagesAPIExtender } from '../extenders/vscode.languages';
 
 import { ExtHostDebug, createDebugApiFactory } from './debug';
 import { ExtensionDocumentDataManagerImpl } from './doc';
@@ -189,77 +191,79 @@ export function createApiFactory(
   ) as ExtHostLocalization;
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
+  const extenders = [createLanguagesAPIExtender(extHostLanguages, rpcProtocol)] as APIExtender<any>[];
 
-  return (extension: IExtensionDescription) => ({
-    authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
-    commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
-    window: createWindowApiFactory(
-      extension,
-      extHostEditors,
-      extHostMessage,
-      extHostWebview,
-      extHostWebviewView,
-      extHostTreeView,
-      extHostWindowState,
-      extHostDecorations,
-      extHostStatusBar,
-      extHostQuickOpen,
-      extHostOutput,
-      extHostTerminal,
-      extHostWindow,
-      extHostProgress,
-      extHostUrls,
-      extHostTheming,
-      extHostCustomEditor,
-      extHostEditorTabs,
-    ),
-    languages: createLanguagesApiFactory(extHostLanguages, extension),
-    workspace: createWorkspaceApiFactory(
-      extHostWorkspace,
-      extHostPreference,
-      extHostDocs,
-      extHostFileSystem,
-      extHostFileSystemEvent,
-      extHostTasks,
-      extension,
-    ),
-    env: createEnvApiFactory(rpcProtocol, extension, extHostEnv, extHostTerminal),
-    debug: createDebugApiFactory(extHostDebug),
-    version: appConfig.customVSCodeEngineVersion || DEFAULT_VSCODE_ENGINE_VERSION,
-    comments: createCommentsApiFactory(extension, extHostComments),
-    extensions: createExtensionsApiFactory(extensionService),
-    tasks: createTaskApiFactory(extHostTasks, extension),
-    scm: {
-      get inputBox() {
-        return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
+  return (extension: IExtensionDescription) =>
+    applyExtenders(extension, extenders, {
+      authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
+      commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
+      window: createWindowApiFactory(
+        extension,
+        extHostEditors,
+        extHostMessage,
+        extHostWebview,
+        extHostWebviewView,
+        extHostTreeView,
+        extHostWindowState,
+        extHostDecorations,
+        extHostStatusBar,
+        extHostQuickOpen,
+        extHostOutput,
+        extHostTerminal,
+        extHostWindow,
+        extHostProgress,
+        extHostUrls,
+        extHostTheming,
+        extHostCustomEditor,
+        extHostEditorTabs,
+      ),
+      languages: createLanguagesApiFactory(extHostLanguages, extension),
+      workspace: createWorkspaceApiFactory(
+        extHostWorkspace,
+        extHostPreference,
+        extHostDocs,
+        extHostFileSystem,
+        extHostFileSystemEvent,
+        extHostTasks,
+        extension,
+      ),
+      env: createEnvApiFactory(rpcProtocol, extension, extHostEnv, extHostTerminal),
+      debug: createDebugApiFactory(extHostDebug),
+      version: appConfig.customVSCodeEngineVersion || DEFAULT_VSCODE_ENGINE_VERSION,
+      comments: createCommentsApiFactory(extension, extHostComments),
+      extensions: createExtensionsApiFactory(extensionService),
+      tasks: createTaskApiFactory(extHostTasks, extension),
+      scm: {
+        get inputBox() {
+          return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
+        },
+        createSourceControl(id: string, label: string, rootUri?: extTypes.Uri) {
+          return extHostSCM.createSourceControl(extension, id, label, rootUri);
+        },
+        getSourceControl(extensionId: string, id: string) {
+          return extHostSCM.getSourceControl(extensionId, id);
+        },
       },
-      createSourceControl(id: string, label: string, rootUri?: extTypes.Uri) {
-        return extHostSCM.createSourceControl(extension, id, label, rootUri);
+      tests: {
+        createTestController(controllerId: string, label: string, refreshHandler?: () => Thenable<void> | void) {
+          return extHostTests.createTestController(controllerId, label, refreshHandler);
+        },
       },
-      getSourceControl(extensionId: string, id: string) {
-        return extHostSCM.getSourceControl(extensionId, id);
-      },
-    },
-    tests: {
-      createTestController(controllerId: string, label: string, refreshHandler?: () => Thenable<void> | void) {
-        return extHostTests.createTestController(controllerId, label, refreshHandler);
-      },
-    },
-    l10n: createLocalizationApiFactory(extHostLocalization, extension),
-    // 类型定义
-    ...extTypes,
-    // https://github.com/microsoft/vscode/blob/0ba16b83267cbab5811e12e0317fb47fd774324e/src/vs/workbench/api/common/extHost.api.impl.ts#L1288
-    InlineCompletionItem: extTypes.InlineSuggestion,
-    InlineCompletionList: extTypes.InlineSuggestionList,
-    ...fileSystemTypes,
-    // 参考 VS Code，目前到 1.44 版本为临时兼容，最新版(1.50+)已去除
-    Task2: extTypes.Task,
-    CancellationTokenSource,
-    EventEmitter: Emitter,
-    Event,
-    ViewColumn,
-    OverviewRulerLane,
-    TextEditorCursorStyle,
-    TextEditorSelectionChangeKind,
-  });
+      l10n: createLocalizationApiFactory(extHostLocalization, extension),
+      // 类型定义
+      ...extTypes,
+      // https://github.com/microsoft/vscode/blob/0ba16b83267cbab5811e12e0317fb47fd774324e/src/vs/workbench/api/common/extHost.api.impl.ts#L1288
+      InlineCompletionItem: extTypes.InlineSuggestion,
+      InlineCompletionList: extTypes.InlineSuggestionList,
+      ...fileSystemTypes,
+      // 参考 VS Code，目前到 1.44 版本为临时兼容，最新版(1.50+)已去除
+      Task2: extTypes.Task,
+      CancellationTokenSource,
+      EventEmitter: Emitter,
+      Event,
+      ViewColumn,
+      OverviewRulerLane,
+      TextEditorCursorStyle,
+      TextEditorSelectionChangeKind,
+    });
 }

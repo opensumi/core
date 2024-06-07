@@ -12,6 +12,8 @@ import {
   TextEditorSelectionChangeKind,
   ViewColumn,
 } from '../../../common/vscode';
+import { APIExtender, applyExtenders } from '../common/extender';
+import { createLanguagesAPIExtender } from '../extenders/vscode.languages';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../vscode/doc';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
@@ -171,67 +173,70 @@ export function createAPIFactory(
   const reporter = new DefaultReporter();
   const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
 
-  return (extension: IExtensionDescription) => ({
-    ...workerExtTypes,
-    EventEmitter: Emitter,
-    CancellationTokenSource,
-    Event,
-    ViewColumn,
-    OverviewRulerLane,
-    TextEditorCursorStyle,
-    TextEditorSelectionChangeKind,
-    version: extHostEnv.getEnvValues()?.customVSCodeEngineVersion || DEFAULT_VSCODE_ENGINE_VERSION,
-    // VS Code 纯前端插件 API
-    // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
-    env: createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),
-    languages: createLanguagesApiFactory(extHostLanguages, extension),
-    extensions: createExtensionsApiFactory(extensionService),
-    workspace: createWorkspaceApiFactory(
-      extHostWorkspace,
-      extHostPreference,
-      extHostDocs,
-      extHostFileSystem,
-      extHostFileSystemEvent,
-      extHostTasks,
-      extension,
-    ),
-    scm: {
-      get inputBox() {
-        return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
+  const extenders = [createLanguagesAPIExtender(extHostLanguages, rpcProtocol)] as APIExtender<any>[];
+
+  return (extension: IExtensionDescription) =>
+    applyExtenders(extension, extenders, {
+      ...workerExtTypes,
+      EventEmitter: Emitter,
+      CancellationTokenSource,
+      Event,
+      ViewColumn,
+      OverviewRulerLane,
+      TextEditorCursorStyle,
+      TextEditorSelectionChangeKind,
+      version: extHostEnv.getEnvValues()?.customVSCodeEngineVersion || DEFAULT_VSCODE_ENGINE_VERSION,
+      // VS Code 纯前端插件 API
+      // ENV 用处貌似比较少, 现有的实现依赖 node 模块，后面需要再重新实现
+      env: createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),
+      languages: createLanguagesApiFactory(extHostLanguages, extension),
+      extensions: createExtensionsApiFactory(extensionService),
+      workspace: createWorkspaceApiFactory(
+        extHostWorkspace,
+        extHostPreference,
+        extHostDocs,
+        extHostFileSystem,
+        extHostFileSystemEvent,
+        extHostTasks,
+        extension,
+      ),
+      scm: {
+        get inputBox() {
+          return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
+        },
+        createSourceControl(id: string, label: string, rootUri: vscode.Uri) {
+          return extHostSCM.createSourceControl(extension, id, label, rootUri);
+        },
+        getSourceControl(extensionId: string, id: string) {
+          return extHostSCM.getSourceControl(extensionId, id);
+        },
       },
-      createSourceControl(id: string, label: string, rootUri: vscode.Uri) {
-        return extHostSCM.createSourceControl(extension, id, label, rootUri);
-      },
-      getSourceControl(extensionId: string, id: string) {
-        return extHostSCM.getSourceControl(extensionId, id);
-      },
-    },
-    l10n: createLocalizationApiFactory(extHostLocalization, extension),
-    window: createWindowApiFactory(
-      extension,
-      extHostEditors,
-      extHostMessage,
-      extHostWebview,
-      extHostWebviewView,
-      extHostTreeView,
-      extHostWindowState,
-      extHostDecorations,
-      extHostStatusBar,
-      extHostQuickOpen,
-      extHostOutput,
-      extHostTerminal,
-      extHostWindow,
-      extHostProgress,
-      extHostUrls,
-      extHostTheming,
-      extHostCustomEditor,
-      extHostEditorTabs,
-    ),
-    InlineCompletionItem: workerExtTypes.InlineSuggestion,
-    InlineCompletionList: workerExtTypes.InlineSuggestionList,
-    authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
-    comments: createCommentsApiFactory(extension, extHostComments),
-    // Sumi 扩展 API
-    ...sumiAPI(extension),
-  });
+      l10n: createLocalizationApiFactory(extHostLocalization, extension),
+      window: createWindowApiFactory(
+        extension,
+        extHostEditors,
+        extHostMessage,
+        extHostWebview,
+        extHostWebviewView,
+        extHostTreeView,
+        extHostWindowState,
+        extHostDecorations,
+        extHostStatusBar,
+        extHostQuickOpen,
+        extHostOutput,
+        extHostTerminal,
+        extHostWindow,
+        extHostProgress,
+        extHostUrls,
+        extHostTheming,
+        extHostCustomEditor,
+        extHostEditorTabs,
+      ),
+      InlineCompletionItem: workerExtTypes.InlineSuggestion,
+      InlineCompletionList: workerExtTypes.InlineSuggestionList,
+      authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
+      comments: createCommentsApiFactory(extension, extHostComments),
+      // Sumi 扩展 API
+      ...sumiAPI(extension),
+    });
 }
