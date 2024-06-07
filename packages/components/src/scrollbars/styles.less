@@ -1,9 +1,18 @@
 @import '../style/variable.less';
 
+.design_left_slot,
+.design_right_slot {
+  .@{prefix}-scrollbar {
+    .scrollbar-thumb-vertical,
+    .scrollbar-thumb-horizontal {
+      border-radius: 5px;
+    }
+  }
+}
+
 .@{prefix}-scrollbar {
   .scrollbar-thumb-vertical,
   .scrollbar-thumb-horizontal {
-    border-radius: 5px;
     opacity: 0;
     transition: opacity 0.5s ease;
     background: var(--scrollbarSlider-background);
