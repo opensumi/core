@@ -25,9 +25,11 @@ import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { AI_DIFF_WIDGET_ID } from '../../../common';
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
+import { AICompletionsService } from '../../contrib/inline-completions/service/ai-completions.service';
 import { ERunStrategy } from '../../types';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 
@@ -35,6 +37,7 @@ import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 import { AIInlineContentWidget } from './inline-content-widget';
+import { InlineHintLineWidget } from './inline-hint-line-widget';
 
 @Injectable()
 export class InlineChatHandler extends Disposable {
@@ -65,6 +68,9 @@ export class InlineChatHandler extends Disposable {
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
 
+  @Autowired(AICompletionsService)
+  private inlineCompletionsService: AICompletionsService;
+
   private logger: ILogServiceClient;
 
   private aiDiffWidget: InlineDiffWidget;
@@ -77,11 +83,6 @@ export class InlineChatHandler extends Disposable {
     super();
 
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
-  }
-
-  contribute(editor: IEditor): IDisposable {
-    this.registerInlineChatFeature(editor);
-    return this;
   }
 
   private cancelToken() {
@@ -103,6 +104,69 @@ export class InlineChatHandler extends Disposable {
   }
 
   protected inlineChatInUsing = false;
+
+  public registerHintLineFeature(editor: IEditor): IDisposable {
+    const { monacoEditor } = editor;
+    const hintDisposable = new Disposable();
+
+    const showHint = (position: monaco.Position) => {
+      const model = monacoEditor.getModel();
+      if (!model) {
+        return;
+      }
+
+      if (this.inlineCompletionsService.isVisibleCompletion) {
+        return;
+      }
+
+      const content = model.getLineContent(position.lineNumber);
+      const isEmpty = content?.trim() === empty;
+      const isEmptySelection = monacoEditor.getSelection()?.isEmpty();
+
+      if (isEmpty && isEmptySelection) {
+        const inlineHintLineWidget = this.injector.get(InlineHintLineWidget, [monacoEditor]);
+        inlineHintLineWidget.show({ position });
+
+        hintDisposable.addDispose(inlineHintLineWidget);
+      }
+    };
+
+    this.disposables.push(
+      monacoEditor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
+        hintDisposable.dispose();
+        showHint(e.position);
+      }),
+    );
+
+    this.disposables.push(
+      monacoEditor.onDidFocusEditorWidget(() => {
+        const currentPosition = monacoEditor.getPosition();
+
+        if (currentPosition) {
+          hintDisposable.dispose();
+          showHint(currentPosition);
+        }
+      }),
+    );
+
+    this.disposables.push(
+      monacoEditor.onDidBlurEditorWidget(() => {
+        hintDisposable.dispose();
+      }),
+    );
+
+    this.disposables.push(
+      this.inlineCompletionsService.onVisibleCompletion((v) => {
+        if (v) {
+          hintDisposable.dispose();
+        }
+      }),
+    );
+
+    this.disposables.push(hintDisposable);
+
+    return this;
+  }
 
   public registerInlineChatFeature(editor: IEditor): IDisposable {
     const { monacoEditor } = editor;

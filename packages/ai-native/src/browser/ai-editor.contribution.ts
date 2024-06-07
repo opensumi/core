@@ -65,6 +65,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.addDispose(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
         this.addDispose(this.inlineChatHandler.registerInlineChatFeature(editor));
+        this.addDispose(this.inlineChatHandler.registerHintLineFeature(editor));
       }),
     );
 

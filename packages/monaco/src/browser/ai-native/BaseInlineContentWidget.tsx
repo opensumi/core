@@ -8,6 +8,7 @@ import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
 
 import * as monaco from '../../common';
 import { editor } from '../monaco-exports';
+import { ContentWidgetPositionPreference } from '../monaco-exports/editor';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '../monaco-api/types';
 
@@ -28,6 +29,7 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
 
   allowEditorOverflow = false;
   suppressMouseDown = false;
+  positionPreference: ContentWidgetPositionPreference[] = [ContentWidgetPositionPreference.BELOW];
 
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
@@ -121,7 +123,7 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
     if (position) {
       return {
         position,
-        preference: [editor.ContentWidgetPositionPreference.BELOW],
+        preference: this.positionPreference,
       };
     }
 
