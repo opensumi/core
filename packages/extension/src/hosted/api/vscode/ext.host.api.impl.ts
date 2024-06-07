@@ -191,10 +191,10 @@ export function createApiFactory(
   ) as ExtHostLocalization;
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
-  const extenders = [createLanguagesAPIExtender(extHostLanguages, rpcProtocol)] as APIExtender<any>[];
+  const extenders = [createLanguagesAPIExtender(extHostLanguages)] as APIExtender<any>[];
 
   return (extension: IExtensionDescription) =>
-    applyExtenders(extension, extenders, {
+    applyExtenders(extenders, {
       authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
       commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
       window: createWindowApiFactory(

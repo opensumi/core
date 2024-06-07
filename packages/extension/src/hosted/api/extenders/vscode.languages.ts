@@ -1,10 +1,7 @@
-import { IRPCProtocol } from '@opensumi/ide-connection';
-
-import { IExtensionDescription } from '../../../common/vscode';
 import { APIExtender } from '../common/extender';
 import { ExtHostLanguages } from '../vscode/ext.host.language';
 
-function createLanguageAPIFactory(extension: IExtensionDescription, extHostLanguages: ExtHostLanguages): any {
+function createLanguageAPIFactory(extHostLanguages: ExtHostLanguages): any {
   return {
     getCurrentInlineCompletions() {
       return extHostLanguages.getCurrentInlineCompletions();
@@ -12,21 +9,19 @@ function createLanguageAPIFactory(extension: IExtensionDescription, extHostLangu
   };
 }
 
-export function createLanguagesAPIExtender(
-  extHostLanguages: ExtHostLanguages,
-  rpcProtocol: IRPCProtocol,
-): APIExtender<any> {
+export function createLanguagesAPIExtender(extHostLanguages: ExtHostLanguages): APIExtender<any> {
+  const _languages = createLanguageAPIFactory(extHostLanguages);
   return {
-    extend(extension: IExtensionDescription, data: any) {
+    extend(data: any) {
       let languages: any;
 
       if (data && data.languages) {
         languages = {
           ...data.languages,
-          ...createLanguageAPIFactory(extension, extHostLanguages),
+          ..._languages,
         };
       } else {
-        languages = createLanguageAPIFactory(extension, extHostLanguages);
+        languages = _languages;
       }
 
       return {

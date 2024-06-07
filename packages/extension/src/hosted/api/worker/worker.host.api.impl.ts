@@ -173,10 +173,10 @@ export function createAPIFactory(
   const reporter = new DefaultReporter();
   const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
 
-  const extenders = [createLanguagesAPIExtender(extHostLanguages, rpcProtocol)] as APIExtender<any>[];
+  const extenders = [createLanguagesAPIExtender(extHostLanguages)] as APIExtender<any>[];
 
   return (extension: IExtensionDescription) =>
-    applyExtenders(extension, extenders, {
+    applyExtenders(extenders, {
       ...workerExtTypes,
       EventEmitter: Emitter,
       CancellationTokenSource,
