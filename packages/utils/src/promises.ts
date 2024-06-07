@@ -50,4 +50,16 @@ export class PromiseTasks<T> {
   async race() {
     return Promise.race(this.promisify());
   }
+
+  /**
+   * This returned promise fulfills when any of the input's promises fulfills, with this first fulfillment value.
+   * It return `undefined` when all of the input's promises reject (including when an empty iterable is passed).
+   */
+  async any() {
+    try {
+      return await Promise.any(this.promisify());
+    } catch (error) {
+      return undefined;
+    }
+  }
 }

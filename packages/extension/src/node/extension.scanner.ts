@@ -248,10 +248,16 @@ export class ExtensionScanner {
 
     for (const maybe of maybeExist) {
       const filepath = path.join(extensionPath, maybe);
-      tasks.addPromise(fs.pathExists(filepath).then((exists) => (exists ? filepath : undefined)));
+      tasks.add(async () => {
+        const exists = await fs.pathExists(filepath);
+        if (exists) {
+          return filepath;
+        }
+        throw new Error('ignore');
+      });
     }
 
-    return await tasks.race();
+    return await tasks.any();
   }
 
   private isLatestVersion(extension: IExtensionMetaData): boolean {
