@@ -270,11 +270,13 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  access(uri: UriComponents, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
-    return fse
-      .access(FileUri.fsPath(URI.from(uri)), mode)
-      .then(() => true)
-      .catch(() => false);
+  async access(uri: UriComponents, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
+    try {
+      await fse.access(FileUri.fsPath(URI.from(uri)), mode);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async delete(uri: UriComponents, options: { recursive?: boolean; moveToTrash?: boolean }): Promise<void> {
@@ -286,25 +288,14 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     if (!isUndefined(options.recursive)) {
       this.logger.warn('DiskFileSystemProvider not support options.recursive!');
     }
-    // Windows 10.
-    // Deleting an empty directory throws `EPERM error` instead of `unlinkDir`.
-    // https://github.com/paulmillr/chokidar/issues/566
-    // Force moveToTrash
-    const moveToTrash = !!options.moveToTrash;
-    if (moveToTrash) {
+
+    if (options.moveToTrash) {
       return trash([FileUri.fsPath(new URI(_uri))]);
     } else {
       const filePath = FileUri.fsPath(new URI(_uri));
       const outputRootPath = paths.join(os.tmpdir(), uuid());
       try {
-        await new Promise<void>((resolve, reject) => {
-          fse.rename(filePath, outputRootPath, async (error) => {
-            if (error) {
-              return reject(error);
-            }
-            resolve();
-          });
-        });
+        await fse.rename(filePath, outputRootPath);
         // There is no reason for the promise returned by this function not to resolve
         // as soon as the move is complete.  Clearing up the temporary files can be
         // done in the background.
@@ -329,12 +320,15 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     if (!sourceStat) {
       throw FileSystemError.FileNotFound(sourceUri.path);
     }
-    if (targetStat && !overwrite) {
-      throw FileSystemError.FileExists(targetUri.path, "Did you set the 'overwrite' flag to true?");
+
+    if (targetStat) {
+      if (!overwrite) {
+        throw FileSystemError.FileExists(targetUri.path, "Did you set the 'overwrite' flag to true?");
+      }
+
+      await this.validateMoveCopy(_sourceUri, _targetUri);
     }
-    if (targetStat && targetStat.uri === sourceStat.uri) {
-      throw FileSystemError.FileExists(targetUri.path, 'Cannot perform copy, source and destination are the same.');
-    }
+
     await fse.copy(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), {
       overwrite,
     });
@@ -343,6 +337,20 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       return newStat;
     }
     throw FileSystemError.FileNotFound(targetUri.path, `Error occurred while copying ${sourceUri} to ${targetUri}.`);
+  }
+
+  private async validateMoveCopy(sourceUri: Uri, targetUri: Uri) {
+    if (sourceUri.toString() === targetUri.toString()) {
+      throw FileSystemError.FileExists(targetUri.path, 'Cannot perform copy, source and destination are the same.');
+    }
+
+    if (await this.access(targetUri)) {
+      // Special case: if the target is a parent of the source, we cannot delete
+      // it as it would delete the source as well. In this case we have to throw
+      if (FileUri.isEqualOrParent(targetUri, sourceUri)) {
+        throw FileSystemError.FileExists(targetUri.path, 'Cannot perform copy, source is a parent of the destination.');
+      }
+    }
   }
 
   async getCurrentUserHome(): Promise<FileStat | undefined> {
@@ -553,6 +561,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       await this.delete(sourceUri, { moveToTrash: false });
       return newStat;
     } else {
+      await this.validateMoveCopy(_sourceUri, _targetUri);
+
       await fse.move(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { overwrite });
       const stat = await this.doGetStat(_targetUri, 1, {
         throwError: true,
