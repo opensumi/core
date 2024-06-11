@@ -64,13 +64,17 @@ import {
 import { AIEditorContribution } from './ai-editor.contribution';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
+import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
+import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
+import { RenameHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import {
   AINativeCoreContribution,
+  IAIMiddleware,
   IChatFeatureRegistry,
   IChatRenderRegistry,
   IRenameCandidatesProviderRegistry,
@@ -156,6 +160,15 @@ export class AINativeBrowserContribution
   @Autowired(IAIInlineChatService)
   private readonly aiInlineChatService: AIInlineChatService;
 
+  @Autowired(RenameHandler)
+  private readonly renameHandler: RenameHandler;
+
+  @Autowired(InlineCompletionHandler)
+  private readonly inlineCompletionHandler: InlineCompletionHandler;
+
+  @Autowired(CodeActionHandler)
+  private readonly codeActionHandler: CodeActionHandler;
+
   constructor() {
     this.registerFeature();
   }
@@ -187,9 +200,21 @@ export class AINativeBrowserContribution
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, false);
       }
     });
+
+    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+      this.renameHandler.load();
+    }
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+      this.inlineCompletionHandler.load();
+    }
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+      this.codeActionHandler.load();
+    }
   }
 
   private registerFeature() {
+    const middlewares: IAIMiddleware[] = [];
+
     this.contributions.getContributions().forEach((contribution) => {
       if (contribution.registerInlineChatFeature) {
         contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
@@ -209,7 +234,12 @@ export class AINativeBrowserContribution
       if (contribution.registerTerminalProvider) {
         contribution.registerTerminalProvider(this.terminalProviderRegistry);
       }
+      if (contribution.middleware) {
+        middlewares.push(contribution.middleware);
+      }
     });
+
+    this.inlineCompletionHandler.updateConfig(middlewares);
   }
 
   registerSetting(registry: ISettingRegistry) {

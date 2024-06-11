@@ -1,17 +1,17 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, IDisposable, PreferenceService } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 
 import { LanguageParserService } from '../../languages/service';
 import { ICodeBlockInfo } from '../../languages/tree-sitter/language-facts/base';
+import { IAIMonacoContribHandler } from '../base';
 
 import { CodeActionService } from './code-action.service';
 
 @Injectable()
-export class CodeActionHandler extends Disposable {
+export class CodeActionHandler extends IAIMonacoContribHandler {
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
 
@@ -21,126 +21,114 @@ export class CodeActionHandler extends Disposable {
   @Autowired(LanguageParserService)
   private readonly languageParserService: LanguageParserService;
 
-  public registerCodeActionFeature(languageId: string, editor: IEditor): IDisposable {
-    const disposable = new Disposable();
+  inlineChatActionEnabled: boolean;
 
-    let prefInlineChatActionEnabled = this.preferenceService.getValid(
+  constructor() {
+    super();
+
+    this.inlineChatActionEnabled = this.preferenceService.getValid(
       AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
       true,
     );
 
-    if (!prefInlineChatActionEnabled) {
-      return disposable;
-    }
-
-    const { monacoEditor } = editor;
-    const { languageParserService, codeActionService } = this;
-
-    let codeActionDispose: IDisposable | undefined;
-
-    disposable.addDispose(
+    this.addDispose(
       this.preferenceService.onSpecificPreferenceChange(
         AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
         ({ newValue }) => {
-          prefInlineChatActionEnabled = newValue;
+          this.inlineChatActionEnabled = newValue;
           if (newValue) {
-            register();
+            this.load();
           } else {
-            if (codeActionDispose) {
-              codeActionDispose.dispose();
-              codeActionDispose = undefined;
-            }
+            this.unload();
           }
         },
       ),
     );
+  }
 
-    register();
+  doContribute() {
+    return languageFeaturesService.codeActionProvider.register('*', {
+      provideCodeActions: async (model, range) => {
+        if (!this.inlineChatActionEnabled) {
+          return;
+        }
 
-    return disposable;
+        const needStop = this.intercept(model.uri);
+        if (needStop) {
+          return;
+        }
 
-    function register() {
-      if (codeActionDispose) {
-        codeActionDispose.dispose();
-        codeActionDispose = undefined;
-      }
+        const { languageParserService, codeActionService } = this;
+        const languageId = model.getLanguageId();
+        const parser = languageParserService.createParser(languageId);
+        if (!parser) {
+          return;
+        }
+        const actions = codeActionService.getCodeActions();
+        if (!actions || actions.length === 0) {
+          return;
+        }
 
-      codeActionDispose = languageFeaturesService.codeActionProvider.register(languageId, {
-        provideCodeActions: async (model) => {
-          if (!prefInlineChatActionEnabled) {
-            return;
-          }
+        const startPosition = range.getStartPosition();
+        if (!startPosition) {
+          return;
+        }
 
-          const parser = languageParserService.createParser(languageId);
-          if (!parser) {
-            return;
-          }
-          const actions = codeActionService.getCodeActions();
-          if (!actions || actions.length === 0) {
-            return;
-          }
+        function constructCodeActions(info: ICodeBlockInfo) {
+          return {
+            actions: actions.map((v) => {
+              const command = {} as monaco.Command;
+              if (v.command) {
+                command.id = v.command.id;
+                command.arguments = [info.range, ...v.command.arguments!];
+              }
 
-          const cursorPosition = monacoEditor.getPosition();
-          if (!cursorPosition) {
-            return;
-          }
+              let title = v.title;
 
-          function constructCodeActions(info: ICodeBlockInfo) {
-            return {
-              actions: actions.map((v) => {
-                const command = {} as monaco.Command;
-                if (v.command) {
-                  command.id = v.command.id;
-                  command.arguments = [info.range, ...v.command.arguments!];
+              switch (info.infoCategory) {
+                case 'function': {
+                  title = title + ` for Function: ${info.name}`;
                 }
+              }
 
-                let title = v.title;
+              return {
+                ...v,
+                title,
+                ranges: [info.range],
+                command,
+              };
+            }) as monaco.CodeAction[],
+            dispose() {},
+          };
+        }
 
-                switch (info.infoCategory) {
-                  case 'function': {
-                    title = title + ` for Function: ${info.name}`;
-                  }
-                }
+        const info = await parser.provideCodeBlockInfo(model, startPosition);
+        if (info) {
+          return constructCodeActions(info);
+        }
 
-                return {
-                  ...v,
-                  title,
-                  ranges: [info.range],
-                  command,
-                };
-              }) as monaco.CodeAction[],
-              dispose() {},
-            };
-          }
+        // check current line is empty
+        const currentLineLength = model.getLineLength(startPosition.lineNumber);
+        if (currentLineLength !== 0) {
+          return;
+        }
 
-          const info = await parser.provideCodeBlockInfo(model, cursorPosition);
-          if (info) {
-            return constructCodeActions(info);
-          }
-
-          // check current line is empty
-          const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
-          if (currentLineLength !== 0) {
-            return;
-          }
-
+        if (this.editor) {
           // 获取视窗范围内的代码块
-          const ranges = monacoEditor.getVisibleRanges();
+          const ranges = this.editor.monacoEditor.getVisibleRanges();
           if (ranges.length === 0) {
             return;
           }
 
           // 查找从当前行至视窗最后一行的代码块中是否包含函数
-          const newRange = new monaco.Range(cursorPosition.lineNumber, 0, ranges[0].endLineNumber + 1, 0);
+          const newRange = new monaco.Range(startPosition.lineNumber, 0, ranges[0].endLineNumber + 1, 0);
 
           const rangeInfo = await parser.provideCodeBlockInfoInRange(model, newRange);
           if (rangeInfo) {
             return constructCodeActions(rangeInfo);
           }
-        },
-      });
-
-      disposable.addDispose(codeActionDispose);
-    }
+        }
+      },
+    });
   }
 }
