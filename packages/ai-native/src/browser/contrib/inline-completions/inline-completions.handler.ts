@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, IDisposable } from '@opensumi/ide-core-browser';
-import { IEventBus } from '@opensumi/ide-core-common';
+import { Emitter, IEventBus } from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
@@ -22,6 +22,9 @@ export class InlineCompletionHandler extends Disposable {
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
+
+  private _onInlineCompletionEmitter = new Emitter<InlineCompletions>();
+  public onInlineCompletion = this._onInlineCompletionEmitter.event;
 
   public registerInlineCompletionFeature(editor: IEditor): IDisposable {
     const { monacoEditor } = editor;

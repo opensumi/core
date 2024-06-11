@@ -4,6 +4,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   DisposableCollection,
+  DisposableStore,
   Emitter,
   IDisposable,
   IMarkerData,
@@ -87,6 +88,7 @@ const { extname } = path;
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly proxy: IExtHostLanguages;
+  private readonly disposableStore = new DisposableStore();
   private readonly disposables = new Map<number, monaco.IDisposable>();
 
   @Autowired(MarkerManager)
@@ -133,6 +135,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
+
+    this.disposableStore.add(
+      this.inlineCompletionHandler.onInlineCompletion((completions) => {
+        this.setNativeInlineCompletions(completions);
+      }),
+    );
   }
 
   public dispose() {
@@ -140,6 +148,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       disposable.dispose();
     });
     this.disposables.clear();
+    this.disposableStore.dispose();
   }
 
   $unregister(handle) {
@@ -1638,6 +1647,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   // #endregion LanguageStatus
 
   // #region InlineCompletions
+  async setNativeInlineCompletions(completions: monaco.InlineCompletions) {
+    this.proxy.$setNativeInlineCompletions(completions);
+  }
   async $getNativeInlineCompletions() {
     return this.inlineCompletionHandler.getCompletionResult();
   }

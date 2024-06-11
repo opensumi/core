@@ -24,6 +24,7 @@ import {
   IMainThreadWorkspace,
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
+import { IBrowserMainThreadAPI } from '../../types';
 
 import { MainThreadProgress } from './main.thread.api.progress';
 import { MainThreadWebview, MainThreadWebviewView } from './main.thread.api.webview';
@@ -53,7 +54,7 @@ import { MainThreadTheming } from './main.thread.theming';
 import { MainThreadUrls } from './main.thread.urls';
 import { MainThreadWorkspace } from './main.thread.workspace';
 
-export function initSharedAPIProxy(rpcProtocol: IRPCProtocol, injector: Injector) {
+export function initSharedAPIProxy(rpcProtocol: IRPCProtocol, injector: Injector): IBrowserMainThreadAPI {
   const MainThreadLanguagesAPI = injector.get(MainThreadLanguages, [rpcProtocol]);
   rpcProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
 
@@ -150,6 +151,7 @@ export function initSharedAPIProxy(rpcProtocol: IRPCProtocol, injector: Injector
     setup: async () => {
       await MainThreadWebviewAPI.init();
     },
+    languages: MainThreadLanguagesAPI,
     dispose: () => {
       MainThreadLanguagesAPI.dispose();
       MainThreadCommandsAPI.dispose();

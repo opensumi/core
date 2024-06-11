@@ -9,6 +9,9 @@ function createLanguageAPIFactory(extHostLanguages: ExtHostLanguages): any {
     getNativeInlineCompletionsAsync() {
       return extHostLanguages.getNativeInlineCompletionsAsync();
     },
+    getNativeInlineCompletions() {
+      return extHostLanguages.getNativeInlineCompletions();
+    },
   };
 }
 
