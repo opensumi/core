@@ -75,13 +75,13 @@ export class CompletionRequestTask {
     this.isCancelFlag = false;
 
     this.isEnablePromptEngineering = this.preferenceService.getValid(
-      AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+      AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
       this.isEnablePromptEngineering,
     );
 
     this._disposables.add(
       this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+        AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
         ({ newValue }) => {
           this.isEnablePromptEngineering = newValue;
         },
@@ -312,7 +312,7 @@ class ReqStack {
   }
 }
 
-@Injectable({ multiple: false })
+@Injectable()
 export class AIInlineCompletionsProvider extends WithEventBus {
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -320,11 +320,37 @@ export class AIInlineCompletionsProvider extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   private aiNativeContextKey: AINativeContextKey;
 
+  /**
+   * 该补全是否是手动触发
+   */
   isManual: boolean;
+
   isDelEvent: boolean;
   reqStack: ReqStack;
+  inlineComletionsDebounceTime: number;
+
+  constructor() {
+    super();
+
+    this.inlineComletionsDebounceTime = this.preferenceService.getValid(
+      AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+      150,
+    );
+
+    this.addDispose(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+        ({ newValue }) => {
+          this.inlineComletionsDebounceTime = newValue;
+        },
+      ),
+    );
+  }
 
   public registerEditor(editor: IEditor): void {
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(editor.monacoEditor as any)._contextKeyService]);
@@ -360,8 +386,9 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     token: monaco.CancellationToken,
   ) {
     this.aiNativeContextKey.inlineCompletionIsTrigger.set(true);
-    // bugfix:修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次
-    if (context.triggerKind === 0) {
+
+    // bugfix: 修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次
+    if (context.triggerKind === monaco.InlineCompletionTriggerKind.Automatic) {
       if (
         inlineCompletionCache.column === position.column &&
         inlineCompletionCache.line === position.lineNumber &&
@@ -383,7 +410,7 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     }
 
     // 重置防止不触发自动补全事件
-    this.udateIsManualVal(false);
+    this.updateIsManual(false);
 
     // 如果用户已取消
     if (token?.isCancellationRequested) {
@@ -396,9 +423,9 @@ export class AIInlineCompletionsProvider extends WithEventBus {
 
     this.reqStack.addReq(requestImp);
 
-    // 如果是自动补全等待300ms
+    // 如果是自动补全需要 debounce
     if (!_isManual) {
-      await sleep(300);
+      await sleep(this.inlineComletionsDebounceTime);
     }
 
     const list = await this.reqStack.runReq();
@@ -406,21 +433,15 @@ export class AIInlineCompletionsProvider extends WithEventBus {
       return undefined;
     }
 
-    if (position !== undefined) {
-      inlineCompletionCache.column = position.column;
-      inlineCompletionCache.line = position.lineNumber;
-    }
-
+    inlineCompletionCache.column = position.column;
+    inlineCompletionCache.line = position.lineNumber;
     inlineCompletionCache.last = {
-      items: list || [],
+      items: list,
     };
     return inlineCompletionCache.last;
   }
 
-  /**
-   * 更新isManual的值，判断是否是主动补全
-   */
-  udateIsManualVal(val: boolean) {
+  updateIsManual(val: boolean) {
     this.isManual = val;
   }
 }

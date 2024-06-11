@@ -125,7 +125,7 @@ export class InterfaceNavigationDecorationsContribution implements IEditorFeatur
   constructor(@Optional() private readonly editor: IEditor) {}
 
   private getInterfaceQuickJumpEnabled() {
-    return this.preferenceService.getValid(AINativeSettingSectionsId.INTERFACE_QUICK_NAVIGATION_ENABLED, true);
+    return this.preferenceService.getValid(AINativeSettingSectionsId.InterfaceQuickNavigationEnabled, true);
   }
 
   private async parseJavaInterfaces(rootNode: Parser.SyntaxNode) {

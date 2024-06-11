@@ -27,13 +27,13 @@ export class CodeActionHandler extends IAIMonacoContribHandler {
     super();
 
     this.inlineChatActionEnabled = this.preferenceService.getValid(
-      AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+      AINativeSettingSectionsId.InlineChatCodeActionEnabled,
       true,
     );
 
     this.addDispose(
       this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+        AINativeSettingSectionsId.InlineChatCodeActionEnabled,
         ({ newValue }) => {
           this.inlineChatActionEnabled = newValue;
           if (newValue) {

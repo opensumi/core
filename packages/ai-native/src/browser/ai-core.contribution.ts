@@ -192,7 +192,7 @@ export class AINativeBrowserContribution
 
   onDidStart() {
     runWhenIdle(() => {
-      const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.CHAT_VISIBLE_TYPE);
+      const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, true);
@@ -253,7 +253,7 @@ export class AINativeBrowserContribution
       title: localize('preference.ai.native.chat.title'),
       preferences: [
         {
-          id: AINativeSettingSectionsId.CHAT_VISIBLE_TYPE,
+          id: AINativeSettingSectionsId.ChatVisibleType,
           localized: 'preference.ai.native.chat.visible.type',
         },
       ],
@@ -263,7 +263,7 @@ export class AINativeBrowserContribution
       title: localize('preference.ai.native.interface.quick.title'),
       preferences: [
         {
-          id: AINativeSettingSectionsId.INTERFACE_QUICK_NAVIGATION_ENABLED,
+          id: AINativeSettingSectionsId.InterfaceQuickNavigationEnabled,
           localized: 'preference.ai.native.interface.quick.navigation',
         },
       ],
@@ -274,7 +274,11 @@ export class AINativeBrowserContribution
         title: localize('preference.ai.native.inlineCompletions.title'),
         preferences: [
           {
-            id: AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+            id: AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+            localized: 'preference.ai.native.inlineCompletions.debounceTime',
+          },
+          {
+            id: AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
             localized: 'preference.ai.native.inlineCompletions.promptEngineering.enabled',
           },
         ],
@@ -286,11 +290,11 @@ export class AINativeBrowserContribution
         title: localize('preference.ai.native.inlineChat.title'),
         preferences: [
           {
-            id: AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+            id: AINativeSettingSectionsId.InlineChatAutoVisible,
             localized: 'preference.ai.native.inlineChat.auto.visible',
           },
           {
-            id: AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+            id: AINativeSettingSectionsId.InlineChatCodeActionEnabled,
             localized: 'preference.ai.native.inlineChat.codeAction.enabled',
           },
         ],
