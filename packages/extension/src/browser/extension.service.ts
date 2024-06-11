@@ -1,6 +1,6 @@
 import debounce from 'lodash/debounce';
 
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
@@ -142,9 +142,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(IExtensionStoragePathServer)
   private readonly extensionStoragePathServer: IExtensionStoragePathServer;
 
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
 
@@ -183,7 +180,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private readonly channelHandler: WSChannelHandler;
 
   /**
-   * @internal 提供获取所有运行中的插件的列表数据
+   * 提供获取所有运行中的插件的列表数据
    */
   async getActivatedExtensions(): Promise<{ [key in ExtensionHostType]?: ActivatedExtension[] }> {
     const activated = {};

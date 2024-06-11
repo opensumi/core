@@ -31,6 +31,8 @@ import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 
 const CLIENT_ID = 'W_' + uuid();
 
+const queries = new URLSearchParams(window.location.search);
+
 export async function renderApp(opts: IClientAppOpts) {
   // eslint-disable-next-line no-console
   console.time('Render');
@@ -39,16 +41,16 @@ export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
 
   opts.workspaceDir = findFirstTruthy(
-    () => {
-      const queries = new URLSearchParams(window.location.search);
-      const dir = queries.get('workspaceDir');
-      if (dir) {
-        return dir;
-      }
-    },
+    () => queries.get('workspaceDir') || undefined,
     process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH && window.location.hash.slice(1),
     opts.workspaceDir,
     process.env.WORKSPACE_DIR,
+  );
+
+  opts.extensionDevelopmentPath = findFirstTruthy(
+    () => queries.get('extensionDevelopmentPath') || undefined,
+    opts.extensionDevelopmentPath,
+    process.env.EXTENSION_DEV_PATH,
   );
 
   opts.injector = injector;

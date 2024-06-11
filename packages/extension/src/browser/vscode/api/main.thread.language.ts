@@ -1640,6 +1640,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   // #endregion LanguageStatus
 
   // #region InlineCompletions
+  async setNativeInlineCompletions(completions: monaco.InlineCompletions) {
+    this.proxy.$setNativeInlineCompletions(completions);
+  }
   async $getNativeInlineCompletions() {
     return this.inlineCompletionHandler.getCompletionResult();
   }

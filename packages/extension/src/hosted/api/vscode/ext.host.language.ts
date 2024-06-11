@@ -151,7 +151,11 @@ import { TypeHierarchyAdapter } from './language/type-hierarchy';
 import { getDurationTimer, score } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 
-import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import type {
+  CodeActionContext,
+  InlineCompletion,
+  InlineCompletions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export function createLanguagesApiFactory(
   extHostLanguages: ExtHostLanguages,
@@ -604,14 +608,23 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
 
-  private _currentInlineCompletions: IdentifiableInlineCompletions | undefined;
+  private _currentInlineCompletions: InlineCompletions | undefined;
+  private _currentNativeInlineCompletions: InlineCompletions<InlineCompletion> | undefined;
 
   getCurrentInlineCompletions() {
     return this._currentInlineCompletions;
   }
 
-  getNativeInlineCompletions() {
+  async $setNativeInlineCompletions(completions: InlineCompletions<InlineCompletion>): Promise<void> {
+    this._currentNativeInlineCompletions = completions;
+  }
+
+  async getNativeInlineCompletionsAsync() {
     return this.proxy.$getNativeInlineCompletions();
+  }
+
+  getNativeInlineCompletions() {
+    return this._currentNativeInlineCompletions;
   }
 
   async $provideInlineCompletions(
