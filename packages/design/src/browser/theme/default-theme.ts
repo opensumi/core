@@ -782,7 +782,7 @@ export default {
     'editorInlayHint.parameterBackground': '#00000000',
     'button.background': '#ffffff14',
     'scrollbarSlider.background': '#ffffff14',
-    'editor.background': '#00000026',
+    'editor.background': '#181818',
     'quickInput.background': '#222830',
     'list.focusBackground': '#ffffff1f',
     'textLink.foreground': '#3c8dff',

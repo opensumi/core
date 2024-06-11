@@ -329,7 +329,10 @@ export class CommentsService extends Disposable implements ICommentsService {
           if (target && target.range) {
             const { range } = target;
             const threads = this.commentsThreads.filter(
-              (thread) => thread.uri.isEqual(editor.currentUri!) && thread.range.endLineNumber === range.endLineNumber,
+              (thread) =>
+                editor.currentUri &&
+                thread.uri.isEqual(editor.currentUri) &&
+                thread.range.endLineNumber === range.endLineNumber,
             );
             if (threads.length) {
               const isShowWidget = threads.some((thread) => thread.isShowWidget(editor));
@@ -373,7 +376,8 @@ export class CommentsService extends Disposable implements ICommentsService {
               !this.commentsThreads.some(
                 (thread) =>
                   thread.comments.length === 0 &&
-                  thread.uri.isEqual(editor.currentUri!) &&
+                  editor.currentUri &&
+                  thread.uri.isEqual(editor.currentUri) &&
                   thread.range.startLineNumber === range.startLineNumber &&
                   thread.range.endLineNumber === range.endLineNumber,
               )
@@ -396,7 +400,8 @@ export class CommentsService extends Disposable implements ICommentsService {
               !this.commentsThreads.some(
                 (thread) =>
                   thread.comments.length === 0 &&
-                  thread.uri.isEqual(editor.currentUri!) &&
+                  editor.currentUri &&
+                  thread.uri.isEqual(editor.currentUri) &&
                   thread.range.startLineNumber === range.startLineNumber &&
                   thread.range.endLineNumber === range.endLineNumber,
               )
@@ -563,7 +568,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const shouldShowComments = editor.currentUri ? this.shouldShowCommentsSchemes.has(editor.currentUri.scheme) : false;
 
     const hasComments = this.commentsThreads.some(
-      (thread) => thread.uri.isEqual(editor.currentUri!) && thread.comments.length > 0,
+      (thread) => editor.currentUri && thread.uri.isEqual(editor.currentUri) && thread.comments.length > 0,
     );
 
     const hasCommentsOrRanges = shouldShowComments || hasComments;
