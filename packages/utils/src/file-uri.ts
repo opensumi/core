@@ -1,3 +1,4 @@
+import { Path } from './path';
 import { isWindows } from './platform';
 import { URI, Uri } from './uri';
 
@@ -21,21 +22,36 @@ export namespace FileUri {
     if (typeof uri === 'string') {
       return fsPath(new URI(uri));
     } else {
-      /*
-       * A uri for the root of a Windows drive, eg file:\\\c%3A, is converted to c:
-       * by the Uri class.  However file:\\\c%3A is unambiguously a uri to the root of
-       * the drive and c: is interpreted as the default directory for the c drive
-       * (by, for example, the readdir function in the fs-extra module).
-       * A backslash must be appended to the drive, eg c:\, to ensure the correct path.
-       */
-      const fsPathFromVsCodeUri = (uri as any).codeUri.fsPath;
-      if (isWindows) {
-        const isWindowsDriveRoot = windowsDriveRegex.exec(fsPathFromVsCodeUri);
-        if (isWindowsDriveRoot) {
-          return fsPathFromVsCodeUri + '\\';
-        }
-      }
-      return fsPathFromVsCodeUri;
+      return uriToFsPath(uri.codeUri);
     }
+  }
+
+  export function uriToFsPath(uri: Uri): string {
+    /*
+     * A uri for the root of a Windows drive, eg file:\\\c%3A, is converted to c:
+     * by the Uri class.  However file:\\\c%3A is unambiguously a uri to the root of
+     * the drive and c: is interpreted as the default directory for the c drive
+     * (by, for example, the readdir function in the fs-extra module).
+     * A backslash must be appended to the drive, eg c:\, to ensure the correct path.
+     */
+    const fsPathFromVsCodeUri = uri.fsPath;
+    if (isWindows) {
+      const isWindowsDriveRoot = windowsDriveRegex.exec(fsPathFromVsCodeUri);
+      if (isWindowsDriveRoot) {
+        return fsPathFromVsCodeUri + '\\';
+      }
+    }
+    return fsPathFromVsCodeUri;
+  }
+
+  export function isEqualOrParent(base: Uri, parentCandidate: Uri): boolean {
+    if (base.scheme !== parentCandidate.scheme || base.authority !== parentCandidate.authority) {
+      return false;
+    }
+
+    const basePath = new Path(uriToFsPath(base));
+    const parentCandidatePath = new Path(uriToFsPath(parentCandidate));
+
+    return basePath.isEqualOrParent(parentCandidatePath);
   }
 }
