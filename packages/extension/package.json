@@ -22,6 +22,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@opensumi/ide-ai-native": "workspace:*",
     "@opensumi/ide-connection": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
@@ -32,7 +33,6 @@
     "@opensumi/ide-task": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
     "@opensumi/ide-webview": "workspace:*",
-    "@opensumi/ide-ai-native": "workspace:*",
     "address": "^1.1.2",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
