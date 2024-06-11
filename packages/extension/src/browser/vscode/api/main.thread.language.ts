@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
-import { CancellationToken } from 'vscode';
-
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { InlineCompletionHandler } from '@opensumi/ide-ai-native/lib/browser/contrib/inline-completions';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -83,6 +80,7 @@ import {
 } from './semantic-tokens/semantic-token-provider';
 
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type { CancellationToken } from 'vscode';
 
 const { extname } = path;
 
@@ -1640,9 +1638,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   // #endregion LanguageStatus
 
   // #region InlineCompletions
-  async setNativeInlineCompletions(completions: monaco.InlineCompletions) {
-    this.proxy.$setNativeInlineCompletions(completions);
-  }
   async $getNativeInlineCompletions() {
     return this.inlineCompletionHandler.getCompletionResult();
   }

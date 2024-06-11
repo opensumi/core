@@ -533,8 +533,6 @@ export interface IExtHostLanguages {
   ): Promise<IInlayHintsDto | undefined>;
   $resolveInlayHint(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IInlayHintDto | undefined>;
   $releaseInlayHints(handle: number, id: number): void;
-
-  $setNativeInlineCompletions(completions: InlineCompletions): Promise<void>;
 }
 
 export interface ILinkedEditingRangesDto {
