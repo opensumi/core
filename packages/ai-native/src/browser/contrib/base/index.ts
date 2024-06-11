@@ -31,7 +31,7 @@ export abstract class IAIMonacoContribHandler extends Disposable {
     this.sessionDisposable.addDispose(this.doContribute());
   }
 
-  registerEditor(editor: IEditor) {
+  mountEditor(editor: IEditor) {
     this.editor = editor;
     return {
       dispose: () => {

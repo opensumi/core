@@ -92,11 +92,11 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
     }
   }
 
-  registerEditor(editor: IEditor) {
+  mountEditor(editor: IEditor) {
     const toDispose = new Disposable();
-    this.aiInlineCompletionsProvider.registerEditor(editor);
+    this.aiInlineCompletionsProvider.mountEditor(editor);
     toDispose.addDispose(this.aiInlineCompletionsProvider);
-    toDispose.addDispose(super.registerEditor(editor));
+    toDispose.addDispose(super.mountEditor(editor));
     return toDispose;
   }
 

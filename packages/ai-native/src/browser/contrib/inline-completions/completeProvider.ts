@@ -352,7 +352,7 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     );
   }
 
-  public registerEditor(editor: IEditor): void {
+  public mountEditor(editor: IEditor): void {
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(editor.monacoEditor as any)._contextKeyService]);
 
     this.isManual = false;
