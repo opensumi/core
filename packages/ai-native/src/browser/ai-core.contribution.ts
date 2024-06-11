@@ -31,8 +31,9 @@ import {
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
+  AI_INLINE_HINT_INTERACTIVE_INPUT_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { InlineChatIsVisible, InlineHintWidgetIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
@@ -83,6 +84,7 @@ import {
 } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { InlineHintService } from './widget/inline-hint/inline-hint.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
 @Domain(
@@ -168,6 +170,9 @@ export class AINativeBrowserContribution
 
   @Autowired(CodeActionHandler)
   private readonly codeActionHandler: CodeActionHandler;
+
+  @Autowired(InlineHintService)
+  private readonly inlineHintService: InlineHintService;
 
   constructor() {
     this.registerFeature();
@@ -321,6 +326,12 @@ export class AINativeBrowserContribution
       },
     });
 
+    commands.registerCommand(AI_INLINE_HINT_INTERACTIVE_INPUT_VISIBLE, {
+      execute: (value: boolean) => {
+        this.inlineHintService._onInteractiveInputVisible.fire(value);
+      },
+    });
+
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTER, {
       execute: (relationId: string, sessionId: string, accept: boolean) => {
         this.aiCompletionsService.report({ sessionId, accept, relationId });
@@ -396,6 +407,17 @@ export class AINativeBrowserContribution
             args: true,
             priority: 0,
             when: `editorFocus && ${InlineChatIsVisible.raw}`,
+          },
+          KeybindingScope.USER,
+        );
+
+        keybindings.registerKeybinding(
+          {
+            command: AI_INLINE_HINT_INTERACTIVE_INPUT_VISIBLE.id,
+            keybinding: 'ctrlcmd+i',
+            args: true,
+            priority: 0,
+            when: `editorTextFocus && ${InlineHintWidgetIsVisible.raw}`,
           },
           KeybindingScope.USER,
         );

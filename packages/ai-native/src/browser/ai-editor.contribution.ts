@@ -1,14 +1,16 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AINativeConfigService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
-import { Disposable, Event, IDisposable, Schemes } from '@opensumi/ide-core-common';
+import { Disposable, Event, IDisposable, InlineChatFeatureRegistryToken, Schemes } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { BrowserCodeEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 
 import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
+import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
+import { InlineHintHandler } from './widget/inline-hint/inline-hint.handler';
 
 @Injectable()
 export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -21,11 +23,17 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(InlineChatHandler)
   private readonly inlineChatHandler: InlineChatHandler;
 
+  @Autowired(InlineHintHandler)
+  private readonly inlineHintHandler: InlineHintHandler;
+
   @Autowired(CodeActionHandler)
   private readonly codeActionHandler: CodeActionHandler;
 
   @Autowired(InlineCompletionHandler)
   private readonly inlineCompletionHandler: InlineCompletionHandler;
+
+  @Autowired(InlineChatFeatureRegistryToken)
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   private modelSessionDisposable: Disposable;
   private initialized: boolean = false;
@@ -65,7 +73,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.addDispose(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
         this.addDispose(this.inlineChatHandler.registerInlineChatFeature(editor));
-        this.addDispose(this.inlineChatHandler.registerHintLineFeature(editor));
+
+        if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+          this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor));
+        }
       }),
     );
 

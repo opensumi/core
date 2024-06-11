@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService, StackingLevelStr, useInjectable } from '@opensumi/ide-core-browser';
@@ -41,14 +41,12 @@ export interface IAIInlineChatControllerProps {
   onInteractiveInputSend?: (value: string) => void;
 }
 
-export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
+const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const { onClickActions, onClose, onInteractiveInputSend, onLayoutChange } = props;
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
   const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
-
-  const interactiveInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const dis = new Disposable();
@@ -68,12 +66,6 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       dis.dispose();
     };
   }, []);
-
-  useEffect(() => {
-    if (interactiveInputVisible === true && interactiveInputRef.current) {
-      interactiveInputRef.current.focus();
-    }
-  }, [interactiveInputVisible, interactiveInputRef]);
 
   useEffect(() => {
     if (status === EInlineChatStatus.ERROR) {
@@ -155,7 +147,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
 
     return (
       <InteractiveInput
-        ref={interactiveInputRef}
+        autoFocus
         onHeightChange={(height) => onLayoutChange(height)}
         size='small'
         placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
