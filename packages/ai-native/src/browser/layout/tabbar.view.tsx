@@ -89,7 +89,7 @@ const AILeftTabbarRenderer: React.FC = () => {
 
       return (
         <>
-          <HorizontalVertical margin={'8px auto 0px'} width={'60%'} />
+          {visibleContainers.length > 0 && <HorizontalVertical margin={'8px auto 0px'} width={'60%'} />}
           {visibleContainers.map((component) => renderContainers(component, handleTabClick, currentContainerId))}
         </>
       );
