@@ -328,7 +328,7 @@ export class AINativeBrowserContribution
 
     commands.registerCommand(AI_INLINE_HINT_INTERACTIVE_INPUT_VISIBLE, {
       execute: (value: boolean) => {
-        this.inlineHintService._onInteractiveInputVisible.fire(value);
+        this.inlineHintService.changVisible(value);
       },
     });
 

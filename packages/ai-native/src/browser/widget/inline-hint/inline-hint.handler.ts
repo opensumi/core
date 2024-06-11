@@ -41,7 +41,9 @@ export class InlineHintHandler extends Disposable {
 
       if (isEmpty && isEmptySelection) {
         const inlineHintLineWidget = this.injector.get(InlineHintLineWidget, [monacoEditor]);
-        inlineHintLineWidget.show({ position });
+        inlineHintLineWidget.show({
+          selection: new monaco.Selection(position.lineNumber, position.column, position.lineNumber, position.column),
+        });
         this.aiNativeContextKey.inlineHintWidgetIsVisible.set(true);
 
         hintDisposable.addDispose(

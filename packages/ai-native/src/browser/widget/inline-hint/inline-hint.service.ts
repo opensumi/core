@@ -8,6 +8,11 @@ export class InlineHintService {
     return this._interactiveInputVisible;
   }
 
-  public readonly _onInteractiveInputVisible = new Emitter<boolean>();
+  private readonly _onInteractiveInputVisible = new Emitter<boolean>();
   public readonly onInteractiveInputVisible: Event<boolean> = this._onInteractiveInputVisible.event;
+
+  public changVisible(v: boolean): void {
+    this._interactiveInputVisible = v;
+    this._onInteractiveInputVisible.fire(v);
+  }
 }

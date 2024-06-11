@@ -188,7 +188,11 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     );
   }, [operationList, moreOperation, customOperationRender, iconResultItems, status, interactiveInputVisible]);
 
-  return <div style={isDone ? { transform: 'translateY(-15px)' } : {}}>{renderContent()}</div>;
+  return (
+    <div className={styles.inline_chat_controller_box} style={isDone ? { transform: 'translateY(-15px)' } : {}}>
+      {renderContent()}
+    </div>
+  );
 };
 
 @Injectable({ multiple: true })
@@ -259,10 +263,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
 
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
-    requestAnimationFrame(() => {
-      domNode.style.padding = '6px';
-      domNode.style.zIndex = StackingLevelStr.OverlayTop;
-    });
+    domNode.style.zIndex = StackingLevelStr.OverlayTop;
     return domNode;
   }
 
@@ -404,7 +405,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
    * 2. 靠近光标处周围没有字符的空白区域作为要显示的区域
    * 3. 显示的区域方向在右侧，左侧不考虑
    */
-  private computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
+  protected computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
     const startPosition = selection.getStartPosition();
     const endPosition = selection.getEndPosition();
     const model = this.editor.getModel();
