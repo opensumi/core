@@ -1,12 +1,10 @@
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { SpecialCases, useInjectable } from '@opensumi/ide-core-browser';
 import { AIAction, InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
-import { AIInlineHintLineContentWidgetId, isMacintosh } from '@opensumi/ide-core-common';
-import { localize } from '@opensumi/ide-core-common';
+import { AIInlineHintLineContentWidgetId, isMacintosh, localize } from '@opensumi/ide-core-common';
 import { IContentWidgetPosition, Position, Selection } from '@opensumi/ide-monaco';
-import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
@@ -16,9 +14,10 @@ import { InlineHintService } from './inline-hint.service';
 
 interface IInlineHintRenderProps {
   layoutWidget: () => void;
+  onInteractiveInputSend: (value: string) => void;
 }
 
-const InlineHintRender = ({ layoutWidget }: IInlineHintRenderProps) => {
+const InlineHintRender = ({ layoutWidget, onInteractiveInputSend }: IInlineHintRenderProps) => {
   const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
   const inlineHintService: InlineHintService = useInjectable(InlineHintService);
 
@@ -36,7 +35,16 @@ const InlineHintRender = ({ layoutWidget }: IInlineHintRenderProps) => {
     }
   }, [interactiveInputVisible, layoutWidget]);
 
-  const handleInteractiveInputSend = useCallback((value: string) => {}, []);
+  const handleLayoutWidget = useCallback(() => {
+    layoutWidget();
+  }, [layoutWidget]);
+
+  const handleInteractiveInputSend = useCallback(
+    (value: string) => {
+      onInteractiveInputSend(value);
+    },
+    [onInteractiveInputSend],
+  );
 
   const customOperationRender = useMemo(() => {
     if (!interactiveInputVisible) {
@@ -49,13 +57,16 @@ const InlineHintRender = ({ layoutWidget }: IInlineHintRenderProps) => {
         size='small'
         placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
         width={320}
-        onHeightChange={layoutWidget.bind(this)}
+        onHeightChange={handleLayoutWidget}
         onSend={handleInteractiveInputSend}
       />
     );
   }, [interactiveInputVisible]);
 
-  const hintText = useMemo(() => `按 ${isMacintosh ? SpecialCases.MACMETA : SpecialCases.CTRL} + i 唤起 Inline Chat`, []);
+  const hintText = useMemo(
+    () => `按 ${isMacintosh ? SpecialCases.MACMETA : SpecialCases.CTRL} + i 唤起 Inline Chat`,
+    [],
+  );
 
   return interactiveInputVisible ? (
     <AIAction loadingShowOperation customOperationRender={customOperationRender} />
@@ -83,7 +94,14 @@ export class InlineHintLineWidget extends AIInlineContentWidget {
   }
 
   override renderView(): ReactNode {
-    return <InlineHintRender layoutWidget={this.layoutContentWidget.bind(this)} />;
+    return (
+      <InlineHintRender
+        layoutWidget={this.layoutContentWidget.bind(this)}
+        onInteractiveInputSend={(v) => {
+          this._onInteractiveInputValue.fire(v);
+        }}
+      />
+    );
   }
 
   override computePosition(selection: Selection): IContentWidgetPosition | null {

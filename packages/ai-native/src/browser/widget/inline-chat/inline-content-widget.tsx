@@ -213,7 +213,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   private readonly _onActionClickEmitter = new Emitter<{ actionId: string; source: string }>();
   public readonly onActionClick = this._onActionClickEmitter.event;
 
-  private readonly _onInteractiveInputValue = new Emitter<string>();
+  protected readonly _onInteractiveInputValue = new Emitter<string>();
   public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {

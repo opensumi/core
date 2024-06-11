@@ -252,7 +252,7 @@ export class InlineChatHandler extends Disposable {
           return;
         }
 
-        const strategy = await this.inlineChatFeatureRegistry.getInteractiveInputStrategyHandler()(value);
+        const strategy = await this.inlineChatFeatureRegistry.getInteractiveInputStrategyHandler()(monacoEditor, value);
 
         this.runInlineChatAction(
           monacoEditor,
