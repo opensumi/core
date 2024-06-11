@@ -32,7 +32,7 @@
     "@opensumi/ide-task": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
     "@opensumi/ide-webview": "workspace:*",
-    "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
+    "@opensumi/ide-ai-native": "workspace:*",
     "address": "^1.1.2",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
@@ -43,7 +43,6 @@
     "v8-inspect-profiler": "^0.0.20"
   },
   "devDependencies": {
-    "@opensumi/ide-ai-native": "workspace:*",
     "@opensumi/ide-comments": "workspace:*",
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",

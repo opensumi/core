@@ -2,7 +2,6 @@ import { Injectable } from '@opensumi/di';
 import { BasicEvent, Event, IDisposable, IExtensionProps } from '@opensumi/ide-core-browser';
 
 import { IExtension, IExtensionMetaData } from '../common';
-import { IMainThreadLanguages } from '../common/vscode';
 
 import { Extension } from './extension';
 
@@ -121,7 +120,3 @@ export class ExtensionDidUninstalledEvent extends BasicEvent<void> {}
  * 插件启用时的事件
  */
 export class ExtensionDidEnabledEvent extends BasicEvent<IExtensionProps> {}
-
-export interface IBrowserMainThreadAPI {
-  languages: IMainThreadLanguages;
-}

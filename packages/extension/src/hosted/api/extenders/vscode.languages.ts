@@ -1,5 +1,5 @@
-import { APIExtender } from '../common/extender';
-import { ExtHostLanguages } from '../vscode/ext.host.language';
+import type { APIExtender } from '../common/extender';
+import type { ExtHostLanguages } from '../vscode/ext.host.language';
 
 function createLanguageAPIFactory(extHostLanguages: ExtHostLanguages): any {
   return {
