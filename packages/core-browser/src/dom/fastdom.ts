@@ -1,15 +1,12 @@
 import { Heap, IDisposable, onUnexpectedError } from '@opensumi/ide-utils';
-import {
-  measure as _monacoMeasure,
-  modify as _monacoModify,
-} from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
+
 class DomOpeartion {
-  private _canceled: boolean;
+  private _disposed: boolean;
 
   constructor(protected _runner: () => void, public priority: number) {}
 
   run() {
-    if (this._canceled) {
+    if (this._disposed) {
       return;
     }
 
@@ -21,7 +18,7 @@ class DomOpeartion {
   }
 
   dispose() {
-    this._canceled = true;
+    this._disposed = true;
   }
 }
 
@@ -104,15 +101,10 @@ function measureAtNextFrame(fn: () => void): IDisposable {
   return op;
 }
 
-const monacoMeasure = (fn: () => void) => _monacoMeasure(window, fn);
-const monacoMutate = (fn: () => void) => _monacoModify(window, fn);
-
 const fastdom = {
   measure,
   measureAtNextFrame,
   mutate,
-  monacoMeasure,
-  monacoMutate,
 };
 
 export default fastdom;
