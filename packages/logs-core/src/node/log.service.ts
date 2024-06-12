@@ -335,15 +335,15 @@ export class LogServiceForClient extends RPCService<IRPCLogService> implements I
     this.getLogger(namespace).dispose();
   }
 
-  setGlobalLogLevel(level: LogLevel) {
+  async setGlobalLogLevel(level: LogLevel) {
     this.loggerManager.setGlobalLogLevel(level);
   }
 
-  getGlobalLogLevel() {
-    this.loggerManager.getGlobalLogLevel();
+  async getGlobalLogLevel() {
+    return this.loggerManager.getGlobalLogLevel();
   }
 
-  disposeAll() {
+  async disposeAll() {
     this.loggerManager.dispose();
   }
 
