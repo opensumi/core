@@ -41,6 +41,14 @@ function relativeLegacy(parent: string, child: string) {
   return new Path(parent).relative(new Path(child))?.toString() as string;
 }
 
+function parseLegacy(path: string) {
+  const _path = new Path(path);
+  return {
+    basename: _path.base,
+    dirname: _path.dir.toString(),
+  };
+}
+
 describe('tree path', () => {
   it('get common paths', () => {
     const paths = ['/a/b/c', '/a/b/d', '/a/b/e', '/a/b/f'];
@@ -86,6 +94,39 @@ describe('tree path', () => {
       const result1 = treePath.relative(testcase[0], testcase[1]);
       expect(result0).toBe(testcase[2]);
       expect(result1).toBe(testcase[2]);
+    }
+  });
+
+  it('can parse path', () => {
+    const testcases = [
+      {
+        source: '/a/b/c',
+        result: {
+          basename: 'c',
+          dirname: '/a/b',
+        },
+      },
+      {
+        source: '/a/b/c/',
+        result: {
+          basename: '',
+          dirname: '/a/b/c',
+        },
+      },
+      {
+        source: 'asfd/w2er/23r.txt',
+        result: {
+          basename: '23r.txt',
+          dirname: 'asfd/w2er',
+        },
+      },
+    ];
+
+    for (const testcase of testcases) {
+      const result = treePath.parse(testcase.source);
+      const resultLegacy = parseLegacy(testcase.source);
+      expect(result).toEqual(resultLegacy);
+      expect(result).toEqual(testcase.result);
     }
   });
 });
