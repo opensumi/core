@@ -10,7 +10,7 @@ export const AILayout = () => {
 
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 35 : 0} slot='top' z-index={2} />
+      <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 35 : 0} slot='top' />
       <SplitPanel
         id='main-horizontal-ai'
         flex={1}
