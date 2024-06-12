@@ -26,6 +26,7 @@ import {
   ITerminalRestore,
   ITerminalSearchService,
 } from '../../common';
+import { IntellTerminalService } from '../intell/intell-terminal.service';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
 import { TerminalKeyBoardInputService } from '../terminal.input';
 
@@ -44,6 +45,9 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
 
   @Autowired(ITerminalSearchService)
   protected readonly search: ITerminalSearchService;
+
+  @Autowired(IntellTerminalService)
+  protected readonly intellTerminalService: IntellTerminalService;
 
   @Autowired(ITerminalRestore)
   protected readonly store: ITerminalRestore;
@@ -89,6 +93,22 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
   }
 
   registerCommands(registry: CommandRegistry) {
+    // 终端智能快捷设置框
+    registry.registerCommand(
+      {
+        ...TERMINAL_COMMANDS.OPEN_TERMINAL_INTELL,
+      },
+      {
+        execute: () => {
+          if (this.intellTerminalService.intellSettingPopupVisible) {
+            this.intellTerminalService.closeIntellSettingsPopup();
+            return;
+          }
+          this.intellTerminalService.openIntellSettingsPopup();
+        },
+      },
+    );
+
     // 搜索
     registry.registerCommand(
       {

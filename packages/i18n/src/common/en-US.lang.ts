@@ -473,6 +473,9 @@ export const localizationBundle = {
     'preference.terminal.integrated.copyOnSelection': 'Terminal > Copy On Selection',
     'preference.terminal.integrated.copyOnSelectionDesc':
       'Controls whether text selected in the terminal will be copied to the clipboard.',
+
+    'preference.terminal.integrated.enableTerminalIntellComplete': 'Enable Terminal Intell Complete',
+
     // Local Echo
     'preference.terminal.integrated.localEchoEnabled': 'Terminal > Local Echo',
     'preference.terminal.integrated.localEchoDesc': 'When local echo should be enabled.',
@@ -1025,6 +1028,7 @@ export const localizationBundle = {
     'terminal.or': 'Or',
     'terminal.search': 'Search',
     'terminal.search.next': 'Search Next',
+    'terminal.intell': 'Terminal IntelliSense',
     'terminal.openWithPath': 'Open In Integrated Terminal',
     'terminal.remove': 'Kill terminal',
     'terminal.menu.search': 'Search',

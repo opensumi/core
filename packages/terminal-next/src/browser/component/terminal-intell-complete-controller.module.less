@@ -7,20 +7,20 @@
 
   // TODO 考虑动态设置字体
   font-family: Menlo, Monaco, 'Courier New', monospace;
-  z-index: 9;
+  z-index: 12;
 }
 
 .suggestionList {
   display: flex;
   flex-direction: column;
   max-height: 200px;
-  width: 350px;
+  width: 450px;
   overflow-y: scroll;
   border-radius: 8px;
   background-color: var(--vscode-editorSuggestWidget-background);
   color: var(--vscode-editorSuggestWidget-foreground);
   // TODO 适配白色主题
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 -6px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: rgba(0, 0, 0, 0.133) 0px 3.2px 7.2px 0px, rgba(0, 0, 0, 0.11) 0px 0.6px 1.8px 0px;
 }
 
 .suggestionItem {
@@ -63,7 +63,7 @@
   color: #fff;
   padding: 10px;
   border-radius: 4px;
-  width: 200px;
+  width: 300px;
 
   position: fixed; /* 全局定位 */
   top: 0;

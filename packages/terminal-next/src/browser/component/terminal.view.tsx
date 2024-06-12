@@ -3,7 +3,8 @@ import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { getIcon, localize, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
+import { CheckBox, Icon } from '@opensumi/ide-components';
+import { PreferenceService, getIcon, localize, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
   ITerminalController,
@@ -14,6 +15,8 @@ import {
   ITerminalSearchService,
   IWidget,
 } from '../../common';
+import { CodeTerminalSettingId } from '../../common/preference';
+import { IntellTerminalService } from '../intell/intell-terminal.service';
 
 import ResizeView, { ResizeDirection } from './resize.view';
 import styles from './terminal.module.less';
@@ -27,6 +30,8 @@ export default observer(() => {
   const searchService = useInjectable<ITerminalSearchService>(ITerminalSearchService);
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const network = useInjectable<ITerminalNetwork>(ITerminalNetwork);
+  const intellService = useInjectable<IntellTerminalService>(IntellTerminalService);
+  const preference = useInjectable<PreferenceService>(PreferenceService);
   const { groups, currentGroupIndex, currentGroupId } = view;
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
@@ -74,6 +79,15 @@ export default observer(() => {
   useEventEffect(searchService.onVisibleChange, (visible) => {
     setIsVisible(visible);
   });
+
+  const [intellSettingsVisible, setIntellSettingsVisible] = React.useState(false);
+  useEventEffect(intellService.onIntellSettingsVisibleChange, (visible) => {
+    setIntellSettingsVisible(visible);
+  });
+
+  const [enableTerminalIntell, setEnableTerminalIntell] = React.useState(
+    preference.get(CodeTerminalSettingId.EnableTerminalIntellComplete, false),
+  );
 
   const [inputText, setInputText] = React.useState('');
 
@@ -127,6 +141,30 @@ export default observer(() => {
             />
           </div>
           <div className={cls(styles.closeBtn, getIcon('close'))} onClick={() => searchService.close()}></div>
+        </div>
+      )}
+      {intellSettingsVisible && (
+        <div className={styles.terminalIntell}>
+          <div className={styles.intellTitleContainer}>
+            <Icon icon={'magic-wand'} className={styles.intellTitleIcon} />
+            <div className={styles.intellTitle}>终端智能补全</div>
+            <div
+              className={cls(styles.closeBtn, getIcon('close'))}
+              onClick={() => intellService.closeIntellSettingsPopup()}
+            ></div>
+          </div>
+          <div className={styles.intellSampleImage} />
+          <div className={styles.intellCheckContainer}>
+            <CheckBox
+              checked={enableTerminalIntell}
+              onChange={(event) => {
+                const checked = (event.target as HTMLInputElement).checked;
+                setEnableTerminalIntell(checked);
+                preference.set(CodeTerminalSettingId.EnableTerminalIntellComplete, checked);
+              }}
+            />
+            <div className={styles.intellDesc}>终端输入时，自动弹出弹出子命令、选项和上下文相关的参数的补全</div>
+          </div>
         </div>
       )}
       {groups.map((group, index) => {

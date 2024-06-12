@@ -1,17 +1,16 @@
-/* eslint-disable no-console */
 import React from 'react';
 import { Root, createRoot } from 'react-dom/client';
 import { IDecoration, IDisposable, IMarker, Terminal } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, Emitter } from '@opensumi/ide-core-common';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 
 import { ITerminalController } from '../../common/controller';
 import { ITerminalConnection } from '../../common/index';
 import { ITerminalSuggestionProvider, ITerminalSuggestionProviderPath } from '../../common/intell/runtime';
+import { CodeTerminalSettingId } from '../../common/preference';
 import { TerminalIntellCompleteController } from '../component/terminal-intell-complete-controller';
-
-// import { fsAsyncStub } from './runtime/template';
 
 enum IstermOscPt {
   PromptStarted = 'PS',
@@ -27,15 +26,24 @@ export class IntellTerminalService extends Disposable {
   @Autowired(ITerminalSuggestionProviderPath)
   private suggestionProvider: ITerminalSuggestionProvider;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
+  public intellSettingPopupVisible = false;
+
+  protected _onVisibleChange = new Emitter<boolean>();
+  public onIntellSettingsVisibleChange: Event<boolean> = this._onVisibleChange.event;
+
   private controlEmitter = new Emitter<string>();
 
   private popupContainer: HTMLDivElement; // AI 终端下拉补全的弹出框容器
 
   private promptEndMarker: IMarker | undefined;
-  private promptEndDecoration: IDecoration | undefined;
+  private promptEndDecoration: IDecoration | undefined; // 终端输入 Prompt 结束时的 decoration
   private onDataDisposable: IDisposable;
   private cwd: string = '';
 
+  // 基于 终端输入末尾 + Prompt End 位置定位的弹出框
   private completePopupRoot: Root | undefined;
   private completePopupDisposeTimeoutHandler: ReturnType<typeof setTimeout> | undefined;
 
@@ -62,6 +70,7 @@ export class IntellTerminalService extends Disposable {
       try {
         this.listenPromptState(client.term);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error('listenTerminalEvent', e);
       }
     }
@@ -93,21 +102,37 @@ export class IntellTerminalService extends Disposable {
   }
 
   private handlePromptEnd(xterm: Terminal) {
-    this.disposePreviousPromptEnd();
-    this.promptEndMarker = xterm.registerMarker(0);
-    const xOffset2 = xterm.buffer.active.cursorX;
-
+    const connection = this.getConnection(xterm);
     if (this.onDataDisposable) {
       this.onDataDisposable.dispose();
     }
+    this.disposePreviousPromptEnd();
 
-    const connection = this.getConnection(xterm);
-    connection.readonly = true;
+    const enable = this.preferenceService.get<boolean>(CodeTerminalSettingId.EnableTerminalIntellComplete, false);
+    if (!enable) {
+      connection.readonly = false; // HACK: 取消 Hack 逻辑，恢复原有的终端数据链路
+      return;
+    } else {
+      connection.readonly = true; // HACK: 避免原有链路自动发送终端的操作
+    }
 
+    this.promptEndMarker = xterm.registerMarker(0);
+    const xOffset2 = xterm.buffer.active.cursorX;
+
+    let lastData = '';
     this.onDataDisposable = xterm.onData(async (e) => {
+      const xtermFullScreenMode = xterm.buffer.active === xterm.buffer.alternate;
+
+      // 如果是终端全屏模式的话，比如说 vim 或者 tmux 等，就不要智能补全，遵循原始行为
+      if (xtermFullScreenMode) {
+        connection.sendData(e);
+        return;
+      }
+
       // 稍微 settimeout 一下，等待终端渲染
       setTimeout(async () => {
-        const notRender = this.handleKeyPress(e, connection);
+        const notRender = this.handleKeyPress(e, lastData, connection);
+        lastData = e;
 
         if (e === '\x1b' && this.promptEndDecoration) {
           this.promptEndDecoration.dispose();
@@ -128,27 +153,29 @@ export class IntellTerminalService extends Disposable {
     });
   }
 
-  private handleKeyPress(e: string, connection: ITerminalConnection): boolean {
+  private handleKeyPress(inputData: string, lastInputData: string, connection: ITerminalConnection): boolean {
     let notRender = false;
 
-    switch (e) {
+    switch (inputData) {
       case '\x1b':
-        console.log('ESC 键被按下');
         this.controlEmitter.fire('Escape');
         break;
       case '\x1b[A':
-        console.log('上方向键被按下');
         this.controlEmitter.fire('ArrowUp');
         notRender = true;
+        if (!this.isShellIntellActive) {
+          connection.sendData(inputData);
+        }
         break;
       case '\x1b[B':
-        console.log('下方向键被按下');
         this.controlEmitter.fire('ArrowDown');
         notRender = true;
+        if (!this.isShellIntellActive) {
+          connection.sendData(inputData);
+        }
         break;
       case '\t':
       case '\x09': // 或者使用 '\t'
-        console.log('Tab 键被按下');
         this.controlEmitter.fire('Tab');
         notRender = this.isShellIntellActive;
         break;
@@ -159,13 +186,20 @@ export class IntellTerminalService extends Disposable {
           notRender = true;
         } else {
           notRender = true;
-          connection.sendData(e);
+          connection.sendData(inputData);
         }
-        console.log('Enter 键被按下');
+        break;
+      case ' ':
+        notRender = false;
+        if (lastInputData === ' ') {
+          notRender = true; // 如果连续多次输入空格，那就不要渲染补全框了
+          this.promptEndDecoration?.dispose();
+        }
+        connection.sendData(inputData);
         break;
       default:
         notRender = !this.isShellIntellActive;
-        connection.sendData(e);
+        connection.sendData(inputData);
     }
 
     return notRender;
@@ -177,36 +211,22 @@ export class IntellTerminalService extends Disposable {
     lineDataString: string,
     cursorX: number,
   ) {
-    // fsAsyncStub.setProxy({
-    //   readdir: async (cwd: string, options: { withFileTypes: true }) => {
-    //     const res = await this.diskFileProvider.readDirectory(Uri.file(cwd));
-    //     const files = res.map(([name, type]) => ({
-    //       name,
-    //       isFile: () => type === FileType.File,
-    //       isDirectory: () => type === FileType.Directory,
-    //     }));
-    //     console.log('readdir', cwd, options, res, files);
-    //     return files;
-    //   },
-    // });
-
     this.promptEndDecoration?.dispose();
 
     const suggestionBlob = await this.suggestionProvider.getSuggestions(lineDataString, this.cwd);
 
-    if (!suggestionBlob || !suggestionBlob.suggestions) {
+    if (!suggestionBlob || !suggestionBlob.suggestions || suggestionBlob.suggestions.length < 1) {
       return;
     }
 
     this.lastPromptLineString = JSON.stringify(lineDataString);
     this.promptEndDecoration = xterm.registerDecoration({
-      marker: this.promptEndMarker,
+      marker: this.promptEndMarker!,
       width: 1,
       height: 1,
       x: cursorX,
     });
 
-    console.log('suggestions: ', suggestionBlob.suggestions, 'hint: ', lineDataString);
     const suggestionsViewModel = [
       ...suggestionBlob.suggestions.map((suggestion) => ({
         description: suggestion.description || '',
@@ -216,16 +236,16 @@ export class IntellTerminalService extends Disposable {
     ];
 
     this.promptEndDecoration?.onRender((element) =>
-      this.renderCompletePopup(element, suggestionsViewModel, suggestionBlob.charactersToDrop || 0, connection),
+      this.renderCompletePopup(xterm, element, suggestionsViewModel, suggestionBlob.charactersToDrop || 0, connection),
     );
 
     this.promptEndDecoration?.onDispose(() => {
-      console.log('dispose react component');
       this.isShellIntellActive = false;
 
       if (this.completePopupRoot) {
         /**
          * 取消 CompleteList 悬浮框的 React 渲染
+         * 目前还需要思考一个更好的方案
          * ----
          * 此处做了一个延时 Dispose 逻辑，为什么要做这个逻辑呢？它背后是有我的良苦用心的。
          * 如果不做延时销毁而是实时销毁的话，每次终端的字符输入都会导致 Decoration 的 Dispose 和重建
@@ -252,20 +272,52 @@ export class IntellTerminalService extends Disposable {
   }
 
   private renderCompletePopup(
+    xterm: Terminal,
     element: HTMLElement,
     suggestionsViewModel: any,
     dropCharNum: number,
     connection: ITerminalConnection,
   ) {
+    const isElementVisible = (element: HTMLElement | null): boolean => {
+      if (!element) {
+        return false;
+      }
+
+      // 检查元素是否在视口中可见
+      const rect = element.getBoundingClientRect();
+      const isInViewport =
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+
+      if (!isInViewport) {
+        return false;
+      }
+
+      // 检查元素的 offsetParent，如果为 null 则表示被隐藏
+      if (element.offsetParent === null) {
+        return false;
+      }
+
+      return true;
+    };
+
     const alignAndCheckVisibility = () => {
-      const sourceStyle = window.getComputedStyle(element);
-      if (sourceStyle.display === 'none' || sourceStyle.visibility === 'hidden') {
+      // const sourceStyle = window.getComputedStyle(element);
+      // if (sourceStyle.display === 'none' || sourceStyle.visibility === 'hidden') {
+      //   this.disposeCompletePopup();
+      //   return;
+      // }
+
+      const isVisible = isElementVisible(element);
+      if (!isVisible) {
         this.disposeCompletePopup();
         return;
       }
 
       const sourceRect = element.getBoundingClientRect();
-      const left = sourceRect.left - element.clientWidth - 6;
+      const left = sourceRect.left - element.clientWidth + 6;
       const top = sourceRect.bottom - element.clientHeight;
 
       this.popupContainer.style.position = 'fixed';
@@ -294,6 +346,10 @@ export class IntellTerminalService extends Disposable {
           this.completePopupRoot = undefined;
           this.isShellIntellActive = false;
           connection.sendData(insertStr);
+          xterm.focus();
+        }}
+        onClose={() => {
+          this.disposeCompletePopup();
         }}
       />,
     );
@@ -322,6 +378,8 @@ export class IntellTerminalService extends Disposable {
     }
   }
 
+  // HACK 从 xterm addon 里面拿到终端和后端服务的 stdio 通信链路
+  // TODO OpenSumi 提供一个更标准的实现
   private getConnection(xterm: Terminal): ITerminalConnection {
     // @ts-ignore
     // 目前需要强制取用 Addon 的 connection 能力
@@ -332,5 +390,16 @@ export class IntellTerminalService extends Disposable {
   private disposeCompletePopup() {
     this.completePopupRoot?.unmount();
     this.completePopupRoot = undefined;
+    this.isShellIntellActive = false;
+  }
+
+  public closeIntellSettingsPopup() {
+    this.intellSettingPopupVisible = false;
+    this._onVisibleChange.fire(false);
+  }
+
+  public openIntellSettingsPopup() {
+    this.intellSettingPopupVisible = true;
+    this._onVisibleChange.fire(true);
   }
 }

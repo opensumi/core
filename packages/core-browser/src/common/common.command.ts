@@ -898,6 +898,12 @@ export namespace TERMINAL_COMMANDS {
     category: CATEGORY,
   };
 
+  export const OPEN_TERMINAL_INTELL = {
+    id: 'terminal.intell',
+    label: '%terminal.intell%',
+    category: CATEGORY,
+  };
+
   export const SEARCH_NEXT = {
     id: 'terminal.search.next',
     label: '%terminal.search.next%',

@@ -18,7 +18,7 @@ interface PopupPosition {
 
 // 支持键盘选择的列表
 const SelectableList = (props: {
-  items: { description: string; command: string; icon: string; }[];
+  items: { description: string; command: string; icon: string }[];
   handleSuggestionClick: (command: string) => void;
   controller?: Emitter<string>;
   noListen?: boolean;
@@ -32,15 +32,26 @@ const SelectableList = (props: {
   const isScrollIntoViewTriggeredRef = useRef(false); // 滚动是否是通过编程触发 (非用户滚动)
 
   useEffect(() => {
-    if (!controller) {return;}
+    if (!controller) {
+      return;
+    }
     const disposable = controller.event((e: string) => {
       if (e === 'ArrowUp') {
-        setSelectedIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+        setSelectedIndex((prevIndex) => {
+          if (prevIndex === 0) {
+            return items.length - 1;
+          }
+          return Math.max(prevIndex - 1, 0);
+        });
       }
       if (e === 'ArrowDown' || e === 'Tab') {
-        setSelectedIndex((prevIndex) =>
-          Math.min(prevIndex + 1, items.length - 1),
-        );
+        // 走到最下面之后按一下返回顶部
+        setSelectedIndex((prevIndex) => {
+          if (prevIndex + 1 >= items.length) {
+            return 0;
+          }
+          return Math.min(prevIndex + 1, items.length - 1);
+        });
       }
       if (e === 'Enter') {
         if (items[selectedIndex]) {
@@ -57,9 +68,8 @@ const SelectableList = (props: {
   // 确保选中项用户可见，比如说通过方向键上下选到了列表 overflow 的部分，此时就需要触发一个自动滚动
   useEffect(() => {
     if (selectedIndex > -1 && selectedItemRef.current && listRef.current) {
-
       // smooth 滚动会导致高度计算的延迟，所以使用 instant 滚动
-      selectedItemRef.current.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+      selectedItemRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest' });
 
       // 对于这种编程触发的滚动的情况下，做一个标记
       isScrollIntoViewTriggeredRef.current = true;
@@ -81,10 +91,9 @@ const SelectableList = (props: {
     }
   }, [selectedIndex, items]);
 
-
   // 用户滚动 Complete 列表时，隐藏右侧提示框
   useEffect(() => {
-    if (selectedIndex > -1 && listRef.current && popupPosition)  {
+    if (selectedIndex > -1 && listRef.current && popupPosition) {
       const handleScroll = () => {
         const { top, left } = popupPosition;
         // 两种情况:
@@ -135,16 +144,15 @@ const SelectableList = (props: {
         ))}
       </div>
       <div>
-        {
-          selectedItem && popupPosition.top > 0 && popupPosition.left > 0 &&  (
-            <div className={cls(styles.suggestionItemExtraContainer, styles.extraContainerRight)}
-              style={{ top: `${popupPosition.top}px`, left: `${popupPosition.left}px` }}
-            >
+        {selectedItem && popupPosition.top > 0 && popupPosition.left > 0 && (
+          <div
+            className={cls(styles.suggestionItemExtraContainer, styles.extraContainerRight)}
+            style={{ top: `${popupPosition.top}px`, left: `${popupPosition.left}px` }}
+          >
             <div className={styles.suggestionItemExtraCommand}>{selectedItem.command}</div>
             <div className={styles.suggestionItemExtraDescription}>{selectedItem.description}</div>
           </div>
-          )
-        }
+        )}
       </div>
     </div>
   );
@@ -154,18 +162,32 @@ export const TerminalIntellCompleteController = (props: {
   suggestions: SmartCommandDesc[];
   controller: Emitter<string>;
   onSuggestion: (suggestion: string) => void;
+  onClose: () => void;
 }) => {
-  const { suggestions, controller, onSuggestion } = props;
+  const { suggestions, controller, onSuggestion, onClose } = props;
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // 点击弹框之外的区域关闭弹框
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose(); // 调用传入的 onClose 函数来关闭弹框
+      }
+    };
+
+    // 监听点击事件
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // 清理函数
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }} ref={modalRef}>
       {suggestions.length > 0 && (
-        <SelectableList
-          items={suggestions}
-          controller={controller}
-          handleSuggestionClick={onSuggestion}
-          noListen
-        />
+        <SelectableList items={suggestions} controller={controller} handleSuggestionClick={onSuggestion} noListen />
       )}
     </div>
   );

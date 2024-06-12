@@ -1,0 +1,1 @@
+/// <reference path='../../node_modules/@withfig/autocomplete-types/index.d.ts' />

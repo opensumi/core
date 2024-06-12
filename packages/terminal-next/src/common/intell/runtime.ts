@@ -6,12 +6,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { path } from '@opensumi/ide-core-common';
 
-import { ITerminalIntellEnvironment } from './environment';
-import { SuggestionBlob } from "./model";
-import { CommandToken, parseCommand } from "./parser";
-import { ISuggestionProcessor } from "./suggestion";
-import { resolveCwd } from "./utils";
-
+import { ITerminalIntellEnvironment, Shell } from './environment';
+import { SuggestionBlob } from './model';
+import { CommandToken, parseCommand } from './parser';
+import { ISuggestionProcessor } from './suggestion';
 
 export const IFigSpecLoader = Symbol('IFigSpecLoader');
 
@@ -55,44 +53,64 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
     }
 
     const spec = await this.specLoader.loadSpec(activeCmd);
-    if (spec == null) {return;}
+    if (spec == null) {
+      return;
+    }
     const subcommand = this.getSubcommand(spec);
-    if (subcommand == null) {return;}
+    if (subcommand == null) {
+      return;
+    }
 
     const lastCommand = activeCmd.at(-1);
-    const { cwd: resolvedCwd, pathy, complete: pathyComplete } = await resolveCwd(lastCommand, cwd);
+    const {
+      cwd: resolvedCwd,
+      pathy,
+      complete: pathyComplete,
+    } = await this.terminalIntellEnvironment.resolveCwd(lastCommand, cwd, Shell.Bash);
     if (pathy && lastCommand) {
       lastCommand.isPath = true;
       lastCommand.isPathComplete = pathyComplete;
     }
     const result = await this.runSubcommand(activeCmd.slice(1), subcommand, resolvedCwd);
-    if (result == null) {return;}
+    if (result == null) {
+      return;
+    }
+
+    // TODO 目前只是粗暴的限制了返回 100 条终端补全数据，后面看看有没有更好的方案
+    result.suggestions = result.suggestions.slice(0, 100);
 
     let charactersToDrop = lastCommand?.complete ? 0 : lastCommand?.token.length ?? 0;
     if (pathy) {
-      charactersToDrop = pathyComplete ? 0 : path.basename(lastCommand?.token ?? "").length;
+      charactersToDrop = pathyComplete ? 0 : path.basename(lastCommand?.token ?? '').length;
     }
     return { ...result, charactersToDrop };
   }
 
   public getSpecNames(): string[] {
-    return Object.keys(this.specLoader.getSpecSet()).filter((spec) => !spec.startsWith("@") && spec !== "-");
+    return Object.keys(this.specLoader.getSpecSet()).filter((spec) => !spec.startsWith('@') && spec !== '-');
   }
 
   private getPersistentOptions(persistentOptions: Fig.Option[], options?: Fig.Option[]): Fig.Option[] {
-    const persistentOptionNames = new Set(persistentOptions.map((o) => (typeof o.name === "string" ? [o.name] : o.name)).flat());
+    const persistentOptionNames = new Set(
+      persistentOptions.map((o) => (typeof o.name === 'string' ? [o.name] : o.name)).flat(),
+    );
     return persistentOptions.concat(
       (options ?? []).filter(
-        (o) => (typeof o.name == "string" ? !persistentOptionNames.has(o.name) : o.name.some((n) => !persistentOptionNames.has(n))) && o.isPersistent === true,
+        (o) =>
+          (typeof o.name == 'string'
+            ? !persistentOptionNames.has(o.name)
+            : o.name.some((n) => !persistentOptionNames.has(n))) && o.isPersistent === true,
       ),
     );
   }
 
   private getSubcommand(spec?: Fig.Spec): Fig.Subcommand | undefined {
-    if (spec == null) {return;}
-    if (typeof spec === "function") {
+    if (spec == null) {
+      return;
+    }
+    if (typeof spec === 'function') {
       const potentialSubcommand = spec();
-      if (Object.prototype.hasOwnProperty.call(potentialSubcommand, "name")) {
+      if (Object.prototype.hasOwnProperty.call(potentialSubcommand, 'name')) {
         return potentialSubcommand as Fig.Subcommand;
       }
       return;
@@ -105,26 +123,36 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
   }
 
   private async genSubcommand(command: string, parentCommand: Fig.Subcommand): Promise<Fig.Subcommand | undefined> {
-    if (!parentCommand.subcommands || parentCommand.subcommands.length === 0) {return;}
+    if (!parentCommand.subcommands || parentCommand.subcommands.length === 0) {
+      return;
+    }
 
-    const subcommandIdx = parentCommand.subcommands.findIndex((s) => (Array.isArray(s.name) ? s.name.includes(command) : s.name === command));
+    const subcommandIdx = parentCommand.subcommands.findIndex((s) =>
+      Array.isArray(s.name) ? s.name.includes(command) : s.name === command,
+    );
 
-    if (subcommandIdx === -1) {return;}
+    if (subcommandIdx === -1) {
+      return;
+    }
     const subcommand = parentCommand.subcommands[subcommandIdx];
 
     switch (typeof subcommand.loadSpec) {
-      case "function": {
+      case 'function': {
         const partSpec = await subcommand.loadSpec(command, this.executeShellCommand);
         if (partSpec instanceof Array) {
-          const locationSpecs = (await Promise.all(partSpec.map((s) => this.specLoader.lazyLoadSpecLocation(s)))).filter((s) => s != null) as Fig.Spec[];
-          const subcommands = locationSpecs.map((s) => this.getSubcommand(s)).filter((s) => s != null) as Fig.Subcommand[];
+          const locationSpecs = (
+            await Promise.all(partSpec.map((s) => this.specLoader.lazyLoadSpecLocation(s)))
+          ).filter((s) => s != null) as Fig.Spec[];
+          const subcommands = locationSpecs
+            .map((s) => this.getSubcommand(s))
+            .filter((s) => s != null) as Fig.Subcommand[];
           (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = {
             ...subcommand,
             ...(subcommands.find((s) => s?.name === command) ?? []),
             loadSpec: undefined,
           };
           return (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx];
-        } else if (Object.prototype.hasOwnProperty.call(partSpec, "type")) {
+        } else if (Object.prototype.hasOwnProperty.call(partSpec, 'type')) {
           const locationSingleSpec = await this.specLoader.lazyLoadSpecLocation(partSpec as Fig.SpecLocation);
           (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = {
             ...subcommand,
@@ -141,7 +169,7 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
           return (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx];
         }
       }
-      case "string": {
+      case 'string': {
         const spec = await this.specLoader.lazyLoadSpec(subcommand.loadSpec as string);
         (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = {
           ...subcommand,
@@ -150,7 +178,7 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
         };
         return (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx];
       }
-      case "object": {
+      case 'object': {
         (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx] = {
           ...subcommand,
           ...(subcommand.loadSpec ?? {}),
@@ -158,14 +186,16 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
         };
         return (parentCommand.subcommands as Fig.Subcommand[])[subcommandIdx];
       }
-      case "undefined": {
+      case 'undefined': {
         return subcommand;
       }
     }
   }
 
   private getOption(activeToken: CommandToken, options: Fig.Option[]): Fig.Option | undefined {
-    return options.find((o) => (typeof o.name === "string" ? o.name === activeToken.token : o.name.includes(activeToken.token)));
+    return options.find((o) =>
+      typeof o.name === 'string' ? o.name === activeToken.token : o.name.includes(activeToken.token),
+    );
   }
 
   private getPersistentTokens(tokens: CommandToken[]): CommandToken[] {
@@ -185,13 +215,24 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
     acceptedTokens: CommandToken[],
   ): Promise<SuggestionBlob | undefined> {
     if (tokens.length === 0) {
-      throw new Error("invalid state reached, option expected but no tokens found");
+      throw new Error('invalid state reached, option expected but no tokens found');
     }
     const activeToken = tokens[0];
-    const isPersistent = persistentOptions.some((o) => (typeof o.name === "string" ? o.name === activeToken.token : o.name.includes(activeToken.token)));
+    const isPersistent = persistentOptions.some((o) =>
+      typeof o.name === 'string' ? o.name === activeToken.token : o.name.includes(activeToken.token),
+    );
     if ((option.args instanceof Array && option.args.length > 0) || option.args != null) {
       const args = option.args instanceof Array ? option.args : [option.args];
-      return this.runArg(tokens.slice(1), args, subcommand, cwd, persistentOptions, acceptedTokens.concat(activeToken), true, false);
+      return this.runArg(
+        tokens.slice(1),
+        args,
+        subcommand,
+        cwd,
+        persistentOptions,
+        acceptedTokens.concat(activeToken),
+        true,
+        false,
+      );
     }
     return this.runSubcommand(
       tokens.slice(1),
@@ -218,9 +259,25 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
     if (args.length === 0) {
       return this.runSubcommand(tokens, subcommand, cwd, persistentOptions, acceptedTokens, true, !fromOption);
     } else if (tokens.length === 0) {
-      return await this.getArgDrivenRecommendation(args, subcommand, persistentOptions, undefined, acceptedTokens, fromVariadic, cwd);
+      return await this.getArgDrivenRecommendation(
+        args,
+        subcommand,
+        persistentOptions,
+        undefined,
+        acceptedTokens,
+        fromVariadic,
+        cwd,
+      );
     } else if (!tokens.at(0)?.complete) {
-      return await this.getArgDrivenRecommendation(args, subcommand, persistentOptions, tokens[0], acceptedTokens, fromVariadic, cwd);
+      return await this.getArgDrivenRecommendation(
+        args,
+        subcommand,
+        persistentOptions,
+        tokens[0],
+        acceptedTokens,
+        fromVariadic,
+        cwd,
+      );
     }
 
     const activeToken = tokens[0];
@@ -235,24 +292,52 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
 
       const nextSubcommand = await this.genSubcommand(activeToken.token, subcommand);
       if (nextSubcommand != null) {
-        return this.runSubcommand(tokens.slice(1), nextSubcommand, cwd, persistentOptions, this.getPersistentTokens(acceptedTokens.concat(activeToken)));
+        return this.runSubcommand(
+          tokens.slice(1),
+          nextSubcommand,
+          cwd,
+          persistentOptions,
+          this.getPersistentTokens(acceptedTokens.concat(activeToken)),
+        );
       }
     }
 
     const activeArg = args[0];
     if (activeArg.isVariadic) {
-      return this.runArg(tokens.slice(1), args, subcommand, cwd, persistentOptions, acceptedTokens.concat(activeToken), fromOption, true);
+      return this.runArg(
+        tokens.slice(1),
+        args,
+        subcommand,
+        cwd,
+        persistentOptions,
+        acceptedTokens.concat(activeToken),
+        fromOption,
+        true,
+      );
     } else if (activeArg.isCommand) {
       if (tokens.length <= 0) {
         return;
       }
       const spec = await this.specLoader.loadSpec(tokens);
-      if (spec == null) {return;}
+      if (spec == null) {
+        return;
+      }
       const subcommand = this.getSubcommand(spec);
-      if (subcommand == null) {return;}
+      if (subcommand == null) {
+        return;
+      }
       return this.runSubcommand(tokens.slice(1), subcommand, cwd);
     }
-    return this.runArg(tokens.slice(1), args.slice(1), subcommand, cwd, persistentOptions, acceptedTokens.concat(activeToken), fromOption, false);
+    return this.runArg(
+      tokens.slice(1),
+      args.slice(1),
+      subcommand,
+      cwd,
+      persistentOptions,
+      acceptedTokens.concat(activeToken),
+      fromOption,
+      false,
+    );
   }
 
   private async runSubcommand(
@@ -265,9 +350,25 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
     argsUsed = false,
   ): Promise<SuggestionBlob | undefined> {
     if (tokens.length === 0) {
-      return this.getSubcommandDrivenRecommendation(subcommand, persistentOptions, undefined, argsDepleted, argsUsed, acceptedTokens, cwd);
+      return this.getSubcommandDrivenRecommendation(
+        subcommand,
+        persistentOptions,
+        undefined,
+        argsDepleted,
+        argsUsed,
+        acceptedTokens,
+        cwd,
+      );
     } else if (!tokens.at(0)?.complete) {
-      return this.getSubcommandDrivenRecommendation(subcommand, persistentOptions, tokens[0], argsDepleted, argsUsed, acceptedTokens, cwd);
+      return this.getSubcommandDrivenRecommendation(
+        subcommand,
+        persistentOptions,
+        tokens[0],
+        argsDepleted,
+        argsUsed,
+        acceptedTokens,
+        cwd,
+      );
     }
 
     const activeToken = tokens[0];
@@ -313,7 +414,15 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
     acceptedTokens: CommandToken[],
     cwd: string,
   ): Promise<SuggestionBlob | undefined> {
-    return this.suggestionProcessor.getSubcommandDrivenRecommendation(subcommand, persistentOptions, token, argsDepleted, argsUsed, acceptedTokens, cwd);
+    return this.suggestionProcessor.getSubcommandDrivenRecommendation(
+      subcommand,
+      persistentOptions,
+      token,
+      argsDepleted,
+      argsUsed,
+      acceptedTokens,
+      cwd,
+    );
   }
 
   private async getArgDrivenRecommendation(
@@ -325,6 +434,14 @@ export class TerminalSuggestionRuntime implements ITerminalSuggestionProvider {
     fromVariadic: boolean,
     cwd: string,
   ): Promise<SuggestionBlob | undefined> {
-    return this.suggestionProcessor.getArgDrivenRecommendation(args, subcommand, persistentOptions, token, acceptedTokens, fromVariadic, cwd);
+    return this.suggestionProcessor.getArgDrivenRecommendation(
+      args,
+      subcommand,
+      persistentOptions,
+      token,
+      acceptedTokens,
+      fromVariadic,
+      cwd,
+    );
   }
 }
