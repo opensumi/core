@@ -17,6 +17,7 @@ import { AICompletionsService } from '../../contrib/inline-completions/service/a
 import { ERunStrategy } from '../../types';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { InlineChatFeatureRegistry } from '../inline-chat/inline-chat.feature.registry';
+import { EInlineChatStatus } from '../inline-chat/inline-chat.service';
 
 import { InlineInputChatWidget } from './inline-input-widget';
 import { InlineInputChatService } from './inline-input.service';
@@ -79,26 +80,28 @@ export class InlineInputHandler extends Disposable {
       const isEmptySelection = monacoEditor.getSelection()?.isEmpty();
 
       if (isEmpty && isEmptySelection) {
-        const inlineHintLineWidget = this.injector.get(InlineInputChatWidget, [monacoEditor]);
-        inlineHintLineWidget.show({
+        const inlineInputChatWidget = this.injector.get(InlineInputChatWidget, [monacoEditor]);
+        inlineInputChatWidget.show({
           selection: new monaco.Selection(position.lineNumber, position.column, position.lineNumber, position.column),
         });
         this.aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
 
         inputDisposable.addDispose(
-          inlineHintLineWidget.onDispose(() => {
+          inlineInputChatWidget.onDispose(() => {
             this.cancelToken();
             this.aiNativeContextKey.inlineInputWidgetIsVisible.set(false);
           }),
         );
 
         inputDisposable.addDispose(
-          inlineHintLineWidget.onInteractiveInputValue(async (value) => {
+          inlineInputChatWidget.onInteractiveInputValue(async (value) => {
             const handler = this.inlineChatFeatureRegistry.getInteractiveInputHandler();
 
             if (!handler) {
               return;
             }
+
+            inlineInputChatWidget.launchChatStatus(EInlineChatStatus.THINKING);
 
             const strategy = await this.inlineChatFeatureRegistry.getInteractiveInputStrategyHandler()(
               monacoEditor,
@@ -107,6 +110,7 @@ export class InlineInputHandler extends Disposable {
 
             if (strategy === ERunStrategy.EXECUTE && handler.execute) {
               handler.execute(monacoEditor, value, this.cancelIndicator.token);
+              inlineInputChatWidget.launchChatStatus(EInlineChatStatus.DONE);
               hideInput();
               return;
             }
@@ -119,6 +123,7 @@ export class InlineInputHandler extends Disposable {
               );
 
               if (CancelResponse.is(previewResponse)) {
+                inlineInputChatWidget.launchChatStatus(EInlineChatStatus.READY);
                 hideInput();
                 return;
               }
@@ -143,13 +148,22 @@ export class InlineInputHandler extends Disposable {
 
                     curPosi = model.getPositionAt(model.getOffsetAt(newPosition) + message.length);
                   }),
+                  controller.onError((error) => {
+                    inlineInputChatWidget.launchChatStatus(EInlineChatStatus.ERROR);
+                  }),
+                  controller.onAbort(() => {
+                    inlineInputChatWidget.launchChatStatus(EInlineChatStatus.READY);
+                  }),
+                  controller.onEnd(() => {
+                    inlineInputChatWidget.launchChatStatus(EInlineChatStatus.DONE);
+                  }),
                 ]);
               }
             }
           }),
         );
 
-        inputDisposable.addDispose(inlineHintLineWidget);
+        inputDisposable.addDispose(inlineInputChatWidget);
       }
     };
 

@@ -23,6 +23,7 @@ import {
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { InlineResultAction } from '../inline-actions/result-items/index';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import styles from './inline-chat.module.less';
@@ -30,13 +31,13 @@ import { AIInlineChatService, EInlineChatStatus, EResultKind } from './inline-ch
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-export interface IAIInlineOperationProps {
+interface IAIInlineOperationProps {
   handleActions: (id: string) => void;
   status: EInlineChatStatus;
   onClose?: () => void;
 }
 
-export interface IAIInlineChatControllerProps {
+interface IAIInlineChatControllerProps {
   onClickActions: (id: string) => void;
   onLayoutChange: (height: number) => void;
   onClose?: () => void;
@@ -77,27 +78,6 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
   const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
-
-  const iconResultItems = useMemo(
-    () => [
-      {
-        icon: 'check',
-        text: localize('aiNative.inline.chat.operate.check.title'),
-        onClick: () => onResultClick(EResultKind.ACCEPT),
-      },
-      {
-        icon: 'discard',
-        text: localize('aiNative.operate.discard.title'),
-        onClick: () => onResultClick(EResultKind.DISCARD),
-      },
-      {
-        icon: 'afresh',
-        text: localize('aiNative.operate.afresh.title'),
-        onClick: () => onResultClick(EResultKind.REGENERATE),
-      },
-    ],
-    [onResultClick],
-  );
 
   const handleClickActions = useCallback(
     (id: string) => {
@@ -161,11 +141,7 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     }
 
     if (isDone) {
-      return (
-        <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
-          <AIInlineResult iconItems={iconResultItems} />
-        </ContentWidgetContainerPanel>
-      );
+      return <InlineResultAction onResultClick={onResultClick} />;
     }
 
     return (
@@ -179,7 +155,7 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         customOperationRender={customOperationRender}
       />
     );
-  }, [operationList, moreOperation, customOperationRender, iconResultItems, status, interactiveInputVisible]);
+  }, [operationList, moreOperation, customOperationRender, onResultClick, status, interactiveInputVisible]);
 
   return (
     <div className={styles.inline_chat_controller_box} style={isDone ? { transform: 'translateY(-15px)' } : {}}>
