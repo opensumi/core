@@ -4,7 +4,6 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { LogModule } from '../../src/browser';
 import { LogServiceClient } from '../../src/browser/log.service';
 import {
-  ILogServiceClient,
   ILogServiceForClient,
   ILoggerManagerClient,
   LogLevel,
@@ -67,7 +66,7 @@ class MockLogServiceForClient implements ILogServiceForClient {
 describe('log-manager', () => {
   let injector: Injector;
   let logManager: ILoggerManagerClient;
-  let logServiceClient: ILogServiceClient;
+  let logServiceClient: LogServiceClient;
   let logServiceForClient: MockLogServiceForClient;
 
   beforeEach(() => {
@@ -78,7 +77,8 @@ describe('log-manager', () => {
     });
     logManager = injector.get(ILoggerManagerClient);
     logServiceForClient = injector.get(LogServiceForClientPath);
-    logServiceClient = new LogServiceClient(SupportLogNamespace.Browser, logServiceForClient);
+    logServiceClient = new LogServiceClient(SupportLogNamespace.Browser);
+    logServiceClient.setup(logServiceForClient);
   });
 
   test('setLevel', async () => {
