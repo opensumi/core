@@ -6,12 +6,12 @@ export { ILogger } from '@opensumi/ide-core-common';
 @Injectable()
 export class Logger implements ILogServiceClient {
   @Autowired(ILoggerManagerClient)
-  private LoggerManager: ILoggerManagerClient;
+  private loggerManager: ILoggerManagerClient;
 
   private logger: ILogServiceClient;
 
   constructor() {
-    this.logger = this.LoggerManager.getLogger(SupportLogNamespace.Browser);
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Browser);
   }
 
   public getLevel() {

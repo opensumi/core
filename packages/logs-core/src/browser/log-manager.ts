@@ -8,7 +8,7 @@ import {
   LogLevel,
   LogServiceForClientPath,
   SupportLogNamespace,
-} from '../common/';
+} from '../common';
 
 import { LogServiceClient } from './log.service';
 
