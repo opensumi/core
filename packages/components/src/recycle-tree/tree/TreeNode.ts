@@ -68,11 +68,13 @@ export interface IOptionalGlobalTreeState {
   loadPathCancelToken?: CancellationTokenSource;
 }
 
+const nextIdFactory = () => {
+  let id = 0;
+  return () => id++;
+};
+
 export class TreeNode implements ITreeNode {
-  public static nextId = (() => {
-    let id = 0;
-    return () => id++;
-  })();
+  public static nextId = nextIdFactory();
 
   public static is(node: any): node is ITreeNode {
     return !!node && 'depth' in node && 'name' in node && 'path' in node && 'id' in node;
@@ -162,14 +164,14 @@ export class TreeNode implements ITreeNode {
     tree: ITree,
     parent?: ICompositeTreeNode,
     watcher?: ITreeWatcher,
-    optionalMetadata?: { [key: string]: any },
+    metadata?: { [key: string]: any },
   ) {
     this._uid = TreeNode.nextId();
     this._parent = parent;
     this._tree = tree;
     this._disposed = false;
     this._visible = true;
-    this._metadata = { ...(optionalMetadata || {}) };
+    this._metadata = { ...(metadata || {}) };
     this._depth = parent ? parent.depth + 1 : 0;
     if (watcher) {
       this._watcher = watcher;
@@ -221,16 +223,33 @@ export class TreeNode implements ITreeNode {
    * 一般不建议手动管理 `name`，采用默认值即可
    */
   get name() {
+    // 根节点保证唯一性
     if (!this.parent) {
       return `root_${this.id}`;
     }
-    return this.getMetadata('name') || String(this.id);
+
+    let name = this.getMetadata('name') as string;
+    this.validateName(name);
+    if (!name) {
+      name = String(TreeNode.nextId());
+      this._metadata['name'] = name;
+    }
+
+    return name;
   }
 
   set name(name: string) {
+    this.validateName(name);
     this.addMetadata('name', name);
     // 节点 `name` 变化，更新当前节点的 `path` 属性
     this._path = '';
+  }
+
+  protected validateName(name: string) {
+    if (name.includes(Path.separator)) {
+      // eslint-disable-next-line no-console
+      console.warn(`[TreeNode] name should not include path separator: ${name}`);
+    }
   }
 
   // 节点绝对路径
@@ -257,9 +276,6 @@ export class TreeNode implements ITreeNode {
   }
 
   public getMetadata(withKey: string): any {
-    if (withKey === 'name' && !this._metadata[withKey]) {
-      this._metadata[withKey] = String(TreeNode.nextId());
-    }
     return this._metadata[withKey];
   }
 
@@ -287,7 +303,7 @@ export class TreeNode implements ITreeNode {
         type: MetadataChangeType.Removed,
         key: withKey,
         prevValue,
-        value: void 0,
+        value: undefined,
       });
     }
   }
@@ -462,14 +478,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     return watcher;
   }
 
-  // parent 为undefined即表示该节点为根节点
-  constructor(
-    tree: ITree,
-    parent?: ICompositeTreeNode,
-    watcher?: ITreeWatcher,
-    optionalMetadata?: { [key: string]: any },
-  ) {
-    super(tree, parent, watcher, optionalMetadata);
+  // parent 为 undefined 即表示该节点为根节点
+  constructor(tree: ITree, parent?: ICompositeTreeNode, watcher?: ITreeWatcher, metadata?: { [key: string]: any }) {
+    super(tree, parent, watcher, metadata);
     this.isExpanded = parent ? false : true;
     this._branchSize = 0;
     if (!parent) {
@@ -483,26 +494,17 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
-  // 重载 name 的 getter/setter，路径改变时需要重新监听文件节点变化
+  // 重载 name 的 setter，路径改变时需要重新监听文件节点变化
   set name(name: string) {
     const prevPath = this.path;
     if (!CompositeTreeNode.isRoot(this) && typeof this.watchTerminator === 'function') {
       this.watchTerminator(prevPath);
-      this.addMetadata('name', name);
       this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
-    } else {
-      this.addMetadata('name', name);
     }
+
+    this.addMetadata('name', name);
     // 节点 `name` 变化，更新当前节点的 `path` 属性
     this._path = '';
-  }
-
-  get name() {
-    // 根节点保证路径不重复
-    if (!this.parent) {
-      return `root_${this.id}`;
-    }
-    return this.getMetadata('name');
   }
 
   // 作为根节点唯一的watcher需要在生成新节点的时候传入
@@ -1632,7 +1634,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   /**
    * 根据路径展开节点树
-   * @memberof CompositeTreeNode
    */
   public async loadTreeNodeByPath(path: string, quiet = false): Promise<ITreeNodeOrCompositeTreeNode | undefined> {
     if (!CompositeTreeNode.isRoot(this)) {
@@ -1796,7 +1797,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 根据节点获取节点ID下标位置
    * @param {number} id
    * @returns
-   * @memberof CompositeTreeNode
    */
   public getIndexAtTreeNodeId(id: number) {
     if (this._flattenedBranch) {
@@ -1809,7 +1809,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 根据节点获取节点下标位置
    * @param {ITreeNodeOrCompositeTreeNode} node
    * @returns
-   * @memberof CompositeTreeNode
    */
   public getIndexAtTreeNode(node: ITreeNodeOrCompositeTreeNode) {
     if (this._flattenedBranch) {
@@ -1822,7 +1821,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 根据下标位置获取节点
    * @param {number} index
    * @returns
-   * @memberof CompositeTreeNode
    */
   public getTreeNodeAtIndex(index: number) {
     const id = this._flattenedBranch?.[index];
@@ -1836,7 +1834,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 根据节点ID获取节点
    * @param {number} id
    * @returns
-   * @memberof CompositeTreeNode
    */
   public getTreeNodeById(id: number) {
     return TreeNode.getTreeNodeById(id);
@@ -1846,7 +1843,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 根据节点路径获取节点
    * @param {string} path
    * @returns
-   * @memberof CompositeTreeNode
    */
   public getTreeNodeByPath(path: string) {
     return TreeNode.getTreeNodeByPath(path);
