@@ -120,7 +120,7 @@ export class BaseLogService implements IBaseLogService {
     }
     if (this.logger) {
       this.doLog(this.logger, level, message);
-    } else if (this.getLevel() <= level) {
+    } else {
       this.buffer.push({ level, message });
     }
   }
