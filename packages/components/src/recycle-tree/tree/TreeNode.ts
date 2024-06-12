@@ -11,6 +11,7 @@ import {
 } from '@opensumi/ide-utils';
 import { findCommonRoot, sortPathByDepth } from '@opensumi/ide-utils/lib/path';
 
+import { warning } from '../../utils';
 import { treePath } from '../path';
 import {
   IAccessibilityInformation,
@@ -246,10 +247,10 @@ export class TreeNode implements ITreeNode {
   }
 
   protected validateName(name: string) {
-    if (name && name.includes(Path.separator)) {
-      // eslint-disable-next-line no-console
-      console.warn(`[TreeNode] name should not include path separator: ${name}`);
+    if (!name) {
+      return;
     }
+    warning(!name.includes(Path.separator), `[TreeNode] name should not include path separator: ${name}`);
   }
 
   // 节点绝对路径
