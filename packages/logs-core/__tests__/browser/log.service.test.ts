@@ -5,6 +5,7 @@ import { LogModule } from '../../src/browser';
 import { LogServiceClient } from '../../src/browser/log.service';
 import {
   ILogServiceClient,
+  ILogServiceForClient,
   ILoggerManagerClient,
   LogLevel,
   LogServiceForClientPath,
@@ -12,7 +13,18 @@ import {
 } from '../../src/common';
 
 @Injectable()
-class MockLogServiceForClient {
+class MockLogServiceForClient implements ILogServiceForClient {
+  dispose(namespace: SupportLogNamespace): void {}
+  async setGlobalLogLevel(level: LogLevel): Promise<void> {}
+  getGlobalLogLevel(): Promise<LogLevel> {
+    return Promise.resolve(LogLevel.Verbose);
+  }
+  async disposeAll(): Promise<void> {
+    this.dispose(this.namespace);
+  }
+  async getLogFolder(): Promise<string> {
+    return '';
+  }
   private level: LogLevel;
 
   catchLogArgs: any[];
@@ -23,7 +35,7 @@ class MockLogServiceForClient {
     this.namespace = namespace;
   }
 
-  async getLevel() {
+  getLevel() {
     return this.level;
   }
 
