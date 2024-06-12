@@ -1480,6 +1480,7 @@ export const localizationBundle = {
     'preference.ai.native.inlineCompletions.title': 'Inline Completions',
     'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
+    'preference.ai.native.inlineCompletions.debounceTime': 'Debounce time for inline completions',
     // #endregion AI Native
 
     // #endregion merge editor

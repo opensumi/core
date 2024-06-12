@@ -64,13 +64,17 @@ import {
 import { AIEditorContribution } from './ai-editor.contribution';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
+import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
+import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
+import { RenameHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import {
   AINativeCoreContribution,
+  IAIMiddleware,
   IChatFeatureRegistry,
   IChatRenderRegistry,
   IRenameCandidatesProviderRegistry,
@@ -156,6 +160,15 @@ export class AINativeBrowserContribution
   @Autowired(IAIInlineChatService)
   private readonly aiInlineChatService: AIInlineChatService;
 
+  @Autowired(RenameHandler)
+  private readonly renameHandler: RenameHandler;
+
+  @Autowired(InlineCompletionHandler)
+  private readonly inlineCompletionHandler: InlineCompletionHandler;
+
+  @Autowired(CodeActionHandler)
+  private readonly codeActionHandler: CodeActionHandler;
+
   constructor() {
     this.registerFeature();
   }
@@ -179,7 +192,7 @@ export class AINativeBrowserContribution
 
   onDidStart() {
     runWhenIdle(() => {
-      const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.CHAT_VISIBLE_TYPE);
+      const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, true);
@@ -187,9 +200,21 @@ export class AINativeBrowserContribution
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, false);
       }
     });
+
+    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+      this.renameHandler.load();
+    }
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+      this.inlineCompletionHandler.load();
+    }
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+      this.codeActionHandler.load();
+    }
   }
 
   private registerFeature() {
+    const middlewares: IAIMiddleware[] = [];
+
     this.contributions.getContributions().forEach((contribution) => {
       if (contribution.registerInlineChatFeature) {
         contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
@@ -209,7 +234,12 @@ export class AINativeBrowserContribution
       if (contribution.registerTerminalProvider) {
         contribution.registerTerminalProvider(this.terminalProviderRegistry);
       }
+      if (contribution.middleware) {
+        middlewares.push(contribution.middleware);
+      }
     });
+
+    this.inlineCompletionHandler.updateConfig(middlewares);
   }
 
   registerSetting(registry: ISettingRegistry) {
@@ -223,7 +253,7 @@ export class AINativeBrowserContribution
       title: localize('preference.ai.native.chat.title'),
       preferences: [
         {
-          id: AINativeSettingSectionsId.CHAT_VISIBLE_TYPE,
+          id: AINativeSettingSectionsId.ChatVisibleType,
           localized: 'preference.ai.native.chat.visible.type',
         },
       ],
@@ -233,7 +263,7 @@ export class AINativeBrowserContribution
       title: localize('preference.ai.native.interface.quick.title'),
       preferences: [
         {
-          id: AINativeSettingSectionsId.INTERFACE_QUICK_NAVIGATION_ENABLED,
+          id: AINativeSettingSectionsId.InterfaceQuickNavigationEnabled,
           localized: 'preference.ai.native.interface.quick.navigation',
         },
       ],
@@ -244,7 +274,11 @@ export class AINativeBrowserContribution
         title: localize('preference.ai.native.inlineCompletions.title'),
         preferences: [
           {
-            id: AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+            id: AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+            localized: 'preference.ai.native.inlineCompletions.debounceTime',
+          },
+          {
+            id: AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
             localized: 'preference.ai.native.inlineCompletions.promptEngineering.enabled',
           },
         ],
@@ -256,11 +290,11 @@ export class AINativeBrowserContribution
         title: localize('preference.ai.native.inlineChat.title'),
         preferences: [
           {
-            id: AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+            id: AINativeSettingSectionsId.InlineChatAutoVisible,
             localized: 'preference.ai.native.inlineChat.auto.visible',
           },
           {
-            id: AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+            id: AINativeSettingSectionsId.InlineChatCodeActionEnabled,
             localized: 'preference.ai.native.inlineChat.codeAction.enabled',
           },
         ],
