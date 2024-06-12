@@ -246,7 +246,7 @@ export class TreeNode implements ITreeNode {
   }
 
   protected validateName(name: string) {
-    if (name.includes(Path.separator)) {
+    if (name && name.includes(Path.separator)) {
       // eslint-disable-next-line no-console
       console.warn(`[TreeNode] name should not include path separator: ${name}`);
     }
@@ -494,7 +494,16 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
-  // 重载 name 的 setter，路径改变时需要重新监听文件节点变化
+  /**
+   * 重载 setter 后，必须要重载 getter
+   */
+  get name() {
+    return super.name;
+  }
+
+  /**
+   * 重载 name 的 setter，路径改变时需要重新监听文件节点变化
+   */
   set name(name: string) {
     const prevPath = this.path;
     if (!CompositeTreeNode.isRoot(this) && typeof this.watchTerminator === 'function') {

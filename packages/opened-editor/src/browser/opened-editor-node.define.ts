@@ -20,7 +20,9 @@ export class EditorFileRoot extends CompositeTreeNode {
   }
 }
 
-// EditorFileGroup 节点不包含父节点, 同时默认为展开状态
+/**
+ * EditorFileGroup 节点不包含父节点, 同时默认为展开状态
+ */
 export class EditorFileGroup extends CompositeTreeNode {
   static makeName(groupIndex: number) {
     return formatLocalize('opened.editors.group.title', groupIndex + 1);
