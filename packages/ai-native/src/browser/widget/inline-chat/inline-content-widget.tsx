@@ -10,8 +10,10 @@ import {
   AIInlineChatContentWidgetId,
   Disposable,
   Emitter,
+  Event,
   InlineChatFeatureRegistryToken,
   localize,
+  runWhenIdle,
 } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
@@ -24,7 +26,7 @@ import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.servic
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import styles from './inline-chat.module.less';
-import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
+import { AIInlineChatService, EInlineChatStatus, EResultKind } from './inline-chat.service';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
@@ -39,10 +41,12 @@ export interface IAIInlineChatControllerProps {
   onLayoutChange: (height: number) => void;
   onClose?: () => void;
   onInteractiveInputSend?: (value: string) => void;
+  onChatStatus: Event<EInlineChatStatus>;
+  onResultClick: (k: EResultKind) => void;
 }
 
 const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
-  const { onClickActions, onClose, onInteractiveInputSend, onLayoutChange } = props;
+  const { onClickActions, onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick } = props;
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
@@ -50,11 +54,7 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
 
   useEffect(() => {
     const dis = new Disposable();
-    dis.addDispose(
-      aiInlineChatService.onChatStatus((status) => {
-        setStatus(status);
-      }),
-    );
+    dis.addDispose(onChatStatus((s) => setStatus(s)));
 
     dis.addDispose(
       aiInlineChatService.onInteractiveInputVisible((v) => {
@@ -65,13 +65,13 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     return () => {
       dis.dispose();
     };
-  }, []);
+  }, [onChatStatus, aiInlineChatService]);
 
   useEffect(() => {
     if (status === EInlineChatStatus.ERROR) {
       onClose?.();
     }
-  }, [status, onClose]);
+  }, [onClose]);
 
   const isLoading = useMemo(() => status === EInlineChatStatus.THINKING, [status]);
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
@@ -83,26 +83,20 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       {
         icon: 'check',
         text: localize('aiNative.inline.chat.operate.check.title'),
-        onClick: () => {
-          aiInlineChatService._onAccept.fire();
-        },
+        onClick: () => onResultClick(EResultKind.ACCEPT),
       },
       {
         icon: 'discard',
         text: localize('aiNative.operate.discard.title'),
-        onClick: () => {
-          aiInlineChatService._onDiscard.fire();
-        },
+        onClick: () => onResultClick(EResultKind.DISCARD),
       },
       {
         icon: 'afresh',
         text: localize('aiNative.operate.afresh.title'),
-        onClick: () => {
-          aiInlineChatService._onRegenerate.fire();
-        },
+        onClick: () => onResultClick(EResultKind.REGENERATE),
       },
     ],
-    [],
+    [onResultClick],
   );
 
   const handleClickActions = useCallback(
@@ -119,7 +113,6 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const handleInteractiveInputSend = useCallback(
     (value: string) => {
       onInteractiveInputSend?.(value);
-      aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
     },
     [onInteractiveInputSend],
   );
@@ -200,9 +193,6 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(IAIInlineChatService)
-  private aiInlineChatService: AIInlineChatService;
-
   @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
@@ -215,6 +205,17 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
 
   protected readonly _onInteractiveInputValue = new Emitter<string>();
   public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
+
+  protected readonly _onChatStatus = new Emitter<EInlineChatStatus>();
+  public readonly onChatStatus: Event<EInlineChatStatus> = this._onChatStatus.event;
+
+  protected readonly _onResultClick = new Emitter<EResultKind>();
+  public readonly onResultClick: Event<EResultKind> = this._onResultClick.event;
+
+  protected _status: EInlineChatStatus = EInlineChatStatus.READY;
+  public get status(): EInlineChatStatus {
+    return this._status;
+  }
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
@@ -229,8 +230,15 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     );
   }
 
+  public launchChatStatus(status: EInlineChatStatus) {
+    return runWhenIdle(() => {
+      this._status = status;
+      this._onChatStatus.fire(status);
+    });
+  }
+
   override dispose(): void {
-    this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
+    this.launchChatStatus(EInlineChatStatus.READY);
     super.dispose();
   }
 
@@ -248,10 +256,17 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
       <AIInlineChatController
         onClickActions={(id) => this.clickActionId(id, 'widget')}
         onClose={() => this.dispose()}
+        onChatStatus={this.onChatStatus.bind(this)}
         onLayoutChange={() => {
           this.editor.layoutContentWidget(this);
         }}
-        onInteractiveInputSend={(value) => this._onInteractiveInputValue.fire(value)}
+        onInteractiveInputSend={(value) => {
+          this.launchChatStatus(EInlineChatStatus.THINKING);
+          this._onInteractiveInputValue.fire(value);
+        }}
+        onResultClick={(kind: EResultKind) => {
+          this._onResultClick.fire(kind);
+        }}
       />
     );
   }
