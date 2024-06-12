@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { ITreeNodeOrCompositeTreeNode, Tree, TreeNodeType } from '@opensumi/ide-components';
-import { Schemes, URI, formatLocalize, path } from '@opensumi/ide-core-browser';
+import { Schemes, URI, path } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IEditorGroup, IResource, ResourceService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -111,36 +111,32 @@ export class OpenedEditorService extends Tree {
   };
 
   public getEditorNodeByUri(resource?: IResource | URI, group?: IEditorGroup) {
-    let path = this.root!.path;
     if (resource) {
+      let path: string;
       if (this._isGroupTree) {
         if (!group) {
           return;
         }
-        const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
-        path = Path.joinPath(
-          path,
-          groupName,
-          resource && (resource as IResource).uri
-            ? (resource as IResource).uri.toString()
-            : (resource as URI).toString(),
+        path = this.root!.joinPath(
+          EditorFileGroup.makeName(group.index),
+          EditorFile.makeName(
+            resource && (resource as IResource).uri ? (resource as IResource).uri : (resource as URI),
+          ),
         );
       } else {
-        path = Path.joinPath(
-          path,
-          resource && (resource as IResource).uri
-            ? (resource as IResource).uri.toString()
-            : (resource as URI).toString(),
+        path = this.root!.joinPath(
+          EditorFile.makeName(
+            resource && (resource as IResource).uri ? (resource as IResource).uri : (resource as URI),
+          ),
         );
       }
-      return this.root?.getTreeNodeByPath(path);
+      return this.root!.getTreeNodeByPath(path);
     } else {
       if (!group) {
         return;
       }
-      const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
-      path = Path.joinPath(path, groupName);
-      return this.root?.getTreeNodeByPath(path);
+      const path = this.root!.joinPath(EditorFileGroup.makeName(group.index));
+      return this.root!.getTreeNodeByPath(path);
     }
   }
 

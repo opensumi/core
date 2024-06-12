@@ -245,6 +245,10 @@ export class TreeNode implements ITreeNode {
     return this._path;
   }
 
+  public joinPath(...paths: string[]) {
+    return Path.joinPath(this.path, ...paths);
+  }
+
   get accessibilityInformation(): IAccessibilityInformation {
     return {
       label: this.name,
