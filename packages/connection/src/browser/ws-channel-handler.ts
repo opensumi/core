@@ -51,12 +51,7 @@ export class WSChannelHandler {
     const serializer = options.serializer || furySerializer;
     this.wrappedConnection = wrapSerializer(this.connection, serializer);
   }
-  // 为解决建立连接之后，替换成可落盘的 logger
-  replaceLogger(logger: any) {
-    if (logger) {
-      this.logger = logger;
-    }
-  }
+
   setReporter(reporterService: IReporterService) {
     this.reporterService = reporterService;
   }

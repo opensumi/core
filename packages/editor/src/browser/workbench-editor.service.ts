@@ -109,6 +109,8 @@ import { UntitledDocumentIdCounter } from './untitled-resource';
 
 const MAX_CONFIRM_RESOURCES = 10;
 
+const debugLogger = getDebugLogger();
+
 const couldRevive = (r: IResource): boolean => !!(r.supportsRevive && !r.deleted);
 
 @Injectable()
@@ -1499,7 +1501,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         };
       }
     } catch (e) {
-      getDebugLogger().error(e);
+      debugLogger.error(e);
       resourceReady && resourceReady.reject();
       if (!isEditorError(e, EditorTabChangedError)) {
         this.messageService.error(formatLocalize('editor.failToOpen', uri.displayName, e.message), [], true);
@@ -1747,7 +1749,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             promises.push(g.close(r.uri));
           }
         });
-        await Promise.all(promises).catch(getDebugLogger().error);
+        await Promise.all(promises).catch(debugLogger.error);
         this.activeComponents.set(component, [resource]);
       }
     }

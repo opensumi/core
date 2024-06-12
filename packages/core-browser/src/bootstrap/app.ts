@@ -28,7 +28,6 @@ import {
   URI,
   asExtensionCandidate,
   createContributionProvider,
-  getDebugLogger,
   isOSX,
   setLanguageId,
 } from '@opensumi/ide-core-common';
@@ -231,7 +230,6 @@ export class ClientApp implements IClientApp, IDisposable {
 
     measureReporter.timeEnd('ClientApp.createConnection');
 
-    this.logger = this.injector.get(ILogger);
     this.stateService.state = 'client_connected';
     this.registerEventListeners();
     // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
@@ -281,6 +279,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.keybindingService = this.injector.get(KeybindingService);
     this.stateService = this.injector.get(ClientAppStateService);
     this.nextMenuRegistry = this.injector.get(IMenuRegistry);
+    this.logger = this.injector.get(ILogger);
   }
 
   private createBrowserModules(defaultPreferences?: IPreferences) {
@@ -412,7 +411,7 @@ export class ClientApp implements IClientApp, IDisposable {
             return true;
           }
         } catch (e) {
-          getDebugLogger().error(e);
+          this.logger.error(e);
         }
       }
     }
@@ -437,7 +436,7 @@ export class ClientApp implements IClientApp, IDisposable {
             return true;
           }
         } catch (e) {
-          getDebugLogger().error(e);
+          this.logger.error(e);
         }
       }
     }

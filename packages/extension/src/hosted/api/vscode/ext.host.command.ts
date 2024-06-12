@@ -34,6 +34,8 @@ import { ObjectIdentifier } from './language/util';
 
 import type vscode from 'vscode';
 
+const debugLogger = getDebugLogger();
+
 export function createCommandsApiFactory(
   extHostCommands: IExtHostCommands,
   extHostEditors: ExtensionHostEditorService,
@@ -67,7 +69,7 @@ export function createCommandsApiFactory(
       return extHostCommands.registerCommand(true, id, (...args: any[]): any => {
         const activeTextEditor = extHostEditors.activeEditor ? extHostEditors.activeEditor.textEditor : undefined;
         if (!activeTextEditor) {
-          getDebugLogger().warn('Cannot execute ' + id + ' because there is no active text editor.');
+          debugLogger.warn('Cannot execute ' + id + ' because there is no active text editor.');
           return undefined;
         }
 
@@ -79,11 +81,11 @@ export function createCommandsApiFactory(
           .then(
             (result) => {
               if (!result) {
-                getDebugLogger().warn('Edits from command ' + id + ' were not applied.');
+                debugLogger.warn('Edits from command ' + id + ' were not applied.');
               }
             },
             (err) => {
-              getDebugLogger().warn('An error occurred while running command ' + id, err);
+              debugLogger.warn('An error occurred while running command ' + id, err);
             },
           );
       });
@@ -96,7 +98,7 @@ export function createCommandsApiFactory(
       return extHostCommands.registerCommand(true, id, async (...args: any[]): Promise<any> => {
         const activeTextEditor = extHostEditors.activeEditor;
         if (!activeTextEditor) {
-          getDebugLogger().warn('Cannot execute ' + id + ' because there is no active text editor.');
+          debugLogger.warn('Cannot execute ' + id + ' because there is no active text editor.');
           return undefined;
         }
 

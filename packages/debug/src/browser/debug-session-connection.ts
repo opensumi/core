@@ -1,15 +1,7 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
-import {
-  Deferred,
-  Disposable,
-  DisposableCollection,
-  Emitter,
-  Event,
-  IDisposable,
-  getDebugLogger,
-} from '@opensumi/ide-core-browser';
-import { CancellationToken } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, DisposableCollection, Emitter, Event, IDisposable } from '@opensumi/ide-core-browser';
+import { CancellationToken, ILogger } from '@opensumi/ide-core-common';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
@@ -48,6 +40,9 @@ const standardDebugEvents = new Set<Required<keyof DebugEventTypes>>([
 
 @Injectable({ multiple: true })
 export class DebugSessionConnection implements IDisposable {
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   @Autowired(IDebugSessionManager)
   protected readonly manager: DebugSessionManager;
 
@@ -264,7 +259,7 @@ export class DebugSessionConnection implements IDisposable {
         response.message = error.message;
       }
     } else {
-      getDebugLogger().error('Unhandled request', request);
+      this.logger.error('Unhandled request', request);
     }
     await this.send(response);
   }

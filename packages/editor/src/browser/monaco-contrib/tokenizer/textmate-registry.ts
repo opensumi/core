@@ -41,6 +41,8 @@ export interface GrammarDefinition {
   location: URI;
 }
 
+const debugLogger = getDebugLogger();
+
 @Injectable()
 export class TextmateRegistry {
   readonly scopeToProvider = new Map<string, GrammarDefinitionProvider>();
@@ -50,7 +52,7 @@ export class TextmateRegistry {
   // 将语法定义描述绑定到某一个Scope：source.json.comments
   registerTextmateGrammarScope(scope: string, description: GrammarDefinitionProvider) {
     if (this.scopeToProvider.has(scope)) {
-      getDebugLogger().warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
+      debugLogger.warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
     }
     this.scopeToProvider.set(scope, description);
 
@@ -66,9 +68,7 @@ export class TextmateRegistry {
   mapLanguageIdToTextmateGrammar(languageId: string, scope: string) {
     const existingScope = this.getScope(languageId);
     if (typeof existingScope === 'string') {
-      getDebugLogger().warn(
-        new Error(`'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`),
-      );
+      debugLogger.warn(new Error(`'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`));
     }
     this.languageIdToScope.set(languageId, scope);
 

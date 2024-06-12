@@ -1,5 +1,5 @@
-import { Injectable } from '@opensumi/di';
-import { Disposable, getDebugLogger } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, ILogger } from '@opensumi/ide-core-common';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, SLASH_SYMBOL } from '../../common';
 import { IChatFeatureRegistry, IChatSlashCommandHandler, IChatSlashCommandItem } from '../types';
@@ -9,7 +9,9 @@ import { ChatProxyService } from './chat-proxy.service';
 
 @Injectable()
 export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegistry {
-  private readonly logger = getDebugLogger();
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   private slashCommandsMap: Map<string, ChatSlashCommandItemModel> = new Map();
   private slashCommandsHandlerMap: Map<string, IChatSlashCommandHandler> = new Map();
 

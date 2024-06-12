@@ -26,6 +26,8 @@ import { TextEditorEdit } from './edit.builder';
 
 import type vscode from 'vscode';
 
+const debugLogger = getDebugLogger();
+
 export class ExtensionHostEditorService implements IExtensionHostEditorService {
   private _editors: Map<string, TextEditorData> = new Map();
 
@@ -357,7 +359,7 @@ export class TextEditorData {
       this.editorService._proxy.$insertSnippet(this.id, snippet.value, _location, options);
       return true;
     } catch (e) {
-      getDebugLogger().error(e);
+      debugLogger.error(e);
       return false;
     }
   }
@@ -366,7 +368,7 @@ export class TextEditorData {
     rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[],
   ): void {
     if (decorationType.disposed) {
-      getDebugLogger().warn(`decorationType with key ${decorationType.key} has been disposed!`);
+      debugLogger.warn(`decorationType with key ${decorationType.key} has been disposed!`);
       return;
     }
     let resolved: IDecorationApplyOptions[] = [];
@@ -389,7 +391,7 @@ export class TextEditorData {
     this.editorService._proxy.$revealRange(this.id, TypeConverts.Range.from(range), revealType);
   }
   show(column?: vscode.ViewColumn | undefined): void {
-    getDebugLogger().warn('TextEditor.show is Deprecated');
+    debugLogger.warn('TextEditor.show is Deprecated');
   }
   hide(): void {
     this.editorService.closeEditor(this);

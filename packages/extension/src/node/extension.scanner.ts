@@ -17,6 +17,8 @@ function resolvePath(path) {
   return path;
 }
 
+const debugLogger = getDebugLogger();
+
 export class ExtensionScanner {
   static async getExtension(
     extensionPath: string,
@@ -27,7 +29,7 @@ export class ExtensionScanner {
     try {
       await fs.stat(extensionPath);
     } catch (e) {
-      getDebugLogger().error(`extension path ${extensionPath} does not exist`);
+      debugLogger.error(`extension path ${extensionPath} does not exist`);
       return;
     }
 
@@ -56,7 +58,7 @@ export class ExtensionScanner {
           pkgCheckResult = false;
         }
       } catch (e) {
-        getDebugLogger().error(e);
+        debugLogger.error(e);
         pkgCheckResult = false;
       }
     }
@@ -103,7 +105,7 @@ export class ExtensionScanner {
         }
       }
     } catch (e) {
-      getDebugLogger().error(e);
+      debugLogger.error(e);
       return;
     }
 
@@ -114,7 +116,7 @@ export class ExtensionScanner {
         delete getNodeRequire().cache[extendPath];
         extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
-        getDebugLogger().error(e);
+        debugLogger.error(e);
       }
     }
 
@@ -195,7 +197,7 @@ export class ExtensionScanner {
     return Array.from(this.availableExtensions.values());
   }
   private async scanDir(dir: string): Promise<void> {
-    getDebugLogger().info('scan directory: ', dir);
+    debugLogger.info('scan directory: ', dir);
     try {
       const extensionDirArr = await fs.readdir(dir);
       await Promise.all(
@@ -205,7 +207,7 @@ export class ExtensionScanner {
         }),
       );
     } catch (e) {
-      getDebugLogger().error(e);
+      debugLogger.error(e);
     }
   }
 

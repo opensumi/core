@@ -439,6 +439,8 @@ class CustomExecutionData implements IDisposable {
   }
 }
 
+const debugLogger = getDebugLogger();
+
 export class ExtHostTasks implements IExtHostTasks {
   private handlerCounter = 0;
 
@@ -622,8 +624,7 @@ export class ExtHostTasks implements IExtHostTasks {
         if (result) {
           for (const task of result) {
             if (!task.definition || !validTypes[task.definition.type]) {
-              getDebugLogger().warn(
-                false,
+              debugLogger.warn(
                 `The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`,
               );
             }
@@ -646,7 +647,7 @@ export class ExtHostTasks implements IExtHostTasks {
         };
       })
       .catch((err) => {
-        getDebugLogger().error(err, provider.extension);
+        debugLogger.error(err, provider.extension);
         return {
           tasks: [],
           extension: provider.extension,

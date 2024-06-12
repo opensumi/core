@@ -31,9 +31,9 @@ import {
   ChatServiceToken,
   ErrorResponse,
   IAIBackService,
+  ILogger,
   MergeConflictEditorMode,
   ReplyResponse,
-  getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -63,7 +63,8 @@ export class AINativeContribution implements AINativeCoreContribution {
   @Autowired(ChatServiceToken)
   private readonly aiChatService: ChatService;
 
-  logger = getDebugLogger();
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   private getCrossCode(monacoEditor: ICodeEditor): string {
     const model = monacoEditor.getModel();
@@ -354,7 +355,7 @@ export class AINativeContribution implements AINativeCoreContribution {
     registry.registerRenameSuggestionsProvider(async (model, range, token): Promise<NewSymbolName[] | undefined> => {
       const prompt = this.renamePromptManager.requestPrompt(model.getValueInRange(range));
 
-      this.logger.info('rename prompt', prompt);
+      this.logger.log('rename prompt', prompt);
 
       const result = await this.aiBackService.request(
         prompt,
@@ -364,7 +365,7 @@ export class AINativeContribution implements AINativeCoreContribution {
         token,
       );
 
-      this.logger.info('rename result', result);
+      this.logger.log('rename result', result);
 
       if (result.data) {
         const names = this.renamePromptManager.extractResponse(result.data);
