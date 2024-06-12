@@ -185,9 +185,8 @@ export const Tabs = ({ group }: ITabsProps) => {
   const updateTabMarginRight = useCallback(() => {
     if (editorActionUpdateTimer.current) {
       clearTimeout(editorActionUpdateTimer.current);
-      editorActionUpdateTimer.current = null;
     }
-    const timer = setTimeout(() => {
+    editorActionUpdateTimer.current = setTimeout(() => {
       fastdom.measure(() => {
         const _marginReight = editorActionRef.current?.offsetWidth;
         if (_marginReight !== lastMarginRight) {
@@ -195,7 +194,6 @@ export const Tabs = ({ group }: ITabsProps) => {
         }
       });
     }, 200);
-    editorActionUpdateTimer.current = timer;
   }, [editorActionRef.current, editorActionUpdateTimer.current, lastMarginRight]);
 
   useEffect(() => {
