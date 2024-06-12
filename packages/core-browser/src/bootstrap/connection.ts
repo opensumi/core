@@ -9,11 +9,13 @@ import {
   BrowserConnectionErrorEvent,
   BrowserConnectionOpenEvent,
   IEventBus,
+  ILogger,
   IReporterService,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
+import { Logger } from '../logger';
 import { AppConfig } from '../react-providers/config-provider';
 
 import { ModuleConstructor } from './app.interface';
@@ -77,6 +79,10 @@ export async function createConnectionService(
   }
 
   initConnectionService(injector, modules, clientCenter);
+
+  // report log to server after connection established
+  const logger = injector.get(ILogger) as Logger;
+  logger.reportToServer();
 
   return channel;
 }

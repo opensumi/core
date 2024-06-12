@@ -5,7 +5,6 @@
 import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 
 import { Injector } from '@opensumi/di';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppLifeCycleServiceToken,
   CommandRegistry,
@@ -19,14 +18,13 @@ import {
   IDisposable,
   IEventBus,
   ILogServiceClient,
-  ILoggerManagerClient,
+  ILogger,
   IReporterService,
   LifeCyclePhase,
   MaybePromise,
   REPORT_NAME,
   StorageProvider,
   StorageResolverContribution,
-  SupportLogNamespace,
   URI,
   asExtensionCandidate,
   createContributionProvider,
@@ -233,7 +231,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
     measureReporter.timeEnd('ClientApp.createConnection');
 
-    this.logger = this.getLogger();
+    this.logger = this.injector.get(ILogger);
     this.stateService.state = 'client_connected';
     this.registerEventListeners();
     // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
@@ -255,18 +253,6 @@ export class ClientApp implements IClientApp, IDisposable {
     channel.onReopen(() => {
       this.onReconnectContributions();
     });
-
-    // create logger after connection established
-    this.logger = this.getLogger();
-    this.injector.get(WSChannelHandler).replaceLogger(this.logger);
-  }
-
-  private getLogger() {
-    if (this.logger) {
-      return this.logger;
-    }
-    this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
-    return this.logger;
   }
 
   private onReconnectContributions() {

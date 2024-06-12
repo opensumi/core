@@ -5,46 +5,62 @@ import { DebugLog, ILogServiceClient, ILogServiceForClient, LogLevel, SupportLog
 export class LogServiceClient implements ILogServiceClient {
   private namespace: SupportLogNamespace;
   private logServiceForClient: ILogServiceForClient;
+
   private debugLog: DebugLog;
   private pid: number | undefined;
 
   private level: LogLevel = LogLevel.Verbose;
 
-  protected ready = new Deferred<void>();
+  private ready = new Deferred<void>();
 
-  constructor(namespace: SupportLogNamespace, logServiceForClient: ILogServiceForClient, pid?: number) {
+  constructor(namespace: SupportLogNamespace) {
     this.namespace = namespace;
-    this.logServiceForClient = logServiceForClient;
     this.debugLog = new DebugLog(namespace);
-    this.pid = pid;
-
-    this.init();
   }
 
-  protected async init() {
+  /**
+   * 启用上报到服务端
+   */
+  async setup(logServiceForClient: ILogServiceForClient, pid?: number) {
+    this.logServiceForClient = logServiceForClient;
+    this.pid = pid;
+
     const level = await this.logServiceForClient.getGlobalLogLevel();
     this.level = level;
     this.ready.resolve();
   }
 
   async getLevel() {
+    if (!this.logServiceForClient) {
+      return this.level;
+    }
     return await this.logServiceForClient.getLevel(this.namespace);
   }
 
   async setLevel(level: LogLevel) {
     this.level = level;
+
+    if (!this.logServiceForClient) {
+      return;
+    }
     await this.logServiceForClient.setLevel(this.namespace, level);
   }
 
   async verbose(...args: any[]) {
     this.debugLog.verbose(...args);
 
+    if (!this.logServiceForClient) {
+      return;
+    }
     await this.logServiceForClient.verbose(this.namespace, format(args), this.pid);
   }
 
   async debug(...args: any[]) {
     this.debugLog.debug(...args);
 
+    if (!this.logServiceForClient) {
+      return;
+    }
     await this.ready.promise;
     if (this.level > LogLevel.Debug) {
       return;
@@ -55,6 +71,9 @@ export class LogServiceClient implements ILogServiceClient {
   async log(...args: any[]) {
     this.debugLog.log(...args);
 
+    if (!this.logServiceForClient) {
+      return;
+    }
     await this.ready.promise;
     if (this.level > LogLevel.Info) {
       return;
@@ -65,6 +84,9 @@ export class LogServiceClient implements ILogServiceClient {
   async warn(...args: any[]) {
     this.debugLog.warn(...args);
 
+    if (!this.logServiceForClient) {
+      return;
+    }
     await this.ready.promise;
     if (this.level > LogLevel.Warning) {
       return;
@@ -75,6 +97,9 @@ export class LogServiceClient implements ILogServiceClient {
   async error(...args: any[]) {
     this.debugLog.error(...args);
 
+    if (!this.logServiceForClient) {
+      return;
+    }
     await this.ready.promise;
     if (this.level > LogLevel.Error) {
       return;
@@ -85,6 +110,9 @@ export class LogServiceClient implements ILogServiceClient {
   async critical(...args: any[]) {
     this.debugLog.error(...args);
 
+    if (!this.logServiceForClient) {
+      return;
+    }
     await this.ready.promise;
     if (this.level > LogLevel.Critical) {
       return;
@@ -93,6 +121,11 @@ export class LogServiceClient implements ILogServiceClient {
   }
 
   async dispose() {
+    this.debugLog.destroy();
+
+    if (!this.logServiceForClient) {
+      return;
+    }
     await this.logServiceForClient.dispose(this.namespace);
   }
 }
