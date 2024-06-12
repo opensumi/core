@@ -32,6 +32,10 @@ export class Path {
     return path.split(Path.separator).filter((path) => !!path);
   }
 
+  static joinPath(...parts: string[]): string {
+    return parts.join(Path.separator);
+  }
+
   static isRelative(path: string): boolean {
     return !path.startsWith(Path.separator);
   }
@@ -1882,4 +1886,40 @@ export function isValidBasename(name: string | null | undefined, isWindowsOS: bo
   }
 
   return true;
+}
+
+export function sortPathByDepth(paths: string[], sep = Path.separator) {
+  const depths = {} as Record<string, number>;
+
+  for (const path of paths) {
+    const parts = path.split(sep);
+    depths[path] = parts.length;
+  }
+
+  return paths.sort((a, b) => depths[a] - depths[b]);
+}
+
+export function findCommonRoot(paths: string[], sep = Path.separator) {
+  const [first = '', ...remaining] = paths;
+  if (first === '' || remaining.length === 0) {
+    return '';
+  }
+
+  const parts = first.split(sep);
+
+  let endOfPrefix = parts.length;
+  for (const path of remaining) {
+    const compare = path.split(sep);
+    for (let i = 0; i < endOfPrefix; i++) {
+      if (compare[i] !== parts[i]) {
+        endOfPrefix = i;
+      }
+    }
+
+    if (endOfPrefix === 0) {
+      return '';
+    }
+  }
+
+  return parts.slice(0, endOfPrefix).join(sep);
 }

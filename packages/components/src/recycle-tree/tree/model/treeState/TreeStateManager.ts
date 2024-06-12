@@ -1,11 +1,10 @@
-import { Emitter, Event, path } from '@opensumi/ide-utils';
+import { Emitter, Event } from '@opensumi/ide-utils';
 
+import { treePath } from '../../../path';
 import { ITreeNodeOrCompositeTreeNode, TreeNodeEvent } from '../../../types';
 import { CompositeTreeNode, TreeNode } from '../../TreeNode';
 
 import { ISerializableState } from './types';
-
-const { Path } = path;
 
 export enum Operation {
   SetExpanded = 1,
@@ -119,8 +118,6 @@ export class TreeStateManager {
 
   /**
    * 处理展开状态的变更
-   * @private
-   * @memberof TreeStateManager
    */
   private handleExpansionChange = (target: CompositeTreeNode, isExpanded: boolean, isVisibleAtSurface: boolean) => {
     if (this.stashing && this.stashKeyframes) {
@@ -155,7 +152,7 @@ export class TreeStateManager {
     }
     let relativePath = this.expandedDirectories.get(target);
     if (isExpanded && !relativePath) {
-      relativePath = new Path(this.root.path).relative(new Path(target.path))?.toString() as string;
+      relativePath = treePath.relative(this.root.path, target.path)!;
       this.expandedDirectories.set(target, relativePath);
       this.onDidChangeExpansionStateEmitter.fire({ relativePath, isExpanded, isVisibleAtSurface });
     } else if (!isExpanded && relativePath) {
@@ -167,7 +164,7 @@ export class TreeStateManager {
   private handleDidChangePath = (target: CompositeTreeNode) => {
     if (this.expandedDirectories.has(target)) {
       const prevPath = this.expandedDirectories.get(target) as string;
-      const newPath = new Path(this.root.path).relative(new Path(target.path))?.toString() as string;
+      const newPath = treePath.relative(this.root.path, target.path)!;
       this.expandedDirectories.set(target, newPath);
       this.onDidChangeRelativePathEmitter.fire({ prevPath, newPath });
     }

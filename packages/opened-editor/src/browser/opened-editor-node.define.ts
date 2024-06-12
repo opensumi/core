@@ -20,8 +20,14 @@ export class EditorFileRoot extends CompositeTreeNode {
   }
 }
 
-// EditorFileGroup 节点不包含父节点, 同时默认为展开状态
+/**
+ * EditorFileGroup 节点不包含父节点, 同时默认为展开状态
+ */
 export class EditorFileGroup extends CompositeTreeNode {
+  static makeName(groupIndex: number) {
+    return formatLocalize('opened.editors.group.title', groupIndex + 1);
+  }
+
   static isEditorGroup(data: OpenedEditorData): data is IEditorGroup {
     return typeof (data as any).resources !== 'undefined';
   }
@@ -42,7 +48,7 @@ export class EditorFileGroup extends CompositeTreeNode {
   }
 
   get name() {
-    return formatLocalize('opened.editors.group.title', this.groupIndex + 1);
+    return EditorFileGroup.makeName(this.groupIndex);
   }
 
   get displayName() {
@@ -63,6 +69,10 @@ export class EditorFile extends TreeNode {
     return TreeNode.is(node) && 'uri' in node;
   }
 
+  static makeName(uri: URI) {
+    return uri.toString().replace(/\//g, '_');
+  }
+
   constructor(
     tree: OpenedEditorService,
     public readonly resource: IResource,
@@ -70,7 +80,7 @@ export class EditorFile extends TreeNode {
     public dirty: boolean = false,
     parent: EditorFileGroup | undefined,
   ) {
-    super(tree as ITree, parent, undefined, { name: `${resource.uri.toString()}` });
+    super(tree as ITree, parent, undefined, { name: EditorFile.makeName(resource.uri) });
   }
 
   get displayName() {
