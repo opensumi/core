@@ -206,8 +206,8 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   protected readonly _onInteractiveInputValue = new Emitter<string>();
   public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
 
-  protected readonly _onChatStatus = new Emitter<EInlineChatStatus>();
-  public readonly onChatStatus: Event<EInlineChatStatus> = this._onChatStatus.event;
+  protected readonly _onStatusChange = new Emitter<EInlineChatStatus>();
+  public readonly onStatusChange: Event<EInlineChatStatus> = this._onStatusChange.event;
 
   protected readonly _onResultClick = new Emitter<EResultKind>();
   public readonly onResultClick: Event<EResultKind> = this._onResultClick.event;
@@ -233,7 +233,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   public launchChatStatus(status: EInlineChatStatus) {
     return runWhenIdle(() => {
       this._status = status;
-      this._onChatStatus.fire(status);
+      this._onStatusChange.fire(status);
     });
   }
 
@@ -256,7 +256,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
       <AIInlineChatController
         onClickActions={(id) => this.clickActionId(id, 'widget')}
         onClose={() => this.dispose()}
-        onChatStatus={this.onChatStatus.bind(this)}
+        onChatStatus={this.onStatusChange.bind(this)}
         onLayoutChange={() => {
           this.editor.layoutContentWidget(this);
         }}

@@ -11,6 +11,7 @@ import { InlineCompletionHandler } from './contrib/inline-completions/inline-com
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
 import { InlineHintHandler } from './widget/inline-hint/inline-hint.handler';
+import { InlineInputHandler } from './widget/inline-input/inline-input.handler';
 
 @Injectable()
 export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -25,6 +26,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(InlineHintHandler)
   private readonly inlineHintHandler: InlineHintHandler;
+
+  @Autowired(InlineInputHandler)
+  private readonly inlineInputHandler: InlineInputHandler;
 
   @Autowired(CodeActionHandler)
   private readonly codeActionHandler: CodeActionHandler;
@@ -76,6 +80,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
           this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor));
+          this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor));
         }
       }),
     );

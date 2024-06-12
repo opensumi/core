@@ -72,7 +72,7 @@ export interface IInlineChatFeatureRegistry {
   registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
   /**
-   * proposed api
+   * proposed api，可能随时都会有变化
    */
   registerInteractiveInput(
     strategyOptions: IInteractiveInputRunStrategy,

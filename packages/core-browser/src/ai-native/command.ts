@@ -6,10 +6,6 @@ export const AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE = {
   id: 'ai.inlineChat.interactiveInput.visible',
 };
 
-export const AI_INLINE_HINT_INTERACTIVE_INPUT_VISIBLE = {
-  id: 'ai.inlineHint.interactiveInput.visible',
-};
-
 export const AI_INLINE_COMPLETION_VISIBLE = {
   id: 'ai.inline.completion.visible',
 };
