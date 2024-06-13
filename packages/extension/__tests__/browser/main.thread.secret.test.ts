@@ -1,9 +1,8 @@
 import { AppConfig, ICredentialsService, ICryptoService } from '@opensumi/ide-core-browser/src';
 import { Emitter } from '@opensumi/ide-core-common';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MainThreadSecret } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.secret';
-
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 const onDidChangePasswordEmitter = new Emitter();
 const mockExtThreadSecretProxy = {
@@ -40,7 +39,7 @@ describe('MainThreadSecret API Test Suite', () => {
   beforeAll(() => {
     injector = createBrowserInjector(
       [],
-      new MockInjector([
+      getBrowserMockInjector([
         {
           token: AppConfig,
           useValue: {

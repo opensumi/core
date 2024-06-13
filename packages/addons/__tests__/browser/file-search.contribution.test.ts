@@ -12,6 +12,8 @@ import {
   CommandServiceImpl,
   DisposableCollection,
 } from '@opensumi/ide-core-common';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
@@ -22,8 +24,6 @@ import { QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/p
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ClientAddonModule } from '../../src/browser';
 import {
   FileSearchContribution,
@@ -42,7 +42,7 @@ describe('test for browser/file-search.contribution.ts', () => {
   beforeEach(() => {
     injector = createBrowserInjector(
       [ClientAddonModule],
-      new MockInjector([
+      getBrowserMockInjector([
         {
           token: CommandRegistry,
           useClass: CommandRegistryImpl,

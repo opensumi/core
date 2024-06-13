@@ -1,9 +1,9 @@
+import { getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { Uri } from '@opensumi/ide-utils';
 
 import { IMarker, MarkerSeverity } from '../../../src';
 import { MarkerManager } from '../../../src/types/markers/markers-manager';
-import { getInjector } from '../../baseInjector';
 
 describe('test for types/markers/markers-manager.ts', () => {
   let injector: MockInjector;
@@ -22,7 +22,7 @@ describe('test for types/markers/markers-manager.ts', () => {
   };
 
   beforeEach(() => {
-    injector = getInjector();
+    injector = getBrowserMockInjector();
   });
 
   it('markers manager updateMarkers should work', (done) => {

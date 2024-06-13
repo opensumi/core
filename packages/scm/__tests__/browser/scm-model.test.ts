@@ -1,10 +1,10 @@
 import { IContextKeyService, PreferenceService, URI } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuId, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable, DisposableCollection, Event } from '@opensumi/ide-core-common';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { ISCMProvider, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../../src';
 import { SCMModule } from '../../src/browser';
 import { ResourceGroupSplicer, ViewModelContext } from '../../src/browser/scm-model';
@@ -37,7 +37,7 @@ describe('test for scm.store.ts', () => {
     beforeEach(() => {
       injector = createBrowserInjector(
         [SCMModule],
-        new MockInjector([
+        getBrowserMockInjector([
           {
             token: IContextKeyService,
             useClass: MockContextKeyService,

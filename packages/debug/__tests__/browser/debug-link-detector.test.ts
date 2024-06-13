@@ -6,11 +6,9 @@
 
 import assert from 'assert';
 
-import { IOpenerService } from '@opensumi/ide-core-browser';
-import { isWindows } from '@opensumi/ide-core-browser';
+import { IOpenerService, isWindows } from '@opensumi/ide-core-browser';
 import { LinkDetector } from '@opensumi/ide-debug/lib/browser/debug-link-detector';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
@@ -20,7 +18,7 @@ describe('Debug - Link Detector', () => {
 
   const injector = createBrowserInjector(
     [],
-    new MockInjector([
+    getBrowserMockInjector([
       {
         token: WorkbenchEditorService,
         useValue: WorkbenchEditorService,

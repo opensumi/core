@@ -5,10 +5,14 @@ import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-res
 import * as ideCoreCommon from '@opensumi/ide-core-common';
 import { DefaultReporter, IReporter } from '@opensumi/ide-core-common';
 import { AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { MockWorkbenchEditorService } from '@opensumi/ide-editor/src/common/mocks/workbench-editor.service';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { IGlobalStorageServer } from '@opensumi/ide-storage';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
@@ -18,10 +22,6 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspacePreferences } from '@opensumi/ide-workspace/lib/browser/workspace-preferences';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockWorkbenchEditorService } from '../../../editor/src/common/mocks/workbench-editor.service';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
 import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
 import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
@@ -72,7 +72,7 @@ describe('MainThreadExtensions Test Suites', () => {
   );
   const injector = createBrowserInjector(
     [],
-    new MockInjector([
+    getBrowserMockInjector([
       ...mockKaitianExtensionProviders,
       {
         token: OutputPreferences,

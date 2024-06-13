@@ -2,10 +2,9 @@ import { Emitter, sleep } from '@opensumi/ide-core-browser';
 import { CancellationToken, CancellationTokenSource, Deferred, Disposable } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugSessionConnection } from '@opensumi/ide-debug/lib/browser/debug-session-connection';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('DebugSessionConnection', () => {
   let debugSessionConnection: DebugSessionConnection;
@@ -76,7 +75,7 @@ describe('DebugSessionConnection', () => {
   beforeAll(() => {
     injector = createBrowserInjector(
       [],
-      new MockInjector([
+      getBrowserMockInjector([
         {
           token: IDebugSessionManager,
           useValue: mockDebugSessionManager,

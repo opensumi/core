@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@opensumi/di';
+import { Injectable, Injector, Provider } from '@opensumi/di';
 import { MockLogger, MockLoggerManageClient, MockLoggerService } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
@@ -8,6 +8,8 @@ import { RecentFilesManager } from '@opensumi/ide-core-browser/lib/quick-open';
 import {
   CommonServerPath,
   ConstructorOf,
+  EventBusImpl,
+  IEventBus,
   ILogServiceManager,
   ILogger,
   ILoggerManagerClient,
@@ -38,6 +40,9 @@ export async function createBrowserApp(
       token: ILoggerManagerClient,
       useValue: {
         getLogger() {
+          return getDebugLogger();
+        },
+        getBrowserLogger() {
           return getDebugLogger();
         },
       },
@@ -91,7 +96,7 @@ class MockLogServiceForClient {
   }
 }
 
-function getBrowserMockInjector() {
+export function getBrowserMockInjector(providers?: Provider[]) {
   const injector = new MockInjector();
   useMockStorage(injector);
   injector.addProviders(
@@ -121,6 +126,19 @@ function getBrowserMockInjector() {
       token: ILogger,
       useClass: MockLogger,
     },
+    {
+      token: IEventBus,
+      useClass: EventBusImpl,
+    },
+    ...(providers
+      ? providers.map(
+          (v) =>
+            ({
+              ...v,
+              override: true,
+            } as any),
+        )
+      : []),
   );
   return injector;
 }

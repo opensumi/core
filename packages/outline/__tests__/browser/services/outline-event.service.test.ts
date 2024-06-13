@@ -1,6 +1,5 @@
 import { EventBusImpl, IEventBus } from '@opensumi/ide-core-common';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { EditorActiveResourceStateChangedEvent, EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbolChangedEvent } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 
@@ -11,7 +10,7 @@ describe('OutlineEventService', () => {
   let eventBus;
   const mockInjector = createBrowserInjector(
     [],
-    new MockInjector([
+    getBrowserMockInjector([
       {
         token: IEventBus,
         useClass: EventBusImpl,

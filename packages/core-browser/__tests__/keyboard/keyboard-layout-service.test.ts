@@ -7,9 +7,9 @@ import {
   KeyboardNativeLayoutService,
   isOSX,
 } from '@opensumi/ide-core-browser';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { KeyboardLayoutContribution } from '../../src/keyboard/layouts/_.contribution';
 
 describe('KeyboardLayoutService should be work', () => {
@@ -27,7 +27,7 @@ describe('KeyboardLayoutService should be work', () => {
   beforeAll(async () => {
     injector = createBrowserInjector(
       [],
-      new MockInjector([
+      getBrowserMockInjector([
         {
           token: GlobalBrowserStorageService,
           useValue: mockGlobalBrowserStorageService,

@@ -6,14 +6,14 @@ import {
   DebugSessionFactory,
 } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { DebugSessionManager } from '@opensumi/ide-debug/lib/browser/debug-session-manager';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITaskService } from '@opensumi/ide-task';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { MockDebugSession } from '../../__mocks__/debug-session';
 
 describe('DebugSessionManager', () => {
@@ -72,7 +72,7 @@ describe('DebugSessionManager', () => {
   beforeAll(() => {
     injector = createBrowserInjector(
       [],
-      new MockInjector([
+      getBrowserMockInjector([
         {
           token: IContextKeyService,
           useClass: MockContextKeyService,

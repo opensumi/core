@@ -1,19 +1,9 @@
-import { EventBusImpl, IEventBus } from '@opensumi/ide-core-common';
 import { DebugToolbarService } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
 import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-model';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 describe('Debug Configuration Service', () => {
-  const mockInjector = createBrowserInjector(
-    [],
-    new MockInjector([
-      {
-        token: IEventBus,
-        useClass: EventBusImpl,
-      },
-    ]),
-  );
+  const mockInjector = createBrowserInjector([], getBrowserMockInjector([]));
   let debugToolbarService: DebugToolbarService;
 
   const mockDebugViewModel = {

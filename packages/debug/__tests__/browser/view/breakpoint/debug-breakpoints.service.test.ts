@@ -8,8 +8,7 @@ import {
 } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugBreakpointsService } from '@opensumi/ide-debug/lib/browser/view/breakpoints/debug-breakpoints.service';
 import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-model';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IWorkspaceService, IWorkspaceStorageService } from '@opensumi/ide-workspace';
@@ -18,7 +17,7 @@ import { WorkspaceEditDidDeleteFileEvent, WorkspaceEditDidRenameFileEvent } from
 describe('Debug Breakpoints Service', () => {
   const mockInjector = createBrowserInjector(
     [],
-    new MockInjector([
+    getBrowserMockInjector([
       {
         token: IEventBus,
         useClass: EventBusImpl,

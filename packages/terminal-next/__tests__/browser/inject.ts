@@ -22,7 +22,7 @@ import {
   ILoggerManagerClient,
   OperatingSystem,
 } from '@opensumi/ide-core-common';
-import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -69,7 +69,7 @@ import {
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
 
-export const injector = new MockInjector([
+export const injector = getBrowserMockInjector([
   {
     token: ITerminalInternalService,
     useClass: TerminalInternalService,

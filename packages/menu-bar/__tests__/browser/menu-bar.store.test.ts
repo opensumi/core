@@ -2,9 +2,9 @@ import { Injectable } from '@opensumi/di';
 import { Emitter, Event } from '@opensumi/ide-core-browser';
 import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable } from '@opensumi/ide-core-common';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MenuBarModule } from '../../src';
 import { AbstractMenubarStore, MenubarStore } from '../../src/browser/menu-bar.store';
 
@@ -64,7 +64,7 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
   beforeEach(() => {
     injector = createBrowserInjector(
       [MenuBarModule],
-      new MockInjector([
+      getBrowserMockInjector([
         {
           token: AbstractMenubarService,
           useClass: MockMenubarServiceImpl,

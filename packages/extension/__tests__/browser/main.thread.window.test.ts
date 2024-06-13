@@ -1,9 +1,7 @@
 import { Emitter } from '@opensumi/ide-core-common';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MainThreadIDEWindow } from '@opensumi/ide-extension/lib/browser/sumi/main.thread.window';
 import { IPlainWebviewWindow, IWebviewService } from '@opensumi/ide-webview';
-
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 const onMessageEmitter = new Emitter<string>();
 const onClosedEmitter = new Emitter<void>();
@@ -41,7 +39,7 @@ const mockProxy = {
 describe('MainThreadWindow API Test Suite', () => {
   const injector = createBrowserInjector(
     [],
-    new MockInjector([
+    getBrowserMockInjector([
       {
         token: IWebviewService,
         useValue: mockWebviewService,

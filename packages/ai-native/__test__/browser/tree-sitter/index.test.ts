@@ -6,6 +6,7 @@ import { AppConfig, BrowserModule } from '@opensumi/ide-core-browser';
 import { ESupportRuntime } from '@opensumi/ide-core-browser/lib/application/runtime';
 import { RendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
 import { Uri } from '@opensumi/ide-core-common';
+import { getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 class MockRendererRuntime extends RendererRuntime {
@@ -28,7 +29,7 @@ class MockRendererRuntime extends RendererRuntime {
 describe.skip('tree sitter', () => {
   let injector: MockInjector;
   beforeAll(() => {
-    injector = new MockInjector([
+    injector = getBrowserMockInjector([
       {
         token: LanguageParserService,
         useClass: LanguageParserService,

@@ -1,8 +1,7 @@
 import { Injectable } from '@opensumi/di';
 
 import { createBrowserInjector } from '../src/injector-helper';
-import { createNodeInjector } from '../src/mock-injector';
-import { MockInjector } from '../src/mock-injector';
+import { MockInjector, createNodeInjector } from '../src/mock-injector';
 
 describe('mock-injector test', () => {
   let fn1: jest.Mock<any, any>;

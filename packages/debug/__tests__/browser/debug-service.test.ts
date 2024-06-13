@@ -1,8 +1,7 @@
 import { IDebugService } from '@opensumi/ide-debug';
 import { DebugService } from '@opensumi/ide-debug/lib/browser/debug-service';
-
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 describe('DebugService', () => {
   let debugService: IDebugService;
@@ -11,7 +10,7 @@ describe('DebugService', () => {
   beforeAll(() => {
     injector = createBrowserInjector(
       [],
-      new MockInjector([
+      getBrowserMockInjector([
         {
           token: IDebugService,
           useClass: DebugService,

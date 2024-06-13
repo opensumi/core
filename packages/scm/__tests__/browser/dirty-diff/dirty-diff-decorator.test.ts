@@ -1,15 +1,14 @@
 import { Injectable } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import { ILineChange, URI } from '@opensumi/ide-core-common';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IDocPersistentCacheProvider, OverviewRulerLane } from '@opensumi/ide-editor';
-import { EmptyDocCacheImpl } from '@opensumi/ide-editor/src/browser';
-import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
+import { EmptyDocCacheImpl, IEditorDocumentModel } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { DirtyDiffDecorator } from '../../../src/browser/dirty-diff/dirty-diff-decorator';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { SCMPreferences } from '../../../src/browser/scm-preference';
@@ -32,7 +31,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
     beforeEach(() => {
       injector = createBrowserInjector(
         [],
-        new MockInjector([
+        getBrowserMockInjector([
           {
             token: IContextKeyService,
             useClass: MockContextKeyService,

@@ -1,5 +1,5 @@
 import { CancellationToken } from '@opensumi/ide-core-common';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createBrowserInjector, getBrowserMockInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { ChatAgentService } from '../../../lib/browser/chat/chat-agent.service';
@@ -12,7 +12,7 @@ describe('ChatAgentService', () => {
   beforeEach(() => {
     injector = createBrowserInjector(
       [],
-      new MockInjector([
+      getBrowserMockInjector([
         {
           token: IChatManagerService,
           useValue: {
