@@ -1,6 +1,5 @@
-import { Readable } from 'stream';
-
 import { Autowired, Injectable } from '@opensumi/di';
+import { IAICompletionOption } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
   ChatReadableStream,
@@ -19,9 +18,9 @@ export interface ReqeustResponse extends IAIBackServiceResponse {
 
 // 模拟 stream 数据,包含一段 TypeScript 代码
 const streamData = [
-  'Here is a simple TypeScript code snippet: \n',
-  '```typescript\n',
-  'interface Person {\n',
+  'Here is a simple TypeScript code ',
+  'snippet: \n```typescript\ne',
+  'xport class Person {\n',
   '  name: string;\n',
   '  age: number;\n',
   '}\n',
@@ -33,8 +32,8 @@ const streamData = [
   '\n',
   'function greet(person: Person) {\n',
   '  console.log(`Hello, ${person.name}!`);\n',
-  ' #Command#: du -sh *\n',
-  ' #Description#: 查看当前文件夹下所有文件和子文件夹的大小\n',
+  '  // #Command#: du -sh *\n',
+  '  // #Description#: 查看当前文件夹下所有文件和子文件夹的大小\n',
   '}\n',
   '\n',
   'greet(person); // Output: "Hello, John Doe!"\n',
@@ -48,6 +47,13 @@ const streamData = [
 export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadableStream> {
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
+
+  async requestCompletion(input: IAICompletionOption, cancelToken?: CancellationToken) {
+    return {
+      sessionId: '123',
+      codeModelList: [{ content: 'Hello OpenSumi!' }],
+    };
+  }
 
   async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
@@ -80,12 +86,11 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
     // 模拟数据事件
     streamData.forEach((chunk, index) => {
       setTimeout(() => {
+        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
+
         if (length - 1 === index || cancelToken?.isCancellationRequested) {
           chatReadableStream.end();
-          return;
         }
-
-        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
       }, index * 300);
     });
 

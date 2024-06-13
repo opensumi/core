@@ -1,7 +1,8 @@
-import { Injectable, Provider } from '@opensumi/di';
+import { Autowired, Injectable, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
+  AINativeConfigService,
   BrowserModule,
   ChatAgentViewServiceToken,
   ChatFeatureRegistryToken,
@@ -14,18 +15,9 @@ import {
 } from '@opensumi/ide-core-browser';
 import { TerminalRegistryToken } from '@opensumi/ide-core-common';
 
-import {
-  ChatProxyServiceToken,
-  IAINativeService,
-  IChatAgentService,
-  IChatInternalService,
-  IChatManagerService,
-} from '../common';
+import { ChatProxyServiceToken, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
-import { AINativeService } from './ai-native.service';
-import { TerminalAIContribution } from './ai-terminal/terminal-ai.contributon';
-import { TerminalFeatureRegistry } from './ai-terminal/terminal.feature.registry';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -34,23 +26,37 @@ import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
-import { InterfaceNavigationContribution } from './interface-navigation/interface-navigation.contribution';
+import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
+import { InterfaceNavigationContribution } from './contrib/interface-navigation/interface-navigation.contribution';
+import { MergeConflictContribution } from './contrib/merge-conflict';
+import { ResolveConflictRegistry } from './contrib/merge-conflict/merge-conflict.feature.registry';
+import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.feature.registry';
+import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
+import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
-import { MergeConflictContribution } from './merge-conflict';
-import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
-import { RenameCandidatesProviderRegistry } from './rename/rename.feature.registry';
+import { AINativePreferencesContribution } from './preferences';
 import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
+  @Autowired(AINativeConfigService)
+  protected readonly aiNativeConfig: AINativeConfigService;
+
+  constructor() {
+    super();
+    this.aiNativeConfig.setAINativeModuleLoaded(true);
+  }
+
   contributionProvider = AINativeCoreContribution;
   providers: Provider[] = [
     AINativeBrowserContribution,
     InterfaceNavigationContribution,
     TerminalAIContribution,
     MergeConflictContribution,
+    AICodeActionContribution,
+    AINativePreferencesContribution,
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
@@ -66,10 +72,6 @@ export class AINativeModule extends BrowserModule {
     {
       token: ResolveConflictRegistryToken,
       useClass: ResolveConflictRegistry,
-    },
-    {
-      token: IAINativeService,
-      useClass: AINativeService,
     },
     {
       token: IAIInlineChatService,

@@ -1,7 +1,7 @@
 import { Injector, Provider } from '@opensumi/di';
-import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
+import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { IRuntimeSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { ISumiConnectionOptions } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   BasicModule,
@@ -9,32 +9,31 @@ import {
   BrowserConnectionErrorEvent,
   BrowserConnectionOpenEvent,
   IEventBus,
+  ILogger,
   IReporterService,
-  getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
+import { Logger } from '../logger';
+import { AppConfig } from '../react-providers/config-provider';
 
 import { ModuleConstructor } from './app.interface';
 
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-const initialLogger = getDebugLogger();
-
 export async function createConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
-  onReconnect: () => void,
-  connection: IRuntimeSocketConnection<Uint8Array>,
-  clientId: string,
+  channelHandler: WSChannelHandler,
+  options: ISumiConnectionOptions = {},
 ) {
+  const appConfig = injector.get(AppConfig) as AppConfig;
   const reporterService: IReporterService = injector.get(IReporterService);
+  channelHandler.setReporter(reporterService);
+
   const eventBus = injector.get(IEventBus);
   const stateService = injector.get(ClientAppStateService);
-
-  const channelHandler = new WSChannelHandler(connection, initialLogger, clientId);
-  channelHandler.setReporter(reporterService);
 
   const onOpen = () => {
     stateService.reachedState('core_module_initialized').then(() => {
@@ -71,16 +70,21 @@ export async function createConnectionService(
   });
 
   const channel = await channelHandler.openChannel(RPCServiceChannelPath);
-  channel.onReopen(() => onReconnect());
 
-  bindConnectionService(injector, modules, channel);
-}
-
-export function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
   const clientCenter = new RPCServiceCenter();
-  const disposable = clientCenter.setSumiConnection(channel.createSumiConnection());
+  clientCenter.setSumiConnection(channel.createSumiConnection(options));
+
+  if (appConfig?.measure?.connection) {
+    clientCenter.setReporter(reporterService, appConfig.measure.connection.minimumReportThresholdTime);
+  }
+
   initConnectionService(injector, modules, clientCenter);
-  return disposable;
+
+  // report log to server after connection established
+  const logger = injector.get(ILogger) as Logger;
+  logger.reportToServer();
+
+  return channel;
 }
 
 /**

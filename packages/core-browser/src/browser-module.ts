@@ -17,7 +17,7 @@ export interface IClientApp {
 export abstract class BrowserModule<T = any> extends BasicModule {
   @Autowired(IClientApp)
   protected app: IClientApp;
-  public preferences?: (inject: Injector) => void;
+  public preferences?: (injector: Injector) => void;
   public component?: React.ComponentType<T>;
 
   // 脱离于文档流的模块

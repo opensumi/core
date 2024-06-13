@@ -12,6 +12,7 @@ import {
   ComponentRegistryImpl,
   ContributionProvider,
   Domain,
+  IAIInlineChatService,
   IEditorExtensionContribution,
   KeybindingContribution,
   KeybindingRegistry,
@@ -26,13 +27,13 @@ import {
 } from '@opensumi/ide-core-browser';
 import {
   AI_CHAT_VISIBLE,
+  AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE,
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { TerminalRegistryToken } from '@opensumi/ide-core-common';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
@@ -41,6 +42,7 @@ import {
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
+  TerminalRegistryToken,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -60,24 +62,28 @@ import {
 } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
-import { AINativeService } from './ai-native.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
-import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
-import { AICompletionsService } from './inline-completions/service/ai-completions.service';
+import { CodeActionHandler } from './contrib/code-action/code-action.handler';
+import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
+import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
+import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
+import { RenameHandler } from './contrib/rename/rename.handler';
+import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
-import { OpenSumiLightBulbWidget } from './light-bulb-widget';
-import { AIRunToolbar } from './run/toolbar/run-toolbar';
 import {
   AINativeCoreContribution,
+  IAIMiddleware,
   IChatFeatureRegistry,
   IChatRenderRegistry,
-  IInlineChatFeatureRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
 } from './types';
+import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
+import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { SumiLightBulbWidget } from './widget/light-bulb';
 
 @Domain(
   ClientAppContribution,
@@ -107,7 +113,7 @@ export class AINativeBrowserContribution
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
 
   @Autowired(InlineChatFeatureRegistryToken)
-  private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   @Autowired(ChatFeatureRegistryToken)
   private readonly chatFeatureRegistry: IChatFeatureRegistry;
@@ -123,9 +129,6 @@ export class AINativeBrowserContribution
 
   @Autowired(TerminalRegistryToken)
   private readonly terminalProviderRegistry: ITerminalProviderRegistry;
-
-  @Autowired(AINativeService)
-  private readonly aiNativeService: AINativeService;
 
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
@@ -154,13 +157,23 @@ export class AINativeBrowserContribution
   @Autowired(AIEditorContribution)
   private readonly aiEditorFeatureContribution: AIEditorContribution;
 
+  @Autowired(IAIInlineChatService)
+  private readonly aiInlineChatService: AIInlineChatService;
+
+  @Autowired(RenameHandler)
+  private readonly renameHandler: RenameHandler;
+
+  @Autowired(InlineCompletionHandler)
+  private readonly inlineCompletionHandler: InlineCompletionHandler;
+
+  @Autowired(CodeActionHandler)
+  private readonly codeActionHandler: CodeActionHandler;
+
   constructor() {
     this.registerFeature();
   }
 
   initialize() {
-    this.aiNativeConfigService.enableCapabilities();
-
     const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
 
     if (supportsChatAssistant) {
@@ -173,13 +186,13 @@ export class AINativeBrowserContribution
   registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
     const { supportsInlineChat } = this.aiNativeConfigService.capabilities;
     if (supportsInlineChat) {
-      register(OpenSumiLightBulbWidget.ID, OpenSumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+      register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
     }
   }
 
   onDidStart() {
     runWhenIdle(() => {
-      const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.CHAT_VISIBLE_TYPE);
+      const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, true);
@@ -187,9 +200,21 @@ export class AINativeBrowserContribution
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, false);
       }
     });
+
+    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+      this.renameHandler.load();
+    }
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+      this.inlineCompletionHandler.load();
+    }
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+      this.codeActionHandler.load();
+    }
   }
 
   private registerFeature() {
+    const middlewares: IAIMiddleware[] = [];
+
     this.contributions.getContributions().forEach((contribution) => {
       if (contribution.registerInlineChatFeature) {
         contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
@@ -209,7 +234,12 @@ export class AINativeBrowserContribution
       if (contribution.registerTerminalProvider) {
         contribution.registerTerminalProvider(this.terminalProviderRegistry);
       }
+      if (contribution.middleware) {
+        middlewares.push(contribution.middleware);
+      }
     });
+
+    this.inlineCompletionHandler.updateConfig(middlewares);
   }
 
   registerSetting(registry: ISettingRegistry) {
@@ -223,7 +253,7 @@ export class AINativeBrowserContribution
       title: localize('preference.ai.native.chat.title'),
       preferences: [
         {
-          id: AINativeSettingSectionsId.CHAT_VISIBLE_TYPE,
+          id: AINativeSettingSectionsId.ChatVisibleType,
           localized: 'preference.ai.native.chat.visible.type',
         },
       ],
@@ -233,22 +263,38 @@ export class AINativeBrowserContribution
       title: localize('preference.ai.native.interface.quick.title'),
       preferences: [
         {
-          id: AINativeSettingSectionsId.INTERFACE_QUICK_NAVIGATION_ENABLED,
+          id: AINativeSettingSectionsId.InterfaceQuickNavigationEnabled,
           localized: 'preference.ai.native.interface.quick.navigation',
         },
       ],
     });
+
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.inlineCompletions.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+            localized: 'preference.ai.native.inlineCompletions.debounceTime',
+          },
+          {
+            id: AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
+            localized: 'preference.ai.native.inlineCompletions.promptEngineering.enabled',
+          },
+        ],
+      });
+    }
 
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
         title: localize('preference.ai.native.inlineChat.title'),
         preferences: [
           {
-            id: AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+            id: AINativeSettingSectionsId.InlineChatAutoVisible,
             localized: 'preference.ai.native.inlineChat.auto.visible',
           },
           {
-            id: AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+            id: AINativeSettingSectionsId.InlineChatCodeActionEnabled,
             localized: 'preference.ai.native.inlineChat.codeAction.enabled',
           },
         ],
@@ -265,7 +311,13 @@ export class AINativeBrowserContribution
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
-        this.aiNativeService.launchInlineChatVisible(value);
+        this.aiInlineChatService._onInlineChatVisible.fire(value);
+      },
+    });
+
+    commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE, {
+      execute: (value: boolean) => {
+        this.aiInlineChatService._onInteractiveInputVisible.fire(value);
       },
     });
 
@@ -335,6 +387,19 @@ export class AINativeBrowserContribution
         args: false,
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
       });
+
+      if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+        keybindings.registerKeybinding(
+          {
+            command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
+            keybinding: 'ctrlcmd+K',
+            args: true,
+            priority: 0,
+            when: `editorFocus && ${InlineChatIsVisible.raw}`,
+          },
+          KeybindingScope.USER,
+        );
+      }
     }
   }
 }

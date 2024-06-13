@@ -1,52 +1,73 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Logger } from '@opensumi/ide-core-browser';
+import { Logger, SpecialCases } from '@opensumi/ide-core-browser';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import {
-  CommandRegistry,
-  CommandService,
-  Disposable,
-  Emitter,
-  IDisposable,
-  IRange,
-  isUndefined,
-} from '@opensumi/ide-core-common';
-import { CodeAction } from '@opensumi/ide-monaco';
+import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
+import { Disposable, Emitter, Event, IDisposable, MaybePromise, isUndefined, uuid } from '@opensumi/ide-core-common';
 
-import { IEditorInlineChatHandler, IInlineChatFeatureRegistry, ITerminalInlineChatHandler } from '../../types';
+import { CodeActionService } from '../../contrib/code-action/code-action.service';
+import {
+  ERunStrategy,
+  IEditorInlineChatHandler,
+  IInlineChatFeatureRegistry,
+  IInteractiveInputHandler,
+  IInteractiveInputRunStrategy,
+  ITerminalInlineChatHandler,
+} from '../../types';
+
+type TRunStrategyFn = (value: string) => MaybePromise<ERunStrategy>;
+
+class InteractiveInputModel {
+  static ID: string = `${InteractiveInput.displayName}:${uuid(4)}`;
+
+  private _handler: IInteractiveInputHandler | undefined;
+  private _strategyHandler: TRunStrategyFn;
+
+  public setHandler(h: IInteractiveInputHandler): void {
+    this._handler = h;
+  }
+
+  public handler(): IInteractiveInputHandler | undefined {
+    return this._handler;
+  }
+
+  public setStrategyHandler(fn: TRunStrategyFn): void {
+    this._strategyHandler = fn;
+  }
+
+  public strategyHandler(): TRunStrategyFn {
+    return this._strategyHandler;
+  }
+
+  public dispose(): void {
+    this._handler = undefined;
+  }
+}
 
 @Injectable()
 export class InlineChatFeatureRegistry extends Disposable implements IInlineChatFeatureRegistry {
   @Autowired(Logger)
   private readonly logger: Logger;
 
-  @Autowired(CommandRegistry)
-  commandRegistry: CommandRegistry;
-
-  @Autowired(CommandService)
-  commandService: CommandService;
+  @Autowired(CodeActionService)
+  private readonly codeActionService: CodeActionService;
 
   private actionsMap: Map<string, AIActionItem> = new Map();
-  private codeActionsMap = new Map<string, CodeAction>();
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
   private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
+
+  private interactiveInputModel: InteractiveInputModel = new InteractiveInputModel();
+
+  public readonly _onChatClick = new Emitter<void>();
+  public readonly onChatClick: Event<void> = this._onChatClick.event;
 
   override dispose() {
     super.dispose();
     this.actionsMap.clear();
     this.editorHandlerMap.clear();
+    this.terminalHandlerMap.clear();
   }
 
-  private readonly _onCodeActionRun = new Emitter<{
-    id: string;
-    range: IRange;
-  }>();
-  public readonly onCodeActionRun = this._onCodeActionRun.event;
-
-  static getCommandId(type: 'editor' | 'terminal', id: string) {
-    return `ai-native.inline-chat.${type}.${id}`;
-  }
-
-  private collectActions(type: 'editor' | 'terminal', operational: AIActionItem): boolean {
+  private collectActions(operational: AIActionItem): boolean {
     const { id } = operational;
 
     if (this.actionsMap.has(id)) {
@@ -54,66 +75,45 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
       return false;
     }
 
-    this.disposables.push(
-      this.commandRegistry.registerCommand(
-        {
-          id: InlineChatFeatureRegistry.getCommandId(type, id),
-        },
-        {
-          execute: async (range: IRange) => {
-            this._onCodeActionRun.fire({
-              id,
-              range,
-            });
-          },
-        },
-      ),
-    );
+    if (isUndefined(operational.renderType)) {
+      operational.renderType = 'button';
+    }
+
+    if (isUndefined(operational.order)) {
+      operational.order = 0;
+    }
 
     this.actionsMap.set(id, operational);
-
-    if (operational.codeAction) {
-      const { codeAction } = operational;
-      const action = {
-        title: codeAction.title || operational.name,
-        isAI: true,
-        isPreferred: codeAction.isPreferred ?? true,
-        kind: codeAction.kind || 'InlineChat',
-        disabled: codeAction.disabled,
-        command: {
-          id: InlineChatFeatureRegistry.getCommandId('editor', operational.id),
-        },
-      } as CodeAction;
-
-      this.codeActionsMap.set(id, action);
-    }
 
     return true;
   }
 
-  private removeCollectedActions(type: 'editor' | 'terminal', operational: AIActionItem): void {
+  private removeCollectedActions(operational: AIActionItem): void {
     this.actionsMap.delete(operational.id);
-    this.codeActionsMap.delete(operational.id);
+    this.codeActionService.deleteCodeActionById(operational.id);
+  }
 
-    this.commandRegistry.unregisterCommand(InlineChatFeatureRegistry.getCommandId(type, operational.id));
+  public getInteractiveInputId(): string {
+    return InteractiveInputModel.ID;
   }
 
   public registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable {
-    const isCollect = this.collectActions('editor', operational);
+    const isCollect = this.collectActions(operational);
 
     if (isCollect) {
       this.editorHandlerMap.set(operational.id, handler);
+      this.codeActionService.registerCodeAction(operational);
     }
 
     return {
       dispose: () => {
-        this.removeCollectedActions('editor', operational);
+        this.removeCollectedActions(operational);
       },
     };
   }
 
   public registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable {
-    const isCollect = this.collectActions('terminal', operational);
+    const isCollect = this.collectActions(operational);
 
     if (isCollect) {
       if (isUndefined(handler.triggerRules)) {
@@ -125,22 +125,59 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
     return {
       dispose: () => {
-        this.removeCollectedActions('terminal', operational);
+        this.removeCollectedActions(operational);
       },
     };
   }
 
+  public registerInteractiveInput(
+    runStrategy: IInteractiveInputRunStrategy,
+    handler: IInteractiveInputHandler,
+  ): IDisposable {
+    this.interactiveInputModel.setHandler(handler);
+
+    if (runStrategy.handleStrategy) {
+      this.interactiveInputModel.setStrategyHandler(runStrategy.handleStrategy);
+    } else {
+      this.interactiveInputModel.setStrategyHandler(() => runStrategy.strategy || ERunStrategy.EXECUTE);
+    }
+
+    this.collectActions({
+      id: InteractiveInputModel.ID,
+      name: `Chat(${SpecialCases.MACMETA}+K)`,
+      renderType: 'button',
+      order: Number.MAX_SAFE_INTEGER,
+    });
+
+    return {
+      dispose: () => {
+        this.interactiveInputModel.dispose();
+      },
+    };
+  }
+
+  public getInteractiveInputHandler(): IInteractiveInputHandler | undefined {
+    return this.interactiveInputModel.handler();
+  }
+
+  public getInteractiveInputStrategyHandler(): TRunStrategyFn {
+    return this.interactiveInputModel.strategyHandler();
+  }
+
   public getEditorActionButtons(): AIActionItem[] {
-    return Array.from(this.editorHandlerMap.keys())
+    const actions = Array.from(this.editorHandlerMap.keys())
       .filter((id) => {
         const actions = this.actionsMap.get(id);
         return actions && actions.renderType === 'button';
       })
-      .map((id) => this.actionsMap.get(id)!);
-  }
+      .map((id) => this.actionsMap.get(id)!)
+      .sort((a, b) => a.order! - b.order!);
 
-  public getCodeActions(): CodeAction[] {
-    return Array.from(this.codeActionsMap.values());
+    if (this.actionsMap.has(InteractiveInputModel.ID)) {
+      actions.push(this.actionsMap.get(InteractiveInputModel.ID)!);
+    }
+
+    return actions;
   }
 
   public getEditorActionMenus(): AIActionItem[] {

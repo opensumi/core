@@ -4,9 +4,8 @@ import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
-import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/ide-monaco';
-import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 import { IDiffEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { ILanguageSelection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -88,29 +87,21 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     const originalModel = modelService.createModel(codeValueInRange, languageSelection);
     const modifiedModel = modelService.createModel('', languageSelection);
 
-    const layout = () => {
-      if (onMaxLineCount) {
-        const originalEditor = diffEditor.getOriginalEditor();
-        const modifiedEditor = diffEditor.getModifiedEditor();
-
-        const originContentHeight = originalEditor.getContentHeight();
-        const originLineCount =
-          originContentHeight / originalEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
-
-        const modifiedContentHeight = modifiedEditor.getContentHeight();
-        const modifiedLineCount =
-          modifiedContentHeight / modifiedEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
-
-        onMaxLineCount(Math.max(originLineCount, modifiedLineCount) + 1);
-      }
-    };
-
     diffEditor.setModel({
       original: originalModel,
       modified: modifiedModel,
     });
 
     diffEditor.revealLine(range.startLineNumber, monaco.editor.ScrollType.Immediate);
+
+    const layout = () => {
+      if (onMaxLineCount) {
+        const originLineCount = originalModel.getLineCount();
+        const modifiedLineCount = modifiedModel.getLineCount();
+
+        onMaxLineCount(Math.max(originLineCount, modifiedLineCount) + 1);
+      }
+    };
 
     if (onReady) {
       onReady({

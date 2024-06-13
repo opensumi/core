@@ -129,7 +129,6 @@ export const enum CodeTerminalSettingId {
   PersistentSessionReviveProcess = 'terminal.integrated.persistentSessionReviveProcess',
   CustomGlyphs = 'terminal.integrated.customGlyphs',
   PersistentSessionScrollback = 'terminal.integrated.persistentSessionScrollback',
-  PersistentSession = 'terminal.integrated.enablePersistentSession',
   InheritEnv = 'terminal.integrated.inheritEnv',
   ShowLinkHover = 'terminal.integrated.showLinkHover',
   IgnoreProcessNames = 'terminal.integrated.ignoreProcessNames',

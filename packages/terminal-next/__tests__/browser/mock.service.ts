@@ -3,9 +3,9 @@ import { Terminal } from 'xterm';
 
 import { Injectable } from '@opensumi/di';
 import { WSChannel } from '@opensumi/ide-connection';
+import { createWSChannelForClient } from '@opensumi/ide-connection/__test__/common/ws-channel';
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Disposable, PreferenceProvider, PreferenceResolveResult, PreferenceService } from '@opensumi/ide-core-browser';
 import { Deferred, Emitter, IDisposable, OperatingSystem, PreferenceScope, URI, uuid } from '@opensumi/ide-core-common';
 import { Color, RGBA } from '@opensumi/ide-theme/lib/common/color';
 
@@ -70,7 +70,7 @@ export class MockTerminalService implements ITerminalService {
     launchConfig: IShellLaunchConfig,
   ): Promise<ITerminalConnection | undefined> {
     const sock = new WebSocket(localhost(getPort()));
-    const channel = WSChannel.forClient(new WSWebSocketConnection(sock), {
+    const channel = createWSChannelForClient(new WSWebSocketConnection(sock), {
       id: sessionId,
     });
 
@@ -292,6 +292,10 @@ export class MockTerminalThemeService {
 /** Mock Preference Service */
 export class MockPreferenceService implements PreferenceService {
   ready: Promise<void> = Promise.resolve();
+
+  has(preferenceName: string, resourceUri?: string | undefined, language?: string | undefined): boolean {
+    return true;
+  }
 
   hasLanguageSpecific(preferenceName: any, overrideIdentifier: string, resourceUri: string): boolean {
     return false;

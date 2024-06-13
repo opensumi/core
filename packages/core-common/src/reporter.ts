@@ -6,6 +6,7 @@ import {
   IReporter,
   IReporterService,
   IReporterTimer,
+  IReporterTimerEndOptions,
   PerformanceData,
   PointData,
   REPORT_NAME,
@@ -18,8 +19,18 @@ class ReporterTimer implements IReporterTimer {
     this.now = Date.now();
   }
 
-  timeEnd(msg?: string, extra?: any) {
-    const duration = Date.now() - this.now;
+  getElapsedTime() {
+    return Date.now() - this.now;
+  }
+
+  timeEnd(msg?: string, extra?: any, options?: IReporterTimerEndOptions) {
+    const duration = this.getElapsedTime();
+
+    if (options?.minimumReportThresholdTime && duration < options.minimumReportThresholdTime) {
+      // 不满足最小时间要求，不上报
+      return duration;
+    }
+
     this.reporter.performance(this.name, {
       duration,
       metadata: this.metadata,

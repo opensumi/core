@@ -1063,6 +1063,9 @@ export namespace QUICK_OPEN_COMMANDS {
   export const OPEN_VIEW: Command = {
     id: 'editor.action.quickView',
   };
+  export const OPEN_WITH_COMMAND: Command = {
+    id: 'editor.action.quickCommand.withCommand',
+  };
 }
 
 export namespace SCM_COMMANDS {

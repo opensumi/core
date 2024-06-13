@@ -38,6 +38,7 @@ export enum REPORT_NAME {
   TERMINAL_MEASURE = 'terminalMeasure',
   SEARCH_MEASURE = 'searchMeasure',
   QUICK_OPEN_MEASURE = 'quickOpenMeasure',
+  RPC_TIMMING_MEASURE = 'rpcTimingMeasure',
 }
 
 export enum REPORT_HOST {
@@ -71,8 +72,16 @@ export interface PerformanceData extends PointData {
 
 export const IReporterService = Symbol('IReporterService');
 
+export interface IReporterTimerEndOptions {
+  /**
+   * 上报的最小时间阈值，单位毫秒
+   * 经过的时间要大于这个值才会上报
+   */
+  minimumReportThresholdTime?: number;
+}
+
 export interface IReporterTimer {
-  timeEnd(msg?: string, extra?: any): number;
+  timeEnd(msg?: string, extra?: any, options?: IReporterTimerEndOptions): number;
 }
 
 export interface IReporterService {

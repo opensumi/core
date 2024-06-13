@@ -10,7 +10,7 @@ export const AILayout = () => {
 
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer id='top' defaultSize={35} slot='top' z-index={2} />
+      <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 35 : 0} slot='top' />
       <SplitPanel
         id='main-horizontal-ai'
         flex={1}
@@ -36,7 +36,14 @@ export const AILayout = () => {
             <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
             <SlotRenderer flex={1} defaultSize={layout.bottom?.size} minResize={160} slot='bottom' isTabbar={true} />
           </SplitPanel>
-          <SlotRenderer slot='right' isTabbar={true} defaultSize={360} maxResize={360} minResize={280} minSize={0} />
+          <SlotRenderer
+            slot='right'
+            isTabbar={true}
+            defaultSize={layout.right?.currentId ? layout.right?.size || 360 : 0}
+            maxResize={360}
+            minResize={280}
+            minSize={0}
+          />
         </SplitPanel>
         <SlotRenderer
           slot={AI_CHAT_VIEW_ID}

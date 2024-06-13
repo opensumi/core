@@ -1,4 +1,12 @@
-import { Deferred, DisposableStore, IDisposable, randomString } from '@opensumi/ide-core-common';
+import {
+  Deferred,
+  DisposableStore,
+  IDisposable,
+  IReporterService,
+  IReporterTimer,
+  REPORT_NAME,
+  randomString,
+} from '@opensumi/ide-core-common';
 import { addElement } from '@opensumi/ide-utils/lib/arrays';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
@@ -11,6 +19,8 @@ import { ProxyBase } from './proxy/base';
 import { ProtocolRegistry, ServiceRegistry } from './registry';
 
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
+
+const kDefaultMinimumReportThresholdTime = 200;
 
 export class RPCServiceCenter implements IDisposable {
   private _disposables = new DisposableStore();
@@ -28,6 +38,16 @@ export class RPCServiceCenter implements IDisposable {
   constructor(private bench?: IBench, logger?: ILogger) {
     this.uid = randomString(6);
     this.logger = logger || console;
+  }
+
+  private _reporterService: IReporterService | undefined;
+  private _reportThreshold: number = kDefaultMinimumReportThresholdTime;
+  setReporter(
+    reporterService: IReporterService,
+    minimumReportThresholdTime: number = kDefaultMinimumReportThresholdTime,
+  ) {
+    this._reporterService = reporterService;
+    this._reportThreshold = minimumReportThresholdTime;
   }
 
   registerService(serviceName: string, type: ServiceType): void {
@@ -98,8 +118,13 @@ export class RPCServiceCenter implements IDisposable {
 
   async broadcast(serviceName: string, _name: string, ...args: any[]): Promise<any> {
     await this.ready();
-
     const name = getMethodName(serviceName, _name);
+
+    let timer: IReporterTimer | undefined;
+    if (this._reporterService) {
+      timer = this._reporterService.time(REPORT_NAME.RPC_TIMMING_MEASURE);
+    }
+
     const broadcastResult = await Promise.all(this.proxies.map((proxy) => proxy.invoke(name, ...args)));
 
     const doubtfulResult = [] as any[];
@@ -117,7 +142,31 @@ export class RPCServiceCenter implements IDisposable {
     }
 
     if (result.length === 0) {
+      if (timer) {
+        timer.timeEnd(
+          name,
+          {
+            success: false,
+          },
+          {
+            minimumReportThresholdTime: this._reportThreshold,
+          },
+        );
+      }
+
       throw new Error(`broadcast rpc \`${name}\` error: no remote service can handle this call`);
+    }
+
+    if (timer) {
+      timer.timeEnd(
+        name,
+        {
+          success: true,
+        },
+        {
+          minimumReportThresholdTime: this._reportThreshold,
+        },
+      );
     }
 
     // FIXME: this is an unreasonable design, if remote service only returned doubtful result, we will return an empty array.

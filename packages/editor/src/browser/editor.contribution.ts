@@ -1,6 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  AINativeConfigService,
   AppConfig,
   ClientAppContribution,
   CommandContribution,
@@ -228,9 +227,6 @@ export class EditorContribution
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
-
-  @Autowired(AINativeConfigService)
-  private readonly aiNativeConfigService: AINativeConfigService;
 
   registerMonacoDefaultFormattingSelector(register: (selector: IFormattingEditProviderSelector) => IDisposable): void {
     const formatSelector = this.injector.get(FormattingSelector);

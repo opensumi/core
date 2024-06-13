@@ -1,4 +1,5 @@
 import { Autowired } from '@opensumi/di';
+import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   BaseTerminalDetectionLineMatcher,
   JavaMatcher,
@@ -6,11 +7,11 @@ import {
   NodeMatcher,
   ShellMatcher,
   TSCMatcher,
-} from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
-import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/utils/ansi-parser';
-import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
+} from '@opensumi/ide-ai-native/lib/browser/contrib/terminal/matcher';
+import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/contrib/terminal/utils/ansi-parser';
 import {
   AINativeCoreContribution,
+  ERunStrategy,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
   IRenameCandidatesProviderRegistry,
@@ -26,19 +27,15 @@ import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/comm
 import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
-  AbortError,
   CancelResponse,
   ChatServiceToken,
   ErrorResponse,
   IAIBackService,
-  IChatContent,
-  IChatProgress,
   MergeConflictEditorMode,
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
-import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
@@ -88,6 +85,24 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
+    registry.registerInteractiveInput(
+      {
+        strategy: ERunStrategy.DIFF_PREVIEW,
+      },
+      {
+        execute: async (editor, value, token) => {},
+        providerDiffPreviewStrategy: async (editor, value, token) => {
+          const crossCode = this.getCrossCode(editor);
+          const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
+          const controller = new InlineChatController({ enableCodeblockRender: true });
+          const stream = await this.aiBackService.requestStream(prompt, {}, token);
+          controller.mountReadable(stream);
+
+          return controller;
+        },
+      },
+    );
+
     registry.registerEditorInlineChat(
       {
         id: 'ai-comments',
@@ -129,7 +144,6 @@ export class AINativeContribution implements AINativeCoreContribution {
           const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
           const result = await this.aiBackService.request(prompt, {}, token);
-
           if (result.isCancel) {
             return new CancelResponse();
           }

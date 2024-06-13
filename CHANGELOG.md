@@ -7,6 +7,60 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
+## v3.1.0
+
+### What's New Features
+
+- feat: support diff editor widget readable stream by @Ricbet in https://github.com/opensumi/core/pull/3710
+- feat: support interactive input run strategy by @Ricbet in https://github.com/opensumi/core/pull/3735
+- feat: add preference to controller whether enable prompt engineering by @bytemain in https://github.com/opensumi/core/pull/3740
+- feat: update preference service typing by @bk1012 in https://github.com/opensumi/core/pull/3741
+- feat: support multiline comment by @erha19 in https://github.com/opensumi/core/pull/3719
+- feat: add rpc timing event track by @bytemain in https://github.com/opensumi/core/pull/3743
+
+### Refactor
+
+- refactor: code action register by @Ricbet in https://github.com/opensumi/core/pull/3722
+- refactor: channel can use custom serializer by @bytemain in https://github.com/opensumi/core/pull/3711
+- refactor: split ai editor feature capabilities by @Ricbet in https://github.com/opensumi/core/pull/3716
+
+### Bug fixes
+
+- fix: design module no register top layout by @Ricbet in https://github.com/opensumi/core/pull/3723
+- fix: should not change user defined ai capabilities by @bytemain in https://github.com/opensumi/core/pull/3738
+- fix: inline chat controller code block by @Ricbet in https://github.com/opensumi/core/pull/3739
+- fix: inline diff widget layout by @Ricbet in https://github.com/opensumi/core/pull/3744
+
+<a name="breaking_changes_3.1.0">[Breaking Changes:](#breaking_changes_3.1.0)</a>
+
+#### 1. about `useMenubarView` configuration
+
+Now the `useMenubarView` configuration has been moved to the `designLayout` configuration, please change it in time.
+
+```typescript
+/**
+ * AI Native Config
+ */
+AINativeConfig?: IAINativeConfig;
+/**
+ * OpenSumi Design Config
+ */
+designLayout?: IDesignLayoutConfig;
+```
+
+When the useMenubarView configuration is enabled, you also need to register the layoutConfig configuration of `SlotLocation.top`
+
+```diff
++ import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design';
+
++layoutConfig: {
++  ...
++  [SlotLocation.top]: {
++    modules: [DESIGN_MENUBAR_CONTAINER_VIEW_ID],
++  }
++}
+```
+
 ## v3.0.0
 
 ### What's New Features

@@ -16,6 +16,7 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ChatAgentViewServiceToken,
   ChatRenderRegistryToken,
@@ -41,7 +42,6 @@ import { IChatAgentViewService } from '../types';
 import { ChatMarkdown } from './ChatMarkdown';
 import { ChatThinking, ChatThinkingResult } from './ChatThinking';
 import styles from './components.module.less';
-import { Loading } from './Loading';
 
 interface IChatReplyProps {
   relationId: string;
@@ -331,6 +331,7 @@ interface IChatNotifyProps {
 }
 export const ChatNotify = (props: IChatNotifyProps) => {
   const { chunk } = props;
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
   const contentNode = React.useMemo(() => {
     let node: ReactNode;
@@ -338,7 +339,14 @@ export const ChatNotify = (props: IChatNotifyProps) => {
     if (chunk.kind === 'component') {
       node = <ComponentRender component={chunk.component} value={chunk.value} />;
     } else {
-      node = <ChatMarkdown markdown={chunk.content} relationId={props.requestId} />;
+      let renderContent = <ChatMarkdown markdown={chunk.content} fillInIncompleteTokens />;
+
+      if (chatRenderRegistry.chatAIRoleRender) {
+        const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
+        renderContent = <ChatAIRoleRender content={chunk.content} />;
+      }
+
+      node = renderContent;
     }
     return node;
   }, [chunk]);

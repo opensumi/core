@@ -110,6 +110,7 @@ export const localizationBundle = {
     'editor.saveCodeActions.getting': 'Getting code actions from {0}.',
     'editor.saveCodeActions.saving': 'Saving "{0}"',
     'editor.title.context.close': 'Close',
+    'editor.closeTab.title': 'Close ({0})',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
     'editor.cannotOpenBinary': 'Cannot open binary file in this editor.',
@@ -1280,7 +1281,7 @@ export const localizationBundle = {
     comments: 'Comments',
     'comments.reply.placeholder': 'Reply',
     'comments.participants': 'Participants',
-    'comments.zone.title': 'Start discussion',
+    'comments.zone.title': 'Start Discussion',
     'comments.panel.action.collapse': 'Collapse All',
     'comments.thread.action.close': 'Close Panel',
     'comments.thread.action.openFile': 'Open file',
@@ -1453,12 +1454,13 @@ export const localizationBundle = {
     'aiNative.chat.code.copy.success': 'Copied successfully',
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
-    'aiNative.chat.enter.send': 'Send',
+    'aiNative.chat.enter.send': 'Send (Enter)',
 
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
+    'aiNative.inline.chat.input.placeholder.default': 'Ask Copilot（shift + enter newline）',
 
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':
@@ -1484,6 +1486,11 @@ export const localizationBundle = {
     'preference.ai.native.inlineChat.codeAction.enabled':
       'Does Inline Chat related code actions automatically appear when code are selected?',
     'preference.ai.native.chat.visible.type': 'Control how the chat panel is displayed by default',
+
+    'preference.ai.native.inlineCompletions.title': 'Inline Completions',
+    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
+      'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
+    'preference.ai.native.inlineCompletions.debounceTime': 'Debounce time for inline completions',
     // #endregion AI Native
 
     // #endregion merge editor

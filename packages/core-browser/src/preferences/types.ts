@@ -26,6 +26,15 @@ export const PreferenceService = Symbol('PreferenceService');
 
 export interface PreferenceService extends IDisposable {
   readonly ready: Promise<void>;
+
+  /**
+   * 查询是否有对应配置
+   * @param {string} preferenceName
+   * @param {string} [resourceUri]
+   * @returns {boolean}
+   */
+  has(preferenceName: string, resourceUri?: string, language?: string): boolean;
+
   /**
    * 获取一个配置的值
    * @param preferenceName  配置名称

@@ -1,6 +1,7 @@
 import { Disposable, DomListener, Emitter, Event, IDisposable, IRange, uuid } from '@opensumi/ide-core-browser';
 import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
 import * as monaco from '@opensumi/ide-monaco';
+import { Color, RGBA } from '@opensumi/ide-theme';
 import { createCSSRule, removeCSSRulesContainingSelector } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
 import {
   IHorizontalSashLayoutProvider,
@@ -20,6 +21,8 @@ export class ViewZoneDelegate implements monaco.editor.IViewZone {
   public afterLineNumber: number;
   public afterColumn: number;
   public heightInLines: number;
+  readonly showInHiddenAreas: boolean | undefined;
+  readonly ordinal: number | undefined;
 
   private readonly _onDomNodeTop: (top: number) => void;
   private readonly _onComputedHeight: (height: number) => void;
@@ -31,11 +34,15 @@ export class ViewZoneDelegate implements monaco.editor.IViewZone {
     heightInLines: number,
     onDomNodeTop: (top: number) => void,
     onComputedHeight: (height: number) => void,
+    showInHiddenAreas: boolean | undefined,
+    ordinal: number | undefined,
   ) {
     this.domNode = domNode;
     this.afterLineNumber = afterLineNumber;
     this.afterColumn = afterColumn;
     this.heightInLines = heightInLines;
+    this.showInHiddenAreas = showInHiddenAreas;
+    this.ordinal = ordinal;
     this._onDomNodeTop = onDomNodeTop;
     this._onComputedHeight = onComputedHeight;
   }
@@ -70,10 +77,24 @@ export class OverlayWidgetDelegate extends Disposable implements monaco.editor.I
 }
 
 export interface IOptions {
+  showFrame?: boolean;
+  showArrow?: boolean;
+  frameWidth?: number;
+  className?: string;
+  isAccessible?: boolean;
   isResizeable?: boolean;
-  arrowColor?: string;
+  frameColor?: Color | string;
+  arrowColor?: Color;
+  keepEditorSelection?: boolean;
+  allowUnlimitedHeight?: boolean;
+  ordinal?: number;
+  showInHiddenAreas?: boolean;
 }
 
+export interface IStyles {
+  frameColor?: Color | string | null;
+  arrowColor?: Color | null;
+}
 class Arrow {
   private static readonly _IdGenerator = new IdGenerator('.arrow-decoration-');
 
@@ -117,7 +138,7 @@ class Arrow {
 
     if (where.startColumn === 1) {
       // the arrow isn't pretty at column 1 and we need to push it out a little
-      where = { ...where, startLineNumber: where.startLineNumber, startColumn: 2 };
+      where = { ...where, startLineNumber: where.endLineNumber, startColumn: 2 };
     }
 
     this._decorations.set([
@@ -136,6 +157,17 @@ class Arrow {
     this._decorations.clear();
   }
 }
+
+const defaultColor = new Color(new RGBA(0, 122, 204));
+
+const defaultOptions: IOptions = {
+  showArrow: true,
+  showFrame: true,
+  className: '',
+  frameColor: defaultColor,
+  arrowColor: defaultColor,
+  keepEditorSelection: false,
+};
 
 /**
  * 构造函数负责 dom 结构，
@@ -171,7 +203,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
 
   private _showImpl(where: monaco.IRange, heightInLines: number) {
     const position = where;
-    const { startLineNumber: lineNumber, startColumn: column } = where;
+    const { endLineNumber: lineNumber, endColumn: column } = where;
     const viewZoneDomNode = document.createElement('div');
     const layoutInfo = this.editor.getLayoutInfo();
     const lineHeight = this.editor.getOption(EditorOption.lineHeight);
@@ -195,6 +227,8 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
         heightInLines,
         (top: number) => this._onViewZoneTop(top),
         (height: number) => this._onViewZoneHeight(height),
+        this.options?.showInHiddenAreas,
+        this.options?.ordinal,
       );
       this._viewZone.id = accessor.addZone(this._viewZone);
       this._overlay = new OverlayWidgetDelegate(OverlayWidgetDelegate.id + this._viewZone.id, this._container);
@@ -270,7 +304,8 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   }
 
   private _getWidth(info: monaco.editor.EditorLayoutInfo): number {
-    const minimapWidth = info.minimap ? info.minimap.minimapWidth : 0;
+    // 增加部分与 Minimap 的边距，整体视觉效果更好
+    const minimapWidth = info.minimap ? info.minimap.minimapWidth + 5 : 0;
     return info.width - minimapWidth - info.verticalScrollbarWidth;
   }
 

@@ -49,6 +49,7 @@ export interface IDesignLayoutConfig {
   useMergeRightWithLeftPanel?: boolean;
   /**
    * use new manubar view
+   * @deprecated Please use layoutConfig
    */
   useMenubarView?: boolean;
   /**

@@ -611,16 +611,6 @@ export const editorGutter = registerColor(
   ),
 );
 
-export const overviewRulerCommentingRangeForeground = registerColor(
-  'editorGutter.commentRangeForeground',
-  {
-    dark: '#37373D',
-    light: darken('#E4E6F1', 0.05),
-    hcDark: Color.white,
-    hcLight: Color.black,
-  },
-  localize('editorGutterCommentRangeForeground', 'Editor gutter decoration color for commenting ranges.'),
-);
 export const editorUnnecessaryCodeBorder = registerColor(
   'editorUnnecessaryCode.border',
   { dark: null, light: null, hcDark: Color.fromHex('#fff').transparent(0.8), hcLight: contrastBorder },

@@ -2,41 +2,57 @@ import React from 'react';
 
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
-  AbortError,
-  CancelResponse,
   CancellationToken,
+  ChatResponse,
   Deferred,
-  ErrorResponse,
   IAICompletionResultModel,
-  IChatProgress,
   IDisposable,
   IResolveConflictHandler,
   MaybePromise,
   MergeConflictEditorMode,
-  ReplyResponse,
 } from '@opensumi/ide-core-common';
-import { ChatResponse } from '@opensumi/ide-core-common';
 import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
-import { SumiReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
-import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
-import { CompletionRequestBean } from './inline-completions/model/competionModel';
+import { CompletionRequestBean } from './contrib/inline-completions/model/competionModel';
+import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
-export interface IEditorInlineChatHandler {
+interface IBaseInlineChatHandler<T extends any[]> {
   /**
    * 直接执行 action 的操作，点击后 inline chat 立即消失
    */
-  execute?: (editor: ICodeEditor, ...args: any[]) => MaybePromise<void>;
+  execute?: (...args: T) => MaybePromise<void>;
   /**
    * 提供 diff editor 的预览策略
    */
-  providerDiffPreviewStrategy?: (
-    editor: ICodeEditor,
-    cancelToken: CancellationToken,
-  ) => MaybePromise<ChatResponse | InlineChatController>;
+  providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
+}
+
+export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
+export type IInteractiveInputHandler = IBaseInlineChatHandler<
+  [editor: ICodeEditor, value: string, token: CancellationToken]
+>;
+
+export enum ERunStrategy {
+  /**
+   * 正常执行，执行后 input 直接消失
+   */
+  EXECUTE = 'EXECUTE',
+  /**
+   * 预览 diff，执行后 input 保留，显示 diff editor
+   */
+  DIFF_PREVIEW = 'DIFF_PREVIEW',
+}
+
+/**
+ * 制定 inline chat interactive input 的执行策略
+ */
+export interface IInteractiveInputRunStrategy {
+  strategy?: ERunStrategy;
+  handleStrategy?: (value: string) => MaybePromise<ERunStrategy>;
 }
 
 export interface ITerminalInlineChatHandler {
@@ -47,6 +63,13 @@ export interface ITerminalInlineChatHandler {
 export interface IInlineChatFeatureRegistry {
   registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
+  /**
+   * proposed api
+   */
+  registerInteractiveInput(
+    strategyOptions: IInteractiveInputRunStrategy,
+    handler: IInteractiveInputHandler,
+  ): IDisposable;
 }
 
 export interface IChatSlashCommandItem {

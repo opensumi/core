@@ -1,4 +1,4 @@
-import { action, autorun, computed, makeObservable, observable } from 'mobx';
+import { action, autorun, computed, makeObservable, observable, runInAction } from 'mobx';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, Emitter, IContextKeyService, IRange, URI, localize, uuid } from '@opensumi/ide-core-browser';
@@ -6,6 +6,7 @@ import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/re
 import { EditorCollectionService, IEditor } from '@opensumi/ide-editor';
 
 import {
+  CommentThreadCollapsibleState,
   IComment,
   ICommentsService,
   ICommentsThread,
@@ -46,12 +47,18 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   public data: any;
 
+  private onDidChangeCollapsibleStateEmitter: Emitter<CommentThreadCollapsibleState> = new Emitter();
+
   set contextValue(value: string | undefined) {
     this._contextKeyService.createKey<string>('thread', value);
   }
 
   get contextValue() {
     return this._contextKeyService.getContextValue('thread');
+  }
+
+  get onDidChangeCollapsibleState() {
+    return this.onDidChangeCollapsibleStateEmitter.event;
   }
 
   private widgets = new Map<IEditor, CommentsZoneWidget>();
@@ -152,7 +159,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   set readOnly(readOnly: boolean) {
-    this._readOnly = readOnly;
+    runInAction(() => (this._readOnly = readOnly));
     this._contextKeyService.createKey<boolean>('readOnly', this._readOnly);
   }
 
@@ -276,13 +283,18 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     }
   }
 
+  @action
   public showAll() {
+    this.isCollapsed = false;
     for (const [, widget] of this.widgets) {
       widget.show();
     }
+    this.onDidChangeCollapsibleStateEmitter.fire(CommentThreadCollapsibleState.Expanded);
   }
 
+  @action
   public hideAll(isDospose?: boolean) {
+    this.isCollapsed = true;
     for (const [editor, widget] of this.widgets) {
       if (isDospose) {
         // 如果 thread 出现在当前 editor 则不隐藏
@@ -291,8 +303,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
         widget.hide();
       }
     }
+    this.onDidChangeCollapsibleStateEmitter.fire(CommentThreadCollapsibleState.Collapsed);
   }
 
+  @action
   public addComment(...comments: IComment[]) {
     this.comments.push(
       ...comments.map((comment) => ({
@@ -303,6 +317,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this.onDidChangeEmitter.fire();
   }
 
+  @action
   public removeComment(comment: IComment) {
     const index = this.comments.findIndex((c) => c === comment);
     if (index !== -1) {
@@ -312,6 +327,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   public isEqual(thread: ICommentsThread): boolean {
-    return thread.uri.isEqual(this.uri) && thread.range.startLineNumber === this.range.startLineNumber;
+    return (
+      thread.uri.isEqual(this.uri) &&
+      thread.range.startLineNumber === this.range.startLineNumber &&
+      thread.range.endLineNumber === this.range.endLineNumber
+    );
   }
 }
