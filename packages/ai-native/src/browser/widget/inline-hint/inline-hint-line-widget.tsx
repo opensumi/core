@@ -21,7 +21,7 @@ export class InlineHintLineWidget extends ReactInlineContentWidget {
       <div className={styles.hint_line_widget}>
         <span className={styles.text}>{`按 ${
           isMacintosh ? SpecialCases.MACMETA : SpecialCases.CTRL
-        } + i 唤起 Inline Chat`}</span>
+        } + K 唤起 Inline Chat`}</span>
       </div>
     );
   }

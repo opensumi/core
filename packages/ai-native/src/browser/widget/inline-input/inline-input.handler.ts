@@ -175,7 +175,7 @@ export class InlineInputHandler extends Disposable {
         const decorationRange = collection.getRange(0)!;
         let preLineRange: LineRange = LineRange.fromRange(decorationRange);
 
-        inlineInputChatWidget.show({ position: decorationRange.getEndPosition() });
+        inlineInputChatWidget.show({ position: decorationRange.getStartPosition() });
 
         this.aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
 
@@ -237,7 +237,7 @@ export class InlineInputHandler extends Disposable {
             const curLineRange = LineRange.fromRange(range);
             if (!preLineRange.equals(curLineRange)) {
               inlineInputChatWidget.setOptions({
-                position: range.getEndPosition(),
+                position: range.getStartPosition(),
               });
 
               inlineInputChatWidget.layoutContentWidget();

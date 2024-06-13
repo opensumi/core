@@ -113,7 +113,7 @@ export class InlineHintHandler extends Disposable {
       this.keybindingRegistry.registerKeybinding(
         {
           command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
-          keybinding: 'ctrlcmd+i',
+          keybinding: 'ctrlcmd+k',
           args: () => currentVisiblePosition,
           priority: 0,
           when: `editorTextFocus && ${InlineHintWidgetIsVisible.raw}`,

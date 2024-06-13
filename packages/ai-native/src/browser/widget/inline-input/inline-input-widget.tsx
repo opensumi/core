@@ -9,7 +9,9 @@ import { InlineResultAction } from '../inline-actions/result-items/index';
 import { EInlineChatStatus, EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 
+import styles from './inline-input.module.less';
 import { InlineInputChatService } from './inline-input.service';
+
 
 interface IInlineInputWidgetRenderProps {
   onLayoutChange: (height: number) => void;
@@ -87,7 +89,7 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
   @Autowired(InlineInputChatService)
   private inlineInputChatService: InlineInputChatService;
 
-  positionPreference = [ContentWidgetPositionPreference.BELOW];
+  positionPreference = [ContentWidgetPositionPreference.ABOVE];
 
   override dispose(): void {
     super.dispose();
@@ -100,20 +102,22 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
 
   override renderView(): ReactNode {
     return (
-      <InlineInputWidgetRender
-        onClose={() => this.dispose()}
-        onChatStatus={this.onStatusChange.bind(this)}
-        onLayoutChange={() => {
-          this.editor.layoutContentWidget(this);
-        }}
-        onInteractiveInputSend={(value) => {
-          this.launchChatStatus(EInlineChatStatus.THINKING);
-          this._onInteractiveInputValue.fire(value);
-        }}
-        onResultClick={(k: EResultKind) => {
-          this._onResultClick.fire(k);
-        }}
-      />
+      <div className={styles.input_wrapper}>
+        <InlineInputWidgetRender
+          onClose={() => this.dispose()}
+          onChatStatus={this.onStatusChange.bind(this)}
+          onLayoutChange={() => {
+            this.editor.layoutContentWidget(this);
+          }}
+          onInteractiveInputSend={(value) => {
+            this.launchChatStatus(EInlineChatStatus.THINKING);
+            this._onInteractiveInputValue.fire(value);
+          }}
+          onResultClick={(k: EResultKind) => {
+            this._onResultClick.fire(k);
+          }}
+        />
+      </div>
     );
   }
 }
