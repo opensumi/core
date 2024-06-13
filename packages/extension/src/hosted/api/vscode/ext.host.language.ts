@@ -619,10 +619,6 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this._currentNativeInlineCompletions = completions;
   }
 
-  async getNativeInlineCompletionsAsync() {
-    return this.proxy.$getNativeInlineCompletions();
-  }
-
   getNativeInlineCompletions() {
     return this._currentNativeInlineCompletions;
   }

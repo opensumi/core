@@ -180,7 +180,6 @@ export interface IMainThreadLanguages {
   $emitInlayHintsEvent(eventHandle: number, event?: any): void;
   $setLanguageStatus(handle: number, status: ILanguageStatus): void;
   $removeLanguageStatus(handle: number): void;
-  $getNativeInlineCompletions(): Promise<InlineCompletions | undefined>;
 }
 
 export interface IExtHostLanguages {

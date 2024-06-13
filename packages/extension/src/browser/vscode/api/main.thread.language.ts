@@ -1650,8 +1650,5 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   async setNativeInlineCompletions(completions: monaco.InlineCompletions) {
     this.proxy.$setNativeInlineCompletions(completions);
   }
-  async $getNativeInlineCompletions() {
-    return this.inlineCompletionHandler.getCompletionResult();
-  }
   // #endregion InlineCompletions
 }
