@@ -42,7 +42,7 @@ export const EnhanceIcon = React.forwardRef<HTMLDivElement | null, IEnhanceIconP
 );
 
 interface IEnhanceIconWithCtxMenuProps extends IEnhanceIconProps {
-  id: string;
+  id?: string;
   menuNodes: MenuNode[];
   skew?: { x: number; y: number };
 }
@@ -100,7 +100,7 @@ export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
           menuNodes,
         });
       });
-    } else {
+    } else if (commandId) {
       try {
         commandService.executeCommand(commandId);
       } catch {}
