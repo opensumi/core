@@ -9,7 +9,7 @@ import {
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
 
-import styles from './style.module.less';
+import { PreventComponent } from './prevent.view';
 
 export const BinaryEditorComponent: ReactEditorComponent<null> = (props) => {
   const srcPath = props.resource.uri.codeUri.fsPath;
@@ -29,14 +29,19 @@ export const BinaryEditorComponent: ReactEditorComponent<null> = (props) => {
     eventBus.fire(new ResourceOpenTypeChangedEvent(current.uri));
   };
 
-  return (
-    <div className={styles.external}>
-      {localize('editor.cannotOpenBinary')}
-      <a onClick={() => handleClick()}>{localize('editor.file.prevent.stillOpen')}</a>
+  const actions = [
+    {
+      label: localize('editor.file.prevent.stillOpen'),
+      onClick: () => handleClick(),
+    },
+  ];
 
-      {appConfig.isElectronRenderer ? (
-        <a onClick={() => injector.get(IElectronMainUIService).openPath(srcPath)}>{localize('editor.openExternal')}</a>
-      ) : null}
-    </div>
-  );
+  if (appConfig.isElectronRenderer) {
+    actions.push({
+      label: localize('editor.openExternal'),
+      onClick: () => injector.get(IElectronMainUIService).openPath(srcPath),
+    });
+  }
+
+  return <PreventComponent description={localize('editor.cannotOpenBinary')} actions={actions} />;
 };

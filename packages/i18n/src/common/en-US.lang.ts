@@ -970,7 +970,7 @@ export const localizationBundle = {
       'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
     'diffEditor.action.toggleCollapseUnchangedRegions': 'Toggle Collapse Unchanged Regions',
 
-    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
+    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause lag or crash.',
     'editor.autoSave.enum.off': 'OFF',
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
     'editor.autoSave.enum.afterDelay': 'Save after delay',
