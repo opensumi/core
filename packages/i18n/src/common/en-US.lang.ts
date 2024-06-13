@@ -475,6 +475,11 @@ export const localizationBundle = {
       'Controls whether text selected in the terminal will be copied to the clipboard.',
 
     'preference.terminal.integrated.enableTerminalIntellComplete': 'Enable Terminal Intell Complete',
+    'preference.terminal.integrated.terminalIntell': 'Terminal Intelligent Completion',
+    'preference.terminal.integrated.terminalIntellDesc':
+      'Automatically pop up subcommands, options, and context-related parameter completions during terminal input (Currently supports Bash only)',
+    'preference.terminal.integrated.terminalIntellUsage':
+      'Use Tab to trigger and select terminal suggestions, Esc to cancel, Enter to confirm',
 
     // Local Echo
     'preference.terminal.integrated.localEchoEnabled': 'Terminal > Local Echo',

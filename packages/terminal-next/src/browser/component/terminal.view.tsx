@@ -147,13 +147,14 @@ export default observer(() => {
         <div className={styles.terminalIntell}>
           <div className={styles.intellTitleContainer}>
             <Icon icon={'magic-wand'} className={styles.intellTitleIcon} />
-            <div className={styles.intellTitle}>终端智能补全</div>
+            <div className={styles.intellTitle}>{localize('preference.terminal.integrated.terminalIntell')}</div>
             <div
               className={cls(styles.closeBtn, getIcon('close'))}
               onClick={() => intellService.closeIntellSettingsPopup()}
             ></div>
           </div>
           <div className={styles.intellSampleImage} />
+          <div className={styles.intellUsage}>{localize('preference.terminal.integrated.terminalIntellUsage')}</div>
           <div className={styles.intellCheckContainer}>
             <CheckBox
               checked={enableTerminalIntell}
@@ -163,7 +164,7 @@ export default observer(() => {
                 preference.set(CodeTerminalSettingId.EnableTerminalIntellComplete, checked);
               }}
             />
-            <div className={styles.intellDesc}>终端输入时，自动弹出弹出子命令、选项和上下文相关的参数的补全</div>
+            <div className={styles.intellDesc}>{localize('preference.terminal.integrated.terminalIntellDesc')}</div>
           </div>
         </div>
       )}
