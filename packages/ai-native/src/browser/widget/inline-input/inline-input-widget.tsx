@@ -22,6 +22,7 @@ interface IInlineInputWidgetRenderProps {
 const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
   const { onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick } = props;
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
+  const [inputValue, setInputValue] = useState<string>('');
 
   useEffect(() => {
     const dis = new Disposable();
@@ -47,6 +48,10 @@ const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
     [onInteractiveInputSend],
   );
 
+  const handleValueChange = useCallback((value) => {
+    setInputValue(value);
+  }, []);
+
   if (isError) {
     return null;
   }
@@ -67,6 +72,8 @@ const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
           size='small'
           placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
           width={320}
+          value={inputValue}
+          onValueChange={handleValueChange}
           disabled={isLoading}
           onSend={handleInteractiveInputSend}
         />

@@ -51,6 +51,7 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
+  const [inputValue, setInputValue] = useState<string>('');
   const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
 
   useEffect(() => {
@@ -113,6 +114,10 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     [inlineChatFeatureRegistry],
   );
 
+  const handleValueChange = useCallback((value) => {
+    setInputValue(value);
+  }, []);
+
   const customOperationRender = useMemo(() => {
     if (!interactiveInputVisible) {
       return null;
@@ -126,10 +131,12 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
         width={320}
         disabled={isLoading}
+        value={inputValue}
+        onValueChange={handleValueChange}
         onSend={handleInteractiveInputSend}
       />
     );
-  }, [isLoading, interactiveInputVisible]);
+  }, [isLoading, interactiveInputVisible, inputValue]);
 
   const renderContent = useCallback(() => {
     if (operationList.length === 0 && moreOperation.length === 0) {
@@ -188,6 +195,11 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   protected readonly _onResultClick = new Emitter<EResultKind>();
   public readonly onResultClick: Event<EResultKind> = this._onResultClick.event;
 
+  protected _interactiveInputValue: string;
+  public get interactiveInputValue(): string {
+    return this._interactiveInputValue;
+  }
+
   protected _status: EInlineChatStatus = EInlineChatStatus.READY;
   public get status(): EInlineChatStatus {
     return this._status;
@@ -238,6 +250,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
         }}
         onInteractiveInputSend={(value) => {
           this.launchChatStatus(EInlineChatStatus.THINKING);
+          this._interactiveInputValue = value;
           this._onInteractiveInputValue.fire(value);
         }}
         onResultClick={(kind: EResultKind) => {
