@@ -7,7 +7,6 @@ import { AppConfig, ConfigProvider, StackingLevelStr } from '@opensumi/ide-core-
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
 
 import * as monaco from '../../common';
-import { editor } from '../monaco-exports';
 import { ContentWidgetPositionPreference } from '../monaco-exports/editor';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '../monaco-api/types';

@@ -3,14 +3,16 @@ import {
   CancelResponse,
   CancellationTokenSource,
   Disposable,
+  Event,
   IDisposable,
   InlineChatFeatureRegistryToken,
   ReplyResponse,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
+import { SelectionDirection } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
-import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
+import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { AICompletionsService } from '../../contrib/inline-completions/service/ai-completions.service';
@@ -20,7 +22,9 @@ import { InlineChatFeatureRegistry } from '../inline-chat/inline-chat.feature.re
 import { EInlineChatStatus } from '../inline-chat/inline-chat.service';
 
 import { InlineInputChatWidget } from './inline-input-widget';
+import styles from './inline-input.module.less';
 import { InlineInputChatService } from './inline-input.service';
+
 
 @Injectable()
 export class InlineInputHandler extends Disposable {
@@ -56,12 +60,11 @@ export class InlineInputHandler extends Disposable {
 
     this.addDispose(
       this.inlineInputChatService.onInteractiveInputVisibleInPosition((position) => {
-        if (!position) {
-          hideInput();
-          return;
-        }
+        hideInput();
 
-        showInput(position);
+        if (position) {
+          showInput(position);
+        }
       }),
     );
 
@@ -81,15 +84,50 @@ export class InlineInputHandler extends Disposable {
 
       if (isEmpty && isEmptySelection) {
         const inlineInputChatWidget = this.injector.get(InlineInputChatWidget, [monacoEditor]);
-        inlineInputChatWidget.show({
-          selection: new monaco.Selection(position.lineNumber, position.column, position.lineNumber, position.column),
-        });
+
+        const collection = monacoEditor.createDecorationsCollection();
+        collection.append([
+          {
+            range: monaco.Range.fromPositions(position),
+            options: {
+              description: '',
+              isWholeLine: true,
+              className: styles.input_decoration_readable_container,
+              inlineClassName: styles.inline_chat_inserted_range,
+            },
+          },
+        ]);
+
+        const decorationRange = collection.getRange(0)!;
+        let preLineRange: LineRange = LineRange.fromRange(decorationRange);
+
+        inlineInputChatWidget.show({ selection: monaco.Selection.fromRange(decorationRange, SelectionDirection.LTR) });
+
         this.aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
 
         inputDisposable.addDispose(
           inlineInputChatWidget.onDispose(() => {
             this.cancelToken();
+            collection.clear();
             this.aiNativeContextKey.inlineInputWidgetIsVisible.set(false);
+          }),
+        );
+
+        inputDisposable.addDispose(
+          Event.debounce(
+            collection.onDidChange.bind(collection),
+            () => {},
+            16 * 3,
+          )(() => {
+            const curLineRange = LineRange.fromRange(collection.getRange(0)!);
+            if (!preLineRange.equals(curLineRange)) {
+              inlineInputChatWidget.setOptions({
+                selection: monaco.Selection.fromRange(collection.getRange(0)!, SelectionDirection.LTR),
+              });
+
+              inlineInputChatWidget.layoutContentWidget();
+            }
+            preLineRange = curLineRange;
           }),
         );
 
@@ -132,7 +170,6 @@ export class InlineInputHandler extends Disposable {
                 const controller = previewResponse as InlineChatController;
 
                 controller.deffered.resolve();
-                let curPosi = position;
 
                 this.previewReadableDisposable.addDispose([
                   controller.onData(async (data) => {
@@ -142,11 +179,17 @@ export class InlineInputHandler extends Disposable {
 
                     const { message } = data;
 
-                    const newPosition = model.modifyPosition(curPosi, 0);
-                    const edit = EditOperation.insert(newPosition, message);
-                    model.pushEditOperations(null, [edit], () => null);
-
-                    curPosi = model.getPositionAt(model.getOffsetAt(newPosition) + message.length);
+                    const curPosi = collection.getRange(0)!;
+                    model.pushEditOperations(
+                      null,
+                      [
+                        {
+                          range: monaco.Range.fromPositions(curPosi.getEndPosition()),
+                          text: message,
+                        },
+                      ],
+                      () => null,
+                    );
                   }),
                   controller.onError((error) => {
                     inlineInputChatWidget.launchChatStatus(EInlineChatStatus.ERROR);
