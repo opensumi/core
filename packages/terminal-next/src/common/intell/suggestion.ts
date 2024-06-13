@@ -5,23 +5,23 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { path } from '@opensumi/ide-core-common';
 
 import { ITerminalIntellEnvironment } from './environment';
-import { IGeneratorRunner } from "./generator";
-import { Suggestion, SuggestionBlob } from "./model";
-import { CommandToken } from "./parser";
-import { ITemplateRunner } from "./template";
+import { IGeneratorRunner } from './generator';
+import { Suggestion, SuggestionBlob } from './model';
+import { CommandToken } from './parser';
+import { ITemplateRunner } from './template';
 
-type FilterStrategy = "fuzzy" | "prefix" | "default";
+type FilterStrategy = 'fuzzy' | 'prefix' | 'default';
 
 enum SuggestionIcons {
-  File = "📄",
-  Folder = "📁",
-  Subcommand = "📦",
-  Option = "🔗",
-  Argument = "💲",
-  Mixin = "🏝️",
-  Shortcut = "🔥",
-  Special = "⭐",
-  Default = "📀",
+  File = '📄',
+  Folder = '📁',
+  Subcommand = '📦',
+  Option = '🔗',
+  Argument = '💲',
+  Mixin = '🏝️',
+  Shortcut = '🔥',
+  Special = '⭐',
+  Default = '📀',
 }
 
 export const ISuggestionProcessor = Symbol('TokenSuggestionProcessor');
@@ -89,11 +89,13 @@ export class SuggestionProcessor implements ISuggestionProcessor {
   }
 
   private getPathy(type: Fig.SuggestionType | undefined): boolean {
-    return type === "file" || type === "folder";
+    return type === 'file' || type === 'folder';
   }
 
   private toSuggestion(suggestion: Fig.Suggestion, name?: string, type?: Fig.SuggestionType): Suggestion | undefined {
-    if (suggestion.name == null) {return;}
+    if (suggestion.name == null) {
+      return;
+    }
     return {
       name: name ?? this.getLong(suggestion.name),
       description: suggestion.description,
@@ -105,19 +107,27 @@ export class SuggestionProcessor implements ISuggestionProcessor {
     };
   }
 
-  private filter<T extends Fig.BaseSuggestion & { name?: Fig.SingleOrArray<string>; type?: Fig.SuggestionType | undefined }>(
+  private filter<
+    T extends Fig.BaseSuggestion & { name?: Fig.SingleOrArray<string>; type?: Fig.SuggestionType | undefined },
+  >(
     suggestions: T[],
     filterStrategy: FilterStrategy | undefined,
     partialCmd: string | undefined,
     suggestionType: Fig.SuggestionType | undefined,
   ): Suggestion[] {
-    if (!partialCmd) {return suggestions.map((s) => this.toSuggestion(s, undefined, suggestionType)).filter((s) => s != null) as Suggestion[];}
+    if (!partialCmd) {
+      return suggestions
+        .map((s) => this.toSuggestion(s, undefined, suggestionType))
+        .filter((s) => s != null) as Suggestion[];
+    }
 
     switch (filterStrategy) {
-      case "fuzzy":
+      case 'fuzzy':
         return suggestions
           .map((s) => {
-            if (s.name == null) {return;}
+            if (s.name == null) {
+              return;
+            }
             if (s.name instanceof Array) {
               const matchedName = s.name.find((n) => n.toLowerCase().includes(partialCmd.toLowerCase()));
               return matchedName != null
@@ -148,7 +158,9 @@ export class SuggestionProcessor implements ISuggestionProcessor {
       default:
         return suggestions
           .map((s) => {
-            if (s.name == null) {return;}
+            if (s.name == null) {
+              return;
+            }
             if (s.name instanceof Array) {
               const matchedName = s.name.find((n) => n.toLowerCase().startsWith(partialCmd.toLowerCase()));
               return matchedName != null
@@ -180,13 +192,21 @@ export class SuggestionProcessor implements ISuggestionProcessor {
   }
 
   private getEscapedPath(value?: string): string | undefined {
-    return value?.replaceAll(" ", "\\ ");
+    return value?.replaceAll(' ', '\\ ');
   }
 
   private adjustPathSuggestions(suggestions: Suggestion[], partialToken?: CommandToken): Suggestion[] {
-    if (partialToken == null || partialToken.isQuoted) {return suggestions;}
+    if (partialToken == null || partialToken.isQuoted) {
+      return suggestions;
+    }
     return suggestions.map((s) =>
-      s.pathy ? { ...s, insertValue: this.getEscapedPath(s.insertValue), name: s.insertValue == null ? this.getEscapedPath(s.name)! : s.name } : s,
+      s.pathy
+        ? {
+            ...s,
+            insertValue: this.getEscapedPath(s.insertValue),
+            name: s.insertValue == null ? this.getEscapedPath(s.name)! : s.name,
+          }
+        : s,
     );
   }
 
@@ -199,7 +219,9 @@ export class SuggestionProcessor implements ISuggestionProcessor {
     const seen = new Set<string>();
     return suggestions
       .map((s) => {
-        if (seen.has(s.name)) {return null;}
+        if (seen.has(s.name)) {
+          return null;
+        }
         seen.add(s.name);
         return s;
       })
@@ -220,8 +242,12 @@ export class SuggestionProcessor implements ISuggestionProcessor {
   ): Promise<Suggestion[]> {
     const generators = generator instanceof Array ? generator : generator ? [generator] : [];
     const tokens = acceptedTokens.map((t) => t.token);
-    if (partialCmd) {tokens.push(partialCmd);}
-    const suggestions = (await Promise.all(generators.map((gen) => this.generatorRunner.runGenerator(gen, tokens, cwd)))).flat();
+    if (partialCmd) {
+      tokens.push(partialCmd);
+    }
+    const suggestions = (
+      await Promise.all(generators.map((gen) => this.generatorRunner.runGenerator(gen, tokens, cwd)))
+    ).flat();
     return this.filter<Fig.Suggestion>(
       suggestions.map((suggestion) => ({ ...suggestion, priority: suggestion.priority ?? 60 })),
       filterStrategy,
@@ -236,7 +262,12 @@ export class SuggestionProcessor implements ISuggestionProcessor {
     partialCmd: string | undefined,
     cwd: string,
   ): Promise<Suggestion[]> {
-    return this.filter<Fig.Suggestion>(await this.templateRunner.runTemplates(templates ?? [], cwd), filterStrategy, partialCmd, undefined);
+    return this.filter<Fig.Suggestion>(
+      await this.templateRunner.runTemplates(templates ?? [], cwd),
+      filterStrategy,
+      partialCmd,
+      undefined,
+    );
   }
 
   public suggestionSuggestions(
@@ -244,7 +275,7 @@ export class SuggestionProcessor implements ISuggestionProcessor {
     filterStrategy: FilterStrategy | undefined,
     partialCmd: string | undefined,
   ): Suggestion[] {
-    const cleanedSuggestions = suggestions?.map((s) => (typeof s === "string" ? { name: s } : s)) ?? [];
+    const cleanedSuggestions = suggestions?.map((s) => (typeof s === 'string' ? { name: s } : s)) ?? [];
     return this.filter<Fig.Suggestion>(cleanedSuggestions ?? [], filterStrategy, partialCmd, undefined);
   }
 
@@ -253,7 +284,7 @@ export class SuggestionProcessor implements ISuggestionProcessor {
     filterStrategy: FilterStrategy | undefined,
     partialCmd: string | undefined,
   ): Suggestion[] {
-    return this.filter<Fig.Subcommand>(subcommands ?? [], filterStrategy, partialCmd, "subcommand");
+    return this.filter<Fig.Subcommand>(subcommands ?? [], filterStrategy, partialCmd, 'subcommand');
   }
 
   public optionSuggestions(
@@ -263,8 +294,10 @@ export class SuggestionProcessor implements ISuggestionProcessor {
     partialCmd: string | undefined,
   ): Suggestion[] {
     const usedOptions = new Set(acceptedTokens.filter((t) => t.isOption).map((t) => t.token));
-    const validOptions = options?.filter((o) => o.exclusiveOn?.every((exclusiveOption) => !usedOptions.has(exclusiveOption)) ?? true);
-    return this.filter<Fig.Option>(validOptions ?? [], filterStrategy, partialCmd, "option");
+    const validOptions = options?.filter(
+      (o) => o.exclusiveOn?.every((exclusiveOption) => !usedOptions.has(exclusiveOption)) ?? true,
+    );
+    return this.filter<Fig.Option>(validOptions ?? [], filterStrategy, partialCmd, 'option');
   }
 
   public async getSubcommandDrivenRecommendation(
@@ -276,18 +309,27 @@ export class SuggestionProcessor implements ISuggestionProcessor {
     acceptedTokens: CommandToken[],
     cwd: string,
   ): Promise<SuggestionBlob | undefined> {
-    this.terminalIntellEnv.getLogger().debug({ msg: "suggestion point", subcommand: {
-      ...subcommand,
-      subcommands: subcommand?.subcommands?.slice(0, 1),
-      options: subcommand?.options?.slice(0, 5),
-      args: subcommand.args instanceof Array ? subcommand.args.slice(0, 3) : subcommand.args,
-     }, persistentOptions, partialToken, argsDepleted, argsFromSubcommand, acceptedTokens, cwd });
+    this.terminalIntellEnv.getLogger().debug({
+      msg: 'suggestion point',
+      subcommand: {
+        ...subcommand,
+        subcommands: subcommand?.subcommands?.slice(0, 1),
+        options: subcommand?.options?.slice(0, 5),
+        args: subcommand.args instanceof Array ? subcommand.args.slice(0, 3) : subcommand.args,
+      },
+      persistentOptions,
+      partialToken,
+      argsDepleted,
+      argsFromSubcommand,
+      acceptedTokens,
+      cwd,
+    });
     if (argsDepleted && argsFromSubcommand) {
       return;
     }
     let partialCmd = partialToken?.token;
     if (partialToken?.isPath) {
-      partialCmd = partialToken.isPathComplete ? "" : path.basename(partialCmd ?? "");
+      partialCmd = partialToken.isPathComplete ? '' : path.basename(partialCmd ?? '');
     }
 
     const suggestions: Suggestion[] = [];
@@ -300,9 +342,19 @@ export class SuggestionProcessor implements ISuggestionProcessor {
     }
     if (argLength !== 0) {
       const activeArg = subcommand.args instanceof Array ? subcommand.args[0] : subcommand.args;
-      suggestions.push(...(await this.generatorSuggestions(activeArg?.generators, acceptedTokens, activeArg?.filterStrategy, partialCmd, cwd)));
+      suggestions.push(
+        ...(await this.generatorSuggestions(
+          activeArg?.generators,
+          acceptedTokens,
+          activeArg?.filterStrategy,
+          partialCmd,
+          cwd,
+        )),
+      );
       suggestions.push(...this.suggestionSuggestions(activeArg?.suggestions, activeArg?.filterStrategy, partialCmd));
-      suggestions.push(...(await this.templateSuggestions(activeArg?.template, activeArg?.filterStrategy, partialCmd, cwd)));
+      suggestions.push(
+        ...(await this.templateSuggestions(activeArg?.template, activeArg?.filterStrategy, partialCmd, cwd)),
+      );
     }
 
     return {
@@ -331,13 +383,19 @@ export class SuggestionProcessor implements ISuggestionProcessor {
   ): Promise<SuggestionBlob | undefined> {
     let partialCmd = partialToken?.token;
     if (partialToken?.isPath) {
-      partialCmd = partialToken.isPathComplete ? "" : path.basename(partialCmd ?? "");
+      partialCmd = partialToken.isPathComplete ? '' : path.basename(partialCmd ?? '');
     }
 
     const activeArg = args[0];
     const allOptions = persistentOptions.concat(subcommand.options ?? []);
     const suggestions = [
-      ...(await this.generatorSuggestions(args[0].generators, acceptedTokens, activeArg?.filterStrategy, partialCmd, cwd)),
+      ...(await this.generatorSuggestions(
+        args[0].generators,
+        acceptedTokens,
+        activeArg?.filterStrategy,
+        partialCmd,
+        cwd,
+      )),
       ...this.suggestionSuggestions(args[0].suggestions, activeArg?.filterStrategy, partialCmd),
       ...(await this.templateSuggestions(args[0].template, activeArg?.filterStrategy, partialCmd, cwd)),
     ];

@@ -1,4 +1,4 @@
-import { CommandToken } from "./parser";
+import { CommandToken } from './parser';
 
 interface Dirent {
   /**
@@ -20,14 +20,14 @@ export interface TerminalIntellFileSystem {
 }
 
 export enum Shell {
-  Bash = "bash",
-  Powershell = "powershell",
-  Pwsh = "pwsh",
-  Zsh = "zsh",
-  Fish = "fish",
-  Cmd = "cmd",
-  Xonsh = "xonsh",
-  Nushell = "nu",
+  Bash = 'bash',
+  Powershell = 'powershell',
+  Pwsh = 'pwsh',
+  Zsh = 'zsh',
+  Fish = 'fish',
+  Cmd = 'cmd',
+  Xonsh = 'xonsh',
+  Nushell = 'nu',
 }
 
 export interface ITerminalIntellLogger {

@@ -26,7 +26,7 @@ export class SpecLoaderNodeImpl implements IFigSpecLoader {
           return;
         }
         if (idx === specRoutes.length - 1) {
-          const prefix = versionedSpeclist.includes(s) ? '/index.js' : `.js`;
+          const prefix = versionedSpeclist.includes(s) ? '/index.js' : '.js';
           // HACK: 看了一下 bundle 的补全数据，这里都是 .js，为了暂先不引入 fig 的完整依赖，这里先写死了
           // const prefix = `.js`;
           activeSet[route] = `@withfig/autocomplete/build/${s}${prefix}`;

@@ -9,7 +9,7 @@ export interface CommandToken {
   isPath?: boolean;
   isPathComplete?: boolean;
   isQuoted?: boolean;
-};
+}
 
 const cmdDelim = /(\|\|)|(&&)|(;)|(\|)/;
 const spaceRegex = /\s/;
@@ -23,14 +23,14 @@ const lex = (command: string): CommandToken[] => {
   const tokens: CommandToken[] = [];
   let [readingQuotedString, readingFlag, readingCmd] = [false, false, false];
   let readingIdx = 0;
-  let readingQuoteChar = "";
+  let readingQuoteChar = '';
 
   [...command].forEach((char, idx) => {
     const reading = readingQuotedString || readingFlag || readingCmd;
-    if (!reading && (char === `'` || char === `"`)) {
+    if (!reading && (char === "'" || char === '"')) {
       [readingQuotedString, readingIdx, readingQuoteChar] = [true, idx, char];
       return;
-    } else if (!reading && char === `-`) {
+    } else if (!reading && char === '-') {
       [readingFlag, readingIdx] = [true, idx];
       return;
     } else if (!reading && !spaceRegex.test(char)) {
@@ -38,7 +38,7 @@ const lex = (command: string): CommandToken[] => {
       return;
     }
 
-    if (readingQuotedString && char === readingQuoteChar && command.at(idx - 1) !== "\\") {
+    if (readingQuotedString && char === readingQuoteChar && command.at(idx - 1) !== '\\') {
       readingQuotedString = false;
       const complete = idx + 1 < command.length && spaceRegex.test(command[idx + 1]);
       tokens.push({
@@ -47,14 +47,14 @@ const lex = (command: string): CommandToken[] => {
         isOption: false,
         isQuoted: true,
       });
-    } else if ((readingFlag && spaceRegex.test(char)) || char === "=") {
+    } else if ((readingFlag && spaceRegex.test(char)) || char === '=') {
       readingFlag = false;
       tokens.push({
         token: command.slice(readingIdx, idx),
         complete: true,
         isOption: true,
       });
-    } else if (readingCmd && spaceRegex.test(char) && command.at(idx - 1) !== "\\") {
+    } else if (readingCmd && spaceRegex.test(char) && command.at(idx - 1) !== '\\') {
       readingCmd = false;
       tokens.push({
         token: command.slice(readingIdx, idx),

@@ -12,7 +12,7 @@ export interface ITemplateRunner {
   runTemplates(template: Fig.TemplateStrings[] | Fig.Template, cwd: string): Promise<Fig.TemplateSuggestion[]>;
 }
 
-export const ITemplateRunner = Symbol("TokenITemplateRunner");
+export const ITemplateRunner = Symbol('TokenITemplateRunner');
 
 /**
  * 解耦 FS 的依赖
@@ -34,8 +34,8 @@ export class TemplateRunner implements ITemplateRunner {
       .map((f) => ({
         name: f.name,
         priority: 55,
-        context: { templateType: "filepaths" },
-        type: f.isDirectory() ? "folder" : "file",
+        context: { templateType: 'filepaths' },
+        type: f.isDirectory() ? 'folder' : 'file',
       }));
   }
 
@@ -47,8 +47,8 @@ export class TemplateRunner implements ITemplateRunner {
       .map((f) => ({
         name: f.name,
         priority: 55,
-        context: { templateType: "folders" },
-        type: "folder",
+        context: { templateType: 'folders' },
+        type: 'folder',
       }));
   }
 
@@ -60,24 +60,27 @@ export class TemplateRunner implements ITemplateRunner {
     return [];
   }
 
-  public async runTemplates(template: Fig.TemplateStrings[] | Fig.Template, cwd: string): Promise<Fig.TemplateSuggestion[]> {
+  public async runTemplates(
+    template: Fig.TemplateStrings[] | Fig.Template,
+    cwd: string,
+  ): Promise<Fig.TemplateSuggestion[]> {
     const templates = template instanceof Array ? template : [template];
     return (
       await Promise.all(
         templates.map(async (t) => {
           try {
             switch (t) {
-              case "filepaths":
+              case 'filepaths':
                 return await this.filepathsTemplate(cwd);
-              case "folders":
+              case 'folders':
                 return await this.foldersTemplate(cwd);
-              case "history":
+              case 'history':
                 return this.historyTemplate();
-              case "help":
+              case 'help':
                 return this.helpTemplate();
             }
           } catch (e) {
-            this.terminalIntellEnv.getLogger().debug({ msg: "template failed", e, template: t, cwd });
+            this.terminalIntellEnv.getLogger().debug({ msg: 'template failed', e, template: t, cwd });
             return [];
           }
         }),
