@@ -27,7 +27,6 @@ import { InlineInputChatWidget } from './inline-input-widget';
 import styles from './inline-input.module.less';
 import { InlineInputChatService } from './inline-input.service';
 
-
 @Injectable()
 export class InlineInputHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
@@ -265,6 +264,12 @@ export class InlineInputHandler extends Disposable {
     };
 
     this.addDispose(inputDisposable);
+
+    this.addDispose(
+      monacoEditor.onWillChangeModel(() => {
+        hideInput();
+      }),
+    );
 
     return this;
   }
