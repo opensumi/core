@@ -51,7 +51,7 @@ interface IEnhanceIconWithCtxMenuProps extends IEnhanceIconProps {
  * 包含下拉菜单的 icon 组件，可以自定义下拉菜单位置
  */
 export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
-  const { children, menuNodes, skew, id, ...restProps } = props;
+  const { children, menuNodes, skew, id: commandId, ...restProps } = props;
   const commandService = useInjectable<CommandService>(CommandService);
 
   const ctxMenuRenderer = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);
@@ -102,10 +102,10 @@ export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
       });
     } else {
       try {
-        commandService.executeCommand(id);
+        commandService.executeCommand(commandId);
       } catch {}
     }
-  }, [iconRef.current, menuNodes, anchor, id]);
+  }, [iconRef.current, menuNodes, anchor, commandId]);
 
   return (
     <EnhanceIcon ref={iconRef} onClick={handleClick} {...restProps}>
