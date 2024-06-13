@@ -7,6 +7,8 @@ import {
   PreferenceService,
   URI,
 } from '@opensumi/ide-core-browser';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { PreferenceSettingId } from '@opensumi/ide-preferences';
 import { PREFERENCE_COMMANDS } from '@opensumi/ide-preferences/lib/browser/preference-contribution';
@@ -15,9 +17,6 @@ import {
   defaultSettingGroup,
   defaultSettingSections,
 } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
-
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('PreferenceSettingService should be work', () => {
   let injector: MockInjector;
@@ -41,6 +40,11 @@ describe('PreferenceSettingService should be work', () => {
     mockPreferenceService = {
       set: jest.fn(),
       get: (key) => {
+        if (key === 'settings.userBeforeWorkspace') {
+          return true;
+        }
+      },
+      getValid: (key) => {
         if (key === 'settings.userBeforeWorkspace') {
           return true;
         }

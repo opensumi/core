@@ -1,4 +1,6 @@
 import { PreferenceService, URI } from '@opensumi/ide-core-browser';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
@@ -12,9 +14,6 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-
 const createMockResource = (uriString: string) => ({ uri: new URI(uriString) } as any as IResource);
 
 const mockFileService = {
@@ -27,6 +26,7 @@ const mockFileService = {
 const mockPreferenceService = {
   onPreferenceChanged: jest.fn(),
   get: jest.fn(() => undefined),
+  getValid: jest.fn(() => undefined),
   ready: Promise.resolve(),
 };
 
