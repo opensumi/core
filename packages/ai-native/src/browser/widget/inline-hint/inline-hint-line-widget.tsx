@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 import { Autowired, Injectable } from '@opensumi/di';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AIInlineHintLineContentWidgetId } from '@opensumi/ide-core-common';
+import { AIInlineHintLineContentWidgetId, formatLocalize, localize } from '@opensumi/ide-core-common';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 
@@ -30,7 +30,9 @@ export class InlineHintLineWidget extends ReactInlineContentWidget {
   override renderView(): ReactNode {
     return (
       <div className={styles.hint_line_widget}>
-        <span className={styles.text}>{`按 ${this.getSequenceKeyString()} 唤起 Inline Chat`}</span>
+        <span className={styles.text}>
+          {formatLocalize('aiNative.inline.hint.widget.placeholder', this.getSequenceKeyString())}
+        </span>
       </div>
     );
   }
