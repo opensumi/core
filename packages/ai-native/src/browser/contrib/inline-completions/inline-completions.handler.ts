@@ -1,19 +1,20 @@
 import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, IDisposable } from '@opensumi/ide-core-browser';
-import { Emitter, IEventBus } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, IEventBus, Sequencer } from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { IAIMiddleware } from '../../types';
+import { IAIMonacoContribHandler } from '../base';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { InlineCompletions } from './model/competionModel';
 import { AICompletionsService } from './service/ai-completions.service';
 
 @Injectable()
-export class InlineCompletionHandler extends Disposable {
+export class InlineCompletionHandler extends IAIMonacoContribHandler {
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
@@ -83,42 +84,51 @@ export class InlineCompletionHandler extends Disposable {
     return this;
   }
 
-  private _completionResult: InlineCompletions | undefined;
-  public getCompletionResult() {
-    return this._completionResult;
+  updateConfig(middlewares: IAIMiddleware[]) {
+    const middleware = middlewares[middlewares.length - 1];
+    if (!middleware) {
+      return;
+    }
+
+    // currently only support one middleware
+    if (middleware?.language?.provideInlineCompletions) {
+      this.aiCompletionsService.setMiddlewareComplete(middleware?.language?.provideInlineCompletions);
+    }
   }
 
-  public registerProvider(editor: IEditor, languageId: string, middlewareCollector?: IAIMiddleware): IDisposable {
-    const disposable = new Disposable();
+  mountEditor(editor: IEditor) {
+    const toDispose = new Disposable();
+    this.aiInlineCompletionsProvider.mountEditor(editor);
+    toDispose.addDispose(this.aiInlineCompletionsProvider);
+    toDispose.addDispose(super.mountEditor(editor));
+    return toDispose;
+  }
 
-    this.aiInlineCompletionsProvider.registerEditor(editor);
+  doContribute(): IDisposable {
+    const sequencer = new Sequencer();
 
-    disposable.addDispose(this.aiInlineCompletionsProvider);
-    disposable.addDispose(
-      monacoApi.languages.registerInlineCompletionsProvider(languageId, {
-        provideInlineCompletions: async (model, position, context, token) => {
-          if (middlewareCollector?.language?.provideInlineCompletions) {
-            this.aiCompletionsService.setMiddlewareComplete(middlewareCollector?.language?.provideInlineCompletions);
-          }
+    return monacoApi.languages.registerInlineCompletionsProvider('*', {
+      groupId: 'ai-native-inline-completions',
+      provideInlineCompletions: async (model, position, context, token) => {
+        const needStop = this.intercept(model.uri);
+        if (needStop) {
+          return;
+        }
 
-          const list = await this.aiInlineCompletionsProvider.provideInlineCompletionItems(
-            model,
-            position,
-            context,
-            token,
-          );
-          this._completionResult = list;
-          return list;
-        },
-        freeInlineCompletions: () => {},
-        handleItemDidShow: (completions) => {
-          if (completions.items.length > 0) {
-            this.aiCompletionsService.setVisibleCompletion(true);
-          }
-        },
-      }),
-    );
-
-    return disposable;
+        const list = await sequencer.queue(() =>
+          this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
+        );
+        if (list) {
+          await this._onInlineCompletionEmitter.fireAndAwait(list);
+        }
+        return list;
+      },
+      freeInlineCompletions() {},
+      handleItemDidShow: (completions) => {
+        if (completions.items.length > 0) {
+          this.aiCompletionsService.setVisibleCompletion(true);
+        }
+      },
+    });
   }
 }

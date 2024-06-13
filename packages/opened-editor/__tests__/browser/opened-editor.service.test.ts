@@ -1,10 +1,11 @@
 import cls from 'classnames';
 
 import { TreeNodeType } from '@opensumi/ide-components';
-import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { Emitter, IEventBus, URI } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS, Emitter, IEventBus, URI, sleep } from '@opensumi/ide-core-browser';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IResource, ResourceDecorationChangeEvent, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, ResourceService } from '@opensumi/ide-editor/lib/browser';
 import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mocks/workbench-editor.service';
@@ -14,15 +15,11 @@ import { MockThemeService } from '@opensumi/ide-theme/lib/common/mocks/theme.ser
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { OpenedEditorModule } from '../../src/browser';
 import { EditorFile, OpenedEditorData } from '../../src/browser/opened-editor-node.define';
 import { OpenedEditorModelService } from '../../src/browser/services/opened-editor-model.service';
 import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';
 import styles from '../src/browser/opened-editor-node.module.less';
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('OpenedEditorModelService should be work', () => {
   let openedEditorModelService: OpenedEditorModelService;

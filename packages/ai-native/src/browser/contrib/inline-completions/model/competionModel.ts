@@ -4,7 +4,7 @@ import * as monaco from '@opensumi/ide-monaco';
 /**
  * 缓存的结果
  */
-export interface InlayList {
+export interface IInlineCompletionCache {
   /**
    * The zero-based line value.
    */
@@ -18,7 +18,7 @@ export interface InlayList {
   /**
    * last complemetion
    */
-  lastResult: any;
+  last: any;
 }
 
 /**

@@ -10,17 +10,42 @@ import * as monaco from '@opensumi/ide-monaco';
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { DEFAULT_COMPLECTION_MODEL } from './constants';
-import { CompletionRequestBean, InlayList, InlineCompletionItem, InlineCompletions } from './model/competionModel';
+import {
+  CompletionRequestBean,
+  IInlineCompletionCache,
+  InlineCompletionItem,
+  InlineCompletions,
+} from './model/competionModel';
 import { PromptCache } from './promptCache';
 import { getPrefixPrompt, getSuffixPrompt, lineBasedPromptProcessor } from './provider';
 import { AICompletionsService } from './service/ai-completions.service';
 import { ICompletionContext } from './types';
 
 // 用来缓存最近一次的补全结果
-const lastInLayList: InlayList = {
+const inlineCompletionCache: IInlineCompletionCache = {
   line: -1,
   column: -1,
-  lastResult: null,
+  last: null,
+};
+
+const makeHashSet = (str: string) => {
+  const set = new Set<string>();
+  for (const char of str) {
+    set.add(char);
+  }
+  return set;
+};
+
+const removeChars = (insertText: string, textAfterCursor: string) => {
+  let result = '';
+  const aSet = makeHashSet(insertText);
+  for (const char of textAfterCursor) {
+    // 如果是空格或者 insertText 中不存在的字符，就加入到结果中
+    if (char === ' ' || !aSet.has(char)) {
+      result += char;
+    }
+  }
+  return result;
 };
 
 @Injectable({ multiple: true })
@@ -55,17 +80,15 @@ export class CompletionRequestTask {
     this.isCancelFlag = false;
 
     this.isEnablePromptEngineering = this.preferenceService.getValid(
-      AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+      AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
       this.isEnablePromptEngineering,
     );
 
     this._disposables.add(
       this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+        AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
         ({ newValue }) => {
-          if (newValue) {
-            this.isEnablePromptEngineering = newValue;
-          }
+          this.isEnablePromptEngineering = newValue;
         },
       ),
     );
@@ -225,15 +248,8 @@ export class CompletionRequestTask {
     for (const codeModel of rs.codeModelList) {
       const contentText = codeModel.content;
 
-      let str = contentText;
-      while (true) {
-        if (!str.endsWith('\n')) {
-          break;
-        }
-        str = str.slice(0, -1);
-      }
+      const insertText = contentText.trimEnd();
 
-      const insertText = str;
       const model = this.model;
 
       const textAfterCursor = model.getValueInRange({
@@ -244,16 +260,6 @@ export class CompletionRequestTask {
       });
 
       // 临时修复方案，用于解决补全后面多了几个括号的问题
-      const removeChars = (a: string, b: string) => {
-        let result = '';
-        for (const char of b) {
-          if (char === ' ' || !a.includes(char)) {
-            result += char;
-          }
-        }
-        return result;
-      };
-
       const filteredString = removeChars(insertText, textAfterCursor);
 
       result.push({
@@ -300,7 +306,7 @@ class ReqStack {
     const fn = this.queue.pop()!;
     return fn.run();
   }
-  cancleReq() {
+  cancelReq() {
     if (this.queue.length === 0) {
       return;
     }
@@ -311,7 +317,7 @@ class ReqStack {
   }
 }
 
-@Injectable({ multiple: false })
+@Injectable()
 export class AIInlineCompletionsProvider extends WithEventBus {
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -319,13 +325,39 @@ export class AIInlineCompletionsProvider extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   private aiNativeContextKey: AINativeContextKey;
 
+  /**
+   * 该补全是否是手动触发
+   */
   isManual: boolean;
+
   isDelEvent: boolean;
   reqStack: ReqStack;
+  inlineComletionsDebounceTime: number;
 
-  public registerEditor(editor: IEditor): void {
+  constructor() {
+    super();
+
+    this.inlineComletionsDebounceTime = this.preferenceService.getValid(
+      AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+      150,
+    );
+
+    this.addDispose(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+        ({ newValue }) => {
+          this.inlineComletionsDebounceTime = newValue;
+        },
+      ),
+    );
+  }
+
+  public mountEditor(editor: IEditor): void {
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(editor.monacoEditor as any)._contextKeyService]);
 
     this.isManual = false;
@@ -336,7 +368,7 @@ export class AIInlineCompletionsProvider extends WithEventBus {
   cancelRequest() {
     this.aiCompletionsService.cancelRequest();
     if (this.reqStack) {
-      this.reqStack.cancleReq();
+      this.reqStack.cancelReq();
     }
   }
 
@@ -357,38 +389,38 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     position: monaco.Position,
     context: monaco.languages.InlineCompletionContext,
     token: monaco.CancellationToken,
-  ): Promise<InlineCompletions> {
+  ): Promise<InlineCompletions | undefined> {
     this.aiNativeContextKey.inlineCompletionIsTrigger.set(true);
-    // bugfix:修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次
-    if (context.triggerKind === 0) {
+
+    // bugfix: 修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次
+    if (context.triggerKind === monaco.InlineCompletionTriggerKind.Automatic) {
       if (
-        lastInLayList.column === position.column &&
-        lastInLayList.line === position.lineNumber &&
-        lastInLayList.lastResult !== undefined
+        inlineCompletionCache.column === position.column &&
+        inlineCompletionCache.line === position.lineNumber &&
+        inlineCompletionCache.last !== undefined
       ) {
-        lastInLayList.column = -1;
-        lastInLayList.line = -1;
-        return lastInLayList.lastResult;
+        inlineCompletionCache.column = -1;
+        inlineCompletionCache.line = -1;
+        return inlineCompletionCache.last;
       }
     }
+
     this.cancelRequest();
     this.aiCompletionsService.hideStatusBarItem();
 
     // step 1 判断生成开关,如果关闭不进行后续操作
     const _isManual = this.isManual;
     if (this.isDelEvent && !_isManual) {
-      return {
-        items: [],
-      };
+      return undefined;
     }
+
     // 重置防止不触发自动补全事件
-    this.udateIsManualVal(false);
+    this.updateIsManual(false);
+
     // 如果用户已取消
     if (token?.isCancellationRequested) {
-      this.aiCompletionsService.updateStatusBarItem('completion not avaliable ', false);
-      return {
-        items: [],
-      };
+      this.aiCompletionsService.updateStatusBarItem('cancelled ', false);
+      return undefined;
     }
 
     // 放入队列
@@ -396,29 +428,25 @@ export class AIInlineCompletionsProvider extends WithEventBus {
 
     this.reqStack.addReq(requestImp);
 
-    // 如果是自动补全等待300ms
+    // 如果是自动补全需要 debounce
     if (!_isManual) {
-      await sleep(300);
+      await sleep(this.inlineComletionsDebounceTime);
     }
 
     const list = await this.reqStack.runReq();
-    if (position !== undefined) {
-      lastInLayList.column = position.column;
-      lastInLayList.line = position.lineNumber;
+    if (!list) {
+      return undefined;
     }
 
-    lastInLayList.lastResult = {
-      items: list || [],
+    inlineCompletionCache.column = position.column;
+    inlineCompletionCache.line = position.lineNumber;
+    inlineCompletionCache.last = {
+      items: list,
     };
-    return {
-      items: list || [],
-    };
+    return inlineCompletionCache.last;
   }
 
-  /**
-   * 更新isManual的值，判断是否是主动补全
-   */
-  udateIsManualVal(val: boolean) {
+  updateIsManual(val: boolean) {
     this.isManual = val;
   }
 }

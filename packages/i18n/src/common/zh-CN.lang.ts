@@ -106,6 +106,7 @@ export const localizationBundle = {
     'editor.redo': '重做',
     'editor.saveCurrent': '保存当前文件',
     'editor.title.context.close': '关闭',
+    'editor.closeTab.title': '关闭 ({0})',
     'editor.closeCurrent': '关闭当前编辑窗口',
     'editor.openExternal': '使用外部软件打开',
     'editor.cannotOpenBinary': '我们无法在编辑器中展示这个文件。',
@@ -1245,6 +1246,7 @@ export const localizationBundle = {
     'preference.ai.native.inlineCompletions.title': '内联补全',
     'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       '是否启用提示词工程，一些 LLM 模型在提示词工程上可能表现不佳。',
+    'preference.ai.native.inlineCompletions.debounceTime': '内联补全的延迟时间（毫秒）',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

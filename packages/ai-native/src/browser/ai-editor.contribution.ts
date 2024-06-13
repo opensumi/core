@@ -1,15 +1,13 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AINativeConfigService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
-import { ContributionProvider, Disposable, Event, IDisposable, Schemes } from '@opensumi/ide-core-common';
+import { Disposable, Event, IDisposable, Schemes } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { BrowserCodeEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 
 import { CodeActionHandler } from './contrib/code-action/code-action.handler';
-import { InlineCompletionHandler } from './contrib/inline-completions';
-import { RenameHandler } from './contrib/rename/rename.handler';
-import { AINativeCoreContribution, IAIMiddleware } from './types';
+import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
 
 @Injectable()
@@ -20,9 +18,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IBrowserCtxMenu)
   private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
 
-  @Autowired(AINativeCoreContribution)
-  private readonly contributions: ContributionProvider<AINativeCoreContribution>;
-
   @Autowired(InlineChatHandler)
   private readonly inlineChatHandler: InlineChatHandler;
 
@@ -31,9 +26,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(InlineCompletionHandler)
   private readonly inlineCompletionHandler: InlineCompletionHandler;
-
-  @Autowired(RenameHandler)
-  private readonly renameHandler: RenameHandler;
 
   private modelSessionDisposable: Disposable;
   private initialized: boolean = false;
@@ -64,12 +56,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           Event.debounce(
             monacoEditor.onWillChangeModel,
             (_, e) => e,
-            300,
+            150,
           )(() => {
-            this.registerLanguageFeatures(editor);
+            this.mount(editor);
           }),
         );
-        this.registerLanguageFeatures(editor);
+        this.mount(editor);
 
         this.addDispose(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
         this.addDispose(this.inlineChatHandler.registerInlineChatFeature(editor));
@@ -89,7 +81,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     return this;
   }
 
-  private async registerLanguageFeatures(editor: IEditor): Promise<void> {
+  private async mount(editor: IEditor): Promise<void> {
     const { monacoEditor } = editor;
 
     if (this.modelSessionDisposable) {
@@ -102,28 +94,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     this.modelSessionDisposable = new Disposable();
-    const languageId = model.getLanguageId();
 
     if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-      let latestMiddlewareCollector: IAIMiddleware | undefined;
-
-      this.contributions.getContributions().forEach((contribution) => {
-        if (contribution.middleware) {
-          latestMiddlewareCollector = contribution.middleware;
-        }
-      });
-
-      this.modelSessionDisposable.addDispose(
-        this.inlineCompletionHandler.registerProvider(editor, languageId, latestMiddlewareCollector),
-      );
+      this.modelSessionDisposable.addDispose(this.inlineCompletionHandler.mountEditor(editor));
     }
-
-    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
-      this.modelSessionDisposable.addDispose(this.renameHandler.registerRenameFeature(languageId));
-    }
-
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-      this.modelSessionDisposable.addDispose(this.codeActionHandler.registerCodeActionFeature(languageId, editor));
+      this.modelSessionDisposable.addDispose(this.codeActionHandler.mountEditor(editor));
     }
   }
 }

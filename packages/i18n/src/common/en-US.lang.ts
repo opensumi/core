@@ -110,6 +110,7 @@ export const localizationBundle = {
     'editor.saveCodeActions.getting': 'Getting code actions from {0}.',
     'editor.saveCodeActions.saving': 'Saving "{0}"',
     'editor.title.context.close': 'Close',
+    'editor.closeTab.title': 'Close ({0})',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
     'editor.cannotOpenBinary': 'Cannot open binary file in this editor.',
@@ -1480,6 +1481,7 @@ export const localizationBundle = {
     'preference.ai.native.inlineCompletions.title': 'Inline Completions',
     'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
+    'preference.ai.native.inlineCompletions.debounceTime': 'Debounce time for inline completions',
     // #endregion AI Native
 
     // #endregion merge editor

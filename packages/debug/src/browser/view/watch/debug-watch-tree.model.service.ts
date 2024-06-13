@@ -27,6 +27,7 @@ import {
   path,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { sortPathByDepth } from '@opensumi/ide-utils/lib/path';
 
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugWatch } from '../../model';
@@ -536,11 +537,8 @@ export class DebugWatchModelService {
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
-    this._changeEventDispatchQueue.sort((pathA, pathB) => {
-      const pathADepth = Path.pathDepth(pathA);
-      const pathBDepth = Path.pathDepth(pathB);
-      return pathADepth - pathBDepth;
-    });
+    this._changeEventDispatchQueue = sortPathByDepth(this._changeEventDispatchQueue);
+
     const roots = [this._changeEventDispatchQueue[0]];
     for (const path of this._changeEventDispatchQueue) {
       if (roots.some((root) => path.indexOf(root) === 0)) {

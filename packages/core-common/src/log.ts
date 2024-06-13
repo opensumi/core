@@ -174,6 +174,7 @@ export const ILoggerManagerClient = Symbol('ILoggerManagerClient');
 export interface ILoggerManagerClient {
   onDidChangeLogLevel: Event<LogLevel>;
   getLogger(namespace: SupportLogNamespace, pid?: number): ILogServiceClient;
+  getBrowserLogger(namespace: SupportLogNamespace): ILogServiceClient;
 
   setGlobalLogLevel(level: LogLevel): Promise<void>;
   getGlobalLogLevel(): Promise<LogLevel>;
