@@ -106,7 +106,6 @@ export class IntellTerminalService extends Disposable {
 
   private handlePromptEnd(xterm: Terminal) {
     const connection = this.getConnection(xterm);
-    window.conn1 = connection;
     if (this.onDataDisposable) {
       this.onDataDisposable.dispose();
     }
