@@ -101,9 +101,7 @@ export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
         });
       });
     } else if (commandId) {
-      try {
-        commandService.executeCommand(commandId);
-      } catch {}
+      commandService.executeCommand(commandId);
     }
   }, [iconRef.current, menuNodes, anchor, commandId]);
 
