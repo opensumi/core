@@ -137,9 +137,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
 
     this.disposableStore.add(
-      this.inlineCompletionHandler.onInlineCompletion((completions) => {
-        this.setNativeInlineCompletions(completions);
-      }),
+      this.inlineCompletionHandler.onInlineCompletion((completions) => this.setNativeInlineCompletions(completions)),
     );
   }
 

@@ -1,6 +1,5 @@
 import { Injectable } from '@opensumi/di';
 import { BasicEvent, Event, IDisposable, IExtensionProps } from '@opensumi/ide-core-browser';
-import { InlineCompletions } from '@opensumi/ide-monaco';
 
 import { IExtension, IExtensionMetaData } from '../common';
 
@@ -122,13 +121,7 @@ export class ExtensionDidUninstalledEvent extends BasicEvent<void> {}
  */
 export class ExtensionDidEnabledEvent extends BasicEvent<IExtensionProps> {}
 
-export interface IBrowserMainThreadLanguagesAPI {
-  setNativeInlineCompletions(completions: InlineCompletions): Promise<void>;
-}
-
 export interface IBrowserMainThreadAPI {
   setup: () => Promise<void>;
   dispose: () => void;
-
-  languages: IBrowserMainThreadLanguagesAPI;
 }

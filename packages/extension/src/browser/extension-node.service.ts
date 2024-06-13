@@ -25,7 +25,6 @@ import { ExtHostAPIIdentifier } from '../common/vscode';
 import { knownProtocols } from '../common/vscode/protocols';
 
 import { createSumiAPIFactory } from './sumi/main.thread.api.impl';
-import { IBrowserMainThreadAPI } from './types';
 import { initNodeThreadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { initSharedAPIProxy } from './vscode/api/main.thread.api.shared-impl';
 
@@ -66,13 +65,11 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     await this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
   }
 
-  protected apiProxy: IBrowserMainThreadAPI;
-
   public async activate(): Promise<IRPCProtocol> {
     await this.createExtProcess();
     if (this.protocol) {
       this.ready.resolve();
-      this.apiProxy = await this.createBrowserMainThreadAPI();
+      await this.createBrowserMainThreadAPI();
 
       const proxy = await this.getProxy();
       await proxy.$updateExtHostData();
@@ -129,8 +126,6 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     this._apiFactoryDisposables.add(toDisposable(initNodeThreadAPIProxy(this.protocol, this.injector, this)));
     this._apiFactoryDisposables.add(toDisposable(createSumiAPIFactory(this.protocol, this.injector)));
     await apiProxy.setup();
-
-    return apiProxy;
   }
 
   public async getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
