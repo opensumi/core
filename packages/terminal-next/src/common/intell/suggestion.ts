@@ -311,12 +311,7 @@ export class SuggestionProcessor implements ISuggestionProcessor {
   ): Promise<SuggestionBlob | undefined> {
     this.terminalIntellEnv.getLogger().debug({
       msg: 'suggestion point',
-      subcommand: {
-        ...subcommand,
-        subcommands: subcommand?.subcommands?.slice(0, 1),
-        options: subcommand?.options?.slice(0, 5),
-        args: subcommand.args instanceof Array ? subcommand.args.slice(0, 3) : subcommand.args,
-      },
+      subcommandShorten: JSON.stringify(subcommand).substring(0, 400),
       persistentOptions,
       partialToken,
       argsDepleted,

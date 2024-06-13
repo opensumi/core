@@ -5,9 +5,11 @@ import { Emitter } from '@opensumi/ide-core-common';
 
 import styles from './terminal-intell-complete-controller.module.less';
 
-export interface SmartCommandDesc {
+// 定义 SuggestionViewModel 接口
+export interface SuggestionViewModel {
   description: string;
   command: string;
+  insertValue: string;
   icon: string;
 }
 
@@ -18,7 +20,7 @@ interface PopupPosition {
 
 // 支持键盘选择的列表
 const SelectableList = (props: {
-  items: { description: string; command: string; icon: string }[];
+  items: SuggestionViewModel[];
   handleSuggestionClick: (command: string) => void;
   controller?: Emitter<string>;
   noListen?: boolean;
@@ -55,7 +57,7 @@ const SelectableList = (props: {
       }
       if (e === 'Enter') {
         if (items[selectedIndex]) {
-          handleSuggestionClick(items[selectedIndex].command);
+          handleSuggestionClick(items[selectedIndex].insertValue || items[selectedIndex].command);
         }
       }
     });
@@ -159,7 +161,7 @@ const SelectableList = (props: {
 };
 
 export const TerminalIntellCompleteController = (props: {
-  suggestions: SmartCommandDesc[];
+  suggestions: SuggestionViewModel[];
   controller: Emitter<string>;
   onSuggestion: (suggestion: string) => void;
   onClose: () => void;

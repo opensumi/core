@@ -10,7 +10,10 @@ import { ITerminalController } from '../../common/controller';
 import { ITerminalConnection } from '../../common/index';
 import { ITerminalSuggestionProvider, ITerminalSuggestionProviderPath } from '../../common/intell/runtime';
 import { CodeTerminalSettingId } from '../../common/preference';
-import { TerminalIntellCompleteController } from '../component/terminal-intell-complete-controller';
+import {
+  SuggestionViewModel,
+  TerminalIntellCompleteController,
+} from '../component/terminal-intell-complete-controller';
 
 enum IstermOscPt {
   PromptStarted = 'PS',
@@ -59,7 +62,7 @@ export class IntellTerminalService extends Disposable {
 
   private initContainer() {
     this.popupContainer = document.createElement('div');
-    this.popupContainer.style.zIndex = '9';
+    this.popupContainer.style.zIndex = '12';
     document.body.appendChild(this.popupContainer);
   }
 
@@ -103,6 +106,7 @@ export class IntellTerminalService extends Disposable {
 
   private handlePromptEnd(xterm: Terminal) {
     const connection = this.getConnection(xterm);
+    window.conn1 = connection;
     if (this.onDataDisposable) {
       this.onDataDisposable.dispose();
     }
@@ -227,10 +231,11 @@ export class IntellTerminalService extends Disposable {
       x: cursorX,
     });
 
-    const suggestionsViewModel = [
+    const suggestionsViewModel: SuggestionViewModel[] = [
       ...suggestionBlob.suggestions.map((suggestion) => ({
         description: suggestion.description || '',
         command: suggestion.name,
+        insertValue: suggestion.insertValue || '',
         icon: suggestion.icon,
       })),
     ];
@@ -274,7 +279,7 @@ export class IntellTerminalService extends Disposable {
   private renderCompletePopup(
     xterm: Terminal,
     element: HTMLElement,
-    suggestionsViewModel: any,
+    suggestionsViewModel: SuggestionViewModel[],
     dropCharNum: number,
     connection: ITerminalConnection,
   ) {
@@ -345,8 +350,8 @@ export class IntellTerminalService extends Disposable {
           this.completePopupRoot?.unmount();
           this.completePopupRoot = undefined;
           this.isShellIntellActive = false;
-          connection.sendData(insertStr);
           xterm.focus();
+          connection.sendData(insertStr);
         }}
         onClose={() => {
           this.disposeCompletePopup();
