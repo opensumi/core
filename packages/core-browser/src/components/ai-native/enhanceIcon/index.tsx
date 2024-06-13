@@ -1,6 +1,8 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
+import { CommandService } from '@opensumi/ide-core-common';
+
 import { Icon } from '../../../components';
 import { MenuNode } from '../../../menu/next/base';
 import { IBrowserCtxMenu } from '../../../menu/next/renderer/ctxmenu/browser';
@@ -40,6 +42,7 @@ export const EnhanceIcon = React.forwardRef<HTMLDivElement | null, IEnhanceIconP
 );
 
 interface IEnhanceIconWithCtxMenuProps extends IEnhanceIconProps {
+  id: string;
   menuNodes: MenuNode[];
   skew?: { x: number; y: number };
 }
@@ -48,7 +51,8 @@ interface IEnhanceIconWithCtxMenuProps extends IEnhanceIconProps {
  * 包含下拉菜单的 icon 组件，可以自定义下拉菜单位置
  */
 export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
-  const { children, menuNodes, skew, ...restProps } = props;
+  const { children, menuNodes, skew, id, ...restProps } = props;
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const ctxMenuRenderer = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);
   const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
@@ -89,14 +93,19 @@ export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
     if (!anchor) {
       return;
     }
-
-    handleRefRect((_anchor) => {
-      ctxMenuRenderer.show({
-        anchor: _anchor,
-        menuNodes,
+    if (menuNodes) {
+      handleRefRect((_anchor) => {
+        ctxMenuRenderer.show({
+          anchor: _anchor,
+          menuNodes,
+        });
       });
-    });
-  }, [iconRef.current, menuNodes, anchor]);
+    } else {
+      try {
+        commandService.executeCommand(id);
+      } catch {}
+    }
+  }, [iconRef.current, menuNodes, anchor, id]);
 
   return (
     <EnhanceIcon ref={iconRef} onClick={handleClick} {...restProps}>
