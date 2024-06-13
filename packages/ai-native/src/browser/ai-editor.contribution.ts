@@ -3,8 +3,9 @@ import { AINativeConfigService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { Disposable, Event, IDisposable, Schemes } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
+import { EditorCollectionService, IEditorDocumentModelRef } from '@opensumi/ide-editor';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { BrowserCodeEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
+import { BrowserCodeEditor, BrowserDiffEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 
 import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
@@ -27,58 +28,111 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(InlineCompletionHandler)
   private readonly inlineCompletionHandler: InlineCompletionHandler;
 
+  @Autowired(EditorCollectionService)
+  private readonly editorCollectionService: EditorCollectionService;
+
   private modelSessionDisposable: Disposable;
-  private initialized: boolean = false;
+  private editorReady: boolean = false;
+  private diffEditorReady: boolean = false;
 
   dispose(): void {
     super.dispose();
-    this.initialized = false;
+    this.editorReady = false;
     if (this.modelSessionDisposable) {
       this.modelSessionDisposable.dispose();
     }
   }
 
   contribute(editor: IEditor): IDisposable {
-    if (!(editor instanceof BrowserCodeEditor) || this.initialized) {
+    if (this.editorReady) {
       return this;
     }
+    this.handleDiffEditorCreated();
+    if (editor instanceof BrowserCodeEditor) {
+      this.disposables.push(
+        editor.onRefOpen((e) => {
+          this.disposables.push(...this.handleBrowserEditor(editor, e));
+        }),
+      );
+    }
+    return this;
+  }
 
-    this.disposables.push(
-      editor.onRefOpen((e) => {
-        const { uri } = e.instance;
-        if (uri.codeUri.scheme !== Schemes.file || this.initialized) {
-          return;
-        }
+  private handleDiffEditorCreated() {
+    Event.once(this.editorCollectionService.onDiffEditorCreate)((editor) => {
+      this.disposables.push(
+        editor.onRefOpen((e) => {
+          this.disposables.push(...this.handleDiffEditor(editor as any, e));
+        }),
+      );
+    });
+  }
 
-        this.initialized = true;
-
-        this.addDispose(
-          Event.debounce(
-            monacoEditor.onWillChangeModel,
-            (_, e) => e,
-            150,
-          )(() => {
-            this.mount(editor);
-          }),
-        );
-        this.mount(editor);
-
-        this.addDispose(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
-        this.addDispose(this.inlineChatHandler.registerInlineChatFeature(editor));
-      }),
-    );
-
+  private handleBrowserEditor(editor: BrowserCodeEditor, e: IEditorDocumentModelRef): IDisposable[] {
+    const disposables: IDisposable[] = [];
     const { monacoEditor } = editor;
 
-    this.disposables.push(
+    const { uri } = e.instance;
+    if (uri.codeUri.scheme !== Schemes.file || this.editorReady) {
+      return disposables;
+    }
+
+    this.editorReady = true;
+
+    disposables.push(
+      Event.debounce(
+        monacoEditor.onWillChangeModel,
+        (_, e) => e,
+        150,
+      )(() => {
+        this.mount(editor);
+      }),
+    );
+    this.mount(editor);
+
+    disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
+    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor));
+
+    disposables.push(
       monacoEditor.onDidScrollChange(() => {
         if (this.ctxMenuRenderer.visible) {
           this.ctxMenuRenderer.hide(true);
         }
       }),
     );
+    return disposables;
+  }
 
-    return this;
+  private handleDiffEditor(editor: BrowserDiffEditor, e: IEditorDocumentModelRef): IDisposable[] {
+    const disposables: IDisposable[] = [];
+    const { monacoDiffEditor } = editor;
+
+    const { uri } = e.instance;
+    if (uri.codeUri.scheme !== Schemes.file || this.diffEditorReady) {
+      return disposables;
+    }
+
+    this.diffEditorReady = true;
+
+    disposables.push(
+      Event.debounce(
+        monacoDiffEditor.onDidUpdateDiff,
+        (_, e) => e,
+        150,
+      )(() => {
+        this.mount(editor.modifiedEditor);
+        this.mount(editor.originalEditor);
+      }),
+    );
+    this.mount(editor.modifiedEditor);
+    this.mount(editor.originalEditor);
+
+    disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor.modifiedEditor));
+    disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor.originalEditor));
+    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor.modifiedEditor));
+    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor.originalEditor));
+
+    return disposables;
   }
 
   private async mount(editor: IEditor): Promise<void> {

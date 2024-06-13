@@ -3,6 +3,7 @@ import debounce from 'lodash/debounce';
 import { Autowired, Injectable } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-browser';
 import { Disposable, IEventBus, Sequencer } from '@opensumi/ide-core-common';
+import { IDiffEditor } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
@@ -23,7 +24,7 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
 
-  public registerInlineCompletionFeature(editor: IEditor): IDisposable {
+  public registerInlineCompletionFeature(editor: IEditor | IDiffEditor): IDisposable {
     const { monacoEditor } = editor;
     // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
     const selectionChange = () => {
