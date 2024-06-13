@@ -106,6 +106,8 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
     editorComponentRegistry.registerEditorComponentResolver(
       (scheme: string) => (scheme === Schemes.file || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
       (resource: IResource<any>, results: IEditorOpenType[]) => {
+        const { metadata, uri } = resource as { uri: URI; metadata: any };
+
         if (results.length === 0) {
           results.push({
             type: EditorOpenType.component,
@@ -120,36 +122,50 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
       async (resource: IResource<any>, results: IEditorOpenType[]) => {
         const type = await this.getFileType(resource.uri.toString());
 
-        if (type === 'image') {
-          results.push({
-            type: EditorOpenType.component,
-            componentId: IMAGE_PREVIEW_COMPONENT_ID,
-          });
-        }
-
-        if (type === 'video') {
-          results.push({
-            type: EditorOpenType.component,
-            componentId: VIDEO_PREVIEW_COMPONENT_ID,
-          });
-        }
-
-        if (type === 'text') {
-          const { metadata, uri } = resource as { uri: URI; metadata: any };
-          const stat = await this.fileServiceClient.getFileStat(uri.toString());
-          await this.preference.ready;
-          const maxSize = this.preference.get<number>('editor.largeFile') || 4 * 1024 * 1024 * 1024;
-
-          if (stat && (stat.size || 0) > maxSize && !(metadata || {}).noPrevent) {
+        switch (type) {
+          case 'image': {
             results.push({
               type: EditorOpenType.component,
-              componentId: LARGE_FILE_PREVENT_COMPONENT_ID,
+              componentId: IMAGE_PREVIEW_COMPONENT_ID,
             });
-          } else {
+            break;
+          }
+          case 'video': {
             results.push({
-              type: EditorOpenType.code,
-              title: localize('editorOpenType.code'),
+              type: EditorOpenType.component,
+              componentId: VIDEO_PREVIEW_COMPONENT_ID,
             });
+            break;
+          }
+          case 'binary':
+          case 'text': {
+            const { metadata: _metadata, uri } = resource as { uri: URI; metadata: any };
+            const metadata = _metadata || {};
+
+            const skipPreventTooLarge = metadata.skipPreventTooLarge;
+            const skipPreventBinary = metadata.skipPreventBinary;
+
+            // 二进制文件不支持打开
+            if (type === 'binary' && !skipPreventBinary) {
+              break;
+            }
+
+            const stat = await this.fileServiceClient.getFileStat(uri.toString());
+            await this.preference.ready;
+            const maxSize = this.preference.getValid<number>('editor.largeFile', 4 * 1024 * 1024 * 1024);
+
+            if (stat && (stat.size || 0) > maxSize && !skipPreventTooLarge) {
+              results.push({
+                type: EditorOpenType.component,
+                componentId: LARGE_FILE_PREVENT_COMPONENT_ID,
+              });
+            } else {
+              results.push({
+                type: EditorOpenType.code,
+                title: localize('editorOpenType.code'),
+              });
+            }
+            break;
           }
         }
       },

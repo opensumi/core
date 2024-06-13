@@ -113,7 +113,7 @@ export const localizationBundle = {
     'editor.closeTab.title': 'Close ({0})',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
-    'editor.cannotOpenBinary': 'Cannot open binary file in this editor.',
+    'editor.cannotOpenBinary': 'The file is not displayed in the text editor because it is binary.',
     'editor.splitToLeft': 'Split To Left',
     'editor.splitToRight': 'Split To Right',
     'editor.splitToTop': 'Split To Top',
@@ -604,7 +604,7 @@ export const localizationBundle = {
     'editor.configuration.autoSaveDelay':
       "Controls the delay in ms after which a dirty file is saved automatically. Only applies when `#editor.formatOnSave#` is set to 'Save After Delay'.",
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
-    'editor.configuration.largeFileSize': 'Custom size of the large file',
+    'editor.configuration.largeFileSize': 'Custom size of the large file (B)',
     'editor.configuration.fontFamily': 'Controls the font family.',
     'editor.configuration.fontWeight':
       'Controls the font weight. Accepts "normal" and "bold" keywords or numbers between 1 and 1000.',
@@ -975,7 +975,7 @@ export const localizationBundle = {
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
     'editor.autoSave.enum.afterDelay': 'Save after delay',
     'editor.autoSave.enum.windowLostFocus': 'When window lost focus',
-    'editor.largeFile.prevent.stillOpen': 'Still open it.',
+    'editor.file.prevent.stillOpen': 'Open Anyway',
 
     'editor.workspaceSymbol.quickopen': 'Search Workspace Symbol',
     'editor.workspaceSymbolClass.quickopen': 'Search Workspace Class Symbol',

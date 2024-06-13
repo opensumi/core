@@ -109,7 +109,7 @@ export const localizationBundle = {
     'editor.closeTab.title': '关闭 ({0})',
     'editor.closeCurrent': '关闭当前编辑窗口',
     'editor.openExternal': '使用外部软件打开',
-    'editor.cannotOpenBinary': '我们无法在编辑器中展示这个文件。',
+    'editor.cannotOpenBinary': '无法在编辑器中展示二进制文件。',
     'editor.splitToLeft': '向左拆分',
     'editor.splitToRight': '向右拆分',
     'editor.splitToTop': '向上拆分',
@@ -552,7 +552,7 @@ export const localizationBundle = {
     'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
 
     'editor.largeFile.prevent': '文件过大，继续打开可能会导致卡顿或者崩溃。',
-    'editor.largeFile.prevent.stillOpen': '仍要打开',
+    'editor.file.prevent.stillOpen': '仍要打开',
     'editor.closeEditorsInOtherGroups': '关闭其他组中的编辑器',
     'editor.resetEditorGroups': '重置编辑器组大小',
     'editor.revert': '还原文档',
@@ -1096,7 +1096,7 @@ export const localizationBundle = {
     'editor.configuration.tabSize':
       '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',
     'editor.configuration.fontWeight': '控制字体粗细，接收 "normal" 和 "bold" 关键词或者 1 到 1000 数值。',
-    'editor.configuration.largeFileSize': '控制超大文件的自定义体积。',
+    'editor.configuration.largeFileSize': '控制超大文件的自定义体积。(单位：B)',
     'editor.configuration.preferredFormatter': '配置优先使用的格式化器。',
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',

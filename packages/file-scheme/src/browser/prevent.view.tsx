@@ -17,14 +17,14 @@ export const LargeFilePrevent = () => {
       return;
     }
 
-    current.metadata = { noPrevent: true };
+    current.metadata = { ...current.metadata, skipPreventTooLarge: true };
     eventBus.fire(new ResourceOpenTypeChangedEvent(current.uri));
   };
 
   return (
     <div className={styles.font}>
       {localize('editor.largeFile.prevent')}
-      <a onClick={() => handleClick()}>{localize('editor.largeFile.prevent.stillOpen')}</a>
+      <a onClick={() => handleClick()}>{localize('editor.file.prevent.stillOpen')}</a>
     </div>
   );
 };
