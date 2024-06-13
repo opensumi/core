@@ -407,7 +407,7 @@ export class AINativeBrowserContribution
         keybindings.registerKeybinding(
           {
             command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
-            keybinding: 'ctrlcmd+K',
+            keybinding: 'ctrlcmd+k',
             priority: 0,
             when: `editorFocus && ${InlineChatIsVisible.raw}`,
           },

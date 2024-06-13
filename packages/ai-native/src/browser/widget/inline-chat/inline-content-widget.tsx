@@ -267,7 +267,9 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
 
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
-    domNode.style.zIndex = StackingLevelStr.OverlayTop;
+    requestAnimationFrame(() => {
+      domNode.style.zIndex = StackingLevelStr.OverlayTop;
+    });
     return domNode;
   }
 
