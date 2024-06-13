@@ -87,7 +87,7 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
   @Autowired(InlineInputChatService)
   private inlineInputChatService: InlineInputChatService;
 
-  positionPreference = [ContentWidgetPositionPreference.ABOVE];
+  positionPreference = [ContentWidgetPositionPreference.BELOW];
 
   override dispose(): void {
     super.dispose();

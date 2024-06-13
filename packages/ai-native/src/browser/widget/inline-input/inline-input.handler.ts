@@ -10,7 +10,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
-import { ICodeEditor, SelectionDirection } from '@opensumi/ide-monaco';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
@@ -21,6 +21,7 @@ import { ERunStrategy } from '../../types';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { InlineChatFeatureRegistry } from '../inline-chat/inline-chat.feature.registry';
 import { EInlineChatStatus, EResultKind } from '../inline-chat/inline-chat.service';
+import { InlineInputPreviewDecorationID } from '../internal.type';
 
 import { InlineInputChatWidget } from './inline-input-widget';
 import styles from './inline-input.module.less';
@@ -164,7 +165,7 @@ export class InlineInputHandler extends Disposable {
           {
             range: monaco.Range.fromPositions(position),
             options: {
-              description: '',
+              description: InlineInputPreviewDecorationID,
               isWholeLine: true,
               className: styles.input_decoration_readable_container,
               inlineClassName: styles.inline_chat_inserted_range,
@@ -175,7 +176,7 @@ export class InlineInputHandler extends Disposable {
         const decorationRange = collection.getRange(0)!;
         let preLineRange: LineRange = LineRange.fromRange(decorationRange);
 
-        inlineInputChatWidget.show({ selection: monaco.Selection.fromRange(decorationRange, SelectionDirection.LTR) });
+        inlineInputChatWidget.show({ position: decorationRange.getEndPosition() });
 
         this.aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
 
@@ -237,7 +238,7 @@ export class InlineInputHandler extends Disposable {
             const curLineRange = LineRange.fromRange(range);
             if (!preLineRange.equals(curLineRange)) {
               inlineInputChatWidget.setOptions({
-                selection: monaco.Selection.fromPositions(range.getEndPosition()),
+                position: range.getEndPosition(),
               });
 
               inlineInputChatWidget.layoutContentWidget();

@@ -10,6 +10,7 @@ import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { AICompletionsService } from '../../contrib/inline-completions/service/ai-completions.service';
+import { InlineInputPreviewDecorationID } from '../internal.type';
 
 import { InlineHintLineWidget } from './inline-hint-line-widget';
 
@@ -48,10 +49,15 @@ export class InlineHintHandler extends Disposable {
       }
 
       const content = model.getLineContent(position.lineNumber);
+      const decorations = model.getLineDecorations(position.lineNumber);
+
       const isEmpty = content?.trim() === empty;
       const isEmptySelection = monacoEditor.getSelection()?.isEmpty();
+      const hasPreviewDecoration = decorations.some(
+        (dec) => dec.options.description === InlineInputPreviewDecorationID,
+      );
 
-      if (isEmpty && isEmptySelection) {
+      if (isEmpty && isEmptySelection && !hasPreviewDecoration) {
         const inlineHintLineWidget = this.injector.get(InlineHintLineWidget, [monacoEditor]);
         inlineHintLineWidget.show({ position });
         currentVisiblePosition = position;
