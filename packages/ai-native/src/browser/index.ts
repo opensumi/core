@@ -34,6 +34,7 @@ import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.featur
 import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
 import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
+import { AINativePreferencesContribution } from './preferences';
 import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
@@ -55,6 +56,7 @@ export class AINativeModule extends BrowserModule {
     TerminalAIContribution,
     MergeConflictContribution,
     AICodeActionContribution,
+    AINativePreferencesContribution,
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,

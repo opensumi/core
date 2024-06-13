@@ -151,12 +151,12 @@ export class InlineChatHandler extends Disposable {
     );
 
     let prefInlineChatAutoVisible = this.preferenceService.getValid(
-      AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+      AINativeSettingSectionsId.InlineChatAutoVisible,
       true,
     );
     this.disposables.push(
       this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+        AINativeSettingSectionsId.InlineChatAutoVisible,
         ({ newValue }) => {
           prefInlineChatAutoVisible = newValue;
         },
