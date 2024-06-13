@@ -19,7 +19,7 @@ export async function getFileType(uri: string): Promise<string | undefined> {
     const stat = await fse.stat(fsPath);
 
     if (stat.isDirectory()) {
-      return 'directory';
+      return EditorFileType.Directory;
     } else {
       let ext: string | undefined;
       if (stat.size) {

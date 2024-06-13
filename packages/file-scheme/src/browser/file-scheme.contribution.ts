@@ -106,8 +106,6 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
     editorComponentRegistry.registerEditorComponentResolver(
       (scheme: string) => (scheme === Schemes.file || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
       (resource: IResource<any>, results: IEditorOpenType[]) => {
-        const { metadata, uri } = resource as { uri: URI; metadata: any };
-
         if (results.length === 0) {
           results.push({
             type: EditorOpenType.component,
@@ -139,14 +137,11 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
           }
           case 'binary':
           case 'text': {
-            const { metadata: _metadata, uri } = resource as { uri: URI; metadata: any };
+            const { metadata: _metadata, uri } = resource;
             const metadata = _metadata || {};
 
-            const skipPreventTooLarge = metadata.skipPreventTooLarge;
-            const skipPreventBinary = metadata.skipPreventBinary;
-
             // 二进制文件不支持打开
-            if (type === 'binary' && !skipPreventBinary) {
+            if (type === 'binary' && !metadata.skipPreventBinary) {
               break;
             }
 
@@ -154,7 +149,7 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
             await this.preference.ready;
             const maxSize = this.preference.getValid<number>('editor.largeFile', 4 * 1024 * 1024 * 1024);
 
-            if (stat && (stat.size || 0) > maxSize && !skipPreventTooLarge) {
+            if (stat && (stat.size || 0) > maxSize && !metadata.skipPreventTooLarge) {
               results.push({
                 type: EditorOpenType.component,
                 componentId: LARGE_FILE_PREVENT_COMPONENT_ID,

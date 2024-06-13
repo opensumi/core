@@ -29,6 +29,7 @@ export const EXT_LIST_IMAGE = new Set([
 export const EXT_LIST_TEXT = new Set(['xml']);
 
 export const enum EditorFileType {
+  Directory = 'directory',
   Text = 'text',
   Image = 'image',
   Video = 'video',
