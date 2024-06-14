@@ -44,10 +44,12 @@ describe('PreferenceSettingService should be work', () => {
           return true;
         }
       },
-      getValid: (key) => {
+      getValid: (key, defaultValue) => {
         if (key === 'settings.userBeforeWorkspace') {
           return true;
         }
+
+        return defaultValue;
       },
       onSpecificPreferenceChange: () => Disposable.NULL,
       resolve: jest.fn(() => ({

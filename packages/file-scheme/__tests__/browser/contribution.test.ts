@@ -26,7 +26,7 @@ const mockFileService = {
 const mockPreferenceService = {
   onPreferenceChanged: jest.fn(),
   get: jest.fn(() => undefined),
-  getValid: jest.fn(() => undefined),
+  getValid: jest.fn((_, defaultValue) => defaultValue),
   ready: Promise.resolve(),
 };
 

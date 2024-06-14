@@ -52,12 +52,14 @@ describe('WorkspaceService should be work while workspace was a single directory
         return FILES_DEFAULTS.filesExclude;
       }
     },
-    getValid: (preferenceName: string) => {
+    getValid: (preferenceName: string, defaultValue) => {
       if (preferenceName === 'files.watcherExclude') {
         return FILES_DEFAULTS.filesWatcherExclude;
       } else if (preferenceName === 'files.exclude') {
         return FILES_DEFAULTS.filesExclude;
       }
+
+      return defaultValue;
     },
     inspect: jest.fn(),
   };
