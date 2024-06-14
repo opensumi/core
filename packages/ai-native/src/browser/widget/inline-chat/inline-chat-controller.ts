@@ -86,7 +86,7 @@ export class InlineChatController {
     listenReadable<IChatProgress>(stream, {
       onData: (data) => {
         reply.updateMessage(this.fencedCodeBlocks((data as IChatContent).content));
-        this._onData.fire(reply);
+        this._onData.fireAndAwait(reply);
       },
       onEnd: () => {
         this.isInCodeBlock = false;
