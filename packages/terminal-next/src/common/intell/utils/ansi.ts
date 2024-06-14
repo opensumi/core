@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+// based on https://github.com/microsoft/inshellisense/blob/bf7a832b75a90e35a5a58062029eed62b02128bc/src/utils/ansi.ts
+
 const ESC = '\u001B';
 const CSI = ESC + '[';
 const OSC = '\u001B]';

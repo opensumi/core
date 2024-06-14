@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-// SpecLoader 是加载 Fig Spec 的抽象层，
+// based on https://github.com/microsoft/inshellisense/blob/057465448a032fe8f85cc7a9cfd23cc6224236a1/src/runtime/runtime.ts
+
+// SpecLoader 是加载 Fig Spec 的抽象层，做了 面向对象 + DI 二次修改
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { path } from '@opensumi/ide-core-common';

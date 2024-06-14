@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+// based on https://github.com/microsoft/inshellisense/blob/ef837d4f738533da7e1a3845231bd5965e025bf1/src/runtime/parser.ts
+
 export interface CommandToken {
   token: string;
   complete: boolean;

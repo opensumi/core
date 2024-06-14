@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+// based on https://github.com/microsoft/inshellisense/blob/c4ab6cfa8d5b4d447d9d554282e501573dbfe473/src/runtime/generator.ts
+
 // 对源文件额外进行了面向对象 + 依赖注入的修改和优化，使其脱离 Node.js/Browser 单一环境的限制
 // GeneratorRunner 类,负责对于 Fig Generator 的处理
 

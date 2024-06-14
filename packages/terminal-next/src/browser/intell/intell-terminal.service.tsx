@@ -1,10 +1,10 @@
 import React from 'react';
 import { Root, createRoot } from 'react-dom/client';
-import { IDecoration, IDisposable, IMarker, Terminal } from 'xterm';
+import { IDecoration, IMarker, Terminal } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, IDisposable, runWhenIdle } from '@opensumi/ide-core-common';
 
 import { ITerminalController } from '../../common/controller';
 import { ITerminalConnection } from '../../common/index';
@@ -20,6 +20,8 @@ enum IstermOscPt {
   PromptEnded = 'PE',
   CurrentWorkingDirectory = 'CWD',
 }
+
+export const OSC_MAGIC_NUMBER = 6973;
 
 @Injectable()
 export class IntellTerminalService extends Disposable {
@@ -48,7 +50,7 @@ export class IntellTerminalService extends Disposable {
 
   // 基于 终端输入末尾 + Prompt End 位置定位的弹出框
   private completePopupRoot: Root | undefined;
-  private completePopupDisposeTimeoutHandler: ReturnType<typeof setTimeout> | undefined;
+  private completePopupDisposeTimeoutHandler: IDisposable | undefined;
 
   private lastPromptLineString: string;
   private isShellIntellActive: boolean;
@@ -80,7 +82,7 @@ export class IntellTerminalService extends Disposable {
   }
 
   private listenPromptState(xterm: Terminal) {
-    xterm.parser.registerOscHandler(6973, (data) => {
+    xterm.parser.registerOscHandler(OSC_MAGIC_NUMBER, (data) => {
       const argsIndex = data.indexOf(';');
       const sequence = argsIndex === -1 ? data : data.substring(0, argsIndex);
 
@@ -133,7 +135,7 @@ export class IntellTerminalService extends Disposable {
       }
 
       // 稍微 settimeout 一下，等待终端渲染
-      setTimeout(async () => {
+      runWhenIdle(async () => {
         const notRender = this.handleKeyPress(e, lastData, connection);
         lastData = e;
 
@@ -260,8 +262,8 @@ export class IntellTerminalService extends Disposable {
          * 如果上一个 Decoration Dispose 之后，立即就有新的 Decoration Render，那么就取消这次 Dispose
          * 这样就可以做到 CompleteList 弹框的复用，在终端快速输入的时候，只做位置的偏移
          */
-        clearTimeout(this.completePopupDisposeTimeoutHandler);
-        this.completePopupDisposeTimeoutHandler = setTimeout(() => {
+        this.completePopupDisposeTimeoutHandler?.dispose();
+        this.completePopupDisposeTimeoutHandler = runWhenIdle(() => {
           this.completePopupRoot?.unmount();
           this.completePopupRoot = undefined;
           this.isShellIntellActive = false;
@@ -331,9 +333,7 @@ export class IntellTerminalService extends Disposable {
 
     alignAndCheckVisibility();
 
-    if (this.completePopupDisposeTimeoutHandler !== undefined) {
-      clearTimeout(this.completePopupDisposeTimeoutHandler);
-    }
+    this.completePopupDisposeTimeoutHandler?.dispose();
 
     if (!this.completePopupRoot) {
       this.completePopupRoot = createRoot(this.popupContainer);

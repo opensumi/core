@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+// based on https://github.com/microsoft/inshellisense/blob/34049e906e4dd8f9cf6edabe0769c9254665cdb7/src/runtime/template.ts
+
 // 对源文件额外进行了面向对象 + 依赖注入的修改和优化，使其脱离 Node.js/Browser 单一环境的限制
 // TemplateRunner 类,负责对于 Fig Template 的处理
 
