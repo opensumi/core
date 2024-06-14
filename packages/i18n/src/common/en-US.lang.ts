@@ -1461,6 +1461,7 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
     'aiNative.inline.chat.input.placeholder.default': 'Ask Copilot（shift + enter newline）',
+    'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
 
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':

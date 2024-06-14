@@ -3,6 +3,7 @@ import { Logger, SpecialCases } from '@opensumi/ide-core-browser';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import { Disposable, Emitter, Event, IDisposable, MaybePromise, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import {
@@ -14,7 +15,7 @@ import {
   ITerminalInlineChatHandler,
 } from '../../types';
 
-type TRunStrategyFn = (value: string) => MaybePromise<ERunStrategy>;
+type TRunStrategyFn = (editor: ICodeEditor, value: string) => MaybePromise<ERunStrategy>;
 
 class InteractiveInputModel {
   static ID: string = `${InteractiveInput.displayName}:${uuid(4)}`;
