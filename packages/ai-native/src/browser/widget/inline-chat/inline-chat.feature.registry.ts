@@ -117,6 +117,10 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     };
   }
 
+  public unregisterEditorInlineChat(operational: AIActionItem) {
+    return this.removeCollectedActions(operational);
+  }
+
   public registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable {
     const isCollect = this.collectActions(operational);
 
@@ -133,6 +137,10 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
         this.removeCollectedActions(operational);
       },
     };
+  }
+
+  public unregisterTerminalInlineChat(operational: AIActionItem) {
+    return this.removeCollectedActions(operational);
   }
 
   public registerInteractiveInput(

@@ -70,7 +70,9 @@ export interface ITerminalInlineChatHandler {
 
 export interface IInlineChatFeatureRegistry {
   registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
+  unregisterEditorInlineChat(operational: AIActionItem): void;
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
+  unregisterTerminalInlineChat(operational: AIActionItem): void;
   /**
    * proposed api，可能随时都会有变化
    */
