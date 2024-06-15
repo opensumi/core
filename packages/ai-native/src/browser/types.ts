@@ -69,9 +69,21 @@ export interface ITerminalInlineChatHandler {
 }
 
 export interface IInlineChatFeatureRegistry {
+  /**
+   * 注册 editor 内联聊天能力
+   */
   registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
+  /**
+   * 注销 editor 内联聊天能力
+   */
   unregisterEditorInlineChat(operational: AIActionItem): void;
+  /**
+   * 注册 terminal 内联功能
+   */
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
+  /**
+   * 注销 terminal 内联功能
+   */
   unregisterTerminalInlineChat(operational: AIActionItem): void;
   /**
    * proposed api，可能随时都会有变化
