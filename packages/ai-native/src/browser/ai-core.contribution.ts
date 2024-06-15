@@ -32,7 +32,7 @@ import {
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { InlineChatIsVisible, InlineInputWidgetIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
@@ -50,6 +50,7 @@ import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { Position } from '@opensumi/ide-monaco';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 
@@ -83,6 +84,7 @@ import {
 } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { InlineInputChatService } from './widget/inline-input/inline-input.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
 @Domain(
@@ -168,6 +170,9 @@ export class AINativeBrowserContribution
 
   @Autowired(CodeActionHandler)
   private readonly codeActionHandler: CodeActionHandler;
+
+  @Autowired(InlineInputChatService)
+  private readonly inlineInputChatService: InlineInputChatService;
 
   constructor() {
     this.registerFeature();
@@ -316,8 +321,18 @@ export class AINativeBrowserContribution
     });
 
     commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE, {
-      execute: (value: boolean) => {
-        this.aiInlineChatService._onInteractiveInputVisible.fire(value);
+      execute: (positionFn: () => Position) => {
+        if (positionFn) {
+          const posi = positionFn();
+
+          if (posi) {
+            this.inlineInputChatService.visibleInPosition(posi);
+          } else {
+            this.inlineInputChatService.hide();
+          }
+        }
+
+        this.aiInlineChatService._onInteractiveInputVisible.fire(true);
       },
     });
 
@@ -392,13 +407,20 @@ export class AINativeBrowserContribution
         keybindings.registerKeybinding(
           {
             command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
-            keybinding: 'ctrlcmd+K',
-            args: true,
+            keybinding: 'ctrlcmd+k',
             priority: 0,
             when: `editorFocus && ${InlineChatIsVisible.raw}`,
           },
           KeybindingScope.USER,
         );
+
+        keybindings.registerKeybinding({
+          command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
+          keybinding: 'esc',
+          args: () => undefined,
+          priority: 0,
+          when: `editorFocus && ${InlineInputWidgetIsVisible.raw}`,
+        });
       }
     }
   }

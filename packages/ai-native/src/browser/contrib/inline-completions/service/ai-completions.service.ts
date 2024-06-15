@@ -4,6 +4,8 @@ import {
   AIBackSerivcePath,
   CancellationTokenSource,
   Disposable,
+  Emitter,
+  Event,
   IAIBackService,
   IAICompletionOption,
   IAICompletionResultModel,
@@ -27,11 +29,14 @@ export class AICompletionsService extends Disposable {
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
 
+  private readonly _onVisibleCompletion = new Emitter<boolean>();
+  public readonly onVisibleCompletion: Event<boolean> = this._onVisibleCompletion.event;
+
   private cancelIndicator = new CancellationTokenSource();
   // 是否使用默认的补全模型
   protected isDefaultCompletionModel = true;
   // 是否显示了 inline 补全
-  private isVisibleCompletion = false;
+  private _isVisibleCompletion = false;
   // 会话 id
   private lastSessionId: string;
   // 统计 id
@@ -47,6 +52,10 @@ export class AICompletionsService extends Disposable {
 
   private recordCompletionUseTime(preTime: number): void {
     this.lastCompletionUseTime = Date.now() - preTime;
+  }
+
+  public get isVisibleCompletion(): boolean {
+    return this._isVisibleCompletion;
   }
 
   public async complete(data: CompletionRequestBean, model, position, token): Promise<IAICompletionResultModel | null> {
@@ -93,7 +102,7 @@ export class AICompletionsService extends Disposable {
     this.aiBackService.reportCompletion(data);
     this.reporterEnd(relationId, { success: true, isReceive: accept, renderingTime: data.renderingTime });
 
-    this.isVisibleCompletion = false;
+    this._isVisibleCompletion = false;
   }
 
   public async reporterEnd(relationId: string, data: CompletionRT) {
@@ -105,15 +114,16 @@ export class AICompletionsService extends Disposable {
 
   public setVisibleCompletion(visible: boolean) {
     // 如果之前是 true，现在是 false，说明并没有进行采纳
-    if (this.isVisibleCompletion === true && visible === false) {
+    if (this._isVisibleCompletion === true && visible === false) {
       this.report({ sessionId: this.lastSessionId, accept: false, relationId: this.lastRelationId });
     }
 
+    this._isVisibleCompletion = visible;
+
+    this._onVisibleCompletion.fire(visible);
+
     if (visible === true) {
-      this.isVisibleCompletion = visible;
       this.recordRenderTime();
-    } else {
-      this.isVisibleCompletion = false;
     }
   }
 

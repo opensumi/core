@@ -50,10 +50,10 @@ export interface AIActionItem {
 }
 
 export interface AIActionProps {
-  operationList: AIActionItem[];
+  operationList?: AIActionItem[];
   moreOperation?: MenuNode[];
   showClose?: boolean;
-  onClickItem: (id: string) => void;
+  onClickItem?: (id: string) => void;
   onClose?: () => void;
   loading?: boolean;
   customOperationRender?: React.ReactNode;
@@ -109,15 +109,15 @@ export const AIAction = (props: AIActionProps) => {
 
     const defaultOperationList = (
       <React.Fragment>
-        {operationList.map(({ name, title, id }, i) =>
+        {operationList?.map(({ name, title, id }, i) =>
           title ? (
             <EnhancePopover id={id} title={title} key={`popover_${i}`}>
-              <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => onClickItem(id)}>
+              <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => onClickItem?.(id)}>
                 <span key={i}>{name}</span>
               </EnhanceIcon>
             </EnhancePopover>
           ) : (
-            <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => onClickItem(id)} key={i}>
+            <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => onClickItem?.(id)} key={i}>
               <span>{name}</span>
             </EnhanceIcon>
           ),

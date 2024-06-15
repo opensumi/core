@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AINativeConfigService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
-import { Disposable, Event, IDisposable, Schemes } from '@opensumi/ide-core-common';
+import { Disposable, Event, IDisposable, InlineChatFeatureRegistryToken, Schemes } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { EditorCollectionService, IEditorDocumentModelRef } from '@opensumi/ide-editor';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
@@ -9,7 +9,10 @@ import { BrowserCodeEditor, BrowserDiffEditor } from '@opensumi/ide-editor/lib/b
 
 import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
+import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
+import { InlineHintHandler } from './widget/inline-hint/inline-hint.handler';
+import { InlineInputHandler } from './widget/inline-input/inline-input.handler';
 
 @Injectable()
 export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -22,6 +25,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(InlineChatHandler)
   private readonly inlineChatHandler: InlineChatHandler;
 
+  @Autowired(InlineHintHandler)
+  private readonly inlineHintHandler: InlineHintHandler;
+
+  @Autowired(InlineInputHandler)
+  private readonly inlineInputHandler: InlineInputHandler;
+
   @Autowired(CodeActionHandler)
   private readonly codeActionHandler: CodeActionHandler;
 
@@ -30,6 +39,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(EditorCollectionService)
   private readonly editorCollectionService: EditorCollectionService;
+
+  @Autowired(InlineChatFeatureRegistryToken)
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   private modelSessionDisposable: Disposable;
   private editorReady: boolean = false;
@@ -93,6 +105,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
     disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor));
 
+    if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+      this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor));
+      this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor));
+    }
     disposables.push(
       monacoEditor.onDidScrollChange(() => {
         if (this.ctxMenuRenderer.visible) {
@@ -132,6 +148,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor.modifiedEditor));
     disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor.originalEditor));
 
+    if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+      this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor.modifiedEditor));
+      this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor.modifiedEditor));
+      this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor.originalEditor));
+      this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor.originalEditor));
+    }
     return disposables;
   }
 

@@ -3,6 +3,7 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
+import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { LanguageParserService } from '../../languages/service';
 import { ICodeBlockInfo } from '../../languages/tree-sitter/language-facts/base';
@@ -50,6 +51,11 @@ export class CodeActionHandler extends IAIMonacoContribHandler {
     return languageFeaturesService.codeActionProvider.register('*', {
       provideCodeActions: async (model, range) => {
         if (!this.inlineChatActionEnabled) {
+          return;
+        }
+
+        const content = model.getLineContent(range.startLineNumber);
+        if (content?.trim() === empty) {
           return;
         }
 
