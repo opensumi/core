@@ -104,6 +104,11 @@ export interface ChannelHandlerOptions {
   serializer?: ISerializer<ChannelMessage, any>;
 }
 
+enum ServerChannelCloseCode {
+  ConnectionClosed = 1,
+  NewChannelOpened = 2,
+}
+
 export abstract class BaseCommonChannelHandler {
   protected channelMap: Map<string, WSServerChannel> = new Map();
 
@@ -135,25 +140,24 @@ export abstract class BaseCommonChannelHandler {
 
     const wrappedConnection = wrapSerializer(connection, this.serializer);
 
-    const getOrCreateChannel = (id: string, clientId: string) => {
-      let channel = this.channelMap.get(id);
-      if (!channel) {
-        channel = new WSServerChannel(wrappedConnection, { id, clientId, logger: this.logger });
-        this.channelMap.set(id, channel);
-      }
-      return channel;
-    };
-
     wrappedConnection.onMessage((msg: ChannelMessage) => {
       try {
         switch (msg.kind) {
           case 'open': {
-            const { id, path, connectionToken } = msg;
+            const { id, path, traceId } = msg;
             clientId = msg.clientId;
+
             this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
-            const channel = getOrCreateChannel(id, clientId);
+            let channel = this.channelMap.get(id);
+            if (channel) {
+              channel.close(ServerChannelCloseCode.NewChannelOpened, 'new channel opened for the same channel id');
+              channel.dispose();
+            }
+
+            channel = new WSServerChannel(wrappedConnection, { id, clientId, logger: this.logger });
+            this.channelMap.set(id, channel);
             commonChannelPathHandler.openChannel(path, channel, clientId);
-            channel.serverReady(connectionToken);
+            channel.serverReady(traceId!);
             break;
           }
           default: {
@@ -186,7 +190,7 @@ export abstract class BaseCommonChannelHandler {
       Array.from(this.channelMap.values())
         .filter((channel) => channel.clientId === clientId)
         .forEach((channel) => {
-          channel.close(1, 'close');
+          channel.close(ServerChannelCloseCode.ConnectionClosed, 'connection closed');
           channel.dispose();
           this.channelMap.delete(channel.id);
           this.logger.log(`Remove connection channel ${channel.id}`);

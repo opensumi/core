@@ -1,3 +1,4 @@
+import { onUnexpectedError } from './errors';
 import { FIN, Iterator, IteratorResult } from './iterator';
 
 class Node<E> {
@@ -132,6 +133,16 @@ export class LinkedList<E> {
         return element;
       },
     };
+  }
+
+  forEach(callback: (element: E) => void): void {
+    for (let node = this._first; node !== Node.Undefined; node = node.next) {
+      try {
+        callback(node.element);
+      } catch (error) {
+        onUnexpectedError(error);
+      }
+    }
   }
 
   toArray(): E[] {
