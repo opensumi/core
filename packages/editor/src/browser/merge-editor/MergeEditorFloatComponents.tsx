@@ -1,3 +1,4 @@
+import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -9,23 +10,22 @@ import {
   URI,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { formatLocalize } from '@opensumi/ide-core-common';
-import { MergeConflictCommands } from '@opensumi/ide-core-common/lib/commands/git';
 import { MergeActions } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/components/merge-actions';
 
 import { useEditorDocumentModelRef } from '../hooks/useEditor';
-import { DocumentMergeConflict, MergeConflictParser } from '../merge-conflict';
+import { MergeConflictService } from '../merge-conflict/merge-conflict.service';
 import { ReactEditorComponent } from '../types';
 
 export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({ resource }) => {
   const { uri } = resource;
   const editorModel = useEditorDocumentModelRef(uri);
-  const mergeConflictParser: MergeConflictParser = useInjectable(MergeConflictParser);
+  const mergeConflictService = useInjectable<MergeConflictService>(MergeConflictService);
   const commandService = useInjectable<CommandService>(CommandService);
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
 
   const [isVisiable, setIsVisiable] = useState(false);
-  const [conflicts, setConflicts] = useState<DocumentMergeConflict[]>([]);
+  const [summary, setSummary] = useState('');
+  const [canNavigate, setCanNavigate] = useState(false);
 
   useEffect(() => {
     const disposables = new DisposableStore();
@@ -33,21 +33,24 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
     if (editorModel) {
       const { instance } = editorModel;
       const run = () => {
-        const conflicts = mergeConflictParser.scanDocument(instance.getMonacoModel());
-        if (conflicts.length > 0) {
+        const n = mergeConflictService.scanDocument(instance.getMonacoModel());
+        setSummary(mergeConflictService.summary);
+        if (n > 0) {
           setIsVisiable(true);
-          setConflicts(conflicts);
+          setCanNavigate(true);
         } else {
-          setIsVisiable(false);
-          setConflicts([]);
+          setCanNavigate(false);
         }
       };
 
+      const debounceRun = debounce(run, 150);
+
       disposables.add(
         editorModel.instance.getMonacoModel().onDidChangeContent(() => {
-          run();
+          debounceRun();
         }),
       );
+
       run();
       return () => {
         disposables.dispose();
@@ -57,15 +60,11 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
 
   const [isAIResolving, setIsAIResolving] = useState(false);
   const handlePrev = useCallback(() => {
-    commandService.tryExecuteCommand(MergeConflictCommands.Previous).then(() => {
-      // TODO: 编辑器向上滚动一行
-    });
+    mergeConflictService.navigatePrevious();
   }, []);
 
   const handleNext = useCallback(() => {
-    commandService.tryExecuteCommand(MergeConflictCommands.Next).then(() => {
-      // TODO: 编辑器向上滚动一行
-    });
+    mergeConflictService.navigateNext();
   }, []);
   const handleAIResolve = useCallback(async () => {
     setIsAIResolving(true);
@@ -81,12 +80,12 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
     return null;
   }
 
-  const summary = formatLocalize('merge-conflicts.merge.conflict.remain', conflicts.length);
   return (
     <MergeActions
       uri={uri}
       editorType='text'
       summary={summary}
+      canNavigate={canNavigate}
       handleNext={handleNext}
       handlePrev={handlePrev}
       isAIResolving={isAIResolving}
