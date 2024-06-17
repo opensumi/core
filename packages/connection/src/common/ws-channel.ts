@@ -338,11 +338,11 @@ export class WSServerChannel extends WSChannel {
     this.clientId = options.clientId;
   }
 
-  serverReady(token: string) {
+  serverReady(traceId: string) {
     this.connection.send({
       kind: 'server-ready',
       id: this.id,
-      token,
+      traceId,
     });
   }
 

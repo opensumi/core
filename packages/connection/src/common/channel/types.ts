@@ -78,5 +78,5 @@ export interface ErrorMessage extends BaseMessage {
 export interface ServerReadyMessage extends BaseMessage {
   kind: 'server-ready';
   id: string;
-  token: string;
+  traceId: string;
 }
