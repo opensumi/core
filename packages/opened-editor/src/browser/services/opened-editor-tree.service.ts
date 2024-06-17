@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { ITreeNodeOrCompositeTreeNode, Tree, TreeNodeType } from '@opensumi/ide-components';
-import { Schemes, URI, path } from '@opensumi/ide-core-browser';
+import { Schemes, URI, formatLocalize, path } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IEditorGroup, IResource, ResourceService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -23,7 +23,7 @@ export class OpenedEditorService extends Tree {
   @Autowired(ResourceService)
   private readonly resourceService: ResourceService;
 
-  private _dirtyUri = new Set<string>();
+  private _dirtyUri: string[] = [];
 
   // 是否为分组的节点树
   private _isGroupTree = false;
@@ -33,13 +33,16 @@ export class OpenedEditorService extends Tree {
   }
 
   addDirtyUri(uri: string) {
-    if (!this._dirtyUri.has(uri)) {
-      this._dirtyUri.add(uri);
+    if (!this._dirtyUri.includes(uri)) {
+      this._dirtyUri.push(uri);
     }
   }
 
   removeDirtyUri(uri: string) {
-    this._dirtyUri.delete(uri);
+    if (this._dirtyUri.includes(uri)) {
+      const index = this._dirtyUri.findIndex((value) => value === uri);
+      this._dirtyUri.splice(index, 1);
+    }
   }
 
   async resolveChildren(
@@ -66,7 +69,7 @@ export class OpenedEditorService extends Tree {
               this,
               item as IResource,
               tooltip,
-              this._dirtyUri.has((item as IResource).uri.toString()),
+              this._dirtyUri.includes((item as IResource).uri.toString()),
               parent as EditorFileGroup,
             ),
           );
@@ -79,7 +82,9 @@ export class OpenedEditorService extends Tree {
     } else {
       for (const resource of (parent as EditorFileGroup).group.resources) {
         const tooltip = await this.getReadableTooltip(resource.uri);
-        children.push(new EditorFile(this, resource, tooltip, this._dirtyUri.has(resource.uri.toString()), parent));
+        children.push(
+          new EditorFile(this, resource, tooltip, this._dirtyUri.includes(resource.uri.toString()), parent),
+        );
       }
     }
     return children;
@@ -105,38 +110,44 @@ export class OpenedEditorService extends Tree {
         }
       }
       // numeric 参数确保数字为第一排序优先级
-      return a.name.localeCompare(b.name, 'kn', { numeric: true });
+      return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
     }
     return a.type === TreeNodeType.CompositeTreeNode ? -1 : b.type === TreeNodeType.CompositeTreeNode ? 1 : 0;
   };
 
   public getEditorNodeByUri(resource?: IResource | URI, group?: IEditorGroup) {
+    let path = this.root!.path;
     if (resource) {
-      let path: string;
       if (this._isGroupTree) {
         if (!group) {
           return;
         }
-        path = this.root!.joinPath(
-          EditorFileGroup.makeName(group.index),
-          EditorFile.makeName(
-            resource && (resource as IResource).uri ? (resource as IResource).uri : (resource as URI),
-          ),
-        );
+        const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
+        path = new Path(path)
+          .join(groupName)
+          .join(
+            resource && (resource as IResource).uri
+              ? (resource as IResource).uri.toString()
+              : (resource as URI).toString(),
+          )
+          .toString();
       } else {
-        path = this.root!.joinPath(
-          EditorFile.makeName(
-            resource && (resource as IResource).uri ? (resource as IResource).uri : (resource as URI),
-          ),
-        );
+        path = new Path(path)
+          .join(
+            resource && (resource as IResource).uri
+              ? (resource as IResource).uri.toString()
+              : (resource as URI).toString(),
+          )
+          .toString();
       }
-      return this.root!.getTreeNodeByPath(path);
+      return this.root?.getTreeNodeByPath(path);
     } else {
       if (!group) {
         return;
       }
-      const path = this.root!.joinPath(EditorFileGroup.makeName(group.index));
-      return this.root!.getTreeNodeByPath(path);
+      const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
+      path = new Path(path).join(groupName).toString();
+      return this.root?.getTreeNodeByPath(path);
     }
   }
 

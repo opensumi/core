@@ -17,9 +17,9 @@ import {
   IClipboardService,
   IContextKeyService,
   pSeries,
+  path,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { sortPathByDepth } from '@opensumi/ide-utils/lib/path';
 
 import { IDebugConsoleModelService, IDebugSessionManager } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
@@ -34,6 +34,7 @@ import { DebugConsoleTreeModel } from './debug-console-model';
 import { DebugConsoleSession } from './debug-console-session';
 import styles from './debug-console.module.less';
 
+const { Path } = path;
 export interface IDebugConsoleHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }
@@ -499,8 +500,11 @@ export class DebugConsoleModelService implements IDebugConsoleModelService {
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
-    this._changeEventDispatchQueue = sortPathByDepth(this._changeEventDispatchQueue);
-
+    this._changeEventDispatchQueue.sort((pathA, pathB) => {
+      const pathADepth = Path.pathDepth(pathA);
+      const pathBDepth = Path.pathDepth(pathB);
+      return pathADepth - pathBDepth;
+    });
     const roots = [this._changeEventDispatchQueue[0]];
     for (const path of this._changeEventDispatchQueue) {
       if (roots.some((root) => path.indexOf(root) === 0)) {

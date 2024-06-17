@@ -16,6 +16,7 @@ import {
   ThrottledDelayer,
   URI,
   pSeries,
+  path,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {
@@ -25,7 +26,6 @@ import {
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import * as monaco from '@opensumi/ide-monaco';
-import { sortPathByDepth } from '@opensumi/ide-utils/lib/path';
 
 import { IOutlineDecorationService, OUTLINE_VIEW_ID } from '../../common';
 import { OutlineCompositeTreeNode, OutlineRoot, OutlineTreeNode } from '../outline-node.define';
@@ -34,6 +34,8 @@ import styles from '../outline-node.module.less';
 import { OutlineEventService } from './outline-event.service';
 import { OutlineTreeModel } from './outline-model';
 import { OutlineTreeService } from './outline-tree.service';
+
+const { Path } = path;
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -548,8 +550,11 @@ export class OutlineModelService {
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
-    this._changeEventDispatchQueue = sortPathByDepth(this._changeEventDispatchQueue);
-
+    this._changeEventDispatchQueue.sort((pathA, pathB) => {
+      const pathADepth = Path.pathDepth(pathA);
+      const pathBDepth = Path.pathDepth(pathB);
+      return pathADepth - pathBDepth;
+    });
     const roots = [this._changeEventDispatchQueue[0]];
     for (const path of this._changeEventDispatchQueue) {
       if (roots.some((root) => path.indexOf(root) === 0)) {
