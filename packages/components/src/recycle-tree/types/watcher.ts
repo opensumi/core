@@ -113,31 +113,32 @@ export interface ITreeWatcher {
   on(event: TreeNodeEvent, callback: any): IDisposable;
 
   // 事件分发
+
   notifyWillChangeParent(
     target: ITreeNodeOrCompositeTreeNode,
     prevParent: ICompositeTreeNode,
     newParent: ICompositeTreeNode,
-  ): void;
+  );
   notifyDidChangeParent(
     target: ITreeNodeOrCompositeTreeNode,
     prevParent: ICompositeTreeNode,
     newParent: ICompositeTreeNode,
-  ): void;
-  notifyDidDispose(target: ITreeNodeOrCompositeTreeNode): void;
+  );
+  notifyDidDispose(target: ITreeNodeOrCompositeTreeNode);
 
-  notifyWillProcessWatchEvent(target: ICompositeTreeNode, event: IWatcherEvent): void;
-  notifyDidProcessWatchEvent(target: ICompositeTreeNode, event: IWatcherEvent): void;
+  notifyWillProcessWatchEvent(target: ICompositeTreeNode, event: IWatcherEvent);
+  notifyDidProcessWatchEvent(target: ICompositeTreeNode, event: IWatcherEvent);
 
-  notifyWillChangeExpansionState(target: ICompositeTreeNode, nowExpanded: boolean): void;
-  notifyDidChangeExpansionState(target: ICompositeTreeNode, nowExpanded: boolean): void;
+  notifyWillChangeExpansionState(target: ICompositeTreeNode, nowExpanded: boolean);
+  notifyDidChangeExpansionState(target: ICompositeTreeNode, nowExpanded: boolean);
 
-  notifyWillResolveChildren(target: ICompositeTreeNode, nowExpanded: boolean): void;
-  notifyDidResolveChildren(target: ICompositeTreeNode, nowExpanded: boolean): void;
+  notifyWillResolveChildren(target: ICompositeTreeNode, nowExpanded: boolean);
+  notifyDidResolveChildren(target: ICompositeTreeNode, nowExpanded: boolean);
 
-  notifyDidChangePath(target: ITreeNodeOrCompositeTreeNode): void;
-  notifyDidChangeMetadata(target: ITreeNodeOrCompositeTreeNode, change: IMetadataChange): void;
+  notifyDidChangePath(target: ITreeNodeOrCompositeTreeNode);
+  notifyDidChangeMetadata(target: ITreeNodeOrCompositeTreeNode, change: IMetadataChange);
 
-  notifyDidUpdateBranch(): void;
+  notifyDidUpdateBranch();
 
   dispose: IDisposable;
 }

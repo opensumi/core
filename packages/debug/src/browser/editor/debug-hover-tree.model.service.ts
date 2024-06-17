@@ -6,14 +6,15 @@ import {
   TreeNodeEvent,
   WatchEvent,
 } from '@opensumi/ide-components';
-import { Deferred, DisposableCollection, Emitter, Event, pSeries } from '@opensumi/ide-core-browser';
-import { sortPathByDepth } from '@opensumi/ide-utils/lib/path';
+import { Deferred, DisposableCollection, Emitter, Event, pSeries, path } from '@opensumi/ide-core-browser';
 
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import styles from '../view/variables/debug-variables.module.less';
 
 import { DebugHoverModel } from './debug-hover-model';
 import { DebugHoverSource, ExpressionVariable } from './debug-hover-source';
+
+const { Path } = path;
 
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -292,8 +293,11 @@ export class DebugHoverTreeModelService {
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
-    this._changeEventDispatchQueue = sortPathByDepth(this._changeEventDispatchQueue);
-
+    this._changeEventDispatchQueue.sort((pathA, pathB) => {
+      const pathADepth = Path.pathDepth(pathA);
+      const pathBDepth = Path.pathDepth(pathB);
+      return pathADepth - pathBDepth;
+    });
     const roots = [this._changeEventDispatchQueue[0]];
     for (const path of this._changeEventDispatchQueue) {
       if (roots.some((root) => path.indexOf(root) === 0)) {

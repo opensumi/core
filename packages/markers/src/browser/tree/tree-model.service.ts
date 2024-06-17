@@ -89,11 +89,11 @@ export class MarkerModelService {
   }
 
   async initTreeModel() {
-    const children = await this.markerService.resolveChildren();
-    if (!children) {
+    const childs = await this.markerService.resolveChildren();
+    if (!childs) {
       return;
     }
-    const root = children[0];
+    const root = childs[0];
     if (!root) {
       return;
     }
