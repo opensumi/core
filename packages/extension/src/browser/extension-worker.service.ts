@@ -155,7 +155,8 @@ export class WorkerExtProcessService
 
       if (this.appConfig.useIframeWrapWorkerHost) {
         const { iframe, extHostUuid } = startInsideIframe(workerUrl);
-        window.addEventListener('message', (event) => {
+
+        const func = (event: MessageEvent<any>) => {
           if (event.source !== iframe.contentWindow) {
             return;
           }
@@ -168,6 +169,15 @@ export class WorkerExtProcessService
             ready.resolve(event.data.data);
             return;
           }
+        };
+
+        window.addEventListener('message', func);
+
+        this.apiFactoryDisposable.add({
+          dispose: () => {
+            window.removeEventListener('message', func);
+            iframe.remove();
+          },
         });
 
         ready.promise.then((port) => {
@@ -176,9 +186,7 @@ export class WorkerExtProcessService
       } else {
         try {
           const extendWorkerHost = new Worker(workerUrl, { name: 'KaitianWorkerExtensionHost' });
-          this.addDispose({
-            dispose: () => extendWorkerHost.terminate(),
-          });
+
           extendWorkerHost.onmessage = (e) => {
             if (e.data instanceof MessagePort) {
               ready.resolve(e.data);
@@ -188,6 +196,14 @@ export class WorkerExtProcessService
           extendWorkerHost.onerror = (err) => {
             reject(err);
           };
+
+          this.apiFactoryDisposable.add({
+            dispose: () => {
+              extendWorkerHost.terminate();
+              extendWorkerHost.onmessage = null;
+              extendWorkerHost.onerror = null;
+            },
+          });
 
           ready.promise.then((port) => {
             resolve(this.createProtocol(port));
