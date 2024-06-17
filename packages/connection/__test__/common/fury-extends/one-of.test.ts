@@ -43,7 +43,7 @@ describe('oneOf', () => {
     const obj4: ServerReadyMessage = {
       kind: 'server-ready',
       id: '456',
-      token: '',
+      traceId: '',
     };
 
     testIt(obj4);
