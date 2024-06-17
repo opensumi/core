@@ -11,7 +11,6 @@ export type ChannelMessage =
 export interface BaseMessage {
   kind: string;
   id: string;
-  needAck?: boolean;
   traceId?: string;
 }
 
@@ -58,6 +57,7 @@ export interface OpenMessage extends BaseMessage {
   kind: 'open';
   path: string;
   clientId: string;
+  traceId: string;
 }
 
 export enum ErrorMessageCode {
