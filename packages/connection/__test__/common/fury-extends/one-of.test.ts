@@ -36,7 +36,6 @@ describe('oneOf', () => {
       clientId: '123',
       id: '456',
       path: '/test',
-      connectionToken: 'abc',
     };
 
     testIt(obj3);

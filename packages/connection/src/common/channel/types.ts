@@ -8,41 +8,43 @@ export type ChannelMessage =
   | CloseMessage
   | ErrorMessage;
 
+export interface BaseMessage {
+  kind: string;
+  id: string;
+  needAck?: boolean;
+  traceId?: string;
+}
+
 /**
  * `ping` and `pong` are used to detect whether the connection is alive.
  */
-export interface PingMessage {
+export interface PingMessage extends BaseMessage {
   kind: 'ping';
-  id: string;
 }
 
 /**
  * when server receive a `ping` message, it should reply a `pong` message, vice versa.
  */
-export interface PongMessage {
+export interface PongMessage extends BaseMessage {
   kind: 'pong';
-  id: string;
 }
 
 /**
  * `data` message indicate that the channel has received some data.
  * the `content` field is the data, it should be a string.
  */
-export interface DataMessage {
+export interface DataMessage extends BaseMessage {
   kind: 'data';
-  id: string;
   content: string;
 }
 
-export interface BinaryMessage {
+export interface BinaryMessage extends BaseMessage {
   kind: 'binary';
-  id: string;
   binary: Uint8Array;
 }
 
-export interface CloseMessage {
+export interface CloseMessage extends BaseMessage {
   kind: 'close';
-  id: string;
   code: number;
   reason: string;
 }
@@ -52,19 +54,17 @@ export interface CloseMessage {
  * `path` is used to identify which handler should be used to handle the channel.
  * `clientId` is used to identify the client.
  */
-export interface OpenMessage {
+export interface OpenMessage extends BaseMessage {
   kind: 'open';
-  id: string;
   path: string;
   clientId: string;
-  connectionToken: string;
 }
 
 export enum ErrorMessageCode {
   ChannelNotFound = 1,
 }
 
-export interface ErrorMessage {
+export interface ErrorMessage extends BaseMessage {
   kind: 'error';
   id: string;
   code: ErrorMessageCode;
@@ -75,7 +75,7 @@ export interface ErrorMessage {
  * when server receive a `open` message, it should reply a `server-ready` message.
  * this is indicate that the channel is ready to use.
  */
-export interface ServerReadyMessage {
+export interface ServerReadyMessage extends BaseMessage {
   kind: 'server-ready';
   id: string;
   token: string;

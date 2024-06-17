@@ -5,6 +5,14 @@ import { oneOf } from '../fury-extends/one-of';
 
 import { ISerializer } from './types';
 
+function baseFields() {
+  return {
+    id: Type.string(),
+    needAck: Type.bool(),
+    traceId: Type.string(),
+  };
+}
+
 export const PingProtocol = Type.object('ping', {
   id: Type.string(),
 });
@@ -14,35 +22,34 @@ export const PongProtocol = Type.object('pong', {
 });
 
 export const OpenProtocol = Type.object('open', {
+  ...baseFields(),
   clientId: Type.string(),
-  id: Type.string(),
   path: Type.string(),
-  connectionToken: Type.string(),
 });
 
 export const ServerReadyProtocol = Type.object('server-ready', {
-  id: Type.string(),
+  ...baseFields(),
   token: Type.string(),
 });
 
 export const ErrorProtocol = Type.object('error', {
-  id: Type.string(),
+  ...baseFields(),
   code: Type.uint16(),
   message: Type.string(),
 });
 
 export const DataProtocol = Type.object('data', {
-  id: Type.string(),
+  ...baseFields(),
   content: Type.string(),
 });
 
 export const BinaryProtocol = Type.object('binary', {
-  id: Type.string(),
+  ...baseFields(),
   binary: Type.binary(),
 });
 
 export const CloseProtocol = Type.object('close', {
-  id: Type.string(),
+  ...baseFields(),
   code: Type.uint32(),
   reason: Type.string(),
 });
