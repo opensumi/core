@@ -107,6 +107,7 @@ const AILeftTabbarRenderer: React.FC = () => {
             ? navMenu.map((menu) => (
                 <EnhanceIconWithCtxMenu
                   key={menu.id}
+                  id={menu.id}
                   wrapperClassName={styles.extra_bottom_icon}
                   iconClass={menu.icon}
                   menuNodes={menu.children}
