@@ -160,7 +160,6 @@ export class WSChannel {
     }
 
     data.traceId = traceId;
-    data.needAck = true;
     this.connection.send(data);
 
     this.stateTracer.send(traceId, {

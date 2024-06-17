@@ -8,23 +8,22 @@ import { ISerializer } from './types';
 function baseFields() {
   return {
     id: Type.string(),
-    needAck: Type.bool(),
-    traceId: Type.string(),
   };
 }
 
 export const PingProtocol = Type.object('ping', {
-  id: Type.string(),
+  ...baseFields(),
 });
 
 export const PongProtocol = Type.object('pong', {
-  id: Type.string(),
+  ...baseFields(),
 });
 
 export const OpenProtocol = Type.object('open', {
   ...baseFields(),
   clientId: Type.string(),
   path: Type.string(),
+  traceId: Type.string(),
 });
 
 export const ServerReadyProtocol = Type.object('server-ready', {
