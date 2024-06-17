@@ -145,9 +145,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
             this.batchedPtyDataMap.set(sessionId, '');
           }
 
-          this.batchedPtyDataMap.set(sessionId, this.batchedPtyDataMap.get(sessionId) + chunk);
+          const ptyData = this.batchedPtyDataMap.get(sessionId)!;
 
-          const ptyData = this.batchedPtyDataMap.get(sessionId) || '';
+          this.batchedPtyDataMap.set(sessionId, ptyData + chunk);
 
           if (ptyData?.length + chunk.length >= BATCH_MAX_SIZE) {
             this.flushPtyData(clientId, sessionId);
