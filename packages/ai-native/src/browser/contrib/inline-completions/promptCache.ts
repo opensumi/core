@@ -1,23 +1,45 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAICompletionResultModel, StaleLRUMap } from '@opensumi/ide-core-browser';
+import {
+  AINativeSettingSectionsId,
+  DisposableStore,
+  IAICompletionResultModel,
+  PreferenceService,
+  StaleLRUMap,
+} from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
-const isCacheEnable = () => true;
-
 /**
- * 缓存服务
- * 1. 过期时间为 1min
- * 2. 用 prompt 的 hash 值作为 key
+ * 用 prompt 的 hash 值作为 key 的缓存服务，自带缓存过期时间
  */
 @Injectable()
 export class PromptCache {
+  protected _disposables = new DisposableStore();
+
   @Autowired(IHashCalculateService)
   private hashCalculateService: IHashCalculateService;
 
-  private cacheMap = new StaleLRUMap<string, IAICompletionResultModel>(15, 10, 60 * 1000);
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  private cacheMap = new StaleLRUMap<string, IAICompletionResultModel>(100, 80, 2 * 60 * 1000);
+
+  usingCache: boolean;
+
+  constructor() {
+    this.usingCache = this.preferenceService.getValid(AINativeSettingSectionsId.InlineCompletionsUsingCache, true);
+
+    this._disposables.add(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.InlineCompletionsUsingCache,
+        ({ newValue }) => {
+          this.usingCache = newValue;
+        },
+      ),
+    );
+  }
 
   getCache(prompt: string) {
-    if (!isCacheEnable()) {
+    if (!this.usingCache) {
       return null;
     }
     const hash = this.hashCalculateService.calculate(prompt);
@@ -28,7 +50,7 @@ export class PromptCache {
   }
 
   setCache(prompt: string, res: any) {
-    if (!isCacheEnable()) {
+    if (!this.usingCache) {
       return false;
     }
     if (!res) {
@@ -41,5 +63,10 @@ export class PromptCache {
       return true;
     }
     return false;
+  }
+
+  dispose() {
+    this._disposables.dispose();
+    this.cacheMap.clear();
   }
 }

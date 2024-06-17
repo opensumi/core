@@ -27,5 +27,9 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'number',
       default: 150,
     },
+    [AINativeSettingSectionsId.InlineCompletionsUsingCache]: {
+      type: 'boolean',
+      default: true,
+    },
   },
 };

@@ -281,6 +281,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
             localized: 'preference.ai.native.inlineCompletions.promptEngineering.enabled',
           },
+          {
+            id: AINativeSettingSectionsId.InlineCompletionsUsingCache,
+            localized: 'preference.ai.native.inlineCompletions.usingCache',
+          },
         ],
       });
     }

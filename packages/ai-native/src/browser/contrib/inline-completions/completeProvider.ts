@@ -1,7 +1,15 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTER } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AINativeSettingSectionsId, DisposableStore, URI, WithEventBus, sleep, uuid } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  DisposableStore,
+  ILogger,
+  URI,
+  WithEventBus,
+  sleep,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
@@ -43,9 +51,20 @@ const removeChars = (insertText: string, textAfterCursor: string) => {
   return result;
 };
 
+export interface ICompletionRequestTaskOptions {
+  preferCache?: boolean;
+  /**
+   * 用户手动触发
+   */
+  isManual?: boolean;
+}
+
 @Injectable({ multiple: true })
 export class CompletionRequestTask {
   private _disposables = new DisposableStore();
+
+  @Autowired(ILogger)
+  private logger: ILogger;
 
   @Autowired(IAIReporter)
   private aiReporter: IAIReporter;
@@ -62,7 +81,7 @@ export class CompletionRequestTask {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  isCancelFlag: boolean;
+  cancelled = false;
 
   private isEnablePromptEngineering = true;
 
@@ -70,10 +89,11 @@ export class CompletionRequestTask {
     public model: monaco.editor.ITextModel,
     public position: monaco.Position,
     public token: monaco.CancellationToken,
-    public _isManual: boolean,
+    public options: ICompletionRequestTaskOptions = {
+      isManual: false,
+      preferCache: false,
+    },
   ) {
-    this.isCancelFlag = false;
-
     this.isEnablePromptEngineering = this.preferenceService.getValid(
       AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
       this.isEnablePromptEngineering,
@@ -127,7 +147,7 @@ export class CompletionRequestTask {
       return [];
     }
 
-    if (this.isCancelFlag) {
+    if (this.cancelled) {
       return [];
     }
 
@@ -162,7 +182,7 @@ export class CompletionRequestTask {
     if (token.isCancellationRequested) {
       return [];
     }
-    if (this.isCancelFlag) {
+    if (this.cancelled) {
       return [];
     }
 
@@ -200,7 +220,7 @@ export class CompletionRequestTask {
     this.aiCompletionsService.setLastSessionId(rs.sessionId);
 
     // 如果是取消直接返回
-    if ((rs && rs.isCancel) || this.isCancelFlag) {
+    if ((rs && rs.isCancel) || this.cancelled) {
       this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
         replytime: Date.now() - requestStartTime,
@@ -281,7 +301,7 @@ export class CompletionRequestTask {
   }
 
   cancelRequest() {
-    this.isCancelFlag = true;
+    this.cancelled = true;
     this.dispose();
   }
 }
@@ -403,23 +423,28 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     this.cancelRequest();
     this.aiCompletionsService.hideStatusBarItem();
 
-    // step 1 判断生成开关,如果关闭不进行后续操作
-    const _isManual = this.isManual;
-    if (this.isDelEvent && !_isManual) {
-      return undefined;
-    }
-
-    // 重置防止不触发自动补全事件
-    this.updateIsManual(false);
-
     // 如果用户已取消
     if (token?.isCancellationRequested) {
       this.aiCompletionsService.updateStatusBarItem('cancelled ', false);
       return undefined;
     }
 
+    const _isManual = this.isManual;
+
+    // 重置防止不触发自动补全事件
+    this.updateIsManual(false);
+
     // 放入队列
-    const requestImp = this.injector.get(CompletionRequestTask, [model, position, token, _isManual]);
+    const requestImp = this.injector.get(CompletionRequestTask, [
+      model,
+      position,
+      token,
+      {
+        isManual: _isManual,
+        // 如果是删除事件，优先读取缓存
+        preferCache: this.isDelEvent && !_isManual,
+      },
+    ]);
 
     this.reqStack.addReq(requestImp);
 

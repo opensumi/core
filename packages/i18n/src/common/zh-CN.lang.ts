@@ -1245,7 +1245,8 @@ export const localizationBundle = {
     'preference.ai.native.inlineCompletions.title': '内联补全',
     'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       '是否启用提示词工程，一些 LLM 模型在提示词工程上可能表现不佳。',
-    'preference.ai.native.inlineCompletions.debounceTime': '内联补全的延迟时间（毫秒）',
+    'preference.ai.native.inlineCompletions.debounceTime': '补全的延迟时间（毫秒）',
+    'preference.ai.native.inlineCompletions.usingCache': '是否使用缓存(基于 Prompt)',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',
