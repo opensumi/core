@@ -40,7 +40,7 @@ import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/
 
 import { SlashCommand } from './SlashCommand';
 
-enum EInlineOperation {
+export enum EInlineOperation {
   Comments = 'Comments',
   Optimize = 'Optimize',
   Explain = 'Explain',
