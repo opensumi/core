@@ -1,9 +1,12 @@
 import fileType from 'file-type';
 import * as fse from 'fs-extra';
 
-import { FileUri } from '@opensumi/ide-core-common';
+import { BinaryBuffer, Deferred, FileUri, detectEncodingFromBuffer } from '@opensumi/ide-core-common';
+import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { EditorFileType, getFileTypeByExt, isErrnoException } from '../../common';
+
+const NO_ENCODING_GUESS_MIN_BYTES = 512; // when not auto guessing the encoding, small number of bytes are enough
 
 export async function getFileType(uri: string): Promise<string | undefined> {
   try {
@@ -11,25 +14,73 @@ export async function getFileType(uri: string): Promise<string | undefined> {
     if (!uri.startsWith('file:/')) {
       return getFileTypeByExt();
     }
-    const stat = await fse.stat(FileUri.fsPath(uri));
+
+    const fsPath = FileUri.fsPath(uri);
+    const stat = await fse.stat(fsPath);
 
     if (stat.isDirectory()) {
-      return 'directory';
+      return EditorFileType.Directory;
     } else {
       let ext: string | undefined;
       if (stat.size) {
-        const type = await fileType.stream(fse.createReadStream(FileUri.fsPath(uri)));
+        const readStream = fse.createReadStream(fsPath);
+        const streamWithType = await fileType.stream(readStream);
+
         // 可以拿到 type.fileType 说明为二进制文件
-        if (type.fileType) {
-          if (type.fileType.mime) {
-            if (type.fileType.mime.startsWith('image/')) {
+        if (streamWithType.fileType) {
+          if (streamWithType.fileType.mime) {
+            if (streamWithType.fileType.mime.startsWith('image/')) {
               return EditorFileType.Image;
             }
-            if (type.fileType.mime.startsWith('video/')) {
+            if (streamWithType.fileType.mime.startsWith('video/')) {
               return EditorFileType.Video;
             }
           }
-          ext = type.fileType.ext;
+          ext = streamWithType.fileType.ext;
+        }
+
+        if (!ext) {
+          const bufferedChunks: Uint8Array[] = [];
+          let bytesBuffered = 0;
+
+          const deferred = new Deferred<boolean | undefined>();
+
+          let decoded = false;
+
+          const decodeStream = async () => {
+            decoded = true;
+            const detected = await detectEncodingFromBuffer(BinaryBuffer.concat(bufferedChunks), false);
+
+            deferred.resolve(detected.seemsBinary);
+          };
+
+          // read file stream
+          listenReadable(readStream, {
+            onData: async (chunk) => {
+              bufferedChunks.push(chunk);
+              bytesBuffered += chunk.byteLength;
+
+              // buffered enough data for encoding detection, create stream
+              if (bytesBuffered >= NO_ENCODING_GUESS_MIN_BYTES) {
+                readStream.pause();
+
+                await decodeStream();
+                setTimeout(() => readStream.destroy());
+              }
+            },
+            onEnd: async () => {
+              if (!decoded) {
+                await decodeStream();
+              }
+            },
+          });
+          const isBinary = await deferred.promise;
+
+          readStream.destroy();
+          streamWithType.destroy();
+          if (isBinary) {
+            return EditorFileType.Binary;
+          }
         }
       }
       return getFileTypeByExt(ext);

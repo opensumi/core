@@ -116,7 +116,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
         this.docSyncEnabled.set(
           uriString,
           docRef.instance.getMonacoModel().getValueLength() <
-            (this.preference.get<number>('editor.docExtHostSyncMaxSize') || 4 * 1024 * 1024 * 1024),
+            this.preference.getValid<number>('editor.docExtHostSyncMaxSize', 4 * 1024 * 1024 * 1024),
         );
         docRef.dispose();
       }
