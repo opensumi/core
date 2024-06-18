@@ -1,10 +1,8 @@
-import debounce from 'lodash/debounce';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import {
   CommandRegistry,
   CommandService,
-  DisposableStore,
   MERGE_CONFLICT_COMMANDS,
   SCM_COMMANDS,
   URI,
@@ -12,53 +10,20 @@ import {
 } from '@opensumi/ide-core-browser';
 import { MergeActions } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/components/merge-actions';
 
-import { useEditorDocumentModelRef } from '../hooks/useEditor';
+import { useMergeConflictModel } from '../merge-conflict/merge-conflict.model';
 import { MergeConflictService } from '../merge-conflict/merge-conflict.service';
 import { ReactEditorComponent } from '../types';
 
 export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({ resource }) => {
   const { uri } = resource;
-  const editorModel = useEditorDocumentModelRef(uri);
   const mergeConflictService = useInjectable<MergeConflictService>(MergeConflictService);
   const commandService = useInjectable<CommandService>(CommandService);
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
 
-  const [isVisiable, setIsVisiable] = useState(false);
-  const [summary, setSummary] = useState('');
-  const [canNavigate, setCanNavigate] = useState(false);
-
-  useEffect(() => {
-    const disposables = new DisposableStore();
-
-    if (editorModel) {
-      const { instance } = editorModel;
-      const run = () => {
-        const n = mergeConflictService.scanDocument(instance.getMonacoModel());
-        setSummary(mergeConflictService.summary);
-        if (n > 0) {
-          setIsVisiable(true);
-          setCanNavigate(true);
-        } else {
-          setCanNavigate(false);
-        }
-      };
-
-      const debounceRun = debounce(run, 150);
-
-      disposables.add(
-        editorModel.instance.getMonacoModel().onDidChangeContent(() => {
-          debounceRun();
-        }),
-      );
-
-      run();
-      return () => {
-        disposables.dispose();
-      };
-    }
-  }, [editorModel]);
+  const { canNavigate, isVisiable, summary } = useMergeConflictModel(uri);
 
   const [isAIResolving, setIsAIResolving] = useState(false);
+
   const handlePrev = useCallback(() => {
     mergeConflictService.navigatePrevious();
   }, []);
@@ -66,6 +31,7 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
   const handleNext = useCallback(() => {
     mergeConflictService.navigateNext();
   }, []);
+
   const handleAIResolve = useCallback(async () => {
     setIsAIResolving(true);
     if (isAIResolving) {

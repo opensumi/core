@@ -1,5 +1,4 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { formatLocalize } from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { IMessageService } from '@opensumi/ide-overlay';
 
@@ -29,12 +28,9 @@ export class MergeConflictService {
   private readonly messageService: IMessageService;
 
   conflicts = [] as DocumentMergeConflict[];
-  summary = '';
 
   scanDocument(model: monaco.editor.ITextModel) {
     this.conflicts = this.parser.scanDocument(model);
-    const summary = formatLocalize('merge-conflicts.merge.conflict.remain', this.conflicts.length);
-    this.summary = summary;
     return this.conflicts.length;
   }
 
