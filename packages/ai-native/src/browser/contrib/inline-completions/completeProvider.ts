@@ -1,7 +1,15 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTER } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AINativeSettingSectionsId, DisposableStore, URI, WithEventBus, sleep, uuid } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  DisposableStore,
+  URI,
+  WithEventBus,
+  raceCancellation,
+  sleep,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
@@ -399,12 +407,6 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     // 重置防止不触发自动补全事件
     this.updateIsManual(false);
 
-    // 如果用户已取消
-    if (token?.isCancellationRequested) {
-      this.aiCompletionsService.updateStatusBarItem('cancelled ', false);
-      return undefined;
-    }
-
     // 放入队列
     const requestImp = this.injector.get(CompletionRequestTask, [model, position, token, _isManual]);
 
@@ -412,7 +414,12 @@ export class AIInlineCompletionsProvider extends WithEventBus {
 
     // 如果是自动补全需要 debounce
     if (!_isManual) {
-      await sleep(this.inlineComletionsDebounceTime);
+      await raceCancellation(sleep(this.inlineComletionsDebounceTime), token);
+    }
+
+    // 如果用户已取消
+    if (token?.isCancellationRequested) {
+      return undefined;
     }
 
     const list = await this.reqStack.runReq();
