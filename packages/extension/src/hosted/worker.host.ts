@@ -1,7 +1,6 @@
 import { Injector } from '@opensumi/di';
-import { ProxyIdentifier, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
+import { ProxyIdentifier, SumiConnectionMultiplexer, createExtMessageIO } from '@opensumi/ide-connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
-import { RawMessageIO } from '@opensumi/ide-connection/lib/common/rpc';
 import {
   Deferred,
   Emitter,
@@ -22,6 +21,7 @@ import {
   MainThreadAPIIdentifier,
   SumiWorkerExtensionService,
 } from '../common/vscode';
+import { knownProtocols } from '../common/vscode/protocols';
 
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
@@ -38,7 +38,7 @@ export function initRPCProtocol() {
   const msgPortConnection = new MessagePortConnection(channel.port1);
 
   const extProtocol = new SumiConnectionMultiplexer(msgPortConnection, {
-    io: new RawMessageIO(),
+    io: createExtMessageIO(knownProtocols),
   });
 
   return extProtocol;
