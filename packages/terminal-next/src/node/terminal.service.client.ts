@@ -52,7 +52,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   clientMessage(id: string, data: string) {
     if (this.client) {
-      this.client.onMessage(id, data);
+      return this.client.onMessage(id, data);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
     }
