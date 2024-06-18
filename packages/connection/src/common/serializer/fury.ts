@@ -28,7 +28,7 @@ export const OpenProtocol = Type.object('open', {
 
 export const ServerReadyProtocol = Type.object('server-ready', {
   ...baseFields(),
-  token: Type.string(),
+  traceId: Type.string(),
 });
 
 export const ErrorProtocol = Type.object('error', {
