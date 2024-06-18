@@ -22,7 +22,7 @@
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-logs": "workspace:*",
     "@parcel/watcher": "2.1.0",
-    "file-type": "16.5.3",
+    "file-type": "19.0.0",
     "nsfw": "2.2.0",
     "trash": "^5.2.0",
     "vscode-languageserver-types": "^3.16.0",

@@ -2515,7 +2515,7 @@ __metadata:
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-logs": "workspace:*"
     "@parcel/watcher": "npm:2.1.0"
-    file-type: "npm:16.5.3"
+    file-type: "npm:19.0.0"
     nsfw: "npm:2.2.0"
     trash: "npm:^5.2.0"
     vscode-languageserver-types: "npm:^3.16.0"
@@ -9194,14 +9194,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:16.5.3":
-  version: 16.5.3
-  resolution: "file-type@npm:16.5.3"
+"file-type@npm:19.0.0":
+  version: 19.0.0
+  resolution: "file-type@npm:19.0.0"
   dependencies:
-    readable-web-to-node-stream: "npm:^3.0.0"
-    strtok3: "npm:^6.2.4"
-    token-types: "npm:^4.1.1"
-  checksum: 10/2f2580539ac339fc02a8e2073325b91d4487a510e92925dc536c429f4c80097ad7707656853ebdda6b27382478d2f121bcbed005455e431c5c46d7b8198cf854
+    readable-web-to-node-stream: "npm:^3.0.2"
+    strtok3: "npm:^7.0.0"
+    token-types: "npm:^5.0.1"
+  checksum: 10/8befa58f769b19d4a72c214694906b83b584310575300e63c08c48f9f2cfa6cb57fb4e1d08325961938d9dde3ecc4f5737b1604ddedfd759f5a1e65e5b0ca577
   languageName: node
   linkType: hard
 
@@ -15578,10 +15578,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"peek-readable@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "peek-readable@npm:4.1.0"
-  checksum: 10/97373215dcf382748645c3d22ac5e8dbd31759f7bd0c539d9fdbaaa7d22021838be3e55110ad0ed8f241c489342304b14a50dfee7ef3bcee2987d003b24ecc41
+"peek-readable@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "peek-readable@npm:5.0.0"
+  checksum: 10/d342f02dd0c8a6b4bd0e7519a93d545b2b19375200e79a7431f0f1ec3f91e22b2217fa3a15cde95f6ab388ce6fce8aae75794d84b9b39c5836eb7c5f55e7ee9e
   languageName: node
   linkType: hard
 
@@ -17017,7 +17017,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-web-to-node-stream@npm:^3.0.0":
+"readable-web-to-node-stream@npm:^3.0.2":
   version: 3.0.2
   resolution: "readable-web-to-node-stream@npm:3.0.2"
   dependencies:
@@ -18523,13 +18523,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strtok3@npm:^6.2.4":
-  version: 6.3.0
-  resolution: "strtok3@npm:6.3.0"
+"strtok3@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "strtok3@npm:7.0.0"
   dependencies:
     "@tokenizer/token": "npm:^0.3.0"
-    peek-readable: "npm:^4.1.0"
-  checksum: 10/98fba564d3830202aa3a6bcd5ccaf2cbd849bd87ae79ece91d337e1913916705a8e633c9577138d030a984f8ec987dea51807e01252f995cf5e183fdea35eb2b
+    peek-readable: "npm:^5.0.0"
+  checksum: 10/4f2269679fcfce1e9fe0600eff361ea4c687ae0a0e8d9dab6703811071cd92545cbcb32d4ace3d3aa591f777cec1a3e8aeecd5efd71ae216fd2962a7a238b4ab
   languageName: node
   linkType: hard
 
@@ -18937,13 +18937,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"token-types@npm:^4.1.1":
-  version: 4.2.1
-  resolution: "token-types@npm:4.2.1"
+"token-types@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "token-types@npm:5.0.1"
   dependencies:
     "@tokenizer/token": "npm:^0.3.0"
     ieee754: "npm:^1.2.1"
-  checksum: 10/2995257d246387e773758c3c92a3cc99d0c0bf13cbafe0de5d712e4c35ed298da6704e21545cb123fa1f1b42ad62936c35bbd0611018b735e78c30b8b22b42d9
+  checksum: 10/0985369bbea9f53a5ccd79bb9899717b41401a813deb2c7fb1add5d0baf2f702aaf6da78f6e0ccf346d5a9f7acaa7cb5efed7d092d89d8c1e6962959e9509bc0
   languageName: node
   linkType: hard
 
