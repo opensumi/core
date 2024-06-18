@@ -1,5 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AppConfig, INodeLogger, isDevelopment, isElectronNode } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
+import { getChunks } from '@opensumi/ide-utils/lib/strings';
 
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient, TERMINAL_ID_SEPARATOR } from '../common';
 import { IPtyProcessProxy, IShellLaunchConfig } from '../common/pty';
@@ -8,10 +9,15 @@ import { PtyService } from './pty';
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 
 // ref: https://github.com/vercel/hyper/blob/4c90d7555c79fb6dc438fa9549f1d0ef7c7a5aa7/app/session.ts#L27-L32
-// 批处理字符最大长度
+// 批处理字符最大长度 (200KB)
 const BATCH_MAX_SIZE = 200 * 1024;
 // 批处理延时
 const BATCH_DURATION_MS = 16;
+
+/**
+ * 每个通知前端的数据包最大的大小 (20MB)
+ */
+const BATCH_CHUNK_MAX_SIZE = 20 * 1024 * 1024;
 
 @Injectable()
 export class TerminalServiceImpl implements ITerminalNodeService {
@@ -118,7 +124,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     }
 
     const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-    serviceClient.clientMessage(sessionId, ptyData);
+
+    const chunks = getChunks(ptyData, BATCH_CHUNK_MAX_SIZE);
+    pSeries(chunks.map((str) => () => serviceClient.clientMessage(sessionId, str)));
   }
 
   public async create2(

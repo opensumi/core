@@ -157,7 +157,7 @@ export abstract class BaseCommonChannelHandler {
             channel = new WSServerChannel(wrappedConnection, { id, clientId, logger: this.logger });
             this.channelMap.set(id, channel);
             commonChannelPathHandler.openChannel(path, channel, clientId);
-            channel.serverReady(traceId!);
+            channel.serverReady(traceId);
             break;
           }
           default: {

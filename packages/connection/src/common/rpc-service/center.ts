@@ -178,6 +178,7 @@ export class RPCServiceCenter implements IDisposable {
   dispose(): void {
     this._disposables.dispose();
     this.proxies.forEach((proxy) => proxy.dispose());
+    this.proxies = [];
   }
 }
 
