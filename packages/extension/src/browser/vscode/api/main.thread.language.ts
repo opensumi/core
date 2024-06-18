@@ -1,5 +1,4 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { InlineCompletionHandler } from '@opensumi/ide-ai-native/lib/browser/contrib/inline-completions';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
@@ -121,9 +120,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   @Autowired(ITextmateTokenizer)
   private textmateService: ITextmateTokenizerService;
 
-  @Autowired(InlineCompletionHandler)
-  private readonly inlineCompletionHandler: InlineCompletionHandler;
-
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
   private _reviveCodeActionDto(data: ReadonlyArray<ICodeActionDto>): modes.CodeAction[] {
@@ -135,10 +131,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
-
-    this.disposableStore.add(
-      this.inlineCompletionHandler.onInlineCompletion((completions) => this.setNativeInlineCompletions(completions)),
-    );
   }
 
   public dispose() {
@@ -1643,10 +1635,4 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this._status.get(handle)?.dispose();
   }
   // #endregion LanguageStatus
-
-  // #region InlineCompletions
-  async setNativeInlineCompletions(completions: monaco.InlineCompletions) {
-    this.proxy.$setNativeInlineCompletions(completions);
-  }
-  // #endregion InlineCompletions
 }

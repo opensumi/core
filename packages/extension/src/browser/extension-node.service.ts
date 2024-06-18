@@ -1,4 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { InlineCompletionHandler } from '@opensumi/ide-ai-native/lib/browser/contrib/inline-completions';
 import { IRPCProtocol, SumiConnectionMultiplexer, WSChannel, createExtMessageIO } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
@@ -21,7 +22,7 @@ import {
 } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractNodeExtProcessService } from '../common/extension.service';
-import { ExtHostAPIIdentifier } from '../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostLanguages } from '../common/vscode';
 import { knownProtocols } from '../common/vscode/protocols';
 
 import { createSumiAPIFactory } from './sumi/main.thread.api.impl';
@@ -47,6 +48,9 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
 
   @Autowired(WSChannelHandler)
   private readonly channelHandler: WSChannelHandler;
+
+  @Autowired(InlineCompletionHandler)
+  private readonly inlineCompletionHandler: InlineCompletionHandler;
 
   private _apiFactoryDisposables = new DisposableStore();
 
@@ -74,6 +78,15 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       const proxy = await this.getProxy();
       await proxy.$updateExtHostData();
       this._extHostUpdated.resolve();
+
+      if (this.appConfig.measure?.inlineCompletion?.reportInlineCompletionToExtThread) {
+        const languageProxy = await this.getLanguageProxy();
+        this._apiFactoryDisposables.add(
+          this.inlineCompletionHandler.onInlineCompletion((completions) =>
+            languageProxy.$setNativeInlineCompletions(completions),
+          ),
+        );
+      }
     }
 
     return this.protocol;
@@ -118,6 +131,11 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   public async getProxy(): Promise<IExtensionHostService> {
     await this.ready.promise;
     return this.protocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
+  }
+
+  public async getLanguageProxy(): Promise<IExtHostLanguages> {
+    await this.ready.promise;
+    return this.protocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
   }
 
   private async createBrowserMainThreadAPI() {
