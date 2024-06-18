@@ -2,12 +2,17 @@ import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-browser';
-import { Disposable, IEventBus, Sequencer } from '@opensumi/ide-core-common';
+import { AI_INLINE_COMPLETION_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { CommandServiceImpl, Disposable, IEventBus, Sequencer, runWhenIdle } from '@opensumi/ide-core-common';
+import { CommandRegistry, CommandRegistryImpl, CommandService } from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
+import { InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 
 import { IAIMiddleware } from '../../types';
 import { IAIMonacoContribHandler } from '../base';
+
 
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { AICompletionsService } from './service/ai-completions.service';
@@ -17,11 +22,21 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
+  @Autowired(CommandService)
+  private commandService: CommandServiceImpl;
+
+  @Autowired(CommandRegistry)
+  private commandRegistry: CommandRegistryImpl;
+
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
+
+  private sequencer = new Sequencer();
+  private didChangeContentDisposable = new Disposable();
+  private preDidShowItems: InlineCompletions | undefined;
 
   public registerInlineCompletionFeature(editor: IEditor): IDisposable {
     const { monacoEditor } = editor;
@@ -37,9 +52,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
       if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
         this.aiInlineCompletionsProvider.cancelRequest();
       }
-      requestAnimationFrame(() => {
-        this.aiCompletionsService.setVisibleCompletion(false);
-      });
     };
 
     const debouncedSelectionChange = debounce(selectionChange, 50, {
@@ -68,12 +80,8 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
           }
         }
       }),
-      monacoEditor.onWillChangeModel(() => {
-        this.aiCompletionsService.hideStatusBarItem();
-      }),
       monacoEditor.onDidBlurEditorText(() => {
-        this.aiCompletionsService.hideStatusBarItem();
-        this.aiCompletionsService.setVisibleCompletion(false);
+        this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
       }),
     );
 
@@ -95,13 +103,39 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
   mountEditor(editor: IEditor) {
     const toDispose = new Disposable();
     this.aiInlineCompletionsProvider.mountEditor(editor);
-    toDispose.addDispose(this.aiInlineCompletionsProvider);
+
     toDispose.addDispose(super.mountEditor(editor));
+    toDispose.addDispose(this.aiInlineCompletionsProvider);
+    toDispose.addDispose(
+      this.commandRegistry.afterExecuteCommand(AI_INLINE_COMPLETION_VISIBLE.id, (v) => {
+        if (!v) {
+          this.didChangeContentDisposable.dispose();
+        }
+      }),
+    );
+
+    const inlineVisibleKey = new Set([InlineCompletionContextKeys.inlineSuggestionVisible.key]);
+    toDispose.addDispose(
+      editor.monacoEditor.contextKeyService.onDidChangeContext((e) => {
+        // inline completion 真正消失时
+        if (e.affectsSome(inlineVisibleKey)) {
+          const inlineSuggestionVisible = InlineCompletionContextKeys.inlineSuggestionVisible.getValue(
+            editor.monacoEditor.contextKeyService,
+          );
+          if (!inlineSuggestionVisible && this.preDidShowItems) {
+            runWhenIdle(() => {
+              this.preDidShowItems = undefined;
+              this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
+            });
+          }
+        }
+      }),
+    );
     return toDispose;
   }
 
   doContribute(): IDisposable {
-    const sequencer = new Sequencer();
+    let prePosition: Position | undefined;
 
     return monacoApi.languages.registerInlineCompletionsProvider('*', {
       groupId: 'ai-native-inline-completions',
@@ -111,15 +145,31 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
           return;
         }
 
-        const list = await sequencer.queue(() =>
+        let resultList: InlineCompletions;
+
+        if (this.preDidShowItems) {
+          if (!prePosition) {
+            prePosition = position.delta(0, -1);
+          }
+
+          const lineBefore = model.getValueInRange(Range.fromPositions(prePosition, position));
+          if (this.preDidShowItems.items[0].insertText.toString().startsWith(lineBefore)) {
+            return this.preDidShowItems;
+          } else {
+            prePosition = undefined;
+          }
+        }
+
+        resultList = await this.sequencer.queue(() =>
           this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
         );
 
-        return list;
+        return resultList;
       },
       freeInlineCompletions() {},
       handleItemDidShow: (completions) => {
         if (completions.items.length > 0) {
+          this.preDidShowItems = completions;
           this.aiCompletionsService.setVisibleCompletion(true);
         }
       },
