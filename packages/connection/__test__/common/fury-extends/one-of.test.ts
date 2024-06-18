@@ -36,7 +36,7 @@ describe('oneOf', () => {
       clientId: '123',
       id: '456',
       path: '/test',
-      traceId: '',
+      traceId: '12312312',
     };
 
     testIt(obj3);
@@ -44,7 +44,7 @@ describe('oneOf', () => {
     const obj4: ServerReadyMessage = {
       kind: 'server-ready',
       id: '456',
-      traceId: '',
+      traceId: '123123',
     };
 
     testIt(obj4);
