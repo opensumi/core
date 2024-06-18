@@ -13,7 +13,6 @@ import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs
 import { IAIMiddleware } from '../../types';
 import { IAIMonacoContribHandler } from '../base';
 
-
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { AICompletionsService } from './service/ai-completions.service';
 
@@ -35,7 +34,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
   private aiCompletionsService: AICompletionsService;
 
   private sequencer = new Sequencer();
-  private didChangeContentDisposable = new Disposable();
   private preDidShowItems: InlineCompletions | undefined;
 
   public registerInlineCompletionFeature(editor: IEditor): IDisposable {
@@ -106,13 +104,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
 
     toDispose.addDispose(super.mountEditor(editor));
     toDispose.addDispose(this.aiInlineCompletionsProvider);
-    toDispose.addDispose(
-      this.commandRegistry.afterExecuteCommand(AI_INLINE_COMPLETION_VISIBLE.id, (v) => {
-        if (!v) {
-          this.didChangeContentDisposable.dispose();
-        }
-      }),
-    );
 
     const inlineVisibleKey = new Set([InlineCompletionContextKeys.inlineSuggestionVisible.key]);
     toDispose.addDispose(
@@ -147,6 +138,9 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
 
         let resultList: InlineCompletions;
 
+        /**
+         * 如果新字符在 inline completion 的 ghost text 内，则走缓存，不重新请求
+         */
         if (this.preDidShowItems) {
           if (!prePosition) {
             prePosition = position.delta(0, -1);
