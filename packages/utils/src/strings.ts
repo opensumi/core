@@ -1010,3 +1010,18 @@ const _format2Regexp = /{([^}]+)}/g;
 export function format2(template: string, values: Record<string, unknown>): string {
   return template.replace(_format2Regexp, (match, group) => (values[group] ?? match) as string);
 }
+
+export function getChunks(str: string, size: number): string[] {
+  const strLength: number = str.length;
+  const numChunks: number = Math.ceil(strLength / size);
+  const chunks: string[] = new Array(numChunks);
+
+  let i = 0;
+  let o = 0;
+
+  for (; i < numChunks; ++i, o += size) {
+    chunks[i] = str.substr(o, size);
+  }
+
+  return chunks;
+}

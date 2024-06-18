@@ -17,6 +17,7 @@ import {
   Event,
   EventBufferer,
   EventMultiplexer,
+  EventQueue,
   PauseableEmitter,
   WaitUntilEvent,
 } from '../src/event';
@@ -931,5 +932,36 @@ describe('Dispatcher', () => {
     expect(listener2).toHaveBeenCalledWith('bar');
 
     dispatcher.dispose();
+  });
+});
+
+describe('EventQueue', () => {
+  it('should queue events', async () => {
+    const queue = new EventQueue<string>();
+    const emitter = new Emitter<string>();
+
+    emitter.event(queue.push);
+
+    const listener = jest.fn();
+    const listener2 = jest.fn();
+
+    emitter.fire('foo');
+    emitter.fire('bar');
+
+    const dispose1 = queue.on(listener);
+    const dispose2 = queue.on(listener2);
+
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    dispose1.dispose();
+
+    emitter.fire('baz');
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(listener2).toHaveBeenCalledTimes(1);
+
+    dispose2.dispose();
+    emitter.fire('qux');
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(listener2).toHaveBeenCalledTimes(1);
   });
 });
