@@ -1,14 +1,14 @@
 import { FILES_DEFAULTS, IClientApp, IWindowService, PreferenceService } from '@opensumi/ide-core-browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { Disposable, StorageProvider, URI } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { DiskFileServicePath, FileStat } from '@opensumi/ide-file-service';
 import { MockFsProvider } from '@opensumi/ide-file-service/__mocks__/file-system-provider';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkspaceModule } from '../../src/browser';
 import { WorkspacePreferences } from '../../src/browser/workspace-preferences';
 
@@ -51,6 +51,15 @@ describe('WorkspaceService should be work while workspace was a single directory
       } else if (preferenceName === 'files.exclude') {
         return FILES_DEFAULTS.filesExclude;
       }
+    },
+    getValid: (preferenceName: string, defaultValue) => {
+      if (preferenceName === 'files.watcherExclude') {
+        return FILES_DEFAULTS.filesWatcherExclude;
+      } else if (preferenceName === 'files.exclude') {
+        return FILES_DEFAULTS.filesExclude;
+      }
+
+      return defaultValue;
     },
     inspect: jest.fn(),
   };

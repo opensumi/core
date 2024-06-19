@@ -31,7 +31,6 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { isWindows, path } from '../src';
-import { sortPathByDepth } from '../src/path';
 
 const { Path } = path;
 
@@ -751,11 +750,5 @@ describe('Path.join', () => {
     expect(path.join('./').toString()).toBe('/a/b/');
     expect(path.join('./././', '././').toString()).toBe('/a/b/');
     expect(path.join('../', './b/', './', '../', '../', './a').toString()).toBe('/a');
-  });
-
-  test('sort path by depth', () => {
-    const paths = ['/a/b/c', '/a', '/a/b', '/a/b/c/d', '/a/b/c/d/e', '/a/b/c/d/e/f'];
-    const result = sortPathByDepth(paths);
-    expect(result).toEqual(['/a', '/a/b', '/a/b/c', '/a/b/c/d', '/a/b/c/d/e', '/a/b/c/d/e/f']);
   });
 });

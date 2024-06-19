@@ -114,13 +114,10 @@ export class RegisterEditorComponentEvent extends BasicEvent<string> {}
 export abstract class EditorComponentRegistry {
   abstract registerEditorComponent<T>(component: IEditorComponent<T>, initialProps?: any): IDisposable;
 
-  // 等同于 handlesScheme => 10
-  abstract registerEditorComponentResolver<T>(scheme: string, resolver: IEditorComponentResolver<T>): IDisposable;
-
-  // handlesScheme 返回权重， 小于 0 表示不处理
   abstract registerEditorComponentResolver<T>(
-    // eslint-disable-next-line @typescript-eslint/unified-signatures
-    handlesScheme: (scheme: string) => number,
+    handlesScheme:
+      | string // 等同于 handlesScheme => 10
+      | ((scheme: string) => number), // handlesScheme 返回权重， 小于 0 表示不处理
     resolver: IEditorComponentResolver<T>,
   ): IDisposable;
 

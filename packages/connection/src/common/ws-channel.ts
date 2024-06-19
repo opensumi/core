@@ -1,5 +1,5 @@
 import { EventEmitter } from '@opensumi/events';
-import { DisposableStore, EventQueue, StateTracer, randomString } from '@opensumi/ide-core-common';
+import { DisposableStore, EventQueue, randomString } from '@opensumi/ide-core-common';
 
 import { ChannelMessage, ErrorMessageCode } from './channel/types';
 import { IConnectionShape } from './connection/types';
@@ -15,6 +15,82 @@ export interface IWSChannelCreateOptions {
   logger?: ILogger;
 
   ensureServerReady?: boolean;
+  deliveryTimeout?: number;
+}
+
+enum MessageDeliveryState {
+  ReSend,
+  Sended,
+  Success,
+  Failed,
+}
+
+class StateTracer {
+  private map = new Map<string, MessageDeliveryState>();
+
+  protected deliveryTimeout = 500;
+  protected timerMap = new Map<string, NodeJS.Timeout>();
+
+  setDeliveryTimeout(timeout: number) {
+    this.deliveryTimeout = timeout;
+  }
+
+  protected set(traceId: string, state: MessageDeliveryState) {
+    this.map.set(traceId, state);
+  }
+
+  get(traceId: string) {
+    return this.map.get(traceId);
+  }
+
+  success(traceId: string) {
+    this.map.set(traceId, MessageDeliveryState.Success);
+    const timer = this.timerMap.get(traceId);
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+
+  dispose() {
+    this.timerMap.forEach((timer) => {
+      clearTimeout(timer);
+    });
+  }
+
+  stop(traceId: string) {
+    const timer = this.timerMap.get(traceId);
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+
+  send(
+    traceId: string,
+    options: {
+      whenRetry: () => void;
+    },
+  ) {
+    this.set(traceId, MessageDeliveryState.Sended);
+    this.guard(traceId, options);
+  }
+
+  guard(
+    traceId: string,
+    options: {
+      whenRetry: () => void;
+    },
+  ) {
+    const timer = this.timerMap.get(traceId);
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(() => {
+      this.set(traceId, MessageDeliveryState.ReSend);
+      options.whenRetry();
+    }, this.deliveryTimeout);
+    this.timerMap.set(traceId, newTimer);
+  }
 }
 
 export class WSChannel {
@@ -35,6 +111,8 @@ export class WSChannel {
   protected _isServerReady = false;
   protected _ensureServerReady: boolean | undefined;
 
+  protected stateTracer = new StateTracer();
+
   public id: string;
 
   public channelPath: string;
@@ -53,6 +131,9 @@ export class WSChannel {
     }
 
     this._ensureServerReady = Boolean(ensureServerReady);
+    if (options.deliveryTimeout) {
+      this.stateTracer.setDeliveryTimeout(options.deliveryTimeout);
+    }
 
     this._disposables.add(this.emitter.on('binary', (data) => this.onBinaryQueue.push(data)));
   }
@@ -66,6 +147,30 @@ export class WSChannel {
       return;
     }
     this.connection.send(data);
+  }
+
+  /**
+   * @param traceId 一个 connection token 用于在全链路中追踪一个消息的生命周期，防止消息未发送或者重复发送
+   */
+  protected ensureMessageDeliveried(data: ChannelMessage, traceId = randomString(16)) {
+    const state = this.stateTracer.get(traceId);
+    if (state && state >= MessageDeliveryState.Sended) {
+      this.logger.error(`message already send already success or in progress, traceId: ${traceId}, state: ${state}`);
+      return;
+    }
+
+    data.traceId = traceId;
+    this.connection.send(data);
+
+    this.stateTracer.send(traceId, {
+      whenRetry: () => {
+        if (this._isServerReady) {
+          this.stateTracer.stop(traceId);
+          return;
+        }
+        this.ensureMessageDeliveried(data, traceId);
+      },
+    });
   }
 
   onMessage(cb: (data: string) => any) {
@@ -106,11 +211,11 @@ export class WSChannel {
   dispatch(msg: ChannelMessage) {
     switch (msg.kind) {
       case 'server-ready':
-        this.stateTracer.fulfill(msg.token);
-        this.resume();
-        if (this.timer) {
-          clearTimeout(this.timer);
+        if (msg.traceId) {
+          this.stateTracer.success(msg.traceId);
         }
+
+        this.resume();
         this.emitter.emit('open', msg.id);
         break;
       case 'data':
@@ -136,56 +241,24 @@ export class WSChannel {
     }
   }
 
-  stateTracer = this._disposables.add(new StateTracer());
-
-  /**
-   * @param connectionToken 一个 connection token 用于在全链路中追踪一个 channel 的生命周期，防止 channel 被重复打开
-   */
-  open(path: string, clientId: string, connectionToken = randomString(16)) {
+  open(path: string, clientId: string) {
     this.channelPath = path;
     this.clientId = clientId;
 
     this.LOG_TAG = `[WSChannel id=${this.id} path=${path}]`;
 
-    if (this.stateTracer.has(connectionToken)) {
-      this.logger.warn(
-        `channel already opened or in progress, path: ${path}, clientId: ${clientId}, connectionToken: ${connectionToken}`,
-      );
-      return;
-    }
-
-    this.stateTracer.record(connectionToken);
-
-    this.connection.send({
+    const msg = {
       kind: 'open',
       id: this.id,
       path,
       clientId,
-      connectionToken,
-    });
+    } as ChannelMessage;
 
     if (this._ensureServerReady) {
-      this.ensureOpenSend(path, clientId, connectionToken);
+      this.ensureMessageDeliveried(msg);
+    } else {
+      this.connection.send(msg);
     }
-
-    return connectionToken;
-  }
-
-  protected timer: NodeJS.Timeout;
-  /**
-   * 启动定时器，确保 server-ready 消息在一定时间内到达
-   */
-  protected ensureOpenSend(path: string, clientId: string, connectionToken: string) {
-    if (this.timer) {
-      clearTimeout(this.timer);
-    }
-    this.timer = setTimeout(() => {
-      if (this._isServerReady) {
-        return;
-      }
-      this.stateTracer.delete(connectionToken);
-      this.open(path, clientId, connectionToken);
-    }, 500);
   }
 
   send(content: string) {
@@ -235,9 +308,7 @@ export class WSChannel {
   }
 
   dispose() {
-    if (this.timer) {
-      clearTimeout(this.timer);
-    }
+    this.stateTracer.dispose();
     this.sendQueue = [];
     this._disposables.dispose();
   }
@@ -266,11 +337,11 @@ export class WSServerChannel extends WSChannel {
     this.clientId = options.clientId;
   }
 
-  serverReady(token: string) {
+  serverReady(traceId: string) {
     this.connection.send({
       kind: 'server-ready',
       id: this.id,
-      token,
+      traceId,
     });
   }
 

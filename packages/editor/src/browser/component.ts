@@ -108,7 +108,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
     let results: IEditorOpenType[] = [];
     const resolvers = this.getResolvers(resource.uri.scheme).slice(); // 防止异步操作时数组被改变
     let shouldBreak = false;
-    const resolve = (res) => {
+    const resolve = (res: IEditorOpenType[]) => {
       results = res;
       shouldBreak = true;
     };

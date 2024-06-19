@@ -1,7 +1,6 @@
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable, EventBusImpl, IEventBus, StorageProvider, URI } from '@opensumi/ide-core-common';
-import { IDebugSessionManager } from '@opensumi/ide-debug';
-import { DEFAULT_CONFIGURATION_NAME_SEPARATOR } from '@opensumi/ide-debug';
+import { DEFAULT_CONFIGURATION_NAME_SEPARATOR, IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
 import { DebugConfigurationService } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-configuration.service';
 import { DebugConsoleService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
@@ -64,6 +63,7 @@ describe('Debug Configuration Service', () => {
   const mockPreferenceService = {
     onPreferenceChanged: jest.fn(),
     get: jest.fn(() => true),
+    getValid: jest.fn(() => true),
   };
 
   const mockDebugConsoleService = {
