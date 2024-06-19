@@ -533,6 +533,7 @@ export class MergeConflictContribution
           }
         },
       }),
+
       commands.registerCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT, {
         execute: async () => {
           const document = this.getModel();
