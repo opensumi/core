@@ -175,9 +175,11 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
   private getSequenceKeyString() {
     const keybindings = this.keybindingRegistry.getKeybindingsForCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id);
-    const resolved = keybindings[0].resolved;
-
-    return this.keybindingRegistry.acceleratorForSequence(resolved!, '+');
+    const resolved = keybindings[0]?.resolved;
+    if (!resolved) {
+      return '';
+    }
+    return this.keybindingRegistry.acceleratorForSequence(resolved, '+');
   }
 
   public getInteractiveInputHandler(): IInteractiveInputHandler | undefined {

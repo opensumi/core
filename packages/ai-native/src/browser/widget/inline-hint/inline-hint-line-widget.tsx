@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 import { Autowired, Injectable } from '@opensumi/di';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AIInlineHintLineContentWidgetId, formatLocalize, localize } from '@opensumi/ide-core-common';
+import { AIInlineHintLineContentWidgetId, formatLocalize } from '@opensumi/ide-core-common';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 
@@ -22,9 +22,11 @@ export class InlineHintLineWidget extends ReactInlineContentWidget {
 
   private getSequenceKeyString() {
     const keybindings = this.keybindingRegistry.getKeybindingsForCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id);
-    const resolved = keybindings[0].resolved;
-
-    return this.keybindingRegistry.acceleratorForSequence(resolved!, '+');
+    const resolved = keybindings[0]?.resolved;
+    if (!resolved) {
+      return '';
+    }
+    return this.keybindingRegistry.acceleratorForSequence(resolved, '+');
   }
 
   override renderView(): ReactNode {
