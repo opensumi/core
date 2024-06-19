@@ -269,12 +269,7 @@ export const Grid = () => {
     return () => {
       mergeEditorService.dispose();
     };
-  }, [
-    incomingEditorContainer.current,
-    currentEditorContainer.current,
-    resultEditorContainer.current,
-    mergeEditorService,
-  ]);
+  }, [mergeEditorService]);
 
   return (
     <div className={styles.merge_editor_container}>
