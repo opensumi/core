@@ -3,8 +3,7 @@ import React, { useMemo, useState } from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
-import { CommandRegistry, IDisposable, isBoolean, strings } from '@opensumi/ide-core-common';
-import { GitCommands } from '@opensumi/ide-core-common/lib/commands/git';
+import { isBoolean, strings } from '@opensumi/ide-core-common';
 
 import {
   AbstractMenuService,
@@ -233,7 +232,6 @@ const InlineActionWidget: React.FC<
 > = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
   const styles_iconAction = useDesignStyles(styles.iconAction, 'iconAction');
   const styles_btnAction = useDesignStyles(styles.btnAction, 'btnAction');
-  const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
 
   const [loading, setLoading] = useState(false);
   const handleClick = React.useCallback(
@@ -259,38 +257,6 @@ const InlineActionWidget: React.FC<
     },
     [data, context],
   );
-
-  React.useEffect(() => {
-    let dispose: IDisposable | undefined;
-    switch (data.id) {
-      case GitCommands.Stage:
-        {
-          const firstArg = context[0];
-          if (!firstArg) {
-            break;
-          }
-          if (!firstArg.sourceUri) {
-            break;
-          }
-          dispose = commandRegistry.registerHandler(`${data.id}-${firstArg.sourceUri.toString()}`, {
-            execute: async () => {
-              if (typeof data.execute === 'function') {
-                await data.execute([...context]);
-              }
-            },
-          });
-        }
-        break;
-      default:
-        break;
-    }
-
-    return () => {
-      if (dispose) {
-        dispose.dispose();
-      }
-    };
-  }, [data.id]);
 
   const [title, label] = React.useMemo(() => {
     let title = data.tooltip || data.label;

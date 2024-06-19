@@ -10,7 +10,7 @@ import {
 } from './menu.interface';
 
 export const isPrimaryGroup = (group: string) => group === 'navigation';
-export const isInlineGroup = (group: string) => /^inline/.test(group);
+export const isInlineGroup = (group: string) => group.startsWith('inline');
 
 /**
  * 将 menuItems 按照 separator 分成两个 group
