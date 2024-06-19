@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService, StackingLevelStr, useInjectable } from '@opensumi/ide-core-browser';
-import { AIAction, AIInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
+import { AIAction } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import {
@@ -30,12 +29,6 @@ import styles from './inline-chat.module.less';
 import { AIInlineChatService, EInlineChatStatus, EResultKind } from './inline-chat.service';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-
-interface IAIInlineOperationProps {
-  handleActions: (id: string) => void;
-  status: EInlineChatStatus;
-  onClose?: () => void;
-}
 
 interface IAIInlineChatControllerProps {
   onClickActions: (id: string) => void;
