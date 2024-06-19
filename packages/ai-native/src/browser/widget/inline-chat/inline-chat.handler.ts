@@ -30,6 +30,7 @@ import { AI_DIFF_WIDGET_ID } from '../../../common';
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import { ERunStrategy } from '../../types';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
+import { InlineDiffHandler } from '../inline-diff/inline-diff.handler';
 
 import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
@@ -318,6 +319,8 @@ export class InlineChatHandler extends Disposable {
     const { crossSelection, chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
+    const inlineDiffHandler = this.injector.get(InlineDiffHandler, [monacoEditor]);
+
     this.aiDiffWidget = this.injector.get(InlineDiffWidget, [
       AI_DIFF_WIDGET_ID,
       {
@@ -359,6 +362,7 @@ export class InlineChatHandler extends Disposable {
                 };
                 modifiedModel.pushEditOperations(null, [edit], () => null);
                 this.aiDiffWidget.layout();
+                inlineDiffHandler.computeDiff(modifiedModel.getValue());
               }
             }),
             controller.onError((error) => {
