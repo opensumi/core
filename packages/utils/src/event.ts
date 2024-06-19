@@ -1052,38 +1052,53 @@ export class Dispatcher<T = void> implements IDisposable {
 }
 
 export class EventQueue<T> {
-  emitter = new Emitter<T>();
+  protected _listeners = new LinkedList<(data: T) => void>();
 
-  queue: T[] = [];
+  protected queue: T[] = [];
 
   isOpened = false;
-  open() {
+  open = () => {
     this.isOpened = true;
     this.queue.forEach((data) => {
-      this.emitter.fire(data);
+      this.fire(data);
     });
     this.queue = [];
-  }
+  };
 
-  push(data: T) {
+  close = () => {
+    this.isOpened = false;
+  };
+
+  push = (data: T) => {
     if (this.isOpened) {
-      this.emitter.fire(data);
+      this.fire(data);
     } else {
       this.queue.push(data);
     }
-  }
+  };
 
-  on(cb: (data: T) => void) {
-    const disposable = this.emitter.event(cb);
+  fire = (data: T) => {
+    this._listeners.forEach((listener) => {
+      listener(data);
+    });
+  };
+
+  on = (cb: (data: T) => void) => {
+    const toRemove = this._listeners.push(cb);
 
     if (!this.isOpened) {
       this.open();
     }
 
-    return disposable;
-  }
+    return Disposable.create(() => {
+      toRemove();
+      if (this._listeners.size === 0) {
+        this.close();
+      }
+    });
+  };
 
-  dispose() {
-    this.emitter.dispose();
-  }
+  dispose = () => {
+    this._listeners.clear();
+  };
 }

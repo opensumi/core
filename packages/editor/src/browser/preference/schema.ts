@@ -1631,7 +1631,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.largeFile': {
     type: 'number',
-    default: 4 * 1024 * 1024 * 1024,
+    default: 4 * 1024 * 1024 * 1024, // 4096 MB
     description: '%editor.configuration.largeFileSize%',
   },
   'editor.quickSuggestionsDelay': {

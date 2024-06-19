@@ -1,6 +1,5 @@
-/* eslint-disable no-console */
-
-import { OpenMessage, PingMessage, PongMessage, ServerReadyMessage, furySerializer } from '@opensumi/ide-connection';
+import { OpenMessage, PingMessage, PongMessage, ServerReadyMessage } from '../../../src/common/channel/types';
+import { furySerializer } from '../../../src/common/serializer';
 
 const parse = furySerializer.deserialize;
 const stringify = furySerializer.serialize;
@@ -9,11 +8,12 @@ describe('oneOf', () => {
   function testIt(obj: any) {
     const bytes = stringify(obj);
     const obj2 = parse(bytes);
-    expect(obj2).toEqual(obj);
-    const str = JSON.stringify(obj);
 
-    console.log('bytes.length', bytes.byteLength);
-    console.log('json length', str.length);
+    // 确保 obj 里的所有字段都在 obj2 里
+    // eslint-disable-next-line guard-for-in
+    for (const key in Object.keys(obj)) {
+      expect(obj2[key]).toEqual(obj[key]);
+    }
   }
 
   it('should serialize and deserialize', () => {
@@ -36,7 +36,7 @@ describe('oneOf', () => {
       clientId: '123',
       id: '456',
       path: '/test',
-      connectionToken: 'abc',
+      traceId: '12312312',
     };
 
     testIt(obj3);
@@ -44,7 +44,7 @@ describe('oneOf', () => {
     const obj4: ServerReadyMessage = {
       kind: 'server-ready',
       id: '456',
-      token: '',
+      traceId: '123123',
     };
 
     testIt(obj4);

@@ -110,7 +110,10 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
         uri.toString(),
         getLanguageIdFromMonaco(uri)!,
       );
+
+    // TODO: 应该挪到后端去做
     const detected = await detectEncodingFromBuffer(buffer, guessEncoding);
+
     detected.encoding = await this.getReadEncoding(uri, options, detected.encoding);
 
     const content = buffer.toString(detected.encoding);
@@ -132,6 +135,7 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     // TODO: 这部分要优化成buffer获取（长期来看是stream获取，encoding在哪一层做？）
     // 暂时还是使用 resolveContent 内提供的 decode 功能
     // 之后 encoding 做了分层之后和其他的需要 decode 的地方一起改
+
     return (await this.read(uri, { encoding })).content;
   }
 

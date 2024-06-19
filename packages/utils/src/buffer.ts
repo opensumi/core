@@ -52,7 +52,7 @@ export class BinaryBuffer {
     }
   }
 
-  static concat(buffers: BinaryBuffer[], totalLength?: number): BinaryBuffer {
+  static concat(buffers: (BinaryBuffer | Uint8Array)[], totalLength?: number): BinaryBuffer {
     if (typeof totalLength === 'undefined') {
       totalLength = 0;
       for (let i = 0, len = buffers.length; i < len; i++) {

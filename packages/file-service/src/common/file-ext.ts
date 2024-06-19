@@ -1,6 +1,6 @@
-export const EXT_LIST_VIDEO = ['mp4', 'webm', 'mkv', 'mov', 'mts', 'flv', 'avi', 'wmv'];
+export const EXT_LIST_VIDEO = new Set(['mp4', 'webm', 'mkv', 'mov', 'mts', 'flv', 'avi', 'wmv']);
 
-export const EXT_LIST_IMAGE = [
+export const EXT_LIST_IMAGE = new Set([
   'png',
   'gif',
   'jpg',
@@ -24,9 +24,12 @@ export const EXT_LIST_IMAGE = [
   'orf',
   'webp',
   'apng',
-];
+]);
+
+export const EXT_LIST_TEXT = new Set(['xml']);
 
 export const enum EditorFileType {
+  Directory = 'directory',
   Text = 'text',
   Image = 'image',
   Video = 'video',
@@ -39,11 +42,13 @@ export function getFileTypeByExt(ext?: string) {
     return type;
   }
 
-  if (EXT_LIST_IMAGE.indexOf(ext) !== -1) {
+  if (EXT_LIST_IMAGE.has(ext)) {
     type = EditorFileType.Image;
-  } else if (EXT_LIST_VIDEO.indexOf(ext) !== -1) {
+  } else if (EXT_LIST_VIDEO.has(ext)) {
     type = EditorFileType.Video;
-  } else if (ext && ['xml'].indexOf(ext) === -1) {
+  } else if (EXT_LIST_TEXT.has(ext)) {
+    type = EditorFileType.Text;
+  } else {
     type = EditorFileType.Binary;
   }
 
