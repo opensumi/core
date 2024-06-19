@@ -102,13 +102,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     );
     this.mount(editor);
 
-    disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
-    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor));
-
-    if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
-      this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor));
-      this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor));
-    }
+    disposables.push(...this.registerFeatures(editor));
     disposables.push(
       monacoEditor.onDidScrollChange(() => {
         if (this.ctxMenuRenderer.visible) {
@@ -143,16 +137,21 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.mount(editor.modifiedEditor);
     this.mount(editor.originalEditor);
 
-    disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor.modifiedEditor));
-    disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor.originalEditor));
-    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor.modifiedEditor));
-    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor.originalEditor));
+    disposables.push(...this.registerFeatures(editor.modifiedEditor, true));
+    disposables.push(...this.registerFeatures(editor.originalEditor, true));
+    return disposables;
+  }
 
-    if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
-      this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor.modifiedEditor));
-      this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor.modifiedEditor));
-      this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor.originalEditor));
-      this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor.originalEditor));
+  private registerFeatures(editor: IEditor, isDiffEditor = false) {
+    const disposables: IDisposable[] = [];
+    if (!isDiffEditor) {
+      disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
+    }
+    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor));
+
+    if (this.inlineChatFeatureRegistry.getInteractiveInputHandler() && !isDiffEditor) {
+      this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor));
+      this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor));
     }
     return disposables;
   }
