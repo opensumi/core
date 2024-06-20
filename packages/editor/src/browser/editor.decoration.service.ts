@@ -155,36 +155,81 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     const iconPath = styles.backgroundIcon?.startsWith('data:')
       ? this.iconService.encodeBase64Path(decodeURIComponent(styles.backgroundIcon))
       : styles.backgroundIcon;
-    return {
-      backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
-      background: styles.backgroundIcon ? `url("${iconPath}") center center no-repeat` : undefined,
-      backgroundSize: styles.backgroundIconSize ? `${styles.backgroundIconSize}` : undefined,
 
-      outline: styles.outline,
-      outlineColor: styles.outlineColor,
-      outlineStyle: styles.outlineStyle,
-      outlineWidth: styles.outlineWidth,
+    const result = {} as Partial<CSSStyleDeclaration>;
 
-      border: styles.border,
-      borderColor: this.themeService.getColorVar(styles.borderColor),
-      borderRadius: styles.borderRadius,
-      borderSpacing: styles.borderSpacing,
-      borderStyle: styles.borderStyle,
-      borderWidth: styles.borderWidth,
-    } as CSSStyleDeclaration;
+    if (styles.backgroundColor) {
+      result.backgroundColor = this.themeService.getColorVar(styles.backgroundColor);
+    }
+    if (styles.backgroundIcon) {
+      result.background = styles.backgroundIcon ? `url("${iconPath}") center center no-repeat` : undefined;
+    }
+    if (styles.backgroundIconSize) {
+      result.backgroundSize = styles.backgroundIconSize;
+    }
+
+    if (styles.outline) {
+      result.outline = styles.outline;
+    }
+    if (styles.outlineColor) {
+      result.outlineColor = this.themeService.getColorVar(styles.outlineColor);
+    }
+    if (styles.outlineStyle) {
+      result.outlineStyle = styles.outlineStyle;
+    }
+    if (styles.outlineWidth) {
+      result.outlineWidth = styles.outlineWidth;
+    }
+    if (styles.border) {
+      result.border = styles.border;
+    }
+    if (styles.borderColor) {
+      result.borderColor = this.themeService.getColorVar(styles.borderColor);
+    }
+    if (styles.borderRadius) {
+      result.borderRadius = styles.borderRadius;
+    }
+    if (styles.borderSpacing) {
+      result.borderSpacing = styles.borderSpacing;
+    }
+    if (styles.borderStyle) {
+      result.borderStyle = styles.borderStyle;
+    }
+    if (styles.borderWidth) {
+      result.borderWidth = styles.borderWidth;
+    }
+
+    return result as CSSStyleDeclaration;
   }
 
   private resolveInlineCSSStyle(styles: IThemeDecorationRenderOptions): CSSStyleDeclaration {
-    return {
-      fontStyle: styles.fontStyle,
-      fontWeight: styles.fontWeight,
-      textDecoration: styles.textDecoration,
-      textUnderlinePosition: styles.textUnderlinePosition,
-      cursor: styles.cursor,
-      color: this.themeService.getColorVar(styles.color),
-      opacity: styles.opacity,
-      letterSpacing: styles.letterSpacing,
-    } as CSSStyleDeclaration;
+    const result = {} as Partial<CSSStyleDeclaration>;
+    if (styles.fontStyle) {
+      result.fontStyle = styles.fontStyle;
+    }
+    if (styles.fontWeight) {
+      result.fontWeight = styles.fontWeight;
+    }
+    if (styles.textDecoration) {
+      result.textDecoration = styles.textDecoration;
+    }
+    if (styles.textUnderlinePosition) {
+      result.textUnderlinePosition = styles.textUnderlinePosition;
+    }
+    if (styles.cursor) {
+      result.cursor = styles.cursor;
+    }
+    if (styles.color) {
+      result.color = this.themeService.getColorVar(styles.color);
+    }
+    if (styles.opacity) {
+      result.opacity = styles.opacity;
+    }
+    if (styles.letterSpacing) {
+      result.letterSpacing = styles.letterSpacing;
+    }
+
+    return result as CSSStyleDeclaration;
   }
 
   private resolveContentCSSStyle(styles: IContentDecorationRenderOptions, display = 'block'): CSSStyleDeclaration {
@@ -194,20 +239,44 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     } else if (styles.contentIconPath) {
       content = `url('${URI.from(styles.contentIconPath).toString(true).replace(/'/g, '%27')}')`;
     }
-    return {
+
+    const result = {
       display,
       content,
-      border: styles.border,
-      borderColor: this.themeService.getColorVar(styles.borderColor),
-      fontStyle: styles.fontStyle,
-      fontWeight: styles.fontWeight,
-      textDecoration: styles.textDecoration,
-      color: this.themeService.getColorVar(styles.color),
-      backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
-      margin: styles.margin,
-      width: styles.width,
-      height: styles.height,
-    } as CSSStyleDeclaration;
+    } as Partial<CSSStyleDeclaration>;
+
+    if (styles.border) {
+      result.border = styles.border;
+    }
+    if (styles.borderColor) {
+      result.borderColor = this.themeService.getColorVar(styles.borderColor);
+    }
+    if (styles.fontStyle) {
+      result.fontStyle = styles.fontStyle;
+    }
+    if (styles.fontWeight) {
+      result.fontWeight = styles.fontWeight;
+    }
+    if (styles.textDecoration) {
+      result.textDecoration = styles.textDecoration;
+    }
+    if (styles.color) {
+      result.color = this.themeService.getColorVar(styles.color);
+    }
+    if (styles.backgroundColor) {
+      result.backgroundColor = this.themeService.getColorVar(styles.backgroundColor);
+    }
+    if (styles.margin) {
+      result.margin = styles.margin;
+    }
+    if (styles.width) {
+      result.width = styles.width;
+    }
+    if (styles.height) {
+      result.height = styles.height;
+    }
+
+    return result as CSSStyleDeclaration;
   }
 
   registerDecorationProvider(provider: IEditorDecorationProvider): IDisposable {
