@@ -1,7 +1,7 @@
 import cls from 'classnames';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, IEventBus, IMarkdownString, URI } from '@opensumi/ide-core-common';
+import { Disposable, IEventBus, IMarkdownString, URI, debugLogger } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { IThemeService } from '@opensumi/ide-theme';
 
@@ -92,6 +92,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
   }
 
   clearDecorations() {
+    debugLogger.log('clearDecorations', this.decorations.size);
     this.decorations.forEach((v) => {
       v.dispose();
       this.editor.deltaDecorations(v.decorations, []);
@@ -117,6 +118,8 @@ export class MonacoEditorDecorationApplier extends Disposable {
   }
 
   applyDecoration(key: string, options: IDecorationApplyOptions[]) {
+    debugLogger.log('applyDecoration', key, options.length);
+
     const oldDecorations = this.decorations.get(key);
     if (oldDecorations) {
       oldDecorations.dispose();
@@ -138,7 +141,10 @@ export class MonacoEditorDecorationApplier extends Disposable {
       });
       disposer.addDispose(resolved);
     });
+
+    debugLogger.log('applyDecoration', key, options.length);
     const result = this.editor.deltaDecorations(oldResult, newDecorations);
+    debugLogger.log('deltaDecorations', key, result, oldResult, newDecorations);
     this.decorations.set(key, {
       decorations: result,
       dispose: () => disposer.dispose(),
@@ -150,6 +156,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
     options?: IDecorationRenderOptions,
   ): { options: monaco.editor.IModelDecorationOptions; dispose: () => void } {
     const type = this.decorationService.getTextEditorDecorationType(key);
+    debugLogger.log('resolveDecorationRenderer', key, options);
     const result: monaco.editor.IModelDecorationOptions = {
       description: key,
     };
@@ -164,6 +171,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
       assignModelDecorationOptions(result, tempType.property, currentTheme);
       disposer.addDispose(tempType);
     }
+    debugLogger.log('resolveDecorationRenderer exit', key, options);
     return {
       options: result,
       dispose: () => disposer.dispose(),

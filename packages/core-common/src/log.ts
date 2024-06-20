@@ -193,6 +193,10 @@ export interface IDebugLog extends ICoreLogger {
   destroy(): void;
 }
 
+interface IDebugLogOptions {
+  showTimeDelta?: boolean;
+}
+
 /**
  * 只输出在控制台，不会落盘
  * const debugLog = new DebugLog('FileService');
@@ -206,19 +210,37 @@ const isChrome = !isNode && /Chrome/.test(navigator.userAgent) && /Google Inc/.t
 export class DebugLog implements IDebugLog {
   private namespace: string;
   private isEnable = false;
+  private showTimeDelta = false;
 
-  constructor(namespace?: string) {
+  constructor(namespace?: string, options: IDebugLogOptions = {}) {
     if (typeof process !== 'undefined' && process.env && process.env.KTLOG_SHOW_DEBUG) {
       this.isEnable = true;
     }
 
     this.namespace = namespace || '';
+    this.showTimeDelta = options.showTimeDelta || false;
   }
 
   private getPre(level: string, color: string) {
     let text = this.getColor('green', `[${new Date().toLocaleString('zh-CN')}] `);
+    if (this.showTimeDelta) {
+      text += `[${this.getTimeDelta()}]`;
+    }
+
     text += this.namespace ? `[${this.namespace}:${level}]` : `[${level}]`;
     return this.getColor(color, text);
+  }
+
+  private lastTimestamp: number | undefined;
+  private getTimeDelta() {
+    if (!this.showTimeDelta) {
+      return '';
+    }
+    const now = Date.now();
+    const delta = this.lastTimestamp ? now - this.lastTimestamp : 0;
+    this.lastTimestamp = now;
+
+    return this.getColor('green', `+${delta}ms`);
   }
 
   private getColor(color: string, message: string) {
@@ -258,6 +280,7 @@ export class DebugLog implements IDebugLog {
     if (!this.isEnable) {
       return;
     }
+
     return console.debug(this.getPre('verbose', 'green'), ...args);
   };
 
@@ -265,6 +288,7 @@ export class DebugLog implements IDebugLog {
     if (!this.isEnable) {
       return;
     }
+
     return console.debug(this.getPre('debug', 'blue'), ...args);
   };
 
@@ -272,17 +296,19 @@ export class DebugLog implements IDebugLog {
     if (!this.isEnable) {
       return;
     }
+
     return console.log(this.getPre('log', 'green'), ...args);
   };
 
-  error = (...args: any[]) =>
-    // 错误一直显示
+  error = (...args: any[]) => {
     console.error(this.getPre('error', 'red'), ...args);
+  };
 
   warn = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
+
     return console.warn(this.getPre('warn', 'yellow'), ...args);
   };
 
@@ -290,6 +316,7 @@ export class DebugLog implements IDebugLog {
     if (!this.isEnable) {
       return;
     }
+
     return console.info(this.getPre('log', 'green'), ...args);
   };
 
@@ -306,35 +333,9 @@ export type ILogger = ILogServiceClient;
  * 只输出在控制台，不会落盘
  */
 export function getDebugLogger(namespace?: string): IDebugLog {
-  function showWarn() {
-    // Do nothing
-  }
-  const debugLog = new DebugLog(namespace);
-  return {
-    get verbose() {
-      showWarn();
-      return debugLog.verbose;
-    },
-    get log() {
-      showWarn();
-      return debugLog.log;
-    },
-    get debug() {
-      showWarn();
-      return debugLog.debug;
-    },
-    get error() {
-      showWarn();
-      return debugLog.error;
-    },
-    get info() {
-      showWarn();
-      return debugLog.info;
-    },
-    get warn() {
-      showWarn();
-      return debugLog.warn;
-    },
-    destroy() {},
-  };
+  return new DebugLog(namespace);
 }
+
+export const debugLogger = new DebugLog('core-common', {
+  showTimeDelta: true,
+});
