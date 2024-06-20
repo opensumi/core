@@ -2515,7 +2515,7 @@ __metadata:
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-logs": "workspace:*"
     "@parcel/watcher": "npm:2.1.0"
-    file-type: "npm:16.5.3"
+    file-type: "npm:16.5.4"
     nsfw: "npm:2.2.0"
     trash: "npm:^5.2.0"
     vscode-languageserver-types: "npm:^3.16.0"
@@ -9194,14 +9194,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:16.5.3":
-  version: 16.5.3
-  resolution: "file-type@npm:16.5.3"
+"file-type@npm:16.5.4":
+  version: 16.5.4
+  resolution: "file-type@npm:16.5.4"
   dependencies:
     readable-web-to-node-stream: "npm:^3.0.0"
     strtok3: "npm:^6.2.4"
     token-types: "npm:^4.1.1"
-  checksum: 10/2f2580539ac339fc02a8e2073325b91d4487a510e92925dc536c429f4c80097ad7707656853ebdda6b27382478d2f121bcbed005455e431c5c46d7b8198cf854
+  checksum: 10/46ced46bb925ab547e0a6d43108a26d043619d234cb0588d7abce7b578dafac142bcfd2e23a6adb0a4faa4b951bd1b14b355134a193362e07cd352f9bf0dc349
   languageName: node
   linkType: hard
 
