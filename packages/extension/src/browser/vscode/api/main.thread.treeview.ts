@@ -532,7 +532,7 @@ export class TreeViewDataProvider extends Tree {
         }
       }
     } else {
-      nodes = [new ExtensionTreeRoot(this as any, this.treeViewId)];
+      nodes = [new ExtensionTreeRoot(this, this.treeViewId)];
     }
     return nodes;
   }

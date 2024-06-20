@@ -33,7 +33,7 @@ export const MiniMap: React.FC<{ contrastType: EditorViewType }> = ({ contrastTy
             Event.debounce(
               currentView.onDidChangeDecorations,
               () => {},
-              1,
+              16,
             )(() => {
               computePiece(currentView, currentView.documentMapping.getOriginalRange());
             }),
@@ -43,7 +43,7 @@ export const MiniMap: React.FC<{ contrastType: EditorViewType }> = ({ contrastTy
             Event.debounce(
               incomingView.onDidChangeDecorations,
               () => {},
-              1,
+              16,
             )(() => {
               computePiece(incomingView, incomingView.documentMapping.getModifiedRange());
             }),

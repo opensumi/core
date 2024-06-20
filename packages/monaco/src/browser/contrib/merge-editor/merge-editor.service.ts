@@ -6,6 +6,7 @@ import {
   Emitter,
   Event,
   MonacoService,
+  SCM_COMMANDS,
   localize,
 } from '@opensumi/ide-core-browser';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
@@ -283,7 +284,11 @@ export class MergeEditorService extends Disposable {
       this.fireRestoreState(uri);
 
       await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id);
-      await this.commandService.executeCommand(`${GitCommands.Stage}-${uri.toString()}`);
+
+      const scmResource = await this.commandService.executeCommand(SCM_COMMANDS.GetSCMResource.id, uri);
+      if (scmResource) {
+        await this.commandService.executeCommand(GitCommands.Stage, scmResource);
+      }
     };
 
     const { completeCount, shouldCount } = this.resultView.completeSituation();
