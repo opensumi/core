@@ -602,6 +602,10 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
 
   private diffResourceKeys: ResourceContextKey[];
 
+  private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
+
+  public onRefOpen = this._onRefOpen.event;
+
   protected saveCurrentState() {
     if (this.currentUri) {
       const state = this.monacoDiffEditor.saveViewState();
@@ -689,6 +693,8 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     } else {
       this.restoreState();
     }
+    this._onRefOpen.fire(originalDocModelRef);
+    this._onRefOpen.fire(modifiedDocModelRef);
     const enableHideUnchanged = this.preferenceService.get('diffEditor.hideUnchangedRegions.enabled');
 
     if (options.revealFirstDiff && !enableHideUnchanged) {

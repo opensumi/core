@@ -12,7 +12,6 @@ import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 import styles from './inline-input.module.less';
 import { InlineInputChatService } from './inline-input.service';
 
-
 interface IInlineInputWidgetRenderProps {
   onLayoutChange: (height: number) => void;
   onClose?: () => void;

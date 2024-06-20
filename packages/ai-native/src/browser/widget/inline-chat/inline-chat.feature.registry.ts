@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Logger, SpecialCases } from '@opensumi/ide-core-browser';
+import { KeybindingRegistry, Logger } from '@opensumi/ide-core-browser';
+import { AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import { Disposable, Emitter, Event, IDisposable, MaybePromise, isUndefined, uuid } from '@opensumi/ide-core-common';
@@ -51,6 +52,9 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
+
+  @Autowired(KeybindingRegistry)
+  private readonly keybindingRegistry: KeybindingRegistry;
 
   private actionsMap: Map<string, AIActionItem> = new Map();
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
@@ -113,6 +117,10 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     };
   }
 
+  public unregisterEditorInlineChat(operational: AIActionItem) {
+    return this.removeCollectedActions(operational);
+  }
+
   public registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable {
     const isCollect = this.collectActions(operational);
 
@@ -131,6 +139,10 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     };
   }
 
+  public unregisterTerminalInlineChat(operational: AIActionItem) {
+    return this.removeCollectedActions(operational);
+  }
+
   public registerInteractiveInput(
     runStrategy: IInteractiveInputRunStrategy,
     handler: IInteractiveInputHandler,
@@ -143,18 +155,31 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
       this.interactiveInputModel.setStrategyHandler(() => runStrategy.strategy || ERunStrategy.EXECUTE);
     }
 
-    this.collectActions({
-      id: InteractiveInputModel.ID,
-      name: `Chat(${SpecialCases.MACMETA}+K)`,
-      renderType: 'button',
-      order: Number.MAX_SAFE_INTEGER,
-    });
+    const keybindingStr = String(this.getSequenceKeyString());
+
+    if (keybindingStr) {
+      this.collectActions({
+        id: InteractiveInputModel.ID,
+        name: `Chat(${keybindingStr.toLocaleUpperCase()})`,
+        renderType: 'button',
+        order: Number.MAX_SAFE_INTEGER,
+      });
+    }
 
     return {
       dispose: () => {
         this.interactiveInputModel.dispose();
       },
     };
+  }
+
+  private getSequenceKeyString() {
+    const keybindings = this.keybindingRegistry.getKeybindingsForCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id);
+    const resolved = keybindings[0]?.resolved;
+    if (!resolved) {
+      return '';
+    }
+    return this.keybindingRegistry.acceleratorForSequence(resolved, '+');
   }
 
   public getInteractiveInputHandler(): IInteractiveInputHandler | undefined {

@@ -257,6 +257,8 @@ export interface IDiffEditor extends IDisposable {
   focus(): void;
 
   getLineChanges(): ILineChange[] | null;
+
+  onRefOpen: Event<IEditorDocumentModelRef>;
 }
 
 @Injectable()
