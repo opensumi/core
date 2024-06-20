@@ -16,7 +16,7 @@ export interface IStyleSheet {
 }
 
 export interface ICSSStyleService {
-  addClass(classname: string, style: Partial<CSSStyleDeclaration>): IDisposable;
+  addClass(classname: string, style: Partial<CSSStyleDeclaration>): IStyleInsertResult;
   removeClass(classname: string): void;
 }
 

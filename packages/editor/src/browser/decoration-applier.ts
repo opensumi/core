@@ -204,8 +204,6 @@ function assignModelDecorationOptions(
   if (property.rangeBehavior) {
     target.stickiness = property.rangeBehavior as number;
   }
-
-  target.inlineClassNameAffectsLetterSpacing = true;
 }
 
 function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOptions, style: IThemedCssStyle) {
@@ -229,6 +227,8 @@ function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOption
       target.overviewRuler.color = style.overviewRulerColor;
     }
   }
+
+  target.inlineClassNameAffectsLetterSpacing = style.inlineClassNameAffectsLetterSpacing;
 }
 
 function resolveHoverMessage(

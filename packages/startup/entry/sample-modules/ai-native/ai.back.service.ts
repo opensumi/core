@@ -50,8 +50,8 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
 
   async requestCompletion(input: IAICompletionOption, cancelToken?: CancellationToken) {
     return {
-      sessionId: '123',
-      codeModelList: [{ content: 'Hello OpenSumi!' }],
+      sessionId: '',
+      codeModelList: [],
     };
   }
 

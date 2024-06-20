@@ -270,14 +270,8 @@ export interface IThemedCssStyle extends IDisposable {
   afterContentClassName?: string;
   beforeContentClassName?: string;
   overviewRulerColor?: string | IThemeColor;
-}
 
-export interface IThemedCssStyleCollection {
-  default: IThemedCssStyle;
-  light: IThemedCssStyle | null;
-  dark: IThemedCssStyle | null;
-
-  dispose(): void;
+  inlineClassNameAffectsLetterSpacing?: boolean;
 }
 
 export const IEditorDecorationCollectionService = Symbol('IEditorDecorationCollectionService');
