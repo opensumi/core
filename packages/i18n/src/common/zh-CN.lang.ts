@@ -1199,7 +1199,7 @@ export const localizationBundle = {
     'mergeEditor.conflict.next': '下一处冲突',
     'mergeEditor.conflict.ai.resolve.all': 'AI 解决',
     'mergeEditor.conflict.ai.resolve.all.stop': '全部停止',
-    'mergeEditor.open.tradition': '传统编辑器',
+    'mergeEditor.open.tradition': '文本编辑器',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 
     // #region AI Native
