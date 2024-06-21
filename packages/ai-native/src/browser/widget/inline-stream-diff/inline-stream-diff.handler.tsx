@@ -3,6 +3,7 @@ import ReactDOMClient from 'react-dom/client';
 
 import { Injectable } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-browser';
+import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
@@ -33,7 +34,12 @@ interface IComputeDiffData {
   pendingRange: LineRange;
 }
 
-class DecorationModel {
+enum EComputerMode {
+  legacy = 'legacy',
+  default = 'default',
+}
+
+class DecorationModel extends Disposable {
   private zoneDec: IEditorDecorationsCollection;
 
   private activeLineDec: IEditorDecorationsCollection;
@@ -41,11 +47,21 @@ class DecorationModel {
   private pendingRangeDec: IEditorDecorationsCollection;
 
   constructor(private readonly monacoEditor: ICodeEditor) {
+    super();
+
     this.zoneDec = this.monacoEditor.createDecorationsCollection();
 
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
     this.addedRangeDec = this.monacoEditor.createDecorationsCollection();
     this.pendingRangeDec = this.monacoEditor.createDecorationsCollection();
+  }
+
+  public dispose(): void {
+    super.dispose();
+    this.zoneDec.clear();
+    this.activeLineDec.clear();
+    this.addedRangeDec.clear();
+    this.pendingRangeDec.clear();
   }
 
   public setZone(selection: Selection): void {
@@ -68,15 +84,17 @@ class DecorationModel {
   }
 
   public touchActiveLine(lineNumber: number) {
+    const zone = this.getZone();
+
     this.activeLineDec.set([
       {
         range: Range.fromPositions(
           {
-            lineNumber: this.zoneDec.getRange(0)!.startLineNumber + lineNumber - 1,
+            lineNumber: zone.startLineNumber + lineNumber - 1,
             column: 0,
           },
           {
-            lineNumber: this.zoneDec.getRange(0)!.startLineNumber + lineNumber - 1,
+            lineNumber: zone.startLineNumber + lineNumber - 1,
             column: Number.MAX_SAFE_INTEGER,
           },
         ),
@@ -94,22 +112,22 @@ class DecorationModel {
 
     this.addedRangeDec.set(
       ranges.map((range) => ({
-          range: Range.fromPositions(
-            {
-              lineNumber: zone.startLineNumber + range.startLineNumber - 1,
-              column: 0,
-            },
-            {
-              lineNumber: zone.startLineNumber + range.endLineNumberExclusive - 2,
-              column: Number.MAX_SAFE_INTEGER,
-            },
-          ),
-          options: ModelDecorationOptions.register({
-            description: 'added-range-decoration',
-            isWholeLine: true,
-            className: styles.inline_diff_added_range,
-          }),
-        })),
+        range: Range.fromPositions(
+          {
+            lineNumber: zone.startLineNumber + range.startLineNumber - 1,
+            column: 0,
+          },
+          {
+            lineNumber: zone.startLineNumber + range.endLineNumberExclusive - 2,
+            column: Number.MAX_SAFE_INTEGER,
+          },
+        ),
+        options: ModelDecorationOptions.register({
+          description: 'added-range-decoration',
+          isWholeLine: true,
+          className: styles.inline_diff_added_range,
+        }),
+      })),
     );
   }
 
@@ -144,10 +162,6 @@ export class InlineStreamDiffHandler extends Disposable {
     return this.monacoEditor.getModel()!;
   }
 
-  private get defaultLinesDiffComputer() {
-    return linesDiffComputers.getDefault();
-  }
-
   private getNewOriginalTextLines(): string[] {
     const zone = this.decorationModel.getZone();
 
@@ -156,14 +170,21 @@ export class InlineStreamDiffHandler extends Disposable {
     }).map((_, i) => this.originalModel.getLineContent(zone.startLineNumber + i));
   }
 
-  private computeDiff(originalTextLines: string[], newTextLines: string[]): IComputeDiffData {
-    const computeResult = this.defaultLinesDiffComputer.computeDiff(originalTextLines, newTextLines, {
+  private computeDiff(
+    originalTextLines: string[],
+    newTextLines: string[],
+    computerMode: EComputerMode = EComputerMode.default,
+  ): IComputeDiffData {
+    const computeResult = (
+      computerMode === EComputerMode.default ? linesDiffComputers.getDefault() : linesDiffComputers.getLegacy()
+    ).computeDiff(originalTextLines, newTextLines, {
       computeMoves: false,
       maxComputationTimeMs: 200,
       ignoreTrimWhitespace: false,
     });
 
     let changes = computeResult.changes;
+    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel.changes ', changes);
 
     if (computeResult.hitTimeout) {
       changes = [
@@ -179,7 +200,10 @@ export class InlineStreamDiffHandler extends Disposable {
     let removedTextLines: string[] = [];
 
     for (const change of changes) {
-      if (change.modified.endLineNumberExclusive === newTextLines.length + 1) {
+      if (
+        change.modified.endLineNumberExclusive === newTextLines.length + 1 &&
+        computerMode === EComputerMode.default
+      ) {
         removedTextLines = originalTextLines.slice(
           change.original.startLineNumber - 1,
           change.original.endLineNumberExclusive - 1,
@@ -237,13 +261,13 @@ export class InlineStreamDiffHandler extends Disposable {
     const zone = this.decorationModel.getZone();
 
     const newOriginalTextLines = this.getNewOriginalTextLines();
-    const diffComputation = this.defaultLinesDiffComputer.computeDiff(newOriginalTextLines, newFullRangeTextLines, {
+    const diffComputation = linesDiffComputers.getDefault().computeDiff(newOriginalTextLines, newFullRangeTextLines, {
       computeMoves: false,
       maxComputationTimeMs: 200,
       ignoreTrimWhitespace: false,
     });
 
-    const changesArray: any = [];
+    const changesArray: ISingleEditOperation[] = [];
 
     if (diffComputation.hitTimeout) {
       let newText = newFullRangeTextLines.join(eol);
@@ -259,7 +283,7 @@ export class InlineStreamDiffHandler extends Disposable {
         let newText: string | null = newFullRangeTextLines
           .slice(change.modified.startLineNumber - 1, change.modified.endLineNumberExclusive - 1)
           .join(eol);
-        let newRange;
+        let newRange: Range;
         if (change.original.isEmpty) {
           newRange = new Range(
             zone.startLineNumber + change.original.startLineNumber - 1,
@@ -307,18 +331,20 @@ export class InlineStreamDiffHandler extends Disposable {
     /**
      * handler add range
      */
-    const allAddRanges = changes.filter((c) => c.addedRange.length > 0).map((c) => c.addedRange);
+    const allAddRanges = changes.filter((c) => !c.addedRange.isEmpty).map((c) => c.addedRange);
     this.decorationModel.touchAddedRange(allAddRanges);
 
     this.allRemoveZoneWidget.forEach((widget) => {
       widget.dispose();
     });
+    this.allRemoveZoneWidget = [];
 
     /**
      * handler removed range
      */
+    let preRemovedLen: number = 0;
     for (const change of changes) {
-      const { removedTextLines, removedLinesOriginalRange } = change;
+      const { removedTextLines, removedLinesOriginalRange, addedRange } = change;
       if (removedTextLines.length > 0) {
         const removedText = removedTextLines.join(eol);
         const zoneWidget = new (class extends ZoneWidget {
@@ -328,6 +354,7 @@ export class InlineStreamDiffHandler extends Disposable {
             this.root = ReactDOMClient.createRoot(container);
             this.root.render(<div className={styles.inline_diff_remove_zone}>{removedText}</div>);
           }
+          override revealRange(_, isLastLine: boolean): void {}
           dispose(): void {
             this.root.unmount();
             super.dispose();
@@ -340,44 +367,61 @@ export class InlineStreamDiffHandler extends Disposable {
 
         zoneWidget.create();
         zoneWidget.show(
-          Range.fromPositions(
-            {
-              lineNumber: zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 1,
-              column: 1,
-            },
-            {
-              lineNumber: zone.startLineNumber + removedLinesOriginalRange.endLineNumberExclusive - 2,
-              column: Number.MAX_SAFE_INTEGER,
-            },
-          ),
+          Range.fromPositions({
+            lineNumber: zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
+            column: 1,
+          }),
           removedTextLines.length,
         );
+
+        preRemovedLen += removedLinesOriginalRange.length - addedRange.length;
 
         this.allRemoveZoneWidget.push(zoneWidget);
       }
     }
 
     // console.log('compute diff:>>>> result >>>>>>>>>>>> diffComputation changesArray', changesArray)
-    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffComputation allAddRanges', allAddRanges)
+    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffComputation changes', changes)
   }
 
   private allRemoveZoneWidget: ZoneWidget[] = [];
 
-  public addLinesToDiff(newText: string): void {
+  public discard(): void {
+    this.originalModel.pushEditOperations(
+      null,
+      [
+        {
+          range: this.decorationModel.getZone(),
+          text: this.rawOriginalTextLines.join(this.originalModel.getEOL()),
+        },
+      ],
+      () => null,
+    );
+
+    this.allRemoveZoneWidget.forEach((widget) => {
+      widget.dispose();
+    });
+    this.allRemoveZoneWidget = [];
+    this.decorationModel.dispose();
+  }
+
+  public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
     const lastLine = this.modifiedModel.getLineCount();
     const lastColumn = this.modifiedModel.getLineMaxColumn(lastLine);
 
     const range = new Range(lastLine, lastColumn, lastLine, lastColumn);
 
-    const edit = {
-      range,
-      text: newText,
-    };
-    this.modifiedModel.pushEditOperations(null, [edit], () => null);
+    if (newText) {
+      const edit = {
+        range,
+        text: newText,
+      };
+      this.modifiedModel.pushEditOperations(null, [edit], () => null);
+    }
 
     const newTextLines = this.modifiedModel.getLinesContent();
 
-    const diffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines);
+    const diffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
     // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel diffModel', diffModel)
     // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel.newTextLines \n', newTextLines)
     // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel.changes', diffModel.changes)

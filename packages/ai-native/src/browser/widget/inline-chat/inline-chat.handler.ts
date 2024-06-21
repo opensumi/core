@@ -344,9 +344,7 @@ export class InlineChatHandler extends Disposable {
           if (ReplyResponse.is(data)) {
             const { message } = data;
 
-            if (message !== empty) {
-              inlineDiffHandler.addLinesToDiff(message);
-            }
+            inlineDiffHandler.addLinesToDiff(message);
           }
         }),
         controller.onError((error) => {
@@ -373,6 +371,8 @@ export class InlineChatHandler extends Disposable {
             startTime,
             isRetry,
           });
+          // @ts-ignore
+          inlineDiffHandler.addLinesToDiff('', 'legacy');
         }),
       ]);
 
