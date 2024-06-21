@@ -78,4 +78,5 @@ export interface CompletionResultModelCache {
  */
 export interface InlineCompletionItem extends monaco.languages.InlineCompletion {
   sessionId: string;
+  relationId: string;
 }
