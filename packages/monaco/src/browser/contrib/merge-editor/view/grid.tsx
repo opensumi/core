@@ -193,7 +193,7 @@ const BottomBar: React.FC = () => {
         }
 
         if (uri.scheme !== 'file') {
-          // replace git:// or any other scheme with file://
+          // replace git:// or any other scheme to file://
           uri = uri.with({
             scheme: 'file',
             path: uri.path,
