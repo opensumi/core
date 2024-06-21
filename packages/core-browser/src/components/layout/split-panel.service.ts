@@ -3,6 +3,8 @@ import React from 'react';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Deferred, Disposable, IDisposable } from '@opensumi/ide-core-common';
 
+import { RESIZE_LOCK } from '../resize/resize';
+
 import { SplitPanelProps } from './split-panel';
 
 export const ISplitPanelService = Symbol('ISplitPanelService');
@@ -60,10 +62,18 @@ export class SplitPanelService extends Disposable implements ISplitPanelService 
       }
     } else {
       if (!direction) {
-        return this.panels[index + 1];
+        for (let i = index + 1; i < this.panels.length; i++) {
+          if (!this.panels[i].classList.contains(RESIZE_LOCK)) {
+            // 跳过无法调整的面板
+            return this.panels[i];
+          }
+        }
       } else {
         for (let i = index + 1; i < this.panels.length; i++) {
-          if (this.panels[i].clientHeight > SplitPanelService.MIN_SIZE) {
+          if (
+            this.panels[i].clientHeight > SplitPanelService.MIN_SIZE &&
+            !this.panels[i].classList.contains(RESIZE_LOCK)
+          ) {
             return this.panels[i];
           }
         }
