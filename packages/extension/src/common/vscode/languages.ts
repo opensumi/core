@@ -21,10 +21,7 @@ import { SymbolInformation } from 'vscode-languageserver-types';
 import { IMarkdownString, IMarkerData, IRange, UriComponents } from '@opensumi/ide-core-common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { InlineValue, InlineValueContext } from '@opensumi/ide-debug/lib/common/inline-values';
-// eslint-disable-next-line import/order
 import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
-
-// eslint-disable-next-line import/no-restricted-paths
 import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
@@ -74,9 +71,7 @@ import {
   WorkspaceEditDto,
 } from './model.api';
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { ITextModel, NewSymbolName } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-// eslint-disable-next-line import/no-restricted-paths
+import type { ITextModel, InlineCompletions, NewSymbolName } from '@opensumi/ide-monaco';
 import type {
   CodeActionContext,
   Command,
@@ -537,6 +532,8 @@ export interface IExtHostLanguages {
   ): Promise<IInlayHintsDto | undefined>;
   $resolveInlayHint(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IInlayHintDto | undefined>;
   $releaseInlayHints(handle: number, id: number): void;
+
+  $setNativeInlineCompletions(completions: InlineCompletions): Promise<void>;
 }
 
 export interface ILinkedEditingRangesDto {

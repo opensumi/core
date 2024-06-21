@@ -24,6 +24,7 @@ import {
   IExtHostLocalization,
   IExtensionDescription,
   MainThreadAPIIdentifier,
+  VSCodeExtensionService,
 } from '../common/vscode';
 
 import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.api.impl';
@@ -146,8 +147,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   private extensionErrors = new WeakMap<Error, IExtensionDescription | undefined>();
 
+  private mainThreadExtensionService: VSCodeExtensionService;
+
   constructor(rpcProtocol: SumiConnectionMultiplexer, public logger: IExtensionLogger, injector: Injector) {
     this.rpcProtocol = rpcProtocol;
+    this.mainThreadExtensionService = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService);
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);
     const reporter = injector.get(IReporter);
@@ -198,7 +202,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         new KTExtension(
           ext,
           this as unknown as IExtensionHostService,
-          this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
+          this.mainThreadExtensionService,
           this.getExtensionExports(ext.id),
           this.getExtendExports(ext.id),
         ),
@@ -236,9 +240,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async $updateExtHostData() {
-    const extensions: IExtensionProps[] = await this.rpcProtocol
-      .getProxy(MainThreadAPIIdentifier.MainThreadExtensionService)
-      .$getExtensions();
+    const extensions: IExtensionProps[] = await this.mainThreadExtensionService.$getExtensions();
     // node 层 extensionLocation 不使用 static 直接使用 file
     // node 层 extension 实例和 vscode 保持一致，并继承 IExtensionProps
     this.extensions = extensions.map((item) => ({
@@ -271,7 +273,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return new KTExtension(
       extensionDescription,
       this as unknown as IExtensionHostService,
-      this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
+      this.mainThreadExtensionService,
       activateExtension && activateExtension.exports,
       activateExtension && activateExtension.extendExports,
     );

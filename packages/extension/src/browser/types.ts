@@ -103,7 +103,7 @@ export class ExtensionWillActivateEvent extends BasicEvent<IExtension> {}
 
 export class ExtensionWillContributeEvent extends BasicEvent<IExtensionMetaData> {}
 
-// 将激活的插件作为 payload 📢 出去
+// 将激活的插件作为 payload 广播出去
 export class ExtensionDidActivatedEvent extends BasicEvent<IExtensionProps> {}
 
 /**
@@ -120,3 +120,8 @@ export class ExtensionDidUninstalledEvent extends BasicEvent<void> {}
  * 插件启用时的事件
  */
 export class ExtensionDidEnabledEvent extends BasicEvent<IExtensionProps> {}
+
+export interface IBrowserMainThreadAPI {
+  setup: () => Promise<void>;
+  dispose: () => void;
+}

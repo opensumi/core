@@ -74,8 +74,21 @@ export interface CompletionResultModelCache {
 }
 
 /**
- * 补全结果item，继承自InlineCompletionItem
+ * 补全结果
  */
 export interface InlineCompletionItem extends monaco.languages.InlineCompletion {
   sessionId: string;
+}
+
+export interface InlineCompletions<TItem extends InlineCompletionItem = InlineCompletionItem> {
+  readonly items: readonly TItem[];
+  /**
+   * A list of commands associated with the inline completions of this list.
+   */
+  readonly commands?: monaco.Command[];
+  readonly suppressSuggestions?: boolean | undefined;
+  /**
+   * When set and the user types a suggestion without derivating from it, the inline suggestion is not updated.
+   */
+  readonly enableForwardStability?: boolean | undefined;
 }

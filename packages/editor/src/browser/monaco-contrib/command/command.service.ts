@@ -117,7 +117,7 @@ export class MonacoCommandService implements IMonacoCommandService {
       }
     }
     if (this.delegate) {
-      const res = this.delegate.executeCommand(
+      const res = await this.delegate.executeCommand(
         MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId,
         ...args,
       );

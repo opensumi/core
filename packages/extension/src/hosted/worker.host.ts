@@ -45,6 +45,8 @@ export function initRPCProtocol() {
 }
 
 export class ExtensionWorkerHost implements IExtensionWorkerHost {
+  private LOG_TAG = '[WorkerHost]';
+
   private extensions: IExtensionProps[];
 
   private sumiAPIFactory: any;
@@ -237,10 +239,10 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     }, {});
   }
 
-  private registerExtendModuleService(exportsData, extension: IExtensionProps) {
+  private registerExtendModuleService(exportsData: any, extension: IExtensionProps) {
     const service = {};
     for (const key in exportsData) {
-      if (exportsData.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(exportsData, key)) {
         if (typeof exportsData[key] === 'function') {
           service[`$${key}`] = exportsData[key];
         }
@@ -255,7 +257,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private async loadContext(extensionDescription: IExtensionProps) {
     const componentProxy = this.getExtendModuleProxy(extensionDescription);
-    const registerExtendFn = (exportsData) => this.registerExtendModuleService(exportsData, extensionDescription);
+    const registerExtendFn = (exportsData: any) => this.registerExtendModuleService(exportsData, extensionDescription);
 
     const context = new ExtensionContext({
       extensionDescription,
@@ -283,11 +285,11 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     const extension = this.extensions.find((extension) => extension.id === id);
 
     if (!extension) {
-      this.logger.error(`[Worker-Host] extension worker not found ${id} `);
+      this.logger.error(`${this.LOG_TAG} extension worker not found ${id} `);
       return;
     }
 
-    this.logger.verbose(`[Worker-Host] extension worker start activate ${id} ${extension.workerScriptPath}`);
+    this.logger.verbose(`${this.LOG_TAG} extension worker start activate ${id} ${extension.workerScriptPath}`);
 
     if (extension.workerScriptPath) {
       const response = await fetch(decodeURIComponent(extension.workerScriptPath));
@@ -316,7 +318,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
               sumiAPIImpl = this.sumiAPIFactory(extension);
               this.sumiExtAPIImpl.set(id, sumiAPIImpl);
             } catch (e) {
-              this.logger.error('[Worker-Host] worker error');
+              this.logger.error(`${this.LOG_TAG} worker error`);
               this.logger.error(e);
             }
           }
@@ -327,7 +329,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       try {
         initFn(_module, _exports, _require, self);
       } catch (err) {
-        this.logger.error(`[Worker-Host] failed to initialize extension ${extension.id} \n`, err);
+        this.logger.error(`${this.LOG_TAG} failed to initialize extension ${extension.id} \n`, err);
       }
 
       let extensionActivateFailed;
@@ -338,7 +340,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
           moduleExports = await (_module.exports as any).activate(Object.freeze(workerExtContext));
         } catch (err) {
           extensionActivateFailed = err;
-          this.logger.error(`[Worker-Host] failed to activate extension ${extension.id} \n\n ${err.message}`);
+          this.logger.error(`${this.LOG_TAG} failed to activate extension ${extension.id} \n\n ${err.message}`);
         }
         const activatedExtension = new ActivatedExtension(
           id,
@@ -358,7 +360,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
         this.activatedExtensions.set(id, activatedExtension);
       }
     } else {
-      this.logger.error('[Worker-Host] extension worker activate error', extension);
+      this.logger.error(`${this.LOG_TAG} extension worker activate error`, extension);
     }
   }
 }

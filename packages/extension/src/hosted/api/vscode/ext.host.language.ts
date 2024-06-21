@@ -151,7 +151,11 @@ import { TypeHierarchyAdapter } from './language/type-hierarchy';
 import { getDurationTimer, score } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 
-import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import type {
+  CodeActionContext,
+  InlineCompletion,
+  InlineCompletions,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export function createLanguagesApiFactory(
   extHostLanguages: ExtHostLanguages,
@@ -604,20 +608,38 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
 
-  $provideInlineCompletions(
+  private _currentInlineCompletions: InlineCompletions | undefined;
+  private _currentNativeInlineCompletions: InlineCompletions<InlineCompletion> | undefined;
+
+  getCurrentInlineCompletions() {
+    return this._currentInlineCompletions;
+  }
+
+  async $setNativeInlineCompletions(completions: InlineCompletions<InlineCompletion>): Promise<void> {
+    this._currentNativeInlineCompletions = completions;
+  }
+
+  getNativeInlineCompletions() {
+    return this._currentNativeInlineCompletions;
+  }
+
+  async $provideInlineCompletions(
     handle: number,
     resource: UriComponents,
     position: Position,
     context: InlineCompletionContext,
     token: CancellationToken,
   ): Promise<IdentifiableInlineCompletions | undefined> {
-    return this.withAdapter<InlineCompletionAdapterBase, IdentifiableInlineCompletions | undefined>(
+    this._currentInlineCompletions = undefined;
+    const completion = await this.withAdapter<InlineCompletionAdapterBase, IdentifiableInlineCompletions | undefined>(
       handle,
       InlineCompletionAdapterBase,
       (adapter) => adapter.provideInlineCompletions(Uri.revive(resource), position, context, token),
       undefined,
       undefined,
     );
+    this._currentInlineCompletions = completion;
+    return completion;
   }
   $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void {
     this.withAdapter(

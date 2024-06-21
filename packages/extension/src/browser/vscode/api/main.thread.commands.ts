@@ -122,7 +122,7 @@ export class MainThreadCommands implements IMainThreadCommands {
   }
 
   /**
-   * 来自main -> extHost的command调用
+   * 来自main -> extHost 的 command 调用
    */
   $executeExtensionCommand(id: string, ...args: any[]): Promise<any> {
     if (this.commands.has(id)) {

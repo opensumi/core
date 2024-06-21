@@ -1,4 +1,4 @@
-import { Uri } from '@opensumi/ide-core-common';
+import { IDisposable, Uri } from '@opensumi/ide-core-common';
 import { join } from '@opensumi/ide-utils/lib/path';
 
 import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
@@ -40,7 +40,7 @@ export interface IKTExtensionContext {
 }
 
 export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionContext {
-  readonly subscriptions: { dispose(): any }[] = [];
+  readonly subscriptions: IDisposable[] = [];
 
   readonly _extensionLocation: Uri;
 

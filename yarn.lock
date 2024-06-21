@@ -2463,7 +2463,6 @@ __metadata:
     "@opensumi/ide-webview": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
-    "@opensumi/vscode-jsonrpc": "npm:^8.0.0-next.2"
     address: "npm:^1.1.2"
     glob-to-regexp: "npm:0.4.1"
     is-running: "npm:^2.1.0"

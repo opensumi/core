@@ -303,6 +303,12 @@ export interface IMeasureConfig {
    * 是否开启连接性能监控
    */
   connection?: IConnectionMeasureConfig;
+
+  inlineCompletion?: IInlineCompletionMeasureConfig;
+}
+
+export interface IInlineCompletionMeasureConfig {
+  reportInlineCompletionToExtThread?: boolean;
 }
 
 export interface IConnectionMeasureConfig {

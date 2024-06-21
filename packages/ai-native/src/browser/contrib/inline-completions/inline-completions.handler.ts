@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-browser';
-import { Disposable, IEventBus, Sequencer } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, IEventBus, Sequencer } from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
@@ -10,6 +10,7 @@ import { IAIMiddleware } from '../../types';
 import { IAIMonacoContribHandler } from '../base';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
+import { InlineCompletions } from './model/competionModel';
 import { AICompletionsService } from './service/ai-completions.service';
 
 @Injectable()
@@ -22,6 +23,9 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
+
+  private _onInlineCompletionEmitter = new Emitter<InlineCompletions>();
+  public onInlineCompletion = this._onInlineCompletionEmitter.event;
 
   public registerInlineCompletionFeature(editor: IEditor): IDisposable {
     const { monacoEditor } = editor;
@@ -114,7 +118,9 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
         const list = await sequencer.queue(() =>
           this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
         );
-
+        if (list) {
+          await this._onInlineCompletionEmitter.fireAndAwait(list);
+        }
         return list;
       },
       freeInlineCompletions() {},

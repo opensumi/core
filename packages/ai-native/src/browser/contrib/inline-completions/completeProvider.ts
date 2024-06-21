@@ -10,7 +10,12 @@ import * as monaco from '@opensumi/ide-monaco';
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { DEFAULT_COMPLECTION_MODEL } from './constants';
-import { CompletionRequestBean, IInlineCompletionCache, InlineCompletionItem } from './model/competionModel';
+import {
+  CompletionRequestBean,
+  IInlineCompletionCache,
+  InlineCompletionItem,
+  InlineCompletions,
+} from './model/competionModel';
 import { PromptCache } from './promptCache';
 import { getPrefixPrompt, getSuffixPrompt, lineBasedPromptProcessor } from './provider';
 import { AICompletionsService } from './service/ai-completions.service';
@@ -384,7 +389,7 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     position: monaco.Position,
     context: monaco.languages.InlineCompletionContext,
     token: monaco.CancellationToken,
-  ) {
+  ): Promise<InlineCompletions | undefined> {
     this.aiNativeContextKey.inlineCompletionIsTrigger.set(true);
 
     // bugfix: 修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次

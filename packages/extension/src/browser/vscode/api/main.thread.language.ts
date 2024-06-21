@@ -1,11 +1,9 @@
-// eslint-disable-next-line import/no-unresolved
-import { CancellationToken } from 'vscode';
-
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   DisposableCollection,
+  DisposableStore,
   Emitter,
   IDisposable,
   IMarkerData,
@@ -82,12 +80,14 @@ import {
 } from './semantic-tokens/semantic-token-provider';
 
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type { CancellationToken } from 'vscode';
 
 const { extname } = path;
 
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly proxy: IExtHostLanguages;
+  private readonly disposableStore = new DisposableStore();
   private readonly disposables = new Map<number, monaco.IDisposable>();
 
   @Autowired(MarkerManager)
@@ -138,6 +138,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       disposable.dispose();
     });
     this.disposables.clear();
+    this.disposableStore.dispose();
   }
 
   $unregister(handle) {
