@@ -1,13 +1,19 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTER } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AINativeSettingSectionsId, DisposableStore, URI, WithEventBus, sleep, uuid } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  DisposableStore,
+  URI,
+  WithEventBus,
+  raceCancellation,
+  sleep,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/ide-monaco';
-
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { DEFAULT_COMPLECTION_MODEL } from './constants';
 import { CompletionRequestBean, IInlineCompletionCache, InlineCompletionItem } from './model/competionModel';
@@ -159,9 +165,6 @@ export class CompletionRequestTask {
 
     // 组装请求参数,向远程发起请求
     const completionRequestBean = await this.constructRequestBean(context, token);
-    if (token.isCancellationRequested) {
-      return [];
-    }
     if (this.isCancelFlag) {
       return [];
     }
@@ -171,9 +174,10 @@ export class CompletionRequestTask {
 
     let rs: IAICompletionResultModel | null;
     const cacheData = this.promptCache.getCache(completionRequestBean.prompt);
-    const relationId = this.aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
-    this.aiCompletionsService.setLastRelationId(relationId);
+    const relationId =
+      cacheData?.relationId || this.aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
 
+    this.aiCompletionsService.setLastRelationId(relationId);
     // 如果存在缓存
     if (cacheData) {
       rs = cacheData;
@@ -200,7 +204,7 @@ export class CompletionRequestTask {
     this.aiCompletionsService.setLastSessionId(rs.sessionId);
 
     // 如果是取消直接返回
-    if ((rs && rs.isCancel) || this.isCancelFlag) {
+    if ((rs && rs.isCancel) || token.isCancellationRequested || this.isCancelFlag) {
       this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
         replytime: Date.now() - requestStartTime,
@@ -212,7 +216,7 @@ export class CompletionRequestTask {
     }
 
     if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
-      this.promptCache.setCache(completionRequestBean.prompt, rs);
+      this.promptCache.setCache(completionRequestBean.prompt, { ...rs, relationId });
     }
     // 返回补全结果为空直接返回
     if (rs.codeModelList.length === 0) {
@@ -266,6 +270,7 @@ export class CompletionRequestTask {
           position.column + insertText.length + textAfterCursor.length,
         ),
         sessionId: rs.sessionId,
+        relationId,
         command: {
           id: AI_INLINE_COMPLETION_REPORTER.id,
           title: '',
@@ -323,8 +328,6 @@ export class AIInlineCompletionsProvider extends WithEventBus {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  private aiNativeContextKey: AINativeContextKey;
-
   /**
    * 该补全是否是手动触发
    */
@@ -353,8 +356,6 @@ export class AIInlineCompletionsProvider extends WithEventBus {
   }
 
   public mountEditor(editor: IEditor): void {
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(editor.monacoEditor as any)._contextKeyService]);
-
     this.isManual = false;
     this.isDelEvent = false;
     this.reqStack = new ReqStack();
@@ -365,10 +366,6 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     if (this.reqStack) {
       this.reqStack.cancelReq();
     }
-  }
-
-  resetContextKey() {
-    this.aiNativeContextKey.inlineCompletionIsTrigger.reset();
   }
 
   /**
@@ -385,8 +382,6 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     context: monaco.languages.InlineCompletionContext,
     token: monaco.CancellationToken,
   ) {
-    this.aiNativeContextKey.inlineCompletionIsTrigger.set(true);
-
     // bugfix: 修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次
     if (context.triggerKind === monaco.InlineCompletionTriggerKind.Automatic) {
       if (
@@ -412,12 +407,6 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     // 重置防止不触发自动补全事件
     this.updateIsManual(false);
 
-    // 如果用户已取消
-    if (token?.isCancellationRequested) {
-      this.aiCompletionsService.updateStatusBarItem('cancelled ', false);
-      return undefined;
-    }
-
     // 放入队列
     const requestImp = this.injector.get(CompletionRequestTask, [model, position, token, _isManual]);
 
@@ -425,7 +414,12 @@ export class AIInlineCompletionsProvider extends WithEventBus {
 
     // 如果是自动补全需要 debounce
     if (!_isManual) {
-      await sleep(this.inlineComletionsDebounceTime);
+      await raceCancellation(sleep(this.inlineComletionsDebounceTime), token);
+    }
+
+    // 如果用户已取消
+    if (token?.isCancellationRequested) {
+      return undefined;
     }
 
     const list = await this.reqStack.runReq();

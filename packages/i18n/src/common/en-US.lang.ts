@@ -1432,7 +1432,7 @@ export const localizationBundle = {
     'mergeEditor.conflict.next': 'Next Conflict',
     'mergeEditor.conflict.ai.resolve.all': 'AI Resolution',
     'mergeEditor.conflict.ai.resolve.all.stop': 'Stop All',
-    'mergeEditor.open.tradition': 'Tradition Editor',
+    'mergeEditor.open.tradition': 'Text Editor',
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',

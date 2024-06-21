@@ -14,7 +14,7 @@ export class PromptCache {
   @Autowired(IHashCalculateService)
   private hashCalculateService: IHashCalculateService;
 
-  private cacheMap = new StaleLRUMap<string, IAICompletionResultModel>(15, 10, 60 * 1000);
+  private cacheMap = new StaleLRUMap<string, IAICompletionResultModel & { relationId: string }>(15, 10, 60 * 1000);
 
   getCache(prompt: string) {
     if (!isCacheEnable()) {

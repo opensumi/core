@@ -1539,29 +1539,34 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async getDocumentModelRef(uri: URI): Promise<IEditorDocumentModelRef> {
-    if (!this.holdDocumentModelRefs.has(uri.toString())) {
+    const key = uri.toString();
+
+    if (!this.holdDocumentModelRefs.has(key)) {
       this.holdDocumentModelRefs.set(
-        uri.toString(),
+        key,
         await this.documentModelManager.createModelReference(uri, 'editor-group-' + this.name),
       );
     }
-    return this.holdDocumentModelRefs.get(uri.toString())!;
+    return this.holdDocumentModelRefs.get(key)!;
   }
 
   disposeDocumentRef(uri: URI) {
     if (uri.scheme === 'diff') {
-      // 针对 diff 编辑器，需要保留 DocumentModelRef，以保留实现对 DiffEditor 的状态恢复
+      const query = uri.getParsedQuery();
+      this.doDisposeDocRef(new URI(query.original));
+      this.doDisposeDocRef(new URI(query.modified));
     } else if (uri.scheme === 'mergeEditor') {
-      this.mergeEditor.dispose();
+      this.mergeEditor && this.mergeEditor.dispose();
     } else {
       this.doDisposeDocRef(uri);
     }
   }
 
   protected doDisposeDocRef(uri: URI) {
-    if (this.holdDocumentModelRefs.has(uri.toString())) {
-      this.holdDocumentModelRefs.get(uri.toString())!.dispose();
-      this.holdDocumentModelRefs.delete(uri.toString());
+    const key = uri.toString();
+    if (this.holdDocumentModelRefs.has(key)) {
+      this.holdDocumentModelRefs.get(key)!.dispose();
+      this.holdDocumentModelRefs.delete(key);
     }
   }
 
@@ -1654,7 +1659,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       await this.diffEditor.compare(original, modified, options, resource.uri);
       if (options.focus) {
         this._domNode?.focus();
-        // 理由见上方 codeEditor.focus 部分
 
         const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
           if (e.payload.groupName === this.name && e.payload.type === EditorOpenType.diff) {

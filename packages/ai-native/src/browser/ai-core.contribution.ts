@@ -53,6 +53,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { Position } from '@opensumi/ide-monaco';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
+import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commands';
 
 import {
   AI_CHAT_CONTAINER_ID,
@@ -351,13 +352,18 @@ export class AINativeBrowserContribution
     commands.registerCommand(AI_INLINE_COMPLETION_VISIBLE, {
       execute: async (visible: boolean) => {
         if (!visible) {
-          await this.commandService.executeCommand('editor.action.inlineSuggest.hide');
           this.aiCompletionsService.hideStatusBarItem();
-          this.aiInlineCompletionsProvider.resetContextKey();
           this.aiInlineCompletionsProvider.cancelRequest();
           this.aiCompletionsService.setVisibleCompletion(false);
         }
       },
+    });
+
+    /**
+     * 当 inline completion 消失时
+     */
+    commands.afterExecuteCommand(HideInlineCompletion.ID, () => {
+      this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
     });
   }
 

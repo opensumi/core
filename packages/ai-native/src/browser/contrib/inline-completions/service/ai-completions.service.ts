@@ -106,10 +106,11 @@ export class AICompletionsService extends Disposable {
   }
 
   public async reporterEnd(relationId: string, data: CompletionRT) {
-    this.aiReporter.end(relationId, {
+    const reportData = {
       ...data,
       isValid: typeof data.renderingTime === 'number' ? data.renderingTime > 750 : false,
-    });
+    };
+    this.aiReporter.end(relationId, reportData);
   }
 
   public setVisibleCompletion(visible: boolean) {
