@@ -1,4 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { AI_DIFF_WIDGET_ID } from '@opensumi/ide-ai-native/lib/common/index';
 import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIInlineChatContentWidgetId,
@@ -25,12 +26,17 @@ import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
+import { EInlineDifPreviewMode } from '../../preferences/schema';
 import { ERunStrategy } from '../../types';
+import {
+  BaseInlineDiffPreviewer,
+  LiveInlineDiffPreviewer,
+  SideBySideInlineDiffWidget,
+} from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
-import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
@@ -68,7 +74,7 @@ export class InlineChatHandler extends Disposable {
 
   private logger: ILogServiceClient;
 
-  private aiDiffWidget: InlineDiffWidget;
+  private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
@@ -87,7 +93,7 @@ export class InlineChatHandler extends Disposable {
 
   private disposeAllWidget() {
     [
-      this.aiDiffWidget,
+      this.diffPreviewer,
       this.aiInlineContentWidget,
       this.aiInlineChatDisposed,
       this.aiInlineChatOperationDisposed,
@@ -319,121 +325,66 @@ export class InlineChatHandler extends Disposable {
     const { crossSelection, chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
-    const inlineDiffHandler = this.injector.get(InlineStreamDiffHandler, [monacoEditor, crossSelection]);
+    const inlineDiffMode = this.preferenceService.getValid<EInlineDifPreviewMode>(
+      AINativeSettingSectionsId.InlineDiffPreviewMode,
+      EInlineDifPreviewMode.inlineLive,
+    );
 
-    // this.aiDiffWidget = this.injector.get(InlineDiffWidget, [
-    //   AI_DIFF_WIDGET_ID,
-    //   {
-    //     editor: monacoEditor,
-    //     selection: crossSelection,
-    //   },
-    // ]);
-    // this.aiDiffWidget.create();
-    // this.aiDiffWidget.showByLine(
-    //   crossSelection.startLineNumber - 1,
-    //   crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
-    // );
+    if (inlineDiffMode === EInlineDifPreviewMode.sideBySide) {
+      this.diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, crossSelection]);
+    } else {
+      this.diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
+    }
+
+    this.diffPreviewer.show(
+      crossSelection.startLineNumber - 1,
+      crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
+    );
 
     if (InlineChatController.is(chatResponse)) {
       const controller = chatResponse as InlineChatController;
 
-      controller.deffered.resolve();
+      this.aiInlineChatOperationDisposed.addDispose(
+        this.diffPreviewer.onReady(() => {
+          controller.deffered.resolve();
 
-      this.aiInlineChatOperationDisposed.addDispose([
-        controller.onData((data) => {
-          if (ReplyResponse.is(data)) {
-            const { message } = data;
-
-            inlineDiffHandler.addLinesToDiff(message);
-          }
+          this.aiInlineChatOperationDisposed.addDispose([
+            controller.onData((data) => {
+              if (ReplyResponse.is(data)) {
+                this.diffPreviewer.onData(data);
+              }
+            }),
+            controller.onError((error) => {
+              this.convertInlineChatStatus(EInlineChatStatus.ERROR, {
+                relationId,
+                message: error.message || '',
+                startTime,
+                isRetry,
+              });
+              this.diffPreviewer.onError(error);
+            }),
+            controller.onAbort(() => {
+              this.convertInlineChatStatus(EInlineChatStatus.READY, {
+                relationId,
+                message: 'abort',
+                startTime,
+                isRetry,
+                isStop: true,
+              });
+              this.diffPreviewer.onAbort();
+            }),
+            controller.onEnd(() => {
+              this.convertInlineChatStatus(EInlineChatStatus.DONE, {
+                relationId,
+                message: '',
+                startTime,
+                isRetry,
+              });
+              this.diffPreviewer.onEnd();
+            }),
+          ]);
         }),
-        controller.onError((error) => {
-          this.convertInlineChatStatus(EInlineChatStatus.ERROR, {
-            relationId,
-            message: error.message || '',
-            startTime,
-            isRetry,
-          });
-        }),
-        controller.onAbort(() => {
-          this.convertInlineChatStatus(EInlineChatStatus.READY, {
-            relationId,
-            message: 'abort',
-            startTime,
-            isRetry,
-            isStop: true,
-          });
-        }),
-        controller.onEnd(() => {
-          this.convertInlineChatStatus(EInlineChatStatus.DONE, {
-            relationId,
-            message: '',
-            startTime,
-            isRetry,
-          });
-          // @ts-ignore
-          inlineDiffHandler.addLinesToDiff('', 'legacy');
-        }),
-      ]);
-
-      // this.aiInlineChatOperationDisposed.addDispose(
-      //   this.aiDiffWidget.onReady(() => {
-      //     const modifiedModel = this.aiDiffWidget.getModifiedModel();
-      //     if (!modifiedModel) {
-      //       return;
-      //     }
-
-      //     controller.deffered.resolve();
-
-      //     this.aiInlineChatOperationDisposed.addDispose([
-      //       controller.onData((data) => {
-      //         if (ReplyResponse.is(data)) {
-      //           const { message } = data;
-
-      //           const lastLine = modifiedModel.getLineCount();
-      //           const lastColumn = modifiedModel.getLineMaxColumn(lastLine);
-
-      //           const range = new monaco.Range(lastLine, lastColumn, lastLine, lastColumn);
-
-      //           const edit = {
-      //             range,
-      //             text: message || '',
-      //           };
-      //           modifiedModel.pushEditOperations(null, [edit], () => null);
-      //           this.aiDiffWidget.layout();
-      //         }
-      //       }),
-      //       controller.onError((error) => {
-      //         this.convertInlineChatStatus(EInlineChatStatus.ERROR, {
-      //           relationId,
-      //           message: error.message || '',
-      //           startTime,
-      //           isRetry,
-      //         });
-      //         this.aiDiffWidget.layout();
-      //       }),
-      //       controller.onAbort(() => {
-      //         this.convertInlineChatStatus(EInlineChatStatus.READY, {
-      //           relationId,
-      //           message: 'abort',
-      //           startTime,
-      //           isRetry,
-      //           isStop: true,
-      //         });
-      //         this.aiDiffWidget.layout();
-      //       }),
-      //       controller.onEnd(() => {
-      //         this.convertInlineChatStatus(EInlineChatStatus.DONE, {
-      //           relationId,
-      //           message: '',
-      //           startTime,
-      //           isRetry,
-      //         });
-      //         this.aiDiffWidget.layout();
-      //       }),
-      //     ]);
-      //   }),
-      // );
+      );
     } else {
       const model = monacoEditor.getModel();
       const crossCode = model!.getValueInRange(crossSelection);
@@ -470,13 +421,8 @@ export class InlineChatHandler extends Disposable {
       answer = this.formatAnswer(answer, crossCode);
 
       this.aiInlineChatOperationDisposed.addDispose(
-        this.aiDiffWidget.onReady(() => {
-          const modifiedModel = this.aiDiffWidget.getModifiedModel();
-          if (!modifiedModel) {
-            return;
-          }
-
-          modifiedModel.setValue(answer);
+        this.diffPreviewer.onReady(() => {
+          this.diffPreviewer.setValue(answer);
         }),
       );
     }
@@ -503,7 +449,7 @@ export class InlineChatHandler extends Disposable {
 
     const model = monacoEditor.getModel();
 
-    this.aiDiffWidget?.dispose();
+    this.diffPreviewer?.dispose();
     this.aiInlineChatOperationDisposed.dispose();
     this.aiInlineChatDisposed.addDispose(this.aiInlineContentWidget.launchChatStatus(EInlineChatStatus.THINKING));
 
@@ -544,7 +490,7 @@ export class InlineChatHandler extends Disposable {
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
         if (kind === EResultKind.ACCEPT) {
           this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
-          const newValue = this.aiDiffWidget?.getModifiedModel()?.getValue() || '';
+          const newValue = this.diffPreviewer.getValue();
 
           monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: newValue }], () => null);
           runWhenIdle(() => {
@@ -555,7 +501,7 @@ export class InlineChatHandler extends Disposable {
       this.aiInlineChatService.onThumbs((isLike: boolean) => {
         this.aiReporter.end(relationId, { isLike });
       }),
-      this.aiDiffWidget.onMaxLineCount((count) => {
+      this.diffPreviewer.onLineCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model!.getLineCount()) {
             // 如果用户是选中了最后一行，直接显示在最后一行

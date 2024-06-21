@@ -34,7 +34,7 @@ interface IComputeDiffData {
   pendingRange: LineRange;
 }
 
-enum EComputerMode {
+export enum EComputerMode {
   legacy = 'legacy',
   default = 'default',
 }
@@ -156,6 +156,16 @@ export class InlineStreamDiffHandler extends Disposable {
     this.modifiedModel = modelService.createModel('', null);
 
     this.rawOriginalTextLines = this.getNewOriginalTextLines();
+
+    this.addDispose(
+      Disposable.create(() => {
+        this.allRemoveZoneWidget.forEach((widget) => {
+          widget.dispose();
+        });
+        this.allRemoveZoneWidget = [];
+        this.decorationModel.dispose();
+      }),
+    );
   }
 
   private get originalModel(): ITextModel {
@@ -184,7 +194,6 @@ export class InlineStreamDiffHandler extends Disposable {
     });
 
     let changes = computeResult.changes;
-    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel.changes ', changes);
 
     if (computeResult.hitTimeout) {
       changes = [
@@ -354,7 +363,7 @@ export class InlineStreamDiffHandler extends Disposable {
             this.root = ReactDOMClient.createRoot(container);
             this.root.render(<div className={styles.inline_diff_remove_zone}>{removedText}</div>);
           }
-          override revealRange(_, isLastLine: boolean): void {}
+          override revealRange(): void {}
           dispose(): void {
             this.root.unmount();
             super.dispose();
@@ -379,31 +388,9 @@ export class InlineStreamDiffHandler extends Disposable {
         this.allRemoveZoneWidget.push(zoneWidget);
       }
     }
-
-    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffComputation changesArray', changesArray)
-    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffComputation changes', changes)
   }
 
   private allRemoveZoneWidget: ZoneWidget[] = [];
-
-  public discard(): void {
-    this.originalModel.pushEditOperations(
-      null,
-      [
-        {
-          range: this.decorationModel.getZone(),
-          text: this.rawOriginalTextLines.join(this.originalModel.getEOL()),
-        },
-      ],
-      () => null,
-    );
-
-    this.allRemoveZoneWidget.forEach((widget) => {
-      widget.dispose();
-    });
-    this.allRemoveZoneWidget = [];
-    this.decorationModel.dispose();
-  }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
     const lastLine = this.modifiedModel.getLineCount();
@@ -411,21 +398,18 @@ export class InlineStreamDiffHandler extends Disposable {
 
     const range = new Range(lastLine, lastColumn, lastLine, lastColumn);
 
-    if (newText) {
-      const edit = {
-        range,
-        text: newText,
-      };
-      this.modifiedModel.pushEditOperations(null, [edit], () => null);
-    }
+    const edit = {
+      range,
+      text: newText,
+    };
+    this.modifiedModel.pushEditOperations(null, [edit], () => null);
 
+    this.recompute(computerMode);
+  }
+
+  public recompute(computerMode: EComputerMode): void {
     const newTextLines = this.modifiedModel.getLinesContent();
-
     const diffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
-    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel diffModel', diffModel)
-    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel.newTextLines \n', newTextLines)
-    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel.changes', diffModel.changes)
-    // console.log('compute diff:>>>> result >>>>>>>>>>>> diffModel.newFullRangeTextLines \n', diffModel.newFullRangeTextLines.join('\n'));
     this.handleEdits(diffModel);
   }
 }

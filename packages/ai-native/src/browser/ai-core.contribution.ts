@@ -303,6 +303,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.InlineChatCodeActionEnabled,
             localized: 'preference.ai.native.inlineChat.codeAction.enabled',
           },
+          {
+            id: AINativeSettingSectionsId.InlineDiffPreviewMode,
+            localized: 'preference.ai.native.inlineDiff.preview.mode',
+          },
         ],
       });
     }

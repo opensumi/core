@@ -1,4 +1,9 @@
 export enum AINativeSettingSectionsId {
+  /**
+   * inline diff preview mode
+   */
+  InlineDiffPreviewMode = 'ai.native.inlineDiff.preview.mode',
+
   InlineChatAutoVisible = 'ai.native.inlineChat.auto.visible',
   InlineChatCodeActionEnabled = 'ai.native.inlineChat.codeAction.enabled',
   InterfaceQuickNavigationEnabled = 'ai.native.interface.quickNavigation.enabled',
