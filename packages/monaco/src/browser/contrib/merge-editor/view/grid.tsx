@@ -192,19 +192,13 @@ const BottomBar: React.FC = () => {
           return;
         }
 
-        if (uri.scheme === 'git') {
-          // replace git:// with file://
+        if (uri.scheme !== 'file') {
+          // replace git:// or any other scheme with file://
           uri = uri.with({
             scheme: 'file',
             path: uri.path,
             query: '',
           });
-        }
-
-        if (uri.scheme !== 'file') {
-          // ignore other scheme
-          logger.warn('Unsupported scheme', uri.scheme);
-          return;
         }
 
         commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
