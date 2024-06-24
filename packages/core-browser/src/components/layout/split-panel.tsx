@@ -64,6 +64,7 @@ export interface SplitPanelProps extends SplitChildProps {
   className?: string;
   style?: React.CSSProperties;
   direction?: Layout.direction;
+  headerSize?: number;
   id: string;
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
@@ -95,6 +96,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
   const {
     id,
     className,
+    headerSize,
     resizeHandleClassName,
     style,
     children = [],
@@ -298,7 +300,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
                     splitPanelService.panels.push(ele);
                   }
                 }}
-                className={hides[index] ? RESIZE_LOCK : ''}
+                className={getElementSize(element, totalFlexNum) === `${headerSize}px` ? RESIZE_LOCK : ''}
                 id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
                 style={{
                   // 手风琴场景，固定尺寸和 flex 尺寸混合布局；需要在 Resize Flex 模式下禁用
