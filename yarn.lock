@@ -2198,7 +2198,7 @@ __metadata:
     react-is: "npm:^18.2.0"
     react-window: "npm:^1.8.5"
     resize-observer-polyfill: "npm:1.5.1"
-    strip-json-comments: "npm:3.0.1"
+    strip-json-comments: "npm:5.0.1"
     vscode-textmate: "npm:7.0.1"
   peerDependencies:
     react: ^18.2.0
@@ -18489,10 +18489,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strip-json-comments@npm:3.0.1":
-  version: 3.0.1
-  resolution: "strip-json-comments@npm:3.0.1"
-  checksum: 10/2b860124c04b9b4ac09ec63c17fea142c789ea99b30569240f63c91917c3a8fdc250fc799280bc80dbbad1cccbcfc5f662636f960f80ce660e230f770c3f3a95
+"strip-json-comments@npm:5.0.1":
+  version: 5.0.1
+  resolution: "strip-json-comments@npm:5.0.1"
+  checksum: 10/b314af70c6666a71133e309a571bdb87687fc878d9fd8b38ebed393a77b89835b92f191aa6b0bc10dfd028ba99eed6b6365985001d64c5aef32a4a82456a156b
   languageName: node
   linkType: hard
 
