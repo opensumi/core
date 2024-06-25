@@ -55,6 +55,7 @@ export class InlineStreamDiffHandler extends Disposable {
     this.modifiedModel = modelService.createModel('', null);
 
     this.rawOriginalTextLines = this.getNewOriginalTextLines();
+    this.livePreviewDiffDecorationModel.calcTextLinesTokens(this.rawOriginalTextLines);
 
     this.schedulerHandleEdits = new RunOnceScheduler(() => {
       if (this.currentDiffModel) {
@@ -262,12 +263,10 @@ export class InlineStreamDiffHandler extends Disposable {
       const { removedTextLines, removedLinesOriginalRange, addedRange } = change;
 
       if (removedTextLines.length > 0) {
-        const removedText = removedTextLines.join(eol);
-
         this.livePreviewDiffDecorationModel.showRemovedWidgetByLineNumber(
           zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
-          removedTextLines.length,
-          removedText,
+          removedLinesOriginalRange,
+          removedTextLines,
         );
       }
 

@@ -1,21 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReactDOMClient from 'react-dom/client';
 
 import { Disposable } from '@opensumi/ide-core-common';
-import {
-  ICodeEditor,
-  IEditorDecorationsCollection,
-  IPosition,
-  IRange,
-  Position,
-  Range,
-  Selection,
-} from '@opensumi/ide-monaco';
+import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 
+import { renderLines } from '../ghost-text-widget/index';
+
 import styles from './inline-stream-diff.module.less';
+
+const RemovedWidgetComponent = ({ dom }) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (dom && ref && ref.current) {
+      ref.current.appendChild(dom);
+    }
+  }, [dom, ref]);
+
+  return <div className={styles.inline_diff_remove_zone} ref={ref}></div>;
+};
 
 class RemovedZoneWidget extends ZoneWidget {
   private root: ReactDOMClient.Root;
@@ -24,8 +32,8 @@ class RemovedZoneWidget extends ZoneWidget {
     this.root = ReactDOMClient.createRoot(container);
   }
 
-  renderText(text: string): void {
-    this.root.render(<div className={styles.inline_diff_remove_zone}>{text}</div>);
+  renderDom(dom: HTMLElement): void {
+    this.root.render(<RemovedWidgetComponent dom={dom} />);
   }
 
   override revealRange(): void {}
@@ -35,6 +43,11 @@ class RemovedZoneWidget extends ZoneWidget {
   }
 }
 
+interface ITextLinesTokens {
+  text: string;
+  lineTokens: LineTokens;
+}
+
 export class LivePreviewDiffDecorationModel extends Disposable {
   private selectionDec: IEditorDecorationsCollection;
 
@@ -42,6 +55,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private addedRangeDec: IEditorDecorationsCollection;
 
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
+  private rawOriginalTextLinesTokens: ITextLinesTokens[] = [];
 
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
@@ -75,8 +89,29 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.clearRemovedWidgets();
   }
 
-  public showRemovedWidgetByLineNumber(lineNumber: number, heightInLines: number, text: string): void {
+  public calcTextLinesTokens(rawOriginalTextLines: string[]): void {
+    this.rawOriginalTextLinesTokens = rawOriginalTextLines.map((text, index) => {
+      const model = this.monacoEditor.getModel()!;
+      const zone = this.getZone();
+      const lineNumber = zone.startLineNumber + index;
+
+      model.tokenization.forceTokenization(lineNumber);
+      const lineTokens = model.tokenization.getLineTokens(lineNumber);
+
+      return {
+        text,
+        lineTokens,
+      };
+    });
+  }
+
+  public showRemovedWidgetByLineNumber(
+    lineNumber: number,
+    removedLinesOriginalRange: LineRange,
+    texts: string[],
+  ): void {
     const position = new Position(lineNumber, this.monacoEditor.getModel()!.getLineMaxColumn(lineNumber) || 1);
+    const heightInLines = texts.length;
 
     const widget = new RemovedZoneWidget(this.monacoEditor, {
       showInHiddenAreas: true,
@@ -85,7 +120,19 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     });
 
     widget.create();
-    widget.renderText(text);
+
+    const dom = document.createElement('div');
+    renderLines(
+      dom,
+      this.monacoEditor.getOption(EditorOption.tabIndex),
+      texts.map((content, index) => ({
+        content,
+        decorations: [],
+        lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index].lineTokens,
+      })),
+      this.monacoEditor.getOptions(),
+    );
+    widget.renderDom(dom);
     widget.show(position, heightInLines);
 
     this.removedZoneWidgets.push(widget);
