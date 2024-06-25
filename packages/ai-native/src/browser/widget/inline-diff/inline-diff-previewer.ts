@@ -1,5 +1,4 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AI_DIFF_WIDGET_ID } from '@opensumi/ide-ai-native/lib/common/index';
 import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
 import { ICodeEditor, IPosition, ITextModel, Position, Range, Selection } from '@opensumi/ide-monaco';
 
@@ -66,9 +65,11 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
 
 @Injectable({ multiple: true })
 export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDiffWidget> {
+  static AI_DIFF_WIDGET_ID = 'AI-DIFF-WIDGET';
+
   createNode(): InlineDiffWidget {
     const widget = this.injector.get(InlineDiffWidget, [
-      AI_DIFF_WIDGET_ID,
+      SideBySideInlineDiffWidget.AI_DIFF_WIDGET_ID,
       {
         editor: this.monacoEditor,
         selection: this.selection,
