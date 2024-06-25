@@ -1,8 +1,9 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AI_DIFF_WIDGET_ID } from '@opensumi/ide-ai-native/lib/common/index';
 import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
-import { ICodeEditor, IPosition, Position, Range, Selection } from '@opensumi/ide-monaco';
+import { ICodeEditor, IPosition, ITextModel, Position, Range, Selection } from '@opensumi/ide-monaco';
 
+import { EResultKind } from '../inline-chat/inline-chat.service';
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineDiffWidget } from './inline-diff-widget';
@@ -17,6 +18,10 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
     this.node = this.createNode();
   }
 
+  get model(): ITextModel {
+    return this.monacoEditor.getModel()!;
+  }
+
   protected node: N;
   public getNode(): N {
     return this.node;
@@ -26,6 +31,7 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   abstract onLayout(exec: () => void): Disposable;
   abstract createNode(): N;
   abstract onData(data: ReplyResponse): void;
+  abstract handleAction(action: EResultKind): void;
 
   getPosition(): IPosition | undefined {
     return undefined;
@@ -98,6 +104,12 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     const model = this.node.getModifiedModel();
     return model!.getValue();
   }
+  handleAction(action: EResultKind): void {
+    if (action === EResultKind.ACCEPT) {
+      const newValue = this.getValue();
+      this.model.pushEditOperations(null, [{ range: this.selection, text: newValue }], () => null);
+    }
+  }
   onLineCount(event: (count: number) => void): Disposable {
     this.node.onMaxLineCount(event.bind(this));
     return this;
@@ -147,6 +159,16 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   getPosition(): IPosition | undefined {
     const zone = this.node.getZone();
     return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
+  }
+  handleAction(action: EResultKind): void {
+    if (action === EResultKind.ACCEPT) {
+      this.node.clearAllDecorations();
+    } else if (action === EResultKind.DISCARD || action === EResultKind.REGENERATE) {
+      const eol = this.model.getEOL();
+      const rawContent = this.node.getRawOriginalTextLines().join(eol);
+      const zone = this.node.getZone();
+      this.model.pushEditOperations(null, [{ range: zone, text: rawContent }], () => null);
+    }
   }
   onLayout(exec: () => void): Disposable {
     this.node.onDidEditChange(exec.bind(this));

@@ -502,10 +502,9 @@ export class InlineChatHandler extends Disposable {
     this.aiInlineChatOperationDisposed.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
         if (kind === EResultKind.ACCEPT) {
-          this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
-          const newValue = this.diffPreviewer.getValue();
+          this.diffPreviewer.handleAction(kind);
 
-          monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: newValue }], () => null);
+          this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
           runWhenIdle(() => {
             this.disposeAllWidget();
           });
@@ -560,6 +559,8 @@ export class InlineChatHandler extends Disposable {
 
       this.aiInlineChatDisposed.addDispose([
         this.aiInlineContentWidget.onResultClick(async (kind: EResultKind) => {
+          this.diffPreviewer.handleAction(kind);
+
           if (kind === EResultKind.DISCARD) {
             this.aiReporter.end(relationId, { message: 'discard', success: true, isDrop: true });
             this.disposeAllWidget();

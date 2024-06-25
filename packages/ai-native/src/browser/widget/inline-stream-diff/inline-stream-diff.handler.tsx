@@ -164,6 +164,14 @@ export class InlineStreamDiffHandler extends Disposable {
     return this.livePreviewDiffDecorationModel.getZone();
   }
 
+  public getRawOriginalTextLines(): string[] {
+    return this.rawOriginalTextLines;
+  }
+
+  public clearAllDecorations(): void {
+    this.livePreviewDiffDecorationModel.dispose();
+  }
+
   private handleEdits(diffModel: IComputeDiffData): void {
     const { activeLine, changes, newFullRangeTextLines } = diffModel;
 
