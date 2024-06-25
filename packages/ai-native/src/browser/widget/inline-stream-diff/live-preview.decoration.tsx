@@ -101,7 +101,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       return selectionRange;
     }
 
-    return selectionRange.setEndPosition(latestAddedRange.endLineNumber, latestAddedRange.endColumn);
+    return selectionRange.setEndPosition(
+      Math.max(selectionRange.endLineNumber, latestAddedRange.endLineNumber),
+      Math.max(selectionRange.endColumn, latestAddedRange.endColumn),
+    );
   }
 
   public touchActiveLine(lineNumber: number) {

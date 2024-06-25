@@ -146,7 +146,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   getPosition(): IPosition | undefined {
     const zone = this.node.getZone();
-    return Position.lift({ lineNumber: zone.endLineNumber + 1, column: 1 });
+    return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
   }
   onLayout(exec: () => void): Disposable {
     this.node.onDidEditChange(exec.bind(this));

@@ -54,6 +54,10 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
     super.dispose();
   }
 
+  setPositionPreference(preferences: ContentWidgetPositionPreference[]): void {
+    this.positionPreference = preferences;
+  }
+
   show(options?: ShowAIContentOptions | undefined): void {
     if (!options) {
       return;

@@ -25,6 +25,7 @@ import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import { EInlineDifPreviewMode } from '../../preferences/schema';
@@ -341,6 +342,11 @@ export class InlineChatHandler extends Disposable {
     );
 
     const doLayoutContentWidget = () => {
+      if (inlineDiffMode === EInlineDifPreviewMode.sideBySide) {
+        this.aiInlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
+      } else {
+        this.aiInlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
+      }
       this.aiInlineContentWidget?.setOptions({
         position: this.diffPreviewer.getPosition(),
       });
