@@ -1,5 +1,4 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AI_DIFF_WIDGET_ID } from '@opensumi/ide-ai-native/lib/common/index';
 import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIInlineChatContentWidgetId,
@@ -36,7 +35,7 @@ import {
   SideBySideInlineDiffWidget,
 } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
-import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
@@ -341,6 +340,13 @@ export class InlineChatHandler extends Disposable {
       crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
     );
 
+    const doLayoutContentWidget = () => {
+      this.aiInlineContentWidget?.setOptions({
+        position: this.diffPreviewer.getPosition(),
+      });
+      this.aiInlineContentWidget?.layoutContentWidget();
+    };
+
     if (InlineChatController.is(chatResponse)) {
       const controller = chatResponse as InlineChatController;
 
@@ -362,6 +368,7 @@ export class InlineChatHandler extends Disposable {
                 isRetry,
               });
               this.diffPreviewer.onError(error);
+              doLayoutContentWidget();
             }),
             controller.onAbort(() => {
               this.convertInlineChatStatus(EInlineChatStatus.READY, {
@@ -372,6 +379,7 @@ export class InlineChatHandler extends Disposable {
                 isStop: true,
               });
               this.diffPreviewer.onAbort();
+              doLayoutContentWidget();
             }),
             controller.onEnd(() => {
               this.convertInlineChatStatus(EInlineChatStatus.DONE, {
@@ -381,6 +389,7 @@ export class InlineChatHandler extends Disposable {
                 isRetry,
               });
               this.diffPreviewer.onEnd();
+              doLayoutContentWidget();
             }),
           ]);
         }),
@@ -427,13 +436,11 @@ export class InlineChatHandler extends Disposable {
       );
     }
 
-    this.aiInlineContentWidget?.setOptions({
-      position: {
-        lineNumber: crossSelection.endLineNumber + 1,
-        column: 1,
-      },
-    });
-    this.aiInlineContentWidget?.layoutContentWidget();
+    this.aiInlineChatOperationDisposed.addDispose(
+      this.diffPreviewer.onLayout(() => {
+        doLayoutContentWidget();
+      }),
+    );
   }
 
   private async handleDiffPreviewStrategy(

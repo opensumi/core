@@ -36,26 +36,40 @@ class RemovedZoneWidget extends ZoneWidget {
 }
 
 export class LivePreviewDiffDecorationModel extends Disposable {
-  private zoneDec: IEditorDecorationsCollection;
+  private selectionDec: IEditorDecorationsCollection;
 
   private activeLineDec: IEditorDecorationsCollection;
   private addedRangeDec: IEditorDecorationsCollection;
 
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
 
-  constructor(private readonly monacoEditor: ICodeEditor) {
+  constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
 
-    this.zoneDec = this.monacoEditor.createDecorationsCollection();
+    this.selectionDec = this.monacoEditor.createDecorationsCollection();
 
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
     this.addedRangeDec = this.monacoEditor.createDecorationsCollection();
+
+    this.selectionDec.set([
+      {
+        range: Range.fromPositions(
+          { lineNumber: this.selection.startLineNumber, column: 1 },
+          { lineNumber: this.selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
+        ),
+        options: ModelDecorationOptions.register({
+          description: 'zone-decoration',
+          className: styles.inline_diff_zone,
+          isWholeLine: true,
+        }),
+      },
+    ]);
   }
 
   override dispose(): void {
     super.dispose();
 
-    this.zoneDec.clear();
+    this.selectionDec.clear();
     this.clearActiveLine();
     this.clearAddedLine();
     this.clearRemovedWidgets();
@@ -77,23 +91,17 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.removedZoneWidgets.push(widget);
   }
 
-  public setZone(selection: Selection): void {
-    this.zoneDec.set([
-      {
-        range: Range.fromPositions(
-          { lineNumber: selection.startLineNumber, column: 1 },
-          { lineNumber: selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
-        ),
-        options: ModelDecorationOptions.register({
-          description: 'zone-decoration',
-          className: styles.inline_diff_zone,
-        }),
-      },
-    ]);
-  }
-
   public getZone(): Range {
-    return this.zoneDec.getRange(0)!;
+    const selectionRange = this.selectionDec.getRange(0)!;
+
+    const addedIndex = this.addedRangeDec.getRanges().length - 1;
+    const latestAddedRange = this.addedRangeDec.getRange(Math.max(0, addedIndex));
+
+    if (!latestAddedRange) {
+      return selectionRange;
+    }
+
+    return selectionRange.setEndPosition(latestAddedRange.endLineNumber, latestAddedRange.endColumn);
   }
 
   public touchActiveLine(lineNumber: number) {

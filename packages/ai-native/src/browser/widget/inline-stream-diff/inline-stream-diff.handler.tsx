@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Disposable, RunOnceScheduler } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, RunOnceScheduler } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -43,11 +43,13 @@ export class InlineStreamDiffHandler extends Disposable {
   private schedulerHandleEdits: RunOnceScheduler;
   private currentDiffModel: IComputeDiffData;
 
+  protected readonly _onDidEditChange = new Emitter<void>();
+  public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
+
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
 
-    this.livePreviewDiffDecorationModel = new LivePreviewDiffDecorationModel(this.monacoEditor);
-    this.livePreviewDiffDecorationModel.setZone(this.selection);
+    this.livePreviewDiffDecorationModel = new LivePreviewDiffDecorationModel(this.monacoEditor, this.selection);
 
     const modelService = StandaloneServices.get(IModelService);
     this.modifiedModel = modelService.createModel('', null);
@@ -68,7 +70,7 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   private getNewOriginalTextLines(): string[] {
-    const zone = this.livePreviewDiffDecorationModel.getZone();
+    const zone = this.getZone();
 
     return Array.from({
       length: zone.endLineNumber - zone.startLineNumber + 1,
@@ -158,11 +160,15 @@ export class InlineStreamDiffHandler extends Disposable {
     };
   }
 
+  public getZone(): Range {
+    return this.livePreviewDiffDecorationModel.getZone();
+  }
+
   private handleEdits(diffModel: IComputeDiffData): void {
     const { activeLine, changes, newFullRangeTextLines } = diffModel;
 
     const eol = this.originalModel.getEOL();
-    const zone = this.livePreviewDiffDecorationModel.getZone();
+    const zone = this.getZone();
 
     const newOriginalTextLines = this.getNewOriginalTextLines();
     const diffComputation = linesDiffComputers.getDefault().computeDiff(newOriginalTextLines, newFullRangeTextLines, {
@@ -235,7 +241,7 @@ export class InlineStreamDiffHandler extends Disposable {
     /**
      * handler add range
      */
-    const allAddRanges = changes.filter((c) => !c.addedRange.isEmpty).map((c) => c.addedRange);
+    const allAddRanges = changes.map((c) => c.addedRange);
     this.livePreviewDiffDecorationModel.touchAddedRange(allAddRanges);
 
     this.livePreviewDiffDecorationModel.clearRemovedWidgets();
@@ -259,6 +265,8 @@ export class InlineStreamDiffHandler extends Disposable {
 
       preRemovedLen += removedLinesOriginalRange.length - addedRange.length;
     }
+
+    this._onDidEditChange.fire();
   }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {

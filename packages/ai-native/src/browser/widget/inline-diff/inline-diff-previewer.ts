@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AI_DIFF_WIDGET_ID } from '@opensumi/ide-ai-native/lib/common/index';
 import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
-import { ICodeEditor, Range } from '@opensumi/ide-monaco';
+import { ICodeEditor, IPosition, Position, Range, Selection } from '@opensumi/ide-monaco';
 
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
@@ -23,17 +23,39 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   }
 
   abstract onReady(exec: () => void): Disposable;
+  abstract onLayout(exec: () => void): Disposable;
   abstract createNode(): N;
-  abstract show(line: number, heightInLines: number): void;
-
-  abstract setValue(content: string): void;
-  abstract getValue(): string;
-  abstract onLineCount(evetn: (count: number) => void): Disposable;
-
   abstract onData(data: ReplyResponse): void;
-  abstract onError(error: ErrorResponse): void;
-  abstract onAbort(): void;
-  abstract onEnd(): void;
+
+  getPosition(): IPosition | undefined {
+    return undefined;
+  }
+
+  show(line: number, heightInLines: number): void {
+    // do nothing
+  }
+
+  onLineCount(evetn: (count: number) => void): Disposable {
+    // do nothing
+    return this;
+  }
+
+  setValue(content: string): void {
+    // do nothing
+  }
+  getValue(): string {
+    // do nothing
+    return '';
+  }
+  onError(error: ErrorResponse): void {
+    // do nothing
+  }
+  onAbort(): void {
+    // do nothing
+  }
+  onEnd(): void {
+    // do nothing
+  }
 }
 
 @Injectable({ multiple: true })
@@ -53,6 +75,13 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
       }),
     );
     return widget;
+  }
+  getPosition(): IPosition | undefined {
+    return Position.lift({ lineNumber: this.selection.endLineNumber + 1, column: 1 });
+  }
+  onLayout(exec: () => void): Disposable {
+    requestAnimationFrame(() => exec());
+    return this;
   }
   onReady(exec: () => void): Disposable {
     this.addDispose(this.node.onReady(exec.bind(this)));
@@ -115,27 +144,17 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     );
     return node;
   }
-  show(line: number, heightInLines: number): void {
-    // do nothing
+  getPosition(): IPosition | undefined {
+    const zone = this.node.getZone();
+    return Position.lift({ lineNumber: zone.endLineNumber + 1, column: 1 });
   }
-  setValue(content: string): void {
-    throw new Error('Method not implemented.');
-  }
-  getValue(): string {
-    throw new Error('Method not implemented.');
-  }
-  onLineCount(evetn: (count: number) => void): Disposable {
+  onLayout(exec: () => void): Disposable {
+    this.node.onDidEditChange(exec.bind(this));
     return this;
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
     this.node.addLinesToDiff(message);
-  }
-  onError(error: ErrorResponse): void {
-    // do nothing
-  }
-  onAbort(): void {
-    // do nothing
   }
   onEnd(): void {
     this.node.recompute(EComputerMode.legacy);
