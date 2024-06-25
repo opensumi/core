@@ -48,11 +48,12 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     this.type = type;
     this.message = message;
     this._visible = true;
-    this.onDidDialogVisibleChangeEmitter.fire(this._visible);
-    this.contextkeyService.dialogViewVisibleContext.set(true);
     this.closable = closable;
     this.props = props ?? {};
     this.buttons = buttons;
+
+    this.onDidDialogVisibleChangeEmitter.fire(this._visible);
+    this.contextkeyService.dialogViewVisibleContext.set(true);
     return this.deferred.promise;
   }
 
