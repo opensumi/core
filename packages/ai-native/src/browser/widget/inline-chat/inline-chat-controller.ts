@@ -41,6 +41,10 @@ export class InlineChatController {
   public deffered: Deferred<void> = new Deferred();
 
   private calculateCodeBlocks(content: string): string {
+    if (!this.options?.enableCodeblockRender) {
+      return content;
+    }
+
     const lines = content.split('\n');
 
     let newContents: string[] = [];
@@ -73,14 +77,8 @@ export class InlineChatController {
     listenReadable<IChatProgress>(stream, {
       onData: (data) => {
         const chatContent = (data as IChatContent).content;
-
-        if (!this.options?.enableCodeblockRender) {
-          reply.updateMessage(chatContent);
-          this._onData.fireAndAwait(reply);
-          return;
-        }
-
         wholeContent += chatContent;
+
         const content = this.calculateCodeBlocks(wholeContent);
         reply.updateMessage(content);
         this._onData.fireAndAwait(reply);
