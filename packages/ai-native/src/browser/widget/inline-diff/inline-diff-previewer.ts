@@ -162,13 +162,27 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
   }
   handleAction(action: EResultKind): void {
-    if (action === EResultKind.ACCEPT) {
-      this.node.clearAllDecorations();
-    } else if (action === EResultKind.DISCARD || action === EResultKind.REGENERATE) {
-      const eol = this.model.getEOL();
-      const rawContent = this.node.getRawOriginalTextLines().join(eol);
-      const zone = this.node.getZone();
-      this.model.pushEditOperations(null, [{ range: zone, text: rawContent }], () => null);
+    switch (action) {
+      case EResultKind.ACCEPT:
+        this.node.clearAllDecorations();
+        break;
+
+      case EResultKind.DISCARD:
+      case EResultKind.REGENERATE:
+        this.model.pushEditOperations(
+          null,
+          [
+            {
+              range: this.node.getZone(),
+              text: this.node.getRawOriginalTextLines().join(this.model.getEOL()),
+            },
+          ],
+          () => null,
+        );
+        break;
+
+      default:
+        break;
     }
   }
   onLayout(exec: () => void): Disposable {
