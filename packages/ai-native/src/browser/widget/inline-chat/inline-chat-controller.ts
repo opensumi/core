@@ -40,41 +40,50 @@ export class InlineChatController {
 
   public deffered: Deferred<void> = new Deferred();
 
-  private isInCodeBlocks(content: string): any {
+  private calculateCodeBlocks(content: string): string {
     const lines = content.split('\n');
-    let inBlock = false;
 
-    lines.forEach((line) => {
+    let newContents: string[] = [];
+    let inBlock = false;
+    let startLine = 0;
+
+    lines.forEach((line, i) => {
       if (!inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
         inBlock = true;
+        startLine = i + 1;
       } else if (inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
         inBlock = false;
+        const endLine = i;
+        newContents = lines.slice(startLine, endLine);
+      }
+
+      if (inBlock && startLine !== i + 1) {
+        newContents.push(line);
       }
     });
 
-    return inBlock;
+    return newContents.join('\n');
   }
 
   public async mountReadable(stream: SumiReadableStream<IChatProgress>): Promise<void> {
     await this.deffered.promise;
     const reply = new ReplyResponse('');
-    let chatContent = '';
+    let wholeContent = '';
 
     listenReadable<IChatProgress>(stream, {
       onData: (data) => {
-        const content = (data as IChatContent).content;
+        const chatContent = (data as IChatContent).content;
 
         if (!this.options?.enableCodeblockRender) {
-          reply.updateMessage(content);
+          reply.updateMessage(chatContent);
           this._onData.fireAndAwait(reply);
           return;
         }
 
-        chatContent += content;
-        if (this.isInCodeBlocks(chatContent)) {
-          reply.updateMessage(content);
-          this._onData.fireAndAwait(reply);
-        }
+        wholeContent += chatContent;
+        const content = this.calculateCodeBlocks(wholeContent);
+        reply.updateMessage(content);
+        this._onData.fireAndAwait(reply);
       },
       onEnd: () => {
         this._onEnd.fire();

@@ -36,7 +36,7 @@ export enum EComputerMode {
 
 @Injectable({ multiple: true })
 export class InlineStreamDiffHandler extends Disposable {
-  private modifiedModel: ITextModel;
+  private virtualModel: ITextModel;
   private rawOriginalTextLines: string[];
   private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
 
@@ -52,7 +52,7 @@ export class InlineStreamDiffHandler extends Disposable {
     this.livePreviewDiffDecorationModel = new LivePreviewDiffDecorationModel(this.monacoEditor, this.selection);
 
     const modelService = StandaloneServices.get(IModelService);
-    this.modifiedModel = modelService.createModel('', null);
+    this.virtualModel = modelService.createModel('', null);
 
     this.rawOriginalTextLines = this.getNewOriginalTextLines();
     this.livePreviewDiffDecorationModel.calcTextLinesTokens(this.rawOriginalTextLines);
@@ -277,22 +277,12 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
-    const lastLine = this.modifiedModel.getLineCount();
-    const lastColumn = this.modifiedModel.getLineMaxColumn(lastLine);
-
-    const range = new Range(lastLine, lastColumn, lastLine, lastColumn);
-
-    const edit = {
-      range,
-      text: newText,
-    };
-    this.modifiedModel.pushEditOperations(null, [edit], () => null);
-
+    this.virtualModel.setValue(newText);
     this.recompute(computerMode);
   }
 
   public recompute(computerMode: EComputerMode): void {
-    const newTextLines = this.modifiedModel.getLinesContent();
+    const newTextLines = this.virtualModel.getLinesContent();
     const diffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
     this.currentDiffModel = diffModel;
 

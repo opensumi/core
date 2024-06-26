@@ -1,6 +1,9 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
-import { ICodeEditor, IPosition, ITextModel, Position, Range, Selection } from '@opensumi/ide-monaco';
+import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
+import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
 
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
@@ -117,18 +120,14 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
-    const modifiedModel = this.node.getModifiedModel();
+    const modifiedModel = this.node.getModifiedModel()!;
 
-    const lastLine = modifiedModel!.getLineCount();
-    const lastColumn = modifiedModel!.getLineMaxColumn(lastLine);
+    const defaultEOL = modifiedModel.getEOL() === EOL.CRLF ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF;
+    const { textBuffer, disposable } = createTextBuffer(message, defaultEOL);
+    const singleEditOperation = ModelService._computeEdits(modifiedModel, textBuffer);
+    modifiedModel.pushEditOperations([], singleEditOperation, () => []);
 
-    const range = new Range(lastLine, lastColumn, lastLine, lastColumn);
-
-    const edit = {
-      range,
-      text: message || '',
-    };
-    modifiedModel!.pushEditOperations(null, [edit], () => null);
+    disposable.dispose();
     this.node.layout();
   }
   onError(error: ErrorResponse): void {
