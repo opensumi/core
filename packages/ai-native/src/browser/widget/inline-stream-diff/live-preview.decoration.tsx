@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import ReactDOMClient from 'react-dom/client';
 
+import { StackingLevel } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
@@ -12,6 +13,11 @@ import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/z
 import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
+
+const ZoneDescription = 'zone-description';
+const ActiveLineDecoration = 'activeLine-decoration';
+const AddedRangeDecoration = 'added-range-decoration';
+const PendingRangeDecoration = 'pending-range-decoration';
 
 const RemovedWidgetComponent = ({ dom, marginWidth }) => {
   const ref = React.useRef<HTMLDivElement>(null);
@@ -50,41 +56,42 @@ interface ITextLinesTokens {
 }
 
 export class LivePreviewDiffDecorationModel extends Disposable {
-  private selectionDec: IEditorDecorationsCollection;
+  private zoneDec: IEditorDecorationsCollection;
 
   private activeLineDec: IEditorDecorationsCollection;
+  private pendingRangeDec: IEditorDecorationsCollection;
   private addedRangeDec: IEditorDecorationsCollection;
 
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
   private rawOriginalTextLinesTokens: ITextLinesTokens[] = [];
 
+  private zone: LineRange;
+
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
 
-    this.selectionDec = this.monacoEditor.createDecorationsCollection();
+    this.zoneDec = this.monacoEditor.createDecorationsCollection();
 
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
     this.addedRangeDec = this.monacoEditor.createDecorationsCollection();
+    this.pendingRangeDec = this.monacoEditor.createDecorationsCollection();
 
-    this.selectionDec.set([
-      {
-        range: Range.fromPositions(
+    this.updateZone(
+      LineRange.fromRangeInclusive(
+        Range.fromPositions(
           { lineNumber: this.selection.startLineNumber, column: 1 },
           { lineNumber: this.selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
         ),
-        options: ModelDecorationOptions.register({
-          description: 'zone-decoration',
-          className: styles.inline_diff_zone,
-          isWholeLine: true,
-        }),
-      },
-    ]);
+      ),
+    );
   }
 
   override dispose(): void {
     super.dispose();
 
-    this.selectionDec.clear();
+    this.zoneDec.clear();
+
+    this.clearPendingLine();
     this.clearActiveLine();
     this.clearAddedLine();
     this.clearRemovedWidgets();
@@ -143,20 +150,23 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.removedZoneWidgets.push(widget);
   }
 
-  public getZone(): Range {
-    const selectionRange = this.selectionDec.getRange(0)!;
+  public updateZone(newZone: LineRange): void {
+    this.zone = newZone;
 
-    const addedIndex = this.addedRangeDec.getRanges().length - 1;
-    const latestAddedRange = this.addedRangeDec.getRange(Math.max(0, addedIndex));
+    this.zoneDec.set([
+      {
+        range: newZone.toInclusiveRange()!,
+        options: ModelDecorationOptions.register({
+          description: ZoneDescription,
+          className: styles.inline_diff_zone,
+          isWholeLine: true,
+        }),
+      },
+    ]);
+  }
 
-    if (!latestAddedRange) {
-      return selectionRange;
-    }
-
-    return selectionRange.setEndPosition(
-      Math.max(selectionRange.endLineNumber, latestAddedRange.endLineNumber),
-      Math.max(selectionRange.endColumn, latestAddedRange.endColumn),
-    );
+  public getZone(): LineRange {
+    return this.zone;
   }
 
   public touchActiveLine(lineNumber: number) {
@@ -175,9 +185,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           },
         ),
         options: ModelDecorationOptions.register({
-          description: 'activeLine-decoration',
+          description: ActiveLineDecoration,
           isWholeLine: true,
           className: styles.inline_diff_current,
+          zIndex: StackingLevel.WorkbenchEditor,
         }),
       },
     ]);
@@ -191,6 +202,30 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         range: Range.fromPositions(
           {
             lineNumber: zone.startLineNumber + range.startLineNumber - 1,
+            column: 1,
+          },
+          {
+            lineNumber: zone.startLineNumber + range.endLineNumberExclusive - 2,
+            column: Number.MAX_SAFE_INTEGER,
+          },
+        ),
+        options: ModelDecorationOptions.register({
+          description: AddedRangeDecoration,
+          isWholeLine: true,
+          className: styles.inline_diff_added_range,
+        }),
+      })),
+    );
+  }
+
+  public touchPendingRange(range: LineRange) {
+    const zone = this.getZone();
+
+    this.pendingRangeDec.set([
+      {
+        range: Range.fromPositions(
+          {
+            lineNumber: zone.startLineNumber + range.startLineNumber - 1,
             column: 0,
           },
           {
@@ -199,12 +234,16 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           },
         ),
         options: ModelDecorationOptions.register({
-          description: 'added-range-decoration',
+          description: PendingRangeDecoration,
           isWholeLine: true,
-          className: styles.inline_diff_added_range,
+          className: styles.inline_diff_pending_range,
         }),
-      })),
-    );
+      },
+    ]);
+  }
+
+  public clearPendingLine() {
+    this.pendingRangeDec.clear();
   }
 
   public clearActiveLine() {

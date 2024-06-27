@@ -54,7 +54,13 @@ export class InlineStreamDiffHandler extends Disposable {
     const modelService = StandaloneServices.get(IModelService);
     this.virtualModel = modelService.createModel('', null);
 
-    this.rawOriginalTextLines = this.getNewOriginalTextLines();
+    const eol = this.originalModel.getEOL();
+    const startPosition = this.selection.getStartPosition();
+    const endPosition = this.selection.getEndPosition();
+    this.rawOriginalTextLines = this.originalModel
+      .getValueInRange(Range.fromPositions(startPosition, endPosition))
+      .split(eol);
+
     this.livePreviewDiffDecorationModel.calcTextLinesTokens(this.rawOriginalTextLines);
 
     this.schedulerHandleEdits = new RunOnceScheduler(() => {
@@ -68,14 +74,6 @@ export class InlineStreamDiffHandler extends Disposable {
 
   private get originalModel(): ITextModel {
     return this.monacoEditor.getModel()!;
-  }
-
-  private getNewOriginalTextLines(): string[] {
-    const zone = this.getZone();
-
-    return Array.from({
-      length: zone.endLineNumber - zone.startLineNumber + 1,
-    }).map((_, i) => this.originalModel.getLineContent(zone.startLineNumber + i));
   }
 
   private computeDiff(
@@ -161,12 +159,23 @@ export class InlineStreamDiffHandler extends Disposable {
     };
   }
 
-  public getZone(): Range {
-    return this.livePreviewDiffDecorationModel.getZone();
+  public discard(): void {
+    const eol = this.originalModel.getEOL();
+    const zone = this.getZone();
+    this.originalModel.pushEditOperations(
+      null,
+      [
+        {
+          range: zone.toInclusiveRange()!,
+          text: this.rawOriginalTextLines.join(eol),
+        },
+      ],
+      () => null,
+    );
   }
 
-  public getRawOriginalTextLines(): string[] {
-    return this.rawOriginalTextLines;
+  public getZone(): LineRange {
+    return this.livePreviewDiffDecorationModel.getZone();
   }
 
   public clearAllDecorations(): void {
@@ -174,12 +183,21 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   private handleEdits(diffModel: IComputeDiffData): void {
-    const { activeLine, changes, newFullRangeTextLines } = diffModel;
-
+    const { activeLine, changes, newFullRangeTextLines, pendingRange } = diffModel;
     const eol = this.originalModel.getEOL();
     const zone = this.getZone();
 
-    const newOriginalTextLines = this.getNewOriginalTextLines();
+    const validZone =
+      zone.startLineNumber < zone.endLineNumberExclusive
+        ? new Range(
+            zone.startLineNumber,
+            1,
+            zone.endLineNumberExclusive - 1,
+            this.originalModel.getLineMaxColumn(zone.endLineNumberExclusive - 1),
+          )
+        : new Range(zone.startLineNumber, 1, zone.startLineNumber, 1);
+
+    const newOriginalTextLines = this.originalModel.getValueInRange(validZone).split(eol);
     const diffComputation = linesDiffComputers.getDefault().computeDiff(newOriginalTextLines, newFullRangeTextLines, {
       computeMoves: false,
       maxComputationTimeMs: 200,
@@ -190,9 +208,9 @@ export class InlineStreamDiffHandler extends Disposable {
 
     if (diffComputation.hitTimeout) {
       let newText = newFullRangeTextLines.join(eol);
-      zone.isEmpty() && (newText += eol);
+      validZone.isEmpty() && (newText += eol);
       const edit = {
-        range: zone,
+        range: validZone,
         text: newText,
         forceMoveMarkers: false,
       };
@@ -205,26 +223,26 @@ export class InlineStreamDiffHandler extends Disposable {
         let newRange: Range;
         if (change.original.isEmpty) {
           newRange = new Range(
-            zone.startLineNumber + change.original.startLineNumber - 1,
+            validZone.startLineNumber + change.original.startLineNumber - 1,
             1,
-            zone.startLineNumber + change.original.startLineNumber - 1,
+            validZone.startLineNumber + change.original.startLineNumber - 1,
             1,
           );
           newText += eol;
         } else if (change.modified.isEmpty) {
           newRange = new Range(
-            zone.startLineNumber + change.original.startLineNumber - 1,
+            validZone.startLineNumber + change.original.startLineNumber - 1,
             1,
-            zone.startLineNumber + change.original.endLineNumberExclusive - 1,
+            validZone.startLineNumber + change.original.endLineNumberExclusive - 1,
             1,
           );
           newText = null;
         } else {
           newRange = new Range(
-            zone.startLineNumber + change.original.startLineNumber - 1,
+            validZone.startLineNumber + change.original.startLineNumber - 1,
             1,
-            zone.startLineNumber + change.original.endLineNumberExclusive - 2,
-            this.originalModel.getLineMaxColumn(zone.startLineNumber + change.original.endLineNumberExclusive - 2),
+            validZone.startLineNumber + change.original.endLineNumberExclusive - 2,
+            this.originalModel.getLineMaxColumn(validZone.startLineNumber + change.original.endLineNumberExclusive - 2),
           );
         }
         const edit = {
@@ -239,7 +257,14 @@ export class InlineStreamDiffHandler extends Disposable {
     this.originalModel.pushEditOperations(null, realTimeChanges, () => null);
 
     /**
-     * handler active line decoration
+     * 根据 newFullRangeTextLines 内容长度重新计算 zone，避免超过最大长度，进而影响未选中的代码区域
+     */
+    this.livePreviewDiffDecorationModel.updateZone(
+      new LineRange(zone.startLineNumber, zone.startLineNumber + newFullRangeTextLines.length),
+    );
+
+    /**
+     * handle active line decoration
      */
     if (activeLine > 0) {
       this.livePreviewDiffDecorationModel.touchActiveLine(activeLine);
@@ -248,23 +273,32 @@ export class InlineStreamDiffHandler extends Disposable {
     }
 
     /**
-     * handler add range
+     * handle added range decoration
      */
     const allAddRanges = changes.map((c) => c.addedRange);
     this.livePreviewDiffDecorationModel.touchAddedRange(allAddRanges);
 
-    this.livePreviewDiffDecorationModel.clearRemovedWidgets();
+    /**
+     * handle pending range decoration
+     */
+    if (pendingRange.length > 0) {
+      this.livePreviewDiffDecorationModel.touchPendingRange(pendingRange);
+    } else {
+      this.livePreviewDiffDecorationModel.clearPendingLine();
+    }
 
     /**
-     * handler removed range
+     * handle removed range
      */
     let preRemovedLen: number = 0;
+    this.livePreviewDiffDecorationModel.clearRemovedWidgets();
+
     for (const change of changes) {
       const { removedTextLines, removedLinesOriginalRange, addedRange } = change;
 
       if (removedTextLines.length > 0) {
         this.livePreviewDiffDecorationModel.showRemovedWidgetByLineNumber(
-          zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
+          validZone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
           removedLinesOriginalRange,
           removedTextLines,
         );

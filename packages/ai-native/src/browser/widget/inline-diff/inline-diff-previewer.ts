@@ -168,16 +168,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
 
       case EResultKind.DISCARD:
       case EResultKind.REGENERATE:
-        this.model.pushEditOperations(
-          null,
-          [
-            {
-              range: this.node.getZone(),
-              text: this.node.getRawOriginalTextLines().join(this.model.getEOL()),
-            },
-          ],
-          () => null,
-        );
+        this.node.discard();
         break;
 
       default:
