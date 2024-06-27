@@ -13,7 +13,7 @@ import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
 
-const RemovedWidgetComponent = ({ dom }) => {
+const RemovedWidgetComponent = ({ dom, marginWidth }) => {
   const ref = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,18 +22,19 @@ const RemovedWidgetComponent = ({ dom }) => {
     }
   }, [dom, ref]);
 
-  return <div className={styles.inline_diff_remove_zone} ref={ref}></div>;
+  return <div className={styles.inline_diff_remove_zone} ref={ref} style={{ marginLeft: marginWidth + 'px' }}></div>;
 };
 
 class RemovedZoneWidget extends ZoneWidget {
   private root: ReactDOMClient.Root;
 
   _fillContainer(container: HTMLElement): void {
+    container.classList.add(styles.inline_diff_remove_zone_widget_container);
     this.root = ReactDOMClient.createRoot(container);
   }
 
-  renderDom(dom: HTMLElement): void {
-    this.root.render(<RemovedWidgetComponent dom={dom} />);
+  renderDom(dom: HTMLElement, options: { marginWidth: number }): void {
+    this.root.render(<RemovedWidgetComponent dom={dom} marginWidth={options.marginWidth} />);
   }
 
   override revealRange(): void {}
@@ -132,7 +133,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       })),
       this.monacoEditor.getOptions(),
     );
-    widget.renderDom(dom);
+
+    const layoutInfo = this.monacoEditor.getOption(EditorOption.layoutInfo);
+    const marginWidth = layoutInfo.contentLeft;
+
+    widget.renderDom(dom, { marginWidth });
     widget.show(position, heightInLines);
 
     this.removedZoneWidgets.push(widget);
