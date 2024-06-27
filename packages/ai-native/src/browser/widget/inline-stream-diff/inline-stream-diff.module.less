@@ -1,16 +1,21 @@
 .inline_diff_current {
-  background-color: var(--editorWhitespace-foreground);
+  background-color: var(--editorIndentGuide-activeBackground);
 }
 
 .inline_diff_added_range {
   background-color: var(--diffEditor-insertedLineBackground);
 }
 
-.inline_diff_remove_zone {
-  background-color: var(--diffEditor-removedLineBackground);
-  height: 100%;
-  width: 100%;
-  display: inline-block;
-  margin-left: 80px;
-  white-space: pre-wrap;
+.inline_diff_remove_zone_widget_container {
+  width: calc(100% + 10px);
+
+  .inline_diff_remove_zone {
+    background-color: var(--diffEditor-removedLineBackground);
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.inline_diff_pending_range {
+  background-color: var(--editorWidget-background);
 }
