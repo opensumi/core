@@ -3,8 +3,9 @@ import React, { useEffect } from 'react';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { StackingLevel } from '@opensumi/ide-core-browser';
-import { Disposable, uuid } from '@opensumi/ide-core-common';
+import { KeybindingRegistry, StackingLevel } from '@opensumi/ide-core-browser';
+import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { Disposable, isUndefined, uuid } from '@opensumi/ide-core-common';
 import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
@@ -14,34 +15,66 @@ import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/edit
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 
+import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
-
 
 const ZoneDescription = 'zone-description';
 const ActiveLineDecoration = 'activeLine-decoration';
 const AddedRangeDecoration = 'added-range-decoration';
 const PendingRangeDecoration = 'pending-range-decoration';
 
-const PartialEditWidgetComponent = () => (
+interface IPartialEditWidgetComponent {
+  acceptSequence: string;
+  discardSequence: string;
+}
+
+const PartialEditWidgetComponent = ({ acceptSequence, discardSequence }: IPartialEditWidgetComponent) => (
     <div className={styles.inline_diff_accept_partial_widget_container}>
       <div className={styles.content}>
-        <span className={cls(styles.accept_btn, styles.btn)}>⌘Y</span>
-        <span className={cls(styles.discard_btn, styles.btn)}>⌘N</span>
+        <span className={cls(styles.accept_btn, styles.btn)}>{acceptSequence}</span>
+        <span className={cls(styles.discard_btn, styles.btn)}>{discardSequence}</span>
       </div>
     </div>
   );
 
 @Injectable({ multiple: true })
 class AcceptPartialEditWidget extends ReactInlineContentWidget {
+  @Autowired(KeybindingRegistry)
+  private readonly keybindingRegistry: KeybindingRegistry;
+
   private _id: string;
 
   positionPreference = [ContentWidgetPositionPreference.EXACT];
 
-  public renderView(): React.ReactNode {
-    return <PartialEditWidgetComponent />;
+  private getSequenceKeyStrings(): IPartialEditWidgetComponent | undefined {
+    let keybindings = this.keybindingRegistry.getKeybindingsForCommand(AI_INLINE_DIFF_PARTIAL_EDIT.id);
+    keybindings = keybindings.sort((a, b) => b.args - a.args);
+
+    if (!keybindings || (keybindings.length !== 2 && keybindings.some((k) => isUndefined(k.resolved)))) {
+      return;
+    }
+
+    return {
+      acceptSequence: this.keybindingRegistry.acceleratorForSequence(keybindings[0].resolved!, '')[0],
+      discardSequence: this.keybindingRegistry.acceleratorForSequence(keybindings[1].resolved!, '')[0],
+    };
   }
+
+  public renderView(): React.ReactNode {
+    const keyStrings = this.getSequenceKeyStrings();
+    if (!keyStrings) {
+      return;
+    }
+    return (
+      <PartialEditWidgetComponent
+        acceptSequence={keyStrings.acceptSequence}
+        discardSequence={keyStrings.discardSequence}
+      />
+    );
+  }
+
   public id(): string {
     if (!this._id) {
       this._id = `AcceptPartialEditWidgetID_${uuid(4)}`;
@@ -106,6 +139,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private rawOriginalTextLinesTokens: ITextLinesTokens[] = [];
 
   private zone: LineRange;
+  private aiNativeContextKey: AINativeContextKey;
 
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
@@ -115,6 +149,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
     this.addedRangeDec = this.monacoEditor.createDecorationsCollection();
     this.pendingRangeDec = this.monacoEditor.createDecorationsCollection();
+
+    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
 
     this.updateZone(
       LineRange.fromRangeInclusive(
@@ -247,6 +283,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
       this.partialEditWidgetList.push(acceptPartialEditWidget);
     });
+
+    this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(true);
   }
 
   public touchAddedRange(ranges: LineRange[]) {
@@ -316,6 +354,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       widget.dispose();
     });
     this.partialEditWidgetList = [];
+    this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(false);
   }
 
   public clearRemovedWidgets() {

@@ -3,14 +3,14 @@
 }
 
 .inline_diff_added_range {
-  background-color: var(--diffEditor-insertedLineBackground);
+  background-color: var(--aiNative-inlineDiffAddedRange);
 }
 
 .inline_diff_remove_zone_widget_container {
   width: calc(100% + 10px);
 
   .inline_diff_remove_zone {
-    background-color: var(--diffEditor-removedLineBackground);
+    background-color: var(--aiNative-inlineDiffRemovedRange);
     height: 100%;
     width: 100%;
   }
@@ -45,13 +45,13 @@
     padding: 2px;
 
     &.accept_btn {
-      background-color: rgba(0, 255, 0, 0.2);
-      color: rgba(255, 255, 255, 0.8);
+      background-color: var(--aiNative-inlineDiffAcceptPartialEdit);
+      color: #fff;
     }
 
     &.discard_btn {
-      background-color: rgba(255, 0, 0, 0.4);
-      color: rgba(255, 255, 255, 0.8);
+      background-color: var(--aiNative-inlineDiffDiscardPartialEdit);
+      color: #fff;
     }
   }
 }

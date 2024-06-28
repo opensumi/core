@@ -31,8 +31,13 @@ import {
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
+  AI_INLINE_DIFF_PARTIAL_EDIT,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { InlineChatIsVisible, InlineInputWidgetIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import {
+  InlineChatIsVisible,
+  InlineDiffPartialEditsIsVisible,
+  InlineInputWidgetIsVisible,
+} from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
@@ -86,6 +91,7 @@ import {
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 import { InlineInputChatService } from './widget/inline-input/inline-input.service';
+import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
 @Domain(
@@ -174,6 +180,9 @@ export class AINativeBrowserContribution
 
   @Autowired(InlineInputChatService)
   private readonly inlineInputChatService: InlineInputChatService;
+
+  @Autowired(InlineStreamDiffService)
+  private readonly inlineStreamDiffService: InlineStreamDiffService;
 
   constructor() {
     this.registerFeature();
@@ -363,6 +372,12 @@ export class AINativeBrowserContribution
       },
     });
 
+    commands.registerCommand(AI_INLINE_DIFF_PARTIAL_EDIT, {
+      execute: (isAccept: boolean) => {
+        this.inlineStreamDiffService.launchAcceptDiscardPartialEdit(isAccept);
+      },
+    });
+
     /**
      * 当 inline completion 消失时
      */
@@ -411,6 +426,19 @@ export class AINativeBrowserContribution
         keybinding: 'esc',
         args: false,
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
+      });
+      keybindings.registerKeybinding({
+        command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
+        keybinding: 'alt+y',
+        args: true,
+        when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
+      });
+      keybindings.registerKeybinding({
+        command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
+        keybinding: 'alt+n',
+        args: false,
+        priority: 1,
+        when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
       });
 
       if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
