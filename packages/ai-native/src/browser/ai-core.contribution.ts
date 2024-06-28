@@ -431,13 +431,14 @@ export class AINativeBrowserContribution
         command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
         keybinding: 'alt+y',
         args: true,
+        priority: 100,
         when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
       });
       keybindings.registerKeybinding({
         command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
         keybinding: 'alt+n',
         args: false,
-        priority: 1,
+        priority: 100,
         when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
       });
 

@@ -5,8 +5,8 @@ import ReactDOMClient from 'react-dom/client';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { KeybindingRegistry, StackingLevel } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { Disposable, isUndefined, uuid } from '@opensumi/ide-core-common';
-import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
+import { Disposable, Emitter, Event, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { ICodeEditor, IEditorDecorationsCollection, IPosition, Position, Range, Selection } from '@opensumi/ide-monaco';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
@@ -16,9 +16,11 @@ import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/to
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
 import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
+import { InlineStreamDiffService } from './inline-stream-diff.service';
 
 const ZoneDescription = 'zone-description';
 const ActiveLineDecoration = 'activeLine-decoration';
@@ -30,14 +32,7 @@ interface IPartialEditWidgetComponent {
   discardSequence: string;
 }
 
-const PartialEditWidgetComponent = ({ acceptSequence, discardSequence }: IPartialEditWidgetComponent) => (
-    <div className={styles.inline_diff_accept_partial_widget_container}>
-      <div className={styles.content}>
-        <span className={cls(styles.accept_btn, styles.btn)}>{acceptSequence}</span>
-        <span className={cls(styles.discard_btn, styles.btn)}>{discardSequence}</span>
-      </div>
-    </div>
-  );
+type TPartialEdit = 'accept' | 'discard';
 
 @Injectable({ multiple: true })
 class AcceptPartialEditWidget extends ReactInlineContentWidget {
@@ -45,6 +40,12 @@ class AcceptPartialEditWidget extends ReactInlineContentWidget {
   private readonly keybindingRegistry: KeybindingRegistry;
 
   private _id: string;
+
+  private readonly _onAccept = new Emitter<void>();
+  public readonly onAccept: Event<void> = this._onAccept.event;
+
+  private readonly _onDiscard = new Emitter<void>();
+  public readonly onDiscard: Event<void> = this._onDiscard.event;
 
   positionPreference = [ContentWidgetPositionPreference.EXACT];
 
@@ -67,11 +68,18 @@ class AcceptPartialEditWidget extends ReactInlineContentWidget {
     if (!keyStrings) {
       return;
     }
+
     return (
-      <PartialEditWidgetComponent
-        acceptSequence={keyStrings.acceptSequence}
-        discardSequence={keyStrings.discardSequence}
-      />
+      <div className={styles.inline_diff_accept_partial_widget_container}>
+        <div className={styles.content}>
+          <span className={cls(styles.accept_btn, styles.btn)} onClick={() => this._onAccept.fire()}>
+            {keyStrings.acceptSequence}
+          </span>
+          <span className={cls(styles.discard_btn, styles.btn)} onClick={() => this._onDiscard.fire()}>
+            {keyStrings.discardSequence}
+          </span>
+        </div>
+      </div>
     );
   }
 
@@ -128,12 +136,15 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  @Autowired(InlineStreamDiffService)
+  private readonly inlineStreamDiffService: InlineStreamDiffService;
+
   private zoneDec: IEditorDecorationsCollection;
 
   private activeLineDec: IEditorDecorationsCollection;
   private pendingRangeDec: IEditorDecorationsCollection;
-  private addedRangeDec: IEditorDecorationsCollection;
 
+  private addedRangeDec: EnhanceDecorationsCollection;
   private partialEditWidgetList: AcceptPartialEditWidget[] = [];
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
   private rawOriginalTextLinesTokens: ITextLinesTokens[] = [];
@@ -145,11 +156,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     super();
 
     this.zoneDec = this.monacoEditor.createDecorationsCollection();
-
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
-    this.addedRangeDec = this.monacoEditor.createDecorationsCollection();
     this.pendingRangeDec = this.monacoEditor.createDecorationsCollection();
 
+    this.addedRangeDec = new EnhanceDecorationsCollection(this.monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
 
     this.updateZone(
@@ -159,6 +169,12 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           { lineNumber: this.selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
         ),
       ),
+    );
+
+    this.addDispose(
+      this.inlineStreamDiffService.onAcceptDiscardPartialEdit((isAccept) => {
+        // console.log('onAcceptDiscardPartialEdit:>>> ', this)
+      }),
     );
   }
 
@@ -271,6 +287,31 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     ]);
   }
 
+  private handlePartialEditAction(type: TPartialEdit, widget: AcceptPartialEditWidget) {
+    const position = widget.getPosition()!.position!;
+    /**
+     * added widget 通常是在 removed widget 的下面一行的位置
+     */
+    const findRemovedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
+    const findAddedWidget = this.addedRangeDec
+      .getDecorations()
+      .find((d) => d.editorDecoration.range.startLineNumber === position.lineNumber);
+
+    switch (type) {
+      case 'accept':
+        widget.dispose();
+        findRemovedWidget?.dispose();
+        findAddedWidget?.dispose();
+        break;
+
+      case 'discard':
+        break;
+
+      default:
+        break;
+    }
+  }
+
   public touchPartialEditWidgets(ranges: LineRange[]) {
     this.clearPartialEditWidgetList();
     const zone = this.getZone();
@@ -279,7 +320,17 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       const startLineNumber = range.startLineNumber;
 
       const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [this.monacoEditor]);
-      acceptPartialEditWidget.show({ position: { lineNumber: zone.startLineNumber + startLineNumber - 1, column: 1 } });
+      const position: IPosition = { lineNumber: zone.startLineNumber + startLineNumber - 1, column: 1 };
+      acceptPartialEditWidget.show({ position });
+
+      acceptPartialEditWidget.addDispose([
+        acceptPartialEditWidget.onAccept(() => {
+          this.handlePartialEditAction('accept', acceptPartialEditWidget);
+        }),
+        acceptPartialEditWidget.onDiscard(() => {
+          this.handlePartialEditAction('discard', acceptPartialEditWidget);
+        }),
+      ]);
 
       this.partialEditWidgetList.push(acceptPartialEditWidget);
     });
