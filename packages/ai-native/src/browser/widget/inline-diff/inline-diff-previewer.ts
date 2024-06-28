@@ -184,6 +184,8 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.node.addLinesToDiff(message);
   }
   onEnd(): void {
-    this.node.recompute(EComputerMode.legacy);
+    const { changes } = this.node.recompute(EComputerMode.legacy);
+    const allAddRanges = changes.map((c) => c.addedRange);
+    this.node.renderPartialEditWidgets(allAddRanges);
   }
 }

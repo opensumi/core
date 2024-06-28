@@ -19,3 +19,39 @@
 .inline_diff_pending_range {
   background-color: var(--editorWidget-background);
 }
+
+.accept_partial_edit_widget_id {
+  pointer-events: none;
+  width: 1e6px;
+}
+
+.inline_diff_accept_partial_widget_container {
+  width: 100%;
+  visibility: visible;
+
+  .content {
+    float: right;
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 10px;
+  }
+
+  .btn {
+    pointer-events: auto;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px;
+
+    &.accept_btn {
+      background-color: rgba(0, 255, 0, 0.2);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    &.discard_btn {
+      background-color: rgba(255, 0, 0, 0.4);
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+}
