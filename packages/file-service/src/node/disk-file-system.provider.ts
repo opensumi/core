@@ -57,7 +57,7 @@ export interface IRPCDiskFileSystemProvider {
 }
 
 export interface IWatcher {
-  id: number;
+  uri: string;
   options?: {
     excludes?: string[];
   };
@@ -73,7 +73,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
-  protected readonly watcherCollection = new Map<string, IWatcher>();
+  protected readonly watcherCollection = new Map<number, IWatcher>();
   protected watchFileExcludes: string[] = [];
 
   private _whenReadyDeferred: Deferred<void> = new Deferred();
@@ -134,7 +134,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   async watch(uri: UriComponents, options?: { excludes?: string[] }): Promise<number> {
     await this.whenReady;
     const _uri = Uri.revive(uri);
-    const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
+    const uriString = _uri.toString();
+    const id = await this.watcherServer.watchFileChanges(uriString, {
       excludes: options?.excludes ?? [],
     });
     const disposable = {
@@ -142,15 +143,15 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
         this.watcherServer.unwatchFileChanges(id);
       },
     };
-    this.watcherCollection.set(_uri.toString(), { id, options, disposable });
+    this.watcherCollection.set(id, { uri: uriString, options, disposable });
     return id;
   }
 
   unwatch(watcherId: number) {
-    for (const [_uri, { id, disposable }] of this.watcherCollection) {
-      if (watcherId === id) {
-        disposable.dispose();
-      }
+    const watcher = this.watcherCollection.get(watcherId);
+    if (watcher) {
+      watcher.disposable.dispose();
+      this.watcherCollection.delete(watcherId);
     }
   }
 
@@ -174,11 +175,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     try {
       const dirList = await fse.readdir(_uri.fsPath);
 
-      dirList.forEach((name) => {
-        const filePath = paths.join(_uri.fsPath, name);
-        // eslint-disable-next-line import/namespace
-        result.push([name, this.getFileStatType(fse.statSync(filePath))]);
-      });
+      await Promise.all(
+        dirList.map(async (name) => {
+          const filePath = paths.join(_uri.fsPath, name);
+          result.push([name, this.getFileStatType(await fse.stat(filePath))]);
+        }),
+      );
       return result;
     } catch (e) {
       return result;
@@ -264,7 +266,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       await writeFileAtomic(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
       await fse.writeFile(FileUri.fsPath(new URI(_uri)), buffer);
-      this.logger.warn('Error using writeFileAtomicSync, using fs instead.', e);
+      this.logger.warn('Error using writeFileAtomic, using fs instead.', e);
     } finally {
       this.ignoreNextChangesEvent.delete(_uri.toString());
     }
@@ -419,7 +421,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       uri: string;
       options?: { excludes?: string[] };
     }[] = [];
-    for (const [uri, { id, options }] of this.watcherCollection) {
+    for (const [id, { uri, options }] of this.watcherCollection) {
       tasks.push({
         id,
         uri,
