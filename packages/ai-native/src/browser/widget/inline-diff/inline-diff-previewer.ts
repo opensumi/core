@@ -192,5 +192,6 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       return new LineRange(lineNumber, lineNumber + 1);
     });
     this.node.renderPartialEditWidgets(allAddRanges);
+    this.monacoEditor.focus();
   }
 }
