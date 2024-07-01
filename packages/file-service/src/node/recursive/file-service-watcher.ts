@@ -419,14 +419,18 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   };
 
   protected async fileInWatching(watcherId: number, directory: string, file: string): Promise<string | undefined> {
-    const realPath = await this.resolvePath(directory, file);
+    const tempPath = paths.join(directory, file);
+    if (this.isIgnored(watcherId, tempPath)) {
+      return;
+    }
+    const realPath = await this.resolveRealPathIfNeeded(directory, file);
     if (this.isIgnored(watcherId, realPath)) {
       return;
     }
     return realPath;
   }
 
-  protected async resolvePath(directory: string, file: string): Promise<string> {
+  protected async resolveRealPathIfNeeded(directory: string, file: string): Promise<string> {
     const path = paths.join(directory, file);
     // 如果是 linux 则获取一下真实 path，以防返回的是软连路径被过滤
     if (isLinux) {
