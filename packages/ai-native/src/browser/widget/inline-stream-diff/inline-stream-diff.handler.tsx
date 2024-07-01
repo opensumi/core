@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, Emitter, Event, RunOnceScheduler } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
@@ -36,6 +36,9 @@ export enum EComputerMode {
 
 @Injectable({ multiple: true })
 export class InlineStreamDiffHandler extends Disposable {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   private virtualModel: ITextModel;
   private rawOriginalTextLines: string[];
   private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
@@ -49,7 +52,10 @@ export class InlineStreamDiffHandler extends Disposable {
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
 
-    this.livePreviewDiffDecorationModel = new LivePreviewDiffDecorationModel(this.monacoEditor, this.selection);
+    this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [
+      this.monacoEditor,
+      this.selection,
+    ]);
 
     const modelService = StandaloneServices.get(IModelService);
     this.virtualModel = modelService.createModel('', null);
@@ -180,6 +186,10 @@ export class InlineStreamDiffHandler extends Disposable {
 
   public clearAllDecorations(): void {
     this.livePreviewDiffDecorationModel.dispose();
+  }
+
+  public renderPartialEditWidgets(range: LineRange[]): void {
+    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(range);
   }
 
   private handleEdits(diffModel: IComputeDiffData): void {
@@ -315,7 +325,7 @@ export class InlineStreamDiffHandler extends Disposable {
     this.recompute(computerMode);
   }
 
-  public recompute(computerMode: EComputerMode): void {
+  public recompute(computerMode: EComputerMode): IComputeDiffData {
     const newTextLines = this.virtualModel.getLinesContent();
     const diffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
     this.currentDiffModel = diffModel;
@@ -323,5 +333,7 @@ export class InlineStreamDiffHandler extends Disposable {
     if (!this.schedulerHandleEdits.isScheduled()) {
       this.schedulerHandleEdits.schedule();
     }
+
+    return diffModel;
   }
 }

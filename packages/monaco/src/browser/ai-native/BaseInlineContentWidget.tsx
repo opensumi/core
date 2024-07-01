@@ -91,11 +91,15 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
     this.editor.layoutContentWidget(this);
   }
 
+  getClassName(): string {
+    return this.getId();
+  }
+
   getDomNode(): HTMLElement {
     if (!this.domNode) {
       this.domNode = document.createElement('div');
       requestAnimationFrame(() => {
-        this.domNode.classList.add(this.getId());
+        this.domNode.classList.add(this.getClassName());
         this.domNode.style.zIndex = StackingLevelStr.Overlay;
       });
     }
