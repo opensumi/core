@@ -1,7 +1,7 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { isMacintosh, sleep } from '@opensumi/ide-core-common';
+import { Deferred, isMacintosh, sleep } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
@@ -35,10 +35,12 @@ const sleepTime = 1000;
 
   it('Should receive file changes events from in the workspace by default.', async () => {
     const actualUris = new Set<string>();
+    const triggered = new Deferred<void>();
 
     const watcherClient = {
       onDidFilesChanged(event: DidFilesChangedParams) {
         event.changes.forEach((c) => actualUris.add(c.uri.toString()));
+        triggered.resolve();
       },
     };
 
@@ -61,7 +63,8 @@ const sleepTime = 1000;
     expect(fse.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual(
       'baz',
     );
-    await sleep(sleepTime);
+    await triggered.promise;
+
     expect(expectedUris).toEqual(Array.from(actualUris));
 
     watcherServerList.push(watcherServer);
@@ -184,6 +187,7 @@ const sleepTime = 1000;
   it('Rename file', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
+    const triggered = new Deferred<void>();
 
     const watcherClient = {
       onDidFilesChanged(event: DidFilesChangedParams) {
@@ -195,6 +199,7 @@ const sleepTime = 1000;
             deleteUris.add(c.uri);
           }
         });
+        triggered.resolve();
       },
     };
     const { root, watcherServer } = await generateWatcher();
@@ -205,7 +210,7 @@ const sleepTime = 1000;
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
 
     fse.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
-    await sleep(sleepTime);
+    await triggered.promise;
 
     expect([...addUris]).toEqual(expectedAddUris);
     expect([...deleteUris]).toEqual(expectedDeleteUris);
@@ -215,6 +220,7 @@ const sleepTime = 1000;
   it('Move file', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
+    const triggered = new Deferred<void>();
 
     const watcherClient = {
       onDidFilesChanged(event: DidFilesChangedParams) {
@@ -226,6 +232,8 @@ const sleepTime = 1000;
             deleteUris.add(c.uri);
           }
         });
+
+        triggered.resolve();
       },
     };
 
@@ -243,7 +251,7 @@ const sleepTime = 1000;
       },
     );
 
-    await sleep(sleepTime);
+    await triggered.promise;
 
     expect(Array.from(addUris)).toEqual(expectedAddUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
