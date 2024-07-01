@@ -429,14 +429,14 @@ export class AINativeBrowserContribution
       });
       keybindings.registerKeybinding({
         command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
-        keybinding: 'alt+y',
+        keybinding: 'ctrl+y',
         args: true,
         priority: 100,
         when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
       });
       keybindings.registerKeybinding({
         command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
-        keybinding: 'alt+n',
+        keybinding: 'ctrl+n',
         args: false,
         priority: 100,
         when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,

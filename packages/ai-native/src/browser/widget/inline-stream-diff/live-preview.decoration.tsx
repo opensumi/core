@@ -33,7 +33,10 @@ interface IPartialEditWidgetComponent {
   discardSequence: string;
 }
 
-type TPartialEdit = 'accept' | 'discard';
+enum EPartialEdit {
+  accept = 'accept',
+  discard = 'discard',
+}
 
 @Injectable({ multiple: true })
 class AcceptPartialEditWidget extends ReactInlineContentWidget {
@@ -194,7 +197,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.addDispose(
       this.inlineStreamDiffService.onAcceptDiscardPartialEdit((isAccept) => {
-        // console.log('onAcceptDiscardPartialEdit:>>> ', this)
+        const firstWidget = this.partialEditWidgetList[0];
+        if (firstWidget) {
+          this.handlePartialEditAction(isAccept ? EPartialEdit.accept : EPartialEdit.discard, firstWidget);
+        }
       }),
     );
   }
@@ -308,7 +314,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     ]);
   }
 
-  private handlePartialEditAction(type: TPartialEdit, widget: AcceptPartialEditWidget) {
+  private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget) {
     const position = widget.getPosition()!.position!;
     const model = this.monacoEditor.getModel()!;
     /**
@@ -318,14 +324,14 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const findAddedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
     switch (type) {
-      case 'accept':
+      case EPartialEdit.accept:
         widget.dispose();
         findAddedDec?.dispose();
         findRemovedWidget?.dispose();
 
         break;
 
-      case 'discard':
+      case EPartialEdit.discard:
         widget.dispose();
 
         if (findAddedDec) {
@@ -372,10 +378,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
       acceptPartialEditWidget.addDispose([
         acceptPartialEditWidget.onAccept(() => {
-          this.handlePartialEditAction('accept', acceptPartialEditWidget);
+          this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget);
         }),
         acceptPartialEditWidget.onDiscard(() => {
-          this.handlePartialEditAction('discard', acceptPartialEditWidget);
+          this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget);
         }),
         acceptPartialEditWidget.onDispose(() => {
           const id = acceptPartialEditWidget.getId();
