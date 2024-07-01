@@ -25,12 +25,14 @@ export class FileSystemWatcher implements IFileServiceWatcher {
     this.watchId = options.watchId;
     this.uri = options.uri;
 
-    this.fileServiceClient.onFilesChanged((fileChangeList: FileChange[]) => {
-      const result = filterChange(fileChangeList, this.uri.toString());
-      if (result && result.length > 0) {
-        this.changeEmitter.fire(result);
-      }
-    });
+    this.toDispose.push(
+      this.fileServiceClient.onFilesChanged((fileChangeList: FileChange[]) => {
+        const result = filterChange(fileChangeList, this.uri.toString());
+        if (result && result.length > 0) {
+          this.changeEmitter.fire(result);
+        }
+      }),
+    );
   }
 
   get onFilesChanged(): Event<FileChange[]> {
