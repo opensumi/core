@@ -6,14 +6,15 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { KeybindingRegistry, StackingLevel } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Disposable, Emitter, Event, isUndefined, uuid } from '@opensumi/ide-core-common';
-import { ICodeEditor, IEditorDecorationsCollection, IPosition, Position, Range, Selection } from '@opensumi/ide-monaco';
+import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
-import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
+import { IOptions, ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
@@ -110,6 +111,10 @@ const RemovedWidgetComponent = ({ dom, marginWidth }) => {
 class RemovedZoneWidget extends ZoneWidget {
   private root: ReactDOMClient.Root;
 
+  constructor(editor: ICodeEditor, private readonly removedTextLines: string[], options: IOptions) {
+    super(editor, options);
+  }
+
   _fillContainer(container: HTMLElement): void {
     container.classList.add(styles.inline_diff_remove_zone_widget_container);
     this.root = ReactDOMClient.createRoot(container);
@@ -117,6 +122,10 @@ class RemovedZoneWidget extends ZoneWidget {
 
   renderDom(dom: HTMLElement, options: { marginWidth: number }): void {
     this.root.render(<RemovedWidgetComponent dom={dom} marginWidth={options.marginWidth} />);
+  }
+
+  getRemovedTextLines(): string[] {
+    return this.removedTextLines;
   }
 
   override revealRange(): void {}
@@ -172,6 +181,18 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     );
 
     this.addDispose(
+      this.addedRangeDec.onDidDecorationsChange((newAddedRangeDec) => {
+        const inlineDiffPartialEditsIsVisible = this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.get();
+        if (inlineDiffPartialEditsIsVisible) {
+          const addedRange = newAddedRangeDec.map((d) => d.editorDecoration.range);
+          this.touchPartialEditWidgets(
+            addedRange.map((range) => new LineRange(range.startLineNumber, range.startLineNumber + 1)),
+          );
+        }
+      }),
+    );
+
+    this.addDispose(
       this.inlineStreamDiffService.onAcceptDiscardPartialEdit((isAccept) => {
         // console.log('onAcceptDiscardPartialEdit:>>> ', this)
       }),
@@ -214,7 +235,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const position = new Position(lineNumber, this.monacoEditor.getModel()!.getLineMaxColumn(lineNumber) || 1);
     const heightInLines = texts.length;
 
-    const widget = new RemovedZoneWidget(this.monacoEditor, {
+    const widget = new RemovedZoneWidget(this.monacoEditor, texts, {
       showInHiddenAreas: true,
       showFrame: false,
       showArrow: false,
@@ -289,22 +310,50 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   private handlePartialEditAction(type: TPartialEdit, widget: AcceptPartialEditWidget) {
     const position = widget.getPosition()!.position!;
+    const model = this.monacoEditor.getModel()!;
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
      */
     const findRemovedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
-    const findAddedWidget = this.addedRangeDec
-      .getDecorations()
-      .find((d) => d.editorDecoration.range.startLineNumber === position.lineNumber);
+    const findAddedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
     switch (type) {
       case 'accept':
         widget.dispose();
+        findAddedDec?.dispose();
         findRemovedWidget?.dispose();
-        findAddedWidget?.dispose();
+
         break;
 
       case 'discard':
+        widget.dispose();
+
+        if (findAddedDec) {
+          const addedRange = findAddedDec.editorDecoration.range;
+          findAddedDec.dispose();
+
+          model.pushEditOperations(null, [EditOperation.delete(Range.lift(addedRange))], () => null);
+        }
+
+        if (findRemovedWidget) {
+          const position = findRemovedWidget.position!;
+          const eol = model.getEOL();
+
+          const removedTextLines = findRemovedWidget.getRemovedTextLines();
+          const removedText = removedTextLines.reduce((pre, cur, index) => {
+            const content = pre + cur;
+
+            if (index !== removedTextLines.length - 1 || findAddedDec?.length === 0) {
+              return content + eol;
+            }
+
+            return content;
+          }, '');
+
+          findRemovedWidget.dispose();
+          model.pushEditOperations(null, [EditOperation.insert(position.delta(1)!, removedText)], () => null);
+        }
+
         break;
 
       default:
@@ -314,14 +363,12 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   public touchPartialEditWidgets(ranges: LineRange[]) {
     this.clearPartialEditWidgetList();
-    const zone = this.getZone();
 
     ranges.forEach((range) => {
-      const startLineNumber = range.startLineNumber;
+      const lineNumber = range.startLineNumber;
 
       const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [this.monacoEditor]);
-      const position: IPosition = { lineNumber: zone.startLineNumber + startLineNumber - 1, column: 1 };
-      acceptPartialEditWidget.show({ position });
+      acceptPartialEditWidget.show({ position: { lineNumber, column: 1 } });
 
       acceptPartialEditWidget.addDispose([
         acceptPartialEditWidget.onAccept(() => {
@@ -329,6 +376,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         }),
         acceptPartialEditWidget.onDiscard(() => {
           this.handlePartialEditAction('discard', acceptPartialEditWidget);
+        }),
+        acceptPartialEditWidget.onDispose(() => {
+          const id = acceptPartialEditWidget.getId();
+          this.partialEditWidgetList = this.partialEditWidgetList.filter((p) => p.id() !== id);
         }),
       ]);
 
@@ -342,25 +393,32 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const zone = this.getZone();
 
     this.addedRangeDec.set(
-      ranges
-        .filter((r) => r.length > 0)
-        .map((range) => ({
-          range: Range.fromPositions(
-            {
-              lineNumber: zone.startLineNumber + range.startLineNumber - 1,
-              column: 1,
-            },
-            {
-              lineNumber: zone.startLineNumber + range.endLineNumberExclusive - 2,
-              column: Number.MAX_SAFE_INTEGER,
-            },
-          ),
+      ranges.map((r) => {
+        const startPosition = { lineNumber: zone.startLineNumber + r.startLineNumber - 1, column: 1 };
+        const endPosition = {
+          lineNumber: zone.startLineNumber + r.endLineNumberExclusive - 2,
+          column: Number.MAX_SAFE_INTEGER,
+        };
+        const length = r.length;
+
+        let range = Range.fromPositions(startPosition, endPosition);
+        let className = styles.inline_diff_added_range + ' ';
+
+        if (length === 0) {
+          range = Range.fromPositions(startPosition);
+          className += styles.hide;
+        }
+
+        return {
+          length: r.length,
+          range,
           options: ModelDecorationOptions.register({
             description: AddedRangeDecoration,
             isWholeLine: true,
-            className: styles.inline_diff_added_range,
+            className,
           }),
-        })),
+        };
+      }),
     );
   }
 

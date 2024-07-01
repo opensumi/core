@@ -1,6 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
+import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
@@ -185,7 +186,11 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   onEnd(): void {
     const { changes } = this.node.recompute(EComputerMode.legacy);
-    const allAddRanges = changes.map((c) => c.addedRange);
+    const zone = this.node.getZone();
+    const allAddRanges = changes.map((c) => {
+      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
+      return new LineRange(lineNumber, lineNumber + 1);
+    });
     this.node.renderPartialEditWidgets(allAddRanges);
   }
 }
