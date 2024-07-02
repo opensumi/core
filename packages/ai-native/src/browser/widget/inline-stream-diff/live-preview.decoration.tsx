@@ -29,6 +29,7 @@ import {
   IResourceUndoRedoElement,
   IUndoRedoService,
   UndoRedoElementType,
+  UndoRedoGroup,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
@@ -196,6 +197,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private partialEditWidgetList: AcceptPartialEditWidget[] = [];
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
   private rawOriginalTextLinesTokens: ITextLinesTokens[] = [];
+
   private undoRedoService: IUndoRedoService;
 
   private zone: LineRange;
@@ -229,7 +231,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           this.partialEditWidgetList.forEach((widget) => {
             const addedWidget = newAddedRangeDec.find((a) => widget.getDecorationId() === a.id);
             if (addedWidget) {
-              const range = addedWidget.editorDecoration.range;
+              const range = addedWidget.getActualRange();
               /**
                * 重新定位 added decoration 与 partial edit widget 的位置
                */
@@ -360,17 +362,21 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     ]);
   }
 
-  private pushUndoElement(data: { undo: () => void; redo: () => void }): void {
+  private pushUndoElement(data: { undo: () => void; redo: () => void; group?: UndoRedoGroup }): void {
     const resource = this.monacoEditor.getModel()!.uri;
+    const group = data.group ?? new UndoRedoGroup();
 
-    this.undoRedoService.pushElement({
-      type: UndoRedoElementType.Resource,
-      resource,
-      label: 'handlePartialEditAction',
-      code: 'handlePartialEditAction_1',
-      undo: data.undo,
-      redo: data.redo,
-    } as IResourceUndoRedoElement);
+    this.undoRedoService.pushElement(
+      {
+        type: UndoRedoElementType.Resource,
+        resource,
+        label: 'handlePartialEditAction',
+        code: 'handlePartialEditAction_1',
+        undo: data.undo,
+        redo: data.redo,
+      } as IResourceUndoRedoElement,
+      group,
+    );
   }
 
   private doAccept(
@@ -404,13 +410,13 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     removedWidget?: RemovedZoneWidget,
   ): void {
     const model = this.monacoEditor.getModel()!;
-    partialWidget.dispose();
+    partialWidget.hide();
 
     let operation: ISingleEditOperation | null = null;
 
     if (addedDec) {
       if (addedDec.length > 0) {
-        const addedRange = addedDec.editorDecoration.range;
+        const addedRange = addedDec.getActualRange();
         const opRange = Range.lift({
           startLineNumber: addedRange.startLineNumber,
           startColumn: addedRange.startColumn,
@@ -420,7 +426,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         operation = EditOperation.delete(opRange);
       }
 
-      addedDec.dispose();
+      addedDec.hide();
     }
 
     if (removedWidget) {
@@ -429,19 +435,33 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
       const removedText = removedWidget.getRemovedTextLines().join(eol) + eol;
 
-      removedWidget.dispose();
-
       if (operation) {
         operation = EditOperation.replace(Range.lift(operation.range), removedText);
       } else {
         operation = EditOperation.insert(position.delta(1)!, removedText);
       }
+
+      removedWidget.hide();
     }
 
     if (operation) {
-      model.pushStackElement();
-      model.pushEditOperations(null, [operation], () => null);
-      model.pushStackElement();
+      const group = new UndoRedoGroup();
+
+      this.pushUndoElement({
+        undo: () => {
+          partialWidget.resume();
+          addedDec?.resume();
+          removedWidget?.resume();
+        },
+        redo: () => {
+          partialWidget.hide();
+          addedDec?.hide();
+          removedWidget?.hide();
+        },
+        group,
+      });
+
+      model.pushEditOperations(null, [operation], () => null, group);
     }
   }
 
