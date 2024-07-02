@@ -54,6 +54,7 @@ export const AccordionContainer = observer(
       <SplitPanel
         className={className}
         style={style}
+        headerSize={headerSize}
         dynamicTarget={true}
         id={containerId}
         resizeKeep={false}
