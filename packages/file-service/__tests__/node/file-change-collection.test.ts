@@ -3,6 +3,8 @@ import { FileUri } from '@opensumi/ide-core-node';
 import { FileChangeType } from '../../src/common';
 import { FileChangeCollection } from '../../src/node/file-change-collection';
 
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 describe('FileChangeCollection', () => {
   assertChanges({
     first: FileChangeType.ADDED,

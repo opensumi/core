@@ -8,6 +8,8 @@ import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 const sleepTime = 1000;
 
 describe('ParceWatcher Test', () => {

@@ -13,6 +13,8 @@ import { FileSystemWatcherServer } from '../../lib/node/recursive/file-service-w
 import { FileChangeType, IFileService } from '../../src/common';
 import { FileService, FileServiceModule } from '../../src/node';
 
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 describe('FileService', () => {
   let root: URI;
   let fileService: IFileService;

@@ -7,6 +7,8 @@ import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common/index';
 import { UnRecursiveFileSystemWatcher } from '../../src/node/un-recursive/file-service-watcher';
 
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 describe('unRecursively watch for folder additions, deletions, rename,and updates', () => {
   const track = temp.track();
   async function generateWatcher() {

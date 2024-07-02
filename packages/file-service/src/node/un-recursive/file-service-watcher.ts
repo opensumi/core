@@ -12,6 +12,7 @@ import {
   SupportLogNamespace,
   isMacintosh,
   path,
+  sleep,
 } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
@@ -73,8 +74,9 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   }
 
   private async doWatch(basePath: string) {
+    let watcher: fs.FSWatcher | undefined;
     try {
-      const watcher = watch(basePath);
+      watcher = watch(basePath);
       this.logger.log('start watching', basePath);
       const isDirectory = (await fs.lstat(basePath)).isDirectory();
 
@@ -99,14 +101,15 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       // 开始走监听流程
       watcher.on('error', (code: number, signal: string) => {
         this.logger.error(`Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`);
-        watcher.close();
+        if (watcher) {
+          watcher.close();
+        }
       });
 
       watcher.on('change', (type: string, filename: string | Buffer) => {
         if (isTemporaryFile(filename as string)) {
           return;
         }
-
         // 对传入的raw做一个统一处理
         let changeFileName = '';
         if (filename) {
@@ -153,8 +156,12 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
         }
       });
+      return watcher;
     } catch (error) {
       this.logger.error(`Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
+      if (watcher) {
+        watcher.close();
+      }
     }
   }
 
@@ -194,18 +201,17 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   protected async start(basePath: string): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
-    if (!(await fs.pathExists(basePath))) {
-      return disposables;
-    }
-
     const realPath = await fs.realpath(basePath);
+
     const tryWatchDir = async (retryDelay = 1000) => {
       try {
-        this.doWatch(realPath);
+        const watcher = await this.doWatch(realPath);
+        if (watcher) {
+          disposables.push(Disposable.create(() => watcher.close()));
+        }
       } catch (error) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, retryDelay);
-        });
+        this.logger.error('watch directory error', error);
+        await sleep(retryDelay);
       }
       return undefined;
     };
