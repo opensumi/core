@@ -1,0 +1,38 @@
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--editorGroupHeader-tabsBackground);
+  color: var(--ai-native-text-color-common);
+  max-height: 350px;
+  width: 500px;
+  overflow-y: auto;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.suggestionItem {
+  padding: 6px 10px 6px 16px;
+  cursor: pointer;
+}
+
+.suggestionItemContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestionDesc {
+  font-size: 12px;
+}
+
+.suggestionCmd {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.suggestionItem:hover {
+  filter: brightness(110%);
+  background-color: var(--selection-background);
+}

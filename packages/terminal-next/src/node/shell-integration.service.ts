@@ -53,6 +53,7 @@ export class ShellIntegrationService implements IShellIntegrationService {
     }
     
     __is_prompt_end() {
+      builtin printf '\e]6973;CWD;$PWD\a' # 记录当前目录
       builtin printf '\e]6973;PE\a' # 用于标记 Shell Prompt End，作用同上
     }
     

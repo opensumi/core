@@ -848,6 +848,10 @@ export const defaultSettingSections: {
         // 命令行参数
         { id: 'terminal.integrated.shellArgs.linux', localized: 'preference.terminal.integrated.shellArgs.linux' },
         { id: 'terminal.integrated.copyOnSelection', localized: 'preference.terminal.integrated.copyOnSelection' },
+        {
+          id: 'terminal.integrated.enableTerminalIntellComplete',
+          localized: 'preference.terminal.integrated.enableTerminalIntellComplete',
+        },
         // Local echo
         { id: 'terminal.integrated.localEchoEnabled', localized: 'preference.terminal.integrated.localEchoEnabled' },
         {

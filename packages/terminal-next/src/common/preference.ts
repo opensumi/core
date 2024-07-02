@@ -119,6 +119,7 @@ export const enum CodeTerminalSettingId {
   EnableFileLinks = 'terminal.integrated.enableFileLinks',
   UnicodeVersion = 'terminal.integrated.unicodeVersion',
   ExperimentalLinkProvider = 'terminal.integrated.experimentalLinkProvider',
+  EnableTerminalIntellComplete = 'terminal.integrated.enableTerminalIntellComplete',
   LocalEchoLatencyThreshold = 'terminal.integrated.localEchoLatencyThreshold',
   LocalEchoEnabled = 'terminal.integrated.localEchoEnabled',
   LocalEchoExcludePrograms = 'terminal.integrated.localEchoExcludePrograms',
@@ -308,6 +309,11 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     [CodeTerminalSettingId.CopyOnSelection]: {
       type: 'boolean',
       description: '%preference.terminal.integrated.copyOnSelectionDesc%',
+      default: false,
+    },
+    [CodeTerminalSettingId.EnableTerminalIntellComplete]: {
+      type: 'boolean',
+      description: '%preference.terminal.integrated.enableTerminalIntellComplete%',
       default: false,
     },
     [CodeTerminalSettingId.LocalEchoEnabled]: {
