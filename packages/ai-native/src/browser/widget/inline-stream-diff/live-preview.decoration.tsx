@@ -245,7 +245,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.addDispose(
       this.inlineStreamDiffService.onAcceptDiscardPartialEdit((isAccept) => {
-        const firstWidget = this.partialEditWidgetList[0];
+        const firstWidget = this.partialEditWidgetList.filter((p) => !p.isHidden)[0];
         if (firstWidget) {
           this.handlePartialEditAction(isAccept ? EPartialEdit.accept : EPartialEdit.discard, firstWidget);
         }
@@ -379,36 +379,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     );
   }
 
-  private doAccept(
-    partialWidget: AcceptPartialEditWidget,
-    addedDec?: IEnhanceModelDeltaDecoration,
-    removedWidget?: RemovedZoneWidget,
-  ): void {
-    const hide = () => {
-      partialWidget.hide();
-      addedDec?.hide();
-      removedWidget?.hide();
-    };
-
-    const resume = () => {
-      partialWidget.resume();
-      addedDec?.resume();
-      removedWidget?.resume();
-    };
-
-    hide();
-
-    this.pushUndoElement({
-      undo: () => resume(),
-      redo: () => hide(),
-    });
-  }
-
   private doDiscard(
     partialWidget: AcceptPartialEditWidget,
     addedDec?: IEnhanceModelDeltaDecoration,
     removedWidget?: RemovedZoneWidget,
-  ): void {
+  ): ISingleEditOperation | null {
     const model = this.monacoEditor.getModel()!;
     partialWidget.hide();
 
@@ -444,47 +419,77 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       removedWidget.hide();
     }
 
-    if (operation) {
-      const group = new UndoRedoGroup();
-
-      this.pushUndoElement({
-        undo: () => {
-          partialWidget.resume();
-          addedDec?.resume();
-          removedWidget?.resume();
-        },
-        redo: () => {
-          partialWidget.hide();
-          addedDec?.hide();
-          removedWidget?.hide();
-        },
-        group,
-      });
-
-      model.pushEditOperations(null, [operation], () => null, group);
-    }
+    return operation;
   }
 
   private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget) {
     const position = widget.getPosition()!.position!;
+    const model = this.monacoEditor.getModel()!;
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
      */
     const findRemovedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
     const findAddedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
+    const hide = () => {
+      widget.hide();
+      findAddedDec?.hide();
+      findRemovedWidget?.hide();
+    };
+
+    const resume = () => {
+      widget.resume();
+      findAddedDec?.resume();
+      findRemovedWidget?.resume();
+    };
+
+    /**
+     * 将 partial widget 的所有操作和代码变更放在单独的 undo/redo 堆栈组里面
+     */
+    const group = new UndoRedoGroup();
+
     switch (type) {
       case EPartialEdit.accept:
-        this.doAccept(widget, findAddedDec, findRemovedWidget);
+        hide();
+        this.pushUndoElement({
+          undo: () => resume(),
+          redo: () => hide(),
+          group,
+        });
         break;
 
       case EPartialEdit.discard:
-        this.doDiscard(widget, findAddedDec, findRemovedWidget);
+        {
+          const operation = this.doDiscard(widget, findAddedDec, findRemovedWidget);
+          if (operation) {
+            this.pushUndoElement({
+              undo: () => resume(),
+              redo: () => hide(),
+              group,
+            });
+            model.pushEditOperations(null, [operation], () => null, group);
+          }
+        }
         break;
 
       default:
         break;
     }
+  }
+
+  /**
+   * 记录 partial edit widget 与 added range 的映射关系(主要用于位置计算)
+   */
+  private recordPartialEditWidgetWithAddedDec(): void {
+    this.partialEditWidgetList.forEach((widget) => {
+      const lineNumber = widget.getPosition()?.position?.lineNumber;
+      if (lineNumber) {
+        const addedWidget = this.addedRangeDec.getDecorationByLineNumber(lineNumber);
+        if (addedWidget) {
+          widget.recordDecorationId(addedWidget.id);
+        }
+      }
+    });
   }
 
   public touchPartialEditWidgets(ranges: LineRange[]) {
@@ -553,18 +558,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       }),
     );
 
-    /**
-     * 记录 partial edit widget 与 added range 的映射关系(主要用于位置计算)
-     */
-    this.partialEditWidgetList.forEach((widget) => {
-      const lineNumber = widget.getPosition()?.position?.lineNumber;
-      if (lineNumber) {
-        const addedWidget = this.addedRangeDec.getDecorationByLineNumber(lineNumber);
-        if (addedWidget) {
-          widget.recordDecorationId(addedWidget.id);
-        }
-      }
-    });
+    this.recordPartialEditWidgetWithAddedDec();
   }
 
   public touchPendingRange(range: LineRange) {
