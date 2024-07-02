@@ -7,6 +7,7 @@ import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/cor
 import { linesDiffComputers } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputers';
 import { DetailedLineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
+import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
 
@@ -46,12 +47,15 @@ export class InlineStreamDiffHandler extends Disposable {
   private schedulerHandleEdits: RunOnceScheduler;
   private currentDiffModel: IComputeDiffData;
 
+  private undoRedoGroup: UndoRedoGroup;
+
   protected readonly _onDidEditChange = new Emitter<void>();
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
 
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
 
+    this.undoRedoGroup = new UndoRedoGroup();
     this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [
       this.monacoEditor,
       this.selection,
@@ -184,12 +188,22 @@ export class InlineStreamDiffHandler extends Disposable {
     return this.livePreviewDiffDecorationModel.getZone();
   }
 
-  public clearAllDecorations(): void {
-    this.livePreviewDiffDecorationModel.dispose();
-  }
-
   public renderPartialEditWidgets(range: LineRange[]): void {
     this.livePreviewDiffDecorationModel.touchPartialEditWidgets(range);
+  }
+
+  /**
+   * 令当前的 inline diff 在流式渲染过程当中使用 pushEditOperations 进行编辑的操作都放在同一组 undo/redo 堆栈里
+   * 一旦撤销到最顶层则关闭当前的 inline diff
+   */
+  public pushStackElement(): void {
+    this.livePreviewDiffDecorationModel.pushUndoElement({
+      undo: () => this.dispose(),
+      redo: () => {
+        /* noop */
+      },
+      group: this.undoRedoGroup,
+    });
   }
 
   private handleEdits(diffModel: IComputeDiffData): void {
@@ -264,7 +278,7 @@ export class InlineStreamDiffHandler extends Disposable {
       }
     }
 
-    this.originalModel.pushEditOperations(null, realTimeChanges, () => null);
+    this.originalModel.pushEditOperations(null, realTimeChanges, () => null, this.undoRedoGroup);
 
     /**
      * 根据 newFullRangeTextLines 内容长度重新计算 zone，避免超过最大长度，进而影响未选中的代码区域
