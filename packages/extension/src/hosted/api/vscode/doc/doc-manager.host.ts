@@ -90,7 +90,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     } else if (!options || typeof options === 'object') {
       uri = Uri.parse(await this._proxy.$tryCreateDocument(options));
     } else {
-      throw new Error('illegal argument -  uriOrFileNameOrOptions');
+      throw new Error('illegal argument - uriOrFileNameOrOptions');
     }
 
     const docUrl = normalizeFileUrl(uri.toString());
@@ -253,6 +253,8 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     const document = this._documents.get(uri);
 
     if (document) {
+      document._acceptIsDirty(e.dirty);
+
       const promises: Promise<any>[] = [];
       const event: vscode.TextDocumentWillSaveEvent = {
         document: document.document,
