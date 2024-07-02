@@ -30,6 +30,11 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
   suppressMouseDown = false;
   positionPreference: ContentWidgetPositionPreference[] = [ContentWidgetPositionPreference.BELOW];
 
+  private _isHidden: boolean;
+  public get isHidden(): boolean {
+    return this._isHidden;
+  }
+
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
   private root?: ReactDOMClient.Root | null = null;
@@ -80,14 +85,17 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
     }
 
     this.setOptions(options);
+    this._isHidden = false;
     this.editor.addContentWidget(this);
   }
 
   hide() {
+    this._isHidden = true;
     this.editor.removeContentWidget(this);
   }
 
   resume(): void {
+    this._isHidden = false;
     this.editor.addContentWidget(this);
   }
 
