@@ -10,7 +10,7 @@ import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-w
 
 const sleepTime = 1000;
 
-(isMacintosh ? describe.skip : describe)('ParceWatcher Test', () => {
+describe('ParceWatcher Test', () => {
   const track = temp.track();
   const watcherServerList: FileSystemWatcherServer[] = [];
   let seed = 1;
@@ -22,7 +22,7 @@ const sleepTime = 1000;
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     const watcherServer = injector.get(FileSystemWatcherServer);
     const watcherId = await watcherServer.watchFileChanges(root.toString());
-
+    await sleep(sleepTime);
     return { root, watcherServer, watcherId };
   }
 

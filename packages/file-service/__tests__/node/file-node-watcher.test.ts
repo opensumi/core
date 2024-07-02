@@ -1,7 +1,7 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { Deferred, FileUri } from '@opensumi/ide-core-node';
+import { Deferred, FileUri, sleep } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common/index';
@@ -16,6 +16,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
     await fse.mkdirp(FileUri.fsPath(root.resolve('for_rename_folder')));
     await fse.writeFile(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     await watcherServer.watchFileChanges(root.toString());
+    await sleep(1000);
     return { root, watcherServer };
   }
   const watcherServerList: UnRecursiveFileSystemWatcher[] = [];
