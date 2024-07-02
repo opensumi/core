@@ -459,6 +459,13 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
 
   protected observeContainer(dom: HTMLDivElement): IDisposable {
     this.wrap = dom;
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          this.resizeZoneWidget();
+        }
+      }
+    });
     const mutationObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList') {
@@ -482,9 +489,11 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
       });
       this.resizeZoneWidget();
     });
+    intersectionObserver.observe(this.wrap);
     mutationObserver.observe(this.wrap, { childList: true, subtree: true });
     return {
       dispose() {
+        intersectionObserver.disconnect();
         mutationObserver.disconnect();
       },
     };
