@@ -30,6 +30,11 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
   suppressMouseDown = false;
   positionPreference: ContentWidgetPositionPreference[] = [ContentWidgetPositionPreference.BELOW];
 
+  private _isHidden: boolean;
+  public get isHidden(): boolean {
+    return this._isHidden;
+  }
+
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
   private root?: ReactDOMClient.Root | null = null;
@@ -44,18 +49,26 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
         this.layoutContentWidget();
       }),
     );
+
+    this.addDispose(
+      Disposable.create(() => {
+        this.hide();
+        if (this.root) {
+          this.root.unmount();
+        }
+      }),
+    );
   }
 
   public abstract renderView(): React.ReactNode;
   public abstract id(): string;
 
-  override dispose(): void {
-    this.hide();
-    super.dispose();
-  }
-
   setPositionPreference(preferences: ContentWidgetPositionPreference[]): void {
     this.positionPreference = preferences;
+  }
+
+  setOptions(options?: ShowAIContentOptions | undefined): void {
+    this.options = options;
   }
 
   show(options?: ShowAIContentOptions | undefined): void {
@@ -71,16 +84,19 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
       return;
     }
 
-    this.options = options;
+    this.setOptions(options);
+    this._isHidden = false;
     this.editor.addContentWidget(this);
   }
 
   hide() {
-    this.options = undefined;
+    this._isHidden = true;
     this.editor.removeContentWidget(this);
-    if (this.root) {
-      this.root.unmount();
-    }
+  }
+
+  resume(): void {
+    this._isHidden = false;
+    this.editor.addContentWidget(this);
   }
 
   getId(): string {
