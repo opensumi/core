@@ -30,6 +30,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     const { getRPCService: clientGetRPCService, createRPCService } = initRPCService(clientCenter);
     const getService: IPtyProxyRPCService = clientGetRPCService(PTY_SERVICE_PROXY_PROTOCOL) as any;
     this.ptyServiceProxy = getService;
+    this.ptyServiceProxyDeferred.resolve();
     let callbackDisposed = false;
 
     // 处理回调
@@ -76,11 +77,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
       this.logger.log('PtyServiceManagerRemote connect failed, will reconnect after 2s');
       rpcServiceDisposable?.dispose();
       global.setTimeout(() => {
-        try {
-          socket.connect(connectOpts);
-        } catch (e) {
-          this.logger.warn(e);
-        }
+        this.initRemoteConnectionMode(connectOpts);
       }, 2000);
     });
 

@@ -171,6 +171,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     await this.proxy.$fireModelWillSaveEvent({
       uri: e.payload.uri.toString(),
       reason: e.payload.reason,
+      dirty: e.payload.dirty,
     });
   }
 
