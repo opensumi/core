@@ -52,7 +52,10 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
       return;
     }
 
-    const classList = this.options.className.split(space).filter((s) => s !== styles.hidden || s !== styles.visible);
+    const classList = this.options.className
+      .split(space)
+      .filter((s) => s !== styles.hidden && s !== styles.visible)
+      .filter(Boolean);
     classList.push(newClassName);
 
     this.options.className = classList.join(space);

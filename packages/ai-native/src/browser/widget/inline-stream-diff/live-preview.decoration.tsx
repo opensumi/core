@@ -378,21 +378,23 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     addedDec?: IEnhanceModelDeltaDecoration,
     removedWidget?: RemovedZoneWidget,
   ): void {
-    partialWidget.hide();
-    addedDec?.hide();
-    removedWidget?.hide();
+    const hide = () => {
+      partialWidget.hide();
+      addedDec?.hide();
+      removedWidget?.hide();
+    };
+
+    const resume = () => {
+      partialWidget.resume();
+      addedDec?.resume();
+      removedWidget?.resume();
+    };
+
+    hide();
 
     this.pushUndoElement({
-      undo: () => {
-        partialWidget.resume();
-        addedDec?.resume();
-        removedWidget?.resume();
-      },
-      redo: () => {
-        partialWidget.hide();
-        addedDec?.hide();
-        removedWidget?.hide();
-      },
+      undo: () => resume(),
+      redo: () => hide(),
     });
   }
 
