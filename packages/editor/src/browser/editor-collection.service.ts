@@ -423,6 +423,7 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
   }
 }
 
+@Injectable({ multiple: true })
 export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
@@ -432,14 +433,10 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
 
   private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
 
-  private readonly toDispose: monaco.IDisposable[] = [];
-
   protected _currentDocumentModelRef: IEditorDocumentModelRef;
 
   private _onCursorPositionChanged = new EventEmitter<CursorStatus>();
   public onCursorPositionChanged = this._onCursorPositionChanged.event;
-
-  public _disposed = false;
 
   private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
 
@@ -466,7 +463,7 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
       bindPreventNavigation(this.monacoEditor.getDomNode()!);
       disposer.dispose();
     });
-    this.toDispose.push(
+    this.addDispose(
       monacoEditor.onDidChangeCursorPosition(() => {
         if (!this.currentDocumentModel) {
           return;
@@ -478,15 +475,12 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
         });
       }),
     );
-    this.addDispose({
-      dispose: () => {
-        this.monacoEditor.dispose();
-      },
-    });
+
+    this.addDispose(this.monacoEditor);
   }
 
-  layout(): void {
-    this.monacoEditor.layout();
+  layout(dimension?: monaco.IDimension, postponeRendering: boolean = false): void {
+    this.monacoEditor.layout(dimension, postponeRendering);
   }
 
   focus(): void {
@@ -497,8 +491,6 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
     super.dispose();
     this.saveCurrentState();
     this.collectionService.removeEditors([this]);
-    this._disposed = true;
-    this.toDispose.forEach((disposable) => disposable.dispose());
   }
 
   protected saveCurrentState() {

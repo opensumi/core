@@ -474,15 +474,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     );
 
     this.addDispose(
-      this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
-        if (
-          this._tabBarHandler &&
-          this._tabBarHandler.isActivated() &&
-          e.payload.slotLocation === getSlotLocation('@opensumi/ide-terminal-next', this.config.layoutConfig)
-        ) {
-          this.terminalView.resize();
-        }
-      }),
+      this.eventBus.onDirective(
+        ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-terminal-next', this.config.layoutConfig)),
+        () => {
+          if (this._tabBarHandler && this._tabBarHandler.isActivated()) {
+            this.terminalView.resize();
+          }
+        },
+      ),
     );
 
     this.registerContributedProfilesCommandAndMenu();

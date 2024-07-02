@@ -112,7 +112,7 @@ export const EDITOR_DEFAULTS = {
   readOnly: false,
   mouseStyle: 'text',
   disableLayerHinting: false,
-  automaticLayout: true, // Modified
+  automaticLayout: false, // Modified
   wordWrap: 'off',
   wordWrapColumn: 80,
   wordWrapMinified: true,

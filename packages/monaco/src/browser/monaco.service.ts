@@ -53,7 +53,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       lightbulb: {
         enabled: ShowLightbulbIconMode.OnCode,
       },
-      automaticLayout: true,
       model: undefined,
       wordBasedSuggestions: 'off',
       renderLineHighlight: 'none',

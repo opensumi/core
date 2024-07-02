@@ -38,6 +38,7 @@ export function App(props: AppProps) {
         lastFrame = null;
         allSlot.forEach((item) => {
           eventBus.fire(new ResizeEvent({ slotLocation: item.slot }));
+          eventBus.fireDirective(ResizeEvent.createDirective(item.slot));
         });
       });
     };

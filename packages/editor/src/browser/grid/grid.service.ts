@@ -124,6 +124,7 @@ export class EditorGrid implements IDisposable {
 
   public emitResizeWithEventBus(eventBus: IEventBus) {
     eventBus.fire(new GridResizeEvent({ gridId: this.uid }));
+    eventBus.fireDirective(GridResizeEvent.createDirective(this.uid));
     this.children.forEach((c) => {
       c.emitResizeWithEventBus(eventBus);
     });
