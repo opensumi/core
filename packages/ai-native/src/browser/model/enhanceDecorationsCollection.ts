@@ -2,16 +2,75 @@ import { Disposable, Emitter, Event, isUndefined } from '@opensumi/ide-core-comm
 import {
   ICodeEditor,
   IContentSizeChangedEvent,
+  IModelDecorationOptions,
   IModelDecorationsChangeAccessor,
   IModelDeltaDecoration,
+  IRange,
   ITextModel,
 } from '@opensumi/ide-monaco';
+import { space } from '@opensumi/ide-utils/lib/strings';
 
-interface IEnhanceModelDeltaDecoration {
+import styles from './styles.module.less';
+
+// @internal
+interface IDeltaData extends IModelDeltaDecoration {
+  length: number;
+  dispose(): void;
+}
+
+export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   id: string;
   readonly editorDecoration: IModelDeltaDecoration;
-  dispose(): void;
+  hide(): void;
+  resume(): void;
+}
+
+// @internal
+class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   length: number;
+  range: IRange;
+  options: IModelDecorationOptions;
+
+  constructor(
+    public readonly id: string,
+    public readonly editorDecoration: IModelDeltaDecoration,
+    private readonly codeEditor: ICodeEditor,
+    private readonly deltaData: Partial<IDeltaData>,
+  ) {
+    if (isUndefined(deltaData.length)) {
+      this.length = editorDecoration.range.endLineNumber - editorDecoration.range.startLineNumber;
+    } else {
+      this.length = deltaData.length;
+    }
+
+    this.range = editorDecoration.range;
+    this.options = editorDecoration.options;
+  }
+
+  private changeVisibility(newClassName: string): void {
+    if (!this.options.className) {
+      return;
+    }
+
+    const classList = this.options.className.split(space).filter((s) => s !== styles.hidden || s !== styles.visible);
+    classList.push(newClassName);
+
+    this.options.className = classList.join(space);
+
+    this.codeEditor.changeDecorations((accessor) => {
+      accessor.changeDecorationOptions(this.id, this.options);
+    });
+  }
+
+  dispose(): void {
+    this.deltaData.dispose?.();
+  }
+  hide(): void {
+    this.changeVisibility(styles.hidden);
+  }
+  resume(): void {
+    this.changeVisibility(styles.visible);
+  }
 }
 
 export class EnhanceDecorationsCollection extends Disposable {
@@ -70,7 +129,7 @@ export class EnhanceDecorationsCollection extends Disposable {
     });
   }
 
-  set(decorations: (IModelDeltaDecoration & { length?: number })[]): void {
+  set(decorations: (IModelDeltaDecoration & Partial<Pick<IEnhanceModelDeltaDecoration, 'length'>>)[]): void {
     this.clear();
 
     this.codeEditor.changeDecorations((accessor: IModelDecorationsChangeAccessor) => {
@@ -78,17 +137,12 @@ export class EnhanceDecorationsCollection extends Disposable {
 
       for (const decoration of decorations) {
         const id = accessor.addDecoration(decoration.range, decoration.options);
-
-        newDecorations.push({
-          id,
-          editorDecoration: decoration,
-          length: isUndefined(decoration.length)
-            ? decoration.range.endLineNumber - decoration.range.startLineNumber
-            : decoration.length,
-          dispose: () => {
-            this.delete(id);
-          },
-        });
+        newDecorations.push(
+          new DeltaDecorations(id, decoration, this.codeEditor, {
+            length: decoration.length,
+            dispose: () => this.delete(id),
+          }),
+        );
       }
 
       this.deltaDecorations = newDecorations;
