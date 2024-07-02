@@ -5,6 +5,7 @@ import { Constants } from './uint';
  * The empty string.
  */
 export const empty = '';
+export const space = ' ';
 
 const hasTextEncoder = typeof TextEncoder !== 'undefined';
 const hasTextDecoder = typeof TextDecoder !== 'undefined';

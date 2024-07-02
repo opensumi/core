@@ -44,18 +44,26 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
         this.layoutContentWidget();
       }),
     );
+
+    this.addDispose(
+      Disposable.create(() => {
+        this.hide();
+        if (this.root) {
+          this.root.unmount();
+        }
+      }),
+    );
   }
 
   public abstract renderView(): React.ReactNode;
   public abstract id(): string;
 
-  override dispose(): void {
-    this.hide();
-    super.dispose();
-  }
-
   setPositionPreference(preferences: ContentWidgetPositionPreference[]): void {
     this.positionPreference = preferences;
+  }
+
+  setOptions(options?: ShowAIContentOptions | undefined): void {
+    this.options = options;
   }
 
   show(options?: ShowAIContentOptions | undefined): void {
@@ -71,16 +79,16 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
       return;
     }
 
-    this.options = options;
+    this.setOptions(options);
     this.editor.addContentWidget(this);
   }
 
   hide() {
-    this.options = undefined;
     this.editor.removeContentWidget(this);
-    if (this.root) {
-      this.root.unmount();
-    }
+  }
+
+  resume(): void {
+    this.editor.addContentWidget(this);
   }
 
   getId(): string {
