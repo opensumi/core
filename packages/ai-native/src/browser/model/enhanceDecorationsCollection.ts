@@ -7,6 +7,7 @@ import {
   IModelDeltaDecoration,
   IRange,
   ITextModel,
+  Range,
 } from '@opensumi/ide-monaco';
 import { space } from '@opensumi/ide-utils/lib/strings';
 
@@ -23,6 +24,8 @@ export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   readonly editorDecoration: IModelDeltaDecoration;
   hide(): void;
   resume(): void;
+  getActualRange(): IRange;
+  setActualRange(newRange: IRange): void;
 }
 
 // @internal
@@ -30,6 +33,8 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   length: number;
   range: IRange;
   options: IModelDecorationOptions;
+
+  private _actualRange: IRange;
 
   constructor(
     public readonly id: string,
@@ -45,9 +50,11 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
 
     this.range = editorDecoration.range;
     this.options = editorDecoration.options;
+
+    this.setActualRange(this.range);
   }
 
-  private changeVisibility(newClassName: string): void {
+  private changeVisibility(newClassName: string, newRange?: Range): void {
     if (!this.options.className) {
       return;
     }
@@ -62,15 +69,28 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
 
     this.codeEditor.changeDecorations((accessor) => {
       accessor.changeDecorationOptions(this.id, this.options);
+      accessor.changeDecoration(this.id, newRange ?? this.range);
     });
+  }
+
+  setActualRange(newRange: IRange): void {
+    this._actualRange = newRange;
+  }
+
+  getActualRange(): IRange {
+    return this._actualRange;
   }
 
   dispose(): void {
     this.deltaData.dispose?.();
   }
+
   hide(): void {
-    this.changeVisibility(styles.hidden);
+    const startPosition = { lineNumber: this._actualRange.startLineNumber, column: 1 };
+    const newRange = Range.fromPositions(startPosition);
+    this.changeVisibility(styles.hidden, newRange);
   }
+
   resume(): void {
     this.changeVisibility(styles.visible);
   }
@@ -116,7 +136,7 @@ export class EnhanceDecorationsCollection extends Disposable {
       } = d;
 
       const newRange = this.model.getDecorationRange(id);
-      d.editorDecoration.range = newRange ?? range;
+      d.setActualRange(newRange ?? range);
 
       return d;
     });
