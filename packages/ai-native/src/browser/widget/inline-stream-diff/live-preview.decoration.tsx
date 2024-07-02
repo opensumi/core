@@ -56,6 +56,8 @@ enum EPartialEdit {
 
 @Injectable({ multiple: true })
 class AcceptPartialEditWidget extends ReactInlineContentWidget {
+  static ID = 'AcceptPartialEditWidgetID';
+
   @Autowired(KeybindingRegistry)
   private readonly keybindingRegistry: KeybindingRegistry;
 
@@ -106,7 +108,7 @@ class AcceptPartialEditWidget extends ReactInlineContentWidget {
 
   public id(): string {
     if (!this._id) {
-      this._id = `AcceptPartialEditWidgetID_${uuid(4)}`;
+      this._id = `${AcceptPartialEditWidget.ID}_${uuid(4)}`;
     }
     return this._id;
   }
@@ -175,11 +177,6 @@ class RemovedZoneWidget extends ZoneWidget {
   }
 }
 
-interface ITextLinesTokens {
-  text: string;
-  lineTokens: LineTokens;
-}
-
 @Injectable({ multiple: true })
 export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(INJECTOR_TOKEN)
@@ -196,7 +193,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private addedRangeDec: EnhanceDecorationsCollection;
   private partialEditWidgetList: AcceptPartialEditWidget[] = [];
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
-  private rawOriginalTextLinesTokens: ITextLinesTokens[] = [];
+  private rawOriginalTextLinesTokens: LineTokens[] = [];
 
   private undoRedoService: IUndoRedoService;
 
@@ -231,7 +228,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           this.partialEditWidgetList.forEach((widget) => {
             const addedWidget = newAddedRangeDec.find((a) => widget.getDecorationId() === a.id);
             if (addedWidget) {
-              const range = addedWidget.getActualRange();
+              const range = addedWidget.getRange();
               /**
                * 重新定位 added decoration 与 partial edit widget 的位置
                */
@@ -266,7 +263,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public calcTextLinesTokens(rawOriginalTextLines: string[]): void {
-    this.rawOriginalTextLinesTokens = rawOriginalTextLines.map((text, index) => {
+    this.rawOriginalTextLinesTokens = rawOriginalTextLines.map((_, index) => {
       const model = this.monacoEditor.getModel()!;
       const zone = this.getZone();
       const lineNumber = zone.startLineNumber + index;
@@ -274,10 +271,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       model.tokenization.forceTokenization(lineNumber);
       const lineTokens = model.tokenization.getLineTokens(lineNumber);
 
-      return {
-        text,
-        lineTokens,
-      };
+      return lineTokens;
     });
   }
 
@@ -304,7 +298,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       texts.map((content, index) => ({
         content,
         decorations: [],
-        lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index].lineTokens,
+        lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index],
       })),
       this.monacoEditor.getOptions(),
     );
@@ -391,7 +385,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     if (addedDec) {
       if (addedDec.length > 0) {
-        const addedRange = addedDec.getActualRange();
+        const addedRange = addedDec.getRange();
         const opRange = Range.lift({
           startLineNumber: addedRange.startLineNumber,
           startColumn: addedRange.startColumn,

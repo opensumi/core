@@ -24,8 +24,8 @@ export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   readonly editorDecoration: IModelDeltaDecoration;
   hide(): void;
   resume(): void;
-  getActualRange(): IRange;
-  setActualRange(newRange: IRange): void;
+  getRange(): IRange;
+  setRange(newRange: IRange): void;
 }
 
 // @internal
@@ -34,7 +34,7 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   range: IRange;
   options: IModelDecorationOptions;
 
-  private _actualRange: IRange;
+  private resumeRange: IRange;
 
   constructor(
     public readonly id: string,
@@ -51,10 +51,10 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
     this.range = editorDecoration.range;
     this.options = editorDecoration.options;
 
-    this.setActualRange(this.range);
+    this.resumeRange = this.range;
   }
 
-  private changeVisibility(newClassName: string, newRange?: Range): void {
+  private changeVisibility(newClassName: string, newRange: Range): void {
     if (!this.options.className) {
       return;
     }
@@ -69,16 +69,16 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
 
     this.codeEditor.changeDecorations((accessor) => {
       accessor.changeDecorationOptions(this.id, this.options);
-      accessor.changeDecoration(this.id, newRange ?? this.range);
+      accessor.changeDecoration(this.id, newRange);
     });
   }
 
-  setActualRange(newRange: IRange): void {
-    this._actualRange = newRange;
+  setRange(newRange: IRange): void {
+    this.range = newRange;
   }
 
-  getActualRange(): IRange {
-    return this._actualRange;
+  getRange(): IRange {
+    return this.range;
   }
 
   dispose(): void {
@@ -86,13 +86,15 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   }
 
   hide(): void {
-    const startPosition = { lineNumber: this._actualRange.startLineNumber, column: 1 };
+    this.resumeRange = this.range;
+
+    const startPosition = { lineNumber: this.range.startLineNumber, column: 1 };
     const newRange = Range.fromPositions(startPosition);
     this.changeVisibility(styles.hidden, newRange);
   }
 
   resume(): void {
-    this.changeVisibility(styles.visible);
+    this.changeVisibility(styles.visible, Range.lift(this.resumeRange));
   }
 }
 
@@ -136,7 +138,7 @@ export class EnhanceDecorationsCollection extends Disposable {
       } = d;
 
       const newRange = this.model.getDecorationRange(id);
-      d.setActualRange(newRange ?? range);
+      d.setRange(newRange ?? range);
 
       return d;
     });
@@ -177,7 +179,7 @@ export class EnhanceDecorationsCollection extends Disposable {
   }
 
   getDecorationByLineNumber(lineNumber: number): IEnhanceModelDeltaDecoration | undefined {
-    return this.deltaDecorations.find((d) => d.editorDecoration.range.startLineNumber === lineNumber);
+    return this.deltaDecorations.find((d) => d.getRange().startLineNumber === lineNumber);
   }
 
   clear(): void {
