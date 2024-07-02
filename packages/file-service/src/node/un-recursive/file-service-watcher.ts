@@ -52,6 +52,11 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   dispose(): void {
     this.toDispose.dispose();
+
+    this.WATCHER_HANDLERS.forEach((watcher) => {
+      watcher.disposable.dispose();
+    });
+
     this.WATCHER_HANDLERS.clear();
   }
 
@@ -155,10 +160,8 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   async watchFileChanges(uri: string) {
     const basePath = FileUri.fsPath(uri);
-    const exist = await fs.pathExists(basePath);
 
     let watcherId = this.checkIsAlreadyWatched(basePath);
-
     if (watcherId) {
       return watcherId;
     }
@@ -168,6 +171,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     const disposables = new DisposableCollection(); // 管理可释放的资源
 
     let watchPath = '';
+    const exist = await fs.pathExists(basePath);
 
     if (exist) {
       const stat = await fs.lstat(basePath);
@@ -176,8 +180,14 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       }
     } else {
       this.logger.warn('This path does not exist. Please try again');
+      return -1;
     }
     disposables.push(await this.start(watchPath));
+    this.WATCHER_HANDLERS.set(watcherId, {
+      path: basePath,
+      disposable: disposables,
+      handlers: [],
+    });
     this.toDispose.push(disposables);
     return watcherId;
   }

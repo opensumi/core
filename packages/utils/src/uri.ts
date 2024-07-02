@@ -294,6 +294,10 @@ export class URI {
     return query;
   }
 
+  get fsPath(): string {
+    return this.codeUri.fsPath;
+  }
+
   static stringifyQuery(query: { [key: string]: any }): string {
     const values: string[] = [];
     Object.keys(query).forEach((key) => {
