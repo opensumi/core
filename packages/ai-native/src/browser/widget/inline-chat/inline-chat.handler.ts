@@ -447,6 +447,12 @@ export class InlineChatHandler extends Disposable {
         doLayoutContentWidget();
       }),
     );
+
+    this.aiInlineChatOperationDisposed.addDispose(
+      this.diffPreviewer.onDispose(() => {
+        this.aiInlineContentWidget.dispose();
+      }),
+    );
   }
 
   private async handleDiffPreviewStrategy(

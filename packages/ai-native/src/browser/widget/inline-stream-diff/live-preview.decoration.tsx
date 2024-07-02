@@ -140,7 +140,7 @@ const RemovedWidgetComponent = ({ dom, marginWidth }) => {
 
 class RemovedZoneWidget extends ZoneWidget {
   private root: ReactDOMClient.Root;
-  private recordPositionData: { rangeOrPos: IRange | IPosition; heightInLines: number };
+  private recordPositionData: { position: Position; heightInLines: number };
 
   constructor(editor: ICodeEditor, private readonly removedTextLines: string[], options: IOptions) {
     super(editor, options);
@@ -159,14 +159,20 @@ class RemovedZoneWidget extends ZoneWidget {
     return this.removedTextLines;
   }
 
-  show(rangeOrPos: IRange | IPosition, heightInLines: number): void {
-    this.recordPositionData = { rangeOrPos, heightInLines };
-    super.show(rangeOrPos, heightInLines);
+  hide(): void {
+    if (this._viewZone && this.position) {
+      this.recordPositionData = {
+        position: this.position,
+        heightInLines: this._viewZone?.heightInLines,
+      };
+    }
+
+    super.hide();
   }
 
   resume(): void {
     if (this.recordPositionData) {
-      this.show(this.recordPositionData.rangeOrPos, this.recordPositionData.heightInLines);
+      this.show(this.recordPositionData.position, this.recordPositionData.heightInLines);
     }
   }
 
@@ -356,23 +362,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     ]);
   }
 
-  private pushUndoElement(data: { undo: () => void; redo: () => void; group?: UndoRedoGroup }): void {
-    const resource = this.monacoEditor.getModel()!.uri;
-    const group = data.group ?? new UndoRedoGroup();
-
-    this.undoRedoService.pushElement(
-      {
-        type: UndoRedoElementType.Resource,
-        resource,
-        label: 'handlePartialEditAction',
-        code: 'handlePartialEditAction_1',
-        undo: data.undo,
-        redo: data.redo,
-      } as IResourceUndoRedoElement,
-      group,
-    );
-  }
-
   private doDiscard(
     partialWidget: AcceptPartialEditWidget,
     addedDec?: IEnhanceModelDeltaDecoration,
@@ -469,6 +458,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       default:
         break;
     }
+
+    this.monacoEditor.focus();
   }
 
   /**
@@ -484,6 +475,22 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         }
       }
     });
+  }
+
+  public pushUndoElement(data: { undo: () => void; redo: () => void; group?: UndoRedoGroup }): void {
+    const resource = this.monacoEditor.getModel()!.uri;
+    const group = data.group ?? new UndoRedoGroup();
+
+    this.undoRedoService.pushElement(
+      {
+        type: UndoRedoElementType.Resource,
+        resource,
+        label: 'Live.Preview.UndoRedo',
+        undo: data.undo,
+        redo: data.redo,
+      } as IResourceUndoRedoElement,
+      group,
+    );
   }
 
   public touchPartialEditWidgets(ranges: LineRange[]) {
