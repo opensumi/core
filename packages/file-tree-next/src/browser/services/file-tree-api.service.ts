@@ -98,6 +98,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     // labelService可根据uri参数提供不同的展示效果
     const name = presetName ? presetName : uri.displayName;
     let node: Directory | File;
+    filestat.isInSymbolicDirectory = parent?.filestat.isSymbolicLink ?? parent?.filestat.isInSymbolicDirectory;
     if (filestat.isDirectory) {
       node = new Directory(tree as any, parent, uri, name, filestat, this.getReadableTooltip(uri));
     } else {
