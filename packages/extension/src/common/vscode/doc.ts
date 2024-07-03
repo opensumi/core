@@ -92,6 +92,7 @@ export interface IExtensionDocumentModelSavedEvent {
 export interface IExtensionDocumentModelWillSaveEvent {
   uri: string;
   reason: SaveReason;
+  dirty: boolean;
 }
 
 export const ExtensionDocumentManagerProxy = Symbol('ExtensionDocumentManagerProxy');

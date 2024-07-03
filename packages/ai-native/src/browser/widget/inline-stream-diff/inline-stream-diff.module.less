@@ -1,0 +1,61 @@
+.inline_diff_current {
+  background-color: var(--editorIndentGuide-activeBackground);
+}
+
+.inline_diff_added_range {
+  background-color: var(--aiNative-inlineDiffAddedRange);
+
+  &.hide {
+    visibility: hidden;
+  }
+}
+
+.inline_diff_remove_zone_widget_container {
+  width: calc(100% + 10px);
+
+  .inline_diff_remove_zone {
+    background-color: var(--aiNative-inlineDiffRemovedRange);
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.inline_diff_pending_range {
+  background-color: var(--editorWidget-background);
+}
+
+.accept_partial_edit_widget_id {
+  pointer-events: none;
+  width: 1e6px;
+}
+
+.inline_diff_accept_partial_widget_container {
+  width: 100%;
+  visibility: visible;
+
+  .content {
+    float: right;
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 10px;
+  }
+
+  .btn {
+    pointer-events: auto;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px;
+
+    &.accept_btn {
+      background-color: var(--aiNative-inlineDiffAcceptPartialEdit);
+      color: #fff;
+    }
+
+    &.discard_btn {
+      background-color: var(--aiNative-inlineDiffDiscardPartialEdit);
+      color: #fff;
+    }
+  }
+}

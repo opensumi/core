@@ -159,13 +159,12 @@ export const AccordionSection = ({
   }, [expanded, headerSize, alignment]);
 
   return (
-    <div className={styles_kt_split_panel} data-view-id={viewId}>
+    <div className={styles_kt_split_panel} data-view-id={viewId} draggable={false}>
       {!noHeader && (
         <div
           {...attrs}
           className={cls(styles_kt_split_panel_header, headerClass)}
           onClick={clickHandler}
-          draggable={false}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
         >

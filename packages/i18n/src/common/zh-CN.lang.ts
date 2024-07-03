@@ -1248,6 +1248,9 @@ export const localizationBundle = {
     'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       '是否启用提示词工程，一些 LLM 模型在提示词工程上可能表现不佳。',
     'preference.ai.native.inlineCompletions.debounceTime': '内联补全的延迟时间（毫秒）',
+    'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff 的预览模式',
+    'preference.ai.native.inlineDiff.preview.mode.sideBySide': '在编辑器当中以左右 diff 面板的方式展示',
+    'preference.ai.native.inlineDiff.preview.mode.inlineLive': '在编辑器当中以流式渲染的方式展示',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

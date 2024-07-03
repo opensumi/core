@@ -3,6 +3,7 @@ import { IContextKey, IContextKeyService, IScopedContextKeyService } from '@open
 import {
   InlineChatIsVisible,
   InlineCompletionIsTrigger,
+  InlineDiffPartialEditsIsVisible,
   InlineHintWidgetIsVisible,
   InlineInputWidgetIsVisible,
 } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
@@ -20,6 +21,7 @@ export class AINativeContextKey {
   public readonly inlineCompletionIsTrigger: IContextKey<boolean>;
   public readonly inlineHintWidgetIsVisible: IContextKey<boolean>;
   public readonly inlineInputWidgetIsVisible: IContextKey<boolean>;
+  public readonly inlineDiffPartialEditsIsVisible: IContextKey<boolean>;
 
   constructor(@Optional() dom?: HTMLElement | IContextKeyServiceTarget | ContextKeyService) {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);
@@ -27,5 +29,6 @@ export class AINativeContextKey {
     this.inlineCompletionIsTrigger = InlineCompletionIsTrigger.bind(this._contextKeyService);
     this.inlineHintWidgetIsVisible = InlineHintWidgetIsVisible.bind(this._contextKeyService);
     this.inlineInputWidgetIsVisible = InlineInputWidgetIsVisible.bind(this._contextKeyService);
+    this.inlineDiffPartialEditsIsVisible = InlineDiffPartialEditsIsVisible.bind(this._contextKeyService);
   }
 }

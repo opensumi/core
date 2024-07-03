@@ -25,11 +25,18 @@ import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 
-import { AI_DIFF_WIDGET_ID } from '../../../common';
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
+import { EInlineDifPreviewMode } from '../../preferences/schema';
 import { ERunStrategy } from '../../types';
+import {
+  BaseInlineDiffPreviewer,
+  LiveInlineDiffPreviewer,
+  SideBySideInlineDiffWidget,
+} from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
+import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
@@ -67,7 +74,7 @@ export class InlineChatHandler extends Disposable {
 
   private logger: ILogServiceClient;
 
-  private aiDiffWidget: InlineDiffWidget;
+  private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
@@ -86,7 +93,7 @@ export class InlineChatHandler extends Disposable {
 
   private disposeAllWidget() {
     [
-      this.aiDiffWidget,
+      this.diffPreviewer,
       this.aiInlineContentWidget,
       this.aiInlineChatDisposed,
       this.aiInlineChatOperationDisposed,
@@ -318,47 +325,45 @@ export class InlineChatHandler extends Disposable {
     const { crossSelection, chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
-    this.aiDiffWidget = this.injector.get(InlineDiffWidget, [
-      AI_DIFF_WIDGET_ID,
-      {
-        editor: monacoEditor,
-        selection: crossSelection,
-      },
-    ]);
-    this.aiDiffWidget.create();
-    this.aiDiffWidget.showByLine(
+    const inlineDiffMode = this.preferenceService.getValid<EInlineDifPreviewMode>(
+      AINativeSettingSectionsId.InlineDiffPreviewMode,
+      EInlineDifPreviewMode.inlineLive,
+    );
+
+    if (inlineDiffMode === EInlineDifPreviewMode.sideBySide) {
+      this.diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, crossSelection]);
+    } else {
+      this.diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
+    }
+
+    this.diffPreviewer.show(
       crossSelection.startLineNumber - 1,
       crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
     );
+
+    const doLayoutContentWidget = () => {
+      if (inlineDiffMode === EInlineDifPreviewMode.sideBySide) {
+        this.aiInlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
+      } else {
+        this.aiInlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
+      }
+      this.aiInlineContentWidget?.setOptions({
+        position: this.diffPreviewer.getPosition(),
+      });
+      this.aiInlineContentWidget?.layoutContentWidget();
+    };
 
     if (InlineChatController.is(chatResponse)) {
       const controller = chatResponse as InlineChatController;
 
       this.aiInlineChatOperationDisposed.addDispose(
-        this.aiDiffWidget.onReady(() => {
-          const modifiedModel = this.aiDiffWidget.getModifiedModel();
-          if (!modifiedModel) {
-            return;
-          }
-
+        this.diffPreviewer.onReady(() => {
           controller.deffered.resolve();
 
           this.aiInlineChatOperationDisposed.addDispose([
             controller.onData((data) => {
               if (ReplyResponse.is(data)) {
-                const { message } = data;
-
-                const lastLine = modifiedModel.getLineCount();
-                const lastColumn = modifiedModel.getLineMaxColumn(lastLine);
-
-                const range = new monaco.Range(lastLine, lastColumn, lastLine, lastColumn);
-
-                const edit = {
-                  range,
-                  text: message || '',
-                };
-                modifiedModel.pushEditOperations(null, [edit], () => null);
-                this.aiDiffWidget.layout();
+                this.diffPreviewer.onData(data);
               }
             }),
             controller.onError((error) => {
@@ -368,7 +373,8 @@ export class InlineChatHandler extends Disposable {
                 startTime,
                 isRetry,
               });
-              this.aiDiffWidget.layout();
+              this.diffPreviewer.onError(error);
+              doLayoutContentWidget();
             }),
             controller.onAbort(() => {
               this.convertInlineChatStatus(EInlineChatStatus.READY, {
@@ -378,7 +384,8 @@ export class InlineChatHandler extends Disposable {
                 isRetry,
                 isStop: true,
               });
-              this.aiDiffWidget.layout();
+              this.diffPreviewer.onAbort();
+              doLayoutContentWidget();
             }),
             controller.onEnd(() => {
               this.convertInlineChatStatus(EInlineChatStatus.DONE, {
@@ -387,7 +394,8 @@ export class InlineChatHandler extends Disposable {
                 startTime,
                 isRetry,
               });
-              this.aiDiffWidget.layout();
+              this.diffPreviewer.onEnd();
+              doLayoutContentWidget();
             }),
           ]);
         }),
@@ -428,24 +436,17 @@ export class InlineChatHandler extends Disposable {
       answer = this.formatAnswer(answer, crossCode);
 
       this.aiInlineChatOperationDisposed.addDispose(
-        this.aiDiffWidget.onReady(() => {
-          const modifiedModel = this.aiDiffWidget.getModifiedModel();
-          if (!modifiedModel) {
-            return;
-          }
-
-          modifiedModel.setValue(answer);
+        this.diffPreviewer.onReady(() => {
+          this.diffPreviewer.setValue(answer);
         }),
       );
     }
 
-    this.aiInlineContentWidget?.setOptions({
-      position: {
-        lineNumber: crossSelection.endLineNumber + 1,
-        column: 1,
-      },
-    });
-    this.aiInlineContentWidget?.layoutContentWidget();
+    this.aiInlineChatOperationDisposed.addDispose(
+      this.diffPreviewer.onLayout(() => {
+        doLayoutContentWidget();
+      }),
+    );
   }
 
   private async handleDiffPreviewStrategy(
@@ -461,7 +462,7 @@ export class InlineChatHandler extends Disposable {
 
     const model = monacoEditor.getModel();
 
-    this.aiDiffWidget?.dispose();
+    this.diffPreviewer?.dispose();
     this.aiInlineChatOperationDisposed.dispose();
     this.aiInlineChatDisposed.addDispose(this.aiInlineContentWidget.launchChatStatus(EInlineChatStatus.THINKING));
 
@@ -501,10 +502,9 @@ export class InlineChatHandler extends Disposable {
     this.aiInlineChatOperationDisposed.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
         if (kind === EResultKind.ACCEPT) {
-          this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
-          const newValue = this.aiDiffWidget?.getModifiedModel()?.getValue() || '';
+          this.diffPreviewer.handleAction(kind);
 
-          monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: newValue }], () => null);
+          this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
           runWhenIdle(() => {
             this.disposeAllWidget();
           });
@@ -513,7 +513,7 @@ export class InlineChatHandler extends Disposable {
       this.aiInlineChatService.onThumbs((isLike: boolean) => {
         this.aiReporter.end(relationId, { isLike });
       }),
-      this.aiDiffWidget.onMaxLineCount((count) => {
+      this.diffPreviewer.onLineCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model!.getLineCount()) {
             // 如果用户是选中了最后一行，直接显示在最后一行
@@ -559,6 +559,8 @@ export class InlineChatHandler extends Disposable {
 
       this.aiInlineChatDisposed.addDispose([
         this.aiInlineContentWidget.onResultClick(async (kind: EResultKind) => {
+          this.diffPreviewer.handleAction(kind);
+
           if (kind === EResultKind.DISCARD) {
             this.aiReporter.end(relationId, { message: 'discard', success: true, isDrop: true });
             this.disposeAllWidget();

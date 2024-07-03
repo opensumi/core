@@ -1,7 +1,22 @@
 import { AINativeSettingSectionsId, PreferenceSchema } from '@opensumi/ide-core-browser';
+import { localize } from '@opensumi/ide-core-common';
+
+export enum EInlineDifPreviewMode {
+  inlineLive = 'inlineLive',
+  sideBySide = 'sideBySide',
+}
 
 export const aiNativePreferenceSchema: PreferenceSchema = {
   properties: {
+    [AINativeSettingSectionsId.InlineDiffPreviewMode]: {
+      type: 'string',
+      enum: [EInlineDifPreviewMode.inlineLive, EInlineDifPreviewMode.sideBySide],
+      enumDescriptions: [
+        localize('preference.ai.native.inlineDiff.preview.mode.inlineLive'),
+        localize('preference.ai.native.inlineDiff.preview.mode.sideBySide'),
+      ],
+      default: EInlineDifPreviewMode.inlineLive,
+    },
     [AINativeSettingSectionsId.InlineChatAutoVisible]: {
       type: 'boolean',
       default: true,

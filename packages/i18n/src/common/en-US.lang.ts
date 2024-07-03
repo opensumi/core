@@ -1483,6 +1483,9 @@ export const localizationBundle = {
     'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
     'preference.ai.native.inlineCompletions.debounceTime': 'Debounce time for inline completions',
+    'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff preview mode',
+    'preference.ai.native.inlineDiff.preview.mode.sideBySide': 'Displayed in the editor as left and right diff panels',
+    'preference.ai.native.inlineDiff.preview.mode.inlineLive': 'Displayed in the editor through streaming rendering',
     // #endregion AI Native
 
     // #endregion merge editor
