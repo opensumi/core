@@ -13,7 +13,6 @@ import { space } from '@opensumi/ide-utils/lib/strings';
 
 import styles from './styles.module.less';
 
-// @internal
 interface IDeltaData extends IModelDeltaDecoration {
   length: number;
   dispose(): void;
@@ -28,7 +27,6 @@ export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   setRange(newRange: IRange): void;
 }
 
-// @internal
 class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   length: number;
   range: IRange;
