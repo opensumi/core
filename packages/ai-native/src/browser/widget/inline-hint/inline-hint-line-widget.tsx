@@ -6,6 +6,7 @@ import { AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE } from '@opensumi/ide-core-bro
 import { AIInlineHintLineContentWidgetId, formatLocalize } from '@opensumi/ide-core-common';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 
 import styles from './inline-hint.module.less';
 
@@ -30,8 +31,9 @@ export class InlineHintLineWidget extends ReactInlineContentWidget {
   }
 
   override renderView(): ReactNode {
+    const lineHeight = this.editor.getOption(EditorOption.lineHeight);
     return (
-      <div className={styles.hint_line_widget}>
+      <div className={styles.hint_line_widget} style={{ height: lineHeight }}>
         <span className={styles.text}>
           {formatLocalize('aiNative.inline.hint.widget.placeholder', this.getSequenceKeyString())}
         </span>
