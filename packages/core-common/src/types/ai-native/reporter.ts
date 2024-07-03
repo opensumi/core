@@ -9,6 +9,7 @@ export enum AISerivceType {
   Agent = 'agent',
   MergeConflict = 'mergeConflict',
   Rename = 'rename',
+  TerminalAICommand = 'terminalAICommand',
 }
 
 export interface CommonLogInfo {
@@ -50,6 +51,12 @@ export interface IAIReportCompletionOption {
 export enum MergeConflictEditorMode {
   '3way' = '3way',
   'traditional' = 'traditional',
+}
+
+export interface ChatRT extends Partial<CommonLogInfo> {
+  agentId?: string;
+  userMessage?: string;
+  assistantMessage?: string;
 }
 
 export interface MergeConflictRT extends Partial<CommonLogInfo> {
@@ -104,7 +111,9 @@ export type ReportInfo =
   | ({ type: AISerivceType.MergeConflict } & MergeConflictRT)
   | ({ type: AISerivceType.Rename } & RenameRT)
   | ({ type: AISerivceType.InlineChat } & InlineChatRT)
-  | ({ type: AISerivceType.InlineChatInput } & InlineChatRT);
+  | ({ type: AISerivceType.InlineChatInput } & InlineChatRT)
+  | ({ type: AISerivceType.Chat } & ChatRT)
+  | ({ type: AISerivceType.Agent } & ChatRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 

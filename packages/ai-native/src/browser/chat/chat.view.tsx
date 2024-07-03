@@ -159,7 +159,6 @@ export const AIChatView = observer(() => {
     disposer.addDispose(
       chatApiService.onChatReplyMessageLaunch((chunk) => {
         const relationId = aiReporter.start(AISerivceType.CustomReplay, {
-          msgType: AISerivceType.CustomReplay,
           message: chunk,
         });
 
@@ -192,8 +191,7 @@ export const AIChatView = observer(() => {
         list.forEach((item) => {
           const { role } = item;
 
-          const relationId = aiReporter.start(AISerivceType.Agent, {
-            msgType: AISerivceType.Agent,
+          const relationId = aiReporter.start(AISerivceType.Chat, {
             message: '',
           });
 
@@ -256,7 +254,6 @@ export const AIChatView = observer(() => {
       chatAgentService.onDidSendMessage((chunk) => {
         const newChunk = chunk as IChatComponent | IChatContent;
         const relationId = aiReporter.start(AISerivceType.Agent, {
-          msgType: AISerivceType.Agent,
           message: '',
         });
 
@@ -333,9 +330,12 @@ export const AIChatView = observer(() => {
       const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
       const startTime = Date.now();
-      const relationId = aiReporter.start(AISerivceType.Agent, {
-        msgType: AISerivceType.Agent,
-        message: value.message,
+      const reportType = ChatProxyService.AGENT_ID === agentId ? AISerivceType.Chat : AISerivceType.Agent;
+      const relationId = aiReporter.start(command || reportType, {
+        type: AISerivceType.Chat,
+        message,
+        agentId,
+        userMessage: message,
       });
 
       msgHistoryManager.addUserMessage({
