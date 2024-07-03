@@ -72,7 +72,7 @@ export type IChatMessageListAssistantItem = (IChatComponent | IChatContent) & {
 
 export type IChatMessageListItem = IChatMessageListUserItem | IChatMessageListAssistantItem;
 
-export const enum ChatCompletionRequestMessageRoleEnum {
+export enum ChatCompletionRequestMessageRoleEnum {
   System = 'system',
   User = 'user',
   Assistant = 'assistant',
