@@ -300,6 +300,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: true,
     },
+    'mergeEditor.autoApplyNoConflictChanges': {
+      type: 'boolean',
+      default: false,
+    },
   },
 };
 

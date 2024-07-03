@@ -741,6 +741,16 @@ export const defaultSettingSections: {
       ],
     },
     {
+      title: 'Merge Editor',
+      preferences: [
+        // merge 编辑器
+        {
+          id: 'mergeEditor.autoApplyNoConflictChanges',
+          localized: 'preference.mergeEditor.autoApplyNoConflictChanges',
+        },
+      ],
+    },
+    {
       title: 'Files',
       preferences: [
         { id: 'files.autoGuessEncoding', localized: 'preference.files.autoGuessEncoding.title' },

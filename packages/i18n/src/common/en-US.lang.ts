@@ -987,6 +987,9 @@ export const localizationBundle = {
 
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
+
+    'preference.mergeEditor.autoApplyNoConflictChanges': 'Automatically apply non-conflicting changes',
+
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
     'validate.tree.fileNameFollowOrStartWithSpaceWarning': 'Leading or trailing spaces detected in file or folder name',

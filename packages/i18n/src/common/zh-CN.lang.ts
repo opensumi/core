@@ -560,6 +560,8 @@ export const localizationBundle = {
     'preference.diffEditor.renderSideBySide': '显示并排差异编辑器',
     'preference.diffEditor.ignoreTrimWhitespace': '忽略差异编辑器的前导和尾随空白字符',
 
+    'preference.mergeEditor.autoApplyNoConflictChanges': '自动合并非冲突变更',
+
     'status.editor.chooseLanguage': '选择语言模式',
     'status.editor.goToLineCol': '转到行/列',
     'status.editor.chooseEncoding': '选择编码',
