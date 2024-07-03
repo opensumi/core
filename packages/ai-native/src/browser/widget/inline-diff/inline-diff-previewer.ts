@@ -150,11 +150,8 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   createNode(): InlineStreamDiffHandler {
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
-    this.addDispose(
-      Disposable.create(() => {
-        node.dispose();
-      }),
-    );
+    this.addDispose(node.onDispose(() => this.dispose()));
+    this.addDispose(node);
     return node;
   }
   getPosition(): IPosition | undefined {
@@ -164,7 +161,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
-        this.node.clearAllDecorations();
+        this.node.dispose();
         break;
 
       case EResultKind.DISCARD:
@@ -192,6 +189,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       return new LineRange(lineNumber, lineNumber + 1);
     });
     this.node.renderPartialEditWidgets(allAddRanges);
+    this.node.pushStackElement();
     this.monacoEditor.focus();
   }
 }
