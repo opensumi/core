@@ -332,7 +332,6 @@ export const AIChatView = observer(() => {
       const startTime = Date.now();
       const reportType = ChatProxyService.AGENT_ID === agentId ? AISerivceType.Chat : AISerivceType.Agent;
       const relationId = aiReporter.start(command || reportType, {
-        type: AISerivceType.Chat,
         message,
         agentId,
         userMessage: message,
