@@ -29,7 +29,6 @@ export interface WatcherOptions {
 }
 
 const watcherPlaceHolder = {
-  path: '',
   disposable: {
     dispose: () => {},
   },
@@ -103,7 +102,10 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     }
 
     watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
-    this.WATCHER_HANDLERS.set(watcherId, watcherPlaceHolder);
+    this.WATCHER_HANDLERS.set(watcherId, {
+      ...watcherPlaceHolder,
+      path: basePath,
+    });
 
     const toDisposeWatcher = new DisposableCollection();
     let watchPath: string;
