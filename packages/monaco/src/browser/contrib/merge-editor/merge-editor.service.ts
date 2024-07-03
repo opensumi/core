@@ -6,6 +6,7 @@ import {
   Emitter,
   Event,
   MonacoService,
+  PreferenceService,
   SCM_COMMANDS,
   localize,
 } from '@opensumi/ide-core-browser';
@@ -54,6 +55,9 @@ export class MergeEditorService extends Disposable {
 
   @Autowired(MergeConflictReportService)
   private readonly mergeConflictReportService: MergeConflictReportService;
+
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
 
   public resultView: ResultCodeEditor;
 
@@ -426,8 +430,11 @@ export class MergeEditorService extends Disposable {
     this.resultView.inputDiffComputingResult();
 
     // resolve non conflict ranges
-    this.acceptLeft(true, ECompleteReason.AutoResolvedNonConflict);
-    this.acceptRight(true, ECompleteReason.AutoResolvedNonConflict);
+    const isAutoApply = this.preferenceService.getValid('mergeEditor.autoApplyNonConflictChanges', false);
+    if (isAutoApply) {
+      this.acceptLeft(true, ECompleteReason.AutoResolvedNonConflict);
+      this.acceptRight(true, ECompleteReason.AutoResolvedNonConflict);
+    }
 
     this.currentView.updateDecorations().updateActions();
     this.incomingView.updateDecorations().updateActions();
