@@ -745,8 +745,8 @@ export const defaultSettingSections: {
       preferences: [
         // merge 编辑器
         {
-          id: 'mergeEditor.autoApplyNoConflictChanges',
-          localized: 'preference.mergeEditor.autoApplyNoConflictChanges',
+          id: 'mergeEditor.autoApplyNonConflictChanges',
+          localized: 'preference.mergeEditor.autoApplyNonConflictChanges',
         },
       ],
     },

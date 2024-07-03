@@ -430,7 +430,7 @@ export class MergeEditorService extends Disposable {
     this.resultView.inputDiffComputingResult();
 
     // resolve non conflict ranges
-    const isAutoApply = this.preferenceService.getValid('mergeEditor.autoApplyNoConflictChanges', false);
+    const isAutoApply = this.preferenceService.getValid('mergeEditor.autoApplyNonConflictChanges', false);
     if (isAutoApply) {
       this.acceptLeft(true, ECompleteReason.AutoResolvedNonConflict);
       this.acceptRight(true, ECompleteReason.AutoResolvedNonConflict);
