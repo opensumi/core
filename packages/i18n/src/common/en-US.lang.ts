@@ -1489,6 +1489,7 @@ export const localizationBundle = {
     'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff preview mode',
     'preference.ai.native.inlineDiff.preview.mode.sideBySide': 'Displayed in the editor as left and right diff panels',
     'preference.ai.native.inlineDiff.preview.mode.inlineLive': 'Displayed in the editor through streaming rendering',
+    'preference.ai.native.inlineCompletions.cache.enabled': 'Whether to enable cache for inline completions',
     // #endregion AI Native
 
     // #endregion merge editor

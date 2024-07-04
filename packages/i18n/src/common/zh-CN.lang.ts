@@ -1253,6 +1253,7 @@ export const localizationBundle = {
     'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff 的预览模式',
     'preference.ai.native.inlineDiff.preview.mode.sideBySide': '在编辑器当中以左右 diff 面板的方式展示',
     'preference.ai.native.inlineDiff.preview.mode.inlineLive': '在编辑器当中以流式渲染的方式展示',
+    'preference.ai.native.inlineCompletions.cache.enabled': '是否启用内联补全的缓存',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

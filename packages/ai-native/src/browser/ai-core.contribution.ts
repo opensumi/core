@@ -289,6 +289,10 @@ export class AINativeBrowserContribution
         title: localize('preference.ai.native.inlineCompletions.title'),
         preferences: [
           {
+            id: AINativeSettingSectionsId.InlineCompletionsCacheEnabled,
+            localized: 'preference.ai.native.inlineCompletions.cache.enabled',
+          },
+          {
             id: AINativeSettingSectionsId.InlineCompletionsDebounceTime,
             localized: 'preference.ai.native.inlineCompletions.debounceTime',
           },
