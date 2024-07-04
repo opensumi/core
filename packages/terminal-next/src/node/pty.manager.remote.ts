@@ -3,7 +3,7 @@ import net, { SocketConnectOpts } from 'net';
 import { Injectable, Optional } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
-import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { DebugLog, Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import {
   IPtyProxyRPCService,
@@ -32,6 +32,7 @@ interface PtyServiceOptions {
 export class PtyServiceManagerRemote extends PtyServiceManager {
   private disposer: Disposable;
   private options: PtyServiceOptions;
+  private debugLog: DebugLog;
 
   // Pty运行在单独的容器上，通过Socket连接，可以自定义Socket连接参数
   constructor(
@@ -43,6 +44,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
       reconnectInterval: 2000,
       ...options,
     };
+    this.debugLog = new DebugLog('PtyServiceManagerRemote');
     this.initRemoteConnectionMode(connectOpts);
   }
 
@@ -139,11 +141,11 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     });
 
     try {
-      this.logger.log('PtyServiceManagerRemote socket start connect');
+      this.debugLog.log('PtyServiceManagerRemote socket start connect');
       socket.connect(connectOpts);
     } catch (e) {
       // 连接错误的时候会抛出异常，此时自动重连，同时需要 catch 错误
-      this.logger.warn('PtyServiceManagerRemote socket connect error', e);
+      this.debugLog.warn('PtyServiceManagerRemote socket connect error', e);
     }
   }
 
