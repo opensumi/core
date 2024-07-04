@@ -28,7 +28,7 @@ export class PromptCache implements IDisposable {
   private cacheMap = new StaleLRUMap<string, IAICompletionResultModel & { relationId: string }>(15, 10, 60 * 1000);
 
   protected calculateCacheKey(requestBean: IAICompletionOption) {
-    const content = requestBean.prompt + (requestBean.suffix || '');
+    const content = requestBean.prompt;
     return this.hashCalculateService.calculate(content);
   }
 
