@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAICompletionResultModel, StaleLRUMap } from '@opensumi/ide-core-browser';
+import { IAICompletionOption, IAICompletionResultModel, StaleLRUMap } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 const isCacheEnable = () => true;
@@ -16,18 +16,23 @@ export class PromptCache {
 
   private cacheMap = new StaleLRUMap<string, IAICompletionResultModel & { relationId: string }>(15, 10, 60 * 1000);
 
-  getCache(prompt: string) {
+  protected calculateCacheKey(requestBean: IAICompletionOption) {
+    const content = requestBean.prompt + (requestBean.suffix || '');
+    return this.hashCalculateService.calculate(content);
+  }
+
+  getCache(requestBean: IAICompletionOption) {
     if (!isCacheEnable()) {
       return null;
     }
-    const hash = this.hashCalculateService.calculate(prompt);
+    const hash = this.calculateCacheKey(requestBean);
     if (hash) {
       return this.cacheMap.get(hash) || null;
     }
     return null;
   }
 
-  setCache(prompt: string, res: any) {
+  setCache(bean: IAICompletionOption, res: any) {
     if (!isCacheEnable()) {
       return false;
     }
@@ -35,7 +40,7 @@ export class PromptCache {
       return false;
     }
 
-    const hash = this.hashCalculateService.calculate(prompt);
+    const hash = this.calculateCacheKey(bean);
     if (hash) {
       this.cacheMap.set(hash, res);
       return true;
