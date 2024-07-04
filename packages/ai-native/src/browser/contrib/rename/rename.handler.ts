@@ -34,7 +34,7 @@ export class RenameHandler extends IAIMonacoContribHandler {
       this.lastModelRequestRenameSessionId = undefined;
 
       const startTime = +new Date();
-      const relationId = this.aiReporter.start('rename', {
+      const relationId = this.aiReporter.start(AISerivceType.Rename, {
         message: 'start',
         type: AISerivceType.Rename,
         modelRequestStartTime: startTime,

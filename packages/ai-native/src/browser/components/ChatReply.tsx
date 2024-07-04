@@ -197,7 +197,7 @@ export const ChatReply = (props: IChatReplyProps) => {
           }
 
           aiReporter.end(relationId, {
-            message: request.response.responseText,
+            assistantMessage: request.response.responseText,
             replytime: Date.now() - startTime,
             success: true,
             isStop: false,
@@ -220,7 +220,7 @@ export const ChatReply = (props: IChatReplyProps) => {
       onDone();
     }
     aiReporter.end(relationId, {
-      message: request.response.responseText,
+      assistantMessage: request.response.responseText,
       replytime: Date.now() - startTime,
       success: false,
       isStop: true,
