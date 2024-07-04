@@ -19,6 +19,10 @@ interface PtyServiceOptions {
    * 重连时间间隔
    */
   reconnectInterval?: number;
+  /**
+   * socket 超时时间
+   */
+  socketTimeout?: number | undefined;
 }
 
 // 双容器架构 - 在IDE容器中远程运行，与DEV Server上的PtyService通信
@@ -85,10 +89,15 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     this.disposer = new Disposable();
 
     const socket = new net.Socket();
+    if (this.options.socketTimeout) {
+      socket.setTimeout(this.options.socketTimeout);
+    }
 
     let reconnectTimer: NodeJS.Timeout | null = null;
     const reconnect = () => {
-      if (reconnectTimer) {return;}
+      if (reconnectTimer) {
+        return;
+      }
       reconnectTimer = global.setTimeout(() => {
         this.logger.log('PtyServiceManagerRemote reconnect');
         socket.destroy();
@@ -99,7 +108,9 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     // UNIX Socket 连接监听，成功连接后再创建RPC服务
     socket.once('connect', () => {
       this.logger.log('PtyServiceManagerRemote connected');
-      socket.setTimeout(0);
+      if (this.options.socketTimeout) {
+        socket.setTimeout(0);
+      }
       if (reconnectTimer) {
         global.clearTimeout(reconnectTimer);
         reconnectTimer = null;
