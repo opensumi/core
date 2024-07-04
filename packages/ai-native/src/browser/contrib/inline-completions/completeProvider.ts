@@ -220,11 +220,8 @@ export class CompletionRequestTask {
       return [];
     }
 
-    if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
-      this.promptCache.setCache(requestBean, { ...rs, relationId });
-    }
     // 返回补全结果为空直接返回
-    if (rs.codeModelList.length === 0) {
+    if (!rs || !rs.codeModelList || rs.codeModelList.length === 0) {
       this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
         replytime: Date.now() - requestStartTime,
@@ -232,6 +229,10 @@ export class CompletionRequestTask {
       });
       this.aiCompletionsService.updateStatusBarItem('no result', false);
       return [];
+    }
+
+    if (rs.codeModelList.length > 0) {
+      this.promptCache.setCache(requestBean, { ...rs, relationId });
     }
 
     this.aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);

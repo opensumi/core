@@ -46,6 +46,8 @@ export class AICompletionsService extends Disposable {
   // 中间件拓展 inlinecompletion
   private lastMiddlewareInlineCompletion?: IProvideInlineCompletionsSignature;
 
+  protected validCompletionThreshold = 750;
+
   private recordRenderTime(): void {
     this.lastRenderTime = Date.now();
   }
@@ -113,7 +115,7 @@ export class AICompletionsService extends Disposable {
   public async reporterEnd(relationId: string, data: CompletionRT) {
     const reportData = {
       ...data,
-      isValid: typeof data.renderingTime === 'number' ? data.renderingTime > 750 : false,
+      isValid: typeof data.renderingTime === 'number' ? data.renderingTime > this.validCompletionThreshold : false,
     };
     this.aiReporter.end(relationId, reportData);
   }
