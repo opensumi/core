@@ -29,7 +29,6 @@ export const AILayout = () => {
             isTabbar={true}
             defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
             minResize={280}
-            maxResize={480}
             minSize={49}
           />
           <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
