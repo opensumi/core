@@ -12,10 +12,12 @@ import {
   SupportLogNamespace,
   isMacintosh,
   path,
+  sleep,
 } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
+import { checkIsDirectory, isTemporaryFile } from '../utils';
 const { join, basename, normalize } = path;
 @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
@@ -70,15 +72,16 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     try {
       const watcher = watch(basePath);
       this.logger.log('start watching', basePath);
-      const isDirectory = fs.lstatSync(basePath).isDirectory();
+      const isDirectory = await checkIsDirectory(basePath);
 
       const docChildren = new Set<string>();
       let signalDoc = '';
       if (isDirectory) {
         try {
-          for (const child of fs.readdirSync(basePath)) {
+          const dirs = await fs.readdir(basePath);
+          for (const child of dirs) {
             const base = join(basePath, String(child));
-            if (!fs.lstatSync(base).isDirectory()) {
+            if (!(await checkIsDirectory(base))) {
               docChildren.add(child);
             }
           }
@@ -95,15 +98,16 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         watcher.close();
       });
 
-      watcher.on('change', (type: string, filename: string | Buffer) => {
-        if (this.isTemporaryFile(filename as string)) {
+      watcher.on('change', (type: string, _filename: string | Buffer) => {
+        const filename = _filename.toString();
+        if (isTemporaryFile(filename)) {
           return;
         }
 
         // 对传入的raw做一个统一处理
         let changeFileName = '';
         if (filename) {
-          changeFileName = filename as string;
+          changeFileName = filename;
           if (isMacintosh) {
             changeFileName = normalize(changeFileName);
           }
@@ -118,7 +122,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
             // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
             if (docChildren.has(changeFileName)) {
               if ((type === 'rename' || type === 'change') && changeFileName === filename) {
-                const fileExists = fs.existsSync(changePath);
+                const fileExists = await fs.exists(changePath);
                 if (fileExists) {
                   this.pushUpdated(changePath);
                 } else {
@@ -126,8 +130,8 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
                   this.pushDeleted(changePath);
                 }
               }
-            } else if (fs.pathExistsSync(changePath)) {
-              if (!fs.lstatSync(changePath).isDirectory()) {
+            } else if (await fs.pathExists(changePath)) {
+              if (!(await checkIsDirectory(changePath))) {
                 this.pushAdded(changePath);
                 docChildren.add(changeFileName);
               }
@@ -136,7 +140,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         } else {
           setTimeout(async () => {
             if (changeFileName === signalDoc) {
-              if (fs.pathExistsSync(basePath)) {
+              if (await fs.pathExists(basePath)) {
                 this.pushUpdated(basePath);
               } else {
                 this.pushDeleted(basePath);
@@ -168,7 +172,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     let watchPath = '';
 
     if (exist) {
-      const stat = await fs.lstatSync(basePath);
+      const stat = await fs.lstat(basePath);
       if (stat) {
         watchPath = basePath;
       }
@@ -191,9 +195,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       try {
         this.doWatch(realPath);
       } catch (error) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, retryDelay);
-        });
+        await sleep(retryDelay);
       }
       return undefined;
     };
@@ -247,16 +249,5 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       return;
     }
     this.client = client;
-  }
-
-  protected isTemporaryFile(path: string): boolean {
-    if (path) {
-      if (/\.\d{7}\d+$/.test(path)) {
-        // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
-        // 这类文件的更新应当完全隐藏掉
-        return true;
-      }
-    }
-    return false;
   }
 }

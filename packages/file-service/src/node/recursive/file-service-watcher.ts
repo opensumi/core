@@ -18,10 +18,12 @@ import {
   isLinux,
   isWindows,
   parseGlob,
+  sleep,
 } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
 import { FileChangeCollection } from '../file-change-collection';
+import { isTemporaryFile } from '../utils';
 
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[];
@@ -180,22 +182,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    * @param events
    */
   protected trimChangeEvent(events: ParcelWatcher.Event[]): ParcelWatcher.Event[] {
-    events = events.filter((event: ParcelWatcher.Event) => {
-      if (event.path) {
-        if (this.isTempFile(event.path)) {
-          // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
-          // 这类文件的更新应当完全隐藏掉
-          return false;
-        }
-      }
-      return true;
-    });
-
-    return events;
-  }
-
-  private isTempFile(path: string) {
-    return /\.\d{7}\d+$/.test(path);
+    return events.filter((event: ParcelWatcher.Event) => !isTemporaryFile(event.path));
   }
 
   private getDefaultWatchExclude() {
@@ -240,9 +227,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         } catch (e) {
           // Watcher 启动失败，尝试重试
           this.logger.error('watcher subscribe failed ', e, ' try times ', times);
-          await new Promise((resolve) => {
-            setTimeout(resolve, retryDelay);
-          });
+          await sleep(retryDelay);
         }
       }
 
@@ -251,13 +236,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       return undefined; // watch 失败则返回 undefined
     };
 
-    /**
-     * 由于 parcel/watcher 在 Linux 下存在内存越界访问问题触发了 sigsegv 导致 crash，所以在 Linux 下仍旧使用 nsfw
-     * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
-     * 后续这里的 watcher 模块需要重构掉，先暂时这样处理
-     *
-     * 代码来自 issue: https://github.com/opensumi/core/pull/1437/files?diff=split&w=0#diff-9de963117a88a70d7c58974bf2b092c61a196d6eef719846d78ca5c9d100b796 的旧代码处理
-     */
     if (this.isEnableNSFW()) {
       const nsfw = await this.withNSFWModule();
       const watcher: INsfw.NSFW = await nsfw(
@@ -321,8 +299,8 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   }
 
   /**
-   * @deprecated
-   * 主要是用来跳过 jest 测试
+   * 由于 parcel/watcher 在 Linux 下存在内存越界访问问题触发了 sigsegv 导致 crash，所以在 Linux 下仍旧使用 nsfw
+   * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
    */
   private isEnableNSFW(): boolean {
     return isLinux;
@@ -333,21 +311,12 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       return;
     }
 
-    const isIgnored = (watcherId: number, path: string): boolean => {
-      const options = this.watcherOptions.get(watcherId);
-      if (!options || !options.excludes || options.excludes.length < 1) {
-        return false;
-      }
-      return options.excludesPattern.some((match) => match(path));
-    };
-
     const filterEvents = events.filter((event) => {
       // 如果是 RENAME，不会产生临时文件
       if (event.action === INsfw.actions.RENAMED) {
         return true;
       }
-
-      return !this.isTempFile(event.file!);
+      return !isTemporaryFile(event.file);
     });
     // 合并下事件，由于 resolvePath 耗时较久，这里只用当前事件路径及文件名去重，后续处理事件再获取真实路径
     const mergedEvents = uniqBy(filterEvents, (event) => {
@@ -361,44 +330,51 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     });
 
     for (const event of mergedEvents) {
-      if (event.action === INsfw.actions.RENAMED) {
-        const deletedPath = this.resolvePath(event.directory, event.oldFile!);
-        if (isIgnored(watcherId, deletedPath)) {
-          continue;
-        }
+      switch (event.action) {
+        case INsfw.actions.RENAMED: {
+          // 被删除的文件不需要检查文件是否存在
+          this.fileInWatch(watcherId, event.directory, event.oldFile!, true).then((file) => {
+            file && this.pushDeleted(file);
+          });
 
-        this.pushDeleted(deletedPath);
-
-        if (event.newDirectory) {
-          const path = this.resolvePath(event.newDirectory, event.newFile!);
-          if (isIgnored(watcherId, path)) {
-            continue;
+          if (event.newDirectory) {
+            this.fileInWatch(watcherId, event.newDirectory, event.newFile!).then((file) => {
+              file && this.pushAdded(file);
+            });
+          } else {
+            this.fileInWatch(watcherId, event.directory, event.newFile!).then((file) => {
+              file && this.pushAdded(file);
+            });
           }
+          break;
+        }
+        case INsfw.actions.CREATED:
+          this.fileInWatch(watcherId, event.directory, event.file!).then((path) => {
+            if (!path) {
+              return;
+            }
 
-          this.pushAdded(path);
-        } else {
-          const path = this.resolvePath(event.directory, event.newFile!);
-          if (isIgnored(watcherId, path)) {
-            continue;
-          }
+            this.pushAdded(path);
+          });
+          break;
+        case INsfw.actions.MODIFIED:
+          this.fileInWatch(watcherId, event.directory, event.file!).then((path) => {
+            if (!path) {
+              return;
+            }
 
-          this.pushAdded(path);
-        }
-      } else {
-        const path = this.resolvePath(event.directory, event.file!);
-        if (isIgnored(watcherId, path)) {
-          continue;
-        }
+            this.pushUpdated(path);
+          });
+          break;
+        case INsfw.actions.DELETED:
+          this.fileInWatch(watcherId, event.directory, event.file!, true).then((path) => {
+            if (!path) {
+              return;
+            }
 
-        if (event.action === INsfw.actions.CREATED) {
-          this.pushAdded(path);
-        }
-        if (event.action === INsfw.actions.DELETED) {
-          this.pushDeleted(path);
-        }
-        if (event.action === INsfw.actions.MODIFIED) {
-          this.pushUpdated(path);
-        }
+            this.pushDeleted(path);
+          });
+          break;
       }
     }
   }
@@ -425,17 +401,47 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
     this.fireDidFilesChanged();
   }
+  protected isIgnored = (watcherId: number, path: string): boolean => {
+    const options = this.watcherOptions.get(watcherId);
+    if (!options || !options.excludes || options.excludes.length < 1) {
+      return false;
+    }
+    return options.excludesPattern.some((match) => match(path));
+  };
 
-  protected resolvePath(directory: string, file: string): string {
+  protected async fileInWatch(
+    watcherId: number,
+    directory: string,
+    file: string,
+    doNotCheckRealPath = false,
+  ): Promise<string | false> {
+    const path = paths.join(directory, file);
+    if (this.isIgnored(watcherId, path)) {
+      return false;
+    }
+
+    if (doNotCheckRealPath) {
+      return path;
+    }
+
+    const realPath = await this.resolveRealPath(directory, file);
+    if (this.isIgnored(watcherId, realPath)) {
+      return false;
+    }
+
+    return realPath;
+  }
+
+  protected async resolveRealPath(directory: string, file: string): Promise<string> {
     const path = paths.join(directory, file);
     // 如果是 linux 则获取一下真实 path，以防返回的是软连路径被过滤
     if (isLinux) {
       try {
-        return fs.realpathSync.native(path);
+        return fs.realpath.native(path);
       } catch (_e) {
         try {
           // file does not exist try to resolve directory
-          return paths.join(fs.realpathSync.native(directory), file);
+          return paths.join(await fs.realpath.native(directory), file);
         } catch (_e) {
           // directory does not exist fall back to symlink
           return path;

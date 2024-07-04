@@ -17,6 +17,10 @@ export interface IFileSystemWatcherServer {
    * @memberof FileSystemWatcherServer
    */
   unwatchFileChanges(watcher: number): Promise<void>;
+
+  setClient(client?: FileSystemWatcherClient): void;
+
+  dispose(): void;
 }
 
 export interface FileSystemWatcherClient {

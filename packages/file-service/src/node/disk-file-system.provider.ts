@@ -39,6 +39,7 @@ import {
   FileSystemProviderCapabilities,
   FileType,
   IDiskFileProvider,
+  IFileSystemWatcherServer,
   handleError,
   isErrnoException,
   notEmpty,
@@ -68,7 +69,7 @@ export interface IWatcher {
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
 
-  private watcherServer: UnRecursiveFileSystemWatcher | FileSystemWatcherServer;
+  private watcherServer: IFileSystemWatcherServer;
 
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
@@ -129,7 +130,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   /**
    * @param {Uri} uri
    * @param {{ excludes: string[] }}
-   * @memberof DiskFileSystemProvider
    */
   async watch(uri: UriComponents, options?: { excludes?: string[] }): Promise<number> {
     await this.whenReady;
