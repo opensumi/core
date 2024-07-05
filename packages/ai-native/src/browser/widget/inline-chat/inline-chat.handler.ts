@@ -336,6 +336,8 @@ export class InlineChatHandler extends Disposable {
       this.diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
     }
 
+    this.diffPreviewer.mount(this.aiInlineContentWidget);
+
     this.diffPreviewer.show(
       crossSelection.startLineNumber - 1,
       crossSelection.endLineNumber - crossSelection.startLineNumber + 2,

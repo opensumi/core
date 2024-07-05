@@ -1,12 +1,12 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
-import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
 
 import { EResultKind } from '../inline-chat/inline-chat.service';
+import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineDiffWidget } from './inline-diff-widget';
@@ -15,6 +15,8 @@ import { InlineDiffWidget } from './inline-diff-widget';
 export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
+
+  protected inlineContentWidget: AIInlineContentWidget;
 
   constructor(protected readonly monacoEditor: ICodeEditor, protected readonly selection: Selection) {
     super();
@@ -28,6 +30,10 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   protected node: N;
   public getNode(): N {
     return this.node;
+  }
+
+  public mount(contentWidget: AIInlineContentWidget): void {
+    this.inlineContentWidget = contentWidget;
   }
 
   abstract onReady(exec: () => void): Disposable;
@@ -80,11 +86,7 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
       },
     ]);
     widget.create();
-    this.addDispose(
-      Disposable.create(() => {
-        widget.dispose();
-      }),
-    );
+    this.addDispose(widget);
     return widget;
   }
   getPosition(): IPosition | undefined {
@@ -167,6 +169,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       case EResultKind.DISCARD:
       case EResultKind.REGENERATE:
         this.node.discard();
+        this.node.dispose();
         break;
 
       default:
@@ -182,14 +185,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.node.addLinesToDiff(message);
   }
   onEnd(): void {
-    const { changes } = this.node.recompute(EComputerMode.legacy);
-    const zone = this.node.getZone();
-    const allAddRanges = changes.map((c) => {
-      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
-      return new LineRange(lineNumber, lineNumber + 1);
-    });
-    this.node.renderPartialEditWidgets(allAddRanges);
-    this.node.pushStackElement();
-    this.monacoEditor.focus();
+    const diffModel = this.node.recompute(EComputerMode.legacy);
+    this.node.readyRender(diffModel);
   }
 }
