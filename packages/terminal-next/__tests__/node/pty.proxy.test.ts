@@ -34,7 +34,7 @@ describe('PtyService function should be valid', () => {
     proxyProvider.initServer();
     injector.overrideProviders({
       token: PtyServiceManagerToken,
-      useValue: injector.get(PtyServiceManagerRemote, [{ path: ipcPath }]),
+      useValue: injector.get(PtyServiceManagerRemote, [{ socketConnectOpts: { path: ipcPath } }]),
     });
     await delay(2000);
   });
