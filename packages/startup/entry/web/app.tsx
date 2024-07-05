@@ -12,7 +12,6 @@ renderApp(
       layoutViewSize: {
         menubarHeight: 48,
       },
-      disableRestoreEditorGroupState: true,
       layoutConfig: {
         [DESIGN_MENU_BAR_RIGHT]: {
           modules: [MENU_BAR_FEATURE_TIP],
