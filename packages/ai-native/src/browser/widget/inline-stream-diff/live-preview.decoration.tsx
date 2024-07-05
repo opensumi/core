@@ -54,6 +54,40 @@ enum EPartialEdit {
   discard = 'discard',
 }
 
+export interface IPartialEditEvent {
+  /**
+   * 总 diff 数
+   */
+  totalPartialEditCount: number;
+  /**
+   * 已采纳数
+   */
+  acceptedPartialEditCount: number;
+
+  /**
+   * 已添加行数
+   */
+  totalAddedLinesCount: number;
+  /**
+   * 已删除行数
+   */
+  totalRemovedLinesCount: number;
+  /**
+   * 当前冲突信息
+   */
+  currentPartialEdit: {
+    type: EPartialEdit;
+    deletedLinesCount: number;
+    addedLinesCount: number;
+    original: {
+      range: IRange;
+    };
+    modified: {
+      range: IRange;
+    };
+  };
+}
+
 @Injectable({ multiple: true })
 class AcceptPartialEditWidget extends ReactInlineContentWidget {
   static ID = 'AcceptPartialEditWidgetID';
@@ -64,10 +98,10 @@ class AcceptPartialEditWidget extends ReactInlineContentWidget {
   private _id: string;
   private _decorationId: string;
 
-  private readonly _onAccept = new Emitter<void>();
+  private readonly _onAccept = this.registerDispose(new Emitter<void>());
   public readonly onAccept: Event<void> = this._onAccept.event;
 
-  private readonly _onDiscard = new Emitter<void>();
+  private readonly _onDiscard = this.registerDispose(new Emitter<void>());
   public readonly onDiscard: Event<void> = this._onDiscard.event;
 
   positionPreference = [ContentWidgetPositionPreference.EXACT];
@@ -190,6 +224,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
+
+  private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
+  public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
 
   private zoneDec: IEditorDecorationsCollection;
 
@@ -426,6 +463,34 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       findRemovedWidget?.resume();
     };
 
+    const event: IPartialEditEvent = {
+      totalPartialEditCount: this.partialEditWidgetList.length,
+      acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
+      totalAddedLinesCount: 0,
+      totalRemovedLinesCount: 0,
+      currentPartialEdit: {
+        addedLinesCount: 0,
+        deletedLinesCount: 0,
+        modified: {
+          range: {
+            endColumn: 0,
+            endLineNumber: 0,
+            startColumn: 0,
+            startLineNumber: 0,
+          },
+        },
+        original: {
+          range: {
+            endColumn: 0,
+            endLineNumber: 0,
+            startColumn: 0,
+            startLineNumber: 0,
+          },
+        },
+        type,
+      },
+    };
+
     /**
      * 将 partial widget 的所有操作和代码变更放在单独的 undo/redo 堆栈组里面
      */
@@ -460,6 +525,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     }
 
     this.monacoEditor.focus();
+
+    this._onPartialEditEvent.fire(event);
   }
 
   /**

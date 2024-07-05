@@ -49,7 +49,7 @@ export class InlineStreamDiffHandler extends Disposable {
 
   private undoRedoGroup: UndoRedoGroup;
 
-  protected readonly _onDidEditChange = new Emitter<void>();
+  protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
 
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
@@ -349,5 +349,23 @@ export class InlineStreamDiffHandler extends Disposable {
     }
 
     return diffModel;
+  }
+
+  end() {
+    this.recompute(EComputerMode.legacy);
+
+    const { changes } = this.currentDiffModel;
+    const zone = this.getZone();
+
+    const allAddRanges = changes.map((c) => {
+      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
+      return new LineRange(lineNumber, lineNumber + 1);
+    });
+    this.renderPartialEditWidgets(allAddRanges);
+    this.pushStackElement();
+  }
+
+  get onPartialEditEvent() {
+    return this.livePreviewDiffDecorationModel.onPartialEditEvent;
   }
 }

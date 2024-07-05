@@ -28,7 +28,7 @@ import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
-import { EInlineDifPreviewMode } from '../../preferences/schema';
+import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { ERunStrategy } from '../../types';
 import {
   BaseInlineDiffPreviewer,
@@ -310,7 +310,7 @@ export class InlineChatHandler extends Disposable {
     });
   }
 
-  private visibleDiffWidget(
+  visibleDiffWidget(
     monacoEditor: monaco.ICodeEditor,
     options: {
       crossSelection: monaco.Selection;
@@ -325,12 +325,12 @@ export class InlineChatHandler extends Disposable {
     const { crossSelection, chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
-    const inlineDiffMode = this.preferenceService.getValid<EInlineDifPreviewMode>(
+    const inlineDiffMode = this.preferenceService.getValid<EInlineDiffPreviewMode>(
       AINativeSettingSectionsId.InlineDiffPreviewMode,
-      EInlineDifPreviewMode.inlineLive,
+      EInlineDiffPreviewMode.inlineLive,
     );
 
-    if (inlineDiffMode === EInlineDifPreviewMode.sideBySide) {
+    if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
       this.diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, crossSelection]);
     } else {
       this.diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
@@ -342,7 +342,7 @@ export class InlineChatHandler extends Disposable {
     );
 
     const doLayoutContentWidget = () => {
-      if (inlineDiffMode === EInlineDifPreviewMode.sideBySide) {
+      if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
         this.aiInlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
       } else {
         this.aiInlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
@@ -453,6 +453,18 @@ export class InlineChatHandler extends Disposable {
         this.aiInlineContentWidget.dispose();
       }),
     );
+  }
+
+  get onPartialEditEvent() {
+    return (this.diffPreviewer as LiveInlineDiffPreviewer).onPartialEditEvent;
+  }
+
+  accpetAllPartialEdits() {
+    this.diffPreviewer.handleAction(EResultKind.ACCEPT);
+  }
+
+  discardAllPartialEdits() {
+    this.diffPreviewer.handleAction(EResultKind.DISCARD);
   }
 
   private async handleDiffPreviewStrategy(

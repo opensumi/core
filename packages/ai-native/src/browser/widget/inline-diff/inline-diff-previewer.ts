@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
+import { Disposable, ErrorResponse, IDisposable, ReplyResponse } from '@opensumi/ide-core-common';
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -158,6 +158,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     const zone = this.node.getZone();
     return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
   }
+
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
@@ -182,14 +183,10 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.node.addLinesToDiff(message);
   }
   onEnd(): void {
-    const { changes } = this.node.recompute(EComputerMode.legacy);
-    const zone = this.node.getZone();
-    const allAddRanges = changes.map((c) => {
-      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
-      return new LineRange(lineNumber, lineNumber + 1);
-    });
-    this.node.renderPartialEditWidgets(allAddRanges);
-    this.node.pushStackElement();
+    this.node.end();
     this.monacoEditor.focus();
+  }
+  get onPartialEditEvent() {
+    return this.node.onPartialEditEvent;
   }
 }

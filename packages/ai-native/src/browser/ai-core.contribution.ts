@@ -43,6 +43,7 @@ import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
+  ChatResponse,
   CommandService,
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
@@ -56,6 +57,7 @@ import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { Position } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commands';
@@ -88,7 +90,9 @@ import {
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
 } from './types';
+import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
+import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 import { InlineInputChatService } from './widget/inline-input/inline-input.service';
 import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
