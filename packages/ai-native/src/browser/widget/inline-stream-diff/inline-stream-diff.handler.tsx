@@ -398,20 +398,6 @@ export class InlineStreamDiffHandler extends Disposable {
     this.monacoEditor.focus();
   }
 
-  end() {
-    this.recompute(EComputerMode.legacy);
-
-    const { changes } = this.currentDiffModel;
-    const zone = this.getZone();
-
-    const allAddRanges = changes.map((c) => {
-      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
-      return new LineRange(lineNumber, lineNumber + 1);
-    });
-    this.renderPartialEditWidgets(allAddRanges);
-    this.pushStackElement();
-  }
-
   get onPartialEditEvent() {
     return this.livePreviewDiffDecorationModel.onPartialEditEvent;
   }
