@@ -291,6 +291,8 @@ export abstract class EditorCollectionService {
   ): IMergeEditorEditor;
 
   public abstract listEditors(): IEditor[];
+  public abstract getEditorByUri(uri: URI): IEditor | undefined;
+
   public abstract listDiffEditors(): IDiffEditor[];
 
   public abstract onCodeEditorCreate: Event<ICodeEditor>;

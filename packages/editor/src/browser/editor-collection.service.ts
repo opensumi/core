@@ -104,6 +104,14 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return Array.from(this._editors.values());
   }
 
+  getEditorByUri(uri: URI): IEditor | undefined {
+    for (const editor of this._editors.values()) {
+      if (editor.currentUri?.isEqual(uri)) {
+        return editor;
+      }
+    }
+  }
+
   public addEditors(editors: ISumiEditor[]) {
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
