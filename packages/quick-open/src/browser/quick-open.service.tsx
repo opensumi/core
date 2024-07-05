@@ -92,14 +92,17 @@ export class MonacoQuickOpenService implements QuickOpenService {
     }
 
     const overlayWidgets = document.createElement('div');
+    const defaultContainerStyle = {
+      position: 'fixed',
+      top: 0,
+      right: '50%',
+      zIndex: '1000000',
+    };
     overlayWidgets.classList.add('quick-open-overlay');
     overlayContainer.appendChild(overlayWidgets);
 
     const container = (this.container = document.createElement('quick-open-container'));
-    container.style.position = 'fixed';
-    container.style.top = (quickOpenContainerStyle?.top as string) || '0px';
-    container.style.right = (quickOpenContainerStyle?.right as string) || '50%';
-    container.style.zIndex = '1000000';
+    this.setContainerStyle(quickOpenContainerStyle || defaultContainerStyle);
     overlayWidgets.appendChild(container);
   }
 
@@ -206,6 +209,15 @@ export class MonacoQuickOpenService implements QuickOpenService {
         </QuickOpenContext.Provider>
       </ConfigProvider>,
     );
+  }
+
+  private setContainerStyle(style: { [key in string]: any }): void {
+    const keys = Object.keys(style);
+    for (const key of keys) {
+      if (Object.prototype.hasOwnProperty.call(this.container?.style, key)) {
+        this.container!.style[key] = style[key];
+      }
+    }
   }
 
   protected onClose(cancelled: boolean): void {
