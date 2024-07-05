@@ -459,7 +459,7 @@ export class InlineChatHandler extends Disposable {
     return (this.diffPreviewer as LiveInlineDiffPreviewer).onPartialEditEvent;
   }
 
-  accpetAllPartialEdits() {
+  acceptAllPartialEdits() {
     this.diffPreviewer.handleAction(EResultKind.ACCEPT);
   }
 
