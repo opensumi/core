@@ -19,7 +19,6 @@ import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/to
 import { IOptions, ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 import {
   IResourceUndoRedoElement,
-  IUndoRedoElement,
   IUndoRedoService,
   UndoRedoElementType,
   UndoRedoGroup,
@@ -52,8 +51,11 @@ interface ITextLinesTokens {
   lineTokens: LineTokens;
 }
 
+/**
+ * @internal
+ */
 @Injectable({ multiple: true })
-class AcceptPartialEditWidget extends ReactInlineContentWidget {
+export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   static ID = 'AcceptPartialEditWidgetID';
 
   @Autowired(KeybindingRegistry)
@@ -202,6 +204,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   private zone: LineRange;
   private aiNativeContextKey: AINativeContextKey;
+
+  protected readonly _onPartialEditWidgetListChange = new Emitter<AcceptPartialEditWidget[]>();
+  public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
+    this._onPartialEditWidgetListChange.event;
 
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
@@ -448,6 +454,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     }
 
     this.monacoEditor.focus();
+    this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
   }
 
   /**

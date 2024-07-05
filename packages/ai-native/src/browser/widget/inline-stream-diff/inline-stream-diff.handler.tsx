@@ -10,7 +10,7 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
-import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
+import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel } from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -51,6 +51,7 @@ export class InlineStreamDiffHandler extends Disposable {
   private currentDiffModel: IComputeDiffData;
 
   private undoRedoGroup: UndoRedoGroup;
+  private partialEditWidgetHandle: (widgets: AcceptPartialEditWidget[]) => void;
 
   protected readonly _onDidEditChange = new Emitter<void>();
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
@@ -93,6 +94,14 @@ export class InlineStreamDiffHandler extends Disposable {
     ]);
 
     this.addDispose(this.livePreviewDiffDecorationModel);
+
+    this.addDispose(
+      this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange((partialWidgets) => {
+        if (this.partialEditWidgetHandle) {
+          this.partialEditWidgetHandle(partialWidgets);
+        }
+      }),
+    );
   }
 
   private get originalModel(): ITextModel {
@@ -182,6 +191,10 @@ export class InlineStreamDiffHandler extends Disposable {
     };
   }
 
+  public registerPartialEditWidgetHandle(exec: (widgets: AcceptPartialEditWidget[]) => void) {
+    this.partialEditWidgetHandle = exec;
+  }
+
   public discard(): void {
     this.livePreviewDiffDecorationModel.discardUnProcessed();
   }
@@ -220,9 +233,9 @@ export class InlineStreamDiffHandler extends Disposable {
         this.livePreviewDiffDecorationModel.showRemovedWidgetByLineNumber(
           zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
           removedTextLines.map((text, index) => ({
-              text,
-              lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index],
-            })),
+            text,
+            lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index],
+          })),
         );
       }
 

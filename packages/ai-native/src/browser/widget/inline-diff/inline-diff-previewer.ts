@@ -154,6 +154,13 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
     this.addDispose(node.onDispose(() => this.dispose()));
     this.addDispose(node);
+
+    node.registerPartialEditWidgetHandle((widgets) => {
+      if (widgets.every((widget) => widget.isHidden)) {
+        this.dispose();
+        this.inlineContentWidget.dispose();
+      }
+    });
     return node;
   }
   getPosition(): IPosition | undefined {
