@@ -17,7 +17,7 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
-  protected inlineContentWidget: AIInlineContentWidget;
+  protected inlineContentWidget: AIInlineContentWidget | null = null;
 
   constructor(protected readonly monacoEditor: ICodeEditor, protected readonly selection: Selection) {
     super();
@@ -38,8 +38,8 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   }
 
   public layout(): void {
-    this.inlineContentWidget.setOptions({ position: this.getPosition() });
-    this.inlineContentWidget.layoutContentWidget();
+    this.inlineContentWidget?.setOptions({ position: this.getPosition() });
+    this.inlineContentWidget?.layoutContentWidget();
   }
 
   abstract onReady(exec: () => void): Disposable;
@@ -95,7 +95,7 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     return Position.lift({ lineNumber: this.selection.endLineNumber + 1, column: 1 });
   }
   layout(): void {
-    this.inlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
+    this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
     super.layout();
   }
   onReady(exec: () => void): Disposable {
@@ -162,7 +162,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     node.registerPartialEditWidgetHandle((widgets) => {
       if (widgets.every((widget) => widget.isHidden)) {
         this.dispose();
-        this.inlineContentWidget.dispose();
+        this.inlineContentWidget?.dispose();
       }
     });
     return node;
@@ -192,7 +192,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     }
   }
   layout(): void {
-    this.inlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
+    this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
     super.layout();
   }
   onData(data: ReplyResponse): void {
