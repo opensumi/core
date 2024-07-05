@@ -56,6 +56,10 @@ export interface IDesignLayoutConfig {
    * set menubar logo
    */
   menubarLogo?: string;
+  /**
+   * set quick open style
+   */
+  quickOpenContainerStyle?: React.CSSProperties;
 }
 
 export interface IAINativeConfig {

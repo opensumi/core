@@ -125,6 +125,7 @@ export class DesignLayoutConfig implements IDesignLayoutConfig {
     useMergeRightWithLeftPanel: false,
     useMenubarView: false,
     menubarLogo: '',
+    quickOpenContainerStyle: {},
   };
 
   setLayout(...value: (Partial<IDesignLayoutConfig> | undefined)[]): void {
@@ -137,5 +138,9 @@ export class DesignLayoutConfig implements IDesignLayoutConfig {
 
   get menubarLogo(): string {
     return this.internalLayout.menubarLogo;
+  }
+
+  get quickOpenContainerStyle(): React.CSSProperties {
+    return this.internalLayout.quickOpenContainerStyle;
   }
 }
