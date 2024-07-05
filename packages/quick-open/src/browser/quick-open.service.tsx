@@ -98,7 +98,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
     const container = (this.container = document.createElement('quick-open-container'));
     container.style.position = 'fixed';
     container.style.top = (quickOpenContainerStyle?.top as string) || '0px';
-    container.style.right = '50%';
+    container.style.right = (quickOpenContainerStyle?.right as string) || '50%';
     container.style.zIndex = '1000000';
     overlayWidgets.appendChild(container);
   }
