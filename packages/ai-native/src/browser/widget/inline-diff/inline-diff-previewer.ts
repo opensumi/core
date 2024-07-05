@@ -1,6 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
+import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
@@ -36,15 +37,16 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
     this.inlineContentWidget = contentWidget;
   }
 
+  public layout(): void {
+    this.inlineContentWidget.setOptions({ position: this.getPosition() });
+    this.inlineContentWidget.layoutContentWidget();
+  }
+
   abstract onReady(exec: () => void): Disposable;
-  abstract onLayout(exec: () => void): Disposable;
   abstract createNode(): N;
   abstract onData(data: ReplyResponse): void;
   abstract handleAction(action: EResultKind): void;
-
-  getPosition(): IPosition | undefined {
-    return undefined;
-  }
+  abstract getPosition(): IPosition;
 
   show(line: number, heightInLines: number): void {
     // do nothing
@@ -89,12 +91,12 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     this.addDispose(widget);
     return widget;
   }
-  getPosition(): IPosition | undefined {
+  getPosition(): IPosition {
     return Position.lift({ lineNumber: this.selection.endLineNumber + 1, column: 1 });
   }
-  onLayout(exec: () => void): Disposable {
-    requestAnimationFrame(() => exec());
-    return this;
+  layout(): void {
+    this.inlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
+    super.layout();
   }
   onReady(exec: () => void): Disposable {
     this.addDispose(this.node.onReady(exec.bind(this)));
@@ -152,6 +154,8 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   createNode(): InlineStreamDiffHandler {
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
+
+    this.addDispose(node.onDidEditChange(() => this.layout()));
     this.addDispose(node.onDispose(() => this.dispose()));
     this.addDispose(node);
 
@@ -163,7 +167,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     });
     return node;
   }
-  getPosition(): IPosition | undefined {
+  getPosition(): IPosition {
     const zone = this.node.getZone();
     return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
   }
@@ -183,9 +187,9 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
         break;
     }
   }
-  onLayout(exec: () => void): Disposable {
-    this.node.onDidEditChange(exec.bind(this));
-    return this;
+  layout(): void {
+    this.inlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
+    super.layout();
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
