@@ -251,9 +251,25 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.addDispose(
       this.inlineStreamDiffService.onAcceptDiscardPartialEdit((isAccept) => {
-        const firstWidget = this.partialEditWidgetList.filter((p) => !p.isHidden)[0];
-        if (firstWidget) {
-          this.handlePartialEditAction(isAccept ? EPartialEdit.accept : EPartialEdit.discard, firstWidget);
+        const currentPosition = this.monacoEditor.getPosition()!;
+
+        /**
+         * 找出离当前光标最近的操作点
+         */
+        const widget = this.partialEditWidgetList
+          .filter((p) => !p.isHidden)
+          .sort((pa, pb) => {
+            const paLineNumber = pa.getPosition()?.position?.lineNumber || 1;
+            const pbLineNumber = pb.getPosition()?.position?.lineNumber || 1;
+
+            const distanceToPa = Math.abs(currentPosition.lineNumber - paLineNumber);
+            const distanceToPb = Math.abs(currentPosition.lineNumber - pbLineNumber);
+
+            return distanceToPa - distanceToPb;
+          });
+
+        if (widget.length > 0) {
+          this.handlePartialEditAction(isAccept ? EPartialEdit.accept : EPartialEdit.discard, widget[0]);
         }
       }),
     );
