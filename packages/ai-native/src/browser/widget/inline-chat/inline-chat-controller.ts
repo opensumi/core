@@ -38,7 +38,7 @@ export class InlineChatController {
 
   constructor(readonly options?: InlineChatControllerOptions) {}
 
-  public deffered: Deferred<void> = new Deferred();
+  public deferred: Deferred<void> = new Deferred();
 
   private calculateCodeBlocks(content: string): string {
     if (!this.options?.enableCodeblockRender) {
@@ -70,7 +70,7 @@ export class InlineChatController {
   }
 
   public async mountReadable(stream: SumiReadableStream<IChatProgress>): Promise<void> {
-    await this.deffered.promise;
+    await this.deferred.promise;
     const reply = new ReplyResponse('');
     let wholeContent = '';
 

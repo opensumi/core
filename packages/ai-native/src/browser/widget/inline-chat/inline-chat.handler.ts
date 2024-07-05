@@ -8,6 +8,7 @@ import {
   CancellationTokenSource,
   ChatResponse,
   Disposable,
+  Emitter,
   ErrorResponse,
   Event,
   IAIReporter,
@@ -37,6 +38,7 @@ import {
 } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { IPartialEditEvent } from '../inline-stream-diff/live-preview.decoration';
 
 import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
@@ -71,6 +73,9 @@ export class InlineChatHandler extends Disposable {
 
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
+
+  private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
+  public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
 
   private logger: ILogServiceClient;
 
@@ -334,12 +339,21 @@ export class InlineChatHandler extends Disposable {
       EInlineDiffPreviewMode.inlineLive,
     );
 
+    if (!this.aiInlineChatDisposed.disposed) {
+      this.aiInlineChatDisposed.dispose();
+    }
+
     if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
       this.diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, crossSelection]);
     } else {
       this.diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
+      this.aiInlineChatDisposed.addDispose(
+        (this.diffPreviewer as LiveInlineDiffPreviewer).onPartialEditEvent((event) => {
+          this._onPartialEditEvent.fire(event);
+        }),
+      );
     }
-
+    this.aiInlineChatDisposed.addDispose(this.diffPreviewer);
     this.diffPreviewer.mount(this.aiInlineContentWidget);
 
     this.diffPreviewer.show(
@@ -352,7 +366,7 @@ export class InlineChatHandler extends Disposable {
 
       this.aiInlineChatOperationDisposed.addDispose(
         this.diffPreviewer.onReady(() => {
-          controller.deffered.resolve();
+          controller.deferred.resolve();
 
           this.aiInlineChatOperationDisposed.addDispose([
             controller.onData((data) => {
@@ -442,10 +456,6 @@ export class InlineChatHandler extends Disposable {
         this.aiInlineContentWidget?.dispose();
       }),
     );
-  }
-
-  get onPartialEditEvent() {
-    return (this.diffPreviewer as LiveInlineDiffPreviewer).onPartialEditEvent;
   }
 
   acceptAllPartialEdits() {
