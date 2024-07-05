@@ -336,22 +336,12 @@ export class InlineChatHandler extends Disposable {
       this.diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
     }
 
+    this.diffPreviewer.mount(this.aiInlineContentWidget);
+
     this.diffPreviewer.show(
       crossSelection.startLineNumber - 1,
       crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
     );
-
-    const doLayoutContentWidget = () => {
-      if (inlineDiffMode === EInlineDifPreviewMode.sideBySide) {
-        this.aiInlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
-      } else {
-        this.aiInlineContentWidget.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
-      }
-      this.aiInlineContentWidget?.setOptions({
-        position: this.diffPreviewer.getPosition(),
-      });
-      this.aiInlineContentWidget?.layoutContentWidget();
-    };
 
     if (InlineChatController.is(chatResponse)) {
       const controller = chatResponse as InlineChatController;
@@ -374,7 +364,7 @@ export class InlineChatHandler extends Disposable {
                 isRetry,
               });
               this.diffPreviewer.onError(error);
-              doLayoutContentWidget();
+              this.diffPreviewer.layout();
             }),
             controller.onAbort(() => {
               this.convertInlineChatStatus(EInlineChatStatus.READY, {
@@ -385,7 +375,7 @@ export class InlineChatHandler extends Disposable {
                 isStop: true,
               });
               this.diffPreviewer.onAbort();
-              doLayoutContentWidget();
+              this.diffPreviewer.layout();
             }),
             controller.onEnd(() => {
               this.convertInlineChatStatus(EInlineChatStatus.DONE, {
@@ -395,7 +385,7 @@ export class InlineChatHandler extends Disposable {
                 isRetry,
               });
               this.diffPreviewer.onEnd();
-              doLayoutContentWidget();
+              this.diffPreviewer.layout();
             }),
           ]);
         }),
@@ -442,11 +432,7 @@ export class InlineChatHandler extends Disposable {
       );
     }
 
-    this.aiInlineChatOperationDisposed.addDispose(
-      this.diffPreviewer.onLayout(() => {
-        doLayoutContentWidget();
-      }),
-    );
+    this.diffPreviewer.layout();
 
     this.aiInlineChatOperationDisposed.addDispose(
       this.diffPreviewer.onDispose(() => {

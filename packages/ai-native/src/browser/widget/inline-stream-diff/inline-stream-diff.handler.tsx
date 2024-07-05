@@ -7,9 +7,10 @@ import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/cor
 import { linesDiffComputers } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputers';
 import { DetailedLineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
+import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
-import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
+import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel } from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -42,12 +43,15 @@ export class InlineStreamDiffHandler extends Disposable {
 
   private virtualModel: ITextModel;
   private rawOriginalTextLines: string[];
+  private rawOriginalTextLinesTokens: LineTokens[] = [];
+
   private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
 
   private schedulerHandleEdits: RunOnceScheduler;
   private currentDiffModel: IComputeDiffData;
 
   private undoRedoGroup: UndoRedoGroup;
+  private partialEditWidgetHandle: (widgets: AcceptPartialEditWidget[]) => void;
 
   protected readonly _onDidEditChange = new Emitter<void>();
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
@@ -56,10 +60,6 @@ export class InlineStreamDiffHandler extends Disposable {
     super();
 
     this.undoRedoGroup = new UndoRedoGroup();
-    this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [
-      this.monacoEditor,
-      this.selection,
-    ]);
 
     const modelService = StandaloneServices.get(IModelService);
     this.virtualModel = modelService.createModel('', null);
@@ -71,7 +71,12 @@ export class InlineStreamDiffHandler extends Disposable {
       .getValueInRange(Range.fromPositions(startPosition, endPosition))
       .split(eol);
 
-    this.livePreviewDiffDecorationModel.calcTextLinesTokens(this.rawOriginalTextLines);
+    this.rawOriginalTextLinesTokens = this.rawOriginalTextLines.map((_, index) => {
+      const lineNumber = startPosition.lineNumber + index;
+      this.originalModel.tokenization.forceTokenization(lineNumber);
+      const lineTokens = this.originalModel.tokenization.getLineTokens(lineNumber);
+      return lineTokens;
+    });
 
     this.schedulerHandleEdits = new RunOnceScheduler(() => {
       if (this.currentDiffModel) {
@@ -79,7 +84,24 @@ export class InlineStreamDiffHandler extends Disposable {
       }
     }, 16 * 12.5);
 
+    this.initializeDecorationModel();
+  }
+
+  private initializeDecorationModel(): void {
+    this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [
+      this.monacoEditor,
+      this.selection,
+    ]);
+
     this.addDispose(this.livePreviewDiffDecorationModel);
+
+    this.addDispose(
+      this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange((partialWidgets) => {
+        if (this.partialEditWidgetHandle) {
+          this.partialEditWidgetHandle(partialWidgets);
+        }
+      }),
+    );
   }
 
   private get originalModel(): ITextModel {
@@ -169,34 +191,63 @@ export class InlineStreamDiffHandler extends Disposable {
     };
   }
 
+  public registerPartialEditWidgetHandle(exec: (widgets: AcceptPartialEditWidget[]) => void) {
+    this.partialEditWidgetHandle = exec;
+  }
+
   public discard(): void {
-    const eol = this.originalModel.getEOL();
-    const zone = this.getZone();
-    this.originalModel.pushEditOperations(
-      null,
-      [
-        {
-          range: zone.toInclusiveRange()!,
-          text: this.rawOriginalTextLines.join(eol),
-        },
-      ],
-      () => null,
-    );
+    this.livePreviewDiffDecorationModel.discardUnProcessed();
   }
 
   public getZone(): LineRange {
     return this.livePreviewDiffDecorationModel.getZone();
   }
 
-  public renderPartialEditWidgets(range: LineRange[]): void {
-    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(range);
+  private renderPartialEditWidgets(diffModel: IComputeDiffData): void {
+    const { changes } = diffModel;
+    const zone = this.getZone();
+    const allAddRanges = changes.map((c) => {
+      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
+      return new LineRange(lineNumber, lineNumber + 1);
+    });
+
+    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(allAddRanges);
+  }
+
+  private renderAddedRangeDecoration(diffModel: IComputeDiffData): void {
+    const allAddRanges = diffModel.changes.map((c) => c.addedRange);
+    this.livePreviewDiffDecorationModel.touchAddedRange(allAddRanges);
+  }
+
+  private renderRemovedRangeDecoration(diffModel: IComputeDiffData): void {
+    const { changes } = diffModel;
+    const zone = this.getZone();
+
+    let preRemovedLen: number = 0;
+    this.livePreviewDiffDecorationModel.clearRemovedWidgets();
+
+    for (const change of changes) {
+      const { removedTextLines, removedLinesOriginalRange, addedRange } = change;
+
+      if (removedTextLines.length > 0) {
+        this.livePreviewDiffDecorationModel.showRemovedWidgetByLineNumber(
+          zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
+          removedTextLines.map((text, index) => ({
+            text,
+            lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index],
+          })),
+        );
+      }
+
+      preRemovedLen += removedLinesOriginalRange.length - addedRange.length;
+    }
   }
 
   /**
    * 令当前的 inline diff 在流式渲染过程当中使用 pushEditOperations 进行编辑的操作都放在同一组 undo/redo 堆栈里
    * 一旦撤销到最顶层则关闭当前的 inline diff
    */
-  public pushStackElement(): void {
+  private pushStackElement(): void {
     this.livePreviewDiffDecorationModel.pushUndoElement({
       undo: () => this.dispose(),
       redo: () => {
@@ -207,7 +258,7 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   private handleEdits(diffModel: IComputeDiffData): void {
-    const { activeLine, changes, newFullRangeTextLines, pendingRange } = diffModel;
+    const { activeLine, newFullRangeTextLines, pendingRange } = diffModel;
     const eol = this.originalModel.getEOL();
     const zone = this.getZone();
 
@@ -299,8 +350,7 @@ export class InlineStreamDiffHandler extends Disposable {
     /**
      * handle added range decoration
      */
-    const allAddRanges = changes.map((c) => c.addedRange);
-    this.livePreviewDiffDecorationModel.touchAddedRange(allAddRanges);
+    this.renderAddedRangeDecoration(diffModel);
 
     /**
      * handle pending range decoration
@@ -314,40 +364,37 @@ export class InlineStreamDiffHandler extends Disposable {
     /**
      * handle removed range
      */
-    let preRemovedLen: number = 0;
-    this.livePreviewDiffDecorationModel.clearRemovedWidgets();
-
-    for (const change of changes) {
-      const { removedTextLines, removedLinesOriginalRange, addedRange } = change;
-
-      if (removedTextLines.length > 0) {
-        this.livePreviewDiffDecorationModel.showRemovedWidgetByLineNumber(
-          validZone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
-          removedLinesOriginalRange,
-          removedTextLines,
-        );
-      }
-
-      preRemovedLen += removedLinesOriginalRange.length - addedRange.length;
-    }
+    this.renderRemovedRangeDecoration(diffModel);
 
     this._onDidEditChange.fire();
+  }
+
+  private doSchedulerEdits(): void {
+    if (!this.schedulerHandleEdits.isScheduled()) {
+      this.schedulerHandleEdits.schedule();
+    }
+  }
+
+  public recompute(computerMode: EComputerMode, newContent?: string): IComputeDiffData {
+    if (newContent) {
+      this.virtualModel.setValue(newContent);
+    }
+    const newTextLines = this.virtualModel.getLinesContent();
+    this.currentDiffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
+    return this.currentDiffModel;
   }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
     this.virtualModel.setValue(newText);
     this.recompute(computerMode);
+    this.doSchedulerEdits();
   }
 
-  public recompute(computerMode: EComputerMode): IComputeDiffData {
-    const newTextLines = this.virtualModel.getLinesContent();
-    const diffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
-    this.currentDiffModel = diffModel;
+  public readyRender(diffModel: IComputeDiffData): void {
+    this.doSchedulerEdits();
 
-    if (!this.schedulerHandleEdits.isScheduled()) {
-      this.schedulerHandleEdits.schedule();
-    }
-
-    return diffModel;
+    this.renderPartialEditWidgets(diffModel);
+    this.pushStackElement();
+    this.monacoEditor.focus();
   }
 }

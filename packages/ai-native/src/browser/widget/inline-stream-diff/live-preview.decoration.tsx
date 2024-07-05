@@ -7,15 +7,7 @@ import { KeybindingRegistry, StackingLevel } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Disposable, Emitter, Event, isUndefined, uuid } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import {
-  ICodeEditor,
-  IEditorDecorationsCollection,
-  IPosition,
-  IRange,
-  Position,
-  Range,
-  Selection,
-} from '@opensumi/ide-monaco';
+import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
@@ -54,8 +46,16 @@ enum EPartialEdit {
   discard = 'discard',
 }
 
+interface ITextLinesTokens {
+  text: string;
+  lineTokens: LineTokens;
+}
+
+/**
+ * @internal
+ */
 @Injectable({ multiple: true })
-class AcceptPartialEditWidget extends ReactInlineContentWidget {
+export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   static ID = 'AcceptPartialEditWidgetID';
 
   @Autowired(KeybindingRegistry)
@@ -199,12 +199,15 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private addedRangeDec: EnhanceDecorationsCollection;
   private partialEditWidgetList: AcceptPartialEditWidget[] = [];
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
-  private rawOriginalTextLinesTokens: LineTokens[] = [];
 
   private undoRedoService: IUndoRedoService;
 
   private zone: LineRange;
   private aiNativeContextKey: AINativeContextKey;
+
+  protected readonly _onPartialEditWidgetListChange = new Emitter<AcceptPartialEditWidget[]>();
+  public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
+    this._onPartialEditWidgetListChange.event;
 
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
     super();
@@ -248,9 +251,25 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.addDispose(
       this.inlineStreamDiffService.onAcceptDiscardPartialEdit((isAccept) => {
-        const firstWidget = this.partialEditWidgetList.filter((p) => !p.isHidden)[0];
-        if (firstWidget) {
-          this.handlePartialEditAction(isAccept ? EPartialEdit.accept : EPartialEdit.discard, firstWidget);
+        const currentPosition = this.monacoEditor.getPosition()!;
+
+        /**
+         * 找出离当前光标最近的操作点
+         */
+        const widget = this.partialEditWidgetList
+          .filter((p) => !p.isHidden)
+          .sort((pa, pb) => {
+            const paLineNumber = pa.getPosition()?.position?.lineNumber || 1;
+            const pbLineNumber = pb.getPosition()?.position?.lineNumber || 1;
+
+            const distanceToPa = Math.abs(currentPosition.lineNumber - paLineNumber);
+            const distanceToPb = Math.abs(currentPosition.lineNumber - pbLineNumber);
+
+            return distanceToPa - distanceToPb;
+          });
+
+        if (widget.length > 0) {
+          this.handlePartialEditAction(isAccept ? EPartialEdit.accept : EPartialEdit.discard, widget[0]);
         }
       }),
     );
@@ -268,32 +287,19 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     );
   }
 
-  public calcTextLinesTokens(rawOriginalTextLines: string[]): void {
-    this.rawOriginalTextLinesTokens = rawOriginalTextLines.map((_, index) => {
-      const model = this.monacoEditor.getModel()!;
-      const zone = this.getZone();
-      const lineNumber = zone.startLineNumber + index;
-
-      model.tokenization.forceTokenization(lineNumber);
-      const lineTokens = model.tokenization.getLineTokens(lineNumber);
-
-      return lineTokens;
-    });
-  }
-
-  public showRemovedWidgetByLineNumber(
-    lineNumber: number,
-    removedLinesOriginalRange: LineRange,
-    texts: string[],
-  ): void {
-    const position = new Position(lineNumber, this.monacoEditor.getModel()!.getLineMaxColumn(lineNumber) || 1);
+  public showRemovedWidgetByLineNumber(lineNumber: number, texts: ITextLinesTokens[]): void {
+    const position = new Position(lineNumber, 1);
     const heightInLines = texts.length;
 
-    const widget = new RemovedZoneWidget(this.monacoEditor, texts, {
-      showInHiddenAreas: true,
-      showFrame: false,
-      showArrow: false,
-    });
+    const widget = new RemovedZoneWidget(
+      this.monacoEditor,
+      texts.map((t) => t.text),
+      {
+        showInHiddenAreas: true,
+        showFrame: false,
+        showArrow: false,
+      },
+    );
 
     widget.create();
 
@@ -301,10 +307,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     renderLines(
       dom,
       this.monacoEditor.getOption(EditorOption.tabIndex),
-      texts.map((content, index) => ({
+      texts.map(({ text: content, lineTokens }) => ({
         content,
         decorations: [],
-        lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index],
+        lineTokens,
       })),
       this.monacoEditor.getOptions(),
     );
@@ -362,7 +368,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     ]);
   }
 
-  private doDiscard(
+  private doDiscardPartialWidget(
     partialWidget: AcceptPartialEditWidget,
     addedDec?: IEnhanceModelDeltaDecoration,
     removedWidget?: RemovedZoneWidget,
@@ -405,7 +411,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     return operation;
   }
 
-  private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget) {
+  private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget, isPushStack: boolean = true) {
     const position = widget.getPosition()!.position!;
     const model = this.monacoEditor.getModel()!;
     /**
@@ -434,22 +440,26 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     switch (type) {
       case EPartialEdit.accept:
         hide();
-        this.pushUndoElement({
-          undo: () => resume(),
-          redo: () => hide(),
-          group,
-        });
+        if (isPushStack) {
+          this.pushUndoElement({
+            undo: () => resume(),
+            redo: () => hide(),
+            group,
+          });
+        }
         break;
 
       case EPartialEdit.discard:
         {
-          const operation = this.doDiscard(widget, findAddedDec, findRemovedWidget);
+          const operation = this.doDiscardPartialWidget(widget, findAddedDec, findRemovedWidget);
           if (operation) {
-            this.pushUndoElement({
-              undo: () => resume(),
-              redo: () => hide(),
-              group,
-            });
+            if (isPushStack) {
+              this.pushUndoElement({
+                undo: () => resume(),
+                redo: () => hide(),
+                group,
+              });
+            }
             model.pushEditOperations(null, [operation], () => null, group);
           }
         }
@@ -460,6 +470,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     }
 
     this.monacoEditor.focus();
+    this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
   }
 
   /**
@@ -477,6 +488,13 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     });
   }
 
+  public discardUnProcessed(): void {
+    const otherWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
+    otherWidgets.forEach((widget) => {
+      this.handlePartialEditAction(EPartialEdit.discard, widget, false);
+    });
+  }
+
   public pushUndoElement(data: { undo: () => void; redo: () => void; group?: UndoRedoGroup }): void {
     const resource = this.monacoEditor.getModel()!.uri;
     const group = data.group ?? new UndoRedoGroup();
@@ -486,8 +504,16 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         type: UndoRedoElementType.Resource,
         resource,
         label: 'Live.Preview.UndoRedo',
-        undo: data.undo,
-        redo: data.redo,
+        undo: () => {
+          if (!this.disposed) {
+            data.undo();
+          }
+        },
+        redo: () => {
+          if (!this.disposed) {
+            data.redo();
+          }
+        },
       } as IResourceUndoRedoElement,
       group,
     );
