@@ -288,7 +288,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public showRemovedWidgetByLineNumber(lineNumber: number, texts: ITextLinesTokens[]): void {
-    const position = new Position(lineNumber, this.monacoEditor.getModel()!.getLineMaxColumn(lineNumber) || 1);
+    const position = new Position(lineNumber, 1);
     const heightInLines = texts.length;
 
     const widget = new RemovedZoneWidget(
