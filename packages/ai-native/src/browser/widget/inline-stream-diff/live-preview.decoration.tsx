@@ -72,9 +72,6 @@ export interface IPartialEditEvent {
    * 已删除行数
    */
   totalRemovedLinesCount: number;
-  /**
-   * 当前冲突信息
-   */
   currentPartialEdit: {
     type: EPartialEdit;
     deletedLinesCount: number;
