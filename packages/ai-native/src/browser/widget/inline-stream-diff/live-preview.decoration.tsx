@@ -460,18 +460,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       findRemovedWidget?.resume();
     };
 
-    const event: IPartialEditEvent = {
-      totalPartialEditCount: this.partialEditWidgetList.length,
-      acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
-      totalAddedLinesCount: this.addedRangeDec.getDecorations().filter((dec) => dec.length > 0).length,
-      totalRemovedLinesCount: this.removedZoneWidgets.length,
-      currentPartialEdit: {
-        addedLinesCount: findAddedDec?.length || 0,
-        deletedLinesCount: findRemovedWidget?.getRemovedTextLines().length || 0,
-        type,
-      },
-    };
-
     /**
      * 将 partial widget 的所有操作和代码变更放在单独的 undo/redo 堆栈组里面
      */
@@ -508,6 +496,18 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       default:
         break;
     }
+
+    const event: IPartialEditEvent = {
+      totalPartialEditCount: this.partialEditWidgetList.length,
+      acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
+      totalAddedLinesCount: this.addedRangeDec.getDecorations().reduce((prev, current) => prev + current.length, 0),
+      totalRemovedLinesCount: this.removedZoneWidgets.reduce((prev, current) => prev + current.getRemovedTextLines().length, 0),
+      currentPartialEdit: {
+        addedLinesCount: findAddedDec?.length || 0,
+        deletedLinesCount: findRemovedWidget?.getRemovedTextLines().length || 0,
+        type,
+      },
+    };
 
     this.monacoEditor.focus();
 
