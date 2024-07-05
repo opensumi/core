@@ -375,7 +375,10 @@ export class InlineStreamDiffHandler extends Disposable {
     }
   }
 
-  public recompute(computerMode: EComputerMode): IComputeDiffData {
+  public recompute(computerMode: EComputerMode, newContent?: string): IComputeDiffData {
+    if (newContent) {
+      this.virtualModel.setValue(newContent);
+    }
     const newTextLines = this.virtualModel.getLinesContent();
     this.currentDiffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
     return this.currentDiffModel;
