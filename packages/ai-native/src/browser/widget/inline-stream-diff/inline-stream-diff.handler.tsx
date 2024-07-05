@@ -385,8 +385,7 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
-    this.virtualModel.setValue(newText);
-    this.recompute(computerMode);
+    this.recompute(computerMode, newText);
     this.doSchedulerEdits();
   }
 

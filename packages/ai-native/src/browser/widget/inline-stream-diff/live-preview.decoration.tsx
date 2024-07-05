@@ -233,7 +233,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private zone: LineRange;
   private aiNativeContextKey: AINativeContextKey;
 
-  protected readonly _onPartialEditWidgetListChange = new Emitter<AcceptPartialEditWidget[]>();
+  protected readonly _onPartialEditWidgetListChange = this.registerDispose(new Emitter<AcceptPartialEditWidget[]>());
   public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
     this._onPartialEditWidgetListChange.event;
 
