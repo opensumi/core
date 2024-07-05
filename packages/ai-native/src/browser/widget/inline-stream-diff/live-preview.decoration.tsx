@@ -463,11 +463,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const event: IPartialEditEvent = {
       totalPartialEditCount: this.partialEditWidgetList.length,
       acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
-      totalAddedLinesCount: 0,
-      totalRemovedLinesCount: 0,
+      totalAddedLinesCount: this.addedRangeDec.getDecorations().filter((dec) => dec.length > 0).length,
+      totalRemovedLinesCount: this.removedZoneWidgets.length,
       currentPartialEdit: {
-        addedLinesCount: 0,
-        deletedLinesCount: 0,
+        addedLinesCount: findAddedDec?.length || 0,
+        deletedLinesCount: findRemovedWidget?.getRemovedTextLines().length || 0,
         type,
       },
     };
