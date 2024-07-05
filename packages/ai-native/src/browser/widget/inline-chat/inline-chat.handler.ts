@@ -298,6 +298,10 @@ export class InlineChatHandler extends Disposable {
       isStop?: boolean;
     },
   ): void {
+    if (!this.aiInlineContentWidget) {
+      return;
+    }
+
     const { relationId, message, startTime, isRetry, isStop } = reportInfo;
 
     this.aiInlineChatDisposed.addDispose(this.aiInlineContentWidget.launchChatStatus(status));
@@ -394,7 +398,7 @@ export class InlineChatHandler extends Disposable {
       const model = monacoEditor.getModel();
       const crossCode = model!.getValueInRange(crossSelection);
 
-      if (this.aiInlineChatDisposed.disposed || CancelResponse.is(chatResponse)) {
+      if ((this.aiInlineContentWidget && this.aiInlineChatDisposed.disposed) || CancelResponse.is(chatResponse)) {
         this.convertInlineChatStatus(EInlineChatStatus.READY, {
           relationId,
           message: (chatResponse as CancelResponse).message || '',
@@ -422,8 +426,7 @@ export class InlineChatHandler extends Disposable {
         isRetry,
       });
 
-      let answer = (chatResponse as ReplyResponse).message;
-      answer = this.formatAnswer(answer, crossCode);
+      const answer = this.formatAnswer((chatResponse as ReplyResponse).message, crossCode);
 
       this.aiInlineChatOperationDisposed.addDispose(
         this.diffPreviewer.onReady(() => {
@@ -436,7 +439,7 @@ export class InlineChatHandler extends Disposable {
 
     this.aiInlineChatOperationDisposed.addDispose(
       this.diffPreviewer.onDispose(() => {
-        this.aiInlineContentWidget.dispose();
+        this.aiInlineContentWidget?.dispose();
       }),
     );
   }
