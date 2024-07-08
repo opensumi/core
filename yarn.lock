@@ -2137,7 +2137,7 @@ __metadata:
     "@types/react-window": "npm:^1.8.5"
     fuzzy: "npm:^0.1.3"
     lodash: "npm:^4.17.21"
-    marked: "npm:4.0.10"
+    marked: "npm:13.0.2"
     prop-types: "npm:^15.8.1"
     raf: "npm:^3.4.1"
     rc-dialog: "npm:~7.6.0"
@@ -13362,12 +13362,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:4.0.10":
-  version: 4.0.10
-  resolution: "marked@npm:4.0.10"
+"marked@npm:13.0.2":
+  version: 13.0.2
+  resolution: "marked@npm:13.0.2"
   bin:
     marked: bin/marked.js
-  checksum: 10/764e49b246ccad0afe2eedf3c5074aafa7abd445c93cb13209b39bacdf9753ae7c333f35c7fafbcb68b20639711c34d74eb06b922ac71b82e440e72ce48d4dc0
+  checksum: 10/73696e2d9d77995011f7a75acaa82a8d3b68cbe7072ad06cfdaddef9cb716022f07c3e51f91710db25338dda7736815d0aa9673950bf27c0ed325e6e3549db38
   languageName: node
   linkType: hard
 
