@@ -32,7 +32,6 @@ import { BaseInlineDiffPreviewer } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 import { InlineDiffService } from '../inline-diff/inline-diff.service';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { IPartialEditEvent } from '../inline-stream-diff/live-preview.decoration';
 
 import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
