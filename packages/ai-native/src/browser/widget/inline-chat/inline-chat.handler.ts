@@ -71,9 +71,6 @@ export class InlineChatHandler extends Disposable {
   @Autowired(InlineDiffService)
   private readonly inlineDiffService: InlineDiffService;
 
-  private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
-  public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
-
   private logger: ILogServiceClient;
 
   private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
