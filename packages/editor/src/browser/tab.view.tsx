@@ -391,6 +391,7 @@ export const Tabs = ({ group }: ITabsProps) => {
     const curTabIndex = group.resources.findIndex((resource) => group.currentResource === resource);
     return (
       <div
+        draggable={false}
         className={cls({
           [styles_kt_editor_tabs_content]: true,
           [styles_kt_editor_tabs_current_last]: curTabIndex === group.resources.length - 1,

@@ -1,5 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
+  AppConfig,
   ClientAppContribution,
   CommandContribution,
   ContributionProvider,
@@ -21,6 +22,10 @@ import {
   PreferenceScope,
   PreferenceService,
   ServiceNames,
+  StaticResourceContribution,
+  StaticResourceService,
+  getCdnHref,
+  getWorkerBootstrapUrl,
 } from '@opensumi/ide-core-browser';
 import {
   IMenuItem,
@@ -33,6 +38,7 @@ import {
   CommandService,
   DisposableCollection,
   ILogger,
+  Schemes,
   URI,
   isOSX,
   isString,
@@ -90,9 +96,42 @@ import { KEY_CODE_MAP } from './monaco.keycode-map';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { MonacoTelemetryService } from './telemetry.service';
 
-@Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
+const pkgJson = require('../../package.json');
+
+export interface Environment {
+  /**
+   * A web worker factory.
+   * NOTE: If `getWorker` is defined, `getWorkerUrl` is not invoked.
+   */
+  getWorker?(workerId: string, label: string): Promise<Worker> | Worker;
+  /**
+   * Return the location for web worker scripts.
+   * NOTE: If `getWorker` is defined, `getWorkerUrl` is not invoked.
+   */
+  getWorkerUrl?(workerId: string, label: string): string;
+}
+
+interface Window {
+  MonacoEnvironment?: Environment | undefined;
+}
+
+const packageName = pkgJson.name;
+const packageVersion = pkgJson.version;
+
+@Domain(
+  ClientAppContribution,
+  CommandContribution,
+  MenuContribution,
+  KeybindingContribution,
+  StaticResourceContribution,
+)
 export class MonacoClientContribution
-  implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution
+  implements
+    ClientAppContribution,
+    CommandContribution,
+    MenuContribution,
+    KeybindingContribution,
+    StaticResourceContribution
 {
   @Autowired(MonacoContribution)
   private readonly monacoContributionProvider: ContributionProvider<MonacoContribution>;
@@ -150,6 +189,12 @@ export class MonacoClientContribution
 
   @Autowired(KeybindingRegistry)
   private readonly keybindings: KeybindingRegistry;
+
+  @Autowired(StaticResourceService)
+  private readonly staticResourceService: StaticResourceService;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
     return EditorExtensionsRegistry;
@@ -215,6 +260,9 @@ export class MonacoClientContribution
     // 监听 preferences 更新事件，同步更新 mime
     this.setPreferencesChangeListener();
 
+    // 注册 monaco environment
+    this.registerMonacoEnvironment();
+
     // 修改一些 Monaco 内置 Services 的行为
     this.patchMonacoInternalServices();
 
@@ -226,6 +274,28 @@ export class MonacoClientContribution
 
     // 在快捷键被用户修改时，同步更新编辑器内的快捷键展示
     this.keybindings.onKeybindingsChanged(() => this.updateMonacoKeybindings());
+  }
+
+  registerMonacoEnvironment() {
+    const defaultEnvironment = (window as Window).MonacoEnvironment || ({} as Environment);
+    (window as Window).MonacoEnvironment = {
+      getWorkerUrl: (moduleId, label) => {
+        const result = this.staticResourceService.resolveStaticResource(
+          URI.from({
+            scheme: Schemes.monaco,
+            path: 'worker',
+            query: JSON.stringify({ moduleId, label }),
+          }),
+        );
+
+        if (result.scheme === Schemes.monaco) {
+          throw new Error(`Unsupported monaco worker: ${moduleId}:${label}`);
+        }
+
+        return getWorkerBootstrapUrl(result.toString(), `${moduleId}:${label}`);
+      },
+      ...defaultEnvironment,
+    };
   }
 
   private registerOverrideServices() {
@@ -530,6 +600,37 @@ export class MonacoClientContribution
       this.logger.error(e);
       return false;
     }
+  }
+
+  registerStaticResolver(service: StaticResourceService): void {
+    service.registerStaticResourceProvider({
+      scheme: Schemes.monaco,
+      resolveStaticResource: (uri) => {
+        const path = uri.codeUri.path;
+
+        switch (path) {
+          case 'worker': {
+            const query = uri.query;
+            if (query) {
+              const { moduleId } = JSON.parse(query);
+              if (moduleId === 'workerMain.js') {
+                return URI.parse(
+                  getCdnHref(
+                    packageName,
+                    'worker/editor.worker.bundle.js',
+                    packageVersion,
+                    this.appConfig.componentCDNType,
+                  ),
+                );
+              }
+            }
+            break;
+          }
+        }
+
+        return uri;
+      },
+    });
   }
 }
 

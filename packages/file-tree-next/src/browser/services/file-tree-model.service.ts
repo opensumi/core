@@ -317,7 +317,7 @@ export class FileTreeModelService {
         if (!this.initTreeModelReady) {
           return;
         }
-        if (!this.refreshedActionDelayer.isTriggered) {
+        if (!this.refreshedActionDelayer.isTriggered()) {
           this.refreshedActionDelayer.cancel();
         }
         this.refreshedActionDelayer.trigger(async () => {

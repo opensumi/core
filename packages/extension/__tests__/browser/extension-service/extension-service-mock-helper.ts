@@ -43,6 +43,7 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import {
   IEditor,
+  IEditorDocumentModel,
   IEditorGroup,
   IOpenResourceResult,
   IResource,
@@ -336,6 +337,9 @@ class MockWorkbenchEditorService implements WorkbenchEditorService {
     throw new Error('Method not implemented.');
   }
   getAllOpenedUris(): URI[] {
+    throw new Error('Method not implemented.');
+  }
+  getAllOpenedDocuments(): Promise<IEditorDocumentModel[]> {
     throw new Error('Method not implemented.');
   }
   createUntitledResource(options?: IUntitledOptions | undefined): Promise<IOpenResourceResult> {

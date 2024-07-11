@@ -1,17 +1,34 @@
-import { Barrier, Deferred, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
+import { EventEmitter } from '@opensumi/events';
+import { Barrier, Deferred, DisposableStore, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
 
-import { NetSocketConnection } from '../common/connection';
-import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
-import { ConnectionInfo, WSCloseInfo } from '../common/types';
-import { WSChannel, parse, pingMessage } from '../common/ws-channel';
+import { ChannelMessage } from '../common/channel/types';
+import { IRuntimeSocketConnection } from '../common/connection';
+import { IConnectionShape } from '../common/connection/types';
+import { ISerializer, furySerializer, wrapSerializer } from '../common/serializer';
+import { ConnectionInfo, ILogger, WSCloseInfo } from '../common/types';
+import { WSChannel } from '../common/ws-channel';
+
+export interface WSChannelHandlerOptions {
+  logger?: ILogger;
+  serializer?: ISerializer<ChannelMessage, any>;
+}
 
 /**
  * Channel Handler in browser
  */
 export class WSChannelHandler {
+  private _disposables = new DisposableStore();
+
+  private _onChannelCreatedEmitter = this._disposables.add(new EventEmitter<Record<string, [WSChannel]>>());
+
+  wrappedConnection: IConnectionShape<ChannelMessage>;
+  public onChannelCreated(path: string, listener: (channel: WSChannel) => void) {
+    return this._onChannelCreatedEmitter.on(path, listener);
+  }
+
   private channelMap: Map<string, WSChannel> = new Map();
   private channelCloseEventMap = new MultiMap<string, WSCloseInfo>();
-  private logger = console;
+  private logger: ILogger = console;
   public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timeout | null;
   private reporterService: IReporterService;
@@ -23,10 +40,16 @@ export class WSChannelHandler {
 
   LOG_TAG: string;
 
-  constructor(public connection: ReconnectingWebSocketConnection | NetSocketConnection, logger: any, clientId: string) {
-    this.logger = logger || this.logger;
+  constructor(
+    public connection: IRuntimeSocketConnection<Uint8Array>,
+    clientId: string,
+    options: WSChannelHandlerOptions = {},
+  ) {
+    this.logger = options.logger || this.logger;
     this.clientId = clientId;
     this.LOG_TAG = `[WSChannelHandler] [client-id:${this.clientId}]`;
+    const serializer = options.serializer || furySerializer;
+    this.wrappedConnection = wrapSerializer(this.connection, serializer);
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {
@@ -42,23 +65,32 @@ export class WSChannelHandler {
       clearTimeout(this.heartbeatMessageTimer);
     }
     this.heartbeatMessageTimer = global.setTimeout(() => {
-      this.connection.send(pingMessage);
+      this.channelMap.forEach((channel) => {
+        channel.ping();
+      });
+
       this.heartbeatMessage();
     }, 10 * 1000);
   }
 
   public async initHandler() {
-    this.connection.onMessage((message) => {
+    this.wrappedConnection.onMessage((msg) => {
       // 一个心跳周期内如果有收到消息，则不需要再发送心跳
       this.heartbeatMessage();
 
-      const msg = parse(message);
+      switch (msg.kind) {
+        case 'pong':
+          // pong 不需要分发, 不处理
+          break;
 
-      const channel = this.channelMap.get(msg.id);
-      if (channel) {
-        channel.dispatch(msg);
-      } else {
-        this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+        default: {
+          const channel = this.channelMap.get(msg.id);
+          if (channel) {
+            channel.dispatch(msg);
+          } else {
+            this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+          }
+        }
       }
     });
 
@@ -72,7 +104,7 @@ export class WSChannelHandler {
 
     this.connection.onClose((code, reason) => {
       this.channelMap.forEach((channel) => {
-        channel.close(code ?? 1000, reason ?? '');
+        channel.close(code, reason);
       });
     });
 
@@ -94,13 +126,28 @@ export class WSChannelHandler {
     await this.openingBarrier.wait();
   }
 
+  private fillKey(channelPath: string) {
+    return `${this.clientId}:${channelPath}`;
+  }
+
+  public getChannel(channelPath: string) {
+    return this.channelMap.get(this.fillKey(channelPath));
+  }
+
   public async openChannel(channelPath: string) {
-    const channel = new WSChannel(this.connection, {
-      id: `${this.clientId}:${channelPath}`,
+    const key = this.fillKey(channelPath);
+    if (this.channelMap.has(key)) {
+      this.channelMap.get(key)!.dispose();
+      this.logger.log(this.LOG_TAG, `channel ${key} already exists, dispose it`);
+    }
+
+    const channel = new WSChannel(this.wrappedConnection, {
+      id: key,
       logger: this.logger,
       ensureServerReady: true,
     });
     this.channelMap.set(channel.id, channel);
+    this._onChannelCreatedEmitter.emit(channelPath, channel);
 
     let channelOpenedCount = 0;
 
@@ -133,7 +180,7 @@ export class WSChannelHandler {
         closeEvent: { code, reason },
         connectInfo: (navigator as any).connection as ConnectionInfo,
       });
-      this.logger.log(this.LOG_TAG, `channel close: code: ${code}, reason: ${reason}`);
+      this.logger.log(this.LOG_TAG, `channel ${channelPath} closed, code: ${code}, reason: ${reason}`);
     });
 
     const deferred = new Deferred<void>();
@@ -154,5 +201,24 @@ export class WSChannelHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
+    this._disposables.dispose();
+  }
+
+  awaitChannelReady(channelPath: string) {
+    const channel = this.getChannel(channelPath);
+    const deferred = new Deferred<void>();
+    if (channel) {
+      channel.onServerReady(() => {
+        deferred.resolve();
+      });
+    } else {
+      const dispose = this.onChannelCreated(channelPath, (channel) => {
+        channel.onServerReady(() => {
+          deferred.resolve();
+        });
+        dispose.dispose();
+      });
+    }
+    return deferred.promise;
   }
 }

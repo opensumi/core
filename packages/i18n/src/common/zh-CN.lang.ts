@@ -106,9 +106,10 @@ export const localizationBundle = {
     'editor.redo': '重做',
     'editor.saveCurrent': '保存当前文件',
     'editor.title.context.close': '关闭',
+    'editor.closeTab.title': '关闭 ({0})',
     'editor.closeCurrent': '关闭当前编辑窗口',
     'editor.openExternal': '使用外部软件打开',
-    'editor.cannotOpenBinary': '我们无法在编辑器中展示这个文件。',
+    'editor.cannotOpenBinary': '无法在编辑器中展示二进制文件。',
     'editor.splitToLeft': '向左拆分',
     'editor.splitToRight': '向右拆分',
     'editor.splitToTop': '向上拆分',
@@ -551,13 +552,15 @@ export const localizationBundle = {
     'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
 
     'editor.largeFile.prevent': '文件过大，继续打开可能会导致卡顿或者崩溃。',
-    'editor.largeFile.prevent.stillOpen': '仍要打开',
+    'editor.file.prevent.stillOpen': '仍要打开',
     'editor.closeEditorsInOtherGroups': '关闭其他组中的编辑器',
     'editor.resetEditorGroups': '重置编辑器组大小',
     'editor.revert': '还原文档',
 
     'preference.diffEditor.renderSideBySide': '显示并排差异编辑器',
     'preference.diffEditor.ignoreTrimWhitespace': '忽略差异编辑器的前导和尾随空白字符',
+
+    'preference.mergeEditor.autoApplyNonConflictChanges': '自动合并非冲突变更',
 
     'status.editor.chooseLanguage': '选择语言模式',
     'status.editor.goToLineCol': '转到行/列',
@@ -715,6 +718,7 @@ export const localizationBundle = {
     'terminal.openFolder': '在新窗口中打开文件夹',
     'terminal.toggleTerminal': '切换终端面板',
     'terminal.killProcess': '结束进程',
+    'terminal.process.unHealthy': '*此终端会话已被系统超时回收，请打开新的终端会话来进行操作',
 
     'view.command.show': '打开 {0}',
 
@@ -856,7 +860,7 @@ export const localizationBundle = {
     'extension.invalidExthostReload.confirm.ok': '刷新',
     'extension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'extension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
-    'extension.exthostRestarting.content': '插件进程重启中',
+    'extension.exthostRestarting.content': '插件进程重启中...',
     'extension.host.restart': '重启插件主进程',
 
     'extension.no.view.found': '找不到插件 {0} 注册的视图组件。\n 请确保插件中已经导出名为 {1} 的组件。',
@@ -1094,7 +1098,7 @@ export const localizationBundle = {
     'editor.configuration.tabSize':
       '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',
     'editor.configuration.fontWeight': '控制字体粗细，接收 "normal" 和 "bold" 关键词或者 1 到 1000 数值。',
-    'editor.configuration.largeFileSize': '控制超大文件的自定义体积。',
+    'editor.configuration.largeFileSize': '控制超大文件的自定义体积。(单位：B)',
     'editor.configuration.preferredFormatter': '配置优先使用的格式化器。',
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
@@ -1150,6 +1154,7 @@ export const localizationBundle = {
     'test.title': '测试管理器',
     'test.result.runFinished': '测试运行完成于 {0}',
     'test.task.unnamed': '未命名任务',
+    'test.results': '测试结果',
 
     // Menu
     'menu.missing.command': '菜单{0} 要执行的命令不存在：{1}',
@@ -1196,7 +1201,7 @@ export const localizationBundle = {
     'mergeEditor.conflict.next': '下一处冲突',
     'mergeEditor.conflict.ai.resolve.all': 'AI 解决',
     'mergeEditor.conflict.ai.resolve.all.stop': '全部停止',
-    'mergeEditor.open.tradition': '传统编辑器',
+    'mergeEditor.open.tradition': '文本编辑器',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 
     // #region AI Native
@@ -1215,6 +1220,8 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.thumbsup.title': '赞',
     'aiNative.inline.chat.operate.thumbsdown.title': '踩',
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
+    'aiNative.inline.chat.input.placeholder.default': '可以问我任何问题，支持 shift + 回车换行',
+    'aiNative.inline.hint.widget.placeholder': '按 {0} 唤起 Inline Chat',
 
     'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
     'aiNative.resolve.conflict.dialog.detection':
@@ -1239,6 +1246,13 @@ export const localizationBundle = {
     'preference.ai.native.inlineChat.codeAction.enabled':
       '是否启用在选中代码片段时显示 Inline Chat 相关的 Code Actions?',
     'preference.ai.native.chat.visible.type': '控制 Chat 面板默认的展示方式',
+    'preference.ai.native.inlineCompletions.title': '内联补全',
+    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
+      '是否启用提示词工程，一些 LLM 模型在提示词工程上可能表现不佳。',
+    'preference.ai.native.inlineCompletions.debounceTime': '内联补全的延迟时间（毫秒）',
+    'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff 的预览模式',
+    'preference.ai.native.inlineDiff.preview.mode.sideBySide': '在编辑器当中以左右 diff 面板的方式展示',
+    'preference.ai.native.inlineDiff.preview.mode.inlineLive': '在编辑器当中以流式渲染的方式展示',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

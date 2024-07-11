@@ -38,6 +38,4 @@ export class BaseAIBackService implements IAIBackService<IAIBackServiceResponse,
   }
 
   async reportCompletion(input: IAIReportCompletionOption) {}
-
-  async destroyStreamRequest(sessionId: string) {}
 }

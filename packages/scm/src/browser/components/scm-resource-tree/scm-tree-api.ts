@@ -49,25 +49,56 @@ export class SCMTreeAPI extends Disposable {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  public shouldCompactFolders = false;
+
+  constructor() {
+    super();
+    this.shouldCompactFolders = this.preferenceService.get<boolean>('scm.listView.compactFolders', false);
+    this.addDispose(
+      this.preferenceService.onSpecificPreferenceChange('scm.listView.compactFolders', (changed) => {
+        this.shouldCompactFolders = changed.newValue;
+      }),
+    );
+  }
+
+  getSCMResource(uri: URI): ISCMResource | undefined {
+    const list = this.getSCMResourceGroups();
+
+    const expected = uri.toString();
+
+    for (const group of list) {
+      for (const element of group.elements) {
+        if (element.sourceUri.toString() === expected) {
+          return element;
+        }
+      }
+    }
+  }
+
+  /**
+   * 获取 scm list 中的一级目录
+   */
+  private getSCMResourceGroups(): ISCMResourceGroup[] {
+    return this.viewModel.scmList.filter(isSCMResourceGroup);
+  }
+
   private get providerId() {
     return this.viewModel.selectedRepo?.provider.id;
   }
 
   public init(mode: SCMViewModelMode = SCMViewModelMode.Tree): ISCMTreeNodeDescription[] {
-    const list = this.viewModel.scmList;
+    const list = this.getSCMResourceGroups();
 
     // 一级目录处理
     // 类似 Git 插件的 Changes/Staged Changes/Merged Changes
-    return list
-      .filter((r) => isSCMResourceGroup(r))
-      .map((resource: ISCMResourceGroup) => ({
-        id: this.providerId + '_' + resource.id,
-        name: resource.id,
-        children:
-          mode === SCMViewModelMode.Tree ? this.pathToTree(resource.elements) : this.pathToList(resource.elements),
-        resource,
-        type: 'group',
-      }));
+    return list.map((resource: ISCMResourceGroup) => ({
+      id: this.providerId + '_' + resource.id,
+      name: resource.id,
+      children:
+        mode === SCMViewModelMode.Tree ? this.pathToTree(resource.elements) : this.pathToList(resource.elements),
+      resource,
+      type: 'group',
+    }));
   }
 
   private pathToList(elements: ISCMResource[]): ISCMTreeNodeDescription[] {
@@ -82,10 +113,6 @@ export class SCMTreeAPI extends Disposable {
         type: 'file',
       };
     });
-  }
-
-  private get shouldCompactFolders() {
-    return this.preferenceService.get<boolean>('scm.listView.compactFolders');
   }
 
   private pathToTree(elements: ISCMResource[]): ISCMTreeNodeDescription[] {

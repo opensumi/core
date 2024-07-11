@@ -20,9 +20,9 @@ import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessExitEvent, IProcessReadyEvent } from '../common/process';
 import { IPtyProcessProxy, IPtySpawnOptions } from '../common/pty';
 
-import { bashIntergrationPath, initShellIntergrationFile } from './easy-shell-intergration';
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
+import { IShellIntegrationService } from './shell-integration.service';
 
 export const IPtyService = Symbol('IPtyService');
 
@@ -33,6 +33,9 @@ export class PtyService extends Disposable {
 
   @Autowired(PtyServiceManagerToken)
   protected readonly ptyServiceManager: IPtyServiceManager;
+
+  @Autowired(IShellIntegrationService)
+  protected readonly shellIntegrationService: IShellIntegrationService;
 
   protected readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
   private _ptyProcess: IPtyProcessProxy | undefined;
@@ -186,12 +189,12 @@ export class PtyService extends Disposable {
     // HACK: 这里的处理逻辑有些黑，后续需要整体去整理下 Shell Intergration，然后整体优化一下
     // 如果是启动 bash，则使用 init file 植入 Intergration 能力
     if (options.executable?.includes('bash')) {
-      await initShellIntergrationFile();
+      const bashIntegrationPath = await this.shellIntegrationService.initBashInitFile();
       if (!options.args) {
         options.args = [];
       }
       if (Array.isArray(options.args)) {
-        options.args.push('--init-file', bashIntergrationPath);
+        options.args.push('--init-file', bashIntegrationPath);
       }
     }
 

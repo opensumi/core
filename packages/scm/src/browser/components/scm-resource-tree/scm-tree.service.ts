@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { ITreeNodeOrCompositeTreeNode, Tree } from '@opensumi/ide-components';
 import { Emitter, Event, PreferenceService } from '@opensumi/ide-core-browser';
-import { PreferenceScope } from '@opensumi/ide-core-common';
+import { PreferenceScope, URI } from '@opensumi/ide-core-common';
 
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';
 
@@ -16,7 +16,13 @@ import {
 } from './scm-tree-node';
 
 /**
- * 应为单例
+ * 默认的 scm list 的结构是拍平的
+ * 但是有个特征是
+ * [
+ *  mergedChangesGroup, ...mergedChangesGroupResources, (当子元素为空时则不存在(git 插件内部逻辑))
+ *  stagedChangesGroup, ...stagedChangesGroupResources, (当子元素为空时则不存在(git 插件内部逻辑))
+ *  changesGroup, ...changesGroupResources,
+ * ]
  */
 @Injectable()
 export class SCMTreeService extends Tree {
@@ -126,14 +132,4 @@ export class SCMTreeService extends Tree {
 
     return super.sortComparator(a, b);
   }
-
-  /**
-   * 默认的 scm list 的结构是拍平的
-   * 但是有个特征是
-   * [
-   *  mergedChangesGroup, ...mergedChangesGroupResources, (当子元素为空时则不存在(git 插件内部逻辑))
-   *  stagedChangesGroup, ...stagedChangesGroupResources, (当子元素为空时则不存在(git 插件内部逻辑))
-   *  changesGroup, ...changesGroupResources,
-   * ]
-   */
 }

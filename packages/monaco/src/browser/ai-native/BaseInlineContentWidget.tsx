@@ -7,7 +7,7 @@ import { AppConfig, ConfigProvider, StackingLevelStr } from '@opensumi/ide-core-
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
 
 import * as monaco from '../../common';
-import { editor } from '../monaco-exports';
+import { ContentWidgetPositionPreference } from '../monaco-exports/editor';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '../monaco-api/types';
 
@@ -27,7 +27,13 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
   private appConfig: AppConfig;
 
   allowEditorOverflow = false;
-  suppressMouseDown = true;
+  suppressMouseDown = false;
+  positionPreference: ContentWidgetPositionPreference[] = [ContentWidgetPositionPreference.BELOW];
+
+  private _isHidden: boolean;
+  public get isHidden(): boolean {
+    return this._isHidden;
+  }
 
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
@@ -43,14 +49,26 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
         this.layoutContentWidget();
       }),
     );
+
+    this.addDispose(
+      Disposable.create(() => {
+        this.hide();
+        if (this.root) {
+          this.root.unmount();
+        }
+      }),
+    );
   }
 
   public abstract renderView(): React.ReactNode;
   public abstract id(): string;
 
-  override dispose(): void {
-    this.hide();
-    super.dispose();
+  setPositionPreference(preferences: ContentWidgetPositionPreference[]): void {
+    this.positionPreference = preferences;
+  }
+
+  setOptions(options?: ShowAIContentOptions | undefined): void {
+    this.options = options;
   }
 
   show(options?: ShowAIContentOptions | undefined): void {
@@ -66,16 +84,19 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
       return;
     }
 
-    this.options = options;
+    this.setOptions(options);
+    this._isHidden = false;
     this.editor.addContentWidget(this);
   }
 
   hide() {
-    this.options = undefined;
+    this._isHidden = true;
     this.editor.removeContentWidget(this);
-    if (this.root) {
-      this.root.unmount();
-    }
+  }
+
+  resume(): void {
+    this._isHidden = false;
+    this.editor.addContentWidget(this);
   }
 
   getId(): string {
@@ -86,11 +107,15 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
     this.editor.layoutContentWidget(this);
   }
 
+  getClassName(): string {
+    return this.getId();
+  }
+
   getDomNode(): HTMLElement {
     if (!this.domNode) {
       this.domNode = document.createElement('div');
       requestAnimationFrame(() => {
-        this.domNode.classList.add(this.getId());
+        this.domNode.classList.add(this.getClassName());
         this.domNode.style.zIndex = StackingLevelStr.Overlay;
       });
     }
@@ -121,7 +146,7 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
     if (position) {
       return {
         position,
-        preference: [editor.ContentWidgetPositionPreference.BELOW],
+        preference: this.positionPreference,
       };
     }
 

@@ -1,6 +1,6 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import { IAIInlineChatService } from '@opensumi/ide-core-browser';
-import { AIBackSerivcePath, Emitter, Event, IAIBackService, runWhenIdle } from '@opensumi/ide-core-common';
+import { Emitter, Event, runWhenIdle } from '@opensumi/ide-core-common';
 
 export const enum EInlineChatStatus {
   READY,
@@ -9,28 +9,24 @@ export const enum EInlineChatStatus {
   ERROR,
 }
 
+export const enum EResultKind {
+  ACCEPT = 'ACCEPT',
+  DISCARD = 'DISCARD',
+  REGENERATE = 'REGENERATE',
+}
+
 @Injectable({ multiple: false })
 export class AIInlineChatService implements IAIInlineChatService {
-  @Autowired(AIBackSerivcePath)
-  aiBackService: IAIBackService;
-
-  private _status: EInlineChatStatus = EInlineChatStatus.READY;
-
-  public get status(): EInlineChatStatus {
-    return this._status;
+  private _interactiveInputVisible: boolean = false;
+  public get interactiveInputVisible(): boolean {
+    return this._interactiveInputVisible;
   }
 
-  private readonly _onChatStatus = new Emitter<EInlineChatStatus>();
-  public readonly onChatStatus: Event<EInlineChatStatus> = this._onChatStatus.event;
+  public readonly _onInteractiveInputVisible = new Emitter<boolean>();
+  public readonly onInteractiveInputVisible: Event<boolean> = this._onInteractiveInputVisible.event;
 
-  public readonly _onAccept = new Emitter<void>();
-  public readonly onAccept: Event<void> = this._onAccept.event;
-
-  public readonly _onDiscard = new Emitter<void>();
-  public readonly onDiscard: Event<void> = this._onDiscard.event;
-
-  public readonly _onRegenerate = new Emitter<void>();
-  public readonly onRegenerate: Event<void> = this._onRegenerate.event;
+  public readonly _onInlineChatVisible = new Emitter<boolean>();
+  public readonly onInlineChatVisible: Event<boolean> = this._onInlineChatVisible.event;
 
   private readonly _onThumbs = new Emitter<boolean>();
   public readonly onThumbs: Event<boolean> = this._onThumbs.event;
@@ -39,14 +35,10 @@ export class AIInlineChatService implements IAIInlineChatService {
     this._onThumbs.fire(isThumbsUp);
   }
 
-  public isLoading(): boolean {
-    return this._status === EInlineChatStatus.THINKING;
-  }
-
-  public launchChatStatus(status: EInlineChatStatus) {
+  public launchInputVisible(v: boolean) {
     return runWhenIdle(() => {
-      this._status = status;
-      this._onChatStatus.fire(status);
+      this._interactiveInputVisible = v;
+      this._onInteractiveInputVisible.fire(v);
     });
   }
 }

@@ -1,6 +1,5 @@
 import { Injector } from '@opensumi/di';
 import {
-  AINativeSettingSectionsId,
   GeneralSettingsId,
   MenubarSettingId,
   PreferenceSchema,
@@ -297,26 +296,13 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
-    [AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE]: {
-      type: 'boolean',
-      default: true,
-    },
-    [AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED]: {
-      type: 'boolean',
-      default: true,
-    },
-    [AINativeSettingSectionsId.INTERFACE_QUICK_NAVIGATION_ENABLED]: {
-      type: 'boolean',
-      default: true,
-    },
-    [AINativeSettingSectionsId.CHAT_VISIBLE_TYPE]: {
-      type: 'string',
-      enum: ['never', 'always', 'default'],
-      default: 'default',
-    },
     'editor.codeActionWidget.showHeaders': {
       type: 'boolean',
       default: true,
+    },
+    'mergeEditor.autoApplyNonConflictChanges': {
+      type: 'boolean',
+      default: false,
     },
   },
 };

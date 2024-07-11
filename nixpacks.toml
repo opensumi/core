@@ -1,14 +1,15 @@
 providers = ["node", "python"]
 
 [variables]
-NODE_ENV = 'production'
+NODE_ENV = "production"
+NIXPACKS_NODE_VERSION = "18"
 
 [phases.setup]
 nixPkgs = ["...", "libsecret"]
 aptPkgs = ["...", "build-essential", "libsecret-1-dev"]
 
 [phases.build]
-cmds = ['yarn build:all', 'yarn bundle:preview', 'yarn download-extension']
+cmds = ["yarn build:all", "yarn bundle:preview", "yarn download-extension"]
 
 [start]
-cmd = 'node packages/startup/dist-node/server/server.js'
+cmd = "node packages/startup/dist-node/server/server.js"

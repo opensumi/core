@@ -340,7 +340,7 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.retainState(child).setId(preId);
   }
 
-  public toRange(startColumn?: number, endColumn?: number): IRange {
+  public toRange(startColumn?: number, endColumn?: number): InnerRange {
     return InnerRange.fromPositions(
       new Position(this.startLineNumber, startColumn ?? 1),
       new Position(this.endLineNumberExclusive, endColumn ?? 1),

@@ -2,15 +2,10 @@ import cls from 'classnames';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
-import { Icon, Popover, PopoverPosition, TextArea, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import {
-  ChatAgentViewServiceToken,
-  ChatFeatureRegistryToken,
-  localize,
-  runWhenIdle,
-  uuid,
-} from '@opensumi/ide-core-common';
+import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
+import { ChatAgentViewServiceToken, ChatFeatureRegistryToken, localize, runWhenIdle } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 import { AT_SIGN_SYMBOL, IChatAgentService, SLASH_SYMBOL } from '../../common';
@@ -22,8 +17,8 @@ import { IChatSlashCommandItem } from '../types';
 
 import styles from './components.module.less';
 
-const MAX_WRAPPER_HEIGHT = 160;
 const INSTRUCTION_BOTTOM = 8;
+const EXPAND_CRITICAL_HEIGHT = 68;
 
 interface IBlockProps extends IChatSlashCommandItem {
   command?: string;
@@ -184,17 +179,21 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     defaultAgentId,
     setCommand,
     command,
+    sendBtnClassName,
   } = props;
   const agentId = propsAgentId || defaultAgentId;
+
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const instructionRef = useRef<HTMLDivElement | null>(null);
+
   const [value, setValue] = useState(props.value || '');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
-  const [wrapperHeight, setWrapperHeight] = useState<number>(defaultHeight);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [inputHeight, setInputHeight] = useState<number>(defaultHeight);
   const [focus, setFocus] = useState(false);
   const [showExpand, setShowExpand] = useState(false);
   const [isExpand, setIsExpand] = useState(false);
-  const instructionRef = useRef<HTMLDivElement | null>(null);
   const [placeholder, setPlaceHolder] = useState(localize('aiNative.chat.input.placeholder.default'));
+
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
@@ -280,32 +279,15 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         }
       }
     }
-
-    runWhenIdle(() => {
-      // 自适应高度
-      if (textareaRef && textareaRef.current && value && !isExpand) {
-        textareaRef.current.style.height = 0 + 'px';
-        const scrollHeight = textareaRef.current.scrollHeight;
-        textareaRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
-        const wapperHeight = Math.min(scrollHeight + 12, MAX_WRAPPER_HEIGHT);
-
-        setWrapperHeight(wapperHeight);
-        if (wapperHeight > 68) {
-          setShowExpand(true);
-        } else {
-          setShowExpand(false);
-        }
-      }
-    });
   }, [textareaRef, value, enableOptions, chatFeatureRegistry]);
 
   useEffect(() => {
     if (!value) {
-      setWrapperHeight(defaultHeight);
+      setInputHeight(defaultHeight);
       setShowExpand(false);
       setIsExpand(false);
     }
-  }, [value, wrapperHeight]);
+  }, [value]);
 
   const handleInputChange = useCallback((value: string) => {
     setValue(value);
@@ -378,20 +360,15 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   );
 
   const optionsBottomPosition = useMemo(() => {
-    const customBottom = INSTRUCTION_BOTTOM + wrapperHeight;
+    const customBottom = INSTRUCTION_BOTTOM + inputHeight;
     if (isExpand) {
       setIsShowOptions(false);
     }
     return customBottom;
-  }, [wrapperHeight]);
+  }, [inputHeight]);
 
   const handleKeyDown = (event) => {
-    if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
-      if (!event.shiftKey) {
-        event.preventDefault();
-        handleSend();
-      }
-    } else if (event.key === 'Backspace') {
+    if (event.key === 'Backspace') {
       if (textareaRef.current?.selectionEnd === 0 && textareaRef.current?.selectionStart === 0) {
         setTheme('');
 
@@ -412,12 +389,23 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     }
   };
 
-  const handleFocus = () => {
-    setFocus(true);
-  };
+  const handleHeightChange = useCallback((height: number) => {
+    setInputHeight(height);
+
+    if (height > EXPAND_CRITICAL_HEIGHT) {
+      setShowExpand(true);
+    } else {
+      setShowExpand(false);
+    }
+  }, []);
+
   const handleBlur = useCallback(() => {
     setFocus(false);
     setIsShowOptions(false);
+  }, [textareaRef]);
+
+  const handleFocus = useCallback(() => {
+    setFocus(true);
   }, [textareaRef]);
 
   const handleExpandClick = useCallback(() => {
@@ -426,49 +414,12 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     if (!expand) {
       const ele = document.querySelector('#ai_chat_left_container');
       const maxHeight = ele!.clientHeight - 68 - (theme ? 32 : 0) - 16;
-      setWrapperHeight(maxHeight);
+      setInputHeight(maxHeight);
     } else {
-      setWrapperHeight(defaultHeight);
+      setInputHeight(defaultHeight);
       setShowExpand(false);
     }
   }, [isExpand]);
-
-  const renderAddonAfter = useMemo(
-    () => (
-      <div className={styles.input_icon_container}>
-        <div
-          className={cls(
-            styles.send_chat_btn,
-            focus && styles.active,
-            disabled && styles.disabled,
-            props.sendBtnClassName,
-          )}
-        >
-          {disabled ? (
-            <div className={styles.ai_loading}>
-              <div className={styles.loader}></div>
-              <div className={styles.loader}></div>
-              <div className={styles.loader}></div>
-            </div>
-          ) : (
-            <Popover
-              id={`ai_chat_input_send_${uuid(4)}`}
-              content={localize('aiNative.chat.enter.send')}
-              position={PopoverPosition.left}
-              disable={disabled}
-            >
-              <EnhanceIcon
-                wrapperClassName={styles.send_icon}
-                className={getIcon('send-solid')}
-                onClick={() => handleSend()}
-              />
-            </Popover>
-          )}
-        </div>
-      </div>
-    ),
-    [focus, disabled, props.sendBtnClassName, handleSend],
-  );
 
   return (
     <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
@@ -494,21 +445,21 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
           </Popover>
         </div>
       )}
-      <TextArea
+      <InteractiveInput
         ref={textareaRef}
         placeholder={placeholder}
-        wrapperStyle={{ height: wrapperHeight + 'px' }}
-        style={{
-          height: wrapperHeight - 12 + 2 + 'px',
-        }}
         value={value}
         onKeyDown={handleKeyDown}
-        onFocus={handleFocus}
         onBlur={handleBlur}
+        onFocus={handleFocus}
         onValueChange={handleInputChange}
         disabled={disabled}
         className={styles.input_wrapper}
-        addonAfter={renderAddonAfter}
+        onSend={handleSend}
+        sendBtnClassName={sendBtnClassName}
+        onHeightChange={handleHeightChange}
+        height={inputHeight}
+        popoverPosition={PopoverPosition.left}
       />
     </div>
   );

@@ -3,7 +3,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import { ComponentContextProvider, IIconResourceOptions, IconContext } from '@opensumi/ide-components';
-import { DisposableCollection, LabelService, TComponentCDNType, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  DisposableCollection,
+  LabelService,
+  TComponentCDNType,
+  getCdnHref as getCdnHrefRaw,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { ExtensionBrowserStyleSheet, URI, localize } from '@opensumi/ide-core-common';
 import {
   IIconService,
@@ -24,15 +30,6 @@ const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, ro
 function cloneNode<T>(head): T {
   return head.cloneNode(true);
 }
-
-type IComponentCDNTypeMap = Record<TComponentCDNType, string>;
-
-const CDN_TYPE_MAP: IComponentCDNTypeMap = {
-  alipay: 'https://gw.alipayobjects.com/os/lib',
-  npmmirror: 'https://registry.npmmirror.com',
-  unpkg: 'https://unpkg.com/browse',
-  jsdelivr: 'https://cdn.jsdelivr.net/npm',
-};
 
 /**
  * 由于经过 clone 以后，实际 Shadow DOM 中 head 与原始 proxiedHead 不是同一份引用
@@ -76,13 +73,7 @@ function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
 const packageName = '@opensumi/ide-components';
 
 function getCdnHref(filePath: string, version: string, cdnType: TComponentCDNType = 'alipay') {
-  if (cdnType === 'alipay') {
-    return `${CDN_TYPE_MAP['alipay']}/${packageName.slice(1)}/${version}/${filePath}`;
-  } else if (cdnType === 'npmmirror') {
-    return `${CDN_TYPE_MAP['npmmirror']}/${packageName}/${version}/files/${filePath}`;
-  } else {
-    return `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`;
-  }
+  return getCdnHrefRaw(packageName, filePath, version, cdnType);
 }
 
 function getStyleSheet(href: string) {

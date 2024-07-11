@@ -104,6 +104,14 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return Array.from(this._editors.values());
   }
 
+  getEditorByUri(uri: URI): IEditor | undefined {
+    for (const editor of this._editors.values()) {
+      if (editor.currentUri?.isEqual(uri)) {
+        return editor;
+      }
+    }
+  }
+
   public addEditors(editors: ISumiEditor[]) {
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
@@ -562,8 +570,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
 
   private modifiedDocModelRef: IEditorDocumentModelRef | null;
 
-  private diffEditorModelCache = new LRUCache<string, monaco.editor.IDiffEditorViewModel>(100);
-
   get originalDocModel() {
     if (this.originalDocModelRef && !this.originalDocModelRef.disposed) {
       return this.originalDocModelRef.instance;
@@ -601,6 +607,10 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   private currentUri: URI | undefined;
 
   private diffResourceKeys: ResourceContextKey[];
+
+  private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
+
+  public onRefOpen = this._onRefOpen.event;
 
   protected saveCurrentState() {
     if (this.currentUri) {
@@ -647,13 +657,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     }
     const original = this.originalDocModel.getMonacoModel();
     const modified = this.modifiedDocModel.getMonacoModel();
-    const key = `${original.uri.toString()}-${modified.uri.toString()}`;
-    let model = this.diffEditorModelCache.get(key);
-    if (!model || (model as any)._store.isDisposed) {
-      model = this.monacoDiffEditor.createViewModel({ original, modified });
-      this.diffEditorModelCache.set(key, model);
-    }
-
+    const model = this.monacoDiffEditor.createViewModel({ original, modified });
     this.monacoDiffEditor.setModel(model);
 
     if (rawUri) {
@@ -662,7 +666,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
       this.currentUri = URI.from({
         scheme: DIFF_SCHEME,
         query: URI.stringifyQuery({
-          name,
           original: this.originalDocModel!.uri.toString(),
           modified: this.modifiedDocModel!.uri.toString(),
         }),
@@ -672,6 +675,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     if (options.range || options.originalRange) {
       const range = (options.range || options.originalRange) as monaco.IRange;
       const currentEditor = options.range ? this.modifiedEditor.monacoEditor : this.originalEditor.monacoEditor;
+      await model?.waitForDiff();
       // 必须使用 setTimeout, 因为两边的 editor 出现时机问题，diffEditor 是异步显示和渲染
       setTimeout(() => {
         currentEditor.revealRangeInCenter(range);
@@ -689,6 +693,8 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     } else {
       this.restoreState();
     }
+    this._onRefOpen.fire(originalDocModelRef);
+    this._onRefOpen.fire(modifiedDocModelRef);
     const enableHideUnchanged = this.preferenceService.get('diffEditor.hideUnchangedRegions.enabled');
 
     if (options.revealFirstDiff && !enableHideUnchanged) {
@@ -746,7 +752,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   }
 
   updateDiffOptions() {
-    this.diffEditorModelCache.clear();
     this.doUpdateDiffOptions();
   }
 
@@ -816,7 +821,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     super.dispose();
     this.collectionService.removeEditors([this.originalEditor, this.modifiedEditor]);
     this.collectionService.removeDiffEditors([this]);
-    this.diffEditorModelCache.clear();
     this.monacoDiffEditor.dispose();
     this._disposed = true;
   }

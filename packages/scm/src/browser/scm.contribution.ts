@@ -4,6 +4,7 @@ import {
   Disposable,
   PreferenceContribution,
   PreferenceService,
+  SCM_COMMANDS,
   URI,
   getExternalIcon,
   getIcon,
@@ -39,6 +40,7 @@ import {
   scmResourceViewId,
 } from '../common';
 
+import { SCMTreeAPI } from './components/scm-resource-tree/scm-tree-api';
 import { SCMTreeService } from './components/scm-resource-tree/scm-tree.service';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
@@ -95,6 +97,9 @@ export class SCMContribution
 
   @Autowired()
   private readonly scmTreeService: SCMTreeService;
+
+  @Autowired()
+  private readonly scmTreeAPI: SCMTreeAPI;
 
   @Autowired(IViewsRegistry)
   private readonly viewsRegistry: IViewsRegistry;
@@ -197,6 +202,10 @@ export class SCMContribution
       execute: () => {
         this.scmTreeService.changeTreeMode(false);
       },
+    });
+
+    commands.registerCommand(SCM_COMMANDS.GetSCMResource, {
+      execute: async (uri: URI) => this.scmTreeAPI.getSCMResource(uri),
     });
   }
 

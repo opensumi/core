@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
@@ -9,38 +9,25 @@ import { ChatRenderRegistryToken, isUndefined, localize } from '@opensumi/ide-co
 import { IChatInternalService } from '../../common/index';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
-import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
 import styles from './components.module.less';
 
 interface ITinkingProps {
   children?: React.ReactNode;
-  status?: EMsgStreamStatus;
   hasMessage?: boolean;
   message?: string;
   onRegenerate?: () => void;
-  sessionId?: string;
+  requestId?: string;
   onStop?: () => void;
   thinkingText?: string;
   showStop?: boolean;
   showRegenerate?: boolean;
-  hasAgent?: boolean;
 }
 
 export const ChatThinking = (props: ITinkingProps) => {
-  const {
-    children,
-    status = EMsgStreamStatus.THINKING,
-    message,
-    onStop,
-    showStop = true,
-    hasAgent,
-    thinkingText,
-  } = props;
+  const { children, message, onStop, showStop = true, thinkingText } = props;
 
-  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
   const CustomThinkingRender = useMemo(
     () => chatRenderRegistry.chatThinkingRender,
@@ -48,19 +35,11 @@ export const ChatThinking = (props: ITinkingProps) => {
   );
 
   const handlePause = useCallback(async () => {
-    // agent 处理有另外的流程
-    if (!hasAgent) {
-      aiChatService.cancelChatViewToken();
-      const { currentSessionId } = msgStreamManager;
-      if (currentSessionId) {
-        await aiChatService.destroyStreamRequest(currentSessionId);
-      }
-    }
     onStop && onStop();
-  }, [msgStreamManager]);
+  }, []);
 
   const renderContent = useCallback(() => {
-    if (!children || (status === EMsgStreamStatus.THINKING && !message?.trim())) {
+    if (!children || !message?.trim()) {
       if (CustomThinkingRender) {
         return <CustomThinkingRender thinkingText={thinkingText} />;
       }
@@ -69,7 +48,7 @@ export const ChatThinking = (props: ITinkingProps) => {
     }
 
     return children;
-  }, [status, message, children, thinkingText, CustomThinkingRender]);
+  }, [message, children, thinkingText, CustomThinkingRender]);
 
   return (
     <>
@@ -79,9 +58,7 @@ export const ChatThinking = (props: ITinkingProps) => {
           {!CustomThinkingRender && (
             <span className={styles.progress_bar}>
               {/* 保持动画效果一致 */}
-              {(!!status || !children) && (
-                <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />
-              )}
+              {!children && <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />}
             </span>
           )}
           {showStop && (
@@ -99,13 +76,27 @@ export const ChatThinking = (props: ITinkingProps) => {
 export const ChatThinkingResult = ({
   children,
   message,
-  status = EMsgStreamStatus.DONE,
   onRegenerate,
-  sessionId,
+  requestId,
   hasMessage = true,
   showRegenerate,
 }: ITinkingProps) => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const [latestRequestId, setLatestRequestId] = useState(aiChatService.latestRequestId);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+
+  useEffect(() => {
+    const dispose = aiChatService.onChangeRequestId((id) => {
+      setLatestRequestId(id);
+    });
+
+    return () => dispose.dispose();
+  }, [aiChatService]);
+
+  const CustomThinkingResultRender = useMemo(
+    () => chatRenderRegistry.chatThinkingResultRender,
+    [chatRenderRegistry, chatRenderRegistry.chatThinkingResultRender],
+  );
 
   const handleRegenerate = useCallback(() => {
     if (onRegenerate) {
@@ -114,24 +105,24 @@ export const ChatThinkingResult = ({
   }, [onRegenerate]);
 
   const renderContent = useCallback(() => {
-    if (
-      (status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && typeof hasMessage === 'boolean'
-        ? !hasMessage
-        : !message?.trim()
-    ) {
-      return <span>{localize('aiNative.chat.stop.immediately')}</span>;
+    if (typeof hasMessage === 'boolean' ? !hasMessage : !message?.trim()) {
+      const stopimmediately = localize('aiNative.chat.stop.immediately');
+      if (CustomThinkingResultRender) {
+        return <CustomThinkingResultRender thinkingResult={stopimmediately} />;
+      }
+      return <span>{stopimmediately}</span>;
     }
 
     return children;
-  }, [status, message, hasMessage, children]);
+  }, [message, hasMessage, children]);
 
   const isRenderRegenerate = useMemo(() => {
     if (isUndefined(showRegenerate)) {
-      return aiChatService.latestSessionId === sessionId;
+      return latestRequestId === requestId;
     }
 
     return !!showRegenerate;
-  }, [aiChatService.latestSessionId, sessionId, showRegenerate]);
+  }, [latestRequestId, requestId, showRegenerate]);
 
   return (
     <>
@@ -151,7 +142,7 @@ export const ChatThinkingResult = ({
             ) : null}
           </div>
           <div className={styles.thumbs}>
-            <Thumbs relationId={sessionId} wrapperClassName={styles.icon_btn} />
+            <Thumbs relationId={requestId} wrapperClassName={styles.icon_btn} />
           </div>
         </div>
       </div>

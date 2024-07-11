@@ -198,16 +198,18 @@ export function SlotRenderer({ slot, isTabbar, id, ...props }: SlotProps) {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const appConfig = React.useContext(ConfigContext);
   const clientApp = useInjectable<IClientApp>(IClientApp);
-  const componentKeys = appConfig.layoutConfig[slot]?.modules ?? [];
   if (isTabbar) {
     slotRendererRegistry.addTabbar(slot);
   }
-  if (!componentKeys || !componentKeys.length) {
-    logger.warn(`No ${slot} view declared by location.`);
-  }
+
   const [componentInfos, setInfos] = React.useState<ComponentRegistryInfo[]>([]);
-  const updateComponentInfos = React.useCallback(() => {
+
+  const prepareComponentInfos = () => {
+    const componentKeys = appConfig.layoutConfig[slot]?.modules ?? [];
     const infos: ComponentRegistryInfo[] = [];
+    if (!componentKeys || !componentKeys.length) {
+      logger.warn(`No ${slot} view declared by location.`);
+    }
     componentKeys.forEach((token) => {
       const info = componentRegistry.getComponentRegistryInfo(token);
       if (!info) {
@@ -217,11 +219,11 @@ export function SlotRenderer({ slot, isTabbar, id, ...props }: SlotProps) {
       }
     });
     setInfos(infos);
-  }, []);
+  };
 
   React.useEffect(() => {
     // 对于嵌套在模块视图的SlotRenderer，渲染时应用已启动
-    clientApp.appInitialized.promise.then(updateComponentInfos);
+    clientApp.appInitialized.promise.then(prepareComponentInfos);
   }, []);
 
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);

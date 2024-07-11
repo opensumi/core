@@ -28,7 +28,9 @@ export class Directory extends CompositeTreeNode {
 
   private updateName(name: string) {
     if (this.name !== name) {
-      this.addMetadata('name', name);
+      TreeNode.removeTreeNode(this.id, this.path);
+      this.name = name;
+      TreeNode.setTreeNode(this.id, this.path, this);
     }
   }
 
@@ -75,7 +77,9 @@ export class File extends TreeNode {
 
   private updateName(name: string) {
     if (this.name !== name) {
-      this.addMetadata('name', name);
+      TreeNode.removeTreeNode(this.id, this.path);
+      this.name = name;
+      TreeNode.setTreeNode(this.id, this.path, this);
     }
   }
 

@@ -4,7 +4,7 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { LogModule } from '../../src/browser';
 import { LogServiceClient } from '../../src/browser/log.service';
 import {
-  ILogServiceClient,
+  ILogServiceForClient,
   ILoggerManagerClient,
   LogLevel,
   LogServiceForClientPath,
@@ -12,7 +12,18 @@ import {
 } from '../../src/common';
 
 @Injectable()
-class MockLogServiceForClient {
+class MockLogServiceForClient implements ILogServiceForClient {
+  dispose(namespace: SupportLogNamespace): void {}
+  async setGlobalLogLevel(level: LogLevel): Promise<void> {}
+  getGlobalLogLevel(): Promise<LogLevel> {
+    return Promise.resolve(LogLevel.Verbose);
+  }
+  async disposeAll(): Promise<void> {
+    this.dispose(this.namespace);
+  }
+  async getLogFolder(): Promise<string> {
+    return '';
+  }
   private level: LogLevel;
 
   catchLogArgs: any[];
@@ -23,7 +34,7 @@ class MockLogServiceForClient {
     this.namespace = namespace;
   }
 
-  async getLevel() {
+  getLevel() {
     return this.level;
   }
 
@@ -55,7 +66,7 @@ class MockLogServiceForClient {
 describe('log-manager', () => {
   let injector: Injector;
   let logManager: ILoggerManagerClient;
-  let logServiceClient: ILogServiceClient;
+  let logServiceClient: LogServiceClient;
   let logServiceForClient: MockLogServiceForClient;
 
   beforeEach(() => {
@@ -66,7 +77,8 @@ describe('log-manager', () => {
     });
     logManager = injector.get(ILoggerManagerClient);
     logServiceForClient = injector.get(LogServiceForClientPath);
-    logServiceClient = new LogServiceClient(SupportLogNamespace.Browser, logServiceForClient);
+    logServiceClient = new LogServiceClient(SupportLogNamespace.Browser);
+    logServiceClient.setup(logServiceForClient);
   });
 
   test('setLevel', async () => {

@@ -6,7 +6,7 @@ import { IOpenResourceResult, IResourceOpenOptions, IUntitledOptions, WorkbenchE
 import { IResource } from '../resource';
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { IEditorGroup } from '../../browser';
+import type { IEditorDocumentModel, IEditorGroup } from '../../browser';
 
 @Injectable()
 export class MockWorkbenchEditorService extends WorkbenchEditorService {
@@ -40,6 +40,10 @@ export class MockWorkbenchEditorService extends WorkbenchEditorService {
   }
 
   getAllOpenedUris(): URI[] {
+    throw new Error('Method not implemented.');
+  }
+
+  async getAllOpenedDocuments(): Promise<IEditorDocumentModel[]> {
     throw new Error('Method not implemented.');
   }
 

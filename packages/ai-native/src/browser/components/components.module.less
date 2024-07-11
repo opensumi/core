@@ -99,8 +99,9 @@
   border: 1px solid var(--kt-input-border);
   background-color: var(--design-chatInput-background);
   &.active {
-    border-color: rgba(60, 141, 255, 0.65);
+    border-color: var(--design-inputOption-activeForeground);
   }
+
   .theme_container {
     padding: 8px 12px 2px;
     display: flex;
@@ -209,64 +210,7 @@
   }
 
   .input_wrapper {
-    border-radius: 8px;
-    padding: 8px 4px 8px 12px;
-    font-size: 12px;
-    position: relative;
     border: none;
-    background-color: transparent;
-    :global {
-      .kt-input-addon-after {
-        align-items: flex-end;
-        margin: 4px 4px 0 0;
-      }
-    }
-
-    textarea {
-      resize: none;
-      line-height: 16px;
-      &::-webkit-scrollbar {
-        width: 4px;
-        &:hover {
-          width: 10px;
-        }
-      }
-    }
-
-    .slash_widget_block {
-      position: absolute;
-      background-color: #34414b;
-      color: #40a6ff;
-      border-radius: 3px;
-      padding: 1px 2px;
-      z-index: 1;
-      top: 9.5px;
-    }
-
-    .send_chat_btn {
-      .send_icon {
-        > span {
-          &::before {
-            font-size: 16px;
-            color: rgba(60, 141, 255, 0.65);
-          }
-        }
-      }
-      &.active .send_icon,
-      .send_icon:hover {
-        > span {
-          &::before {
-            color: #3c8dff;
-          }
-        }
-      }
-    }
-  }
-
-  :global {
-    .kt-input-disabled {
-      background-color: var(--kt-input-disableBackground) !important;
-    }
   }
 }
 
@@ -364,26 +308,6 @@
 
 .ai_native_input_container {
   height: 32px;
-}
-
-/**
-* loading
-*/
-.loading_indicator {
-  background: linear-gradient(to right, #9c03ff, #00f6ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: spin 1.5s infinite linear;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 /**

@@ -1,6 +1,9 @@
+import { ChannelMessage, ErrorMessageCode } from './channel/types';
 import { IConnectionShape } from './connection/types';
+import { furySerializer, wrapSerializer } from './serializer';
+import { ISerializer } from './serializer/types';
 import { ILogger } from './types';
-import { ChannelMessage, WSChannel, WSServerChannel, parse, pongMessage } from './ws-channel';
+import { WSChannel, WSServerChannel } from './ws-channel';
 
 export interface IPathHandler {
   dispose: (channel: WSChannel, connectionId: string) => void;
@@ -68,7 +71,7 @@ export class CommonChannelPathHandler {
       });
     });
   }
-  dispatchChannelOpen(path: string, channel: WSChannel, clientId: string) {
+  openChannel(path: string, channel: WSChannel, clientId: string) {
     // 根据 path 拿到注册的 handler
     let handlerArr = this.get(path);
     let params: Record<string, string> | undefined;
@@ -97,59 +100,80 @@ export class CommonChannelPathHandler {
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
 
+export interface ChannelHandlerOptions {
+  serializer?: ISerializer<ChannelMessage, any>;
+}
+
+enum ServerChannelCloseCode {
+  ConnectionClosed = 1,
+  NewChannelOpened = 2,
+}
+
 export abstract class BaseCommonChannelHandler {
-  protected channelMap: Map<string, WSChannel> = new Map();
+  protected channelMap: Map<string, WSServerChannel> = new Map();
 
-  heartbeatTimer: NodeJS.Timeout | null = null;
+  protected heartbeatTimer: NodeJS.Timeout | null = null;
 
-  constructor(public handlerId: string, protected logger: ILogger = console) {}
+  serializer: ISerializer<ChannelMessage, any> = furySerializer;
+  constructor(public handlerId: string, protected logger: ILogger = console, options: ChannelHandlerOptions = {}) {
+    if (options.serializer) {
+      this.serializer = options.serializer;
+    }
+  }
 
   abstract doHeartbeat(connection: any): void;
 
   private heartbeat(connection: any) {
-    const timer = global.setTimeout(() => {
-      this.doHeartbeat(connection);
-      this.heartbeat(connection);
-    }, 5000);
-
     if (this.heartbeatTimer) {
       clearTimeout(this.heartbeatTimer);
     }
 
-    this.heartbeatTimer = timer;
+    this.heartbeatTimer = global.setTimeout(() => {
+      this.doHeartbeat(connection);
+      this.heartbeat(connection);
+    }, 5000);
   }
 
   receiveConnection(connection: IConnectionShape<Uint8Array>) {
     let clientId: string;
     this.heartbeat(connection);
 
-    connection.onMessage((data: Uint8Array) => {
-      let msg: ChannelMessage;
+    const wrappedConnection = wrapSerializer(connection, this.serializer);
+
+    wrappedConnection.onMessage((msg: ChannelMessage) => {
       try {
-        msg = parse(data);
-
         switch (msg.kind) {
-          case 'ping':
-            connection.send(pongMessage);
-            break;
           case 'open': {
-            const { id, path } = msg;
+            const { id, path, traceId } = msg;
             clientId = msg.clientId;
+
             this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
+            let channel = this.channelMap.get(id);
+            if (channel) {
+              channel.close(ServerChannelCloseCode.NewChannelOpened, 'new channel opened for the same channel id');
+              channel.dispose();
+            }
 
-            const channel = new WSServerChannel(connection, { id, logger: this.logger });
+            channel = new WSServerChannel(wrappedConnection, { id, clientId, logger: this.logger });
             this.channelMap.set(id, channel);
-
-            commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
-            channel.serverReady();
+            commonChannelPathHandler.openChannel(path, channel, clientId);
+            channel.serverReady(traceId);
             break;
           }
           default: {
             const { id } = msg;
+
             const channel = this.channelMap.get(id);
             if (channel) {
               channel.dispatch(msg);
             } else {
+              wrappedConnection.send({
+                kind: 'error',
+                id,
+                code: ErrorMessageCode.ChannelNotFound,
+                message: `channel ${id} not found`,
+              });
+
               this.logger.warn(`channel ${id} is not found`);
             }
           }
@@ -160,12 +184,13 @@ export abstract class BaseCommonChannelHandler {
     });
 
     connection.onceClose(() => {
+      this.logger.log(`connection ${clientId} is closed, dispose all channels`);
       commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
 
       Array.from(this.channelMap.values())
-        .filter((channel) => channel.id.toString().indexOf(clientId) !== -1)
+        .filter((channel) => channel.clientId === clientId)
         .forEach((channel) => {
-          channel.close(1, 'close');
+          channel.close(ServerChannelCloseCode.ConnectionClosed, 'connection closed');
           channel.dispose();
           this.channelMap.delete(channel.id);
           this.logger.log(`Remove connection channel ${channel.id}`);

@@ -5,8 +5,11 @@ import { FuryFactoryReturn, furyFactory } from './shared';
 
 type Writable = Record<string, any> & { kind: string };
 
-export const oneOf7 = (
+const cap = 8;
+
+export const oneOf = (
   schemas: [
+    TypeDescription,
     TypeDescription,
     TypeDescription,
     TypeDescription,
@@ -23,8 +26,8 @@ export const oneOf7 = (
 
   const { fury, reader, writer } = context;
 
-  const serializers = new Array(7) as Serializer[];
-  const kinds = new Array(7) as string[];
+  const serializers = new Array(cap) as Serializer[];
+  const kinds = new Array(cap) as string[];
 
   const kindToIndex = {} as Record<string, number>;
 
@@ -62,6 +65,9 @@ export const oneOf7 = (
       case 6:
         v = serializers[6].read();
         break;
+      case 7:
+        v = serializers[7].read();
+        break;
     }
 
     v.kind = kinds[idx];
@@ -96,6 +102,9 @@ export const oneOf7 = (
         break;
       case 6:
         serializers[6].write(v);
+        break;
+      case 7:
+        serializers[7].write(v);
         break;
     }
 

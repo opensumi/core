@@ -9,7 +9,16 @@ import {
   TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { IMatch, URI, getIcon, useDesignStyles, withPrevented } from '@opensumi/ide-core-browser';
+import {
+  IMatch,
+  IOpenerService,
+  URI,
+  Uri,
+  getIcon,
+  useDesignStyles,
+  useInjectable,
+  withPrevented,
+} from '@opensumi/ide-core-browser';
 
 import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 
@@ -75,14 +84,24 @@ const MarkerItemName: FC<{ marker: IRenderableMarker }> = memo(({ marker }) => {
 
 const MarkerCode: FC<{
   data: string;
-  href?: URI;
+  href?: Uri;
   matches?: IMatch[] | null;
   type: string;
 }> = memo(({ data, href, matches, type }) => {
+  const openner = useInjectable(IOpenerService) as IOpenerService;
+
   const code = matches ? <HighlightData data={data} matches={matches} className={type} /> : <>{data}</>;
   if (typeof href !== 'undefined') {
     return (
-      <a className={styles.codeHref} rel='noopener' target='_blank' onClick={withPrevented()} title={data}>
+      <a
+        className={styles.codeHref}
+        rel='noopener'
+        target='_blank'
+        onClick={withPrevented(() => {
+          openner.open(new URI(href));
+        })}
+        title={data}
+      >
         {code}
       </a>
     );

@@ -110,9 +110,10 @@ export const localizationBundle = {
     'editor.saveCodeActions.getting': 'Getting code actions from {0}.',
     'editor.saveCodeActions.saving': 'Saving "{0}"',
     'editor.title.context.close': 'Close',
+    'editor.closeTab.title': 'Close ({0})',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
-    'editor.cannotOpenBinary': 'Cannot open binary file in this editor.',
+    'editor.cannotOpenBinary': 'The file is not displayed in the text editor because it is binary.',
     'editor.splitToLeft': 'Split To Left',
     'editor.splitToRight': 'Split To Right',
     'editor.splitToTop': 'Split To Top',
@@ -603,7 +604,7 @@ export const localizationBundle = {
     'editor.configuration.autoSaveDelay':
       "Controls the delay in ms after which a dirty file is saved automatically. Only applies when `#editor.formatOnSave#` is set to 'Save After Delay'.",
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
-    'editor.configuration.largeFileSize': 'Custom size of the large file',
+    'editor.configuration.largeFileSize': 'Custom size of the large file (B)',
     'editor.configuration.fontFamily': 'Controls the font family.',
     'editor.configuration.fontWeight':
       'Controls the font weight. Accepts "normal" and "bold" keywords or numbers between 1 and 1000.',
@@ -969,12 +970,12 @@ export const localizationBundle = {
       'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
     'diffEditor.action.toggleCollapseUnchangedRegions': 'Toggle Collapse Unchanged Regions',
 
-    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
+    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause lag or crash.',
     'editor.autoSave.enum.off': 'OFF',
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
     'editor.autoSave.enum.afterDelay': 'Save after delay',
     'editor.autoSave.enum.windowLostFocus': 'When window lost focus',
-    'editor.largeFile.prevent.stillOpen': 'Still open it.',
+    'editor.file.prevent.stillOpen': 'Open Anyway',
 
     'editor.workspaceSymbol.quickopen': 'Search Workspace Symbol',
     'editor.workspaceSymbolClass.quickopen': 'Search Workspace Class Symbol',
@@ -986,6 +987,9 @@ export const localizationBundle = {
 
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
+
+    'preference.mergeEditor.autoApplyNonConflictChanges': 'Automatically apply non-conflicting changes',
+
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
     'validate.tree.fileNameFollowOrStartWithSpaceWarning': 'Leading or trailing spaces detected in file or folder name',
@@ -1056,6 +1060,8 @@ export const localizationBundle = {
     'terminal.relaunch': 'Relaunch Terminal',
     'terminal.toggleTerminal': 'Toggle Terminal',
     'terminal.killProcess': 'Kill Process',
+    'terminal.process.unHealthy':
+      '*This terminal session has been timed out and killed by the system. Please open a new terminal session to proceed with operations.',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
@@ -1256,7 +1262,7 @@ export const localizationBundle = {
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'extension.crashedExthostReload.confirm': 'Extension Host Process is crashed, do you want to restart the process?',
-    'extension.exthostRestarting.content': 'Restarting Extension Host',
+    'extension.exthostRestarting.content': 'Extension Host Process is restarting',
     'extension.host.restart': 'Restart Extension Host Process',
 
     'extension.no.view.found':
@@ -1269,7 +1275,7 @@ export const localizationBundle = {
     comments: 'Comments',
     'comments.reply.placeholder': 'Reply',
     'comments.participants': 'Participants',
-    'comments.zone.title': 'Start discussion',
+    'comments.zone.title': 'Start Discussion',
     'comments.panel.action.collapse': 'Collapse All',
     'comments.thread.action.close': 'Close Panel',
     'comments.thread.action.openFile': 'Open file',
@@ -1377,6 +1383,8 @@ export const localizationBundle = {
     'test.title': 'Testing',
     'test.result.runFinished': 'Test run at {0}',
     'test.task.unnamed': 'Unnamed Task',
+    'test.results': 'Test Results',
+
     // #endregion
     'menu.missing.command': 'menuId {0} register command not exist: {1}',
     'menu.missing.altCommand': 'menuId {0} register altCommand not exist: {1}',
@@ -1427,7 +1435,7 @@ export const localizationBundle = {
     'mergeEditor.conflict.next': 'Next Conflict',
     'mergeEditor.conflict.ai.resolve.all': 'AI Resolution',
     'mergeEditor.conflict.ai.resolve.all.stop': 'Stop All',
-    'mergeEditor.open.tradition': 'Tradition Editor',
+    'mergeEditor.open.tradition': 'Text Editor',
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',
@@ -1440,12 +1448,14 @@ export const localizationBundle = {
     'aiNative.chat.code.copy.success': 'Copied successfully',
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
-    'aiNative.chat.enter.send': 'Send',
+    'aiNative.chat.enter.send': 'Send (Enter)',
 
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
+    'aiNative.inline.chat.input.placeholder.default': 'Ask Copilot（shift + enter newline）',
+    'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
 
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':
@@ -1471,6 +1481,14 @@ export const localizationBundle = {
     'preference.ai.native.inlineChat.codeAction.enabled':
       'Does Inline Chat related code actions automatically appear when code are selected?',
     'preference.ai.native.chat.visible.type': 'Control how the chat panel is displayed by default',
+
+    'preference.ai.native.inlineCompletions.title': 'Inline Completions',
+    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
+      'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
+    'preference.ai.native.inlineCompletions.debounceTime': 'Debounce time for inline completions',
+    'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff preview mode',
+    'preference.ai.native.inlineDiff.preview.mode.sideBySide': 'Displayed in the editor as left and right diff panels',
+    'preference.ai.native.inlineDiff.preview.mode.inlineLive': 'Displayed in the editor through streaming rendering',
     // #endregion AI Native
 
     // #endregion merge editor

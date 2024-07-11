@@ -2,38 +2,65 @@ import React from 'react';
 
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
-  CancelResponse,
   CancellationToken,
+  ChatResponse,
   Deferred,
-  ErrorResponse,
   IAICompletionResultModel,
   IDisposable,
   IResolveConflictHandler,
   MaybePromise,
   MergeConflictEditorMode,
-  ReplyResponse,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
-import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
-import { CompletionRequestBean } from './inline-completions/model/competionModel';
-import { EMsgStreamStatus } from './model/msg-stream-manager';
+import { CompletionRequestBean } from './contrib/inline-completions/model/competionModel';
+import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
+import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
-export interface IEditorInlineChatHandler {
+interface IBaseInlineChatHandler<T extends any[]> {
   /**
    * 直接执行 action 的操作，点击后 inline chat 立即消失
    */
-  execute?: (editor: ICodeEditor, ...args: any[]) => MaybePromise<void>;
+  execute?: (...args: T) => MaybePromise<void>;
   /**
    * 提供 diff editor 的预览策略
    */
-  providerDiffPreviewStrategy?: (
-    editor: ICodeEditor,
-    cancelToken: CancellationToken,
-  ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>;
+  providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
+  /**
+   * 在 editor 里直接预览输出的结果
+   */
+  providerPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
+}
+
+export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
+export type IInteractiveInputHandler = IBaseInlineChatHandler<
+  [editor: ICodeEditor, value: string, token: CancellationToken]
+>;
+
+export enum ERunStrategy {
+  /**
+   * 正常执行，执行后 input 直接消失
+   */
+  EXECUTE = 'EXECUTE',
+  /**
+   * 预览 diff，执行后 input 保留，显示 inline diff editor
+   */
+  DIFF_PREVIEW = 'DIFF_PREVIEW',
+  /**
+   * 预览输出结果，执行后 input 保留，并在 editor 里直接展示输出结果
+   */
+  PREVIEW = 'PREVIEW',
+}
+
+/**
+ * 制定 inline chat interactive input 的执行策略
+ */
+export interface IInteractiveInputRunStrategy {
+  strategy?: ERunStrategy;
+  handleStrategy?: (editor: ICodeEditor, value: string) => MaybePromise<ERunStrategy>;
 }
 
 export interface ITerminalInlineChatHandler {
@@ -42,8 +69,29 @@ export interface ITerminalInlineChatHandler {
 }
 
 export interface IInlineChatFeatureRegistry {
+  /**
+   * 注册 editor 内联聊天能力
+   */
   registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
+  /**
+   * 注销 editor 内联聊天能力
+   */
+  unregisterEditorInlineChat(operational: AIActionItem): void;
+  /**
+   * 注册 terminal 内联功能
+   */
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
+  /**
+   * 注销 terminal 内联功能
+   */
+  unregisterTerminalInlineChat(operational: AIActionItem): void;
+  /**
+   * proposed api，可能随时都会有变化
+   */
+  registerInteractiveInput(
+    strategyOptions: IInteractiveInputRunStrategy,
+    handler: IInteractiveInputHandler,
+  ): IDisposable;
 }
 
 export interface IChatSlashCommandItem {
@@ -75,16 +123,14 @@ export type ChatWelcomeRender = (props: {
   message: IChatWelcomeMessageContent;
   sampleQuestions: ISampleQuestions[];
 }) => React.ReactElement | React.JSX.Element;
-export type ChatAIRoleRender = (props: {
-  content: string;
-  status: EMsgStreamStatus;
-}) => React.ReactElement | React.JSX.Element;
+export type ChatAIRoleRender = (props: { content: string }) => React.ReactElement | React.JSX.Element;
 export type ChatUserRoleRender = (props: {
   content: string;
   agentId?: string;
   command?: string;
 }) => React.ReactElement | React.JSX.Element;
 export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactElement | React.JSX.Element;
+export type ChatThinkingResultRender = (props: { thinkingResult?: string }) => React.ReactElement | React.JSX.Element;
 export type ChatInputRender = (props: {
   onSend: (value: string, agentId?: string, command?: string) => void;
   onValueChange?: (value: string) => void;
@@ -116,6 +162,7 @@ export interface IChatRenderRegistry {
    */
   registerUserRoleRender(render: ChatUserRoleRender): void;
   registerThinkingRender(render: ChatThinkingRender): void;
+  registerThinkingResultRender(render: ChatThinkingResultRender): void;
   /**
    * 输入框渲染
    */

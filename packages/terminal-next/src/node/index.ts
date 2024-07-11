@@ -11,6 +11,7 @@ import {
 
 import { IPtyService, PtyService } from './pty';
 import { PtyServiceManager, PtyServiceManagerToken } from './pty.manager';
+import { IShellIntegrationService, ShellIntegrationService } from './shell-integration.service';
 import { TerminalProcessServiceImpl } from './terminal.process.service';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
 import { TerminalServiceImpl } from './terminal.service';
@@ -30,6 +31,10 @@ export class TerminalNodePtyModule extends NodeModule {
     {
       token: ITerminalProcessService,
       useClass: TerminalProcessServiceImpl,
+    },
+    {
+      token: IShellIntegrationService,
+      useClass: ShellIntegrationService,
     },
     {
       token: IPtyService,

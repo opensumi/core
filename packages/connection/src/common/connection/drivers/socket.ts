@@ -1,10 +1,11 @@
 import { IDisposable } from '@opensumi/ide-core-common';
 
+import { IRuntimeSocketConnection } from './base';
 import { StreamConnection } from './stream';
 
 import type net from 'net';
 
-export class NetSocketConnection extends StreamConnection {
+export class NetSocketConnection extends StreamConnection implements IRuntimeSocketConnection {
   constructor(private socket: net.Socket) {
     super(socket, socket);
   }

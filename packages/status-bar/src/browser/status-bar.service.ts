@@ -1,6 +1,7 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
+import { EventEmitter } from '@opensumi/events';
 import { AppConfig, Disposable, IContextKeyService, IDisposable, isUndefined } from '@opensumi/ide-core-browser';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AbstractMenuService, IMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -17,10 +18,14 @@ import { CommandService, DisposableCollection, memoize } from '@opensumi/ide-cor
 
 @Injectable()
 export class StatusBarService extends Disposable implements IStatusBarService {
-  @observable
-  private background: string | undefined;
+  emitter = this.registerDispose(
+    new EventEmitter<{
+      backgroundColor: [string?];
+      color: [string?];
+    }>(),
+  );
 
-  @observable
+  private background: string | undefined;
   private foreground: string | undefined;
 
   @observable
@@ -72,6 +77,7 @@ export class StatusBarService extends Disposable implements IStatusBarService {
   @action
   setBackgroundColor(color?: string | undefined) {
     this.background = color;
+    this.emitter.emit('backgroundColor', color);
   }
   /**
    * 设置 Status Bar 所有文字颜色，当设置值为 undefined 时，文件将回复原有颜色配置
@@ -80,6 +86,7 @@ export class StatusBarService extends Disposable implements IStatusBarService {
   @action
   setColor(color?: string | undefined) {
     this.foreground = color;
+    this.emitter.emit('color', color);
   }
 
   // 暴露给其他地方获取配置数据以自定义渲染

@@ -41,27 +41,6 @@ export interface ICacheDocumentMergeConflict extends IDocumentMergeConflictDescr
   aiContent?: string;
 }
 
-export interface IDocumentMergeConflictTracker {
-  getConflicts(document: monaco.editor.ITextModel): PromiseLike<IDocumentMergeConflict[]>;
-  isPending(document: monaco.editor.ITextModel): boolean;
-  forget(document: monaco.editor.ITextModel): void;
-}
-
-export interface IDocumentMergeConflictTrackerService {
-  createTracker(origin: string): IDocumentMergeConflictTracker;
-  forget(document: monaco.editor.ITextModel): void;
-}
-
-export interface IDocumentMergeConflictNavigationResults {
-  canNavigate: boolean;
-  conflict?: IDocumentMergeConflict;
-}
-
-export enum NavigationDirection {
-  Forwards,
-  Backwards,
-}
-
 export namespace AI_COMMAND {
   const MERGE_CONFLICT = 'merge-conflict';
   export const ACCEPT = `${MERGE_CONFLICT}.ai.accept`;

@@ -8,6 +8,7 @@ node_modules
 **/tools/playwright/lib/**
 **/tools/cli-engine/lib/**
 tools/cli-engine/src/browser/worker-host.js
+packages/monaco/worker/**
 
 **/typings/**
 **/scripts/**

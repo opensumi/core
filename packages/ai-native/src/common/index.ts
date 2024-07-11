@@ -3,6 +3,7 @@ import {
   AISerivceType,
   CancellationToken,
   Event,
+  IChatComponent,
   IChatContent,
   IChatProgress,
   IDisposable,
@@ -31,6 +32,7 @@ export const AI_MENUBAR_CONTAINER_VIEW_ID = DESIGN_MENUBAR_CONTAINER_VIEW_ID;
 
 export const SLASH_SYMBOL = '/';
 export const AT_SIGN_SYMBOL = '@';
+export const BACK_QUOTE_3_SYMBOL = '```';
 
 export interface IChatMessageStructure {
   /**
@@ -58,6 +60,17 @@ export interface IChatMessageStructure {
    */
   immediate?: boolean;
 }
+
+export interface IChatMessageListUserItem {
+  role: 'user';
+  message: string;
+}
+
+export type IChatMessageListAssistantItem = (IChatComponent | IChatContent) & {
+  role: 'assistant';
+};
+
+export type IChatMessageListItem = IChatMessageListUserItem | IChatMessageListAssistantItem;
 
 export enum ChatCompletionRequestMessageRoleEnum {
   System = 'system',
@@ -94,7 +107,7 @@ export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 
 export interface IChatAgentService {
   readonly onDidChangeAgents: Event<void>;
-  readonly onDidSendMessage: Event<IChatContent>;
+  readonly onDidSendMessage: Event<IChatProgress>;
   registerAgent(agent: IChatAgent): IDisposable;
   invokeAgent(
     id: string,
@@ -114,7 +127,7 @@ export interface IChatAgentService {
   getSampleQuestions(id: string, token: CancellationToken): Promise<IChatFollowup[]>;
   getAllSampleQuestions(): Promise<IChatReplyFollowup[]>;
   getDefaultAgentId(): undefined | string;
-  sendMessage(chunk: IChatContent): void;
+  sendMessage(chunk: IChatProgress): void;
 }
 
 export interface IChatAgent extends IChatAgentData {
@@ -206,8 +219,8 @@ export interface IChatModel {
 export type IChatWelcomeMessageContent = string | IMarkdownString;
 
 export interface ISampleQuestions {
-  title: string;
   message: string;
+  title?: string;
   icon?: string;
   tooltip?: string;
 }

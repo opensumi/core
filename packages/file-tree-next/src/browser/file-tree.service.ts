@@ -87,9 +87,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
   @Autowired(FileContextKey)
   private fileContextKey: FileContextKey;
 
-  private _cacheNodesMap: Map<string, File | Directory> = new Map();
-
   private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
+
+  private _symbolicFiles: Map<string, Directory | File> = new Map();
 
   // 文件系统Change事件队列
   private _changeEventDispatchQueue = new Set<string>();
@@ -265,6 +265,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
                 name: rootName,
               });
             }
+
+            if (child.filestat.isSymbolicLink || child.filestat.isInSymbolicDirectory) {
+              this._symbolicFiles.set(child.filestat.uri, child);
+            }
           });
           this.watchFilesChange(new URI(this._roots[0].uri));
           this.root = children[0] as Directory;
@@ -285,6 +289,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
           );
           this.watchFilesChange(new URI(fileStat.uri));
           children = children.concat(child);
+          if (child.filestat.isSymbolicLink || child.filestat.isInSymbolicDirectory) {
+            this._symbolicFiles.set(child.filestat.uri, child);
+          }
         }
         return children;
       }
@@ -297,6 +304,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
           this.isCompactMode && !Directory.isRoot(parent),
         );
         children = data.children;
+        children.forEach((child) => {
+          if (child.filestat.isSymbolicLink || child.filestat.isInSymbolicDirectory) {
+            this._symbolicFiles.set(child.filestat.uri, child);
+          }
+        });
         // 有概率获取不到 Filestat，易发生在外部删除多文件情况下
         const childrenParentStat = data.filestat;
         if (!!childrenParentStat && this.isCompactMode && !Directory.isRoot(parent)) {
@@ -590,13 +602,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     return /^file:\/\//.test(str);
   }
 
-  /**
-   *
-   * @param pathOrUri 路径或者URI对象
-   * @param compactMode 是否开启压缩模式查找
-   *
-   */
-  getNodeByPathOrUri(pathOrUri: string | URI) {
+  public getNodeByPathOrUri(pathOrUri: string | URI) {
     let path: string | undefined;
     let pathURI: URI | undefined;
     if (typeof pathOrUri !== 'string') {
@@ -608,6 +614,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
       path = pathOrUri;
     }
     if (this.isFileURI(pathOrUri) && !!pathURI) {
+      if (this._symbolicFiles.has(pathURI?.toString())) {
+        return this._symbolicFiles.get(pathURI.toString());
+      }
       let rootStr;
       if (!this.isMultipleWorkspace) {
         rootStr = this.workspaceService.workspace?.uri;
@@ -617,43 +626,14 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (this.root && rootStr) {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(pathURI)) {
-          let basePath = new Path(this.root.path);
-          if (this.isMultipleWorkspace) {
-            basePath = basePath.join(rootUri.displayName);
+          const relativePath = rootUri.relative(pathURI);
+          if (relativePath) {
+            path = new Path(this.root.path).join(relativePath.toString()).toString();
           }
-          path = basePath.join(rootUri.relative(pathURI)!.toString()).toString();
         }
       }
     }
-
     if (path) {
-      // 压缩模式下查找不到对应节点时，需要查看是否已有包含的文件夹存在
-      // 如当收到的变化是 /root/test_folder/test_file，而当前缓存中的路径只有/root/test_folder/test_folder2的情况
-      // 需要用当前缓存路径校验是否存在包含关系，这里/root/test_folder/test_folder2与/root/test_folder存在路径包含关系
-      // 此时应该重载/root下的文件，将test_folder目录折叠并清理缓存
-      if (this.isCompactMode && !this._cacheNodesMap.has(path)) {
-        const allNearestPath = Array.from(this._cacheNodesMap.keys()).filter((cache) => cache.indexOf(path!) >= 0);
-        let nearestPath;
-        for (const nextPath of allNearestPath) {
-          const depth = Path.pathDepth(nextPath);
-          if (nearestPath) {
-            if (depth < nearestPath.depth) {
-              nearestPath = {
-                path: nextPath,
-                depth,
-              };
-            }
-          } else {
-            nearestPath = {
-              path: nextPath,
-              depth,
-            };
-          }
-        }
-        if (nearestPath) {
-          return this.root?.getTreeNodeByPath(nearestPath.path) as File | Directory;
-        }
-      }
       return this.root?.getTreeNodeByPath(path) as File | Directory;
     }
   }
