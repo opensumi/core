@@ -13,7 +13,6 @@ import {
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
-
 @Injectable()
 export class InlineDiffService extends Disposable {
   @Autowired(INJECTOR_TOKEN)

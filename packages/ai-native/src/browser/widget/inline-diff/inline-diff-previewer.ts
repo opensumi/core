@@ -50,7 +50,11 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
     this.inlineContentWidget?.layoutContentWidget();
   }
 
-  abstract onReady(exec: () => void): Disposable;
+  public onReady(exec: () => void): IDisposable {
+    exec();
+    return Disposable.NULL;
+  }
+
   abstract createNode(): N;
   abstract onData(data: ReplyResponse): void;
   abstract handleAction(action: EResultKind): void;
@@ -106,9 +110,8 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
     super.layout();
   }
-  onReady(exec: () => void): Disposable {
-    this.addDispose(this.node.onReady(exec.bind(this)));
-    return this;
+  onReady(exec: () => void): IDisposable {
+    return this.node.onReady(exec.bind(this));
   }
   show(line: number, heightInLines: number): void {
     this.node.showByLine(line, heightInLines);
@@ -156,10 +159,6 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
 
 @Injectable({ multiple: true })
 export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStreamDiffHandler> {
-  onReady(exec: () => void): Disposable {
-    exec();
-    return this;
-  }
   createNode(): InlineStreamDiffHandler {
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
 
