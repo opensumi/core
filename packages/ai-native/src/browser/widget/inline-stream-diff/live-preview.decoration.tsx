@@ -445,19 +445,19 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
      */
-    const findRemovedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
-    const findAddedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
+    const removedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
+    const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
     const hide = () => {
       widget.hide();
-      findAddedDec?.hide();
-      findRemovedWidget?.hide();
+      addedDec?.hide();
+      removedWidget?.hide();
     };
 
     const resume = () => {
       widget.resume();
-      findAddedDec?.resume();
-      findRemovedWidget?.resume();
+      addedDec?.resume();
+      removedWidget?.resume();
     };
 
     /**
@@ -479,7 +479,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
       case EPartialEdit.discard:
         {
-          const operation = this.doDiscardPartialWidget(widget, findAddedDec, findRemovedWidget);
+          const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
           if (operation) {
             if (isPushStack) {
               this.pushUndoElement({
@@ -501,10 +501,13 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       totalPartialEditCount: this.partialEditWidgetList.length,
       acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
       totalAddedLinesCount: this.addedRangeDec.getDecorations().reduce((prev, current) => prev + current.length, 0),
-      totalRemovedLinesCount: this.removedZoneWidgets.reduce((prev, current) => prev + current.getRemovedTextLines().length, 0),
+      totalRemovedLinesCount: this.removedZoneWidgets.reduce(
+        (prev, current) => prev + current.getRemovedTextLines().length,
+        0,
+      ),
       currentPartialEdit: {
-        addedLinesCount: findAddedDec?.length || 0,
-        deletedLinesCount: findRemovedWidget?.getRemovedTextLines().length || 0,
+        addedLinesCount: addedDec?.length || 0,
+        deletedLinesCount: removedWidget?.getRemovedTextLines().length || 0,
         type,
       },
     };
@@ -531,8 +534,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public discardUnProcessed(): void {
-    const otherWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
-    otherWidgets.forEach((widget) => {
+    const showingWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
+    showingWidgets.forEach((widget) => {
       this.handlePartialEditAction(EPartialEdit.discard, widget, false);
     });
   }

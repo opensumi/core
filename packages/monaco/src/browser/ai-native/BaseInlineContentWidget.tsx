@@ -95,8 +95,10 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
   }
 
   resume(): void {
-    this._isHidden = false;
-    this.editor.addContentWidget(this);
+    if (this._isHidden) {
+      this._isHidden = false;
+      this.editor.addContentWidget(this);
+    }
   }
 
   getId(): string {
