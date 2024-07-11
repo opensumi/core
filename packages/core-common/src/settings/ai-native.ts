@@ -14,6 +14,7 @@ export enum AINativeSettingSectionsId {
    */
   InlineCompletionsPromptEngineeringEnabled = 'ai.native.inlineCompletions.promptEngineering.enabled',
   InlineCompletionsDebounceTime = 'ai.native.inlineCompletions.debounceTime',
+  InlineCompletionsCacheEnabled = 'ai.native.inlineCompletions.cache.enabled',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';

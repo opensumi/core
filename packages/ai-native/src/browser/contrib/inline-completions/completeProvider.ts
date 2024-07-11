@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTER } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import {
   AINativeSettingSectionsId,
@@ -10,13 +10,13 @@ import {
   sleep,
   uuid,
 } from '@opensumi/ide-core-common';
-import { IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IAICompletionOption, IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/ide-monaco';
 
 import { DEFAULT_COMPLECTION_MODEL } from './constants';
-import { CompletionRequestBean, IInlineCompletionCache, InlineCompletionItem } from './model/competionModel';
+import { IInlineCompletionCache, InlineCompletionItem } from './model/competionModel';
 import { PromptCache } from './promptCache';
 import { getPrefixPrompt, getSuffixPrompt, lineBasedPromptProcessor } from './provider';
 import { AICompletionsService } from './service/ai-completions.service';
@@ -68,6 +68,9 @@ export class CompletionRequestTask {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   isCancelFlag: boolean;
 
   private isEnablePromptEngineering = true;
@@ -98,7 +101,7 @@ export class CompletionRequestTask {
   async constructRequestBean(
     context: ICompletionContext,
     token: monaco.CancellationToken,
-  ): Promise<CompletionRequestBean> {
+  ): Promise<IAICompletionOption> {
     if (this.isEnablePromptEngineering) {
       const prompt = await getPrefixPrompt(context, DEFAULT_COMPLECTION_MODEL, this.injector, token);
       const suffix = await getSuffixPrompt(context, DEFAULT_COMPLECTION_MODEL, this.injector, token);
@@ -109,6 +112,7 @@ export class CompletionRequestTask {
         sessionId: uuid(),
         language: context.language,
         fileUrl: context.fileUrl,
+        workspaceDir: context.workspaceDir,
       };
     }
 
@@ -120,6 +124,7 @@ export class CompletionRequestTask {
       sessionId: uuid(),
       language: context.language,
       fileUrl: context.fileUrl,
+      workspaceDir: context.workspaceDir,
     };
   }
 
@@ -154,17 +159,17 @@ export class CompletionRequestTask {
 
     const languageId = model.getLanguageId();
     const context: ICompletionContext = {
-      // todo: 改成相对工作空间的路径
-      fileUrl: model.uri.toString().split('/').pop()!,
+      fileUrl: model.uri.fsPath,
       filename: model.uri.toString().split('/').pop()!,
       language: languageId,
       prefix,
       suffix,
       uri: URI.from(model.uri),
+      workspaceDir: this.appConfig.workspaceDir,
     };
 
     // 组装请求参数,向远程发起请求
-    const completionRequestBean = await this.constructRequestBean(context, token);
+    const requestBean = await this.constructRequestBean(context, token);
     if (this.isCancelFlag) {
       return [];
     }
@@ -173,7 +178,7 @@ export class CompletionRequestTask {
     const requestStartTime = Date.now();
 
     let rs: IAICompletionResultModel | null;
-    const cacheData = this.promptCache.getCache(completionRequestBean.prompt);
+    const cacheData = this.promptCache.getCache(requestBean);
     const relationId =
       cacheData?.relationId || this.aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
 
@@ -183,7 +188,7 @@ export class CompletionRequestTask {
       rs = cacheData;
     } else {
       try {
-        rs = await this.aiCompletionsService.complete(completionRequestBean, model, position, token);
+        rs = await this.aiCompletionsService.complete(requestBean, model, position, token);
       } catch (error) {
         this.aiCompletionsService.reporterEnd(relationId, {
           success: false,
@@ -215,11 +220,8 @@ export class CompletionRequestTask {
       return [];
     }
 
-    if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
-      this.promptCache.setCache(completionRequestBean.prompt, { ...rs, relationId });
-    }
     // 返回补全结果为空直接返回
-    if (rs.codeModelList.length === 0) {
+    if (!rs || !rs.codeModelList || rs.codeModelList.length === 0) {
       this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
         replytime: Date.now() - requestStartTime,
@@ -227,6 +229,10 @@ export class CompletionRequestTask {
       });
       this.aiCompletionsService.updateStatusBarItem('no result', false);
       return [];
+    }
+
+    if (rs.codeModelList.length > 0) {
+      this.promptCache.setCache(requestBean, { ...rs, relationId });
     }
 
     this.aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);

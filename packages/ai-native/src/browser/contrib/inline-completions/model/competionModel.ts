@@ -22,28 +22,6 @@ export interface IInlineCompletionCache {
 }
 
 /**
- * 补全请求对象
- */
-export interface CompletionRequestBean {
-  /**
-   * 模型输入上文
-   */
-  prompt: string;
-  /**
-   * 代码语言类型
-   */
-  language: string;
-  sessionId: string;
-  /**
-   * 代码下文
-   */
-  suffix: string | null;
-  /**
-   * 文件路径
-   */
-  fileUrl: string | null;
-}
-/**
  * 补全结果缓存对象
  */
 export interface CompletionResultModelCache {

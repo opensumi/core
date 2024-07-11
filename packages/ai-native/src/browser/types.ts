@@ -5,6 +5,7 @@ import {
   CancellationToken,
   ChatResponse,
   Deferred,
+  IAICompletionOption,
   IAICompletionResultModel,
   IDisposable,
   IResolveConflictHandler,
@@ -16,7 +17,6 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
-import { CompletionRequestBean } from './contrib/inline-completions/model/competionModel';
 import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
@@ -250,8 +250,8 @@ export type IProvideInlineCompletionsSignature = (
   model: ITextModel,
   position: Position,
   token: CancellationToken,
-  next: (reqBean: CompletionRequestBean) => MaybePromise<IAICompletionResultModel | null>,
-  completionRequestBean: CompletionRequestBean,
+  next: (reqBean: IAICompletionOption) => MaybePromise<IAICompletionResultModel | null>,
+  requestOption: IAICompletionOption,
 ) => MaybePromise<IAICompletionResultModel | null>;
 
 export interface IAIMiddleware {

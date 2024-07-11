@@ -12,9 +12,9 @@ import {
   IAIReportCompletionOption,
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { IProvideInlineCompletionsSignature } from '../../../types';
-import { CompletionRequestBean } from '../model/competionModel';
 
 @Injectable()
 export class AICompletionsService extends Disposable {
@@ -46,6 +46,8 @@ export class AICompletionsService extends Disposable {
   // 中间件拓展 inlinecompletion
   private lastMiddlewareInlineCompletion?: IProvideInlineCompletionsSignature;
 
+  protected validCompletionThreshold = 750;
+
   private recordRenderTime(): void {
     this.lastRenderTime = Date.now();
   }
@@ -58,20 +60,25 @@ export class AICompletionsService extends Disposable {
     return this._isVisibleCompletion;
   }
 
-  public async complete(data: CompletionRequestBean, model, position, token): Promise<IAICompletionResultModel | null> {
-    const doCompletion = async (data: CompletionRequestBean) => {
+  public async complete(
+    data: IAICompletionOption,
+    model: monaco.editor.ITextModel,
+    position: monaco.Position,
+    token: monaco.CancellationToken,
+  ): Promise<IAICompletionResultModel | null> {
+    const doCompletion = async (data: IAICompletionOption) => {
       if (!this.aiBackService.requestCompletion) {
         return null;
       }
 
       try {
         this.isDefaultCompletionModel = true;
-        const now = Date.now();
+        const completionStart = Date.now();
         const result = (await this.aiBackService.requestCompletion(
-          data as IAICompletionOption,
+          data,
           this.cancelIndicator.token,
         )) as IAICompletionResultModel;
-        this.recordCompletionUseTime(now);
+        this.recordCompletionUseTime(completionStart);
         return result;
       } catch (error) {
         return null;
@@ -108,7 +115,7 @@ export class AICompletionsService extends Disposable {
   public async reporterEnd(relationId: string, data: CompletionRT) {
     const reportData = {
       ...data,
-      isValid: typeof data.renderingTime === 'number' ? data.renderingTime > 750 : false,
+      isValid: typeof data.renderingTime === 'number' ? data.renderingTime > this.validCompletionThreshold : false,
     };
     this.aiReporter.end(relationId, reportData);
   }

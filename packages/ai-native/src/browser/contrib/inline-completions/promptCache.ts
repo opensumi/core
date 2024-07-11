@@ -1,8 +1,14 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAICompletionResultModel, StaleLRUMap } from '@opensumi/ide-core-browser';
+import {
+  AINativeSettingSectionsId,
+  DisposableStore,
+  IAICompletionOption,
+  IAICompletionResultModel,
+  IDisposable,
+  PreferenceService,
+  StaleLRUMap,
+} from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-
-const isCacheEnable = () => true;
 
 /**
  * 缓存服务
@@ -10,36 +16,67 @@ const isCacheEnable = () => true;
  * 2. 用 prompt 的 hash 值作为 key
  */
 @Injectable()
-export class PromptCache {
+export class PromptCache implements IDisposable {
+  protected _disposables = new DisposableStore();
+
   @Autowired(IHashCalculateService)
   private hashCalculateService: IHashCalculateService;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
   private cacheMap = new StaleLRUMap<string, IAICompletionResultModel & { relationId: string }>(15, 10, 60 * 1000);
 
-  getCache(prompt: string) {
-    if (!isCacheEnable()) {
+  protected calculateCacheKey(requestBean: IAICompletionOption) {
+    const content = requestBean.prompt;
+    return this.hashCalculateService.calculate(content);
+  }
+
+  protected _isCacheEnabled = false;
+  constructor() {
+    this._isCacheEnabled = this.preferenceService.getValid(
+      AINativeSettingSectionsId.InlineCompletionsCacheEnabled,
+      true,
+    );
+
+    this._disposables.add(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.InlineCompletionsCacheEnabled,
+        (e) => {
+          this._isCacheEnabled = e.newValue;
+        },
+      ),
+    );
+  }
+
+  getCache(requestBean: IAICompletionOption) {
+    if (!this._isCacheEnabled) {
       return null;
     }
-    const hash = this.hashCalculateService.calculate(prompt);
+    const hash = this.calculateCacheKey(requestBean);
     if (hash) {
       return this.cacheMap.get(hash) || null;
     }
     return null;
   }
 
-  setCache(prompt: string, res: any) {
-    if (!isCacheEnable()) {
+  setCache(bean: IAICompletionOption, res: any) {
+    if (!this._isCacheEnabled) {
       return false;
     }
     if (!res) {
       return false;
     }
 
-    const hash = this.hashCalculateService.calculate(prompt);
+    const hash = this.calculateCacheKey(bean);
     if (hash) {
       this.cacheMap.set(hash, res);
       return true;
     }
     return false;
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
