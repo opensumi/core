@@ -126,6 +126,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(ResourceService)
   private resourceService: ResourceService;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
@@ -484,7 +487,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
-    state = this.openedResourceState.get<IEditorGridState>('grid', state);
+    if (!this.appConfig.disableRestoreEditorGroupState) {
+      state = this.openedResourceState.get<IEditorGridState>('grid', state);
+    }
     this.topGrid = new EditorGrid();
     this.topGrid.onDidGridAndDesendantStateChange(() => {
       this._sortedEditorGroups = undefined;
