@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
+import { Disposable, ErrorResponse, IDisposable, ReplyResponse } from '@opensumi/ide-core-common';
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -22,6 +22,14 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   constructor(protected readonly monacoEditor: ICodeEditor, protected readonly selection: Selection) {
     super();
     this.node = this.createNode();
+
+    this.addDispose(
+      Disposable.create(() => {
+        if (this.inlineContentWidget) {
+          this.inlineContentWidget.dispose();
+        }
+      }),
+    );
   }
 
   get model(): ITextModel {
@@ -42,7 +50,11 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
     this.inlineContentWidget?.layoutContentWidget();
   }
 
-  abstract onReady(exec: () => void): Disposable;
+  public onReady(exec: () => void): IDisposable {
+    exec();
+    return Disposable.NULL;
+  }
+
   abstract createNode(): N;
   abstract onData(data: ReplyResponse): void;
   abstract handleAction(action: EResultKind): void;
@@ -98,9 +110,8 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
     super.layout();
   }
-  onReady(exec: () => void): Disposable {
-    this.addDispose(this.node.onReady(exec.bind(this)));
-    return this;
+  onReady(exec: () => void): IDisposable {
+    return this.node.onReady(exec.bind(this));
   }
   show(line: number, heightInLines: number): void {
     this.node.showByLine(line, heightInLines);
@@ -148,10 +159,6 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
 
 @Injectable({ multiple: true })
 export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStreamDiffHandler> {
-  onReady(exec: () => void): Disposable {
-    exec();
-    return this;
-  }
   createNode(): InlineStreamDiffHandler {
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
 
@@ -171,10 +178,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     const zone = this.node.getZone();
     return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
   }
-  setValue(content: string): void {
-    const diffModel = this.node.recompute(EComputerMode.legacy, content);
-    this.node.readyRender(diffModel);
-  }
+
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
@@ -202,5 +206,12 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   onEnd(): void {
     const diffModel = this.node.recompute(EComputerMode.legacy);
     this.node.readyRender(diffModel);
+  }
+  setValue(content: string): void {
+    this.node.addLinesToDiff(content);
+    this.onEnd();
+  }
+  get onPartialEditEvent() {
+    return this.node.onPartialEditEvent;
   }
 }

@@ -53,7 +53,7 @@ export class InlineStreamDiffHandler extends Disposable {
   private undoRedoGroup: UndoRedoGroup;
   private partialEditWidgetHandle: (widgets: AcceptPartialEditWidget[]) => void;
 
-  protected readonly _onDidEditChange = new Emitter<void>();
+  protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
 
   constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
@@ -385,8 +385,7 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
-    this.virtualModel.setValue(newText);
-    this.recompute(computerMode);
+    this.recompute(computerMode, newText);
     this.doSchedulerEdits();
   }
 
@@ -396,5 +395,9 @@ export class InlineStreamDiffHandler extends Disposable {
     this.renderPartialEditWidgets(diffModel);
     this.pushStackElement();
     this.monacoEditor.focus();
+  }
+
+  get onPartialEditEvent() {
+    return this.livePreviewDiffDecorationModel.onPartialEditEvent;
   }
 }

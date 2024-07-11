@@ -5,7 +5,7 @@ import ReactDOMClient from 'react-dom/client';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { KeybindingRegistry, StackingLevel } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { Disposable, Emitter, Event, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, IRange, isUndefined, uuid } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
@@ -46,6 +46,31 @@ enum EPartialEdit {
   discard = 'discard',
 }
 
+export interface IPartialEditEvent {
+  /**
+   * 总 diff 数
+   */
+  totalPartialEditCount: number;
+  /**
+   * 已采纳数
+   */
+  acceptedPartialEditCount: number;
+
+  /**
+   * 已添加行数
+   */
+  totalAddedLinesCount: number;
+  /**
+   * 已删除行数
+   */
+  totalRemovedLinesCount: number;
+  currentPartialEdit: {
+    type: EPartialEdit;
+    deletedLinesCount: number;
+    addedLinesCount: number;
+  };
+}
+
 interface ITextLinesTokens {
   text: string;
   lineTokens: LineTokens;
@@ -64,10 +89,10 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   private _id: string;
   private _decorationId: string;
 
-  private readonly _onAccept = new Emitter<void>();
+  private readonly _onAccept = this.registerDispose(new Emitter<void>());
   public readonly onAccept: Event<void> = this._onAccept.event;
 
-  private readonly _onDiscard = new Emitter<void>();
+  private readonly _onDiscard = this.registerDispose(new Emitter<void>());
   public readonly onDiscard: Event<void> = this._onDiscard.event;
 
   positionPreference = [ContentWidgetPositionPreference.EXACT];
@@ -191,6 +216,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
 
+  private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
+  public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
+
   private zoneDec: IEditorDecorationsCollection;
 
   private activeLineDec: IEditorDecorationsCollection;
@@ -205,7 +233,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private zone: LineRange;
   private aiNativeContextKey: AINativeContextKey;
 
-  protected readonly _onPartialEditWidgetListChange = new Emitter<AcceptPartialEditWidget[]>();
+  protected readonly _onPartialEditWidgetListChange = this.registerDispose(new Emitter<AcceptPartialEditWidget[]>());
   public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
     this._onPartialEditWidgetListChange.event;
 
@@ -417,19 +445,19 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
      */
-    const findRemovedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
-    const findAddedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
+    const removedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
+    const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
     const hide = () => {
       widget.hide();
-      findAddedDec?.hide();
-      findRemovedWidget?.hide();
+      addedDec?.hide();
+      removedWidget?.hide();
     };
 
     const resume = () => {
       widget.resume();
-      findAddedDec?.resume();
-      findRemovedWidget?.resume();
+      addedDec?.resume();
+      removedWidget?.resume();
     };
 
     /**
@@ -451,7 +479,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
       case EPartialEdit.discard:
         {
-          const operation = this.doDiscardPartialWidget(widget, findAddedDec, findRemovedWidget);
+          const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
           if (operation) {
             if (isPushStack) {
               this.pushUndoElement({
@@ -469,7 +497,24 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         break;
     }
 
+    const event: IPartialEditEvent = {
+      totalPartialEditCount: this.partialEditWidgetList.length,
+      acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
+      totalAddedLinesCount: this.addedRangeDec.getDecorations().reduce((prev, current) => prev + current.length, 0),
+      totalRemovedLinesCount: this.removedZoneWidgets.reduce(
+        (prev, current) => prev + current.getRemovedTextLines().length,
+        0,
+      ),
+      currentPartialEdit: {
+        addedLinesCount: addedDec?.length || 0,
+        deletedLinesCount: removedWidget?.getRemovedTextLines().length || 0,
+        type,
+      },
+    };
+
     this.monacoEditor.focus();
+
+    this._onPartialEditEvent.fire(event);
     this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
   }
 
@@ -489,8 +534,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public discardUnProcessed(): void {
-    const otherWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
-    otherWidgets.forEach((widget) => {
+    const showingWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
+    showingWidgets.forEach((widget) => {
       this.handlePartialEditAction(EPartialEdit.discard, widget, false);
     });
   }

@@ -2,18 +2,7 @@ import { Injectable } from '@opensumi/di';
 import { IAIInlineChatService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, runWhenIdle } from '@opensumi/ide-core-common';
 
-export const enum EInlineChatStatus {
-  READY,
-  THINKING,
-  DONE,
-  ERROR,
-}
-
-export const enum EResultKind {
-  ACCEPT = 'ACCEPT',
-  DISCARD = 'DISCARD',
-  REGENERATE = 'REGENERATE',
-}
+export { EInlineChatStatus, EResultKind } from '../../../common';
 
 @Injectable({ multiple: false })
 export class AIInlineChatService implements IAIInlineChatService {

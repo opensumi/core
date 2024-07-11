@@ -84,7 +84,7 @@ export class InlineInputHandler extends Disposable {
       if (InlineChatController.is(previewResponse)) {
         const controller = previewResponse as InlineChatController;
 
-        controller.deffered.resolve();
+        controller.deferred.resolve();
 
         inputDisposable.addDispose([
           controller.onData(async (data) => {
