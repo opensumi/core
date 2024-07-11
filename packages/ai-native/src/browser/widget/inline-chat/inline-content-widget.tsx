@@ -201,7 +201,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
 
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(this.editor as any)._contextKeyService]);
+    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.editor.contextKeyService]);
     this.addDispose(
       this.editor.onDidLayoutChange(() => {
         if (this.isOutOfArea()) {

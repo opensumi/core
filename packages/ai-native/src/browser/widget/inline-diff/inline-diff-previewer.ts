@@ -171,10 +171,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     const zone = this.node.getZone();
     return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
   }
-  setValue(content: string): void {
-    const diffModel = this.node.recompute(EComputerMode.default, content);
-    this.node.readyRender(diffModel);
-  }
+
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
@@ -202,6 +199,10 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   onEnd(): void {
     const diffModel = this.node.recompute(EComputerMode.legacy);
     this.node.readyRender(diffModel);
+  }
+  setValue(content: string): void {
+    this.node.addLinesToDiff(content);
+    this.onEnd();
   }
   get onPartialEditEvent() {
     return this.node.onPartialEditEvent;

@@ -81,8 +81,8 @@ export class InlineChatHandler extends Disposable {
 
   private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
   private aiInlineContentWidget: AIInlineContentWidget;
-  private aiInlineChatDisposed: Disposable = new Disposable();
-  private aiInlineChatOperationDisposed: Disposable = new Disposable();
+  private aiInlineChatDisposable: Disposable = new Disposable();
+  private aiInlineChatOperationDisposable: Disposable = new Disposable();
   private cancelIndicator = new CancellationTokenSource();
 
   constructor() {
@@ -100,8 +100,8 @@ export class InlineChatHandler extends Disposable {
     [
       this.diffPreviewer,
       this.aiInlineContentWidget,
-      this.aiInlineChatDisposed,
-      this.aiInlineChatOperationDisposed,
+      this.aiInlineChatDisposable,
+      this.aiInlineChatOperationDisposable,
     ].forEach((widget) => {
       widget?.dispose();
     });
@@ -212,7 +212,6 @@ export class InlineChatHandler extends Disposable {
     const selection = monacoEditor.getSelection();
 
     if (!selection || selection.isEmpty()) {
-      this.disposeAllWidget();
       return;
     }
 
@@ -220,13 +219,13 @@ export class InlineChatHandler extends Disposable {
 
     this.aiInlineContentWidget.show({ selection });
 
-    this.aiInlineChatDisposed.addDispose(
+    this.aiInlineChatDisposable.addDispose(
       this.inlineChatFeatureRegistry.onChatClick(() => {
         this.aiInlineChatService.launchInputVisible(true);
       }),
     );
 
-    this.aiInlineChatDisposed.addDispose(
+    this.aiInlineChatDisposable.addDispose(
       this.aiInlineContentWidget.onActionClick(({ actionId, source }) => {
         const handler = this.inlineChatFeatureRegistry.getEditorHandler(actionId);
         const action = this.inlineChatFeatureRegistry.getAction(actionId);
@@ -253,7 +252,7 @@ export class InlineChatHandler extends Disposable {
       }),
     );
 
-    this.aiInlineChatDisposed.addDispose(
+    this.aiInlineChatDisposable.addDispose(
       this.aiInlineContentWidget.onInteractiveInputValue(async (value) => {
         const handler = this.inlineChatFeatureRegistry.getInteractiveInputHandler();
 
@@ -309,7 +308,7 @@ export class InlineChatHandler extends Disposable {
 
     const { relationId, message, startTime, isRetry, isStop } = reportInfo;
 
-    this.aiInlineChatDisposed.addDispose(this.aiInlineContentWidget.launchChatStatus(status));
+    this.aiInlineChatDisposable.addDispose(this.aiInlineContentWidget.launchChatStatus(status));
     this.aiReporter.end(relationId, {
       message,
       success: status !== EInlineChatStatus.ERROR,
@@ -339,21 +338,19 @@ export class InlineChatHandler extends Disposable {
       EInlineDiffPreviewMode.inlineLive,
     );
 
-    if (!this.aiInlineChatDisposed.disposed) {
-      this.aiInlineChatDisposed.dispose();
-    }
+    this.disposeAllWidget();
 
     if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
       this.diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, crossSelection]);
     } else {
       this.diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
-      this.aiInlineChatDisposed.addDispose(
+      this.aiInlineChatDisposable.addDispose(
         (this.diffPreviewer as LiveInlineDiffPreviewer).onPartialEditEvent((event) => {
           this._onPartialEditEvent.fire(event);
         }),
       );
     }
-    this.aiInlineChatDisposed.addDispose(this.diffPreviewer);
+    this.aiInlineChatDisposable.addDispose(this.diffPreviewer);
     this.diffPreviewer.mount(this.aiInlineContentWidget);
 
     this.diffPreviewer.show(
@@ -364,11 +361,11 @@ export class InlineChatHandler extends Disposable {
     if (InlineChatController.is(chatResponse)) {
       const controller = chatResponse as InlineChatController;
 
-      this.aiInlineChatOperationDisposed.addDispose(
+      this.aiInlineChatOperationDisposable.addDispose(
         this.diffPreviewer.onReady(() => {
           controller.deferred.resolve();
 
-          this.aiInlineChatOperationDisposed.addDispose([
+          this.aiInlineChatOperationDisposable.addDispose([
             controller.onData((data) => {
               if (ReplyResponse.is(data)) {
                 this.diffPreviewer.onData(data);
@@ -412,7 +409,7 @@ export class InlineChatHandler extends Disposable {
       const model = monacoEditor.getModel();
       const crossCode = model!.getValueInRange(crossSelection);
 
-      if ((this.aiInlineContentWidget && this.aiInlineChatDisposed.disposed) || CancelResponse.is(chatResponse)) {
+      if ((this.aiInlineContentWidget && this.aiInlineChatDisposable.disposed) || CancelResponse.is(chatResponse)) {
         this.convertInlineChatStatus(EInlineChatStatus.READY, {
           relationId,
           message: (chatResponse as CancelResponse).message || '',
@@ -442,16 +439,17 @@ export class InlineChatHandler extends Disposable {
 
       const answer = this.formatAnswer((chatResponse as ReplyResponse).message, crossCode);
 
-      this.aiInlineChatOperationDisposed.addDispose(
+      this.aiInlineChatOperationDisposable.addDispose(
         this.diffPreviewer.onReady(() => {
           this.diffPreviewer.setValue(answer);
+          this.diffPreviewer.layout();
         }),
       );
     }
 
     this.diffPreviewer.layout();
 
-    this.aiInlineChatOperationDisposed.addDispose(
+    this.aiInlineChatOperationDisposable.addDispose(
       this.diffPreviewer.onDispose(() => {
         this.aiInlineContentWidget?.dispose();
       }),
@@ -480,8 +478,8 @@ export class InlineChatHandler extends Disposable {
     const model = monacoEditor.getModel();
 
     this.diffPreviewer?.dispose();
-    this.aiInlineChatOperationDisposed.dispose();
-    this.aiInlineChatDisposed.addDispose(this.aiInlineContentWidget.launchChatStatus(EInlineChatStatus.THINKING));
+    this.aiInlineChatOperationDisposable.dispose();
+    this.aiInlineChatDisposable.addDispose(this.aiInlineContentWidget.launchChatStatus(EInlineChatStatus.THINKING));
 
     const startTime = Date.now();
 
@@ -516,7 +514,7 @@ export class InlineChatHandler extends Disposable {
       { relationId, startTime, isRetry },
     );
 
-    this.aiInlineChatOperationDisposed.addDispose([
+    this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
         if (kind === EResultKind.ACCEPT) {
           this.diffPreviewer.handleAction(kind);
@@ -574,7 +572,7 @@ export class InlineChatHandler extends Disposable {
         false,
       );
 
-      this.aiInlineChatDisposed.addDispose([
+      this.aiInlineChatDisposable.addDispose([
         this.aiInlineContentWidget.onResultClick(async (kind: EResultKind) => {
           this.diffPreviewer.handleAction(kind);
 
