@@ -17,7 +17,6 @@ import {
   ILoggerManagerClient,
   InlineChatFeatureRegistryToken,
   MaybePromise,
-  ReplyResponse,
   SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -26,17 +25,12 @@ import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
-import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { ERunStrategy } from '../../types';
-import {
-  BaseInlineDiffPreviewer,
-  LiveInlineDiffPreviewer,
-  SideBySideInlineDiffWidget,
-} from '../inline-diff/inline-diff-previewer';
+import { BaseInlineDiffPreviewer } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
+import { InlineDiffService } from '../inline-diff/inline-diff.service';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 import { IPartialEditEvent } from '../inline-stream-diff/live-preview.decoration';
 
@@ -73,6 +67,9 @@ export class InlineChatHandler extends Disposable {
 
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
+
+  @Autowired(InlineDiffService)
+  private readonly inlineDiffService: InlineDiffService;
 
   private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
   public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
@@ -318,7 +315,7 @@ export class InlineChatHandler extends Disposable {
     });
   }
 
-  visibleDiffWidget(
+  private visibleDiffWidget(
     monacoEditor: monaco.ICodeEditor,
     options: {
       crossSelection: monaco.Selection;
@@ -330,85 +327,44 @@ export class InlineChatHandler extends Disposable {
       isRetry: boolean;
     },
   ): void {
-    const { crossSelection, chatResponse } = options;
+    const { chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
-    const inlineDiffMode = this.preferenceService.getValid<EInlineDiffPreviewMode>(
-      AINativeSettingSectionsId.InlineDiffPreviewMode,
-      EInlineDiffPreviewMode.inlineLive,
-    );
-
     this.disposeAllWidget();
+    this.diffPreviewer = this.inlineDiffService.createDiffPreviewer(monacoEditor, options);
 
-    if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
-      this.diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, crossSelection]);
-    } else {
-      this.diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
-      this.aiInlineChatDisposable.addDispose(
-        (this.diffPreviewer as LiveInlineDiffPreviewer).onPartialEditEvent((event) => {
-          this._onPartialEditEvent.fire(event);
-        }),
-      );
-    }
     this.aiInlineChatDisposable.addDispose(this.diffPreviewer);
     this.diffPreviewer.mount(this.aiInlineContentWidget);
 
-    this.diffPreviewer.show(
-      crossSelection.startLineNumber - 1,
-      crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
-    );
-
     if (InlineChatController.is(chatResponse)) {
-      const controller = chatResponse as InlineChatController;
-
-      this.aiInlineChatOperationDisposable.addDispose(
-        this.diffPreviewer.onReady(() => {
-          controller.deferred.resolve();
-
-          this.aiInlineChatOperationDisposable.addDispose([
-            controller.onData((data) => {
-              if (ReplyResponse.is(data)) {
-                this.diffPreviewer.onData(data);
-              }
-            }),
-            controller.onError((error) => {
-              this.convertInlineChatStatus(EInlineChatStatus.ERROR, {
-                relationId,
-                message: error.message || '',
-                startTime,
-                isRetry,
-              });
-              this.diffPreviewer.onError(error);
-              this.diffPreviewer.layout();
-            }),
-            controller.onAbort(() => {
-              this.convertInlineChatStatus(EInlineChatStatus.READY, {
-                relationId,
-                message: 'abort',
-                startTime,
-                isRetry,
-                isStop: true,
-              });
-              this.diffPreviewer.onAbort();
-              this.diffPreviewer.layout();
-            }),
-            controller.onEnd(() => {
-              this.convertInlineChatStatus(EInlineChatStatus.DONE, {
-                relationId,
-                message: '',
-                startTime,
-                isRetry,
-              });
-              this.diffPreviewer.onEnd();
-              this.diffPreviewer.layout();
-            }),
-          ]);
+      this.aiInlineChatOperationDisposable.addDispose([
+        chatResponse.onError((error) => {
+          this.convertInlineChatStatus(EInlineChatStatus.ERROR, {
+            relationId,
+            message: error.message || '',
+            startTime,
+            isRetry,
+          });
         }),
-      );
+        chatResponse.onAbort(() => {
+          this.convertInlineChatStatus(EInlineChatStatus.READY, {
+            relationId,
+            message: 'abort',
+            startTime,
+            isRetry,
+            isStop: true,
+          });
+        }),
+        chatResponse.onEnd(() => {
+          this.convertInlineChatStatus(EInlineChatStatus.DONE, {
+            relationId,
+            message: '',
+            startTime,
+            isRetry,
+          });
+        }),
+      ]);
     } else {
-      const model = monacoEditor.getModel();
-      const crossCode = model!.getValueInRange(crossSelection);
-
       if ((this.aiInlineContentWidget && this.aiInlineChatDisposable.disposed) || CancelResponse.is(chatResponse)) {
         this.convertInlineChatStatus(EInlineChatStatus.READY, {
           relationId,
@@ -436,32 +392,7 @@ export class InlineChatHandler extends Disposable {
         startTime,
         isRetry,
       });
-
-      const answer = this.formatAnswer((chatResponse as ReplyResponse).message, crossCode);
-
-      this.aiInlineChatOperationDisposable.addDispose(
-        this.diffPreviewer.onReady(() => {
-          this.diffPreviewer.setValue(answer);
-          this.diffPreviewer.layout();
-        }),
-      );
     }
-
-    this.diffPreviewer.layout();
-
-    this.aiInlineChatOperationDisposable.addDispose(
-      this.diffPreviewer.onDispose(() => {
-        this.aiInlineContentWidget?.dispose();
-      }),
-    );
-  }
-
-  acceptAllPartialEdits() {
-    this.diffPreviewer.handleAction(EResultKind.ACCEPT);
-  }
-
-  discardAllPartialEdits() {
-    this.diffPreviewer.handleAction(EResultKind.DISCARD);
   }
 
   private async handleDiffPreviewStrategy(

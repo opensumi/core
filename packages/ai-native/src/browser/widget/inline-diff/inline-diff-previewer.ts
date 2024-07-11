@@ -22,6 +22,14 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   constructor(protected readonly monacoEditor: ICodeEditor, protected readonly selection: Selection) {
     super();
     this.node = this.createNode();
+
+    this.addDispose(
+      Disposable.create(() => {
+        if (this.inlineContentWidget) {
+          this.inlineContentWidget.dispose();
+        }
+      }),
+    );
   }
 
   get model(): ITextModel {

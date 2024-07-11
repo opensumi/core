@@ -20,7 +20,7 @@ export interface InlineChatControllerOptions {
   enableCodeblockRender: boolean;
 }
 export class InlineChatController {
-  static is(controller: any): boolean {
+  static is(controller: any): controller is InlineChatController {
     return controller instanceof InlineChatController && typeof controller.mountReadable === 'function';
   }
 

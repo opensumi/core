@@ -237,3 +237,16 @@ export interface ITerminalCommandSuggestionDesc {
   description: string;
   command: string;
 }
+
+export enum EInlineChatStatus {
+  READY,
+  THINKING,
+  DONE,
+  ERROR,
+}
+
+export enum EResultKind {
+  ACCEPT = 'ACCEPT',
+  DISCARD = 'DISCARD',
+  REGENERATE = 'REGENERATE',
+}
