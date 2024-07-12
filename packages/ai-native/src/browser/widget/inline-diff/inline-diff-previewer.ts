@@ -9,6 +9,7 @@ import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { SerializableState } from '../inline-stream-diff/live-preview.decoration';
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
@@ -213,5 +214,8 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   get onPartialEditEvent() {
     return this.node.onPartialEditEvent;
+  }
+  serializeState(): SerializableState {
+    return this.node.serializeState();
   }
 }

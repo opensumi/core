@@ -10,7 +10,7 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
-import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel } from './live-preview.decoration';
+import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel, SerializableState } from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -203,17 +203,6 @@ export class InlineStreamDiffHandler extends Disposable {
     return this.livePreviewDiffDecorationModel.getZone();
   }
 
-  private renderPartialEditWidgets(diffModel: IComputeDiffData): void {
-    const { changes } = diffModel;
-    const zone = this.getZone();
-    const allAddRanges = changes.map((c) => {
-      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
-      return new LineRange(lineNumber, lineNumber + 1);
-    });
-
-    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(allAddRanges);
-  }
-
   private renderAddedRangeDecoration(diffModel: IComputeDiffData): void {
     const allAddRanges = diffModel.changes.map((c) => c.addedRange);
     this.livePreviewDiffDecorationModel.touchAddedRange(allAddRanges);
@@ -392,12 +381,18 @@ export class InlineStreamDiffHandler extends Disposable {
   public readyRender(diffModel: IComputeDiffData): void {
     this.doSchedulerEdits();
 
-    this.renderPartialEditWidgets(diffModel);
     this.pushStackElement();
     this.monacoEditor.focus();
   }
 
   get onPartialEditEvent() {
     return this.livePreviewDiffDecorationModel.onPartialEditEvent;
+  }
+
+  serializeState(): SerializableState {
+    return this.livePreviewDiffDecorationModel.serializeState();
+  }
+  restoreSerializedState(state: SerializableState): void {
+    this.livePreviewDiffDecorationModel.restoreSerializedState(state);
   }
 }
