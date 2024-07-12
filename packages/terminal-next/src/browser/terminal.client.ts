@@ -510,7 +510,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (this.workspace.isMultiRootWorkspaceOpened) {
       // 工作区模式下每次新建终端都需要用户手动进行一次路径选择
       const roots = this.workspace.tryGetRoots();
-      const choose = await this.quickPick.show(roots.map((file) => new URI(file.uri).codeUri.fsPath));
+      const choose = await this.quickPick.show(
+        roots.map((file) => new URI(file.uri).codeUri.fsPath),
+        { placeholder: localize('terminal.selectCWDForNewTerminal') },
+      );
       return choose;
     } else if (this.workspace.workspace) {
       return new URI(this.workspace.workspace?.uri).codeUri.fsPath;
@@ -530,7 +533,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const widget = this._widget;
     if (TerminalClient.WORKSPACE_PATH_CACHED.has(widget.group.id)) {
       this._workspacePath = TerminalClient.WORKSPACE_PATH_CACHED.get(widget.group.id)!;
-    } else {
+    } else if (!widget.recovery) {
       const choose = await this._pickWorkspace();
       if (choose) {
         this._workspacePath = choose;

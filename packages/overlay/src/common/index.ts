@@ -103,7 +103,7 @@ export interface IDialogOptions {
   title?: string;
   defaultUri?: URI;
   filters?: {
-    [name: string]: string;
+    [name: string]: string[];
   };
 }
 

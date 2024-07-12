@@ -49,7 +49,7 @@ export const localizationBundle = {
     'file.action.new.folder': 'New Folder',
     'file.action.refresh': 'Refresh',
     'file.open.folder': 'Open Folder',
-    'file.open.workspace': 'Open Workspace',
+    'file.open.workspace': 'Open Workspace from File ...',
     'file.action.collapse': 'Collapse',
     'file.confirm.delete': 'Are you sure you want to delete the following files?\n{0}',
     'file.confirm.delete.ok': 'Move to trash',
@@ -1062,6 +1062,7 @@ export const localizationBundle = {
     'terminal.killProcess': 'Kill Process',
     'terminal.process.unHealthy':
       '*This terminal session has been timed out and killed by the system. Please open a new terminal session to proceed with operations.',
+    'terminal.selectCWDForNewTerminal': 'Select current working directory for new terminal',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
@@ -1215,7 +1216,7 @@ export const localizationBundle = {
     'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
 
     'workspace.openDirectory': 'Open Directory',
-    'workspace.addFolderToWorkspace': 'Add Folder Into Workspace ...',
+    'workspace.addFolderToWorkspace': 'Add Folder to Workspace ...',
     'workspace.removeFolderFromWorkspace': 'Remove Folder From Workspace',
     'workspace.saveWorkspaceAsFile': 'Save Workspace As ...',
     'workspace.openWorkspace': 'Open Workspace',

@@ -11,6 +11,7 @@ export interface IWidget extends Disposable {
   element: HTMLDivElement;
   group: IWidgetGroup;
   reuse: boolean;
+  recovery: boolean;
   show: boolean;
   error: boolean;
   resize: (dynamic?: number) => void;
