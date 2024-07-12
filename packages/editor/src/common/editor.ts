@@ -587,6 +587,11 @@ export interface IResourceOpenOptions {
   focus?: boolean;
 
   /**
+   * If set `focus`, the editor's dom will be focused, This option prevents the element from being scrolled after getting the focus.
+   */
+  preventScroll?: boolean;
+
+  /**
    * 强制使用指定的打开方式
    */
   forceOpenType?: IEditorOpenType;

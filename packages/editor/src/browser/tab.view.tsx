@@ -22,6 +22,7 @@ import {
   Event,
   IEventBus,
   MaybeNull,
+  MouseEventButton,
   PreferenceService,
   ResizeEvent,
   URI,
@@ -172,7 +173,10 @@ export const Tabs = ({ group }: ITabsProps) => {
             '.' + styles.kt_editor_tab + "[data-uri='" + group.currentResource.uri.toString() + "']",
           );
           if (currentTab) {
-            currentTab.scrollIntoView();
+            currentTab.scrollIntoView({
+              block: 'nearest',
+              inline: 'nearest',
+            });
           }
         } catch (e) {
           // noop
@@ -425,14 +429,14 @@ export const Tabs = ({ group }: ITabsProps) => {
               }}
               key={resource.uri.toString()}
               onMouseUp={(e) => {
-                if (e.nativeEvent.which === 2) {
+                if (e.nativeEvent.button === MouseEventButton.Middle) {
                   e.preventDefault();
                   e.stopPropagation();
                   group.close(resource.uri);
                 }
               }}
               onMouseDown={(e) => {
-                if (e.nativeEvent.which === 1) {
+                if (e.nativeEvent.button === MouseEventButton.Left) {
                   group.open(resource.uri, { focus: true });
                 }
               }}

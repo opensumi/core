@@ -1344,6 +1344,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this.pinPreviewed(uri);
   }
 
+  protected getPreventScrollOption(options: IResourceOpenOptions = {}) {
+    const preventScroll = options.preventScroll ?? this.preferenceService.get('editor.preventScrollAfterFocused');
+    return preventScroll;
+  }
+
   async doOpen(
     uri: URI,
     options: IResourceOpenOptions = {},
@@ -1357,6 +1362,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const previewMode =
         this.preferenceService.get('editor.previewMode') &&
         (isUndefinedOrNull(options.preview) ? true : options.preview);
+
       if (
         this.currentResource &&
         this.currentResource.uri.isEqual(uri) &&
@@ -1365,7 +1371,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       ) {
         // 就是当前打开的 Resource
         if (options.focus && this.currentEditor) {
-          this._domNode?.focus();
+          const preventScroll = this.getPreventScrollOption(options);
+          this._domNode?.focus({
+            preventScroll,
+          });
           this.currentEditor.monacoEditor.focus();
         }
         if (options.range && this.currentEditor) {
@@ -1611,7 +1620,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       });
 
       if (options.focus) {
-        this._domNode?.focus();
+        const preventScroll = this.getPreventScrollOption(options);
+        this._domNode?.focus({ preventScroll });
         // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
         // 会引起 document.activeElement !== editor.textArea.domNode，进而会导致focus失败
         // 需要等待真正 append 之后再
@@ -1663,7 +1673,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       await this.diffEditor.compare(original, modified, options, resource.uri);
       if (options.focus) {
-        this._domNode?.focus();
+        const preventScroll = this.getPreventScrollOption(options);
+        this._domNode?.focus({
+          preventScroll,
+        });
 
         const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
           if (e.payload.groupName === this.name && e.payload.type === EditorOpenType.diff) {
@@ -2192,6 +2205,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   focus() {
     this.gainFocus();
+
     if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
       this.codeEditor.focus();
     }
