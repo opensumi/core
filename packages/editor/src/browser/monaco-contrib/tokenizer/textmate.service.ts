@@ -913,6 +913,16 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
   dispose() {
     super.dispose();
-    this.monacoLanguageService['_encounteredLanguages'].clear();
+    if (this.monacoLanguageService['_requestedRichLanguages']) {
+      this.monacoLanguageService['_requestedRichLanguages'].clear();
+    } else {
+      this.logger.warn('monaco language service not found _requestedRichLanguages');
+    }
+
+    if (this.monacoLanguageService['_requestedBasicLanguages']) {
+      this.monacoLanguageService['_requestedBasicLanguages'].clear();
+    } else {
+      this.logger.warn('monaco language service not found _requestedBasicLanguages');
+    }
   }
 }
