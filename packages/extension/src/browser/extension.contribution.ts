@@ -207,9 +207,9 @@ export class ExtensionCommandContribution implements CommandContribution {
       },
       {
         execute: async () => {
-          this.logger.log('插件进程开始重启');
+          this.logger.log('start restart ext host process');
           await this.extensionService.restartExtProcess();
-          this.logger.log('插件进程重启结束');
+          this.logger.log('end restart ext host process');
         },
       },
     );
@@ -441,6 +441,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.API_OPEN_DIFF_EDITOR_COMMAND_ID,
       VSCodeBuiltinCommands.API_OPEN_WITH_EDITOR_COMMAND_ID,
       // debug builtin commands
+      VSCodeBuiltinCommands.DEBUG_START,
+      VSCodeBuiltinCommands.DEBUG_ADD,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_INTO,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_OVER,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STEP_OUT,

@@ -20,6 +20,11 @@ export class MockThemeService implements IThemeService {
       dispose: () => {},
     };
   }
+
+  ensureValidTheme(themeId: string): Promise<string> {
+    return Promise.resolve(themeId);
+  }
+
   async applyTheme(id: string) {
     this.colorThemeLoaded.resolve();
     throw new Error('Method not implemented.');

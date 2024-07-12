@@ -128,7 +128,6 @@ export const enum CodeTerminalSettingId {
   PersistentSessionReviveProcess = 'terminal.integrated.persistentSessionReviveProcess',
   CustomGlyphs = 'terminal.integrated.customGlyphs',
   PersistentSessionScrollback = 'terminal.integrated.persistentSessionScrollback',
-  PersistentSession = 'terminal.integrated.enablePersistentSession',
   InheritEnv = 'terminal.integrated.inheritEnv',
   ShowLinkHover = 'terminal.integrated.showLinkHover',
   IgnoreProcessNames = 'terminal.integrated.ignoreProcessNames',
@@ -344,7 +343,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
       enum: [RenderType.WebGL, RenderType.Canvas, RenderType.Dom],
       default: RenderType.WebGL,
     },
-    [CodeTerminalSettingId.PersistentSession]: {
+    [CodeTerminalSettingId.EnablePersistentSessions]: {
       type: 'boolean',
       description: '%preference.terminal.integrated.enablePersistentSessionDesc%',
       default: true,

@@ -49,6 +49,7 @@ export interface IDesignLayoutConfig {
   useMergeRightWithLeftPanel?: boolean;
   /**
    * use new manubar view
+   * @deprecated Please use layoutConfig
    */
   useMenubarView?: boolean;
   /**
@@ -62,9 +63,39 @@ export interface IAINativeConfig {
   layout?: IDesignLayoutConfig;
 }
 
+export enum ECompletionType {
+  /**
+   * 行补全
+   */
+  Line = 0,
+  /**
+   * 片段补全
+   */
+  Snippet = 1,
+  /**
+   * 块补全
+   */
+  Block = 2,
+}
+
+/**
+ * 补全模型
+ */
+export interface CodeModel {
+  content: string;
+  displayName?: string;
+  id?: number;
+  score?: number;
+  /**
+   * 补全来源，当你的后端对接了多个 LLM 时，可以通过 source 来区分不同的模型
+   */
+  source?: string;
+  completionType?: ECompletionType;
+}
+
 export interface IAICompletionResultModel {
   sessionId: string;
-  codeModelList: Array<{ content: string }>;
+  codeModelList: Array<CodeModel>;
   isCancel?: boolean;
 }
 
@@ -84,12 +115,29 @@ export interface IAIBackServiceOption {
   history?: IHistoryChatMessage[];
 }
 
+/**
+ * 补全请求对象
+ */
 export interface IAICompletionOption {
+  sessionId: string;
+  /**
+   * 模型输入上文
+   */
   prompt: string;
-  suffix?: string;
-  language?: string;
-  fileUrl?: string;
-  sessionId?: string;
+  /**
+   * 代码下文
+   */
+  suffix?: string | null;
+
+  workspaceDir: string;
+  /**
+   * 文件路径
+   */
+  fileUrl: string;
+  /**
+   * 代码语言类型
+   */
+  language: string;
 }
 
 export interface IAIRenameSuggestionOption {
@@ -112,19 +160,32 @@ export interface IAIBackService<
     options: O,
     cancelToken?: CancellationToken,
   ): Promise<StreamResponse>;
-  requestCompletion<I extends IAICompletionOption>(
+  requestCompletion?<I extends IAICompletionOption>(
     input: I,
     cancelToken?: CancellationToken,
   ): Promise<CompletionResponse>;
-  reportCompletion<I extends IAIReportCompletionOption>(input: I): Promise<void>;
-  destroyStreamRequest?: (sessionId: string) => Promise<void>;
+  reportCompletion?<I extends IAIReportCompletionOption>(input: I): Promise<void>;
 }
 
 export class ReplyResponse {
-  constructor(readonly message: string) {}
+  public get message(): string {
+    return this._message;
+  }
+
+  constructor(private _message: string) {}
 
   static is(response: any): boolean {
     return response instanceof ReplyResponse || (typeof response === 'object' && response.message !== undefined);
+  }
+
+  extractCodeContent(): string {
+    const regex = /```\w*([\s\S]+?)\s*```/;
+    const match = regex.exec(this.message);
+    return match ? match[1].trim() : this.message.trim();
+  }
+
+  updateMessage(msg: string): void {
+    this._message = msg;
   }
 }
 
@@ -196,7 +257,7 @@ export interface IResolveConflictHandler {
     contentMetadata: IConflictContentMetadata,
     options: { isRegenerate: boolean },
     token: CancellationToken,
-  ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>;
+  ) => MaybePromise<ChatResponse>;
 }
 export interface IInternalResolveConflictRegistry {
   getThreeWayHandler(): IResolveConflictHandler | undefined;

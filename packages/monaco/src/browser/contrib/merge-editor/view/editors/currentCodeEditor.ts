@@ -23,7 +23,7 @@ import {
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
-@Injectable({ multiple: false })
+@Injectable({ multiple: true })
 export class CurrentCodeEditor extends BaseCodeEditor {
   public get documentMapping(): DocumentMapping {
     return this.mappingManagerService.documentMappingTurnLeft;

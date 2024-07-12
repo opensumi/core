@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-monaco-enhance",
-  "version": "3.0.1",
+  "version": "3.1.4",
   "files": [
     "lib",
     "src"
@@ -22,6 +22,7 @@
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
-    "@opensumi/ide-monaco": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*",
+    "@opensumi/ide-theme": "workspace:*"
   }
 }

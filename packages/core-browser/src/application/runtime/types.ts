@@ -1,6 +1,10 @@
-import type { ESupportRuntime } from './constants';
+import { Autowired, Injectable } from '@opensumi/di';
+
+import { AppConfig } from '../../react-providers/config-provider';
+
+import { type ESupportRuntime, onigWasmCDNUri, treeSitterWasmCDNUri } from './constants';
+
 import type { BrowserModule } from '../../browser-module';
-import type { AppConfig } from '../../react-providers/config-provider';
 import type { Injector } from '@opensumi/di';
 
 export enum EKnownResources {
@@ -8,13 +12,28 @@ export enum EKnownResources {
   TreeSitterWasmDirectory = 'wasm:tree-sitter',
 }
 
-export const IRendererRuntime = Symbol('IRendererRuntime');
-export interface IRendererRuntime {
-  runtimeName: ESupportRuntime;
+@Injectable()
+export abstract class RendererRuntime {
+  @Autowired(AppConfig)
+  protected appConfig: AppConfig;
 
-  mergeAppConfig(meta: AppConfig): AppConfig;
-  registerRuntimeInnerProviders(injector: Injector): void;
-  registerRuntimeModuleProviders(injector: Injector, module: BrowserModule): void;
+  abstract runtimeName: ESupportRuntime;
 
-  provideResourceUri(resource: EKnownResources): Promise<string>;
+  abstract registerRuntimeInnerProviders(injector: Injector): void;
+  abstract registerRuntimeModuleProviders(injector: Injector, module: BrowserModule): void;
+
+  mergeAppConfig(meta: AppConfig): AppConfig {
+    return meta;
+  }
+
+  async provideResourceUri(resource: string): Promise<string> {
+    switch (resource) {
+      case EKnownResources.OnigWasm:
+        return this.appConfig.onigWasmUri || onigWasmCDNUri;
+      case EKnownResources.TreeSitterWasmDirectory:
+        return this.appConfig.treeSitterWasmDirectoryUri || treeSitterWasmCDNUri;
+      default:
+        throw new Error(`Unknown resource: ${resource}`);
+    }
+  }
 }

@@ -21,6 +21,7 @@ export * from './design';
 // 前端工具方法
 export * from './logger';
 export * from './utils';
+export * from './worker';
 
 export * from './context-key';
 

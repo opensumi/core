@@ -900,12 +900,14 @@ declare module 'sumi' {
     isDefault?: boolean;
   }
 
+  export type ChatAgentCustomReplyMessage = ChatAgentContent | ChatAgentComponent;
+
   export namespace chat {
     /**
      * create chat agent
      */
     export function createChatAgent(name: string, handler: ChatAgentHandler): ChatAgent;
 
-    export function sendMessage(chunk: ChatAgentContent): void;
+    export function sendMessage(chunk: ChatAgentCustomReplyMessage): void;
   }
 }

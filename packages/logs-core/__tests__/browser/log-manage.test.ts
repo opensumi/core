@@ -3,7 +3,7 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { LogModule } from '../../src/browser';
-import { LoggerManagerClient } from '../../src/browser/log-manage';
+import { LoggerManagerClient } from '../../src/browser/log-manager';
 import { ILoggerManagerClient, LogLevel, LogServiceForClientPath, SupportLogNamespace } from '../../src/common';
 
 @Injectable()

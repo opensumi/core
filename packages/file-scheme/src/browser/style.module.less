@@ -50,11 +50,42 @@
   height: 100%;
 }
 
-.external {
-  padding: 10px;
-}
+.error-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-.font {
-  padding: 4px;
+  flex-direction: column;
+
   font-size: 12px;
+  padding: 10px;
+
+  height: 100%;
+  width: 100%;
+
+  user-select: none;
+
+  & .icon {
+    font-size: 40px !important;
+    color: var(--kt-modalWarningIcon-foreground);
+  }
+
+  .description {
+    width: 100%;
+    margin-top: 4px;
+
+    text-align: center;
+
+    font-size: 14px;
+  }
+
+  & .action-wrapper {
+    display: flex;
+    width: 100%;
+  }
+
+  & .action-button {
+    margin-top: 20px;
+    font-size: 13px;
+  }
 }

@@ -119,6 +119,7 @@ export const IThemeStore = Symbol('IThemeStore');
 
 export interface IThemeStore {
   getThemeData(contribution?: IThemeContribution, basePath?: URI): Promise<IThemeData>;
+  getDefaultThemeID(): string;
 }
 
 export interface IThemeService {
@@ -126,6 +127,7 @@ export interface IThemeService {
   colorThemeLoaded: Deferred<void>;
   onThemeChange: Event<ITheme>;
   registerThemes(themeContributions: IThemeContribution[], extPath: URI): IDisposable;
+  ensureValidTheme(defaultThemeId?: string): Promise<string>;
   /**
    * 应用主题（外部需要改主题请直接修改preference）
    * @param id 主题ID

@@ -28,6 +28,13 @@ export interface WatcherOptions {
   excludes: string[];
 }
 
+const watcherPlaceHolder = {
+  disposable: {
+    dispose: () => {},
+  },
+  handlers: [],
+};
+
 /**
  * @deprecated
  */
@@ -88,7 +95,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    */
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const basePath = FileUri.fsPath(uri);
-    const exist = await fs.pathExists(basePath);
 
     let watcherId = this.checkIsAlreadyWatched(basePath);
     if (watcherId) {
@@ -96,10 +102,17 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     }
 
     watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
+    this.WATCHER_HANDLERS.set(watcherId, {
+      ...watcherPlaceHolder,
+      path: basePath,
+    });
+
     const toDisposeWatcher = new DisposableCollection();
-    let watchPath;
+    let watchPath: string;
+
+    const exist = await fs.pathExists(basePath);
     if (exist) {
-      const stat = await fs.lstatSync(basePath);
+      const stat = await fs.lstat(basePath);
       if (stat && stat.isDirectory()) {
         watchPath = basePath;
       } else {
@@ -116,14 +129,16 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       }
       events = this.trimChangeEvent(events);
       for (const event of events) {
-        if (event.type === 'create') {
-          this.pushAdded(event.path);
-        }
-        if (event.type === 'delete') {
-          this.pushDeleted(event.path);
-        }
-        if (event.type === 'update') {
-          this.pushUpdated(event.path);
+        switch (event.type) {
+          case 'create':
+            this.pushAdded(event.path);
+            break;
+          case 'delete':
+            this.pushDeleted(event.path);
+            break;
+          case 'update':
+            this.pushUpdated(event.path);
+            break;
         }
       }
     };

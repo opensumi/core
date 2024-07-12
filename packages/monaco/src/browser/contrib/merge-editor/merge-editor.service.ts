@@ -6,6 +6,8 @@ import {
   Emitter,
   Event,
   MonacoService,
+  PreferenceService,
+  SCM_COMMANDS,
   localize,
 } from '@opensumi/ide-core-browser';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
@@ -53,6 +55,9 @@ export class MergeEditorService extends Disposable {
 
   @Autowired(MergeConflictReportService)
   private readonly mergeConflictReportService: MergeConflictReportService;
+
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
 
   public resultView: ResultCodeEditor;
 
@@ -283,7 +288,11 @@ export class MergeEditorService extends Disposable {
       this.fireRestoreState(uri);
 
       await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id);
-      await this.commandService.executeCommand(`${GitCommands.Stage}-${uri.toString()}`);
+
+      const scmResource = await this.commandService.executeCommand(SCM_COMMANDS.GetSCMResource.id, uri);
+      if (scmResource) {
+        await this.commandService.executeCommand(GitCommands.Stage, scmResource);
+      }
     };
 
     const { completeCount, shouldCount } = this.resultView.completeSituation();
@@ -421,8 +430,11 @@ export class MergeEditorService extends Disposable {
     this.resultView.inputDiffComputingResult();
 
     // resolve non conflict ranges
-    this.acceptLeft(true, ECompleteReason.AutoResolvedNonConflict);
-    this.acceptRight(true, ECompleteReason.AutoResolvedNonConflict);
+    const isAutoApply = this.preferenceService.getValid('mergeEditor.autoApplyNonConflictChanges', false);
+    if (isAutoApply) {
+      this.acceptLeft(true, ECompleteReason.AutoResolvedNonConflict);
+      this.acceptRight(true, ECompleteReason.AutoResolvedNonConflict);
+    }
 
     this.currentView.updateDecorations().updateActions();
     this.incomingView.updateDecorations().updateActions();

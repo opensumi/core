@@ -83,6 +83,10 @@ export class MappingManagerDataStore {
     this._onDataChangeEmitter.fire();
   }
 
+  canNavigate() {
+    return this.conflictsCount.lefted > 0;
+  }
+
   summary() {
     const conflictsCount = this.conflictsCount;
     const nonConflictingChangesResolvedCount = this.nonConflictingChangesResolvedCount;

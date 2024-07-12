@@ -9,6 +9,8 @@ import { SupportedTreeSitterLanguages, TreeSitterLanguageFacts } from './tree-si
 import { ICodeBlockInfo, IOtherBlockInfo } from './tree-sitter/language-facts/base';
 import { WasmModuleManager } from './tree-sitter/wasm-manager';
 
+export const DEFAULT_MIN_BLOCK_COUNT = 20;
+
 @Injectable({ multiple: true })
 export class LanguageParser implements IDisposable {
   private parser: Parser;
@@ -218,6 +220,151 @@ export class LanguageParser implements IDisposable {
     }
 
     return null;
+  }
+
+  async trimSuffixSyntaxErrors(code: string, minBlockCount = DEFAULT_MIN_BLOCK_COUNT): Promise<string> {
+    await this.parserLoaded.promise;
+    const tree = this.parser?.parse(code);
+    const rootNode = tree?.rootNode;
+    if (!rootNode) {
+      return code;
+    }
+    const { namedChildren } = rootNode;
+
+    if (!rootNode.hasError || namedChildren.length <= minBlockCount) {
+      return this.trimToLastCompleteBlock(rootNode, true);
+    }
+
+    let lastErrorNode: Parser.SyntaxNode | null = null;
+    let targetNode: Parser.SyntaxNode | null = null;
+    for (let i = namedChildren.length - 1; i >= minBlockCount; i--) {
+      const child = namedChildren[i];
+      if (child.hasError && i !== 0) {
+        lastErrorNode = child;
+      } else if (lastErrorNode) {
+        targetNode = child;
+        break;
+      }
+    }
+
+    if (!targetNode) {
+      targetNode = namedChildren[minBlockCount - 1];
+    }
+
+    const lines = code.split('\n');
+    const remainingLines = lines.slice(0, targetNode.endPosition.row + 1);
+    const lastLine = remainingLines[remainingLines.length - 1].slice(0, targetNode.endPosition.column);
+    const correctCode = `${remainingLines.length > 1 ? `${remainingLines.slice(0, -1).join('\n')}\n` : ''}${lastLine}`;
+    return correctCode;
+  }
+
+  async trimPrefixSyntaxErrors(code: string, minBlockCount = DEFAULT_MIN_BLOCK_COUNT): Promise<string> {
+    await this.parserLoaded.promise;
+    const tree = this.parser?.parse(code);
+    const rootNode = tree?.rootNode;
+    if (!rootNode) {
+      return code;
+    }
+    const { namedChildren } = rootNode;
+
+    if (!rootNode.hasError || namedChildren.length <= minBlockCount) {
+      return this.trimToLastCompleteBlock(rootNode);
+    }
+
+    let firstErrorNode: Parser.SyntaxNode | null = null;
+    let targetNode: Parser.SyntaxNode | null = null;
+    for (let i = 0; i < namedChildren.length - minBlockCount; i++) {
+      const child = namedChildren[i];
+      if (child.hasError && i !== namedChildren.length - 1) {
+        firstErrorNode = child;
+      } else if (firstErrorNode) {
+        targetNode = child;
+        break;
+      }
+    }
+
+    if (!targetNode) {
+      targetNode = namedChildren[namedChildren.length - minBlockCount];
+    }
+
+    const lines = code.split('\n');
+    const remainingLines = lines.slice(targetNode.startPosition.row);
+    const firstLine = remainingLines[0].slice(targetNode.startPosition.column);
+    const correctCode = `${firstLine}${remainingLines.length > 1 ? `\n${remainingLines.slice(1).join('\n')}` : ''}`;
+    return correctCode;
+  }
+
+  trimToLastCompleteBlock(rootNode: Parser.SyntaxNode, reverse = false) {
+    const { namedChildren } = rootNode;
+    if (reverse) {
+      const lastNamedChild = namedChildren[namedChildren.length - 2];
+      if (lastNamedChild) {
+        const lines = rootNode.text.split('\n');
+        const remainingLines = lines.slice(0, lastNamedChild.endPosition.row + 1);
+        const lastLine = remainingLines[remainingLines.length - 1].slice(0, lastNamedChild.endPosition.column);
+        const correctCode = `${
+          remainingLines.length > 1 ? `${remainingLines.slice(0, -1).join('\n')}\n` : ''
+        }${lastLine}`;
+        return correctCode;
+      }
+    } else {
+      const firstNamedChild = namedChildren[1];
+      if (firstNamedChild) {
+        const lines = rootNode.text.split('\n');
+        const remainingLines = lines.slice(firstNamedChild.startPosition.row);
+        const firstLine = remainingLines[0].slice(firstNamedChild.startPosition.column);
+        const correctCode = `${firstLine}${remainingLines.length > 1 ? `\n${remainingLines.slice(1).join('\n')}` : ''}`;
+        return correctCode;
+      }
+    }
+    return rootNode.text;
+  }
+
+  async extractImportPaths(code: string) {
+    const paths: string[] = [];
+    if (this.language === 'typescript') {
+      await this.parserLoaded.promise;
+      const tree = this.parser?.parse(code);
+      const rootNode = tree?.rootNode;
+      if (rootNode) {
+        for (let i = 0; i < rootNode?.childCount; i++) {
+          const sourceChild = rootNode.child(i);
+          if (sourceChild?.type === 'import_statement') {
+            let importPath = sourceChild.child(3)?.text;
+            if (importPath?.includes("'") || importPath?.includes('"')) {
+              importPath = importPath.slice(1, -1);
+            }
+            if (importPath) {
+              paths.push(importPath);
+            }
+          }
+        }
+      }
+    }
+    return paths;
+  }
+
+  async extractInterfaceOrTypeCode(code: string) {
+    const snippets: string[] = [];
+    if (this.language === 'typescript') {
+      await this.parserLoaded.promise;
+      const tree = this.parser?.parse(code);
+      const rootNode = tree?.rootNode;
+      if (rootNode) {
+        for (let i = 0; i < rootNode?.childCount; i++) {
+          const sourceChild = rootNode.child(i);
+          if (sourceChild?.type === 'export_statement') {
+            const exportChild = sourceChild.child(1);
+            if (exportChild?.type === 'interface_declaration' || exportChild?.type === 'type_alias_declaration') {
+              snippets.push(exportChild.text);
+            }
+          } else if (sourceChild?.type === 'interface_declaration' || sourceChild?.type === 'type_alias_declaration') {
+            snippets.push(sourceChild.text);
+          }
+        }
+      }
+    }
+    return snippets;
   }
 
   dispose() {

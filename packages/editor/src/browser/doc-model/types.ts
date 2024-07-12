@@ -14,8 +14,6 @@ import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
 
-import { EditorDocumentModel } from './editor-document-model';
-
 export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
   detectIndentation?: boolean;
 }
@@ -217,6 +215,7 @@ export class EditorDocumentModelWillSaveEvent extends BasicEvent<{
   uri: URI;
   reason: SaveReason;
   language: string;
+  dirty: boolean;
 }> {}
 export interface IStackElement {
   readonly beforeVersionId: number;

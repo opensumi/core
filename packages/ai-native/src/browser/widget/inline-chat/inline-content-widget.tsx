@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IAIInlineChatService, StackingLevelStr } from '@opensumi/ide-core-browser';
-import { AIInlineChatContentWidgetId, Emitter } from '@opensumi/ide-core-common';
+import { IAIInlineChatService, StackingLevelStr, useInjectable } from '@opensumi/ide-core-browser';
+import { AIAction } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
+import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
+import {
+  AIInlineChatContentWidgetId,
+  Disposable,
+  Emitter,
+  Event,
+  InlineChatFeatureRegistryToken,
+  localize,
+  runWhenIdle,
+} from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
@@ -11,34 +22,186 @@ import {
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { InlineResultAction } from '../inline-actions/result-items/index';
 
-import { AIInlineChatController } from './inline-chat-controller';
-import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
+import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
+import styles from './inline-chat.module.less';
+import { AIInlineChatService, EInlineChatStatus, EResultKind } from './inline-chat.service';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
+interface IAIInlineChatControllerProps {
+  onClickActions: (id: string) => void;
+  onLayoutChange: (height: number) => void;
+  onClose?: () => void;
+  onInteractiveInputSend?: (value: string) => void;
+  onChatStatus: Event<EInlineChatStatus>;
+  onResultClick: (k: EResultKind) => void;
+}
+
+const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
+  const { onClickActions, onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick } = props;
+  const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
+  const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
+  const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
+  const [inputValue, setInputValue] = useState<string>('');
+  const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    const dis = new Disposable();
+    dis.addDispose(onChatStatus((s) => setStatus(s)));
+
+    dis.addDispose(
+      aiInlineChatService.onInteractiveInputVisible((v) => {
+        setInteractiveInputVisible(v);
+      }),
+    );
+
+    return () => {
+      dis.dispose();
+    };
+  }, [onChatStatus, aiInlineChatService]);
+
+  useEffect(() => {
+    if (status === EInlineChatStatus.ERROR) {
+      onClose?.();
+    }
+  }, [onClose]);
+
+  const isLoading = useMemo(() => status === EInlineChatStatus.THINKING, [status]);
+  const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
+  const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
+  const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
+
+  const handleClickActions = useCallback(
+    (id: string) => {
+      onClickActions?.(id);
+    },
+    [onClickActions],
+  );
+
+  const handleClose = useCallback(() => {
+    onClose?.();
+  }, [onClose]);
+
+  const handleInteractiveInputSend = useCallback(
+    (value: string) => {
+      onInteractiveInputSend?.(value);
+    },
+    [onInteractiveInputSend],
+  );
+
+  const moreOperation = useMemo(
+    () =>
+      inlineChatFeatureRegistry.getEditorActionMenus().map(
+        (data) =>
+          new MenuNode({
+            id: `ai.menu.operation.${data.id}`,
+            label: data.name,
+            className: styles.more_operation_menu_item,
+            execute: () => {
+              handleClickActions(data.id);
+            },
+          }),
+      ),
+    [inlineChatFeatureRegistry],
+  );
+
+  const handleValueChange = useCallback((value) => {
+    setInputValue(value);
+  }, []);
+
+  const customOperationRender = useMemo(() => {
+    if (!interactiveInputVisible) {
+      return null;
+    }
+
+    return (
+      <InteractiveInput
+        autoFocus
+        onHeightChange={(height) => onLayoutChange(height)}
+        size='small'
+        placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
+        width={320}
+        disabled={isLoading}
+        value={inputValue}
+        onValueChange={handleValueChange}
+        onSend={handleInteractiveInputSend}
+      />
+    );
+  }, [isLoading, interactiveInputVisible, inputValue]);
+
+  const renderContent = useCallback(() => {
+    if (operationList.length === 0 && moreOperation.length === 0) {
+      return null;
+    }
+
+    if (isError) {
+      return null;
+    }
+
+    if (isDone) {
+      return <InlineResultAction onResultClick={onResultClick} />;
+    }
+
+    return (
+      <AIAction
+        operationList={operationList}
+        moreOperation={moreOperation}
+        onClickItem={handleClickActions}
+        onClose={handleClose}
+        loading={isLoading}
+        loadingShowOperation={interactiveInputVisible}
+        customOperationRender={customOperationRender}
+      />
+    );
+  }, [operationList, moreOperation, customOperationRender, onResultClick, status, interactiveInputVisible]);
+
+  return (
+    <div className={styles.inline_chat_controller_box} style={isDone ? { transform: 'translateY(-15px)' } : {}}>
+      {renderContent()}
+    </div>
+  );
+};
 
 @Injectable({ multiple: true })
 export class AIInlineContentWidget extends ReactInlineContentWidget {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(IAIInlineChatService)
-  private aiInlineChatService: AIInlineChatService;
+  @Autowired(InlineChatFeatureRegistryToken)
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   private readonly aiNativeContextKey: AINativeContextKey;
 
   private originTop = 0;
 
-  private readonly _onActionClickEmitter = new Emitter<{
-    actionId: string;
-    source: string;
-  }>();
+  private readonly _onActionClickEmitter = new Emitter<{ actionId: string; source: string }>();
   public readonly onActionClick = this._onActionClickEmitter.event;
+
+  protected readonly _onInteractiveInputValue = new Emitter<string>();
+  public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
+
+  protected readonly _onStatusChange = new Emitter<EInlineChatStatus>();
+  public readonly onStatusChange: Event<EInlineChatStatus> = this._onStatusChange.event;
+
+  protected readonly _onResultClick = new Emitter<EResultKind>();
+  public readonly onResultClick: Event<EResultKind> = this._onResultClick.event;
+
+  protected _interactiveInputValue: string;
+  public get interactiveInputValue(): string {
+    return this._interactiveInputValue;
+  }
+
+  protected _status: EInlineChatStatus = EInlineChatStatus.READY;
+  public get status(): EInlineChatStatus {
+    return this._status;
+  }
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
 
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(this.editor as any)._contextKeyService]);
+    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.editor.contextKeyService]);
     this.addDispose(
       this.editor.onDidLayoutChange(() => {
         if (this.isOutOfArea()) {
@@ -48,12 +211,24 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     );
   }
 
+  public launchChatStatus(status: EInlineChatStatus) {
+    return runWhenIdle(() => {
+      this._status = status;
+      this._onStatusChange.fire(status);
+    });
+  }
+
   override dispose(): void {
-    this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
+    this.launchChatStatus(EInlineChatStatus.READY);
     super.dispose();
   }
 
-  clickActionId(actionId: string, source: string): void {
+  public clickActionId(actionId: string, source: string): void {
+    if (actionId === this.inlineChatFeatureRegistry.getInteractiveInputId()) {
+      this.inlineChatFeatureRegistry._onChatClick.fire();
+      return;
+    }
+
     this._onActionClickEmitter.fire({ actionId, source });
   }
 
@@ -62,6 +237,18 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
       <AIInlineChatController
         onClickActions={(id) => this.clickActionId(id, 'widget')}
         onClose={() => this.dispose()}
+        onChatStatus={this.onStatusChange.bind(this)}
+        onLayoutChange={() => {
+          this.editor.layoutContentWidget(this);
+        }}
+        onInteractiveInputSend={(value) => {
+          this.launchChatStatus(EInlineChatStatus.THINKING);
+          this._interactiveInputValue = value;
+          this._onInteractiveInputValue.fire(value);
+        }}
+        onResultClick={(kind: EResultKind) => {
+          this._onResultClick.fire(kind);
+        }}
       />
     );
   }
@@ -74,7 +261,6 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
     requestAnimationFrame(() => {
-      domNode.style.padding = '6px';
       domNode.style.zIndex = StackingLevelStr.OverlayTop;
     });
     return domNode;
@@ -218,7 +404,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
    * 2. 靠近光标处周围没有字符的空白区域作为要显示的区域
    * 3. 显示的区域方向在右侧，左侧不考虑
    */
-  private computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
+  protected computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
     const startPosition = selection.getStartPosition();
     const endPosition = selection.getEndPosition();
     const model = this.editor.getModel();

@@ -5,7 +5,7 @@ import { MessageChannel, MessagePort } from 'worker_threads';
 
 import { Type, TypeDescription } from '@furyjs/fury';
 
-import { ProxyJson, WSChannel } from '@opensumi/ide-connection';
+import { ProxyJson } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import { Deferred, isUint8Array } from '@opensumi/ide-core-common';
@@ -17,6 +17,7 @@ import { SumiConnection } from '../../../src/common/rpc/connection';
 import { MessageIO } from '../../../src/common/rpc/message-io';
 import { ProxySumi } from '../../../src/common/rpc-service/proxy/sumi';
 import { ServiceRegistry } from '../../../src/common/rpc-service/registry';
+import { createWSChannelForClient } from '../ws-channel';
 
 function createRandomBuffer(size: number): Buffer {
   const randomContent = randomBytes(size);
@@ -132,10 +133,10 @@ export function createMessagePortWSChannel() {
   const channel = new MessageChannel();
   const { port1, port2 } = channel;
 
-  const channel1 = WSChannel.forClient(new NodeMessagePortConnection(port1), {
+  const channel1 = createWSChannelForClient(new NodeMessagePortConnection(port1), {
     id: '1',
   });
-  const channel2 = WSChannel.forClient(new NodeMessagePortConnection(port2), {
+  const channel2 = createWSChannelForClient(new NodeMessagePortConnection(port2), {
     id: '2',
   });
 

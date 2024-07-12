@@ -1,10 +1,10 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
+import { IRPCProtocol, SumiConnectionMultiplexer, createExtMessageIO } from '@opensumi/ide-connection';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
-import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
-import { Disposable, IDisposable, path, toDisposable } from '@opensumi/ide-core-common';
+import { Disposable, DisposableStore, path, toDisposable } from '@opensumi/ide-core-common';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
@@ -40,18 +40,20 @@ export class WorkerExtProcessService
 
   public protocol: IRPCProtocol;
 
-  private apiFactoryDisposable: IDisposable[] = [];
+  private apiFactoryDisposable = new DisposableStore();
 
   public disposeApiFactory() {
-    this.apiFactoryDisposable.forEach((disposable) => {
-      disposable.dispose();
-    });
-    this.apiFactoryDisposable = [];
+    this.apiFactoryDisposable.clear();
+    if (this.protocol) {
+      (this.protocol as SumiConnectionMultiplexer).dispose?.();
+    }
+    if (this.connection) {
+      this.connection.dispose();
+    }
   }
 
   public disposeProcess() {
     this.disposeApiFactory();
-    return;
   }
 
   public async activate(ignoreCors?: boolean): Promise<IRPCProtocol> {
@@ -61,14 +63,11 @@ export class WorkerExtProcessService
       this.ready.resolve();
       this.logger.log('[Worker Host] init worker thread api proxy');
       const apiProxy = initSharedAPIProxy(this.protocol, this.injector);
-      await apiProxy.setup();
-      this.apiFactoryDisposable.push(
-        apiProxy,
-        toDisposable(initWorkerThreadAPIProxy(this.protocol, this.injector, this)),
-        toDisposable(createSumiAPIFactory(this.protocol, this.injector)),
-      );
-      this.addDispose(this.apiFactoryDisposable);
+      this.apiFactoryDisposable.add(apiProxy);
+      this.apiFactoryDisposable.add(toDisposable(initWorkerThreadAPIProxy(this.protocol, this.injector, this)));
+      this.apiFactoryDisposable.add(toDisposable(createSumiAPIFactory(this.protocol, this.injector)));
 
+      await apiProxy.setup();
       await this.getProxy().$updateExtHostData();
       this._extHostUpdated.resolve();
     }
@@ -156,7 +155,8 @@ export class WorkerExtProcessService
 
       if (this.appConfig.useIframeWrapWorkerHost) {
         const { iframe, extHostUuid } = startInsideIframe(workerUrl);
-        window.addEventListener('message', (event) => {
+
+        const func = (event: MessageEvent<any>) => {
           if (event.source !== iframe.contentWindow) {
             return;
           }
@@ -169,6 +169,15 @@ export class WorkerExtProcessService
             ready.resolve(event.data.data);
             return;
           }
+        };
+
+        window.addEventListener('message', func);
+
+        this.apiFactoryDisposable.add({
+          dispose: () => {
+            window.removeEventListener('message', func);
+            iframe.remove();
+          },
         });
 
         ready.promise.then((port) => {
@@ -177,9 +186,7 @@ export class WorkerExtProcessService
       } else {
         try {
           const extendWorkerHost = new Worker(workerUrl, { name: 'KaitianWorkerExtensionHost' });
-          this.addDispose({
-            dispose: () => extendWorkerHost.terminate(),
-          });
+
           extendWorkerHost.onmessage = (e) => {
             if (e.data instanceof MessagePort) {
               ready.resolve(e.data);
@@ -189,6 +196,14 @@ export class WorkerExtProcessService
           extendWorkerHost.onerror = (err) => {
             reject(err);
           };
+
+          this.apiFactoryDisposable.add({
+            dispose: () => {
+              extendWorkerHost.terminate();
+              extendWorkerHost.onmessage = null;
+              extendWorkerHost.onerror = null;
+            },
+          });
 
           ready.promise.then((port) => {
             resolve(this.createProtocol(port));
@@ -207,7 +222,7 @@ export class WorkerExtProcessService
     const protocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'worker-ext-host',
-      knownProtocols,
+      io: createExtMessageIO(knownProtocols),
     });
 
     this.logger.log('[Worker Host] web worker extension host ready');
@@ -238,5 +253,10 @@ export class WorkerExtProcessService
     ).toString();
 
     return Object.assign({}, extension.toJSON(), { workerScriptPath });
+  }
+
+  dispose(): void {
+    super.dispose();
+    this.disposeApiFactory();
   }
 }

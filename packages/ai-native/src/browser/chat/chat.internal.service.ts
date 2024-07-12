@@ -1,20 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import {
-  AIBackSerivcePath,
-  CancelResponse,
-  CancellationTokenSource,
-  Disposable,
-  Emitter,
-  ErrorResponse,
-  Event,
-  IAIBackService,
-  IAIBackServiceOption,
-  ReplyResponse,
-} from '@opensumi/ide-core-common';
+import { AIBackSerivcePath, Disposable, Emitter, Event, IAIBackService } from '@opensumi/ide-core-common';
 
 import { IChatManagerService } from '../../common';
-import { MsgStreamManager } from '../model/msg-stream-manager';
 
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel } from './chat-model';
@@ -30,18 +18,15 @@ export class ChatInternalService extends Disposable {
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
 
-  @Autowired(MsgStreamManager)
-  private readonly msgStreamManager: MsgStreamManager;
-
   @Autowired(IChatManagerService)
   private chatManagerService: ChatManagerService;
 
-  private readonly _onChangeSessionId = new Emitter<string>();
-  public readonly onChangeSessionId: Event<string> = this._onChangeSessionId.event;
+  private readonly _onChangeRequestId = new Emitter<string>();
+  public readonly onChangeRequestId: Event<string> = this._onChangeRequestId.event;
 
-  private _latestSessionId: string;
-  public get latestSessionId(): string {
-    return this._latestSessionId;
+  private _latestRequestId: string;
+  public get latestRequestId(): string {
+    return this._latestRequestId;
   }
 
   #sessionModel: ChatModel;
@@ -54,51 +39,9 @@ export class ChatInternalService extends Disposable {
     this.#sessionModel = this.chatManagerService.startSession();
   }
 
-  public cancelIndicatorChatView = new CancellationTokenSource();
-
-  public cancelChatViewToken() {
-    this.cancelIndicatorChatView.cancel();
-    this.cancelIndicatorChatView = new CancellationTokenSource();
-  }
-
-  public async destroyStreamRequest(sessionId: string) {
-    if (this.aiBackService.destroyStreamRequest) {
-      await this.aiBackService.destroyStreamRequest(sessionId);
-      this.msgStreamManager.sendDoneStatue();
-    }
-  }
-
-  public async messageWithStream(input: string, options: IAIBackServiceOption = {}, sessionId: string): Promise<void> {
-    this.msgStreamManager.setCurrentSessionId(sessionId);
-    this.msgStreamManager.sendThinkingStatue();
-
-    await this.aiBackService.requestStream(
-      input,
-      {
-        ...options,
-        sessionId,
-      },
-      this.cancelIndicatorChatView.token,
-    );
-  }
-
-  public async message(input: string, options: IAIBackServiceOption = {}) {
-    const result = await this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
-
-    if (result.isCancel) {
-      return new CancelResponse();
-    }
-
-    if (result.errorCode !== 0) {
-      return new ErrorResponse('');
-    }
-
-    return new ReplyResponse(result.data!);
-  }
-
-  public setLatestSessionId(id: string): void {
-    this._latestSessionId = id;
-    this._onChangeSessionId.fire(id);
+  public setLatestRequestId(id: string): void {
+    this._latestRequestId = id;
+    this._onChangeRequestId.fire(id);
   }
 
   createRequest(input: string, agentId: string, command?: string) {

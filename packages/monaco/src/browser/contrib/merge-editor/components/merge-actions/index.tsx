@@ -16,6 +16,7 @@ export interface IMergeActionsProps {
   isAIResolving: boolean;
   onAIResolve: () => void;
 
+  canNavigate: boolean;
   handlePrev: () => void;
   handleNext: () => void;
 
@@ -33,6 +34,7 @@ export const MergeActions = ({
   containerClassName,
   onReset,
   onSwitchEditor,
+  canNavigate,
   handleNext,
   handlePrev,
   beforeAddons,
@@ -49,15 +51,39 @@ export const MergeActions = ({
     [aiNativeConfigService],
   );
 
+  const onClickPrev = useCallback(() => {
+    if (!canNavigate) {
+      return;
+    }
+    handlePrev();
+  }, [handlePrev, canNavigate]);
+
+  const onClickNext = useCallback(() => {
+    if (!canNavigate) {
+      return;
+    }
+    handleNext();
+  }, [handleNext, canNavigate]);
+
   return (
     <div className={cls(styles.merge_editor_float_container, containerClassName)}>
       <div className={styles.merge_editor_float_container_info}>
         <div className={styles.merge_editor_nav_operator}>
-          <div className={styles.merge_editor_nav_operator_btn} onClick={handlePrev}>
+          <div
+            className={cls(styles.merge_editor_nav_operator_btn, {
+              [styles.disabled]: !canNavigate,
+            })}
+            onClick={onClickPrev}
+          >
             {localize('mergeEditor.conflict.prev')}
           </div>
           <div className={styles['vertical-divider']} />
-          <div className={styles.merge_editor_nav_operator_btn} onClick={handleNext}>
+          <div
+            className={cls(styles.merge_editor_nav_operator_btn, {
+              [styles.disabled]: !canNavigate,
+            })}
+            onClick={onClickNext}
+          >
             {localize('mergeEditor.conflict.next')}
           </div>
         </div>

@@ -232,6 +232,7 @@
         font-size: 14px;
         color: var(--design-text-foreground);
         margin-left: 2px;
+        border-radius: 4px;
 
         &:not(.disabled):hover {
           color: var(--design-text-hoverForeground);
@@ -257,7 +258,6 @@
       }
 
       button.design-btnAction {
-        border-radius: 4px;
         color: var(--design-text-foreground);
 
         &:hover {
@@ -423,9 +423,11 @@
       align-items: center;
       justify-content: center;
       font-size: 14px;
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       color: var(--design-text-foreground);
+      border-radius: 4px;
+      box-sizing: border-box;
 
       &:not(.disabled):hover {
         color: var(--design-text-hoverForeground);
@@ -437,7 +439,6 @@
       font-size: 14px;
 
       &:hover {
-        border-radius: 4px;
         background-color: var(--kt-icon-hoverBackground);
         color: var(--design-text-hoverForeground);
       }
@@ -620,9 +621,11 @@
   }
 
   .design-scmMenu {
-    button {
-      border-radius: 4px !important;
-    }
+    margin: 0 8px;
+    padding: 0;
+    margin-bottom: 10px;
+    border-radius: 4px !important;
+    overflow: hidden;
   }
 
   .design-section_badge {
@@ -632,13 +635,12 @@
   .design-titleActions {
     > span.design-iconAction {
       display: flex;
-      width: 22px;
-      height: 22px;
       align-items: center;
       justify-content: center;
-      margin-left: 0;
       box-sizing: border-box;
       color: var(--design-text-foreground);
+      box-sizing: border-box;
+      border-radius: 3px;
 
       &::before {
         font-size: 14px;

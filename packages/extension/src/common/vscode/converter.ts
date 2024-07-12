@@ -22,8 +22,7 @@ import {
   path,
   randomString,
 } from '@opensumi/ide-core-common';
-import { ChatMessageRole as ChatMessageRoleEnum } from '@opensumi/ide-core-common/lib/types/ai-native';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatMessageRole as ChatMessageRoleEnum, IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import {
@@ -563,7 +562,7 @@ export namespace Diagnostic {
   export function toMarker(diagnostic: vscode.Diagnostic): IMarkerData {
     return {
       code: convertCode(diagnostic.code),
-      codeHref: typeof diagnostic.code === 'object' ? new URI(diagnostic.code.target) : undefined,
+      codeHref: typeof diagnostic.code === 'object' ? Uri.from(diagnostic.code.target) : undefined,
       severity: convertSeverity(diagnostic.severity),
       message: diagnostic.message,
       source: diagnostic.source,

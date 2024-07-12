@@ -1057,9 +1057,19 @@ export namespace QUICK_OPEN_COMMANDS {
   export const OPEN_VIEW: Command = {
     id: 'editor.action.quickView',
   };
+  export const OPEN_WITH_COMMAND: Command = {
+    id: 'editor.action.quickCommand.withCommand',
+  };
 }
 
 export namespace SCM_COMMANDS {
+  const category = 'SCM';
+
+  export const GetSCMResource = {
+    id: 'scm.getResource',
+    category,
+  };
+
   // git extension 1.71 版本之前存在下划线，这里为了做兼容处理: https://github.com/microsoft/vscode/blob/1.68.1/extensions/git/src/repository.ts#L613
   export const _GIT_OPEN_MERGE_EDITOR: Command = {
     id: '_git.openMergeEditor',

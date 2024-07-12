@@ -25,6 +25,10 @@ export class StaticResourceServiceImpl implements StaticResourceService {
     };
   }
 
+  public removeStaticResourceProvider(scheme: string) {
+    this.providers.delete(scheme);
+  }
+
   public resolveStaticResource(uri: URI): URI {
     if (!this.providers.has(uri.scheme)) {
       return uri;

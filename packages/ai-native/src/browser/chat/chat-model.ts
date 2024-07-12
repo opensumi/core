@@ -233,7 +233,7 @@ export class ChatModel extends Disposable implements IChatModel {
   }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
-    const requestId = 'request_' + ChatModel.requestIdPool++;
+    const requestId = `${this.sessionId}_request_${ChatModel.requestIdPool++}`;
     const response = new ChatResponseModel(requestId, this, message.agentId);
     const request = new ChatRequestModel(requestId, this, message, response);
 

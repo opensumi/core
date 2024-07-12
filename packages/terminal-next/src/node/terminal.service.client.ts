@@ -52,7 +52,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   clientMessage(id: string, data: string) {
     if (this.client) {
-      this.client.onMessage(id, data);
+      return this.client.onMessage(id, data);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
     }
@@ -186,7 +186,8 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   }
 
   dispose() {
-    this.terminalService.closeClient(this.clientId);
+    // TODO 后续需要一个合理的 Dispose 逻辑，暂时不要 Dispose，避免重连时终端不可用
+    // this.terminalService.closeClient(this.clientId);
   }
 
   getCwd(id: string): Promise<string | undefined> {

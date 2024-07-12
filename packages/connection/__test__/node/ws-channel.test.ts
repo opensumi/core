@@ -1,16 +1,17 @@
 import net from 'net';
 
-import { IWSChannelCreateOptions, WSChannel } from '@opensumi/ide-connection';
+import { IWSChannelCreateOptions } from '@opensumi/ide-connection';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 
 import { copy } from '../../src/common/buffers/buffers';
 import { NetSocketConnection } from '../../src/common/connection';
+import { createWSChannelForClient } from '../common/ws-channel';
 
 const total = 1000;
 
 const createWSChannel = (socket: net.Socket, options: IWSChannelCreateOptions) => {
   const wsConnection = new NetSocketConnection(socket);
-  return WSChannel.forClient(wsConnection, options);
+  return createWSChannelForClient(wsConnection, options);
 };
 
 describe('ws channel node', () => {

@@ -38,6 +38,7 @@ import {
 import { AIReporter } from '../ai-native/ai-reporter';
 import { ClientAppStateService } from '../application/application-state-service';
 import { ApplicationService } from '../application/application.service';
+import { ConnectionHelperFactory } from '../application/runtime';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ClientAppContribution } from '../common';
 import { ISplitPanelService, SplitPanelService } from '../components/layout/split-panel.service';
@@ -134,6 +135,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: ILogger,
       useClass: Logger,
+    },
+    {
+      token: Logger,
+      useAlias: ILogger,
     },
     {
       token: ComponentRegistry,
@@ -263,6 +268,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IDesignStyleService,
       useClass: DesignStyleService,
+    },
+    {
+      token: ConnectionHelperFactory,
+      useFactory: ConnectionHelperFactory,
     },
   ];
   injector.addProviders(...providers);

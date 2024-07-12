@@ -233,7 +233,6 @@ export class ExtensionTreeViewModel {
 
   private _isMultiSelected = false;
   private revealDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REVEAL_DELAY);
-  private revealDeferred: Deferred<void> | null;
 
   private toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
   private draggedOverNode: ExtensionTreeNode | ExtensionCompositeTreeNode;
@@ -535,10 +534,11 @@ export class ExtensionTreeViewModel {
   };
 
   toggleDirectory = async (item: ExtensionCompositeTreeNode) => {
+    await this.treeHandlerReadyDeffer.promise;
     if (item.expanded) {
-      await this.extensionTreeHandle.collapseNode(item);
+      await this.extensionTreeHandle?.collapseNode(item);
     } else {
-      await this.extensionTreeHandle.expandNode(item);
+      await this.extensionTreeHandle?.expandNode(item);
     }
   };
 
@@ -1013,24 +1013,28 @@ export class ExtensionTreeViewModel {
     this.treeModel.root.collapsedAll();
   }
 
+  async refreshById(treeItemId: string) {
+    const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(treeItemId);
+    if (!id) {
+      return;
+    }
+    const treeNode = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeById(id);
+    if (!treeNode) {
+      return;
+    }
+    if (ExtensionCompositeTreeNode.is(treeNode)) {
+      await (treeNode as ExtensionCompositeTreeNode).refresh();
+    } else if (treeNode.parent) {
+      await (treeNode.parent as ExtensionCompositeTreeNode).refresh();
+    }
+  }
+
   async refresh(item?: TreeViewItem) {
     await this.whenReady;
     if (!item) {
       await this.treeModel.root?.refresh();
     } else {
-      const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(item.id);
-      if (!id) {
-        return;
-      }
-      const treeNode = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeById(id);
-      if (!treeNode) {
-        return;
-      }
-      if (ExtensionCompositeTreeNode.is(treeNode)) {
-        await (treeNode as ExtensionCompositeTreeNode).refresh();
-      } else if (treeNode.parent) {
-        await (treeNode.parent as ExtensionCompositeTreeNode).refresh();
-      }
+      await this.refreshById(item.id);
     }
   }
 
@@ -1038,16 +1042,15 @@ export class ExtensionTreeViewModel {
     await this.whenReady;
     if (!this.revealDelayer.isTriggered()) {
       this.revealDelayer.cancel();
-    } else if (this.revealDeferred) {
-      await this.revealDeferred.promise;
     }
+
     return this.revealDelayer.trigger(async () => {
       await this.treeHandlerReadyDeffer.promise;
-      this.revealDeferred = new Deferred();
       if (this.treeModel.root.branchSize === 0) {
         // 当Tree为空时，刷新一次Tree
         await this.refresh();
       }
+
       const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(treeItemId);
       if (!id) {
         return;
@@ -1073,18 +1076,11 @@ export class ExtensionTreeViewModel {
           this.activeNodeFocusedDecoration(itemsToExpand as ExtensionTreeNode, false, true);
         }
       }
-      for (
-        ;
-        ExtensionCompositeTreeNode.is(itemsToExpand) &&
-        (itemsToExpand as ExtensionCompositeTreeNode).branchSize > 0 &&
-        expand > 0;
-        expand--
-      ) {
+
+      for (; ExtensionCompositeTreeNode.is(itemsToExpand) && expand > 0; expand--) {
         await this.extensionTreeHandle.expandNode(itemsToExpand as CompositeTreeNode);
         itemsToExpand = itemsToExpand?.children ? (itemsToExpand?.children[0] as TreeNode) : undefined;
       }
-      this.revealDeferred.resolve();
-      this.revealDeferred = null;
     });
   }
 }

@@ -129,7 +129,6 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   }
 
   async provideResource(uri: URI): Promise<IResource<any>> {
-    // 获取文件类型 getFileType: (path: string) => string
     await this.ready;
     this.involvedFiles.add(uri.codeUri.fsPath);
     return Promise.all([

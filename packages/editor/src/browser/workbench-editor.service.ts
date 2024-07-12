@@ -99,6 +99,7 @@ import {
   EditorVisibleChangeEvent,
   GridResizeEvent,
   IEditorComponent,
+  IEditorDocumentModel,
   IMergeEditorResource,
   RegisterEditorComponentEvent,
   ResoucesOfActiveComponentChangedEvent,
@@ -124,6 +125,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   @Autowired(ResourceService)
   private resourceService: ResourceService;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
@@ -228,6 +232,25 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       }
     }
     return uris;
+  }
+
+  async getAllOpenedDocuments() {
+    const documents: IEditorDocumentModel[] = [];
+    for (const group of this.editorGroups) {
+      for (const resource of group.resources) {
+        if (resource.uri.scheme !== 'file') {
+          continue;
+        }
+        const index = documents.findIndex((u) => u.uri.isEqual(resource.uri));
+        if (index === -1) {
+          const doc = await group.getDocumentModelRef(resource.uri);
+          if (doc) {
+            documents.push(doc.instance);
+          }
+        }
+      }
+    }
+    return documents;
   }
 
   async saveAll(includeUntitled?: boolean, reason?: SaveReason) {
@@ -464,7 +487,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
-    state = this.openedResourceState.get<IEditorGridState>('grid', state);
+    if (!this.appConfig.disableRestoreEditorGroupState) {
+      state = this.openedResourceState.get<IEditorGridState>('grid', state);
+    }
     this.topGrid = new EditorGrid();
     this.topGrid.onDidGridAndDesendantStateChange(() => {
       this._sortedEditorGroups = undefined;
@@ -1519,29 +1544,34 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async getDocumentModelRef(uri: URI): Promise<IEditorDocumentModelRef> {
-    if (!this.holdDocumentModelRefs.has(uri.toString())) {
+    const key = uri.toString();
+
+    if (!this.holdDocumentModelRefs.has(key)) {
       this.holdDocumentModelRefs.set(
-        uri.toString(),
+        key,
         await this.documentModelManager.createModelReference(uri, 'editor-group-' + this.name),
       );
     }
-    return this.holdDocumentModelRefs.get(uri.toString())!;
+    return this.holdDocumentModelRefs.get(key)!;
   }
 
   disposeDocumentRef(uri: URI) {
     if (uri.scheme === 'diff') {
-      // 针对 diff 编辑器，需要保留 DocumentModelRef，以保留实现对 DiffEditor 的状态恢复
+      const query = uri.getParsedQuery();
+      this.doDisposeDocRef(new URI(query.original));
+      this.doDisposeDocRef(new URI(query.modified));
     } else if (uri.scheme === 'mergeEditor') {
-      this.mergeEditor.dispose();
+      this.mergeEditor && this.mergeEditor.dispose();
     } else {
       this.doDisposeDocRef(uri);
     }
   }
 
   protected doDisposeDocRef(uri: URI) {
-    if (this.holdDocumentModelRefs.has(uri.toString())) {
-      this.holdDocumentModelRefs.get(uri.toString())!.dispose();
-      this.holdDocumentModelRefs.delete(uri.toString());
+    const key = uri.toString();
+    if (this.holdDocumentModelRefs.has(key)) {
+      this.holdDocumentModelRefs.get(key)!.dispose();
+      this.holdDocumentModelRefs.delete(key);
     }
   }
 
@@ -1634,7 +1664,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       await this.diffEditor.compare(original, modified, options, resource.uri);
       if (options.focus) {
         this._domNode?.focus();
-        // 理由见上方 codeEditor.focus 部分
 
         const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
           if (e.payload.groupName === this.name && e.payload.type === EditorOpenType.diff) {

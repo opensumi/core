@@ -18,7 +18,7 @@ export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
   /**
    * APP的名称
-   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `OPENSUMI`
+   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `OpenSumi`
    */
   appName?: string;
   /**
@@ -223,7 +223,7 @@ export interface AppConfig {
    */
   workspaceSuffixName?: string;
   /**
-   * 视图组件内默认的组件样式资源 CDN 来源
+   * 视图组件/内部使用的资源 CDN 来源
    * 默认值为 'alipay'
    */
   componentCDNType?: TComponentCDNType;
@@ -264,20 +264,58 @@ export interface AppConfig {
    * AI Native 相关的配置项
    */
   AINativeConfig?: IAINativeConfig;
+  /**
+   * OpenSumi Design 布局相关的配置项
+   */
   designLayout?: IDesignLayoutConfig;
   /**
    * Collaboration Client Options
    */
   collaborationOptions?: ICollaborationClientOpts;
-
   /**
    * Define the default size (height) of each layout block in the IDE
    */
   layoutViewSize?: Partial<ILayoutViewSize>;
+  /**
+   * 自定义前后端通信路径
+   */
+  connectionPath?: UrlProvider;
+  /**
+   * 支持的通信协议类型
+   */
+  connectionProtocols?: string[];
+  /**
+   * 埋点上报的配置
+   */
+  measure?: IMeasureConfig;
+  /**
+   * 是否启用 Diff 协议文件自动恢复
+   */
+  enableDiffRevive?: boolean;
+  /**
+   * Disable restore editor group state
+   *
+   * This is useful when your scenario is one-time use, and you can control the opening of the editor tab yourself.
+   */
+  disableRestoreEditorGroupState?: boolean;
 }
 
 export interface ICollaborationClientOpts {
   port?: number;
+}
+
+export interface IMeasureConfig {
+  /**
+   * 是否开启连接性能监控
+   */
+  connection?: IConnectionMeasureConfig;
+}
+
+export interface IConnectionMeasureConfig {
+  /**
+   * 最低上报阈值时间，单位 ms
+   */
+  minimumReportThresholdTime?: number;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
@@ -305,3 +343,27 @@ export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig
 }
 
 export type TComponentCDNType = 'unpkg' | 'jsdelivr' | 'alipay' | 'npmmirror';
+
+type IComponentCDNTypeMap = Record<TComponentCDNType, string>;
+
+const CDN_TYPE_MAP: IComponentCDNTypeMap = {
+  alipay: 'https://gw.alipayobjects.com/os/lib',
+  npmmirror: 'https://registry.npmmirror.com',
+  unpkg: 'https://unpkg.com/browse',
+  jsdelivr: 'https://cdn.jsdelivr.net/npm',
+};
+
+export function getCdnHref(
+  packageName: string,
+  filePath: string,
+  version: string,
+  cdnType: TComponentCDNType = 'alipay',
+) {
+  if (cdnType === 'alipay') {
+    return `${CDN_TYPE_MAP['alipay']}/${packageName.slice(1)}/${version}/${filePath}`;
+  } else if (cdnType === 'npmmirror') {
+    return `${CDN_TYPE_MAP['npmmirror']}/${packageName}/${version}/files/${filePath}`;
+  } else {
+    return `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`;
+  }
+}

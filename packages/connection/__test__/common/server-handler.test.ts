@@ -27,7 +27,7 @@ describe('CommonChannelPathHandler', () => {
       id: 'a',
     });
 
-    handler.dispatchChannelOpen('test/artin', {} as any, 'test_client_id');
+    handler.openChannel('test/artin', {} as any, 'test_client_id');
     expect(channelOpened).toBeTruthy();
     expect(channelOpenParams).toEqual({
       id: 'artin',

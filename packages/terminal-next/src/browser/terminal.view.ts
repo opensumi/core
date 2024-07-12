@@ -242,7 +242,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 export class TerminalGroupViewService implements ITerminalGroupViewService {
   protected _widgets: Map<string, Widget>;
 
-  @observable.shallow
+  @observable
   groups: WidgetGroup[] = observable.array([]);
 
   @observable
@@ -290,9 +290,6 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
 
   @action
   private _doSelectGroup(index: number) {
-    if (this.currentGroupIndex === index) {
-      return;
-    }
     const group = this.getGroup(index);
     this.currentGroupIndex = index;
     this.currentGroupId = group.id;

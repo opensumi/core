@@ -7,6 +7,8 @@ export * from './dropdown';
 export * from './editor';
 export * from './input';
 export * from './checkbox';
+export * from './comment';
+export * from './comment-glyph';
 export * from './list-tree';
 export * from './menu-bar';
 export * from './menu';
@@ -32,5 +34,6 @@ export * from './charts';
 export * from './minimap';
 export * from './testing';
 export * from './design';
+export * from './ai-native';
 
 export * from './custom';

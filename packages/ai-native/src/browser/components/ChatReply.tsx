@@ -16,12 +16,14 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ChatAgentViewServiceToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
   FileType,
   IAIReporter,
+  IChatComponent,
   IChatContent,
   IChatResponseProgressFileTreeData,
   URI,
@@ -35,19 +37,19 @@ import { ChatService } from '../chat/chat.api.service';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
 import { MsgHistoryManager } from '../model/msg-history-manager';
-import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatAgentViewService } from '../types';
 
 import { ChatMarkdown } from './ChatMarkdown';
 import { ChatThinking, ChatThinkingResult } from './ChatThinking';
 import styles from './components.module.less';
-import { Loading } from './Loading';
 
 interface IChatReplyProps {
   relationId: string;
   request: ChatRequestModel;
   startTime?: number;
   onRegenerate?: () => void;
+  onDidChange?: () => void;
+  onDone?: () => void;
 }
 
 const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) => {
@@ -157,10 +159,9 @@ const ComponentRender = (props: { component: string; value?: unknown }) => {
 };
 
 export const ChatReply = (props: IChatReplyProps) => {
-  const { relationId, request, startTime = 0, onRegenerate } = props;
+  const { relationId, request, startTime = 0, onRegenerate, onDidChange, onDone } = props;
 
   const [, update] = useReducer((num) => (num + 1) % 1_000_000, 0);
-  const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const iconService = useInjectable<IIconService>(IIconService);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
@@ -170,8 +171,6 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const msgHistoryManager = useInjectable<MsgHistoryManager>(MsgHistoryManager);
 
-  const isLastReply = msgStreamManager.currentSessionId === relationId;
-
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
 
@@ -179,6 +178,10 @@ export const ChatReply = (props: IChatReplyProps) => {
 
     disposableCollection.push(
       request.response.onDidChange(() => {
+        if (onDidChange) {
+          onDidChange();
+        }
+
         if (!msgId) {
           msgId = msgHistoryManager.addAssistantMessage({
             content: '',
@@ -189,30 +192,23 @@ export const ChatReply = (props: IChatReplyProps) => {
         msgHistoryManager.updateAssistantMessage(msgId, { content: request.response.responseText });
 
         if (request.response.isComplete) {
+          if (onDone) {
+            onDone();
+          }
+
           aiReporter.end(relationId, {
-            message: request.response.responseText,
+            assistantMessage: request.response.responseText,
             replytime: Date.now() - startTime,
             success: true,
             isStop: false,
           });
-          msgStreamManager.sendDoneStatue();
-        } else {
-          msgStreamManager.sendThinkingStatue();
         }
         update();
       }),
     );
 
-    disposableCollection.push(
-      msgStreamManager.onMsgStatus(() => {
-        if (msgStreamManager.currentSessionId !== relationId) {
-          update();
-        }
-      }),
-    );
-
     return () => disposableCollection.dispose();
-  }, [relationId]);
+  }, [relationId, onDidChange, onDone]);
 
   const handleRegenerate = useCallback(() => {
     request.response.reset();
@@ -220,8 +216,11 @@ export const ChatReply = (props: IChatReplyProps) => {
   }, [onRegenerate]);
 
   const onStop = () => {
+    if (onDone) {
+      onDone();
+    }
     aiReporter.end(relationId, {
-      message: request.response.responseText,
+      assistantMessage: request.response.responseText,
       replytime: Date.now() - startTime,
       success: false,
       isStop: true,
@@ -233,12 +232,12 @@ export const ChatReply = (props: IChatReplyProps) => {
     (markdown: IMarkdownString) => {
       if (chatRenderRegistry.chatAIRoleRender) {
         const Render = chatRenderRegistry.chatAIRoleRender;
-        return <Render content={markdown.value} status={msgStreamManager.status} />;
+        return <Render content={markdown.value} />;
       }
 
       return <ChatMarkdown markdown={markdown} fillInIncompleteTokens />;
     },
-    [chatRenderRegistry, chatRenderRegistry.chatAIRoleRender, msgStreamManager.status],
+    [chatRenderRegistry, chatRenderRegistry.chatAIRoleRender],
   );
 
   const renderTreeData = (treeData: IChatResponseProgressFileTreeData) => <TreeRenderer treeData={treeData} />;
@@ -295,9 +294,9 @@ export const ChatReply = (props: IChatReplyProps) => {
     });
   }, [request.response.followups]);
 
-  if (!request.response.isComplete && isLastReply) {
+  if (!request.response.isComplete) {
     return (
-      <ChatThinking status={msgStreamManager.status} message={request.response.responseText} onStop={onStop} hasAgent>
+      <ChatThinking message={request.response.responseText} onStop={onStop}>
         {contentNode}
       </ChatThinking>
     );
@@ -305,10 +304,9 @@ export const ChatReply = (props: IChatReplyProps) => {
 
   return (
     <ChatThinkingResult
-      status={EMsgStreamStatus.DONE}
       hasMessage={request.response.responseParts.length > 0 || !!request.response.errorDetails?.message}
       onRegenerate={handleRegenerate}
-      sessionId={relationId}
+      requestId={request.requestId}
     >
       <div className={styles.ai_chat_response_container}>
         {request.response.errorDetails?.message ? (
@@ -328,11 +326,34 @@ export const ChatReply = (props: IChatReplyProps) => {
 };
 
 interface IChatNotifyProps {
-  relationId: string;
-  chunk: IChatContent;
+  requestId: string;
+  chunk: IChatContent | IChatComponent;
 }
-export const ChatNotify = (props: IChatNotifyProps) => (
-  <ChatThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} showRegenerate={false}>
-    <ChatMarkdown markdown={props.chunk.content} relationId={props.relationId} />
-  </ChatThinkingResult>
-);
+export const ChatNotify = (props: IChatNotifyProps) => {
+  const { chunk } = props;
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+
+  const contentNode = React.useMemo(() => {
+    let node: ReactNode;
+
+    if (chunk.kind === 'component') {
+      node = <ComponentRender component={chunk.component} value={chunk.value} />;
+    } else {
+      let renderContent = <ChatMarkdown markdown={chunk.content} fillInIncompleteTokens />;
+
+      if (chatRenderRegistry.chatAIRoleRender) {
+        const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
+        renderContent = <ChatAIRoleRender content={chunk.content} />;
+      }
+
+      node = renderContent;
+    }
+    return node;
+  }, [chunk]);
+
+  return (
+    <ChatThinkingResult hasMessage requestId={props.requestId} showRegenerate={false}>
+      <div className={styles.ai_chat_response_container}>{contentNode}</div>
+    </ChatThinkingResult>
+  );
+};

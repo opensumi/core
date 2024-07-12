@@ -1,7 +1,7 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MergeEditorInputData } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { Disposable, IEventBus, URI, Uri, diffSets, isUndefined } from '@opensumi/ide-core-common';
+import { Disposable, URI, Uri, diffSets, isUndefined } from '@opensumi/ide-core-common';
 import {
   DragOverPosition,
   IDiffResource,
@@ -21,7 +21,6 @@ import {
   TabModelOperationKind,
 } from './../../../common/vscode/editor-tabs';
 import { ExtHostAPIIdentifier } from './../../../common/vscode/index';
-import { MainThreadWebview } from './main.thread.api.webview';
 
 export interface ITabInfo {
   name: string;
@@ -34,9 +33,6 @@ export class MainThreadEditorTabsService extends Disposable implements IMainThre
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
   private readonly proxy: IExtHostEditorTabsShape;
-
-  @Autowired(IEventBus)
-  private eventBus: IEventBus;
 
   constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();

@@ -1,13 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import cls from 'classnames';
+import React, { FC, useEffect, useState } from 'react';
+import AutoSizer from 'react-virtualized-auto-sizer';
 
 import { BasicRecycleTree } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import {
+  BasicCompositeTreeNode,
+  BasicTreeNode,
+} from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
+import { ViewState, transformLabelWithCodicon, useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, localize } from '@opensumi/ide-core-common';
+import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import { TestPeekMessageToken } from '../../common';
 import { ITestResult, TestResultServiceToken, maxCountPriority, resultItemParents } from '../../common/test-result';
-import { ITestMessage, ITestTaskState, TestResultItem, TestResultState } from '../../common/testCollection';
+import {
+  ITestMessage,
+  ITestTaskState,
+  TestMessageType,
+  TestResultItem,
+  TestResultState,
+} from '../../common/testCollection';
 import { firstLine, parseMarkdownText } from '../../common/testingStates';
 import { TestUriType, buildTestUri } from '../../common/testingUri';
 import { ITestTreeData } from '../../common/tree-view.model';
@@ -15,6 +28,7 @@ import styles from '../components/testing.module.less';
 import { getIconWithColor } from '../icons/icons';
 import { TestResultServiceImpl } from '../test.result.service';
 
+import { TestDto } from './test-output-peek';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 
 enum ETestTreeType {
@@ -33,9 +47,10 @@ interface ITestBaseTree<T> extends ITestTreeData<T> {
   ariaLabel?: string;
 }
 
-export const TestTreeContainer = () => {
+export const TestTreeContainer: FC<{ viewState?: ViewState }> = ({ viewState }) => {
   const testResultService: TestResultServiceImpl = useInjectable(TestResultServiceToken);
   const testingPeekMessageService: TestingPeekMessageServiceImpl = useInjectable(TestPeekMessageToken);
+  const iconService = useInjectable<IIconService>(IIconService);
 
   const [treeData, setTreeData] = useState<ITestBaseTree<ITestResult>[]>([]);
 
@@ -45,6 +60,18 @@ export const TestTreeContainer = () => {
 
     const toTreeResult = testResultService.results.map((e) => getRootChildren(e));
     setTreeData(toTreeResult);
+
+    const testResultEventDisposable = testResultService.onResultsChanged((results) => {
+      const toTreeResult = testResultService.results.map((e) => getRootChildren(e));
+      setTreeData(toTreeResult);
+    });
+
+    disposer.addDispose(testResultEventDisposable);
+
+    testResultService.onTestChanged((result) => {
+      const toTreeResult = testResultService.results.map((e) => getRootChildren(e));
+      setTreeData(toTreeResult);
+    });
 
     return disposer.dispose.bind(disposer);
   }, []);
@@ -65,8 +92,12 @@ export const TestTreeContainer = () => {
   }, []);
 
   const getTaskChildren = React.useCallback(
-    (result: ITestResult, test: TestResultItem, taskId: number): Iterable<ITestBaseTree<ITestMessage>> =>
-      Iterable.map(test.tasks[0].messages, (m, messageIndex) => {
+    (
+      result: ITestResult,
+      test: TestResultItem,
+      taskId: number,
+    ): Iterable<ITestBaseTree<ITestMessage & { dto: TestDto }>> =>
+      Iterable.map(test.tasks[0].messages, (testMessage, messageIndex) => {
         const { message, location } = test.tasks[taskId].messages[messageIndex];
 
         const uri = buildTestUri({
@@ -77,6 +108,8 @@ export const TestTreeContainer = () => {
           testExtId: test.item.extId,
         });
 
+        const testDto = new TestDto(result.id, test, taskId, messageIndex);
+
         return {
           type: ETestTreeType.MESSAGE,
           context: uri,
@@ -86,7 +119,7 @@ export const TestTreeContainer = () => {
           icon: '',
           notExpandable: false,
           location,
-          rawItem: m,
+          rawItem: { ...testMessage, dto: testDto },
         };
       }),
     [],
@@ -116,7 +149,9 @@ export const TestTreeContainer = () => {
   );
 
   const getResultChildren = React.useCallback((result: ITestResult): Iterable<ITestBaseTree<TestResultItem>> => {
-    const tests = Iterable.filter(result.tests, (test) => test.tasks.some((t) => t.messages.length > 0));
+    const tests = Iterable.filter(result.tests, (test) =>
+      test.tasks.some((t) => t.messages.length > 0 || t.state >= TestResultState.Running),
+    );
     return Iterable.map(tests, (test) => {
       let description = '';
       for (const parent of resultItemParents(result, test)) {
@@ -124,26 +159,64 @@ export const TestTreeContainer = () => {
           description = description ? parent.item.label + ' › ' + description : parent.item.label;
         }
       }
+      description = transformLabelWithCodicon(description, {}, iconService.fromString.bind(iconService));
+      const renderLabel = transformLabelWithCodicon(
+        test.item.label,
+        {
+          verticalAlign: 'middle',
+          marginRight: '4px',
+        },
+        iconService.fromString.bind(iconService),
+      );
+
+      const tasksInCurrentTest = test.tasks.filter((task) => task.messages.length > 0);
+      const moreThanOneTask = tasksInCurrentTest.length > 1;
+
+      const children = moreThanOneTask
+        ? Array.from(getTestChildren(result, test))
+        : Array.from(getTaskChildren(result, test, 0));
+      const expandable = children.length > 0;
+
       return {
         type: ETestTreeType.TEST,
         context: test.item.extId,
         id: `${result.id}/${test.item.extId}`,
+        renderLabel,
         label: test.item.label,
-        get icon() {
+        icon: '',
+        get iconClassName() {
           return getIconWithColor(test.computedState);
         },
         notExpandable: false,
-        description,
+        expandable,
+        description: '',
         rawItem: test,
         get children() {
-          return Array.from(getTestChildren(result, test));
+          return children;
         },
       };
     });
   }, []);
 
-  const getRootChildren = React.useCallback(
-    (item: ITestResult): ITestBaseTree<ITestResult> => ({
+  // 渲染 ITestResult，每项测试的节点
+  const getRootChildren = React.useCallback((item: ITestResult): ITestBaseTree<ITestResult & { dto: TestDto }> => {
+    const testDtoStub = {
+      messages: [
+        {
+          location: undefined,
+          message: {
+            value: item.getOutput(),
+            uris: {},
+            isTrusted: true,
+            supportThemeIcons: true,
+          },
+          type: TestMessageType.Error,
+        },
+      ],
+      messageIndex: 0,
+    } as TestDto;
+
+    return {
       type: ETestTreeType.RESULT,
       context: item.id,
       id: item.id,
@@ -152,19 +225,33 @@ export const TestTreeContainer = () => {
       get iconClassName() {
         return getItemIcon(item);
       },
-      rawItem: item,
+      expandable: true,
+      rawItem: { ...item, dto: testDtoStub },
       get children() {
         return Array.from(getResultChildren(item));
       },
-    }),
-    [],
-  );
+    };
+  }, []);
 
+  // 需要用到 monaco 的 codicon，因此需要使用对应的 monaco-editor class
   return (
-    <div className={styles.test_output_peek_tree}>
-      {treeData.length > 0 && (
-        <BasicRecycleTree treeData={treeData} height={500} resolveChildren={resolveTestChildren} />
-      )}
+    <div className={cls(styles.test_output_peek_tree, 'monaco-editor')}>
+      <BasicRecycleTree
+        treeData={treeData}
+        height={viewState?.height || 500}
+        resolveChildren={resolveTestChildren}
+        onClick={(event, node: BasicCompositeTreeNode | BasicTreeNode) => {
+          if (!node) {
+            return;
+          }
+          // 右侧 Test 列表点击时的左侧联动
+          const raw = node.raw as ITestTreeData<ITestResult>;
+          const rawItem = raw.rawItem as ITestResult & { dto?: TestDto };
+          if (rawItem.dto) {
+            testingPeekMessageService._didReveal.fire(rawItem.dto);
+          }
+        }}
+      />
     </div>
   );
 };

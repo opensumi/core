@@ -3,7 +3,7 @@ import { BrowserModule } from '@opensumi/ide-core-browser';
 
 import { ILoggerManagerClient, LogServiceForClientPath } from '../common/';
 
-import { LoggerManagerClient } from './log-manage';
+import { LoggerManagerClient } from './log-manager';
 
 export * from '../common/';
 export { LogServiceClient } from './log.service';
