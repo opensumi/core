@@ -528,6 +528,13 @@ export class MonacoClientContribution
     menuRegistry.registerMenuItems(MenuId.MergeEditorResultTitleContext, [
       {
         command: {
+          id: EDITOR_COMMANDS.CHANGE_ENCODING.id,
+          label: '',
+        },
+        group: 'navigation',
+      },
+      {
+        command: {
           id: EDITOR_COMMANDS.MERGEEDITOR_RESET.id,
           label: EDITOR_COMMANDS.MERGEEDITOR_RESET.label!,
         },

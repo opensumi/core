@@ -103,11 +103,10 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
       languageId: (ancestor.textModel as ITextModel).getLanguageId(),
       onDidChange: Event.None,
     };
-    const ancestorModel = modelService.createModel(ancestor.baseContent, languageSelection);
 
     this.setModel({
       ours: input1.textModel as ITextModel,
-      result: ancestorModel,
+      result: ancestor.textModel as ITextModel,
       theirs: input2.textModel as ITextModel,
     });
 

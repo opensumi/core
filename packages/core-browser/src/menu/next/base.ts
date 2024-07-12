@@ -531,4 +531,8 @@ export class MenuNode implements IMenuAction {
 
     return Promise.resolve(true);
   }
+
+  updateLabel(newLabel: string): void {
+    this.label = newLabel;
+  }
 }

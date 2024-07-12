@@ -32,6 +32,7 @@ import { StickinessConnectManager } from './view/stickiness-connect-manager';
 import type { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import type { ICodeEditor } from '../../monaco-api/editor';
 import type { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { ITextModel } from '../../monaco-api/types';
 
 @Injectable()
 export class MergeEditorService extends Disposable {
@@ -81,10 +82,10 @@ export class MergeEditorService extends Disposable {
   private readonly _onRestoreState = new Emitter<URI>();
   public readonly onRestoreState: Event<URI> = this._onRestoreState.event;
 
-  private loadingDispose = new Disposable();
   private readonly _onHasIntelligentLoadingChange = new Emitter<boolean>();
   public readonly onHasIntelligentLoadingChange: Event<boolean> = this._onHasIntelligentLoadingChange.event;
 
+  private loadingDispose = new Disposable();
   private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor() {

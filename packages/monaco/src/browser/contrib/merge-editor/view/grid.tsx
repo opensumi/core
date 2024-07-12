@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useState } from 'react';
 
 import {
   CommandService,
@@ -8,11 +8,11 @@ import {
   URI,
   localize,
   runWhenIdle,
-  useInjectable,
+  useInjectable
 } from '@opensumi/ide-core-browser';
 import { Button, Icon, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
-import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { InlineActionWidget } from '@opensumi/ide-core-browser/lib/components/actions';
+import { AbstractMenuService, MenuId, MenuItemNode, generateMergedInlineActions } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IMergeEditorInputData,
   IOpenMergeEditorArgs,
@@ -29,12 +29,21 @@ import styles from './merge-editor.module.less';
 import { MiniMap } from './mini-map';
 import { WithViewStickinessConnectComponent } from './stickiness-connect-manager';
 
-const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
+interface ITitleHeadProps {
+  contrastType: EditorViewType;
+}
+
+const TitleHead: React.FC<ITitleHeadProps> = ({ contrastType }) => {
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
 
+  const [state, update] = useReducer((num) => (num + 1) % 1_000_000, 0);
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const commandService = useInjectable<CommandService>(CommandService);
+
   const [head, setHead] = useState<IMergeEditorInputData>();
+  const [encoding, setEncoding] = useState<string>('');
+  const [currentURI, setCurrentURI] = useState<URI>();
 
   const toRelativePath = useCallback((uri: URI) => {
     // 获取相对路径
@@ -58,13 +67,16 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
        * input2: incoming
        * output: result
        */
-      const { input1, input2, output } = nutrition;
+      const { input1, input2, output, ancestor } = nutrition;
       if (contrastType === EditorViewType.CURRENT) {
         setHead(input1.getRaw());
+        setCurrentURI(input1.uri);
       } else if (contrastType === EditorViewType.INCOMING) {
         setHead(input2.getRaw());
+        setCurrentURI(input2.uri);
       } else if (contrastType === EditorViewType.RESULT) {
         setHead(new MergeEditorInputData(output.uri, 'Result', toRelativePath(output.uri), '').getRaw());
+        setCurrentURI(ancestor.uri);
       }
     });
 
@@ -73,15 +85,32 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
     };
   }, [mergeEditorService]);
 
-  const renderMoreActions = useCallback(() => {
-    if (contrastType !== EditorViewType.RESULT) {
-      return null;
+  React.useEffect(() => {
+    if (currentURI) {
+      commandService.executeCommand<string>(EDITOR_COMMANDS.GET_ENCODING.id, currentURI).then((encoding) => {
+        setEncoding(encoding || '');
+      });
     }
+  }, [currentURI, state])
 
+  const renderMoreActions = useCallback(() => {
     const menus = menuService.createMenu(MenuId.MergeEditorResultTitleContext);
+    const inlineActions = generateMergedInlineActions({ menus });
 
-    return <InlineActionBar menus={menus} className={styles.menubar_action} />;
-  }, [contrastType]);
+    return inlineActions
+      .filter((action) => contrastType === EditorViewType.RESULT ? true : action.id !== EDITOR_COMMANDS.MERGEEDITOR_RESET.id)
+      .map((data: MenuItemNode) => {
+        if (data.id === EDITOR_COMMANDS.CHANGE_ENCODING.id && currentURI && encoding) {
+          data.updateLabel(encoding.toLocaleUpperCase());
+          data.argsTransformer = () => [currentURI];
+          data.executeCallback = () => {
+            update();
+          }
+        }
+
+        return <InlineActionWidget data={data} />
+      });
+  }, [contrastType, currentURI, encoding]);
 
   return (
     <div className={styles.title_head_container}>

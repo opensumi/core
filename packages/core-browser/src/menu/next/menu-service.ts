@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
-import { CommandRegistry, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { CommandRegistry, Disposable, Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
@@ -148,7 +148,7 @@ class Menu extends Disposable implements IMenu {
 
         const menuCommand = { ...(command || {}), ...menuCommandDesc };
         // 没有 desc 的 command 不展示在 menu 中
-        if (!menuCommand.label) {
+        if (isUndefined(menuCommand.label)) {
           return;
         }
 
