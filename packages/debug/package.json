@@ -25,7 +25,7 @@
     "@opensumi/ide-terminal-next": "workspace:*",
     "@rjsf/core": "5.5.2",
     "@rjsf/utils": "5.5.2",
-    "@rjsf/validator-ajv6": "5.4.0",
+    "@rjsf/validator-ajv6": "5.19.3",
     "anser": "^2.1.1",
     "btoa": "^1.2.1"
   },
