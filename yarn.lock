@@ -2517,7 +2517,7 @@ __metadata:
     "@opensumi/ide-logs": "workspace:*"
     "@parcel/watcher": "npm:2.1.0"
     file-type: "npm:16.5.4"
-    nsfw: "npm:2.2.0"
+    nsfw: "npm:2.2.4"
     trash: "npm:^5.2.0"
     vscode-languageserver-types: "npm:^3.16.0"
     write-file-atomic: "npm:^5.0.1"
@@ -14114,15 +14114,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-addon-api@npm:*":
-  version: 8.0.0
-  resolution: "node-addon-api@npm:8.0.0"
-  dependencies:
-    node-gyp: "npm:latest"
-  checksum: 10/a9b3a1b5d7236bfc4cb2e781f14786ef5526f2be095f4fad1684b6374253336b3a70f2333605f2d8a6e4e0cb9ecf186ac21250328833fda7fe3e8b32910d1297
-  languageName: node
-  linkType: hard
-
 "node-addon-api@npm:^3.2.1":
   version: 3.2.1
   resolution: "node-addon-api@npm:3.2.1"
@@ -14138,6 +14129,15 @@ __metadata:
   dependencies:
     node-gyp: "npm:latest"
   checksum: 10/d3b38d16cb9ad0714d965331d0e38cef1c27750c2c3343cd3464a9ed8158501a2910ccbf2fd9fdc476e806a19dbc9e0524ff9d66a7c779d42a9752a63ba30b80
+  languageName: node
+  linkType: hard
+
+"node-addon-api@npm:^5.0.0":
+  version: 5.1.0
+  resolution: "node-addon-api@npm:5.1.0"
+  dependencies:
+    node-gyp: "npm:latest"
+  checksum: 10/595f59ffb4630564f587c502119cbd980d302e482781021f3b479f5fc7e41cf8f2f7280fdc2795f32d148e4f3259bd15043c52d4a3442796aa6f1ae97b959636
   languageName: node
   linkType: hard
 
@@ -14667,13 +14667,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nsfw@npm:2.2.0":
-  version: 2.2.0
-  resolution: "nsfw@npm:2.2.0"
+"nsfw@npm:2.2.4":
+  version: 2.2.4
+  resolution: "nsfw@npm:2.2.4"
   dependencies:
-    node-addon-api: "npm:*"
+    node-addon-api: "npm:^5.0.0"
     node-gyp: "npm:latest"
-  checksum: 10/536ef494161877c833760a4a496b59b8d87e0e46b498e6a6e03c7d0d623f1388780b98ce9adb4592feb770eb1cf7b41984bf4eede257f609eab48e4897f76922
+  checksum: 10/ccc0e955640e7ef72e1f794e0756661201083f3f5f013602c0281a82af5d6d6629d002762837355a211a015a1770f13b1c689d952fdbbf6741d5aff9b4a26638
   languageName: node
   linkType: hard
 
