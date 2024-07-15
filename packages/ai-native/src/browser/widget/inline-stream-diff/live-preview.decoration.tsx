@@ -9,6 +9,7 @@ import { Disposable, Emitter, Event, IRange, isUndefined, uuid } from '@opensumi
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
+import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
@@ -41,12 +42,13 @@ interface IPartialEditWidgetComponent {
   discardSequence: string;
 }
 
-enum EPartialEdit {
+export enum EPartialEdit {
   accept = 'accept',
   discard = 'discard',
 }
 
 export interface IPartialEditEvent {
+  uri: URI;
   /**
    * 总 diff 数
    */
@@ -55,7 +57,6 @@ export interface IPartialEditEvent {
    * 已采纳数
    */
   acceptedPartialEditCount: number;
-
   /**
    * 已添加行数
    */
@@ -63,11 +64,11 @@ export interface IPartialEditEvent {
   /**
    * 已删除行数
    */
-  totalRemovedLinesCount: number;
+  totalDeletedLinesCount: number;
   currentPartialEdit: {
     type: EPartialEdit;
-    deletedLinesCount: number;
     addedLinesCount: number;
+    deletedLinesCount: number;
   };
 }
 
@@ -96,6 +97,10 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   public readonly onDiscard: Event<void> = this._onDiscard.event;
 
   positionPreference = [ContentWidgetPositionPreference.EXACT];
+
+  public addedLinesCount: number = 0;
+  public deletedLinesCount: number = 0;
+  public status: 'accept' | 'discard' | 'pending' = 'pending';
 
   private getSequenceKeyStrings(): IPartialEditWidgetComponent | undefined {
     let keybindings = this.keybindingRegistry.getKeybindingsForCommand(AI_INLINE_DIFF_PARTIAL_EDIT.id);
@@ -148,6 +153,28 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
 
   public getDecorationId(): string {
     return this._decorationId;
+  }
+
+  public resume(): void {
+    this.status = 'pending';
+    this.addedLinesCount = 0;
+    this.deletedLinesCount = 0;
+
+    super.resume();
+  }
+
+  public accept(addedLinesCount: number, deletedLinesCount: number): void {
+    this.status = 'accept';
+    this.addedLinesCount = addedLinesCount;
+    this.deletedLinesCount = deletedLinesCount;
+    super.hide();
+  }
+
+  public discard(addedLinesCount: number, deletedLinesCount: number): void {
+    this.status = 'discard';
+    this.addedLinesCount = addedLinesCount;
+    this.deletedLinesCount = deletedLinesCount;
+    super.hide();
   }
 }
 
@@ -402,20 +429,24 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     removedWidget?: RemovedZoneWidget,
   ): ISingleEditOperation | null {
     const model = this.monacoEditor.getModel()!;
-    partialWidget.hide();
 
     let operation: ISingleEditOperation | null = null;
+
+    let addedLinesCount = 0;
+    let deletedLinesCount = 0;
 
     if (addedDec) {
       if (addedDec.length > 0) {
         const addedRange = addedDec.getRange();
-        const opRange = Range.lift({
-          startLineNumber: addedRange.startLineNumber,
-          startColumn: addedRange.startColumn,
-          endLineNumber: addedRange.endLineNumber + 1,
-          endColumn: 1,
-        });
-        operation = EditOperation.delete(opRange);
+        operation = EditOperation.delete(
+          Range.lift({
+            startLineNumber: addedRange.startLineNumber,
+            startColumn: addedRange.startColumn,
+            endLineNumber: addedRange.endLineNumber + 1,
+            endColumn: 1,
+          }),
+        );
+        addedLinesCount = addedDec.length;
       }
 
       addedDec.hide();
@@ -425,7 +456,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       const position = removedWidget.position!;
       const eol = model.getEOL();
 
-      const removedText = removedWidget.getRemovedTextLines().join(eol) + eol;
+      const lines = removedWidget.getRemovedTextLines();
+      deletedLinesCount = lines.length;
+      const removedText = lines.join(eol) + eol;
 
       if (operation) {
         operation = EditOperation.replace(Range.lift(operation.range), removedText);
@@ -436,6 +469,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       removedWidget.hide();
     }
 
+    partialWidget.discard(addedLinesCount, deletedLinesCount);
     return operation;
   }
 
@@ -448,10 +482,24 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const removedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
     const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
-    const hide = () => {
-      widget.hide();
+    const addedLinesCount = addedDec?.length || 0;
+    const deletedLinesCount = removedWidget?.getRemovedTextLines().length || 0;
+
+    const accpet = () => {
+      widget.accept(addedLinesCount, deletedLinesCount);
       addedDec?.hide();
       removedWidget?.hide();
+    };
+
+    const discard = () => {
+      const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
+      if (operation) {
+        model.pushEditOperations(null, [operation], () => null, group);
+      }
+      addedDec?.hide();
+      removedWidget?.hide();
+
+      return operation;
     };
 
     const resume = () => {
@@ -467,11 +515,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     switch (type) {
       case EPartialEdit.accept:
-        hide();
+        accpet();
         if (isPushStack) {
           this.pushUndoElement({
             undo: () => resume(),
-            redo: () => hide(),
+            redo: () => accpet(),
             group,
           });
         }
@@ -479,35 +527,29 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
       case EPartialEdit.discard:
         {
-          const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
-          if (operation) {
-            if (isPushStack) {
-              this.pushUndoElement({
-                undo: () => resume(),
-                redo: () => hide(),
-                group,
-              });
-            }
-            model.pushEditOperations(null, [operation], () => null, group);
+          const op = discard();
+          if (op && isPushStack) {
+            this.pushUndoElement({
+              undo: () => resume(),
+              redo: () => discard(),
+              group,
+            });
           }
         }
         break;
-
       default:
         break;
     }
 
     const event: IPartialEditEvent = {
+      uri: this.monacoEditor.getModel()!.uri,
       totalPartialEditCount: this.partialEditWidgetList.length,
       acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
-      totalAddedLinesCount: this.addedRangeDec.getDecorations().reduce((prev, current) => prev + current.length, 0),
-      totalRemovedLinesCount: this.removedZoneWidgets.reduce(
-        (prev, current) => prev + current.getRemovedTextLines().length,
-        0,
-      ),
+      totalAddedLinesCount: this.partialEditWidgetList.reduce((prev, current) => prev + current.addedLinesCount, 0),
+      totalDeletedLinesCount: this.partialEditWidgetList.reduce((prev, current) => prev + current.deletedLinesCount, 0),
       currentPartialEdit: {
-        addedLinesCount: addedDec?.length || 0,
-        deletedLinesCount: removedWidget?.getRemovedTextLines().length || 0,
+        addedLinesCount,
+        deletedLinesCount,
         type,
       },
     };
