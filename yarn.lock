@@ -2311,7 +2311,7 @@ __metadata:
     html-webpack-plugin: "npm:^5.6.0"
     koa: "npm:^2.15.0"
     koa-bodyparser: "npm:^4.3.0"
-    koa-router: "npm:^10.1.1"
+    koa-router: "npm:^12.0.1"
     koa-static: "npm:^5.0.0"
     less: "npm:^3.9.0"
     less-loader: "npm:^12.1.0"
@@ -10457,7 +10457,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-errors@npm:2.0.0":
+"http-errors@npm:2.0.0, http-errors@npm:^2.0.0":
   version: 2.0.0
   resolution: "http-errors@npm:2.0.0"
   dependencies:
@@ -12422,16 +12422,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koa-router@npm:^10.1.1":
-  version: 10.1.1
-  resolution: "koa-router@npm:10.1.1"
+"koa-router@npm:^12.0.1":
+  version: 12.0.1
+  resolution: "koa-router@npm:12.0.1"
   dependencies:
-    debug: "npm:^4.1.1"
-    http-errors: "npm:^1.7.3"
+    debug: "npm:^4.3.4"
+    http-errors: "npm:^2.0.0"
     koa-compose: "npm:^4.1.0"
     methods: "npm:^1.1.2"
-    path-to-regexp: "npm:^6.1.0"
-  checksum: 10/f362a9dae2abe74760ee3161ab183bffae52b9af3cf979f7a03fc19657da05924d178a7b0b0dc3cafd86104d1dcfdc1c31f8b1f4922ed6f7109b3c38ebc550b6
+    path-to-regexp: "npm:^6.2.1"
+  checksum: 10/5c733289f58f74c91e5f9c8925fe369325b650038eafea2fde9d9cd5f9d775df0bd308313c6381995668ad428ca50725a13db002256f7f2232ed0f08b4e1f8a9
   languageName: node
   linkType: hard
 
@@ -15543,7 +15543,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-to-regexp@npm:^6.1.0, path-to-regexp@npm:^6.2.1":
+"path-to-regexp@npm:^6.2.1":
   version: 6.2.1
   resolution: "path-to-regexp@npm:6.2.1"
   checksum: 10/1e266be712d1a08086ee77beab12a1804842ec635dfed44f9ee1ba960a0e01cec8063fb8c92561115cdc0ce73158cdc7766e353ffa039340b4a85b370084c4d4
