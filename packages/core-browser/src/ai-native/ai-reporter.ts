@@ -73,7 +73,6 @@ export class AIReporter implements IAIReporter {
 
   private report(relationId: string, data: ReportInfo) {
     const reportInfo = this.record(data, relationId);
-    console.log('report:>>>> ', JSON.stringify(reportInfo));
     this.reporter.point(AI_REPORTER_NAME, data.msgType || reportInfo.msgType, reportInfo);
   }
 }

@@ -104,14 +104,15 @@ interface ResourceArgs {
 export class EditorContribution
   extends Disposable
   implements
-  CommandContribution,
-  ClientAppContribution,
-  KeybindingContribution,
-  MonacoContribution,
-  ComponentContribution,
-  MenuContribution,
-  OpenerContribution,
-  QuickOpenContribution {
+    CommandContribution,
+    ClientAppContribution,
+    KeybindingContribution,
+    MonacoContribution,
+    ComponentContribution,
+    MenuContribution,
+    OpenerContribution,
+    QuickOpenContribution
+{
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -525,17 +526,7 @@ export class EditorContribution
             return;
           }
 
-          // const toArgs = JSON.parse(value);
-          const toArgs = JSON.parse(`{
-    "input1": {
-        "uri": "/Users/qianyi/Documents/work/github/opensumi/tools/workspace/merge-editor/a.json"
-    },
-    "input2": {
-        "uri": "/Users/qianyi/Documents/work/github/opensumi/tools/workspace/merge-editor/b.json"
-    },
-    "output": "/Users/qianyi/Documents/work/github/opensumi/tools/workspace/merge-editor/c.json",
-    "base": "/Users/qianyi/Documents/work/github/opensumi/tools/workspace/merge-editor/c.json"
-}`)
+          const toArgs = JSON.parse(value);
 
           /**
            * @example
@@ -552,7 +543,7 @@ export class EditorContribution
            */
 
           this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR.id, toArgs);
-        } catch (error) { }
+        } catch (error) {}
       },
     });
 
@@ -818,8 +809,8 @@ export class EditorContribution
         }
 
         return this.editorDocumentModelService.getModelReference(uri)?.instance.encoding;
-      }
-    })
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.CHANGE_ENCODING, {
       execute: async (uri: URI) => {
@@ -900,8 +891,7 @@ export class EditorContribution
         const uris: URI[] = [];
 
         if (uri.scheme === DIFF_SCHEME) {
-          const resource = await this.resourceService.getResource(uri) as IDiffResource;
-          console.log('resource:>>>', resource)
+          const resource = (await this.resourceService.getResource(uri)) as IDiffResource;
           if (resource.metadata) {
             uris.push(resource.metadata.original);
             uris.push(resource.metadata.modified);

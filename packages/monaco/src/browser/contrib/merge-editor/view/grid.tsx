@@ -8,11 +8,16 @@ import {
   URI,
   localize,
   runWhenIdle,
-  useInjectable
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Button, Icon, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionWidget } from '@opensumi/ide-core-browser/lib/components/actions';
-import { AbstractMenuService, MenuId, MenuItemNode, generateMergedInlineActions } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  AbstractMenuService,
+  MenuId,
+  MenuItemNode,
+  generateMergedInlineActions,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IMergeEditorInputData,
   IOpenMergeEditorArgs,
@@ -91,24 +96,29 @@ const TitleHead: React.FC<ITitleHeadProps> = ({ contrastType }) => {
         setEncoding(encoding || '');
       });
     }
-  }, [currentURI, state])
+  }, [currentURI, state]);
 
   const renderMoreActions = useCallback(() => {
     const menus = menuService.createMenu(MenuId.MergeEditorResultTitleContext);
     const inlineActions = generateMergedInlineActions({ menus });
 
     return inlineActions
-      .filter((action) => contrastType === EditorViewType.RESULT ? true : action.id !== EDITOR_COMMANDS.MERGEEDITOR_RESET.id)
+      .filter((action) =>
+        contrastType === EditorViewType.RESULT ? true : action.id !== EDITOR_COMMANDS.MERGEEDITOR_RESET.id,
+      )
       .map((data: MenuItemNode) => {
         if (data.id === EDITOR_COMMANDS.CHANGE_ENCODING.id && currentURI && encoding) {
           data.updateLabel(encoding.toLocaleUpperCase());
           data.argsTransformer = () => [currentURI];
           data.executeCallback = () => {
             update();
-          }
+            setTimeout(() => {
+              mergeEditorService.compare();
+            }, 16 * 3);
+          };
         }
 
-        return <InlineActionWidget data={data} />
+        return <InlineActionWidget data={data} />;
       });
   }, [contrastType, currentURI, encoding]);
 

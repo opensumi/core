@@ -32,7 +32,6 @@ import { StickinessConnectManager } from './view/stickiness-connect-manager';
 import type { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import type { ICodeEditor } from '../../monaco-api/editor';
 import type { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { ITextModel } from '../../monaco-api/types';
 
 @Injectable()
 export class MergeEditorService extends Disposable {
