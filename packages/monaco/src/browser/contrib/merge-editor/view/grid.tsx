@@ -118,8 +118,7 @@ const TitleHead: React.FC<ITitleHeadProps> = ({ contrastType }) => {
           };
         }
 
-        return <InlineActionWidget data={data} />;
-      });
+        return <InlineActionWidget key={data.id} data={data} />;
   }, [contrastType, currentURI, encoding]);
 
   return (
