@@ -2472,7 +2472,7 @@ __metadata:
     picomatch: "npm:^2.2.1"
     semver: "npm:^7.5.2"
     tree-kill: "npm:^1.2.2"
-    v8-inspect-profiler: "npm:^0.0.20"
+    v8-inspect-profiler: "npm:^0.1.1"
   languageName: unknown
   linkType: soft
 
@@ -6287,15 +6287,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chrome-remote-interface@npm:0.26.1":
-  version: 0.26.1
-  resolution: "chrome-remote-interface@npm:0.26.1"
+"chrome-remote-interface@npm:^0.33.0":
+  version: 0.33.2
+  resolution: "chrome-remote-interface@npm:0.33.2"
   dependencies:
     commander: "npm:2.11.x"
-    ws: "npm:^3.3.3"
+    ws: "npm:^7.2.0"
   bin:
-    chrome-remote-interface: ./bin/client.js
-  checksum: 10/473540e0ba95fe6466d0b1b32c82725705eb4217a6b52ea032d40866d1dc472e43a906115d80330018baa392269a8a597674b55d065fadb14a60453f63591076
+    chrome-remote-interface: bin/client.js
+  checksum: 10/fa82c76c5af629f5fbccb22c383604650f8679571385b8610783fde6f006b899c48e1522be551fd9670de59c1a2d93beb152a55651f24ba9c91ca0f8df3f581c
   languageName: node
   linkType: hard
 
@@ -19446,13 +19446,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ultron@npm:~1.1.0":
-  version: 1.1.1
-  resolution: "ultron@npm:1.1.1"
-  checksum: 10/7cc6e8e98a2c62c87ab25a79a274f90492f13f5cf7c622dbda1ec85913e207aed392c26e76ed6250c4f05f842571b05dcce1f8ad0f5ecded64a99002b1fdf6e5
-  languageName: node
-  linkType: hard
-
 "unbox-primitive@npm:^1.0.2":
   version: 1.0.2
   resolution: "unbox-primitive@npm:1.0.2"
@@ -19707,12 +19700,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"v8-inspect-profiler@npm:^0.0.20":
-  version: 0.0.20
-  resolution: "v8-inspect-profiler@npm:0.0.20"
+"v8-inspect-profiler@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "v8-inspect-profiler@npm:0.1.1"
   dependencies:
-    chrome-remote-interface: "npm:0.26.1"
-  checksum: 10/25491d7357bf0e5053b5230b3f39adf9404d31a44766601f711e5a63ee27975eb9d5dea72901a5d89c9341f1e3d568aabaa450f4cfd30c79248ca3680585a80d
+    chrome-remote-interface: "npm:^0.33.0"
+  checksum: 10/17260b825d1f0d1012c9ffe087836970f05ed25cf5aeedc3197dec73f0e69afbe4b9d3c4e146b228dd801d24fed24a6c371388b1f33e9368ef7080de3a4fec92
   languageName: node
   linkType: hard
 
@@ -20371,17 +20364,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^3.3.3":
-  version: 3.3.3
-  resolution: "ws@npm:3.3.3"
-  dependencies:
-    async-limiter: "npm:~1.0.0"
-    safe-buffer: "npm:~5.1.0"
-    ultron: "npm:~1.1.0"
-  checksum: 10/4b4a7e5d11025e399d82a7471bfb4818d563c892f5d953c2de937d262bd8e8acc8b340220001c01f8392574fccbc2df153d6031e285b8b38441187ea0c2cfd72
-  languageName: node
-  linkType: hard
-
 "ws@npm:^6.2.1":
   version: 6.2.3
   resolution: "ws@npm:6.2.3"
@@ -20391,7 +20373,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.3.1":
+"ws@npm:^7.2.0, ws@npm:^7.3.1":
   version: 7.5.10
   resolution: "ws@npm:7.5.10"
   peerDependencies:

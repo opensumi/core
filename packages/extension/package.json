@@ -40,7 +40,7 @@
     "picomatch": "^2.2.1",
     "semver": "^7.5.2",
     "tree-kill": "^1.2.2",
-    "v8-inspect-profiler": "^0.0.20"
+    "v8-inspect-profiler": "^0.1.1"
   },
   "devDependencies": {
     "@opensumi/ide-ai-native": "workspace:*",
