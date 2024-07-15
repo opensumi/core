@@ -74,7 +74,7 @@ export class MenuItemNode extends MenuNode {
     this.item = item;
   }
 
-  executeCallback = (...args: any[]) => { };
+  executeCallback = (...args: any[]) => {};
 
   getExecuteArgs(args: any[] = []): any[] {
     let runArgs = [...(this._options.args || []), ...(args || []), ...(this.extraTailArgs || [])];
@@ -92,7 +92,7 @@ export class MenuItemNode extends MenuNode {
     if (this.executeCallback) {
       this.executeCallback(result);
     }
-    return result
+    return result;
   }
 
   private getShortcut(commandId: string) {
