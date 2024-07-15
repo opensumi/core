@@ -2964,7 +2964,7 @@ __metadata:
     "@types/http-proxy": "npm:^1.17.2"
     http-proxy: "npm:^1.18.0"
     node-pty: "npm:1.0.0"
-    os-locale: "npm:^4.0.0"
+    os-locale: "npm:^6.0.2"
     xterm: "npm:5.3.0"
     xterm-addon-canvas: "npm:0.4.0"
     xterm-addon-fit: "npm:0.8.0"
@@ -8940,21 +8940,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"execa@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "execa@npm:1.0.0"
-  dependencies:
-    cross-spawn: "npm:^6.0.0"
-    get-stream: "npm:^4.0.0"
-    is-stream: "npm:^1.1.0"
-    npm-run-path: "npm:^2.0.0"
-    p-finally: "npm:^1.0.0"
-    signal-exit: "npm:^3.0.0"
-    strip-eof: "npm:^1.0.0"
-  checksum: 10/9b7a0077ba9d0ecdd41bf2d8644f83abf736e37622e3d1af39dec9d5f2cfa6bf8263301d0df489688dda3873d877f4168c01172cbafed5fffd12c808983515b0
-  languageName: node
-  linkType: hard
-
 "execa@npm:^5.0.0":
   version: 5.1.1
   resolution: "execa@npm:5.1.1"
@@ -9690,15 +9675,6 @@ __metadata:
   version: 3.0.0
   resolution: "get-stream@npm:3.0.0"
   checksum: 10/de14fbb3b4548ace9ab6376be852eef9898c491282e29595bc908a1814a126d3961b11cd4b7be5220019fe3b2abb84568da7793ad308fc139925a217063fa159
-  languageName: node
-  linkType: hard
-
-"get-stream@npm:^4.0.0":
-  version: 4.1.0
-  resolution: "get-stream@npm:4.1.0"
-  dependencies:
-    pump: "npm:^3.0.0"
-  checksum: 10/12673e8aebc79767d187b203e5bfabb8266304037815d3bcc63b6f8c67c6d4ad0d98d4d4528bcdc1cbea68f1dd91bcbd87827aa3cdcfa9c5fa4a4644716d72c2
   languageName: node
   linkType: hard
 
@@ -12507,7 +12483,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lcid@npm:^3.0.0":
+"lcid@npm:^3.1.1":
   version: 3.1.1
   resolution: "lcid@npm:3.1.1"
   dependencies:
@@ -13330,15 +13306,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"map-age-cleaner@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "map-age-cleaner@npm:0.1.3"
-  dependencies:
-    p-defer: "npm:^1.0.0"
-  checksum: 10/cb2804a5bcb3cbdfe4b59066ea6d19f5e7c8c196cd55795ea4c28f792b192e4c442426ae52524e5e1acbccf393d3bddacefc3d41f803e66453f6c4eda3650bc1
-  languageName: node
-  linkType: hard
-
 "map-obj@npm:^1.0.0":
   version: 1.0.1
   resolution: "map-obj@npm:1.0.1"
@@ -13402,17 +13369,6 @@ __metadata:
   version: 0.3.0
   resolution: "media-typer@npm:0.3.0"
   checksum: 10/38e0984db39139604756903a01397e29e17dcb04207bb3e081412ce725ab17338ecc47220c1b186b6bbe79a658aad1b0d41142884f5a481f36290cdefbe6aa46
-  languageName: node
-  linkType: hard
-
-"mem@npm:^5.0.0":
-  version: 5.1.1
-  resolution: "mem@npm:5.1.1"
-  dependencies:
-    map-age-cleaner: "npm:^0.1.3"
-    mimic-fn: "npm:^2.1.0"
-    p-is-promise: "npm:^2.1.0"
-  checksum: 10/8dc22ded29d7c0a9aeb4ae2a69ad232d32b117a5a8842d7997b7a37aa943dc306326ea24616b42de3d819e9dad0dbba083aa25dd5fe55ca1dfa654d89e5a0969
   languageName: node
   linkType: hard
 
@@ -15081,14 +15037,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"os-locale@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "os-locale@npm:4.0.0"
+"os-locale@npm:^6.0.2":
+  version: 6.0.2
+  resolution: "os-locale@npm:6.0.2"
   dependencies:
-    execa: "npm:^1.0.0"
-    lcid: "npm:^3.0.0"
-    mem: "npm:^5.0.0"
-  checksum: 10/e971925f46dd25498045b6b1528cb478132a0179aad30a04acd7b160a61ee02c2af31fa90e842fed7349859d0d8e73271a7824a6d332f1fc698531c4b5e4d795
+    lcid: "npm:^3.1.1"
+  checksum: 10/812d73334c8773b971bf7fd257b84d2ce7b85d5d2184370f2875fe0e51451f530d6f7c272de1faa0b9ff02d0d10dafd665b6425ed85489271705ab5738691a43
   languageName: node
   linkType: hard
 
@@ -15106,13 +15060,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-defer@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "p-defer@npm:1.0.0"
-  checksum: 10/1d8fb7138a0ccebb65479160fd93f245303c06c977c976105d75838f7f504a9a6ef11b7e058f98b4c957a6a8df268c616da1ee339285d565f9e5ba00304e027b
-  languageName: node
-  linkType: hard
-
 "p-event@npm:^4.0.0":
   version: 4.2.0
   resolution: "p-event@npm:4.2.0"
@@ -15126,13 +15073,6 @@ __metadata:
   version: 1.0.0
   resolution: "p-finally@npm:1.0.0"
   checksum: 10/93a654c53dc805dd5b5891bab16eb0ea46db8f66c4bfd99336ae929323b1af2b70a8b0654f8f1eae924b2b73d037031366d645f1fd18b3d30cbd15950cc4b1d4
-  languageName: node
-  linkType: hard
-
-"p-is-promise@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "p-is-promise@npm:2.1.0"
-  checksum: 10/c9a8248c8b5e306475a5d55ce7808dbce4d4da2e3d69526e4991a391a7809bfd6cfdadd9bf04f1c96a3db366c93d9a0f5ee81d949e7b1684c4e0f61f747199ef
   languageName: node
   linkType: hard
 
