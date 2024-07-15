@@ -5,10 +5,20 @@ import ReactDOMClient from 'react-dom/client';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { KeybindingRegistry, StackingLevel } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { Disposable, Emitter, Event, IRange, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, IPosition, IRange, isUndefined, uuid } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
-import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
+import {
+  ICodeEditor,
+  IContentWidgetPosition,
+  IEditorDecorationsCollection,
+  Position,
+  Range,
+  Selection,
+} from '@opensumi/ide-monaco';
+import {
+  ReactInlineContentWidget,
+  ShowAIContentOptions,
+} from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
@@ -77,9 +87,15 @@ interface ITextLinesTokens {
   lineTokens: LineTokens;
 }
 
-/**
- * @internal
- */
+type IWidgetStatus = 'accept' | 'discard' | 'pending';
+
+interface IWidgetSerializedState {
+  addedLinesCount: number;
+  deletedLinesCount: number;
+  status: IWidgetStatus;
+  lineNumber: number;
+}
+
 @Injectable({ multiple: true })
 export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   static ID = 'AcceptPartialEditWidgetID';
@@ -100,7 +116,7 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
 
   public addedLinesCount: number = 0;
   public deletedLinesCount: number = 0;
-  public status: 'accept' | 'discard' | 'pending' = 'pending';
+  public status: IWidgetStatus = 'pending';
 
   private getSequenceKeyStrings(): IPartialEditWidgetComponent | undefined {
     let keybindings = this.keybindingRegistry.getKeybindingsForCommand(AI_INLINE_DIFF_PARTIAL_EDIT.id);
@@ -176,6 +192,32 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
     this.deletedLinesCount = deletedLinesCount;
     super.hide();
   }
+
+  public serializeState(): IWidgetSerializedState {
+    return {
+      addedLinesCount: this.addedLinesCount,
+      deletedLinesCount: this.deletedLinesCount,
+      status: this.status,
+      lineNumber: this.getPosition()!.position!.lineNumber,
+    };
+  }
+
+  public restoreSerializedState(state: IWidgetSerializedState) {
+    if (state.status === 'accept') {
+      this.accept(state.addedLinesCount, state.deletedLinesCount);
+    } else if (state.status === 'discard') {
+      this.discard(state.addedLinesCount, state.deletedLinesCount);
+    } else {
+      this.resume();
+    }
+  }
+}
+
+interface IRemovedWidgetSerializedState {
+  textLines: ITextLinesTokens[];
+  pos: {
+    position: IPosition;
+  };
 }
 
 const RemovedWidgetComponent = ({ dom, marginWidth }) => {
@@ -192,9 +234,9 @@ const RemovedWidgetComponent = ({ dom, marginWidth }) => {
 
 class RemovedZoneWidget extends ZoneWidget {
   private root: ReactDOMClient.Root;
-  private recordPositionData: { position: Position; heightInLines: number };
+  private recordPositionData: { position: IPosition; heightInLines: number };
 
-  constructor(editor: ICodeEditor, private readonly removedTextLines: string[], options: IOptions) {
+  constructor(editor: ICodeEditor, private readonly removedTextLines: ITextLinesTokens[], options: IOptions) {
     super(editor, options);
   }
 
@@ -208,7 +250,14 @@ class RemovedZoneWidget extends ZoneWidget {
   }
 
   getRemovedTextLines(): string[] {
-    return this.removedTextLines;
+    return this.removedTextLines.map((v) => v.text);
+  }
+
+  serializeState(): IRemovedWidgetSerializedState {
+    return {
+      textLines: this.removedTextLines,
+      pos: this.recordPositionData,
+    };
   }
 
   hide(): void {
@@ -226,6 +275,11 @@ class RemovedZoneWidget extends ZoneWidget {
     if (this.recordPositionData) {
       this.show(this.recordPositionData.position, this.recordPositionData.heightInLines);
     }
+  }
+
+  override show(pos: IPosition, heightInLines: number): void {
+    this.recordPositionData = { position: pos, heightInLines };
+    super.show(pos, heightInLines);
   }
 
   override revealRange(): void {}
@@ -331,30 +385,30 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.addDispose(
       Disposable.create(() => {
-        this.zoneDec.clear();
-
-        this.clearPendingLine();
-        this.clearActiveLine();
-        this.clearAddedLine();
-        this.clearRemovedWidgets();
-        this.clearPartialEditWidgetList();
+        this.clear();
       }),
     );
+  }
+
+  clear() {
+    this.zoneDec.clear();
+
+    this.clearPendingLine();
+    this.clearActiveLine();
+    this.clearAddedLine();
+    this.clearRemovedWidgets();
+    this.clearPartialEditWidgetList();
   }
 
   public showRemovedWidgetByLineNumber(lineNumber: number, texts: ITextLinesTokens[]): void {
     const position = new Position(lineNumber, 1);
     const heightInLines = texts.length;
 
-    const widget = new RemovedZoneWidget(
-      this.monacoEditor,
-      texts.map((t) => t.text),
-      {
-        showInHiddenAreas: true,
-        showFrame: false,
-        showArrow: false,
-      },
-    );
+    const widget = new RemovedZoneWidget(this.monacoEditor, texts, {
+      showInHiddenAreas: true,
+      showFrame: false,
+      showArrow: false,
+    });
 
     widget.create();
 
@@ -725,4 +779,41 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     });
     this.removedZoneWidgets = [];
   }
+
+  serializeState(): SerializableState {
+    const addedRanges = this.addedRangeDec.getRanges();
+    const removedTextLines = this.removedZoneWidgets.map((w) => w.serializeState());
+    const widgets = this.partialEditWidgetList.map((w) => w.serializeState());
+
+    const state = {
+      addedRanges,
+      removedTextLines,
+      widgets,
+    };
+    return state;
+  }
+
+  restoreSerializedState(state: SerializableState): void {
+    this.clear();
+
+    const ranges = state.addedRanges.map((r) => new LineRange(r.startLineNumber, r.endLineNumber + 1));
+    this.touchAddedRange(ranges);
+    const widgetRanges = state.widgets.map((w) => new LineRange(w.lineNumber, w.lineNumber + 1));
+    this.touchPartialEditWidgets(widgetRanges);
+    widgetRanges.forEach((range, index) => {
+      const widget = this.partialEditWidgetList[index];
+      if (widget) {
+        widget.restoreSerializedState(state.widgets[index]);
+      }
+    });
+    state.removedTextLines.forEach(({ textLines, pos }) => {
+      this.showRemovedWidgetByLineNumber(pos.position.lineNumber, textLines);
+    });
+  }
+}
+
+export interface SerializableState {
+  addedRanges: IRange[];
+  removedTextLines: IRemovedWidgetSerializedState[];
+  widgets: IWidgetSerializedState[];
 }

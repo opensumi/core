@@ -326,7 +326,7 @@ export class InlineChatHandler extends Disposable {
     const { chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
-    this.diffPreviewer = this.inlineDiffService.createDiffPreviewer(monacoEditor, options);
+    this.diffPreviewer = this.inlineDiffService.showPreviewerByStream(monacoEditor, options);
     this.diffPreviewer.mount(this.aiInlineContentWidget);
 
     this.aiInlineChatDisposable.addDispose(this.diffPreviewer);

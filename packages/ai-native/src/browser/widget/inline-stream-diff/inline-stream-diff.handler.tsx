@@ -10,7 +10,7 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
-import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel } from './live-preview.decoration';
+import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel, SerializableState } from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -399,5 +399,12 @@ export class InlineStreamDiffHandler extends Disposable {
 
   get onPartialEditEvent() {
     return this.livePreviewDiffDecorationModel.onPartialEditEvent;
+  }
+
+  serializeState(): SerializableState {
+    return this.livePreviewDiffDecorationModel.serializeState();
+  }
+  restoreSerializedState(state: SerializableState): void {
+    this.livePreviewDiffDecorationModel.restoreSerializedState(state);
   }
 }

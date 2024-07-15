@@ -180,6 +180,10 @@ export class EnhanceDecorationsCollection extends Disposable {
     return this.deltaDecorations.find((d) => d.getRange().startLineNumber === lineNumber);
   }
 
+  getRanges() {
+    return this.deltaDecorations.map((d) => d.getRange());
+  }
+
   clear(): void {
     this.codeEditor.changeDecorations((accessor) => {
       for (const decoration of this.deltaDecorations) {

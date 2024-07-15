@@ -30,7 +30,7 @@ export class InlineDiffService extends Disposable {
       .join('\n');
   }
 
-  createDiffPreviewer(
+  showPreviewerByStream(
     monacoEditor: monaco.ICodeEditor,
     options: {
       crossSelection: monaco.Selection;
@@ -39,25 +39,9 @@ export class InlineDiffService extends Disposable {
   ): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> {
     const { crossSelection, chatResponse } = options;
 
-    const inlineDiffMode = this.preferenceService.getValid<EInlineDiffPreviewMode>(
-      AINativeSettingSectionsId.InlineDiffPreviewMode,
-      EInlineDiffPreviewMode.inlineLive,
-    );
-
     const disposable = new Disposable();
 
-    let diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
-
-    if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
-      diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, crossSelection]);
-    } else {
-      diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, crossSelection]);
-    }
-
-    diffPreviewer.show(
-      crossSelection.startLineNumber - 1,
-      crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
-    );
+    const diffPreviewer = this.createDiffPreviewer(monacoEditor, crossSelection);
 
     const onFinish = () => {
       diffPreviewer.layout();
@@ -107,6 +91,25 @@ export class InlineDiffService extends Disposable {
     }
 
     diffPreviewer.layout();
+    return diffPreviewer;
+  }
+
+  createDiffPreviewer(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection) {
+    const inlineDiffMode = this.preferenceService.getValid<EInlineDiffPreviewMode>(
+      AINativeSettingSectionsId.InlineDiffPreviewMode,
+      EInlineDiffPreviewMode.inlineLive,
+    );
+
+    let diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
+
+    if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
+      diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, selection]);
+    } else {
+      diffPreviewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, selection]);
+    }
+
+    diffPreviewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
+
     return diffPreviewer;
   }
 }
