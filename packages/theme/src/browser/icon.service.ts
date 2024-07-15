@@ -95,11 +95,13 @@ export class IconService extends WithEventBus implements IIconService {
   }
 
   private listen() {
-    this.preferenceService.onPreferenceChanged(async (e) => {
-      if (e.preferenceName === GeneralSettingsId.Icon && this.iconContributionRegistry.has(e.newValue)) {
-        await this.applyTheme(this.preferenceService.get<string>(GeneralSettingsId.Icon)!);
-      }
-    });
+    this.addDispose(
+      this.preferenceService.onSpecificPreferenceChange(GeneralSettingsId.Icon, async (e) => {
+        if (this.iconContributionRegistry.has(e.newValue)) {
+          await this.applyTheme(e.newValue);
+        }
+      }),
+    );
   }
 
   private styleSheetCollection = '';

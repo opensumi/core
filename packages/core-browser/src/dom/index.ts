@@ -175,3 +175,14 @@ export class FocusTracker extends Disposable {
 export function trackFocus(element: HTMLElement | Window): IFocusTracker {
   return new FocusTracker(element);
 }
+
+/**
+ * https://developer.mozilla.org/zh-CN/docs/Web/API/MouseEvent/button
+ */
+export const MouseEventButton = {
+  Left: 0,
+  Middle: 1,
+  Right: 2,
+  Back: 3,
+  Forward: 4,
+};

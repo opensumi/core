@@ -1498,6 +1498,11 @@ const customEditorSchema: PreferenceSchemaProperties = {
     default: true,
     description: '%editor.configuration.previewMode%',
   },
+  'editor.preventScrollAfterFocused': {
+    type: 'boolean',
+    default: false,
+    description: '%editor.configuration.preventScrollAfterFocused%',
+  },
   'editor.wrapTab': {
     type: 'boolean',
     default: false,

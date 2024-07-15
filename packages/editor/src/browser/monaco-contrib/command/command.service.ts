@@ -191,7 +191,6 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
   protected execute(monacoHandler: MonacoEditorCommandHandler, ...args: any[]): any {
     const editor = this.getActiveCodeEditor();
     if (editor) {
-      // editor.focus();
       return Promise.resolve(monacoHandler.execute(editor, ...args));
     }
     return Promise.resolve();

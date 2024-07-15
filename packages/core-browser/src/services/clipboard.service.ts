@@ -35,13 +35,17 @@ export class BrowserClipboardService implements IClipboardService {
     textArea.style.position = 'absolute';
 
     textArea.value = text;
-    textArea.focus();
+    textArea.focus({
+      preventScroll: true,
+    });
     textArea.select();
 
     document.execCommand('copy');
 
     if (activeElement instanceof HTMLElement) {
-      activeElement.focus();
+      activeElement.focus({
+        preventScroll: true,
+      });
     }
 
     document.body.removeChild(textArea);

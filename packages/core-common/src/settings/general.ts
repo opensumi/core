@@ -1,4 +1,4 @@
-export const enum GeneralSettingsId {
+export enum GeneralSettingsId {
   Icon = 'general.icon',
   Theme = 'general.theme',
   Language = 'general.language',

@@ -26,7 +26,6 @@ export const renderInfoItem = observer((props: ItemProps) => {
   const iconService = useInjectable<IIconService>(IconService);
   const handleSelect = debounce(() => props.onClick && props.onClick(), 20);
   const handleClose = debounce(() => props.onClose && props.onClose(), 20);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
   const styles_item_container = useDesignStyles(styles.item_container, 'item_container');
   const styles_tab_item_selected = useDesignStyles(styles.tab_item_selected, 'tab_item_selected');
   const styles_item_info_name = useDesignStyles(styles.item_info_name, 'item_info_name');
