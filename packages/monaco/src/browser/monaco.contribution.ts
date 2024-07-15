@@ -529,7 +529,7 @@ export class MonacoClientContribution
       {
         command: {
           id: EDITOR_COMMANDS.CHANGE_ENCODING.id,
-          label: '',
+          label: 'Change File Encoding',
         },
         group: 'navigation',
       },
