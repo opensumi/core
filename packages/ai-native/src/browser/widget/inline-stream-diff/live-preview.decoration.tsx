@@ -318,7 +318,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
     this._onPartialEditWidgetListChange.event;
 
-  constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
+  constructor(private readonly monacoEditor: ICodeEditor, private selection: Selection) {
     super();
 
     this.zoneDec = this.monacoEditor.createDecorationsCollection();
@@ -330,14 +330,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.undoRedoService = StandaloneServices.get(IUndoRedoService);
 
-    this.updateZone(
-      LineRange.fromRangeInclusive(
-        Range.fromPositions(
-          { lineNumber: this.selection.startLineNumber, column: 1 },
-          { lineNumber: this.selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
-        ),
-      ),
-    );
+    this.updateSelection(selection);
 
     this.addDispose(
       this.addedRangeDec.onDidDecorationsChange((newAddedRangeDec) => {
@@ -398,6 +391,18 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.clearAddedLine();
     this.clearRemovedWidgets();
     this.clearPartialEditWidgetList();
+  }
+
+  public updateSelection(selection: Selection) {
+    this.selection = selection;
+    this.updateZone(
+      LineRange.fromRangeInclusive(
+        Range.fromPositions(
+          { lineNumber: this.selection.startLineNumber, column: 1 },
+          { lineNumber: this.selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
+        ),
+      ),
+    );
   }
 
   public showRemovedWidgetByLineNumber(lineNumber: number, texts: ITextLinesTokens[]): void {

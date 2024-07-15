@@ -88,6 +88,10 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   private initializeDecorationModel(): void {
+    if (this.livePreviewDiffDecorationModel) {
+      this.livePreviewDiffDecorationModel.dispose();
+    }
+
     this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [
       this.monacoEditor,
       this.selection,
