@@ -9,7 +9,6 @@ import {
   Emitter as EventEmitter,
   ILineChange,
   ISelection,
-  LRUCache,
   OnEvent,
   URI,
   WithEventBus,
@@ -617,7 +616,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     if (this.currentUri) {
       const state = this.editorState.get(this.currentUri.toString());
       if (state) {
-        this.monacoDiffEditor.restoreViewState(state);
+        // this.monacoDiffEditor.restoreViewState(state);
       }
     }
   }
