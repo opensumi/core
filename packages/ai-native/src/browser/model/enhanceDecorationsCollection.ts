@@ -5,6 +5,7 @@ import {
   IModelDecorationOptions,
   IModelDecorationsChangeAccessor,
   IModelDeltaDecoration,
+  IPosition,
   IRange,
   ITextModel,
   Range,
@@ -12,6 +13,12 @@ import {
 import { space } from '@opensumi/ide-utils/lib/strings';
 
 import styles from './styles.module.less';
+
+export interface IDecorationSerializableState {
+  startPosition: IPosition;
+  endPosition: IPosition;
+  len: number;
+}
 
 interface IDeltaData extends IModelDeltaDecoration {
   length: number;
@@ -180,8 +187,16 @@ export class EnhanceDecorationsCollection extends Disposable {
     return this.deltaDecorations.find((d) => d.getRange().startLineNumber === lineNumber);
   }
 
-  getRanges() {
-    return this.deltaDecorations.map((d) => d.getRange());
+  serializeState(): IDecorationSerializableState[] {
+    return this.deltaDecorations.map((d) => {
+      const { range } = d;
+      const startPosition = { lineNumber: range.startLineNumber, column: range.startColumn };
+      const endPosition = {
+        lineNumber: range.endLineNumber,
+        column: range.endColumn,
+      };
+      return { startPosition, endPosition, len: d.length };
+    });
   }
 
   clear(): void {

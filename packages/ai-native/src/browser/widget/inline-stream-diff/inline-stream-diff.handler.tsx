@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, RunOnceScheduler } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, IPosition, RunOnceScheduler } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { linesDiffComputers } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputers';
@@ -9,6 +9,8 @@ import { DetailedLineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/ed
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
+
+import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
 
 import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel, SerializableState } from './live-preview.decoration';
 
@@ -208,19 +210,35 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   private renderPartialEditWidgets(diffModel: IComputeDiffData): void {
-    const { changes } = diffModel;
+    const decorationRange = this.calculateAddedDecorationCollectionState(diffModel);
+
+    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(decorationRange.map((v) => v.startPosition.lineNumber));
+  }
+
+  private calculateAddedDecorationCollectionState(diffModel: IComputeDiffData): IDecorationSerializableState[] {
     const zone = this.getZone();
-    const allAddRanges = changes.map((c) => {
-      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
-      return new LineRange(lineNumber, lineNumber + 1);
+
+    const ranges = diffModel.changes.map((c) => {
+      const r = c.addedRange;
+      const startPosition = { lineNumber: zone.startLineNumber + r.startLineNumber - 1, column: 1 };
+      const endPosition = {
+        lineNumber: zone.startLineNumber + r.endLineNumberExclusive - 2,
+        column: Number.MAX_SAFE_INTEGER,
+      };
+
+      return {
+        startPosition,
+        endPosition,
+        len: r.endLineNumberExclusive - r.startLineNumber,
+      };
     });
 
-    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(allAddRanges);
+    return ranges;
   }
 
   private renderAddedRangeDecoration(diffModel: IComputeDiffData): void {
-    const allAddRanges = diffModel.changes.map((c) => c.addedRange);
-    this.livePreviewDiffDecorationModel.touchAddedRange(allAddRanges);
+    const ranges = this.calculateAddedDecorationCollectionState(diffModel);
+    this.livePreviewDiffDecorationModel.touchAddedRange(ranges);
   }
 
   private renderRemovedRangeDecoration(diffModel: IComputeDiffData): void {

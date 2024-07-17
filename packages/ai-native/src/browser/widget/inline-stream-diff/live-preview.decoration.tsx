@@ -36,7 +36,11 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
-import { EnhanceDecorationsCollection, IEnhanceModelDeltaDecoration } from '../../model/enhanceDecorationsCollection';
+import {
+  EnhanceDecorationsCollection,
+  IDecorationSerializableState,
+  IEnhanceModelDeltaDecoration,
+} from '../../model/enhanceDecorationsCollection';
 import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
@@ -245,10 +249,6 @@ class RemovedZoneWidget extends ZoneWidget {
     this.root = ReactDOMClient.createRoot(container);
   }
 
-  renderDom(dom: HTMLElement, options: { marginWidth: number }): void {
-    this.root.render(<RemovedWidgetComponent dom={dom} marginWidth={options.marginWidth} />);
-  }
-
   getRemovedTextLines(): string[] {
     return this.removedTextLines.map((v) => v.text);
   }
@@ -283,6 +283,27 @@ class RemovedZoneWidget extends ZoneWidget {
   }
 
   override revealRange(): void {}
+
+  override create(): void {
+    super.create();
+
+    const dom = document.createElement('div');
+    renderLines(
+      dom,
+      this.editor.getOption(EditorOption.tabIndex),
+      this.removedTextLines.map(({ text: content, lineTokens }) => ({
+        content,
+        decorations: [],
+        lineTokens,
+      })),
+      this.editor.getOptions(),
+    );
+
+    const layoutInfo = this.editor.getOption(EditorOption.layoutInfo);
+    const marginWidth = layoutInfo.contentLeft;
+    this.root.render(<RemovedWidgetComponent dom={dom} marginWidth={marginWidth} />);
+  }
+
   dispose(): void {
     this.root.unmount();
     super.dispose();
@@ -416,23 +437,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     });
 
     widget.create();
-
-    const dom = document.createElement('div');
-    renderLines(
-      dom,
-      this.monacoEditor.getOption(EditorOption.tabIndex),
-      texts.map(({ text: content, lineTokens }) => ({
-        content,
-        decorations: [],
-        lineTokens,
-      })),
-      this.monacoEditor.getOptions(),
-    );
-
-    const layoutInfo = this.monacoEditor.getOption(EditorOption.layoutInfo);
-    const marginWidth = layoutInfo.contentLeft;
-
-    widget.renderDom(dom, { marginWidth });
     widget.show(position, heightInLines);
 
     this.removedZoneWidgets.push(widget);
@@ -665,12 +669,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     );
   }
 
-  public touchPartialEditWidgets(ranges: LineRange[]) {
+  public touchPartialEditWidgets(startLineNumbers: number[]) {
     this.clearPartialEditWidgetList();
 
-    ranges.forEach((range) => {
-      const lineNumber = range.startLineNumber;
-
+    startLineNumbers.forEach((lineNumber) => {
       const dispoable = new Disposable();
       const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [this.monacoEditor]);
       acceptPartialEditWidget.show({ position: { lineNumber, column: 1 } });
@@ -701,17 +703,12 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(true);
   }
 
-  public touchAddedRange(ranges: LineRange[]) {
-    const zone = this.getZone();
-
+  public touchAddedRange(ranges: IDecorationSerializableState[]) {
     this.addedRangeDec.set(
       ranges.map((r) => {
-        const startPosition = { lineNumber: zone.startLineNumber + r.startLineNumber - 1, column: 1 };
-        const endPosition = {
-          lineNumber: zone.startLineNumber + r.endLineNumberExclusive - 2,
-          column: Number.MAX_SAFE_INTEGER,
-        };
-        const length = r.length;
+        const startPosition = r.startPosition;
+        const endPosition = r.endPosition;
+        const length = r.len;
 
         let range = Range.fromPositions(startPosition, endPosition);
         let className = styles.inline_diff_added_range + ' ';
@@ -788,12 +785,12 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   serializeState(): SerializableState {
-    const addedRanges = this.addedRangeDec.getRanges();
+    const addedState = this.addedRangeDec.serializeState();
     const removedTextLines = this.removedZoneWidgets.map((w) => w.serializeState());
     const widgets = this.partialEditWidgetList.map((w) => w.serializeState());
 
     const state = {
-      addedRanges,
+      addedState,
       removedTextLines,
       widgets,
     };
@@ -803,11 +800,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   restoreSerializedState(state: SerializableState): void {
     this.clear();
 
-    const ranges = state.addedRanges.map((r) => new LineRange(r.startLineNumber, r.endLineNumber + 1));
-    this.touchAddedRange(ranges);
-    const widgetRanges = state.widgets.map((w) => new LineRange(w.lineNumber, w.lineNumber + 1));
-    this.touchPartialEditWidgets(widgetRanges);
-    widgetRanges.forEach((range, index) => {
+    this.touchAddedRange(state.addedState);
+    const widgetLineNumber = state.widgets.map((w) => w.lineNumber);
+    this.touchPartialEditWidgets(widgetLineNumber);
+    widgetLineNumber.forEach((range, index) => {
       const widget = this.partialEditWidgetList[index];
       if (widget) {
         widget.restoreSerializedState(state.widgets[index]);
@@ -820,7 +816,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 }
 
 export interface SerializableState {
-  addedRanges: IRange[];
+  addedState: IDecorationSerializableState[];
   removedTextLines: IRemovedWidgetSerializedState[];
   widgets: IWidgetSerializedState[];
 }
