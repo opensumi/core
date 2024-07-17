@@ -432,4 +432,12 @@ export class InlineStreamDiffHandler extends Disposable {
   restoreState(state: SerializableState): void {
     this.livePreviewDiffDecorationModel.restoreSerializedState(state);
   }
+  acceptAll(): void {
+    this.livePreviewDiffDecorationModel.fireAcceptAllEvent();
+    this.dispose();
+  }
+  rejectAll(): void {
+    this.discard();
+    this.dispose();
+  }
 }

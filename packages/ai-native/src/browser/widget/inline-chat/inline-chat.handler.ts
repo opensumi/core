@@ -28,9 +28,8 @@ import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import { ERunStrategy } from '../../types';
-import { BaseInlineDiffPreviewer } from '../inline-diff/inline-diff-previewer';
-import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
-import { InlineDiffHandler } from '../inline-diff/inline-diff.handler';
+import { InlineDiffHandler, InlineDiffWidget } from '../inline-diff';
+import { BaseInlineDiffPreviewer, LiveInlineDiffPreviewer } from '../inline-diff/inline-diff-previewer';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineChatController } from './inline-chat-controller';

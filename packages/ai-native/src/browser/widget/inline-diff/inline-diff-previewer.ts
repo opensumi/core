@@ -193,13 +193,12 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
-        this.node.dispose();
+        this.node.acceptAll();
         break;
 
       case EResultKind.DISCARD:
       case EResultKind.REGENERATE:
-        this.node.discard();
-        this.node.dispose();
+        this.node.rejectAll();
         break;
 
       default:

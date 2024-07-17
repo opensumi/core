@@ -59,6 +59,7 @@ interface IPartialEditWidgetComponent {
 export enum EPartialEdit {
   accept = 'accept',
   discard = 'discard',
+  acceptAll = 'acceptAll',
 }
 
 export interface IPartialEditEvent {
@@ -68,9 +69,9 @@ export interface IPartialEditEvent {
    */
   totalPartialEditCount: number;
   /**
-   * 已采纳数
+   * 已处理的个数
    */
-  acceptedPartialEditCount: number;
+  resolvedPartialEditCount: number;
   /**
    * 已添加行数
    */
@@ -190,11 +191,19 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
     super.hide();
   }
 
+  get isAccepted(): boolean {
+    return this.status === 'accept';
+  }
+
   public discard(addedLinesCount: number, deletedLinesCount: number): void {
     this.status = 'discard';
     this.addedLinesCount = addedLinesCount;
     this.deletedLinesCount = deletedLinesCount;
     super.hide();
+  }
+
+  get isRejected(): boolean {
+    return this.status === 'discard';
   }
 
   public serializeState(): IWidgetSerializedState {
@@ -251,6 +260,10 @@ class RemovedZoneWidget extends ZoneWidget {
 
   getRemovedTextLines(): string[] {
     return this.removedTextLines.map((v) => v.text);
+  }
+
+  get size() {
+    return this.removedTextLines.length;
   }
 
   serializeState(): IRemovedWidgetSerializedState {
@@ -607,20 +620,46 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const event: IPartialEditEvent = {
       uri: this.monacoEditor.getModel()!.uri,
       totalPartialEditCount: this.partialEditWidgetList.length,
-      acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
-      totalAddedLinesCount: this.partialEditWidgetList.reduce((prev, current) => prev + current.addedLinesCount, 0),
-      totalDeletedLinesCount: this.partialEditWidgetList.reduce((prev, current) => prev + current.deletedLinesCount, 0),
+      resolvedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
       currentPartialEdit: {
         addedLinesCount,
         deletedLinesCount,
         type,
       },
+      ...this.getTotalCodeCount(),
     };
 
     this.monacoEditor.focus();
 
     this._onPartialEditEvent.fire(event);
     this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
+  }
+
+  protected getTotalCodeCount(): {
+    totalAddedLinesCount: number;
+    totalDeletedLinesCount: number;
+  } {
+    const list = this.partialEditWidgetList.filter((w) => w.isAccepted);
+    return {
+      totalAddedLinesCount: list.reduce((prev, current) => prev + current.addedLinesCount, 0),
+      totalDeletedLinesCount: list.reduce((prev, current) => prev + current.deletedLinesCount, 0),
+    };
+  }
+
+  public fireAcceptAllEvent() {
+    const event: IPartialEditEvent = {
+      uri: this.monacoEditor.getModel()!.uri,
+      totalPartialEditCount: this.partialEditWidgetList.length,
+      resolvedPartialEditCount: this.partialEditWidgetList.length,
+      currentPartialEdit: {
+        addedLinesCount: -1,
+        deletedLinesCount: -1,
+        type: EPartialEdit.acceptAll,
+      },
+      ...this.getTotalCodeCount(),
+    };
+
+    this._onPartialEditEvent.fire(event);
   }
 
   /**

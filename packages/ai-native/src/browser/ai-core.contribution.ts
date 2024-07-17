@@ -90,7 +90,7 @@ import {
 } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
-import { InlineDiffHandler } from './widget/inline-diff/inline-diff.handler';
+import { InlineDiffHandler } from './widget/inline-diff';
 import { InlineInputChatService } from './widget/inline-input/inline-input.service';
 import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
@@ -184,9 +184,6 @@ export class AINativeBrowserContribution
 
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
-
-  @Autowired(InlineDiffHandler)
-  private readonly inlineDiffHandler: InlineDiffHandler;
 
   constructor() {
     this.registerFeature();
