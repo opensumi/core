@@ -81,6 +81,10 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
           return;
         }
 
+        if (typeof this.diffPreviewer !== 'undefined') {
+          (this.diffPreviewer as LiveInlineDiffPreviewer).clear();
+        }
+
         const key = e.newModelUrl.toString();
         const state = this._store.get(key);
         if (this.editor && state) {

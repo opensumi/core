@@ -27,6 +27,7 @@ interface IDeltaData extends IModelDeltaDecoration {
 
 export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   id: string;
+  isHidden: boolean;
   readonly editorDecoration: IModelDeltaDecoration;
   hide(): void;
   resume(): void;
@@ -40,6 +41,11 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   options: IModelDecorationOptions;
 
   private resumeRange: IRange;
+
+  private _hidden = false;
+  get isHidden(): boolean {
+    return this._hidden;
+  }
 
   constructor(
     public readonly id: string,
@@ -92,13 +98,14 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
 
   hide(): void {
     this.resumeRange = this.range;
-
+    this._hidden = true;
     const startPosition = { lineNumber: this.range.startLineNumber, column: 1 };
     const newRange = Range.fromPositions(startPosition);
     this.changeVisibility(styles.hidden, newRange);
   }
 
   resume(): void {
+    this._hidden = false;
     this.changeVisibility(styles.visible, Range.lift(this.resumeRange));
   }
 }
@@ -188,15 +195,17 @@ export class EnhanceDecorationsCollection extends Disposable {
   }
 
   serializeState(): IDecorationSerializableState[] {
-    return this.deltaDecorations.map((d) => {
-      const { range } = d;
-      const startPosition = { lineNumber: range.startLineNumber, column: range.startColumn };
-      const endPosition = {
-        lineNumber: range.endLineNumber,
-        column: range.endColumn,
-      };
-      return { startPosition, endPosition, len: d.length };
-    });
+    return this.deltaDecorations
+      .filter((d) => !d.isHidden)
+      .map((d) => {
+        const { range } = d;
+        const startPosition = { lineNumber: range.startLineNumber, column: range.startColumn };
+        const endPosition = {
+          lineNumber: range.endLineNumber,
+          column: range.endColumn,
+        };
+        return { startPosition, endPosition, len: d.length };
+      });
   }
 
   clear(): void {

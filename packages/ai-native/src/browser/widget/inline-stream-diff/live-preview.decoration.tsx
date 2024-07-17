@@ -253,6 +253,11 @@ class RemovedZoneWidget extends ZoneWidget {
   private root: ReactDOMClient.Root;
   private recordPositionData: { position: IPosition; heightInLines: number };
 
+  private _hidden: boolean = false;
+  get isHidden(): boolean {
+    return this._hidden;
+  }
+
   constructor(editor: ICodeEditor, private readonly removedTextLines: ITextLinesTokens[], options: IOptions) {
     super(editor, options);
   }
@@ -284,7 +289,7 @@ class RemovedZoneWidget extends ZoneWidget {
         heightInLines: this._viewZone?.heightInLines,
       };
     }
-
+    this._hidden = true;
     super.hide();
   }
 
@@ -296,6 +301,7 @@ class RemovedZoneWidget extends ZoneWidget {
 
   override show(pos: IPosition, heightInLines: number): void {
     this.recordPositionData = { position: pos, heightInLines };
+    this._hidden = false;
     super.show(pos, heightInLines);
   }
 
@@ -303,7 +309,6 @@ class RemovedZoneWidget extends ZoneWidget {
 
   override create(): void {
     super.create();
-
     const dom = document.createElement('div');
     renderLines(
       dom,
@@ -837,7 +842,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   serializeState(): SerializableState {
     const addedState = this.addedRangeDec.serializeState();
-    const removedTextLines = this.removedZoneWidgets.map((w) => w.serializeState());
+    const removedTextLines = this.removedZoneWidgets.filter((v) => !v.isHidden).map((w) => w.serializeState());
     const widgets = this.partialEditWidgetList.map((w) => w.serializeState());
 
     const state = {
