@@ -12,7 +12,12 @@ import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undo
 
 import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
 
-import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel, SerializableState } from './live-preview.decoration';
+import {
+  AcceptPartialEditWidget,
+  IRemovedWidgetSerializedState,
+  LivePreviewDiffDecorationModel,
+  SerializableState,
+} from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -246,23 +251,29 @@ export class InlineStreamDiffHandler extends Disposable {
     const zone = this.getZone();
 
     let preRemovedLen: number = 0;
-    this.livePreviewDiffDecorationModel.clearRemovedWidgets();
+
+    const states = [] as IRemovedWidgetSerializedState[];
 
     for (const change of changes) {
       const { removedTextLines, removedLinesOriginalRange, addedRange } = change;
 
       if (removedTextLines.length > 0) {
-        this.livePreviewDiffDecorationModel.showRemovedWidgetByLineNumber(
-          zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
-          removedTextLines.map((text, index) => ({
+        states.push({
+          position: {
+            column: 1,
+            lineNumber: zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
+          },
+          textLines: removedTextLines.map((text, index) => ({
             text,
             lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index],
           })),
-        );
+        });
       }
 
       preRemovedLen += removedLinesOriginalRange.length - addedRange.length;
     }
+
+    this.livePreviewDiffDecorationModel.touchRemovedWidget(states);
   }
 
   /**

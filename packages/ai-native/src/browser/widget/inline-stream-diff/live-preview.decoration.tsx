@@ -87,18 +87,24 @@ export interface IPartialEditEvent {
   };
 }
 
-interface ITextLinesTokens {
+export interface ITextLinesTokens {
   text: string;
   lineTokens: LineTokens;
 }
 
 type IWidgetStatus = 'accept' | 'discard' | 'pending';
 
-interface IWidgetSerializedState {
+export interface IWidgetSerializedState {
   addedLinesCount: number;
   deletedLinesCount: number;
   status: IWidgetStatus;
   lineNumber: number;
+}
+
+export interface SerializableState {
+  addedState: IDecorationSerializableState[];
+  removedTextLines: IRemovedWidgetSerializedState[];
+  widgets: IWidgetSerializedState[];
 }
 
 @Injectable({ multiple: true })
@@ -226,11 +232,9 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   }
 }
 
-interface IRemovedWidgetSerializedState {
+export interface IRemovedWidgetSerializedState {
   textLines: ITextLinesTokens[];
-  pos: {
-    position: IPosition;
-  };
+  position: IPosition;
 }
 
 const RemovedWidgetComponent = ({ dom, marginWidth }) => {
@@ -269,7 +273,7 @@ class RemovedZoneWidget extends ZoneWidget {
   serializeState(): IRemovedWidgetSerializedState {
     return {
       textLines: this.removedTextLines,
-      pos: this.recordPositionData,
+      position: this.recordPositionData.position,
     };
   }
 
@@ -772,6 +776,14 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.recordPartialEditWidgetWithAddedDec();
   }
 
+  public touchRemovedWidget(states: IRemovedWidgetSerializedState[]) {
+    this.clearRemovedWidgets();
+
+    states.forEach(({ textLines, position }) => {
+      this.showRemovedWidgetByLineNumber(position.lineNumber, textLines);
+    });
+  }
+
   public touchPendingRange(range: LineRange) {
     const zone = this.getZone();
 
@@ -848,14 +860,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         widget.restoreSerializedState(state.widgets[index]);
       }
     });
-    state.removedTextLines.forEach(({ textLines, pos }) => {
-      this.showRemovedWidgetByLineNumber(pos.position.lineNumber, textLines);
-    });
+    this.touchRemovedWidget(state.removedTextLines);
   }
-}
-
-export interface SerializableState {
-  addedState: IDecorationSerializableState[];
-  removedTextLines: IRemovedWidgetSerializedState[];
-  widgets: IWidgetSerializedState[];
 }
