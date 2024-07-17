@@ -1,8 +1,17 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { AINativeSettingSectionsId, ChatResponse, Disposable, ReplyResponse } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  ChatResponse,
+  Disposable,
+  IDisposable,
+  ILogger,
+  ReplyResponse,
+} from '@opensumi/ide-core-common';
+import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 
+import { IAIMonacoContribHandler } from '../../contrib/base';
 import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import {
@@ -12,14 +21,79 @@ import {
 } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { SerializableState } from '../inline-stream-diff/live-preview.decoration';
 
 @Injectable()
-export class InlineDiffService extends Disposable {
+export class InlineDiffHandler extends IAIMonacoContribHandler {
+  protected allowAnyScheme = true;
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
+
+  @Autowired(ILogger)
+  private logger: ILogger;
+
+  private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined;
+
+  protected _store = new Map<
+    string,
+    {
+      state: SerializableState;
+      selection: monaco.Selection;
+    }
+  >();
+
+  doContribute(): IDisposable {
+    this.logger.log('InlineDiffHandler doContribute');
+    return Disposable.NULL;
+  }
+
+  registerInlineDiffFeature(editor: IEditor): IDisposable {
+    const disposable = new Disposable();
+
+    const monacoEditor = editor.monacoEditor;
+
+    disposable.addDispose(
+      monacoEditor.onWillChangeModel((e) => {
+        if (e.oldModelUrl) {
+          const key = e.oldModelUrl.toString();
+          if (this.diffPreviewer instanceof LiveInlineDiffPreviewer) {
+            const state = (this.diffPreviewer as LiveInlineDiffPreviewer).serializeState();
+            if (state) {
+              this._store.set(key, { state, selection: this.diffPreviewer.getSelection() });
+            }
+          }
+        }
+      }),
+    );
+
+    disposable.addDispose(
+      monacoEditor.onDidChangeModel((e) => {
+        if (!e.newModelUrl) {
+          return;
+        }
+
+        if (typeof this.diffPreviewer !== 'undefined') {
+          (this.diffPreviewer as LiveInlineDiffPreviewer).clear();
+        }
+
+        const key = e.newModelUrl.toString();
+        const state = this._store.get(key);
+        if (this.editor && state) {
+          const diffPreviewer = this.createDiffPreviewer(this.editor.monacoEditor, state.selection);
+          this.diffPreviewer = diffPreviewer;
+          (this.diffPreviewer as LiveInlineDiffPreviewer).restoreState(state.state);
+        } else {
+          this.diffPreviewer = undefined;
+        }
+      }),
+    );
+
+    return disposable;
+  }
 
   private formatAnswer(answer: string, crossCode: string): string {
     const leadingWhitespaceMatch = crossCode.match(/^\s*/);
@@ -42,6 +116,7 @@ export class InlineDiffService extends Disposable {
     const disposable = new Disposable();
 
     const diffPreviewer = this.createDiffPreviewer(monacoEditor, crossSelection);
+    this.diffPreviewer = diffPreviewer;
 
     const onFinish = () => {
       diffPreviewer.layout();
@@ -95,13 +170,12 @@ export class InlineDiffService extends Disposable {
   }
 
   createDiffPreviewer(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection) {
+    let diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
+
     const inlineDiffMode = this.preferenceService.getValid<EInlineDiffPreviewMode>(
       AINativeSettingSectionsId.InlineDiffPreviewMode,
       EInlineDiffPreviewMode.inlineLive,
     );
-
-    let diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
-
     if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
       diffPreviewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, selection]);
     } else {

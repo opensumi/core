@@ -14,7 +14,7 @@ import { SerializableState } from '../inline-stream-diff/live-preview.decoration
 import { InlineDiffWidget } from './inline-diff-widget';
 
 @Injectable({ multiple: true })
-export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
+export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
@@ -29,6 +29,9 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
         if (this.inlineContentWidget) {
           this.inlineContentWidget.dispose();
         }
+        if (this.node) {
+          this.node.dispose();
+        }
       }),
     );
   }
@@ -40,6 +43,10 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   protected node: N;
   public getNode(): N {
     return this.node;
+  }
+
+  public getSelection(): Selection {
+    return this.selection;
   }
 
   public mount(contentWidget: AIInlineContentWidget): void {
@@ -65,7 +72,7 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
     // do nothing
   }
 
-  onLineCount(evetn: (count: number) => void): Disposable {
+  onLineCount(evetn: (count: number) => void): IDisposable {
     // do nothing
     return this;
   }
@@ -84,6 +91,9 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
     // do nothing
   }
   onEnd(): void {
+    // do nothing
+  }
+  clear(): void {
     // do nothing
   }
 }
@@ -196,6 +206,9 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
         break;
     }
   }
+  onLineCount() {
+    return Disposable.NULL;
+  }
   layout(): void {
     this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
     super.layout();
@@ -214,6 +227,12 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   serializeState(): SerializableState {
     return this.node.serializeState();
+  }
+  restoreState(state: SerializableState): void {
+    this.node.restoreState(state);
+  }
+  clear(): void {
+    this.node.clear();
   }
   get onPartialEditEvent() {
     return this.node.onPartialEditEvent;

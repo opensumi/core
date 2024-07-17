@@ -696,6 +696,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       this.partialEditWidgetList.push(acceptPartialEditWidget);
     });
 
+    this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
+
     this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(true);
   }
 

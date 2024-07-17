@@ -30,7 +30,7 @@ import { CodeActionService } from '../../contrib/code-action/code-action.service
 import { ERunStrategy } from '../../types';
 import { BaseInlineDiffPreviewer } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
-import { InlineDiffService } from '../inline-diff/inline-diff.service';
+import { InlineDiffHandler } from '../inline-diff/inline-diff.handler';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineChatController } from './inline-chat-controller';
@@ -67,8 +67,8 @@ export class InlineChatHandler extends Disposable {
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
 
-  @Autowired(InlineDiffService)
-  private readonly inlineDiffService: InlineDiffService;
+  @Autowired(InlineDiffHandler)
+  private readonly inlineDiffService: InlineDiffHandler;
 
   private logger: ILogServiceClient;
 
@@ -90,14 +90,11 @@ export class InlineChatHandler extends Disposable {
   }
 
   private disposeAllWidget() {
-    [
-      this.diffPreviewer,
-      this.aiInlineContentWidget,
-      this.aiInlineChatDisposable,
-      this.aiInlineChatOperationDisposable,
-    ].forEach((widget) => {
-      widget?.dispose();
-    });
+    [this.aiInlineContentWidget, this.aiInlineChatDisposable, this.aiInlineChatOperationDisposable].forEach(
+      (widget) => {
+        widget?.dispose();
+      },
+    );
 
     this.inlineChatInUsing = false;
   }
@@ -276,15 +273,6 @@ export class InlineChatHandler extends Disposable {
     );
   }
 
-  private formatAnswer(answer: string, crossCode: string): string {
-    const leadingWhitespaceMatch = crossCode.match(/^\s*/);
-    const indent = leadingWhitespaceMatch ? leadingWhitespaceMatch[0] : '  ';
-    return answer
-      .split('\n')
-      .map((line) => `${indent}${line}`)
-      .join('\n');
-  }
-
   private convertInlineChatStatus(
     status: EInlineChatStatus,
     reportInfo: {
@@ -326,10 +314,11 @@ export class InlineChatHandler extends Disposable {
     const { chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
+    if (this.diffPreviewer) {
+      this.diffPreviewer.dispose();
+    }
     this.diffPreviewer = this.inlineDiffService.showPreviewerByStream(monacoEditor, options);
     this.diffPreviewer.mount(this.aiInlineContentWidget);
-
-    this.aiInlineChatDisposable.addDispose(this.diffPreviewer);
 
     if (InlineChatController.is(chatResponse)) {
       this.aiInlineChatOperationDisposable.addDispose([
@@ -403,7 +392,7 @@ export class InlineChatHandler extends Disposable {
 
     const model = monacoEditor.getModel();
 
-    this.diffPreviewer?.dispose();
+    this.diffPreviewer?.clear();
     this.aiInlineChatOperationDisposable.dispose();
     this.aiInlineChatDisposable.addDispose(this.aiInlineContentWidget.launchChatStatus(EInlineChatStatus.THINKING));
 
@@ -468,7 +457,7 @@ export class InlineChatHandler extends Disposable {
 
   private async runInlineChatAction(
     monacoEditor: monaco.ICodeEditor,
-    reporterFn: () => string,
+    createReporter: () => string,
     execute?: () => MaybePromise<void>,
     providerDiffPreviewStrategy?: () => MaybePromise<ChatResponse | InlineChatController>,
   ) {
@@ -488,7 +477,7 @@ export class InlineChatHandler extends Disposable {
         .setStartPosition(selection.startLineNumber, 1)
         .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
-      const relationId = reporterFn();
+      const relationId = createReporter();
 
       await this.handleDiffPreviewStrategy(
         monacoEditor,
