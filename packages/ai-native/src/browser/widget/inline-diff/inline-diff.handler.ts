@@ -4,6 +4,8 @@ import {
   AINativeSettingSectionsId,
   ChatResponse,
   Disposable,
+  Emitter,
+  Event,
   IDisposable,
   ILogger,
   ReplyResponse,
@@ -21,7 +23,7 @@ import {
 } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { SerializableState } from '../inline-stream-diff/live-preview.decoration';
+import { IPartialEditEvent, SerializableState } from '../inline-stream-diff/live-preview.decoration';
 
 @Injectable()
 export class InlineDiffHandler extends IAIMonacoContribHandler {
@@ -35,6 +37,9 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
   @Autowired(ILogger)
   private logger: ILogger;
+
+  private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
+  public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
 
   private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined;
 
@@ -76,15 +81,11 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
           return;
         }
 
-        if (typeof this.diffPreviewer !== 'undefined') {
-          (this.diffPreviewer as LiveInlineDiffPreviewer).clear();
-        }
-
         const key = e.newModelUrl.toString();
         const state = this._store.get(key);
         if (this.editor && state) {
           const diffPreviewer = this.createDiffPreviewer(this.editor.monacoEditor, state.selection);
-          this.diffPreviewer = diffPreviewer;
+          this.attachDiffPreviewer(diffPreviewer);
           (this.diffPreviewer as LiveInlineDiffPreviewer).restoreState(state.state);
         } else {
           this.diffPreviewer = undefined;
@@ -104,6 +105,22 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       .join('\n');
   }
 
+  protected _previewerDisposable: IDisposable = Disposable.NULL;
+  attachDiffPreviewer(previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>) {
+    if (typeof this.diffPreviewer !== 'undefined') {
+      (this.diffPreviewer as LiveInlineDiffPreviewer).clear();
+    }
+
+    this._previewerDisposable.dispose();
+    this.diffPreviewer = previewer;
+
+    if (previewer instanceof LiveInlineDiffPreviewer) {
+      this._previewerDisposable = previewer.onPartialEditEvent((event) => {
+        this._onPartialEditEvent.fire(event);
+      });
+    }
+  }
+
   showPreviewerByStream(
     monacoEditor: monaco.ICodeEditor,
     options: {
@@ -116,7 +133,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     const disposable = new Disposable();
 
     const diffPreviewer = this.createDiffPreviewer(monacoEditor, crossSelection);
-    this.diffPreviewer = diffPreviewer;
+    this.attachDiffPreviewer(diffPreviewer);
 
     const onFinish = () => {
       diffPreviewer.layout();
