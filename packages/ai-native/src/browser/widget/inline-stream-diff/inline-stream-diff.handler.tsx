@@ -95,10 +95,6 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   private initializeDecorationModel(): void {
-    if (this.livePreviewDiffDecorationModel) {
-      this.livePreviewDiffDecorationModel.dispose();
-    }
-
     this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [
       this.monacoEditor,
       this.selection,
@@ -210,12 +206,6 @@ export class InlineStreamDiffHandler extends Disposable {
     return this.livePreviewDiffDecorationModel.getZone();
   }
 
-  private renderPartialEditWidgets(diffModel: IComputeDiffData): void {
-    const decorationRange = this.calculateAddedDecorationCollectionState(diffModel);
-
-    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(decorationRange.map((v) => v.startPosition.lineNumber));
-  }
-
   private calculateAddedDecorationCollectionState(diffModel: IComputeDiffData): IDecorationSerializableState[] {
     const zone = this.getZone();
 
@@ -235,6 +225,12 @@ export class InlineStreamDiffHandler extends Disposable {
     });
 
     return ranges;
+  }
+
+  private renderPartialEditWidgets(diffModel: IComputeDiffData): void {
+    const decorationRange = this.calculateAddedDecorationCollectionState(diffModel);
+
+    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(decorationRange.map((v) => v.startPosition.lineNumber));
   }
 
   private renderAddedRangeDecoration(diffModel: IComputeDiffData): void {
@@ -421,6 +417,7 @@ export class InlineStreamDiffHandler extends Disposable {
   public readyRender(diffModel: IComputeDiffData): void {
     this.doSchedulerEdits();
 
+    // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
     this.renderPartialEditWidgets(diffModel);
     this.pushStackElement();
     this.monacoEditor.focus();
