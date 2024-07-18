@@ -59,7 +59,6 @@ interface IPartialEditWidgetComponent {
 export enum EPartialEdit {
   accept = 'accept',
   discard = 'discard',
-  acceptAll = 'acceptAll',
 }
 
 export interface IPartialEditEvent {
@@ -653,22 +652,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       totalAddedLinesCount: list.reduce((prev, current) => prev + current.addedLinesCount, 0),
       totalDeletedLinesCount: list.reduce((prev, current) => prev + current.deletedLinesCount, 0),
     };
-  }
-
-  public fireAcceptAllEvent() {
-    const event: IPartialEditEvent = {
-      uri: this.monacoEditor.getModel()!.uri,
-      totalPartialEditCount: this.partialEditWidgetList.length,
-      resolvedPartialEditCount: this.partialEditWidgetList.length,
-      currentPartialEdit: {
-        addedLinesCount: -1,
-        deletedLinesCount: -1,
-        type: EPartialEdit.acceptAll,
-      },
-      ...this.getTotalCodeCount(),
-    };
-
-    this._onPartialEditEvent.fire(event);
   }
 
   /**
