@@ -427,15 +427,14 @@ export class InlineChatHandler extends Disposable {
 
     this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
+        this.inlineDiffHandler.handleAction(monacoEditor, kind);
+
         if (kind === EResultKind.ACCEPT) {
-          this.inlineDiffHandler.handleAction(monacoEditor, kind);
           this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
           runWhenIdle(() => {
             this.disposeAllWidget();
           });
         } else if (kind === EResultKind.DISCARD) {
-          this.inlineDiffHandler.handleAction(monacoEditor, kind);
-
           this.aiReporter.end(relationId, { message: 'discard', success: true, isDrop: true });
           runWhenIdle(() => {
             this.disposeAllWidget();

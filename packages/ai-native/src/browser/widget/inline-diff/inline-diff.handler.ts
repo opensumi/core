@@ -93,8 +93,8 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
           oldDiffPreviewer.dispose();
         }
 
-        if (oldDiffPreviewer instanceof LiveInlineDiffPreviewer) {
-          const previewer = this.createDiffPreviewer(monacoEditor, state.selection) as LiveInlineDiffPreviewer;
+        const previewer = this.createDiffPreviewer(monacoEditor, state.selection);
+        if (previewer instanceof LiveInlineDiffPreviewer) {
           previewer.restoreState(state);
         }
       }),
