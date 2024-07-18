@@ -258,7 +258,7 @@ class RemovedZoneWidget extends ZoneWidget {
     return this._hidden;
   }
 
-  constructor(editor: ICodeEditor, private readonly removedTextLines: ITextLinesTokens[], options: IOptions) {
+  constructor(editor: ICodeEditor, private readonly textLines: ITextLinesTokens[], options: IOptions) {
     super(editor, options);
   }
 
@@ -268,16 +268,16 @@ class RemovedZoneWidget extends ZoneWidget {
   }
 
   getRemovedTextLines(): string[] {
-    return this.removedTextLines.map((v) => v.text);
+    return this.textLines.map((v) => v.text);
   }
 
-  get size() {
-    return this.removedTextLines.length;
+  get height() {
+    return this.textLines.length;
   }
 
   serializeState(): IRemovedWidgetSerializedState {
     return {
-      textLines: this.removedTextLines,
+      textLines: this.textLines,
       position: this.recordPositionData.position,
     };
   }
@@ -313,7 +313,7 @@ class RemovedZoneWidget extends ZoneWidget {
     renderLines(
       dom,
       this.editor.getOption(EditorOption.tabIndex),
-      this.removedTextLines.map(({ text: content, lineTokens }) => ({
+      this.textLines.map(({ text: content, lineTokens }) => ({
         content,
         decorations: [],
         lineTokens,
@@ -568,7 +568,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
     const addedLinesCount = addedDec?.length || 0;
-    const deletedLinesCount = removedWidget?.getRemovedTextLines().length || 0;
+    const deletedLinesCount = removedWidget?.height || 0;
 
     const accpet = () => {
       widget.accept(addedLinesCount, deletedLinesCount);

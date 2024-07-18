@@ -427,9 +427,6 @@ export class InlineStreamDiffHandler extends Disposable {
     return this.livePreviewDiffDecorationModel.onPartialEditEvent;
   }
 
-  clear(): void {
-    this.livePreviewDiffDecorationModel.clear();
-  }
   serializeState(): SerializableState {
     return this.livePreviewDiffDecorationModel.serializeState();
   }
