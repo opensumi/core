@@ -31,7 +31,7 @@ export class Widget extends Disposable implements IWidget {
   @observable
   processName: string | undefined;
 
-  constructor(id: string, public reuse: boolean = false) {
+  constructor(id: string, public reuse: boolean = false, public recovery: boolean = false) {
     super();
     makeObservable(this);
     this._id = id;
@@ -372,8 +372,8 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this.selectGroup(index);
   }
 
-  createWidget(group: WidgetGroup, id?: string, reuse?: boolean, isSimpleWidget = false) {
-    const widget = new Widget(id || this.service.generateSessionId(), reuse);
+  createWidget(group: WidgetGroup, id?: string, reuse?: boolean, isSimpleWidget = false, recovery = false) {
+    const widget = new Widget(id || this.service.generateSessionId(), reuse, recovery);
     this._widgets.set(widget.id, widget);
     widget.group = group;
     if (!isSimpleWidget) {

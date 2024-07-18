@@ -21,7 +21,13 @@ import { MenuId } from '../menu/next/menu-id';
 import { PreferenceContribution } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 
-import { COMMON_COMMANDS, EDITOR_COMMANDS, FILE_COMMANDS, TERMINAL_COMMANDS } from './common.command';
+import {
+  COMMON_COMMANDS,
+  EDITOR_COMMANDS,
+  FILE_COMMANDS,
+  TERMINAL_COMMANDS,
+  WORKSPACE_COMMANDS,
+} from './common.command';
 import { ClientAppContribution } from './common.define';
 
 export const inputFocusedContextKey = 'inputFocus';
@@ -154,6 +160,16 @@ export class ClientCommonContribution
         command: FILE_COMMANDS.OPEN_WORKSPACE.id,
         group: '1_open',
         when: 'config.application.supportsOpenWorkspace',
+      },
+      {
+        command: WORKSPACE_COMMANDS.ADD_WORKSPACE_FOLDER.id,
+        group: '1_open',
+        when: 'config.workspace.supportMultiRootWorkspace',
+      },
+      {
+        command: WORKSPACE_COMMANDS.SAVE_WORKSPACE_AS_FILE.id,
+        group: '1_open',
+        when: 'config.workspace.supportMultiRootWorkspace',
       },
       {
         command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
