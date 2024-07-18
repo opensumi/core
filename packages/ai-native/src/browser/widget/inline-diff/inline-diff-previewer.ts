@@ -93,9 +93,6 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   onEnd(): void {
     // do nothing
   }
-  clear(): void {
-    // do nothing
-  }
 }
 
 @Injectable({ multiple: true })
@@ -229,9 +226,6 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   restoreState(state: SerializableState): void {
     this.node.restoreState(state);
-  }
-  clear(): void {
-    this.node.clear();
   }
   get onPartialEditEvent() {
     return this.node.onPartialEditEvent;

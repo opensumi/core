@@ -15,7 +15,7 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
         localize('preference.ai.native.inlineDiff.preview.mode.inlineLive'),
         localize('preference.ai.native.inlineDiff.preview.mode.sideBySide'),
       ],
-      default: EInlineDiffPreviewMode.inlineLive,
+      default: EInlineDiffPreviewMode.sideBySide,
     },
     [AINativeSettingSectionsId.InlineChatAutoVisible]: {
       type: 'boolean',

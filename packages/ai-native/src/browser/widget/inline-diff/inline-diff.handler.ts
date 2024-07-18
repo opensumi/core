@@ -95,10 +95,11 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         }
 
         const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
+        if (oldDiffPreviewer) {
+          oldDiffPreviewer.dispose();
+        }
 
         if (oldDiffPreviewer instanceof LiveInlineDiffPreviewer) {
-          oldDiffPreviewer.dispose();
-
           const previewer = this.createDiffPreviewer(monacoEditor, state.selection) as LiveInlineDiffPreviewer;
           previewer.restoreState(state.state);
         }
@@ -211,6 +212,8 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         }),
       );
     }
+
+    diffPreviewer.addDispose(diffPreviewer.onLineCount((lineCount) => this._onMaxLineCount.fire(lineCount)));
     return diffPreviewer;
   }
 
@@ -230,7 +233,8 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   hidePreviewer(monacoEditor: monaco.ICodeEditor) {
     const diffPreviewer = this._editorsStore.get(monacoEditor);
     if (diffPreviewer) {
-      diffPreviewer.clear();
+      diffPreviewer.dispose();
+      this._editorsStore.delete(monacoEditor);
     }
   }
 }

@@ -314,7 +314,7 @@ export class InlineChatHandler extends Disposable {
 
     const diffPreviewer = this.inlineDiffHandler.showPreviewerByStream(monacoEditor, options);
     diffPreviewer.mount(this.aiInlineContentWidget);
-
+    this.aiInlineChatDisposable.addDispose(diffPreviewer);
     if (InlineChatController.is(chatResponse)) {
       this.aiInlineChatOperationDisposable.addDispose([
         chatResponse.onError((error) => {
@@ -452,7 +452,7 @@ export class InlineChatHandler extends Disposable {
 
   private async runInlineChatAction(
     monacoEditor: monaco.ICodeEditor,
-    createReporter: () => string,
+    reporterFn: () => string,
     execute?: () => MaybePromise<void>,
     providerDiffPreviewStrategy?: () => MaybePromise<ChatResponse | InlineChatController>,
   ) {
@@ -472,15 +472,7 @@ export class InlineChatHandler extends Disposable {
         .setStartPosition(selection.startLineNumber, 1)
         .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
-      const relationId = createReporter();
-
-      await this.handleDiffPreviewStrategy(
-        monacoEditor,
-        providerDiffPreviewStrategy,
-        crossSelection,
-        relationId,
-        false,
-      );
+      const relationId = reporterFn();
 
       this.aiInlineChatDisposable.addDispose([
         this.aiInlineContentWidget.onResultClick(async (kind: EResultKind) => {
@@ -500,6 +492,14 @@ export class InlineChatHandler extends Disposable {
           }
         }),
       ]);
+
+      await this.handleDiffPreviewStrategy(
+        monacoEditor,
+        providerDiffPreviewStrategy,
+        crossSelection,
+        relationId,
+        false,
+      );
     }
   }
 }
