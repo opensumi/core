@@ -9,6 +9,7 @@ import { BrowserCodeEditor, BrowserDiffEditor } from '@opensumi/ide-editor/lib/b
 
 import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
+import { IntelligentCompletionsHandler } from './contrib/intelligent-completions/intelligent-completions.handler';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
 import { InlineDiffHandler } from './widget/inline-diff/inline-diff.handler';
@@ -40,6 +41,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(InlineCompletionHandler)
   private readonly inlineCompletionHandler: InlineCompletionHandler;
+
+  @Autowired(IntelligentCompletionsHandler)
+  private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
 
   @Autowired(EditorCollectionService)
   private readonly editorCollectionService: EditorCollectionService;
@@ -159,6 +163,11 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     this.addDispose(this.inlineDiffHandler.registerInlineDiffFeature(editor));
+    
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
+      this.addDispose(this.intelligentCompletionsHandler.registerFeature(editor));
+    }
+
     return disposables;
   }
 
