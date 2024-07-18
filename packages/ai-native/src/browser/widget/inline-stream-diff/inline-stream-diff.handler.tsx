@@ -206,10 +206,6 @@ export class InlineStreamDiffHandler extends Disposable {
     this.partialEditWidgetHandle = exec;
   }
 
-  public discard(): void {
-    this.livePreviewDiffDecorationModel.discardUnProcessed();
-  }
-
   public getZone(): LineRange {
     return this.livePreviewDiffDecorationModel.getZone();
   }
@@ -444,11 +440,11 @@ export class InlineStreamDiffHandler extends Disposable {
     this.livePreviewDiffDecorationModel.restoreSerializedState(state);
   }
   acceptAll(): void {
-    this.livePreviewDiffDecorationModel.fireAcceptAllEvent();
+    this.livePreviewDiffDecorationModel.acceptUnProcessed();
     this.dispose();
   }
   rejectAll(): void {
-    this.discard();
+    this.livePreviewDiffDecorationModel.discardUnProcessed();
     this.dispose();
   }
 }
