@@ -8,6 +8,7 @@ import {
   IAICompletionOption,
   IAICompletionResultModel,
   IDisposable,
+  IPosition,
   IResolveConflictHandler,
   MaybePromise,
   MergeConflictEditorMode,
@@ -17,6 +18,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
+import { IIntelligentCompletionsResult } from './contrib/intelligent-completions/intelligent-completions';
 import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
@@ -198,6 +200,16 @@ export interface ITerminalProviderRegistry {
   registerCommandSuggestionsProvider(provider: TTerminalCommandSuggestionsProviderFn): void;
 }
 
+export type IIntelligentCompletionProvider = (
+  editor: ICodeEditor,
+  position: IPosition,
+  requestBean: IAICompletionOption,
+  token: CancellationToken,
+) => MaybePromise<IIntelligentCompletionsResult>;
+export interface IIntelligentCompletionsRegistry {
+  registerIntelligentCompletionProvier(provider: IIntelligentCompletionProvider): void;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
@@ -231,6 +243,10 @@ export interface AINativeCoreContribution {
    * 注册智能终端相关功能
    */
   registerTerminalProvider?(registry: ITerminalProviderRegistry): void;
+  /**
+   * 注册智能代码补全相关功能
+   */
+  registerIntelligentCompletionFeature?(registry: IIntelligentCompletionsRegistry): void;
 }
 
 export interface IChatComponentConfig {

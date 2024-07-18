@@ -218,6 +218,7 @@ export const ChatRenderRegistryToken = Symbol('ChatRenderRegistryToken');
 export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
 export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');
 export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
+export const IntelligentCompletionsRegistryToken = Symbol('IntelligentCompletionsRegistryToken');
 
 export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
