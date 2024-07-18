@@ -16,6 +16,7 @@ import * as monaco from '@opensumi/ide-monaco';
 import { IAIMonacoContribHandler } from '../../contrib/base';
 import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
+import { EResultKind } from '../inline-chat/inline-chat.service';
 import {
   BaseInlineDiffPreviewer,
   LiveInlineDiffPreviewer,
@@ -41,7 +42,13 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
   public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
 
-  private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined;
+  private readonly _onMaxLineCount = new Emitter<number>();
+  public readonly onMaxLineCount: Event<number> = this._onMaxLineCount.event;
+
+  protected _editorsStore = new Map<
+    monaco.ICodeEditor,
+    BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined
+  >();
 
   protected _store = new Map<
     string,
@@ -64,11 +71,12 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     disposable.addDispose(
       monacoEditor.onWillChangeModel((e) => {
         if (e.oldModelUrl) {
-          const key = e.oldModelUrl.toString();
-          if (this.diffPreviewer instanceof LiveInlineDiffPreviewer) {
-            const state = (this.diffPreviewer as LiveInlineDiffPreviewer).serializeState();
+          const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
+          if (oldDiffPreviewer instanceof LiveInlineDiffPreviewer) {
+            const key = e.oldModelUrl.toString();
+            const state = oldDiffPreviewer.serializeState();
             if (state) {
-              this._store.set(key, { state, selection: this.diffPreviewer.getSelection() });
+              this._store.set(key, { state, selection: oldDiffPreviewer.getSelection() });
             }
           }
         }
@@ -80,19 +88,19 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         if (!e.newModelUrl) {
           return;
         }
-
-        if (typeof this.diffPreviewer !== 'undefined') {
-          (this.diffPreviewer as LiveInlineDiffPreviewer).clear();
-        }
-
         const key = e.newModelUrl.toString();
         const state = this._store.get(key);
-        if (this.editor && state) {
-          const diffPreviewer = this.createDiffPreviewer(this.editor.monacoEditor, state.selection);
-          this.attachDiffPreviewer(diffPreviewer);
-          (this.diffPreviewer as LiveInlineDiffPreviewer).restoreState(state.state);
-        } else {
-          this.diffPreviewer = undefined;
+        if (!state) {
+          return;
+        }
+
+        const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
+
+        if (oldDiffPreviewer instanceof LiveInlineDiffPreviewer) {
+          oldDiffPreviewer.dispose();
+
+          const previewer = this.createDiffPreviewer(monacoEditor, state.selection) as LiveInlineDiffPreviewer;
+          previewer.restoreState(state.state);
         }
       }),
     );
@@ -109,22 +117,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       .join('\n');
   }
 
-  protected _previewerDisposable: IDisposable = Disposable.NULL;
-  attachDiffPreviewer(previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>) {
-    if (typeof this.diffPreviewer !== 'undefined') {
-      (this.diffPreviewer as LiveInlineDiffPreviewer).clear();
-    }
-
-    this._previewerDisposable.dispose();
-    this.diffPreviewer = previewer;
-
-    if (previewer instanceof LiveInlineDiffPreviewer) {
-      this._previewerDisposable = previewer.onPartialEditEvent((event) => {
-        this._onPartialEditEvent.fire(event);
-      });
-    }
-  }
-
   showPreviewerByStream(
     monacoEditor: monaco.ICodeEditor,
     options: {
@@ -137,7 +129,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     const disposable = new Disposable();
 
     const diffPreviewer = this.createDiffPreviewer(monacoEditor, crossSelection);
-    this.attachDiffPreviewer(diffPreviewer);
 
     const onFinish = () => {
       diffPreviewer.layout();
@@ -205,6 +196,41 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
     diffPreviewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
 
+    const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
+
+    if (oldDiffPreviewer) {
+      oldDiffPreviewer.dispose();
+    }
+
+    this._editorsStore.set(monacoEditor, diffPreviewer);
+
+    if (diffPreviewer instanceof LiveInlineDiffPreviewer) {
+      diffPreviewer.addDispose(
+        diffPreviewer.onPartialEditEvent((event) => {
+          this._onPartialEditEvent.fire(event);
+        }),
+      );
+    }
     return diffPreviewer;
+  }
+
+  getPreviewer(
+    monacoEditor: monaco.ICodeEditor,
+  ): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined {
+    return this._editorsStore.get(monacoEditor);
+  }
+
+  handleAction(monacoEditor: monaco.ICodeEditor, action: EResultKind): void {
+    const diffPreviewer = this._editorsStore.get(monacoEditor);
+    if (diffPreviewer) {
+      diffPreviewer.handleAction(action);
+    }
+  }
+
+  hidePreviewer(monacoEditor: monaco.ICodeEditor) {
+    const diffPreviewer = this._editorsStore.get(monacoEditor);
+    if (diffPreviewer) {
+      diffPreviewer.clear();
+    }
   }
 }

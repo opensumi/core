@@ -14,6 +14,7 @@ import {
   IAIReporter,
   IDisposable,
   ILogServiceClient,
+  ILogger,
   ILoggerManagerClient,
   InlineChatFeatureRegistryToken,
   MaybePromise,
@@ -67,11 +68,11 @@ export class InlineChatHandler extends Disposable {
   private readonly codeActionService: CodeActionService;
 
   @Autowired(InlineDiffHandler)
-  private readonly inlineDiffService: InlineDiffHandler;
+  private readonly inlineDiffHandler: InlineDiffHandler;
 
+  @Autowired(ILogger)
   private logger: ILogServiceClient;
 
-  private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposable: Disposable = new Disposable();
   private aiInlineChatOperationDisposable: Disposable = new Disposable();
@@ -79,8 +80,6 @@ export class InlineChatHandler extends Disposable {
 
   constructor() {
     super();
-
-    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
   private cancelToken() {
@@ -313,11 +312,8 @@ export class InlineChatHandler extends Disposable {
     const { chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
-    if (this.diffPreviewer) {
-      this.diffPreviewer.dispose();
-    }
-    this.diffPreviewer = this.inlineDiffService.showPreviewerByStream(monacoEditor, options);
-    this.diffPreviewer.mount(this.aiInlineContentWidget);
+    const diffPreviewer = this.inlineDiffHandler.showPreviewerByStream(monacoEditor, options);
+    diffPreviewer.mount(this.aiInlineContentWidget);
 
     if (InlineChatController.is(chatResponse)) {
       this.aiInlineChatOperationDisposable.addDispose([
@@ -391,7 +387,7 @@ export class InlineChatHandler extends Disposable {
 
     const model = monacoEditor.getModel();
 
-    this.diffPreviewer?.clear();
+    this.inlineDiffHandler.hidePreviewer(monacoEditor);
     this.aiInlineChatOperationDisposable.dispose();
     this.aiInlineChatDisposable.addDispose(this.aiInlineContentWidget.launchChatStatus(EInlineChatStatus.THINKING));
 
@@ -431,7 +427,7 @@ export class InlineChatHandler extends Disposable {
     this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
         if (kind === EResultKind.ACCEPT) {
-          this.diffPreviewer.handleAction(kind);
+          this.inlineDiffHandler.handleAction(monacoEditor, kind);
 
           this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
           runWhenIdle(() => {
@@ -442,7 +438,7 @@ export class InlineChatHandler extends Disposable {
       this.aiInlineChatService.onThumbs((isLike: boolean) => {
         this.aiReporter.end(relationId, { isLike });
       }),
-      this.diffPreviewer.onLineCount((count) => {
+      this.inlineDiffHandler.onMaxLineCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model!.getLineCount()) {
             // 如果用户是选中了最后一行，直接显示在最后一行
@@ -488,7 +484,7 @@ export class InlineChatHandler extends Disposable {
 
       this.aiInlineChatDisposable.addDispose([
         this.aiInlineContentWidget.onResultClick(async (kind: EResultKind) => {
-          this.diffPreviewer.handleAction(kind);
+          this.inlineDiffHandler.handleAction(monacoEditor, kind);
 
           if (kind === EResultKind.DISCARD) {
             this.aiReporter.end(relationId, { message: 'discard', success: true, isDrop: true });
