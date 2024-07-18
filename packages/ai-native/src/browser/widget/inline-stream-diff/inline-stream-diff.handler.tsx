@@ -13,7 +13,6 @@ import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undo
 import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
 
 import {
-  AcceptPartialEditWidget,
   IRemovedWidgetSerializedState,
   LivePreviewDiffDecorationModel,
   SerializableState,
@@ -58,7 +57,6 @@ export class InlineStreamDiffHandler extends Disposable {
   private currentDiffModel: IComputeDiffData;
 
   private undoRedoGroup: UndoRedoGroup;
-  private partialEditWidgetHandle: (widgets: AcceptPartialEditWidget[]) => void;
 
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
@@ -101,14 +99,10 @@ export class InlineStreamDiffHandler extends Disposable {
     ]);
 
     this.addDispose(this.livePreviewDiffDecorationModel);
+  }
 
-    this.addDispose(
-      this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange((partialWidgets) => {
-        if (this.partialEditWidgetHandle) {
-          this.partialEditWidgetHandle(partialWidgets);
-        }
-      }),
-    );
+  get onPartialEditWidgetListChange() {
+    return this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange;
   }
 
   private get originalModel(): ITextModel {
@@ -196,10 +190,6 @@ export class InlineStreamDiffHandler extends Disposable {
       activeLine,
       pendingRange,
     };
-  }
-
-  public registerPartialEditWidgetHandle(exec: (widgets: AcceptPartialEditWidget[]) => void) {
-    this.partialEditWidgetHandle = exec;
   }
 
   public getZone(): LineRange {

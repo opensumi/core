@@ -156,8 +156,11 @@ export class InlineChatHandler extends Disposable {
           return;
         }
 
+        // 处于以下状态时不重新展示 Widget
+        // 如果 widget 是隐藏状态，直接展示新 widget
         if (
           this.aiInlineContentWidget &&
+          !this.aiInlineContentWidget.isHidden &&
           this.aiInlineContentWidget.status !== EInlineChatStatus.READY &&
           this.aiInlineContentWidget.status !== EInlineChatStatus.ERROR
         ) {
@@ -172,6 +175,9 @@ export class InlineChatHandler extends Disposable {
   }
 
   protected showInlineContentWidget(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection): void {
+    if (this.aiInlineContentWidget) {
+      this.aiInlineContentWidget.dispose();
+    }
     this.aiInlineContentWidget = this.injector.get(AIInlineContentWidget, [monacoEditor]);
 
     this.aiInlineContentWidget.show({ selection });
@@ -370,6 +376,14 @@ export class InlineChatHandler extends Disposable {
     }
   }
 
+  private ensureInlineChatVisible(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection) {
+    if (this.aiInlineContentWidget.disposed) {
+      this.showInlineContentWidget(monacoEditor, crossSelection);
+    } else if (this.aiInlineContentWidget.isHidden) {
+      this.aiInlineContentWidget.resume();
+    }
+  }
+
   private async handleDiffPreviewStrategy(
     monacoEditor: monaco.ICodeEditor,
     strategy: (...arg: any[]) => MaybePromise<ChatResponse | InlineChatController>,
@@ -386,10 +400,8 @@ export class InlineChatHandler extends Disposable {
     this.inlineDiffHandler.hidePreviewer(monacoEditor);
     this.aiInlineChatOperationDisposable.dispose();
 
-    // 如果是重新生成的逻辑，inline content widget 会被 dispose 掉，需要重新创建
-    if (this.aiInlineContentWidget.disposed) {
-      this.showInlineContentWidget(monacoEditor, crossSelection);
-    }
+    this.ensureInlineChatVisible(monacoEditor, crossSelection);
+
     this.aiInlineChatDisposable.addDispose(this.aiInlineContentWidget.launchChatStatus(EInlineChatStatus.THINKING));
 
     const startTime = Date.now();

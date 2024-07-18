@@ -170,12 +170,14 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.addDispose(node.onDispose(() => this.dispose()));
     this.addDispose(node);
 
-    node.registerPartialEditWidgetHandle((widgets) => {
-      if (widgets.every((widget) => widget.isHidden)) {
-        this.dispose();
-        this.inlineContentWidget?.dispose();
-      }
-    });
+    this.addDispose(
+      node.onPartialEditWidgetListChange((widgets) => {
+        if (widgets.every((widget) => widget.isHidden)) {
+          this.dispose();
+          this.inlineContentWidget?.dispose();
+        }
+      }),
+    );
     return node;
   }
   getPosition(): IPosition {
