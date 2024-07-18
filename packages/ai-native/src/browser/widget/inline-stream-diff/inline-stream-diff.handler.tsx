@@ -343,7 +343,6 @@ export class InlineStreamDiffHandler extends Disposable {
         realTimeChanges.push(edit);
       }
     }
-
     this.originalModel.pushEditOperations(null, realTimeChanges, () => null, this.undoRedoGroup);
 
     /**

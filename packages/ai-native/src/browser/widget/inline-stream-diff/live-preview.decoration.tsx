@@ -520,19 +520,17 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     let addedLinesCount = 0;
     let deletedLinesCount = 0;
 
-    if (addedDec) {
-      if (addedDec.length > 0) {
-        const addedRange = addedDec.getRange();
-        operation = EditOperation.delete(
-          Range.lift({
-            startLineNumber: addedRange.startLineNumber,
-            startColumn: addedRange.startColumn,
-            endLineNumber: addedRange.endLineNumber + 1,
-            endColumn: 1,
-          }),
-        );
-        addedLinesCount = addedDec.length;
-      }
+    if (addedDec && addedDec.length > 0) {
+      const addedRange = addedDec.getRange();
+      operation = EditOperation.delete(
+        Range.lift({
+          startLineNumber: addedRange.startLineNumber,
+          startColumn: addedRange.startColumn,
+          endLineNumber: addedRange.endLineNumber + 1,
+          endColumn: 1,
+        }),
+      );
+      addedLinesCount = addedDec.length;
 
       addedDec.hide();
     }
@@ -579,7 +577,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const discard = () => {
       const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
       if (operation) {
+        model.pushStackElement();
         model.pushEditOperations(null, [operation], () => null, group);
+        model.pushStackElement();
       }
       addedDec?.hide();
       removedWidget?.hide();
