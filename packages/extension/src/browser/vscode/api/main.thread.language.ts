@@ -169,6 +169,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   isLanguageFeatureEnabled(model: ITextModel) {
+    if (model.uri.scheme === 'inmemory') {
+      return false;
+    }
+
     const uriString = model.uri.toString();
     if (!this.languageFeatureEnabled.has(uriString)) {
       this.languageFeatureEnabled.set(
