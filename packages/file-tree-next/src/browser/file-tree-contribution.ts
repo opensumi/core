@@ -934,7 +934,8 @@ export class FileTreeContribution
             })
             .then((uris) => {
               if (uris && uris.length > 0) {
-                windowService.openWorkspace(uris[0], options || { newWindow: true });
+                const workspaceService: IWorkspaceService = this.injector.get(IWorkspaceService);
+                workspaceService.open(uris[0], { preserveWindow: options?.newWindow ?? false });
               }
             });
         }
