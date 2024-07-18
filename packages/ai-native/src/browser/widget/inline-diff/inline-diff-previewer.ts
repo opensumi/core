@@ -45,10 +45,6 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     return this.node;
   }
 
-  public getSelection(): Selection {
-    return this.selection;
-  }
-
   public mount(contentWidget: AIInlineContentWidget): void {
     this.inlineContentWidget = contentWidget;
   }

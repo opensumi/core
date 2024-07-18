@@ -104,6 +104,7 @@ export interface SerializableState {
   addedState: IDecorationSerializableState[];
   removedTextLines: IRemovedWidgetSerializedState[];
   widgets: IWidgetSerializedState[];
+  selection: Selection;
 }
 
 @Injectable({ multiple: true })
@@ -839,6 +840,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       addedState,
       removedTextLines,
       widgets,
+      selection: this.selection,
     };
     return state;
   }

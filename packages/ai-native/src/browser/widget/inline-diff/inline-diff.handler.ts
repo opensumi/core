@@ -50,13 +50,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined
   >();
 
-  protected _store = new Map<
-    string,
-    {
-      state: SerializableState;
-      selection: monaco.Selection;
-    }
-  >();
+  protected _store = new Map<string, SerializableState>();
 
   doContribute(): IDisposable {
     this.logger.log('InlineDiffHandler doContribute');
@@ -76,7 +70,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
             const key = e.oldModelUrl.toString();
             const state = oldDiffPreviewer.serializeState();
             if (state) {
-              this._store.set(key, { state, selection: oldDiffPreviewer.getSelection() });
+              this._store.set(key, state);
             }
           }
         }
@@ -101,7 +95,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
         if (oldDiffPreviewer instanceof LiveInlineDiffPreviewer) {
           const previewer = this.createDiffPreviewer(monacoEditor, state.selection) as LiveInlineDiffPreviewer;
-          previewer.restoreState(state.state);
+          previewer.restoreState(state);
         }
       }),
     );
