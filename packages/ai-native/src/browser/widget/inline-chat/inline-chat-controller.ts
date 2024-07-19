@@ -38,8 +38,6 @@ export class InlineChatController {
 
   constructor(readonly options?: InlineChatControllerOptions) {}
 
-  public deferred: Deferred<void> = new Deferred();
-
   private calculateCodeBlocks(content: string): string {
     if (!this.options?.enableCodeblockRender) {
       return content;
@@ -69,19 +67,38 @@ export class InlineChatController {
     return newContents.join('\n');
   }
 
-  public async mountReadable(stream: SumiReadableStream<IChatProgress>): Promise<void> {
-    await this.deferred.promise;
+  protected _stream: SumiReadableStream<IChatProgress> | null = null;
+  public mountReadable(stream: SumiReadableStream<IChatProgress>): void {
+    this._stream = stream;
+  }
+
+  protected _listened = false;
+
+  get isListened(): boolean {
+    return this._listened;
+  }
+
+  public listen() {
+    if (this._listened) {
+      return;
+    }
+
+    if (!this._stream) {
+      throw new Error('No Stream mounted');
+    }
+
+    this._listened = true;
+
     const reply = new ReplyResponse('');
     let wholeContent = '';
 
-    listenReadable<IChatProgress>(stream, {
+    listenReadable<IChatProgress>(this._stream, {
       onData: (data) => {
-        const chatContent = (data as IChatContent).content;
-        wholeContent += chatContent;
+        wholeContent += (data as IChatContent).content;
 
         const content = this.calculateCodeBlocks(wholeContent);
         reply.updateMessage(content);
-        this._onData.fireAndAwait(reply);
+        this._onData.fire(reply);
       },
       onEnd: () => {
         this._onEnd.fire();

@@ -146,7 +146,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
       disposable.addDispose(
         diffPreviewer.onReady(() => {
-          controller.deferred.resolve();
+          controller.listen();
 
           disposable.addDispose([
             controller.onData((data) => {
