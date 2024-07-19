@@ -1,3 +1,5 @@
+import throttle from 'lodash/throttle';
+
 import { Disposable, Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
 import {
   ICodeEditor,
@@ -33,6 +35,8 @@ export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   resume(): void;
   getRange(): IRange;
   setRange(newRange: IRange): void;
+
+  serializeState(): IDecorationSerializableState;
 }
 
 class DeltaDecorations implements IEnhanceModelDeltaDecoration {
@@ -107,6 +111,16 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   resume(): void {
     this._hidden = false;
     this.changeVisibility(styles.visible, Range.lift(this.resumeRange));
+  }
+
+  serializeState(): IDecorationSerializableState {
+    const { range } = this;
+    const startPosition = { lineNumber: range.startLineNumber, column: range.startColumn };
+    const endPosition = {
+      lineNumber: range.endLineNumber,
+      column: range.endColumn,
+    };
+    return { startPosition, endPosition, len: this.length };
   }
 }
 
@@ -195,17 +209,7 @@ export class EnhanceDecorationsCollection extends Disposable {
   }
 
   serializeState(): IDecorationSerializableState[] {
-    return this.deltaDecorations
-      .filter((d) => !d.isHidden)
-      .map((d) => {
-        const { range } = d;
-        const startPosition = { lineNumber: range.startLineNumber, column: range.startColumn };
-        const endPosition = {
-          lineNumber: range.endLineNumber,
-          column: range.endColumn,
-        };
-        return { startPosition, endPosition, len: d.length };
-      });
+    return this.deltaDecorations.filter((d) => !d.isHidden).map((d) => d.serializeState());
   }
 
   clear(): void {
