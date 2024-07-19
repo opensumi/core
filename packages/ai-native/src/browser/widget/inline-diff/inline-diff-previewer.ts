@@ -68,7 +68,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     // do nothing
   }
 
-  onLineCount(evetn: (count: number) => void): IDisposable {
+  onLineCount(event: (count: number) => void): IDisposable {
     // do nothing
     return this;
   }
