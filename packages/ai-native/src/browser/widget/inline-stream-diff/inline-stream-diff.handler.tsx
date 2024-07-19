@@ -204,7 +204,7 @@ export class InlineStreamDiffHandler extends Disposable {
       const startPosition = { lineNumber: zone.startLineNumber + r.startLineNumber - 1, column: 1 };
       const endPosition = {
         lineNumber: zone.startLineNumber + r.endLineNumberExclusive - 2,
-        column: Number.MAX_SAFE_INTEGER,
+        column: 1,
       };
 
       return {

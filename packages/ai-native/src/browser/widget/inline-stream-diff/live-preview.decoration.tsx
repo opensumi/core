@@ -14,6 +14,7 @@ import {
   Position,
   Range,
   Selection,
+  TrackedRangeStickiness,
 } from '@opensumi/ide-monaco';
 import {
   ReactInlineContentWidget,
@@ -576,11 +577,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     const discard = () => {
       const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
-      if (operation) {
-        model.pushStackElement();
-        model.pushEditOperations(null, [operation], () => null, group);
-        model.pushStackElement();
-      }
+
       addedDec?.hide();
       removedWidget?.hide();
 
@@ -613,12 +610,15 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       case EPartialEdit.discard:
         {
           const op = discard();
-          if (op && isPushStack) {
-            this.pushUndoElement({
-              undo: () => resume(),
-              redo: () => discard(),
-              group,
-            });
+          if (op) {
+            if (isPushStack) {
+              this.pushUndoElement({
+                undo: () => resume(),
+                redo: () => discard(),
+                group,
+              });
+            }
+            model.pushEditOperations(null, [op], () => null, group);
           }
         }
         break;
