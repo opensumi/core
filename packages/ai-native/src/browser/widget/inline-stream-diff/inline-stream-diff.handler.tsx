@@ -85,11 +85,13 @@ export class InlineStreamDiffHandler extends Disposable {
       return lineTokens;
     });
 
-    this.schedulerHandleEdits = new RunOnceScheduler(() => {
-      if (this.currentDiffModel) {
-        this.handleEdits(this.currentDiffModel);
-      }
-    }, 16 * 12.5);
+    this.schedulerHandleEdits = this.registerDispose(
+      new RunOnceScheduler(() => {
+        if (this.currentDiffModel) {
+          this.handleEdits(this.currentDiffModel);
+        }
+      }, 16 * 12.5),
+    );
 
     this.initializeDecorationModel();
   }
