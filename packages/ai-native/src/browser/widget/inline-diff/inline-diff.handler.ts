@@ -231,4 +231,11 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       this._editorsStore.delete(monacoEditor);
     }
   }
+
+  revealFirstDiff(monacoEditor: monaco.ICodeEditor) {
+    const diffPreviewer = this._editorsStore.get(monacoEditor);
+    if (diffPreviewer) {
+      diffPreviewer.revealFirstDiff();
+    }
+  }
 }

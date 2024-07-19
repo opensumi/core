@@ -430,4 +430,8 @@ export class InlineStreamDiffHandler extends Disposable {
     this.livePreviewDiffDecorationModel.discardUnProcessed();
     this.dispose();
   }
+
+  revealFirstDiff() {
+    this.livePreviewDiffDecorationModel.revealFirstDiff();
+  }
 }

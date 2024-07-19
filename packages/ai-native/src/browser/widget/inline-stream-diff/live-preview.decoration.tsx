@@ -276,10 +276,14 @@ class RemovedZoneWidget extends ZoneWidget {
     return this.textLines.length;
   }
 
+  getLastPosition(): IPosition {
+    return this.recordPositionData.position;
+  }
+
   serializeState(): IRemovedWidgetSerializedState {
     return {
       textLines: this.textLines,
-      position: this.recordPositionData.position,
+      position: this.getLastPosition(),
     };
   }
 
@@ -845,5 +849,13 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       }
     });
     this.touchRemovedWidget(state.removedTextLines);
+  }
+
+  revealFirstDiff(): void {
+    const first = this.removedZoneWidgets[0];
+    if (first) {
+      const pos = first.getLastPosition();
+      this.monacoEditor.revealLineInCenterIfOutsideViewport(pos.lineNumber);
+    }
   }
 }

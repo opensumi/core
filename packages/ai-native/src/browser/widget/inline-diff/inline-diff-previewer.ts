@@ -89,6 +89,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   onEnd(): void {
     // do nothing
   }
+
+  revealFirstDiff(): void {
+    // do nothing
+  }
 }
 
 @Injectable({ multiple: true })
@@ -228,5 +232,8 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   get onPartialEditEvent() {
     return this.node.onPartialEditEvent;
+  }
+  revealFirstDiff(): void {
+    this.node.revealFirstDiff();
   }
 }
