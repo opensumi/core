@@ -132,6 +132,7 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     if (action === EResultKind.ACCEPT) {
       const newValue = this.getValue();
       this.model.pushEditOperations(null, [{ range: this.selection, text: newValue }], () => null);
+      this.model.pushStackElement();
     }
   }
   onLineCount(event: (count: number) => void): Disposable {

@@ -602,7 +602,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
                 group,
               });
             }
+            model.pushStackElement();
             model.pushEditOperations(null, [op], () => null, group);
+            model.pushStackElement();
           }
         }
         break;
