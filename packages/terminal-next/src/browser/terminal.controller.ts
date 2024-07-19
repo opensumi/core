@@ -355,6 +355,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
               group,
               typeof session === 'string' ? session : session.client,
               !!session.task,
+              false,
+              true,
             );
             const client = await this.clientFactory(widget);
 

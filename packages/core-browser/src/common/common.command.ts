@@ -824,6 +824,7 @@ export namespace WORKSPACE_COMMANDS {
 
   export const REMOVE_WORKSPACE_FOLDER: Command = {
     id: 'workspace.removeFolderFromWorkspace',
+    label: '%workspace.removeFolderFromWorkspace%',
     category: CATEGORY,
   };
 

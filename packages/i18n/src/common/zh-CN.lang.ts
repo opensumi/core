@@ -51,7 +51,7 @@ export const localizationBundle = {
     'file.action.collapse': '全部折叠',
     'file.location': '在文件树中定位',
     'file.open.folder': '打开文件夹',
-    'file.open.workspace': '打开工作区',
+    'file.open.workspace': '从文件打开工作区',
     'file.confirm.delete': '确定删除下面列的文件?\n{0}',
     'file.confirm.delete.ok': '移入回收站',
     'file.confirm.delete.cancel': '取消',
@@ -719,6 +719,7 @@ export const localizationBundle = {
     'terminal.toggleTerminal': '切换终端面板',
     'terminal.killProcess': '结束进程',
     'terminal.process.unHealthy': '*此终端会话已被系统超时回收，请打开新的终端会话来进行操作',
+    'terminal.selectCWDForNewTerminal': '为新 terminal 选择当前工作路径',
 
     'view.command.show': '打开 {0}',
 

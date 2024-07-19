@@ -143,6 +143,16 @@
         "version": "1.55.2"
       }
     ],
+    "ms-python": [
+      {
+        "name": "python",
+        "version": "2024.4.1"
+      },
+      {
+        "name": "debugpy",
+        "version": "2024.6.0"
+      }
+    ],
     "ms-vscode": [
       {
         "name": "js-debug",

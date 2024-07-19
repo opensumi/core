@@ -10,7 +10,7 @@ import {
   Select,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { isMacintosh, localize, path, useInjectable } from '@opensumi/ide-core-browser';
+import { URI, isMacintosh, localize, path, useInjectable } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { IDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@opensumi/ide-overlay';
 
@@ -153,7 +153,19 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
           }
         } else {
           if ((options as IOpenDialogOptions).canSelectFiles && type === TreeNodeType.TreeNode) {
-            handleItemClick(item, type);
+            const filterExts = new Set(
+              Object.values((options as IOpenDialogOptions).filters ?? {})
+                .flat()
+                .map((item) => `.${item}`),
+            );
+            if (filterExts.size > 0) {
+              const ext = URI.parse(item.filestat.uri).path.ext;
+              if (filterExts.has(ext)) {
+                handleItemClick(item, type);
+              }
+            } else {
+              handleItemClick(item, type);
+            }
           } else if ((options as IOpenDialogOptions).canSelectFolders && type === TreeNodeType.CompositeTreeNode) {
             handleItemClick(item, type);
           }

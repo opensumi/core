@@ -2,7 +2,7 @@ import { Injectable } from '@opensumi/di';
 import { Deferred, Emitter, URI } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
-import { IWorkspaceService } from '../../common';
+import { IWorkspaceService, WorkspaceInput } from '../../common';
 
 @Injectable()
 export class MockWorkspaceService implements IWorkspaceService {
@@ -14,10 +14,16 @@ export class MockWorkspaceService implements IWorkspaceService {
 
   whenReady: Promise<void>;
 
+  workspaceSuffixName: string;
+
   private deferredRoots = new Deferred<FileStat[]>();
 
   constructor() {
     this.whenReady = this.init();
+  }
+
+  open(uri: URI, options?: WorkspaceInput): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async init() {
