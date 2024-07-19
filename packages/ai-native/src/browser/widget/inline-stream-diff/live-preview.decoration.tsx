@@ -344,8 +344,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
   public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
 
-  private zoneDec: IEditorDecorationsCollection;
-
   private activeLineDec: IEditorDecorationsCollection;
   private pendingRangeDec: IEditorDecorationsCollection;
 
@@ -365,7 +363,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   constructor(private readonly monacoEditor: ICodeEditor, private selection: Selection) {
     super();
 
-    this.zoneDec = this.monacoEditor.createDecorationsCollection();
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
     this.pendingRangeDec = this.monacoEditor.createDecorationsCollection();
 
@@ -428,8 +425,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   clear() {
-    this.zoneDec.clear();
-
     this.clearPendingLine();
     this.clearActiveLine();
     this.clearAddedLine();
@@ -467,17 +462,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   public updateZone(newZone: LineRange): void {
     this.zone = newZone;
-
-    this.zoneDec.set([
-      {
-        range: newZone.toInclusiveRange()!,
-        options: ModelDecorationOptions.register({
-          description: ZoneDescription,
-          className: styles.inline_diff_zone,
-          isWholeLine: true,
-        }),
-      },
-    ]);
   }
 
   public getZone(): LineRange {
@@ -764,6 +748,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
             description: AddedRangeDecoration,
             isWholeLine: true,
             className,
+            // stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
           }),
         };
       }),
