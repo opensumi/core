@@ -11,6 +11,7 @@ import {
   ICodeEditor,
   IContentWidgetPosition,
   IEditorDecorationsCollection,
+  ITextModel,
   Position,
   Range,
   Selection,
@@ -364,8 +365,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
     this._onPartialEditWidgetListChange.event;
 
+  protected model: ITextModel;
+
   constructor(private readonly monacoEditor: ICodeEditor, private selection: Selection) {
     super();
+    this.model = this.monacoEditor.getModel()!;
 
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
     this.pendingRangeDec = this.monacoEditor.createDecorationsCollection();
@@ -502,8 +506,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     addedDec?: IEnhanceModelDeltaDecoration,
     removedWidget?: RemovedZoneWidget,
   ): ISingleEditOperation | null {
-    const model = this.monacoEditor.getModel()!;
-
     let operation: ISingleEditOperation | null = null;
 
     let addedLinesCount = 0;
@@ -526,7 +528,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     if (removedWidget) {
       const position = removedWidget.position!;
-      const eol = model.getEOL();
+      const eol = this.model.getEOL();
 
       const lines = removedWidget.getRemovedTextLines();
       deletedLinesCount = lines.length;
@@ -547,7 +549,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget, isPushStack: boolean = true) {
     const position = widget.getPosition()!.position!;
-    const model = this.monacoEditor.getModel()!;
+    const model = this.model;
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
      */
@@ -617,7 +619,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     }
 
     const event: IPartialEditEvent = {
-      uri: this.monacoEditor.getModel()!.uri,
+      uri: this.model.uri,
       totalPartialEditCount: this.partialEditWidgetList.length,
       resolvedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
       currentPartialEdit: {
@@ -675,7 +677,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public pushUndoElement(data: { undo: () => void; redo: () => void; group?: UndoRedoGroup }): void {
-    const resource = this.monacoEditor.getModel()!.uri;
+    const resource = this.model.uri;
     const group = data.group ?? new UndoRedoGroup();
 
     this.undoRedoService.pushElement(

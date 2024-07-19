@@ -57,6 +57,37 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     return Disposable.NULL;
   }
 
+  storeState(monacoEditor: monaco.ICodeEditor, key: string) {
+    const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
+    if (oldDiffPreviewer instanceof LiveInlineDiffPreviewer) {
+      const state = oldDiffPreviewer.serializeState();
+      if (state) {
+        this._store.set(key, state);
+      }
+    }
+  }
+
+  tryRestoreState(monacoEditor: monaco.ICodeEditor, key: string) {
+    const state = this._store.get(key);
+    if (!state) {
+      return;
+    }
+
+    this.restoreState(monacoEditor, state);
+  }
+
+  restoreState(monacoEditor: monaco.ICodeEditor, state: SerializableState) {
+    const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
+    if (oldDiffPreviewer) {
+      oldDiffPreviewer.dispose();
+    }
+
+    const previewer = this.createDiffPreviewer(monacoEditor, state.selection);
+    if (previewer instanceof LiveInlineDiffPreviewer) {
+      previewer.restoreState(state);
+    }
+  }
+
   registerInlineDiffFeature(editor: IEditor): IDisposable {
     const disposable = new Disposable();
 
@@ -64,16 +95,10 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
     disposable.addDispose(
       monacoEditor.onWillChangeModel((e) => {
-        if (e.oldModelUrl) {
-          const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
-          if (oldDiffPreviewer instanceof LiveInlineDiffPreviewer) {
-            const key = e.oldModelUrl.toString();
-            const state = oldDiffPreviewer.serializeState();
-            if (state) {
-              this._store.set(key, state);
-            }
-          }
+        if (!e.oldModelUrl) {
+          return;
         }
+        this.storeState(monacoEditor, e.oldModelUrl.toString());
       }),
     );
 
@@ -82,21 +107,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         if (!e.newModelUrl) {
           return;
         }
-        const key = e.newModelUrl.toString();
-        const state = this._store.get(key);
-        if (!state) {
-          return;
-        }
-
-        const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
-        if (oldDiffPreviewer) {
-          oldDiffPreviewer.dispose();
-        }
-
-        const previewer = this.createDiffPreviewer(monacoEditor, state.selection);
-        if (previewer instanceof LiveInlineDiffPreviewer) {
-          previewer.restoreState(state);
-        }
+        this.tryRestoreState(monacoEditor, e.newModelUrl.toString());
       }),
     );
 

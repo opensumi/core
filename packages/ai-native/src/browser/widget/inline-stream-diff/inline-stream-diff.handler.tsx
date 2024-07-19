@@ -57,6 +57,7 @@ export class InlineStreamDiffHandler extends Disposable {
   private currentDiffModel: IComputeDiffData;
 
   private undoRedoGroup: UndoRedoGroup;
+  private originalModel: ITextModel;
 
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
@@ -68,6 +69,7 @@ export class InlineStreamDiffHandler extends Disposable {
 
     const modelService = StandaloneServices.get(IModelService);
     this.virtualModel = modelService.createModel('', null);
+    this.originalModel = this.monacoEditor.getModel()!;
 
     const eol = this.originalModel.getEOL();
     const startPosition = this.selection.getStartPosition();
@@ -103,10 +105,6 @@ export class InlineStreamDiffHandler extends Disposable {
 
   get onPartialEditWidgetListChange() {
     return this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange;
-  }
-
-  private get originalModel(): ITextModel {
-    return this.monacoEditor.getModel()!;
   }
 
   private computeDiff(
