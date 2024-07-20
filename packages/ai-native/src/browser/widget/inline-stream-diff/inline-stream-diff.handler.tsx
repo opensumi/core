@@ -389,6 +389,10 @@ export class InlineStreamDiffHandler extends Disposable {
     }
   }
 
+  private finishEdits(): void {
+    this.schedulerHandleEdits.trigger();
+  }
+
   public recompute(computerMode: EComputerMode, newContent?: string): IComputeDiffData {
     if (newContent) {
       this.virtualModel.setValue(newContent);
@@ -404,7 +408,7 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   public readyRender(diffModel: IComputeDiffData): void {
-    this.doSchedulerEdits();
+    this.finishEdits();
 
     // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
     this.renderPartialEditWidgets(diffModel);
