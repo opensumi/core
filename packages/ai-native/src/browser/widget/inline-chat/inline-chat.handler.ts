@@ -310,13 +310,6 @@ export class InlineChatHandler extends Disposable {
     const { chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
 
-    const diffPreviewer = this.inlineDiffHandler.showPreviewerByStream(monacoEditor, options);
-    diffPreviewer.mount(this.aiInlineContentWidget);
-    this.aiInlineChatDisposable.addDispose({
-      dispose: () => {
-        this.inlineDiffHandler.hidePreviewer(monacoEditor);
-      },
-    });
     if (InlineChatController.is(chatResponse)) {
       this.aiInlineChatOperationDisposable.addDispose([
         chatResponse.onError((error) => {
@@ -374,6 +367,14 @@ export class InlineChatHandler extends Disposable {
         isRetry,
       });
     }
+
+    const diffPreviewer = this.inlineDiffHandler.showPreviewerByStream(monacoEditor, options);
+    diffPreviewer.mount(this.aiInlineContentWidget);
+    this.aiInlineChatDisposable.addDispose({
+      dispose: () => {
+        this.inlineDiffHandler.hidePreviewer(monacoEditor);
+      },
+    });
   }
 
   private ensureInlineChatVisible(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection) {
