@@ -127,7 +127,7 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
 export class EnhanceDecorationsCollection extends Disposable {
   private deltaDecorations: IEnhanceModelDeltaDecoration[] = [];
 
-  protected readonly _onDidDecorationsChange = new Emitter<IEnhanceModelDeltaDecoration[]>();
+  protected readonly _onDidDecorationsChange = this.registerDispose(new Emitter<IEnhanceModelDeltaDecoration[]>());
   public readonly onDidDecorationsChange: Event<IEnhanceModelDeltaDecoration[]> = this._onDidDecorationsChange.event;
 
   private get model(): ITextModel {
