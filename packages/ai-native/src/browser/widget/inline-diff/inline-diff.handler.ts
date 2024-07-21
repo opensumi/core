@@ -7,10 +7,11 @@ import {
   Emitter,
   Event,
   IDisposable,
+  IEventBus,
   ILogger,
   ReplyResponse,
 } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor/lib/browser';
+import { EditorGroupCloseEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 
 import { IAIMonacoContribHandler } from '../../contrib/base';
@@ -36,6 +37,9 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(IEventBus)
+  private readonly eventBus: IEventBus;
+
   @Autowired(ILogger)
   private logger: ILogger;
 
@@ -52,6 +56,10 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
   protected _store = new Map<string, SerializableState>();
 
+  constructor() {
+    super();
+    this.registerDispose(this.eventBus.on(EditorGroupCloseEvent, this.groupCloseHandler.bind(this)));
+  }
   doContribute(): IDisposable {
     this.logger.log('InlineDiffHandler doContribute');
     return Disposable.NULL;
@@ -210,6 +218,14 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
     const previous = this._editorsStore.get(monacoEditor);
 
+    const currentModel = monacoEditor.getModel();
+
+    if (currentModel) {
+      currentModel.onWillDispose(() => {
+        previewer.dispose();
+      });
+    }
+
     if (previous) {
       previous.dispose();
     }
@@ -254,5 +270,19 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     if (diffPreviewer) {
       diffPreviewer.revealFirstDiff();
     }
+  }
+
+  private async groupCloseHandler(e: EditorGroupCloseEvent) {
+    const uriString = e.payload.resource.uri.toString();
+
+    const previewer = this._editorsStore.get(e.payload.group.codeEditor.monacoEditor);
+
+    if (previewer) {
+      if (previewer.isModel(uriString)) {
+        previewer.dispose();
+      }
+    }
+
+    this._store.delete(uriString);
   }
 }

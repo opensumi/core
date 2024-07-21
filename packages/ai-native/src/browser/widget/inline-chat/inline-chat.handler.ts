@@ -370,11 +370,6 @@ export class InlineChatHandler extends Disposable {
 
     const diffPreviewer = this.inlineDiffHandler.showPreviewerByStream(monacoEditor, options);
     diffPreviewer.mount(this.aiInlineContentWidget);
-    this.aiInlineChatDisposable.addDispose({
-      dispose: () => {
-        this.inlineDiffHandler.hidePreviewer(monacoEditor);
-      },
-    });
   }
 
   private ensureInlineChatVisible(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection) {

@@ -91,6 +91,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   revealFirstDiff(): void {
     // do nothing
   }
+
+  isModel(uri: string): boolean {
+    return this.model.uri.toString() === uri;
+  }
 }
 
 @Injectable({ multiple: true })
