@@ -1,23 +1,21 @@
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
-interface IChangeItem {
-  count: number;
+/**
+ * @internal
+ */
+export interface IDiffChangeResult {
+  added?: boolean;
+  removed?: boolean;
   value: string;
 }
 
-enum EDiffMode {
-  added = 'added',
-  removed = 'removed',
-  unchanged = 'unchanged',
-}
-
-interface IDiffChangeResult extends IChangeItem {
-  mode: EDiffMode;
+interface IResultWithCount extends IDiffChangeResult {
+  count: number;
 }
 
 interface IElement {
   newPos: number;
-  changeResult: IDiffChangeResult[];
+  changeResult: IResultWithCount[];
 }
 
 export class IntelligentCompletionDiffComputer {
@@ -46,21 +44,21 @@ export class IntelligentCompletionDiffComputer {
 
     // 如果找到公共部分，则记录新位置
     if (commonCount) {
-      element.changeResult.push({ count: commonCount, value: empty, mode: EDiffMode.unchanged });
+      element.changeResult.push({ count: commonCount, value: empty });
       element.newPos = newPos;
     }
 
     return originalPos;
   }
 
-  public diff(originalContent: string, modifiedContent: string) {
+  public diff(originalContent: string, modifiedContent: string): IResultWithCount[] | undefined {
     const cloneElement = (element: IElement): IElement => ({
       newPos: element.newPos,
       changeResult: [...element.changeResult],
     });
     const join = (content: string[]) => content.join(empty);
 
-    const processElements = (changeResult: IDiffChangeResult[], modified: string[], original: string[]) => {
+    const processElements = (changeResult: IResultWithCount[], modified: string[], original: string[]) => {
       const modifiedLength = changeResult.length;
 
       let originalIndex = 0;
@@ -70,11 +68,11 @@ export class IntelligentCompletionDiffComputer {
       for (; originalIndex < modifiedLength; originalIndex++) {
         const changeItem = changeResult[originalIndex];
         // 如果标记为删除，则从原始内容中提取对应的值
-        if (changeItem.mode === EDiffMode.removed) {
+        if (changeItem.removed) {
           changeItem.value = join(original.slice(originalCount, originalCount + changeItem.count));
           originalCount += changeItem.count;
           // 如果前一个元素被标记为添加，则交换位置
-          if (originalIndex && changeResult[originalIndex - 1].mode === EDiffMode.added) {
+          if (originalIndex && changeResult[originalIndex - 1].added) {
             [changeResult[originalIndex - 1], changeResult[originalIndex]] = [
               changeResult[originalIndex],
               changeResult[originalIndex - 1],
@@ -84,7 +82,7 @@ export class IntelligentCompletionDiffComputer {
           changeItem.value = join(modified.slice(modifiedIndex, modifiedIndex + changeItem.count));
           modifiedIndex += changeItem.count;
 
-          if (changeItem.mode !== EDiffMode.added) {
+          if (!changeItem.added) {
             originalCount += changeItem.count;
           }
         }
@@ -94,7 +92,7 @@ export class IntelligentCompletionDiffComputer {
       if (
         modifiedLength > 1 &&
         typeof changeResult[modifiedLength - 1].value === 'string' &&
-        changeResult[modifiedLength - 1].mode !== EDiffMode.unchanged &&
+        (changeResult[modifiedLength - 1].added || changeResult[modifiedLength - 1].removed) &&
         this.equals(empty, changeResult[modifiedLength - 1].value)
       ) {
         changeResult[modifiedLength - 2].value += changeResult[modifiedLength - 1].value;
@@ -112,13 +110,13 @@ export class IntelligentCompletionDiffComputer {
     const elements: Array<IElement | undefined> = [{ newPos: -1, changeResult: [] }];
     const initialDiagonal = this.extractCommon(elements[0]!, tokenizeModified, tokenizeOriginal, 0);
 
-    const pushElement = (changeResult: IDiffChangeResult[], mode: EDiffMode) => {
+    const pushElement = (changeResult: IResultWithCount[], added?: boolean, removed?: boolean) => {
       const len = changeResult.length;
       const latestResult = changeResult[len - 1];
-      if (len > 0 && latestResult.mode === mode) {
-        changeResult[len - 1] = { count: latestResult.count + 1, mode, value: empty };
+      if (len > 0 && latestResult.added === added && latestResult.removed === removed) {
+        changeResult[len - 1] = { count: latestResult.count + 1, added, removed, value: empty };
       } else {
-        changeResult.push({ count: 1, mode, value: empty });
+        changeResult.push({ count: 1, added, removed, value: empty });
       }
     };
 
@@ -159,11 +157,11 @@ export class IntelligentCompletionDiffComputer {
         // 根据移动方向选择元素
         if (!canMoveLeft || (canMoveRight && leftElement.newPos < rightElement.newPos)) {
           element = cloneElement(rightElement!);
-          pushElement(element.changeResult, EDiffMode.removed);
+          pushElement(element.changeResult, undefined, true);
         } else {
           element = leftElement;
           element.newPos++;
-          pushElement(element.changeResult, EDiffMode.added);
+          pushElement(element.changeResult, true, undefined);
         }
 
         originalPos = this.extractCommon(element, tokenizeModified, tokenizeOriginal, diagonalIndex);
@@ -179,7 +177,9 @@ export class IntelligentCompletionDiffComputer {
 
     while (diagonal <= maxLength) {
       const diffResult = execDiff();
-      if (diffResult) {return diffResult;}
+      if (diffResult) {
+        return diffResult;
+      }
     }
   }
 }
