@@ -463,7 +463,6 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
 
   constructor(public readonly monacoEditor: IMonacoCodeEditor, options: any = {}) {
     super(monacoEditor, EditorType.CODE);
-    const dom = monacoEditor.getContainerDomNode();
 
     this._specialEditorOptions = options;
     this.collectionService.addEditors([this]);
