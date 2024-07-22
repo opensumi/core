@@ -1,6 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IContextKeyService, IRange, PreferenceService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
+import { ResizeObserverWrapper } from '@opensumi/ide-core-browser/lib/dom/resize-observer';
 import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
   Disposable,
@@ -9,7 +10,6 @@ import {
   Emitter as EventEmitter,
   ILineChange,
   ISelection,
-  LRUCache,
   OnEvent,
   URI,
   WithEventBus,
@@ -450,6 +450,8 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
 
   public onRefOpen = this._onRefOpen.event;
 
+  private readonly _containerObserver: ResizeObserverWrapper;
+
   public get currentDocumentModel() {
     if (this._currentDocumentModelRef && !this._currentDocumentModelRef.disposed) {
       return this._currentDocumentModelRef.instance;
@@ -464,6 +466,11 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
 
   constructor(public readonly monacoEditor: IMonacoCodeEditor, options: any = {}) {
     super(monacoEditor, EditorType.CODE);
+    const dom = monacoEditor.getContainerDomNode();
+    this._containerObserver = this.registerDispose(new ResizeObserverWrapper(dom));
+    this._containerObserver.observe();
+    this.addDispose(this._containerObserver.onDidChange(() => this.monacoEditor.layout()));
+
     this._specialEditorOptions = options;
     this.collectionService.addEditors([this]);
     // 防止浏览器后退前进手势
