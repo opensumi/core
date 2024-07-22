@@ -49,7 +49,7 @@ export const localizationBundle = {
     'file.action.new.folder': 'New Folder',
     'file.action.refresh': 'Refresh',
     'file.open.folder': 'Open Folder',
-    'file.open.workspace': 'Open Workspace',
+    'file.open.workspace': 'Open Workspace from File ...',
     'file.action.collapse': 'Collapse',
     'file.confirm.delete': 'Are you sure you want to delete the following files?\n{0}',
     'file.confirm.delete.ok': 'Move to trash',
@@ -113,7 +113,7 @@ export const localizationBundle = {
     'editor.closeTab.title': 'Close ({0})',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
-    'editor.cannotOpenBinary': 'Cannot open binary file in this editor.',
+    'editor.cannotOpenBinary': 'The file is not displayed in the text editor because it is binary.',
     'editor.splitToLeft': 'Split To Left',
     'editor.splitToRight': 'Split To Right',
     'editor.splitToTop': 'Split To Top',
@@ -604,7 +604,7 @@ export const localizationBundle = {
     'editor.configuration.autoSaveDelay':
       "Controls the delay in ms after which a dirty file is saved automatically. Only applies when `#editor.formatOnSave#` is set to 'Save After Delay'.",
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
-    'editor.configuration.largeFileSize': 'Custom size of the large file',
+    'editor.configuration.largeFileSize': 'Custom size of the large file (B)',
     'editor.configuration.fontFamily': 'Controls the font family.',
     'editor.configuration.fontWeight':
       'Controls the font weight. Accepts "normal" and "bold" keywords or numbers between 1 and 1000.',
@@ -970,12 +970,12 @@ export const localizationBundle = {
       'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
     'diffEditor.action.toggleCollapseUnchangedRegions': 'Toggle Collapse Unchanged Regions',
 
-    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
+    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause lag or crash.',
     'editor.autoSave.enum.off': 'OFF',
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
     'editor.autoSave.enum.afterDelay': 'Save after delay',
     'editor.autoSave.enum.windowLostFocus': 'When window lost focus',
-    'editor.largeFile.prevent.stillOpen': 'Still open it.',
+    'editor.file.prevent.stillOpen': 'Open Anyway',
 
     'editor.workspaceSymbol.quickopen': 'Search Workspace Symbol',
     'editor.workspaceSymbolClass.quickopen': 'Search Workspace Class Symbol',
@@ -987,6 +987,9 @@ export const localizationBundle = {
 
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
+
+    'preference.mergeEditor.autoApplyNonConflictChanges': 'Automatically apply non-conflicting changes',
+
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
     'validate.tree.fileNameFollowOrStartWithSpaceWarning': 'Leading or trailing spaces detected in file or folder name',
@@ -1059,6 +1062,7 @@ export const localizationBundle = {
     'terminal.killProcess': 'Kill Process',
     'terminal.process.unHealthy':
       '*This terminal session has been timed out and killed by the system. Please open a new terminal session to proceed with operations.',
+    'terminal.selectCWDForNewTerminal': 'Select current working directory for new terminal',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
@@ -1212,7 +1216,7 @@ export const localizationBundle = {
     'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
 
     'workspace.openDirectory': 'Open Directory',
-    'workspace.addFolderToWorkspace': 'Add Folder Into Workspace ...',
+    'workspace.addFolderToWorkspace': 'Add Folder to Workspace ...',
     'workspace.removeFolderFromWorkspace': 'Remove Folder From Workspace',
     'workspace.saveWorkspaceAsFile': 'Save Workspace As ...',
     'workspace.openWorkspace': 'Open Workspace',
@@ -1432,7 +1436,7 @@ export const localizationBundle = {
     'mergeEditor.conflict.next': 'Next Conflict',
     'mergeEditor.conflict.ai.resolve.all': 'AI Resolution',
     'mergeEditor.conflict.ai.resolve.all.stop': 'Stop All',
-    'mergeEditor.open.tradition': 'Tradition Editor',
+    'mergeEditor.open.tradition': 'Text Editor',
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',
@@ -1452,6 +1456,7 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
     'aiNative.inline.chat.input.placeholder.default': 'Ask Copilot（shift + enter newline）',
+    'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
 
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':
@@ -1481,6 +1486,11 @@ export const localizationBundle = {
     'preference.ai.native.inlineCompletions.title': 'Inline Completions',
     'preference.ai.native.inlineCompletions.promptEngineering.enabled':
       'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
+    'preference.ai.native.inlineCompletions.debounceTime': 'Debounce time for inline completions',
+    'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff preview mode',
+    'preference.ai.native.inlineDiff.preview.mode.sideBySide': 'Displayed in the editor as left and right diff panels',
+    'preference.ai.native.inlineDiff.preview.mode.inlineLive': 'Displayed in the editor through streaming rendering',
+    'preference.ai.native.inlineCompletions.cache.enabled': 'Whether to enable cache for inline completions',
     // #endregion AI Native
 
     // #endregion merge editor

@@ -38,6 +38,7 @@ export const InteractiveInput = React.forwardRef(
       width,
       sendBtnClassName,
       popoverPosition,
+      autoFocus,
     } = props;
 
     const internalRef = useRef<HTMLTextAreaElement>(null);
@@ -47,6 +48,12 @@ export const InteractiveInput = React.forwardRef(
     const [focus, setFocus] = useState(false);
 
     useImperativeHandle(ref, () => internalRef.current as HTMLTextAreaElement);
+
+    useEffect(() => {
+      if (internalRef && internalRef.current && autoFocus) {
+        internalRef.current.focus();
+      }
+    }, [internalRef]);
 
     useEffect(() => {
       const value = props.value;

@@ -259,6 +259,8 @@ export interface IDiffEditor extends IDisposable {
   focus(): void;
 
   getLineChanges(): ILineChange[] | null;
+
+  onRefOpen: Event<IEditorDocumentModelRef>;
 }
 
 @Injectable()
@@ -291,6 +293,8 @@ export abstract class EditorCollectionService {
   ): IMergeEditorEditor;
 
   public abstract listEditors(): IEditor[];
+  public abstract getEditorByUri(uri: URI): IEditor | undefined;
+
   public abstract listDiffEditors(): IDiffEditor[];
 
   public abstract onCodeEditorCreate: Event<ICodeEditor>;
@@ -583,6 +587,11 @@ export interface IResourceOpenOptions {
    * 获取焦点
    */
   focus?: boolean;
+
+  /**
+   * If set `focus`, the editor's dom will be focused, This option prevents the element from being scrolled after getting the focus.
+   */
+  preventScroll?: boolean;
 
   /**
    * 强制使用指定的打开方式

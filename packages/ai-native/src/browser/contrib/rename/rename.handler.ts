@@ -1,14 +1,15 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, IDisposable } from '@opensumi/ide-core-browser';
-import { AISerivceType, CancellationToken, IAIReporter, Schemes, getErrorMessage } from '@opensumi/ide-core-common';
+import { AISerivceType, CancellationToken, Disposable, IAIReporter, getErrorMessage } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
 
+import { IAIMonacoContribHandler } from '../base';
+
 import { RenameSuggestionsService } from './rename.service';
 
 @Injectable()
-export class RenameHandler extends Disposable {
+export class RenameHandler extends IAIMonacoContribHandler {
   @Autowired(RenameSuggestionsService)
   private readonly renameSuggestionService: RenameSuggestionsService;
 
@@ -21,14 +22,19 @@ export class RenameHandler extends Disposable {
   private lastModelRequestRenameEndTime: number | undefined;
   private lastModelRequestRenameSessionId: string | undefined;
 
-  public registerRenameFeature(languageId: string): IDisposable {
+  doContribute() {
     const disposable = new Disposable();
 
     const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
+      const needStop = this.intercept(model.uri);
+      if (needStop) {
+        return;
+      }
+
       this.lastModelRequestRenameSessionId = undefined;
 
       const startTime = +new Date();
-      const relationId = this.aiReporter.start('rename', {
+      const relationId = this.aiReporter.start(AISerivceType.Rename, {
         message: 'start',
         type: AISerivceType.Rename,
         modelRequestStartTime: startTime,
@@ -66,10 +72,7 @@ export class RenameHandler extends Disposable {
       }
     };
 
-    disposable.addDispose([
-      monacoApi.languages.registerNewSymbolNameProvider(languageId, {
-        provideNewSymbolNames: provider,
-      }),
+    disposable.addDispose(
       this.monacoTelemetryService.onEventLog('renameInvokedEvent', (event) => {
         if (this.lastModelRequestRenameSessionId) {
           this.aiReporter.end(this.lastModelRequestRenameSessionId, {
@@ -80,7 +83,12 @@ export class RenameHandler extends Disposable {
           });
         }
       }),
-    ]);
+    );
+    disposable.addDispose(
+      monacoApi.languages.registerNewSymbolNameProvider('*', {
+        provideNewSymbolNames: provider,
+      }),
+    );
 
     return disposable;
   }

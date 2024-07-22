@@ -5,7 +5,7 @@ import { IEventBus } from '@opensumi/ide-core-common';
 
 import { ResizeEvent } from '../../layout';
 import { useInjectable } from '../../react-hooks';
-import { IResizeHandleDelegate, ResizeFlexMode } from '../resize/resize';
+import { IResizeHandleDelegate, RESIZE_LOCK, ResizeFlexMode } from '../resize/resize';
 
 import { Layout } from './layout';
 import { SplitPanelManager } from './split-panel.service';
@@ -64,6 +64,7 @@ export interface SplitPanelProps extends SplitChildProps {
   className?: string;
   style?: React.CSSProperties;
   direction?: Layout.direction;
+  headerSize?: number;
   id: string;
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
@@ -95,6 +96,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
   const {
     id,
     className,
+    headerSize,
     resizeHandleClassName,
     style,
     children = [],
@@ -299,6 +301,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
                     splitPanelService.panels.push(ele);
                   }
                 }}
+                className={getElementSize(element, totalFlexNum) === `${headerSize}px` ? RESIZE_LOCK : ''}
                 id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
                 style={{
                   // 手风琴场景，固定尺寸和 flex 尺寸混合布局；需要在 Resize Flex 模式下禁用

@@ -129,6 +129,7 @@ export interface ICompletionContext {
   suffix: string;
   fileUrl: string;
   filename: string;
+  workspaceDir: string;
   language: string;
   uri: URI;
 }

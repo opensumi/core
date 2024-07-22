@@ -8,7 +8,7 @@ import {
   LogLevel,
   LogServiceForClientPath,
   SupportLogNamespace,
-} from '../common/';
+} from '../common';
 
 import { LogServiceClient } from './log.service';
 
@@ -19,7 +19,16 @@ export class LoggerManagerClient implements ILoggerManagerClient {
   logServiceForClient: ILogServiceForClient;
 
   getLogger(namespace: SupportLogNamespace, pid?: number): ILogServiceClient {
-    return new LogServiceClient(namespace, this.logServiceForClient, pid);
+    const logger = new LogServiceClient(namespace);
+    logger.setup(this.logServiceForClient, pid);
+    return logger;
+  }
+
+  /**
+   * Logger that can used in non-server environment
+   */
+  getBrowserLogger(namespace: SupportLogNamespace): ILogServiceClient {
+    return new LogServiceClient(namespace);
   }
 
   async getLogFolder() {

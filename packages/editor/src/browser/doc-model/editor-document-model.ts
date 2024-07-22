@@ -369,6 +369,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
           uri: this.uri,
           reason,
           language: this.languageId,
+          dirty: this.dirty,
         }),
       );
       if (!this.editorPreferences['editor.askIfDiff']) {

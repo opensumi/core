@@ -12,6 +12,8 @@ export interface WorkspaceInput {
 export const IWorkspaceService = Symbol('IWorkspaceService');
 
 export interface IWorkspaceService {
+  // 工作区文件后缀，默认后缀为 `sumi-workspace`
+  workspaceSuffixName: string;
   // 获取当前的根节点
   roots: Promise<FileStat[]>;
   // 获取workspace
@@ -68,6 +70,8 @@ export interface IWorkspaceService {
   setWorkspace(workspaceStat: FileStat | undefined): Promise<void>;
   // 初始化文件服务中 `files.exclude` 和 `watche.exclude` 配置
   initFileServiceExclude(): Promise<void>;
+  // 打开工作区
+  open(uri: URI, options?: WorkspaceInput): Promise<void>;
 }
 
 export const IWorkspaceStorageService = Symbol('IWorkspaceStorageService');

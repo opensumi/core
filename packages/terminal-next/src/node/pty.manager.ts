@@ -1,7 +1,7 @@
 import * as pty from 'node-pty';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { Deferred, INodeLogger } from '@opensumi/ide-core-node';
 
 import { IPtyProcessProxy, IPtyProxyRPCService, IPtySpawnOptions, IShellLaunchConfig } from '../common';
 
@@ -49,6 +49,7 @@ export class PtyServiceManager implements IPtyServiceManager {
   protected callbackMap = new Map<number, (...args: any[]) => void>();
   // Pty 终端服务的代理，在双容器模式下采用 RPC 连接，单容器模式下直连
   protected ptyServiceProxy: IPtyProxyRPCService;
+  protected ptyServiceProxyDeferred = new Deferred();
 
   @Autowired(INodeLogger)
   protected logger: INodeLogger;
@@ -67,6 +68,7 @@ export class PtyServiceManager implements IPtyServiceManager {
       callback(...args);
     };
     this.ptyServiceProxy = new PtyServiceProxy(callback);
+    this.ptyServiceProxyDeferred.resolve();
   }
 
   // 维护一个 CallbackMap，用于在 PtyServiceProxy 中远程调用回调
@@ -92,6 +94,7 @@ export class PtyServiceManager implements IPtyServiceManager {
     sessionId?: string,
     spawnOptions?: IPtySpawnOptions,
   ): Promise<IPtyProcessProxy> {
+    await this.ptyServiceProxyDeferred.promise;
     const ptyRemoteProxy = (await this.ptyServiceProxy.$spawn(
       file,
       args,

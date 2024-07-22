@@ -152,17 +152,24 @@ const BottomBar: React.FC = () => {
   const dataStore = useInjectable<MappingManagerDataStore>(MappingManagerDataStore);
 
   const [summary, setSummary] = useState<string>('');
+  const [canNavigate, setCanNavigate] = useState<boolean>(false);
   useEffect(() => {
-    const debounced = debounce(() => {
-      setSummary(dataStore.summary());
-    }, 16 * 5);
+    const debounced = debounce(
+      () => {
+        setSummary(dataStore.summary());
+        setCanNavigate(dataStore.canNavigate());
+      },
+      16 * 5,
+      {
+        leading: true,
+      },
+    );
 
     const dispose = dataStore.onDataChange(() => {
       debounced();
     });
 
-    setSummary(dataStore.summary());
-
+    debounced();
     return () => dispose.dispose();
   }, [dataStore]);
 
@@ -185,8 +192,8 @@ const BottomBar: React.FC = () => {
           return;
         }
 
-        if (uri.scheme === 'git') {
-          // replace git:// with file://
+        if (uri.scheme !== 'file') {
+          // replace git:// or any other scheme to file://
           uri = uri.with({
             scheme: 'file',
             path: uri.path,
@@ -194,14 +201,9 @@ const BottomBar: React.FC = () => {
           });
         }
 
-        if (uri.scheme !== 'file') {
-          // ignore other scheme
-          logger.warn('Unsupported scheme', uri.scheme);
-          return;
-        }
-
         commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
       }}
+      canNavigate={canNavigate}
       handlePrev={() => {
         mergeEditorService.resultView.navigateForwards();
       }}
@@ -261,12 +263,7 @@ export const Grid = () => {
     return () => {
       mergeEditorService.dispose();
     };
-  }, [
-    incomingEditorContainer.current,
-    currentEditorContainer.current,
-    resultEditorContainer.current,
-    mergeEditorService,
-  ]);
+  }, [mergeEditorService]);
 
   return (
     <div className={styles.merge_editor_container}>

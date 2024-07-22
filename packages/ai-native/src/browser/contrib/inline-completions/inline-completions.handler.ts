@@ -1,26 +1,40 @@
 import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, IDisposable } from '@opensumi/ide-core-browser';
-import { IEventBus } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-browser';
+import { AI_INLINE_COMPLETION_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { CommandServiceImpl, Disposable, IEventBus, Sequencer, runWhenIdle } from '@opensumi/ide-core-common';
+import { CommandRegistry, CommandRegistryImpl, CommandService } from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
+import { InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 
 import { IAIMiddleware } from '../../types';
+import { IAIMonacoContribHandler } from '../base';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { AICompletionsService } from './service/ai-completions.service';
 
 @Injectable()
-export class InlineCompletionHandler extends Disposable {
+export class InlineCompletionHandler extends IAIMonacoContribHandler {
   @Autowired(IEventBus)
   private eventBus: IEventBus;
+
+  @Autowired(CommandService)
+  private commandService: CommandServiceImpl;
+
+  @Autowired(CommandRegistry)
+  private commandRegistry: CommandRegistryImpl;
 
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
+
+  private sequencer = new Sequencer();
+  private preDidShowItems: InlineCompletions | undefined;
 
   public registerInlineCompletionFeature(editor: IEditor): IDisposable {
     const { monacoEditor } = editor;
@@ -36,9 +50,6 @@ export class InlineCompletionHandler extends Disposable {
       if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
         this.aiInlineCompletionsProvider.cancelRequest();
       }
-      requestAnimationFrame(() => {
-        this.aiCompletionsService.setVisibleCompletion(false);
-      });
     };
 
     const debouncedSelectionChange = debounce(selectionChange, 50, {
@@ -67,49 +78,95 @@ export class InlineCompletionHandler extends Disposable {
           }
         }
       }),
-      monacoEditor.onWillChangeModel(() => {
-        this.aiCompletionsService.hideStatusBarItem();
-      }),
       monacoEditor.onDidBlurEditorText(() => {
-        this.aiCompletionsService.hideStatusBarItem();
-        this.aiCompletionsService.setVisibleCompletion(false);
+        this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
       }),
     );
 
     return this;
   }
 
-  public registerProvider(editor: IEditor, languageId: string, middlewareCollector?: IAIMiddleware): IDisposable {
-    const disposable = new Disposable();
+  updateConfig(middlewares: IAIMiddleware[]) {
+    const middleware = middlewares[middlewares.length - 1];
+    if (!middleware) {
+      return;
+    }
 
-    this.aiInlineCompletionsProvider.registerEditor(editor);
+    // currently only support one middleware
+    if (middleware?.language?.provideInlineCompletions) {
+      this.aiCompletionsService.setMiddlewareComplete(middleware?.language?.provideInlineCompletions);
+    }
+  }
 
-    disposable.addDispose(this.aiInlineCompletionsProvider);
-    disposable.addDispose(
-      monacoApi.languages.registerInlineCompletionsProvider(languageId, {
-        provideInlineCompletions: async (model, position, context, token) => {
-          if (middlewareCollector?.language?.provideInlineCompletions) {
-            this.aiCompletionsService.setMiddlewareComplete(middlewareCollector?.language?.provideInlineCompletions);
-          }
+  mountEditor(editor: IEditor) {
+    const toDispose = new Disposable();
+    this.aiInlineCompletionsProvider.mountEditor(editor);
 
-          const list = await this.aiInlineCompletionsProvider.provideInlineCompletionItems(
-            model,
-            position,
-            context,
-            token,
+    toDispose.addDispose(super.mountEditor(editor));
+    toDispose.addDispose(this.aiInlineCompletionsProvider);
+
+    const inlineVisibleKey = new Set([InlineCompletionContextKeys.inlineSuggestionVisible.key]);
+    toDispose.addDispose(
+      editor.monacoEditor.contextKeyService.onDidChangeContext((e) => {
+        // inline completion 真正消失时
+        if (e.affectsSome(inlineVisibleKey)) {
+          const inlineSuggestionVisible = InlineCompletionContextKeys.inlineSuggestionVisible.getValue(
+            editor.monacoEditor.contextKeyService,
           );
-
-          return list;
-        },
-        freeInlineCompletions() {},
-        handleItemDidShow: (completions) => {
-          if (completions.items.length > 0) {
-            this.aiCompletionsService.setVisibleCompletion(true);
+          if (!inlineSuggestionVisible && this.preDidShowItems) {
+            runWhenIdle(() => {
+              this.preDidShowItems = undefined;
+              this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
+            });
           }
-        },
+        }
       }),
     );
+    return toDispose;
+  }
 
-    return disposable;
+  doContribute(): IDisposable {
+    let prePosition: Position | undefined;
+
+    return monacoApi.languages.registerInlineCompletionsProvider('*', {
+      groupId: 'ai-native-inline-completions',
+      provideInlineCompletions: async (model, position, context, token) => {
+        const needStop = this.intercept(model.uri);
+        if (needStop) {
+          return;
+        }
+
+        let resultList: InlineCompletions;
+
+        /**
+         * 如果新字符在 inline completion 的 ghost text 内，则走缓存，不重新请求
+         */
+        if (this.preDidShowItems) {
+          if (!prePosition) {
+            prePosition = position.delta(0, -1);
+          }
+
+          const lineBefore = model.getValueInRange(Range.fromPositions(prePosition, position));
+          if (this.preDidShowItems.items[0].insertText.toString().startsWith(lineBefore)) {
+            return this.preDidShowItems;
+          } else {
+            prePosition = undefined;
+          }
+        }
+
+        resultList = await this.sequencer.queue(() =>
+          this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
+        );
+
+        return resultList;
+      },
+      freeInlineCompletions() {},
+      handleItemDidShow: (completions) => {
+        if (completions.items.length > 0) {
+          this.preDidShowItems = completions;
+          this.aiCompletionsService.setVisibleCompletion(true);
+        }
+      },
+    });
   }
 }

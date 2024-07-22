@@ -127,6 +127,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(ResourceService)
   private resourceService: ResourceService;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
@@ -485,7 +488,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
-    state = this.openedResourceState.get<IEditorGridState>('grid', state);
+    if (!this.appConfig.disableRestoreEditorGroupState) {
+      state = this.openedResourceState.get<IEditorGridState>('grid', state);
+    }
     this.topGrid = new EditorGrid();
     this.topGrid.onDidGridAndDesendantStateChange(() => {
       this._sortedEditorGroups = undefined;
@@ -1360,6 +1365,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this.pinPreviewed(uri);
   }
 
+  protected getPreventScrollOption(options: IResourceOpenOptions = {}) {
+    const preventScroll = options.preventScroll ?? this.preferenceService.get('editor.preventScrollAfterFocused');
+    return preventScroll;
+  }
+
   async doOpen(
     uri: URI,
     options: IResourceOpenOptions = {},
@@ -1373,6 +1383,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const previewMode =
         this.preferenceService.get('editor.previewMode') &&
         (isUndefinedOrNull(options.preview) ? true : options.preview);
+
       if (
         this.currentResource &&
         this.currentResource.uri.isEqual(uri) &&
@@ -1381,7 +1392,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       ) {
         // 就是当前打开的 Resource
         if (options.focus && this.currentEditor) {
-          this._domNode?.focus();
+          const preventScroll = this.getPreventScrollOption(options);
+          this._domNode?.focus({
+            preventScroll,
+          });
           this.currentEditor.monacoEditor.focus();
         }
         if (options.range && this.currentEditor) {
@@ -1560,29 +1574,34 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async getDocumentModelRef(uri: URI): Promise<IEditorDocumentModelRef> {
-    if (!this.holdDocumentModelRefs.has(uri.toString())) {
+    const key = uri.toString();
+
+    if (!this.holdDocumentModelRefs.has(key)) {
       this.holdDocumentModelRefs.set(
-        uri.toString(),
+        key,
         await this.documentModelManager.createModelReference(uri, 'editor-group-' + this.name),
       );
     }
-    return this.holdDocumentModelRefs.get(uri.toString())!;
+    return this.holdDocumentModelRefs.get(key)!;
   }
 
   disposeDocumentRef(uri: URI) {
     if (uri.scheme === 'diff') {
-      // 针对 diff 编辑器，需要保留 DocumentModelRef，以保留实现对 DiffEditor 的状态恢复
+      const query = uri.getParsedQuery();
+      this.doDisposeDocRef(new URI(query.original));
+      this.doDisposeDocRef(new URI(query.modified));
     } else if (uri.scheme === 'mergeEditor') {
-      this.mergeEditor.dispose();
+      this.mergeEditor && this.mergeEditor.dispose();
     } else {
       this.doDisposeDocRef(uri);
     }
   }
 
   protected doDisposeDocRef(uri: URI) {
-    if (this.holdDocumentModelRefs.has(uri.toString())) {
-      this.holdDocumentModelRefs.get(uri.toString())!.dispose();
-      this.holdDocumentModelRefs.delete(uri.toString());
+    const key = uri.toString();
+    if (this.holdDocumentModelRefs.has(key)) {
+      this.holdDocumentModelRefs.get(key)!.dispose();
+      this.holdDocumentModelRefs.delete(key);
     }
   }
 
@@ -1622,7 +1641,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       });
 
       if (options.focus) {
-        this._domNode?.focus();
+        const preventScroll = this.getPreventScrollOption(options);
+        this._domNode?.focus({ preventScroll });
         // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
         // 会引起 document.activeElement !== editor.textArea.domNode，进而会导致focus失败
         // 需要等待真正 append 之后再
@@ -1674,8 +1694,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       await this.diffEditor.compare(original, modified, options, resource.uri);
       if (options.focus) {
-        this._domNode?.focus();
-        // 理由见上方 codeEditor.focus 部分
+        const preventScroll = this.getPreventScrollOption(options);
+        this._domNode?.focus({
+          preventScroll,
+        });
 
         const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
           if (e.payload.groupName === this.name && e.payload.type === EditorOpenType.diff) {
@@ -2204,6 +2226,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   focus() {
     this.gainFocus();
+
     if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
       this.codeEditor.focus();
     }

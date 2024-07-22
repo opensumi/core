@@ -1,5 +1,3 @@
-import { Readable } from 'stream';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { IAICompletionOption } from '@opensumi/ide-core-common';
 import {
@@ -32,10 +30,9 @@ const streamData = [
   '  age: 30\n',
   '};\n',
   '\n',
-  'function greet(person: Person) {\n',
-  '  console.log(`Hello, ${person.name}!`);\n',
-  ' #Command#: du -sh *\n',
-  ' #Description#: 查看当前文件夹下所有文件和子文件夹的大小\n',
+  'function greet(person: Person) {\n  console.log(`Hello, ${person.name}!`);\n  // #Command#:',
+  ' du -sh *\n',
+  '  // #Description#: 查看当前文件夹下所有文件和子文件夹的大小\n',
   '}\n',
   '\n',
   'greet(person); // Output: "Hello, John Doe!"\n',
@@ -93,7 +90,7 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
         if (length - 1 === index || cancelToken?.isCancellationRequested) {
           chatReadableStream.end();
         }
-      }, index * 300);
+      }, index * 100);
     });
 
     return chatReadableStream;

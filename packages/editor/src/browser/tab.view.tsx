@@ -22,6 +22,7 @@ import {
   Event,
   IEventBus,
   MaybeNull,
+  MouseEventButton,
   PreferenceService,
   ResizeEvent,
   URI,
@@ -173,7 +174,10 @@ export const Tabs = ({ group }: ITabsProps) => {
             '.' + styles.kt_editor_tab + "[data-uri='" + group.currentResource.uri.toString() + "']",
           );
           if (currentTab) {
-            currentTab.scrollIntoView();
+            currentTab.scrollIntoView({
+              block: 'nearest',
+              inline: 'nearest',
+            });
           }
         }
       } catch (e) {
@@ -389,6 +393,7 @@ export const Tabs = ({ group }: ITabsProps) => {
     const curTabIndex = group.resources.findIndex((resource) => group.currentResource === resource);
     return (
       <div
+        draggable={false}
         className={cls({
           [styles_kt_editor_tabs_content]: true,
           [styles_kt_editor_tabs_current_last]: curTabIndex === group.resources.length - 1,
@@ -422,14 +427,14 @@ export const Tabs = ({ group }: ITabsProps) => {
               }}
               key={resource.uri.toString()}
               onMouseUp={(e) => {
-                if (e.nativeEvent.which === 2) {
+                if (e.nativeEvent.button === MouseEventButton.Middle) {
                   e.preventDefault();
                   e.stopPropagation();
                   group.close(resource.uri);
                 }
               }}
               onMouseDown={(e) => {
-                if (e.nativeEvent.which === 1) {
+                if (e.nativeEvent.button === MouseEventButton.Left) {
                   group.open(resource.uri, { focus: true });
                 }
               }}

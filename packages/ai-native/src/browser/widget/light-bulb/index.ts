@@ -1,6 +1,5 @@
 import { asClassNameArrayWrapper } from '@opensumi/ide-core-browser';
-import { Sumicon } from '@opensumi/ide-core-common/lib/codicons';
-import { Codicon } from '@opensumi/monaco-editor-core/esm/vs/base/common/codicons';
+import { Codicon, Sumicon } from '@opensumi/ide-core-common/lib/codicons';
 import { ThemeIcon } from '@opensumi/monaco-editor-core/esm/vs/base/common/themables';
 import {
   LightBulbState,

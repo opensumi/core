@@ -179,3 +179,13 @@ export function trackFocus(element: HTMLElement | Window): IFocusTracker {
 }
 
 export { fastdom };
+/**
+ * https://developer.mozilla.org/zh-CN/docs/Web/API/MouseEvent/button
+ */
+export const MouseEventButton = {
+  Left: 0,
+  Middle: 1,
+  Right: 2,
+  Back: 3,
+  Forward: 4,
+};

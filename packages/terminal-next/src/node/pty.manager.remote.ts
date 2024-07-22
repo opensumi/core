@@ -3,7 +3,7 @@ import net, { SocketConnectOpts } from 'net';
 import { Injectable, Optional } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
-import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { DebugLog, Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import {
   IPtyProxyRPCService,
@@ -14,15 +14,34 @@ import {
 
 import { PtyServiceManager } from './pty.manager';
 
+interface PtyServiceOptions {
+  socketConnectOpts: SocketConnectOpts;
+  /**
+   * 重连时间间隔
+   */
+  reconnectInterval?: number;
+  /**
+   * socket 超时时间
+   */
+  socketTimeout?: number | undefined;
+}
+
+export const PtyServiceManagerRemoteOptions = Symbol('PtyServiceManagerRemoteOptions');
+
 // 双容器架构 - 在IDE容器中远程运行，与DEV Server上的PtyService通信
 // 继承自PtyServiceManager，覆写了创建PtyProxyService连接的方法，用于需要远程连接PtyService的场景
 // 具体需要根据应用场景，通过DI注入覆盖PtyServiceManager使用
 @Injectable()
 export class PtyServiceManagerRemote extends PtyServiceManager {
+  private disposer: Disposable;
+
   // Pty运行在单独的容器上，通过Socket连接，可以自定义Socket连接参数
-  constructor(@Optional() connectOpts: SocketConnectOpts = { port: PTY_SERVICE_PROXY_SERVER_PORT }) {
+  constructor(
+    @Optional(PtyServiceManagerRemoteOptions)
+    opts: PtyServiceOptions = { socketConnectOpts: { port: PTY_SERVICE_PROXY_SERVER_PORT } },
+  ) {
     super();
-    this.initRemoteConnectionMode(connectOpts);
+    this.initRemoteConnectionMode(opts);
   }
 
   private initRPCService(socket: net.Socket): IDisposable {
@@ -30,6 +49,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     const { getRPCService: clientGetRPCService, createRPCService } = initRPCService(clientCenter);
     const getService: IPtyProxyRPCService = clientGetRPCService(PTY_SERVICE_PROXY_PROTOCOL) as any;
     this.ptyServiceProxy = getService;
+    this.ptyServiceProxyDeferred.resolve();
     let callbackDisposed = false;
 
     // 处理回调
@@ -60,40 +80,69 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     });
   }
 
-  private initRemoteConnectionMode(connectOpts: SocketConnectOpts) {
+  private initRemoteConnectionMode(opts: PtyServiceOptions) {
+    const { socketTimeout, reconnectInterval, socketConnectOpts } = opts;
+    if (this.disposer) {
+      this.disposer.dispose();
+    }
+    this.disposer = new Disposable();
+
     const socket = new net.Socket();
-    let rpcServiceDisposable: IDisposable | undefined;
+    if (socketTimeout) {
+      socket.setTimeout(socketTimeout);
+    }
+
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    const reconnect = () => {
+      if (reconnectTimer) {
+        return;
+      }
+      reconnectTimer = global.setTimeout(() => {
+        this.logger.log('PtyServiceManagerRemote reconnect');
+        socket.destroy();
+        this.initRemoteConnectionMode(opts);
+      }, reconnectInterval || 2000);
+    };
 
     // UNIX Socket 连接监听，成功连接后再创建RPC服务
-    socket.on('connect', () => {
+    socket.once('connect', () => {
       this.logger.log('PtyServiceManagerRemote connected');
-      rpcServiceDisposable?.dispose();
-      rpcServiceDisposable = this.initRPCService(socket);
+      if (socketTimeout) {
+        socket.setTimeout(0);
+      }
+      if (reconnectTimer) {
+        global.clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      this.disposer.addDispose(this.initRPCService(socket));
     });
 
     // UNIX Socket 连接失败或者断开，此时需要等待 1.5s 后重新连接
-    socket.on('close', () => {
-      this.logger.log('PtyServiceManagerRemote connect failed, will reconnect after 2s');
-      rpcServiceDisposable?.dispose();
-      global.setTimeout(() => {
-        try {
-          socket.connect(connectOpts);
-        } catch (e) {
-          this.logger.warn(e);
-        }
-      }, 2000);
+    socket.on('close', (hadError) => {
+      this.logger.log('PtyServiceManagerRemote socket close, hadError:', hadError);
+      reconnect();
     });
 
     // 处理 Socket 异常
     socket.on('error', (e) => {
-      this.logger.warn('pty unix domain socket error ', e);
+      this.logger.warn('PtyServiceManagerRemote socket error ', e);
+    });
+
+    socket.on('end', () => {
+      this.logger.log('PtyServiceManagerRemote socket end');
+    });
+
+    socket.on('timeout', () => {
+      this.logger.log('PtyServiceManagerRemote socket timeout');
+      reconnect();
     });
 
     try {
-      socket.connect(connectOpts);
+      this.logger.log('PtyServiceManagerRemote socket start connect');
+      socket.connect(socketConnectOpts);
     } catch (e) {
       // 连接错误的时候会抛出异常，此时自动重连，同时需要 catch 错误
-      this.logger.warn(e);
+      this.logger.warn('PtyServiceManagerRemote socket connect error', e);
     }
   }
 

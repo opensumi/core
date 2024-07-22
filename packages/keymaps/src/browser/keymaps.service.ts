@@ -580,7 +580,7 @@ export class KeymapService implements IKeymapService {
   searchKeybindings = (search: string) => {
     this.currentSearchValue = search;
     // throttle
-    if (!this.searchDelayer.isTriggered) {
+    if (!this.searchDelayer.isTriggered()) {
       this.searchDelayer.cancel();
     }
     this.searchDelayer.trigger(async () => {

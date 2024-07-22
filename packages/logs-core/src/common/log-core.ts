@@ -15,9 +15,9 @@ export interface ILogServiceForClient {
 
   dispose(namespace: SupportLogNamespace): void;
 
-  setGlobalLogLevel(level: LogLevel);
-  getGlobalLogLevel();
-  disposeAll();
+  setGlobalLogLevel(level: LogLevel): Promise<void>;
+  getGlobalLogLevel(): Promise<LogLevel>;
+  disposeAll(): Promise<void>;
 
   getLogFolder(): Promise<string>;
 }

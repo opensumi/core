@@ -64,6 +64,10 @@ export class MockLoggerManageClient implements ILoggerManagerClient {
     return this.logger;
   }
 
+  getBrowserLogger(namespace: SupportLogNamespace): ILogServiceClient {
+    return this.logger;
+  }
+
   async getLogFolder() {
     return '';
   }

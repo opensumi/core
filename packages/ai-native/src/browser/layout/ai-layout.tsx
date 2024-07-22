@@ -10,7 +10,7 @@ export const AILayout = () => {
 
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 35 : 0} slot='top' z-index={2} />
+      <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 35 : 0} slot='top' />
       <SplitPanel
         id='main-horizontal-ai'
         flex={1}
@@ -29,7 +29,6 @@ export const AILayout = () => {
             isTabbar={true}
             defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
             minResize={280}
-            maxResize={480}
             minSize={49}
           />
           <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>

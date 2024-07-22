@@ -6,6 +6,16 @@
   position: relative;
   background-color: transparent;
 
+  :global {
+    .kt-input-addon-after {
+      align-items: flex-end;
+      margin: 4px 4px 0 0;
+    }
+    .kt-input-disabled {
+      background-color: var(--kt-input-disableBackground) !important;
+    }
+  }
+
   &.active {
     border-color: var(--design-inputOption-activeForeground) !important;
   }
@@ -40,15 +50,5 @@
         }
       }
     }
-  }
-}
-
-:global {
-  .kt-input-addon-after {
-    align-items: flex-end;
-    margin: 4px 4px 0 0;
-  }
-  .kt-input-disabled {
-    background-color: var(--kt-input-disableBackground) !important;
   }
 }

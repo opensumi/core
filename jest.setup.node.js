@@ -42,6 +42,7 @@ global.getComputedStyle = jsdom.window.getComputedStyle;
 global.window = jsdom.window;
 global.DOMParser = jsdom.window.DOMParser;
 global.MutationObserver = jsdom.window.MutationObserver;
+global.IntersectionObserver = jsdom.window.IntersectionObserver;
 global.KeyboardEvent = jsdom.window.KeyboardEvent;
 global.requestAnimationFrame = (fn) => setTimeout(fn, 16);
 global.cancelAnimationFrame = (timer) => {

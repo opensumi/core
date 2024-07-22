@@ -1,15 +1,15 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
+import { IRPCProtocol, SumiConnectionMultiplexer, createExtMessageIO } from '@opensumi/ide-connection';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
-import { RawMessageIO } from '@opensumi/ide-connection/lib/common/rpc';
-import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
 import { Disposable, DisposableStore, path, toDisposable } from '@opensumi/ide-core-common';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractWorkerExtProcessService } from '../common/extension.service';
+import { knownProtocols } from '../common/vscode/protocols';
 
 import { getWorkerBootstrapUrl } from './loader';
 import { createSumiAPIFactory } from './sumi/main.thread.api.impl';
@@ -155,7 +155,8 @@ export class WorkerExtProcessService
 
       if (this.appConfig.useIframeWrapWorkerHost) {
         const { iframe, extHostUuid } = startInsideIframe(workerUrl);
-        window.addEventListener('message', (event) => {
+
+        const func = (event: MessageEvent<any>) => {
           if (event.source !== iframe.contentWindow) {
             return;
           }
@@ -168,6 +169,15 @@ export class WorkerExtProcessService
             ready.resolve(event.data.data);
             return;
           }
+        };
+
+        window.addEventListener('message', func);
+
+        this.apiFactoryDisposable.add({
+          dispose: () => {
+            window.removeEventListener('message', func);
+            iframe.remove();
+          },
         });
 
         ready.promise.then((port) => {
@@ -176,9 +186,7 @@ export class WorkerExtProcessService
       } else {
         try {
           const extendWorkerHost = new Worker(workerUrl, { name: 'KaitianWorkerExtensionHost' });
-          this.addDispose({
-            dispose: () => extendWorkerHost.terminate(),
-          });
+
           extendWorkerHost.onmessage = (e) => {
             if (e.data instanceof MessagePort) {
               ready.resolve(e.data);
@@ -188,6 +196,14 @@ export class WorkerExtProcessService
           extendWorkerHost.onerror = (err) => {
             reject(err);
           };
+
+          this.apiFactoryDisposable.add({
+            dispose: () => {
+              extendWorkerHost.terminate();
+              extendWorkerHost.onmessage = null;
+              extendWorkerHost.onerror = null;
+            },
+          });
 
           ready.promise.then((port) => {
             resolve(this.createProtocol(port));
@@ -206,7 +222,7 @@ export class WorkerExtProcessService
     const protocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'worker-ext-host',
-      io: new RawMessageIO(),
+      io: createExtMessageIO(knownProtocols),
     });
 
     this.logger.log('[Worker Host] web worker extension host ready');

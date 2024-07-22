@@ -211,6 +211,7 @@ export class EditorDocumentModelWillSaveEvent extends BasicEvent<{
   uri: URI;
   reason: SaveReason;
   language: string;
+  dirty: boolean;
 }> {}
 export interface IStackElement {
   readonly beforeVersionId: number;

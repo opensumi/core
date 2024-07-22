@@ -10,6 +10,10 @@ export const AI_INLINE_COMPLETION_VISIBLE = {
   id: 'ai.inline.completion.visible',
 };
 
+export const AI_INLINE_DIFF_PARTIAL_EDIT = {
+  id: 'ai.inline.diff.partial.edit',
+};
+
 export const AI_INLINE_COMPLETION_REPORTER = {
   id: 'ai.inline.completion.reporter',
 };

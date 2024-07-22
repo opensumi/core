@@ -137,6 +137,10 @@ export function injectInnerProviders(injector: Injector) {
       useClass: Logger,
     },
     {
+      token: Logger,
+      useAlias: ILogger,
+    },
+    {
       token: ComponentRegistry,
       useClass: ComponentRegistryImpl,
     },

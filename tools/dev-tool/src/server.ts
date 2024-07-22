@@ -22,12 +22,17 @@ export async function startServer(
   arg1: NodeModule[] | Partial<IServerAppOpts>,
   options?: {
     mountStaticPath?: string;
-    injector?: Provider;
+    injector?: Injector;
   },
 ) {
   const app = new Koa();
   const router = new KoaRouter();
   const deferred = new Deferred<http.Server>();
+  const injector = options?.injector ?? new Injector();
+  injector.addProviders({
+    token: RemoteOpenerServiceToken,
+    useClass: RemoteOpenerServiceImpl,
+  });
 
   router.get('/open', (ctx) => {
     const openerService: IRemoteOpenerClient = injector.get(RemoteOpenerClientToken);
@@ -53,13 +58,6 @@ export async function startServer(
       }),
     );
   }
-
-  const injector = new Injector([
-    {
-      token: RemoteOpenerServiceToken,
-      useClass: RemoteOpenerServiceImpl,
-    },
-  ]);
 
   const port = process.env.PORT || process.env.IDE_SERVER_PORT || 8000;
   let opts: IServerAppOpts = {

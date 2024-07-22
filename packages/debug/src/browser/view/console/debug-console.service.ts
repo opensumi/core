@@ -44,7 +44,6 @@ const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
     handleMouseWheel: true,
   },
   acceptSuggestionOnEnter: 'on',
-  readOnly: true,
 };
 
 @Injectable()
@@ -149,11 +148,10 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     this._consoleInputElement = e;
     this.inputEditor = this.editorService.createCodeEditor(this._consoleInputElement!, {
       ...consoleInputMonacoOptions,
+      readOnly: !this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY),
     });
 
-    this.debugContextKey = this.injector.get(DebugContextKey, [
-      (this.inputEditor.monacoEditor as any)._contextKeyService,
-    ]);
+    this.debugContextKey = this.injector.get(DebugContextKey, [this.inputEditor.monacoEditor.contextKeyService]);
 
     this.contextKeyService.onDidChangeContext((e) => {
       if (e.payload.affectsSome(DebugConsoleService.keySet)) {

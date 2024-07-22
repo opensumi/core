@@ -4,7 +4,7 @@ import * as monaco from '@opensumi/ide-monaco';
 /**
  * 缓存的结果
  */
-export interface InlayList {
+export interface IInlineCompletionCache {
   /**
    * The zero-based line value.
    */
@@ -18,31 +18,9 @@ export interface InlayList {
   /**
    * last complemetion
    */
-  lastResult: any;
+  last: any;
 }
 
-/**
- * 补全请求对象
- */
-export interface CompletionRequestBean {
-  /**
-   * 模型输入上文
-   */
-  prompt: string;
-  /**
-   * 代码语言类型
-   */
-  language: string;
-  sessionId: string;
-  /**
-   * 代码下文
-   */
-  suffix: string | null;
-  /**
-   * 文件路径
-   */
-  fileUrl: string | null;
-}
 /**
  * 补全结果缓存对象
  */
@@ -78,4 +56,5 @@ export interface CompletionResultModelCache {
  */
 export interface InlineCompletionItem extends monaco.languages.InlineCompletion {
   sessionId: string;
+  relationId: string;
 }

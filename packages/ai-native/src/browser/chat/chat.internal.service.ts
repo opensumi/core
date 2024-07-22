@@ -1,17 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import {
-  AIBackSerivcePath,
-  CancelResponse,
-  CancellationTokenSource,
-  Disposable,
-  Emitter,
-  ErrorResponse,
-  Event,
-  IAIBackService,
-  IAIBackServiceOption,
-  ReplyResponse,
-} from '@opensumi/ide-core-common';
+import { AIBackSerivcePath, Disposable, Emitter, Event, IAIBackService } from '@opensumi/ide-core-common';
 
 import { IChatManagerService } from '../../common';
 

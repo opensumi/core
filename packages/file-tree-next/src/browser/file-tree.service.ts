@@ -89,6 +89,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
 
+  private _symbolicFiles: Map<string, Directory | File> = new Map();
+
   // 文件系统Change事件队列
   private _changeEventDispatchQueue = new Set<string>();
 
@@ -263,6 +265,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
                 name: rootName,
               });
             }
+
+            if (child.filestat.isSymbolicLink || child.filestat.isInSymbolicDirectory) {
+              this._symbolicFiles.set(child.filestat.uri, child);
+            }
           });
           this.watchFilesChange(new URI(this._roots[0].uri));
           this.root = children[0] as Directory;
@@ -283,6 +289,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
           );
           this.watchFilesChange(new URI(fileStat.uri));
           children = children.concat(child);
+          if (child.filestat.isSymbolicLink || child.filestat.isInSymbolicDirectory) {
+            this._symbolicFiles.set(child.filestat.uri, child);
+          }
         }
         return children;
       }
@@ -295,6 +304,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
           this.isCompactMode && !Directory.isRoot(parent),
         );
         children = data.children;
+        children.forEach((child) => {
+          if (child.filestat.isSymbolicLink || child.filestat.isInSymbolicDirectory) {
+            this._symbolicFiles.set(child.filestat.uri, child);
+          }
+        });
         // 有概率获取不到 Filestat，易发生在外部删除多文件情况下
         const childrenParentStat = data.filestat;
         if (!!childrenParentStat && this.isCompactMode && !Directory.isRoot(parent)) {
@@ -600,6 +614,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
       path = pathOrUri;
     }
     if (this.isFileURI(pathOrUri) && !!pathURI) {
+      if (this._symbolicFiles.has(pathURI?.toString())) {
+        return this._symbolicFiles.get(pathURI.toString());
+      }
       let rootStr;
       if (!this.isMultipleWorkspace) {
         rootStr = this.workspaceService.workspace?.uri;

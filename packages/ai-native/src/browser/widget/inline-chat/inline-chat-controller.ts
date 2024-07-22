@@ -1,6 +1,5 @@
 import {
   AbortError,
-  ChatResponse,
   Deferred,
   Emitter,
   ErrorResponse,
@@ -20,12 +19,8 @@ export interface InlineChatControllerOptions {
    */
   enableCodeblockRender: boolean;
 }
-
-const rgCodeBlockBefore = /```([a-zA-Z]+)?\n([\s\S]*)/;
-const rgCodeBlockAfter = /([\s\S]+)?\n?```/;
-
 export class InlineChatController {
-  static is(controller: any): boolean {
+  static is(controller: any): controller is InlineChatController {
     return controller instanceof InlineChatController && typeof controller.mountReadable === 'function';
   }
 
@@ -41,59 +36,57 @@ export class InlineChatController {
   private readonly _onError = new Emitter<ErrorResponse>();
   public readonly onError: Event<ErrorResponse> = this._onError.event;
 
-  private isInCodeBlock = false;
-
   constructor(readonly options?: InlineChatControllerOptions) {}
 
-  public deffered: Deferred<void> = new Deferred();
+  public deferred: Deferred<void> = new Deferred();
 
-  private fencedCodeBlocks(content: string): string {
-    let _content = content;
-
+  private calculateCodeBlocks(content: string): string {
     if (!this.options?.enableCodeblockRender) {
-      return _content;
+      return content;
     }
 
-    if (_content.includes(BACK_QUOTE_3_SYMBOL)) {
-      if (!this.isInCodeBlock) {
-        // 第一次进入代码块时，去除反引号符号
-        const match = _content.match(rgCodeBlockBefore);
-        if (match && match.length >= 3) {
-          _content = match[2];
-        }
-      } else {
-        const match = _content.match(rgCodeBlockAfter);
-        if (match && match.length >= 2) {
-          _content = match[1];
-        }
+    const lines = content.split('\n');
+
+    let newContents: string[] = [];
+    let inBlock = false;
+    let startLine = 0;
+
+    lines.forEach((line, i) => {
+      if (!inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
+        inBlock = true;
+        startLine = i + 1;
+      } else if (inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
+        inBlock = false;
+        const endLine = i;
+        newContents = lines.slice(startLine, endLine);
       }
 
-      this.isInCodeBlock = !this.isInCodeBlock;
-      return _content || '';
-    }
+      if (inBlock && startLine !== i + 1) {
+        newContents.push(line);
+      }
+    });
 
-    if (this.isInCodeBlock) {
-      return _content;
-    }
-
-    return '';
+    return newContents.join('\n');
   }
 
   public async mountReadable(stream: SumiReadableStream<IChatProgress>): Promise<void> {
-    await this.deffered.promise;
+    await this.deferred.promise;
     const reply = new ReplyResponse('');
+    let wholeContent = '';
 
     listenReadable<IChatProgress>(stream, {
       onData: (data) => {
-        reply.updateMessage(this.fencedCodeBlocks((data as IChatContent).content));
-        this._onData.fire(reply);
+        const chatContent = (data as IChatContent).content;
+        wholeContent += chatContent;
+
+        const content = this.calculateCodeBlocks(wholeContent);
+        reply.updateMessage(content);
+        this._onData.fireAndAwait(reply);
       },
       onEnd: () => {
-        this.isInCodeBlock = false;
         this._onEnd.fire();
       },
       onError: (error) => {
-        this.isInCodeBlock = false;
         if (AbortError.is(error)) {
           this._onAbort.fire();
         } else {

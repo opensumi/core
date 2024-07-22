@@ -3,19 +3,15 @@ import { ILogServiceClient, ILoggerManagerClient, LogLevel, SupportLogNamespace 
 
 export { ILogger } from '@opensumi/ide-core-common';
 
-@Injectable()
-export class Logger implements ILogServiceClient {
-  @Autowired(ILoggerManagerClient)
-  private LoggerManager: ILoggerManagerClient;
+class LoggerWrapper implements ILogServiceClient {
+  protected logger: ILogServiceClient;
 
-  private logger: ILogServiceClient;
-
-  constructor() {
-    this.logger = this.LoggerManager.getLogger(SupportLogNamespace.Browser);
+  setup(logger: ILogServiceClient) {
+    this.logger = logger;
   }
 
   public getLevel() {
-    return this.getLevel();
+    return this.logger.getLevel();
   }
 
   public setLevel(level: LogLevel) {
@@ -47,5 +43,21 @@ export class Logger implements ILogServiceClient {
 
   public dispose() {
     return this.logger.dispose();
+  }
+}
+
+@Injectable()
+export class Logger extends LoggerWrapper implements ILogServiceClient {
+  @Autowired(ILoggerManagerClient)
+  protected loggerManager: ILoggerManagerClient;
+
+  constructor() {
+    super();
+    this.logger = this.loggerManager.getBrowserLogger(SupportLogNamespace.Browser);
+  }
+
+  public reportToServer() {
+    this.logger.dispose();
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Browser);
   }
 }

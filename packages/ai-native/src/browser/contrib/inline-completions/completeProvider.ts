@@ -1,26 +1,52 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTER } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AINativeSettingSectionsId, DisposableStore, URI, WithEventBus, sleep, uuid } from '@opensumi/ide-core-common';
-import { IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
+import {
+  AINativeSettingSectionsId,
+  DisposableStore,
+  URI,
+  WithEventBus,
+  raceCancellation,
+  sleep,
+  uuid,
+} from '@opensumi/ide-core-common';
+import { IAICompletionOption, IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/ide-monaco';
 
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
-
 import { DEFAULT_COMPLECTION_MODEL } from './constants';
-import { CompletionRequestBean, InlayList, InlineCompletionItem } from './model/competionModel';
+import { IInlineCompletionCache, InlineCompletionItem } from './model/competionModel';
 import { PromptCache } from './promptCache';
 import { getPrefixPrompt, getSuffixPrompt, lineBasedPromptProcessor } from './provider';
 import { AICompletionsService } from './service/ai-completions.service';
 import { ICompletionContext } from './types';
 
 // 用来缓存最近一次的补全结果
-const lastInLayList: InlayList = {
+const inlineCompletionCache: IInlineCompletionCache = {
   line: -1,
   column: -1,
-  lastResult: null,
+  last: null,
+};
+
+const makeHashSet = (str: string) => {
+  const set = new Set<string>();
+  for (const char of str) {
+    set.add(char);
+  }
+  return set;
+};
+
+const removeChars = (insertText: string, textAfterCursor: string) => {
+  let result = '';
+  const aSet = makeHashSet(insertText);
+  for (const char of textAfterCursor) {
+    // 如果是空格或者 insertText 中不存在的字符，就加入到结果中
+    if (char === ' ' || !aSet.has(char)) {
+      result += char;
+    }
+  }
+  return result;
 };
 
 @Injectable({ multiple: true })
@@ -42,6 +68,9 @@ export class CompletionRequestTask {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   isCancelFlag: boolean;
 
   private isEnablePromptEngineering = true;
@@ -55,17 +84,15 @@ export class CompletionRequestTask {
     this.isCancelFlag = false;
 
     this.isEnablePromptEngineering = this.preferenceService.getValid(
-      AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+      AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
       this.isEnablePromptEngineering,
     );
 
     this._disposables.add(
       this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.INLINE_COMPLETIONS_PROMPT_ENGINEERING_ENABLED,
+        AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
         ({ newValue }) => {
-          if (newValue) {
-            this.isEnablePromptEngineering = newValue;
-          }
+          this.isEnablePromptEngineering = newValue;
         },
       ),
     );
@@ -74,7 +101,7 @@ export class CompletionRequestTask {
   async constructRequestBean(
     context: ICompletionContext,
     token: monaco.CancellationToken,
-  ): Promise<CompletionRequestBean> {
+  ): Promise<IAICompletionOption> {
     if (this.isEnablePromptEngineering) {
       const prompt = await getPrefixPrompt(context, DEFAULT_COMPLECTION_MODEL, this.injector, token);
       const suffix = await getSuffixPrompt(context, DEFAULT_COMPLECTION_MODEL, this.injector, token);
@@ -85,6 +112,7 @@ export class CompletionRequestTask {
         sessionId: uuid(),
         language: context.language,
         fileUrl: context.fileUrl,
+        workspaceDir: context.workspaceDir,
       };
     }
 
@@ -96,6 +124,7 @@ export class CompletionRequestTask {
       sessionId: uuid(),
       language: context.language,
       fileUrl: context.fileUrl,
+      workspaceDir: context.workspaceDir,
     };
   }
 
@@ -130,20 +159,17 @@ export class CompletionRequestTask {
 
     const languageId = model.getLanguageId();
     const context: ICompletionContext = {
-      // todo: 改成相对工作空间的路径
-      fileUrl: model.uri.toString().split('/').pop()!,
+      fileUrl: model.uri.fsPath,
       filename: model.uri.toString().split('/').pop()!,
       language: languageId,
       prefix,
       suffix,
       uri: URI.from(model.uri),
+      workspaceDir: this.appConfig.workspaceDir,
     };
 
     // 组装请求参数,向远程发起请求
-    const completionRequestBean = await this.constructRequestBean(context, token);
-    if (token.isCancellationRequested) {
-      return [];
-    }
+    const requestBean = await this.constructRequestBean(context, token);
     if (this.isCancelFlag) {
       return [];
     }
@@ -152,16 +178,17 @@ export class CompletionRequestTask {
     const requestStartTime = Date.now();
 
     let rs: IAICompletionResultModel | null;
-    const cacheData = this.promptCache.getCache(completionRequestBean.prompt);
-    const relationId = this.aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
-    this.aiCompletionsService.setLastRelationId(relationId);
+    const cacheData = this.promptCache.getCache(requestBean);
+    const relationId =
+      cacheData?.relationId || this.aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
 
+    this.aiCompletionsService.setLastRelationId(relationId);
     // 如果存在缓存
     if (cacheData) {
       rs = cacheData;
     } else {
       try {
-        rs = await this.aiCompletionsService.complete(completionRequestBean, model, position, token);
+        rs = await this.aiCompletionsService.complete(requestBean, model, position, token);
       } catch (error) {
         this.aiCompletionsService.reporterEnd(relationId, {
           success: false,
@@ -182,7 +209,7 @@ export class CompletionRequestTask {
     this.aiCompletionsService.setLastSessionId(rs.sessionId);
 
     // 如果是取消直接返回
-    if ((rs && rs.isCancel) || this.isCancelFlag) {
+    if ((rs && rs.isCancel) || token.isCancellationRequested || this.isCancelFlag) {
       this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
         replytime: Date.now() - requestStartTime,
@@ -193,11 +220,8 @@ export class CompletionRequestTask {
       return [];
     }
 
-    if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
-      this.promptCache.setCache(completionRequestBean.prompt, rs);
-    }
     // 返回补全结果为空直接返回
-    if (rs.codeModelList.length === 0) {
+    if (!rs || !rs.codeModelList || rs.codeModelList.length === 0) {
       this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
         replytime: Date.now() - requestStartTime,
@@ -205,6 +229,10 @@ export class CompletionRequestTask {
       });
       this.aiCompletionsService.updateStatusBarItem('no result', false);
       return [];
+    }
+
+    if (rs.codeModelList.length > 0) {
+      this.promptCache.setCache(requestBean, { ...rs, relationId });
     }
 
     this.aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);
@@ -225,15 +253,8 @@ export class CompletionRequestTask {
     for (const codeModel of rs.codeModelList) {
       const contentText = codeModel.content;
 
-      let str = contentText;
-      while (true) {
-        if (!str.endsWith('\n')) {
-          break;
-        }
-        str = str.slice(0, -1);
-      }
+      const insertText = contentText.trimEnd();
 
-      const insertText = str;
       const model = this.model;
 
       const textAfterCursor = model.getValueInRange({
@@ -244,16 +265,6 @@ export class CompletionRequestTask {
       });
 
       // 临时修复方案，用于解决补全后面多了几个括号的问题
-      const removeChars = (a: string, b: string) => {
-        let result = '';
-        for (const char of b) {
-          if (char === ' ' || !a.includes(char)) {
-            result += char;
-          }
-        }
-        return result;
-      };
-
       const filteredString = removeChars(insertText, textAfterCursor);
 
       result.push({
@@ -265,6 +276,7 @@ export class CompletionRequestTask {
           position.column + insertText.length + textAfterCursor.length,
         ),
         sessionId: rs.sessionId,
+        relationId,
         command: {
           id: AI_INLINE_COMPLETION_REPORTER.id,
           title: '',
@@ -300,7 +312,7 @@ class ReqStack {
     const fn = this.queue.pop()!;
     return fn.run();
   }
-  cancleReq() {
+  cancelReq() {
     if (this.queue.length === 0) {
       return;
     }
@@ -311,7 +323,7 @@ class ReqStack {
   }
 }
 
-@Injectable({ multiple: false })
+@Injectable()
 export class AIInlineCompletionsProvider extends WithEventBus {
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -319,15 +331,37 @@ export class AIInlineCompletionsProvider extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  private aiNativeContextKey: AINativeContextKey;
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
+  /**
+   * 该补全是否是手动触发
+   */
   isManual: boolean;
+
   isDelEvent: boolean;
   reqStack: ReqStack;
+  inlineComletionsDebounceTime: number;
 
-  public registerEditor(editor: IEditor): void {
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(editor.monacoEditor as any)._contextKeyService]);
+  constructor() {
+    super();
 
+    this.inlineComletionsDebounceTime = this.preferenceService.getValid(
+      AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+      150,
+    );
+
+    this.addDispose(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+        ({ newValue }) => {
+          this.inlineComletionsDebounceTime = newValue;
+        },
+      ),
+    );
+  }
+
+  public mountEditor(editor: IEditor): void {
     this.isManual = false;
     this.isDelEvent = false;
     this.reqStack = new ReqStack();
@@ -336,12 +370,8 @@ export class AIInlineCompletionsProvider extends WithEventBus {
   cancelRequest() {
     this.aiCompletionsService.cancelRequest();
     if (this.reqStack) {
-      this.reqStack.cancleReq();
+      this.reqStack.cancelReq();
     }
-  }
-
-  resetContextKey() {
-    this.aiNativeContextKey.inlineCompletionIsTrigger.reset();
   }
 
   /**
@@ -358,67 +388,60 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     context: monaco.languages.InlineCompletionContext,
     token: monaco.CancellationToken,
   ) {
-    this.aiNativeContextKey.inlineCompletionIsTrigger.set(true);
-    // bugfix:修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次
-    if (context.triggerKind === 0) {
+    // bugfix: 修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次
+    if (context.triggerKind === monaco.InlineCompletionTriggerKind.Automatic) {
       if (
-        lastInLayList.column === position.column &&
-        lastInLayList.line === position.lineNumber &&
-        lastInLayList.lastResult !== undefined
+        inlineCompletionCache.column === position.column &&
+        inlineCompletionCache.line === position.lineNumber &&
+        inlineCompletionCache.last !== undefined
       ) {
-        lastInLayList.column = -1;
-        lastInLayList.line = -1;
-        return lastInLayList.lastResult;
+        inlineCompletionCache.column = -1;
+        inlineCompletionCache.line = -1;
+        return inlineCompletionCache.last;
       }
     }
+
     this.cancelRequest();
     this.aiCompletionsService.hideStatusBarItem();
 
     // step 1 判断生成开关,如果关闭不进行后续操作
     const _isManual = this.isManual;
     if (this.isDelEvent && !_isManual) {
-      return {
-        items: [],
-      };
+      return undefined;
     }
+
     // 重置防止不触发自动补全事件
-    this.udateIsManualVal(false);
-    // 如果用户已取消
-    if (token?.isCancellationRequested) {
-      this.aiCompletionsService.updateStatusBarItem('completion not avaliable ', false);
-      return {
-        items: [],
-      };
-    }
+    this.updateIsManual(false);
 
     // 放入队列
     const requestImp = this.injector.get(CompletionRequestTask, [model, position, token, _isManual]);
 
     this.reqStack.addReq(requestImp);
 
-    // 如果是自动补全等待300ms
+    // 如果是自动补全需要 debounce
     if (!_isManual) {
-      await sleep(300);
+      await raceCancellation(sleep(this.inlineComletionsDebounceTime), token);
+    }
+
+    // 如果用户已取消
+    if (token?.isCancellationRequested) {
+      return undefined;
     }
 
     const list = await this.reqStack.runReq();
-    if (position !== undefined) {
-      lastInLayList.column = position.column;
-      lastInLayList.line = position.lineNumber;
+    if (!list) {
+      return undefined;
     }
 
-    lastInLayList.lastResult = {
-      items: list || [],
+    inlineCompletionCache.column = position.column;
+    inlineCompletionCache.line = position.lineNumber;
+    inlineCompletionCache.last = {
+      items: list,
     };
-    return {
-      items: list || [],
-    };
+    return inlineCompletionCache.last;
   }
 
-  /**
-   * 更新isManual的值，判断是否是主动补全
-   */
-  udateIsManualVal(val: boolean) {
+  updateIsManual(val: boolean) {
     this.isManual = val;
   }
 }

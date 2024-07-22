@@ -824,6 +824,7 @@ export namespace WORKSPACE_COMMANDS {
 
   export const REMOVE_WORKSPACE_FOLDER: Command = {
     id: 'workspace.removeFolderFromWorkspace',
+    label: '%workspace.removeFolderFromWorkspace%',
     category: CATEGORY,
   };
 
@@ -1063,6 +1064,13 @@ export namespace QUICK_OPEN_COMMANDS {
 }
 
 export namespace SCM_COMMANDS {
+  const category = 'SCM';
+
+  export const GetSCMResource = {
+    id: 'scm.getResource',
+    category,
+  };
+
   // git extension 1.71 版本之前存在下划线，这里为了做兼容处理: https://github.com/microsoft/vscode/blob/1.68.1/extensions/git/src/repository.ts#L613
   export const _GIT_OPEN_MERGE_EDITOR: Command = {
     id: '_git.openMergeEditor',

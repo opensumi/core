@@ -292,6 +292,12 @@ export interface AppConfig {
    * 是否启用 Diff 协议文件自动恢复
    */
   enableDiffRevive?: boolean;
+  /**
+   * Disable restore editor group state
+   *
+   * This is useful when your scenario is one-time use, and you can control the opening of the editor tab yourself.
+   */
+  disableRestoreEditorGroupState?: boolean;
 }
 
 export interface ICollaborationClientOpts {

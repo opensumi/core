@@ -5,7 +5,13 @@ import { IDecoration, IDisposable, IMarker, Terminal } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { localize } from '@opensumi/ide-core-browser';
-import { CancellationTokenSource, Disposable, IAIReporter, TerminalRegistryToken } from '@opensumi/ide-core-common';
+import {
+  AISerivceType,
+  CancellationTokenSource,
+  Disposable,
+  IAIReporter,
+  TerminalRegistryToken,
+} from '@opensumi/ide-core-common';
 import { ITerminalConnection, ITerminalController } from '@opensumi/ide-terminal-next';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
@@ -222,7 +228,7 @@ export class PS1TerminalService extends Disposable {
   ) {
     await this.stopAIStreamRequest();
 
-    const reportRelationId = this.aiReporter.start('terminalAICommand', { message: commandDescription });
+    const reportRelationId = this.aiReporter.start(AISerivceType.TerminalAICommand, { message: commandDescription });
 
     const terminalReadableStream = await this.terminalFeatureRegistry.readableCommandSuggestions(
       commandDescription,

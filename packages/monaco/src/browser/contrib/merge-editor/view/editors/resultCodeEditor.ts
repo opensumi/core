@@ -20,6 +20,7 @@ import {
   MergeConflictEditorMode,
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-common';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import {
   IModelDecorationOptions,
@@ -41,6 +42,7 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { IIntelligentState, LineRange } from '../../model/line-range';
 import { TimeMachineDocument } from '../../model/time-machine';
+import { NavigationDirection, findRangeForNavigation } from '../../navigate-to';
 import {
   ACCEPT_COMBINATION_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
@@ -66,7 +68,7 @@ import { BaseCodeEditor } from './baseCodeEditor';
 const positionFactory: IWidgetPositionFactory = (range) =>
   new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1);
 
-@Injectable({ multiple: false })
+@Injectable({ multiple: true })
 export class ResultCodeEditor extends BaseCodeEditor {
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
@@ -76,6 +78,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   @Autowired(MappingManagerDataStore)
   private readonly dataStore: MappingManagerDataStore;
+
+  @Autowired(IMessageService)
+  private readonly messageService: IMessageService;
 
   private readonly _onDidChangeContent = new Emitter<void>();
   public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
@@ -797,40 +802,23 @@ export class ResultCodeEditor extends BaseCodeEditor {
     if (visibleRanges.length === 0) {
       return;
     }
+    const allConflicts = this.mappingManagerService.getAllDiffRanges().map((v) => v.toInclusiveRange());
 
-    const allConflicts = this.mappingManagerService.getAllDiffRanges();
+    const position = this.editor.getPosition() || visibleRanges[0].getStartPosition();
 
-    if (direction === NavigationDirection.Forwards) {
-      // 向上查找
-      const firstVisibleRange = visibleRanges[0];
-      const firstVisibleLineNumber = firstVisibleRange.startLineNumber;
-
-      // 找到 diff 的第一行比当前可视区域的第一行还要小的 range
-      for (let i = allConflicts.length - 1; i >= 0; i--) {
-        const range = allConflicts[i];
-
-        if (range.startLineNumber < firstVisibleLineNumber) {
-          return range;
-        }
-      }
-      return allConflicts[0];
-    } else {
-      // 向下查找
-      const lastVisibleRange = visibleRanges[visibleRanges.length - 1];
-      const lastVisibleLineNumber = lastVisibleRange.endLineNumber;
-
-      // 找到 diff 的第一行比当前可视区域的最后一行还要大的 range
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let i = 0; i < allConflicts.length; i++) {
-        const range = allConflicts[i];
-
-        if (range.startLineNumber > lastVisibleLineNumber) {
-          return range;
-        }
-      }
-
-      return allConflicts[allConflicts.length - 1];
+    const navigationResult = findRangeForNavigation(direction, allConflicts, position);
+    if (!navigationResult) {
+      this.messageService.warning('No conflicts found in this editor');
+      return;
+    } else if (!navigationResult.canNavigate) {
+      this.messageService.warning('No other conflicts within this editor');
+      return;
+    } else if (!navigationResult.range) {
+      // impossible path
+      return;
     }
+
+    return navigationResult.range;
   }
 
   private navigate(direction: NavigationDirection): void {
@@ -839,7 +827,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
       return;
     }
 
-    this.editor.revealLineInCenter(range.startLineNumber);
+    this.editor.setSelection(range);
+    this.editor.revealRangeNearTopIfOutsideViewport(range);
+    this.editor.focus();
   }
 
   public navigateForwards(): void {
@@ -848,9 +838,4 @@ export class ResultCodeEditor extends BaseCodeEditor {
   public navigateBackwards(): void {
     this.navigate(NavigationDirection.Backwards);
   }
-}
-
-enum NavigationDirection {
-  Forwards,
-  Backwards,
 }

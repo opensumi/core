@@ -4,15 +4,17 @@ import {
   AIBackSerivcePath,
   CancellationTokenSource,
   Disposable,
+  Emitter,
+  Event,
   IAIBackService,
   IAICompletionOption,
   IAICompletionResultModel,
   IAIReportCompletionOption,
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { IProvideInlineCompletionsSignature } from '../../../types';
-import { CompletionRequestBean } from '../model/competionModel';
 
 @Injectable()
 export class AICompletionsService extends Disposable {
@@ -27,11 +29,14 @@ export class AICompletionsService extends Disposable {
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
 
+  private readonly _onVisibleCompletion = new Emitter<boolean>();
+  public readonly onVisibleCompletion: Event<boolean> = this._onVisibleCompletion.event;
+
   private cancelIndicator = new CancellationTokenSource();
   // 是否使用默认的补全模型
   protected isDefaultCompletionModel = true;
   // 是否显示了 inline 补全
-  private isVisibleCompletion = false;
+  private _isVisibleCompletion = false;
   // 会话 id
   private lastSessionId: string;
   // 统计 id
@@ -41,6 +46,8 @@ export class AICompletionsService extends Disposable {
   // 中间件拓展 inlinecompletion
   private lastMiddlewareInlineCompletion?: IProvideInlineCompletionsSignature;
 
+  protected validCompletionThreshold = 750;
+
   private recordRenderTime(): void {
     this.lastRenderTime = Date.now();
   }
@@ -49,20 +56,29 @@ export class AICompletionsService extends Disposable {
     this.lastCompletionUseTime = Date.now() - preTime;
   }
 
-  public async complete(data: CompletionRequestBean, model, position, token): Promise<IAICompletionResultModel | null> {
-    const doCompletion = async (data: CompletionRequestBean) => {
+  public get isVisibleCompletion(): boolean {
+    return this._isVisibleCompletion;
+  }
+
+  public async complete(
+    data: IAICompletionOption,
+    model: monaco.editor.ITextModel,
+    position: monaco.Position,
+    token: monaco.CancellationToken,
+  ): Promise<IAICompletionResultModel | null> {
+    const doCompletion = async (data: IAICompletionOption) => {
       if (!this.aiBackService.requestCompletion) {
         return null;
       }
 
       try {
         this.isDefaultCompletionModel = true;
-        const now = Date.now();
+        const completionStart = Date.now();
         const result = (await this.aiBackService.requestCompletion(
-          data as IAICompletionOption,
+          data,
           this.cancelIndicator.token,
         )) as IAICompletionResultModel;
-        this.recordCompletionUseTime(now);
+        this.recordCompletionUseTime(completionStart);
         return result;
       } catch (error) {
         return null;
@@ -93,27 +109,29 @@ export class AICompletionsService extends Disposable {
     this.aiBackService.reportCompletion(data);
     this.reporterEnd(relationId, { success: true, isReceive: accept, renderingTime: data.renderingTime });
 
-    this.isVisibleCompletion = false;
+    this._isVisibleCompletion = false;
   }
 
   public async reporterEnd(relationId: string, data: CompletionRT) {
-    this.aiReporter.end(relationId, {
+    const reportData = {
       ...data,
-      isValid: typeof data.renderingTime === 'number' ? data.renderingTime > 750 : false,
-    });
+      isValid: typeof data.renderingTime === 'number' ? data.renderingTime > this.validCompletionThreshold : false,
+    };
+    this.aiReporter.end(relationId, reportData);
   }
 
   public setVisibleCompletion(visible: boolean) {
     // 如果之前是 true，现在是 false，说明并没有进行采纳
-    if (this.isVisibleCompletion === true && visible === false) {
+    if (this._isVisibleCompletion === true && visible === false) {
       this.report({ sessionId: this.lastSessionId, accept: false, relationId: this.lastRelationId });
     }
 
+    this._isVisibleCompletion = visible;
+
+    this._onVisibleCompletion.fire(visible);
+
     if (visible === true) {
-      this.isVisibleCompletion = visible;
       this.recordRenderTime();
-    } else {
-      this.isVisibleCompletion = false;
     }
   }
 

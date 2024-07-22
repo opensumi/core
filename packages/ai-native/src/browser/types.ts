@@ -5,6 +5,7 @@ import {
   CancellationToken,
   ChatResponse,
   Deferred,
+  IAICompletionOption,
   IAICompletionResultModel,
   IDisposable,
   IResolveConflictHandler,
@@ -16,7 +17,6 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
-import { CompletionRequestBean } from './contrib/inline-completions/model/competionModel';
 import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
@@ -29,6 +29,10 @@ interface IBaseInlineChatHandler<T extends any[]> {
    * 提供 diff editor 的预览策略
    */
   providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
+  /**
+   * 在 editor 里直接预览输出的结果
+   */
+  providerPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
 }
 
 export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
@@ -42,9 +46,13 @@ export enum ERunStrategy {
    */
   EXECUTE = 'EXECUTE',
   /**
-   * 预览 diff，执行后 input 保留，显示 diff editor
+   * 预览 diff，执行后 input 保留，显示 inline diff editor
    */
   DIFF_PREVIEW = 'DIFF_PREVIEW',
+  /**
+   * 预览输出结果，执行后 input 保留，并在 editor 里直接展示输出结果
+   */
+  PREVIEW = 'PREVIEW',
 }
 
 /**
@@ -52,7 +60,7 @@ export enum ERunStrategy {
  */
 export interface IInteractiveInputRunStrategy {
   strategy?: ERunStrategy;
-  handleStrategy?: (value: string) => MaybePromise<ERunStrategy>;
+  handleStrategy?: (editor: ICodeEditor, value: string) => MaybePromise<ERunStrategy>;
 }
 
 export interface ITerminalInlineChatHandler {
@@ -61,10 +69,24 @@ export interface ITerminalInlineChatHandler {
 }
 
 export interface IInlineChatFeatureRegistry {
+  /**
+   * 注册 editor 内联聊天能力
+   */
   registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
+  /**
+   * 注销 editor 内联聊天能力
+   */
+  unregisterEditorInlineChat(operational: AIActionItem): void;
+  /**
+   * 注册 terminal 内联功能
+   */
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
   /**
-   * proposed api
+   * 注销 terminal 内联功能
+   */
+  unregisterTerminalInlineChat(operational: AIActionItem): void;
+  /**
+   * proposed api，可能随时都会有变化
    */
   registerInteractiveInput(
     strategyOptions: IInteractiveInputRunStrategy,
@@ -228,8 +250,8 @@ export type IProvideInlineCompletionsSignature = (
   model: ITextModel,
   position: Position,
   token: CancellationToken,
-  next: (reqBean: CompletionRequestBean) => MaybePromise<IAICompletionResultModel | null>,
-  completionRequestBean: CompletionRequestBean,
+  next: (reqBean: IAICompletionOption) => MaybePromise<IAICompletionResultModel | null>,
+  requestOption: IAICompletionOption,
 ) => MaybePromise<IAICompletionResultModel | null>;
 
 export interface IAIMiddleware {

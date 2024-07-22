@@ -351,6 +351,11 @@ export class MessageIO extends IMessageIO<PlatformBuffer> {
   }
 }
 
+/**
+ * 请不要使用 RawMessageIO 作为与 Worker-Host 之间的通信协议
+ * 因为与插件层的通信需要正确的反序列化和序列化 Uri/URI/vscode-uri 这三种 uri
+ * TODO: 兼容 Uri/URI/vscode-uri 的序列化和反序列化
+ */
 export class RawMessageIO implements IMessageIO<RPCMessage> {
   Request(requestId: number, method: string, headers: IRequestHeaders, args: any[]): RPCRequestMessage {
     return {
