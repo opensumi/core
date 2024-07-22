@@ -8,16 +8,14 @@ import {
   CancellationTokenSource,
   ChatResponse,
   Disposable,
-  Emitter,
   ErrorResponse,
   Event,
   IAIReporter,
   IDisposable,
   ILogServiceClient,
-  ILoggerManagerClient,
+  ILogger,
   InlineChatFeatureRegistryToken,
   MaybePromise,
-  SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -28,10 +26,7 @@ import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
 import { ERunStrategy } from '../../types';
-import { BaseInlineDiffPreviewer } from '../inline-diff/inline-diff-previewer';
-import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
-import { InlineDiffService } from '../inline-diff/inline-diff.service';
-import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { InlineDiffHandler } from '../inline-diff';
 
 import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
@@ -61,28 +56,19 @@ export class InlineChatHandler extends Disposable {
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
-  @Autowired(ILoggerManagerClient)
-  private readonly loggerManagerClient: ILoggerManagerClient;
-
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
 
-  @Autowired(InlineDiffService)
-  private readonly inlineDiffService: InlineDiffService;
+  @Autowired(InlineDiffHandler)
+  private readonly inlineDiffHandler: InlineDiffHandler;
 
+  @Autowired(ILogger)
   private logger: ILogServiceClient;
 
-  private diffPreviewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposable: Disposable = new Disposable();
   private aiInlineChatOperationDisposable: Disposable = new Disposable();
   private cancelIndicator = new CancellationTokenSource();
-
-  constructor() {
-    super();
-
-    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
-  }
 
   private cancelToken() {
     this.cancelIndicator.cancel();
@@ -90,14 +76,11 @@ export class InlineChatHandler extends Disposable {
   }
 
   private disposeAllWidget() {
-    [
-      this.diffPreviewer,
-      this.aiInlineContentWidget,
-      this.aiInlineChatDisposable,
-      this.aiInlineChatOperationDisposable,
-    ].forEach((widget) => {
-      widget?.dispose();
-    });
+    [this.aiInlineContentWidget, this.aiInlineChatDisposable, this.aiInlineChatOperationDisposable].forEach(
+      (widget) => {
+        widget?.dispose();
+      },
+    );
 
     this.inlineChatInUsing = false;
   }
@@ -173,8 +156,11 @@ export class InlineChatHandler extends Disposable {
           return;
         }
 
+        // 处于以下状态时不重新展示 Widget
+        // 如果 widget 是隐藏状态，直接展示新 widget
         if (
           this.aiInlineContentWidget &&
+          !this.aiInlineContentWidget.isHidden &&
           this.aiInlineContentWidget.status !== EInlineChatStatus.READY &&
           this.aiInlineContentWidget.status !== EInlineChatStatus.ERROR
         ) {
@@ -186,6 +172,15 @@ export class InlineChatHandler extends Disposable {
     );
 
     return this;
+  }
+
+  protected showInlineContentWidget(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection): void {
+    if (this.aiInlineContentWidget) {
+      this.aiInlineContentWidget.dispose();
+    }
+    this.aiInlineContentWidget = this.injector.get(AIInlineContentWidget, [monacoEditor]);
+
+    this.aiInlineContentWidget.show({ selection });
   }
 
   protected async showInlineChat(editor: IEditor): Promise<void> {
@@ -208,9 +203,7 @@ export class InlineChatHandler extends Disposable {
       return;
     }
 
-    this.aiInlineContentWidget = this.injector.get(AIInlineContentWidget, [monacoEditor]);
-
-    this.aiInlineContentWidget.show({ selection });
+    this.showInlineContentWidget(monacoEditor, selection);
 
     this.aiInlineChatDisposable.addDispose(
       this.inlineChatFeatureRegistry.onChatClick(() => {
@@ -276,15 +269,6 @@ export class InlineChatHandler extends Disposable {
     );
   }
 
-  private formatAnswer(answer: string, crossCode: string): string {
-    const leadingWhitespaceMatch = crossCode.match(/^\s*/);
-    const indent = leadingWhitespaceMatch ? leadingWhitespaceMatch[0] : '  ';
-    return answer
-      .split('\n')
-      .map((line) => `${indent}${line}`)
-      .join('\n');
-  }
-
   private convertInlineChatStatus(
     status: EInlineChatStatus,
     reportInfo: {
@@ -325,11 +309,6 @@ export class InlineChatHandler extends Disposable {
   ): void {
     const { chatResponse } = options;
     const { relationId, startTime, isRetry } = reportInfo;
-
-    this.diffPreviewer = this.inlineDiffService.createDiffPreviewer(monacoEditor, options);
-    this.diffPreviewer.mount(this.aiInlineContentWidget);
-
-    this.aiInlineChatDisposable.addDispose(this.diffPreviewer);
 
     if (InlineChatController.is(chatResponse)) {
       this.aiInlineChatOperationDisposable.addDispose([
@@ -388,6 +367,17 @@ export class InlineChatHandler extends Disposable {
         isRetry,
       });
     }
+
+    const diffPreviewer = this.inlineDiffHandler.showPreviewerByStream(monacoEditor, options);
+    diffPreviewer.mount(this.aiInlineContentWidget);
+  }
+
+  private ensureInlineChatVisible(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection) {
+    if (this.aiInlineContentWidget.disposed) {
+      this.showInlineContentWidget(monacoEditor, crossSelection);
+    } else if (this.aiInlineContentWidget.isHidden) {
+      this.aiInlineContentWidget.resume();
+    }
   }
 
   private async handleDiffPreviewStrategy(
@@ -403,8 +393,11 @@ export class InlineChatHandler extends Disposable {
 
     const model = monacoEditor.getModel();
 
-    this.diffPreviewer?.dispose();
+    this.inlineDiffHandler.hidePreviewer(monacoEditor);
     this.aiInlineChatOperationDisposable.dispose();
+
+    this.ensureInlineChatVisible(monacoEditor, crossSelection);
+
     this.aiInlineChatDisposable.addDispose(this.aiInlineContentWidget.launchChatStatus(EInlineChatStatus.THINKING));
 
     const startTime = Date.now();
@@ -442,19 +435,26 @@ export class InlineChatHandler extends Disposable {
 
     this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
-        if (kind === EResultKind.ACCEPT) {
-          this.diffPreviewer.handleAction(kind);
+        this.inlineDiffHandler.handleAction(monacoEditor, kind);
 
+        if (kind === EResultKind.ACCEPT) {
           this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
           runWhenIdle(() => {
             this.disposeAllWidget();
           });
+        } else if (kind === EResultKind.DISCARD) {
+          this.aiReporter.end(relationId, { message: 'discard', success: true, isDrop: true });
+          runWhenIdle(() => {
+            this.disposeAllWidget();
+          });
+        } else if (kind === EResultKind.REGENERATE) {
+          this.handleDiffPreviewStrategy(monacoEditor, strategy, crossSelection, relationId, true);
         }
       }),
       this.aiInlineChatService.onThumbs((isLike: boolean) => {
         this.aiReporter.end(relationId, { isLike });
       }),
-      this.diffPreviewer.onLineCount((count) => {
+      this.inlineDiffHandler.onMaxLineCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model!.getLineCount()) {
             // 如果用户是选中了最后一行，直接显示在最后一行
@@ -497,25 +497,6 @@ export class InlineChatHandler extends Disposable {
         relationId,
         false,
       );
-
-      this.aiInlineChatDisposable.addDispose([
-        this.aiInlineContentWidget.onResultClick(async (kind: EResultKind) => {
-          this.diffPreviewer.handleAction(kind);
-
-          if (kind === EResultKind.DISCARD) {
-            this.aiReporter.end(relationId, { message: 'discard', success: true, isDrop: true });
-            this.disposeAllWidget();
-          } else if (kind === EResultKind.REGENERATE) {
-            await this.handleDiffPreviewStrategy(
-              monacoEditor,
-              providerDiffPreviewStrategy,
-              crossSelection,
-              relationId,
-              true,
-            );
-          }
-        }),
-      ]);
     }
   }
 }

@@ -3,6 +3,9 @@ import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 export abstract class IAIMonacoContribHandler extends Disposable {
+  protected allowAnyScheme: boolean = false;
+  protected allowedSchemes: string[] = [Schemes.file];
+
   sessionDisposable = new Disposable();
 
   editor: IEditor | undefined;
@@ -11,8 +14,12 @@ export abstract class IAIMonacoContribHandler extends Disposable {
     super();
   }
 
-  intercept(uri: URI) {
-    if (uri.scheme !== Schemes.file) {
+  shouldHandle(uri: URI) {
+    if (this.allowAnyScheme) {
+      return true;
+    }
+
+    if (this.allowedSchemes.includes(uri.scheme)) {
       return true;
     }
 

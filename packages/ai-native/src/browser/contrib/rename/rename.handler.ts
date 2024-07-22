@@ -26,8 +26,7 @@ export class RenameHandler extends IAIMonacoContribHandler {
     const disposable = new Disposable();
 
     const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
-      const needStop = this.intercept(model.uri);
-      if (needStop) {
+      if (!this.shouldHandle(model.uri)) {
         return;
       }
 

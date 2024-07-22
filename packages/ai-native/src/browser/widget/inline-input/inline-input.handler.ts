@@ -84,7 +84,7 @@ export class InlineInputHandler extends Disposable {
       if (InlineChatController.is(previewResponse)) {
         const controller = previewResponse as InlineChatController;
 
-        controller.deferred.resolve();
+        controller.listen();
 
         inputDisposable.addDispose([
           controller.onData(async (data) => {
@@ -113,6 +113,7 @@ export class InlineInputHandler extends Disposable {
             widget.launchChatStatus(EInlineChatStatus.READY);
           }),
           controller.onEnd(() => {
+            model.pushStackElement();
             widget.launchChatStatus(EInlineChatStatus.DONE);
           }),
         ]);

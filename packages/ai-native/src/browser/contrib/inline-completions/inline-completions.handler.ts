@@ -131,8 +131,7 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
     return monacoApi.languages.registerInlineCompletionsProvider('*', {
       groupId: 'ai-native-inline-completions',
       provideInlineCompletions: async (model, position, context, token) => {
-        const needStop = this.intercept(model.uri);
-        if (needStop) {
+        if (!this.shouldHandle(model.uri)) {
           return;
         }
 
