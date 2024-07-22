@@ -1,7 +1,7 @@
 import { Heap, IDisposable, onUnexpectedError } from '@opensumi/ide-utils';
 
-class DomOpeartion {
-  private _disposed: boolean;
+class DomOperation {
+  private _disposed = false;
 
   constructor(protected _runner: () => void, public priority: number) {}
 
@@ -22,11 +22,11 @@ class DomOpeartion {
   }
 }
 
-const aQueue = new Heap<DomOpeartion>({
+const aQueue = new Heap<DomOperation>({
   comparator: (a, b) => b.priority - a.priority,
 });
 
-const bQueue = new Heap<DomOpeartion>({
+const bQueue = new Heap<DomOperation>({
   comparator: (a, b) => b.priority - a.priority,
 });
 
@@ -72,7 +72,7 @@ function schedule() {
 /**
  * 如果当前在动画帧中，将操作加入当前队列，否则加入下一帧队列
  */
-function runAtThisOrScheduleAtNext(op: DomOpeartion) {
+function runAtThisOrScheduleAtNext(op: DomOperation) {
   if (inAnimationFrame) {
     runningQueue.add(op);
   } else {
@@ -81,21 +81,21 @@ function runAtThisOrScheduleAtNext(op: DomOpeartion) {
 }
 
 function measure(fn: () => void): IDisposable {
-  const op = new DomOpeartion(fn, 10000);
+  const op = new DomOperation(fn, 10000);
   runAtThisOrScheduleAtNext(op);
   schedule();
   return op;
 }
 
 function mutate(fn: () => void): IDisposable {
-  const op = new DomOpeartion(fn, -10000);
+  const op = new DomOperation(fn, -10000);
   runAtThisOrScheduleAtNext(op);
   schedule();
   return op;
 }
 
 function measureAtNextFrame(fn: () => void): IDisposable {
-  const op = new DomOpeartion(fn, 10000);
+  const op = new DomOperation(fn, 10000);
   nextQueue.add(op);
   schedule();
   return op;
