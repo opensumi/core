@@ -237,13 +237,22 @@ export class AINativeBrowserContribution
 
     this.contributions.getContributions().forEach((contribution) => {
       const contributions = [
-        { key: contribution.registerInlineChatFeature, registry: this.inlineChatFeatureRegistry },
-        { key: contribution.registerChatFeature, registry: this.chatFeatureRegistry },
-        { key: contribution.registerResolveConflictFeature, registry: this.resolveConflictRegistry },
-        { key: contribution.registerRenameProvider, registry: this.renameCandidatesProviderRegistry },
-        { key: contribution.registerChatRender, registry: this.chatRenderRegistry },
-        { key: contribution.registerTerminalProvider, registry: this.terminalProviderRegistry },
-        { key: contribution.registerIntelligentCompletionFeature, registry: this.intelligentCompletionsRegistry },
+        { key: contribution.registerInlineChatFeature?.bind(contribution), registry: this.inlineChatFeatureRegistry },
+        { key: contribution.registerChatFeature?.bind(contribution), registry: this.chatFeatureRegistry },
+        {
+          key: contribution.registerResolveConflictFeature?.bind(contribution),
+          registry: this.resolveConflictRegistry,
+        },
+        {
+          key: contribution.registerRenameProvider?.bind(contribution),
+          registry: this.renameCandidatesProviderRegistry,
+        },
+        { key: contribution.registerChatRender?.bind(contribution), registry: this.chatRenderRegistry },
+        { key: contribution.registerTerminalProvider?.bind(contribution), registry: this.terminalProviderRegistry },
+        {
+          key: contribution.registerIntelligentCompletionFeature?.bind(contribution),
+          registry: this.intelligentCompletionsRegistry,
+        },
       ];
 
       for (const contrib of contributions) {
