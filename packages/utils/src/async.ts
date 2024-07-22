@@ -554,6 +554,11 @@ export class RunOnceScheduler {
     this.timeoutToken = setTimeout(this.timeoutHandler, delay);
   }
 
+  trigger(): void {
+    this.cancel();
+    this.onTimeout();
+  }
+
   get delay(): number {
     return this.timeout;
   }

@@ -5,10 +5,23 @@ import ReactDOMClient from 'react-dom/client';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { KeybindingRegistry, StackingLevel } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { Disposable, Emitter, Event, IRange, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, IPosition, IRange, isUndefined, uuid } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import { ICodeEditor, IEditorDecorationsCollection, Position, Range, Selection } from '@opensumi/ide-monaco';
-import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
+import {
+  ICodeEditor,
+  IContentWidgetPosition,
+  IEditorDecorationsCollection,
+  ITextModel,
+  Position,
+  Range,
+  Selection,
+  TrackedRangeStickiness,
+} from '@opensumi/ide-monaco';
+import {
+  ReactInlineContentWidget,
+  ShowAIContentOptions,
+} from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
+import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
@@ -25,7 +38,11 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
-import { EnhanceDecorationsCollection, IEnhanceModelDeltaDecoration } from '../../model/enhanceDecorationsCollection';
+import {
+  EnhanceDecorationsCollection,
+  IDecorationSerializableState,
+  IEnhanceModelDeltaDecoration,
+} from '../../model/enhanceDecorationsCollection';
 import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
@@ -41,21 +58,21 @@ interface IPartialEditWidgetComponent {
   discardSequence: string;
 }
 
-enum EPartialEdit {
+export enum EPartialEdit {
   accept = 'accept',
   discard = 'discard',
 }
 
 export interface IPartialEditEvent {
+  uri: URI;
   /**
    * 总 diff 数
    */
   totalPartialEditCount: number;
   /**
-   * 已采纳数
+   * 已处理的个数
    */
-  acceptedPartialEditCount: number;
-
+  resolvedPartialEditCount: number;
   /**
    * 已添加行数
    */
@@ -63,22 +80,35 @@ export interface IPartialEditEvent {
   /**
    * 已删除行数
    */
-  totalRemovedLinesCount: number;
+  totalDeletedLinesCount: number;
   currentPartialEdit: {
     type: EPartialEdit;
-    deletedLinesCount: number;
     addedLinesCount: number;
+    deletedLinesCount: number;
   };
 }
 
-interface ITextLinesTokens {
+export interface ITextLinesTokens {
   text: string;
   lineTokens: LineTokens;
 }
 
-/**
- * @internal
- */
+type IWidgetStatus = 'accept' | 'discard' | 'pending';
+
+export interface IWidgetSerializedState {
+  addedLinesCount: number;
+  deletedLinesCount: number;
+  status: IWidgetStatus;
+  lineNumber: number;
+}
+
+export interface SerializableState {
+  addedState: IDecorationSerializableState[];
+  removedTextLines: IRemovedWidgetSerializedState[];
+  widgets: IWidgetSerializedState[];
+  selection: Selection;
+}
+
 @Injectable({ multiple: true })
 export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   static ID = 'AcceptPartialEditWidgetID';
@@ -96,6 +126,10 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   public readonly onDiscard: Event<void> = this._onDiscard.event;
 
   positionPreference = [ContentWidgetPositionPreference.EXACT];
+
+  public addedLinesCount: number = 0;
+  public deletedLinesCount: number = 0;
+  public status: IWidgetStatus = 'pending';
 
   private getSequenceKeyStrings(): IPartialEditWidgetComponent | undefined {
     let keybindings = this.keybindingRegistry.getKeybindingsForCommand(AI_INLINE_DIFF_PARTIAL_EDIT.id);
@@ -149,6 +183,60 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   public getDecorationId(): string {
     return this._decorationId;
   }
+
+  public resume(): void {
+    this.status = 'pending';
+    this.addedLinesCount = 0;
+    this.deletedLinesCount = 0;
+
+    super.resume();
+  }
+
+  public accept(addedLinesCount: number, deletedLinesCount: number): void {
+    this.status = 'accept';
+    this.addedLinesCount = addedLinesCount;
+    this.deletedLinesCount = deletedLinesCount;
+    super.hide();
+  }
+
+  get isAccepted(): boolean {
+    return this.status === 'accept';
+  }
+
+  public discard(addedLinesCount: number, deletedLinesCount: number): void {
+    this.status = 'discard';
+    this.addedLinesCount = addedLinesCount;
+    this.deletedLinesCount = deletedLinesCount;
+    super.hide();
+  }
+
+  get isRejected(): boolean {
+    return this.status === 'discard';
+  }
+
+  public serializeState(): IWidgetSerializedState {
+    return {
+      addedLinesCount: this.addedLinesCount,
+      deletedLinesCount: this.deletedLinesCount,
+      status: this.status,
+      lineNumber: this.getPosition()!.position!.lineNumber,
+    };
+  }
+
+  public restoreSerializedState(state: IWidgetSerializedState) {
+    if (state.status === 'accept') {
+      this.accept(state.addedLinesCount, state.deletedLinesCount);
+    } else if (state.status === 'discard') {
+      this.discard(state.addedLinesCount, state.deletedLinesCount);
+    } else {
+      this.resume();
+    }
+  }
+}
+
+export interface IRemovedWidgetSerializedState {
+  textLines: ITextLinesTokens[];
+  position: IPosition;
 }
 
 const RemovedWidgetComponent = ({ dom, marginWidth }) => {
@@ -165,9 +253,14 @@ const RemovedWidgetComponent = ({ dom, marginWidth }) => {
 
 class RemovedZoneWidget extends ZoneWidget {
   private root: ReactDOMClient.Root;
-  private recordPositionData: { position: Position; heightInLines: number };
+  private recordPositionData: { position: IPosition; heightInLines: number };
 
-  constructor(editor: ICodeEditor, private readonly removedTextLines: string[], options: IOptions) {
+  private _hidden: boolean = false;
+  get isHidden(): boolean {
+    return this._hidden;
+  }
+
+  constructor(editor: ICodeEditor, private readonly textLines: ITextLinesTokens[], options: IOptions) {
     super(editor, options);
   }
 
@@ -176,12 +269,23 @@ class RemovedZoneWidget extends ZoneWidget {
     this.root = ReactDOMClient.createRoot(container);
   }
 
-  renderDom(dom: HTMLElement, options: { marginWidth: number }): void {
-    this.root.render(<RemovedWidgetComponent dom={dom} marginWidth={options.marginWidth} />);
+  getRemovedTextLines(): string[] {
+    return this.textLines.map((v) => v.text);
   }
 
-  getRemovedTextLines(): string[] {
-    return this.removedTextLines;
+  get height() {
+    return this.textLines.length;
+  }
+
+  getLastPosition(): IPosition {
+    return this.recordPositionData.position;
+  }
+
+  serializeState(): IRemovedWidgetSerializedState {
+    return {
+      textLines: this.textLines,
+      position: this.getLastPosition(),
+    };
   }
 
   hide(): void {
@@ -191,7 +295,7 @@ class RemovedZoneWidget extends ZoneWidget {
         heightInLines: this._viewZone?.heightInLines,
       };
     }
-
+    this._hidden = true;
     super.hide();
   }
 
@@ -201,7 +305,33 @@ class RemovedZoneWidget extends ZoneWidget {
     }
   }
 
+  override show(pos: IPosition, heightInLines: number): void {
+    this.recordPositionData = { position: pos, heightInLines };
+    this._hidden = false;
+    super.show(pos, heightInLines);
+  }
+
   override revealRange(): void {}
+
+  override create(): void {
+    super.create();
+    const dom = document.createElement('div');
+    renderLines(
+      dom,
+      this.editor.getOption(EditorOption.tabIndex),
+      this.textLines.map(({ text: content, lineTokens }) => ({
+        content,
+        decorations: [],
+        lineTokens,
+      })),
+      this.editor.getOptions(),
+    );
+
+    const layoutInfo = this.editor.getOption(EditorOption.layoutInfo);
+    const marginWidth = layoutInfo.contentLeft;
+    this.root.render(<RemovedWidgetComponent dom={dom} marginWidth={marginWidth} />);
+  }
+
   dispose(): void {
     this.root.unmount();
     super.dispose();
@@ -219,8 +349,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
   public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
 
-  private zoneDec: IEditorDecorationsCollection;
-
   private activeLineDec: IEditorDecorationsCollection;
   private pendingRangeDec: IEditorDecorationsCollection;
 
@@ -237,10 +365,12 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
     this._onPartialEditWidgetListChange.event;
 
-  constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
-    super();
+  protected model: ITextModel;
 
-    this.zoneDec = this.monacoEditor.createDecorationsCollection();
+  constructor(private readonly monacoEditor: ICodeEditor, private selection: Selection) {
+    super();
+    this.model = this.monacoEditor.getModel()!;
+
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
     this.pendingRangeDec = this.monacoEditor.createDecorationsCollection();
 
@@ -249,14 +379,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.undoRedoService = StandaloneServices.get(IUndoRedoService);
 
-    this.updateZone(
-      LineRange.fromRangeInclusive(
-        Range.fromPositions(
-          { lineNumber: this.selection.startLineNumber, column: 1 },
-          { lineNumber: this.selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
-        ),
-      ),
-    );
+    this.updateSelection(selection);
 
     this.addDispose(
       this.addedRangeDec.onDidDecorationsChange((newAddedRangeDec) => {
@@ -304,14 +427,28 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.addDispose(
       Disposable.create(() => {
-        this.zoneDec.clear();
-
-        this.clearPendingLine();
-        this.clearActiveLine();
-        this.clearAddedLine();
-        this.clearRemovedWidgets();
-        this.clearPartialEditWidgetList();
+        this.clear();
       }),
+    );
+  }
+
+  clear() {
+    this.clearPendingLine();
+    this.clearActiveLine();
+    this.clearAddedLine();
+    this.clearRemovedWidgets();
+    this.clearPartialEditWidgetList();
+  }
+
+  public updateSelection(selection: Selection) {
+    this.selection = selection;
+    this.updateZone(
+      LineRange.fromRangeInclusive(
+        Range.fromPositions(
+          { lineNumber: this.selection.startLineNumber, column: 1 },
+          { lineNumber: this.selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
+        ),
+      ),
     );
   }
 
@@ -319,34 +456,13 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const position = new Position(lineNumber, 1);
     const heightInLines = texts.length;
 
-    const widget = new RemovedZoneWidget(
-      this.monacoEditor,
-      texts.map((t) => t.text),
-      {
-        showInHiddenAreas: true,
-        showFrame: false,
-        showArrow: false,
-      },
-    );
+    const widget = new RemovedZoneWidget(this.monacoEditor, texts, {
+      showInHiddenAreas: true,
+      showFrame: false,
+      showArrow: false,
+    });
 
     widget.create();
-
-    const dom = document.createElement('div');
-    renderLines(
-      dom,
-      this.monacoEditor.getOption(EditorOption.tabIndex),
-      texts.map(({ text: content, lineTokens }) => ({
-        content,
-        decorations: [],
-        lineTokens,
-      })),
-      this.monacoEditor.getOptions(),
-    );
-
-    const layoutInfo = this.monacoEditor.getOption(EditorOption.layoutInfo);
-    const marginWidth = layoutInfo.contentLeft;
-
-    widget.renderDom(dom, { marginWidth });
     widget.show(position, heightInLines);
 
     this.removedZoneWidgets.push(widget);
@@ -354,17 +470,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   public updateZone(newZone: LineRange): void {
     this.zone = newZone;
-
-    this.zoneDec.set([
-      {
-        range: newZone.toInclusiveRange()!,
-        options: ModelDecorationOptions.register({
-          description: ZoneDescription,
-          className: styles.inline_diff_zone,
-          isWholeLine: true,
-        }),
-      },
-    ]);
   }
 
   public getZone(): LineRange {
@@ -401,31 +506,33 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     addedDec?: IEnhanceModelDeltaDecoration,
     removedWidget?: RemovedZoneWidget,
   ): ISingleEditOperation | null {
-    const model = this.monacoEditor.getModel()!;
-    partialWidget.hide();
-
     let operation: ISingleEditOperation | null = null;
 
-    if (addedDec) {
-      if (addedDec.length > 0) {
-        const addedRange = addedDec.getRange();
-        const opRange = Range.lift({
+    let addedLinesCount = 0;
+    let deletedLinesCount = 0;
+
+    if (addedDec && addedDec.length > 0) {
+      const addedRange = addedDec.getRange();
+      operation = EditOperation.delete(
+        Range.lift({
           startLineNumber: addedRange.startLineNumber,
           startColumn: addedRange.startColumn,
           endLineNumber: addedRange.endLineNumber + 1,
           endColumn: 1,
-        });
-        operation = EditOperation.delete(opRange);
-      }
+        }),
+      );
+      addedLinesCount = addedDec.length;
 
       addedDec.hide();
     }
 
     if (removedWidget) {
       const position = removedWidget.position!;
-      const eol = model.getEOL();
+      const eol = this.model.getEOL();
 
-      const removedText = removedWidget.getRemovedTextLines().join(eol) + eol;
+      const lines = removedWidget.getRemovedTextLines();
+      deletedLinesCount = lines.length;
+      const removedText = lines.join(eol) + eol;
 
       if (operation) {
         operation = EditOperation.replace(Range.lift(operation.range), removedText);
@@ -436,22 +543,35 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       removedWidget.hide();
     }
 
+    partialWidget.discard(addedLinesCount, deletedLinesCount);
     return operation;
   }
 
   private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget, isPushStack: boolean = true) {
     const position = widget.getPosition()!.position!;
-    const model = this.monacoEditor.getModel()!;
+    const model = this.model;
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
      */
     const removedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
     const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
-    const hide = () => {
-      widget.hide();
+    const addedLinesCount = addedDec?.length || 0;
+    const deletedLinesCount = removedWidget?.height || 0;
+
+    const accpet = () => {
+      widget.accept(addedLinesCount, deletedLinesCount);
       addedDec?.hide();
       removedWidget?.hide();
+    };
+
+    const discard = () => {
+      const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
+
+      addedDec?.hide();
+      removedWidget?.hide();
+
+      return operation;
     };
 
     const resume = () => {
@@ -467,11 +587,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     switch (type) {
       case EPartialEdit.accept:
-        hide();
+        accpet();
         if (isPushStack) {
           this.pushUndoElement({
             undo: () => resume(),
-            redo: () => hide(),
+            redo: () => accpet(),
             group,
           });
         }
@@ -479,43 +599,52 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
       case EPartialEdit.discard:
         {
-          const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
-          if (operation) {
+          const op = discard();
+          if (op) {
             if (isPushStack) {
               this.pushUndoElement({
                 undo: () => resume(),
-                redo: () => hide(),
+                redo: () => discard(),
                 group,
               });
             }
-            model.pushEditOperations(null, [operation], () => null, group);
+            model.pushStackElement();
+            model.pushEditOperations(null, [op], () => null, group);
+            model.pushStackElement();
           }
         }
         break;
-
       default:
         break;
     }
 
     const event: IPartialEditEvent = {
+      uri: this.model.uri,
       totalPartialEditCount: this.partialEditWidgetList.length,
-      acceptedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
-      totalAddedLinesCount: this.addedRangeDec.getDecorations().reduce((prev, current) => prev + current.length, 0),
-      totalRemovedLinesCount: this.removedZoneWidgets.reduce(
-        (prev, current) => prev + current.getRemovedTextLines().length,
-        0,
-      ),
+      resolvedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
       currentPartialEdit: {
-        addedLinesCount: addedDec?.length || 0,
-        deletedLinesCount: removedWidget?.getRemovedTextLines().length || 0,
+        addedLinesCount,
+        deletedLinesCount,
         type,
       },
+      ...this.getTotalCodeCount(),
     };
 
     this.monacoEditor.focus();
 
     this._onPartialEditEvent.fire(event);
     this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
+  }
+
+  protected getTotalCodeCount(): {
+    totalAddedLinesCount: number;
+    totalDeletedLinesCount: number;
+  } {
+    const list = this.partialEditWidgetList.filter((w) => w.isAccepted);
+    return {
+      totalAddedLinesCount: list.reduce((prev, current) => prev + current.addedLinesCount, 0),
+      totalDeletedLinesCount: list.reduce((prev, current) => prev + current.deletedLinesCount, 0),
+    };
   }
 
   /**
@@ -533,6 +662,13 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     });
   }
 
+  public acceptUnProcessed(): void {
+    const showingWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
+    showingWidgets.forEach((widget) => {
+      this.handlePartialEditAction(EPartialEdit.accept, widget, false);
+    });
+  }
+
   public discardUnProcessed(): void {
     const showingWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
     showingWidgets.forEach((widget) => {
@@ -541,7 +677,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public pushUndoElement(data: { undo: () => void; redo: () => void; group?: UndoRedoGroup }): void {
-    const resource = this.monacoEditor.getModel()!.uri;
+    const resource = this.model.uri;
     const group = data.group ?? new UndoRedoGroup();
 
     this.undoRedoService.pushElement(
@@ -564,12 +700,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     );
   }
 
-  public touchPartialEditWidgets(ranges: LineRange[]) {
+  public touchPartialEditWidgets(startLineNumbers: number[]) {
     this.clearPartialEditWidgetList();
 
-    ranges.forEach((range) => {
-      const lineNumber = range.startLineNumber;
-
+    startLineNumbers.forEach((lineNumber) => {
       const dispoable = new Disposable();
       const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [this.monacoEditor]);
       acceptPartialEditWidget.show({ position: { lineNumber, column: 1 } });
@@ -595,20 +729,17 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       this.partialEditWidgetList.push(acceptPartialEditWidget);
     });
 
+    this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
+
     this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(true);
   }
 
-  public touchAddedRange(ranges: LineRange[]) {
-    const zone = this.getZone();
-
+  public touchAddedRange(ranges: IDecorationSerializableState[]) {
     this.addedRangeDec.set(
       ranges.map((r) => {
-        const startPosition = { lineNumber: zone.startLineNumber + r.startLineNumber - 1, column: 1 };
-        const endPosition = {
-          lineNumber: zone.startLineNumber + r.endLineNumberExclusive - 2,
-          column: Number.MAX_SAFE_INTEGER,
-        };
-        const length = r.length;
+        const startPosition = r.startPosition;
+        const endPosition = r.endPosition;
+        const length = r.len;
 
         let range = Range.fromPositions(startPosition, endPosition);
         let className = styles.inline_diff_added_range + ' ';
@@ -625,12 +756,21 @@ export class LivePreviewDiffDecorationModel extends Disposable {
             description: AddedRangeDecoration,
             isWholeLine: true,
             className,
+            // stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
           }),
         };
       }),
     );
 
     this.recordPartialEditWidgetWithAddedDec();
+  }
+
+  public touchRemovedWidget(states: IRemovedWidgetSerializedState[]) {
+    this.clearRemovedWidgets();
+
+    states.forEach(({ textLines, position }) => {
+      this.showRemovedWidgetByLineNumber(position.lineNumber, textLines);
+    });
   }
 
   public touchPendingRange(range: LineRange) {
@@ -682,5 +822,42 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       widget.dispose();
     });
     this.removedZoneWidgets = [];
+  }
+
+  serializeState(): SerializableState {
+    const addedState = this.addedRangeDec.serializeState();
+    const removedTextLines = this.removedZoneWidgets.filter((v) => !v.isHidden).map((w) => w.serializeState());
+    const widgets = this.partialEditWidgetList.map((w) => w.serializeState());
+
+    const state = {
+      addedState,
+      removedTextLines,
+      widgets,
+      selection: this.selection,
+    };
+    return state;
+  }
+
+  restoreSerializedState(state: SerializableState): void {
+    this.clear();
+
+    this.touchAddedRange(state.addedState);
+    const widgetLineNumber = state.widgets.map((w) => w.lineNumber);
+    this.touchPartialEditWidgets(widgetLineNumber);
+    widgetLineNumber.forEach((range, index) => {
+      const widget = this.partialEditWidgetList[index];
+      if (widget) {
+        widget.restoreSerializedState(state.widgets[index]);
+      }
+    });
+    this.touchRemovedWidget(state.removedTextLines);
+  }
+
+  revealFirstDiff(): void {
+    const first = this.removedZoneWidgets[0];
+    if (first) {
+      const pos = first.getLastPosition();
+      this.monacoEditor.revealLineInCenterIfOutsideViewport(pos.lineNumber);
+    }
   }
 }

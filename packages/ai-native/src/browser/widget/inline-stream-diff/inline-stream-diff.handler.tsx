@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, RunOnceScheduler } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, IPosition, RunOnceScheduler } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { linesDiffComputers } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputers';
@@ -10,7 +10,13 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
-import { AcceptPartialEditWidget, LivePreviewDiffDecorationModel } from './live-preview.decoration';
+import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
+
+import {
+  IRemovedWidgetSerializedState,
+  LivePreviewDiffDecorationModel,
+  SerializableState,
+} from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -51,7 +57,7 @@ export class InlineStreamDiffHandler extends Disposable {
   private currentDiffModel: IComputeDiffData;
 
   private undoRedoGroup: UndoRedoGroup;
-  private partialEditWidgetHandle: (widgets: AcceptPartialEditWidget[]) => void;
+  private originalModel: ITextModel;
 
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
@@ -63,6 +69,7 @@ export class InlineStreamDiffHandler extends Disposable {
 
     const modelService = StandaloneServices.get(IModelService);
     this.virtualModel = modelService.createModel('', null);
+    this.originalModel = this.monacoEditor.getModel()!;
 
     const eol = this.originalModel.getEOL();
     const startPosition = this.selection.getStartPosition();
@@ -78,11 +85,13 @@ export class InlineStreamDiffHandler extends Disposable {
       return lineTokens;
     });
 
-    this.schedulerHandleEdits = new RunOnceScheduler(() => {
-      if (this.currentDiffModel) {
-        this.handleEdits(this.currentDiffModel);
-      }
-    }, 16 * 12.5);
+    this.schedulerHandleEdits = this.registerDispose(
+      new RunOnceScheduler(() => {
+        if (this.currentDiffModel) {
+          this.handleEdits(this.currentDiffModel);
+        }
+      }, 16 * 12.5),
+    );
 
     this.initializeDecorationModel();
   }
@@ -94,18 +103,10 @@ export class InlineStreamDiffHandler extends Disposable {
     ]);
 
     this.addDispose(this.livePreviewDiffDecorationModel);
-
-    this.addDispose(
-      this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange((partialWidgets) => {
-        if (this.partialEditWidgetHandle) {
-          this.partialEditWidgetHandle(partialWidgets);
-        }
-      }),
-    );
   }
 
-  private get originalModel(): ITextModel {
-    return this.monacoEditor.getModel()!;
+  get onPartialEditWidgetListChange() {
+    return this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange;
   }
 
   private computeDiff(
@@ -191,32 +192,40 @@ export class InlineStreamDiffHandler extends Disposable {
     };
   }
 
-  public registerPartialEditWidgetHandle(exec: (widgets: AcceptPartialEditWidget[]) => void) {
-    this.partialEditWidgetHandle = exec;
-  }
-
-  public discard(): void {
-    this.livePreviewDiffDecorationModel.discardUnProcessed();
-  }
-
   public getZone(): LineRange {
     return this.livePreviewDiffDecorationModel.getZone();
   }
 
-  private renderPartialEditWidgets(diffModel: IComputeDiffData): void {
-    const { changes } = diffModel;
+  private calculateAddedDecorationCollectionState(diffModel: IComputeDiffData): IDecorationSerializableState[] {
     const zone = this.getZone();
-    const allAddRanges = changes.map((c) => {
-      const lineNumber = zone.startLineNumber + c.addedRange.startLineNumber - 1;
-      return new LineRange(lineNumber, lineNumber + 1);
+
+    const ranges = diffModel.changes.map((c) => {
+      const r = c.addedRange;
+      const startPosition = { lineNumber: zone.startLineNumber + r.startLineNumber - 1, column: 1 };
+      const endPosition = {
+        lineNumber: zone.startLineNumber + r.endLineNumberExclusive - 2,
+        column: 1,
+      };
+
+      return {
+        startPosition,
+        endPosition,
+        len: r.endLineNumberExclusive - r.startLineNumber,
+      };
     });
 
-    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(allAddRanges);
+    return ranges;
+  }
+
+  private renderPartialEditWidgets(diffModel: IComputeDiffData): void {
+    const decorationRange = this.calculateAddedDecorationCollectionState(diffModel);
+
+    this.livePreviewDiffDecorationModel.touchPartialEditWidgets(decorationRange.map((v) => v.startPosition.lineNumber));
   }
 
   private renderAddedRangeDecoration(diffModel: IComputeDiffData): void {
-    const allAddRanges = diffModel.changes.map((c) => c.addedRange);
-    this.livePreviewDiffDecorationModel.touchAddedRange(allAddRanges);
+    const ranges = this.calculateAddedDecorationCollectionState(diffModel);
+    this.livePreviewDiffDecorationModel.touchAddedRange(ranges);
   }
 
   private renderRemovedRangeDecoration(diffModel: IComputeDiffData): void {
@@ -224,23 +233,29 @@ export class InlineStreamDiffHandler extends Disposable {
     const zone = this.getZone();
 
     let preRemovedLen: number = 0;
-    this.livePreviewDiffDecorationModel.clearRemovedWidgets();
+
+    const states = [] as IRemovedWidgetSerializedState[];
 
     for (const change of changes) {
       const { removedTextLines, removedLinesOriginalRange, addedRange } = change;
 
       if (removedTextLines.length > 0) {
-        this.livePreviewDiffDecorationModel.showRemovedWidgetByLineNumber(
-          zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
-          removedTextLines.map((text, index) => ({
+        states.push({
+          position: {
+            column: 1,
+            lineNumber: zone.startLineNumber + removedLinesOriginalRange.startLineNumber - 2 - preRemovedLen,
+          },
+          textLines: removedTextLines.map((text, index) => ({
             text,
             lineTokens: this.rawOriginalTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index],
           })),
-        );
+        });
       }
 
       preRemovedLen += removedLinesOriginalRange.length - addedRange.length;
     }
+
+    this.livePreviewDiffDecorationModel.touchRemovedWidget(states);
   }
 
   /**
@@ -328,7 +343,6 @@ export class InlineStreamDiffHandler extends Disposable {
         realTimeChanges.push(edit);
       }
     }
-
     this.originalModel.pushEditOperations(null, realTimeChanges, () => null, this.undoRedoGroup);
 
     /**
@@ -390,14 +404,34 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   public readyRender(diffModel: IComputeDiffData): void {
-    this.doSchedulerEdits();
-
+    // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
     this.renderPartialEditWidgets(diffModel);
+    this.schedulerHandleEdits.trigger();
+
     this.pushStackElement();
     this.monacoEditor.focus();
   }
 
   get onPartialEditEvent() {
     return this.livePreviewDiffDecorationModel.onPartialEditEvent;
+  }
+
+  serializeState(): SerializableState {
+    return this.livePreviewDiffDecorationModel.serializeState();
+  }
+  restoreState(state: SerializableState): void {
+    this.livePreviewDiffDecorationModel.restoreSerializedState(state);
+  }
+  acceptAll(): void {
+    this.livePreviewDiffDecorationModel.acceptUnProcessed();
+    this.dispose();
+  }
+  rejectAll(): void {
+    this.livePreviewDiffDecorationModel.discardUnProcessed();
+    this.dispose();
+  }
+
+  revealFirstDiff() {
+    this.livePreviewDiffDecorationModel.revealFirstDiff();
   }
 }

@@ -59,8 +59,7 @@ export class CodeActionHandler extends IAIMonacoContribHandler {
           return;
         }
 
-        const needStop = this.intercept(model.uri);
-        if (needStop) {
+        if (!this.shouldHandle(model.uri)) {
           return;
         }
 

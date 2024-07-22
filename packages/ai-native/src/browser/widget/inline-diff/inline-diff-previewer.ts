@@ -9,31 +9,33 @@ import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { SerializableState } from '../inline-stream-diff/live-preview.decoration';
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
 @Injectable({ multiple: true })
-export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
+export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
   protected inlineContentWidget: AIInlineContentWidget | null = null;
 
+  protected model: ITextModel;
+
   constructor(protected readonly monacoEditor: ICodeEditor, protected readonly selection: Selection) {
     super();
     this.node = this.createNode();
-
+    this.model = this.monacoEditor.getModel()!;
     this.addDispose(
       Disposable.create(() => {
         if (this.inlineContentWidget) {
           this.inlineContentWidget.dispose();
         }
+        if (this.node) {
+          this.node.dispose();
+        }
       }),
     );
-  }
-
-  get model(): ITextModel {
-    return this.monacoEditor.getModel()!;
   }
 
   protected node: N;
@@ -64,7 +66,7 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
     // do nothing
   }
 
-  onLineCount(evetn: (count: number) => void): Disposable {
+  onLineCount(event: (count: number) => void): IDisposable {
     // do nothing
     return this;
   }
@@ -84,6 +86,14 @@ export abstract class BaseInlineDiffPreviewer<N> extends Disposable {
   }
   onEnd(): void {
     // do nothing
+  }
+
+  revealFirstDiff(): void {
+    // do nothing
+  }
+
+  isModel(uri: string): boolean {
+    return this.model.uri.toString() === uri;
   }
 }
 
@@ -128,6 +138,7 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     if (action === EResultKind.ACCEPT) {
       const newValue = this.getValue();
       this.model.pushEditOperations(null, [{ range: this.selection, text: newValue }], () => null);
+      this.model.pushStackElement();
     }
   }
   onLineCount(event: (count: number) => void): Disposable {
@@ -166,12 +177,14 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.addDispose(node.onDispose(() => this.dispose()));
     this.addDispose(node);
 
-    node.registerPartialEditWidgetHandle((widgets) => {
-      if (widgets.every((widget) => widget.isHidden)) {
-        this.dispose();
-        this.inlineContentWidget?.dispose();
-      }
-    });
+    this.addDispose(
+      node.onPartialEditWidgetListChange((widgets) => {
+        if (widgets.every((widget) => widget.isHidden)) {
+          this.dispose();
+          this.inlineContentWidget?.dispose();
+        }
+      }),
+    );
     return node;
   }
   getPosition(): IPosition {
@@ -182,18 +195,20 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
-        this.node.dispose();
+        this.node.acceptAll();
         break;
 
       case EResultKind.DISCARD:
       case EResultKind.REGENERATE:
-        this.node.discard();
-        this.node.dispose();
+        this.node.rejectAll();
         break;
 
       default:
         break;
     }
+  }
+  onLineCount() {
+    return Disposable.NULL;
   }
   layout(): void {
     this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
@@ -211,7 +226,16 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.node.addLinesToDiff(content);
     this.onEnd();
   }
+  serializeState(): SerializableState {
+    return this.node.serializeState();
+  }
+  restoreState(state: SerializableState): void {
+    this.node.restoreState(state);
+  }
   get onPartialEditEvent() {
     return this.node.onPartialEditEvent;
+  }
+  revealFirstDiff(): void {
+    this.node.revealFirstDiff();
   }
 }

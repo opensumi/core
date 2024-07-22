@@ -11,6 +11,7 @@ import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
+import { InlineDiffHandler } from './widget/inline-diff/inline-diff.handler';
 import { InlineHintHandler } from './widget/inline-hint/inline-hint.handler';
 import { InlineInputHandler } from './widget/inline-input/inline-input.handler';
 
@@ -33,6 +34,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(CodeActionHandler)
   private readonly codeActionHandler: CodeActionHandler;
+
+  @Autowired(InlineDiffHandler)
+  private readonly inlineDiffHandler: InlineDiffHandler;
 
   @Autowired(InlineCompletionHandler)
   private readonly inlineCompletionHandler: InlineCompletionHandler;
@@ -153,6 +157,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor));
       this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor));
     }
+
+    this.addDispose(this.inlineDiffHandler.registerInlineDiffFeature(editor));
     return disposables;
   }
 
@@ -176,5 +182,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       this.modelSessionDisposable.addDispose(this.codeActionHandler.mountEditor(editor));
     }
+
+    this.modelSessionDisposable.addDispose(this.inlineDiffHandler.mountEditor(editor));
   }
 }

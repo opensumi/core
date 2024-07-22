@@ -1,3 +1,5 @@
+import throttle from 'lodash/throttle';
+
 import { Disposable, Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
 import {
   ICodeEditor,
@@ -5,6 +7,7 @@ import {
   IModelDecorationOptions,
   IModelDecorationsChangeAccessor,
   IModelDeltaDecoration,
+  IPosition,
   IRange,
   ITextModel,
   Range,
@@ -13,6 +16,12 @@ import { space } from '@opensumi/ide-utils/lib/strings';
 
 import styles from './styles.module.less';
 
+export interface IDecorationSerializableState {
+  startPosition: IPosition;
+  endPosition: IPosition;
+  len: number;
+}
+
 interface IDeltaData extends IModelDeltaDecoration {
   length: number;
   dispose(): void;
@@ -20,11 +29,14 @@ interface IDeltaData extends IModelDeltaDecoration {
 
 export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   id: string;
+  isHidden: boolean;
   readonly editorDecoration: IModelDeltaDecoration;
   hide(): void;
   resume(): void;
   getRange(): IRange;
   setRange(newRange: IRange): void;
+
+  serializeState(): IDecorationSerializableState;
 }
 
 class DeltaDecorations implements IEnhanceModelDeltaDecoration {
@@ -33,6 +45,11 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   options: IModelDecorationOptions;
 
   private resumeRange: IRange;
+
+  private _hidden = false;
+  get isHidden(): boolean {
+    return this._hidden;
+  }
 
   constructor(
     public readonly id: string,
@@ -85,21 +102,32 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
 
   hide(): void {
     this.resumeRange = this.range;
-
+    this._hidden = true;
     const startPosition = { lineNumber: this.range.startLineNumber, column: 1 };
     const newRange = Range.fromPositions(startPosition);
     this.changeVisibility(styles.hidden, newRange);
   }
 
   resume(): void {
+    this._hidden = false;
     this.changeVisibility(styles.visible, Range.lift(this.resumeRange));
+  }
+
+  serializeState(): IDecorationSerializableState {
+    const { range } = this;
+    const startPosition = { lineNumber: range.startLineNumber, column: range.startColumn };
+    const endPosition = {
+      lineNumber: range.endLineNumber,
+      column: range.endColumn,
+    };
+    return { startPosition, endPosition, len: this.length };
   }
 }
 
 export class EnhanceDecorationsCollection extends Disposable {
   private deltaDecorations: IEnhanceModelDeltaDecoration[] = [];
 
-  protected readonly _onDidDecorationsChange = new Emitter<IEnhanceModelDeltaDecoration[]>();
+  protected readonly _onDidDecorationsChange = this.registerDispose(new Emitter<IEnhanceModelDeltaDecoration[]>());
   public readonly onDidDecorationsChange: Event<IEnhanceModelDeltaDecoration[]> = this._onDidDecorationsChange.event;
 
   private get model(): ITextModel {
@@ -178,6 +206,10 @@ export class EnhanceDecorationsCollection extends Disposable {
 
   getDecorationByLineNumber(lineNumber: number): IEnhanceModelDeltaDecoration | undefined {
     return this.deltaDecorations.find((d) => d.getRange().startLineNumber === lineNumber);
+  }
+
+  serializeState(): IDecorationSerializableState[] {
+    return this.deltaDecorations.filter((d) => !d.isHidden).map((d) => d.serializeState());
   }
 
   clear(): void {
