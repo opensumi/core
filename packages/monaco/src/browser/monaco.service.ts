@@ -56,6 +56,8 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       model: undefined,
       wordBasedSuggestions: 'off',
       renderLineHighlight: 'none',
+      automaticLayout: true,
+      ignoreTrimWhitespace: false,
     } as IStandaloneEditorConstructionOptions;
   }
 
@@ -124,7 +126,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       monacoContainer,
       {
         ...this.monacoBaseOptions,
-        ignoreTrimWhitespace: false,
         ...options,
       } as any,
       { ...this.overrideServiceRegistry.all(), ...overrides },

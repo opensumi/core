@@ -897,7 +897,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  @debounce(100)
+  @debounce(16 * 5)
   doLayoutEditors() {
     this._layoutEditorWorker();
   }
