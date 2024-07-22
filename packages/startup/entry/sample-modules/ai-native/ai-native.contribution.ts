@@ -14,6 +14,7 @@ import {
   ERunStrategy,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
+  IIntelligentCompletionsRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
@@ -402,6 +403,52 @@ export class AINativeContribution implements AINativeCoreContribution {
         stream.end();
       }, 2000);
       return stream;
+    });
+  }
+
+  registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
+    registry.registerIntelligentCompletionProvier(async (editor, position, bean, token) => {
+      const model = editor.getModel()!;
+      let value = model.getValueInRange({
+        startLineNumber: position.lineNumber,
+        startColumn: 1,
+        endLineNumber: position.lineNumber + 3,
+        endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
+      });
+
+      /**
+       * mock randown
+       */
+      const getRandomString = (length) => {
+        const characters = 'opensumi';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+      };
+
+      const insertRandomStrings = (originalString) => {
+        const numberOfInserts = Math.floor(Math.random() * 3) + 1;
+        let modifiedString = originalString;
+        for (let i = 0; i < numberOfInserts; i++) {
+          const randomString = getRandomString(Math.floor(Math.random() * 2) + 1);
+          const position = Math.floor(Math.random() * (modifiedString.length + 1));
+          modifiedString = modifiedString.slice(0, position) + randomString + modifiedString.slice(position);
+        }
+        return modifiedString;
+      };
+
+      return {
+        items: [
+          {
+            // content: 'export class Personsss {\n  name: string;\n  ages: n__open__umber;\n}',
+            content: insertRandomStrings(value),
+            belowRadius: 3,
+            aboveRadius: 0,
+          },
+        ],
+      };
     });
   }
 }
