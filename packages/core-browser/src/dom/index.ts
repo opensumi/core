@@ -186,3 +186,12 @@ export const MouseEventButton = {
   Back: 3,
   Forward: 4,
 };
+
+export function createClassNameTokens(className: string): string[] {
+  return className.split(' ').filter(Boolean);
+}
+
+export function addClassName(node: HTMLElement, className: string): void {
+  const tokens = createClassNameTokens(className);
+  node.classList.add(...tokens);
+}

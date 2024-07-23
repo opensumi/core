@@ -1,7 +1,14 @@
 import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable, Injector } from '@opensumi/di';
-import { DomListener, IContextKeyService, IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
+import {
+  DomListener,
+  IContextKeyService,
+  IReporterService,
+  PreferenceService,
+  addClassName,
+  createClassNameTokens,
+} from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
   ICtxMenuRenderer,
@@ -848,7 +855,7 @@ class InlineBreakpointWidget extends Disposable implements monaco.editor.IConten
     const domNode = document.createElement('div');
     domNode.className = 'inline-breakpoint-widget';
     if (cssClass) {
-      domNode.classList.add(...cssClass.split(' '));
+      addClassName(domNode, cssClass);
     }
     this.domNode = domNode;
 
