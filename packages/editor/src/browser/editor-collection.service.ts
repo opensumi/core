@@ -9,7 +9,6 @@ import {
   Emitter as EventEmitter,
   ILineChange,
   ISelection,
-  LRUCache,
   OnEvent,
   URI,
   WithEventBus,
@@ -690,8 +689,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
           currentEditor.revealRangeInCenter(range);
         });
       });
-    } else {
-      this.restoreState();
     }
     this._onRefOpen.fire(originalDocModelRef);
     this._onRefOpen.fire(modifiedDocModelRef);
