@@ -1,24 +1,38 @@
-import React, { ReactNode } from 'react';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser';
 import { AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AIInlineHintLineContentWidgetId, formatLocalize } from '@opensumi/ide-core-common';
-import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
-import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
-import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { Disposable, formatLocalize } from '@opensumi/ide-core-common';
+import { ICodeEditor, IPosition, Range } from '@opensumi/ide-monaco';
+import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
+import { IThemeService, getColorRegistry, inputPlaceholderForeground } from '@opensumi/ide-theme';
+import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
 
-import styles from './inline-hint.module.less';
+const INLINE_HINT_DESCRIPTION = 'inline_hint_description';
+const INLINE_HINT_DESCRIPTION_KEY = 'inline_hint_description_key';
 
 @Injectable({ multiple: true })
-export class InlineHintLineWidget extends ReactInlineContentWidget {
-  positionPreference = [ContentWidgetPositionPreference.EXACT];
-
+export class InlineHintLineDecoration extends Disposable {
   @Autowired(KeybindingRegistry)
   private readonly keybindingRegistry: KeybindingRegistry;
 
-  override id(): string {
-    return AIInlineHintLineContentWidgetId;
+  @Autowired(IThemeService)
+  private readonly themeService: IThemeService;
+
+  private colorRegister = getColorRegistry();
+
+  constructor(private readonly monacoEditor: ICodeEditor) {
+    super();
+
+    const codeEditorService = StandaloneServices.get(ICodeEditorService);
+    codeEditorService.registerDecorationType(INLINE_HINT_DESCRIPTION, INLINE_HINT_DESCRIPTION_KEY, {
+      isWholeLine: true,
+    });
+
+    this.addDispose(
+      Disposable.create(() => {
+        this.monacoEditor.setDecorationsByType(INLINE_HINT_DESCRIPTION, INLINE_HINT_DESCRIPTION_KEY, []);
+      }),
+    );
   }
 
   private getSequenceKeyString() {
@@ -30,14 +44,25 @@ export class InlineHintLineWidget extends ReactInlineContentWidget {
     return this.keybindingRegistry.acceleratorForSequence(resolved, '+');
   }
 
-  override renderView(): ReactNode {
-    const lineHeight = this.editor.getOption(EditorOption.lineHeight);
-    return (
-      <div className={styles.hint_line_widget} style={{ height: lineHeight }}>
-        <span className={styles.text}>
-          {formatLocalize('aiNative.inline.hint.widget.placeholder', this.getSequenceKeyString())}
-        </span>
-      </div>
-    );
+  public async show(position: IPosition) {
+    const content = formatLocalize('aiNative.inline.hint.widget.placeholder', this.getSequenceKeyString());
+
+    const theme = await this.themeService.getCurrentTheme();
+    const color = this.colorRegister.resolveDefaultColor(inputPlaceholderForeground, theme);
+
+    this.monacoEditor.setDecorationsByType(INLINE_HINT_DESCRIPTION, INLINE_HINT_DESCRIPTION_KEY, [
+      {
+        range: Range.fromPositions(position),
+        renderOptions: {
+          after: {
+            contentText: content,
+            opacity: '0.5',
+            color: color?.toString() ?? '',
+            padding: '0 0 0 12px',
+            width: 'max-content',
+          },
+        },
+      },
+    ]);
   }
 }
