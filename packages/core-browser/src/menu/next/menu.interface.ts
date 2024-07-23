@@ -74,8 +74,6 @@ export class MenuItemNode extends MenuNode {
     this.item = item;
   }
 
-  executeCallback = (...args: any[]) => {};
-
   getExecuteArgs(args: any[] = []): any[] {
     let runArgs = [...(this._options.args || []), ...(args || []), ...(this.extraTailArgs || [])];
     // args 为 createMenu 时提供，同一个 menu 所有的都是同一 args
@@ -87,12 +85,8 @@ export class MenuItemNode extends MenuNode {
     return runArgs;
   }
 
-  async execute(args: any[] = []): Promise<any> {
-    const result = await this.commandService.executeCommand(this.item.id, ...this.getExecuteArgs(args));
-    if (this.executeCallback) {
-      this.executeCallback(result);
-    }
-    return result;
+  execute(args: any[] = []): Promise<any> {
+    return this.commandService.executeCommand(this.item.id, ...this.getExecuteArgs(args));
   }
 
   private getShortcut(commandId: string) {

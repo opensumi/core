@@ -8,6 +8,7 @@ import {
   URI,
   localize,
   runWhenIdle,
+  useDisposable,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Button, Icon, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
@@ -23,6 +24,7 @@ import {
   IOpenMergeEditorArgs,
   MergeEditorInputData,
 } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { CommandRegistry } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MergeActions } from '../components/merge-actions';
@@ -45,10 +47,18 @@ const TitleHead: React.FC<ITitleHeadProps> = ({ contrastType }) => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const commandService = useInjectable<CommandService>(CommandService);
+  const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
 
   const [head, setHead] = useState<IMergeEditorInputData>();
   const [encoding, setEncoding] = useState<string>('');
   const [currentURI, setCurrentURI] = useState<URI>();
+
+  useDisposable(() => commandRegistry.afterExecuteCommand(EDITOR_COMMANDS.CHANGE_ENCODING.id, () => {
+      update();
+      setTimeout(() => {
+        mergeEditorService.compare();
+      }, 16 * 3);
+    }), [commandRegistry, mergeEditorService]);
 
   const toRelativePath = useCallback((uri: URI) => {
     // 获取相对路径
@@ -110,12 +120,6 @@ const TitleHead: React.FC<ITitleHeadProps> = ({ contrastType }) => {
         if (data.id === EDITOR_COMMANDS.CHANGE_ENCODING.id && currentURI && encoding) {
           data.updateLabel(encoding.toLocaleUpperCase());
           data.argsTransformer = () => [currentURI];
-          data.executeCallback = () => {
-            update();
-            setTimeout(() => {
-              mergeEditorService.compare();
-            }, 16 * 3);
-          };
         }
 
         return <InlineActionWidget key={data.id} data={data} />;
