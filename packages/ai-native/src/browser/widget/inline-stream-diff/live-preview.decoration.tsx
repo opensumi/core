@@ -1,32 +1,28 @@
 import cls from 'classnames';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { KeybindingRegistry, StackingLevel } from '@opensumi/ide-core-browser';
+import { KeybindingRegistry, StackingLevel, useDisposable } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { Disposable, Emitter, Event, IPosition, IRange, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, IPosition, isUndefined, uuid } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import {
   ICodeEditor,
-  IContentWidgetPosition,
   IEditorDecorationsCollection,
   ITextModel,
   Position,
   Range,
   Selection,
-  TrackedRangeStickiness,
 } from '@opensumi/ide-monaco';
-import {
-  ReactInlineContentWidget,
-  ShowAIContentOptions,
-} from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
+import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
+import { IScrollEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { IOptions, ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
@@ -48,7 +44,6 @@ import { renderLines } from '../ghost-text-widget/index';
 import styles from './inline-stream-diff.module.less';
 import { InlineStreamDiffService } from './inline-stream-diff.service';
 
-const ZoneDescription = 'zone-description';
 const ActiveLineDecoration = 'activeLine-decoration';
 const AddedRangeDecoration = 'added-range-decoration';
 const PendingRangeDecoration = 'pending-range-decoration';
@@ -109,6 +104,44 @@ export interface SerializableState {
   selection: Selection;
 }
 
+const PartialEditComponent = (props: {
+  keyStrings: IPartialEditWidgetComponent;
+  onAccept: () => void;
+  onDiscard: () => void;
+  editor: ICodeEditor;
+}) => {
+  const { keyStrings, onAccept, onDiscard, editor } = props;
+  const [scrollLeft, setScrollLeft] = React.useState(0);
+
+  const handleAccept = useCallback(() => {
+    onAccept?.();
+  }, [onAccept]);
+
+  const handleDiscard = useCallback(() => {
+    onDiscard?.();
+  }, [onDiscard]);
+
+  useDisposable(() => editor.onDidScrollChange((event: IScrollEvent) => {
+      const { scrollLeftChanged, scrollLeft } = event;
+      if (scrollLeftChanged) {
+        setScrollLeft(scrollLeft);
+      }
+    }), [editor]);
+
+  return (
+    <div className={styles.inline_diff_accept_partial_widget_container} style={{ marginLeft: scrollLeft + 'px' }}>
+      <div className={styles.content}>
+        <span className={cls(styles.accept_btn, styles.btn)} onClick={handleAccept}>
+          {keyStrings.acceptSequence}
+        </span>
+        <span className={cls(styles.discard_btn, styles.btn)} onClick={handleDiscard}>
+          {keyStrings.discardSequence}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 @Injectable({ multiple: true })
 export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   static ID = 'AcceptPartialEditWidgetID';
@@ -152,16 +185,12 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
     }
 
     return (
-      <div className={styles.inline_diff_accept_partial_widget_container}>
-        <div className={styles.content}>
-          <span className={cls(styles.accept_btn, styles.btn)} onClick={() => this._onAccept.fire()}>
-            {keyStrings.acceptSequence}
-          </span>
-          <span className={cls(styles.discard_btn, styles.btn)} onClick={() => this._onDiscard.fire()}>
-            {keyStrings.discardSequence}
-          </span>
-        </div>
-      </div>
+      <PartialEditComponent
+        keyStrings={keyStrings}
+        onAccept={() => this._onAccept.fire()}
+        onDiscard={() => this._onDiscard.fire()}
+        editor={this.editor}
+      />
     );
   }
 
@@ -239,8 +268,9 @@ export interface IRemovedWidgetSerializedState {
   position: IPosition;
 }
 
-const RemovedWidgetComponent = ({ dom, marginWidth }) => {
+const RemovedWidgetComponent = ({ dom, editor }) => {
   const ref = React.useRef<HTMLDivElement>(null);
+  const [scrollLeft, setScrollLeft] = React.useState(0);
 
   useEffect(() => {
     if (dom && ref && ref.current) {
@@ -248,7 +278,23 @@ const RemovedWidgetComponent = ({ dom, marginWidth }) => {
     }
   }, [dom, ref]);
 
-  return <div className={styles.inline_diff_remove_zone} ref={ref} style={{ marginLeft: marginWidth + 'px' }}></div>;
+  useDisposable(() => editor.onDidScrollChange((event: IScrollEvent) => {
+      const { scrollLeftChanged, scrollLeft } = event;
+      if (scrollLeftChanged) {
+        setScrollLeft(scrollLeft);
+      }
+    }), [editor]);
+
+  const marginWidth = useMemo(() => {
+    const layoutInfo = editor.getOption(EditorOption.layoutInfo);
+    return layoutInfo.contentLeft;
+  }, [editor]);
+
+  return (
+    <div className={styles.inline_diff_remove_zone_fixed_box} style={{ marginLeft: marginWidth + 'px' }}>
+      <div className={styles.inline_diff_remove_zone} ref={ref} style={{ marginLeft: -scrollLeft + 'px' }}></div>
+    </div>
+  );
 };
 
 class RemovedZoneWidget extends ZoneWidget {
@@ -327,9 +373,7 @@ class RemovedZoneWidget extends ZoneWidget {
       this.editor.getOptions(),
     );
 
-    const layoutInfo = this.editor.getOption(EditorOption.layoutInfo);
-    const marginWidth = layoutInfo.contentLeft;
-    this.root.render(<RemovedWidgetComponent dom={dom} marginWidth={marginWidth} />);
+    this.root.render(<RemovedWidgetComponent dom={dom} editor={this.editor} />);
   }
 
   dispose(): void {
