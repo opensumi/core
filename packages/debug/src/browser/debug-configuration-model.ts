@@ -1,4 +1,12 @@
-import { DisposableCollection, Emitter, Event, IDisposable, PreferenceService, URI } from '@opensumi/ide-core-browser';
+import {
+  DisposableCollection,
+  Emitter,
+  Event,
+  IDisposable,
+  PreferenceService,
+  URI,
+  isDefined,
+} from '@opensumi/ide-core-browser';
 
 import { DebugConfiguration } from '../common';
 
@@ -43,7 +51,7 @@ export class DebugConfigurationModel implements IDisposable {
   protected parseConfigurations(): DebugConfigurationModel.JsonContent {
     const configurations: DebugConfiguration[] = [];
     const { configUri, value } = this.preferences.resolve<any>('launch', undefined, this.workspaceFolderUri);
-    if (value && typeof value === 'object' && 'configurations' in value) {
+    if (isDefined(value) && 'configurations' in value) {
       if (Array.isArray(value.configurations)) {
         for (const configuration of value.configurations) {
           if (DebugConfiguration.is(configuration)) {
