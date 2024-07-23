@@ -81,10 +81,10 @@ export class MergeEditorService extends Disposable {
   private readonly _onRestoreState = new Emitter<URI>();
   public readonly onRestoreState: Event<URI> = this._onRestoreState.event;
 
-  private loadingDispose = new Disposable();
   private readonly _onHasIntelligentLoadingChange = new Emitter<boolean>();
   public readonly onHasIntelligentLoadingChange: Event<boolean> = this._onHasIntelligentLoadingChange.event;
 
+  private loadingDispose = new Disposable();
   private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor() {
