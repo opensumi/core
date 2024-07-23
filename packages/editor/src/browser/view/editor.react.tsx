@@ -30,6 +30,7 @@ export const CodeEditor = (props: ICodeEditorProps) => {
         editor.dispose();
       }
       const e = editorCollectionService.createCodeEditor(container.current, {
+        automaticLayout: true,
         ...props.options,
       });
       setEditor(e);
