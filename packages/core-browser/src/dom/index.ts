@@ -1,4 +1,5 @@
 import { Event as BaseEvent, Disposable, Emitter, IDisposable, isWebKit } from '@opensumi/ide-core-common';
+import { space } from '@opensumi/ide-utils/lib/strings';
 
 export * from './event';
 
@@ -188,7 +189,7 @@ export const MouseEventButton = {
 };
 
 export function createClassNameTokens(className: string): string[] {
-  return className.split(' ').filter(Boolean);
+  return className.split(space).filter(Boolean);
 }
 
 export function addClassName(node: HTMLElement, className: string): void {
