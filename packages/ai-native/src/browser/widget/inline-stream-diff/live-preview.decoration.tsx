@@ -121,12 +121,16 @@ const PartialEditComponent = (props: {
     onDiscard?.();
   }, [onDiscard]);
 
-  useDisposable(() => editor.onDidScrollChange((event: IScrollEvent) => {
-      const { scrollLeftChanged, scrollLeft } = event;
-      if (scrollLeftChanged) {
-        setScrollLeft(scrollLeft);
-      }
-    }), [editor]);
+  useDisposable(
+    () =>
+      editor.onDidScrollChange((event: IScrollEvent) => {
+        const { scrollLeftChanged, scrollLeft } = event;
+        if (scrollLeftChanged) {
+          setScrollLeft(scrollLeft);
+        }
+      }),
+    [editor],
+  );
 
   return (
     <div className={styles.inline_diff_accept_partial_widget_container} style={{ marginLeft: scrollLeft + 'px' }}>
@@ -271,6 +275,7 @@ export interface IRemovedWidgetSerializedState {
 const RemovedWidgetComponent = ({ dom, editor }) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [scrollLeft, setScrollLeft] = React.useState(0);
+  const [marginWidth, setMarginWidth] = React.useState(0);
 
   useEffect(() => {
     if (dom && ref && ref.current) {
@@ -278,16 +283,24 @@ const RemovedWidgetComponent = ({ dom, editor }) => {
     }
   }, [dom, ref]);
 
-  useDisposable(() => editor.onDidScrollChange((event: IScrollEvent) => {
-      const { scrollLeftChanged, scrollLeft } = event;
-      if (scrollLeftChanged) {
-        setScrollLeft(scrollLeft);
-      }
-    }), [editor]);
+  useDisposable(
+    () =>
+      editor.onDidScrollChange((event: IScrollEvent) => {
+        const { scrollLeftChanged, scrollLeft } = event;
+        if (scrollLeftChanged) {
+          setScrollLeft(scrollLeft);
+        }
+      }),
+    [editor],
+  );
 
-  const marginWidth = useMemo(() => {
-    const layoutInfo = editor.getOption(EditorOption.layoutInfo);
-    return layoutInfo.contentLeft;
+  useDisposable(() => {
+    setMarginWidth(editor.getOption(EditorOption.layoutInfo).contentLeft);
+    return editor.onDidChangeConfiguration((event) => {
+      if (event.hasChanged(EditorOption.layoutInfo)) {
+        setMarginWidth(editor.getOption(EditorOption.layoutInfo).contentLeft);
+      }
+    });
   }, [editor]);
 
   return (
