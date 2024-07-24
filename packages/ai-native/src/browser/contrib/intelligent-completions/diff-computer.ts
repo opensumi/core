@@ -18,7 +18,7 @@ interface IElement {
   changeResult: IResultWithCount[];
 }
 
-export class IntelligentCompletionDiffComputer {
+export class MultiLineDiffComputer {
   private equals(a: string, b: string | undefined): boolean {
     return a === b;
   }

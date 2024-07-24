@@ -13,7 +13,7 @@ import {
   MaybePromise,
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
@@ -203,11 +203,10 @@ export interface ITerminalProviderRegistry {
 export type IIntelligentCompletionProvider = (
   editor: ICodeEditor,
   position: IPosition,
-  requestBean: IAICompletionOption,
   token: CancellationToken,
 ) => MaybePromise<IIntelligentCompletionsResult>;
 export interface IIntelligentCompletionsRegistry {
-  registerIntelligentCompletionProvier(provider: IIntelligentCompletionProvider): void;
+  registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
 }
 
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');

@@ -2,15 +2,17 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   CancellationTokenSource,
   Disposable,
+  Event,
   IDisposable,
   IntelligentCompletionsRegistryToken,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
-import { Position, Range } from '@opensumi/ide-monaco';
+import { CursorChangeReason, ICursorSelectionChangedEvent } from '@opensumi/ide-monaco';
+import { TextEditorSelectionSource } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
-import { CompletionsInlineDecorationModel } from './completions-inline.decoration';
-import { IntelligentCompletionDiffComputer } from './diff-computer';
+import { MultiLineDiffComputer } from './diff-computer';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
+import { MultiLineDecorationModel } from './multi-line.decoration';
 
 @Injectable()
 export class IntelligentCompletionsHandler extends Disposable {
@@ -24,9 +26,8 @@ export class IntelligentCompletionsHandler extends Disposable {
     this.cancelIndicator = new CancellationTokenSource();
   }
 
-  private intelligentCompletionDiffComputer: IntelligentCompletionDiffComputer =
-    new IntelligentCompletionDiffComputer();
-  private completionsInlineDecorationModel: CompletionsInlineDecorationModel;
+  private multiLineDiffComputer: MultiLineDiffComputer = new MultiLineDiffComputer();
+  private multiLineDecorationModel: MultiLineDecorationModel;
 
   private editor: IEditor;
 
@@ -41,8 +42,7 @@ export class IntelligentCompletionsHandler extends Disposable {
     const position = monacoEditor.getPosition()!;
     const model = monacoEditor.getModel();
 
-    // @ts-ignore
-    const intelligentCompletionModel = await provider(monacoEditor, position, {}, this.cancelIndicator.token);
+    const intelligentCompletionModel = await provider(monacoEditor, position, this.cancelIndicator.token);
 
     const { items } = intelligentCompletionModel;
 
@@ -55,15 +55,12 @@ export class IntelligentCompletionsHandler extends Disposable {
       endColumn: model.getLineMaxColumn(position.lineNumber + (belowRadius || 0)),
     });
 
-    let intelligentCompletionDiffComputerResult = this.intelligentCompletionDiffComputer.diff(
-      originalContent!,
-      content,
-    );
+    let diffComputerResult = this.multiLineDiffComputer.diff(originalContent!, content);
 
-    // console.log('intelligentCompletionModel:>>> intelligentCompletionDiffComputerResult \n ', intelligentCompletionDiffComputerResult);
+    // console.log('intelligentCompletionModel:>>> intelligentCompletionDiffComputerResult \n ', diffComputerResult);
     // console.log('intelligentCompletionModel:>>> intelligentCompletionDiffComputerResult: >> provider content: \n ', content);
-    if (intelligentCompletionDiffComputerResult) {
-      intelligentCompletionDiffComputerResult = intelligentCompletionDiffComputerResult.map((result) => {
+    if (diffComputerResult) {
+      diffComputerResult = diffComputerResult.map((result) => {
         if (result.removed) {
           result.added = undefined;
           result.removed = undefined;
@@ -71,17 +68,17 @@ export class IntelligentCompletionsHandler extends Disposable {
         return result;
       });
 
-      const inlineModifications = this.completionsInlineDecorationModel.applyInlineDecorations(
+      const inlineModifications = this.multiLineDecorationModel.applyInlineDecorations(
         monacoEditor,
-        intelligentCompletionDiffComputerResult,
+        diffComputerResult,
         position.lineNumber,
         position,
       );
 
       if (inlineModifications) {
-        this.completionsInlineDecorationModel.updateLineModificationDecorations(inlineModifications);
+        this.multiLineDecorationModel.updateLineModificationDecorations(inlineModifications);
       } else {
-        this.completionsInlineDecorationModel.updateLineModificationDecorations([]);
+        this.multiLineDecorationModel.clearDecorations();
       }
       // console.log('intelligentCompletionModel:>>> decorationModel 。 decorationModel \n ', inlineModifications);
     }
@@ -91,13 +88,34 @@ export class IntelligentCompletionsHandler extends Disposable {
     this.editor = editor;
     const { monacoEditor } = editor;
 
-    this.completionsInlineDecorationModel = new CompletionsInlineDecorationModel(monacoEditor);
+    this.multiLineDecorationModel = new MultiLineDecorationModel(monacoEditor);
 
-    this.addDispose(
-      monacoEditor.onDidChangeCursorPosition(() => {
+    const stop = () => {
+      this.cancelToken();
+      this.multiLineDecorationModel.clearDecorations();
+    };
+
+    /**
+     * 触发时机与 inline completion 保持一致
+     */
+    this.addDispose([
+      monacoEditor.onDidType(() => {
         this.update();
       }),
-    );
+
+      Event.any<any>(
+        monacoEditor.onDidChangeModel,
+        monacoEditor.onDidBlurEditorWidget,
+      )(() => {
+        stop();
+      }),
+
+      monacoEditor.onDidChangeCursorSelection((event: ICursorSelectionChangedEvent) => {
+        if (event.reason === CursorChangeReason.Explicit || event.source === TextEditorSelectionSource.PROGRAMMATIC) {
+          stop();
+        }
+      }),
+    ]);
 
     return this;
   }

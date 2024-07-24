@@ -7,7 +7,7 @@ import { IIntelligentCompletionProvider, IIntelligentCompletionsRegistry } from 
 export class IntelligentCompletionsRegistry extends Disposable implements IIntelligentCompletionsRegistry {
   private provider: IIntelligentCompletionProvider | undefined;
 
-  registerIntelligentCompletionProvier(provider: IIntelligentCompletionProvider): void {
+  registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void {
     this.provider = provider;
   }
 

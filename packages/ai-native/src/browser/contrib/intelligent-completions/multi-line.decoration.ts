@@ -1,5 +1,12 @@
 import { isUndefined } from '@opensumi/ide-core-common';
-import { ICodeEditor, IModelDeltaDecoration, IPosition, Position, Range } from '@opensumi/ide-monaco';
+import {
+  ICodeEditor,
+  IEditorDecorationsCollection,
+  IModelDeltaDecoration,
+  IPosition,
+  Position,
+  Range,
+} from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { IDiffChangeResult } from './diff-computer';
@@ -9,7 +16,7 @@ interface IModificationsInline {
   oldValue: string;
   lineNumber?: number;
   column?: number;
-  isEndLine?: boolean;
+  isEolLine?: boolean;
 }
 
 enum EProcessStatus {
@@ -25,10 +32,12 @@ interface IProcessModificationsInline extends IModificationsInline {
 const GHOST_TEXT_DESCRIPTION = 'ghost-text-decoration';
 const GHOST_TEXT = 'ghost-text';
 
-export class CompletionsInlineDecorationModel {
-  constructor(private readonly editor: ICodeEditor) {}
+export class MultiLineDecorationModel {
+  private ghostTextDecorations: IEditorDecorationsCollection;
 
-  private ghostTextDecorations: any[] = [];
+  constructor(private readonly editor: ICodeEditor) {
+    this.ghostTextDecorations = this.editor.createDecorationsCollection();
+  }
 
   /**
    * 切割 diff 计算结果的换行符
@@ -70,7 +79,7 @@ export class CompletionsInlineDecorationModel {
     const lines: string[] = [];
     let currentLineContent = empty;
     for (const change of changes) {
-      if (change.isEndLine) {
+      if (change.isEolLine) {
         lines.push(currentLineContent);
         currentLineContent = empty;
       } else {
@@ -161,10 +170,17 @@ export class CompletionsInlineDecorationModel {
     };
   }
 
-  public updateLineModificationDecorations(modifications: IModificationsInline[]) {
-    const decorations: IModelDeltaDecoration[] = [];
+  public clearDecorations(): void {
+    this.ghostTextDecorations.clear();
+  }
 
-    modifications.forEach((modification) => {
+  public updateLineModificationDecorations(modifications: IModificationsInline[]) {
+    if (modifications.length === 0) {
+      this.clearDecorations();
+      return;
+    }
+
+    const decorations: IModelDeltaDecoration[] = modifications.map((modification) => {
       let content: string;
 
       if (modification.newValue.startsWith(modification.oldValue)) {
@@ -174,7 +190,7 @@ export class CompletionsInlineDecorationModel {
         content = oldValueIndex !== -1 ? modification.newValue.slice(0, oldValueIndex) : modification.newValue;
       }
 
-      decorations.push({
+      return {
         range: Range.fromPositions(new Position(modification.lineNumber!, modification.column!)),
         options: {
           description: GHOST_TEXT,
@@ -184,11 +200,10 @@ export class CompletionsInlineDecorationModel {
             inlineClassName: GHOST_TEXT_DESCRIPTION,
           },
         },
-      });
+      };
     });
 
-    const model = this.editor.getModel()!;
-    this.ghostTextDecorations = model.deltaDecorations(this.ghostTextDecorations, decorations);
+    this.ghostTextDecorations.set(decorations);
   }
 
   public applyInlineDecorations(
@@ -198,8 +213,8 @@ export class CompletionsInlineDecorationModel {
     cursorPosition: IPosition,
   ): IModificationsInline[] | undefined {
     startLine = Math.max(startLine - 1, 0);
-    const model = editor.getModel();
 
+    const model = editor.getModel();
     if (!model) {
       return;
     }
@@ -249,15 +264,17 @@ export class CompletionsInlineDecorationModel {
 
     for (const change of changes) {
       if (change.added) {
-        if (change.value === eol) {
+        const isEolLine = change.value === eol;
+
+        if (isEolLine) {
           previousValue = empty;
         }
 
         waitAddModificationsLines.push({
-          isEndLine: change.value === eol,
+          isEolLine,
           lineNumber: startLine,
-          newValue: change.value === eol ? empty : change.value,
-          oldValue: change.value === eol ? empty : previousValue,
+          newValue: isEolLine ? empty : change.value,
+          oldValue: isEolLine ? empty : previousValue,
         });
       } else {
         const { inlineMods } = processChange(change);
