@@ -29,8 +29,8 @@ interface IProcessModificationsInline extends IModificationsInline {
 }
 
 // https://github.com/microsoft/vscode/blob/main/src/vs/editor/contrib/inlineCompletions/browser/ghostTextWidget.ts#L156
-const GHOST_TEXT_DESCRIPTION = 'ghost-text-decoration';
-const GHOST_TEXT = 'ghost-text';
+export const GHOST_TEXT_DESCRIPTION = 'ghost-text-decoration';
+export const GHOST_TEXT = 'ghost-text';
 
 export class MultiLineDecorationModel {
   private ghostTextDecorations: IEditorDecorationsCollection;
