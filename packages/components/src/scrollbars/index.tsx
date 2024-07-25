@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import throttle from 'lodash/throttle';
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Scrollbars as CustomScrollbars } from 'react-custom-scrollbars';
+import { Scrollbars as CustomScrollbars } from 'react-custom-scrollbars-2';
 
 import { DisposableCollection } from '@opensumi/ide-utils';
 import './styles.less';
@@ -30,9 +30,11 @@ export interface ICustomScrollbarProps {
    * 是否隐藏横向滚动条，默认 false
    */
   hiddenHorizontal?: boolean;
+  hideTracksWhenNotNeeded?: boolean;
   /**
-   * 通用渲染， 默认 false
-   * https://github.com/malte-wessel/react-custom-scrollbars/blob/master/docs/usage.md#universal-rendering
+   * If your app runs on both client and server, activate the universal mode.
+   * This will ensure that the initial markup on client and server are the same:
+   * https://github.com/RobPethick/react-custom-scrollbars-2/blob/master/docs/usage.md#universal-rendering
    */
   universal?: boolean;
 }
@@ -50,6 +52,7 @@ export const Scrollbars = ({
   hiddenVertical,
   hiddenHorizontal,
   universal = false,
+  hideTracksWhenNotNeeded,
 }: ICustomScrollbarProps) => {
   const disposableCollection = useRef<DisposableCollection>(new DisposableCollection());
   const scrollerRef = useRef<HTMLDivElement>();
@@ -148,6 +151,7 @@ export const Scrollbars = ({
       onUpdate={handleUpdate}
       onScroll={onScroll}
       universal={universal}
+      hideTracksWhenNotNeeded={hideTracksWhenNotNeeded}
       renderTrackHorizontal={({ style, ...props }) => {
         const newStyle = { ...style, height: thumbSize, left: 0, right: 0, bottom: 1 };
         if (hiddenHorizontal) {

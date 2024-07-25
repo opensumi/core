@@ -2148,7 +2148,7 @@ __metadata:
     rc-tooltip: "npm:^6.2.0"
     rc-util: "npm:^4.16.1"
     react-ctxmenu-trigger: "npm:^1.0.0"
-    react-custom-scrollbars: "npm:^4.2.1"
+    react-custom-scrollbars-2: "npm:^4.5.0"
     react-lifecycles-compat: "npm:^3.0.4"
     react-virtualized-auto-sizer: "npm:^1.0.2"
     react-virtuoso: "npm:^3.1.5"
@@ -2194,7 +2194,6 @@ __metadata:
     react: "npm:^18.2.0"
     react-autosize-textarea: "npm:^7.0.0"
     react-ctxmenu-trigger: "npm:^1.0.0"
-    react-custom-scrollbars: "npm:^4.2.1"
     react-dom: "npm:^18.2.0"
     react-is: "npm:^18.2.0"
     react-window: "npm:^1.8.5"
@@ -16755,17 +16754,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-custom-scrollbars@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "react-custom-scrollbars@npm:4.2.1"
+"react-custom-scrollbars-2@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "react-custom-scrollbars-2@npm:4.5.0"
   dependencies:
     dom-css: "npm:^2.0.0"
     prop-types: "npm:^15.5.10"
     raf: "npm:^3.1.0"
   peerDependencies:
-    react: ^0.14.0 || ^15.0.0 || ^16.0.0
-    react-dom: ^0.14.0 || ^15.0.0 || ^16.0.0
-  checksum: 10/58c62e04f6a23558f9f4c3df1e96f30efa344d0ce63eb7894f58ca497f8c383e25b86d8055496c7e7910d61eb77496dbe4b451097c98f0347a31aaa7880879f6
+    react: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: 10/4e5e67032a254c6fbfc2157c8c9b28b4285a41372d458a41fa6756777e224f692ae842488e51cb089b55b83625809aed0eb403026b8a8122a7dcf667637b21fd
   languageName: node
   linkType: hard
 
