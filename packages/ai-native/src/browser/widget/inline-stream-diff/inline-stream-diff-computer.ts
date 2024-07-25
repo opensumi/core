@@ -1,14 +1,13 @@
-
 import { equals } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { OffsetRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/offsetRange';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import {
   DateTimeout,
+  DiffAlgorithmResult,
   InfiniteTimeout,
   SequenceDiff,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/diffAlgorithm';
-import { DiffAlgorithmResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/diffAlgorithm';
 import { DefaultLinesDiffComputer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/defaultLinesDiffComputer/defaultLinesDiffComputer';
 import { LineSequence } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/defaultLinesDiffComputer/lineSequence';
 import { Array2D } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/defaultLinesDiffComputer/utils';
@@ -87,7 +86,7 @@ const levenshteinDiffAlgorithmCompute = (
     }
   }
 
-  let diffSequences: SequenceDiff[] = [];
+  const diffSequences: SequenceDiff[] = [];
   let currentOriginalLineIndex = minCostIndex;
   let currentModifiedLineIndex = modifiedLines.length;
 
@@ -254,8 +253,8 @@ export class InlineStreamDiffComputer extends DefaultLinesDiffComputer {
       }
     }
 
-    let lineAlignments = lineAlignmentResult.diffs;
-    let hitTimeout = lineAlignmentResult.hitTimeout;
+    const lineAlignments = lineAlignmentResult.diffs;
+    const hitTimeout = lineAlignmentResult.hitTimeout;
 
     if (isCarePrefixLines) {
       const diffs = lineAlignments.map(
