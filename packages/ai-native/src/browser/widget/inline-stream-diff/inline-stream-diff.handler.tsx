@@ -12,6 +12,7 @@ import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undo
 
 import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
 
+import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
 import {
   IRemovedWidgetSerializedState,
   LivePreviewDiffDecorationModel,
@@ -58,6 +59,7 @@ export class InlineStreamDiffHandler extends Disposable {
 
   private undoRedoGroup: UndoRedoGroup;
   private originalModel: ITextModel;
+  private inlineStreamDiffComputer: InlineStreamDiffComputer = new InlineStreamDiffComputer();
 
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
@@ -90,7 +92,7 @@ export class InlineStreamDiffHandler extends Disposable {
         if (this.currentDiffModel) {
           this.handleEdits(this.currentDiffModel);
         }
-      }, 16 * 12.5),
+      }, 16 * 3),
     );
 
     this.initializeDecorationModel();
@@ -115,11 +117,12 @@ export class InlineStreamDiffHandler extends Disposable {
     computerMode: EComputerMode = EComputerMode.default,
   ): IComputeDiffData {
     const computeResult = (
-      computerMode === EComputerMode.default ? linesDiffComputers.getDefault() : linesDiffComputers.getLegacy()
+      computerMode === EComputerMode.default ? this.inlineStreamDiffComputer : linesDiffComputers.getLegacy()
     ).computeDiff(originalTextLines, newTextLines, {
       computeMoves: false,
       maxComputationTimeMs: 200,
       ignoreTrimWhitespace: false,
+      onlyCareAboutPrefixOfOriginalLines: true,
     });
 
     let changes = computeResult.changes;
@@ -391,7 +394,7 @@ export class InlineStreamDiffHandler extends Disposable {
 
   public recompute(computerMode: EComputerMode, newContent?: string): IComputeDiffData {
     if (newContent) {
-      this.virtualModel.setValue(newContent);
+      this.virtualModel.setValue(newContent.trim());
     }
     const newTextLines = this.virtualModel.getLinesContent();
     this.currentDiffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
