@@ -121,6 +121,10 @@ export class InlineChatHandler extends Disposable {
     this.disposables.push(
       monacoEditor.onMouseDown(() => {
         needShowInlineChat = false;
+
+        if (this.aiInlineContentWidget && !this.aiInlineContentWidget.isHidden) {
+          this.aiInlineContentWidget.dispose();
+        }
       }),
       monacoEditor.onMouseUp((event) => {
         const target = event.target;
