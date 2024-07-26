@@ -610,7 +610,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
      */
-    const removedWidget = this.removedZoneWidgets.find((w) => w.position?.lineNumber === position.lineNumber - 1);
+    const removedWidget = this.removedZoneWidgets.find(
+      (w) => w.position?.lineNumber === Math.max(1, position.lineNumber - 1),
+    );
     const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
     const addedLinesCount = addedDec?.length || 0;

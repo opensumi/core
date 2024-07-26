@@ -540,6 +540,8 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
 
+    const noActions = menu.getMergedMenuNodes().length === 0;
+
     useEffect(() => {
       const disposableCollection = new DisposableCollection();
       disposableCollection.push(
@@ -566,7 +568,9 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     return (
       <div
         ref={ref}
-        className={cls(styles_editor_actions, className)}
+        className={cls(styles_editor_actions, className, {
+          [styles.editor_actions_no_actions]: noActions,
+        })}
         style={{ height: layoutViewSize.editorTabsHeight }}
       >
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>
