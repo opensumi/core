@@ -9,8 +9,11 @@ import { Deferred } from '@opensumi/ide-core-common';
 
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
+import { CommonChannelPathHandler } from '../../src/common/server-handler';
 import { WSChannel } from '../../src/common/ws-channel';
-import { CommonChannelHandler, WebSocketServerRoute, commonChannelPathHandler } from '../../src/node';
+import { CommonChannelHandler, WebSocketServerRoute } from '../../src/node';
+
+const commonChannelPathHandler = new CommonChannelPathHandler();
 
 const wssPort = 7788;
 
@@ -31,7 +34,7 @@ describe('connection', () => {
   it('websocket connection route', async () => {
     const server = http.createServer();
     const socketRoute = new WebSocketServerRoute(server, console);
-    const channelHandler = new CommonChannelHandler('/service', console);
+    const channelHandler = new CommonChannelHandler('/service', commonChannelPathHandler, console);
     socketRoute.registerHandler(channelHandler);
     socketRoute.init();
 
@@ -93,7 +96,7 @@ describe('connection', () => {
     const server = http.createServer();
     const deferred = new Deferred();
     const socketRoute = new WebSocketServerRoute(server, console);
-    const channelHandler = new CommonChannelHandler('/service', console, {
+    const channelHandler = new CommonChannelHandler('/service', commonChannelPathHandler, console, {
       wsServerOptions: {
         verifyClient: () => false,
       },
