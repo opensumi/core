@@ -20,7 +20,12 @@ import {
 } from '@opensumi/ide-core-common';
 import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 
-import { RPCServiceCenter, createNetServerConnection, createServerConnection2 } from '../connection';
+import {
+  RPCServiceCenter,
+  createNetServerConnection,
+  createServerConnection2,
+  injectConnectionProviders,
+} from '../connection';
 import { NodeModule } from '../node-module';
 import { AppConfig, IServerApp, IServerAppOpts, ModuleConstructor, ServerAppContribution } from '../types';
 
@@ -114,6 +119,7 @@ export class ServerApp implements IServerApp {
       useValue: this.config,
     });
     injectInnerProviders(this.injector);
+    injectConnectionProviders(this.injector);
   }
 
   private async initializeContribution() {
