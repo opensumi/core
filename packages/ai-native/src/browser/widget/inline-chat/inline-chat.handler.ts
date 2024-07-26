@@ -119,10 +119,21 @@ export class InlineChatHandler extends Disposable {
 
     let needShowInlineChat = false;
     this.disposables.push(
-      monacoEditor.onMouseDown(() => {
+      monacoEditor.onMouseDown((event: monaco.IEditorMouseEvent) => {
+        const target = event.target;
+        const detail = (target as any).detail;
+
         needShowInlineChat = false;
+
+        if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidgetId) {
+          return;
+        }
+
+        if (this.aiInlineContentWidget && !this.aiInlineContentWidget.isHidden) {
+          this.disposeAllWidget();
+        }
       }),
-      monacoEditor.onMouseUp((event) => {
+      monacoEditor.onMouseUp((event: monaco.IEditorMouseEvent) => {
         const target = event.target;
         const detail = (target as any).detail;
         if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidgetId) {
