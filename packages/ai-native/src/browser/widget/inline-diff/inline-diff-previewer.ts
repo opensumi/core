@@ -22,7 +22,17 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
 
   protected model: ITextModel;
 
-  constructor(protected readonly monacoEditor: ICodeEditor, protected readonly selection: Selection) {
+  get disposeWhenEditorClosed() {
+    return this.options.disposeWhenEditorClosed;
+  }
+
+  constructor(
+    protected readonly monacoEditor: ICodeEditor,
+    protected readonly selection: Selection,
+    public options = {
+      disposeWhenEditorClosed: true,
+    },
+  ) {
     super();
     this.node = this.createNode();
     this.model = this.monacoEditor.getModel()!;
