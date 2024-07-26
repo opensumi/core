@@ -20,6 +20,7 @@ import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import {
   BaseInlineDiffPreviewer,
+  IDiffPreviewerOptions,
   LiveInlineDiffPreviewer,
   SideBySideInlineDiffWidget,
 } from '../inline-diff/inline-diff-previewer';
@@ -142,13 +143,14 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     options: {
       crossSelection: monaco.Selection;
       chatResponse?: ChatResponse | InlineChatController;
+      previewerOptions?: IDiffPreviewerOptions;
     },
   ): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> {
     const { crossSelection, chatResponse } = options;
 
     const disposable = new Disposable();
 
-    const previewer = this.createDiffPreviewer(monacoEditor, crossSelection);
+    const previewer = this.createDiffPreviewer(monacoEditor, crossSelection, options.previewerOptions);
 
     const onFinish = () => {
       previewer.layout();
@@ -201,13 +203,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     return previewer;
   }
 
-  createDiffPreviewer(
-    monacoEditor: monaco.ICodeEditor,
-    selection: monaco.Selection,
-    options = {
-      disposeWhenEditorClosed: true,
-    },
-  ) {
+  createDiffPreviewer(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection, options?: IDiffPreviewerOptions) {
     let previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
 
     const inlineDiffMode = this.preferenceService.getValid<EInlineDiffPreviewMode>(

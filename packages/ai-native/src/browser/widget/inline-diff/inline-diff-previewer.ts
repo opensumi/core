@@ -13,6 +13,10 @@ import { SerializableState } from '../inline-stream-diff/live-preview.decoration
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
+export interface IDiffPreviewerOptions {
+  disposeWhenEditorClosed: boolean;
+}
+
 @Injectable({ multiple: true })
 export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
@@ -29,7 +33,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   constructor(
     protected readonly monacoEditor: ICodeEditor,
     protected readonly selection: Selection,
-    public options = {
+    public options: IDiffPreviewerOptions = {
       disposeWhenEditorClosed: true,
     },
   ) {
