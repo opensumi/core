@@ -123,7 +123,7 @@ export class InlineChatHandler extends Disposable {
         needShowInlineChat = false;
 
         if (this.aiInlineContentWidget && !this.aiInlineContentWidget.isHidden) {
-          this.aiInlineContentWidget.dispose();
+          this.disposeAllWidget();
         }
       }),
       monacoEditor.onMouseUp((event) => {
