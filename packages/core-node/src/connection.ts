@@ -13,6 +13,14 @@ import { IServerAppOpts } from './types';
 
 export { RPCServiceCenter };
 
+export function injectConnectionProviders(injector: Injector) {
+  const commonChannelPathHandler = new CommonChannelPathHandler();
+  injector.addProviders({
+    token: CommonChannelPathHandler,
+    useValue: commonChannelPathHandler,
+  });
+}
+
 function handleClientChannel(
   injector: Injector,
   modulesInstances: NodeModule[],
@@ -44,12 +52,7 @@ export function createServerConnection2(
   serverAppOpts: IServerAppOpts,
 ) {
   const logger = injector.get(INodeLogger);
-  const commonChannelPathHandler = new CommonChannelPathHandler();
-  injector.addProviders({
-    token: CommonChannelPathHandler,
-    useValue: commonChannelPathHandler,
-  });
-
+  const commonChannelPathHandler = injector.get(CommonChannelPathHandler);
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', commonChannelPathHandler, logger, {
     pathMatchOptions: serverAppOpts.pathMatchOptions,
@@ -75,11 +78,7 @@ export function createServerConnection2(
 
 export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
   const logger = injector.get(INodeLogger) as INodeLogger;
-  const commonChannelPathHandler = new CommonChannelPathHandler();
-  injector.addProviders({
-    token: CommonChannelPathHandler,
-    useValue: commonChannelPathHandler,
-  });
+  const commonChannelPathHandler = injector.get(CommonChannelPathHandler);
 
   const handler = new ElectronChannelHandler(server, commonChannelPathHandler, logger);
   // 事件由 connection 的时机来触发
