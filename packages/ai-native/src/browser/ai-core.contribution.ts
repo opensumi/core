@@ -237,8 +237,14 @@ export class AINativeBrowserContribution
 
     this.contributions.getContributions().forEach((contribution) => {
       const contributions = [
-        { key: contribution.registerInlineChatFeature?.bind(contribution), registry: this.inlineChatFeatureRegistry },
-        { key: contribution.registerChatFeature?.bind(contribution), registry: this.chatFeatureRegistry },
+        {
+          key: contribution.registerInlineChatFeature?.bind(contribution),
+          registry: this.inlineChatFeatureRegistry,
+        },
+        {
+          key: contribution.registerChatFeature?.bind(contribution),
+          registry: this.chatFeatureRegistry,
+        },
         {
           key: contribution.registerResolveConflictFeature?.bind(contribution),
           registry: this.resolveConflictRegistry,
@@ -247,8 +253,14 @@ export class AINativeBrowserContribution
           key: contribution.registerRenameProvider?.bind(contribution),
           registry: this.renameCandidatesProviderRegistry,
         },
-        { key: contribution.registerChatRender?.bind(contribution), registry: this.chatRenderRegistry },
-        { key: contribution.registerTerminalProvider?.bind(contribution), registry: this.terminalProviderRegistry },
+        {
+          key: contribution.registerChatRender?.bind(contribution),
+          registry: this.chatRenderRegistry,
+        },
+        {
+          key: contribution.registerTerminalProvider?.bind(contribution),
+          registry: this.terminalProviderRegistry,
+        },
         {
           key: contribution.registerIntelligentCompletionFeature?.bind(contribution),
           registry: this.intelligentCompletionsRegistry,

@@ -405,11 +405,18 @@ export class AINativeContribution implements AINativeCoreContribution {
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
     registry.registerIntelligentCompletionProvider(async (editor, position, token) => {
       const model = editor.getModel()!;
-      let value = model.getValueInRange({
+      const value = model.getValueInRange({
         startLineNumber: position.lineNumber,
         startColumn: 1,
         endLineNumber: position.lineNumber + 3,
         endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
+      });
+
+      const cancelController = new AbortController();
+      const { signal } = cancelController;
+
+      token.onCancellationRequested(() => {
+        cancelController.abort();
       });
 
       /**
@@ -435,16 +442,31 @@ export class AINativeContribution implements AINativeCoreContribution {
         return modifiedString;
       };
 
-      return {
-        items: [
-          {
-            // content: 'export class Personsss {\n  name: string;\n  ages: n__open__umber;\n}',
-            content: insertRandomStrings(value),
-            belowRadius: 3,
-            aboveRadius: 0,
-          },
-        ],
-      };
+      try {
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(resolve, 1000);
+
+          signal.addEventListener('abort', () => {
+            clearTimeout(timeout);
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+
+        return {
+          items: [
+            {
+              content: insertRandomStrings(value),
+              belowRadius: 3,
+              aboveRadius: 0,
+            },
+          ],
+        };
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          return { items: [] };
+        }
+        throw error;
+      }
     });
   }
 }
