@@ -13,14 +13,6 @@ import { IServerAppOpts } from './types';
 
 export { RPCServiceCenter };
 
-export function injectConnectionProviders(injector: Injector) {
-  const commonChannelPathHandler = new CommonChannelPathHandler();
-  injector.addProviders({
-    token: CommonChannelPathHandler,
-    useValue: commonChannelPathHandler,
-  });
-}
-
 function handleClientChannel(
   injector: Injector,
   modulesInstances: NodeModule[],

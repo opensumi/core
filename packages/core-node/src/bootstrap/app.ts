@@ -7,6 +7,7 @@ import path from 'path';
 import Koa from 'koa';
 
 import { Injector } from '@opensumi/di';
+import { injectConnectionProviders } from '@opensumi/ide-connection/lib/common/server-handler';
 import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
 import {
   ContributionProvider,
@@ -20,12 +21,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 
-import {
-  RPCServiceCenter,
-  createNetServerConnection,
-  createServerConnection2,
-  injectConnectionProviders,
-} from '../connection';
+import { RPCServiceCenter, createNetServerConnection, createServerConnection2 } from '../connection';
 import { NodeModule } from '../node-module';
 import { AppConfig, IServerApp, IServerAppOpts, ModuleConstructor, ServerAppContribution } from '../types';
 

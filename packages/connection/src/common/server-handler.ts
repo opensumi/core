@@ -5,6 +5,8 @@ import { ISerializer } from './serializer/types';
 import { ILogger } from './types';
 import { WSChannel, WSServerChannel } from './ws-channel';
 
+import type { Injector } from '@opensumi/di';
+
 export interface IPathHandler {
   dispose: (channel: WSChannel, connectionId: string) => void;
   handler: (channel: WSChannel, connectionId: string, params?: Record<string, string>) => void;
@@ -209,3 +211,11 @@ export abstract class BaseCommonChannelHandler {
 }
 
 export const RPCServiceChannelPath = 'RPCService';
+
+export function injectConnectionProviders(injector: Injector) {
+  const commonChannelPathHandler = new CommonChannelPathHandler();
+  injector.addProviders({
+    token: CommonChannelPathHandler,
+    useValue: commonChannelPathHandler,
+  });
+}
