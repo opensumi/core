@@ -129,7 +129,7 @@ export class InlineChatHandler extends Disposable {
           return;
         }
 
-        if (this.aiInlineContentWidget && !this.aiInlineContentWidget.shouldBePermanent) {
+        if (this.aiInlineContentWidget && !this.aiInlineContentWidget.isPersisted) {
           this.disposeAllWidget();
         }
       }),
@@ -169,7 +169,7 @@ export class InlineChatHandler extends Disposable {
 
         // 处于以下状态时不重新展示 Widget
         // 如果 widget 是隐藏状态，直接展示新 widget
-        if (this.aiInlineContentWidget && this.aiInlineContentWidget.shouldBePermanent) {
+        if (this.aiInlineContentWidget && this.aiInlineContentWidget.isPersisted) {
           return;
         }
 
