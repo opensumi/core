@@ -1,6 +1,5 @@
 import net from 'net';
 
-import { commonChannelPathHandler } from '@opensumi/ide-connection/lib/node';
 import { NetSocketConnection } from '@opensumi/ide-connection/src/common/connection';
 import { ElectronChannelHandler } from '@opensumi/ide-connection/src/electron';
 import { Deferred } from '@opensumi/ide-core-common';
@@ -8,6 +7,9 @@ import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/src/uti
 
 // eslint-disable-next-line import/no-restricted-paths
 import { WSChannelHandler } from '../../src/browser';
+import { CommonChannelPathHandler } from '../../src/common/server-handler';
+
+const commonChannelPathHandler = new CommonChannelPathHandler();
 
 const clientId = 'test-client-id';
 
@@ -19,7 +21,7 @@ describe('channel handler', () => {
     const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
     server.listen(ipcPath);
 
-    const nodeChannelHandler = new ElectronChannelHandler(server);
+    const nodeChannelHandler = new ElectronChannelHandler(server, commonChannelPathHandler);
     nodeChannelHandler.listen();
 
     commonChannelPathHandler.register('test', {

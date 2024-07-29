@@ -5,7 +5,7 @@ import util from 'util';
 import { Autowired, Injectable } from '@opensumi/di';
 import { WSServerChannel } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { commonChannelPathHandler } from '@opensumi/ide-connection/lib/node';
+import { CommonChannelPathHandler } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   Emitter,
   Event,
@@ -95,6 +95,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   @Autowired(IExtensionHostManager)
   private extensionHostManager: IExtensionHostManager;
+
+  @Autowired(CommonChannelPathHandler)
+  private commonChannelPathHandler: CommonChannelPathHandler;
 
   private clientExtProcessMap: Map<string, number> = new Map();
   private clientExtProcessInspectPortMap: Map<string, number> = new Map();
@@ -507,7 +510,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private async _setMainThreadConnection(
     handler: (connectionResult: { channel: WSServerChannel; clientId: string }) => void,
   ) {
-    commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
+    this.commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
       handler: (channel: WSServerChannel, clientId: string) => {
         handler({
           channel,
