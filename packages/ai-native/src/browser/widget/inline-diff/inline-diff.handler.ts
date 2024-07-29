@@ -21,6 +21,7 @@ import { EResultKind } from '../inline-chat/inline-chat.service';
 import {
   BaseInlineDiffPreviewer,
   IDiffPreviewerOptions,
+  IExtendedSerializedState,
   LiveInlineDiffPreviewer,
   SideBySideInlineDiffWidget,
 } from '../inline-diff/inline-diff-previewer';
@@ -55,7 +56,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined
   >();
 
-  protected _store = new Map<string, SerializableState>();
+  protected _store = new Map<string, IExtendedSerializedState>();
 
   constructor() {
     super();
@@ -86,13 +87,13 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     return this.restoreState(monacoEditor, state);
   }
 
-  restoreState(monacoEditor: monaco.ICodeEditor, state: SerializableState) {
+  restoreState(monacoEditor: monaco.ICodeEditor, state: IExtendedSerializedState) {
     const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
     if (oldDiffPreviewer) {
       oldDiffPreviewer.dispose();
     }
 
-    const previewer = this.createDiffPreviewer(monacoEditor, state.selection);
+    const previewer = this.createDiffPreviewer(monacoEditor, state.selection, state.options);
     if (previewer instanceof LiveInlineDiffPreviewer) {
       previewer.restoreState(state);
     }

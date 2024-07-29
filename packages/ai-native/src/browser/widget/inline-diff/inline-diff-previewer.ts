@@ -17,6 +17,10 @@ export interface IDiffPreviewerOptions {
   disposeWhenEditorClosed: boolean;
 }
 
+export interface IExtendedSerializedState extends SerializableState {
+  readonly options: IDiffPreviewerOptions;
+}
+
 @Injectable({ multiple: true })
 export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
@@ -240,10 +244,13 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.node.addLinesToDiff(content);
     this.onEnd();
   }
-  serializeState(): SerializableState {
-    return this.node.serializeState();
+  serializeState(): IExtendedSerializedState {
+    return {
+      ...this.node.serializeState(),
+      options: this.options,
+    };
   }
-  restoreState(state: SerializableState): void {
+  restoreState(state: IExtendedSerializedState): void {
     this.node.restoreState(state);
   }
   get onPartialEditEvent() {
