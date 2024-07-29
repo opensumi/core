@@ -198,6 +198,10 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     return this._status;
   }
 
+  public get isPersisted(): boolean {
+    return !this.isHidden && this.status !== EInlineChatStatus.READY && this.status !== EInlineChatStatus.ERROR;
+  }
+
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
 
