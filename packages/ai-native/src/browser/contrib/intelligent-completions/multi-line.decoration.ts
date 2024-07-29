@@ -9,6 +9,8 @@ import {
 } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
+import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
+
 import { IDiffChangeResult } from './diff-computer';
 
 interface IModificationsInline {
@@ -33,10 +35,10 @@ export const GHOST_TEXT_DESCRIPTION = 'ghost-text-decoration';
 export const GHOST_TEXT = 'ghost-text';
 
 export class MultiLineDecorationModel {
-  private ghostTextDecorations: IEditorDecorationsCollection;
+  private ghostTextDecorations: EnhanceDecorationsCollection;
 
   constructor(private readonly editor: ICodeEditor) {
-    this.ghostTextDecorations = this.editor.createDecorationsCollection();
+    this.ghostTextDecorations = new EnhanceDecorationsCollection(this.editor);
   }
 
   /**
@@ -174,6 +176,18 @@ export class MultiLineDecorationModel {
     this.ghostTextDecorations.clear();
   }
 
+  public getEdits() {
+    const decorations = this.ghostTextDecorations.getDecorations();
+    const edits = decorations.map(({ editorDecoration, range }) => {
+      const options = editorDecoration.options;
+      const text = options.after?.content || '';
+
+      return { range, text };
+    });
+
+    return edits;
+  }
+
   public updateLineModificationDecorations(modifications: IModificationsInline[]) {
     if (modifications.length === 0) {
       this.clearDecorations();
@@ -285,7 +299,7 @@ export class MultiLineDecorationModel {
           /**
            * 如果光标位置在首个 diff 结果的后面，则不显示多行补全
            */
-          if (startLine < cursorPosition.lineNumber && columnNumber < cursorPosition.column) {
+          if (startLine <= cursorPosition.lineNumber && columnNumber < cursorPosition.column) {
             return;
           }
         }
@@ -308,7 +322,11 @@ export class MultiLineDecorationModel {
 
     const { fullLineMods } = processChange(undefined);
 
-    if (!isEmptyLine && startLine < cursorPosition.lineNumber && fullLineMods.length > 0) {
+    if (startLine <= cursorPosition.lineNumber && columnNumber < cursorPosition.column) {
+      return;
+    }
+
+    if (!isEmptyLine && fullLineMods.length > 0) {
       return;
     }
 

@@ -1,23 +1,17 @@
-import { IDiffChangeResult } from '@opensumi/ide-ai-native/lib/browser/contrib/intelligent-completions/diff-computer';
 import {
   GHOST_TEXT,
   GHOST_TEXT_DESCRIPTION,
   MultiLineDecorationModel,
 } from '@opensumi/ide-ai-native/lib/browser/contrib/intelligent-completions/multi-line.decoration';
-import {
-  ICodeEditor,
-  IEditorDecorationsCollection,
-  IModelDeltaDecoration,
-  IPosition,
-  ITextModel,
-  Position,
-  Range,
-} from '@opensumi/ide-monaco';
+import { ICodeEditor, IPosition } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+
+import { IDiffChangeResult } from '../../../../lib/browser/contrib/intelligent-completions/diff-computer';
+import { EnhanceDecorationsCollection } from '../../../../src/browser/model/enhanceDecorationsCollection';
 
 describe('MultiLineDecorationModel', () => {
   let editor: ICodeEditor;
-  let decorationsCollection: IEditorDecorationsCollection;
+  let decorationsCollection: EnhanceDecorationsCollection;
   let multiLineDecorationModel: MultiLineDecorationModel;
 
   beforeEach(() => {

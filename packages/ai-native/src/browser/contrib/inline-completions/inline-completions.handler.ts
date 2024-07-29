@@ -3,8 +3,14 @@ import debounce from 'lodash/debounce';
 import { Autowired, Injectable } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { CommandServiceImpl, Disposable, IEventBus, Sequencer, runWhenIdle } from '@opensumi/ide-core-common';
-import { CommandRegistry, CommandRegistryImpl, CommandService } from '@opensumi/ide-core-common';
+import {
+  CommandService,
+  CommandServiceImpl,
+  Disposable,
+  IEventBus,
+  Sequencer,
+  runWhenIdle,
+} from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
 import { InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
@@ -23,9 +29,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
 
   @Autowired(CommandService)
   private commandService: CommandServiceImpl;
-
-  @Autowired(CommandRegistry)
-  private commandRegistry: CommandRegistryImpl;
 
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
@@ -135,8 +138,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
           return;
         }
 
-        let resultList: InlineCompletions;
-
         /**
          * 如果新字符在 inline completion 的 ghost text 内，则走缓存，不重新请求
          */
@@ -153,7 +154,7 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
           }
         }
 
-        resultList = await this.sequencer.queue(() =>
+        const resultList: InlineCompletions = await this.sequencer.queue(() =>
           this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
         );
 

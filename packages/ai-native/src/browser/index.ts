@@ -27,6 +27,7 @@ import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
 import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
+import { IntelligentCompletionsContribution } from './contrib/intelligent-completions/intelligent-completions.contribution';
 import { IntelligentCompletionsRegistry } from './contrib/intelligent-completions/intelligent-completions.feature.registry';
 import { InterfaceNavigationContribution } from './contrib/interface-navigation/interface-navigation.contribution';
 import { MergeConflictContribution } from './contrib/merge-conflict';
@@ -58,6 +59,7 @@ export class AINativeModule extends BrowserModule {
     MergeConflictContribution,
     AICodeActionContribution,
     AINativePreferencesContribution,
+    IntelligentCompletionsContribution,
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
