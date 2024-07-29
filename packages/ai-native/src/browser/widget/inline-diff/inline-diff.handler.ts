@@ -20,6 +20,8 @@ import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import {
   BaseInlineDiffPreviewer,
+  IDiffPreviewerOptions,
+  IExtendedSerializedState,
   LiveInlineDiffPreviewer,
   SideBySideInlineDiffWidget,
 } from '../inline-diff/inline-diff-previewer';
@@ -54,7 +56,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined
   >();
 
-  protected _store = new Map<string, SerializableState>();
+  protected _store = new Map<string, IExtendedSerializedState>();
 
   constructor() {
     super();
@@ -85,13 +87,13 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     return this.restoreState(monacoEditor, state);
   }
 
-  restoreState(monacoEditor: monaco.ICodeEditor, state: SerializableState) {
+  restoreState(monacoEditor: monaco.ICodeEditor, state: IExtendedSerializedState) {
     const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
     if (oldDiffPreviewer) {
       oldDiffPreviewer.dispose();
     }
 
-    const previewer = this.createDiffPreviewer(monacoEditor, state.selection);
+    const previewer = this.createDiffPreviewer(monacoEditor, state.selection, state.options);
     if (previewer instanceof LiveInlineDiffPreviewer) {
       previewer.restoreState(state);
     }
@@ -142,13 +144,14 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     options: {
       crossSelection: monaco.Selection;
       chatResponse?: ChatResponse | InlineChatController;
+      previewerOptions?: IDiffPreviewerOptions;
     },
   ): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> {
     const { crossSelection, chatResponse } = options;
 
     const disposable = new Disposable();
 
-    const previewer = this.createDiffPreviewer(monacoEditor, crossSelection);
+    const previewer = this.createDiffPreviewer(monacoEditor, crossSelection, options.previewerOptions);
 
     const onFinish = () => {
       previewer.layout();
@@ -201,7 +204,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     return previewer;
   }
 
-  createDiffPreviewer(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection) {
+  createDiffPreviewer(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection, options?: IDiffPreviewerOptions) {
     let previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
 
     const inlineDiffMode = this.preferenceService.getValid<EInlineDiffPreviewMode>(
@@ -209,9 +212,9 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       EInlineDiffPreviewMode.inlineLive,
     );
     if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
-      previewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, selection]);
+      previewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, selection, options]);
     } else {
-      previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, selection]);
+      previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, selection, options]);
     }
 
     previewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
@@ -278,7 +281,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     const previewer = this._editorsStore.get(e.payload.group.codeEditor.monacoEditor);
 
     if (previewer) {
-      if (previewer.isModel(uriString)) {
+      if (previewer.disposeWhenEditorClosed && previewer.isModel(uriString)) {
         previewer.dispose();
       }
     }

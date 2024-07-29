@@ -13,6 +13,14 @@ import { SerializableState } from '../inline-stream-diff/live-preview.decoration
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
+export interface IDiffPreviewerOptions {
+  disposeWhenEditorClosed: boolean;
+}
+
+export interface IExtendedSerializedState extends SerializableState {
+  readonly options: IDiffPreviewerOptions;
+}
+
 @Injectable({ multiple: true })
 export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
@@ -22,7 +30,17 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
 
   protected model: ITextModel;
 
-  constructor(protected readonly monacoEditor: ICodeEditor, protected readonly selection: Selection) {
+  get disposeWhenEditorClosed() {
+    return this.options.disposeWhenEditorClosed;
+  }
+
+  constructor(
+    protected readonly monacoEditor: ICodeEditor,
+    protected readonly selection: Selection,
+    public options: IDiffPreviewerOptions = {
+      disposeWhenEditorClosed: true,
+    },
+  ) {
     super();
     this.node = this.createNode();
     this.model = this.monacoEditor.getModel()!;
@@ -226,10 +244,13 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.node.addLinesToDiff(content);
     this.onEnd();
   }
-  serializeState(): SerializableState {
-    return this.node.serializeState();
+  serializeState(): IExtendedSerializedState {
+    return {
+      ...this.node.serializeState(),
+      options: this.options,
+    };
   }
-  restoreState(state: SerializableState): void {
+  restoreState(state: IExtendedSerializedState): void {
     this.node.restoreState(state);
   }
   get onPartialEditEvent() {
