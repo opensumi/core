@@ -1900,7 +1900,7 @@ __metadata:
   resolution: "@opensumi/cli-engine@workspace:tools/cli-engine"
   dependencies:
     "@koa/cors": "npm:^5.0.0"
-    "@opensumi/di": "npm:^1.8.0"
+    "@opensumi/di": "npm:^2.1.0"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-core-node": "workspace:*"
@@ -2025,12 +2025,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/di@npm:^1.4.0, @opensumi/di@npm:^1.8.0":
-  version: 1.10.1
-  resolution: "@opensumi/di@npm:1.10.1"
-  dependencies:
-    reflect-metadata: "npm:^0.1.13"
-  checksum: 10/1c4b4ad4df43c314624abbfbee90589cd81973b8f27ea9770ac779734e36d6f38f79f89830710c22dc81c6443c2ee45b26035b3f4b2845e42da36a8a1d90d378
+"@opensumi/di@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@opensumi/di@npm:2.1.0"
+  checksum: 10/876404ed1815d9b74a9f2707f9887e196918aada227e9ffda8c58ab3205c0a8cfee6ae396444f6ccd4c7c4764ad20f099c40ba460b7de5b800b270cf001a884c
   languageName: node
   linkType: hard
 
@@ -2211,7 +2209,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-common@workspace:packages/core-common"
   dependencies:
-    "@opensumi/di": "npm:^1.4.0"
+    "@opensumi/di": "npm:^2.1.0"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
     jschardet: "npm:3.0.0"
@@ -17068,13 +17066,6 @@ __metadata:
     indent-string: "npm:^4.0.0"
     strip-indent: "npm:^3.0.0"
   checksum: 10/fa1ef20404a2d399235e83cc80bd55a956642e37dd197b4b612ba7327bf87fa32745aeb4a1634b2bab25467164ab4ed9c15be2c307923dd08b0fe7c52431ae6b
-  languageName: node
-  linkType: hard
-
-"reflect-metadata@npm:^0.1.13":
-  version: 0.1.14
-  resolution: "reflect-metadata@npm:0.1.14"
-  checksum: 10/fcab9c17ec3b9fea0e2f748c2129aceb57c24af6d8d13842b8a77c8c79dde727d7456ce293e76e8d7b267d1dbf93eea4c5b3c9101299a789a075824f2e40f1ee
   languageName: node
   linkType: hard
 

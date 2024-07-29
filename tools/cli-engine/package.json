@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
-    "@opensumi/di": "^1.8.0",
+    "@opensumi/di": "^2.1.0",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
