@@ -198,7 +198,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (isUndefined(currentId)) {
       service.updateCurrentContainerId(defaultContainer);
     } else {
-      service.updateCurrentContainerId(currentId);
+      service.updateCurrentContainerId(
+        currentId ? (service.containersMap.has(currentId) ? currentId : defaultContainer) : '',
+      );
     }
   };
 
