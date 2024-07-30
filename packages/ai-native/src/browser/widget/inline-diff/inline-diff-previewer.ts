@@ -262,11 +262,11 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   onEnd(): void {
     const diffModel = this.node.recompute(EComputerMode.legacy);
-    this.node.readyRender(diffModel);
+    this.node.setFinallyDiffModel(diffModel);
   }
   setValue(content: string): void {
     const diffModel = this.node.recompute(EComputerMode.legacy, content);
-    this.node.readyRender(diffModel);
+    this.node.finallyRender(diffModel);
   }
   serializeState(): IExtendedSerializedState {
     return {

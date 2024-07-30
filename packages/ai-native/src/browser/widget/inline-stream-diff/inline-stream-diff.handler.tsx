@@ -385,6 +385,7 @@ export class InlineStreamDiffHandler extends Disposable {
   }
 
   private currentEditLine = 0;
+  private finallyDiffModel: IComputeDiffData | null = null;
   private isEditing = false;
   private async rateEditController(): Promise<void> {
     if (this.isEditing === false) {
@@ -401,6 +402,10 @@ export class InlineStreamDiffHandler extends Disposable {
         await sleep(frameThree);
       }
 
+      if (this.finallyDiffModel) {
+        this.handleEdits(this.finallyDiffModel);
+      }
+
       this.isEditing = false;
     }
   }
@@ -410,11 +415,14 @@ export class InlineStreamDiffHandler extends Disposable {
     this.rateEditController();
   }
 
-  public readyRender(diffModel: IComputeDiffData): void {
+  public setFinallyDiffModel(diffModel: IComputeDiffData): void {
+    this.finallyDiffModel = diffModel;
+  }
+
+  public finallyRender(diffModel: IComputeDiffData): void {
+    this.handleEdits(diffModel);
     // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
     this.renderPartialEditWidgets(diffModel);
-    this.handleEdits(diffModel);
-
     this.pushStackElement();
     this.monacoEditor.focus();
   }
@@ -437,7 +445,6 @@ export class InlineStreamDiffHandler extends Disposable {
     this.livePreviewDiffDecorationModel.discardUnProcessed();
     this.dispose();
   }
-
   revealFirstDiff() {
     this.livePreviewDiffDecorationModel.revealFirstDiff();
   }
