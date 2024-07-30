@@ -1,4 +1,4 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, Emitter, Event, frameThree, sleep } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
@@ -16,7 +16,7 @@ import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
 import {
   IRemovedWidgetSerializedState,
   LivePreviewDiffDecorationModel,
-  SerializableState
+  SerializableState,
 } from './live-preview.decoration';
 
 interface IRangeChangeData {
@@ -402,11 +402,11 @@ export class InlineStreamDiffHandler extends Disposable {
         await sleep(frameThree);
       }
 
-      if (this.finallyDiffModel) {
-        this.handleEdits(this.finallyDiffModel);
-      }
-
       this.isEditing = false;
+
+      if (this.finallyDiffModel) {
+        this.finallyRender(this.finallyDiffModel);
+      }
     }
   }
 
