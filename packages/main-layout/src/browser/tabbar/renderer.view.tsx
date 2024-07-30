@@ -53,15 +53,8 @@ export const TabRendererBase: FC<{
   const resizeHandle = useContext(PanelContext);
   const rootRef = useRef<HTMLDivElement>(null);
   const [fullSize, setFullSize] = useState(0);
-  const skipFirstRender = useRef(true);
 
   useLayoutEffect(() => {
-    // 由于当前 Tabbar 组件渲染首次默认传入空的 components 数组初始化
-    // 为了避免后续存在时序问题，这里做一个简单的判断，跳过首次渲染场景
-    if (skipFirstRender.current) {
-      skipFirstRender.current = false;
-      return;
-    }
     tabbarService.registerResizeHandle(resizeHandle);
     components.forEach((component) => {
       tabbarService.registerContainer(component.options!.containerId, component);
