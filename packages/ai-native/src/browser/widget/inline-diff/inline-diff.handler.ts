@@ -27,7 +27,7 @@ import {
 } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { IPartialEditEvent, SerializableState } from '../inline-stream-diff/live-preview.decoration';
+import { IPartialEditEvent } from '../inline-stream-diff/live-preview.decoration';
 
 @Injectable()
 export class InlineDiffHandler extends IAIMonacoContribHandler {
@@ -158,11 +158,10 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       disposable.dispose();
     };
 
-    if (InlineChatController.is(chatResponse)) {
-      const controller = chatResponse as InlineChatController;
-
-      disposable.addDispose(
-        previewer.onReady(() => {
+    disposable.addDispose(
+      previewer.onReady(() => {
+        if (InlineChatController.is(chatResponse)) {
+          const controller = chatResponse as InlineChatController;
           controller.listen();
 
           disposable.addDispose([
@@ -184,21 +183,12 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
               onFinish();
             }),
           ]);
-        }),
-      );
-    } else {
-      const model = monacoEditor.getModel();
-      const crossCode = model!.getValueInRange(crossSelection);
-
-      const answer = this.formatAnswer((chatResponse as ReplyResponse).message, crossCode);
-
-      disposable.addDispose(
-        previewer.onReady(() => {
-          previewer.setValue(answer);
+        } else {
+          previewer.setValue((chatResponse as ReplyResponse).message);
           onFinish();
-        }),
-      );
-    }
+        }
+      }),
+    );
 
     previewer.layout();
     return previewer;

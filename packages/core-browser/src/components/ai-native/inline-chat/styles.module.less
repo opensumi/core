@@ -1,4 +1,5 @@
 @default_height: 24px;
+@default_line_height: 22px;
 
 .ai_inline_result_panel {
   display: flex;
@@ -11,14 +12,19 @@
     display: flex;
     align-items: center;
     .operate_btn {
-      height: 22px;
-      line-height: 22px;
+      height: @default_line_height;
+      line-height: @default_line_height;
       padding: 0 6px;
+      margin: 0 2px;
+
+      &.default {
+        background-color: var(--kt-primaryButton-hoverBackground);
+      }
     }
     .operate_icon {
-      width: 22px;
-      height: 22px;
-      line-height: 22px;
+      width: @default_line_height;
+      height: @default_line_height;
+      line-height: @default_line_height;
       border-radius: 4px;
     }
   }

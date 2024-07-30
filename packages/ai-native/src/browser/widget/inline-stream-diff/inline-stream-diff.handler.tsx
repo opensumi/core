@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, IPosition, RunOnceScheduler } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, RunOnceScheduler, sleep } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import { ICodeEditor, IRange, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
+import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { linesDiffComputers } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputers';
@@ -394,8 +394,9 @@ export class InlineStreamDiffHandler extends Disposable {
 
   public recompute(computerMode: EComputerMode, newContent?: string): IComputeDiffData {
     if (newContent) {
-      this.virtualModel.setValue(newContent.trim());
+      this.virtualModel.setValue(newContent);
     }
+
     const newTextLines = this.virtualModel.getLinesContent();
     this.currentDiffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
     return this.currentDiffModel;
