@@ -262,7 +262,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   onEnd(): void {
     const diffModel = this.node.recompute(EComputerMode.legacy);
-    this.node.setFinallyDiffModel(diffModel);
+    this.node.pushRateFinallyDiffStack(diffModel);
   }
   setValue(content: string): void {
     const diffModel = this.node.recompute(EComputerMode.legacy, this.formatIndentation(content));

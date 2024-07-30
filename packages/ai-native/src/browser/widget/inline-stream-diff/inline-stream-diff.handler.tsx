@@ -402,11 +402,11 @@ export class InlineStreamDiffHandler extends Disposable {
         await sleep(frameThree);
       }
 
-      this.isEditing = false;
-
       if (this.finallyDiffModel) {
         this.finallyRender(this.finallyDiffModel);
       }
+
+      this.isEditing = false;
     }
   }
 
@@ -415,8 +415,13 @@ export class InlineStreamDiffHandler extends Disposable {
     this.rateEditController();
   }
 
-  public setFinallyDiffModel(diffModel: IComputeDiffData): void {
+  public pushRateFinallyDiffStack(diffModel: IComputeDiffData): void {
     this.finallyDiffModel = diffModel;
+
+    // 可能存在 rate editr controller 处理完之后接口层流式才结束
+    if (this.isEditing === false) {
+      this.finallyRender(this.finallyDiffModel);
+    }
   }
 
   public finallyRender(diffModel: IComputeDiffData): void {
