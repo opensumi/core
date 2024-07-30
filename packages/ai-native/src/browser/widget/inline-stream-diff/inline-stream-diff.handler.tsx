@@ -1,5 +1,5 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, RunOnceScheduler, sleep } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Disposable, Emitter, Event, sleep } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -16,7 +16,7 @@ import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
 import {
   IRemovedWidgetSerializedState,
   LivePreviewDiffDecorationModel,
-  SerializableState,
+  SerializableState
 } from './live-preview.decoration';
 
 interface IRangeChangeData {
@@ -54,9 +54,6 @@ export class InlineStreamDiffHandler extends Disposable {
 
   private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
 
-  private schedulerHandleEdits: RunOnceScheduler;
-  private currentDiffModel: IComputeDiffData;
-
   private undoRedoGroup: UndoRedoGroup;
   private originalModel: ITextModel;
   private inlineStreamDiffComputer: InlineStreamDiffComputer = new InlineStreamDiffComputer();
@@ -86,14 +83,6 @@ export class InlineStreamDiffHandler extends Disposable {
       const lineTokens = this.originalModel.tokenization.getLineTokens(lineNumber);
       return lineTokens;
     });
-
-    this.schedulerHandleEdits = this.registerDispose(
-      new RunOnceScheduler(() => {
-        if (this.currentDiffModel) {
-          this.handleEdits(this.currentDiffModel);
-        }
-      }, 16 * 3),
-    );
 
     this.initializeDecorationModel();
   }
@@ -386,32 +375,44 @@ export class InlineStreamDiffHandler extends Disposable {
     this._onDidEditChange.fire();
   }
 
-  private doSchedulerEdits(): void {
-    if (!this.schedulerHandleEdits.isScheduled()) {
-      this.schedulerHandleEdits.schedule();
-    }
-  }
-
   public recompute(computerMode: EComputerMode, newContent?: string): IComputeDiffData {
     if (newContent) {
       this.virtualModel.setValue(newContent);
     }
 
     const newTextLines = this.virtualModel.getLinesContent();
-    this.currentDiffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
-    return this.currentDiffModel;
+    return this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
+  }
+
+  private currentEditLine = 0;
+  private isEditing = false;
+  private async rateEditController(): Promise<void> {
+    if (this.isEditing === false) {
+      this.isEditing = true;
+
+      while (this.currentEditLine <= this.virtualModel.getLinesContent().length) {
+        const virtualTextLines = this.virtualModel.getLinesContent();
+        const currentText = virtualTextLines.slice(0, this.currentEditLine);
+        const currentDiffModel = this.computeDiff(this.rawOriginalTextLines, currentText);
+        this.handleEdits(currentDiffModel);
+
+        this.currentEditLine += 1;
+
+        await sleep(16 * 3);
+      }
+
+      this.isEditing = false;
+    }
   }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
     this.recompute(computerMode, newText);
-    this.doSchedulerEdits();
+    this.rateEditController();
   }
 
   public readyRender(diffModel: IComputeDiffData): void {
     // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
     this.renderPartialEditWidgets(diffModel);
-    this.schedulerHandleEdits.trigger();
-
     this.pushStackElement();
     this.monacoEditor.focus();
   }
