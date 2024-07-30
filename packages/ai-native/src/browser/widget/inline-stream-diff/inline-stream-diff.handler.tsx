@@ -1,18 +1,13 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, IPosition, RunOnceScheduler } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, RunOnceScheduler, sleep } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import { ICodeEditor, IRange, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
+import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
-import { getLeadingWhitespace } from '@opensumi/ide-utils/lib/strings';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { linesDiffComputers } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputers';
 import { DetailedLineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
-import {
-  generateIndent,
-  getSpaceCnt,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/indentation/browser/indentUtils';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
@@ -402,16 +397,7 @@ export class InlineStreamDiffHandler extends Disposable {
       this.virtualModel.setValue(newContent);
     }
 
-    // 控制缩进
-    const startLineNumber = this.selection.startLineNumber;
-    const oldIndentation = getLeadingWhitespace(this.originalModel.getLineContent(startLineNumber));
-
-    const { tabSize, insertSpaces } = this.originalModel.getOptions();
-    const originalSpacesCnt = getSpaceCnt(oldIndentation, tabSize);
-    const newIndentation = generateIndent(originalSpacesCnt, tabSize, insertSpaces);
-
-    const newTextLines = this.virtualModel.getLinesContent().map((content) => newIndentation + content);
-
+    const newTextLines = this.virtualModel.getLinesContent();
     this.currentDiffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
     return this.currentDiffModel;
   }

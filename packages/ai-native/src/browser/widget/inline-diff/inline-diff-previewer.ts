@@ -2,9 +2,14 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, ErrorResponse, IDisposable, ReplyResponse } from '@opensumi/ide-core-common';
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
+import { empty, getLeadingWhitespace } from '@opensumi/ide-utils/lib/strings';
 import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
+import {
+  generateIndent,
+  getSpaceCnt,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/indentation/browser/indentUtils';
 
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
@@ -54,6 +59,25 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
         }
       }),
     );
+  }
+
+  protected formatIndentation(content: string): string {
+    const startLineNumber = this.selection.startLineNumber;
+    const oldIndentation = getLeadingWhitespace(this.model.getLineContent(startLineNumber));
+
+    if (oldIndentation === empty) {
+      return content;
+    }
+
+    const { tabSize, insertSpaces } = this.model.getOptions();
+    const eol = this.model.getEOL();
+
+    const originalSpacesCnt = getSpaceCnt(oldIndentation, tabSize);
+    const newIndentation = generateIndent(originalSpacesCnt, tabSize, insertSpaces);
+
+    const linesText = content.split(eol);
+    const newTextLines = linesText.map((content) => newIndentation + content);
+    return newTextLines.join(eol);
   }
 
   protected node: N;
@@ -146,7 +170,7 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
   }
   setValue(content: string): void {
     const modifiedModel = this.node.getModifiedModel();
-    modifiedModel?.setValue(content);
+    modifiedModel?.setValue(this.formatIndentation(content));
   }
   getValue(): string {
     const model = this.node.getModifiedModel();
@@ -234,14 +258,14 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
-    this.node.addLinesToDiff(message);
+    this.node.addLinesToDiff(this.formatIndentation(message));
   }
   onEnd(): void {
     const diffModel = this.node.recompute(EComputerMode.legacy);
     this.node.readyRender(diffModel);
   }
   setValue(content: string): void {
-    this.node.addLinesToDiff(content);
+    this.node.addLinesToDiff(this.formatIndentation(content));
     this.onEnd();
   }
   serializeState(): IExtendedSerializedState {
