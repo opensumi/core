@@ -24,7 +24,7 @@ import {
   IOpenMergeEditorArgs,
   MergeEditorInputData,
 } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { CommandRegistry, frameThree } from '@opensumi/ide-core-common';
+import { CommandRegistry, FRAME_THREE } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MergeActions } from '../components/merge-actions';
@@ -59,7 +59,7 @@ const TitleHead: React.FC<ITitleHeadProps> = ({ contrastType }) => {
         update();
         setTimeout(() => {
           mergeEditorService.compare();
-        }, frameThree);
+        }, FRAME_THREE);
       }),
     [commandRegistry, mergeEditorService],
   );

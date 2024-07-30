@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, frameThree, sleep } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, FRAME_THREE, sleep } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -399,7 +399,7 @@ export class InlineStreamDiffHandler extends Disposable {
 
         this.currentEditLine += 1;
 
-        await sleep(frameThree);
+        await sleep(FRAME_THREE);
       }
 
       if (this.finallyDiffModel) {

@@ -4,7 +4,7 @@ import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider, StackingLevelStr } from '@opensumi/ide-core-browser';
-import { Disposable, frameThree, runWhenIdle } from '@opensumi/ide-core-common';
+import { Disposable, FRAME_THREE, runWhenIdle } from '@opensumi/ide-core-common';
 
 import * as monaco from '../../common';
 import { ContentWidgetPositionPreference } from '../monaco-exports/editor';
@@ -124,7 +124,7 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
 
     const throttled = throttle(() => {
       requestAnimationFrame(() => this.layoutContentWidget());
-    }, frameThree);
+    }, FRAME_THREE);
 
     const id = monaco.createLayoutEventType(this.id());
 

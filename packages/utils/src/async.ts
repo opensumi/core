@@ -5,9 +5,9 @@ import { canceled } from './errors';
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
 // 浏览器渲染帧
-export const frameOne = 16;
-export const frameTwo = frameOne * 2;
-export const frameThree = frameOne * 3;
+export const FRAME_ONE = 16;
+export const FRAME_TWO = FRAME_ONE * 2;
+export const FRAME_THREE = FRAME_ONE * 3;
 
 export interface CancelablePromise<T> extends Promise<T> {
   cancel(): void;
