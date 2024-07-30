@@ -154,8 +154,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   restoreTabbarService = async (service: TabbarService) => {
-    await service.viewReady.promise;
-
     this.state = this.layoutState.getState(LAYOUT_STATE.MAIN, {
       [SlotLocation.left]: {
         currentId: undefined,
