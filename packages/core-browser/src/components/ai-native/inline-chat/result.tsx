@@ -1,4 +1,7 @@
+import cls from 'classnames';
 import React from 'react';
+
+import { Button, ButtonType } from '@opensumi/ide-components';
 
 import { EnhanceIcon } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';
@@ -9,6 +12,7 @@ import styles from './styles.module.less';
 export interface IAIInlineResultIconItemsProps {
   text: string | React.ReactNode;
   onClick: () => void;
+  btnType?: ButtonType;
   icon?: string;
 }
 
@@ -25,8 +29,13 @@ export const AIInlineResult = (props: IAIInlineResultProps) => {
   return (
     <div className={styles.ai_inline_result_panel}>
       <div className={styles.side}>
-        {iconItems.map(({ icon, text, onClick }, idx) => (
-          <EnhanceIcon wrapperClassName={styles.operate_btn} icon={icon} onClick={onClick} key={idx}>
+        {iconItems.map(({ icon, text, onClick, btnType }, idx) => (
+          <EnhanceIcon
+            wrapperClassName={cls(styles.operate_btn, btnType === 'default' ? styles.default : '')}
+            icon={icon}
+            onClick={onClick}
+            key={idx}
+          >
             <span>{text}</span>
           </EnhanceIcon>
         ))}
