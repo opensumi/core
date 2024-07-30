@@ -413,6 +413,8 @@ export class InlineStreamDiffHandler extends Disposable {
   public readyRender(diffModel: IComputeDiffData): void {
     // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
     this.renderPartialEditWidgets(diffModel);
+    this.handleEdits(diffModel);
+
     this.pushStackElement();
     this.monacoEditor.focus();
   }
