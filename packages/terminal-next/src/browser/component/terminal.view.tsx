@@ -3,7 +3,7 @@ import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { getIcon, localize, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
+import { frameThree, getIcon, localize, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
   ITerminalController,
@@ -53,7 +53,7 @@ export default observer(() => {
   const [errors, setErrors] = React.useState(errorService.errors);
   const func = debounce(() => {
     setErrors(errorService.errors);
-  }, 16 * 3);
+  }, frameThree);
   useEventEffect(errorService.onErrorsChange, func);
 
   const renderWidget = React.useCallback(

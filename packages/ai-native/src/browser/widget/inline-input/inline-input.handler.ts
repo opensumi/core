@@ -8,6 +8,7 @@ import {
   InlineChatFeatureRegistryToken,
   ReplyResponse,
   RunOnceScheduler,
+  frameThree,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
@@ -221,7 +222,7 @@ export class InlineInputHandler extends Disposable {
         Event.debounce(
           collection.onDidChange.bind(collection),
           () => {},
-          16 * 3,
+          frameThree,
         )(() => {
           if (!collection.getRange(0)) {
             return;

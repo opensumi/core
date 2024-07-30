@@ -4,6 +4,11 @@ import { canceled } from './errors';
 
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
+// 浏览器渲染帧
+export const frameOne = 16;
+export const frameTwo = frameOne * 2;
+export const frameThree = frameOne * 3;
+
 export interface CancelablePromise<T> extends Promise<T> {
   cancel(): void;
 }

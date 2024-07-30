@@ -21,6 +21,7 @@ import {
   LabelService,
   URI,
   formatLocalize,
+  frameThree,
   getIcon,
   localize,
   useEventDrivenState,
@@ -402,7 +403,7 @@ const PreferenceBody = (props: PreferenceBodyProps) => {
         setFocusItem(item._path);
       }
     },
-    16 * 3,
+    frameThree,
     {
       leading: true,
       trailing: true,
