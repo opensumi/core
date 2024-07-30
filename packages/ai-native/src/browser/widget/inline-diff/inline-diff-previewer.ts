@@ -87,6 +87,8 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
 
   public mount(contentWidget: AIInlineContentWidget): void {
     this.inlineContentWidget = contentWidget;
+
+    this.inlineContentWidget.addDispose(this);
   }
 
   public layout(): void {
@@ -189,10 +191,12 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
+
+    const indentMessage = this.formatIndentation(message);
     const modifiedModel = this.node.getModifiedModel()!;
 
     const defaultEOL = modifiedModel.getEOL() === EOL.CRLF ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF;
-    const { textBuffer, disposable } = createTextBuffer(message, defaultEOL);
+    const { textBuffer, disposable } = createTextBuffer(indentMessage, defaultEOL);
     const singleEditOperation = ModelService._computeEdits(modifiedModel, textBuffer);
     modifiedModel.pushEditOperations([], singleEditOperation, () => []);
 
