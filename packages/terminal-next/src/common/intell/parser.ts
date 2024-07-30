@@ -1,0 +1,88 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+// based on https://github.com/microsoft/inshellisense/blob/ef837d4f738533da7e1a3845231bd5965e025bf1/src/runtime/parser.ts
+
+export interface CommandToken {
+  token: string;
+  complete: boolean;
+  isOption: boolean;
+  isPersistent?: boolean;
+  isPath?: boolean;
+  isPathComplete?: boolean;
+  isQuoted?: boolean;
+}
+
+const cmdDelim = /(\|\|)|(&&)|(;)|(\|)/;
+const spaceRegex = /\s/;
+
+export const parseCommand = (command: string): CommandToken[] => {
+  const lastCommand = command.split(cmdDelim).at(-1)?.trimStart();
+  return lastCommand ? lex(lastCommand) : [];
+};
+
+const lex = (command: string): CommandToken[] => {
+  const tokens: CommandToken[] = [];
+  let [readingQuotedString, readingFlag, readingCmd] = [false, false, false];
+  let readingIdx = 0;
+  let readingQuoteChar = '';
+
+  [...command].forEach((char, idx) => {
+    const reading = readingQuotedString || readingFlag || readingCmd;
+    if (!reading && (char === "'" || char === '"')) {
+      [readingQuotedString, readingIdx, readingQuoteChar] = [true, idx, char];
+      return;
+    } else if (!reading && char === '-') {
+      [readingFlag, readingIdx] = [true, idx];
+      return;
+    } else if (!reading && !spaceRegex.test(char)) {
+      [readingCmd, readingIdx] = [true, idx];
+      return;
+    }
+
+    if (readingQuotedString && char === readingQuoteChar && command.at(idx - 1) !== '\\') {
+      readingQuotedString = false;
+      const complete = idx + 1 < command.length && spaceRegex.test(command[idx + 1]);
+      tokens.push({
+        token: command.slice(readingIdx + 1, idx),
+        complete,
+        isOption: false,
+        isQuoted: true,
+      });
+    } else if ((readingFlag && spaceRegex.test(char)) || char === '=') {
+      readingFlag = false;
+      tokens.push({
+        token: command.slice(readingIdx, idx),
+        complete: true,
+        isOption: true,
+      });
+    } else if (readingCmd && spaceRegex.test(char) && command.at(idx - 1) !== '\\') {
+      readingCmd = false;
+      tokens.push({
+        token: command.slice(readingIdx, idx),
+        complete: true,
+        isOption: false,
+      });
+    }
+  });
+
+  const reading = readingQuotedString || readingFlag || readingCmd;
+  if (reading) {
+    if (readingQuotedString) {
+      tokens.push({
+        token: command.slice(readingIdx + 1),
+        complete: false,
+        isOption: false,
+        isQuoted: true,
+      });
+    } else {
+      tokens.push({
+        token: command.slice(readingIdx),
+        complete: false,
+        isOption: readingFlag,
+      });
+    }
+  }
+
+  return tokens;
+};

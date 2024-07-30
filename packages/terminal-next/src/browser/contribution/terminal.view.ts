@@ -5,6 +5,7 @@ import {
   TERMINAL_COMMANDS,
   TabBarToolbarContribution,
   ToolbarRegistry,
+  getIcon,
   localize,
 } from '@opensumi/ide-core-browser';
 import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
@@ -17,6 +18,13 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
   static viewId = TERMINAL_CONTAINER_ID;
 
   registerToolbarItems(registry: ToolbarRegistry) {
+    registry.registerItem({
+      id: TERMINAL_COMMANDS.OPEN_TERMINAL_INTELL.id,
+      command: TERMINAL_COMMANDS.OPEN_TERMINAL_INTELL.id,
+      viewId: TerminalRenderContribution.viewId,
+      tooltip: localize('terminal.intell'),
+      iconClass: getIcon('magic-wand'),
+    });
     registry.registerItem({
       id: TERMINAL_COMMANDS.OPEN_SEARCH.id,
       command: TERMINAL_COMMANDS.OPEN_SEARCH.id,

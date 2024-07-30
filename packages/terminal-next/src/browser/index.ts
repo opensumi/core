@@ -21,10 +21,12 @@ import {
   ITerminalTheme,
 } from '../common';
 import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
+import { ITerminalSuggestionProviderPath } from '../common/intell/runtime';
 import { ITerminalPreference } from '../common/preference';
 
 import {
   TerminalCommandContribution,
+  TerminalIntellContribution,
   TerminalKeybindingContribution,
   TerminalLifeCycleContribution,
   TerminalMenuContribution,
@@ -60,6 +62,7 @@ export class TerminalNextModule extends BrowserModule {
     TerminalKeybindingContribution,
     TerminalNetworkContribution,
     TerminalPreferenceContribution,
+    TerminalIntellContribution,
     {
       token: ITerminalApiService,
       useClass: TerminalApiService,
@@ -138,6 +141,9 @@ export class TerminalNextModule extends BrowserModule {
     {
       servicePath: ITerminalProcessPath,
       clientToken: EnvironmentVariableServiceToken,
+    },
+    {
+      servicePath: ITerminalSuggestionProviderPath,
     },
   ];
 }

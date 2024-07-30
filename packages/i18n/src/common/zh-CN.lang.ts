@@ -458,6 +458,12 @@ export const localizationBundle = {
     'preference.terminal.integrated.copyOnSelection': '终端选中复制',
     'preference.terminal.integrated.copyOnSelectionDesc': '将终端中选中的文本立即复制到剪贴板。',
 
+    'preference.terminal.integrated.enableTerminalIntellComplete': '启用终端智能补全',
+    'preference.terminal.integrated.terminalIntell': '终端智能补全',
+    'preference.terminal.integrated.terminalIntellDesc':
+      '终端输入时，自动弹出弹出子命令、选项和上下文相关的参数的补全 (暂时仅支持 Bash)',
+    'preference.terminal.integrated.terminalIntellUsage': '使用 Tab 触发和选择终端提示，Esc 取消，Enter 键确认',
+
     'preference.terminal.integrated.localEchoEnabled': '终端本地回显',
     'preference.terminal.integrated.localEchoDesc': '何时应启用本地回显',
     'preference.terminal.integrated.localEchoLatencyThreshold': '终端本地回显触发延时',
@@ -687,6 +693,7 @@ export const localizationBundle = {
     'terminal.or': '或者',
     'terminal.search': '搜索',
     'terminal.search.next': '搜索下一个匹配项',
+    'terminal.intell': '终端智能',
     'terminal.openWithPath': '在终端中打开',
     'terminal.remove': '终止终端',
     'terminal.relaunch': '重启终端',
