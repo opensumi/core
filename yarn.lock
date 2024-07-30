@@ -2269,7 +2269,7 @@ __metadata:
     "@opensumi/ide-workspace-edit": "workspace:*"
     "@rjsf/core": "npm:5.5.2"
     "@rjsf/utils": "npm:5.5.2"
-    "@rjsf/validator-ajv6": "npm:5.4.0"
+    "@rjsf/validator-ajv6": "npm:5.19.4"
     "@types/btoa": "npm:^1.2.3"
     anser: "npm:^2.1.1"
     btoa: "npm:^1.2.1"
@@ -3284,16 +3284,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv6@npm:5.4.0":
-  version: 5.4.0
-  resolution: "@rjsf/validator-ajv6@npm:5.4.0"
+"@rjsf/validator-ajv6@npm:5.19.4":
+  version: 5.19.4
+  resolution: "@rjsf/validator-ajv6@npm:5.19.4"
   dependencies:
-    ajv: "npm:^6.7.0"
-    lodash: "npm:^4.17.15"
-    lodash-es: "npm:^4.17.15"
+    ajv: "npm:^6.12.6"
+    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
-    "@rjsf/utils": ^5.0.0
-  checksum: 10/f875297828a6b08373d5776ae3a407054b5bdf8c00984e93a8c8518c11ff5dafdd3e9dec09674a018de62fdbb6f035c1ae339caa4706e4c40c8b97e2554fd6f0
+    "@rjsf/utils": ^5.19.x
+  checksum: 10/55ffc7647274502434bbfa6723a8e6bf16eeb673cca2281ce36567551ecebc0cde0e1e0fc1b45621f1dfac13ac872c2493ae233068b40de6a8d6ea1867df1c0b
   languageName: node
   linkType: hard
 
@@ -5035,7 +5035,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^6.10.0, ajv@npm:^6.10.2, ajv@npm:^6.12.4, ajv@npm:^6.12.5, ajv@npm:^6.7.0":
+"ajv@npm:^6.10.0, ajv@npm:^6.10.2, ajv@npm:^6.12.4, ajv@npm:^6.12.5, ajv@npm:^6.12.6":
   version: 6.12.6
   resolution: "ajv@npm:6.12.6"
   dependencies:
@@ -12996,7 +12996,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash-es@npm:^4.17.15":
+"lodash-es@npm:^4.17.15, lodash-es@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash-es@npm:4.17.21"
   checksum: 10/03f39878ea1e42b3199bd3f478150ab723f93cc8730ad86fec1f2804f4a07c6e30deaac73cad53a88e9c3db33348bb8ceeb274552390e7a75d7849021c02df43
