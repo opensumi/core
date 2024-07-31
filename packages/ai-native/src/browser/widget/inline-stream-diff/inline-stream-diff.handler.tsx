@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, RunOnceScheduler, sleep } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, FRAME_THREE, sleep } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -54,9 +54,6 @@ export class InlineStreamDiffHandler extends Disposable {
 
   private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
 
-  private schedulerHandleEdits: RunOnceScheduler;
-  private currentDiffModel: IComputeDiffData;
-
   private undoRedoGroup: UndoRedoGroup;
   private originalModel: ITextModel;
   private inlineStreamDiffComputer: InlineStreamDiffComputer = new InlineStreamDiffComputer();
@@ -86,14 +83,6 @@ export class InlineStreamDiffHandler extends Disposable {
       const lineTokens = this.originalModel.tokenization.getLineTokens(lineNumber);
       return lineTokens;
     });
-
-    this.schedulerHandleEdits = this.registerDispose(
-      new RunOnceScheduler(() => {
-        if (this.currentDiffModel) {
-          this.handleEdits(this.currentDiffModel);
-        }
-      }, 16 * 3),
-    );
 
     this.initializeDecorationModel();
   }
@@ -386,32 +375,59 @@ export class InlineStreamDiffHandler extends Disposable {
     this._onDidEditChange.fire();
   }
 
-  private doSchedulerEdits(): void {
-    if (!this.schedulerHandleEdits.isScheduled()) {
-      this.schedulerHandleEdits.schedule();
-    }
-  }
-
   public recompute(computerMode: EComputerMode, newContent?: string): IComputeDiffData {
     if (newContent) {
       this.virtualModel.setValue(newContent);
     }
 
     const newTextLines = this.virtualModel.getLinesContent();
-    this.currentDiffModel = this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
-    return this.currentDiffModel;
+    return this.computeDiff(this.rawOriginalTextLines, newTextLines, computerMode);
+  }
+
+  private currentEditLine = 0;
+  private finallyDiffModel: IComputeDiffData | null = null;
+  private isEditing = false;
+  private async rateEditController(): Promise<void> {
+    if (this.isEditing === false) {
+      this.isEditing = true;
+
+      while (this.currentEditLine <= this.virtualModel.getLinesContent().length) {
+        const virtualTextLines = this.virtualModel.getLinesContent();
+        const currentText = virtualTextLines.slice(0, this.currentEditLine);
+        const currentDiffModel = this.computeDiff(this.rawOriginalTextLines, currentText);
+        this.handleEdits(currentDiffModel);
+
+        this.currentEditLine += 1;
+
+        await sleep(FRAME_THREE);
+      }
+
+      if (this.finallyDiffModel) {
+        this.finallyRender(this.finallyDiffModel);
+      }
+
+      this.isEditing = false;
+    }
   }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
     this.recompute(computerMode, newText);
-    this.doSchedulerEdits();
+    this.rateEditController();
   }
 
-  public readyRender(diffModel: IComputeDiffData): void {
+  public pushRateFinallyDiffStack(diffModel: IComputeDiffData): void {
+    this.finallyDiffModel = diffModel;
+
+    // 可能存在 rate editr controller 处理完之后接口层流式才结束
+    if (this.isEditing === false) {
+      this.finallyRender(this.finallyDiffModel);
+    }
+  }
+
+  public finallyRender(diffModel: IComputeDiffData): void {
     // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
     this.renderPartialEditWidgets(diffModel);
-    this.schedulerHandleEdits.trigger();
-
+    this.handleEdits(diffModel);
     this.pushStackElement();
     this.monacoEditor.focus();
   }
@@ -434,7 +450,6 @@ export class InlineStreamDiffHandler extends Disposable {
     this.livePreviewDiffDecorationModel.discardUnProcessed();
     this.dispose();
   }
-
   revealFirstDiff() {
     this.livePreviewDiffDecorationModel.revealFirstDiff();
   }

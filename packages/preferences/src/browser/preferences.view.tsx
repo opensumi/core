@@ -14,6 +14,7 @@ import { VirtualList } from '@opensumi/ide-components/lib/virtual-list';
 import { IVirtualListRange } from '@opensumi/ide-components/lib/virtual-list/types';
 import {
   Disposable,
+  FRAME_THREE,
   IPreferenceSettingsService,
   IResolvedSettingSection,
   ISettingGroup,
@@ -402,7 +403,7 @@ const PreferenceBody = (props: PreferenceBodyProps) => {
         setFocusItem(item._path);
       }
     },
-    16 * 3,
+    FRAME_THREE,
     {
       leading: true,
       trailing: true,

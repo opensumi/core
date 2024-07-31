@@ -4,6 +4,7 @@ import {
   CancellationTokenSource,
   Disposable,
   Event,
+  FRAME_THREE,
   IDisposable,
   InlineChatFeatureRegistryToken,
   ReplyResponse,
@@ -221,7 +222,7 @@ export class InlineInputHandler extends Disposable {
         Event.debounce(
           collection.onDidChange.bind(collection),
           () => {},
-          16 * 3,
+          FRAME_THREE,
         )(() => {
           if (!collection.getRange(0)) {
             return;

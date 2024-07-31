@@ -24,7 +24,7 @@ import {
   IOpenMergeEditorArgs,
   MergeEditorInputData,
 } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { CommandRegistry } from '@opensumi/ide-core-common';
+import { CommandRegistry, FRAME_THREE } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MergeActions } from '../components/merge-actions';
@@ -53,12 +53,16 @@ const TitleHead: React.FC<ITitleHeadProps> = ({ contrastType }) => {
   const [encoding, setEncoding] = useState<string>('');
   const [currentURI, setCurrentURI] = useState<URI>();
 
-  useDisposable(() => commandRegistry.afterExecuteCommand(EDITOR_COMMANDS.CHANGE_ENCODING.id, () => {
-      update();
-      setTimeout(() => {
-        mergeEditorService.compare();
-      }, 16 * 3);
-    }), [commandRegistry, mergeEditorService]);
+  useDisposable(
+    () =>
+      commandRegistry.afterExecuteCommand(EDITOR_COMMANDS.CHANGE_ENCODING.id, () => {
+        update();
+        setTimeout(() => {
+          mergeEditorService.compare();
+        }, FRAME_THREE);
+      }),
+    [commandRegistry, mergeEditorService],
+  );
 
   const toRelativePath = useCallback((uri: URI) => {
     // 获取相对路径
