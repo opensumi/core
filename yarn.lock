@@ -2211,7 +2211,6 @@ __metadata:
     "@opensumi/di": "npm:^1.4.0"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
-    jschardet: "npm:3.0.0"
   languageName: unknown
   linkType: soft
 
@@ -2705,7 +2704,6 @@ __metadata:
     "@opensumi/ide-main-layout": "workspace:*"
     "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
-    escape-carriage: "npm:^1.3.0"
   languageName: unknown
   linkType: soft
 
@@ -8397,13 +8395,6 @@ __metadata:
   version: 3.1.2
   resolution: "escalade@npm:3.1.2"
   checksum: 10/a1e07fea2f15663c30e40b9193d658397846ffe28ce0a3e4da0d8e485fedfeca228ab846aee101a05015829adf39f9934ff45b2a3fca47bed37a29646bd05cd3
-  languageName: node
-  linkType: hard
-
-"escape-carriage@npm:^1.3.0":
-  version: 1.3.1
-  resolution: "escape-carriage@npm:1.3.1"
-  checksum: 10/6d7613a5875977b04eb4651f3fa14eb8f54c72aa198b603c823502fcfef9f5969afc4c76d27b2f2fc008d88764fbf4c3a6e04d549d6134e2ff7f705c99e3ddb9
   languageName: node
   linkType: hard
 
