@@ -2184,7 +2184,6 @@ __metadata:
     "@vscode/codicons": "npm:0.0.35"
     ajv: "npm:^6.10.0"
     classnames: "npm:2.5.1"
-    font-awesome: "npm:^4.7.0"
     fuzzy: "npm:^0.1.3"
     jsonc-parser: "npm:^2.1.0"
     keycode: "npm:^2.2.0"
@@ -9355,13 +9354,6 @@ __metadata:
     debug:
       optional: true
   checksum: 10/70c7612c4cab18e546e36b991bbf8009a1a41cf85354afe04b113d1117569abf760269409cb3eb842d9f7b03d62826687086b081c566ea7b1e6613cf29030bf7
-  languageName: node
-  linkType: hard
-
-"font-awesome@npm:^4.7.0":
-  version: 4.7.0
-  resolution: "font-awesome@npm:4.7.0"
-  checksum: 10/eefb0e49c06428c646c22ae0f406e2b31b05fc89cdf7bedb0352a99ce94cd34b5e2e7bb52e8a8fdfb486b5e6481de010d00d6be79f426e1033a1dea726fbc8a8
   languageName: node
   linkType: hard
 
