@@ -10,7 +10,14 @@ import {
   TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { CommandService, URI, getIcon, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  MouseEventButton,
+  URI,
+  getIcon,
+  useDesignStyles,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -90,10 +97,9 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
 
   const handleContextMenu = useCallback(
     (ev: React.MouseEvent) => {
-      if (ev.nativeEvent.which === 0) {
-        return;
+      if (ev.nativeEvent.button === MouseEventButton.Right) {
+        onContextMenu(ev, item, itemType);
       }
-      onContextMenu(ev, item, itemType);
     },
     [onContextMenu],
   );
@@ -233,10 +239,9 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
 
   const handleContextMenu = useCallback(
     (ev: React.MouseEvent) => {
-      if (ev.nativeEvent.which === 0) {
-        return;
+      if (ev.nativeEvent.button === MouseEventButton.Right) {
+        onContextMenu(ev, item, itemType);
       }
-      onContextMenu(ev, item, itemType);
     },
     [onContextMenu],
   );
@@ -281,7 +286,6 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
       return null;
     }
 
-    // @internal extra scm decorations
     const badge = decoration.badge || item.resource.decorations.letter || '';
     const kolor = decoration.color || item.resource.decorations.color;
     const color = kolor && themeService.getColor({ id: kolor });

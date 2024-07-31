@@ -155,7 +155,6 @@ SCMProvidersView.displayName = 'SCMProvidersView';
 
 export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
   const selectedRepo: ISCMRepository | undefined = viewModel.selectedRepo;
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 

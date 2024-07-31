@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree, TreeModel, TreeNodeType } from '@opensumi/ide-components';
-import { isOSX } from '@opensumi/ide-core-browser';
+import { IDisposable, isOSX } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import { ViewModelContext } from '../../scm-model';
@@ -52,15 +52,19 @@ export const SCMResourceTree: FC<{
   }, []);
 
   useEffect(() => {
+    let dispose: IDisposable | undefined;
     if (isReady) {
       setModel(scmTreeModelService.treeModel);
-      scmTreeModelService.onDidTreeModelChange(async (model) => {
+      dispose = scmTreeModelService.onDidTreeModelChange(async (model) => {
         if (model) {
           await model.ensureReady;
         }
         setModel(model);
       });
     }
+    return () => {
+      dispose?.dispose();
+    };
   }, [isReady]);
 
   useEffect(() => {
