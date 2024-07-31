@@ -155,16 +155,21 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
       this.interactiveInputModel.setStrategyHandler(() => runStrategy.strategy || ERunStrategy.EXECUTE);
     }
 
-    const keybindingStr = String(this.getSequenceKeyString());
-
-    if (keybindingStr) {
-      this.collectActions({
-        id: InteractiveInputModel.ID,
-        name: `Chat(${keybindingStr.toLocaleUpperCase()})`,
-        renderType: 'button',
-        order: Number.MAX_SAFE_INTEGER,
-      });
-    }
+    this.addDispose(
+      Event.filter(this.keybindingRegistry.onKeybindingsChanged, ({ affectsCommands }) =>
+        affectsCommands.includes(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id),
+      )(() => {
+        const keybindingStr = String(this.getSequenceKeyString());
+        if (keybindingStr) {
+          this.collectActions({
+            id: InteractiveInputModel.ID,
+            name: `Chat(${keybindingStr.toLocaleUpperCase()})`,
+            renderType: 'button',
+            order: Number.MAX_SAFE_INTEGER,
+          });
+        }
+      }),
+    );
 
     return {
       dispose: () => {
