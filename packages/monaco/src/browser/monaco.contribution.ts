@@ -277,25 +277,35 @@ export class MonacoClientContribution
   }
 
   registerMonacoEnvironment() {
-    const defaultEnvironment = (window as Window).MonacoEnvironment || ({} as Environment);
-    (window as Window).MonacoEnvironment = {
-      getWorkerUrl: (moduleId, label) => {
-        const result = this.staticResourceService.resolveStaticResource(
-          URI.from({
-            scheme: Schemes.monaco,
-            path: 'worker',
-            query: JSON.stringify({ moduleId, label }),
-          }),
-        );
+    const ref = new WeakRef(this.staticResourceService);
 
-        if (result.scheme === Schemes.monaco) {
-          throw new Error(`Unsupported monaco worker: ${moduleId}:${label}`);
-        }
+    const getWorkerUrl = (moduleId, label) => {
+      const staticResourceService = ref.deref();
+      if (!staticResourceService) {
+        throw new Error(`Unsupported monaco worker: ${moduleId}:${label}`);
+      }
 
-        return getWorkerBootstrapUrl(result.toString(), `${moduleId}:${label}`);
-      },
-      ...defaultEnvironment,
+      const result = staticResourceService.resolveStaticResource(
+        URI.from({
+          scheme: Schemes.monaco,
+          path: 'worker',
+          query: JSON.stringify({ moduleId, label }),
+        }),
+      );
+
+      if (result.scheme === Schemes.monaco) {
+        throw new Error(`Unsupported monaco worker: ${moduleId}:${label}`);
+      }
+
+      return getWorkerBootstrapUrl(result.toString(), `${moduleId}:${label}`);
     };
+
+    // If `MonacoEnvironment` is already set, do not override it
+    if (!(window as Window).MonacoEnvironment) {
+      (window as Window).MonacoEnvironment = {
+        getWorkerUrl,
+      };
+    }
   }
 
   private registerOverrideServices() {

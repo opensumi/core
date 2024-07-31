@@ -62,6 +62,12 @@ export class DisposableStore implements IDisposable {
 
     return t;
   }
+
+  public addAll(disposables: IDisposable[]) {
+    for (const item of disposables) {
+      this.add(item);
+    }
+  }
 }
 
 export interface IDisposable {

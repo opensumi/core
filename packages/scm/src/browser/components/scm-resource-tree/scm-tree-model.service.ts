@@ -7,6 +7,7 @@ import {
   CommandService,
   CorePreferences,
   DisposableCollection,
+  DisposableStore,
   EDITOR_COMMANDS,
   Emitter,
   Event,
@@ -110,11 +111,11 @@ export class SCMTreeModelService {
   // 右键菜单选择的节点
   private _contextMenuFile: SCMTreeNodeType | undefined;
 
-  private disposableCollection: DisposableCollection = new DisposableCollection();
+  private disposableCollection: DisposableStore = new DisposableStore();
   private treeModelDisposableCollection: DisposableCollection;
 
-  private onDidRefreshedEmitter: Emitter<void> = new Emitter();
-  private onDidTreeModelChangeEmitter: Emitter<SCMTreeModel> = new Emitter();
+  private onDidRefreshedEmitter: Emitter<void> = this.disposableCollection.add(new Emitter());
+  private onDidTreeModelChangeEmitter: Emitter<SCMTreeModel> = this.disposableCollection.add(new Emitter());
 
   private treeModelCache: Map<
     string,
@@ -134,7 +135,7 @@ export class SCMTreeModelService {
   init() {
     this.showProgress((this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode)));
     this._whenReady.then(() => {
-      this.disposableCollection.push(
+      this.disposableCollection.add(
         this.scmTreeService.onDidTreeModeChange((isTreeMode) => {
           // 展示进度条
           this.showProgress((this._whenReady = this.initTreeModel(isTreeMode)));
@@ -142,7 +143,7 @@ export class SCMTreeModelService {
       );
     });
 
-    this.disposableCollection.push(
+    this.disposableCollection.add(
       this.viewModel.onDidSelectedRepoChange((repo: ISCMRepository) => {
         this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode, repo.provider.rootUri?.toString());
       }),
@@ -163,14 +164,14 @@ export class SCMTreeModelService {
       ),
     );
 
-    this.disposableCollection.push(
+    this.disposableCollection.add(
       onDidChange(() => {
         this.refresh();
       }),
     );
 
     this.setIconThemeDesc(this.iconService.currentTheme || defaultIconThemeDesc);
-    this.disposableCollection.push(
+    this.disposableCollection.add(
       this.iconService.onThemeChange((theme) => {
         this.setIconThemeDesc(theme);
       }),
@@ -280,7 +281,7 @@ export class SCMTreeModelService {
 
       this._activeDecorations = this.initDecorations(root);
 
-      this.disposableCollection.push(this._activeDecorations);
+      this.disposableCollection.add(this._activeDecorations);
 
       this.treeModelCache.set(cacheKey, {
         treeModel: this._activeTreeModel,

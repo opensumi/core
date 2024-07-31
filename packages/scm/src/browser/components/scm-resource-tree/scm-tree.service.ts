@@ -132,4 +132,9 @@ export class SCMTreeService extends Tree {
 
     return super.sortComparator(a, b);
   }
+
+  dispose(): void {
+    super.dispose();
+    this.onDidTreeModeChangeEmitter.dispose();
+  }
 }

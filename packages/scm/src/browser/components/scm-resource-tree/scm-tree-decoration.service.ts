@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   DisposableCollection,
+  DisposableStore,
   Emitter,
   FileDecorationsProvider,
   IFileDecoration,
@@ -18,12 +19,12 @@ export class SCMTreeDecorationService implements FileDecorationsProvider {
   @Autowired(IThemeService)
   public readonly themeService: IThemeService;
 
-  private disposeCollection: DisposableCollection = new DisposableCollection();
+  private disposeCollection: DisposableStore = new DisposableStore();
 
-  private readonly onDidChangeEmitter: Emitter<void> = new Emitter();
+  private readonly onDidChangeEmitter: Emitter<void> = this.disposeCollection.add(new Emitter());
 
   constructor() {
-    this.disposeCollection.pushAll([
+    this.disposeCollection.addAll([
       this.decorationsService.onDidChangeDecorations(() => {
         this.onDidChangeEmitter.fire();
       }),
