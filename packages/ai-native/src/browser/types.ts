@@ -199,6 +199,7 @@ export interface ITerminalProviderRegistry {
 export type IIntelligentCompletionProvider = (
   editor: ICodeEditor,
   position: IPosition,
+  contextBean: IAICompletionOption,
   token: CancellationToken,
 ) => MaybePromise<IIntelligentCompletionsResult>;
 export interface IIntelligentCompletionsRegistry {

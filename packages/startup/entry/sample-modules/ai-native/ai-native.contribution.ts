@@ -403,7 +403,7 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
-    registry.registerIntelligentCompletionProvider(async (editor, position, token) => {
+    registry.registerIntelligentCompletionProvider(async (editor, position, bean, token) => {
       const model = editor.getModel()!;
       const value = model.getValueInRange({
         startLineNumber: position.lineNumber,

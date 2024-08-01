@@ -2,6 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   CancellationTokenSource,
   Disposable,
+  IAICompletionOption,
   IDisposable,
   IntelligentCompletionsRegistryToken,
 } from '@opensumi/ide-core-common';
@@ -41,14 +42,14 @@ export class IntelligentCompletionsHandler extends Disposable {
     return this.editor.monacoEditor;
   }
 
-  public async fetchProvider(): Promise<IIntelligentCompletionsResult | undefined> {
+  public async fetchProvider(bean: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
     const provider = this.intelligentCompletionsRegistry.getProvider();
     if (!provider) {
       return;
     }
 
     const position = this.monacoEditor.getPosition()!;
-    const intelligentCompletionModel = await provider(this.monacoEditor, position, this.cancelIndicator.token);
+    const intelligentCompletionModel = await provider(this.monacoEditor, position, bean, this.cancelIndicator.token);
 
     return intelligentCompletionModel;
   }
