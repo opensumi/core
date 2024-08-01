@@ -16,9 +16,7 @@ import { CommandContribution, CommandRegistry, Domain } from '@opensumi/ide-core
 import { IntelligentCompletionsHandler } from './intelligent-completions.handler';
 
 @Domain(ClientAppContribution, KeybindingContribution, CommandContribution)
-export class IntelligentCompletionsContribution
-  implements ClientAppContribution, KeybindingContribution, CommandContribution
-{
+export class IntelligentCompletionsContribution implements KeybindingContribution, CommandContribution {
   @Autowired(IntelligentCompletionsHandler)
   private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
 

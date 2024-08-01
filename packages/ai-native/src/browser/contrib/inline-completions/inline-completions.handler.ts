@@ -16,8 +16,12 @@ import { InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 
-import { IAIMiddleware } from '../../types';
 import { IAIMonacoContribHandler } from '../base';
+import {
+  IIntelligentCompletionsResult,
+  isMultiLineCompletion,
+} from '../intelligent-completions/intelligent-completions';
+import { IntelligentCompletionsHandler } from '../intelligent-completions/intelligent-completions.handler';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { AICompletionsService } from './service/ai-completions.service';
@@ -32,6 +36,9 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
 
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
+
+  @Autowired(IntelligentCompletionsHandler)
+  private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -89,18 +96,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
     return this;
   }
 
-  updateConfig(middlewares: IAIMiddleware[]) {
-    const middleware = middlewares[middlewares.length - 1];
-    if (!middleware) {
-      return;
-    }
-
-    // currently only support one middleware
-    if (middleware?.language?.provideInlineCompletions) {
-      this.aiCompletionsService.setMiddlewareComplete(middleware?.language?.provideInlineCompletions);
-    }
-  }
-
   mountEditor(editor: IEditor) {
     const toDispose = new Disposable();
     this.aiInlineCompletionsProvider.mountEditor(editor);
@@ -154,11 +149,16 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
           }
         }
 
-        const resultList: InlineCompletions = await this.sequencer.queue(() =>
+        const completionsResult: IIntelligentCompletionsResult = await this.sequencer.queue(() =>
           this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
         );
 
-        return resultList;
+        if (completionsResult.items.some((i) => isMultiLineCompletion(i))) {
+          this.intelligentCompletionsHandler.applyInlineDecorations(completionsResult);
+          return { items: [] };
+        }
+
+        return completionsResult;
       },
       freeInlineCompletions() {},
       handleItemDidShow: (completions) => {

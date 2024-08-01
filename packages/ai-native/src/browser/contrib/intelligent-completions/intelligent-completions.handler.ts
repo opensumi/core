@@ -2,18 +2,17 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   CancellationTokenSource,
   Disposable,
-  Event,
   IDisposable,
   IntelligentCompletionsRegistryToken,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
-import { CursorChangeReason, ICursorSelectionChangedEvent, Position } from '@opensumi/ide-monaco';
+import { ICodeEditor, Position } from '@opensumi/ide-monaco';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
-import { TextEditorSelectionSource } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { MultiLineDiffComputer } from './diff-computer';
+import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 import { MultiLineDecorationModel } from './multi-line.decoration';
 
@@ -38,26 +37,31 @@ export class IntelligentCompletionsHandler extends Disposable {
   private editor: IEditor;
   private aiNativeContextKey: AINativeContextKey;
 
-  private async fetch() {
+  private get monacoEditor(): ICodeEditor {
+    return this.editor.monacoEditor;
+  }
+
+  public async fetchProvider(): Promise<IIntelligentCompletionsResult | undefined> {
     const provider = this.intelligentCompletionsRegistry.getProvider();
     if (!provider) {
       return;
     }
 
-    const { monacoEditor } = this.editor;
+    const position = this.monacoEditor.getPosition()!;
+    const intelligentCompletionModel = await provider(this.monacoEditor, position, this.cancelIndicator.token);
 
-    const position = monacoEditor.getPosition()!;
-    const model = monacoEditor.getModel();
+    return intelligentCompletionModel;
+  }
 
-    const intelligentCompletionModel = await provider(monacoEditor, position, this.cancelIndicator.token);
-
-    const { items } = intelligentCompletionModel;
-
+  public applyInlineDecorations(completionModel: IIntelligentCompletionsResult) {
+    const { items } = completionModel;
     if (items.length === 0) {
       return;
     }
 
-    const { belowRadius, aboveRadius, content } = items[0];
+    const position = this.monacoEditor.getPosition()!;
+    const model = this.monacoEditor.getModel();
+    const { belowRadius, aboveRadius, insertText } = items[0];
 
     const originalContent = model?.getValueInRange({
       startLineNumber: position.lineNumber - (aboveRadius || 0),
@@ -66,11 +70,11 @@ export class IntelligentCompletionsHandler extends Disposable {
       endColumn: model.getLineMaxColumn(position.lineNumber + (belowRadius || 0)),
     });
 
-    const diffComputerResult = this.multiLineDiffComputer.diff(originalContent!, content);
+    const diffComputerResult = this.multiLineDiffComputer.diff(originalContent!, insertText.toString());
 
     if (diffComputerResult) {
       const inlineModifications = this.multiLineDecorationModel.applyInlineDecorations(
-        monacoEditor,
+        this.monacoEditor,
         diffComputerResult,
         position.lineNumber,
         position,
@@ -115,35 +119,6 @@ export class IntelligentCompletionsHandler extends Disposable {
 
     this.multiLineDecorationModel = new MultiLineDecorationModel(monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [monacoEditor.contextKeyService]);
-
-    /**
-     * 触发时机与 inline completion 保持一致
-     */
-    this.addDispose([
-      Event.debounce(
-        monacoEditor.onDidType,
-        () => {},
-        16 * 3,
-      )(() => {
-        // 取消上一次正在请求中的补全
-        this.cancelToken();
-        this.fetch();
-      }),
-
-      Event.any<any>(
-        monacoEditor.onDidChangeModel,
-        // monacoEditor.onDidBlurEditorWidget,
-      )(() => {
-        this.hide();
-      }),
-
-      monacoEditor.onDidChangeCursorSelection((event: ICursorSelectionChangedEvent) => {
-        if (event.reason === CursorChangeReason.Explicit || event.source === TextEditorSelectionSource.PROGRAMMATIC) {
-          this.hide();
-        }
-      }),
-    ]);
-
     return this;
   }
 }

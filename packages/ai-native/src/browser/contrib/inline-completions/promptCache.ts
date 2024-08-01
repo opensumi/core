@@ -3,12 +3,13 @@ import {
   AINativeSettingSectionsId,
   DisposableStore,
   IAICompletionOption,
-  IAICompletionResultModel,
   IDisposable,
   PreferenceService,
   StaleLRUMap,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+
+import { IIntelligentCompletionsResult } from '../intelligent-completions/intelligent-completions';
 
 /**
  * 缓存服务
@@ -25,7 +26,7 @@ export class PromptCache implements IDisposable {
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
-  private cacheMap = new StaleLRUMap<string, IAICompletionResultModel & { relationId: string }>(15, 10, 60 * 1000);
+  private cacheMap = new StaleLRUMap<string, IIntelligentCompletionsResult & { relationId: string }>(15, 10, 60 * 1000);
 
   protected calculateCacheKey(requestBean: IAICompletionOption) {
     const content = requestBean.prompt;
