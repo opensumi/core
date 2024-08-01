@@ -73,7 +73,7 @@ export class AICompletionsService extends Disposable {
     const provider = this.intelligentCompletionsRegistry.getProvider();
 
     if (provider) {
-      return this.intelligentCompletionsHandler.fetchProvider();
+      return this.intelligentCompletionsHandler.fetchProvider(data);
     }
 
     // 兼容旧的 requestCompletion 接口
