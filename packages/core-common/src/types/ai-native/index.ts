@@ -93,6 +93,9 @@ export interface CodeModel {
   completionType?: ECompletionType;
 }
 
+/**
+ * @deprecated use IIntelligentCompletionsResult
+ */
 export interface IAICompletionResultModel {
   sessionId: string;
   codeModelList: Array<CodeModel>;
@@ -160,10 +163,17 @@ export interface IAIBackService<
     options: O,
     cancelToken?: CancellationToken,
   ): Promise<StreamResponse>;
+
+  /**
+   * @deprecated use `registerIntelligentCompletionFeature` API
+   */
   requestCompletion?<I extends IAICompletionOption>(
     input: I,
     cancelToken?: CancellationToken,
   ): Promise<CompletionResponse>;
+  /**
+   * @deprecated
+   */
   reportCompletion?<I extends IAIReportCompletionOption>(input: I): Promise<void>;
 }
 

@@ -1,19 +1,12 @@
 import { isUndefined } from '@opensumi/ide-core-common';
-import {
-  ICodeEditor,
-  IEditorDecorationsCollection,
-  IModelDeltaDecoration,
-  IPosition,
-  Position,
-  Range,
-} from '@opensumi/ide-monaco';
+import { ICodeEditor, IModelDeltaDecoration, IPosition, Position, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
 
 import { IDiffChangeResult } from './diff-computer';
 
-interface IModificationsInline {
+export interface IModificationsInline {
   newValue: string;
   oldValue: string;
   lineNumber?: number;
@@ -296,9 +289,6 @@ export class MultiLineDecorationModel {
         if (startLine === cursorPosition.lineNumber && inlineMods.length > 0) {
           isEmptyLine = false;
 
-          /**
-           * 如果光标位置在首个 diff 结果的后面，则不显示多行补全
-           */
           if (startLine <= cursorPosition.lineNumber && columnNumber < cursorPosition.column) {
             return;
           }

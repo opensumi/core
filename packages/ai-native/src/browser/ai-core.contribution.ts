@@ -82,7 +82,6 @@ import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layo
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import {
   AINativeCoreContribution,
-  IAIMiddleware,
   IChatFeatureRegistry,
   IChatRenderRegistry,
   IIntelligentCompletionsRegistry,
@@ -233,8 +232,6 @@ export class AINativeBrowserContribution
   }
 
   private registerFeature() {
-    const middlewares: IAIMiddleware[] = [];
-
     this.contributions.getContributions().forEach((contribution) => {
       const contributions = [
         {
@@ -277,8 +274,6 @@ export class AINativeBrowserContribution
         middlewares.push(contribution.middleware);
       }
     });
-
-    this.inlineCompletionHandler.updateConfig(middlewares);
   }
 
   registerSetting(registry: ISettingRegistry) {

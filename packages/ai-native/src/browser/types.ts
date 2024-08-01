@@ -213,11 +213,6 @@ export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
   /**
-   * 通过中间件扩展部分 ai 能力
-   */
-  middleware?: IAIMiddleware;
-
-  /**
    * 注册 inline chat 相关功能
    * @param registry: IInlineChatFeatureRegistry
    */
@@ -260,6 +255,9 @@ export interface IChatAgentViewService {
   getChatComponentDeferred(componentId: string): Deferred<IChatComponentConfig> | null;
 }
 
+/**
+ * @deprecated use registerIntelligentCompletionProvider API
+ */
 export type IProvideInlineCompletionsSignature = (
   this: void,
   model: ITextModel,
@@ -269,6 +267,9 @@ export type IProvideInlineCompletionsSignature = (
   requestOption: IAICompletionOption,
 ) => MaybePromise<IAICompletionResultModel | null>;
 
+/**
+ * @deprecated use registerIntelligentCompletionProvider API
+ */
 export interface IAIMiddleware {
   language?: {
     provideInlineCompletions?: IProvideInlineCompletionsSignature;

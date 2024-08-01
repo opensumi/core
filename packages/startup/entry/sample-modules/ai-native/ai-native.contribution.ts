@@ -128,7 +128,7 @@ export class AINativeContribution implements AINativeCoreContribution {
       {
         providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
           const crossCode = this.getCrossCode(editor);
-          const prompt = `Add Chinese comments to the code: \`\`\`\n ${crossCode}\`\`\`.`;
+          const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
           const controller = new InlineChatController({ enableCodeblockRender: true });
           const stream = await this.aiBackService.requestStream(prompt, {}, token);
@@ -459,9 +459,12 @@ export class AINativeContribution implements AINativeCoreContribution {
         return {
           items: [
             {
-              content: insertRandomStrings(value),
+              insertText: insertRandomStrings(value),
               belowRadius: 3,
               aboveRadius: 0,
+            },
+            {
+              insertText: insertRandomStrings(value),
             },
           ],
         };

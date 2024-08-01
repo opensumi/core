@@ -10,11 +10,13 @@ import {
   IAICompletionOption,
   IAICompletionResultModel,
   IAIReportCompletionOption,
+  IntelligentCompletionsRegistryToken,
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
-import * as monaco from '@opensumi/ide-monaco';
 
-import { IProvideInlineCompletionsSignature } from '../../../types';
+import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
+import { IntelligentCompletionsRegistry } from '../../intelligent-completions/intelligent-completions.feature.registry';
+import { IntelligentCompletionsHandler } from '../../intelligent-completions/intelligent-completions.handler';
 
 @Injectable()
 export class AICompletionsService extends Disposable {
@@ -28,6 +30,12 @@ export class AICompletionsService extends Disposable {
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
+
+  @Autowired(IntelligentCompletionsRegistryToken)
+  private readonly intelligentCompletionsRegistry: IntelligentCompletionsRegistry;
+
+  @Autowired(IntelligentCompletionsHandler)
+  private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
 
   private readonly _onVisibleCompletion = new Emitter<boolean>();
   public readonly onVisibleCompletion: Event<boolean> = this._onVisibleCompletion.event;
@@ -43,8 +51,6 @@ export class AICompletionsService extends Disposable {
   private lastRelationId: string;
   private lastRenderTime: number;
   private lastCompletionUseTime: number;
-  // 中间件拓展 inlinecompletion
-  private lastMiddlewareInlineCompletion?: IProvideInlineCompletionsSignature;
 
   protected validCompletionThreshold = 750;
 
@@ -60,41 +66,36 @@ export class AICompletionsService extends Disposable {
     return this._isVisibleCompletion;
   }
 
-  public async complete(
-    data: IAICompletionOption,
-    model: monaco.editor.ITextModel,
-    position: monaco.Position,
-    token: monaco.CancellationToken,
-  ): Promise<IAICompletionResultModel | null> {
-    const doCompletion = async (data: IAICompletionOption) => {
-      if (!this.aiBackService.requestCompletion) {
-        return null;
-      }
+  public async complete(data: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
+    this.isDefaultCompletionModel = true;
+    const completionStart = Date.now();
 
-      try {
-        this.isDefaultCompletionModel = true;
-        const completionStart = Date.now();
-        const result = (await this.aiBackService.requestCompletion(
-          data,
-          this.cancelIndicator.token,
-        )) as IAICompletionResultModel;
-        this.recordCompletionUseTime(completionStart);
-        return result;
-      } catch (error) {
-        return null;
-      }
-    };
+    const provider = this.intelligentCompletionsRegistry.getProvider();
 
-    if (this.lastMiddlewareInlineCompletion) {
-      this.isDefaultCompletionModel = false;
-      return this.lastMiddlewareInlineCompletion(model, position, token, doCompletion, data);
+    if (provider) {
+      return this.intelligentCompletionsHandler.fetchProvider();
     }
 
-    return doCompletion(data);
-  }
+    // 兼容旧的 requestCompletion 接口
+    try {
+      const result = (await this.aiBackService.requestCompletion?.(
+        data,
+        this.cancelIndicator.token,
+      )) as IAICompletionResultModel;
+      this.recordCompletionUseTime(completionStart);
 
-  public setMiddlewareComplete(provideInlineCompletions: IProvideInlineCompletionsSignature): void {
-    this.lastMiddlewareInlineCompletion = provideInlineCompletions;
+      const { sessionId, codeModelList, isCancel } = result;
+
+      return {
+        items: codeModelList.map((model) => ({ ...model, insertText: model.content })),
+        extra: {
+          sessionId,
+          isCancel,
+        },
+      };
+    } catch (error) {
+      return;
+    }
   }
 
   public async report(data: IAIReportCompletionOption) {
