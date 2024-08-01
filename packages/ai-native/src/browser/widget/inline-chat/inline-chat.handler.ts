@@ -83,6 +83,7 @@ export class InlineChatHandler extends Disposable {
     );
 
     this.inlineChatInUsing = false;
+    this.cancelToken();
   }
 
   protected inlineChatInUsing = false;
