@@ -392,6 +392,10 @@ export class InlineStreamDiffHandler extends Disposable {
       this.isEditing = true;
 
       while (this.currentEditLine <= this.virtualModel.getLinesContent().length) {
+        if (this.disposed) {
+          return;
+        }
+
         const virtualTextLines = this.virtualModel.getLinesContent();
         const currentText = virtualTextLines.slice(0, this.currentEditLine);
         const currentDiffModel = this.computeDiff(this.rawOriginalTextLines, currentText);
