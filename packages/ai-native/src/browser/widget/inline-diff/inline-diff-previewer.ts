@@ -87,8 +87,6 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
 
   public mount(contentWidget: AIInlineContentWidget): void {
     this.inlineContentWidget = contentWidget;
-
-    this.inlineContentWidget.addDispose(this);
   }
 
   public layout(): void {
@@ -156,6 +154,10 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     widget.create();
     this.addDispose(widget);
     return widget;
+  }
+  mount(contentWidget: AIInlineContentWidget): void {
+    super.mount(contentWidget);
+    contentWidget.addDispose(this);
   }
   getPosition(): IPosition {
     return Position.lift({ lineNumber: this.selection.endLineNumber + 1, column: 1 });
