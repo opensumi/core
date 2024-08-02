@@ -30,6 +30,11 @@ export interface ISearchResultTotalContent {
 const ResultTotalContent = ({ total, state, model }: ISearchResultTotalContent) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const searchModelService = useInjectable<SearchModelService>(SearchModelService);
+
+  const handleClear = useCallback(() => {
+    searchModelService.clearSearchResults();
+  }, [searchModelService]);
+
   const handleFold = useCallback(() => {
     const toCollapsed = !collapsed;
     setCollapsed(toCollapsed);
@@ -64,6 +69,13 @@ const ResultTotalContent = ({ total, state, model }: ISearchResultTotalContent) 
         <span className={styles.text}>
           {formatLocalize('search.files.result', String(total.resultNum), String(total.fileNum))}
         </span>
+        <Button
+          className={cls(styles.result_fold, { [styles.disabled]: state === SEARCH_STATE.doing })}
+          onClick={handleClear}
+          type='icon'
+          icon='clear'
+          title={localize('search.ClearSearchResultsAction.label')}
+        ></Button>
         <Button
           className={cls(styles.result_fresh, { [styles.disabled]: state === SEARCH_STATE.doing })}
           onClick={handleRefresh}

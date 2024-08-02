@@ -336,6 +336,11 @@ export class SearchModelService extends Disposable {
     return this.treeModel.root.expandedAll();
   }
 
+  clearSearchResults() {
+    this.searchService.clean();
+    this.searchService.search();
+  }
+
   private toReplaceResource(fileResource: URI) {
     const REPLACE_PREVIEW = 'replacePreview';
     return fileResource
