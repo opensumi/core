@@ -5,6 +5,8 @@ import { BaseAIBackService } from '@opensumi/ide-core-node/lib/ai-native/base-ba
 
 import { ChatProxyServiceToken } from '../common';
 
+// 测试代码变更
+
 @Injectable()
 export class AINativeModule extends NodeModule {
   providers: Provider[] = [
