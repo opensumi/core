@@ -433,7 +433,7 @@ export const AIChatView = observer(() => {
     <div id={styles.ai_chat_view}>
       <div className={styles.header_container}>
         <div className={styles.left}>
-          <span className={styles.title}>{aiAssistantName}</span>
+          <span className={styles.title}>Chat XXXXX</span>
         </div>
         <div className={styles.right}>
           <Popover

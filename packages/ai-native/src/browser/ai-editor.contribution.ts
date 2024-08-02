@@ -151,7 +151,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     if (!isDiffEditor) {
       disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
     }
-    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor));
+    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor, { title: 'Chat XXXXX' }));
 
     if (this.inlineChatFeatureRegistry.getInteractiveInputHandler() && !isDiffEditor) {
       this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor));
