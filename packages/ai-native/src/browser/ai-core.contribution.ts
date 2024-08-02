@@ -269,10 +269,6 @@ export class AINativeBrowserContribution
           contrib.key(contrib.registry as any);
         }
       }
-
-      if (contribution.middleware) {
-        middlewares.push(contribution.middleware);
-      }
     });
   }
 
