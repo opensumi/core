@@ -6,6 +6,7 @@ import {
   ITextModelContentProvider,
   ITextModelService,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/resolverService';
+import { MonacoLanguageClient } from 'monaco-languageclient';
 
 import { IEditorDocumentModelService } from './types';
 
@@ -23,6 +24,14 @@ export class MonacoTextModelService implements ITextModelService {
 
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
+
+  private languageClient: MonacoLanguageClient;
+
+  constructor() {
+    this.languageClient = new MonacoLanguageClient({
+      // Language client options
+    });
+  }
 
   async createModelReference(resource: monaco.Uri) {
     const docModelRef = await this.documentModelManager.createModelReference(new URI(resource.toString()), 'monaco');
@@ -45,5 +54,9 @@ export class MonacoTextModelService implements ITextModelService {
         // no-op
       },
     };
+  }
+
+  startLanguageClient() {
+    this.languageClient.start();
   }
 }

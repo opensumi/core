@@ -22,6 +22,7 @@ import {
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { MonacoLanguageClient, createLanguageClient } from 'monaco-languageclient';
 
 import { IEditorDocumentModel } from '../../common/editor';
 
@@ -77,6 +78,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   private modelCreationEventDispatcher = this.registerDispose(new Dispatcher<void>());
 
+  private languageClient: MonacoLanguageClient;
+
   constructor() {
     super();
     this._modelReferenceManager = new ReferenceManager<EditorDocumentModel>((key: string) => {
@@ -113,6 +116,10 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         }
       }),
     );
+
+    this.languageClient = createLanguageClient({
+      // Language client options
+    });
   }
 
   onDocumentModelCreated(uri: string, listener: () => void): IDisposable {
@@ -356,6 +363,10 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
     const result = await provider.saveDocumentModel(uri, content, baseContent, changes, encoding, ignoreDiff, eol);
     return result;
+  }
+
+  startLanguageClient() {
+    this.languageClient.start();
   }
 
   dispose() {

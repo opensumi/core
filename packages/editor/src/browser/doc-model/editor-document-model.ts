@@ -36,6 +36,7 @@ import {
   ITextBuffer,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import { MonacoLanguageClient } from 'monaco-languageclient';
 
 import {
   IDocCache,
@@ -155,6 +156,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   private readonly _onDidChangeEncoding = new Emitter<void>();
   readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
 
+  private languageClient: MonacoLanguageClient;
+
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
     super();
 
@@ -197,6 +200,10 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         );
       }),
     );
+
+    this.languageClient = new MonacoLanguageClient({
+      // Language client options
+    });
   }
 
   updateOptions(options: IDocModelUpdateOptions) {
@@ -715,5 +722,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         timer.timeEnd(this.uri.path.ext);
       }
     }
+  }
+
+  handleLanguageClientInteractions() {
+    // Implement language client interactions for code suggestions
   }
 }
