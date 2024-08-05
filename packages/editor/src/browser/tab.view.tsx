@@ -117,12 +117,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const slotLocation = useMemo(() => getSlotLocation(pkgName, configContext.layoutConfig), []);
 
   const RightExtraComponent = React.useMemo(() => {
-    const emptyComponentInfo = componentRegistry.getComponentRegistryInfo(TabbarRightExtraContentId);
-    if (!emptyComponentInfo || !emptyComponentInfo.views) {
-      return undefined;
-    }
-
-    const firstView = emptyComponentInfo && emptyComponentInfo.views[0];
+    const firstView = componentRegistry.getComponentRegistryInfo(TabbarRightExtraContentId)?.views?.[0];
     if (firstView) {
       return firstView;
     }
