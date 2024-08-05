@@ -67,7 +67,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "devDependencies": {
-    "@ast-grep/napi": "^0.17.1",
+    "@ast-grep/napi": "^0.25.6",
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0 ",
     "@opensumi/ide-dev-tool": "workspace:*",
