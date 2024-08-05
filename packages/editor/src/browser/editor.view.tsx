@@ -17,6 +17,7 @@ import {
   PreferenceService,
   URI,
   View,
+  renderView,
   useDesignStyles,
   useDisposable,
 } from '@opensumi/ide-core-browser';
@@ -314,12 +315,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             backgroundImage: !EmptyEditorViewConfig && editorBackgroundImage ? `url(${editorBackgroundImage})` : 'none',
           }}
         >
-          {EmptyEditorViewConfig && ReactIs.isValidElementType(EmptyEditorViewConfig.component) ? (
-            <ErrorBoundary>
-              {EmptyEditorViewConfig.component &&
-                React.createElement(EmptyEditorViewConfig.component, EmptyEditorViewConfig.initialProps)}
-            </ErrorBoundary>
-          ) : null}
+          {renderView(EmptyEditorViewConfig)}
         </div>
       )}
     </div>
