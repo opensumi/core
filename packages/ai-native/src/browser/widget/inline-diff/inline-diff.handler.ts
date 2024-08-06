@@ -27,7 +27,7 @@ import {
 } from '../inline-diff/inline-diff-previewer';
 import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { IPartialEditEvent } from '../inline-stream-diff/live-preview.decoration';
+import { IPartialEditEvent } from '../inline-stream-diff/live-preview.component';
 
 @Injectable()
 export class InlineDiffHandler extends IAIMonacoContribHandler {
@@ -56,7 +56,8 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined
   >();
 
-  protected _store = new Map<string, IExtendedSerializedState>();
+  // protected _store = new Map<string, IExtendedSerializedState>();
+  protected _store = new Map<string, InlineStreamDiffHandler>();
 
   constructor() {
     super();
@@ -70,9 +71,10 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   storeState(monacoEditor: monaco.ICodeEditor, key: string) {
     const previous = this._editorsStore.get(monacoEditor);
     if (previous instanceof LiveInlineDiffPreviewer) {
-      const state = previous.serializeState();
-      if (state) {
-        this._store.set(key, state);
+      // const state = previous.serializeState();
+      const node = previous.getNode();
+      if (node) {
+        this._store.set(key, node);
       }
     }
     return previous;
@@ -87,15 +89,16 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     return this.restoreState(monacoEditor, state);
   }
 
-  restoreState(monacoEditor: monaco.ICodeEditor, state: IExtendedSerializedState) {
+  restoreState(monacoEditor: monaco.ICodeEditor, state: InlineStreamDiffHandler) {
     const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
     if (oldDiffPreviewer) {
       oldDiffPreviewer.dispose();
     }
 
-    const previewer = this.createDiffPreviewer(monacoEditor, state.selection, state.options);
+    // const previewer = this.createDiffPreviewer(monacoEditor, state.selection, state.options);
+    const previewer = this.createDiffPreviewer(monacoEditor, state.selection);
     if (previewer instanceof LiveInlineDiffPreviewer) {
-      previewer.restoreState(state);
+      previewer.attachNode(state);
     }
 
     return previewer;

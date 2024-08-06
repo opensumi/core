@@ -14,6 +14,7 @@ import {
 } from '@opensumi/ide-monaco';
 import { space } from '@opensumi/ide-utils/lib/strings';
 
+import { ISerializeState } from './serialize';
 import styles from './styles.module.less';
 
 export interface IDecorationSerializableState {
@@ -39,7 +40,14 @@ export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   serializeState(): IDecorationSerializableState;
 }
 
-class DeltaDecorations implements IEnhanceModelDeltaDecoration {
+export interface IDeltaDecorationsOptions {
+  id: string;
+  editorDecoration: IModelDeltaDecoration;
+  codeEditor: ICodeEditor;
+  deltaData: Partial<IDeltaData>;
+}
+
+class DeltaDecorations implements IEnhanceModelDeltaDecoration, ISerializeState<IDecorationSerializableState> {
   length: number;
   range: IRange;
   options: IModelDecorationOptions;
@@ -51,12 +59,25 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
     return this._hidden;
   }
 
-  constructor(
-    public readonly id: string,
-    public readonly editorDecoration: IModelDeltaDecoration,
-    private readonly codeEditor: ICodeEditor,
-    private readonly deltaData: Partial<IDeltaData>,
-  ) {
+  get codeEditor(): ICodeEditor {
+    return this.metadata.codeEditor;
+  }
+
+  get deltaData(): Partial<IDeltaData> {
+    return this.metadata.deltaData;
+  }
+
+  get id(): string {
+    return this.metadata.id;
+  }
+
+  get editorDecoration(): IModelDeltaDecoration {
+    return this.metadata.editorDecoration;
+  }
+
+  constructor(protected readonly metadata: IDeltaDecorationsOptions) {
+    const { editorDecoration, deltaData } = metadata;
+
     if (isUndefined(deltaData.length)) {
       this.length = editorDecoration.range.endLineNumber - editorDecoration.range.startLineNumber;
     } else {
@@ -122,6 +143,8 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
     };
     return { startPosition, endPosition, len: this.length };
   }
+
+  restoreSerializedState(state: IDecorationSerializableState): void {}
 }
 
 export class EnhanceDecorationsCollection extends Disposable {
@@ -180,6 +203,11 @@ export class EnhanceDecorationsCollection extends Disposable {
     });
   }
 
+  protected createDecorations(metaData: IDeltaDecorationsOptions) {
+    const { id, deltaData, codeEditor, editorDecoration } = metaData;
+    return new DeltaDecorations({ id, editorDecoration, codeEditor, deltaData });
+  }
+
   set(decorations: (IModelDeltaDecoration & Partial<Pick<IEnhanceModelDeltaDecoration, 'length'>>)[]): void {
     this.clear();
 
@@ -189,9 +217,14 @@ export class EnhanceDecorationsCollection extends Disposable {
       for (const decoration of decorations) {
         const id = accessor.addDecoration(decoration.range, decoration.options);
         newDecorations.push(
-          new DeltaDecorations(id, decoration, this.codeEditor, {
-            length: decoration.length,
-            dispose: () => this.delete(id),
+          this.createDecorations({
+            id,
+            editorDecoration: decoration,
+            codeEditor: this.codeEditor,
+            deltaData: {
+              dispose: () => this.delete(id),
+              length: decoration.length,
+            },
           }),
         );
       }
