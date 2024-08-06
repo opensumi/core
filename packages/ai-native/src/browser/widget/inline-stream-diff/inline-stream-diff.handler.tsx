@@ -45,7 +45,6 @@ export class InlineStreamDiffHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  private virtualModel: ITextModel;
   private rawOriginalTextLines: string[];
   private rawOriginalTextLinesTokens: LineTokens[] = [];
 
@@ -57,6 +56,8 @@ export class InlineStreamDiffHandler extends Disposable {
 
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
+
+  public virtualModel: ITextModel;
 
   constructor(private readonly monacoEditor: ICodeEditor, public readonly selection: Selection) {
     super();
@@ -82,10 +83,6 @@ export class InlineStreamDiffHandler extends Disposable {
     });
 
     this.initializeDecorationModel();
-  }
-
-  dispose(): void {
-    super.dispose();
   }
 
   private initializeDecorationModel(): void {
@@ -441,14 +438,6 @@ export class InlineStreamDiffHandler extends Disposable {
     return this.livePreviewDiffDecorationModel.onPartialEditEvent;
   }
 
-  serializeState(): SerializableState {
-    return this.livePreviewDiffDecorationModel.serializeState();
-  }
-
-  restoreState(state: SerializableState): void {
-    this.livePreviewDiffDecorationModel.restoreSerializedState(state);
-  }
-
   acceptAll(): void {
     this.livePreviewDiffDecorationModel.acceptUnProcessed();
     this.dispose();
@@ -461,5 +450,9 @@ export class InlineStreamDiffHandler extends Disposable {
 
   revealFirstDiff() {
     this.livePreviewDiffDecorationModel.revealFirstDiff();
+  }
+
+  clearDecoration() {
+    this.livePreviewDiffDecorationModel.clear();
   }
 }

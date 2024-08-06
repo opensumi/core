@@ -32,28 +32,24 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   protected readonly injector: Injector;
 
   protected inlineContentWidget: AIInlineContentWidget | null = null;
-
+  protected options: IDiffPreviewerOptions;
+  protected selection: Selection;
   protected model: ITextModel;
 
   get disposeWhenEditorClosed() {
     return this.options.disposeWhenEditorClosed;
   }
 
-  constructor(
-    protected readonly monacoEditor: ICodeEditor,
-    protected readonly selection: Selection,
-    public options: IDiffPreviewerOptions = {
-      disposeWhenEditorClosed: true,
-    },
-  ) {
+  constructor(protected readonly monacoEditor: ICodeEditor) {
     super();
-    this.node = this.createNode();
     this.model = this.monacoEditor.getModel()!;
     this.addDispose(
       Disposable.create(() => {
         if (this.inlineContentWidget) {
           this.inlineContentWidget.dispose();
         }
+        // diff previewer 被销毁之后应该将 node 置为空，但不销毁 node
+        this.attachNode(undefined);
       }),
     );
   }
@@ -77,8 +73,8 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     return newTextLines.join(eol);
   }
 
-  protected node: N;
-  public getNode(): N {
+  protected node: N | undefined;
+  public getNode(): N | undefined {
     return this.node;
   }
 
@@ -101,7 +97,18 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   abstract handleAction(action: EResultKind): void;
   abstract getPosition(): IPosition;
 
-  attachNode(node: N): void {
+  create(
+    selection: Selection,
+    options: IDiffPreviewerOptions = {
+      disposeWhenEditorClosed: true,
+    },
+  ): void {
+    this.selection = selection;
+    this.options = options;
+    this.node = this.createNode();
+  }
+
+  attachNode(node: N | undefined): void {
     this.node = node;
   }
 
@@ -168,17 +175,20 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     super.layout();
   }
   onReady(exec: () => void): IDisposable {
-    return this.node.onReady(exec.bind(this));
+    if (this.node) {
+      return this.node!.onReady(exec.bind(this));
+    }
+    return Disposable.NULL;
   }
   show(line: number, heightInLines: number): void {
-    this.node.showByLine(line, heightInLines);
+    this.node?.showByLine(line, heightInLines);
   }
   setValue(content: string): void {
-    const modifiedModel = this.node.getModifiedModel();
+    const modifiedModel = this.node?.getModifiedModel();
     modifiedModel?.setValue(this.formatIndentation(content));
   }
   getValue(): string {
-    const model = this.node.getModifiedModel();
+    const model = this.node?.getModifiedModel();
     return model!.getValue();
   }
   handleAction(action: EResultKind): void {
@@ -189,14 +199,14 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     }
   }
   onLineCount(event: (count: number) => void): Disposable {
-    this.node.onMaxLineCount(event.bind(this));
+    this.node?.onMaxLineCount(event.bind(this));
     return this;
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
 
     const indentMessage = this.formatIndentation(message);
-    const modifiedModel = this.node.getModifiedModel()!;
+    const modifiedModel = this.node?.getModifiedModel()!;
 
     const defaultEOL = modifiedModel.getEOL() === EOL.CRLF ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF;
     const { textBuffer, disposable } = createTextBuffer(indentMessage, defaultEOL);
@@ -204,16 +214,16 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     modifiedModel.pushEditOperations([], singleEditOperation, () => []);
 
     disposable.dispose();
-    this.node.layout();
+    this.node?.layout();
   }
   onError(error: ErrorResponse): void {
-    this.node.layout();
+    this.node?.layout();
   }
   onAbort(): void {
-    this.node.layout();
+    this.node?.layout();
   }
   onEnd(): void {
-    this.node.layout();
+    this.node?.layout();
   }
 }
 
@@ -222,34 +232,44 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   createNode(): InlineStreamDiffHandler {
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
 
-    // this.addDispose(node.onDidEditChange(() => this.layout()));
-    // this.addDispose(node.onDispose(() => this.dispose()));
-    // this.addDispose(node);
+    node.addDispose(node.onDidEditChange(() => this.layout()));
+    node.addDispose(node.onDispose(() => this.dispose()));
 
-    // this.addDispose(
-    //   node.onPartialEditWidgetListChange((widgets) => {
-    //     if (widgets.every((widget) => widget.isHidden)) {
-    //       this.dispose();
-    //       this.inlineContentWidget?.dispose();
-    //     }
-    //   }),
-    // );
+    node.addDispose(
+      node.onPartialEditWidgetListChange((widgets) => {
+        if (widgets.every((widget) => widget.isHidden)) {
+          this.dispose();
+          this.inlineContentWidget?.dispose();
+        }
+      }),
+    );
     return node;
   }
-  getPosition(): IPosition {
-    const zone = this.node.getZone();
-    return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
+  attachNode(node: InlineStreamDiffHandler): void {
+    this.node = node;
+
+    if (node) {
+      this.restoreState(node);
+    }
+    // console.log("🚀 ~ LiveInlineDiffPreviewer ~ attachNode ~ attachNode:", node)
   }
 
+  getPosition(): IPosition {
+    const zone = this.node?.getZone();
+    if (zone) {
+      return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
+    }
+    return Position.lift({ lineNumber: 1, column: 1 });
+  }
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
-        this.node.acceptAll();
+        this.node?.acceptAll();
         break;
 
       case EResultKind.DISCARD:
       case EResultKind.REGENERATE:
-        this.node.rejectAll();
+        this.node?.rejectAll();
         break;
 
       default:
@@ -265,29 +285,34 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
-    this.node.addLinesToDiff(this.formatIndentation(message));
+    this.node?.addLinesToDiff(this.formatIndentation(message));
   }
   onEnd(): void {
-    const diffModel = this.node.recompute(EComputerMode.legacy);
-    this.node.pushRateFinallyDiffStack(diffModel);
+    const diffModel = this.node?.recompute(EComputerMode.legacy);
+    if (diffModel) {
+      this.node?.pushRateFinallyDiffStack(diffModel);
+    }
   }
   setValue(content: string): void {
-    const diffModel = this.node.recompute(EComputerMode.legacy, this.formatIndentation(content));
-    this.node.finallyRender(diffModel);
+    const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
+    if (diffModel) {
+      this.node?.finallyRender(diffModel);
+    }
   }
-  serializeState(): IExtendedSerializedState {
-    return {
-      ...this.node.serializeState(),
-      options: this.options,
-    };
+  serializeState(): InlineStreamDiffHandler {
+    return this.node!;
   }
-  restoreState(state: IExtendedSerializedState): void {
-    this.node.restoreState(state);
+  restoreState(node: InlineStreamDiffHandler): void {
+    const content = node.virtualModel.getValue();
+    const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
+    if (diffModel) {
+      this.node?.finallyRender(diffModel);
+    }
   }
   get onPartialEditEvent() {
-    return this.node.onPartialEditEvent;
+    return this.node?.onPartialEditEvent;
   }
   revealFirstDiff(): void {
-    this.node.revealFirstDiff();
+    this.node?.revealFirstDiff();
   }
 }
