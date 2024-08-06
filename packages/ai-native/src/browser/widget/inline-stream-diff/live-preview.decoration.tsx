@@ -22,19 +22,11 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
-import {
-  EnhanceDecorationsCollection,
-  IDecorationSerializableState,
-  IEnhanceModelDeltaDecoration,
-} from '../../model/enhanceDecorationsCollection';
+import { EnhanceDecorationsCollection, IEnhanceModelDeltaDecoration } from '../../model/enhanceDecorationsCollection';
 
 import styles from './inline-stream-diff.module.less';
 import { InlineStreamDiffService } from './inline-stream-diff.service';
-import {
-  IRemovedWidgetSerializedState,
-  LivePreviewUndoRedoStackElement,
-  SerializableState,
-} from './live-preview-stack';
+import { IRemovedWidgetState, LivePreviewUndoRedoStackElement } from './live-preview-stack';
 import {
   AcceptPartialEditWidget,
   ActiveLineDecoration,
@@ -478,7 +470,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.recordPartialEditWidgetWithAddedDec();
   }
 
-  public touchRemovedWidget(states: IRemovedWidgetSerializedState[]) {
+  public touchRemovedWidget(states: IRemovedWidgetState[]) {
     this.clearRemovedWidgets();
 
     states.forEach(({ textLines, position }) => {
@@ -535,38 +527,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       widget.dispose();
     });
     this.removedZoneWidgets = [];
-  }
-
-  serializeState(): SerializableState {
-    const addedState = this.addedRangeDec.serializeState();
-    const removedTextLines = this.removedZoneWidgets.filter((v) => !v.isHidden).map((w) => w.serializeState());
-    const widgets = this.partialEditWidgetList.map((w) => w.serializeState());
-
-    return {
-      addedState,
-      removedTextLines,
-      widgets,
-      selection: this.selection,
-    };
-  }
-
-  restoreSerializedState(state: SerializableState): void {
-    this.clear();
-
-    this.touchAddedRange(state.addedState);
-    const widgetLineNumber = state.widgets.map((w) => w.lineNumber);
-    this.touchPartialEditWidgets(widgetLineNumber);
-    widgetLineNumber.forEach((_, index) => {
-      const widget = this.partialEditWidgetList[index];
-      if (widget) {
-        widget.restoreSerializedState(state.widgets[index]);
-      }
-    });
-    this.touchRemovedWidget(state.removedTextLines);
-
-    // const stackElement = this.getUndoStackElement();
-    // console.log("🚀 ~ LivePreviewDiffDecorationModel ~ restoreSerializedState ~ stackElement:", stackElement)
-    // stackElement?.append(this);
   }
 
   revealFirstDiff(): void {

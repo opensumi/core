@@ -14,16 +14,11 @@ import {
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { SerializableState } from '../inline-stream-diff/live-preview-stack';
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
 export interface IDiffPreviewerOptions {
   disposeWhenEditorClosed: boolean;
-}
-
-export interface IExtendedSerializedState extends SerializableState {
-  readonly options: IDiffPreviewerOptions;
 }
 
 @Injectable({ multiple: true })
@@ -249,9 +244,12 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.node = node;
 
     if (node) {
-      this.restoreState(node);
+      const content = node.virtualModel.getValue();
+      const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
+      if (diffModel) {
+        this.node?.finallyRender(diffModel);
+      }
     }
-    // console.log("🚀 ~ LiveInlineDiffPreviewer ~ attachNode ~ attachNode:", node)
   }
 
   getPosition(): IPosition {
@@ -294,16 +292,6 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     }
   }
   setValue(content: string): void {
-    const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
-    if (diffModel) {
-      this.node?.finallyRender(diffModel);
-    }
-  }
-  serializeState(): InlineStreamDiffHandler {
-    return this.node!;
-  }
-  restoreState(node: InlineStreamDiffHandler): void {
-    const content = node.virtualModel.getValue();
     const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
     if (diffModel) {
       this.node?.finallyRender(diffModel);
