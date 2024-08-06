@@ -53,10 +53,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       lightbulb: {
         enabled: ShowLightbulbIconMode.OnCode,
       },
-      automaticLayout: true,
       model: undefined,
       wordBasedSuggestions: 'off',
       renderLineHighlight: 'none',
+      automaticLayout: true,
+      ignoreTrimWhitespace: false,
     } as IStandaloneEditorConstructionOptions;
   }
 
@@ -125,7 +126,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       monacoContainer,
       {
         ...this.monacoBaseOptions,
-        ignoreTrimWhitespace: false,
         ...options,
       } as any,
       { ...this.overrideServiceRegistry.all(), ...overrides },

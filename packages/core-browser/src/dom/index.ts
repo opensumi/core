@@ -1,6 +1,8 @@
 import { Event as BaseEvent, Disposable, Emitter, IDisposable, isWebKit } from '@opensumi/ide-core-common';
 import { space } from '@opensumi/ide-utils/lib/strings';
 
+import fastdom from './fastdom';
+
 export * from './event';
 
 export const EventType = {
@@ -177,6 +179,7 @@ export function trackFocus(element: HTMLElement | Window): IFocusTracker {
   return new FocusTracker(element);
 }
 
+export { fastdom };
 /**
  * https://developer.mozilla.org/zh-CN/docs/Web/API/MouseEvent/button
  */

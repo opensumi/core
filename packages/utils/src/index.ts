@@ -1,3 +1,9 @@
+export * as process from './process';
+export * as strings from './strings';
+export * as arrays from './arrays';
+export * as objects from './objects';
+export * as path from './path';
+
 export * from './ansi';
 export * from './async';
 export * from './buffer';
@@ -33,8 +39,4 @@ export * from './uint';
 export * from './uri';
 export * from './uuid';
 export * from './const';
-export * as process from './process';
-export * as strings from './strings';
-export * as arrays from './arrays';
-export * as objects from './objects';
-export * as path from './path';
+export * from './heap';
