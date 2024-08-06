@@ -51,57 +51,54 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   private readonly _onMaxLineCount = new Emitter<number>();
   public readonly onMaxLineCount: Event<number> = this._onMaxLineCount.event;
 
-  protected _editorsStore = new Map<
-    monaco.ICodeEditor,
-    BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined
-  >();
-
-  // protected _store = new Map<string, IExtendedSerializedState>();
-  protected _store = new Map<string, InlineStreamDiffHandler>();
+  private previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined;
+  protected _previewerNodeStore = new Map<string, InlineStreamDiffHandler | null>();
 
   constructor() {
     super();
     this.registerDispose(this.eventBus.on(EditorGroupCloseEvent, this.groupCloseHandler.bind(this)));
   }
+
   doContribute(): IDisposable {
     this.logger.log('InlineDiffHandler doContribute');
     return Disposable.NULL;
   }
 
-  storeState(monacoEditor: monaco.ICodeEditor, key: string) {
-    const previous = this._editorsStore.get(monacoEditor);
-    if (previous instanceof LiveInlineDiffPreviewer) {
-      // const state = previous.serializeState();
-      const node = previous.getNode();
-      if (node) {
-        this._store.set(key, node);
-      }
-    }
-    return previous;
-  }
-
-  tryRestoreState(monacoEditor: monaco.ICodeEditor, key: string) {
-    const state = this._store.get(key);
-    if (!state) {
+  storeState(key: string) {
+    if (!this.previewer) {
       return;
     }
 
-    return this.restoreState(monacoEditor, state);
+    const node = this.previewer.getNode();
+    if (node) {
+      (node as InlineStreamDiffHandler).clearDecoration();
+      this._previewerNodeStore.set(key, node as InlineStreamDiffHandler);
+    }
+
+    // console.log("🚀 ~ InlineDiffHandler ~ storeState ~ this._previewerNodeStore:", this._previewerNodeStore)
+    // console.log("🚀 ~ InlineDiffHandler ~ storeState ~ node:", this.previewer, node)
   }
 
-  restoreState(monacoEditor: monaco.ICodeEditor, state: InlineStreamDiffHandler) {
-    const oldDiffPreviewer = this._editorsStore.get(monacoEditor);
-    if (oldDiffPreviewer) {
-      oldDiffPreviewer.dispose();
+  tryRestoreState(monacoEditor: monaco.ICodeEditor, key: string) {
+    if (!this.previewer) {
+      return;
     }
 
-    // const previewer = this.createDiffPreviewer(monacoEditor, state.selection, state.options);
-    const previewer = this.createDiffPreviewer(monacoEditor, state.selection);
-    if (previewer instanceof LiveInlineDiffPreviewer) {
-      previewer.attachNode(state);
+    const node = this._previewerNodeStore.get(key);
+    if (!node) {
+      return;
     }
 
-    return previewer;
+    return this.restoreState(monacoEditor, node);
+  }
+
+  restoreState(monacoEditor: monaco.ICodeEditor, node: InlineStreamDiffHandler) {
+    // console.log("🚀 ~ InlineDiffHandler ~ restoreState ~ state:", node)
+    const uri = monacoEditor.getModel()?.uri;
+
+    if (uri && this._previewerNodeStore.has(uri.toString()) && this.previewer) {
+      this.previewer.attachNode(node);
+    }
   }
 
   registerInlineDiffFeature(editor: IEditor): IDisposable {
@@ -114,10 +111,10 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         if (!e.oldModelUrl) {
           return;
         }
-        const previewer = this.storeState(monacoEditor, e.oldModelUrl.toString());
-        if (previewer) {
-          previewer.dispose();
-        }
+
+        // console.log("🚀 ~ InlineDiffHandler ~ monacoEditor.onWillChangeModel ~ this.previewer:", this.previewer)
+        this.storeState(e.oldModelUrl.toString());
+        this.previewer?.dispose();
       }),
     );
 
@@ -126,20 +123,14 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         if (!e.newModelUrl) {
           return;
         }
+        // console.log("🚀 ~ InlineDiffHandler ~ monacoEditor.onDidChangeModel ~ onDidChangeModel:", this.previewer)
+        this.previewer?.dispose();
+
         this.tryRestoreState(monacoEditor, e.newModelUrl.toString());
       }),
     );
 
     return disposable;
-  }
-
-  private formatAnswer(answer: string, crossCode: string): string {
-    const leadingWhitespaceMatch = crossCode.match(/^\s*/);
-    const indent = leadingWhitespaceMatch ? leadingWhitespaceMatch[0] : '  ';
-    return answer
-      .split('\n')
-      .map((line) => `${indent}${line}`)
-      .join('\n');
   }
 
   showPreviewerByStream(
@@ -198,87 +189,59 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   }
 
   createDiffPreviewer(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection, options?: IDiffPreviewerOptions) {
-    let previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
-
     const inlineDiffMode = this.preferenceService.getValid<EInlineDiffPreviewMode>(
       AINativeSettingSectionsId.InlineDiffPreviewMode,
       EInlineDiffPreviewMode.inlineLive,
     );
     if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
-      previewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor, selection, options]);
+      this.previewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor]);
     } else {
-      previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor, selection, options]);
+      this.previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
     }
 
-    previewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
-
-    const previous = this._editorsStore.get(monacoEditor);
+    this.previewer.create(selection, options);
+    this.previewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
 
     const currentModel = monacoEditor.getModel();
 
     if (currentModel) {
       currentModel.onWillDispose(() => {
-        previewer.dispose();
+        this.previewer?.dispose();
       });
     }
 
-    if (previous) {
-      previous.dispose();
-    }
-
-    this._editorsStore.set(monacoEditor, previewer);
-
-    if (previewer instanceof LiveInlineDiffPreviewer) {
-      previewer.addDispose(
-        previewer.onPartialEditEvent((event) => {
+    if (this.previewer instanceof LiveInlineDiffPreviewer) {
+      this.previewer.addDispose(
+        this.previewer.onPartialEditEvent!((event) => {
           this._onPartialEditEvent.fire(event);
         }),
       );
     }
 
-    previewer.addDispose(previewer.onLineCount((lineCount) => this._onMaxLineCount.fire(lineCount)));
-    return previewer;
+    this.previewer.addDispose(this.previewer.onLineCount((lineCount) => this._onMaxLineCount.fire(lineCount)));
+    return this.previewer;
   }
 
-  getPreviewer(
-    monacoEditor: monaco.ICodeEditor,
-  ): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined {
-    return this._editorsStore.get(monacoEditor);
+  getPreviewer(): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined {
+    return this.previewer;
   }
 
-  handleAction(monacoEditor: monaco.ICodeEditor, action: EResultKind): void {
-    const diffPreviewer = this._editorsStore.get(monacoEditor);
-    if (diffPreviewer) {
-      diffPreviewer.handleAction(action);
-    }
+  handleAction(action: EResultKind): void {
+    this.previewer?.handleAction(action);
   }
 
-  hidePreviewer(monacoEditor: monaco.ICodeEditor) {
-    const diffPreviewer = this._editorsStore.get(monacoEditor);
-    if (diffPreviewer) {
-      diffPreviewer.dispose();
-      this._editorsStore.delete(monacoEditor);
-    }
+  hidePreviewer() {
+    this.previewer?.dispose();
   }
 
-  revealFirstDiff(monacoEditor: monaco.ICodeEditor) {
-    const diffPreviewer = this._editorsStore.get(monacoEditor);
-    if (diffPreviewer) {
-      diffPreviewer.revealFirstDiff();
-    }
+  revealFirstDiff() {
+    this.previewer?.revealFirstDiff();
   }
 
   private async groupCloseHandler(e: EditorGroupCloseEvent) {
     const uriString = e.payload.resource.uri.toString();
 
-    const previewer = this._editorsStore.get(e.payload.group.codeEditor.monacoEditor);
-
-    if (previewer) {
-      if (previewer.disposeWhenEditorClosed && previewer.isModel(uriString)) {
-        previewer.dispose();
-      }
-    }
-
-    this._store.delete(uriString);
+    this.previewer?.dispose();
+    this._previewerNodeStore.delete(uriString);
   }
 }

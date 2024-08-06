@@ -47,7 +47,7 @@ export interface IDeltaDecorationsOptions {
   deltaData: Partial<IDeltaData>;
 }
 
-class DeltaDecorations implements IEnhanceModelDeltaDecoration, ISerializeState<IDecorationSerializableState> {
+class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   length: number;
   range: IRange;
   options: IModelDecorationOptions;
