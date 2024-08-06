@@ -16,11 +16,10 @@ import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/to
 import { IOptions, ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
-import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
 import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
-import { IRemovedWidgetSerializedState, IWidgetSerializedState, IWidgetStatus } from './live-preview-stack';
+import { IWidgetStatus } from './live-preview-stack';
 
 export const ActiveLineDecoration = 'activeLine-decoration';
 export const AddedRangeDecoration = 'added-range-decoration';
@@ -220,25 +219,6 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   get isRejected(): boolean {
     return this.status === 'discard';
   }
-
-  public serializeState(): IWidgetSerializedState {
-    return {
-      addedLinesCount: this.addedLinesCount,
-      deletedLinesCount: this.deletedLinesCount,
-      status: this.status,
-      lineNumber: this.getPosition()!.position!.lineNumber,
-    };
-  }
-
-  public restoreSerializedState(state: IWidgetSerializedState) {
-    if (state.status === 'accept') {
-      this.accept(state.addedLinesCount, state.deletedLinesCount);
-    } else if (state.status === 'discard') {
-      this.discard(state.addedLinesCount, state.deletedLinesCount);
-    } else {
-      this.resume();
-    }
-  }
 }
 
 const RemovedWidgetComponent = ({ dom, editor }) => {
@@ -307,13 +287,6 @@ export class RemovedZoneWidget extends ZoneWidget {
 
   getLastPosition(): IPosition {
     return this.recordPositionData.position;
-  }
-
-  serializeState(): IRemovedWidgetSerializedState {
-    return {
-      textLines: this.textLines,
-      position: this.getLastPosition(),
-    };
   }
 
   hide(): void {

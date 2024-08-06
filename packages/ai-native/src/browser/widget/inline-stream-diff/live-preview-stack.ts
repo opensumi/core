@@ -1,49 +1,25 @@
-import { IPosition, ITextModel, Selection, Uri } from '@opensumi/ide-monaco';
+import { IPosition, ITextModel, Uri } from '@opensumi/ide-monaco';
 import {
   IResourceUndoRedoElement,
   UndoRedoElementType,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
-
-import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
-import { ISerializeState } from '../../model/serialize';
 
 import { ITextLinesTokens } from './live-preview.component';
 import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
 
 export type IWidgetStatus = 'accept' | 'discard' | 'pending';
 
-export interface IRemovedWidgetSerializedState {
+export interface IRemovedWidgetState {
   textLines: ITextLinesTokens[];
   position: IPosition;
 }
 
-export interface IWidgetSerializedState {
-  addedLinesCount: number;
-  deletedLinesCount: number;
-  status: IWidgetStatus;
-  lineNumber: number;
-}
-
-export interface SerializableState {
-  addedState: IDecorationSerializableState[];
-  removedTextLines: IRemovedWidgetSerializedState[];
-  widgets: IWidgetSerializedState[];
-  selection: Selection;
-}
-
-class StackData implements ISerializeState<SerializableState> {
+class StackData {
   static create(): StackData {
     return new StackData();
   }
 
   constructor() {}
-
-  // @ts-ignore
-  serializeState() {
-    return;
-  }
-
-  restoreSerializedState(state: SerializableState): void {}
 }
 
 export class LivePreviewUndoRedoStackElement implements IResourceUndoRedoElement {

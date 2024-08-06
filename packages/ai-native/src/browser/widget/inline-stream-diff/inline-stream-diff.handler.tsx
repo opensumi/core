@@ -13,7 +13,7 @@ import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undo
 import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
 
 import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
-import { IRemovedWidgetSerializedState, SerializableState } from './live-preview-stack';
+import { IRemovedWidgetState } from './live-preview-stack';
 import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
 
 interface IRangeChangeData {
@@ -224,7 +224,7 @@ export class InlineStreamDiffHandler extends Disposable {
 
     let preRemovedLen: number = 0;
 
-    const states = [] as IRemovedWidgetSerializedState[];
+    const states = [] as IRemovedWidgetState[];
 
     for (const change of changes) {
       const { removedTextLines, removedLinesOriginalRange, addedRange } = change;

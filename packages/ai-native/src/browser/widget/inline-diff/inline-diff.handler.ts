@@ -21,7 +21,6 @@ import { EResultKind } from '../inline-chat/inline-chat.service';
 import {
   BaseInlineDiffPreviewer,
   IDiffPreviewerOptions,
-  IExtendedSerializedState,
   LiveInlineDiffPreviewer,
   SideBySideInlineDiffWidget,
 } from '../inline-diff/inline-diff-previewer';
