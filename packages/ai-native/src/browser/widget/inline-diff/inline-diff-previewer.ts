@@ -14,7 +14,7 @@ import {
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { SerializableState } from '../inline-stream-diff/live-preview.decoration';
+import { SerializableState } from '../inline-stream-diff/live-preview-stack';
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
@@ -53,9 +53,6 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
       Disposable.create(() => {
         if (this.inlineContentWidget) {
           this.inlineContentWidget.dispose();
-        }
-        if (this.node) {
-          this.node.dispose();
         }
       }),
     );
@@ -103,6 +100,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   abstract onData(data: ReplyResponse): void;
   abstract handleAction(action: EResultKind): void;
   abstract getPosition(): IPosition;
+
+  attachNode(node: N): void {
+    this.node = node;
+  }
 
   show(line: number, heightInLines: number): void {
     // do nothing
@@ -221,18 +222,18 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   createNode(): InlineStreamDiffHandler {
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
 
-    this.addDispose(node.onDidEditChange(() => this.layout()));
-    this.addDispose(node.onDispose(() => this.dispose()));
-    this.addDispose(node);
+    // this.addDispose(node.onDidEditChange(() => this.layout()));
+    // this.addDispose(node.onDispose(() => this.dispose()));
+    // this.addDispose(node);
 
-    this.addDispose(
-      node.onPartialEditWidgetListChange((widgets) => {
-        if (widgets.every((widget) => widget.isHidden)) {
-          this.dispose();
-          this.inlineContentWidget?.dispose();
-        }
-      }),
-    );
+    // this.addDispose(
+    //   node.onPartialEditWidgetListChange((widgets) => {
+    //     if (widgets.every((widget) => widget.isHidden)) {
+    //       this.dispose();
+    //       this.inlineContentWidget?.dispose();
+    //     }
+    //   }),
+    // );
     return node;
   }
   getPosition(): IPosition {

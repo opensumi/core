@@ -13,11 +13,8 @@ import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undo
 import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
 
 import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
-import {
-  IRemovedWidgetSerializedState,
-  LivePreviewDiffDecorationModel,
-  SerializableState,
-} from './live-preview.decoration';
+import { IRemovedWidgetSerializedState, SerializableState } from './live-preview-stack';
+import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -61,7 +58,7 @@ export class InlineStreamDiffHandler extends Disposable {
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
 
-  constructor(private readonly monacoEditor: ICodeEditor, private readonly selection: Selection) {
+  constructor(private readonly monacoEditor: ICodeEditor, public readonly selection: Selection) {
     super();
 
     this.undoRedoGroup = new UndoRedoGroup();
@@ -85,6 +82,10 @@ export class InlineStreamDiffHandler extends Disposable {
     });
 
     this.initializeDecorationModel();
+  }
+
+  dispose(): void {
+    super.dispose();
   }
 
   private initializeDecorationModel(): void {
@@ -377,7 +378,7 @@ export class InlineStreamDiffHandler extends Disposable {
 
   public recompute(computerMode: EComputerMode, newContent?: string): IComputeDiffData {
     if (newContent) {
-      this.virtualModel.setValue(newContent);
+      this.virtualModel.setValue(newContent.trim());
     }
 
     const newTextLines = this.virtualModel.getLinesContent();
@@ -443,17 +444,21 @@ export class InlineStreamDiffHandler extends Disposable {
   serializeState(): SerializableState {
     return this.livePreviewDiffDecorationModel.serializeState();
   }
+
   restoreState(state: SerializableState): void {
     this.livePreviewDiffDecorationModel.restoreSerializedState(state);
   }
+
   acceptAll(): void {
     this.livePreviewDiffDecorationModel.acceptUnProcessed();
     this.dispose();
   }
+
   rejectAll(): void {
     this.livePreviewDiffDecorationModel.discardUnProcessed();
     this.dispose();
   }
+
   revealFirstDiff() {
     this.livePreviewDiffDecorationModel.revealFirstDiff();
   }
