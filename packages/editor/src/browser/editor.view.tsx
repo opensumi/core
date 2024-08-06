@@ -17,8 +17,10 @@ import {
   PreferenceService,
   URI,
   View,
+  renderView,
   useDesignStyles,
   useDisposable,
+  usePreference,
 } from '@opensumi/ide-core-browser';
 import {
   IResizeHandleDelegate,
@@ -241,7 +243,6 @@ const EditorEmptyComponent: React.FC<{
 export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const groupWrapperRef = React.useRef<HTMLElement | null>();
 
-  const preferenceService = useInjectable(PreferenceService) as PreferenceService;
   const [isEmpty, setIsEmpty] = React.useState(group.resources.length === 0);
   const styles_kt_editor_group = useDesignStyles(styles.kt_editor_group, 'kt_editor_group');
 
@@ -263,20 +264,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
     };
   }, []);
 
-  const [showActionWhenGroupEmpty, setShowActionWhenGroupEmpty] = React.useState(
-    () => !!preferenceService.get<boolean>('editor.showActionWhenGroupEmpty'),
-  );
-
-  useDisposable(
-    () => [
-      preferenceService.onPreferenceChanged((change) => {
-        if (change.preferenceName === 'editor.showActionWhenGroupEmpty') {
-          setShowActionWhenGroupEmpty(!!change.newValue);
-        }
-      }),
-    ],
-    [],
-  );
+  const showActionWhenGroupEmpty = usePreference('editor.showActionWhenGroupEmpty', false);
 
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
 
@@ -314,12 +302,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             backgroundImage: !EmptyEditorViewConfig && editorBackgroundImage ? `url(${editorBackgroundImage})` : 'none',
           }}
         >
-          {EmptyEditorViewConfig && ReactIs.isValidElementType(EmptyEditorViewConfig.component) ? (
-            <ErrorBoundary>
-              {EmptyEditorViewConfig.component &&
-                React.createElement(EmptyEditorViewConfig.component, EmptyEditorViewConfig.initialProps)}
-            </ErrorBoundary>
-          ) : null}
+          {renderView(EmptyEditorViewConfig)}
         </div>
       )}
     </div>
