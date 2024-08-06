@@ -23,7 +23,7 @@
     "@opensumi/ide-logs": "workspace:*",
     "@parcel/watcher": "2.1.0",
     "file-type": "16.5.4",
-    "nsfw": "2.2.4",
+    "nsfw": "2.2.0",
     "trash": "^5.2.0",
     "vscode-languageserver-types": "^3.16.0",
     "write-file-atomic": "^5.0.1"
