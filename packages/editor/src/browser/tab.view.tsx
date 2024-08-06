@@ -116,7 +116,7 @@ export const Tabs = ({ group }: ITabsProps) => {
 
   const slotLocation = useMemo(() => getSlotLocation(pkgName, configContext.layoutConfig), []);
 
-  const RightExtraComponent = React.useMemo(() => {
+  const RightExtraContentViewConfig = React.useMemo(() => {
     const firstView = componentRegistry.getComponentRegistryInfo(TabbarRightExtraContentId)?.views?.[0];
     if (firstView) {
       return firstView;
@@ -523,7 +523,7 @@ export const Tabs = ({ group }: ITabsProps) => {
       </div>
       {!wrapMode && <EditorActions ref={editorActionRef} group={group} />}
 
-      {renderView(RightExtraComponent)}
+      {renderView(RightExtraContentViewConfig)}
     </div>
   );
 };
