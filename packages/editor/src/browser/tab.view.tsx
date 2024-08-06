@@ -36,6 +36,7 @@ import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/cons
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { formatLocalize, isMacintosh } from '@opensumi/ide-core-common';
 
 import { IEditorGroup, IResource, ResourceDidUpdateEvent, ResourceService, WorkbenchEditorService } from '../common';
 
@@ -352,15 +353,91 @@ export const Tabs = ({ group }: ITabsProps) => {
     [editorService],
   );
 
+  // 处理选项卡键盘事件
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Enter', ' '].includes(e.key)) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    if ([' ', 'Enter'].includes(e.key)) {
+      simulateClick(e.currentTarget as HTMLElement);
+    } else if (e.key === 'ContextMenu') {
+      simulateContextMenu(e.currentTarget as HTMLElement);
+    }
+
+    handleTabNavigation(e);
+  };
+
+  const simulateClick = (element: HTMLElement) => {
+    const mouseDownEvent = new window.MouseEvent('mousedown', { bubbles: true, button: 0 });
+    element.dispatchEvent(mouseDownEvent);
+  };
+
+  const simulateContextMenu = (element: HTMLElement) => {
+    const mouseDownEvent = new window.MouseEvent('contextmenu', { bubbles: true, button: 2 });
+    element.dispatchEvent(mouseDownEvent);
+  };
+
+  const handleTabNavigation = (e: React.KeyboardEvent) => {
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+      navigateTabs(e);
+    }
+  };
+
+  const navigateTabs = (e: React.KeyboardEvent) => {
+    const currentElement = e.currentTarget;
+    const parentNode = currentElement.parentElement?.parentElement?.parentElement;
+    if (parentNode) {
+      const tabs = Array.from(parentNode.querySelectorAll('[role="tab"][aria-expanded]')) as HTMLElement[];
+      if (tabs.length <= 1) {
+        return;
+      }
+
+      const currentTabIndex = tabs.findIndex((tab) => tab === currentElement);
+      if (currentTabIndex === -1) {
+        return;
+      }
+
+      const moveFocus = (targetIndex: number) => {
+        if (targetIndex >= 0 && targetIndex < tabs.length) {
+          const targetTab = tabs[targetIndex];
+          if (targetTab) {
+            targetTab.setAttribute('tabindex', '0');
+            targetTab.focus();
+            currentElement.setAttribute('tabindex', '-1');
+          }
+        }
+      };
+
+      if (['ArrowLeft', 'ArrowUp'].includes(e.key)) {
+        moveFocus(currentTabIndex - 1);
+      } else if (['ArrowRight', 'ArrowDown'].includes(e.key)) {
+        moveFocus(currentTabIndex + 1);
+      } else if (e.key === 'Home') {
+        moveFocus(0);
+      } else if (e.key === 'End') {
+        moveFocus(tabs.length - 1);
+      }
+    }
+  };
+
   const renderEditorTab = React.useCallback(
     (resource: IResource, isCurrent: boolean) => {
       const decoration = resourceService.getResourceDecoration(resource.uri);
       const subname = resourceService.getResourceSubname(resource, group.resources);
+      const editorCloseTabButtonAriaLabel = formatLocalize('editor.closeTab.title', resource.name);
 
       return editorTabService.renderEditorTab(
         <>
           <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : cls(resource.icon)}> </div>
-          <div>{resource.name}</div>
+          <div
+            role='tab'
+            tabIndex={isCurrent ? 0 : -1}
+            aria-expanded={isCurrent ? 'true' : 'false'}
+            onKeyDown={handleKeyDown}
+          >
+            {resource.name}
+          </div>
           {subname ? <div className={styles.subname}>{subname}</div> : null}
           {decoration.readOnly ? (
             <span className={cls(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
@@ -377,6 +454,19 @@ export const Tabs = ({ group }: ITabsProps) => {
               onMouseDown={(e) => {
                 e.stopPropagation();
                 group.close(resource.uri);
+              }}
+              tabIndex={isCurrent ? 0 : -1}
+              role='button'
+              aria-label={editorCloseTabButtonAriaLabel}
+              aria-description={isMacintosh ? '⌘W' : 'Ctrl+W'}
+              onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  // 模拟鼠标左键点击事件
+                  const mouseDownEvent = new window.MouseEvent('mousedown', { bubbles: true, button: 0 });
+                  e.currentTarget.dispatchEvent(mouseDownEvent);
+                }
               }}
             >
               {editorTabService.renderTabCloseComponent(
@@ -482,7 +572,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   };
 
   return (
-    <div id={VIEW_CONTAINERS.EDITOR_TABS} className={styles_kt_editor_tabs}>
+    <div id={VIEW_CONTAINERS.EDITOR_TABS} className={styles_kt_editor_tabs} role='tablist'>
       <div
         className={styles_kt_editor_tabs_scroll_wrapper}
         ref={tabWrapperRef as any}
