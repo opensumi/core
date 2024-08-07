@@ -13,7 +13,11 @@ import {
 
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
-import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import {
+  EComputerMode,
+  IInlineStreamDiffSnapshotData,
+  InlineStreamDiffHandler,
+} from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
@@ -43,7 +47,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
         if (this.inlineContentWidget) {
           this.inlineContentWidget.dispose();
         }
-        // diff previewer 被销毁之后应该将 node 置为空，但不销毁 node
+
         this.attachNode(undefined);
       }),
     );
@@ -73,6 +77,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     return this.node;
   }
 
+  public createNodeSnapshot(): N | undefined {
+    return this.node;
+  }
+
   public mount(contentWidget: AIInlineContentWidget): void {
     this.inlineContentWidget = contentWidget;
   }
@@ -87,7 +95,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     return Disposable.NULL;
   }
 
-  abstract createNode(): N;
+  protected abstract createNode(): N;
   abstract onData(data: ReplyResponse): void;
   abstract handleAction(action: EResultKind): void;
   abstract getPosition(): IPosition;
@@ -224,9 +232,7 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
 
 @Injectable({ multiple: true })
 export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStreamDiffHandler> {
-  createNode(): InlineStreamDiffHandler {
-    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
-
+  private listenNode(node: InlineStreamDiffHandler): void {
     node.addDispose(node.onDidEditChange(() => this.layout()));
     node.addDispose(node.onDispose(() => this.dispose()));
 
@@ -238,18 +244,44 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
         }
       }),
     );
+
+    this.addDispose(node);
+  }
+
+  createNode(): InlineStreamDiffHandler {
+    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
+    node.initialize(this.selection);
+    this.listenNode(node);
     return node;
   }
   attachNode(node: InlineStreamDiffHandler): void {
-    this.node = node;
+    if (this.node && !node) {
+      this.node.dispose();
+      this.node = node;
+      return;
+    }
 
     if (node) {
-      const content = node.virtualModel.getValue();
-      const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
-      if (diffModel) {
-        this.node?.finallyRender(diffModel);
+      this.node = node;
+
+      const snapshot = node.currentSnapshotStore;
+      if (snapshot) {
+        this.node.restoreDecoration(snapshot.decorationSnapshotData);
       }
     }
+  }
+  public createNodeSnapshot(): InlineStreamDiffHandler | undefined {
+    if (!this.node) {
+      return this.createNode();
+    }
+
+    // 拿前一个 node 的快照信息
+    const snapshot = this.node.createSnapshot();
+    // 创建新的实例
+    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
+    node.restoreSnapshot(snapshot);
+    this.listenNode(node);
+    return node;
   }
 
   getPosition(): IPosition {

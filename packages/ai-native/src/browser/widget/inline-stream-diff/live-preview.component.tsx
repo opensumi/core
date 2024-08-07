@@ -19,7 +19,6 @@ import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undo
 import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
-import { IWidgetStatus } from './live-preview-stack';
 
 export const ActiveLineDecoration = 'activeLine-decoration';
 export const AddedRangeDecoration = 'added-range-decoration';
@@ -28,6 +27,13 @@ export const PendingRangeDecoration = 'pending-range-decoration';
 interface IPartialEditWidgetComponent {
   acceptSequence: string;
   discardSequence: string;
+}
+
+export type IWidgetStatus = 'accept' | 'discard' | 'pending';
+
+export interface IRemovedWidgetState {
+  textLines: ITextLinesTokens[];
+  position: IPosition;
 }
 
 export enum EPartialEdit {
@@ -268,7 +274,7 @@ export class RemovedZoneWidget extends ZoneWidget {
     return this._hidden;
   }
 
-  constructor(editor: ICodeEditor, private readonly textLines: ITextLinesTokens[], options: IOptions) {
+  constructor(editor: ICodeEditor, public readonly textLines: ITextLinesTokens[], options: IOptions) {
     super(editor, options);
   }
 

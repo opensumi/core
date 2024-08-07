@@ -144,12 +144,6 @@ export class EnhanceDecorationsCollection extends Disposable {
     super();
 
     this.addDispose(
-      Disposable.create(() => {
-        this.clear();
-      }),
-    );
-
-    this.addDispose(
       this.codeEditor.onDidContentSizeChange((event: IContentSizeChangedEvent) => {
         const { contentHeightChanged } = event;
         if (contentHeightChanged) {
@@ -213,6 +207,15 @@ export class EnhanceDecorationsCollection extends Disposable {
       }
 
       this.deltaDecorations = newDecorations;
+    });
+  }
+
+  attachDecorations(decorations: IEnhanceModelDeltaDecoration[]): void {
+    this.clear();
+
+    this.codeEditor.changeDecorations((accessor: IModelDecorationsChangeAccessor) => {
+      accessor.deltaDecorations([], decorations);
+      this.deltaDecorations = decorations;
     });
   }
 
