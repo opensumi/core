@@ -55,7 +55,12 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
   constructor() {
     super();
-    this.registerDispose(this.eventBus.on(EditorGroupCloseEvent, this.groupCloseHandler.bind(this)));
+    this.registerDispose(
+      this.eventBus.on(EditorGroupCloseEvent, (e: EditorGroupCloseEvent) => {
+        const uriString = e.payload.resource.uri.toString();
+        this.destroyPreviewer(uriString);
+      }),
+    );
   }
 
   doContribute(): IDisposable {
@@ -76,10 +81,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   }
 
   tryRestoreState(monacoEditor: monaco.ICodeEditor, key: string) {
-    if (!this.previewer) {
-      return;
-    }
-
     const node = this._previewerNodeStore.get(key);
     if (!node) {
       return;
@@ -91,7 +92,8 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   restoreState(monacoEditor: monaco.ICodeEditor, node: InlineStreamDiffHandler) {
     const uri = monacoEditor.getModel()?.uri;
 
-    if (uri && this._previewerNodeStore.has(uri.toString()) && this.previewer) {
+    if (uri && this._previewerNodeStore.has(uri.toString())) {
+      this.previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
       this.previewer.attachNode(node);
     }
   }
@@ -108,8 +110,11 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
           return;
         }
 
-        this.storeState(e.oldModelUrl.toString());
-        this.previewer?.getNode()?.dispose();
+        const urlString = e.oldModelUrl.toString();
+        this.storeState(urlString);
+
+        this.previewer?.dispose();
+        this.previewer = undefined;
       }),
     );
 
@@ -119,7 +124,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
           return;
         }
 
-        this.previewer?.getNode()?.dispose();
         this.tryRestoreState(monacoEditor, e.newModelUrl.toString());
       }),
     );
@@ -127,7 +131,8 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     if (model) {
       disposable.addDispose(
         model.onWillDispose(() => {
-          this.previewer?.dispose();
+          const uriString = model.uri.toString();
+          this.destroyPreviewer(uriString);
         }),
       );
     }
@@ -230,18 +235,13 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     this.previewer?.handleAction(action);
   }
 
-  hidePreviewer() {
+  destroyPreviewer(uriString: string) {
     this.previewer?.dispose();
+    this.previewer = undefined;
+    this._previewerNodeStore.delete(uriString);
   }
 
   revealFirstDiff() {
     this.previewer?.revealFirstDiff();
-  }
-
-  private async groupCloseHandler(e: EditorGroupCloseEvent) {
-    const uriString = e.payload.resource.uri.toString();
-
-    this.hidePreviewer();
-    this._previewerNodeStore.delete(uriString);
   }
 }

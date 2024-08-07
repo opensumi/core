@@ -13,11 +13,7 @@ import {
 
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
-import {
-  EComputerMode,
-  IInlineStreamDiffSnapshotData,
-  InlineStreamDiffHandler,
-} from '../inline-stream-diff/inline-stream-diff.handler';
+import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
@@ -255,18 +251,14 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     return node;
   }
   attachNode(node: InlineStreamDiffHandler): void {
-    if (this.node && !node) {
-      this.node.dispose();
-      this.node = node;
-      return;
-    }
+    this.node?.dispose();
+    this.node = node;
 
     if (node) {
-      this.node = node;
-
       const snapshot = node.currentSnapshotStore;
       if (snapshot) {
         this.node.restoreDecoration(snapshot.decorationSnapshotData);
+        this.listenNode(node);
       }
     }
   }
@@ -280,7 +272,6 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     // 创建新的实例
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
     node.restoreSnapshot(snapshot);
-    this.listenNode(node);
     return node;
   }
 
