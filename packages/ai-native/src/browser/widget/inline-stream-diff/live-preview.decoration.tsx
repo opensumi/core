@@ -2,14 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { StackingLevel } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-import {
-  ICodeEditor,
-  IEditorDecorationsCollection,
-  ITextModel,
-  Position,
-  Range,
-  Selection,
-} from '@opensumi/ide-monaco';
+import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Position, Range } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
@@ -22,21 +15,32 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
-import { EnhanceDecorationsCollection, IEnhanceModelDeltaDecoration } from '../../model/enhanceDecorationsCollection';
+import {
+  EnhanceDecorationsCollection,
+  IDecorationSerializableState,
+  IEnhanceModelDeltaDecoration,
+} from '../../model/enhanceDecorationsCollection';
 
 import styles from './inline-stream-diff.module.less';
 import { InlineStreamDiffService } from './inline-stream-diff.service';
-import { IRemovedWidgetState, LivePreviewUndoRedoStackElement } from './live-preview-stack';
 import {
   AcceptPartialEditWidget,
   ActiveLineDecoration,
   AddedRangeDecoration,
   EPartialEdit,
   IPartialEditEvent,
+  IRemovedWidgetState,
   ITextLinesTokens,
   PendingRangeDecoration,
   RemovedZoneWidget,
 } from './live-preview.component';
+
+export interface ILivePreviewDiffDecorationSnapshotData {
+  addedDecList: IEnhanceModelDeltaDecoration[];
+  partialEditWidgetList: AcceptPartialEditWidget[];
+  removedWidgetList: RemovedZoneWidget[];
+  zone: LineRange;
+}
 
 @Injectable({ multiple: true })
 export class LivePreviewDiffDecorationModel extends Disposable {
@@ -51,15 +55,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   private activeLineDec: IEditorDecorationsCollection;
   private pendingRangeDec: IEditorDecorationsCollection;
-
-  private addedRangeDec: EnhanceDecorationsCollection;
-  private partialEditWidgetList: AcceptPartialEditWidget[] = [];
-  private removedZoneWidgets: Array<RemovedZoneWidget> = [];
-
-  private undoRedoService: IUndoRedoService;
-
-  private zone: LineRange;
   private aiNativeContextKey: AINativeContextKey;
+  private undoRedoService: IUndoRedoService;
 
   protected readonly _onPartialEditWidgetListChange = this.registerDispose(new Emitter<AcceptPartialEditWidget[]>());
   public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
@@ -67,38 +64,22 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   protected model: ITextModel;
 
-  constructor(private readonly monacoEditor: ICodeEditor, private selection: Selection) {
+  // Parts that require snapshots
+  private addedRangeDec: EnhanceDecorationsCollection;
+  private partialEditWidgetList: AcceptPartialEditWidget[] = [];
+  private removedZoneWidgets: Array<RemovedZoneWidget> = [];
+  private zone: LineRange;
+
+  constructor(private readonly monacoEditor: ICodeEditor) {
     super();
     this.model = this.monacoEditor.getModel()!;
+
+    this.undoRedoService = StandaloneServices.get(IUndoRedoService);
 
     this.activeLineDec = this.monacoEditor.createDecorationsCollection();
     this.pendingRangeDec = this.monacoEditor.createDecorationsCollection();
 
-    this.addedRangeDec = new EnhanceDecorationsCollection(this.monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
-
-    this.undoRedoService = StandaloneServices.get(IUndoRedoService);
-
-    this.updateSelection(selection);
-
-    this.addDispose(
-      this.addedRangeDec.onDidDecorationsChange((newAddedRangeDec) => {
-        const inlineDiffPartialEditsIsVisible = this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.get();
-        if (inlineDiffPartialEditsIsVisible) {
-          this.partialEditWidgetList.forEach((widget) => {
-            const addedWidget = newAddedRangeDec.find((a) => widget.getDecorationId() === a.id);
-            if (addedWidget) {
-              const range = addedWidget.getRange();
-              /**
-               * 重新定位 added decoration 与 partial edit widget 的位置
-               */
-              widget.setOptions({ position: { lineNumber: range.startLineNumber, column: 1 } });
-              widget.layoutContentWidget();
-            }
-          });
-        }
-      }),
-    );
 
     this.addDispose(
       this.inlineStreamDiffService.onAcceptDiscardPartialEdit((isAccept) => {
@@ -125,6 +106,26 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       }),
     );
 
+    this.addedRangeDec = new EnhanceDecorationsCollection(this.monacoEditor);
+    this.addDispose(
+      this.addedRangeDec.onDidDecorationsChange((newAddedRangeDec) => {
+        const inlineDiffPartialEditsIsVisible = this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.get();
+        if (inlineDiffPartialEditsIsVisible) {
+          this.partialEditWidgetList.forEach((widget) => {
+            const addedWidget = newAddedRangeDec.find((a) => widget.getDecorationId() === a.id);
+            if (addedWidget) {
+              const range = addedWidget.getRange();
+              /**
+               * 重新定位 added decoration 与 partial edit widget 的位置
+               */
+              widget.setOptions({ position: { lineNumber: range.startLineNumber, column: 1 } });
+              widget.layoutContentWidget();
+            }
+          });
+        }
+      }),
+    );
+
     this.addDispose(
       Disposable.create(() => {
         this.clear();
@@ -140,16 +141,39 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.clearPartialEditWidgetList();
   }
 
-  public updateSelection(selection: Selection) {
-    this.selection = selection;
-    this.updateZone(
-      LineRange.fromRangeInclusive(
-        Range.fromPositions(
-          { lineNumber: this.selection.startLineNumber, column: 1 },
-          { lineNumber: this.selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
-        ),
-      ),
-    );
+  initialize(zone: LineRange): void {
+    this.updateZone(zone);
+  }
+
+  restoreSnapshot(snapshot: ILivePreviewDiffDecorationSnapshotData): void {
+    const { addedDecList, removedWidgetList, zone } = snapshot;
+
+    // restore zone
+    this.updateZone(zone);
+
+    // restore added
+    this.addedRangeDec.attachDecorations(addedDecList);
+
+    // restore removed
+    this.clearRemovedWidgets();
+    removedWidgetList.forEach((widget) => {
+      const position = widget.getLastPosition();
+      if (position) {
+        this.showRemovedWidgetByLineNumber(position.lineNumber, widget.textLines);
+      }
+    });
+
+    // restore partial edit widget
+    this.touchPartialEditWidgets(addedDecList.map((dec) => dec.range.startLineNumber));
+  }
+
+  createSnapshot(): ILivePreviewDiffDecorationSnapshotData {
+    return {
+      addedDecList: this.addedRangeDec.getDecorations(),
+      partialEditWidgetList: this.partialEditWidgetList,
+      removedWidgetList: this.removedZoneWidgets,
+      zone: this.zone,
+    };
   }
 
   public showRemovedWidgetByLineNumber(lineNumber: number, texts: ITextLinesTokens[]): void {
@@ -374,12 +398,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     showingWidgets.forEach((widget) => {
       this.handlePartialEditAction(EPartialEdit.discard, widget, false);
     });
-  }
-
-  private createUndoStackElement(group: UndoRedoGroup | undefined): LivePreviewUndoRedoStackElement {
-    const newElement = new LivePreviewUndoRedoStackElement(this.model);
-    this.undoRedoService.pushElement(newElement, group);
-    return newElement;
   }
 
   public pushUndoElement(data: { undo: () => void; redo: () => void; group?: UndoRedoGroup }): void {

@@ -13,8 +13,8 @@ import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undo
 import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
 
 import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
-import { IRemovedWidgetState } from './live-preview-stack';
-import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
+import { IRemovedWidgetState } from './live-preview.component';
+import { ILivePreviewDiffDecorationSnapshotData, LivePreviewDiffDecorationModel } from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -40,26 +40,33 @@ export enum EComputerMode {
   default = 'default',
 }
 
+export interface IInlineStreamDiffSnapshotData {
+  rawOriginalTextLines: string[];
+  rawOriginalTextLinesTokens: LineTokens[];
+  undoRedoGroup: UndoRedoGroup;
+  decorationSnapshotData: ILivePreviewDiffDecorationSnapshotData;
+}
+
+const inlineStreamDiffComputer = new InlineStreamDiffComputer();
+
 @Injectable({ multiple: true })
 export class InlineStreamDiffHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  private rawOriginalTextLines: string[];
-  private rawOriginalTextLinesTokens: LineTokens[] = [];
-
-  private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
-
-  private undoRedoGroup: UndoRedoGroup;
-  private originalModel: ITextModel;
-  private inlineStreamDiffComputer: InlineStreamDiffComputer = new InlineStreamDiffComputer();
-
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
 
-  public virtualModel: ITextModel;
+  private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
+  private originalModel: ITextModel;
+  private virtualModel: ITextModel;
 
-  constructor(private readonly monacoEditor: ICodeEditor, public readonly selection: Selection) {
+  // Parts that require snapshots
+  private rawOriginalTextLines: string[];
+  private rawOriginalTextLinesTokens: LineTokens[] = [];
+  private undoRedoGroup: UndoRedoGroup;
+
+  constructor(private readonly monacoEditor: ICodeEditor) {
     super();
 
     this.undoRedoGroup = new UndoRedoGroup();
@@ -68,9 +75,15 @@ export class InlineStreamDiffHandler extends Disposable {
     this.virtualModel = modelService.createModel('', null);
     this.originalModel = this.monacoEditor.getModel()!;
 
+    this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [this.monacoEditor]);
+    this.addDispose(this.livePreviewDiffDecorationModel);
+  }
+
+  initialize(selection: Selection): void {
     const eol = this.originalModel.getEOL();
-    const startPosition = this.selection.getStartPosition();
-    const endPosition = this.selection.getEndPosition();
+    const startPosition = selection.getStartPosition();
+    const endPosition = selection.getEndPosition();
+
     this.rawOriginalTextLines = this.originalModel
       .getValueInRange(Range.fromPositions(startPosition, endPosition))
       .split(eol);
@@ -82,16 +95,43 @@ export class InlineStreamDiffHandler extends Disposable {
       return lineTokens;
     });
 
-    this.initializeDecorationModel();
+    const zone = LineRange.fromRangeInclusive(
+      Range.fromPositions(
+        { lineNumber: selection.startLineNumber, column: 1 },
+        { lineNumber: selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
+      ),
+    );
+
+    this.livePreviewDiffDecorationModel.initialize(zone);
   }
 
-  private initializeDecorationModel(): void {
-    this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [
-      this.monacoEditor,
-      this.selection,
-    ]);
+  private _snapshotStore: IInlineStreamDiffSnapshotData | undefined;
+  restoreSnapshot(snapshot: IInlineStreamDiffSnapshotData): void {
+    this._snapshotStore = snapshot;
+    const { rawOriginalTextLines, rawOriginalTextLinesTokens, undoRedoGroup, decorationSnapshotData } = snapshot;
 
-    this.addDispose(this.livePreviewDiffDecorationModel);
+    this.rawOriginalTextLines = rawOriginalTextLines;
+    this.rawOriginalTextLinesTokens = rawOriginalTextLinesTokens;
+    this.undoRedoGroup = undoRedoGroup;
+
+    this.livePreviewDiffDecorationModel.initialize(decorationSnapshotData.zone);
+  }
+
+  get currentSnapshotStore(): IInlineStreamDiffSnapshotData | undefined {
+    return this._snapshotStore;
+  }
+
+  restoreDecoration(decorationSnapshotData: ILivePreviewDiffDecorationSnapshotData): void {
+    this.livePreviewDiffDecorationModel.restoreSnapshot(decorationSnapshotData);
+  }
+
+  createSnapshot(): IInlineStreamDiffSnapshotData {
+    return {
+      rawOriginalTextLines: this.rawOriginalTextLines,
+      rawOriginalTextLinesTokens: this.rawOriginalTextLinesTokens,
+      undoRedoGroup: this.undoRedoGroup,
+      decorationSnapshotData: this.livePreviewDiffDecorationModel.createSnapshot(),
+    };
   }
 
   get onPartialEditWidgetListChange() {
@@ -104,7 +144,7 @@ export class InlineStreamDiffHandler extends Disposable {
     computerMode: EComputerMode = EComputerMode.default,
   ): IComputeDiffData {
     const computeResult = (
-      computerMode === EComputerMode.default ? this.inlineStreamDiffComputer : linesDiffComputers.getLegacy()
+      computerMode === EComputerMode.default ? inlineStreamDiffComputer : linesDiffComputers.getLegacy()
     ).computeDiff(originalTextLines, newTextLines, {
       computeMoves: false,
       maxComputationTimeMs: 200,
@@ -209,7 +249,6 @@ export class InlineStreamDiffHandler extends Disposable {
 
   private renderPartialEditWidgets(diffModel: IComputeDiffData): void {
     const decorationRange = this.calculateAddedDecorationCollectionState(diffModel);
-
     this.livePreviewDiffDecorationModel.touchPartialEditWidgets(decorationRange.map((v) => v.startPosition.lineNumber));
   }
 
@@ -450,9 +489,5 @@ export class InlineStreamDiffHandler extends Disposable {
 
   revealFirstDiff() {
     this.livePreviewDiffDecorationModel.revealFirstDiff();
-  }
-
-  clearDecoration() {
-    this.livePreviewDiffDecorationModel.clear();
   }
 }
