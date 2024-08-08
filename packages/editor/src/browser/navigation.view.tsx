@@ -56,7 +56,7 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
   }
   return parts.length === 0 ? null : (
     <div
-      className={cls('navigation_container', styles_navigation_container)}
+      className={cls('kt-navigation-container', styles_navigation_container)}
       onContextMenu={(event) => {
         event.preventDefault();
       }}
