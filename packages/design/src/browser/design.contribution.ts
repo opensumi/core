@@ -6,7 +6,7 @@ import {
   SlotRendererContribution,
   SlotRendererRegistry,
 } from '@opensumi/ide-core-browser';
-import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { ConfigPriority, LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { Schemes } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
@@ -29,9 +29,9 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
   initialize() {
     this.fileSystem.registerProvider(Schemes.design, this.designThemeFileSystemProvider);
 
-    this.layoutViewSize.setEditorTabsHeight(36);
-    this.layoutViewSize.setStatusBarHeight(36);
-    this.layoutViewSize.setAccordionHeaderSizeHeight(36);
+    this.layoutViewSize.setEditorTabsHeight(36, ConfigPriority.ModuleDefined);
+    this.layoutViewSize.setStatusBarHeight(36, ConfigPriority.ModuleDefined);
+    this.layoutViewSize.setAccordionHeaderSizeHeight(36, ConfigPriority.ModuleDefined);
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
