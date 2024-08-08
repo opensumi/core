@@ -6,7 +6,12 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { KeybindingRegistry, useDisposable } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Emitter, Event, IPosition, isUndefined, uuid } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-monaco';
+import {
+  ICodeEditor,
+  IEditorDecorationsCollection,
+  IModelDecorationsChangedEvent,
+  Position,
+} from '@opensumi/ide-monaco';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
@@ -265,17 +270,41 @@ const RemovedWidgetComponent = ({ dom, editor }) => {
   );
 };
 
+export interface IRemovedZoneWidgetOptions extends IOptions {
+  isHidden?: boolean;
+  recordPosition?: Position;
+}
+
 export class RemovedZoneWidget extends ZoneWidget {
   private root: ReactDOMClient.Root;
-  private recordPositionData: { position: IPosition; heightInLines: number };
+  private _recordPosition: Position;
 
   private _hidden: boolean = false;
   get isHidden(): boolean {
     return this._hidden;
   }
 
-  constructor(editor: ICodeEditor, public readonly textLines: ITextLinesTokens[], options: IOptions) {
+  constructor(editor: ICodeEditor, public readonly textLines: ITextLinesTokens[], options: IRemovedZoneWidgetOptions) {
     super(editor, options);
+
+    if (!isUndefined(options.isHidden)) {
+      this._hidden = options.isHidden;
+    }
+
+    if (!isUndefined(options.recordPosition)) {
+      this._recordPosition = options.recordPosition;
+    }
+
+    // 监听 position 的位置变化
+    const positionMarkerId = this['_positionMarkerId'] as IEditorDecorationsCollection;
+    this._disposables.add(
+      positionMarkerId.onDidChange((event: IModelDecorationsChangedEvent) => {
+        const range = positionMarkerId.getRange(0);
+        if (range) {
+          this._recordPosition = range.getStartPosition();
+        }
+      }),
+    );
   }
 
   _fillContainer(container: HTMLElement): void {
@@ -291,29 +320,23 @@ export class RemovedZoneWidget extends ZoneWidget {
     return this.textLines.length;
   }
 
-  getLastPosition(): IPosition {
-    return this.recordPositionData.position;
+  getLastPosition(): Position {
+    return this.position || this._recordPosition;
   }
 
   hide(): void {
-    if (this._viewZone && this.position) {
-      this.recordPositionData = {
-        position: this.position,
-        heightInLines: this._viewZone?.heightInLines,
-      };
-    }
     this._hidden = true;
     super.hide();
   }
 
   resume(): void {
-    if (this.recordPositionData) {
-      this.show(this.recordPositionData.position, this.recordPositionData.heightInLines);
+    const position = this.getLastPosition();
+    if (position) {
+      this.show(position, this.height);
     }
   }
 
   override show(pos: IPosition, heightInLines: number): void {
-    this.recordPositionData = { position: pos, heightInLines };
     this._hidden = false;
     super.show(pos, heightInLines);
   }
@@ -322,6 +345,10 @@ export class RemovedZoneWidget extends ZoneWidget {
 
   override create(): void {
     super.create();
+    this.mountRender();
+  }
+
+  mountRender(): void {
     const dom = document.createElement('div');
     renderLines(
       dom,

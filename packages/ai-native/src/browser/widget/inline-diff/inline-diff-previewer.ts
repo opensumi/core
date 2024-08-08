@@ -257,7 +257,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     if (node) {
       const snapshot = node.currentSnapshotStore;
       if (snapshot) {
-        this.node.restoreDecoration(snapshot.decorationSnapshotData);
+        this.node.restoreDecorationSnapshot(snapshot.decorationSnapshotData);
         this.listenNode(node);
       }
     }

@@ -86,15 +86,25 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       return;
     }
 
+    if (node.disposed) {
+      this.destroyPreviewer(key);
+      return;
+    }
+
     return this.restoreState(monacoEditor, node);
   }
 
   restoreState(monacoEditor: monaco.ICodeEditor, node: InlineStreamDiffHandler) {
     const uri = monacoEditor.getModel()?.uri;
 
-    if (uri && this._previewerNodeStore.has(uri.toString())) {
+    if (uri) {
       this.previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
       this.previewer.attachNode(node);
+
+      const dispose = this.previewer.onDispose(() => {
+        this.destroyPreviewer();
+        dispose.dispose();
+      });
     }
   }
 
@@ -113,8 +123,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         const urlString = e.oldModelUrl.toString();
         this.storeState(urlString);
 
-        this.previewer?.dispose();
-        this.previewer = undefined;
+        this.destroyPreviewer();
       }),
     );
 
@@ -123,7 +132,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         if (!e.newModelUrl) {
           return;
         }
-
         this.tryRestoreState(monacoEditor, e.newModelUrl.toString());
       }),
     );
@@ -235,10 +243,12 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     this.previewer?.handleAction(action);
   }
 
-  destroyPreviewer(uriString: string) {
+  destroyPreviewer(uriString?: string) {
     this.previewer?.dispose();
     this.previewer = undefined;
-    this._previewerNodeStore.delete(uriString);
+    if (uriString) {
+      this._previewerNodeStore.delete(uriString);
+    }
   }
 
   revealFirstDiff() {

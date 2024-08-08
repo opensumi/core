@@ -40,6 +40,7 @@ export interface IDeltaDecorationsOptions {
   editorDecoration: IModelDeltaDecoration;
   codeEditor: ICodeEditor;
   deltaData: Partial<IDeltaData>;
+  isHidden?: boolean;
 }
 
 class DeltaDecorations implements IEnhanceModelDeltaDecoration {
@@ -71,7 +72,7 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   }
 
   constructor(protected readonly metadata: IDeltaDecorationsOptions) {
-    const { editorDecoration, deltaData } = metadata;
+    const { editorDecoration, deltaData, isHidden } = metadata;
 
     if (isUndefined(deltaData.length)) {
       this.length = editorDecoration.range.endLineNumber - editorDecoration.range.startLineNumber;
@@ -83,6 +84,11 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
     this.options = editorDecoration.options;
 
     this.resumeRange = this.range;
+
+    this._hidden = !!isHidden;
+    if (this._hidden) {
+      this.hide();
+    }
   }
 
   private changeVisibility(newClassName: string, newRange: Range): void {
@@ -181,11 +187,12 @@ export class EnhanceDecorationsCollection extends Disposable {
   }
 
   protected createDecorations(metaData: IDeltaDecorationsOptions) {
-    const { id, deltaData, codeEditor, editorDecoration } = metaData;
-    return new DeltaDecorations({ id, editorDecoration, codeEditor, deltaData });
+    return new DeltaDecorations(metaData);
   }
 
-  set(decorations: (IModelDeltaDecoration & Partial<Pick<IEnhanceModelDeltaDecoration, 'length'>>)[]): void {
+  set(
+    decorations: (IModelDeltaDecoration & Partial<Pick<IEnhanceModelDeltaDecoration, 'length' | 'isHidden'>>)[],
+  ): void {
     this.clear();
 
     this.codeEditor.changeDecorations((accessor: IModelDecorationsChangeAccessor) => {
@@ -198,6 +205,7 @@ export class EnhanceDecorationsCollection extends Disposable {
             id,
             editorDecoration: decoration,
             codeEditor: this.codeEditor,
+            isHidden: decoration.isHidden,
             deltaData: {
               dispose: () => this.delete(id),
               length: decoration.length,
@@ -207,15 +215,6 @@ export class EnhanceDecorationsCollection extends Disposable {
       }
 
       this.deltaDecorations = newDecorations;
-    });
-  }
-
-  attachDecorations(decorations: IEnhanceModelDeltaDecoration[]): void {
-    this.clear();
-
-    this.codeEditor.changeDecorations((accessor: IModelDecorationsChangeAccessor) => {
-      accessor.deltaDecorations([], decorations);
-      this.deltaDecorations = decorations;
     });
   }
 
