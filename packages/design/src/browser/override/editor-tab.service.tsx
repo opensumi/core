@@ -1,8 +1,9 @@
 import cls from 'classnames';
 import React, { ReactNode, useCallback, useMemo } from 'react';
 
-import { Injectable } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { formatLocalize, isMacintosh, uuid } from '@opensumi/ide-core-common';
 import { EditorTabService } from '@opensumi/ide-editor/lib/browser/editor.tab.service';
 
@@ -36,6 +37,9 @@ const EditorTabCloseComponent = (props) => {
 
 @Injectable()
 export class DesignEditorTabService extends EditorTabService {
+  @Autowired(LayoutViewSizeConfig)
+  private layoutViewSize: LayoutViewSizeConfig;
+
   override renderEditorTab(component: ReactNode, isCurrent: boolean): ReactNode {
     return (
       <div
@@ -43,6 +47,9 @@ export class DesignEditorTabService extends EditorTabService {
           [styles['design-editor_tab_block_container']]: true,
           [styles.active]: isCurrent,
         })}
+        style={{
+          height: this.layoutViewSize.editorTabsHeight,
+        }}
       >
         {component}
       </div>
