@@ -507,7 +507,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   private async _pickWorkspace() {
-    if (this.workspace.isMultiRootWorkspaceOpened) {
+    if (this.workspace.isMultiRootWorkspaceOpened && !this._widget.recovery) {
       // 工作区模式下每次新建终端都需要用户手动进行一次路径选择
       const roots = this.workspace.tryGetRoots();
       const choose = await this.quickPick.show(
@@ -533,7 +533,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const widget = this._widget;
     if (TerminalClient.WORKSPACE_PATH_CACHED.has(widget.group.id)) {
       this._workspacePath = TerminalClient.WORKSPACE_PATH_CACHED.get(widget.group.id)!;
-    } else if (!widget.recovery) {
+    } else {
       const choose = await this._pickWorkspace();
       if (choose) {
         this._workspacePath = choose;
