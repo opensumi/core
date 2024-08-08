@@ -30,6 +30,7 @@ import {
   EPartialEdit,
   IPartialEditEvent,
   IRemovedWidgetState,
+  IRemovedZoneWidgetOptions,
   ITextLinesTokens,
   PendingRangeDecoration,
   RemovedZoneWidget,
@@ -152,19 +153,22 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.updateZone(zone);
 
     // restore added
-    this.addedRangeDec.attachDecorations(addedDecList);
+    this.addedRangeDec.set(addedDecList);
 
     // restore removed
     this.clearRemovedWidgets();
     removedWidgetList.forEach((widget) => {
       const position = widget.getLastPosition();
       if (position) {
-        this.showRemovedWidgetByLineNumber(position.lineNumber, widget.textLines);
+        this.showRemovedWidgetByLineNumber(position.lineNumber, widget.textLines, {
+          isHidden: widget.isHidden,
+        });
       }
     });
 
     // restore partial edit widget
-    this.touchPartialEditWidgets(addedDecList.map((dec) => dec.range.startLineNumber));
+    this.touchPartialEditWidgets(addedDecList.filter((dec) => !dec.isHidden).map((dec) => dec.range.startLineNumber));
+    this.recordPartialEditWidgetWithAddedDec();
   }
 
   createSnapshot(): ILivePreviewDiffDecorationSnapshotData {
@@ -176,20 +180,29 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     };
   }
 
-  public showRemovedWidgetByLineNumber(lineNumber: number, texts: ITextLinesTokens[]): void {
+  public showRemovedWidgetByLineNumber(
+    lineNumber: number,
+    texts: ITextLinesTokens[],
+    options: IRemovedZoneWidgetOptions,
+  ): void {
     const position = new Position(lineNumber, 1);
     const heightInLines = texts.length;
 
     const widget = new RemovedZoneWidget(this.monacoEditor, texts, {
+      ...options,
       showInHiddenAreas: true,
       showFrame: false,
       showArrow: false,
     });
 
     widget.create();
-    widget.show(position, heightInLines);
-
     this.removedZoneWidgets.push(widget);
+
+    if (options.isHidden) {
+      widget.hide();
+    } else {
+      widget.show(position, heightInLines);
+    }
   }
 
   public updateZone(newZone: LineRange): void {
@@ -245,7 +258,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     }
 
     if (removedWidget) {
-      const position = removedWidget.position!;
+      const position = removedWidget.getLastPosition();
       const eol = this.model.getEOL();
 
       const lines = removedWidget.getRemovedTextLines();
@@ -272,7 +285,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
      * added widget 通常是在 removed widget 的下面一行的位置
      */
     const removedWidget = this.removedZoneWidgets.find(
-      (w) => w.position?.lineNumber === Math.max(1, position.lineNumber - 1),
+      (w) => w.getLastPosition().lineNumber === Math.max(1, position.lineNumber - 1),
     );
     const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
@@ -455,7 +468,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
 
-    this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(true);
+    this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(startLineNumbers.length !== 0);
   }
 
   public touchAddedRange(ranges: IDecorationSerializableState[]) {
@@ -476,6 +489,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         return {
           length,
           range,
+          isHidden: length === 0,
           options: ModelDecorationOptions.register({
             description: AddedRangeDecoration,
             isWholeLine: true,
@@ -492,7 +506,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.clearRemovedWidgets();
 
     states.forEach(({ textLines, position }) => {
-      this.showRemovedWidgetByLineNumber(position.lineNumber, textLines);
+      this.showRemovedWidgetByLineNumber(position.lineNumber, textLines, {});
     });
   }
 
@@ -551,7 +565,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const first = this.removedZoneWidgets[0];
     if (first) {
       const pos = first.getLastPosition();
-      this.monacoEditor.revealLineInCenterIfOutsideViewport(pos.lineNumber);
+      if (pos) {
+        this.monacoEditor.revealLineInCenterIfOutsideViewport(pos.lineNumber);
+      }
     }
   }
 }

@@ -121,7 +121,7 @@ export class InlineStreamDiffHandler extends Disposable {
     return this._snapshotStore;
   }
 
-  restoreDecoration(decorationSnapshotData: ILivePreviewDiffDecorationSnapshotData): void {
+  restoreDecorationSnapshot(decorationSnapshotData: ILivePreviewDiffDecorationSnapshotData): void {
     this.livePreviewDiffDecorationModel.restoreSnapshot(decorationSnapshotData);
   }
 
@@ -220,10 +220,6 @@ export class InlineStreamDiffHandler extends Disposable {
       activeLine,
       pendingRange,
     };
-  }
-
-  public getZone(): LineRange {
-    return this.livePreviewDiffDecorationModel.getZone();
   }
 
   private calculateAddedDecorationCollectionState(diffModel: IComputeDiffData): IDecorationSerializableState[] {
@@ -489,5 +485,9 @@ export class InlineStreamDiffHandler extends Disposable {
 
   revealFirstDiff() {
     this.livePreviewDiffDecorationModel.revealFirstDiff();
+  }
+
+  getZone(): LineRange {
+    return this.livePreviewDiffDecorationModel.getZone();
   }
 }
