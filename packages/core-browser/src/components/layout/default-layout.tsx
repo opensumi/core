@@ -56,7 +56,7 @@ export function ToolbarActionBasedLayout(
           <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
           <SlotRenderer
             flex={1}
-            defaultSize={layout.bottom?.currentId ? layout.bottom?.size : 0}
+            defaultSize={layout.bottom?.currentId ? layout.bottom?.size : 24}
             minResize={160}
             slot='bottom'
             isTabbar={true}
