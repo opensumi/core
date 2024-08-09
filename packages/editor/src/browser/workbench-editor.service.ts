@@ -491,10 +491,13 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       state = this.openedResourceState.get<IEditorGridState>('grid', state);
     }
     this.topGrid = new EditorGrid();
-    this.topGrid.onDidGridAndDesendantStateChange(() => {
-      this._sortedEditorGroups = undefined;
-      this._onDidEditorGroupsChanged.fire();
-    });
+    this.addDispose(this.topGrid);
+    this.addDispose(
+      this.topGrid.onDidGridAndDesendantStateChange(() => {
+        this._sortedEditorGroups = undefined;
+        this._onDidEditorGroupsChanged.fire();
+      }),
+    );
     const editorRestorePromises = [];
     const promise = this.topGrid
       .deserialize(state, () => this.createEditorGroup(), editorRestorePromises)
