@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { StackingLevel } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event, isDefined, runWhenIdle } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Position, Range } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -8,10 +8,8 @@ import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import {
-  IResourceUndoRedoElement,
   IUndoRedoService,
   ResourceEditStackSnapshot,
-  UndoRedoElementType,
   UndoRedoGroup,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
@@ -447,7 +445,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(visiableLists.length !== 0);
   }
 
-  private createEditStackElement(group: UndoRedoGroup): LivePreviewUndoRedoStackElement {
+  public createEditStackElement(group: UndoRedoGroup): LivePreviewUndoRedoStackElement {
     const newElement = new LivePreviewUndoRedoStackElement(this.model);
     this.undoRedoService.pushElement(newElement, group);
     return newElement;
@@ -491,30 +489,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     showingWidgets.forEach((widget) => {
       this.handlePartialEditAction(EPartialEdit.discard, widget, false);
     });
-  }
-
-  public pushUndoElement(data: { undo: () => void; redo: () => void; group?: UndoRedoGroup }): void {
-    const resource = this.model.uri;
-    const group = data.group ?? new UndoRedoGroup();
-
-    this.undoRedoService.pushElement(
-      {
-        type: UndoRedoElementType.Resource,
-        resource,
-        label: 'Live.Preview.UndoRedo',
-        undo: () => {
-          if (!this.disposed) {
-            data.undo();
-          }
-        },
-        redo: () => {
-          if (!this.disposed) {
-            data.redo();
-          }
-        },
-      } as IResourceUndoRedoElement,
-      group,
-    );
   }
 
   private createPartialEditWidget(lineNumber: number): AcceptPartialEditWidget {

@@ -77,6 +77,12 @@ export class InlineStreamDiffHandler extends Disposable {
 
     this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [this.monacoEditor]);
     this.addDispose(this.livePreviewDiffDecorationModel);
+
+    // 将 diff handler 和 decoration model 的生命周期绑定在一起
+    const dispose = this.livePreviewDiffDecorationModel.onDispose(() => {
+      this.dispose();
+      dispose.dispose();
+    });
   }
 
   initialize(selection: Selection): void {
@@ -288,12 +294,10 @@ export class InlineStreamDiffHandler extends Disposable {
    * 一旦撤销到最顶层则关闭当前的 inline diff
    */
   private pushStackElement(): void {
-    this.livePreviewDiffDecorationModel.pushUndoElement({
-      undo: () => this.dispose(),
-      redo: () => {
-        /* noop */
-      },
-      group: this.undoRedoGroup,
+    const stack = this.livePreviewDiffDecorationModel.createEditStackElement(this.undoRedoGroup);
+    stack.attachModel(this.livePreviewDiffDecorationModel);
+    stack.registerUndo((decorationModel) => {
+      decorationModel.dispose();
     });
   }
 
