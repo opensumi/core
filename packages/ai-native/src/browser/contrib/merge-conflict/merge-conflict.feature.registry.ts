@@ -15,10 +15,6 @@ export class ResolveConflictRegistry
 {
   private readonly providerMap = new Map<MergeConflictEditorMode, IResolveConflictHandler>();
 
-  override dispose() {
-    super.dispose();
-  }
-
   registerResolveConflictProvider(editorMode: MergeConflictEditorMode, handler: IResolveConflictHandler): void {
     if (this.providerMap.has(editorMode)) {
       throw new Error(`Conflict provider for ${editorMode} already exists`);

@@ -3,15 +3,25 @@ import debounce from 'lodash/debounce';
 import { Autowired, Injectable } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { CommandServiceImpl, Disposable, IEventBus, Sequencer, runWhenIdle } from '@opensumi/ide-core-common';
-import { CommandRegistry, CommandRegistryImpl, CommandService } from '@opensumi/ide-core-common';
+import {
+  CommandService,
+  CommandServiceImpl,
+  Disposable,
+  IEventBus,
+  Sequencer,
+  runWhenIdle,
+} from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
 import { InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 
-import { IAIMiddleware } from '../../types';
 import { IAIMonacoContribHandler } from '../base';
+import {
+  IIntelligentCompletionsResult,
+  isMultiLineCompletion,
+} from '../intelligent-completions/intelligent-completions';
+import { IntelligentCompletionsHandler } from '../intelligent-completions/intelligent-completions.handler';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { AICompletionsService } from './service/ai-completions.service';
@@ -24,11 +34,11 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
   @Autowired(CommandService)
   private commandService: CommandServiceImpl;
 
-  @Autowired(CommandRegistry)
-  private commandRegistry: CommandRegistryImpl;
-
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
+
+  @Autowired(IntelligentCompletionsHandler)
+  private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -86,18 +96,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
     return this;
   }
 
-  updateConfig(middlewares: IAIMiddleware[]) {
-    const middleware = middlewares[middlewares.length - 1];
-    if (!middleware) {
-      return;
-    }
-
-    // currently only support one middleware
-    if (middleware?.language?.provideInlineCompletions) {
-      this.aiCompletionsService.setMiddlewareComplete(middleware?.language?.provideInlineCompletions);
-    }
-  }
-
   mountEditor(editor: IEditor) {
     const toDispose = new Disposable();
     this.aiInlineCompletionsProvider.mountEditor(editor);
@@ -135,8 +133,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
           return;
         }
 
-        let resultList: InlineCompletions;
-
         /**
          * 如果新字符在 inline completion 的 ghost text 内，则走缓存，不重新请求
          */
@@ -153,11 +149,16 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
           }
         }
 
-        resultList = await this.sequencer.queue(() =>
+        const completionsResult: IIntelligentCompletionsResult = await this.sequencer.queue(() =>
           this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
         );
 
-        return resultList;
+        if (completionsResult.items.some((i) => isMultiLineCompletion(i))) {
+          this.intelligentCompletionsHandler.applyInlineDecorations(completionsResult);
+          return { items: [] };
+        }
+
+        return completionsResult;
       },
       freeInlineCompletions() {},
       handleItemDidShow: (completions) => {
