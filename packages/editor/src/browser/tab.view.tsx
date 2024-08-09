@@ -15,6 +15,7 @@ import React, {
 
 import { Scrollbars } from '@opensumi/ide-components';
 import {
+  ComponentRegistry,
   ConfigContext,
   Disposable,
   DisposableCollection,
@@ -26,18 +27,27 @@ import {
   PreferenceService,
   ResizeEvent,
   URI,
+  View,
   getExternalIcon,
   getIcon,
   getSlotLocation,
   useDesignStyles,
 } from '@opensumi/ide-core-browser';
+import { renderView } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
 
-import { IEditorGroup, IResource, ResourceDidUpdateEvent, ResourceService, WorkbenchEditorService } from '../common';
+import {
+  IEditorGroup,
+  IResource,
+  ResourceDidUpdateEvent,
+  ResourceService,
+  TabbarRightExtraContentId,
+  WorkbenchEditorService,
+} from '../common';
 
 import styles from './editor.module.less';
 import { TabTitleMenuService } from './menu/title-context.menu';
@@ -72,6 +82,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
   const editorTabService = useInjectable<IEditorTabService>(IEditorTabService);
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
+  const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
 
   const styles_tab_right = useDesignStyles(styles.tab_right, 'tab_right');
   const styles_close_tab = useDesignStyles(styles.close_tab, 'close_tab');
@@ -104,6 +115,13 @@ export const Tabs = ({ group }: ITabsProps) => {
   const [lastMarginRight, setLastMarginRight] = useState<number | undefined>();
 
   const slotLocation = useMemo(() => getSlotLocation(pkgName, configContext.layoutConfig), []);
+
+  const RightExtraContentViewConfig = React.useMemo(() => {
+    const firstView = componentRegistry.getComponentRegistryInfo(TabbarRightExtraContentId)?.views?.[0];
+    if (firstView) {
+      return firstView;
+    }
+  }, []);
 
   useUpdateOnGroupTabChange(group);
   useUpdateOnEventBusEvent(
@@ -504,6 +522,8 @@ export const Tabs = ({ group }: ITabsProps) => {
         )}
       </div>
       {!wrapMode && <EditorActions ref={editorActionRef} group={group} />}
+
+      {renderView(RightExtraContentViewConfig)}
     </div>
   );
 };

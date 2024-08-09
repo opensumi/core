@@ -4,3 +4,4 @@ export * from './resource';
 export * from './language';
 export * from './utils';
 export * from './language-status';
+export * from './components';
