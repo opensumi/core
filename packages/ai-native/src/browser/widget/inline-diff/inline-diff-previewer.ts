@@ -230,8 +230,6 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
 export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStreamDiffHandler> {
   private listenNode(node: InlineStreamDiffHandler): void {
     node.addDispose(node.onDidEditChange(() => this.layout()));
-    node.addDispose(node.onDispose(() => this.dispose()));
-
     node.addDispose(
       node.onPartialEditWidgetListChange((widgets) => {
         if (widgets.every((widget) => widget.isHidden)) {
@@ -240,6 +238,11 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
         }
       }),
     );
+
+    const dispose = node.onDispose(() => {
+      this.dispose();
+      dispose.dispose();
+    });
 
     this.addDispose(node);
   }

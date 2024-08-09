@@ -273,6 +273,7 @@ const RemovedWidgetComponent = ({ dom, editor }) => {
 export interface IRemovedZoneWidgetOptions extends IOptions {
   isHidden?: boolean;
   recordPosition?: Position;
+  undoRedoGroup?: UndoRedoGroup;
 }
 
 export class RemovedZoneWidget extends ZoneWidget {
@@ -282,6 +283,11 @@ export class RemovedZoneWidget extends ZoneWidget {
   private _hidden: boolean = false;
   get isHidden(): boolean {
     return this._hidden;
+  }
+
+  private _group: UndoRedoGroup;
+  public get group(): UndoRedoGroup {
+    return this._group;
   }
 
   constructor(editor: ICodeEditor, public readonly textLines: ITextLinesTokens[], options: IRemovedZoneWidgetOptions) {
@@ -295,6 +301,10 @@ export class RemovedZoneWidget extends ZoneWidget {
       this._recordPosition = options.recordPosition;
     }
 
+    if (!isUndefined(options.undoRedoGroup)) {
+      this._group = options.undoRedoGroup;
+    }
+
     // 监听 position 的位置变化
     const positionMarkerId = this['_positionMarkerId'] as IEditorDecorationsCollection;
     this._disposables.add(
@@ -305,6 +315,10 @@ export class RemovedZoneWidget extends ZoneWidget {
         }
       }),
     );
+  }
+
+  setGroup(group): void {
+    this._group = group;
   }
 
   _fillContainer(container: HTMLElement): void {

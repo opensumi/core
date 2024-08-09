@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { StackingLevel } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, isDefined, runWhenIdle } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Position, Range } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -10,6 +10,7 @@ import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/edit
 import {
   IResourceUndoRedoElement,
   IUndoRedoService,
+  ResourceEditStackSnapshot,
   UndoRedoElementType,
   UndoRedoGroup,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
@@ -23,6 +24,7 @@ import {
 
 import styles from './inline-stream-diff.module.less';
 import { InlineStreamDiffService } from './inline-stream-diff.service';
+import { LivePreviewUndoRedoStackElement } from './live-preview-stack';
 import {
   AcceptPartialEditWidget,
   ActiveLineDecoration,
@@ -40,6 +42,7 @@ export interface ILivePreviewDiffDecorationSnapshotData {
   addedDecList: IEnhanceModelDeltaDecoration[];
   partialEditWidgetList: AcceptPartialEditWidget[];
   removedWidgetList: RemovedZoneWidget[];
+  editStackSnapshot: ResourceEditStackSnapshot;
   zone: LineRange;
 }
 
@@ -147,7 +150,13 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   restoreSnapshot(snapshot: ILivePreviewDiffDecorationSnapshotData): void {
-    const { addedDecList, removedWidgetList, zone } = snapshot;
+    const {
+      addedDecList,
+      removedWidgetList,
+      zone,
+      editStackSnapshot,
+      partialEditWidgetList: snapshotPartialEditWidgetList,
+    } = snapshot;
 
     // restore zone
     this.updateZone(zone);
@@ -162,13 +171,42 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       if (position) {
         this.showRemovedWidgetByLineNumber(position.lineNumber, widget.textLines, {
           isHidden: widget.isHidden,
+          recordPosition: widget.getLastPosition(),
+          undoRedoGroup: widget.group,
         });
       }
     });
 
     // restore partial edit widget
-    this.touchPartialEditWidgets(addedDecList.filter((dec) => !dec.isHidden).map((dec) => dec.range.startLineNumber));
+    this.clearPartialEditWidgetList();
+    snapshotPartialEditWidgetList.forEach((snapshotWidget) => {
+      const lineNumber = snapshotWidget.getPosition()?.position?.lineNumber;
+      if (lineNumber) {
+        const newPartialEditWidget = this.createPartialEditWidget(lineNumber);
+
+        if (snapshotWidget.status === 'accept') {
+          newPartialEditWidget.accept(snapshotWidget.addedLinesCount, snapshotWidget.deletedLinesCount);
+        } else if (snapshotWidget.status === 'discard') {
+          newPartialEditWidget.discard(snapshotWidget.addedLinesCount, snapshotWidget.deletedLinesCount);
+        }
+
+        newPartialEditWidget.setGroup(snapshotWidget.group);
+        this.partialEditWidgetList.push(newPartialEditWidget);
+      }
+    });
+    this.firePartialEditWidgetList();
     this.recordPartialEditWidgetWithAddedDec();
+
+    // restore undo/redo stack
+    const uri = this.model.uri;
+    this.undoRedoService.restoreSnapshot(editStackSnapshot);
+    const elements = this.undoRedoService.getElements(uri);
+    elements.future.concat(elements.past).forEach((node) => {
+      if (node instanceof LivePreviewUndoRedoStackElement) {
+        // 在每次 restore 的时候需要将当前的类重新指向到 undo/redo 的 stack 中
+        node.attachModel(this);
+      }
+    });
   }
 
   createSnapshot(): ILivePreviewDiffDecorationSnapshotData {
@@ -176,6 +214,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       addedDecList: this.addedRangeDec.getDecorations(),
       partialEditWidgetList: this.partialEditWidgetList,
       removedWidgetList: this.removedZoneWidgets,
+      editStackSnapshot: this.undoRedoService.createSnapshot(this.model.uri),
       zone: this.zone,
     };
   }
@@ -287,62 +326,91 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const removedWidget = this.removedZoneWidgets.find(
       (w) => w.getLastPosition().lineNumber === Math.max(1, position.lineNumber - 1),
     );
-    const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
 
+    const addedDec = this.addedRangeDec.getDecorationByLineNumber(position.lineNumber);
     const addedLinesCount = addedDec?.length || 0;
     const deletedLinesCount = removedWidget?.height || 0;
 
-    const accpet = () => {
-      widget.accept(addedLinesCount, deletedLinesCount);
-      addedDec?.hide();
-      removedWidget?.hide();
-    };
+    // 将 partial widget 的所有操作和代码变更放在单独的 undo/redo 堆栈组里面
+    const group = new UndoRedoGroup();
+    // 并将此刻的 group 信息记录到每个 widget/decoration 中
+    widget.setGroup(group);
+    removedWidget?.setGroup(group);
+    addedDec?.setGroup(group);
 
-    const discard = () => {
-      const operation = this.doDiscardPartialWidget(widget, addedDec, removedWidget);
+    /**
+     * 在 undo/redo 的 stack 中，原本的 widget 和 decoration 信息已经是旧的数据了，所以不能直接拿旧的数据进行 resume 或 accept
+     * 需要根据 group 信息和当前实例的 LivePreviewDiffDecorationModel 对象重新找到 widget 和 decoration
+     */
+    const findPartialWidgetByGroup = (model: LivePreviewDiffDecorationModel) =>
+      model.partialEditWidgetList.find((widget) => widget.group === group);
+    const findRemovedWidgetByGroup = (model: LivePreviewDiffDecorationModel) =>
+      model.removedZoneWidgets.find((widget) => widget.group === group);
+    const findAddedRangeDecByGroup = (model: LivePreviewDiffDecorationModel) =>
+      model.addedRangeDec.getDecorationByGroup(group);
 
-      addedDec?.hide();
+    const discard = (decorationModel: LivePreviewDiffDecorationModel) => {
+      const removedWidget = findRemovedWidgetByGroup(decorationModel);
       removedWidget?.hide();
+
+      const addedDec = findAddedRangeDecByGroup(decorationModel);
+      addedDec?.hide();
+
+      const partialEditWidget = findPartialWidgetByGroup(decorationModel);
+      const operation = this.doDiscardPartialWidget(partialEditWidget!, addedDec, removedWidget);
 
       return operation;
     };
 
-    const resume = () => {
-      widget.resume();
-      addedDec?.resume();
-      removedWidget?.resume();
+    const accpet = (decorationModel: LivePreviewDiffDecorationModel) => {
+      const partialEditWidget = findPartialWidgetByGroup(decorationModel);
+      partialEditWidget?.accept(addedLinesCount, deletedLinesCount);
+
+      const removedWidget = findRemovedWidgetByGroup(decorationModel);
+      removedWidget?.hide();
+
+      const addedDec = findAddedRangeDecByGroup(decorationModel);
+      addedDec?.hide();
     };
 
-    /**
-     * 将 partial widget 的所有操作和代码变更放在单独的 undo/redo 堆栈组里面
-     */
-    const group = new UndoRedoGroup();
+    const resume = (decorationModel: LivePreviewDiffDecorationModel) => {
+      const partialEditWidget = findPartialWidgetByGroup(decorationModel);
+      partialEditWidget?.resume();
+
+      const removedWidget = findRemovedWidgetByGroup(decorationModel);
+      removedWidget?.resume();
+
+      const addedDec = findAddedRangeDecByGroup(decorationModel);
+      addedDec?.resume();
+    };
 
     switch (type) {
       case EPartialEdit.accept:
-        accpet();
+        accpet(this);
         if (isPushStack) {
-          // const stackElement = this.createUndoStackElement(group);
-          // stackElement.append(this);
-          this.pushUndoElement({
-            undo: () => resume(),
-            redo: () => accpet(),
-            group,
+          const stack = this.createEditStackElement(group);
+          stack.attachModel(this);
+          stack.registerUndo((model: LivePreviewDiffDecorationModel) => {
+            resume(model);
+          });
+          stack.registerRedo((model: LivePreviewDiffDecorationModel) => {
+            accpet(model);
           });
         }
         break;
 
       case EPartialEdit.discard:
         {
-          const op = discard();
+          const op = discard(this);
           if (op) {
             if (isPushStack) {
-              // const stackElement = this.createUndoStackElement(group);
-              // stackElement.append(this);
-              this.pushUndoElement({
-                undo: () => resume(),
-                redo: () => discard(),
-                group,
+              const stack = this.createEditStackElement(group);
+              stack.attachModel(this);
+              stack.registerUndo((model: LivePreviewDiffDecorationModel) => {
+                resume(model);
+              });
+              stack.registerRedo((model: LivePreviewDiffDecorationModel) => {
+                discard(model);
               });
             }
             model.pushStackElement();
@@ -370,7 +438,19 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.monacoEditor.focus();
 
     this._onPartialEditEvent.fire(event);
+    this.firePartialEditWidgetList();
+  }
+
+  private firePartialEditWidgetList(): void {
     this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
+    const visiableLists = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
+    this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(visiableLists.length !== 0);
+  }
+
+  private createEditStackElement(group: UndoRedoGroup): LivePreviewUndoRedoStackElement {
+    const newElement = new LivePreviewUndoRedoStackElement(this.model);
+    this.undoRedoService.pushElement(newElement, group);
+    return newElement;
   }
 
   protected getTotalCodeCount(): {
@@ -437,38 +517,33 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     );
   }
 
-  public touchPartialEditWidgets(startLineNumbers: number[]) {
-    this.clearPartialEditWidgetList();
+  private createPartialEditWidget(lineNumber: number): AcceptPartialEditWidget {
+    const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [this.monacoEditor]);
+    acceptPartialEditWidget.show({ position: { lineNumber, column: 1 } });
 
-    startLineNumbers.forEach((lineNumber) => {
-      const dispoable = new Disposable();
-      const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [this.monacoEditor]);
-      acceptPartialEditWidget.show({ position: { lineNumber, column: 1 } });
+    const dispoable = acceptPartialEditWidget.onDispose(() => {
+      const id = acceptPartialEditWidget.getId();
+      this.partialEditWidgetList = this.partialEditWidgetList.filter((p) => p.getId() !== id);
 
-      dispoable.addDispose(
-        acceptPartialEditWidget.onDispose(() => {
-          const id = acceptPartialEditWidget.getId();
-          this.partialEditWidgetList = this.partialEditWidgetList.filter((p) => p.getId() !== id);
-
-          dispoable.dispose();
-        }),
-      );
-
-      acceptPartialEditWidget.addDispose([
-        acceptPartialEditWidget.onAccept(() => {
-          this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget);
-        }),
-        acceptPartialEditWidget.onDiscard(() => {
-          this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget);
-        }),
-      ]);
-
-      this.partialEditWidgetList.push(acceptPartialEditWidget);
+      dispoable.dispose();
     });
 
-    this._onPartialEditWidgetListChange.fire(this.partialEditWidgetList);
+    acceptPartialEditWidget.addDispose([
+      acceptPartialEditWidget.onAccept(() => {
+        this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget);
+      }),
+      acceptPartialEditWidget.onDiscard(() => {
+        this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget);
+      }),
+    ]);
 
-    this.aiNativeContextKey.inlineDiffPartialEditsIsVisible.set(startLineNumbers.length !== 0);
+    return acceptPartialEditWidget;
+  }
+
+  public touchPartialEditWidgets(lineNumbers: number[]) {
+    this.clearPartialEditWidgetList();
+    this.partialEditWidgetList = lineNumbers.map((lineNumber) => this.createPartialEditWidget(lineNumber));
+    this.firePartialEditWidgetList();
   }
 
   public touchAddedRange(ranges: IDecorationSerializableState[]) {
