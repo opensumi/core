@@ -5,7 +5,7 @@ import { SlotRenderer } from '../../react-providers/slot';
 import { BoxPanel } from './box-panel';
 import { SplitPanel } from './split-panel';
 
-interface ILayoutConfigCache {
+export interface ILayoutConfigCache {
   [key: string]: { size: number; currentId: string };
 }
 
