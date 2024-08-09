@@ -39,7 +39,7 @@ export class LivePreviewUndoRedoStackElement implements IResourceUndoRedoElement
   }
 
   undo(): void | Promise<void> {
-    this._undo(this.decorationModel);
+    this._undo?.(this.decorationModel);
   }
 
   private _redo: (model: LivePreviewDiffDecorationModel) => void;
@@ -47,6 +47,6 @@ export class LivePreviewUndoRedoStackElement implements IResourceUndoRedoElement
     this._redo = redo;
   }
   redo() {
-    this._redo(this.decorationModel);
+    this._redo?.(this.decorationModel);
   }
 }
