@@ -23,6 +23,13 @@ export const designInlineDiffAcceptPartialEdit = registerColor(
   true,
 );
 
+export const designInlineDiffAcceptPartialEditForeground = registerColor(
+  'aiNative.inlineDiffAcceptPartialEdit.foreground',
+  { dark: '#fff', light: '#fff', hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
 export const designInlineDiffDiscardPartialEdit = registerColor(
   'aiNative.inlineDiffDiscardPartialEdit',
   { dark: transparent(defaultRemoveColor, 3), light: transparent(defaultRemoveColor, 3), hcDark: null, hcLight: null },

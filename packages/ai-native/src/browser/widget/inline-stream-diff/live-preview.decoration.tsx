@@ -133,7 +133,13 @@ const PartialEditComponent = (props: {
   );
 
   return (
-    <div className={styles.inline_diff_accept_partial_widget_container} style={{ marginLeft: scrollLeft + 'px' }}>
+    <div
+      className={cls(
+        'kt-inline-diff-accept-partial-widget-container',
+        styles.inline_diff_accept_partial_widget_container,
+      )}
+      style={{ marginLeft: scrollLeft }}
+    >
       <div className={styles.content}>
         <span className={cls(styles.accept_btn, styles.btn)} onClick={handleAccept}>
           {keyStrings.acceptSequence}
