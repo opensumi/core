@@ -209,10 +209,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       EInlineDiffPreviewMode.inlineLive,
     );
 
-    if (this.previewer) {
-      this.previewer.dispose();
-      this.previewer = undefined;
-    }
+    this.destroyPreviewer();
 
     if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
       this.previewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor]);
@@ -223,16 +220,25 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     this.previewer.create(selection, options);
     this.previewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
 
-    if (this.previewer instanceof LiveInlineDiffPreviewer) {
-      this.previewer.addDispose(
-        this.previewer.onPartialEditEvent!((event) => {
+    this.listenPreviewer(this.previewer);
+
+    return this.previewer;
+  }
+
+  private listenPreviewer(previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined) {
+    if (!previewer) {
+      return;
+    }
+
+    if (previewer instanceof LiveInlineDiffPreviewer) {
+      previewer.addDispose(
+        previewer.onPartialEditEvent!((event) => {
           this._onPartialEditEvent.fire(event);
         }),
       );
     }
 
-    this.previewer.addDispose(this.previewer.onLineCount((lineCount) => this._onMaxLineCount.fire(lineCount)));
-    return this.previewer;
+    previewer.addDispose(previewer.onLineCount((lineCount) => this._onMaxLineCount.fire(lineCount)));
   }
 
   getPreviewer(): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined {

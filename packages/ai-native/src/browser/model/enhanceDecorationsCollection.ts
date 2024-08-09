@@ -11,6 +11,7 @@ import {
   Range,
 } from '@opensumi/ide-monaco';
 import { space } from '@opensumi/ide-utils/lib/strings';
+import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import styles from './styles.module.less';
 
@@ -33,6 +34,8 @@ export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   resume(): void;
   getRange(): IRange;
   setRange(newRange: IRange): void;
+  group?: UndoRedoGroup;
+  setGroup(group: UndoRedoGroup): void;
 }
 
 export interface IDeltaDecorationsOptions {
@@ -41,6 +44,7 @@ export interface IDeltaDecorationsOptions {
   codeEditor: ICodeEditor;
   deltaData: Partial<IDeltaData>;
   isHidden?: boolean;
+  group?: UndoRedoGroup;
 }
 
 class DeltaDecorations implements IEnhanceModelDeltaDecoration {
@@ -49,6 +53,7 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   options: IModelDecorationOptions;
 
   private resumeRange: IRange;
+  private _group: UndoRedoGroup;
 
   private _hidden = false;
   get isHidden(): boolean {
@@ -71,8 +76,12 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
     return this.metadata.editorDecoration;
   }
 
+  public get group(): UndoRedoGroup {
+    return this._group;
+  }
+
   constructor(protected readonly metadata: IDeltaDecorationsOptions) {
-    const { editorDecoration, deltaData, isHidden } = metadata;
+    const { editorDecoration, deltaData, isHidden, group } = metadata;
 
     if (isUndefined(deltaData.length)) {
       this.length = editorDecoration.range.endLineNumber - editorDecoration.range.startLineNumber;
@@ -89,6 +98,14 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
     if (this._hidden) {
       this.hide();
     }
+
+    if (!isUndefined(group)) {
+      this.setGroup(group);
+    }
+  }
+
+  setGroup(group): void {
+    this._group = group;
   }
 
   private changeVisibility(newClassName: string, newRange: Range): void {
@@ -191,7 +208,8 @@ export class EnhanceDecorationsCollection extends Disposable {
   }
 
   set(
-    decorations: (IModelDeltaDecoration & Partial<Pick<IEnhanceModelDeltaDecoration, 'length' | 'isHidden'>>)[],
+    decorations: (IModelDeltaDecoration &
+      Partial<Pick<IEnhanceModelDeltaDecoration, 'length' | 'isHidden' | 'group'>>)[],
   ): void {
     this.clear();
 
@@ -206,6 +224,7 @@ export class EnhanceDecorationsCollection extends Disposable {
             editorDecoration: decoration,
             codeEditor: this.codeEditor,
             isHidden: decoration.isHidden,
+            group: decoration.group,
             deltaData: {
               dispose: () => this.delete(id),
               length: decoration.length,
@@ -220,6 +239,10 @@ export class EnhanceDecorationsCollection extends Disposable {
 
   getDecorations(): IEnhanceModelDeltaDecoration[] {
     return this.deltaDecorations;
+  }
+
+  getDecorationByGroup(group: UndoRedoGroup): IEnhanceModelDeltaDecoration | undefined {
+    return this.deltaDecorations.find((d) => d.group === group);
   }
 
   getDecorationByLineNumber(lineNumber: number): IEnhanceModelDeltaDecoration | undefined {
