@@ -33,7 +33,13 @@ export const AILayout = () => {
           />
           <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
             <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
-            <SlotRenderer flex={1} defaultSize={layout.bottom?.size} minResize={160} slot='bottom' isTabbar={true} />
+            <SlotRenderer
+              flex={1}
+              defaultSize={layout.bottom?.currentId ? layout.bottom?.size : 0}
+              minResize={160}
+              slot='bottom'
+              isTabbar={true}
+            />
           </SplitPanel>
           <SlotRenderer
             slot='right'
