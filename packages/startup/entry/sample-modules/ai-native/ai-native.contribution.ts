@@ -85,31 +85,27 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
-    const doPreview = async (editor, value, token) => {
-      const crossCode = this.getCrossCode(editor);
-      const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
-      const controller = new InlineChatController({ enableCodeblockRender: true });
-      const stream = await this.aiBackService.requestStream(prompt, {}, token);
-      controller.mountReadable(stream);
-
-      return controller;
-    };
-
     registry.registerInteractiveInput(
       {
         handleStrategy: (editor, value) => {
-          const isEmptySelection = editor.getSelection()?.isEmpty();
-          if (isEmptySelection) {
-            return ERunStrategy.PREVIEW;
+          if (value.includes('execute')) {
+            return ERunStrategy.EXECUTE;
           }
 
-          return ERunStrategy.DIFF_PREVIEW;
+          return ERunStrategy.PREVIEW;
         },
       },
       {
         execute: async (editor, value, token) => {},
-        providerPreviewStrategy: doPreview,
-        providerDiffPreviewStrategy: doPreview,
+        providerPreviewStrategy: async (editor, value, token) => {
+          const crossCode = this.getCrossCode(editor);
+          const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
+          const controller = new InlineChatController({ enableCodeblockRender: true });
+          const stream = await this.aiBackService.requestStream(prompt, {}, token);
+          controller.mountReadable(stream);
+
+          return controller;
+        },
       },
     );
 

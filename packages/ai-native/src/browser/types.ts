@@ -25,18 +25,24 @@ interface IBaseInlineChatHandler<T extends any[]> {
    * 直接执行 action 的操作，点击后 inline chat 立即消失
    */
   execute?: (...args: T) => MaybePromise<void>;
+}
+
+interface IDiffPreviewInlineChatHandler<T extends any[]> extends IBaseInlineChatHandler<T> {
   /**
    * 提供 diff editor 的预览策略
    */
   providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
+}
+
+interface IPreviewInlineChatHandler<T extends any[]> extends IBaseInlineChatHandler<T> {
   /**
    * 在 editor 里直接预览输出的结果
    */
   providerPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
 }
 
-export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
-export type IInteractiveInputHandler = IBaseInlineChatHandler<
+export type IEditorInlineChatHandler = IDiffPreviewInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
+export type IInteractiveInputHandler = IPreviewInlineChatHandler<
   [editor: ICodeEditor, value: string, token: CancellationToken]
 >;
 
@@ -45,10 +51,6 @@ export enum ERunStrategy {
    * 正常执行，执行后 input 直接消失
    */
   EXECUTE = 'EXECUTE',
-  /**
-   * 预览 diff，执行后 input 保留，显示 inline diff editor
-   */
-  DIFF_PREVIEW = 'DIFF_PREVIEW',
   /**
    * 预览输出结果，执行后 input 保留，并在 editor 里直接展示输出结果
    */
