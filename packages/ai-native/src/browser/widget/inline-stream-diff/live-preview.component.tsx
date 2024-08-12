@@ -5,7 +5,7 @@ import ReactDOMClient from 'react-dom/client';
 import { Autowired, Injectable } from '@opensumi/di';
 import { KeybindingRegistry, useDisposable } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { Emitter, Event, IPosition, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { Emitter, Event, IPosition, isDefined, isUndefined, uuid } from '@opensumi/ide-core-common';
 import {
   ICodeEditor,
   IEditorDecorationsCollection,
@@ -106,7 +106,10 @@ const PartialEditComponent = (props: {
 
   return (
     <div
-      className={cls('kt-inline-diff-accept-partial-widget-container', styles.inline_diff_accept_partial_widget_container)}
+      className={cls(
+        'kt-inline-diff-accept-partial-widget-container',
+        styles.inline_diff_accept_partial_widget_container,
+      )}
       style={{ marginLeft: scrollLeft }}
     >
       <div className={styles.content}>
@@ -293,15 +296,15 @@ export class RemovedZoneWidget extends ZoneWidget {
   constructor(editor: ICodeEditor, public readonly textLines: ITextLinesTokens[], options: IRemovedZoneWidgetOptions) {
     super(editor, options);
 
-    if (!isUndefined(options.isHidden)) {
+    if (isDefined(options.isHidden)) {
       this._hidden = options.isHidden;
     }
 
-    if (!isUndefined(options.recordPosition)) {
+    if (isDefined(options.recordPosition)) {
       this._recordPosition = options.recordPosition;
     }
 
-    if (!isUndefined(options.undoRedoGroup)) {
+    if (isDefined(options.undoRedoGroup)) {
       this._group = options.undoRedoGroup;
     }
 
@@ -355,7 +358,7 @@ export class RemovedZoneWidget extends ZoneWidget {
     super.show(pos, heightInLines);
   }
 
-  override revealRange(): void { }
+  override revealRange(): void {}
 
   override create(): void {
     super.create();

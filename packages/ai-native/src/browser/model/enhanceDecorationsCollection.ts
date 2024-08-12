@@ -1,4 +1,4 @@
-import { Disposable, Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, isDefined, isUndefined } from '@opensumi/ide-core-common';
 import {
   ICodeEditor,
   IContentSizeChangedEvent,
@@ -99,7 +99,7 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
       this.hide();
     }
 
-    if (!isUndefined(group)) {
+    if (isDefined(group)) {
       this.setGroup(group);
     }
   }
