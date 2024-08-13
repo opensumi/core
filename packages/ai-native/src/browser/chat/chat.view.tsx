@@ -20,7 +20,13 @@ import {
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import 'react-chat-elements/dist/main.css';
-import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
+import {
+  AI_CHAT_VIEW_ID,
+  IChatAgentService,
+  IChatInternalService,
+  IChatMessageStructure,
+  SLASH_SYMBOL,
+} from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -58,6 +64,8 @@ export const AIChatView = observer(() => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
 
+  const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
+
   const [messageListData, dispatchMessage] = React.useReducer((state: MessageData[], action: TDispatchAction) => {
     switch (action.type) {
       case 'add':
@@ -79,7 +87,34 @@ export const AIChatView = observer(() => {
 
   const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
 
-  const shortcutCommands = React.useMemo(() => chatFeatureRegistry.getAllShortcutSlashCommand(), [chatFeatureRegistry]);
+  React.useEffect(() => {
+    const featureSlashCommands = chatFeatureRegistry.getAllShortcutSlashCommand();
+
+    const dispose = chatAgentService.onDidChangeAgents(() => {
+      const agentSlashCommands = chatAgentService
+        .getCommands()
+        .filter((c) => c.isShortcut)
+        .map(
+          (c) =>
+            new ChatSlashCommandItemModel(
+              {
+                icon: '',
+                name: `${c.name} `,
+                description: c.description,
+                isShortcut: c.isShortcut,
+              },
+              c.name,
+              c.agentId,
+            ),
+        );
+
+      setShortcutCommands(featureSlashCommands.concat(agentSlashCommands));
+    });
+
+    setShortcutCommands(featureSlashCommands);
+
+    return () => dispose.dispose();
+  }, [chatFeatureRegistry, chatAgentService]);
 
   const ChatInputWrapperRender = React.useMemo(() => {
     if (chatRenderRegistry.chatInputRender) {
