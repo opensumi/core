@@ -71,13 +71,25 @@ export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
     <div className={styles.monaco_wrapper}>
       <div className={styles.action_toolbar}>
         <Popover id={`ai-chat-inser-${useUUID}`} title={localize('aiNative.chat.code.insert')}>
-          <EnhanceIcon className={getIcon('insert')} onClick={() => handleInsert()} />
+          <EnhanceIcon
+            className={getIcon('insert')}
+            onClick={() => handleInsert()}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.chat.code.insert')}
+          />
         </Popover>
         <Popover
           id={`ai-chat-copy-${useUUID}`}
           title={localize(isCoping ? 'aiNative.chat.code.copy.success' : 'aiNative.chat.code.copy')}
         >
-          <EnhanceIcon className={getIcon('copy')} onClick={() => handleCopy()} />
+          <EnhanceIcon
+            className={getIcon('copy')}
+            onClick={() => handleCopy()}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.chat.code.copy')}
+          />
         </Popover>
       </div>
       <Highlight language={language} ref={ref} className={styles.editor}>

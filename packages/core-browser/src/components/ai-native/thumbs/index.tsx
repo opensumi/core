@@ -70,6 +70,10 @@ export const Thumbs = (props: ThumbsProps) => {
             wrapperClassName={wrapperClassName}
             onClick={() => handleClick('up')}
             className={getExternalIcon(thumbsupIcon, KTICON_OWNER)}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.inline.chat.operate.thumbsup.title')}
+            ariaPressed={thumbsupIcon === 'thumbs-fill' ? 'true' : 'false'}
           />
         </Popover>
       )}
@@ -79,6 +83,10 @@ export const Thumbs = (props: ThumbsProps) => {
             wrapperClassName={wrapperClassName}
             onClick={() => handleClick('down')}
             className={getExternalIcon(thumbsdownIcon, KTICON_OWNER)}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.inline.chat.operate.thumbsdown.title')}
+            ariaPressed={thumbsdownIcon === 'thumbsdown-fill' ? 'true' : 'false'}
           />
         </Popover>
       )}

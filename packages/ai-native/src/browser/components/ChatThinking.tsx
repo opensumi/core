@@ -62,7 +62,7 @@ export const ChatThinking = (props: ITinkingProps) => {
             </span>
           )}
           {showStop && (
-            <div className={styles.block} onClick={handlePause}>
+            <div className={styles.block} onClick={handlePause} tabIndex={0} role='button'>
               <Icon className={getIcon('circle-pause')}></Icon>
               <span>{localize('aiNative.operate.stop.title')}</span>
             </div>
@@ -136,6 +136,8 @@ export const ChatThinkingResult = ({
                 wrapperClassName={styles.text_btn}
                 className={styles.transform}
                 onClick={handleRegenerate}
+                tabIndex={0}
+                role='button'
               >
                 <span>{localize('aiNative.operate.afresh.title')}</span>
               </EnhanceIcon>

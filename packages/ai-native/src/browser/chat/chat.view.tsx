@@ -476,7 +476,14 @@ export const AIChatView = observer(() => {
             id={'ai-chat-header-clear'}
             title={localize('aiNative.operate.clear.title')}
           >
-            <EnhanceIcon wrapperClassName={styles.action_btn} className={getIcon('clear')} onClick={handleClear} />
+            <EnhanceIcon
+              wrapperClassName={styles.action_btn}
+              className={getIcon('clear')}
+              onClick={handleClear}
+              tabIndex={0}
+              role='button'
+              ariaLabel={localize('aiNative.operate.clear.title')}
+            />
           </Popover>
           <Popover
             overlayClassName={styles.popover_icon}
@@ -488,6 +495,9 @@ export const AIChatView = observer(() => {
               wrapperClassName={styles.action_btn}
               className={getIcon('window-close')}
               onClick={handleCloseChatView}
+              tabIndex={0}
+              role='button'
+              ariaLabel={localize('aiNative.operate.close.title')}
             />
           </Popover>
         </div>
