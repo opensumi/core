@@ -4,6 +4,7 @@ import { DEFAULT_VSCODE_ENGINE_VERSION } from '@opensumi/ide-core-common/lib/con
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService } from '../../../common';
+import { ExtHostAppConfig } from '../../../common/ext.process';
 import {
   ExtHostAPIIdentifier,
   IExtHostDebugService,
@@ -18,7 +19,6 @@ import { ViewColumn } from '../../../common/vscode/enums';
 import * as extTypes from '../../../common/vscode/ext-types';
 import * as fileSystemTypes from '../../../common/vscode/file-system';
 import { IExtHostLocalization } from '../../../common/vscode/localization';
-import { ExtHostAppConfig } from '../../ext.process-base';
 
 import { ExtHostDebug, createDebugApiFactory } from './debug';
 import { ExtensionDocumentDataManagerImpl } from './doc';

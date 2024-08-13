@@ -4,7 +4,7 @@ import net from 'net';
 
 import { DebugAdapterForkExecutable, DebugStreamConnection } from '@opensumi/ide-debug';
 
-import { CustomChildProcess, CustomChildProcessModule } from '../../../ext.process-base';
+import { CustomChildProcess, CustomChildProcessModule } from '../../../../common/ext.process';
 
 import { DirectDebugAdapter } from './abstract-debug-adapter-session';
 
