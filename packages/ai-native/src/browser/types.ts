@@ -25,24 +25,18 @@ interface IBaseInlineChatHandler<T extends any[]> {
    * 直接执行 action 的操作，点击后 inline chat 立即消失
    */
   execute?: (...args: T) => MaybePromise<void>;
-}
-
-interface IDiffPreviewInlineChatHandler<T extends any[]> extends IBaseInlineChatHandler<T> {
   /**
-   * 提供 diff editor 的预览策略
+   * 在 editor 里预览输出的结果
+   */
+  providePreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
+  /**
+   * @deprecated use providePreviewStrategy api
    */
   providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
 }
 
-interface IPreviewInlineChatHandler<T extends any[]> extends IBaseInlineChatHandler<T> {
-  /**
-   * 在 editor 里直接预览输出的结果
-   */
-  providePreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
-}
-
-export type IEditorInlineChatHandler = IDiffPreviewInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
-export type IInteractiveInputHandler = IPreviewInlineChatHandler<
+export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
+export type IInteractiveInputHandler = IBaseInlineChatHandler<
   [editor: ICodeEditor, value: string, token: CancellationToken]
 >;
 

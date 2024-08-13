@@ -121,7 +121,7 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
+        providePreviewStrategy: async (editor: ICodeEditor, token) => {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Add Chinese comments to the code: \`\`\`\n ${crossCode}\`\`\`.`;
 
@@ -145,7 +145,7 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
+        providePreviewStrategy: async (editor: ICodeEditor, token) => {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
