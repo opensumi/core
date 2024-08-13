@@ -11,7 +11,12 @@ import { CancellationToken, Emitter, Progress, getDebugLogger, raceCancellation 
 import { IChatMessage, IChatProgress } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
-import { IChatProgressChunk, IExtHostChatAgents, IMainThreadChatAgents } from '../../../common/sumi/chat-agents';
+import {
+  IChatProgressChunk,
+  IExtHostChatAgents,
+  IInlineChatPreviewProviderMetadata,
+  IMainThreadChatAgents,
+} from '../../../common/sumi/chat-agents';
 import { IExtensionDescription } from '../../../common/vscode';
 import * as typeConverters from '../../../common/vscode/converter';
 
@@ -38,6 +43,14 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
     this.agents.set(handle, agent);
     this.proxy.$registerAgent(handle, name, {});
     return agent.apiAgent;
+  }
+
+  createInlineChatAgent(extension: IExtensionDescription, name: string, handler: sumi.ChatAgentHandler) {
+    const handle = ExtHostChatAgents.idPool++;
+    const agent = new ExtHostChatAgent(extension, name, this.proxy, handle, handler);
+    this.agents.set(handle, agent);
+    this.proxy.$registerInlineChatProvider(handle, name, {});
+    return agent.apiInlineChatAgent;
   }
 
   sendMessage(extension: IExtensionDescription, chunk: sumi.ChatAgentCustomReplyMessage) {
@@ -310,6 +323,18 @@ class ExtHostChatAgent {
     };
   }
 
+  get apiInlineChatAgent(): sumi.InlineChatAgent {
+    let disposed = false;
+    const that = this;
+
+    return {
+      dispose() {
+        disposed = true;
+        that._proxy.$unregisterAgent(that._handle);
+      },
+    };
+  }
+
   get apiAgent(): sumi.ChatAgent {
     let disposed = false;
     let updateScheduled = false;
@@ -433,6 +458,10 @@ export function createChatApiFactory(extension: IExtensionDescription, extHostCh
     },
     sendMessage(chunk: sumi.ChatAgentContent) {
       return extHostChatAgents.sendMessage(extension, chunk);
+    },
+    // proposed api
+    createInlineChatAgent(name: string, handler: sumi.ChatAgentHandler) {
+      return extHostChatAgents.createInlineChatAgent(extension, name, handler);
     },
   };
 }
