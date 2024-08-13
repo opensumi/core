@@ -33,16 +33,22 @@ export const ExtHostSumiAPIIdentifier = {
   ExtHostChatAgents: createExtHostContextProxyIdentifier<IExtHostChatAgents>('ExtHostChatAgents'),
 };
 
-export interface ExternalSumiExtApi {
-  [api: string]: {
-    /**
-     * register rpc identifier when main thread could call
-     */
-    identifier?: ProxyIdentifier;
-    /**
-     * api factory
-     * can use rpcProtocol to call main thread
-     */
-    createApiFactory: (rpcProtocol: IRPCProtocol) => any;
-  };
+/**
+ * sumi API extender
+ */
+export abstract class SumiApiExtender<T = any> {
+  constructor(protected rpcProtocol: IRPCProtocol) {}
+  /**
+   * create rpc service when main thread could call
+   */
+  createRPCService?: () => [identifier: ProxyIdentifier<T>, service: T];
+  /**
+   * api factory
+   * can use rpc service to call main thread
+   */
+  createApiFactory: (service?: T) => any;
+}
+
+export interface SumiApiExtenders extends Record<string, any> {
+  [api: string]: new (rpcProtocol: IRPCProtocol) => SumiApiExtender;
 }

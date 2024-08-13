@@ -1,4 +1,4 @@
-import type { ExternalSumiExtApi } from './sumi';
+import type { SumiApiExtenders } from './sumi';
 import type { CommandHandler } from './vscode';
 import type { ConstructorOf, Injector } from '@opensumi/di';
 import type { ILogService, LogLevel } from '@opensumi/ide-core-common';
@@ -48,7 +48,7 @@ export interface ExtHostAppConfig {
   /**
    * register external sumi extension api
    */
-  externalSumiExtApi?: ExternalSumiExtApi;
+  sumiApiExtenders?: SumiApiExtenders;
 }
 
 export interface ExtProcessConfig extends ExtHostAppConfig {

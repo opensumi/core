@@ -118,7 +118,7 @@ class OpenSumiAPIImpl extends ApiImplFactory {
     injector: Injector,
   ) {
     const appConfig: ExtHostAppConfig = injector.get(ExtHostAppConfig);
-    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter), appConfig.externalSumiExtApi);
+    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter), appConfig.sumiApiExtenders);
   }
 }
 
