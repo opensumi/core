@@ -172,6 +172,9 @@ export const InteractiveInput = React.forwardRef(
                   wrapperClassName={styles.send_icon}
                   className={getIcon('send-solid')}
                   onClick={handleSend}
+                  tabIndex={0}
+                  role='button'
+                  ariaLabel={localize('aiNative.chat.enter.send')}
                 />
               </Popover>
             )}

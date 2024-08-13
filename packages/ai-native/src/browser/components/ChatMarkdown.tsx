@@ -96,7 +96,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
     };
   }, [props.markdown]);
 
-  return <div className={cls(styles.markdown_container, props.className)} ref={ref} />;
+  return <div className={cls(styles.markdown_container, props.className)} ref={ref} tabIndex={0} />;
 };
 
 export function postProcessCodeBlockLanguageId(lang: string | undefined): string {
