@@ -495,11 +495,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [this.monacoEditor]);
     acceptPartialEditWidget.show({ position: { lineNumber, column: 1 } });
 
-    const dispoable = acceptPartialEditWidget.onDispose(() => {
+    const disposable = acceptPartialEditWidget.onDispose(() => {
       const id = acceptPartialEditWidget.getId();
       this.partialEditWidgetList = this.partialEditWidgetList.filter((p) => p.getId() !== id);
 
-      dispoable.dispose();
+      disposable.dispose();
     });
 
     acceptPartialEditWidget.addDispose([

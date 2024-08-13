@@ -27,9 +27,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   protected readonly injector: Injector;
 
   protected inlineContentWidget: AIInlineContentWidget | null = null;
-  protected options: IDiffPreviewerOptions;
   protected selection: Selection;
   protected model: ITextModel;
+
+  public options: IDiffPreviewerOptions;
 
   get disposeWhenEditorClosed() {
     return this.options.disposeWhenEditorClosed;
@@ -96,6 +97,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   abstract handleAction(action: EResultKind): void;
   abstract getPosition(): IPosition;
 
+  setOptions(options: IDiffPreviewerOptions): void {
+    this.options = options;
+  }
+
   create(
     selection: Selection,
     options: IDiffPreviewerOptions = {
@@ -103,7 +108,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     },
   ): void {
     this.selection = selection;
-    this.options = options;
+    this.setOptions(options);
     this.node = this.createNode();
   }
 
