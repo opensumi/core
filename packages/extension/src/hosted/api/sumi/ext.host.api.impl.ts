@@ -2,7 +2,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IReporter, REPORT_HOST, ReporterService } from '@opensumi/ide-core-common';
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
-import { ExtHostSumiAPIIdentifier } from '../../../common/sumi';
+import { ExtHostSumiAPIIdentifier, ExternalSumiExtApi } from '../../../common/sumi';
 import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
 
@@ -21,6 +21,7 @@ export function createAPIFactory(
   extensionService: IExtensionHostService | IExtensionWorkerHost,
   type: string,
   reporterEmitter: IReporter,
+  externalSumiExtApi: ExternalSumiExtApi = {},
 ) {
   if (type === 'worker') {
     rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
@@ -58,6 +59,17 @@ export function createAPIFactory(
     new ExtHostChatAgents(rpcProtocol),
   ) as ExtHostChatAgents;
 
+  const externalSumiApis = Object.keys(externalSumiExtApi).reduce((acc, key) => {
+    const identifier = externalSumiExtApi[key].identifier;
+    const api = externalSumiExtApi[key].createApiFactory(rpcProtocol);
+    // register external api rpc protocol
+    if (identifier) {
+      rpcProtocol.set(identifier, api);
+    }
+    acc[key] = api;
+    return acc;
+  }, {});
+
   return (extension: IExtensionDescription) => {
     const reporter = new ReporterService(reporterEmitter, {
       extensionId: extension.extensionId,
@@ -75,6 +87,7 @@ export function createAPIFactory(
       commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
       toolbar: createToolbarAPIFactory(extension, extHostToolbar),
       chat: createChatApiFactory(extension, extHostChatAgents),
+      ...externalSumiApis,
     };
   };
 }

@@ -1,4 +1,9 @@
-import { createExtHostContextProxyIdentifier, createMainContextProxyIdentifier } from '@opensumi/ide-connection';
+import {
+  IRPCProtocol,
+  ProxyIdentifier,
+  createExtHostContextProxyIdentifier,
+  createMainContextProxyIdentifier,
+} from '@opensumi/ide-connection';
 
 import { IExtHostChatAgents, IMainThreadChatAgents } from './chat-agents';
 import { IExtHostCommon, IMainThreadCommon } from './common';
@@ -27,3 +32,17 @@ export const ExtHostSumiAPIIdentifier = {
   ExtHostIDEWindow: createExtHostContextProxyIdentifier<IExtHostIDEWindow>('ExtHostIDEWindow'),
   ExtHostChatAgents: createExtHostContextProxyIdentifier<IExtHostChatAgents>('ExtHostChatAgents'),
 };
+
+export interface ExternalSumiExtApi {
+  [api: string]: {
+    /**
+     * register rpc identifier when main thread could call
+     */
+    identifier?: ProxyIdentifier;
+    /**
+     * api factory
+     * can use rpcProtocol to call main thread
+     */
+    createApiFactory: (rpcProtocol: IRPCProtocol) => any;
+  };
+}
