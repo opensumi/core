@@ -21,7 +21,7 @@ interface IEnhanceIconProps {
   tabIndex?: number;
   role?: string;
   ariaLabel?: string;
-  ariaPressed?: string;
+  ariaPressed?: boolean | 'mixed' | 'false' | 'true' | undefined;
 }
 
 export const EnhanceIcon = React.forwardRef<HTMLDivElement | null, IEnhanceIconProps>(
