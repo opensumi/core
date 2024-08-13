@@ -2263,9 +2263,9 @@ __metadata:
     "@opensumi/ide-variable": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
-    "@rjsf/core": "npm:5.5.2"
-    "@rjsf/utils": "npm:5.5.2"
-    "@rjsf/validator-ajv6": "npm:5.19.4"
+    "@rjsf/core": "npm:5.20.0"
+    "@rjsf/utils": "npm:5.20.0"
+    "@rjsf/validator-ajv6": "npm:5.20.0"
     "@types/btoa": "npm:^1.2.3"
     anser: "npm:^2.1.1"
     btoa: "npm:^1.2.1"
@@ -3262,47 +3262,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.5.2":
-  version: 5.5.2
-  resolution: "@rjsf/core@npm:5.5.2"
+"@rjsf/core@npm:5.20.0":
+  version: 5.20.0
+  resolution: "@rjsf/core@npm:5.20.0"
   dependencies:
-    lodash: "npm:^4.17.15"
-    lodash-es: "npm:^4.17.15"
-    markdown-to-jsx: "npm:^7.2.0"
-    nanoid: "npm:^3.3.4"
-    prop-types: "npm:^15.7.2"
+    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
+    markdown-to-jsx: "npm:^7.4.1"
+    nanoid: "npm:^3.3.7"
+    prop-types: "npm:^15.8.1"
   peerDependencies:
-    "@rjsf/utils": ^5.0.0
+    "@rjsf/utils": ^5.19.x
     react: ^16.14.0 || >=17
-  checksum: 10/55f0f9085b9ad24cf4d40e2a3259df43394af6513607f44ff3ab83f5b2097f49ea02da93e21eb7b9a1dd356aacd6e581accdde1c69d0f5c0288655f4f5269def
+  checksum: 10/19a7db9823bcc87a4f4eff784df9ec776ec0dd7f5ebf37b64fac8a347f498ac1f79d16ed590c7b02c4f9315c1667e0d17c6d12bcd75be83944b4ff74e4c6944e
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.5.2":
-  version: 5.5.2
-  resolution: "@rjsf/utils@npm:5.5.2"
+"@rjsf/utils@npm:5.20.0":
+  version: 5.20.0
+  resolution: "@rjsf/utils@npm:5.20.0"
   dependencies:
     json-schema-merge-allof: "npm:^0.8.1"
     jsonpointer: "npm:^5.0.1"
-    lodash: "npm:^4.17.15"
-    lodash-es: "npm:^4.17.15"
+    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
     react-is: "npm:^18.2.0"
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 10/4c061fdbf2cbb75722e67c3f5a20e75300d6af64ca9c1e7cb0c75b6ffabe380bd52ab100f13b27ac5b82012f1e421e2d81bd76754c6029380c2f49725ff161ac
+  checksum: 10/d9070f0c4f8ccd368d03de634bf6c49075a5dab7d9ce56596cd1d8d9feda6848de29bb306a2c59505bf2f5c0674cb5fa9dbec8b338a2f7366e512e8e812fc138
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv6@npm:5.19.4":
-  version: 5.19.4
-  resolution: "@rjsf/validator-ajv6@npm:5.19.4"
+"@rjsf/validator-ajv6@npm:5.20.0":
+  version: 5.20.0
+  resolution: "@rjsf/validator-ajv6@npm:5.20.0"
   dependencies:
     ajv: "npm:^6.12.6"
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
   peerDependencies:
     "@rjsf/utils": ^5.19.x
-  checksum: 10/55ffc7647274502434bbfa6723a8e6bf16eeb673cca2281ce36567551ecebc0cde0e1e0fc1b45621f1dfac13ac872c2493ae233068b40de6a8d6ea1867df1c0b
+  checksum: 10/a8a455e8b911d49e7852f1bc2dc12f1124e102c3de37863ef0439f8916476b6d090029631f5e4843d4dcb3a23d717fe36112547e35c3d9eea674d4ba97801bf9
   languageName: node
   linkType: hard
 
@@ -12968,7 +12968,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash-es@npm:^4.17.15, lodash-es@npm:^4.17.21":
+"lodash-es@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash-es@npm:4.17.21"
   checksum: 10/03f39878ea1e42b3199bd3f478150ab723f93cc8730ad86fec1f2804f4a07c6e30deaac73cad53a88e9c3db33348bb8ceeb274552390e7a75d7849021c02df43
@@ -13325,12 +13325,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-to-jsx@npm:^7.2.0":
-  version: 7.4.3
-  resolution: "markdown-to-jsx@npm:7.4.3"
+"markdown-to-jsx@npm:^7.4.1":
+  version: 7.4.7
+  resolution: "markdown-to-jsx@npm:7.4.7"
   peerDependencies:
     react: ">= 0.14.0"
-  checksum: 10/233aba70f28fce9fd62f983d10d5f5bb781dc1de608a215b1e43c10cba160754824bd494fa534a74a4dbd41d5184f693816ec35b507d2adb5a6ef7b99ccb5e1d
+  checksum: 10/d421f561a57256164564f4b4ac1c3439493f7b88d46ca8d1ed429e481a199a8756591e180d401654c0826ccabe9e76ce4fb97286a0b3c43a7a6346c735778b2b
   languageName: node
   linkType: hard
 
@@ -13995,7 +13995,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.4, nanoid@npm:^3.3.7":
+"nanoid@npm:^3.3.7":
   version: 3.3.7
   resolution: "nanoid@npm:3.3.7"
   bin:
@@ -16253,7 +16253,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.8, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.8, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
