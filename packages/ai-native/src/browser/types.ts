@@ -38,7 +38,7 @@ interface IPreviewInlineChatHandler<T extends any[]> extends IBaseInlineChatHand
   /**
    * 在 editor 里直接预览输出的结果
    */
-  providerPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
+  providePreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
 }
 
 export type IEditorInlineChatHandler = IDiffPreviewInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;

@@ -268,8 +268,8 @@ export class InlineChatHandler extends Disposable {
           handler.execute && strategy === ERunStrategy.EXECUTE
             ? handler.execute!.bind(this, monacoEditor, value, this.cancelIndicator.token)
             : undefined,
-          handler.providerPreviewStrategy && strategy === ERunStrategy.PREVIEW
-            ? handler.providerPreviewStrategy.bind(this, monacoEditor, value, this.cancelIndicator.token)
+          handler.providePreviewStrategy && strategy === ERunStrategy.PREVIEW
+            ? handler.providePreviewStrategy.bind(this, monacoEditor, value, this.cancelIndicator.token)
             : undefined,
         );
       }),

@@ -97,7 +97,7 @@ export class AINativeContribution implements AINativeCoreContribution {
       },
       {
         execute: async (editor, value, token) => {},
-        providerPreviewStrategy: async (editor, value, token) => {
+        providePreviewStrategy: async (editor, value, token) => {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
           const controller = new InlineChatController({ enableCodeblockRender: true });
