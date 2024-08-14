@@ -74,8 +74,8 @@ export class InlineInputHandler extends Disposable {
       return;
     }
 
-    if (strategy === ERunStrategy.PREVIEW && handler.providerPreviewStrategy) {
-      const previewResponse = await handler.providerPreviewStrategy(monacoEditor, value, this.cancelIndicator.token);
+    if (strategy === ERunStrategy.PREVIEW && handler.providePreviewStrategy) {
+      const previewResponse = await handler.providePreviewStrategy(monacoEditor, value, this.cancelIndicator.token);
 
       if (CancelResponse.is(previewResponse)) {
         widget.launchChatStatus(EInlineChatStatus.READY);
