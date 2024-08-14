@@ -41,6 +41,22 @@ import { AccordionService } from './accordion/accordion.service';
 import { TabbarService } from './tabbar/tabbar.service';
 import { TabBarHandler } from './tabbar-handler';
 
+const defaultLayoutState = {
+  [SlotLocation.left]: {
+    currentId: undefined,
+    size: undefined,
+  },
+  [SlotLocation.right]: {
+    // 依照下面的恢复逻辑，这里设置为 `''` 时，就不会恢复右侧的 TabBar 的状态（即选中相应的 viewContainer）
+    currentId: '',
+    size: undefined,
+  },
+  [SlotLocation.bottom]: {
+    currentId: undefined,
+    size: undefined,
+  },
+};
+
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(INJECTOR_TOKEN)
@@ -154,21 +170,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   restoreTabbarService = async (service: TabbarService) => {
-    this.state = this.layoutState.getState(LAYOUT_STATE.MAIN, {
-      [SlotLocation.left]: {
-        currentId: undefined,
-        size: undefined,
-      },
-      [SlotLocation.right]: {
-        // 依照下面的恢复逻辑，这里设置为 `''` 时，就不会恢复右侧的 TabBar 的状态（即选中相应的 viewContainer）
-        currentId: '',
-        size: undefined,
-      },
-      [SlotLocation.bottom]: {
-        currentId: undefined,
-        size: undefined,
-      },
-    });
+    this.state = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultLayoutState);
 
     const { currentId, size } = this.state[service.location] || {};
     service.prevSize = size;
@@ -264,18 +266,20 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   getTabbarService(location: string) {
     const service = this.tabbarServices.get(location) || this.injector.get(TabbarService, [location]);
     if (!this.tabbarServices.get(location)) {
-      service.onCurrentChange(({ currentId }) => {
-        this.storeState(service, currentId);
-        // onView 也支持监听 containerId
-        this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: currentId }));
-        if (currentId && SUPPORT_ACCORDION_LOCATION.has(service.location)) {
-          const accordionService = this.getAccordionService(currentId);
-          accordionService?.tryUpdateResize();
-          accordionService?.expandedViews.forEach((view) => {
-            this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: view.id }));
-          });
-        }
-      });
+      service.addDispose(
+        service.onCurrentChange(({ currentId }) => {
+          this.storeState(service, currentId);
+          // onView 也支持监听 containerId
+          this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: currentId }));
+          if (currentId && SUPPORT_ACCORDION_LOCATION.has(service.location)) {
+            const accordionService = this.getAccordionService(currentId);
+            accordionService?.tryUpdateResize();
+            accordionService?.expandedViews.forEach((view) => {
+              this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: view.id }));
+            });
+          }
+        }),
+      );
       service.viewReady.promise
         .then(() => service.restoreState())
         .then(() => this.restoreTabbarService(service))
@@ -283,11 +287,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
       const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId), 100);
-      service.onSizeChange(debouncedStoreState);
+      service.addDispose(service.onSizeChange(debouncedStoreState));
       if (location === SlotLocation.bottom) {
         // use this getter's side effect to set bottomExpanded contextKey
         const debouncedUpdate = debounce(() => void this.bottomExpanded, 100);
-        service.onSizeChange(() => debouncedUpdate);
+        service.addDispose(service.onSizeChange(() => debouncedUpdate));
       }
       this.tabbarServices.set(location, service);
     }
@@ -372,17 +376,21 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
       const service = this.getAccordionService(options.containerId);
       // 如果 append view 时尝试注册 holdTabbarComponent
-      service.onBeforeAppendViewEvent(() => {
-        this.tryUpdateTabbar(options.containerId);
-      });
-      service.onAfterDisposeViewEvent(() => {
-        // 如果没有其他 view ，则 remove 掉 container
-        if (service.views.length === 0) {
-          this.disposeContainer(options.containerId);
-          // 重新注册到 holdTabbarComponent ,以便再次 append 时能注册传上去
-          this.holdTabbarComponent.set(options.containerId, { views, options, side });
-        }
-      });
+      service.addDispose(
+        service.onBeforeAppendViewEvent(() => {
+          this.tryUpdateTabbar(options.containerId);
+        }),
+      );
+      service.addDispose(
+        service.onAfterDisposeViewEvent(() => {
+          // 如果没有其他 view ，则 remove 掉 container
+          if (service.views.length === 0) {
+            this.disposeContainer(options.containerId);
+            // 重新注册到 holdTabbarComponent ,以便再次 append 时能注册传上去
+            this.holdTabbarComponent.set(options.containerId, { views, options, side });
+          }
+        }),
+      );
       return options.containerId;
     }
     const tabbarService = this.getTabbarService(side);
@@ -443,11 +451,13 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     const viewReady = new Deferred<void>();
     const accordionService = this.getAccordionService(containerId);
     if (!accordionService.visibleViews.find((view) => view.id === viewId)) {
-      accordionService.onAfterAppendViewEvent((id) => {
-        if (id === viewId) {
-          viewReady.resolve();
-        }
-      });
+      accordionService.addDispose(
+        accordionService.onAfterAppendViewEvent((id) => {
+          if (id === viewId) {
+            viewReady.resolve();
+          }
+        }),
+      );
     } else {
       viewReady.resolve();
     }
