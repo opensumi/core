@@ -88,6 +88,7 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
   @Autowired(InlineInputChatService)
   private inlineInputChatService: InlineInputChatService;
 
+  allowEditorOverflow = true;
   positionPreference = [ContentWidgetPositionPreference.ABOVE];
 
   override dispose(): void {
