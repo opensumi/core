@@ -1,4 +1,5 @@
 import debounce from 'lodash/debounce';
+import isEqual from 'lodash/isEqual';
 import { action, makeObservable, observable, runInAction } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
@@ -82,7 +83,7 @@ export class AccordionService extends WithEventBus {
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
-  @Autowired()
+  @Autowired(LayoutState)
   private layoutState: LayoutState;
 
   @Autowired(IProgressService)
@@ -118,16 +119,18 @@ export class AccordionService extends WithEventBus {
   private topViewKey: IContextKey<string>;
   private scopedCtxKeyService: IScopedContextKeyService;
 
-  private didChangeViewTitleEmitter: Emitter<AccordionViewChangeEvent> = new Emitter<AccordionViewChangeEvent>();
+  private didChangeViewTitleEmitter: Emitter<AccordionViewChangeEvent> = this.registerDispose(
+    new Emitter<AccordionViewChangeEvent>(),
+  );
   public onDidChangeViewTitle: Event<AccordionViewChangeEvent> = this.didChangeViewTitleEmitter.event;
 
-  private beforeAppendViewEmitter = new Emitter<string>();
+  private beforeAppendViewEmitter = this.registerDispose(new Emitter<string>());
   public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
 
-  private afterAppendViewEmitter = new Emitter<string>();
+  private afterAppendViewEmitter = this.registerDispose(new Emitter<string>());
   public onAfterAppendViewEvent = this.afterAppendViewEmitter.event;
 
-  private afterDisposeViewEmitter = new Emitter<string>();
+  private afterDisposeViewEmitter = this.registerDispose(new Emitter<string>());
   public onAfterDisposeViewEvent = this.afterDisposeViewEmitter.event;
 
   constructor(public containerId: string, private noRestore?: boolean) {
@@ -221,7 +224,7 @@ export class AccordionService extends WithEventBus {
     const defaultState: { [containerId: string]: SectionState } = {};
     this.visibleViews.forEach((view) => (defaultState[view.id] = { collapsed: false, hidden: false }));
     const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
-    if (restoredState !== defaultState) {
+    if (!isEqual(restoredState, defaultState)) {
       this.state = restoredState;
     }
     this.popViewKeyIfOnlyOneViewVisible();

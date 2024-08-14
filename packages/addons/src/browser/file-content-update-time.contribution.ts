@@ -232,10 +232,8 @@ export class FileAndContentUpdateTimeContribution extends WithEventBus {
     // additional edits for file-participants
     this._traceConfig = !!this.preferenceService.get<boolean>(TRACE_LOG_FLAG);
     this.addDispose(
-      this.preferenceService.onPreferenceChanged((e) => {
-        if (e.preferenceName === TRACE_LOG_FLAG) {
-          this._traceConfig = !!e.newValue;
-        }
+      this.preferenceService.onSpecificPreferenceChange(TRACE_LOG_FLAG, (e) => {
+        this._traceConfig = !!e.newValue;
       }),
     );
   }

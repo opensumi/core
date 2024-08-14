@@ -61,22 +61,25 @@ export type IAppRenderer = (app: (props: any) => JSX.Element) => void;
 
 const defaultAppRender =
   (dom: HTMLElement): IAppRenderer =>
-  (IDEApp: (props) => JSX.Element) => {
+  (IDEApp: (props: any) => JSX.Element) => {
     const root = ReactDom.createRoot(dom);
     root.render(<IDEApp />);
   };
 
+const debugLogger = getDebugLogger();
+
 export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRenderer) {
   const Layout = app.config.layoutComponent || DefaultLayout;
   const overlayComponents = app.browserModules
-    .filter((module) => module.isOverlay)
-    .map((module) => {
-      if (!module.component) {
-        getDebugLogger().warn('Overlay module does not have component', module);
-        return () => <></>;
+    .filter((mod) => mod.isOverlay)
+    .map((mod) => {
+      if (!mod.component) {
+        debugLogger.warn('Overlay module does not have component', mod);
+        return null;
       }
-      return module.component;
-    });
+      return mod.component;
+    })
+    .filter(Boolean) as React.ComponentType[];
 
   const IdeApp = (props) => <App {...props} app={app} main={Layout} overlays={overlayComponents} />;
 
