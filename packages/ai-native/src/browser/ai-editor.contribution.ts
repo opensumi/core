@@ -163,7 +163,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     this.addDispose(this.inlineDiffHandler.registerInlineDiffFeature(editor));
-    
+
     if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
       this.addDispose(this.intelligentCompletionsHandler.registerFeature(editor));
     }
