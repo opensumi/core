@@ -53,15 +53,15 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   private previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined;
 
   private _previewerNodeStore = new Map<string, InlineStreamDiffHandler | null>();
-  private _previewerOptionsStore = new Map<string, IDiffPreviewerOptions>();
 
   constructor() {
     super();
     this.registerDispose(
       this.eventBus.on(EditorGroupCloseEvent, (e: EditorGroupCloseEvent) => {
         const uriString = e.payload.resource.uri.toString();
-        const options = this._previewerOptionsStore.get(uriString);
-        if (options && options.disposeWhenEditorClosed) {
+        const node = this._previewerNodeStore.get(uriString);
+
+        if (node && node.previewerOptions.disposeWhenEditorClosed) {
           this.destroyPreviewer(uriString);
         }
       }),
@@ -105,11 +105,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     if (uri) {
       this.previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
       this.previewer.attachNode(node);
-
-      const options = this._previewerOptionsStore.get(uri.toString());
-      if (options) {
-        this.previewer.setOptions(options);
-      }
 
       const dispose = this.previewer.onDispose(() => {
         this.destroyPreviewer();
@@ -229,11 +224,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
     this.previewer.create(selection, options);
     this.previewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
-
-    const uri = monacoEditor.getModel()?.uri;
-    if (uri) {
-      this._previewerOptionsStore.set(uri.toString(), this.previewer.options);
-    }
 
     this.listenPreviewer(this.previewer);
 

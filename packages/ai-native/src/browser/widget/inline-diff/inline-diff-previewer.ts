@@ -21,20 +21,19 @@ export interface IDiffPreviewerOptions {
   disposeWhenEditorClosed: boolean;
 }
 
+export interface IInlineDiffPreviewerNode extends IDisposable {
+  previewerOptions: IDiffPreviewerOptions;
+  setPreviewerOptions(options: IDiffPreviewerOptions): void;
+}
+
 @Injectable({ multiple: true })
-export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Disposable {
+export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
   protected inlineContentWidget: AIInlineContentWidget | null = null;
   protected selection: Selection;
   protected model: ITextModel;
-
-  public options: IDiffPreviewerOptions;
-
-  get disposeWhenEditorClosed() {
-    return this.options.disposeWhenEditorClosed;
-  }
 
   constructor(protected readonly monacoEditor: ICodeEditor) {
     super();
@@ -97,10 +96,6 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   abstract handleAction(action: EResultKind): void;
   abstract getPosition(): IPosition;
 
-  setOptions(options: IDiffPreviewerOptions): void {
-    this.options = options;
-  }
-
   create(
     selection: Selection,
     options: IDiffPreviewerOptions = {
@@ -108,8 +103,8 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     },
   ): void {
     this.selection = selection;
-    this.setOptions(options);
     this.node = this.createNode();
+    this.node.setPreviewerOptions(options);
   }
 
   attachNode(node: N | undefined): void {

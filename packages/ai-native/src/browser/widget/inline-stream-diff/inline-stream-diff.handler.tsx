@@ -11,6 +11,7 @@ import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/to
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
+import { IDiffPreviewerOptions, IInlineDiffPreviewerNode } from '../inline-diff/inline-diff-previewer';
 
 import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
 import { IRemovedWidgetState } from './live-preview.component';
@@ -45,17 +46,20 @@ export interface IInlineStreamDiffSnapshotData {
   rawOriginalTextLinesTokens: LineTokens[];
   undoRedoGroup: UndoRedoGroup;
   decorationSnapshotData: ILivePreviewDiffDecorationSnapshotData;
+  previewerOptions: IDiffPreviewerOptions;
 }
 
 const inlineStreamDiffComputer = new InlineStreamDiffComputer();
 
 @Injectable({ multiple: true })
-export class InlineStreamDiffHandler extends Disposable {
+export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPreviewerNode {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
+
+  public previewerOptions: IDiffPreviewerOptions;
 
   private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
   private originalModel: ITextModel;
@@ -83,6 +87,10 @@ export class InlineStreamDiffHandler extends Disposable {
       this.dispose();
       dispose.dispose();
     });
+  }
+
+  setPreviewerOptions(options: IDiffPreviewerOptions): void {
+    this.previewerOptions = options;
   }
 
   initialize(selection: Selection): void {
@@ -114,7 +122,15 @@ export class InlineStreamDiffHandler extends Disposable {
   private _snapshotStore: IInlineStreamDiffSnapshotData | undefined;
   restoreSnapshot(snapshot: IInlineStreamDiffSnapshotData): void {
     this._snapshotStore = snapshot;
-    const { rawOriginalTextLines, rawOriginalTextLinesTokens, undoRedoGroup, decorationSnapshotData } = snapshot;
+    const {
+      rawOriginalTextLines,
+      rawOriginalTextLinesTokens,
+      undoRedoGroup,
+      decorationSnapshotData,
+      previewerOptions,
+    } = snapshot;
+
+    this.setPreviewerOptions(previewerOptions);
 
     this.rawOriginalTextLines = rawOriginalTextLines;
     this.rawOriginalTextLinesTokens = rawOriginalTextLinesTokens;
@@ -137,6 +153,7 @@ export class InlineStreamDiffHandler extends Disposable {
       rawOriginalTextLinesTokens: this.rawOriginalTextLinesTokens,
       undoRedoGroup: this.undoRedoGroup,
       decorationSnapshotData: this.livePreviewDiffDecorationModel.createSnapshot(),
+      previewerOptions: this.previewerOptions,
     };
   }
 
