@@ -23,9 +23,9 @@
     "@opensumi/ide-file-service": "workspace:*",
     "@opensumi/ide-task": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
-    "@rjsf/core": "5.5.2",
-    "@rjsf/utils": "5.5.2",
-    "@rjsf/validator-ajv6": "5.19.4",
+    "@rjsf/core": "5.20.0",
+    "@rjsf/utils": "5.20.0",
+    "@rjsf/validator-ajv6": "5.20.0",
     "anser": "^2.1.1",
     "btoa": "^1.2.1"
   },
