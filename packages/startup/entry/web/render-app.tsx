@@ -25,16 +25,13 @@ import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/b
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
+import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
-import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 
 const CLIENT_ID = 'W_' + uuid();
 
 export async function renderApp(opts: IClientAppOpts) {
-  // eslint-disable-next-line no-console
-  console.time('Render');
-
   const defaultHost = process.env.HOST || window.location.hostname;
   const injector = new Injector();
 
@@ -46,7 +43,7 @@ export async function renderApp(opts: IClientAppOpts) {
         return dir;
       }
     },
-    process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH && window.location.hash.slice(1),
+    window.location.hash.slice(1),
     opts.workspaceDir,
     process.env.WORKSPACE_DIR,
   );

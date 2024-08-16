@@ -90,6 +90,7 @@
     "@opensumi/ide-menu-bar": "workspace:*",
     "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-monaco-enhance": "workspace:*",
+    "@opensumi/ide-notebook": "workspace:*",
     "@opensumi/ide-opened-editor": "workspace:*",
     "@opensumi/ide-outline": "workspace:*",
     "@opensumi/ide-output": "workspace:*",
