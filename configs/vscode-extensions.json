@@ -170,6 +170,18 @@
         "name": "opensumi-default-themes",
         "version": "2.5.8"
       }
+    ],
+    "charliermarsh": [
+      {
+        "name": "ruff",
+        "version": "2024.40.0"
+      }
+    ],
+    "ms-pyright": [
+      {
+        "name": "pyright",
+        "version": "1.1.372"
+      }
     ]
   }
 }
