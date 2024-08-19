@@ -456,13 +456,15 @@ export class AINativeContribution implements AINativeCoreContribution {
           items: [
             {
               insertText: insertRandomStrings(value),
-              belowRadius: 3,
-              aboveRadius: 0,
-            },
-            {
-              insertText: insertRandomStrings(value),
+              range: {
+                startLineNumber: position.lineNumber,
+                startColumn: 1,
+                endLineNumber: position.lineNumber + 3,
+                endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
+              },
             },
           ],
+          enableMultiLine: true,
         };
       } catch (error) {
         if (error.name === 'AbortError') {

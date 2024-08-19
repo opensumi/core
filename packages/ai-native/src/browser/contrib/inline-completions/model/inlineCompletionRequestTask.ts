@@ -7,16 +7,12 @@ import { IAICompletionResultModel } from '@opensumi/ide-core-common';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import * as monaco from '@opensumi/ide-monaco';
 
-import {
-  IIntelligentCompletionsResult,
-  isMultiLineCompletion,
-} from '../../intelligent-completions/intelligent-completions';
+import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
 import { InlineCompletionItem } from '../model/competionModel';
 import { PromptCache } from '../promptCache';
 import { lineBasedPromptProcessor } from '../provider';
 import { AICompletionsService } from '../service/ai-completions.service';
 import { ICompletionContext } from '../types';
-
 
 const makeHashSet = (str: string) => {
   const set = new Set<string>();

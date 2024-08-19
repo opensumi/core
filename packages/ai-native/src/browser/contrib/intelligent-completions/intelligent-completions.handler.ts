@@ -51,25 +51,30 @@ export class IntelligentCompletionsHandler extends Disposable {
     const position = this.monacoEditor.getPosition()!;
     const intelligentCompletionModel = await provider(this.monacoEditor, position, bean, this.cancelIndicator.token);
 
+    if (
+      intelligentCompletionModel &&
+      intelligentCompletionModel.enableMultiLine &&
+      intelligentCompletionModel.items.length > 0
+    ) {
+      return this.applyInlineDecorations(intelligentCompletionModel);
+    }
+
     return intelligentCompletionModel;
   }
 
   public applyInlineDecorations(completionModel: IIntelligentCompletionsResult) {
     const { items } = completionModel;
-    if (items.length === 0) {
-      return;
-    }
 
     const position = this.monacoEditor.getPosition()!;
     const model = this.monacoEditor.getModel();
-    const { belowRadius, aboveRadius, insertText } = items[0];
+    const { range, insertText } = items[0];
 
-    const originalContent = model?.getValueInRange({
-      startLineNumber: position.lineNumber - (aboveRadius || 0),
-      startColumn: 1,
-      endLineNumber: position.lineNumber + (belowRadius || 0),
-      endColumn: model.getLineMaxColumn(position.lineNumber + (belowRadius || 0)),
-    });
+    // 如果只是开启了 enableMultiLine 而没有传递 range ，则不显示 multi line
+    if (!range) {
+      return completionModel;
+    }
+
+    const originalContent = model?.getValueInRange(range);
 
     const diffComputerResult = this.multiLineDiffComputer.diff(originalContent!, insertText.toString());
 

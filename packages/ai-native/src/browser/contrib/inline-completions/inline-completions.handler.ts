@@ -17,10 +17,7 @@ import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 
 import { IAIMonacoContribHandler } from '../base';
-import {
-  IIntelligentCompletionsResult,
-  isMultiLineCompletion,
-} from '../intelligent-completions/intelligent-completions';
+import { IIntelligentCompletionsResult } from '../intelligent-completions/intelligent-completions';
 import { IntelligentCompletionsHandler } from '../intelligent-completions/intelligent-completions.handler';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
@@ -152,12 +149,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
         const completionsResult: IIntelligentCompletionsResult = await this.sequencer.queue(() =>
           this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
         );
-
-        if (completionsResult && completionsResult.items.some((i) => isMultiLineCompletion(i))) {
-          this.intelligentCompletionsHandler.applyInlineDecorations(completionsResult);
-          // 此时用 multi line 的 decoration 来渲染，而 inline completion 则不显示
-          return { items: [] };
-        }
 
         return completionsResult;
       },
