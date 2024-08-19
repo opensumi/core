@@ -355,8 +355,8 @@ export class AINativeBrowserContribution
     });
 
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTER, {
-      execute: (relationId: string, sessionId: string, accept: boolean) => {
-        this.aiCompletionsService.report({ sessionId, accept, relationId });
+      execute: (relationId: string, sessionId: string, accept: boolean, content: string) => {
+        this.aiCompletionsService.report({ sessionId, accept, relationId, content });
       },
     });
 

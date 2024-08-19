@@ -322,6 +322,7 @@ export class InlineChatHandler extends Disposable {
       relationId: string;
       startTime: number;
       isRetry: boolean;
+      content?: string;
     },
   ): void {
     const { chatResponse } = options;
@@ -453,14 +454,26 @@ export class InlineChatHandler extends Disposable {
     this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
         this.inlineDiffHandler.handleAction(kind);
-
+        const modifyContent = this.inlineDiffHandler.getModifyContent();
         if (kind === EResultKind.ACCEPT) {
-          this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
+          this.aiReporter.end(relationId, {
+            message: 'accept',
+            msgType: EResultKind.ACCEPT,
+            success: true,
+            isReceive: true,
+            content: modifyContent,
+          });
           runWhenIdle(() => {
             this.disposeAllWidget();
           });
         } else if (kind === EResultKind.DISCARD) {
-          this.aiReporter.end(relationId, { message: 'discard', success: true, isDrop: true });
+          this.aiReporter.end(relationId, {
+            message: 'discard',
+            msgType: EResultKind.DISCARD,
+            success: true,
+            isDrop: true,
+            content: modifyContent,
+          });
           runWhenIdle(() => {
             this.disposeAllWidget();
           });

@@ -264,6 +264,9 @@ export class CompletionRequestTask {
         endColumn: model.getLineMaxColumn(position.lineNumber),
       });
 
+      // 打点上报 补全提示代码
+      this.aiCompletionsService.setLastCompletionContent(insertText);
+
       // 临时修复方案，用于解决补全后面多了几个括号的问题
       const filteredString = removeChars(insertText, textAfterCursor);
 
@@ -280,7 +283,7 @@ export class CompletionRequestTask {
         command: {
           id: AI_INLINE_COMPLETION_REPORTER.id,
           title: '',
-          arguments: [relationId, rs.sessionId, true],
+          arguments: [relationId, rs.sessionId, true, insertText],
         },
       });
     }

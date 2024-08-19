@@ -37,6 +37,7 @@ export class RenameHandler extends IAIMonacoContribHandler {
         message: 'start',
         type: AISerivceType.Rename,
         modelRequestStartTime: startTime,
+        content: model.getValue(),
       });
       this.lastModelRequestRenameSessionId = relationId;
 

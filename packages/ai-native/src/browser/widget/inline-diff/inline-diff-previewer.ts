@@ -127,6 +127,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     // do nothing
     return '';
   }
+  getValueByEnd(): string {
+    // do nothing
+    return '';
+  }
   onError(error: ErrorResponse): void {
     // do nothing
   }
@@ -190,6 +194,11 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     const model = this.node?.getModifiedModel();
     return model!.getValue();
   }
+  // 结束渲染后获取变更的内容
+  getValueByEnd() {
+    const model = this.node?.getModifiedModel();
+    return model!.getValue();
+  }
   handleAction(action: EResultKind): void {
     if (action === EResultKind.ACCEPT) {
       const newValue = this.getValue();
@@ -228,6 +237,8 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
 
 @Injectable({ multiple: true })
 export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStreamDiffHandler> {
+  protected modifyContent: string;
+
   private listenNode(node: InlineStreamDiffHandler): void {
     node.addDispose(node.onDidEditChange(() => this.layout()));
     node.addDispose(
@@ -314,8 +325,14 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   onEnd(): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy);
     if (diffModel) {
+      // 获取diff变更的内容
+      this.modifyContent = diffModel.newFullRangeTextLines.join('\n');
       this.node?.pushRateFinallyDiffStack(diffModel);
     }
+  }
+  // 渲染结束后获取对应的变更值
+  getValueByEnd() {
+    return this.modifyContent;
   }
   setValue(content: string): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));

@@ -3,6 +3,7 @@ export const AI_REPORTER_NAME = 'AI';
 export enum AISerivceType {
   Chat = 'chat',
   InlineChat = 'inlineChat',
+  CodeAction = 'codeAction',
   InlineChatInput = 'inlineChatInput',
   CustomReplay = 'customReplay',
   Completion = 'completion',
@@ -27,6 +28,11 @@ export interface CommonLogInfo {
   insert: boolean;
   isRetry: boolean;
   isDrop: boolean;
+  language?: string;
+  // 补全内容
+  content?: string;
+  // 行动点来源 codeAction、inlineChat、chat
+  source?: string;
 }
 
 export interface CompletionRT extends Partial<CommonLogInfo> {
@@ -43,6 +49,7 @@ export interface IAIReportCompletionOption {
   relationId: string;
   sessionId: string;
   accept: boolean;
+  content: string;
   repo?: string;
   completionUseTime?: number;
   renderingTime?: number;

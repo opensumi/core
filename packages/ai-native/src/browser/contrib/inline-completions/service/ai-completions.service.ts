@@ -43,6 +43,8 @@ export class AICompletionsService extends Disposable {
   private lastRelationId: string;
   private lastRenderTime: number;
   private lastCompletionUseTime: number;
+  // 补全内容
+  private lastCompletionContent: string;
   // 中间件拓展 inlinecompletion
   private lastMiddlewareInlineCompletion?: IProvideInlineCompletionsSignature;
 
@@ -107,7 +109,12 @@ export class AICompletionsService extends Disposable {
     data.renderingTime = Date.now() - this.lastRenderTime;
     data.completionUseTime = this.lastCompletionUseTime;
     this.aiBackService.reportCompletion(data);
-    this.reporterEnd(relationId, { success: true, isReceive: accept, renderingTime: data.renderingTime });
+    this.reporterEnd(relationId, {
+      success: true,
+      isReceive: accept,
+      renderingTime: data.renderingTime,
+      content: data.content,
+    });
 
     this._isVisibleCompletion = false;
   }
@@ -123,7 +130,12 @@ export class AICompletionsService extends Disposable {
   public setVisibleCompletion(visible: boolean) {
     // 如果之前是 true，现在是 false，说明并没有进行采纳
     if (this._isVisibleCompletion === true && visible === false) {
-      this.report({ sessionId: this.lastSessionId, accept: false, relationId: this.lastRelationId });
+      this.report({
+        sessionId: this.lastSessionId,
+        accept: false,
+        relationId: this.lastRelationId,
+        content: this.lastCompletionContent,
+      });
     }
 
     this._isVisibleCompletion = visible;
@@ -141,6 +153,10 @@ export class AICompletionsService extends Disposable {
 
   public setLastRelationId(relationId: string) {
     this.lastRelationId = relationId;
+  }
+
+  public setLastCompletionContent(content: string) {
+    this.lastCompletionContent = content;
   }
 
   public async cancelRequest() {
