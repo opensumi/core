@@ -197,7 +197,7 @@ export const AIChatView = observer(() => {
           message: chunk,
         });
 
-        let renderContent = <ChatMarkdown markdown={chunk} fillInIncompleteTokens />;
+        let renderContent = <ChatMarkdown markdown={chunk} fillInIncompleteTokens agentId={agentId} />;
 
         if (chatRenderRegistry.chatAIRoleRender) {
           const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
