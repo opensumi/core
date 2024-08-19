@@ -458,7 +458,6 @@ export class InlineChatHandler extends Disposable {
         if (kind === EResultKind.ACCEPT) {
           this.aiReporter.end(relationId, {
             message: 'accept',
-            msgType: EResultKind.ACCEPT,
             success: true,
             isReceive: true,
             content: modifyContent,
@@ -469,7 +468,6 @@ export class InlineChatHandler extends Disposable {
         } else if (kind === EResultKind.DISCARD) {
           this.aiReporter.end(relationId, {
             message: 'discard',
-            msgType: EResultKind.DISCARD,
             success: true,
             isDrop: true,
             content: modifyContent,

@@ -31,8 +31,6 @@ export interface CommonLogInfo {
   language?: string;
   // 补全内容
   content?: string;
-  // 行动点来源 codeAction、inlineChat、chat
-  source?: string;
 }
 
 export interface CompletionRT extends Partial<CommonLogInfo> {
