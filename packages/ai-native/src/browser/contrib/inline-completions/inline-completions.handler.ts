@@ -153,8 +153,9 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
           this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
         );
 
-        if (completionsResult.items.some((i) => isMultiLineCompletion(i))) {
+        if (completionsResult && completionsResult.items.some((i) => isMultiLineCompletion(i))) {
           this.intelligentCompletionsHandler.applyInlineDecorations(completionsResult);
+          // 此时用 multi line 的 decoration 来渲染，而 inline completion 则不显示
           return { items: [] };
         }
 

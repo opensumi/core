@@ -233,42 +233,13 @@ export class AINativeBrowserContribution
 
   private registerFeature() {
     this.contributions.getContributions().forEach((contribution) => {
-      const contributions = [
-        {
-          key: contribution.registerInlineChatFeature?.bind(contribution),
-          registry: this.inlineChatFeatureRegistry,
-        },
-        {
-          key: contribution.registerChatFeature?.bind(contribution),
-          registry: this.chatFeatureRegistry,
-        },
-        {
-          key: contribution.registerResolveConflictFeature?.bind(contribution),
-          registry: this.resolveConflictRegistry,
-        },
-        {
-          key: contribution.registerRenameProvider?.bind(contribution),
-          registry: this.renameCandidatesProviderRegistry,
-        },
-        {
-          key: contribution.registerChatRender?.bind(contribution),
-          registry: this.chatRenderRegistry,
-        },
-        {
-          key: contribution.registerTerminalProvider?.bind(contribution),
-          registry: this.terminalProviderRegistry,
-        },
-        {
-          key: contribution.registerIntelligentCompletionFeature?.bind(contribution),
-          registry: this.intelligentCompletionsRegistry,
-        },
-      ];
-
-      for (const contrib of contributions) {
-        if (contrib.key) {
-          contrib.key(contrib.registry as any);
-        }
-      }
+      contribution.registerInlineChatFeature?.(this.inlineChatFeatureRegistry);
+      contribution.registerChatFeature?.(this.chatFeatureRegistry);
+      contribution.registerResolveConflictFeature?.(this.resolveConflictRegistry);
+      contribution.registerRenameProvider?.(this.renameCandidatesProviderRegistry);
+      contribution.registerChatRender?.(this.chatRenderRegistry);
+      contribution.registerTerminalProvider?.(this.terminalProviderRegistry);
+      contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
     });
   }
 
