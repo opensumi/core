@@ -25,3 +25,11 @@ export const AI_CHAT_VISIBLE = {
 export const AI_CODE_ACTION = {
   id: 'ai.code.action',
 };
+
+export const AI_MULTI_LINE_COMPLETION_HIDE = {
+  id: 'ai.multiLine.completion.hide',
+};
+
+export const AI_MULTI_LINE_COMPLETION_ACCEPT = {
+  id: 'ai.multiLine.completion.accept',
+};

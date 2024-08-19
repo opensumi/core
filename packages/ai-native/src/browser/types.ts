@@ -8,15 +8,17 @@ import {
   IAICompletionOption,
   IAICompletionResultModel,
   IDisposable,
+  IPosition,
   IResolveConflictHandler,
   MaybePromise,
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
+import { IIntelligentCompletionsResult } from './contrib/intelligent-completions/intelligent-completions';
 import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
@@ -194,14 +196,19 @@ export interface ITerminalProviderRegistry {
   registerCommandSuggestionsProvider(provider: TTerminalCommandSuggestionsProviderFn): void;
 }
 
+export type IIntelligentCompletionProvider = (
+  editor: ICodeEditor,
+  position: IPosition,
+  contextBean: IAICompletionOption,
+  token: CancellationToken,
+) => MaybePromise<IIntelligentCompletionsResult>;
+export interface IIntelligentCompletionsRegistry {
+  registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
-  /**
-   * 通过中间件扩展部分 ai 能力
-   */
-  middleware?: IAIMiddleware;
-
   /**
    * 注册 inline chat 相关功能
    * @param registry: IInlineChatFeatureRegistry
@@ -227,6 +234,10 @@ export interface AINativeCoreContribution {
    * 注册智能终端相关功能
    */
   registerTerminalProvider?(registry: ITerminalProviderRegistry): void;
+  /**
+   * 注册智能代码补全相关功能
+   */
+  registerIntelligentCompletionFeature?(registry: IIntelligentCompletionsRegistry): void;
 }
 
 export interface IChatComponentConfig {
@@ -241,6 +252,9 @@ export interface IChatAgentViewService {
   getChatComponentDeferred(componentId: string): Deferred<IChatComponentConfig> | null;
 }
 
+/**
+ * @deprecated use registerIntelligentCompletionProvider API
+ */
 export type IProvideInlineCompletionsSignature = (
   this: void,
   model: ITextModel,
@@ -250,6 +264,9 @@ export type IProvideInlineCompletionsSignature = (
   requestOption: IAICompletionOption,
 ) => MaybePromise<IAICompletionResultModel | null>;
 
+/**
+ * @deprecated use registerIntelligentCompletionProvider API
+ */
 export interface IAIMiddleware {
   language?: {
     provideInlineCompletions?: IProvideInlineCompletionsSignature;

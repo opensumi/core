@@ -45,6 +45,7 @@ import {
   ChatRenderRegistryToken,
   CommandService,
   InlineChatFeatureRegistryToken,
+  IntelligentCompletionsRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
   TerminalRegistryToken,
@@ -81,9 +82,9 @@ import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layo
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import {
   AINativeCoreContribution,
-  IAIMiddleware,
   IChatFeatureRegistry,
   IChatRenderRegistry,
+  IIntelligentCompletionsRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
@@ -138,6 +139,9 @@ export class AINativeBrowserContribution
 
   @Autowired(TerminalRegistryToken)
   private readonly terminalProviderRegistry: ITerminalProviderRegistry;
+
+  @Autowired(IntelligentCompletionsRegistryToken)
+  private readonly intelligentCompletionsRegistry: IIntelligentCompletionsRegistry;
 
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
@@ -228,33 +232,15 @@ export class AINativeBrowserContribution
   }
 
   private registerFeature() {
-    const middlewares: IAIMiddleware[] = [];
-
     this.contributions.getContributions().forEach((contribution) => {
-      if (contribution.registerInlineChatFeature) {
-        contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
-      }
-      if (contribution.registerChatFeature) {
-        contribution.registerChatFeature(this.chatFeatureRegistry);
-      }
-      if (contribution.registerResolveConflictFeature) {
-        contribution.registerResolveConflictFeature(this.resolveConflictRegistry);
-      }
-      if (contribution.registerRenameProvider) {
-        contribution.registerRenameProvider(this.renameCandidatesProviderRegistry);
-      }
-      if (contribution.registerChatRender) {
-        contribution.registerChatRender(this.chatRenderRegistry);
-      }
-      if (contribution.registerTerminalProvider) {
-        contribution.registerTerminalProvider(this.terminalProviderRegistry);
-      }
-      if (contribution.middleware) {
-        middlewares.push(contribution.middleware);
-      }
+      contribution.registerInlineChatFeature?.(this.inlineChatFeatureRegistry);
+      contribution.registerChatFeature?.(this.chatFeatureRegistry);
+      contribution.registerResolveConflictFeature?.(this.resolveConflictRegistry);
+      contribution.registerRenameProvider?.(this.renameCandidatesProviderRegistry);
+      contribution.registerChatRender?.(this.chatRenderRegistry);
+      contribution.registerTerminalProvider?.(this.terminalProviderRegistry);
+      contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
     });
-
-    this.inlineCompletionHandler.updateConfig(middlewares);
   }
 
   registerSetting(registry: ISettingRegistry) {
