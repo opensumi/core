@@ -302,6 +302,12 @@ export class InlineChatHandler extends Disposable {
 
     const { relationId, message, startTime, isRetry, isStop } = reportInfo;
 
+    // 获取变更的内容
+    let content;
+    if (status === EInlineChatStatus.DONE) {
+      content = this.inlineDiffHandler.getModifyContent();
+    }
+
     this.aiInlineChatDisposable.addDispose(this.aiInlineContentWidget.launchChatStatus(status));
     this.aiReporter.end(relationId, {
       message,
@@ -309,6 +315,7 @@ export class InlineChatHandler extends Disposable {
       replytime: Date.now() - startTime,
       isStop,
       isRetry,
+      content,
     });
   }
 
@@ -322,7 +329,6 @@ export class InlineChatHandler extends Disposable {
       relationId: string;
       startTime: number;
       isRetry: boolean;
-      content?: string;
     },
   ): void {
     const { chatResponse } = options;
@@ -476,6 +482,12 @@ export class InlineChatHandler extends Disposable {
             this.disposeAllWidget();
           });
         } else if (kind === EResultKind.REGENERATE) {
+          this.aiReporter.end(relationId, {
+            message: 'regenerate',
+            success: true,
+            isDrop: true,
+            content: modifyContent,
+          });
           this.handleDiffPreviewStrategy(monacoEditor, strategy, crossSelection, relationId, true);
         }
       }),

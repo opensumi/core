@@ -241,9 +241,13 @@ export interface ITerminalCommandSuggestionDesc {
 }
 
 export enum EInlineChatStatus {
+  // 准备渲染、渲染中
   READY,
+  // 正在请求数据中
   THINKING,
+  // 渲染结束
   DONE,
+  // 异常
   ERROR,
 }
 

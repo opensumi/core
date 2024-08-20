@@ -31,6 +31,10 @@ export interface CommonLogInfo {
   language?: string;
   // 补全内容
   content?: string;
+  // 文件路径
+  filePath?: string;
+  // 仓库地址
+  repoPath?: string;
 }
 
 export interface CompletionRT extends Partial<CommonLogInfo> {
