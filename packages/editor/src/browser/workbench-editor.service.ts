@@ -2305,9 +2305,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     // 否则使用 document 进行保存 (如果有)
     const docRef = this.documentModelManager.getModelReference(resource.uri);
     if (docRef) {
-      if (docRef.instance.dirty) {
-        await docRef.instance.save(undefined, reason);
-      }
+      await docRef.instance.save(undefined, reason);
       docRef.dispose();
     }
   }
