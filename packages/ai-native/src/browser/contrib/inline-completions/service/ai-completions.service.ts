@@ -101,15 +101,10 @@ export class AICompletionsService extends Disposable {
   }
 
   public async report(data: IAIReportCompletionOption) {
-    if (!this.aiBackService.reportCompletion) {
-      return;
-    }
-
     const { relationId, accept } = data;
 
     data.renderingTime = Date.now() - this.lastRenderTime;
     data.completionUseTime = this.lastCompletionUseTime;
-    this.aiBackService.reportCompletion(data);
     this.reporterEnd(relationId, {
       success: true,
       isReceive: accept,
