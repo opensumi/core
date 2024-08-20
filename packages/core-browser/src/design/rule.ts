@@ -5,7 +5,6 @@ export const StackingLevel = {
   /**
    * 基础层级
    */
-  Base: 0,
   Background: 0,
 
   Workbench: 1,

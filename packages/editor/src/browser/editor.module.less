@@ -73,7 +73,7 @@
         left: 0;
         position: absolute;
         display: block;
-        z-index: 0;
+        z-index: var(--stacking-level-background, 0);
       }
       &::after {
         content: '';
@@ -84,7 +84,7 @@
         left: 0;
         position: absolute;
         display: block;
-        z-index: 0;
+        z-index: var(--stacking-level-background, 0);
       }
       .editor_action_wrapper {
         margin-left: 8px;
@@ -175,7 +175,7 @@
         left: 0;
         position: absolute;
         display: block;
-        z-index: 0;
+        z-index: var(--stacking-level-background, 0);
       }
     }
   }
@@ -312,7 +312,7 @@
           width: 100%;
           top: -1px;
           left: 0;
-          z-index: var(--stacking-level-popover-component, 1000);
+          z-index: var(--stacking-level-overlay, 800);
           background-color: var(--tab-activeBorderTop);
         }
         .dirty {
@@ -348,7 +348,7 @@
   }
 
   .editorGroupHeader {
-    z-index: 0;
+    z-index: var(--stacking-level-background, 0);
     position: relative;
   }
 
