@@ -231,6 +231,7 @@ export class DebugBreakpointsService extends WithEventBus {
         }
         const getContent = model.getLineContent(line);
         node.fireDescriptionChange(getContent.trim());
+        monacoModel.dispose();
       }
     }
   }

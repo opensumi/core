@@ -808,7 +808,16 @@ export class EditorContribution
           return;
         }
 
-        return this.editorDocumentModelService.getModelReference(uri)?.instance.encoding;
+        const ref = this.editorDocumentModelService.getModelReference(uri);
+        if (!ref) {
+          return;
+        }
+
+        const encoding = ref.instance.encoding;
+
+        ref.dispose();
+
+        return encoding;
       },
     });
 

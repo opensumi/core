@@ -91,7 +91,7 @@ const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
 
     const textModel = model.instance.getMonacoModel();
     const { leftPad, base, rightPad } = splitLeftAndRightPadInTextModel(item.textEdit.range, textModel);
-
+    model.dispose();
     return (
       <div className={styles.refactor_preview_node_wrapper}>
         {leftPad}

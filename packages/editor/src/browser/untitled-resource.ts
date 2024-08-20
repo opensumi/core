@@ -173,8 +173,10 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
   async shouldCloseResourceWithoutConfirm(resource: IResource) {
     const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
     if (documentModelRef && documentModelRef.instance.dirty) {
+      documentModelRef.dispose();
       return true;
     }
+    documentModelRef?.dispose();
     return false;
   }
 
@@ -195,6 +197,7 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
       documentModelRef.dispose();
       return false;
     } else {
+      documentModelRef.dispose();
       return true;
     }
   }

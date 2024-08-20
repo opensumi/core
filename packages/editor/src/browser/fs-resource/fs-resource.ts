@@ -183,8 +183,10 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   async shouldCloseResourceWithoutConfirm(resource: IResource) {
     const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
     if (documentModelRef && documentModelRef.instance.dirty) {
+      documentModelRef.dispose();
       return true;
     }
+    documentModelRef?.dispose();
     return false;
   }
   async close(resource: IResource, saveAction?: AskSaveResult) {
@@ -229,6 +231,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       }
       return true;
     }
+
+    documentModelRef?.dispose();
 
     // 询问用户是否保存
     const buttons = {
