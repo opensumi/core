@@ -78,11 +78,7 @@ export async function replace(
 ) {
   const autoSavedDocs = results
     .map((result) => documentModelManager.getModelReference(new URI(result.fileUri)))
-    .filter((doc) => {
-      const result = doc?.instance && !doc.instance.dirty;
-      doc?.dispose();
-      return result;
-    });
+    .filter((doc) => doc?.instance && !doc.instance.dirty);
 
   const edits: Array<IResourceFileEdit | IResourceTextEdit> = [];
   for (const result of results) {
@@ -117,7 +113,10 @@ export async function replace(
     edits,
   });
 
-  autoSavedDocs.forEach((doc) => {
-    doc!.instance.save();
-  });
+  await Promise.all(
+    autoSavedDocs.map(async (doc) => {
+      await doc?.instance.save();
+      doc?.dispose();
+    }),
+  );
 }
