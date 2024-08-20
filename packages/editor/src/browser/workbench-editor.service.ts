@@ -436,10 +436,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     // contextKeys
     const getLanguageFromModel = (uri: URI) => {
       let result: string | null = null;
-      const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
+      const modelRef = this.documentModelManager.getModelDescription(uri, 'resourceContextKey');
       if (modelRef) {
-        result = modelRef.instance.languageId;
-        modelRef.dispose();
+        result = modelRef.languageId;
       }
       return result;
     };
@@ -890,12 +889,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (!this._resourceContext) {
       const getLanguageFromModel = (uri: URI) => {
         let result: string | null = null;
-        const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
+        const modelRef = this.documentModelManager.getModelDescription(uri, 'resourceContextKey');
         if (modelRef) {
-          if (modelRef) {
-            result = modelRef.instance.languageId;
-          }
-          modelRef.dispose();
+          result = modelRef.languageId;
         }
         return result;
       };
@@ -2337,11 +2333,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   hasDirty(): boolean {
     for (const r of this.resources) {
-      const docRef = this.documentModelManager.getModelReference(r.uri);
+      const docRef = this.documentModelManager.getModelDescription(r.uri);
       if (docRef) {
-        const isDirty = docRef.instance.dirty;
-        docRef.dispose();
-        if (isDirty) {
+        if (docRef.dirty) {
           return true;
         }
       }
@@ -2355,15 +2349,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   calcDirtyCount(countedUris: Set<string> = new Set<string>()): number {
     let count = 0;
     for (const r of this.resources) {
-      const docRef = this.documentModelManager.getModelReference(r.uri, 'calc-dirty-count');
+      const docRef = this.documentModelManager.getModelDescription(r.uri, 'calc-dirty-count');
       if (countedUris.has(r.uri.toString())) {
         continue;
       }
       countedUris.add(r.uri.toString());
       if (docRef) {
-        const isDirty = docRef.instance.dirty;
-        docRef.dispose();
-        if (isDirty) {
+        if (docRef.dirty) {
           count += 1;
         }
       }

@@ -808,16 +808,12 @@ export class EditorContribution
           return;
         }
 
-        const ref = this.editorDocumentModelService.getModelReference(uri);
+        const ref = this.editorDocumentModelService.getModelDescription(uri);
         if (!ref) {
           return;
         }
 
-        const encoding = ref.instance.encoding;
-
-        ref.dispose();
-
-        return encoding;
+        return ref.encoding;
       },
     });
 
@@ -841,8 +837,8 @@ export class EditorContribution
 
         const provider = await this.contentRegistry.getProvider(uri);
         const guessedEncoding = await provider?.guessEncoding?.(uri);
-        const ref = this.editorDocumentModelService.getModelReference(uri);
-        const currentEncoding = documentModel?.encoding ?? ref?.instance.encoding;
+        const ref = this.editorDocumentModelService.getModelDescription(uri);
+        const currentEncoding = documentModel?.encoding ?? ref?.encoding;
 
         let matchIndex: number | undefined;
         const encodingItems: QuickPickItem<string>[] = Object.keys(SUPPORTED_ENCODINGS)

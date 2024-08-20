@@ -4,12 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { formatLocalize, useInjectable } from '@opensumi/ide-core-browser';
 import { DisposableStore, URI } from '@opensumi/ide-utils';
 
-import { useEditorDocumentModelRef } from '../hooks/useEditor';
+import { useEditorDocumentModel } from '../hooks/useEditor';
 
 import { MergeConflictService } from './merge-conflict.service';
 
 export function useMergeConflictModel(uri: URI) {
-  const editorModel = useEditorDocumentModelRef(uri);
+  const editorModel = useEditorDocumentModel(uri);
 
   /**
    * 如果是原来就有冲突的文件，当冲突没了之后，仍然显示冲突
@@ -28,9 +28,8 @@ export function useMergeConflictModel(uri: URI) {
     const disposables = new DisposableStore();
 
     if (editorModel) {
-      const { instance } = editorModel;
       const run = () => {
-        const n = mergeConflictService.scanDocument(instance.getMonacoModel());
+        const n = mergeConflictService.scanDocument(editorModel.getMonacoModel());
         setConflictsCount(n);
         if (n > 0) {
           setIsInitialVisiable(true);
@@ -40,7 +39,7 @@ export function useMergeConflictModel(uri: URI) {
       const debounceRun = debounce(run, 150);
 
       disposables.add(
-        instance.getMonacoModel().onDidChangeContent(() => {
+        editorModel.getMonacoModel().onDidChangeContent(() => {
           debounceRun();
         }),
       );

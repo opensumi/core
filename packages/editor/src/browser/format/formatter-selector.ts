@@ -47,12 +47,11 @@ export class FormattingSelector implements IFormattingSelector {
     mode: FormattingMode,
     _kind: FormattingKind,
   ): Promise<T | undefined> {
-    const docRef = this.modelService.getModelReference(URI.from(document.uri.toJSON()));
+    const docRef = this.modelService.getModelDescription(URI.from(document.uri.toJSON()));
     if (!docRef) {
       return;
     }
-    const languageId = docRef.instance.languageId;
-    docRef.dispose();
+    const languageId = docRef.languageId;
     const preferred = this.getPreferedFormatter(languageId);
 
     const elements: { [key: string]: T } = {};
@@ -120,12 +119,11 @@ export class FormattingSelector implements IFormattingSelector {
     formatters: T[],
     document: ITextModel,
   ): Promise<T | undefined> {
-    const docRef = this.modelService.getModelReference(URI.from(document.uri.toJSON()));
+    const docRef = this.modelService.getModelDescription(URI.from(document.uri.toJSON()));
     if (!docRef) {
       return;
     }
-    const languageId = docRef.instance.languageId;
-    docRef.dispose();
+    const languageId = docRef.languageId;
 
     const elements: { [key: string]: T } = {};
     formatters.forEach((provider: T) => {

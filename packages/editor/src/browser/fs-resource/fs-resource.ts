@@ -181,12 +181,10 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     this.cachedFileStat.delete(resource.uri.toString());
   }
   async shouldCloseResourceWithoutConfirm(resource: IResource) {
-    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
-    if (documentModelRef && documentModelRef.instance.dirty) {
-      documentModelRef.dispose();
+    const documentModelRef = this.documentModelService.getModelDescription(resource.uri, 'close-resource-check');
+    if (documentModelRef && documentModelRef.dirty) {
       return true;
     }
-    documentModelRef?.dispose();
     return false;
   }
   async close(resource: IResource, saveAction?: AskSaveResult) {
@@ -225,15 +223,10 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
         }
       }
     }
-    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
-    if (!documentModelRef || !documentModelRef.instance.dirty) {
-      if (documentModelRef) {
-        documentModelRef.dispose();
-      }
+    const documentModelRef = this.documentModelService.getModelDescription(resource.uri, 'close-resource-check');
+    if (!documentModelRef || !documentModelRef.dirty) {
       return true;
     }
-
-    documentModelRef?.dispose();
 
     // 询问用户是否保存
     const buttons = {

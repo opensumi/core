@@ -12,7 +12,7 @@ import * as monaco from '@opensumi/ide-monaco';
 import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
-import { IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
+import { IEditorDocumentDescription, IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
 
 export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
   detectIndentation?: boolean;
@@ -130,6 +130,7 @@ export interface IEditorDocumentModelService {
    * 当文档从来没有被打开过时，返回null
    */
   getModelReference(uri: URI, reason?: string): IEditorDocumentModelRef | null;
+  getModelDescription(uri: URI, reason?: string): IEditorDocumentDescription | null;
 
   /**
    * 获得全部model
