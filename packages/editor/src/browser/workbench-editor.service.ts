@@ -44,6 +44,7 @@ import {
   debounce,
   formatLocalize,
   getDebugLogger,
+  isDefined,
   isUndefinedOrNull,
   localize,
   makeRandomHexString,
@@ -714,12 +715,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 当前打开的所有resource
    */
-  // @observable.shallow
   resources: IResource[] = [];
 
   resourceStatus: Map<IResource, Promise<void>> = new Map();
 
-  // @observable.ref
   _currentResource: IResource | null;
 
   _currentOpenType: IEditorOpenType | null;
@@ -1410,6 +1409,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
           if (options && options.label) {
             resource.name = options.label;
+          }
+          if (options && isDefined(options.supportsRevive)) {
+            resource.supportsRevive = options.supportsRevive;
           }
           let replaceResource: IResource | null = null;
           if (options && options.index !== undefined && options.index < this.resources.length) {

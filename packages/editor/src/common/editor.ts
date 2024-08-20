@@ -636,6 +636,8 @@ export interface IResourceOpenOptions {
    * 当关闭时指定 force 参数，用来跳过 shouldClose 等逻辑
    */
   forceClose?: boolean;
+
+  supportsRevive?: boolean;
 }
 
 export interface IResourceOpenResult {

@@ -268,6 +268,7 @@ export class SearchModelService extends Disposable {
           }),
           {
             preview,
+            supportsRevive: false,
           },
         );
         if (openResourceResult) {

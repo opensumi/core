@@ -206,6 +206,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       documentModelRef.dispose();
       return false;
     } else {
+      documentModelRef.dispose();
       return true;
     }
   }
