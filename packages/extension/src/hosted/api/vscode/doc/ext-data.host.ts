@@ -135,6 +135,10 @@ export class ExtHostDocumentData extends MirrorTextModel {
     this._languageId = newLanguageId;
   }
 
+  _getLanguageId(): string {
+    return this._languageId;
+  }
+
   _acceptIsDirty(isDirty: boolean): void {
     this._isDirty = isDirty;
   }

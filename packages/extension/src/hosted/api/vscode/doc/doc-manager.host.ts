@@ -180,7 +180,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     const document = this._documents.get(e.uri);
     if (document) {
       // 和 vscode 表现保持一致，接收到 languages 变更时，发送一个 close 和一个 open 事件
-      if (isDefined(e.languageId)) {
+      if (isDefined(e.languageId) && e.languageId !== document._getLanguageId()) {
         document._acceptLanguageId(e.languageId);
         this._onDidCloseTextDocument.fire(document.document);
         this._onDidOpenTextDocument.fire(document.document);
