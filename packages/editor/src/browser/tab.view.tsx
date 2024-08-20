@@ -39,6 +39,7 @@ import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/cons
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { formatLocalize } from '@opensumi/ide-core-common';
 
 import {
   IEditorGroup,
@@ -378,7 +379,9 @@ export const Tabs = ({ group }: ITabsProps) => {
       return editorTabService.renderEditorTab(
         <>
           <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : cls(resource.icon)}> </div>
-          <div>{resource.name}</div>
+          <div tabIndex={0} role='tab' aria-selected={isCurrent ? 'true' : 'false'}>
+            {resource.name}
+          </div>
           {subname ? <div className={styles.subname}>{subname}</div> : null}
           {decoration.readOnly ? (
             <span className={cls(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
@@ -398,7 +401,12 @@ export const Tabs = ({ group }: ITabsProps) => {
               }}
             >
               {editorTabService.renderTabCloseComponent(
-                <div className={cls(getIcon('close'), styles_kt_editor_close_icon)} />,
+                <div
+                  className={cls(getIcon('close'), styles_kt_editor_close_icon)}
+                  tabIndex={0}
+                  role='button'
+                  aria-label={formatLocalize('editor.closeTab.title', resource.name)}
+                />,
               )}
             </div>
           </div>
@@ -419,6 +427,7 @@ export const Tabs = ({ group }: ITabsProps) => {
           [styles_kt_editor_tabs_current_last]: curTabIndex === group.resources.length - 1,
         })}
         ref={contentRef as any}
+        role='tablist'
       >
         {group.resources.map((resource, i) => {
           let ref: HTMLDivElement | null;
