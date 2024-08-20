@@ -193,6 +193,7 @@ export interface IEditorDocumentModelOptionChangedEventPayload {
   encoding?: string;
   languageId?: string;
   eol?: EOL;
+  dirty?: boolean;
 }
 
 export class EditorDocumentModelCreationEvent extends BasicEvent<IEditorDocumentModelCreationEventPayload> {}

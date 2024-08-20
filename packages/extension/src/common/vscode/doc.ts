@@ -70,6 +70,7 @@ export interface IExtensionDocumentModelOptionsChangedEvent {
   uri: string;
   encoding?: string;
   languageId?: string;
+  dirty?: boolean;
 }
 
 export interface IExtensionDocumentModelOpenedEvent {
