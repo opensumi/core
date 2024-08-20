@@ -18,7 +18,15 @@ import { highLightLanguageSupport } from './highLight';
 
 import './highlightTheme.less';
 
-export const CodeEditorWithHighlight = ({ input, language, relationId, agentId, command }) => {
+interface Props {
+  input: string;
+  relationId: string;
+  language?: string;
+  agentId?: string;
+  command?: string;
+}
+export const CodeEditorWithHighlight = (props: Props) => {
+  const { input, language, relationId, agentId, command } = props;
   const ref = React.useRef<HTMLDivElement | null>(null);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);

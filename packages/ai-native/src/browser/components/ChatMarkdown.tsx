@@ -14,6 +14,7 @@ import styles from './components.module.less';
 interface MarkdownProps {
   markdown: IMarkdownString | string;
   agentId?: string;
+  command?: string;
   relationId?: string;
   className?: string;
   fillInIncompleteTokens?: boolean; // 补齐不完整的 token，如代码块或表格
@@ -49,8 +50,9 @@ export const ChatMarkdown = (props: MarkdownProps) => {
             <CodeEditorWithHighlight
               input={code}
               language={language}
-              relationId={props.relationId}
+              relationId={props.relationId || ''}
               agentId={props.agentId}
+              command={props.command}
             />
           </div>
         </ConfigProvider>,
