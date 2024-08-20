@@ -2133,7 +2133,7 @@ __metadata:
     "@ant-design/icons": "npm:^4.6.4"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
-    "@opensumi/react-custom-scrollbars-2": "npm:^4.3.2"
+    "@opensumi/react-custom-scrollbars-2": "npm:^4.3.3"
     "@types/marked": "npm:^4.0.7"
     "@types/react-window": "npm:^1.8.5"
     fuzzy: "npm:^0.1.3"
@@ -3101,9 +3101,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/react-custom-scrollbars-2@npm:^4.3.2":
-  version: 4.3.2
-  resolution: "@opensumi/react-custom-scrollbars-2@npm:4.3.2"
+"@opensumi/react-custom-scrollbars-2@npm:^4.3.3":
+  version: 4.3.3
+  resolution: "@opensumi/react-custom-scrollbars-2@npm:4.3.3"
   dependencies:
     dom-css: "npm:^2.0.0"
     prop-types: "npm:^15.5.10"
@@ -3111,7 +3111,7 @@ __metadata:
   peerDependencies:
     react: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/31d00305d8014705131267fe0e2fd26d4887d216e186ef90f5c75a433637104bce3563f2ee78b907985cb786a5456578409b3d4bdafd860cc57e3af9425436ef
+  checksum: 10/5210297f6b581990f7f2306db199240c7280aa9a1b2f52d0c6fa8abb931d4f39637174d924a208c8f2bf80d4b87724e30dc756fc1e63c0946ae10a4046aef057
   languageName: node
   linkType: hard
 

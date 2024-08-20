@@ -17,6 +17,9 @@ export const StackingLevel = {
 
   ToolbarDropdown: 10,
 
+  EditorTabbarCurrent: 11,
+  EditorTabbarOverlay: 15,
+
   ResizeHandle: 12,
 
   EditorFloatingContainer: 20,
@@ -25,9 +28,10 @@ export const StackingLevel = {
    * 一级弹窗
    */
   Popup: 100,
+  Overlay: 800,
+
   PopoverComponent: 1000,
   PopoverComponentArrow: 1001,
-  Overlay: 800,
   OverlayTop: 1000,
 } as const;
 
