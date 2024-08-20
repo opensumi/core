@@ -332,7 +332,15 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   }
   // 渲染结束后获取对应的变更值
   getValueByEnd() {
-    return this.modifyContent;
+    if (this.modifyContent) {
+      return this.modifyContent;
+    }
+    const diffModel = this.node?.recompute(EComputerMode.legacy);
+    if (diffModel) {
+      // 获取diff变更的内容
+      return diffModel.newFullRangeTextLines.join('\n');
+    }
+    return '';
   }
   setValue(content: string): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));

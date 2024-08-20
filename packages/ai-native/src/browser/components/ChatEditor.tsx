@@ -18,7 +18,7 @@ import { highLightLanguageSupport } from './highLight';
 
 import './highlightTheme.less';
 
-export const CodeEditorWithHighlight = ({ input, language, relationId, agentId }) => {
+export const CodeEditorWithHighlight = ({ input, language, relationId, agentId, command }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);
@@ -50,7 +50,7 @@ export const CodeEditorWithHighlight = ({ input, language, relationId, agentId }
   const handleCopy = useCallback(async () => {
     setIsCoping(true);
     await clipboardService.writeText(input);
-    aiReporter.end(relationId, { copy: true, content: input, language, agentId });
+    aiReporter.end(relationId, { copy: true, content: input, language, agentId, command });
     runWhenIdle(() => {
       setIsCoping(false);
     }, 1000);
@@ -62,7 +62,7 @@ export const CodeEditorWithHighlight = ({ input, language, relationId, agentId }
       const selection = editor.getSelection();
       if (selection) {
         insertSnippetWithMonacoEditor(editor, input, [selection], { undoStopBefore: false, undoStopAfter: false });
-        aiReporter.end(relationId, { insert: true, content: input, language, agentId });
+        aiReporter.end(relationId, { insert: true, content: input, language, agentId, command });
       }
     }
   }, [monacoCommandRegistry]);
@@ -104,11 +104,13 @@ const CodeBlock = ({
   relationId,
   renderText,
   agentId = '',
+  command = '',
 }: {
   content?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
   agentId?: string;
+  command?: string;
 }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
@@ -123,7 +125,13 @@ const CodeBlock = ({
     return (
       <div className={styles.code_block}>
         <div className={styles.code_language}>{capitalize(heighLightLang)}</div>
-        <CodeEditorWithHighlight input={content} language={language} relationId={relationId} agentId={agentId} />
+        <CodeEditorWithHighlight
+          input={content}
+          language={language}
+          relationId={relationId}
+          agentId={agentId}
+          command={command}
+        />
       </div>
     );
   };
@@ -173,14 +181,16 @@ export const CodeBlockWrapper = ({
   text,
   renderText,
   relationId,
+  agentId,
 }: {
   text?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
+  agentId?: string;
 }) => (
   <div className={styles.ai_chat_code_wrapper}>
     <div className={styles.render_text}>
-      <CodeBlock content={text} renderText={renderText} relationId={relationId} />
+      <CodeBlock content={text} renderText={renderText} relationId={relationId} agentId={agentId} />
     </div>
   </div>
 );
@@ -224,7 +234,7 @@ export const CodeBlockWrapperInput = ({
           </div>
         )}
         {command && <div className={styles.tag}>/ {command}</div>}
-        <CodeBlock content={txt} relationId={relationId} agentId={agentId} />
+        <CodeBlock content={txt} relationId={relationId} agentId={agentId} command={command} />
       </div>
     </div>
   );

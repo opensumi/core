@@ -64,6 +64,7 @@ export enum MergeConflictEditorMode {
 
 export interface ChatRT extends Partial<CommonLogInfo> {
   agentId?: string;
+  command?: string;
   userMessage?: string;
   assistantMessage?: string;
 }

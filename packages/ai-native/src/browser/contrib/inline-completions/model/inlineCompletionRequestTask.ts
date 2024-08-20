@@ -237,12 +237,13 @@ export class InlineCompletionRequestTask extends Disposable {
 
       // 临时修复方案，用于解决补全后面多了几个括号的问题
       const filteredString = removeChars(insertText, textAfterCursor);
+      const insertContent = insertText + filteredString;
 
-      this.aiCompletionsService.setLastCompletionContent(filteredString);
+      this.aiCompletionsService.setLastCompletionContent(insertContent);
 
       result.push({
         ...codeModel,
-        insertText: insertText + filteredString,
+        insertText: insertContent,
         range: new monaco.Range(
           position.lineNumber,
           position.column,
@@ -254,7 +255,7 @@ export class InlineCompletionRequestTask extends Disposable {
         command: {
           id: AI_INLINE_COMPLETION_REPORTER.id,
           title: '',
-          arguments: [relationId, requestBean.sessionId, true, filteredString],
+          arguments: [relationId, requestBean.sessionId, true, insertContent],
         },
       });
     }

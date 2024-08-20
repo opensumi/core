@@ -120,7 +120,10 @@ export class AICompletionsService extends Disposable {
       ...data,
       isValid: typeof data.renderingTime === 'number' ? data.renderingTime > this.validCompletionThreshold : false,
     };
-    this.aiReporter.end(relationId, reportData);
+    // 排除掉无效数据，避免多余数据上报
+    if (reportData.isValid) {
+      this.aiReporter.end(relationId, reportData);
+    }
   }
 
   public setVisibleCompletion(visible: boolean) {
