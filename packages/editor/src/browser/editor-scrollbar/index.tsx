@@ -247,7 +247,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
   componentWillUnmount() {
     if (this.ref) {
       this.ref.removeEventListener('mouseenter', this.onMouseEnter);
-      this.ref.addEventListener('wheel', this.onMousewheel);
+      this.ref.removeEventListener('wheel', this.onMousewheel);
     }
     window.removeEventListener('resize', this.handleWindowResize);
     if (this.requestFrame) {
