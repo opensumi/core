@@ -47,7 +47,7 @@ import {
   WorkbenchEditorService,
 } from '../common';
 
-import { Scroll } from './editor-scrollbar/inedx';
+import { Scroll } from './editor-scrollbar';
 import styles from './editor.module.less';
 import { TabTitleMenuService } from './menu/title-context.menu';
 import {
