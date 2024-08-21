@@ -87,8 +87,10 @@ export const WelcomeMessage = () => {
                 onClick={withPrevented(() => {
                   aiChatService.sendMessage({
                     ...chatAgentService.parseMessage(data.message),
-                    actionType: ActionTypeEnum.Welcome,
-                    actionSource: ActionSourceEnum.Chat,
+                    reportExtra: {
+                      actionType: ActionTypeEnum.Welcome,
+                      actionSource: ActionSourceEnum.Chat,
+                    },
                   });
                 })}
               >

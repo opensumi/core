@@ -291,8 +291,10 @@ export const ChatReply = (props: IChatReplyProps) => {
             onClick={() => {
               chatApiService.sendMessage({
                 ...chatAgentService.parseMessage(item.message),
-                actionSource: ActionSourceEnum.Chat,
-                actionType: ActionTypeEnum.Followup,
+                reportExtra: {
+                  actionSource: ActionSourceEnum.Chat,
+                  actionType: ActionTypeEnum.Followup,
+                },
               });
             }}
           >
