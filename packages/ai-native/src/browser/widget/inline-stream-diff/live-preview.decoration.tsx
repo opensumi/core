@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { StackingLevel } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { ActionSourceEnum, ActionTypeEnum, Disposable, Emitter, Event, IAIReporter } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Position, Range } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -49,6 +49,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
+
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
 
@@ -71,10 +74,12 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private partialEditWidgetList: AcceptPartialEditWidget[] = [];
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
   private zone: LineRange;
+  private relationId: string;
 
   constructor(private readonly monacoEditor: ICodeEditor) {
     super();
     this.model = this.monacoEditor.getModel()!;
+    this.relationId = this.aiReporter.getRelationId();
 
     this.undoRedoService = StandaloneServices.get(IUndoRedoService);
 
@@ -315,7 +320,12 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     return operation;
   }
 
-  private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget, isPushStack: boolean = true) {
+  private handlePartialEditAction(
+    type: EPartialEdit,
+    widget: AcceptPartialEditWidget,
+    isPushStack: boolean = true,
+    isReport: boolean = false,
+  ) {
     const position = widget.getPosition()!.position!;
     const model = this.model;
     /**
@@ -347,7 +357,24 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const findAddedRangeDecByGroup = (model: LivePreviewDiffDecorationModel) =>
       model.addedRangeDec.getDecorationByGroup(group);
 
+    let modifyContent;
+    const range = addedDec?.getRange();
+    if (range) {
+      modifyContent = model.getValueInRange(range);
+    }
+
     const discard = (decorationModel: LivePreviewDiffDecorationModel) => {
+      // 只有点击行采纳时才会上报
+      if (isReport) {
+        this.aiReporter.end(this.relationId, {
+          message: 'discard',
+          success: true,
+          isDrop: true,
+          content: modifyContent,
+          actionSource: ActionSourceEnum.InlineChat,
+          actionType: ActionTypeEnum.LineDiscard,
+        });
+      }
       const removedWidget = findRemovedWidgetByGroup(decorationModel);
       removedWidget?.hide();
 
@@ -361,6 +388,17 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     };
 
     const accpet = (decorationModel: LivePreviewDiffDecorationModel) => {
+      // 只有点击行采纳时才会上报
+      if (isReport) {
+        this.aiReporter.end(this.relationId, {
+          message: 'accept',
+          success: true,
+          isReceive: true,
+          content: modifyContent,
+          actionSource: ActionSourceEnum.InlineChat,
+          actionType: ActionTypeEnum.lineAccept,
+        });
+      }
       const partialEditWidget = findPartialWidgetByGroup(decorationModel);
       partialEditWidget?.accept(addedLinesCount, deletedLinesCount);
 
@@ -504,10 +542,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     acceptPartialEditWidget.addDispose([
       acceptPartialEditWidget.onAccept(() => {
-        this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget);
+        this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget, true, true);
       }),
       acceptPartialEditWidget.onDiscard(() => {
-        this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget);
+        this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget, true, true);
       }),
     ]);
 

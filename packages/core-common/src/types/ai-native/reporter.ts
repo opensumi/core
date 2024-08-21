@@ -13,6 +13,47 @@ export enum AISerivceType {
   TerminalAICommand = 'terminalAICommand',
 }
 
+export enum ActionSourceEnum {
+  // 聊天面板
+  Chat = 'chat',
+  // 编辑器内联 Chat
+  InlineChat = 'inlineChat',
+  // 编辑器内 Action
+  CodeAction = 'codeAction',
+  // 终端
+  Terminal = 'terminal',
+}
+
+export enum ActionTypeEnum {
+  // 自动补全
+  Completion = 'completion',
+  // 下拉补全
+  DropdownCompletion = 'dropdownCompletion',
+  // ai重命名
+  Rename = 'rename',
+  // Chat面板 插入代码
+  ChatInsertCode = 'chatInsertCode',
+  // Chat面板 复制代码
+  ChatCopyCode = 'chatCopyCode',
+  // Chat面板 欢迎语的Action
+  Welcome = 'welcome',
+  // Chat面板 回复消息的Action
+  Followup = 'followup',
+  // 发送消息
+  Send = 'send',
+  // 生成代码后的行动点：全部采纳
+  Accept = 'accept',
+  // 生成代码后的行动点：单模块采纳
+  lineAccept = 'lineAccept',
+  // 生成代码后的行动点：全部拒绝
+  Discard = 'discard',
+  // 生成代码后的行动点：全部拒绝
+  LineDiscard = 'lineDiscard',
+  // 生成代码后的行动点：重新生成
+  Regenerate = 'regenerate',
+  // 包含业务自定义的Action
+}
+
 export interface CommonLogInfo {
   msgType: AISerivceType | string;
   relationId: string;
@@ -29,12 +70,17 @@ export interface CommonLogInfo {
   isRetry: boolean;
   isDrop: boolean;
   language?: string;
+  // 针对新版数据增加额外参数
   // 补全内容
   content?: string;
   // 文件路径
   filePath?: string;
   // 仓库地址
   repoPath?: string;
+  // 行动点来源
+  actionSource?: ActionSourceEnum | string;
+  // 行动点类型，内置通用，但是很多来自业务
+  actionType?: ActionTypeEnum | string;
 }
 
 export interface CompletionRT extends Partial<CommonLogInfo> {
@@ -131,6 +177,7 @@ export interface IAIReporter {
   getCommonReportInfo(): Record<string, unknown>;
   getCacheReportInfo<T = ReportInfo>(relationId: string): T | undefined;
   record(data: ReportInfo, relationId?: string): ReportInfo;
+  getRelationId(): string;
   // 返回关联 ID
   start(msg: string, data: ReportInfo): string;
   end(relationId: string, data: ReportInfo): void;

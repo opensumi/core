@@ -32,7 +32,7 @@ export class CodeActionService extends Disposable {
   }
 
   public registerCodeAction(operational: AIActionItem): void {
-    const { codeAction, id } = operational;
+    const { codeAction, id, extra } = operational;
 
     if (!codeAction) {
       return;
@@ -48,6 +48,7 @@ export class CodeActionService extends Disposable {
         id: AI_CODE_ACTION.id,
         arguments: [operational.id],
       },
+      extra,
     } as CodeAction;
 
     this.codeActionsMap.set(id, action);

@@ -1,6 +1,8 @@
 import {
   AIInlineChatContentWidgetId,
   AISerivceType,
+  ActionSourceEnum,
+  ActionTypeEnum,
   CancellationToken,
   Event,
   IChatComponent,
@@ -59,6 +61,10 @@ export interface IChatMessageStructure {
    * 是否立即发送，默认为 true
    */
   immediate?: boolean;
+  // 行动点类型
+  actionType?: ActionTypeEnum | string;
+  // 行动点来源
+  actionSource?: ActionSourceEnum | string;
 }
 
 export interface IChatMessageListUserItem {

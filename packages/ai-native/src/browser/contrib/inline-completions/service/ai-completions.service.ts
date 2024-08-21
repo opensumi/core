@@ -2,6 +2,8 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
+  ActionSourceEnum,
+  ActionTypeEnum,
   CancellationTokenSource,
   Disposable,
   Emitter,
@@ -110,6 +112,8 @@ export class AICompletionsService extends Disposable {
       isReceive: accept,
       renderingTime: data.renderingTime,
       content: data.content,
+      actionSource: ActionSourceEnum.CodeAction,
+      actionType: ActionTypeEnum.Completion,
     });
 
     this._isVisibleCompletion = false;

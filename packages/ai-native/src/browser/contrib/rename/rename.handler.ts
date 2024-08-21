@@ -1,5 +1,13 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AISerivceType, CancellationToken, Disposable, IAIReporter, getErrorMessage } from '@opensumi/ide-core-common';
+import {
+  AISerivceType,
+  ActionSourceEnum,
+  ActionTypeEnum,
+  CancellationToken,
+  Disposable,
+  IAIReporter,
+  getErrorMessage,
+} from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
@@ -38,6 +46,8 @@ export class RenameHandler extends IAIMonacoContribHandler {
         type: AISerivceType.Rename,
         modelRequestStartTime: startTime,
         content: model.getValue(),
+        actionSource: ActionSourceEnum.CodeAction,
+        actionType: ActionTypeEnum.Rename,
       });
       this.lastModelRequestRenameSessionId = relationId;
 
@@ -50,6 +60,8 @@ export class RenameHandler extends IAIMonacoContribHandler {
           isCancel: true,
           modelRequestStartTime: startTime,
           modelRequestEndTime: endTime,
+          actionSource: ActionSourceEnum.CodeAction,
+          actionType: ActionTypeEnum.Rename,
         });
 
         this.lastModelRequestRenameSessionId = undefined;
@@ -67,6 +79,8 @@ export class RenameHandler extends IAIMonacoContribHandler {
           success: false,
           modelRequestStartTime: startTime,
           modelRequestEndTime: endTime,
+          actionSource: ActionSourceEnum.CodeAction,
+          actionType: ActionTypeEnum.Rename,
         });
         throw error;
       }
@@ -78,6 +92,8 @@ export class RenameHandler extends IAIMonacoContribHandler {
           this.aiReporter.end(this.lastModelRequestRenameSessionId, {
             message: 'done',
             success: true,
+            actionSource: ActionSourceEnum.CodeAction,
+            actionType: ActionTypeEnum.Rename,
             modelRequestEndTime: this.lastModelRequestRenameEndTime,
             ...event,
           });

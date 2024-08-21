@@ -5,7 +5,14 @@ import Highlight from 'react-highlight';
 import { IClipboardService, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
 import { Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { ChatFeatureRegistryToken, IAIReporter, localize, runWhenIdle } from '@opensumi/ide-core-common';
+import {
+  ActionSourceEnum,
+  ActionTypeEnum,
+  ChatFeatureRegistryToken,
+  IAIReporter,
+  localize,
+  runWhenIdle,
+} from '@opensumi/ide-core-common';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';
@@ -58,7 +65,15 @@ export const CodeEditorWithHighlight = (props: Props) => {
   const handleCopy = useCallback(async () => {
     setIsCoping(true);
     await clipboardService.writeText(input);
-    aiReporter.end(relationId, { copy: true, content: input, language, agentId, command });
+    aiReporter.end(relationId, {
+      copy: true,
+      content: input,
+      language,
+      agentId,
+      command,
+      actionSource: ActionSourceEnum.Chat,
+      actionType: ActionTypeEnum.ChatCopyCode,
+    });
     runWhenIdle(() => {
       setIsCoping(false);
     }, 1000);
@@ -70,7 +85,15 @@ export const CodeEditorWithHighlight = (props: Props) => {
       const selection = editor.getSelection();
       if (selection) {
         insertSnippetWithMonacoEditor(editor, input, [selection], { undoStopBefore: false, undoStopAfter: false });
-        aiReporter.end(relationId, { insert: true, content: input, language, agentId, command });
+        aiReporter.end(relationId, {
+          insert: true,
+          content: input,
+          language,
+          agentId,
+          command,
+          actionSource: ActionSourceEnum.Chat,
+          actionType: ActionTypeEnum.ChatCopyCode,
+        });
       }
     }
   }, [monacoCommandRegistry]);
