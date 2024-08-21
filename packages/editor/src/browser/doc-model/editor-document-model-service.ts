@@ -237,8 +237,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     }
 
     const instance = ref.instance;
-    ref.dispose();
-    return {
+    const resullt = {
       alwaysDirty: instance.alwaysDirty,
       closeAutoSave: instance.closeAutoSave,
       disposeEvenDirty: instance.disposeEvenDirty,
@@ -251,6 +250,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       id: instance.id,
       savable: instance.savable,
     };
+    ref.dispose();
+    return resullt;
   }
 
   getAllModels(): IEditorDocumentModel[] {
