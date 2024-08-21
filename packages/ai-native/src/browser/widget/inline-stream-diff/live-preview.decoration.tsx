@@ -263,7 +263,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           description: ActiveLineDecoration,
           isWholeLine: true,
           className: styles.inline_diff_current,
-          zIndex: StackingLevel.WorkbenchEditor,
+          zIndex: StackingLevel.Workbench,
         }),
       },
     ]);

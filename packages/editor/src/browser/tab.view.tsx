@@ -13,7 +13,6 @@ import React, {
   useState,
 } from 'react';
 
-import { Scrollbars } from '@opensumi/ide-components';
 import {
   ComponentRegistry,
   ConfigContext,
@@ -27,13 +26,12 @@ import {
   PreferenceService,
   ResizeEvent,
   URI,
-  View,
   getExternalIcon,
   getIcon,
   getSlotLocation,
+  renderView,
   useDesignStyles,
 } from '@opensumi/ide-core-browser';
-import { renderView } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -49,6 +47,7 @@ import {
   WorkbenchEditorService,
 } from '../common';
 
+import { Scroll } from './editor-scrollbar';
 import styles from './editor.module.less';
 import { TabTitleMenuService } from './menu/title-context.menu';
 import {
@@ -510,13 +509,12 @@ export const Tabs = ({ group }: ITabsProps) => {
         onDoubleClick={handleEmptyDBClick}
       >
         {!wrapMode ? (
-          <Scrollbars
-            tabBarMode
+          <Scroll
             forwardedRef={(el) => (el ? (tabContainer.current = el) : null)}
             className={styles.kt_editor_tabs_scroll}
           >
             {renderTabContent()}
-          </Scrollbars>
+          </Scroll>
         ) : (
           <div className={styles.kt_editor_wrap_container}>{renderTabContent()}</div>
         )}

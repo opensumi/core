@@ -1,4 +1,3 @@
-// 输出所有 common 里面会有的内容
 export * from '@opensumi/ide-core-common';
 
 // 输出当前 browser 特有的内容
@@ -45,3 +44,4 @@ export * from './markdown';
 export * from './extensions';
 
 export * from './static-resource';
+export * from './context-key';
