@@ -61,10 +61,15 @@ export interface IChatMessageStructure {
    * 是否立即发送，默认为 true
    */
   immediate?: boolean;
-  // 行动点类型
-  actionType?: ActionTypeEnum | string;
-  // 行动点来源
-  actionSource?: ActionSourceEnum | string;
+  /**
+   * 上报数据时需要增加额外的字段
+   */
+  reportExtra?: {
+    // 行动点类型
+    actionType?: ActionTypeEnum | string;
+    // 行动点来源
+    actionSource?: ActionSourceEnum | string;
+  };
 }
 
 export interface IChatMessageListUserItem {

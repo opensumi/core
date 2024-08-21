@@ -47,10 +47,6 @@ export interface AIActionItem {
    * @example {}
    */
   codeAction?: AICodeActionItem;
-  /**
-   * 定义的额外信息
-   */
-  extra?: any;
 }
 
 export interface AIActionProps {

@@ -249,8 +249,8 @@ export class InlineChatHandler extends Disposable {
               type: AISerivceType.InlineChat,
               source,
               runByCodeAction: source === 'codeAction',
-              actionSource: action.extra?.actionSource,
-              actionType: action.extra?.actionType,
+              actionSource: ActionSourceEnum.InlineChat,
+              actionType: action.name,
             });
             return relationId;
           },
@@ -343,12 +343,13 @@ export class InlineChatHandler extends Disposable {
       relationId: string;
       startTime: number;
       isRetry: boolean;
+      actionType?: string;
+      actionSource?: string;
     };
-    extra?: any;
   }): void {
-    const { monacoEditor, options, reportInfo, extra } = params;
+    const { monacoEditor, options, reportInfo } = params;
     const { chatResponse } = options;
-    const { relationId, startTime, isRetry } = reportInfo;
+    const { relationId, startTime, isRetry, actionType, actionSource } = reportInfo;
 
     if (InlineChatController.is(chatResponse)) {
       this.aiInlineChatOperationDisposable.addDispose([
@@ -358,8 +359,8 @@ export class InlineChatHandler extends Disposable {
             message: error.message || '',
             startTime,
             isRetry,
-            actionSource: extra?.actionSource,
-            actionType: extra?.actionType,
+            actionSource,
+            actionType,
           });
         }),
         chatResponse.onAbort(() => {
@@ -369,8 +370,8 @@ export class InlineChatHandler extends Disposable {
             startTime,
             isRetry,
             isStop: true,
-            actionSource: extra?.actionSource,
-            actionType: extra?.actionType,
+            actionSource,
+            actionType,
           });
         }),
         chatResponse.onEnd(() => {
@@ -379,8 +380,8 @@ export class InlineChatHandler extends Disposable {
             message: '',
             startTime,
             isRetry,
-            actionSource: extra?.actionSource,
-            actionType: extra?.actionType,
+            actionSource,
+            actionType,
           });
         }),
       ]);
@@ -392,8 +393,8 @@ export class InlineChatHandler extends Disposable {
           startTime,
           isRetry,
           isStop: true,
-          actionSource: extra?.actionSource,
-          actionType: extra?.actionType,
+          actionSource,
+          actionType,
         });
         return;
       }
@@ -404,8 +405,8 @@ export class InlineChatHandler extends Disposable {
           message: (chatResponse as ErrorResponse).message || '',
           startTime,
           isRetry,
-          actionSource: extra?.actionSource,
-          actionType: extra?.actionType,
+          actionSource,
+          actionType,
         });
         return;
       }
@@ -415,8 +416,8 @@ export class InlineChatHandler extends Disposable {
         message: '',
         startTime,
         isRetry,
-        actionSource: extra?.actionSource,
-        actionType: extra?.actionType,
+        actionSource,
+        actionType,
       });
     }
 
@@ -491,11 +492,7 @@ export class InlineChatHandler extends Disposable {
     this.visibleDiffWidget({
       monacoEditor,
       options: { crossSelection, chatResponse: response },
-      reportInfo: { relationId, startTime, isRetry },
-      extra: {
-        actionType,
-        actionSource,
-      },
+      reportInfo: { relationId, startTime, isRetry, actionType, actionSource },
     });
 
     this.aiInlineChatOperationDisposable.addDispose([
@@ -593,8 +590,8 @@ export class InlineChatHandler extends Disposable {
         crossSelection,
         relationId,
         isRetry: false,
-        actionSource: action?.extra?.actionSource,
-        actionType: action?.extra?.actionType,
+        actionSource: ActionSourceEnum.InlineChat,
+        actionType: action?.name,
       });
     }
   }

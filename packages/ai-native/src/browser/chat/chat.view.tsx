@@ -360,7 +360,8 @@ export const AIChatView = observer(() => {
 
   const handleAgentReply = React.useCallback(
     async (value: IChatMessageStructure) => {
-      const { message, agentId, command, actionSource, actionType } = value;
+      const { message, agentId, command, reportExtra } = value;
+      const { actionType, actionSource } = reportExtra || {};
 
       const request = aiChatService.createRequest(message, agentId!, command);
       if (!request) {
@@ -453,10 +454,10 @@ export const AIChatView = observer(() => {
   );
 
   const handleSend = React.useCallback(async (value: IChatMessageStructure) => {
-    const { message, command, actionSource, actionType } = value;
+    const { message, command, reportExtra } = value;
 
     const agentId = value.agentId ? value.agentId : ChatProxyService.AGENT_ID;
-    return handleAgentReply({ message, agentId, command, actionSource, actionType });
+    return handleAgentReply({ message, agentId, command, reportExtra });
   }, []);
 
   const handleClear = React.useCallback(() => {
@@ -551,8 +552,10 @@ export const AIChatView = observer(() => {
                   message: value,
                   agentId,
                   command,
-                  actionSource: ActionSourceEnum.Chat,
-                  actionType: ActionTypeEnum.Send,
+                  reportExtra: {
+                    actionSource: ActionSourceEnum.Chat,
+                    actionType: ActionTypeEnum.Send,
+                  },
                 })
               }
               disabled={loading}
