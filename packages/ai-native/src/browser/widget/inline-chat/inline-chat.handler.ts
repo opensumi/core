@@ -315,9 +315,9 @@ export class InlineChatHandler extends Disposable {
     const { relationId, message, startTime, isRetry, isStop } = reportInfo;
 
     // 获取变更的内容
-    let content;
+    let modifyContent;
     if (status === EInlineChatStatus.DONE) {
-      content = this.inlineDiffHandler.getModifyContent();
+      modifyContent = this.inlineDiffHandler.getModifyContent();
     }
 
     this.aiInlineChatDisposable.addDispose(this.aiInlineContentWidget.launchChatStatus(status));
@@ -327,7 +327,7 @@ export class InlineChatHandler extends Disposable {
       replytime: Date.now() - startTime,
       isStop,
       isRetry,
-      content,
+      code: modifyContent,
       actionType: reportInfo?.actionType,
       actionSource: reportInfo?.actionSource,
     });
@@ -504,7 +504,7 @@ export class InlineChatHandler extends Disposable {
             message: 'accept',
             success: true,
             isReceive: true,
-            content: modifyContent,
+            code: modifyContent,
             actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Accept,
           });
@@ -516,7 +516,7 @@ export class InlineChatHandler extends Disposable {
             message: 'discard',
             success: true,
             isDrop: true,
-            content: modifyContent,
+            code: modifyContent,
             actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Discard,
           });
@@ -528,7 +528,7 @@ export class InlineChatHandler extends Disposable {
             message: 'regenerate',
             success: true,
             isDrop: true,
-            content: modifyContent,
+            code: modifyContent,
             actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Regenerate,
           });

@@ -22,6 +22,8 @@ export enum ActionSourceEnum {
   CodeAction = 'codeAction',
   // 终端
   Terminal = 'terminal',
+  // 下拉补全 | 自动补全
+  Completion = 'completion',
 }
 
 export enum ActionTypeEnum {
@@ -71,12 +73,12 @@ export interface CommonLogInfo {
   isDrop: boolean;
   language?: string;
   // 针对新版数据增加额外参数
-  // 补全内容
-  content?: string;
+  // 操作的代码
+  code?: string;
   // 文件路径
-  filePath?: string;
+  fileUrl?: string;
   // 仓库地址
-  repoPath?: string;
+  repo?: string;
   // 行动点来源
   actionSource?: ActionSourceEnum | string;
   // 行动点类型，内置通用，但是很多来自业务
@@ -97,10 +99,10 @@ export interface IAIReportCompletionOption {
   relationId: string;
   sessionId: string;
   accept: boolean;
-  content: string;
   repo?: string;
   completionUseTime?: number;
   renderingTime?: number;
+  code?: string;
 }
 
 export enum MergeConflictEditorMode {

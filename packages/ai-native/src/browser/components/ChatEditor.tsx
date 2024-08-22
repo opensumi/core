@@ -67,7 +67,7 @@ export const CodeEditorWithHighlight = (props: Props) => {
     await clipboardService.writeText(input);
     aiReporter.end(relationId, {
       copy: true,
-      content: input,
+      code: input,
       language,
       agentId,
       command,
@@ -87,7 +87,7 @@ export const CodeEditorWithHighlight = (props: Props) => {
         insertSnippetWithMonacoEditor(editor, input, [selection], { undoStopBefore: false, undoStopAfter: false });
         aiReporter.end(relationId, {
           insert: true,
-          content: input,
+          code: input,
           language,
           agentId,
           command,

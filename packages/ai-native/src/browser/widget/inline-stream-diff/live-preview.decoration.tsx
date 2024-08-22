@@ -370,7 +370,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           message: 'discard',
           success: true,
           isDrop: true,
-          content: modifyContent,
+          code: modifyContent,
           actionSource: ActionSourceEnum.InlineChat,
           actionType: ActionTypeEnum.LineDiscard,
         });
@@ -394,7 +394,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           message: 'accept',
           success: true,
           isReceive: true,
-          content: modifyContent,
+          code: modifyContent,
           actionSource: ActionSourceEnum.InlineChat,
           actionType: ActionTypeEnum.lineAccept,
         });

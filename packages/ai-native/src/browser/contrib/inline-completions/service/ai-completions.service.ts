@@ -111,8 +111,8 @@ export class AICompletionsService extends Disposable {
       success: true,
       isReceive: accept,
       renderingTime: data.renderingTime,
-      content: data.content,
-      actionSource: ActionSourceEnum.CodeAction,
+      code: data.code,
+      actionSource: ActionSourceEnum.Completion,
       actionType: ActionTypeEnum.Completion,
     });
 
@@ -137,7 +137,7 @@ export class AICompletionsService extends Disposable {
         sessionId: this.lastSessionId,
         accept: false,
         relationId: this.lastRelationId,
-        content: this.lastCompletionContent,
+        code: this.lastCompletionContent,
       });
     }
 

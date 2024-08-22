@@ -45,7 +45,7 @@ export class RenameHandler extends IAIMonacoContribHandler {
         message: 'start',
         type: AISerivceType.Rename,
         modelRequestStartTime: startTime,
-        content: model.getValue(),
+        code: model.getValueInRange(range),
         actionSource: ActionSourceEnum.CodeAction,
         actionType: ActionTypeEnum.Rename,
       });
