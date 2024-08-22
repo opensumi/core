@@ -261,5 +261,14 @@ export function createApiFactory(
     OverviewRulerLane,
     TextEditorCursorStyle,
     TextEditorSelectionChangeKind,
+    TabInputText: extTypes.TextTabInput,
+    TabInputTextDiff: extTypes.TextDiffTabInput,
+    TabInputTextMerge: extTypes.TextMergeTabInput,
+    TabInputCustom: extTypes.CustomEditorTabInput,
+    TabInputNotebook: extTypes.NotebookEditorTabInput,
+    TabInputNotebookDiff: extTypes.NotebookDiffEditorTabInput,
+    TabInputWebview: extTypes.WebviewEditorTabInput,
+    TabInputTerminal: extTypes.TerminalEditorTabInput,
+    TabInputInteractiveWindow: extTypes.InteractiveWindowInput,
   });
 }

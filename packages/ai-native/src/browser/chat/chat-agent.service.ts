@@ -75,9 +75,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
       throw new Error(`No agent with id ${id} registered`);
     }
     data.agent.metadata = { ...data.agent.metadata, ...updateMetadata };
-    data.agent.provideSlashCommands(CancellationToken.None).then((commands) => {
-      data.commands = commands;
-    });
+    data.commands = await data.agent.provideSlashCommands(CancellationToken.None);
 
     if (updateMetadata.isDefault) {
       this.defaultAgentId = id;

@@ -5,14 +5,26 @@ import { SlotRenderer } from '../../react-providers/slot';
 import { BoxPanel } from './box-panel';
 import { SplitPanel } from './split-panel';
 
+export interface ILayoutConfigCache {
+  [key: string]: { size: number; currentId: string };
+}
+
 export const getStorageValue = () => {
   // 启动时渲染的颜色和尺寸，弱依赖
-  let savedLayout: { [key: string]: { size: number; currentId: string } } = {};
+  let savedLayout: ILayoutConfigCache = {};
   let savedColors: { [colorKey: string]: string } = {};
   try {
-    savedLayout = JSON.parse(localStorage.getItem('layout') || '{}');
-    savedColors = JSON.parse(localStorage.getItem('theme') || '{}');
+    const layoutConfigStr = localStorage.getItem('layout');
+    if (layoutConfigStr) {
+      savedLayout = JSON.parse(layoutConfigStr);
+    }
+
+    const themeConfigStr = localStorage.getItem('theme');
+    if (themeConfigStr) {
+      savedColors = JSON.parse(themeConfigStr);
+    }
   } catch (err) {}
+
   return {
     layout: savedLayout,
     colors: savedColors,
@@ -42,7 +54,13 @@ export function ToolbarActionBasedLayout(
         />
         <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
           <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
-          <SlotRenderer flex={1} defaultSize={layout.bottom?.size} minResize={160} slot='bottom' isTabbar={true} />
+          <SlotRenderer
+            flex={1}
+            defaultSize={layout.bottom?.currentId ? layout.bottom?.size : 24}
+            minResize={160}
+            slot='bottom'
+            isTabbar={true}
+          />
         </SplitPanel>
         <SlotRenderer
           slot='right'

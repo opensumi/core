@@ -4,11 +4,15 @@ import {
   ILogService,
   LogLevel,
   SupportLogNamespace,
-  getNodeRequire,
 } from '@opensumi/ide-core-common';
 import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';
 
 import { ExtHostAppConfig } from '../common/ext.process';
+import { IExtensionLogger, ILogService, LogLevel, SupportLogNamespace } from '@opensumi/ide-core-common';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
+import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';
+
+import { getNodeRequire } from '../common/utils';
 
 export class ExtensionLogger2 implements IExtensionLogger {
   private injector: Injector;

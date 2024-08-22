@@ -18,6 +18,10 @@ interface IEnhanceIconProps {
   icon?: string;
   iconClass?: string;
   children?: React.ReactNode;
+  tabIndex?: number;
+  role?: string;
+  ariaLabel?: string;
+  ariaPressed?: boolean | 'mixed' | 'false' | 'true' | undefined;
 }
 
 export const EnhanceIcon = React.forwardRef<HTMLDivElement | null, IEnhanceIconProps>(
@@ -27,6 +31,10 @@ export const EnhanceIcon = React.forwardRef<HTMLDivElement | null, IEnhanceIconP
       style={props.wrapperStyle}
       onClick={props.onClick}
       ref={ref}
+      tabIndex={props.tabIndex}
+      role={props.role}
+      aria-label={props.ariaLabel}
+      aria-pressed={props.ariaPressed}
     >
       <Icon
         className={cls(props.className, styles.icon)}

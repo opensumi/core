@@ -13,7 +13,7 @@ import {
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-browser';
-import { TerminalRegistryToken } from '@opensumi/ide-core-common';
+import { IntelligentCompletionsRegistryToken, TerminalRegistryToken } from '@opensumi/ide-core-common';
 
 import { ChatProxyServiceToken, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
 
@@ -27,6 +27,8 @@ import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
 import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
+import { IntelligentCompletionsContribution } from './contrib/intelligent-completions/intelligent-completions.contribution';
+import { IntelligentCompletionsRegistry } from './contrib/intelligent-completions/intelligent-completions.feature.registry';
 import { InterfaceNavigationContribution } from './contrib/interface-navigation/interface-navigation.contribution';
 import { MergeConflictContribution } from './contrib/merge-conflict';
 import { ResolveConflictRegistry } from './contrib/merge-conflict/merge-conflict.feature.registry';
@@ -57,6 +59,7 @@ export class AINativeModule extends BrowserModule {
     MergeConflictContribution,
     AICodeActionContribution,
     AINativePreferencesContribution,
+    IntelligentCompletionsContribution,
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
@@ -72,6 +75,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: ResolveConflictRegistryToken,
       useClass: ResolveConflictRegistry,
+    },
+    {
+      token: IntelligentCompletionsRegistryToken,
+      useClass: IntelligentCompletionsRegistry,
     },
     {
       token: IAIInlineChatService,

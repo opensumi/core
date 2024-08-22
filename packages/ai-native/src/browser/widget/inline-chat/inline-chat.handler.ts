@@ -226,6 +226,18 @@ export class InlineChatHandler extends Disposable {
           return;
         }
 
+        const previewer = () => {
+          // 兼容 providerDiffPreviewStrategy api
+          const strategy = handler.providerDiffPreviewStrategy
+            ? handler.providerDiffPreviewStrategy
+            : handler.providePreviewStrategy;
+          if (!strategy) {
+            return undefined;
+          }
+
+          return strategy.bind(this, monacoEditor, this.cancelIndicator.token);
+        };
+
         this.runInlineChatAction(
           monacoEditor,
           () => {
@@ -238,9 +250,7 @@ export class InlineChatHandler extends Disposable {
             return relationId;
           },
           handler.execute ? handler.execute!.bind(this, monacoEditor, this.cancelIndicator.token) : undefined,
-          handler.providerDiffPreviewStrategy
-            ? handler.providerDiffPreviewStrategy.bind(this, monacoEditor, this.cancelIndicator.token)
-            : undefined,
+          previewer(),
         );
       }),
     );
@@ -268,8 +278,8 @@ export class InlineChatHandler extends Disposable {
           handler.execute && strategy === ERunStrategy.EXECUTE
             ? handler.execute!.bind(this, monacoEditor, value, this.cancelIndicator.token)
             : undefined,
-          handler.providerDiffPreviewStrategy && strategy === ERunStrategy.DIFF_PREVIEW
-            ? handler.providerDiffPreviewStrategy.bind(this, monacoEditor, value, this.cancelIndicator.token)
+          handler.providePreviewStrategy && strategy === ERunStrategy.PREVIEW
+            ? handler.providePreviewStrategy.bind(this, monacoEditor, value, this.cancelIndicator.token)
             : undefined,
         );
       }),
@@ -400,7 +410,7 @@ export class InlineChatHandler extends Disposable {
 
     const model = monacoEditor.getModel();
 
-    this.inlineDiffHandler.hidePreviewer(monacoEditor);
+    this.inlineDiffHandler.destroyPreviewer(model!.uri.toString());
     this.aiInlineChatOperationDisposable.dispose();
 
     this.ensureInlineChatVisible(monacoEditor, crossSelection);
@@ -442,7 +452,7 @@ export class InlineChatHandler extends Disposable {
 
     this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
-        this.inlineDiffHandler.handleAction(monacoEditor, kind);
+        this.inlineDiffHandler.handleAction(kind);
 
         if (kind === EResultKind.ACCEPT) {
           this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
@@ -477,7 +487,7 @@ export class InlineChatHandler extends Disposable {
     monacoEditor: monaco.ICodeEditor,
     reporterFn: () => string,
     execute?: () => MaybePromise<void>,
-    providerDiffPreviewStrategy?: () => MaybePromise<ChatResponse | InlineChatController>,
+    providerPreview?: () => MaybePromise<ChatResponse | InlineChatController>,
   ) {
     const selection = monacoEditor.getSelection();
     if (!selection) {
@@ -490,20 +500,14 @@ export class InlineChatHandler extends Disposable {
       this.disposeAllWidget();
     }
 
-    if (providerDiffPreviewStrategy) {
+    if (providerPreview) {
       const crossSelection = selection
         .setStartPosition(selection.startLineNumber, 1)
         .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
       const relationId = reporterFn();
 
-      await this.handleDiffPreviewStrategy(
-        monacoEditor,
-        providerDiffPreviewStrategy,
-        crossSelection,
-        relationId,
-        false,
-      );
+      await this.handleDiffPreviewStrategy(monacoEditor, providerPreview, crossSelection, relationId, false);
     }
   }
 }

@@ -13,6 +13,7 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
+import { IDiffPreviewerOptions, IInlineDiffPreviewerNode } from './inline-diff-previewer';
 import styles from './inline-diff-widget.module.less';
 
 const diffEditorOptions: IDiffEditorOptions = {
@@ -123,7 +124,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
 });
 
 @Injectable({ multiple: true })
-export class InlineDiffWidget extends ZoneWidget {
+export class InlineDiffWidget extends ZoneWidget implements IInlineDiffPreviewerNode {
   @Autowired(AppConfig)
   private configContext: AppConfig;
 
@@ -137,7 +138,12 @@ export class InlineDiffWidget extends ZoneWidget {
   private root: ReactDOMClient.Root | null;
   private diffWidgetHandler: IDiffWidgetHandler | null = null;
   private resultContainer: HTMLDivElement | null = null;
-  hiddenArea: monaco.languages.IRange;
+  private hiddenArea: monaco.languages.IRange;
+
+  previewerOptions: IDiffPreviewerOptions;
+  setPreviewerOptions(options: IDiffPreviewerOptions): void {
+    this.previewerOptions = options;
+  }
 
   protected _fillContainer(container: HTMLElement): void {
     this.setCssClass('inline-diff-widget');

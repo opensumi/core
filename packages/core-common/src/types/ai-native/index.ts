@@ -93,6 +93,9 @@ export interface CodeModel {
   completionType?: ECompletionType;
 }
 
+/**
+ * @deprecated use IIntelligentCompletionsResult
+ */
 export interface IAICompletionResultModel {
   sessionId: string;
   codeModelList: Array<CodeModel>;
@@ -160,10 +163,17 @@ export interface IAIBackService<
     options: O,
     cancelToken?: CancellationToken,
   ): Promise<StreamResponse>;
+
+  /**
+   * @deprecated use `registerIntelligentCompletionFeature` API
+   */
   requestCompletion?<I extends IAICompletionOption>(
     input: I,
     cancelToken?: CancellationToken,
   ): Promise<CompletionResponse>;
+  /**
+   * @deprecated
+   */
   reportCompletion?<I extends IAIReportCompletionOption>(input: I): Promise<void>;
 }
 
@@ -218,6 +228,7 @@ export const ChatRenderRegistryToken = Symbol('ChatRenderRegistryToken');
 export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
 export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');
 export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
+export const IntelligentCompletionsRegistryToken = Symbol('IntelligentCompletionsRegistryToken');
 
 export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');

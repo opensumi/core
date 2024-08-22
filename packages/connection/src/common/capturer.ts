@@ -39,9 +39,14 @@ export interface ICapturedMessage {
   source?: string;
 }
 
-const _global = (typeof window !== 'undefined' ? window : global) || {
-  __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: undefined,
-};
+const _global: any =
+  typeof global === 'undefined'
+    ? typeof window === 'undefined'
+      ? {
+          __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: undefined,
+        }
+      : window
+    : global;
 
 export function getCapturer() {
   const hook = _global.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__;

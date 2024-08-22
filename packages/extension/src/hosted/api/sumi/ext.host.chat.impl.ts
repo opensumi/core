@@ -261,12 +261,13 @@ class ExtHostChatAgent {
       return [];
     }
     this._lastSlashCommands = result;
-    return result.map((c) => ({
+    return result.map((c: IChatAgentCommand & sumi.ChatAgentSlashCommand) => ({
       name: c.name,
       description: c.description,
       followupPlaceholder: c.followupPlaceholder,
       shouldRepopulate: c.shouldRepopulate,
       sampleRequest: c.sampleRequest,
+      isShortcut: c.isShortcut,
     }));
   }
 
