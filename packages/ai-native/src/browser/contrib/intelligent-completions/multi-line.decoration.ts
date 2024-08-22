@@ -1,6 +1,7 @@
 import { isUndefined } from '@opensumi/ide-core-common';
 import { ICodeEditor, IModelDeltaDecoration, IPosition, Position, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
+import { LineDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/viewLayout/lineDecorations';
 
 import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
 
@@ -12,6 +13,7 @@ export interface IModificationsInline {
   lineNumber?: number;
   column?: number;
   isEolLine?: boolean;
+  lockLineGhostText?: boolean;
 }
 
 enum EProcessStatus {
@@ -21,6 +23,16 @@ enum EProcessStatus {
 
 interface IProcessModificationsInline extends IModificationsInline {
   status: EProcessStatus;
+}
+
+interface IModificationsMap {
+  content: string;
+  decorations: LineDecoration[];
+}
+
+export interface IModificationsInlineAndMap {
+  fullLineMods: { [key: number]: IModificationsMap[] };
+  inlineMods: IModificationsInline[];
 }
 
 // https://github.com/microsoft/vscode/blob/main/src/vs/editor/contrib/inlineCompletions/browser/ghostTextWidget.ts#L156
@@ -92,6 +104,7 @@ export class MultiLineDecorationModel {
     eol: string,
     previous: IDiffChangeResult,
     next?: IDiffChangeResult,
+    includeInline = true,
   ) {
     const lines = this.combineContinuousMods(waitAddModificationsLines);
     const len = lines.length;
@@ -110,18 +123,22 @@ export class MultiLineDecorationModel {
     const lastLine = lines[len - 1];
 
     if (len === 1) {
-      if (!isUndefined(previous) && previous.value !== eol) {
-        inlineMods.push({
-          status: EProcessStatus.beginning,
-          newValue: previous.value + firstLine,
-          oldValue: previous.value,
-        });
-      } else if (!isUndefined(next) && next.value !== eol) {
-        inlineMods.push({
-          status: EProcessStatus.end,
-          newValue: lastLine + next.value,
-          oldValue: next.value,
-        });
+      if (includeInline) {
+        if (!isUndefined(previous) && previous.value !== eol) {
+          inlineMods.push({
+            status: EProcessStatus.beginning,
+            newValue: previous.value + firstLine,
+            oldValue: previous.value,
+          });
+        } else if (!isUndefined(next) && next.value !== eol) {
+          inlineMods.push({
+            status: EProcessStatus.end,
+            newValue: lastLine + next.value,
+            oldValue: next.value,
+          });
+        } else {
+          fullLineMods.push(firstLine);
+        }
       } else {
         fullLineMods.push(firstLine);
       }
@@ -218,9 +235,7 @@ export class MultiLineDecorationModel {
     changes: IDiffChangeResult[],
     startLine: number,
     cursorPosition: IPosition,
-  ): IModificationsInline[] | undefined {
-    startLine = Math.max(startLine - 1, 0);
-
+  ): IModificationsInlineAndMap | undefined {
     const model = editor.getModel();
     if (!model) {
       return;
@@ -235,24 +250,44 @@ export class MultiLineDecorationModel {
       removed: undefined,
     });
 
+    let currentLine = Math.max(startLine - 1, 0);
+    const baseText = model.getValue();
     const currentLineText = model.getLineContent(cursorPosition.lineNumber);
+
+    const modificationsMap: { [key: number]: IModificationsMap[] } = {};
     const resultModifications: IModificationsInline[] = [];
 
+    let previousValue = empty;
+    let isEmptyLine = currentLineText.trim() === empty;
     let lastChange: IDiffChangeResult;
     let waitAddModificationsLines: IModificationsInline[] = [];
+    let currentLineIndex = currentLine;
     let columnNumber = 1;
 
     const processChange = (change: IDiffChangeResult | undefined) => {
+      const isUniqueLine = !resultModifications.some(
+        (modification) => modification.lineNumber === currentLine && modification.lockLineGhostText,
+      );
+
       const { fullLineMods, inlineMods } = this.processLineModifications(
         waitAddModificationsLines,
         eol,
         lastChange,
         change,
+        isUniqueLine,
       );
+
+      modificationsMap[currentLine] = [
+        ...(modificationsMap[currentLine] ?? []),
+        ...fullLineMods.map((value) => ({
+          content: value,
+          decorations: [new LineDecoration(1, value.length + 1, 'ghost-text', 0)],
+        })),
+      ];
 
       inlineMods.forEach((mod) =>
         resultModifications.push({
-          lineNumber: mod.status === EProcessStatus.beginning ? startLine : startLine + 1,
+          lineNumber: mod.status === EProcessStatus.beginning ? currentLine : currentLine + 1,
           column: mod.status === EProcessStatus.beginning ? columnNumber : 1,
           newValue: mod.newValue,
           oldValue: mod.oldValue,
@@ -265,10 +300,6 @@ export class MultiLineDecorationModel {
       };
     };
 
-    let currentLineIndex = startLine;
-    let previousValue = empty;
-    let isEmptyLine = currentLineText.trim() === empty;
-
     for (const change of changes) {
       if (change.added) {
         const isEolLine = change.value === eol;
@@ -279,17 +310,47 @@ export class MultiLineDecorationModel {
 
         waitAddModificationsLines.push({
           isEolLine,
-          lineNumber: startLine,
+          lineNumber: currentLine,
           newValue: isEolLine ? empty : change.value,
           oldValue: isEolLine ? empty : previousValue,
         });
       } else {
         const { inlineMods } = processChange(change);
 
-        if (startLine === cursorPosition.lineNumber && inlineMods.length > 0) {
+        if (modificationsMap[currentLine].length > 0 && baseText.split(eol)[currentLine] === empty) {
+          const mods = modificationsMap[currentLine];
+          if (mods.length > 0) {
+            const firstModContent = mods[0].content;
+            const remainingMods = mods.slice(1);
+
+            if (firstModContent.startsWith(currentLineText)) {
+              if (!resultModifications.some((mod) => mod.lineNumber === currentLine + 1 && mod.lockLineGhostText)) {
+                resultModifications.push({
+                  lineNumber: currentLine + 1,
+                  column: 1,
+                  newValue: firstModContent,
+                  oldValue: empty,
+                  lockLineGhostText: true,
+                });
+                modificationsMap[currentLine + 1] ??= [];
+                modificationsMap[currentLine + 1].unshift(...remainingMods);
+              } else {
+                modificationsMap[currentLine + 1] ??= [];
+                modificationsMap[currentLine + 1].unshift(...mods);
+              }
+
+              modificationsMap[currentLine] = [];
+            }
+          }
+        }
+
+        if (currentLine === cursorPosition.lineNumber && inlineMods.length > 0) {
           isEmptyLine = false;
 
-          if (startLine <= cursorPosition.lineNumber && columnNumber < cursorPosition.column) {
+          if (
+            (currentLine < cursorPosition.lineNumber && modificationsMap[currentLine]?.length > 0) ||
+            (currentLine === cursorPosition.lineNumber && inlineMods.length > 0 && columnNumber < cursorPosition.column)
+          ) {
             return;
           }
         }
@@ -302,8 +363,12 @@ export class MultiLineDecorationModel {
           currentLineIndex++;
           columnNumber = 1;
           previousValue = empty;
+        } else if (currentLineIndex > currentLine) {
+          currentLine = currentLineIndex;
+          columnNumber += change.value.length;
+          waitAddModificationsLines = [];
+          previousValue += change.value;
         } else {
-          startLine = Math.max(startLine, currentLineIndex);
           columnNumber += change.value.length;
           previousValue += change.value;
         }
@@ -312,14 +377,36 @@ export class MultiLineDecorationModel {
 
     const { fullLineMods } = processChange(undefined);
 
-    if (startLine <= cursorPosition.lineNumber && columnNumber < cursorPosition.column) {
+    if (isEmptyLine) {
+      const modsAtCursorLine = modificationsMap[cursorPosition.lineNumber - 1];
+      if (modsAtCursorLine?.length > 0) {
+        const firstModContent = modsAtCursorLine[0].content;
+        const remainingMods = modsAtCursorLine.slice(1);
+
+        if (!resultModifications.some((mod) => mod.lineNumber === cursorPosition.lineNumber && mod.lockLineGhostText)) {
+          resultModifications.push({
+            lineNumber: cursorPosition.lineNumber,
+            column: cursorPosition.column,
+            newValue: firstModContent.slice(cursorPosition.column - 1),
+            oldValue: currentLineText,
+            lockLineGhostText: true,
+          });
+          modificationsMap[cursorPosition.lineNumber] ??= [];
+          modificationsMap[cursorPosition.lineNumber].unshift(...remainingMods);
+        } else {
+          modificationsMap[cursorPosition.lineNumber] ??= [];
+          modificationsMap[cursorPosition.lineNumber].unshift(...modsAtCursorLine);
+        }
+
+        modificationsMap[cursorPosition.lineNumber - 1] = [];
+      }
+    } else if (currentLine < cursorPosition.lineNumber && fullLineMods.length > 0) {
       return;
     }
 
-    if (!isEmptyLine && fullLineMods.length > 0) {
-      return;
-    }
-
-    return resultModifications;
+    return {
+      fullLineMods: modificationsMap,
+      inlineMods: resultModifications,
+    };
   }
 }

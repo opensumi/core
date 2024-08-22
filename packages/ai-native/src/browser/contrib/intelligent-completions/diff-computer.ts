@@ -19,10 +19,6 @@ interface IElement {
 }
 
 export class MultiLineDiffComputer {
-  private equals(a: string, b: string | undefined): boolean {
-    return a === b;
-  }
-
   private extractCommon(element: IElement, modified: string[], original: string[], diagonal: number): number {
     const modifiedLength = modified.length;
     const originalLength = original.length;
@@ -49,6 +45,14 @@ export class MultiLineDiffComputer {
     }
 
     return originalPos;
+  }
+
+  protected equals(a: string, b: string | undefined): boolean {
+    return a === b;
+  }
+
+  protected tokenize(content: string): string[] {
+    return content.split(empty).filter(Boolean);
   }
 
   public diff(originalContent: string, modifiedContent: string): IResultWithCount[] | undefined {
@@ -101,8 +105,8 @@ export class MultiLineDiffComputer {
       return changeResult;
     };
 
-    const tokenizeOriginal = originalContent.split(empty).filter(Boolean);
-    const tokenizeModified = modifiedContent.split(empty).filter(Boolean);
+    const tokenizeOriginal = this.tokenize(originalContent);
+    const tokenizeModified = this.tokenize(modifiedContent);
     const originalLength = tokenizeOriginal.length;
     const modifiedLength = tokenizeModified.length;
     const maxLength = originalLength + modifiedLength;
@@ -181,5 +185,38 @@ export class MultiLineDiffComputer {
         return diffResult;
       }
     }
+  }
+}
+
+const nonWhitespacePattern = /\S/;
+const identifierPattern = /^[a-zA-Z]+$/u;
+const splitPattern = /([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/;
+
+export class RewriteDiffComputer extends MultiLineDiffComputer {
+  override equals(a: string, b: string): boolean {
+    const lowerA = a.toLowerCase();
+    const lowerB = b.toLowerCase();
+    return lowerA === lowerB || (!nonWhitespacePattern.test(lowerA) && !nonWhitespacePattern.test(lowerB));
+  }
+
+  override tokenize(content: string): string[] {
+    const tokens = content.split(splitPattern);
+
+    for (let tokenIndex = 0; tokenIndex < tokens.length - 1; tokenIndex++) {
+      const nextToken = tokens[tokenIndex + 1];
+      const nextNextToken = tokens[tokenIndex + 2];
+      if (
+        !nextToken &&
+        nextNextToken &&
+        identifierPattern.test(tokens[tokenIndex]) &&
+        identifierPattern.test(nextNextToken)
+      ) {
+        tokens[tokenIndex] += nextNextToken;
+        tokens.splice(tokenIndex + 1, 2);
+        tokenIndex--;
+      }
+    }
+
+    return tokens;
   }
 }
