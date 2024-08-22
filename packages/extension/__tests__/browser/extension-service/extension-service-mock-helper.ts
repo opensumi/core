@@ -45,6 +45,7 @@ import {
   IEditor,
   IEditorDocumentModel,
   IEditorGroup,
+  INotebookService,
   IOpenResourceResult,
   IResource,
   IUntitledOptions,
@@ -59,6 +60,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import { EditorActionRegistryImpl } from '@opensumi/ide-editor/lib/browser/menu/editor.menu';
+import { NotebookService } from '@opensumi/ide-editor/lib/browser/notebook.service';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { BrowserRequireInterceptorContribution } from '@opensumi/ide-extension/lib/browser/require-interceptor.contribution';
@@ -496,6 +498,10 @@ export function setupExtensionServiceInjector() {
     {
       token: IContextKeyService,
       useClass: MockContextKeyService,
+    },
+    {
+      token: INotebookService,
+      useClass: NotebookService,
     },
     {
       token: IWorkspaceStorageServer,

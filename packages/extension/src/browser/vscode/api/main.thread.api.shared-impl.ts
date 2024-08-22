@@ -42,6 +42,7 @@ import { MainThreadLanguages } from './main.thread.language';
 import { MainThreadLocalization } from './main.thread.localization';
 import { MainThreadExtensionLog } from './main.thread.log';
 import { MainThreadMessage } from './main.thread.message';
+import { MainThreadExtensionNotebook } from './main.thread.notebook';
 import { MainThreadOutput } from './main.thread.output';
 import { MainThreadPreference } from './main.thread.preference';
 import { MainThreadQuickOpen } from './main.thread.quickopen';
@@ -71,6 +72,9 @@ export function initSharedAPIProxy(rpcProtocol: IRPCProtocol, injector: Injector
     MainThreadExtensionDocumentDataAPI,
   ]);
   rpcProtocol.set<MainThreadEditorService>(MainThreadAPIIdentifier.MainThreadEditors, MainThreadEditorServiceAPI);
+
+  const MainThreadNotebookDocumentAPI = injector.get(MainThreadExtensionNotebook, [rpcProtocol]);
+  rpcProtocol.set(MainThreadAPIIdentifier.MainThreadNotebook, MainThreadNotebookDocumentAPI);
 
   const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [rpcProtocol]);
   rpcProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, MainThreadStatusBarAPI);
@@ -155,6 +159,7 @@ export function initSharedAPIProxy(rpcProtocol: IRPCProtocol, injector: Injector
       MainThreadCommandsAPI.dispose();
       MainThreadStatusBarAPI.dispose();
       MainThreadExtensionDocumentDataAPI.dispose();
+      MainThreadNotebookDocumentAPI.dispose();
       MainThreadEditorServiceAPI.dispose();
       MainThreadMessageAPI.dispose();
       MainThreadStorageAPI.dispose();

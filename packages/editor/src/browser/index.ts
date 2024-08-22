@@ -52,6 +52,7 @@ import {
   MonacoCommandService,
 } from './monaco-contrib/command/command.service';
 import { TextmateService } from './monaco-contrib/tokenizer/textmate.service';
+import { NotebookService } from './notebook.service';
 import { EditorPreferenceContribution } from './preference/contribution';
 import { EditorPreferences, editorPreferenceSchema } from './preference/schema';
 import { ResourceServiceImpl } from './resource.service';
@@ -65,6 +66,7 @@ import {
   IEditorFeatureRegistry,
   IEditorTabService,
   ILanguageStatusService,
+  INotebookService,
 } from './types';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 export * from './doc-cache';
@@ -168,6 +170,10 @@ export class EditorModule extends BrowserModule {
     {
       token: IEditorTabService,
       useClass: EditorTabService,
+    },
+    {
+      token: INotebookService,
+      useClass: NotebookService,
     },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,
