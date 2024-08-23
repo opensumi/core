@@ -15,7 +15,7 @@ import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { RewriteWidget } from '../../widget/rewrite/rewrite-widget';
 
-import { IDiffChangeResult, MultiLineDiffComputer, RewriteDiffComputer } from './diff-computer';
+import { IMultiLineDiffChangeResult, MultiLineDiffComputer, RewriteDiffComputer } from './diff-computer';
 import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 import { MultiLineDecorationModel } from './multi-line.decoration';
@@ -52,10 +52,10 @@ export class IntelligentCompletionsHandler extends Disposable {
 
   private rewriteWidget: RewriteWidget;
 
-  private mergeDiffChanges(lines: IDiffChangeResult[], eol: string): IDiffChangeResult[] {
+  private mergeDiffChanges(lines: IMultiLineDiffChangeResult[], eol: string): IMultiLineDiffChangeResult[] {
     const modifiedLines = lines.flatMap((line) => {
       const segments = line.value.split(eol);
-      const wrap = (value: string): IDiffChangeResult => ({ value, added: line.added, removed: line.removed });
+      const wrap = (value: string): IMultiLineDiffChangeResult => ({ value, added: line.added, removed: line.removed });
 
       return segments
         .flatMap((segment, index) => {
@@ -91,8 +91,9 @@ export class IntelligentCompletionsHandler extends Disposable {
    * @returns
    */
   private getChanges(originalContent: string, modifiedContent: string, lineNumber: number, eol: string) {
-    let rewriteDiffResult: IDiffChangeResult[] = this.rewriteDiffComputer.diff(originalContent, modifiedContent) || [];
-    let multiLineDiffResult: IDiffChangeResult[] =
+    let rewriteDiffResult: IMultiLineDiffChangeResult[] =
+      this.rewriteDiffComputer.diff(originalContent, modifiedContent) || [];
+    let multiLineDiffResult: IMultiLineDiffChangeResult[] =
       this.multiLineDiffComputer.diff(originalContent, modifiedContent) || [];
 
     let isModified = false;
@@ -110,7 +111,7 @@ export class IntelligentCompletionsHandler extends Disposable {
         multiLineDiffResult = originalLines
           .map((value, index) => {
             const modifiedLine = modifiedLines[index];
-            const diffElements: IDiffChangeResult[] = [
+            const diffElements: IMultiLineDiffChangeResult[] = [
               {
                 value,
               },
@@ -294,13 +295,13 @@ export class IntelligentCompletionsHandler extends Disposable {
   }
 
   private showChangesOnTheRight(
-    wordChanges: IDiffChangeResult[],
+    wordChanges: IMultiLineDiffChangeResult[],
     model: ITextModel | null,
     eol: string,
     range: IRange,
     newValue: string,
   ) {
-    const lineChangesMap: { [lineNumber in number]: IDiffChangeResult[][] } = {};
+    const lineChangesMap: { [lineNumber in number]: IMultiLineDiffChangeResult[][] } = {};
     let currentLineNumber = range.startLineNumber;
 
     const cursorPosition = this.monacoEditor.getPosition();
@@ -325,7 +326,7 @@ export class IntelligentCompletionsHandler extends Disposable {
       return lastLineChanges;
     };
 
-    const addNewLineChanges = (change: IDiffChangeResult) => {
+    const addNewLineChanges = (change: IMultiLineDiffChangeResult) => {
       const currentLineChanges = lineChangesMap[currentLineNumber];
       if (!currentLineChanges) {
         lineChangesMap[currentLineNumber] = [[change]];
@@ -334,7 +335,7 @@ export class IntelligentCompletionsHandler extends Disposable {
       currentLineChanges.push([change]);
     };
 
-    const pushToLastLineChanges = (change: IDiffChangeResult) => {
+    const pushToLastLineChanges = (change: IMultiLineDiffChangeResult) => {
       getLastLineChanges().push(change);
     };
 
@@ -386,7 +387,9 @@ export class IntelligentCompletionsHandler extends Disposable {
         continue;
       }
       if (isRemoved) {
-        if (currentValue.replace(/\r?\n/g, empty) === empty) {continue;}
+        if (currentValue.replace(/\r?\n/g, empty) === empty) {
+          continue;
+        }
         for (let segmentIndex = 0; segmentIndex < splitValue.length; segmentIndex++) {
           const currentSegment = splitValue[segmentIndex];
           if (segmentIndex === 0) {
@@ -430,8 +433,9 @@ export class IntelligentCompletionsHandler extends Disposable {
           });
           continue;
         }
-        if (segmentIndex !== splitValue.length - 1) {moveNextLine();}
-        else {
+        if (segmentIndex !== splitValue.length - 1) {
+          moveNextLine();
+        } else {
           const nextChange = wordChanges[changeIndex + 1];
           nextChange &&
             (nextChange.removed || (nextChange.added && currentSegment !== empty && !nextChange.value.includes(eol))) &&
@@ -459,58 +463,15 @@ export class IntelligentCompletionsHandler extends Disposable {
     if (lineChanges.every(({ changes: Ee }) => Ee.every((ke) => ke.every(({ removed: xe }) => xe)))) {
       // 处理全是删除的情况
     } else {
-      let hasChanges = false;
-      const rewriteModel = this.rewriteWidget.getModel();
-      if (rewriteModel) {
-        const languageId = rewriteModel!.getLanguageId();
-        if (rewriteModel.getLanguageId() !== languageId) {
-          rewriteModel.setLanguage(languageId);
-          hasChanges = true;
-        }
-        if (rewriteModel.getValue() !== newValue) {
-          rewriteModel.setValue(newValue);
-          hasChanges = true;
-        }
+      const rewriteEditor = this.rewriteWidget.getVirtualEditor();
+      if (!rewriteEditor) {
+        return;
       }
 
-      if (hasChanges) {
-        if (!rewriteModel) {
-          return;
-        }
-        let currentLineNumber = range.startLineNumber;
-        let currentColumn = range.startColumn;
-        rewriteModel.changeDecorations((decorations) => {
-          if (rewriteModel) {
-            rewriteModel
-              .getAllDecorations()
-              .map((decoration) => decoration.id)
-              .forEach((decorationId) => decorations.removeDecoration(decorationId));
-            for (const change of wordChanges) {
-              if (change.removed) {
-                continue;
-              }
-              const lines = change.value.split(eol);
-              for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-                const line = lines[lineIndex];
-                if (lineIndex !== 0) {
-                  currentLineNumber++;
-                  currentColumn = 1;
-                }
-                if (change.added) {
-                  decorations.addDecoration(
-                    new Range(currentLineNumber, currentColumn, currentLineNumber, currentColumn + line.length),
-                    {
-                      description: 'ghost-text-decoration',
-                      className: 'ghost-text-decoration-inline-add',
-                    },
-                  );
-                }
-                currentColumn += line.length;
-              }
-            }
-          }
-        });
-      }
+      rewriteEditor.setValue(newValue);
+
+      this.rewriteWidget.show({ position: cursorPosition });
+      this.rewriteWidget.changeDecorations(range, wordChanges);
     }
 
     // console.log("🚀 ~ IntelligentCompletionsHandler ~ showChangesOnTheRight ~ wordChanges:", wordChanges)

@@ -3,13 +3,13 @@ import { empty } from '@opensumi/ide-utils/lib/strings';
 /**
  * @internal
  */
-export interface IDiffChangeResult {
+export interface IMultiLineDiffChangeResult {
   added?: boolean;
   removed?: boolean;
   value: string;
 }
 
-interface IResultWithCount extends IDiffChangeResult {
+interface IResultWithCount extends IMultiLineDiffChangeResult {
   count: number;
 }
 

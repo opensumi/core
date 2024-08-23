@@ -5,7 +5,7 @@ import { LineDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/commo
 
 import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
 
-import { IDiffChangeResult } from './diff-computer';
+import { IMultiLineDiffChangeResult } from './diff-computer';
 
 export interface IModificationsInline {
   newValue: string;
@@ -49,10 +49,10 @@ export class MultiLineDecorationModel {
   /**
    * 切割 diff 计算结果的换行符
    */
-  private splitDiffChanges(lines: IDiffChangeResult[], eol: string): IDiffChangeResult[] {
+  private splitDiffChanges(lines: IMultiLineDiffChangeResult[], eol: string): IMultiLineDiffChangeResult[] {
     const modifiedLines = lines.flatMap((line) => {
       const segments = line.value.split(eol);
-      const wrap = (value: string): IDiffChangeResult => ({ value, added: line.added, removed: line.removed });
+      const wrap = (value: string): IMultiLineDiffChangeResult => ({ value, added: line.added, removed: line.removed });
 
       return segments
         .flatMap((segment, index) => {
@@ -102,8 +102,8 @@ export class MultiLineDecorationModel {
   private processLineModifications(
     waitAddModificationsLines: IModificationsInline[],
     eol: string,
-    previous: IDiffChangeResult,
-    next?: IDiffChangeResult,
+    previous: IMultiLineDiffChangeResult,
+    next?: IMultiLineDiffChangeResult,
     includeInline = true,
   ) {
     const lines = this.combineContinuousMods(waitAddModificationsLines);
@@ -232,7 +232,7 @@ export class MultiLineDecorationModel {
 
   public applyInlineDecorations(
     editor: ICodeEditor,
-    changes: IDiffChangeResult[],
+    changes: IMultiLineDiffChangeResult[],
     startLine: number,
     cursorPosition: IPosition,
   ): IModificationsInlineAndMap | undefined {
@@ -259,12 +259,12 @@ export class MultiLineDecorationModel {
 
     let previousValue = empty;
     let isEmptyLine = currentLineText.trim() === empty;
-    let lastChange: IDiffChangeResult;
+    let lastChange: IMultiLineDiffChangeResult;
     let waitAddModificationsLines: IModificationsInline[] = [];
     let currentLineIndex = currentLine;
     let columnNumber = 1;
 
-    const processChange = (change: IDiffChangeResult | undefined) => {
+    const processChange = (change: IMultiLineDiffChangeResult | undefined) => {
       const isUniqueLine = !resultModifications.some(
         (modification) => modification.lineNumber === currentLine && modification.lockLineGhostText,
       );

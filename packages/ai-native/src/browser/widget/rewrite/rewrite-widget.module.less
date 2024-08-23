@@ -1,0 +1,16 @@
+.rewrite_widget_container {
+  border: 1px solid var(--panel-border);
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+
+  .virtual_editor_container {
+    height: inherit;
+  }
+}
+
+.ghost_text_decoration_inline_add {
+  background-color: var(--vscode-diffEditor-insertedTextBackground) !important;
+}
