@@ -64,19 +64,42 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   protected formatIndentation(content: string): string {
     const startLineNumber = this.selection.startLineNumber;
     const oldIndentation = getLeadingWhitespace(this.model.getLineContent(startLineNumber));
-
+    if (content === empty) {
+      return content;
+    }
     if (oldIndentation === empty) {
       return content;
     }
-
     const { tabSize, insertSpaces } = this.model.getOptions();
     const eol = this.model.getEOL();
-
     const originalSpacesCnt = getSpaceCnt(oldIndentation, tabSize);
-    const newIndentation = generateIndent(originalSpacesCnt, tabSize, insertSpaces);
+
+    let newIndentation = generateIndent(originalSpacesCnt, tabSize, insertSpaces);
 
     const linesText = content.split(eol);
-    const newTextLines = linesText.map((content) => newIndentation + content);
+
+    const firstLines = linesText[0];
+    let isShrinkLeft = false;
+    if (firstLines) {
+      const firstIndentation = getLeadingWhitespace(firstLines);
+      if (newIndentation === firstIndentation) {
+        newIndentation = '';
+      } else if (newIndentation.length > firstIndentation.length) {
+        newIndentation = newIndentation.slice(firstIndentation.length);
+      } else {
+        newIndentation = firstIndentation.slice(newIndentation.length);
+        isShrinkLeft = true;
+      }
+    }
+
+    const newTextLines = linesText.map((content) => {
+      if (isShrinkLeft) {
+        const currentIndentation = getLeadingWhitespace(content);
+        return content.replace(currentIndentation, currentIndentation.slice(newIndentation.length));
+      }
+
+      return newIndentation + content;
+    });
     return newTextLines.join(eol);
   }
 
