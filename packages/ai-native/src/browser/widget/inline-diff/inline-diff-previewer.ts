@@ -95,7 +95,8 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     const newTextLines = linesText.map((content) => {
       if (isShrinkLeft) {
         const currentIndentation = getLeadingWhitespace(content);
-        return content.replace(currentIndentation, currentIndentation.slice(newIndentation.length));
+        content = newIndentation + content.substring(currentIndentation.length);
+        return content;
       }
 
       return newIndentation + content;
