@@ -360,7 +360,25 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this.monacoModel;
   }
 
+  async syncDocumentModelToExtThread() {
+    await this.eventBus.fireAndAwait(
+      new EditorDocumentModelOptionChangedEvent({
+        uri: this.uri,
+        languageId: this.languageId,
+        encoding: this.encoding,
+        eol: this.eol,
+        dirty: this.dirty,
+      }),
+    );
+  }
+
   async save(force = false, reason: SaveReason = SaveReason.Manual): Promise<boolean> {
+    if (!this.dirty) {
+      // 如果文档内容没有变化，则只同步新状态到插件进程
+      await this.syncDocumentModelToExtThread();
+      return false;
+    }
+
     const provider = await this.contentRegistry.getProvider(this.uri);
     const isReadonly = await provider?.isReadonly(this.uri);
 

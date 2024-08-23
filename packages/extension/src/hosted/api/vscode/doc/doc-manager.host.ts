@@ -5,6 +5,7 @@ import {
   Emitter,
   IDisposable,
   URI,
+  isDefined,
   isUTF8,
   normalizeFileUrl,
 } from '@opensumi/ide-core-common';
@@ -178,11 +179,14 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   $fireModelOptionsChangedEvent(e: IExtensionDocumentModelOptionsChangedEvent) {
     const document = this._documents.get(e.uri);
     if (document) {
-      // 和vscode中相同，接收到languages变更时，发送一个close和一个open事件
-      if (e.languageId) {
+      // 和 vscode 表现保持一致，接收到 languages 变更时，发送一个 close 和一个 open 事件
+      if (isDefined(e.languageId) && e.languageId !== document._getLanguageId()) {
         document._acceptLanguageId(e.languageId);
         this._onDidCloseTextDocument.fire(document.document);
         this._onDidOpenTextDocument.fire(document.document);
+      }
+      if (isDefined(e.dirty)) {
+        document._acceptIsDirty(e.dirty);
       }
     }
   }
@@ -214,7 +218,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       document: document.document,
       contentChanges: changes.map((change) => ({
         ...change,
-        range: toRange(change.range) as any,
+        range: toRange(change.range),
       })),
       reason,
     });

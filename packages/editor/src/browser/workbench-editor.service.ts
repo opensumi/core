@@ -44,6 +44,7 @@ import {
   debounce,
   formatLocalize,
   getDebugLogger,
+  isDefined,
   isUndefinedOrNull,
   localize,
   makeRandomHexString,
@@ -435,10 +436,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     // contextKeys
     const getLanguageFromModel = (uri: URI) => {
       let result: string | null = null;
-      const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
+      const modelRef = this.documentModelManager.getModelDescription(uri, 'resourceContextKey');
       if (modelRef) {
-        result = modelRef.instance.languageId;
-        modelRef.dispose();
+        result = modelRef.languageId;
       }
       return result;
     };
@@ -717,12 +717,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 当前打开的所有resource
    */
-  // @observable.shallow
   resources: IResource[] = [];
 
   resourceStatus: Map<IResource, Promise<void>> = new Map();
 
-  // @observable.ref
   _currentResource: IResource | null;
 
   _currentOpenType: IEditorOpenType | null;
@@ -894,12 +892,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (!this._resourceContext) {
       const getLanguageFromModel = (uri: URI) => {
         let result: string | null = null;
-        const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
+        const modelRef = this.documentModelManager.getModelDescription(uri, 'resourceContextKey');
         if (modelRef) {
-          if (modelRef) {
-            result = modelRef.instance.languageId;
-          }
-          modelRef.dispose();
+          result = modelRef.languageId;
         }
         return result;
       };
@@ -1413,6 +1408,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
           if (options && options.label) {
             resource.name = options.label;
+          }
+          if (options && isDefined(options.supportsRevive)) {
+            resource.supportsRevive = options.supportsRevive;
           }
           let replaceResource: IResource | null = null;
           if (options && options.index !== undefined && options.index < this.resources.length) {
@@ -2305,9 +2303,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     // 否则使用 document 进行保存 (如果有)
     const docRef = this.documentModelManager.getModelReference(resource.uri);
     if (docRef) {
-      if (docRef.instance.dirty) {
-        await docRef.instance.save(undefined, reason);
-      }
+      await docRef.instance.save(undefined, reason);
       docRef.dispose();
     }
   }
@@ -2340,11 +2336,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   hasDirty(): boolean {
     for (const r of this.resources) {
-      const docRef = this.documentModelManager.getModelReference(r.uri);
+      const docRef = this.documentModelManager.getModelDescription(r.uri);
       if (docRef) {
-        const isDirty = docRef.instance.dirty;
-        docRef.dispose();
-        if (isDirty) {
+        if (docRef.dirty) {
           return true;
         }
       }
@@ -2358,15 +2352,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   calcDirtyCount(countedUris: Set<string> = new Set<string>()): number {
     let count = 0;
     for (const r of this.resources) {
-      const docRef = this.documentModelManager.getModelReference(r.uri, 'calc-dirty-count');
+      const docRef = this.documentModelManager.getModelDescription(r.uri, 'calc-dirty-count');
       if (countedUris.has(r.uri.toString())) {
         continue;
       }
       countedUris.add(r.uri.toString());
       if (docRef) {
-        const isDirty = docRef.instance.dirty;
-        docRef.dispose();
-        if (isDirty) {
+        if (docRef.dirty) {
           count += 1;
         }
       }

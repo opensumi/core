@@ -84,14 +84,14 @@ const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
   const refactorPreviewService = useInjectable<IRefactorPreviewService>(IRefactorPreviewService);
 
   const renderTextEditDiff = () => {
-    const model = modelService.getModelReference(URI.from(item.resource));
-    if (!model) {
+    const modelRef = modelService.getModelReference(URI.from(item.resource));
+    if (!modelRef) {
       return <div className={styles.refactor_preview_node_wrapper}>{item.textEdit.text}</div>;
     }
 
-    const textModel = model.instance.getMonacoModel();
+    const textModel = modelRef.instance.getMonacoModel();
     const { leftPad, base, rightPad } = splitLeftAndRightPadInTextModel(item.textEdit.range, textModel);
-
+    modelRef.dispose();
     return (
       <div className={styles.refactor_preview_node_wrapper}>
         {leftPad}

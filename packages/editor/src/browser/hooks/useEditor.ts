@@ -1,34 +1,35 @@
 import { useEffect, useState } from 'react';
 
-import { URI, useInjectable } from '@opensumi/ide-core-browser';
+import { DisposableStore, URI, useInjectable } from '@opensumi/ide-core-browser';
 
 import { IEditorDocumentModelService } from '../doc-model/types';
-import { IEditorDocumentModelRef } from '../types';
+import { IEditorDocumentModel } from '../types';
 
-export function useEditorDocumentModelRef(uri: URI) {
+export function useEditorDocumentModel(uri: URI) {
   const documentService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
-  const [ref, setRef] = useState<IEditorDocumentModelRef | null>(null);
+  const [instance, setInstance] = useState<IEditorDocumentModel | null>(null);
 
   useEffect(() => {
+    const toDispose = new DisposableStore();
     const run = () => {
       const ref = documentService.getModelReference(uri);
       if (ref) {
-        setRef(ref);
+        setInstance(ref.instance);
+        ref.dispose();
       }
     };
 
-    const toDispose = documentService.onDocumentModelCreated(uri.toString(), () => {
-      run();
-    });
+    toDispose.add(
+      documentService.onDocumentModelCreated(uri.toString(), () => {
+        run();
+      }),
+    );
 
     run();
     return () => {
       toDispose.dispose();
-      if (ref) {
-        ref.dispose();
-      }
     };
   }, [uri]);
 
-  return ref;
+  return instance;
 }

@@ -23,7 +23,7 @@ import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calcul
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-import { IEditorDocumentModel } from '../../common/editor';
+import { IEditorDocumentDescription, IEditorDocumentModel } from '../../common/editor';
 
 import { EditorDocumentModel } from './editor-document-model';
 import {
@@ -228,6 +228,30 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   getModelReference(uri: URI, reason?: string | undefined): IRef<IEditorDocumentModel> | null {
     return this._modelReferenceManager.getReferenceIfHasInstance(uri.toString(), reason);
+  }
+
+  getModelDescription(uri: URI, reason?: string): IEditorDocumentDescription | null {
+    const ref = this.getModelReference(uri, reason);
+    if (!ref) {
+      return null;
+    }
+
+    const instance = ref.instance;
+    const resullt = {
+      alwaysDirty: instance.alwaysDirty,
+      closeAutoSave: instance.closeAutoSave,
+      disposeEvenDirty: instance.disposeEvenDirty,
+      eol: instance.eol,
+      encoding: instance.encoding,
+      dirty: instance.dirty,
+      languageId: instance.languageId,
+      readonly: instance.readonly,
+      uri: instance.uri,
+      id: instance.id,
+      savable: instance.savable,
+    };
+    ref.dispose();
+    return resullt;
   }
 
   getAllModels(): IEditorDocumentModel[] {

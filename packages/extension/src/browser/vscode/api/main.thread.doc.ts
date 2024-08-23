@@ -184,6 +184,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
       encoding: e.payload.encoding,
       uri: e.payload.uri.toString(),
       languageId: e.payload.languageId,
+      dirty: e.payload.dirty,
     });
   }
 
