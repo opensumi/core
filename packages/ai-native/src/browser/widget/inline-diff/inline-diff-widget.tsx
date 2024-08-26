@@ -3,7 +3,15 @@ import { createPortal } from 'react-dom';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, ConfigProvider, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  ConfigProvider,
+  Emitter,
+  Event,
+  MonacoService,
+  randomString,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { IDiffEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
@@ -85,8 +93,24 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     const modelService = StandaloneServices.get(IModelService);
     const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
 
-    const originalModel = modelService.createModel(codeValueInRange, languageSelection);
-    const modifiedModel = modelService.createModel('', languageSelection);
+    const originalModel = modelService.createModel(
+      codeValueInRange,
+      languageSelection,
+      monaco.Uri.from({
+        scheme: 'inmemory',
+        path: 'inline-diff-widget/' + randomString(8),
+      }),
+      true,
+    );
+    const modifiedModel = modelService.createModel(
+      '',
+      languageSelection,
+      monaco.Uri.from({
+        scheme: 'inmemory',
+        path: 'inline-diff-widget/' + randomString(8),
+      }),
+      true,
+    );
 
     diffEditor.setModel({
       original: originalModel,
