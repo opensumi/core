@@ -109,6 +109,7 @@ export const getDefaultClientAppOpts = ({
       'general.productIconTheme': 'opensumi-icons',
       'application.confirmExit': 'never',
       'editor.quickSuggestionsDelay': 100,
+      'editor.showActionWhenGroupEmpty': true,
     },
     defaultPanels: {
       bottom: '@opensumi/ide-terminal-next',

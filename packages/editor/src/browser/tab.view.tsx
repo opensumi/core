@@ -567,6 +567,11 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
 
+    /**
+     * 集成场景下可以不展示任何菜单，可以用以下代码取消菜单注册
+     * registry.unregisterMenuId(MenuId.EditorTitle);
+     * registry.unregisterMenuId(MenuId.EditorTitleRun);
+     */
     const noActions = menu.getMergedMenuNodes().length === 0;
 
     useEffect(() => {
