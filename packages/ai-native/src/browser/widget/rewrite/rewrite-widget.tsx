@@ -9,6 +9,7 @@ import {
   ShowAIContentOptions,
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { IEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
+import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { space } from '@opensumi/ide-utils/lib/strings';
 import { ILanguageSelection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -133,6 +134,7 @@ const VirtualEditorProvider = React.memo((props: IVirtualEditorProviderProps) =>
           maxColumnWidth = Math.max(maxColumnWidth, columnWidth);
         }
       });
+
       setEditorSize({ width: maxColumnWidth * spaceWidth, height: lineHeight * lineCount });
 
       let maxLineColumn = 0;
@@ -141,8 +143,6 @@ const VirtualEditorProvider = React.memo((props: IVirtualEditorProviderProps) =>
         maxLineColumn = Math.max(maxLineColumn, lineMaxColumn);
       }
       setMarginLeft(maxLineColumn * spaceWidth + 10);
-
-      // console.log("🚀 ~ RewriteWidget ~ changeDecorations ~ this.editorSize:", Ke * Se, Ee * Ve)
     },
     [editorSize, editor],
   );
@@ -191,6 +191,8 @@ const VirtualEditorProvider = React.memo((props: IVirtualEditorProviderProps) =>
 export class RewriteWidget extends ReactInlineContentWidget {
   private virtualEditorHandler: IVirtualEditorHandler | null = null;
 
+  positionPreference: ContentWidgetPositionPreference[] = [ContentWidgetPositionPreference.EXACT];
+
   public renderView(): React.ReactNode {
     return (
       <VirtualEditorProvider
@@ -217,9 +219,6 @@ export class RewriteWidget extends ReactInlineContentWidget {
     }
 
     const { lineNumber } = position;
-
-    // const model = this.editor.getModel();
-    // const maxLine = model?.getLineMaxColumn(lineNumber) || Number.MAX_SAFE_INTEGER;
 
     super.show({ position: monaco.Position.lift({ lineNumber, column: 1 }) });
   }

@@ -8,16 +8,18 @@ import {
   isUndefined,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
-import { ICodeEditor, IRange, ITextModel, Position, Range } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel, Position, Range, TrackedRangeStickiness } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { RewriteWidget } from '../../widget/rewrite/rewrite-widget';
 
+import { AdditionsDeletionsDecorationModel } from './additions-deletions.decoration';
 import { IMultiLineDiffChangeResult, MultiLineDiffComputer, RewriteDiffComputer } from './diff-computer';
 import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
+import styles from './intelligent-completions.module.less';
 import { MultiLineDecorationModel } from './multi-line.decoration';
 
 @Injectable()
@@ -37,7 +39,9 @@ export class IntelligentCompletionsHandler extends Disposable {
 
   private multiLineDiffComputer: MultiLineDiffComputer = new MultiLineDiffComputer();
   private rewriteDiffComputer: RewriteDiffComputer = new RewriteDiffComputer();
+
   private multiLineDecorationModel: MultiLineDecorationModel;
+  private additionsDeletionsDecorationModel: AdditionsDeletionsDecorationModel;
 
   private editor: IEditor;
   private aiNativeContextKey: AINativeContextKey;
@@ -290,6 +294,33 @@ export class IntelligentCompletionsHandler extends Disposable {
         this.multiLineDecorationModel.updateLineModificationDecorations(modificationsResult.inlineMods);
       }
     } else {
+      const deletionRanges = this.additionsDeletionsDecorationModel.generateRange(
+        wordChanges.map((change) => {
+          const value = change.value;
+
+          if (change.removed) {
+            return { value, added: true };
+          } else if (change.added) {
+            return { value, removed: true };
+          }
+
+          return change;
+        }),
+        range,
+        eol,
+      );
+
+      this.additionsDeletionsDecorationModel.setDeletionsDecoration(
+        deletionRanges.map((range) => ({
+          range,
+          options: {
+            description: 'suggestion_deletions_background',
+            className: styles.suggestion_deletions_background,
+            stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+          },
+        })),
+      );
+
       this.showChangesOnTheRight(wordChanges, model, eol, range, newValue);
     }
   }
@@ -508,6 +539,7 @@ export class IntelligentCompletionsHandler extends Disposable {
     this.rewriteWidget = this.injector.get(RewriteWidget, [monacoEditor]);
 
     this.multiLineDecorationModel = new MultiLineDecorationModel(monacoEditor);
+    this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [monacoEditor.contextKeyService]);
     return this;
   }
