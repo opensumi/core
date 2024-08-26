@@ -89,12 +89,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
     this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [this.monacoEditor]);
     this.addDispose(this.livePreviewDiffDecorationModel);
-
-    this.addDispose({
-      dispose: () => {
-        modelService.destroyModel(this.virtualModel.uri);
-      },
-    });
+    this.addDispose(this.virtualModel);
 
     // 将 diff handler 和 decoration model 的生命周期绑定在一起
     const dispose = this.livePreviewDiffDecorationModel.onDispose(() => {
