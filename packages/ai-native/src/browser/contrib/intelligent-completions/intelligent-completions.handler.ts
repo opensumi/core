@@ -223,7 +223,6 @@ export class IntelligentCompletionsHandler extends Disposable {
 
   public applyInlineDecorations(completionModel: IIntelligentCompletionsResult) {
     const { items } = completionModel;
-    // console.log("🚀 ~ IntelligentCompletionsHandler ~ applyInlineDecorations ~ items:", items)
 
     const position = this.monacoEditor.getPosition()!;
     const model = this.monacoEditor.getModel();
@@ -245,7 +244,6 @@ export class IntelligentCompletionsHandler extends Disposable {
     }
 
     const { singleLineCharChanges, charChanges, wordChanges, isOnlyAddingToEachWord } = changes;
-    // console.log("🚀 ~ IntelligentCompletionsHandler ~ applyInlineDecorations ~ changes:", changes)
 
     let isEOLAdded = false;
     let isMiddle = false;
@@ -276,6 +274,7 @@ export class IntelligentCompletionsHandler extends Disposable {
       Position.lift({ lineNumber: range.endLineNumber, column: range.endColumn }),
     );
     const allText = this.model.getValue();
+    // 这里是为了能在 rewrite widget 的 editor 当中完整的复用代码高亮与语法检测的能力
     const newValue = allText.substring(0, startOffset) + insertText + allText.substring(endOffset);
 
     if (position && isOnlyAddingToEachWord && !isEOLAdded && charChanges.length <= 20 && wordChanges.length <= 20) {
@@ -335,6 +334,8 @@ export class IntelligentCompletionsHandler extends Disposable {
     const lineChangesMap: { [lineNumber in number]: IMultiLineDiffChangeResult[][] } = {};
     let currentLineNumber = range.startLineNumber;
 
+    this.rewriteWidget.hide();
+
     const cursorPosition = this.monacoEditor.getPosition();
     if (!cursorPosition) {
       return;
@@ -375,6 +376,7 @@ export class IntelligentCompletionsHandler extends Disposable {
       currentLineNumber >= totalLines || (currentLineNumber++, (lineChangesMap[currentLineNumber] = []));
     };
 
+    // console.log("🚀 ~ IntelligentCompletionsHandler ~ wordChanges:", wordChanges)
     for (let changeIndex = 0; changeIndex < wordChanges.length; changeIndex++) {
       const currentChange = wordChanges[changeIndex];
       const { value: currentValue, added: isAdded, removed: isRemoved } = currentChange;
@@ -480,29 +482,22 @@ export class IntelligentCompletionsHandler extends Disposable {
       }
     }
 
-    let lineChanges = Object.keys(lineChangesMap).map((lineNumber) => ({
-      lineNumber: parseInt(lineNumber, 10),
-      changes: lineChangesMap[parseInt(lineNumber, 10)]
-        .map((change) => change.filter((item) => item.value !== empty))
+    // console.log("🚀 ~ IntelligentCompletionsHandler ~ lineChangesMap ~ lineChangesMap:", lineChangesMap)
+
+    const allLineChanges = Object.values(lineChangesMap).map((lineChanges) => ({
+      changes: lineChanges
+        .map((change) => change.filter((item) => item.value.trim() !== empty))
         .filter((change) => change.length > 0),
     }));
 
-    lineChanges = lineChanges.filter(
-      ({ changes }) => changes.length > 0 && changes.some((ke) => ke.some((xe) => xe.value.trim() !== empty)),
-    );
+    this.rewriteWidget.show({ position: cursorPosition });
 
-    if (lineChanges.every(({ changes: Ee }) => Ee.every((ke) => ke.every(({ removed: xe }) => xe)))) {
+    if (allLineChanges.every(({ changes }) => changes.every((change) => change.every(({ removed }) => removed)))) {
       // 处理全是删除的情况
+      this.rewriteWidget.renderTextLineThrough(range, allLineChanges);
+      // console.log("🚀 ~ IntelligentCompletionsHandler ~ allLineChanges:", allLineChanges)
     } else {
-      const rewriteEditor = this.rewriteWidget.getVirtualEditor();
-      if (!rewriteEditor) {
-        return;
-      }
-
-      rewriteEditor.setValue(newValue);
-
-      this.rewriteWidget.show({ position: cursorPosition });
-      this.rewriteWidget.changeDecorations(range, wordChanges);
+      this.rewriteWidget.renderVirtualEditor(newValue, range, wordChanges);
     }
 
     // console.log("🚀 ~ IntelligentCompletionsHandler ~ showChangesOnTheRight ~ wordChanges:", wordChanges)

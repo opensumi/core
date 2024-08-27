@@ -1,4 +1,6 @@
+import cls from 'classnames';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import ReactDOMClient from 'react-dom/client';
 
 import { Injectable } from '@opensumi/di';
 import { Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
@@ -55,22 +57,26 @@ const editorOptions: IEditorOptions = {
   },
 };
 
-interface IVirtualEditorHandler {
-  getVirtualEditor: () => ICodeEditor;
-  changeDecorations: (range: monaco.IRange, wordChanges: IMultiLineDiffChangeResult[]) => void;
+interface ITextBoxHandler {
+  layout: (range: monaco.IRange) => void;
+  renderVirtualEditor: (newValue: string, range: monaco.IRange, wordChanges: IMultiLineDiffChangeResult[]) => void;
+  renderTextLineThrough: (lineChanges: { changes: IMultiLineDiffChangeResult[][] }[]) => void;
 }
 
-interface IVirtualEditorProviderProps {
+interface ITextBoxProviderProps {
   editor: ICodeEditor;
-  onReady?: (handler: IVirtualEditorHandler) => void;
+  onReady?: (handler: ITextBoxHandler) => void;
 }
 
-const VirtualEditorProvider = React.memo((props: IVirtualEditorProviderProps) => {
+const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
   const { editor, onReady } = props;
   const monacoService: MonacoService = useInjectable(MonacoService);
-  const editorRef = useRef<HTMLDivElement>(null);
-  const [editorSize, setEditorSize] = useState({ width: 300, height: 60 });
+  const ref = useRef<HTMLDivElement>(null);
+  const refRoot = useRef<ReactDOMClient.Root | null>(null);
+
+  const [editorSize, setEditorSize] = useState<{ width: number; height: number } | null>(null);
   const [marginLeft, setMarginLeft] = useState(0);
+  const [virtualEditor, setVirtualEditor] = useState<ICodeEditor | null>(null);
 
   const changeDecorations = useCallback(
     (virtualEditor: ICodeEditor, range: monaco.IRange, wordChanges: IMultiLineDiffChangeResult[]): void => {
@@ -136,13 +142,6 @@ const VirtualEditorProvider = React.memo((props: IVirtualEditorProviderProps) =>
       });
 
       setEditorSize({ width: maxColumnWidth * spaceWidth, height: lineHeight * lineCount });
-
-      let maxLineColumn = 0;
-      for (let lineNumber = range.startLineNumber; lineNumber <= range.endLineNumber; lineNumber++) {
-        const lineMaxColumn = virtualModel.getLineMaxColumn(lineNumber);
-        maxLineColumn = Math.max(maxLineColumn, lineMaxColumn);
-      }
-      setMarginLeft(maxLineColumn * spaceWidth + 10);
     },
     [editorSize, editor],
   );
@@ -154,19 +153,11 @@ const VirtualEditorProvider = React.memo((props: IVirtualEditorProviderProps) =>
       return;
     }
 
-    const virtualEditor = monacoService.createCodeEditor(editorRef.current!, editorOptions);
-
-    const modelService = StandaloneServices.get(IModelService);
-    const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
-
-    const virtualModel = modelService.createModel('', languageSelection);
-
-    virtualEditor.setModel(virtualModel);
-
     if (onReady) {
       onReady({
-        getVirtualEditor: () => virtualEditor,
-        changeDecorations: (range, wordChanges) => changeDecorations(virtualEditor, range, wordChanges),
+        renderVirtualEditor: (newValue, range, wordChanges) => renderVirtualEditor(newValue, range, wordChanges),
+        renderTextLineThrough: (lineChanges) => renderTextLineThrough(lineChanges),
+        layout: (range) => layout(range),
       });
     }
 
@@ -174,28 +165,175 @@ const VirtualEditorProvider = React.memo((props: IVirtualEditorProviderProps) =>
       if (virtualEditor) {
         virtualEditor.dispose();
       }
+      if (refRoot.current) {
+        refRoot.current.unmount();
+      }
     };
-  }, [editor, onReady]);
+  }, [editor, onReady, virtualEditor]);
+
+  const renderVirtualEditor = useCallback(
+    (newValue: string, range: monaco.IRange, wordChanges: IMultiLineDiffChangeResult[]) => {
+      if (!ref.current) {
+        return;
+      }
+
+      const model: ITextModel | null = editor.getModel();
+
+      if (!model) {
+        return;
+      }
+
+      let _virtualEditor = virtualEditor;
+
+      if (!_virtualEditor) {
+        _virtualEditor = monacoService.createCodeEditor(ref.current!, editorOptions);
+        const modelService = StandaloneServices.get(IModelService);
+        const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
+
+        const virtualModel = modelService.createModel(newValue, languageSelection);
+        _virtualEditor.setModel(virtualModel);
+
+        setVirtualEditor(_virtualEditor);
+      }
+
+      changeDecorations(_virtualEditor, range, wordChanges);
+    },
+    [ref, virtualEditor],
+  );
+
+  const renderTextLineThrough = useCallback(
+    (lineChanges: { changes: IMultiLineDiffChangeResult[][] }[]) => {
+      if (!ref.current) {
+        return;
+      }
+
+      if (virtualEditor) {
+        virtualEditor.dispose();
+        setVirtualEditor(null);
+      }
+
+      const LineElement = ({ changes }) => {
+        const lineHeight = editor!.getOption(monaco.editor.EditorOption.lineHeight);
+        const spaceWidth = editor.getOption(monaco.editor.EditorOption.fontInfo).spaceWidth;
+
+        const createSpaceSpan = (spaceCount: number, className: string = styles.ghost_text_decoration) => (
+          <span className={cls(styles.space_span, className)} style={{ width: `${spaceWidth * spaceCount}px` }}>
+            {space.repeat(spaceCount)}
+          </span>
+        );
+
+        const createTextSpan = (textContent: string, className: string) => (
+          <span className={cls(styles.text_span, className)}>{textContent}</span>
+        );
+
+        return changes.map((change, index) => {
+          let isOnlySpaces = true;
+          let removedText = '';
+          let textLength = 0;
+          const lineElements: React.ReactElement[] = [];
+
+          for (const item of change) {
+            const { value, added, removed } = item;
+            if (removed) {
+              removedText += value;
+            } else {
+              isOnlySpaces = false;
+              textLength += value.length;
+              const leadingSpaces = value.length - value.trimStart().length;
+              const trailingSpaces = value.length - value.trimEnd().length;
+              const trimmedValue = value.trim();
+
+              lineElements.push(createSpaceSpan(leadingSpaces));
+              if (trimmedValue) {
+                lineElements.push(
+                  createTextSpan(
+                    trimmedValue,
+                    added ? styles.ghost_text_decoration_inline_add : styles.ghost_text_decoration,
+                  ),
+                );
+                lineElements.push(createSpaceSpan(trailingSpaces));
+              }
+            }
+          }
+
+          if (isOnlySpaces) {
+            const leadingSpaces = removedText.length - removedText.trimStart().length;
+            const trailingSpaces = removedText.length - removedText.trimEnd().length;
+            const trimmedRemovedText = removedText.trim();
+            lineElements.push(createSpaceSpan(leadingSpaces, styles.ghost_text_decoration_remove));
+            if (trimmedRemovedText) {
+              lineElements.push(createTextSpan(trimmedRemovedText, styles.ghost_text_decoration_inline_remove));
+              lineElements.push(createSpaceSpan(trailingSpaces, styles.ghost_text_decoration_inline_remove));
+            }
+          }
+
+          return (
+            <div key={index} className={styles.deletions_code_line} style={{ height: `${lineHeight}px` }}>
+              {lineElements}
+            </div>
+          );
+        });
+      };
+
+      if (refRoot.current) {
+        refRoot.current.unmount();
+        refRoot.current = null;
+      }
+
+      refRoot.current = ReactDOMClient.createRoot(ref.current);
+      refRoot.current.render(
+        <>
+          {lineChanges.map((lineChange, index) => (
+            <LineElement key={index} changes={lineChange.changes} />
+          ))}
+        </>,
+      );
+    },
+    [editor, ref, virtualEditor, refRoot],
+  );
+
+  const layout = useCallback(
+    (range: monaco.IRange) => {
+      const spaceWidth = editor!.getOption(monaco.editor.EditorOption.fontInfo).spaceWidth;
+
+      let maxLineColumn = 0;
+      for (let lineNumber = range.startLineNumber; lineNumber <= range.endLineNumber; lineNumber++) {
+        const lineMaxColumn = editor!.getModel()!.getLineMaxColumn(lineNumber);
+        maxLineColumn = Math.max(maxLineColumn, lineMaxColumn);
+      }
+
+      setMarginLeft(maxLineColumn * spaceWidth + 10);
+    },
+    [editor],
+  );
 
   return (
     <div
       className={styles.rewrite_widget_container}
-      style={{ width: editorSize.width, height: editorSize.height, marginLeft }}
+      style={{ width: editorSize?.width, height: editorSize?.height, marginLeft }}
     >
-      <div className={styles.virtual_editor_container} ref={editorRef}></div>;
+      <div className={styles.virtual_editor_container} ref={ref}></div>
     </div>
   );
 });
 
 @Injectable({ multiple: true })
 export class RewriteWidget extends ReactInlineContentWidget {
-  private virtualEditorHandler: IVirtualEditorHandler | null = null;
+  private virtualEditorHandler: ITextBoxHandler | null = null;
 
   positionPreference: ContentWidgetPositionPreference[] = [ContentWidgetPositionPreference.EXACT];
 
+  private updateFontStyle = () => {
+    const fontInfo = this.editor.getOption(monaco.editor.EditorOption.fontInfo);
+    this.domNode.style.fontFamily = fontInfo.fontFamily;
+    this.domNode.style.fontSize = fontInfo.fontSize + 'px';
+  };
+
   public renderView(): React.ReactNode {
+    this.updateFontStyle();
+
     return (
-      <VirtualEditorProvider
+      <TextBoxProvider
         editor={this.editor}
         onReady={(handler) => {
           this.virtualEditorHandler = handler;
@@ -205,10 +343,6 @@ export class RewriteWidget extends ReactInlineContentWidget {
   }
   public id(): string {
     return 'RewriteWidget';
-  }
-
-  public getVirtualEditor(): ICodeEditor {
-    return this.virtualEditorHandler!.getVirtualEditor();
   }
 
   override show(options: ShowAIContentOptions): void {
@@ -223,7 +357,13 @@ export class RewriteWidget extends ReactInlineContentWidget {
     super.show({ position: monaco.Position.lift({ lineNumber, column: 1 }) });
   }
 
-  public changeDecorations(range: monaco.IRange, wordChanges: IMultiLineDiffChangeResult[]): void {
-    this.virtualEditorHandler!.changeDecorations(range, wordChanges);
+  public renderTextLineThrough(range: monaco.IRange, lineChanges: { changes: IMultiLineDiffChangeResult[][] }[]): void {
+    this.virtualEditorHandler?.renderTextLineThrough(lineChanges);
+    this.virtualEditorHandler?.layout(range);
+  }
+
+  public renderVirtualEditor(newValue: string, range: monaco.IRange, wordChanges: IMultiLineDiffChangeResult[]): void {
+    this.virtualEditorHandler!.renderVirtualEditor(newValue, range, wordChanges);
+    this.virtualEditorHandler!.layout(range);
   }
 }

@@ -11,6 +11,39 @@
   }
 }
 
+.deletions_code_line {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+
+  .space_span {
+    display: inline-block;
+  }
+
+  .text_span {
+    white-space: nowrap;
+  }
+}
+
 .ghost_text_decoration_inline_add {
-  background-color: var(--vscode-diffEditor-insertedTextBackground) !important;
+  background-color: var(--diffEditor-insertedTextBackground) !important;
+}
+
+.ghost_text_decoration_remove {
+  opacity: 0.2;
+}
+
+.ghost_text_decoration_inline_remove {
+  opacity: 0.2;
+  text-decoration: line-through;
+}
+
+.ghost_text_decoration_inline_add {
+  background-color: var(--diffEditor-insertedTextBackground) !important;
+}
+
+.ghost_text_decoration {
+  background-color: var(--editorGhostText-background);
+  border: 1px solid var(--editorGhostText-border);
+  color: var(--editorGhostText-foreground) !important;
 }

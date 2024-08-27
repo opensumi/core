@@ -188,7 +188,6 @@ export class MultiLineDiffComputer {
   }
 }
 
-const nonWhitespacePattern = /\S/;
 const identifierPattern = /^[a-zA-Z]+$/u;
 const splitPattern = /([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/;
 
@@ -196,7 +195,7 @@ export class RewriteDiffComputer extends MultiLineDiffComputer {
   override equals(a: string, b: string): boolean {
     const lowerA = a.toLowerCase();
     const lowerB = b.toLowerCase();
-    return lowerA === lowerB || (!nonWhitespacePattern.test(lowerA) && !nonWhitespacePattern.test(lowerB));
+    return lowerA === lowerB;
   }
 
   override tokenize(content: string): string[] {
