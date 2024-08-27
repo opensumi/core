@@ -105,6 +105,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     if (uri) {
       this.previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
       this.previewer.attachNode(node);
+      this.listenPreviewer(this.previewer);
 
       const dispose = this.previewer.onDispose(() => {
         this.destroyPreviewer();
