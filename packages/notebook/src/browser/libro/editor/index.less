@@ -1,0 +1,40 @@
+.libro-opensumi-editor-container {
+  padding: 12px 0 18px;
+  background: var(--mana-libro-input-background) !important;
+  border-radius: 4px;
+}
+
+.libro-opensumi-editor {
+  background: var(--mana-libro-input-background) !important;
+
+  .monaco-editor-background,
+  .margin {
+    background: var(--mana-libro-input-background) !important;
+  }
+
+  .findMatch {
+    background-color: var(--mana-libro-editor-search-match) !important;
+  }
+
+  .currentFindMatch {
+    background-color: var(--mana-libro-editor-search-currentmatch) !important;
+  }
+
+  .current-line-margin,
+  .current-line-both {
+    background: var(--mana-libro-editor-activeline-color) !important;
+    border: unset !important;
+  }
+
+  .line-numbers {
+    margin-left: 8px;
+    color: var(--mana-libro-editor-gutter-number-color) !important;
+    font-weight: 400;
+    font-size: 13px;
+    // font-family: Menlo-Regular, consolas, 'DejaVu Sans Mono', monospace !important;
+  }
+
+  .cursors-layer .cursor {
+    background-color: var(--mana-libro-editor-cursor-color);
+  }
+}

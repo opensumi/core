@@ -124,7 +124,9 @@
       "@opensumi/ide-design": ["../packages/design/src/index.ts"],
       "@opensumi/ide-design/lib/*": ["../packages/design/src/*"],
       "@opensumi/ide-ai-native": ["../packages/ai-native/src/index.ts"],
-      "@opensumi/ide-ai-native/lib/*": ["../packages/ai-native/src/*"]
+      "@opensumi/ide-ai-native/lib/*": ["../packages/ai-native/src/*"],
+      "@opensumi/notebook": ["../packages/notebook/src/index.ts"],
+      "@opensumi/notebook/lib/*": ["../packages/notebook/src/*"]
     }
   }
 }
