@@ -50,6 +50,7 @@ jobs:
       - name: Install
         run: |
           yarn install --immutable
+          yarn constraints
 
       - name: CI
         run: |
