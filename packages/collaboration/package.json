@@ -21,7 +21,7 @@
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
     "lib0": "0.2.58",
-    "ws": "^8.15.1",
+    "ws": "^8.16.0",
     "y-websocket": "^1.3.9",
     "yjs": "13.5.39"
   },
