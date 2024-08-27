@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-dev-tool",
-  "version": "3.2.4",
+  "version": "3.2.5",
   "repository": {
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
