@@ -87,6 +87,7 @@
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
     "@typescript-eslint/parser": "^7.6.0",
+    "@yarnpkg/types": "^4.0.0",
     "async-retry": "^1.3.1",
     "await-event": "^2.1.0",
     "chalk": "^4.1.2",
@@ -144,5 +145,5 @@
     "tools/playwright",
     "tools/cli-engine"
   ],
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.4.1"
 }
