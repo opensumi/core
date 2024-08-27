@@ -30,11 +30,16 @@ export class AdditionsDeletionsDecorationModel {
           endLineNumber: endLineNumber + zoneRange.startLineNumber - 1,
           endColumn,
         });
+        currentColumn = endColumn;
+        currentLineNumber = endLineNumber;
       }
 
-      currentColumn = endColumn;
-      currentLineNumber = endLineNumber;
+      if (!change.removed) {
+        currentColumn = endColumn;
+        currentLineNumber = endLineNumber;
+      }
     }
+
     return ranges;
   }
 

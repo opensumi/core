@@ -376,7 +376,6 @@ export class IntelligentCompletionsHandler extends Disposable {
       currentLineNumber >= totalLines || (currentLineNumber++, (lineChangesMap[currentLineNumber] = []));
     };
 
-    // console.log("🚀 ~ IntelligentCompletionsHandler ~ wordChanges:", wordChanges)
     for (let changeIndex = 0; changeIndex < wordChanges.length; changeIndex++) {
       const currentChange = wordChanges[changeIndex];
       const { value: currentValue, added: isAdded, removed: isRemoved } = currentChange;
@@ -482,8 +481,6 @@ export class IntelligentCompletionsHandler extends Disposable {
       }
     }
 
-    // console.log("🚀 ~ IntelligentCompletionsHandler ~ lineChangesMap ~ lineChangesMap:", lineChangesMap)
-
     const allLineChanges = Object.values(lineChangesMap).map((lineChanges) => ({
       changes: lineChanges
         .map((change) => change.filter((item) => item.value.trim() !== empty))
@@ -495,13 +492,9 @@ export class IntelligentCompletionsHandler extends Disposable {
     if (allLineChanges.every(({ changes }) => changes.every((change) => change.every(({ removed }) => removed)))) {
       // 处理全是删除的情况
       this.rewriteWidget.renderTextLineThrough(range, allLineChanges);
-      // console.log("🚀 ~ IntelligentCompletionsHandler ~ allLineChanges:", allLineChanges)
     } else {
       this.rewriteWidget.renderVirtualEditor(newValue, range, wordChanges);
     }
-
-    // console.log("🚀 ~ IntelligentCompletionsHandler ~ showChangesOnTheRight ~ wordChanges:", wordChanges)
-    // console.log("🚀 ~ IntelligentCompletionsHandler ~ showChangesOnTheRight ~ lineChanges:", lineChanges)
   }
 
   public hide() {

@@ -141,7 +141,7 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
         }
       });
 
-      setEditorSize({ width: maxColumnWidth * spaceWidth, height: lineHeight * lineCount });
+      setEditorSize({ width: maxColumnWidth * spaceWidth, height: lineHeight * (lineCount + 1) });
     },
     [editorSize, editor],
   );
@@ -190,11 +190,13 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
         const modelService = StandaloneServices.get(IModelService);
         const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
 
-        const virtualModel = modelService.createModel(newValue, languageSelection);
+        const virtualModel = modelService.createModel('', languageSelection);
         _virtualEditor.setModel(virtualModel);
 
         setVirtualEditor(_virtualEditor);
       }
+
+      _virtualEditor.setValue(newValue);
 
       changeDecorations(_virtualEditor, range, wordChanges);
     },
