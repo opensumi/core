@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, FRAME_THREE, Uri, randomString, sleep } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, FRAME_THREE, Schemes, Uri, randomString, sleep } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -80,7 +80,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
       '',
       null,
       Uri.from({
-        scheme: 'inmemory',
+        scheme: Schemes.inMemory,
         path: 'inline-stream-diff/' + randomString(8),
       }),
       true,

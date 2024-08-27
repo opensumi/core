@@ -9,6 +9,7 @@ import {
   Emitter,
   Event,
   MonacoService,
+  Schemes,
   randomString,
   useInjectable,
 } from '@opensumi/ide-core-browser';
@@ -97,7 +98,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       codeValueInRange,
       languageSelection,
       monaco.Uri.from({
-        scheme: 'inmemory',
+        scheme: Schemes.inMemory,
         path: 'inline-diff-widget/' + randomString(8),
       }),
       true,
@@ -106,7 +107,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       '',
       languageSelection,
       monaco.Uri.from({
-        scheme: 'inmemory',
+        scheme: Schemes.inMemory,
         path: 'inline-diff-widget/' + randomString(8),
       }),
       true,
