@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, FRAME_THREE, sleep } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, FRAME_THREE, Schemes, Uri, randomString, sleep } from '@opensumi/ide-core-browser';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -76,11 +76,20 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     this.undoRedoGroup = new UndoRedoGroup();
 
     const modelService = StandaloneServices.get(IModelService);
-    this.virtualModel = modelService.createModel('', null);
+    this.virtualModel = modelService.createModel(
+      '',
+      null,
+      Uri.from({
+        scheme: Schemes.inMemory,
+        path: 'inline-stream-diff/' + randomString(8),
+      }),
+      true,
+    );
     this.originalModel = this.monacoEditor.getModel()!;
 
     this.livePreviewDiffDecorationModel = this.injector.get(LivePreviewDiffDecorationModel, [this.monacoEditor]);
     this.addDispose(this.livePreviewDiffDecorationModel);
+    this.addDispose(this.virtualModel);
 
     // 将 diff handler 和 decoration model 的生命周期绑定在一起
     const dispose = this.livePreviewDiffDecorationModel.onDispose(() => {
