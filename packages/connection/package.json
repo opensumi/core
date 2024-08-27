@@ -20,6 +20,7 @@
     "@furyjs/fury": "0.5.9-beta",
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-utils": "workspace:*",
     "@opensumi/reconnecting-websocket": "^4.4.0",
     "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
     "path-to-regexp": "^6.2.1",

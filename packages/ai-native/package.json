@@ -32,14 +32,18 @@
     "@opensumi/ide-menu-bar": "workspace:*",
     "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-overlay": "workspace:*",
+    "@opensumi/ide-preferences": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
+    "@opensumi/ide-utils": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
+    "ansi-regex": "^2.0.0",
     "dom-align": "^1.7.0",
     "js-tiktoken": "1.0.12",
     "react-chat-elements": "^12.0.10",
     "react-highlight": "^0.15.0",
-    "web-tree-sitter": "0.22.6"
+    "web-tree-sitter": "0.22.6",
+    "xterm": "5.3.0"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*"

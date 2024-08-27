@@ -20,6 +20,7 @@
   "dependencies": {
     "@opensumi/ide-connection": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-utils": "workspace:*",
     "keytar": "^7.7.0"
   },
   "devDependencies": {
