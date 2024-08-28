@@ -5,6 +5,8 @@ import { Disposable } from '@opensumi/ide-core-common';
 
 import { ConfigContext } from '../react-providers/config-provider';
 
+import { useMemorizeFn } from './memorize-fn';
+
 import type { EventEmitter } from '@opensumi/events';
 
 function isDisposable(target: any): target is Disposable {
@@ -43,11 +45,14 @@ export function useEventDrivenState<T, Events extends EventEmitter<any>, Event e
   eventName: Event,
   factory: (emitter: any) => T,
 ) {
-  const [state, setState] = useState(factory(emitter));
+  const memorizeFactory = useMemorizeFn(factory);
+  const [state, setState] = useState(memorizeFactory(emitter));
 
   useEffect(() => {
+    // 绑定事件前先取下值，避免期间事件已 emit
+    setState(() => memorizeFactory(emitter));
     const listener = (...args: any[]) => {
-      setState(factory(emitter));
+      setState(memorizeFactory(emitter));
     };
     emitter.on(eventName, listener);
     return () => emitter.off(eventName, listener);
