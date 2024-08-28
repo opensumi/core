@@ -1,8 +1,9 @@
-import { ICodeEditor, IModelDeltaDecoration, IRange } from '@opensumi/ide-monaco';
+import { ICodeEditor, IModelDeltaDecoration, IRange, TrackedRangeStickiness } from '@opensumi/ide-monaco';
 
 import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
 
 import { IMultiLineDiffChangeResult } from './diff-computer';
+import styles from './intelligent-completions.module.less';
 
 export class AdditionsDeletionsDecorationModel {
   private deletionsDecorations: EnhanceDecorationsCollection;
@@ -11,7 +12,7 @@ export class AdditionsDeletionsDecorationModel {
     this.deletionsDecorations = new EnhanceDecorationsCollection(this.editor);
   }
 
-  generateRange(wordChanges: IMultiLineDiffChangeResult[], zoneRange: IRange, eol: string) {
+  private generateRange(wordChanges: IMultiLineDiffChangeResult[], zoneRange: IRange, eol: string) {
     const ranges: IRange[] = [];
 
     let currentLineNumber = 1;
@@ -43,7 +44,32 @@ export class AdditionsDeletionsDecorationModel {
     return ranges;
   }
 
-  setDeletionsDecoration(decoration: IModelDeltaDecoration[]) {
-    this.deletionsDecorations.set(decoration);
+  updateDeletionsDecoration(wordChanges: IMultiLineDiffChangeResult[], range: IRange, eol: string) {
+    const deletionRanges = this.generateRange(
+      wordChanges.map((change) => {
+        const value = change.value;
+
+        if (change.removed) {
+          return { value, added: true };
+        } else if (change.added) {
+          return { value, removed: true };
+        }
+
+        return change;
+      }),
+      range,
+      eol,
+    );
+
+    this.deletionsDecorations.set(
+      deletionRanges.map((range) => ({
+        range,
+        options: {
+          description: 'suggestion_deletions_background',
+          className: styles.suggestion_deletions_background,
+          stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+        },
+      })),
+    );
   }
 }
