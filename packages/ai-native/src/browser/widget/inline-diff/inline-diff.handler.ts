@@ -59,7 +59,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     this.registerDispose(
       this.eventBus.on(EditorGroupCloseEvent, (e: EditorGroupCloseEvent) => {
         const uriString = e.payload.resource.uri.toString();
-        const node = this._previewerNodeStore.get(uriString);
+        const node = this.getStoredState(uriString);
 
         if (node && node.previewerOptions.disposeWhenEditorClosed) {
           this.destroyPreviewer(uriString);
@@ -86,7 +86,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   }
 
   tryRestoreState(monacoEditor: monaco.ICodeEditor, key: string) {
-    const node = this._previewerNodeStore.get(key);
+    const node = this.getStoredState(key);
     if (!node) {
       return;
     }
@@ -249,6 +249,10 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
   getPreviewer(): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined {
     return this.previewer;
+  }
+
+  getStoredState(uri: string) {
+    return this._previewerNodeStore.get(uri);
   }
 
   handleAction(action: EResultKind): void {
