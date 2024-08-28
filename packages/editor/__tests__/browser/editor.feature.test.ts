@@ -102,6 +102,9 @@ describe('editor status bar item test', () => {
       },
       dispose: jest.fn(),
     }),
+    getModelDescription: () => ({
+      languageId: 'javascript',
+    }),
   });
 
   it('formatter select test', async () => {

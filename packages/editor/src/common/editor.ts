@@ -29,10 +29,66 @@ import type { ITextModel, ITextModelUpdateOptions } from '@opensumi/monaco-edito
 
 export { ShowLightbulbIconMode } from '@opensumi/ide-monaco';
 
+export interface IEditorDocumentDescription {
+  /**
+   * 文档URI
+   */
+  readonly uri: URI;
+
+  /**
+   * A unique identifier associated with this model.
+   */
+  readonly id: string;
+
+  /**
+   * 编码
+   */
+  readonly encoding: string;
+
+  /**
+   * 行末结束
+   */
+  readonly eol: EOL;
+
+  /**
+   * 语言Id
+   */
+  readonly languageId: string;
+
+  /**
+   * 是否被修改过
+   */
+  readonly dirty: boolean;
+
+  /**
+   * 能否修改
+   */
+  readonly readonly: boolean;
+
+  /**
+   * 能否保存
+   */
+  readonly savable: boolean;
+
+  /**
+   * 是否永远都显示 dirty
+   */
+  readonly alwaysDirty: boolean;
+
+  /**
+   * 即便是 dirty 也要被 dispose
+   */
+  readonly disposeEvenDirty: boolean;
+
+  /**
+   * 是否关闭自动保存功能
+   */
+  readonly closeAutoSave: boolean;
+}
+
 /**
  * editorDocumentModel is a wrapped concept for monaco's textModel
  */
-
 export interface IEditorDocumentModel extends IDisposable {
   /**
    * 文档URI
@@ -636,6 +692,8 @@ export interface IResourceOpenOptions {
    * 当关闭时指定 force 参数，用来跳过 shouldClose 等逻辑
    */
   forceClose?: boolean;
+
+  supportsRevive?: boolean;
 }
 
 export interface IResourceOpenResult {

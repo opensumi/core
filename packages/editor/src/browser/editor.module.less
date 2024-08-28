@@ -48,6 +48,7 @@
     position: absolute;
     width: 100%;
     height: 100%;
+    pointer-events: none;
   }
   .kt_editor_tabs {
     display: flex;
@@ -132,12 +133,6 @@
     }
   }
 
-  .kt_editor_tabs_scroll_wrapper {
-    flex-grow: 1;
-    width: 100%;
-    position: relative;
-  }
-
   .kt_editor_tabs_scroll {
     overflow-y: hidden;
     :global(.loading_indicator) {
@@ -184,7 +179,7 @@
   }
   .kt_editor_tabs_content {
     overflow-y: hidden;
-    display: inline-flex;
+    display: flex;
     position: relative;
     height: 100%;
     &.kt_on_drag_over {
@@ -197,8 +192,6 @@
       display: flex;
       position: relative;
       align-items: center;
-      flex-shrink: 1;
-      flex-grow: 1;
       padding: 0 12px;
       border-right: 1px solid var(--tab-border);
       height: 100%;
@@ -209,7 +202,6 @@
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
       border-top: 1px solid transparent;
-      box-sizing: border-box;
       z-index: 1;
       word-break: keep-all;
       white-space: nowrap;
@@ -348,7 +340,7 @@
   }
 
   .editorGroupHeader {
-    z-index: var(--stacking-level-background, 0);
+    z-index: var(--stacking-level-workbench, 1);
     position: relative;
   }
 

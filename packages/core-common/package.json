@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-common",
-  "version": "3.2.4",
+  "version": "3.2.5",
   "description": "@opensumi/ide-core-common",
   "files": [
     "lib",
@@ -18,7 +18,7 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
   "dependencies": {
-    "@opensumi/di": "^1.4.0",
+    "@opensumi/di": "^1.8.0",
     "@opensumi/ide-utils": "workspace:*"
   },
   "devDependencies": {

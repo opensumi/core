@@ -12,6 +12,7 @@ import {
   validateConstraint,
 } from '@opensumi/ide-core-common';
 
+import { IBuiltInCommand } from '../../../common/ext.process';
 import {
   ArgumentProcessor,
   CommandHandler,
@@ -26,7 +27,6 @@ import * as extHostTypeConverter from '../../../common/vscode/converter';
 import { Disposable, Location, Position, Range } from '../../../common/vscode/ext-types';
 import * as modes from '../../../common/vscode/model.api';
 import { CommandDto } from '../../../common/vscode/scm';
-import { IBuiltInCommand } from '../../ext.process-base';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ApiCommand, ApiCommandResult, newCommands } from './ext.host.api.command';

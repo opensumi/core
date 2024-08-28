@@ -13,6 +13,7 @@ import {
   LRUMap,
   MarkerManager,
   REPORT_NAME,
+  Schemes,
   URI,
   path,
   revive,
@@ -169,7 +170,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   isLanguageFeatureEnabled(model: ITextModel) {
-    if (model.uri.scheme === 'inmemory') {
+    if (model.uri.scheme === Schemes.inMemory) {
       return false;
     }
 

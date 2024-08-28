@@ -4,7 +4,9 @@ import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   AppConfig,
+  ContributionProvider,
   Deferred,
+  Disposable,
   DisposableStore,
   IApplicationService,
   IExtensionProps,
@@ -21,6 +23,7 @@ import {
 } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractNodeExtProcessService } from '../common/extension.service';
+import { IMainThreadExtenderService, MainThreadExtenderContribution } from '../common/main.thread.extender';
 import { ExtHostAPIIdentifier } from '../common/vscode';
 import { knownProtocols } from '../common/vscode/protocols';
 
@@ -37,7 +40,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   private readonly appConfig: AppConfig;
 
   @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
+  protected readonly injector: Injector;
 
   @Autowired(ExtensionNodeServiceServerPath)
   private readonly extensionNodeClient: IExtensionNodeClientService;
@@ -47,6 +50,12 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
 
   @Autowired(WSChannelHandler)
   private readonly channelHandler: WSChannelHandler;
+
+  @Autowired(IMainThreadExtenderService)
+  private readonly mainThreadExtenderService: IMainThreadExtenderService;
+
+  @Autowired(MainThreadExtenderContribution)
+  private readonly mainThreadExtenderContributionProvider: ContributionProvider<MainThreadExtenderContribution>;
 
   private _apiFactoryDisposables = new DisposableStore();
 
@@ -125,7 +134,29 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     this._apiFactoryDisposables.add(apiProxy);
     this._apiFactoryDisposables.add(toDisposable(initNodeThreadAPIProxy(this.protocol, this.injector, this)));
     this._apiFactoryDisposables.add(toDisposable(createSumiAPIFactory(this.protocol, this.injector)));
+    this._apiFactoryDisposables.add(this.createExternalSumiAPIFactory());
     await apiProxy.setup();
+  }
+
+  /**
+   * register external main thread class
+   * @returns disposer
+   */
+  private createExternalSumiAPIFactory() {
+    const disposer = new Disposable();
+    // register main thread extender contribution
+    const contributions = this.mainThreadExtenderContributionProvider.getContributions();
+    for (const contribution of contributions) {
+      contribution.registerMainThreadExtender(this.mainThreadExtenderService);
+    }
+    // instantiate this MainThreadExtenderClass
+    const extenders = this.mainThreadExtenderService.getMainThreadExtenders();
+    for (const extender of extenders) {
+      const service = this.injector.get(extender.serviceClass, [this.protocol]);
+      this.protocol.set(extender.identifier, service);
+      disposer.addDispose(service);
+    }
+    return disposer;
   }
 
   public async getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
