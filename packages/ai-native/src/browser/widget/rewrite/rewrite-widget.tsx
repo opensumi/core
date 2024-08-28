@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOMClient from 'react-dom/client';
 
 import { Injectable } from '@opensumi/di';
-import { Deferred, Event, MonacoService, runWhenIdle, useInjectable } from '@opensumi/ide-core-browser';
+import { Deferred, Event, MonacoService, isUndefined, runWhenIdle, useInjectable } from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import {
@@ -136,7 +136,11 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
         const lineContent = virtualModel.getLineContent(lineNumber);
         let columnWidth = 0;
         for (const char of lineContent) {
-          char === space ? (columnWidth += tabSize) : (columnWidth += 1);
+          if (char === space) {
+            columnWidth += tabSize;
+          } else {
+            columnWidth += 1;
+          }
           maxColumnWidth = Math.max(maxColumnWidth, columnWidth);
         }
       });
@@ -329,6 +333,8 @@ export class RewriteWidget extends ReactInlineContentWidget {
   positionPreference: ContentWidgetPositionPreference[] = [ContentWidgetPositionPreference.EXACT];
   defered = new Deferred();
 
+  private editArea: monaco.IRange;
+  private insertText: string;
   private updateFontStyle = () => {
     const fontInfo = this.editor.getOption(monaco.editor.EditorOption.fontInfo);
     this.domNode.style.fontFamily = fontInfo.fontFamily;
@@ -364,13 +370,30 @@ export class RewriteWidget extends ReactInlineContentWidget {
     super.show({ position: monaco.Position.lift({ lineNumber, column: 1 }) });
   }
 
-  public renderTextLineThrough(range: monaco.IRange, lineChanges: { changes: IMultiLineDiffChangeResult[][] }[]): void {
-    this.virtualEditorHandler?.renderTextLineThrough(lineChanges);
-    this.virtualEditorHandler?.layout(range);
+  public setInsertText(insertText: string) {
+    this.insertText = insertText;
   }
 
-  public renderVirtualEditor(newValue: string, range: monaco.IRange, wordChanges: IMultiLineDiffChangeResult[]): void {
-    this.virtualEditorHandler!.renderVirtualEditor(newValue, range, wordChanges);
-    this.virtualEditorHandler!.layout(range);
+  public setEditArea(range: monaco.IRange) {
+    this.editArea = range;
+  }
+
+  public renderTextLineThrough(lineChanges: { changes: IMultiLineDiffChangeResult[][] }[]): void {
+    this.virtualEditorHandler?.renderTextLineThrough(lineChanges);
+    this.virtualEditorHandler?.layout(this.editArea);
+  }
+
+  public renderVirtualEditor(newValue: string, wordChanges: IMultiLineDiffChangeResult[]): void {
+    this.virtualEditorHandler!.renderVirtualEditor(newValue, this.editArea, wordChanges);
+    this.virtualEditorHandler!.layout(this.editArea);
+  }
+
+  public accept() {
+    if (isUndefined(this.insertText)) {
+      return;
+    }
+
+    this.editor.pushUndoStop();
+    this.editor.getModel()!.pushEditOperations(null, [{ range: this.editArea, text: this.insertText }], () => null);
   }
 }

@@ -44,6 +44,10 @@ export class AdditionsDeletionsDecorationModel {
     return ranges;
   }
 
+  clearDecorations() {
+    this.deletionsDecorations.clear();
+  }
+
   updateDeletionsDecoration(wordChanges: IMultiLineDiffChangeResult[], range: IRange, eol: string) {
     const deletionRanges = this.generateRange(
       wordChanges.map((change) => {

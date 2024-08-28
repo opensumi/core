@@ -6,7 +6,7 @@ import {
   InlineDiffPartialEditsIsVisible,
   InlineHintWidgetIsVisible,
   InlineInputWidgetIsVisible,
-  MultiLineCompletionsIsVisible,
+  MultiLineEditsIsVisible,
 } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import { IContextKeyServiceTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
@@ -23,7 +23,7 @@ export class AINativeContextKey {
   public readonly inlineHintWidgetIsVisible: IContextKey<boolean>;
   public readonly inlineInputWidgetIsVisible: IContextKey<boolean>;
   public readonly inlineDiffPartialEditsIsVisible: IContextKey<boolean>;
-  public readonly multiLineCompletionsIsVisible: IContextKey<boolean>;
+  public readonly multiLineEditsIsVisible: IContextKey<boolean>;
 
   constructor(@Optional() dom?: HTMLElement | IContextKeyServiceTarget | ContextKeyService) {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);
@@ -32,6 +32,6 @@ export class AINativeContextKey {
     this.inlineHintWidgetIsVisible = InlineHintWidgetIsVisible.bind(this._contextKeyService);
     this.inlineInputWidgetIsVisible = InlineInputWidgetIsVisible.bind(this._contextKeyService);
     this.inlineDiffPartialEditsIsVisible = InlineDiffPartialEditsIsVisible.bind(this._contextKeyService);
-    this.multiLineCompletionsIsVisible = MultiLineCompletionsIsVisible.bind(this._contextKeyService);
+    this.multiLineEditsIsVisible = MultiLineEditsIsVisible.bind(this._contextKeyService);
   }
 }

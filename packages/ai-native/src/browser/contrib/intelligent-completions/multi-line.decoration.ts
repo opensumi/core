@@ -1,6 +1,7 @@
 import { isUndefined } from '@opensumi/ide-core-common';
 import { ICodeEditor, IModelDeltaDecoration, IPosition, Position, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
+import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/viewLayout/lineDecorations';
 
 import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
@@ -182,11 +183,7 @@ export class MultiLineDecorationModel {
     };
   }
 
-  public clearDecorations(): void {
-    this.ghostTextDecorations.clear();
-  }
-
-  public getEdits() {
+  private getEdits() {
     const decorations = this.ghostTextDecorations.getDecorations();
     const edits = decorations.map(({ editorDecoration, range }) => {
       const options = editorDecoration.options;
@@ -196,6 +193,10 @@ export class MultiLineDecorationModel {
     });
 
     return edits;
+  }
+
+  public clearDecorations(): void {
+    this.ghostTextDecorations.clear();
   }
 
   public updateLineModificationDecorations(modifications: IModificationsInline[]) {
@@ -408,5 +409,24 @@ export class MultiLineDecorationModel {
       fullLineMods: modificationsMap,
       inlineMods: resultModifications,
     };
+  }
+
+  public accept() {
+    const edits = this.getEdits();
+
+    if (edits.length === 0) {
+      return;
+    }
+
+    this.editor.pushUndoStop();
+    this.editor.executeEdits(
+      'multiLineCompletions.accept',
+      edits.map((edit) =>
+        EditOperation.insert(
+          Position.lift({ lineNumber: edit.range.startLineNumber, column: edit.range.startColumn }),
+          edit.text,
+        ),
+      ),
+    );
   }
 }

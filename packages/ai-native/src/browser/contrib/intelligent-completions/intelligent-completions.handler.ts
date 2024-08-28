@@ -54,18 +54,12 @@ export class IntelligentCompletionsHandler extends Disposable {
     return this.monacoEditor.getModel()!;
   }
 
-  private _rewriteWidget: RewriteWidget | null = null;
-  private get rewriteWidget(): RewriteWidget {
-    if (!this._rewriteWidget) {
-      this._rewriteWidget = this.injector.get(RewriteWidget, [this.monacoEditor]);
-    }
-    return this._rewriteWidget;
-  }
+  private rewriteWidget: RewriteWidget | null;
 
   private disposeRewriteWidget() {
-    if (this._rewriteWidget) {
-      this._rewriteWidget.dispose();
-      this._rewriteWidget = null;
+    if (this.rewriteWidget) {
+      this.rewriteWidget.dispose();
+      this.rewriteWidget = null;
     }
   }
 
@@ -89,7 +83,7 @@ export class IntelligentCompletionsHandler extends Disposable {
     return intelligentCompletionModel;
   }
 
-  public applyInlineDecorations(completionModel: IIntelligentCompletionsResult) {
+  private applyInlineDecorations(completionModel: IIntelligentCompletionsResult) {
     const { items } = completionModel;
 
     const position = this.monacoEditor.getPosition()!;
@@ -119,13 +113,7 @@ export class IntelligentCompletionsHandler extends Disposable {
 
     const { singleLineCharChanges, charChanges, wordChanges, isOnlyAddingToEachWord } = changes;
 
-    const startOffset = this.model.getOffsetAt({ lineNumber: range.startLineNumber, column: range.startColumn });
-    const endOffset = this.model.getOffsetAt({ lineNumber: range.endLineNumber, column: range.endColumn });
-    const allText = this.model.getValue();
-    // 这里是为了能在 rewrite widget 的 editor 当中完整的复用代码高亮与语法检测的能力
-    const newValue = allText.substring(0, startOffset) + insertText + allText.substring(endOffset);
-
-    // 限制 change 数量，超过这个数量直接显示智能重写
+    // 限制 changes 数量，超过这个数量直接显示智能重写
     const maxCharChanges = 20;
     const maxWordChanges = 20;
 
@@ -142,28 +130,27 @@ export class IntelligentCompletionsHandler extends Disposable {
         position,
       );
 
+      this.aiNativeContextKey.multiLineEditsIsVisible.reset();
+      this.multiLineDecorationModel.clearDecorations();
+
       if (!modificationsResult) {
-        this.aiNativeContextKey.multiLineCompletionsIsVisible.reset();
-        this.multiLineDecorationModel.clearDecorations();
-        this.showChangesOnTheRight(wordChanges, model, range, newValue);
+        this.renderRewriteWidget(wordChanges, model, range, insertTextString);
       } else if (modificationsResult && modificationsResult.inlineMods) {
-        this.aiNativeContextKey.multiLineCompletionsIsVisible.set(true);
+        this.aiNativeContextKey.multiLineEditsIsVisible.set(true);
         this.multiLineDecorationModel.updateLineModificationDecorations(modificationsResult.inlineMods);
       }
     } else {
       this.additionsDeletionsDecorationModel.updateDeletionsDecoration(wordChanges, range, eol);
-      this.showChangesOnTheRight(wordChanges, model, range, newValue);
+      this.renderRewriteWidget(wordChanges, model, range, insertTextString);
     }
   }
 
-  private async showChangesOnTheRight(
+  private async renderRewriteWidget(
     wordChanges: IMultiLineDiffChangeResult[],
     model: ITextModel | null,
     range: IRange,
-    newValue: string,
+    insertTextString: string,
   ) {
-    const lineChangesMap = wordChangesToLineChangesMap(wordChanges, range, model);
-
     this.disposeRewriteWidget();
 
     const cursorPosition = this.monacoEditor.getPosition();
@@ -171,7 +158,19 @@ export class IntelligentCompletionsHandler extends Disposable {
       return;
     }
 
+    this.rewriteWidget = this.injector.get(RewriteWidget, [this.monacoEditor]);
+
+    const startOffset = this.model.getOffsetAt({ lineNumber: range.startLineNumber, column: range.startColumn });
+    const endOffset = this.model.getOffsetAt({ lineNumber: range.endLineNumber, column: range.endColumn });
+    const allText = this.model.getValue();
+    // 这里是为了能在 rewrite widget 的 editor 当中完整的复用代码高亮与语法检测的能力
+    const newVirtualContent = allText.substring(0, startOffset) + insertTextString + allText.substring(endOffset);
+
+    const lineChangesMap = wordChangesToLineChangesMap(wordChanges, range, model);
+
     await this.rewriteWidget.defered.promise;
+
+    this.aiNativeContextKey.multiLineEditsIsVisible.set(true);
 
     const allLineChanges = Object.values(lineChangesMap).map((lineChanges) => ({
       changes: lineChanges
@@ -179,36 +178,29 @@ export class IntelligentCompletionsHandler extends Disposable {
         .filter((change) => change.length > 0),
     }));
 
+    this.rewriteWidget.setInsertText(insertTextString);
     this.rewriteWidget.show({ position: cursorPosition });
+    this.rewriteWidget.setEditArea(range);
 
     if (allLineChanges.every(({ changes }) => changes.every((change) => change.every(({ removed }) => removed)))) {
       // 处理全是删除的情况
-      this.rewriteWidget.renderTextLineThrough(range, allLineChanges);
+      this.rewriteWidget.renderTextLineThrough(allLineChanges);
     } else {
-      this.rewriteWidget.renderVirtualEditor(newValue, range, wordChanges);
+      this.rewriteWidget.renderVirtualEditor(newVirtualContent, wordChanges);
     }
   }
 
   public hide() {
     this.cancelToken();
-    this.aiNativeContextKey.multiLineCompletionsIsVisible.reset();
+    this.aiNativeContextKey.multiLineEditsIsVisible.reset();
     this.multiLineDecorationModel.clearDecorations();
+    this.additionsDeletionsDecorationModel.clearDecorations();
+    this.disposeRewriteWidget();
   }
 
   public accept() {
-    const edits = this.multiLineDecorationModel.getEdits();
-
-    this.editor.monacoEditor.pushUndoStop();
-    this.editor.monacoEditor.executeEdits(
-      'multiLineCompletions.accept',
-      edits.map((edit) =>
-        EditOperation.insert(
-          Position.lift({ lineNumber: edit.range.startLineNumber, column: edit.range.startColumn }),
-          edit.text,
-        ),
-      ),
-    );
-
+    this.multiLineDecorationModel.accept();
+    this.rewriteWidget?.accept();
     this.hide();
   }
 
