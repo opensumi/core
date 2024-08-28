@@ -54,7 +54,20 @@ export class IntelligentCompletionsHandler extends Disposable {
     return this.monacoEditor.getModel()!;
   }
 
-  private rewriteWidget: RewriteWidget;
+  private _rewriteWidget: RewriteWidget | null = null;
+  private get rewriteWidget(): RewriteWidget {
+    if (!this._rewriteWidget) {
+      this._rewriteWidget = this.injector.get(RewriteWidget, [this.monacoEditor]);
+    }
+    return this._rewriteWidget;
+  }
+
+  private disposeRewriteWidget() {
+    if (this._rewriteWidget) {
+      this._rewriteWidget.dispose();
+      this._rewriteWidget = null;
+    }
+  }
 
   public async fetchProvider(bean: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
     const provider = this.intelligentCompletionsRegistry.getProvider();
@@ -143,7 +156,7 @@ export class IntelligentCompletionsHandler extends Disposable {
     }
   }
 
-  private showChangesOnTheRight(
+  private async showChangesOnTheRight(
     wordChanges: IMultiLineDiffChangeResult[],
     model: ITextModel | null,
     range: IRange,
@@ -151,12 +164,14 @@ export class IntelligentCompletionsHandler extends Disposable {
   ) {
     const lineChangesMap = wordChangesToLineChangesMap(wordChanges, range, model);
 
-    this.rewriteWidget.hide();
+    this.disposeRewriteWidget();
 
     const cursorPosition = this.monacoEditor.getPosition();
     if (!cursorPosition) {
       return;
     }
+
+    await this.rewriteWidget.defered.promise;
 
     const allLineChanges = Object.values(lineChangesMap).map((lineChanges) => ({
       changes: lineChanges
@@ -200,8 +215,6 @@ export class IntelligentCompletionsHandler extends Disposable {
   public registerFeature(editor: IEditor): IDisposable {
     this.editor = editor;
     const { monacoEditor } = editor;
-
-    this.rewriteWidget = this.injector.get(RewriteWidget, [monacoEditor]);
 
     this.multiLineDecorationModel = new MultiLineDecorationModel(monacoEditor);
     this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(monacoEditor);

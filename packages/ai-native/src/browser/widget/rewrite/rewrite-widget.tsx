@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOMClient from 'react-dom/client';
 
 import { Injectable } from '@opensumi/di';
-import { Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
+import { Deferred, Event, MonacoService, runWhenIdle, useInjectable } from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import {
@@ -166,7 +166,10 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
         virtualEditor.dispose();
       }
       if (refRoot.current) {
-        refRoot.current.unmount();
+        runWhenIdle(() => {
+          refRoot.current?.unmount();
+          refRoot.current = null;
+        });
       }
     };
   }, [editor, onReady, virtualEditor]);
@@ -214,8 +217,8 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
         setVirtualEditor(null);
       }
 
-      const LineElement = ({ changes }) => {
-        const lineHeight = editor!.getOption(monaco.editor.EditorOption.lineHeight);
+      const LineElement = ({ changes }: { changes: IMultiLineDiffChangeResult[][] }) => {
+        const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
         const spaceWidth = editor.getOption(monaco.editor.EditorOption.fontInfo).spaceWidth;
 
         const createSpaceSpan = (spaceCount: number, className: string = styles.ghost_text_decoration) => (
@@ -324,6 +327,7 @@ export class RewriteWidget extends ReactInlineContentWidget {
   private virtualEditorHandler: ITextBoxHandler | null = null;
 
   positionPreference: ContentWidgetPositionPreference[] = [ContentWidgetPositionPreference.EXACT];
+  defered = new Deferred();
 
   private updateFontStyle = () => {
     const fontInfo = this.editor.getOption(monaco.editor.EditorOption.fontInfo);
@@ -338,6 +342,7 @@ export class RewriteWidget extends ReactInlineContentWidget {
       <TextBoxProvider
         editor={this.editor}
         onReady={(handler) => {
+          this.defered.resolve();
           this.virtualEditorHandler = handler;
         }}
       />
