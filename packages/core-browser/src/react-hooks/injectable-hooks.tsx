@@ -49,11 +49,11 @@ export function useEventDrivenState<T, Events extends EventEmitter<any>, Event e
   const [state, setState] = useState(memorizeFactory(emitter));
 
   useEffect(() => {
-    // 绑定事件前先取下值，避免期间事件已 emit
-    setState(() => memorizeFactory(emitter));
     const listener = (...args: any[]) => {
       setState(() => memorizeFactory(emitter));
     };
+    // 绑定事件前先取下值，避免期间事件已 emit
+    listener();
     emitter.on(eventName, listener);
     return () => emitter.off(eventName, listener);
   }, [emitter]);
