@@ -1,5 +1,6 @@
-import { run } from './fn/shell';
 import { argv } from '../packages/core-common/src/node/cli';
+
+import { run } from './fn/shell';
 
 const folderName = 'tools/playwright';
 
