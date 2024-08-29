@@ -6,7 +6,7 @@ import {
 import { ICodeEditor, IPosition } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
-import { IMultiLineDiffChangeResult } from '../../../../lib/browser/contrib/intelligent-completions/diff-computer';
+import { IMultiLineDiffChangeResult } from '../../../../src/browser/contrib/intelligent-completions/diff-computer';
 import { EnhanceDecorationsCollection } from '../../../../src/browser/model/enhanceDecorationsCollection';
 
 describe('MultiLineDecorationModel', () => {
