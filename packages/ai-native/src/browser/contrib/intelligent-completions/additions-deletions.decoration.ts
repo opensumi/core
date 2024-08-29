@@ -1,15 +1,18 @@
 import { ICodeEditor, IModelDeltaDecoration, IRange, TrackedRangeStickiness } from '@opensumi/ide-monaco';
 
 import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
+import { REWRITE_DECORATION_INLINE_ADD } from '../../widget/rewrite/rewrite-widget';
 
 import { IMultiLineDiffChangeResult } from './diff-computer';
 import styles from './intelligent-completions.module.less';
 
 export class AdditionsDeletionsDecorationModel {
   private deletionsDecorations: EnhanceDecorationsCollection;
+  private additionsDecorations: EnhanceDecorationsCollection;
 
   constructor(private readonly editor: ICodeEditor) {
     this.deletionsDecorations = new EnhanceDecorationsCollection(this.editor);
+    this.additionsDecorations = new EnhanceDecorationsCollection(this.editor);
   }
 
   private generateRange(wordChanges: IMultiLineDiffChangeResult[], zoneRange: IRange, eol: string) {
@@ -44,8 +47,12 @@ export class AdditionsDeletionsDecorationModel {
     return ranges;
   }
 
-  clearDecorations() {
+  clearDeletionsDecorations() {
     this.deletionsDecorations.clear();
+  }
+
+  clearAdditionsDecorations() {
+    this.additionsDecorations.clear();
   }
 
   updateDeletionsDecoration(wordChanges: IMultiLineDiffChangeResult[], range: IRange, eol: string) {
@@ -71,6 +78,19 @@ export class AdditionsDeletionsDecorationModel {
         options: {
           description: 'suggestion_deletions_background',
           className: styles.suggestion_deletions_background,
+          stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+        },
+      })),
+    );
+  }
+
+  updateAdditionsDecoration(additionRanges: IRange[]) {
+    this.additionsDecorations.set(
+      additionRanges.map((range) => ({
+        range,
+        options: {
+          description: REWRITE_DECORATION_INLINE_ADD,
+          className: styles.suggestion_additions_background,
           stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
         },
       })),

@@ -2,17 +2,17 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   CancellationTokenSource,
   Disposable,
+  Event,
   IAICompletionOption,
   IDisposable,
   IntelligentCompletionsRegistryToken,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
-import { ICodeEditor, IRange, ITextModel, Position } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
-import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
-import { RewriteWidget } from '../../widget/rewrite/rewrite-widget';
+import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
 
 import { AdditionsDeletionsDecorationModel } from './additions-deletions.decoration';
 import {
@@ -194,13 +194,32 @@ export class IntelligentCompletionsHandler extends Disposable {
     this.cancelToken();
     this.aiNativeContextKey.multiLineEditsIsVisible.reset();
     this.multiLineDecorationModel.clearDecorations();
-    this.additionsDeletionsDecorationModel.clearDecorations();
+    this.additionsDeletionsDecorationModel.clearDeletionsDecorations();
     this.disposeRewriteWidget();
   }
 
   public accept() {
     this.multiLineDecorationModel.accept();
-    this.rewriteWidget?.accept();
+
+    if (this.rewriteWidget) {
+      this.rewriteWidget.accept();
+
+      const virtualEditor = this.rewriteWidget.getVirtualEditor();
+      // 采纳完之后将 virtualEditor 的 decorations 重新映射在 editor 上
+      if (virtualEditor) {
+        const editArea = this.rewriteWidget?.getEditArea();
+        const decorations = virtualEditor.getDecorationsInRange(Range.lift(editArea));
+        const preAddedDecorations = decorations?.filter(
+          (decoration) => decoration.options.description === REWRITE_DECORATION_INLINE_ADD,
+        );
+        if (preAddedDecorations) {
+          this.additionsDeletionsDecorationModel.updateAdditionsDecoration(
+            preAddedDecorations.map((decoration) => decoration.range),
+          );
+        }
+      }
+    }
+
     this.hide();
   }
 
@@ -211,6 +230,17 @@ export class IntelligentCompletionsHandler extends Disposable {
     this.multiLineDecorationModel = new MultiLineDecorationModel(monacoEditor);
     this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [monacoEditor.contextKeyService]);
+
+    this.addDispose(
+      Event.any<any>(
+        monacoEditor.onDidChangeCursorPosition,
+        monacoEditor.onDidChangeModelContent,
+        monacoEditor.onDidBlurEditorWidget,
+      )(() => {
+        this.additionsDeletionsDecorationModel.clearAdditionsDecorations();
+      }),
+    );
+
     return this;
   }
 }

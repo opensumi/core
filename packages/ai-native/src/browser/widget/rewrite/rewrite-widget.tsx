@@ -13,6 +13,7 @@ import {
 import { IEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { space } from '@opensumi/ide-utils/lib/strings';
+import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { ILanguageSelection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
@@ -58,6 +59,7 @@ const editorOptions: IEditorOptions = {
 };
 
 interface ITextBoxHandler {
+  getVirtualEditor: () => ICodeEditor | null;
   layout: (range: monaco.IRange) => void;
   renderVirtualEditor: (newValue: string, range: monaco.IRange, wordChanges: IMultiLineDiffChangeResult[]) => void;
   renderTextLineThrough: (lineChanges: { changes: IMultiLineDiffChangeResult[][] }[]) => void;
@@ -67,6 +69,8 @@ interface ITextBoxProviderProps {
   editor: ICodeEditor;
   onReady?: (handler: ITextBoxHandler) => void;
 }
+
+export const REWRITE_DECORATION_INLINE_ADD = 'rewrite-decoration-inline-add';
 
 const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
   const { editor, onReady } = props;
@@ -87,12 +91,12 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
 
       const virtualModel = virtualEditor.getModel()!;
 
-      virtualEditor.changeDecorations((decorations) => {
+      virtualEditor.changeDecorations((accessor) => {
         if (virtualEditor) {
           virtualModel
             .getAllDecorations()
             .map((decoration) => decoration.id)
-            .forEach((decorationId) => decorations.removeDecoration(decorationId));
+            .forEach((decorationId) => accessor.removeDecoration(decorationId));
 
           for (const change of wordChanges) {
             if (change.removed) {
@@ -106,10 +110,10 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
                 currentColumn = 1;
               }
               if (change.added) {
-                decorations.addDecoration(
+                accessor.addDecoration(
                   new monaco.Range(currentLineNumber, currentColumn, currentLineNumber, currentColumn + line.length),
                   {
-                    description: 'ghost-text-decoration',
+                    description: REWRITE_DECORATION_INLINE_ADD,
                     className: styles.ghost_text_decoration_inline_add,
                   },
                 );
@@ -159,6 +163,7 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
 
     if (onReady) {
       onReady({
+        getVirtualEditor: () => virtualEditor,
         renderVirtualEditor: (newValue, range, wordChanges) => renderVirtualEditor(newValue, range, wordChanges),
         renderTextLineThrough: (lineChanges) => renderTextLineThrough(lineChanges),
         layout: (range) => layout(range),
@@ -378,6 +383,14 @@ export class RewriteWidget extends ReactInlineContentWidget {
     this.editArea = range;
   }
 
+  public getEditArea(): monaco.IRange {
+    return this.editArea;
+  }
+
+  public getVirtualEditor(): ICodeEditor | null {
+    return this.virtualEditorHandler?.getVirtualEditor() ?? null;
+  }
+
   public renderTextLineThrough(lineChanges: { changes: IMultiLineDiffChangeResult[][] }[]): void {
     this.virtualEditorHandler?.renderTextLineThrough(lineChanges);
     this.virtualEditorHandler?.layout(this.editArea);
@@ -394,6 +407,8 @@ export class RewriteWidget extends ReactInlineContentWidget {
     }
 
     this.editor.pushUndoStop();
-    this.editor.getModel()!.pushEditOperations(null, [{ range: this.editArea, text: this.insertText }], () => null);
+    this.editor
+      .getModel()!
+      .pushEditOperations(null, [EditOperation.replace(monaco.Range.lift(this.editArea), this.insertText)], () => null);
   }
 }
