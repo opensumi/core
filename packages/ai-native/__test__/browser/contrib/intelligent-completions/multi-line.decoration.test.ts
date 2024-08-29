@@ -6,7 +6,7 @@ import {
 import { ICodeEditor, IPosition } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
-import { IDiffChangeResult } from '../../../../lib/browser/contrib/intelligent-completions/diff-computer';
+import { IMultiLineDiffChangeResult } from '../../../../lib/browser/contrib/intelligent-completions/diff-computer';
 import { EnhanceDecorationsCollection } from '../../../../src/browser/model/enhanceDecorationsCollection';
 
 describe('MultiLineDecorationModel', () => {
@@ -43,7 +43,7 @@ greet(person); // Output: "Hello, OpenSumi!"`);
   });
 
   it('should split diff changes correctly', () => {
-    const lines: IDiffChangeResult[] = [
+    const lines: IMultiLineDiffChangeResult[] = [
       { value: 'line1\nline2', added: true, removed: false },
       { value: 'line3', added: false, removed: true },
     ];
@@ -81,7 +81,7 @@ greet(person); // Output: "Hello, OpenSumi!"`);
   });
 
   it('should apply inline decorations correctly', () => {
-    const changes: IDiffChangeResult[] = [
+    const changes: IMultiLineDiffChangeResult[] = [
       { value: 'const person: Person = {\n  name: "' },
       { value: 'Hello ', added: true, removed: undefined },
       { value: 'OpenSumi",\n  age: 18' },
