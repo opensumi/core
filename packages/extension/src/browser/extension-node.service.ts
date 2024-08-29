@@ -8,9 +8,9 @@ import {
   Deferred,
   Disposable,
   DisposableStore,
+  ExtHostSpawnOptions,
   IApplicationService,
   IExtensionProps,
-  ILogger,
   toDisposable,
 } from '@opensumi/ide-core-browser';
 
@@ -33,9 +33,6 @@ import { initSharedAPIProxy } from './vscode/api/main.thread.api.shared-impl';
 
 @Injectable()
 export class NodeExtProcessService implements AbstractNodeExtProcessService<IExtensionHostService> {
-  @Autowired(ILogger)
-  private readonly logger: ILogger;
-
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -138,6 +135,10 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     await apiProxy.setup();
   }
 
+  getSpawnOptions(): ExtHostSpawnOptions {
+    return {};
+  }
+
   /**
    * register external main thread class
    * @returns disposer
@@ -173,6 +174,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       enableDebugExtensionHost: this.appConfig.enableDebugExtensionHost,
       inspectExtensionHost: this.appConfig.inspectExtensionHost,
       extensionConnectOption: this.appConfig.extensionConnectOption,
+      extHostSpawnOptions: this.getSpawnOptions(),
     });
 
     await this.initExtProtocol();
