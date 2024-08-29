@@ -166,6 +166,10 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     };
   }
 
+  getVirtualModelValue() {
+    return this.virtualModel.getValue();
+  }
+
   get onPartialEditWidgetListChange() {
     return this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange;
   }

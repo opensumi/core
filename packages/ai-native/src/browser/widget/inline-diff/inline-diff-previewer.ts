@@ -151,10 +151,6 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     // do nothing
     return '';
   }
-  getValueByEnd(): string {
-    // do nothing
-    return '';
-  }
   onError(error: ErrorResponse): void {
     // do nothing
   }
@@ -218,11 +214,7 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     const model = this.node?.getModifiedModel();
     return model!.getValue();
   }
-  // 结束渲染后获取变更的内容
-  getValueByEnd() {
-    const model = this.node?.getModifiedModel();
-    return model!.getValue();
-  }
+
   handleAction(action: EResultKind): void {
     if (action === EResultKind.ACCEPT) {
       const newValue = this.getValue();
@@ -366,6 +358,12 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     }
     return '';
   }
+
+  getValue(): string {
+    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
+    return node.getVirtualModelValue();
+  }
+
   setValue(content: string): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
     if (diffModel) {

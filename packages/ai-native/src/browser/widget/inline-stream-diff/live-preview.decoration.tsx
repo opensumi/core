@@ -74,12 +74,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private partialEditWidgetList: AcceptPartialEditWidget[] = [];
   private removedZoneWidgets: Array<RemovedZoneWidget> = [];
   private zone: LineRange;
-  private relationId: string;
 
   constructor(private readonly monacoEditor: ICodeEditor) {
     super();
     this.model = this.monacoEditor.getModel()!;
-    this.relationId = this.aiReporter.getRelationId();
 
     this.undoRedoService = StandaloneServices.get(IUndoRedoService);
 
@@ -327,6 +325,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     isReport: boolean = false,
   ) {
     const position = widget.getPosition()!.position!;
+    const relationId = this.aiReporter.getRelationId();
     const model = this.model;
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
@@ -364,9 +363,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     }
 
     const discard = (decorationModel: LivePreviewDiffDecorationModel) => {
-      // 只有点击行采纳时才会上报
+      // 只有点击行丢弃时才会上报
       if (isReport) {
-        this.aiReporter.end(this.relationId, {
+        this.aiReporter.end(relationId, {
           message: 'discard',
           success: true,
           isDrop: true,
@@ -390,7 +389,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const accpet = (decorationModel: LivePreviewDiffDecorationModel) => {
       // 只有点击行采纳时才会上报
       if (isReport) {
-        this.aiReporter.end(this.relationId, {
+        this.aiReporter.end(relationId, {
           message: 'accept',
           success: true,
           isReceive: true,

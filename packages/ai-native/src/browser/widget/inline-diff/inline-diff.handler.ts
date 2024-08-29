@@ -260,7 +260,7 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   }
 
   getModifyContent() {
-    return this.previewer?.getValueByEnd();
+    return this.previewer?.getValue();
   }
 
   destroyPreviewer(uriString?: string) {
