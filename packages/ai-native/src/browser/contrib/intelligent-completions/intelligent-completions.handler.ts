@@ -7,6 +7,7 @@ import {
   IAICompletionOption,
   IDisposable,
   IntelligentCompletionsRegistryToken,
+  runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
@@ -149,15 +150,19 @@ export class IntelligentCompletionsHandler extends Disposable {
     if (this.whenMultiLineEditsVisibleDispose.disposed) {
       this.whenMultiLineEditsVisibleDispose = new Disposable();
     }
-    // 监听当前光标位置的变化，如果超出 range 区域则取消 multiLine edits
-    this.whenMultiLineEditsVisibleDispose.addDispose(
-      this.monacoEditor.onDidChangeCursorPosition((event: ICursorPositionChangedEvent) => {
-        const position = event.position;
-        if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
-          this.hide();
-        }
-      }),
-    );
+    if (this.aiNativeContextKey.multiLineEditsIsVisible.get()) {
+      // 监听当前光标位置的变化，如果超出 range 区域则取消 multiLine edits
+      this.whenMultiLineEditsVisibleDispose.addDispose(
+        this.monacoEditor.onDidChangeCursorPosition((event: ICursorPositionChangedEvent) => {
+          const position = event.position;
+          if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
+            runWhenIdle(() => {
+              this.hide();
+            });
+          }
+        }),
+      );
+    }
   }
 
   private async renderRewriteWidget(
@@ -222,7 +227,7 @@ export class IntelligentCompletionsHandler extends Disposable {
       const virtualEditor = this.rewriteWidget.getVirtualEditor();
       // 采纳完之后将 virtualEditor 的 decorations 重新映射在 editor 上
       if (virtualEditor) {
-        const editArea = this.rewriteWidget?.getEditArea();
+        const editArea = this.rewriteWidget.getEditArea();
         const decorations = virtualEditor.getDecorationsInRange(Range.lift(editArea));
         const preAddedDecorations = decorations?.filter(
           (decoration) => decoration.options.description === REWRITE_DECORATION_INLINE_ADD,
@@ -270,8 +275,13 @@ export class IntelligentCompletionsHandler extends Disposable {
     );
 
     this.addDispose(
-      monacoEditor.onDidChangeModel(() => {
-        this.hide();
+      Event.any<any>(
+        monacoEditor.onDidChangeModel,
+        monacoEditor.onDidChangeModelContent,
+      )(() => {
+        runWhenIdle(() => {
+          this.hide();
+        });
       }),
     );
 
