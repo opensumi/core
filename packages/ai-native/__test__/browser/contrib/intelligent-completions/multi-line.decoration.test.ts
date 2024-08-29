@@ -96,20 +96,13 @@ greet(person); // Output: "Hello, OpenSumi!"`);
       cursorPosition,
     );
 
-    expect(result).toEqual([
-      {
-        lineNumber: 8,
-        column: 10,
-        newValue: '  name: "Hello ',
-        oldValue: '  name: "',
-      },
-      {
-        lineNumber: 9,
-        column: 10,
-        newValue: '  age: 18 + 1',
-        oldValue: '  age: 18',
-      },
-    ]);
+    expect(result).toEqual({
+      fullLineMods: { 10: [], 6: [], 7: [], 8: [], 9: [] },
+      inlineMods: [
+        { column: 10, lineNumber: 8, newValue: '  name: "Hello ', oldValue: '  name: "' },
+        { column: 10, lineNumber: 9, newValue: '  age: 18 + 1', oldValue: '  age: 18' },
+      ],
+    });
   });
 
   it('should update line modification decorations correctly', () => {
