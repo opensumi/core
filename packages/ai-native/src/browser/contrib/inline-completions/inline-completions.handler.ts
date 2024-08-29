@@ -18,7 +18,6 @@ import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs
 
 import { IAIMonacoContribHandler } from '../base';
 import { IIntelligentCompletionsResult } from '../intelligent-completions/intelligent-completions';
-import { IntelligentCompletionsHandler } from '../intelligent-completions/intelligent-completions.handler';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { AICompletionsService } from './service/ai-completions.service';
@@ -33,9 +32,6 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
 
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
-
-  @Autowired(IntelligentCompletionsHandler)
-  private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;

@@ -24,6 +24,9 @@ export class AINativeContextKey {
   public readonly inlineInputWidgetIsVisible: IContextKey<boolean>;
   public readonly inlineDiffPartialEditsIsVisible: IContextKey<boolean>;
   public readonly multiLineEditsIsVisible: IContextKey<boolean>;
+  public get contextKeyService() {
+    return this._contextKeyService;
+  }
 
   constructor(@Optional() dom?: HTMLElement | IContextKeyServiceTarget | ContextKeyService) {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);

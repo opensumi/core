@@ -1,4 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
   CancellationTokenSource,
   Disposable,
@@ -8,7 +9,7 @@ import {
   IntelligentCompletionsRegistryToken,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
-import { ICodeEditor, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
+import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
@@ -55,6 +56,7 @@ export class IntelligentCompletionsHandler extends Disposable {
   }
 
   private rewriteWidget: RewriteWidget | null;
+  private whenMultiLineEditsVisibleDispose: Disposable = new Disposable();
 
   private disposeRewriteWidget() {
     if (this.rewriteWidget) {
@@ -143,6 +145,19 @@ export class IntelligentCompletionsHandler extends Disposable {
       this.additionsDeletionsDecorationModel.updateDeletionsDecoration(wordChanges, range, eol);
       this.renderRewriteWidget(wordChanges, model, range, insertTextString);
     }
+
+    if (this.whenMultiLineEditsVisibleDispose.disposed) {
+      this.whenMultiLineEditsVisibleDispose = new Disposable();
+    }
+    // 监听当前光标位置的变化，如果超出 range 区域则取消 multiLine edits
+    this.whenMultiLineEditsVisibleDispose.addDispose(
+      this.monacoEditor.onDidChangeCursorPosition((event: ICursorPositionChangedEvent) => {
+        const position = event.position;
+        if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
+          this.hide();
+        }
+      }),
+    );
   }
 
   private async renderRewriteWidget(
@@ -238,6 +253,25 @@ export class IntelligentCompletionsHandler extends Disposable {
         monacoEditor.onDidBlurEditorWidget,
       )(() => {
         this.additionsDeletionsDecorationModel.clearAdditionsDecorations();
+      }),
+    );
+
+    const multiLineEditsIsVisibleKey = new Set([MultiLineEditsIsVisible.raw]);
+    this.addDispose(this.whenMultiLineEditsVisibleDispose);
+    this.addDispose(
+      this.aiNativeContextKey.contextKeyService!.onDidChangeContext((e) => {
+        if (e.payload.affectsSome(multiLineEditsIsVisibleKey)) {
+          const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
+          if (!isVisible) {
+            this.whenMultiLineEditsVisibleDispose.dispose();
+          }
+        }
+      }),
+    );
+
+    this.addDispose(
+      monacoEditor.onDidChangeModel(() => {
+        this.hide();
       }),
     );
 
