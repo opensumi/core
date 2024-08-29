@@ -150,19 +150,22 @@ export class IntelligentCompletionsHandler extends Disposable {
     if (this.whenMultiLineEditsVisibleDisposable.disposed) {
       this.whenMultiLineEditsVisibleDisposable = new Disposable();
     }
-    if (this.aiNativeContextKey.multiLineEditsIsVisible.get()) {
-      // 监听当前光标位置的变化，如果超出 range 区域则取消 multiLine edits
-      this.whenMultiLineEditsVisibleDisposable.addDispose(
-        this.monacoEditor.onDidChangeCursorPosition((event: ICursorPositionChangedEvent) => {
+    // 监听当前光标位置的变化，如果超出 range 区域则取消 multiLine edits
+    this.whenMultiLineEditsVisibleDisposable.addDispose(
+      this.monacoEditor.onDidChangeCursorPosition((event: ICursorPositionChangedEvent) => {
+        const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
+        if (isVisible) {
           const position = event.position;
           if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
             runWhenIdle(() => {
               this.hide();
             });
           }
-        }),
-      );
-    }
+        } else {
+          this.whenMultiLineEditsVisibleDisposable.dispose();
+        }
+      }),
+    );
   }
 
   private async renderRewriteWidget(
