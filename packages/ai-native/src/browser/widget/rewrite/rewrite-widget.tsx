@@ -240,53 +240,57 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
           <span className={cls(styles.text_span, className)}>{textContent}</span>
         );
 
-        return changes.map((change, index) => {
-          let isOnlySpaces = true;
-          let removedText = '';
-          let textLength = 0;
-          const lineElements: React.JSX.Element[] = [];
+        return (
+          <React.Fragment>
+            {changes.map((change, index) => {
+              let isOnlySpaces = true;
+              let removedText = '';
+              let textLength = 0;
+              const lineElements: React.JSX.Element[] = [];
 
-          for (const item of change) {
-            const { value, added, removed } = item;
-            if (removed) {
-              removedText += value;
-            } else {
-              isOnlySpaces = false;
-              textLength += value.length;
-              const leadingSpaces = value.length - value.trimStart().length;
-              const trailingSpaces = value.length - value.trimEnd().length;
-              const trimmedValue = value.trim();
+              for (const item of change) {
+                const { value, added, removed } = item;
+                if (removed) {
+                  removedText += value;
+                } else {
+                  isOnlySpaces = false;
+                  textLength += value.length;
+                  const leadingSpaces = value.length - value.trimStart().length;
+                  const trailingSpaces = value.length - value.trimEnd().length;
+                  const trimmedValue = value.trim();
 
-              lineElements.push(createSpaceSpan(leadingSpaces));
-              if (trimmedValue) {
-                lineElements.push(
-                  createTextSpan(
-                    trimmedValue,
-                    added ? styles.ghost_text_decoration_inline_add : styles.ghost_text_decoration,
-                  ),
-                );
-                lineElements.push(createSpaceSpan(trailingSpaces));
+                  lineElements.push(createSpaceSpan(leadingSpaces));
+                  if (trimmedValue) {
+                    lineElements.push(
+                      createTextSpan(
+                        trimmedValue,
+                        added ? styles.ghost_text_decoration_inline_add : styles.ghost_text_decoration,
+                      ),
+                    );
+                    lineElements.push(createSpaceSpan(trailingSpaces));
+                  }
+                }
               }
-            }
-          }
 
-          if (isOnlySpaces) {
-            const leadingSpaces = removedText.length - removedText.trimStart().length;
-            const trailingSpaces = removedText.length - removedText.trimEnd().length;
-            const trimmedRemovedText = removedText.trim();
-            lineElements.push(createSpaceSpan(leadingSpaces, styles.ghost_text_decoration_remove));
-            if (trimmedRemovedText) {
-              lineElements.push(createTextSpan(trimmedRemovedText, styles.ghost_text_decoration_inline_remove));
-              lineElements.push(createSpaceSpan(trailingSpaces, styles.ghost_text_decoration_inline_remove));
-            }
-          }
+              if (isOnlySpaces) {
+                const leadingSpaces = removedText.length - removedText.trimStart().length;
+                const trailingSpaces = removedText.length - removedText.trimEnd().length;
+                const trimmedRemovedText = removedText.trim();
+                lineElements.push(createSpaceSpan(leadingSpaces, styles.ghost_text_decoration_remove));
+                if (trimmedRemovedText) {
+                  lineElements.push(createTextSpan(trimmedRemovedText, styles.ghost_text_decoration_inline_remove));
+                  lineElements.push(createSpaceSpan(trailingSpaces, styles.ghost_text_decoration_inline_remove));
+                }
+              }
 
-          return (
-            <div key={index} className={styles.deletions_code_line} style={{ height: `${lineHeight}px` }}>
-              {lineElements}
-            </div>
-          );
-        });
+              return (
+                <div key={index} className={styles.deletions_code_line} style={{ height: `${lineHeight}px` }}>
+                  {lineElements}
+                </div>
+              );
+            })}
+          </React.Fragment>
+        );
       };
 
       if (refRoot.current) {
@@ -296,11 +300,11 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
 
       refRoot.current = ReactDOMClient.createRoot(ref.current);
       refRoot.current.render(
-        <>
+        <React.Fragment>
           {lineChanges.map((lineChange, index) => (
             <LineElement key={index} changes={lineChange.changes} />
           ))}
-        </>,
+        </React.Fragment>,
       );
     },
     [editor, ref, virtualEditor, refRoot],
