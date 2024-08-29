@@ -244,7 +244,7 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
           let isOnlySpaces = true;
           let removedText = '';
           let textLength = 0;
-          const lineElements: React.ReactElement[] = [];
+          const lineElements: React.JSX.Element[] = [];
 
           for (const item of change) {
             const { value, added, removed } = item;
