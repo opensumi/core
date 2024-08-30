@@ -1,12 +1,9 @@
-import { LRUCache, Uri, objects } from '@opensumi/ide-core-browser';
-import * as monaco from '@opensumi/ide-monaco';
+import { Uri, objects } from '@opensumi/ide-core-browser';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { IConvertedMonacoOptions } from '../types';
 
 const { removeUndefined } = objects;
-
-const cache = new LRUCache<string, any>(15);
 
 type NoConverter = false;
 type KaitianPreferenceKey = string;
@@ -815,117 +812,45 @@ export function getConvertedMonacoOptions(
   language?: string,
   updatingKey?: string[],
 ): IConvertedMonacoOptions {
-  let editorOptions: Partial<monaco.editor.IEditorOptions> = {};
-  let diffOptions: Partial<monaco.editor.IDiffEditorOptions> = {};
-  let modelOptions: Partial<monaco.editor.ITextModelUpdateOptions> = {};
-
-  let editorOptionsKeys = [] as string[];
-  let textModelUpdateOptionsKeys = [] as string[];
-  let diffEditorOptionsKeys = [] as string[];
-
   const resource = resourceUri ? Uri.parse(resourceUri) : undefined;
 
-  if (updatingKey) {
-    updatingKey.forEach((key) => {
-      if (editorOptionsConverters.has(key)) {
-        editorOptionsKeys.push(key);
-      } else if (textModelUpdateOptionsConverters.has(key)) {
-        textModelUpdateOptionsKeys.push(key);
-      } else if (diffEditorOptionsConverters.has(key)) {
-        diffEditorOptionsKeys.push(key);
-      }
-    });
-  } else {
-    editorOptionsKeys = editorOptionsConvertersKey;
-    textModelUpdateOptionsKeys = textModelUpdateOptionsConvertersKey;
-    diffEditorOptionsKeys = diffEditorOptionsConvertersKey;
-  }
+  const getOptions = (keys: string[], converters: Map<string, NoConverter | IMonacoOptionsConverter>): Partial<any> =>
+    keys.reduce((options, key) => {
+      const value = configurationService.getValue(key, { resource, overrideIdentifier: language });
+      if (value !== undefined) {
+        const converter = converters.get(key);
+        if (!converter) {
+          options[key] = value;
+          return options;
+        }
 
-  const commonCacheKey = [resourceUri, language].join(',');
+        const targetKey = converter ? converter.monaco : key;
+        const convertedValue = converter?.convert ? converter.convert(value) : value;
 
-  const editorCacheKey = commonCacheKey + editorOptionsKeys.join(',');
-  if (cache.has(editorCacheKey)) {
-    editorOptions = cache.get(editorCacheKey)!;
-  } else {
-    editorOptionsKeys.forEach((key) => {
-      const value = configurationService.getValue(key, {
-        resource,
-        overrideIdentifier: language,
-      });
-      if (value === undefined) {
-        return;
-      }
-      if (!editorOptionsConverters.get(key)) {
-        editorOptions[key] = value;
-      } else {
-        const converter: IMonacoOptionsConverter = editorOptionsConverters.get(key)! as IMonacoOptionsConverter;
-        if (!editorOptions[converter.monaco]) {
-          editorOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
+        if (!options[targetKey]) {
+          options[targetKey] = convertedValue;
         } else {
-          Object.assign(editorOptions[converter.monaco], converter.convert ? converter.convert(value) : value);
+          Object.assign(options[targetKey], convertedValue);
         }
       }
-    });
+      return options;
+    }, {});
 
-    editorOptions = removeUndefined(editorOptions);
-    cache.set(editorCacheKey, editorOptions);
-  }
+  const editorOptionsKeys = updatingKey
+    ? updatingKey.filter((key) => editorOptionsConverters.has(key))
+    : [...editorOptionsConvertersKey];
 
-  const modelCacheKey = commonCacheKey + textModelUpdateOptionsKeys.join(',');
+  const textModelUpdateOptionsKeys = updatingKey
+    ? updatingKey.filter((key) => textModelUpdateOptionsConverters.has(key))
+    : [...textModelUpdateOptionsConvertersKey];
 
-  if (cache.has(modelCacheKey)) {
-    modelOptions = cache.get(modelCacheKey)!;
-  } else {
-    textModelUpdateOptionsKeys.forEach((key) => {
-      const value = configurationService.getValue(key, {
-        resource,
-        overrideIdentifier: language,
-      });
-      if (value === undefined) {
-        return;
-      }
-      if (!textModelUpdateOptionsConverters.get(key)) {
-        modelOptions[key] = value;
-      } else {
-        const converter: IMonacoOptionsConverter = textModelUpdateOptionsConverters.get(
-          key,
-        )! as IMonacoOptionsConverter;
-        modelOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
-      }
-    });
+  const diffEditorOptionsKeys = updatingKey
+    ? updatingKey.filter((key) => diffEditorOptionsConverters.has(key))
+    : [...diffEditorOptionsConvertersKey];
 
-    modelOptions = removeUndefined(modelOptions);
-    cache.set(modelCacheKey, modelOptions);
-  }
-
-  const diffCacheKey = commonCacheKey + diffEditorOptionsKeys.join(',');
-
-  if (cache.has(diffCacheKey)) {
-    diffOptions = cache.get(diffCacheKey)!;
-  } else {
-    diffEditorOptionsKeys.forEach((key) => {
-      const value = configurationService.getValue(key, {
-        resource,
-        overrideIdentifier: language,
-      });
-      if (value === undefined) {
-        return;
-      }
-      if (!diffEditorOptionsConverters.get(key)) {
-        editorOptions[key] = value;
-      } else {
-        const converter: IMonacoOptionsConverter = diffEditorOptionsConverters.get(key)! as IMonacoOptionsConverter;
-        if (diffOptions[converter.monaco]) {
-          Object.assign(diffOptions[converter.monaco], converter.convert ? converter.convert(value) : value);
-        } else {
-          diffOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
-        }
-      }
-    });
-
-    diffOptions = removeUndefined(diffOptions);
-    cache.set(diffCacheKey, diffOptions);
-  }
+  const editorOptions = removeUndefined(getOptions(editorOptionsKeys, editorOptionsConverters));
+  const modelOptions = removeUndefined(getOptions(textModelUpdateOptionsKeys, textModelUpdateOptionsConverters));
+  const diffOptions = removeUndefined(getOptions(diffEditorOptionsKeys, diffEditorOptionsConverters));
 
   return {
     editorOptions,
