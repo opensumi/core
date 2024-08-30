@@ -6,7 +6,7 @@ import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '../c
 import { AccordionServiceFactory } from './accordion/accordion.service';
 import { LayoutService } from './layout.service';
 import { MainLayoutModuleContribution } from './main-layout.contribution';
-import { TabbarServiceFactory } from './tabbar/tabbar.service';
+import { TabbarServiceFactory, TabbarServiceFactoryFn } from './tabbar/tabbar.service';
 import { ViewsRegistry } from './views-registry';
 
 @Injectable()
@@ -23,10 +23,7 @@ export class MainLayoutModule extends BrowserModule {
     },
     {
       token: TabbarServiceFactory,
-      useFactory: (injector: Injector) => (location: string) => {
-        const manager: IMainLayoutService = injector.get(IMainLayoutService);
-        return manager.getTabbarService(location);
-      },
+      useFactory: TabbarServiceFactoryFn,
     },
     {
       token: AccordionServiceFactory,
