@@ -60,6 +60,9 @@ describe('fastdom', () => {
   it('should measure', () => {
     const animationFrameController = new AnimationFrameController();
 
+    let originalAnimationFrame = global.requestAnimationFrame;
+    let originalCancelAnimationFrame = global.cancelAnimationFrame;
+
     global.requestAnimationFrame = (callback) => {
       animationFrameController.register(callback);
       return 1;
@@ -104,5 +107,8 @@ describe('fastdom', () => {
     animationFrameController.run();
     animationFrameController.run();
     expect(count).toBe(9);
+
+    global.requestAnimationFrame = originalAnimationFrame;
+    global.cancelAnimationFrame = originalCancelAnimationFrame;
   });
 });
