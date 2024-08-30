@@ -520,4 +520,8 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   getZone(): LineRange {
     return this.livePreviewDiffDecorationModel.getZone();
   }
+
+  getTotalCodeInfo() {
+    return this.livePreviewDiffDecorationModel.getTotalCodeInfo();
+  }
 }
