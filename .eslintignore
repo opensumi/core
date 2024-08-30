@@ -1,5 +1,8 @@
 node_modules
 
+packages/process/scripts
+tools/electron/scripts
+
 **/tools/workspace/**
 **/tools/extensions/**
 **/tools/**/vendor/
