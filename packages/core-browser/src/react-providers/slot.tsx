@@ -35,6 +35,9 @@ export const SlotLocation = {
 };
 
 export function getSlotLocation(moduleName: string, layoutConfig: LayoutConfig) {
+  if (!layoutConfig) {
+    return '';
+  }
   for (const location of Object.keys(layoutConfig)) {
     if (layoutConfig[location].modules && layoutConfig[location].modules.indexOf(moduleName) > -1) {
       return location;
