@@ -13,11 +13,11 @@ import {
   arrays,
   timeout,
 } from '@opensumi/ide-core-common';
-import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { join } from '@opensumi/ide-utils/lib/path';
 
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtendProxy, IExtensionHostService, getExtensionId } from '../common';
 import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from '../common/activator';
+import { ExtHostAppConfig } from '../common/ext.process';
 import { getNodeRequire } from '../common/utils';
 import {
   ExtHostAPIIdentifier,
@@ -96,7 +96,7 @@ class VSCodeAPIImpl extends ApiImplFactory {
     extHost: IExtensionHostService,
     injector: Injector,
   ) {
-    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(AppConfig));
+    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(ExtHostAppConfig));
   }
 }
 
@@ -106,7 +106,8 @@ class OpenSumiAPIImpl extends ApiImplFactory {
     extHost: IExtensionHostService,
     injector: Injector,
   ) {
-    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter));
+    const appConfig: ExtHostAppConfig = injector.get(ExtHostAppConfig);
+    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter), appConfig.sumiApiExtenders);
   }
 }
 

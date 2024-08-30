@@ -283,6 +283,7 @@ export class TrimFinalNewLinesParticipant extends WithEventBus {
 
       const model = modelRef.instance.getMonacoModel();
       this.doTrimFinalNewLines(model, e.payload.reason !== SaveReason.Manual);
+      modelRef.dispose();
     }
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-design",
-  "version": "3.2.3",
+  "version": "3.2.5",
   "files": [
     "lib",
     "src"
@@ -19,8 +19,14 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
-    "@opensumi/ide-core-node": "workspace:*"
+    "@opensumi/ide-editor": "workspace:*",
+    "@opensumi/ide-file-service": "workspace:*",
+    "@opensumi/ide-main-layout": "workspace:*",
+    "@opensumi/ide-menu-bar": "workspace:*",
+    "@opensumi/ide-overlay": "workspace:*",
+    "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",

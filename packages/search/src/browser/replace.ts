@@ -113,7 +113,10 @@ export async function replace(
     edits,
   });
 
-  autoSavedDocs.forEach((doc) => {
-    doc!.instance.save();
-  });
+  await Promise.all(
+    autoSavedDocs.map(async (doc) => {
+      await doc?.instance.save();
+      doc?.dispose();
+    }),
+  );
 }

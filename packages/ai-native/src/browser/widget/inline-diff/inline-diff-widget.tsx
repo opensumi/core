@@ -3,7 +3,16 @@ import { createPortal } from 'react-dom';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, ConfigProvider, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  ConfigProvider,
+  Emitter,
+  Event,
+  MonacoService,
+  Schemes,
+  randomString,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { IDiffEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
@@ -13,6 +22,7 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
+import { IDiffPreviewerOptions, IInlineDiffPreviewerNode } from './inline-diff-previewer';
 import styles from './inline-diff-widget.module.less';
 
 const diffEditorOptions: IDiffEditorOptions = {
@@ -84,8 +94,24 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     const modelService = StandaloneServices.get(IModelService);
     const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
 
-    const originalModel = modelService.createModel(codeValueInRange, languageSelection);
-    const modifiedModel = modelService.createModel('', languageSelection);
+    const originalModel = modelService.createModel(
+      codeValueInRange,
+      languageSelection,
+      monaco.Uri.from({
+        scheme: Schemes.inMemory,
+        path: 'inline-diff-widget/' + randomString(8),
+      }),
+      true,
+    );
+    const modifiedModel = modelService.createModel(
+      '',
+      languageSelection,
+      monaco.Uri.from({
+        scheme: Schemes.inMemory,
+        path: 'inline-diff-widget/' + randomString(8),
+      }),
+      true,
+    );
 
     diffEditor.setModel({
       original: originalModel,
@@ -123,7 +149,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
 });
 
 @Injectable({ multiple: true })
-export class InlineDiffWidget extends ZoneWidget {
+export class InlineDiffWidget extends ZoneWidget implements IInlineDiffPreviewerNode {
   @Autowired(AppConfig)
   private configContext: AppConfig;
 
@@ -137,7 +163,12 @@ export class InlineDiffWidget extends ZoneWidget {
   private root: ReactDOMClient.Root | null;
   private diffWidgetHandler: IDiffWidgetHandler | null = null;
   private resultContainer: HTMLDivElement | null = null;
-  hiddenArea: monaco.languages.IRange;
+  private hiddenArea: monaco.languages.IRange;
+
+  previewerOptions: IDiffPreviewerOptions;
+  setPreviewerOptions(options: IDiffPreviewerOptions): void {
+    this.previewerOptions = options;
+  }
 
   protected _fillContainer(container: HTMLElement): void {
     this.setCssClass('inline-diff-widget');

@@ -33,11 +33,18 @@ interface INodeProcess {
   nextTick: any;
   versions?: {
     electron?: string;
+    node?: string;
+    chrome?: string;
   };
   type?: string;
 }
 declare const process: INodeProcess;
 declare const global: any;
+
+let nodeProcess: INodeProcess | undefined;
+if (typeof process !== 'undefined' && typeof process?.versions?.node === 'string') {
+  nodeProcess = process;
+}
 
 interface INavigator {
   userAgent: string;
@@ -46,29 +53,16 @@ interface INavigator {
 declare const navigator: INavigator;
 declare const self: any;
 
-const isElectronRenderer =
-  typeof process !== 'undefined' &&
-  typeof process.versions !== 'undefined' &&
-  typeof process.versions.electron !== 'undefined' &&
-  process.type === 'renderer';
+const isElectronRenderer = typeof nodeProcess?.versions?.electron === 'string' && nodeProcess.type === 'renderer';
 
 // OS detection
-if (typeof navigator === 'object' && !isElectronRenderer) {
-  const userAgent = navigator.userAgent;
-  _isWindows = userAgent.indexOf('Windows') >= 0;
-  _isMacintosh = userAgent.indexOf('Macintosh') >= 0;
-  _isLinux = userAgent.indexOf('Linux') >= 0;
-  _isWeb = true;
-  _locale = navigator.language;
-  _language = _locale;
-  _isWebKit = userAgent.indexOf('AppleWebKit') >= 0;
-} else if (typeof process === 'object') {
-  _isWindows = process.platform === 'win32';
-  _isMacintosh = process.platform === 'darwin';
-  _isLinux = process.platform === 'linux';
+if (typeof nodeProcess === 'object') {
+  _isWindows = nodeProcess.platform === 'win32';
+  _isMacintosh = nodeProcess.platform === 'darwin';
+  _isLinux = nodeProcess.platform === 'linux';
   _locale = LANGUAGE_DEFAULT;
   _language = LANGUAGE_DEFAULT;
-  const rawNlsConfig = process.env['VSCODE_NLS_CONFIG'];
+  const rawNlsConfig = nodeProcess.env['VSCODE_NLS_CONFIG'];
   if (rawNlsConfig) {
     try {
       const nlsConfig: NLSConfig = JSON.parse(rawNlsConfig);
@@ -80,6 +74,15 @@ if (typeof navigator === 'object' && !isElectronRenderer) {
     } catch (e) {}
   }
   _isNative = true;
+} else if (typeof navigator === 'object' && !isElectronRenderer) {
+  const userAgent = navigator.userAgent;
+  _isWindows = userAgent.indexOf('Windows') >= 0;
+  _isMacintosh = userAgent.indexOf('Macintosh') >= 0;
+  _isLinux = userAgent.indexOf('Linux') >= 0;
+  _isWeb = true;
+  _locale = navigator.language;
+  _language = _locale;
+  _isWebKit = userAgent.indexOf('AppleWebKit') >= 0;
 }
 
 export const enum Platform {

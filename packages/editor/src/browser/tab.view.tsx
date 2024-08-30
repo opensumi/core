@@ -13,7 +13,6 @@ import React, {
   useState,
 } from 'react';
 
-import { Scrollbars } from '@opensumi/ide-components';
 import {
   ComponentRegistry,
   ConfigContext,
@@ -27,18 +26,18 @@ import {
   PreferenceService,
   ResizeEvent,
   URI,
-  View,
   getExternalIcon,
   getIcon,
   getSlotLocation,
+  renderView,
   useDesignStyles,
 } from '@opensumi/ide-core-browser';
-import { renderView } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { formatLocalize } from '@opensumi/ide-core-common';
 
 import {
   IEditorGroup,
@@ -49,6 +48,7 @@ import {
   WorkbenchEditorService,
 } from '../common';
 
+import { Scroll } from './editor-scrollbar';
 import styles from './editor.module.less';
 import { TabTitleMenuService } from './menu/title-context.menu';
 import {
@@ -378,7 +378,9 @@ export const Tabs = ({ group }: ITabsProps) => {
       return editorTabService.renderEditorTab(
         <>
           <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : cls(resource.icon)}> </div>
-          <div>{resource.name}</div>
+          <div tabIndex={0} role='tab' aria-selected={isCurrent ? 'true' : 'false'}>
+            {resource.name}
+          </div>
           {subname ? <div className={styles.subname}>{subname}</div> : null}
           {decoration.readOnly ? (
             <span className={cls(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
@@ -398,7 +400,12 @@ export const Tabs = ({ group }: ITabsProps) => {
               }}
             >
               {editorTabService.renderTabCloseComponent(
-                <div className={cls(getIcon('close'), styles_kt_editor_close_icon)} />,
+                <div
+                  className={cls(getIcon('close'), styles_kt_editor_close_icon)}
+                  tabIndex={0}
+                  role='button'
+                  aria-label={formatLocalize('editor.closeTab.title', resource.name)}
+                />,
               )}
             </div>
           </div>
@@ -419,6 +426,7 @@ export const Tabs = ({ group }: ITabsProps) => {
           [styles_kt_editor_tabs_current_last]: curTabIndex === group.resources.length - 1,
         })}
         ref={contentRef as any}
+        role='tablist'
       >
         {group.resources.map((resource, i) => {
           let ref: HTMLDivElement | null;
@@ -510,13 +518,12 @@ export const Tabs = ({ group }: ITabsProps) => {
         onDoubleClick={handleEmptyDBClick}
       >
         {!wrapMode ? (
-          <Scrollbars
-            tabBarMode
+          <Scroll
             forwardedRef={(el) => (el ? (tabContainer.current = el) : null)}
             className={styles.kt_editor_tabs_scroll}
           >
             {renderTabContent()}
-          </Scrollbars>
+          </Scroll>
         ) : (
           <div className={styles.kt_editor_wrap_container}>{renderTabContent()}</div>
         )}
@@ -560,6 +567,11 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
 
+    /**
+     * 集成场景下可以不展示任何菜单，可以用以下代码取消菜单注册
+     * registry.unregisterMenuId(MenuId.EditorTitle);
+     * registry.unregisterMenuId(MenuId.EditorTitleRun);
+     */
     const noActions = menu.getMergedMenuNodes().length === 0;
 
     useEffect(() => {

@@ -141,6 +141,13 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
 
   async updateContent(uri: URI): Promise<any> {
     const sourceFileUri = uri.withScheme(JSON.parse(uri.query).scheme).withoutQuery().withoutFragment();
+
+    let searchResults = this.searchBrowserService.searchResults.get(sourceFileUri.toString());
+
+    if (!searchResults) {
+      return '';
+    }
+
     const sourceDocModelRef =
       this.documentModelManager.getModelReference(sourceFileUri) ||
       (await this.documentModelManager.createModelReference(sourceFileUri));
@@ -151,12 +158,6 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
     const replaceViewDocModel = replaceViewDocModelRef.instance;
 
     replaceViewDocModel.updateContent(value);
-
-    let searchResults = this.searchBrowserService.searchResults.get(sourceFileUri.toString());
-
-    if (!searchResults) {
-      return '';
-    }
 
     searchResults = searchResults.map((result) =>
       Object.assign({}, result, {
@@ -174,6 +175,9 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
     );
 
     this.contentMap.set(uri.toString(), replaceViewDocModel.getText());
+
+    replaceViewDocModelRef.dispose();
+    sourceDocModelRef.dispose();
   }
 
   onDidChangeContent = this.onDidChangeContentEvent.event;

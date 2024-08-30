@@ -202,8 +202,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   async startNode() {
-    await this.clear();
     this._nodeReady = new Deferred();
+    await this.clear();
     this.node = new KTNodeProcess(
       this.appConfig.nodeEntry,
       this.appConfig.extensionEntry,

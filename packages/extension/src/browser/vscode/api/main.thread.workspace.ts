@@ -25,7 +25,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   editorService: WorkbenchEditorService;
 
   @Autowired(FileSearchServicePath)
-  private readonly fileSearchService;
+  private readonly fileSearchService: IFileSearchService;
 
   @Autowired(IExtensionStorageService)
   extensionStorageService: IExtensionStorageService;

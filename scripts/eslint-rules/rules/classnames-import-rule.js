@@ -1,4 +1,5 @@
 const { ESLintUtils } = require('@typescript-eslint/utils');
+
 const { replaceImportDefault } = require('../../ast-grep/replace-import-default');
 
 const pkgName = 'classnames';
@@ -19,31 +20,29 @@ const rule = ESLintUtils.RuleCreator.withoutDocs({
     fixable: 'code',
     schema: [], // No options
   },
-  create: (context) => {
-    return {
-      ImportDeclaration(node) {
-        const { source, specifiers } = node;
-        if (source.value === pkgName) {
-          specifiers.forEach((specifier) => {
-            if (specifier.type === 'ImportDefaultSpecifier' && specifier.local.name !== expectLocalName) {
-              // 报告问题并提供修复方案
-              context.report({
-                node: specifier.local,
-                messageId: 'unexpectedImportName',
-                fix: (fixer) => {
-                  const sourceCode = context.getSourceCode();
-                  const source = sourceCode.text;
-                  const result = replaceImportDefault(source, pkgName, expectLocalName);
+  create: (context) => ({
+    ImportDeclaration(node) {
+      const { source, specifiers } = node;
+      if (source.value === pkgName) {
+        specifiers.forEach((specifier) => {
+          if (specifier.type === 'ImportDefaultSpecifier' && specifier.local.name !== expectLocalName) {
+            // 报告问题并提供修复方案
+            context.report({
+              node: specifier.local,
+              messageId: 'unexpectedImportName',
+              fix: (fixer) => {
+                const sourceCode = context.getSourceCode();
+                const source = sourceCode.text;
+                const result = replaceImportDefault(source, pkgName, expectLocalName);
 
-                  return fixer.replaceTextRange(sourceCode.ast.range, result);
-                },
-              });
-            }
-          });
-        }
-      },
-    };
-  },
+                return fixer.replaceTextRange(sourceCode.ast.range, result);
+              },
+            });
+          }
+        });
+      }
+    },
+  }),
 });
 
 module.exports = rule;

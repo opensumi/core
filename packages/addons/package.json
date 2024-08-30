@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-addons",
-  "version": "3.2.3",
+  "version": "3.2.5",
   "files": [
     "lib",
     "src"
@@ -27,6 +27,7 @@
     "@opensumi/ide-editor": "workspace:*",
     "@opensumi/ide-file-search": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-quick-open": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",

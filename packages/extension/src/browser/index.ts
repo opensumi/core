@@ -19,6 +19,11 @@ import {
   AbstractViewExtProcessService,
   AbstractWorkerExtProcessService,
 } from '../common/extension.service';
+import {
+  IMainThreadExtenderService,
+  MainThreadExtenderContribution,
+  MainThreadExtenderService,
+} from '../common/main.thread.extender';
 
 import { ActivationEventServiceImpl } from './activation.service';
 import { ExtCommandManagementImpl as ExtCommandManagementImpl } from './extension-command-management';
@@ -37,7 +42,7 @@ import { VSCodeContributesService, VSCodeContributesServiceToken } from './vscod
 
 @Injectable()
 export class ExtensionModule extends BrowserModule {
-  contributionProvider = [RequireInterceptorContribution];
+  contributionProvider = [RequireInterceptorContribution, MainThreadExtenderContribution];
   providers: Provider[] = [
     {
       token: ExtensionService,
@@ -92,6 +97,10 @@ export class ExtensionModule extends BrowserModule {
     {
       token: SumiContributionsServiceToken,
       useClass: SumiContributionsService,
+    },
+    {
+      token: IMainThreadExtenderService,
+      useClass: MainThreadExtenderService,
     },
     ExtensionCommandContribution,
     ExtensionClientAppContribution,

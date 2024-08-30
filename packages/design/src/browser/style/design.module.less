@@ -294,7 +294,6 @@
     content: '';
     position: absolute;
     left: 0;
-    top: 12px;
     display: inline-block;
     width: 1px;
     height: 12px;
@@ -706,12 +705,6 @@
     }
   }
 
-  .design-tab_panel {
-    &::before {
-      content: none;
-    }
-  }
-
   .design-tab_panel_hidden {
     display: none;
   }
@@ -722,6 +715,12 @@
 
   .design-extension_item {
     border-radius: 8px;
+  }
+}
+
+.design-tab_panel {
+  &::before {
+    content: none !important;
   }
 }
 

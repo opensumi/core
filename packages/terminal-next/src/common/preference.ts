@@ -198,10 +198,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     },
     [CodeTerminalSettingId.ShellArgsMacOs]: {
       type: 'array',
-      // Unlike on Linux, ~/.profile is not sourced when logging into a macOS session. This
-      // is the reason terminals on macOS typically run login shells by default which set up
-      // the environment. See http://unix.stackexchange.com/a/119675/115410
-      default: ['-l'],
+      default: [],
       markdownDeprecationMessage: shellDeprecationMessageOsx,
     },
     [CodeTerminalSettingId.ShellArgsWindows]: {

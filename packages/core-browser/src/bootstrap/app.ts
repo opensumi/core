@@ -101,6 +101,7 @@ export class ClientApp implements IClientApp, IDisposable {
   constructor(protected opts: IClientAppOpts) {
     const {
       modules,
+      contributions,
       iconStyleSheets,
       useCdnIcon,
       editorBackgroundImage,
@@ -172,6 +173,9 @@ export class ClientApp implements IClientApp, IDisposable {
 
     this.config = this.runtime.mergeAppConfig(this.config);
 
+    if (contributions) {
+      this.injector.addProviders(...contributions);
+    }
     this.initBaseProvider();
     this.initFields();
     this.appendIconStyleSheets(iconStyleSheets, useCdnIcon);

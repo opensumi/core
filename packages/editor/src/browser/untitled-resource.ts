@@ -171,8 +171,8 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
   }
 
   async shouldCloseResourceWithoutConfirm(resource: IResource) {
-    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
-    if (documentModelRef && documentModelRef.instance.dirty) {
+    const documentModelRef = this.documentModelService.getModelDescription(resource.uri, 'close-resource-check');
+    if (documentModelRef && documentModelRef.dirty) {
       return true;
     }
     return false;
@@ -195,16 +195,14 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
       documentModelRef.dispose();
       return false;
     } else {
+      documentModelRef.dispose();
       return true;
     }
   }
 
   async shouldCloseResource(resource: IResource) {
-    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
-    if (!documentModelRef || !documentModelRef.instance.dirty) {
-      if (documentModelRef) {
-        documentModelRef.dispose();
-      }
+    const documentModelRef = this.documentModelService.getModelDescription(resource.uri, 'close-resource-check');
+    if (!documentModelRef || !documentModelRef.dirty) {
       return true;
     }
     // 询问用户是否保存

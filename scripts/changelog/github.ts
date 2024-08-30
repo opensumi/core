@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { DefaultLogFields } from 'simple-git';
+
 import { ICommitLogFields, PR_STATE } from './types';
 
 const GITHUB_URL = 'https://github.com/opensumi/core';

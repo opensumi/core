@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { getPrList } from './changelog/github';
-import { formatBytes, getChangelog } from './changelog/util';
-import { argv } from '../packages/core-common/src/node/cli';
 
 import chalk from 'chalk';
+
+import { argv } from '../packages/core-common/src/node/cli';
+
+import { getPrList } from './changelog/github';
+import { formatBytes, getChangelog } from './changelog/util';
 
 if (!process.env.GITHUB_TOKEN) {
   console.log(chalk.red('Please export your github personal access token as env `GITHUB_TOKEN`'));
