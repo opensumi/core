@@ -1,16 +1,18 @@
 /* eslint-disable no-console */
-import { join } from 'path';
-import { readFileSync, writeFileSync, ensureFileSync } from 'fs-extra';
 import { execSync } from 'child_process';
+import { join } from 'path';
 import { createInterface } from 'readline';
-import semver from 'semver';
-import { argv } from '../packages/core-common/src/node/cli';
-import git from 'git-rev-sync';
+
 import chalk from 'chalk';
+import { ensureFileSync, readFileSync, writeFileSync } from 'fs-extra';
+import git from 'git-rev-sync';
+import semver from 'semver';
 
 import pkg from '../lerna.json';
-import Package, { readAllMainPackages } from './pkg';
+import { argv } from '../packages/core-common/src/node/cli';
+
 import { generateManifest } from './manifest';
+import Package, { readAllMainPackages } from './pkg';
 
 const rl = createInterface({
   input: process.stdin,

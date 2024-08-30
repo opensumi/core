@@ -1,6 +1,4 @@
-import throttle from 'lodash/throttle';
-
-import { Disposable, Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, isDefined, isUndefined } from '@opensumi/ide-core-common';
 import {
   ICodeEditor,
   IContentSizeChangedEvent,
@@ -13,6 +11,7 @@ import {
   Range,
 } from '@opensumi/ide-monaco';
 import { space } from '@opensumi/ide-utils/lib/strings';
+import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
 import styles from './styles.module.less';
 
@@ -35,8 +34,17 @@ export interface IEnhanceModelDeltaDecoration extends IDeltaData {
   resume(): void;
   getRange(): IRange;
   setRange(newRange: IRange): void;
+  group?: UndoRedoGroup;
+  setGroup(group: UndoRedoGroup): void;
+}
 
-  serializeState(): IDecorationSerializableState;
+export interface IDeltaDecorationsOptions {
+  id: string;
+  editorDecoration: IModelDeltaDecoration;
+  codeEditor: ICodeEditor;
+  deltaData: Partial<IDeltaData>;
+  isHidden?: boolean;
+  group?: UndoRedoGroup;
 }
 
 class DeltaDecorations implements IEnhanceModelDeltaDecoration {
@@ -45,18 +53,36 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
   options: IModelDecorationOptions;
 
   private resumeRange: IRange;
+  private _group: UndoRedoGroup;
 
   private _hidden = false;
   get isHidden(): boolean {
     return this._hidden;
   }
 
-  constructor(
-    public readonly id: string,
-    public readonly editorDecoration: IModelDeltaDecoration,
-    private readonly codeEditor: ICodeEditor,
-    private readonly deltaData: Partial<IDeltaData>,
-  ) {
+  get codeEditor(): ICodeEditor {
+    return this.metadata.codeEditor;
+  }
+
+  get deltaData(): Partial<IDeltaData> {
+    return this.metadata.deltaData;
+  }
+
+  get id(): string {
+    return this.metadata.id;
+  }
+
+  get editorDecoration(): IModelDeltaDecoration {
+    return this.metadata.editorDecoration;
+  }
+
+  public get group(): UndoRedoGroup {
+    return this._group;
+  }
+
+  constructor(protected readonly metadata: IDeltaDecorationsOptions) {
+    const { editorDecoration, deltaData, isHidden, group } = metadata;
+
     if (isUndefined(deltaData.length)) {
       this.length = editorDecoration.range.endLineNumber - editorDecoration.range.startLineNumber;
     } else {
@@ -67,6 +93,19 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
     this.options = editorDecoration.options;
 
     this.resumeRange = this.range;
+
+    this._hidden = !!isHidden;
+    if (this._hidden) {
+      this.hide();
+    }
+
+    if (isDefined(group)) {
+      this.setGroup(group);
+    }
+  }
+
+  setGroup(group): void {
+    this._group = group;
   }
 
   private changeVisibility(newClassName: string, newRange: Range): void {
@@ -112,16 +151,6 @@ class DeltaDecorations implements IEnhanceModelDeltaDecoration {
     this._hidden = false;
     this.changeVisibility(styles.visible, Range.lift(this.resumeRange));
   }
-
-  serializeState(): IDecorationSerializableState {
-    const { range } = this;
-    const startPosition = { lineNumber: range.startLineNumber, column: range.startColumn };
-    const endPosition = {
-      lineNumber: range.endLineNumber,
-      column: range.endColumn,
-    };
-    return { startPosition, endPosition, len: this.length };
-  }
 }
 
 export class EnhanceDecorationsCollection extends Disposable {
@@ -136,12 +165,6 @@ export class EnhanceDecorationsCollection extends Disposable {
 
   constructor(private readonly codeEditor: ICodeEditor) {
     super();
-
-    this.addDispose(
-      Disposable.create(() => {
-        this.clear();
-      }),
-    );
 
     this.addDispose(
       this.codeEditor.onDidContentSizeChange((event: IContentSizeChangedEvent) => {
@@ -180,7 +203,14 @@ export class EnhanceDecorationsCollection extends Disposable {
     });
   }
 
-  set(decorations: (IModelDeltaDecoration & Partial<Pick<IEnhanceModelDeltaDecoration, 'length'>>)[]): void {
+  protected createDecorations(metaData: IDeltaDecorationsOptions) {
+    return new DeltaDecorations(metaData);
+  }
+
+  set(
+    decorations: (IModelDeltaDecoration &
+      Partial<Pick<IEnhanceModelDeltaDecoration, 'length' | 'isHidden' | 'group'>>)[],
+  ): void {
     this.clear();
 
     this.codeEditor.changeDecorations((accessor: IModelDecorationsChangeAccessor) => {
@@ -189,9 +219,16 @@ export class EnhanceDecorationsCollection extends Disposable {
       for (const decoration of decorations) {
         const id = accessor.addDecoration(decoration.range, decoration.options);
         newDecorations.push(
-          new DeltaDecorations(id, decoration, this.codeEditor, {
-            length: decoration.length,
-            dispose: () => this.delete(id),
+          this.createDecorations({
+            id,
+            editorDecoration: decoration,
+            codeEditor: this.codeEditor,
+            isHidden: decoration.isHidden,
+            group: decoration.group,
+            deltaData: {
+              dispose: () => this.delete(id),
+              length: decoration.length,
+            },
           }),
         );
       }
@@ -204,12 +241,12 @@ export class EnhanceDecorationsCollection extends Disposable {
     return this.deltaDecorations;
   }
 
-  getDecorationByLineNumber(lineNumber: number): IEnhanceModelDeltaDecoration | undefined {
-    return this.deltaDecorations.find((d) => d.getRange().startLineNumber === lineNumber);
+  getDecorationByGroup(group: UndoRedoGroup): IEnhanceModelDeltaDecoration | undefined {
+    return this.deltaDecorations.find((d) => d.group === group);
   }
 
-  serializeState(): IDecorationSerializableState[] {
-    return this.deltaDecorations.filter((d) => !d.isHidden).map((d) => d.serializeState());
+  getDecorationByLineNumber(lineNumber: number): IEnhanceModelDeltaDecoration | undefined {
+    return this.deltaDecorations.find((d) => d.getRange().startLineNumber === lineNumber);
   }
 
   clear(): void {

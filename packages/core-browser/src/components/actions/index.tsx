@@ -221,7 +221,7 @@ const EllipsisWidget: React.FC<{
 
 EllipsisWidget.displayName = 'EllipsisWidget';
 
-const InlineActionWidget: React.FC<
+export const InlineActionWidget: React.FC<
   {
     data: MenuNode;
     context?: any[];

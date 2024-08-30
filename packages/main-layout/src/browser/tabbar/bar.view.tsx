@@ -7,6 +7,8 @@ import {
   ComponentRegistryInfo,
   ComponentRegistryProvider,
   KeybindingRegistry,
+  addClassName,
+  createClassNameTokens,
   getIcon,
   useDesignStyles,
   useInjectable,
@@ -130,7 +132,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
               const dragImage = ref.cloneNode(true) as HTMLLIElement;
               dragImage.classList.add(styles.dragging);
               if (tabClassName) {
-                dragImage.classList.add(tabClassName);
+                addClassName(dragImage, tabClassName);
               }
               document.body.appendChild(dragImage);
               e.persist();

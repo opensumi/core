@@ -5,6 +5,8 @@ import { ISerializer } from './serializer/types';
 import { ILogger } from './types';
 import { WSChannel, WSServerChannel } from './ws-channel';
 
+import type { Injector } from '@opensumi/di';
+
 export interface IPathHandler {
   dispose: (channel: WSChannel, connectionId: string) => void;
   handler: (channel: WSChannel, connectionId: string, params?: Record<string, string>) => void;
@@ -98,8 +100,6 @@ export class CommonChannelPathHandler {
   }
 }
 
-export const commonChannelPathHandler = new CommonChannelPathHandler();
-
 export interface ChannelHandlerOptions {
   serializer?: ISerializer<ChannelMessage, any>;
 }
@@ -115,7 +115,12 @@ export abstract class BaseCommonChannelHandler {
   protected heartbeatTimer: NodeJS.Timeout | null = null;
 
   serializer: ISerializer<ChannelMessage, any> = furySerializer;
-  constructor(public handlerId: string, protected logger: ILogger = console, options: ChannelHandlerOptions = {}) {
+  constructor(
+    public handlerId: string,
+    protected commonChannelPathHandler: CommonChannelPathHandler,
+    protected logger: ILogger = console,
+    options: ChannelHandlerOptions = {},
+  ) {
     if (options.serializer) {
       this.serializer = options.serializer;
     }
@@ -156,7 +161,7 @@ export abstract class BaseCommonChannelHandler {
 
             channel = new WSServerChannel(wrappedConnection, { id, clientId, logger: this.logger });
             this.channelMap.set(id, channel);
-            commonChannelPathHandler.openChannel(path, channel, clientId);
+            this.commonChannelPathHandler.openChannel(path, channel, clientId);
             channel.serverReady(traceId);
             break;
           }
@@ -185,7 +190,7 @@ export abstract class BaseCommonChannelHandler {
 
     connection.onceClose(() => {
       this.logger.log(`connection ${clientId} is closed, dispose all channels`);
-      commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
+      this.commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
 
       Array.from(this.channelMap.values())
         .filter((channel) => channel.clientId === clientId)
@@ -206,3 +211,11 @@ export abstract class BaseCommonChannelHandler {
 }
 
 export const RPCServiceChannelPath = 'RPCService';
+
+export function injectConnectionProviders(injector: Injector) {
+  const commonChannelPathHandler = new CommonChannelPathHandler();
+  injector.addProviders({
+    token: CommonChannelPathHandler,
+    useValue: commonChannelPathHandler,
+  });
+}

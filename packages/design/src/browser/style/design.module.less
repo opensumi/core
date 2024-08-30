@@ -286,7 +286,6 @@
 .design-editor_tab_block_container {
   display: flex;
   align-items: center;
-  height: 36px;
   border-radius: 12px 12px 0 0;
   padding: 0 8px;
   margin-right: 0 !important;
@@ -295,7 +294,6 @@
     content: '';
     position: absolute;
     left: 0;
-    top: 12px;
     display: inline-block;
     width: 1px;
     height: 12px;
@@ -378,7 +376,6 @@
 * ---------------- Override editor component content block style ---------------------
 */
 .design-kt_editor_component {
-  padding-right: 2px;
   background-color: var(--panel-background);
 }
 
@@ -708,12 +705,6 @@
     }
   }
 
-  .design-tab_panel {
-    &::before {
-      content: none;
-    }
-  }
-
   .design-tab_panel_hidden {
     display: none;
   }
@@ -724,6 +715,12 @@
 
   .design-extension_item {
     border-radius: 8px;
+  }
+}
+
+.design-tab_panel {
+  &::before {
+    content: none !important;
   }
 }
 

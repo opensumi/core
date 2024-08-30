@@ -3,14 +3,9 @@ import net from 'net';
 
 import { ClassCreator, FactoryCreator, Injector, InstanceCreator } from '@opensumi/di';
 import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
-import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
+import { CommonChannelPathHandler, RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
-import {
-  CommonChannelHandler,
-  WebSocketHandler,
-  WebSocketServerRoute,
-  commonChannelPathHandler,
-} from '@opensumi/ide-connection/lib/node';
+import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
@@ -49,8 +44,9 @@ export function createServerConnection2(
   serverAppOpts: IServerAppOpts,
 ) {
   const logger = injector.get(INodeLogger);
+  const commonChannelPathHandler = injector.get(CommonChannelPathHandler);
   const socketRoute = new WebSocketServerRoute(server, logger);
-  const channelHandler = new CommonChannelHandler('/service', logger, {
+  const channelHandler = new CommonChannelHandler('/service', commonChannelPathHandler, logger, {
     pathMatchOptions: serverAppOpts.pathMatchOptions,
     wsServerOptions: serverAppOpts.wsServerOptions,
   });
@@ -74,8 +70,9 @@ export function createServerConnection2(
 
 export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
   const logger = injector.get(INodeLogger) as INodeLogger;
+  const commonChannelPathHandler = injector.get(CommonChannelPathHandler);
 
-  const handler = new ElectronChannelHandler(server, logger);
+  const handler = new ElectronChannelHandler(server, commonChannelPathHandler, logger);
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register(RPCServiceChannelPath, {
     handler: (channel: WSChannel, clientId: string) => {

@@ -1,9 +1,11 @@
-import * as glob from 'glob';
 import * as path from 'path';
-import { run } from './fn/shell';
-import * as fs from 'fs-extra';
-import { command } from 'execa';
+
 import chalk from 'chalk';
+import { command } from 'execa';
+import * as fs from 'fs-extra';
+import * as glob from 'glob';
+
+import { run } from './fn/shell';
 
 (async () => {
   await run('yarn run clean');

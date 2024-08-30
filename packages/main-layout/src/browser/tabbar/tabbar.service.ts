@@ -23,6 +23,7 @@ import {
   formatLocalize,
   getTabbarCtxKey,
   isDefined,
+  isUndefined,
   localize,
   toDisposable,
 } from '@opensumi/ide-core-browser';
@@ -64,6 +65,9 @@ export class TabbarService extends WithEventBus {
   @observable
   // currentContainerId 默认值应该为一个非空且唯一的字符串，避免在切换容器时触发 MobX 不变错误
   currentContainerId?: string = NONE_CONTAINER_ID;
+
+  private nextContainerId = '';
+  private useFirstContainerId = false;
 
   previousContainerId = '';
 
@@ -176,6 +180,14 @@ export class TabbarService extends WithEventBus {
 
   public setIsLatter(v: boolean) {
     this.isLatter = v;
+  }
+
+  updateNextContainerId(nextContainerId?: string) {
+    if (isUndefined(nextContainerId)) {
+      this.useFirstContainerId = true;
+    } else {
+      this.nextContainerId = nextContainerId;
+    }
   }
 
   @action
@@ -324,6 +336,15 @@ export class TabbarService extends WithEventBus {
   registerContainer(containerId: string, componentInfo: ComponentRegistryInfo) {
     if (this.containersMap.has(containerId)) {
       return;
+    }
+
+    if (this.useFirstContainerId) {
+      this.useFirstContainerId = false;
+      this.updateCurrentContainerId(containerId);
+    }
+
+    if (this.nextContainerId === containerId) {
+      this.updateCurrentContainerId(containerId);
     }
 
     const disposables = new DisposableCollection();

@@ -23,9 +23,33 @@ export const designInlineDiffAcceptPartialEdit = registerColor(
   true,
 );
 
+export const designInlineDiffAcceptPartialEditForeground = registerColor(
+  'aiNative.inlineDiffAcceptPartialEdit.foreground',
+  { dark: '#fff', light: '#fff', hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
 export const designInlineDiffDiscardPartialEdit = registerColor(
   'aiNative.inlineDiffDiscardPartialEdit',
   { dark: transparent(defaultRemoveColor, 3), light: transparent(defaultRemoveColor, 3), hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
+/**
+ * multi-line edits colors
+ */
+export const designMultiLineEditsDeletionsBackground = registerColor(
+  'aiNative.multiLineEditsDeletionsBackground',
+  { dark: defaultRemoveColor, light: defaultRemoveColor, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
+export const designMultiLineEditsAdditionsBackground = registerColor(
+  'aiNative.multiLineEditsAdditionsBackground',
+  { dark: defaultInsertColor, light: defaultInsertColor, hcDark: null, hcLight: null },
   '',
   true,
 );

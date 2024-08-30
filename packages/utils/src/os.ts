@@ -52,14 +52,3 @@ export function isElectronNode() {
 export function isDevelopment() {
   return safeGlobal.isDev || (typeof process !== 'undefined' && process.env.IS_DEV);
 }
-
-/**
- * 在 Electron 中，会将 opensumi 中的 extension-host 使用 webpack 打成一个，所以需要其他方法来获取原始的 require
- */
-declare let __webpack_require__: any;
-declare let __non_webpack_require__: any;
-
-// https://github.com/webpack/webpack/issues/4175#issuecomment-342931035
-export function getNodeRequire() {
-  return typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require;
-}

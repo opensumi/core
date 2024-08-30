@@ -5,7 +5,7 @@ import util from 'util';
 import { Autowired, Injectable } from '@opensumi/di';
 import { WSServerChannel } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { commonChannelPathHandler } from '@opensumi/ide-connection/lib/node';
+import { CommonChannelPathHandler } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   Emitter,
   Event,
@@ -95,6 +95,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   @Autowired(IExtensionHostManager)
   private extensionHostManager: IExtensionHostManager;
+
+  @Autowired(CommonChannelPathHandler)
+  private commonChannelPathHandler: CommonChannelPathHandler;
 
   private clientExtProcessMap: Map<string, number> = new Map();
   private clientExtProcessInspectPortMap: Map<string, number> = new Map();
@@ -298,6 +301,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       env: {
         // 显式设置 env，因为需要和插件运行环境的 env merge
         ...process.env,
+        ...options?.extHostSpawnOptions?.env,
       },
     };
     // 软链模式下的路径兼容性存在问题
@@ -383,6 +387,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         forkOptions.execArgv.push(`--inspect=${port}`);
       }
       this.clientExtProcessInspectPortMap.set(clientId, port);
+    }
+
+    if (options?.extHostSpawnOptions?.execArgv) {
+      forkOptions.execArgv = forkOptions.execArgv.concat(options.extHostSpawnOptions.execArgv);
     }
 
     const forkTimer = this.reporterService.time(`${clientId} fork ext process`);
@@ -507,7 +515,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private async _setMainThreadConnection(
     handler: (connectionResult: { channel: WSServerChannel; clientId: string }) => void,
   ) {
-    commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
+    this.commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
       handler: (channel: WSServerChannel, clientId: string) => {
         handler({
           channel,

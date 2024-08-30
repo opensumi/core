@@ -57,10 +57,13 @@ import {
   DIFF_SCHEME,
   Direction,
   EditorGroupSplitAction,
+  IDiffResource,
   IDocPersistentCacheProvider,
   IEditor,
   ILanguageService,
+  IResource,
   IResourceOpenOptions,
+  ResourceService,
   SaveReason,
   WorkbenchEditorService,
 } from '../common';
@@ -181,6 +184,9 @@ export class EditorContribution
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
+
+  @Autowired(ResourceService)
+  private readonly resourceService: ResourceService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@opensumi/ide-editor', {
@@ -796,28 +802,44 @@ export class EditorContribution
       },
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.GET_ENCODING, {
+      execute: (uri: URI) => {
+        if (!uri) {
+          return;
+        }
+
+        const ref = this.editorDocumentModelService.getModelDescription(uri);
+        if (!ref) {
+          return;
+        }
+
+        return ref.encoding;
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.CHANGE_ENCODING, {
-      execute: async () => {
+      execute: async (uri: URI) => {
         // TODO: 这里应该和 vscode 一样，可以 通过编码打开 和 通过编码保存
         // 但目前的磁盘文件对比使用的是文件字符串 md5 对比，导致更改编码时必定触发 diff，因此编码保存无法生效
         // 长期看 md5 应该更改为 mtime 和 size 才更可靠
-        const resource = this.workbenchEditorService.currentResource;
+        uri = uri ?? this.workbenchEditorService.currentResource?.uri;
         const documentModel = this.workbenchEditorService.currentEditor?.currentDocumentModel;
-        if (!resource || !documentModel) {
+        if (!uri) {
           return;
         }
 
         const configuredEncoding = this.preferenceService.get<string>(
           'files.encoding',
           'utf8',
-          resource.uri.toString(),
-          getLanguageIdFromMonaco(resource.uri)!,
+          uri.toString(),
+          getLanguageIdFromMonaco(uri)!,
         );
 
-        const provider = await this.contentRegistry.getProvider(resource.uri);
-        const guessedEncoding = await provider?.guessEncoding?.(resource.uri);
+        const provider = await this.contentRegistry.getProvider(uri);
+        const guessedEncoding = await provider?.guessEncoding?.(uri);
+        const ref = this.editorDocumentModelService.getModelDescription(uri);
+        const currentEncoding = documentModel?.encoding ?? ref?.encoding;
 
-        const currentEncoding = documentModel.encoding;
         let matchIndex: number | undefined;
         const encodingItems: QuickPickItem<string>[] = Object.keys(SUPPORTED_ENCODINGS)
           .sort((k1, k2) => {
@@ -871,10 +893,18 @@ export class EditorContribution
           return;
         }
 
-        const uris =
-          resource.uri.scheme === DIFF_SCHEME
-            ? [resource.metadata.original, resource.metadata.modified]
-            : [resource.uri];
+        const uris: URI[] = [];
+
+        if (uri.scheme === DIFF_SCHEME) {
+          const resource = (await this.resourceService.getResource(uri)) as IDiffResource;
+          if (resource.metadata) {
+            uris.push(resource.metadata.original);
+            uris.push(resource.metadata.modified);
+          }
+        } else {
+          uris.push(uri);
+        }
+
         uris.forEach((uri) => {
           this.editorDocumentModelService.changeModelOptions(uri, {
             encoding: selectedFileEncoding,

@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom/client';
 
 import { Disposable, Emitter, IEventBus } from '@opensumi/ide-core-common';
 
-import { DomListener } from '../dom';
+import { DomListener, addClassName, createClassNameTokens } from '../dom';
 import { AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '../menu/next';
 import { PreferenceService } from '../preferences';
 import { useInjectable } from '../react-hooks';
@@ -417,7 +417,7 @@ function renderToolbarLocation(
     const moreElement = document.createElement('div');
     moreElement.classList.add('kt-toolbar-more');
     const moreLink = document.createElement('div');
-    moreLink.classList.add(...getIcon('more').split(' '));
+    addClassName(moreLink, getIcon('more'));
     moreElement.append(moreLink);
     locationContainer.append(moreElement);
     moreLink.addEventListener('mousedown', () => {

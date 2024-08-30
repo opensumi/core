@@ -13,6 +13,7 @@ import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/ke
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { localize, registerLocalizationBundle } from '@opensumi/ide-core-common';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+import { TabbarRightExtraContentId } from '@opensumi/ide-editor';
 import { IKeymapService } from '@opensumi/ide-keymaps/lib/common/keymaps';
 import { KeybindingView } from '@opensumi/ide-quick-open/lib/browser/components/keybinding';
 
@@ -143,5 +144,11 @@ export class EditorEmptyComponentContribution implements ComponentContribution {
       component: EditorEmptyComponent,
       initialProps: {},
     });
+
+    // registry.register(TabbarRightExtraContentId, {
+    //   id: TabbarRightExtraContentId,
+    //   component: () => <button>buttonbuttonbuttonbutton</button>,
+    //   initialProps: {},
+    // });
   }
 }

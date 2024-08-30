@@ -3,6 +3,7 @@ import React from 'react';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Deferred, Disposable, IDisposable } from '@opensumi/ide-core-common';
 
+import { AppConfig, SlotRenderer } from '../../react-providers';
 import { RESIZE_LOCK } from '../resize/resize';
 
 import { SplitPanelProps } from './split-panel';
@@ -19,12 +20,16 @@ export interface ISplitPanelService extends IDisposable {
     props: SplitPanelProps,
   ): React.ReactElement;
   interceptProps(props: SplitPanelProps): SplitPanelProps;
+  checkChildNoResize(child: React.ReactNode): boolean;
   setRootNode(node: HTMLElement): void;
   whenReady: Promise<void>;
 }
 
 @Injectable({ multiple: true })
 export class SplitPanelService extends Disposable implements ISplitPanelService {
+  @Autowired(AppConfig)
+  appConfig: AppConfig;
+
   constructor(protected readonly panelId: string) {
     super();
   }
@@ -80,6 +85,17 @@ export class SplitPanelService extends Disposable implements ISplitPanelService 
         }
       }
     }
+  }
+
+  checkChildNoResize(child: React.ReactNode) {
+    if (child && (child as React.ReactElement).type === SlotRenderer) {
+      // slot render must have modules
+      const modules = this.appConfig.layoutConfig[(child as React.ReactElement).props?.slot]?.modules;
+      if (!modules || modules.length === 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public renderSplitPanel(component: React.JSX.Element, children: React.ReactNode[], props: SplitPanelProps) {

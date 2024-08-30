@@ -1,301 +1,301 @@
 {
   "meta": {
     "@opensumi/ide-addons": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-ai-native": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-collaboration": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-comments": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-components": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": []
     },
     "@opensumi/ide-connection": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-core-browser": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["common"]
     },
     "@opensumi/ide-core-common": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": []
     },
     "@opensumi/ide-core-electron-main": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": []
     },
     "@opensumi/ide-core-node": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": []
     },
     "@opensumi/ide-debug": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-decoration": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-design": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-editor": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-electron-basic": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser"]
     },
     "@opensumi/ide-explorer": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser"]
     },
     "@opensumi/ide-express-file-server": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-extension": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-extension-manager": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-extension-storage": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-file-scheme": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-file-search": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "common"]
     },
     "@opensumi/ide-file-service": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-file-tree-next": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-i18n": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-keymaps": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-logs": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-main-layout": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-markdown": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-markers": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-menu-bar": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser"]
     },
     "@opensumi/ide-monaco": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-monaco-enhance": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-opened-editor": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-outline": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-output": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-overlay": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-preferences": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-process": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "common"]
     },
     "@opensumi/ide-quick-open": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/remote-cli": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": []
     },
     "@opensumi/ide-remote-opener": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-scm": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-search": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-startup": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser"]
     },
     "@opensumi/ide-static-resource": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser"]
     },
     "@opensumi/ide-status-bar": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-storage": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-task": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-terminal-next": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["node", "browser", "common"]
     },
     "@opensumi/ide-testing": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-theme": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-toolbar": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser"]
     },
     "@opensumi/sumi": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": []
     },
     "@opensumi/ide-utils": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": []
     },
     "@opensumi/ide-variable": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-webview": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-workspace": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     },
     "@opensumi/ide-workspace-edit": {
-      "version": "3.1.4",
+      "version": "3.2.5",
       "entry": ["browser", "common"]
     }
   },
   "packages": {
-    "@opensumi/ide-addons": "3.1.4",
-    "@opensumi/ide-ai-native": "3.1.4",
-    "@opensumi/ide-collaboration": "3.1.4",
-    "@opensumi/ide-comments": "3.1.4",
-    "@opensumi/ide-components": "3.1.4",
-    "@opensumi/ide-connection": "3.1.4",
-    "@opensumi/ide-core-browser": "3.1.4",
-    "@opensumi/ide-core-common": "3.1.4",
-    "@opensumi/ide-core-electron-main": "3.1.4",
-    "@opensumi/ide-core-node": "3.1.4",
-    "@opensumi/ide-debug": "3.1.4",
-    "@opensumi/ide-decoration": "3.1.4",
-    "@opensumi/ide-design": "3.1.4",
-    "@opensumi/ide-editor": "3.1.4",
-    "@opensumi/ide-electron-basic": "3.1.4",
-    "@opensumi/ide-explorer": "3.1.4",
-    "@opensumi/ide-express-file-server": "3.1.4",
-    "@opensumi/ide-extension": "3.1.4",
-    "@opensumi/ide-extension-manager": "3.1.4",
-    "@opensumi/ide-extension-storage": "3.1.4",
-    "@opensumi/ide-file-scheme": "3.1.4",
-    "@opensumi/ide-file-search": "3.1.4",
-    "@opensumi/ide-file-service": "3.1.4",
-    "@opensumi/ide-file-tree-next": "3.1.4",
-    "@opensumi/ide-i18n": "3.1.4",
-    "@opensumi/ide-keymaps": "3.1.4",
-    "@opensumi/ide-logs": "3.1.4",
-    "@opensumi/ide-main-layout": "3.1.4",
-    "@opensumi/ide-markdown": "3.1.4",
-    "@opensumi/ide-markers": "3.1.4",
-    "@opensumi/ide-menu-bar": "3.1.4",
-    "@opensumi/ide-monaco": "3.1.4",
-    "@opensumi/ide-monaco-enhance": "3.1.4",
-    "@opensumi/ide-opened-editor": "3.1.4",
-    "@opensumi/ide-outline": "3.1.4",
-    "@opensumi/ide-output": "3.1.4",
-    "@opensumi/ide-overlay": "3.1.4",
-    "@opensumi/ide-preferences": "3.1.4",
-    "@opensumi/ide-process": "3.1.4",
-    "@opensumi/ide-quick-open": "3.1.4",
-    "@opensumi/remote-cli": "3.1.4",
-    "@opensumi/ide-remote-opener": "3.1.4",
-    "@opensumi/ide-scm": "3.1.4",
-    "@opensumi/ide-search": "3.1.4",
-    "@opensumi/ide-startup": "3.1.4",
-    "@opensumi/ide-static-resource": "3.1.4",
-    "@opensumi/ide-status-bar": "3.1.4",
-    "@opensumi/ide-storage": "3.1.4",
-    "@opensumi/ide-task": "3.1.4",
-    "@opensumi/ide-terminal-next": "3.1.4",
-    "@opensumi/ide-testing": "3.1.4",
-    "@opensumi/ide-theme": "3.1.4",
-    "@opensumi/ide-toolbar": "3.1.4",
-    "@opensumi/sumi": "3.1.4",
-    "@opensumi/ide-utils": "3.1.4",
-    "@opensumi/ide-variable": "3.1.4",
-    "@opensumi/ide-webview": "3.1.4",
-    "@opensumi/ide-workspace": "3.1.4",
-    "@opensumi/ide-workspace-edit": "3.1.4"
+    "@opensumi/ide-addons": "3.2.5",
+    "@opensumi/ide-ai-native": "3.2.5",
+    "@opensumi/ide-collaboration": "3.2.5",
+    "@opensumi/ide-comments": "3.2.5",
+    "@opensumi/ide-components": "3.2.5",
+    "@opensumi/ide-connection": "3.2.5",
+    "@opensumi/ide-core-browser": "3.2.5",
+    "@opensumi/ide-core-common": "3.2.5",
+    "@opensumi/ide-core-electron-main": "3.2.5",
+    "@opensumi/ide-core-node": "3.2.5",
+    "@opensumi/ide-debug": "3.2.5",
+    "@opensumi/ide-decoration": "3.2.5",
+    "@opensumi/ide-design": "3.2.5",
+    "@opensumi/ide-editor": "3.2.5",
+    "@opensumi/ide-electron-basic": "3.2.5",
+    "@opensumi/ide-explorer": "3.2.5",
+    "@opensumi/ide-express-file-server": "3.2.5",
+    "@opensumi/ide-extension": "3.2.5",
+    "@opensumi/ide-extension-manager": "3.2.5",
+    "@opensumi/ide-extension-storage": "3.2.5",
+    "@opensumi/ide-file-scheme": "3.2.5",
+    "@opensumi/ide-file-search": "3.2.5",
+    "@opensumi/ide-file-service": "3.2.5",
+    "@opensumi/ide-file-tree-next": "3.2.5",
+    "@opensumi/ide-i18n": "3.2.5",
+    "@opensumi/ide-keymaps": "3.2.5",
+    "@opensumi/ide-logs": "3.2.5",
+    "@opensumi/ide-main-layout": "3.2.5",
+    "@opensumi/ide-markdown": "3.2.5",
+    "@opensumi/ide-markers": "3.2.5",
+    "@opensumi/ide-menu-bar": "3.2.5",
+    "@opensumi/ide-monaco": "3.2.5",
+    "@opensumi/ide-monaco-enhance": "3.2.5",
+    "@opensumi/ide-opened-editor": "3.2.5",
+    "@opensumi/ide-outline": "3.2.5",
+    "@opensumi/ide-output": "3.2.5",
+    "@opensumi/ide-overlay": "3.2.5",
+    "@opensumi/ide-preferences": "3.2.5",
+    "@opensumi/ide-process": "3.2.5",
+    "@opensumi/ide-quick-open": "3.2.5",
+    "@opensumi/remote-cli": "3.2.5",
+    "@opensumi/ide-remote-opener": "3.2.5",
+    "@opensumi/ide-scm": "3.2.5",
+    "@opensumi/ide-search": "3.2.5",
+    "@opensumi/ide-startup": "3.2.5",
+    "@opensumi/ide-static-resource": "3.2.5",
+    "@opensumi/ide-status-bar": "3.2.5",
+    "@opensumi/ide-storage": "3.2.5",
+    "@opensumi/ide-task": "3.2.5",
+    "@opensumi/ide-terminal-next": "3.2.5",
+    "@opensumi/ide-testing": "3.2.5",
+    "@opensumi/ide-theme": "3.2.5",
+    "@opensumi/ide-toolbar": "3.2.5",
+    "@opensumi/sumi": "3.2.5",
+    "@opensumi/ide-utils": "3.2.5",
+    "@opensumi/ide-variable": "3.2.5",
+    "@opensumi/ide-webview": "3.2.5",
+    "@opensumi/ide-workspace": "3.2.5",
+    "@opensumi/ide-workspace-edit": "3.2.5"
   }
 }

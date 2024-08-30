@@ -49,7 +49,7 @@ export class MenuItemNode extends MenuNode {
     @Optional() nativeRole?: string,
     @Optional() extraDesc?: string,
     @Optional() private extraTailArgs?: any[],
-    @Optional() private argsTransformer?: (...args: any[]) => any[],
+    @Optional() public argsTransformer?: (...args: any[]) => any[],
   ) {
     super({
       id: item.id,

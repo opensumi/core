@@ -72,6 +72,10 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     this.terminalHandlerMap.clear();
   }
 
+  private updateActions(id: string, operational: AIActionItem): void {
+    this.actionsMap.set(id, operational);
+  }
+
   private collectActions(operational: AIActionItem): boolean {
     const { id } = operational;
 
@@ -155,16 +159,31 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
       this.interactiveInputModel.setStrategyHandler(() => runStrategy.strategy || ERunStrategy.EXECUTE);
     }
 
-    const keybindingStr = String(this.getSequenceKeyString());
+    const doCollect = () => {
+      const keybindingStr = String(this.getSequenceKeyString());
+      if (keybindingStr) {
+        const operational: AIActionItem = {
+          id: InteractiveInputModel.ID,
+          name: `Chat(${keybindingStr.toLocaleUpperCase()})`,
+          renderType: 'button',
+          order: Number.MAX_SAFE_INTEGER,
+        };
 
-    if (keybindingStr) {
-      this.collectActions({
-        id: InteractiveInputModel.ID,
-        name: `Chat(${keybindingStr.toLocaleUpperCase()})`,
-        renderType: 'button',
-        order: Number.MAX_SAFE_INTEGER,
-      });
-    }
+        if (this.actionsMap.has(operational.id)) {
+          this.updateActions(operational.id, operational);
+        } else {
+          this.collectActions(operational);
+        }
+      }
+    };
+
+    this.addDispose(
+      Event.filter(this.keybindingRegistry.onKeybindingsChanged, ({ affectsCommands }) =>
+        affectsCommands.includes(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id),
+      )(() => doCollect()),
+    );
+
+    doCollect();
 
     return {
       dispose: () => {

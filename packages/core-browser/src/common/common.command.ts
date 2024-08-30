@@ -462,6 +462,11 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const GET_ENCODING: Command = {
+    id: 'editor.getEncoding',
+    category: CATEGORY,
+  };
+
   export const CHANGE_EOL: Command = {
     id: 'editor.changeEol',
     category: CATEGORY,

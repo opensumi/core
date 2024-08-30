@@ -163,6 +163,12 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
   private now(): string {
     const now = new Date();
     return (
+      padLeft(now.getFullYear() + '', 4, '0') +
+      '-' +
+      padLeft(now.getMonth() + 1 + '', 2, '0') +
+      '-' +
+      padLeft(now.getDate() + '', 2, '0') +
+      ' ' +
       padLeft(now.getUTCHours() + '', 2, '0') +
       ':' +
       padLeft(now.getMinutes() + '', 2, '0') +
@@ -173,8 +179,25 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
     );
   }
 
+  private label(level: types.OutputChannelLogLevel) {
+    switch (level) {
+      case types.OutputChannelLogLevel.Trace:
+        return 'trace';
+      case types.OutputChannelLogLevel.Error:
+        return 'error';
+      case types.OutputChannelLogLevel.Warning:
+        return 'warning';
+      case types.OutputChannelLogLevel.Info:
+        return 'info';
+      case types.OutputChannelLogLevel.Debug:
+        return 'debug';
+      default:
+        return '';
+    }
+  }
+
   private logWithLevel(level: types.OutputChannelLogLevel, message: string, data?: any): void {
-    this.append(`[${level}  - ${this.now()}] ${message}`);
+    this.append(`${this.now()} [${this.label(level)}] ${message}`);
     if (data) {
       this.append(this.data2String(data));
     }

@@ -1,10 +1,12 @@
 import * as path from 'path';
-import * as glob from 'glob';
+
 import * as fs from 'fs-extra';
-import { packagesDir, toolsDir } from './dir-constants';
-import { run } from './shell';
+import * as glob from 'glob';
 import camelCase from 'lodash/camelCase';
 import upperFirst from 'lodash/upperFirst';
+
+import { packagesDir, toolsDir } from './dir-constants';
+import { run } from './shell';
 
 const templateDir = path.join(toolsDir, '/template');
 const templatePattern = path.join(templateDir, '/**');
@@ -48,9 +50,7 @@ export async function createPackage(name: string) {
     if (stat.isFile()) {
       const buffer = await fs.readFile(filePath, 'utf-8');
 
-      const content = replaceList.reduce((ret, [reg, value]) => {
-        return ret.replace(reg, value);
-      }, buffer.toString());
+      const content = replaceList.reduce((ret, [reg, value]) => ret.replace(reg, value), buffer.toString());
 
       const relativePath = path.relative(templateDir, filePath);
       const resultPath = path.join(packagesDir, name, relativePath);

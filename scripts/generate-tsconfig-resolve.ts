@@ -1,5 +1,6 @@
-import fse from 'fs-extra';
 import path from 'path';
+
+import fse from 'fs-extra';
 
 const packagesPath = path.join(__dirname, '../packages');
 const referenceDirPath = path.join(__dirname, '../configs/ts/references');

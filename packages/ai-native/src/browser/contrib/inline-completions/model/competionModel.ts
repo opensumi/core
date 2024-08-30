@@ -1,5 +1,6 @@
-import { IAICompletionResultModel } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
+
+import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
 
 /**
  * 缓存的结果
@@ -48,7 +49,7 @@ export interface CompletionResultModelCache {
   /**
    * 缓存结果
    */
-  completionResultModel: IAICompletionResultModel | null;
+  completionResultModel: IIntelligentCompletionsResult | null;
 }
 
 /**

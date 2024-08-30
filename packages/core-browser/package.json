@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-browser",
-  "version": "3.1.4",
+  "version": "3.2.5",
   "description": "@opensumi/ide-core-browser",
   "files": [
     "lib",
@@ -32,8 +32,6 @@
     "mobx": "^6.12.0",
     "mobx-react-lite": "^4.0.5",
     "react": "^18.2.0",
-    "react-ctxmenu-trigger": "^1.0.0",
-    "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^18.2.0",
     "react-is": "^18.2.0",
     "react-window": "^1.8.5",

@@ -12,7 +12,7 @@ import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.servic
 import { AICompletionsService } from '../../contrib/inline-completions/service/ai-completions.service';
 import { InlineInputPreviewDecorationID } from '../internal.type';
 
-import { InlineHintLineWidget } from './inline-hint-line-widget';
+import { InlineHintLineDecoration } from './inline-hint-line-widget';
 
 @Injectable()
 export class InlineHintHandler extends Disposable {
@@ -58,20 +58,20 @@ export class InlineHintHandler extends Disposable {
       );
 
       if (isEmpty && isEmptySelection && !hasPreviewDecoration) {
-        const inlineHintLineWidget = this.injector.get(InlineHintLineWidget, [monacoEditor]);
-        inlineHintLineWidget.show({ position });
+        const inlineHintLineDecoration = this.injector.get(InlineHintLineDecoration, [monacoEditor]);
+        inlineHintLineDecoration.show(position);
         currentVisiblePosition = position;
 
         this.aiNativeContextKey.inlineHintWidgetIsVisible.set(true);
 
         hintDisposable.addDispose(
-          inlineHintLineWidget.onDispose(() => {
+          inlineHintLineDecoration.onDispose(() => {
             currentVisiblePosition = undefined;
             this.aiNativeContextKey.inlineHintWidgetIsVisible.set(false);
           }),
         );
 
-        hintDisposable.addDispose(inlineHintLineWidget);
+        hintDisposable.addDispose(inlineHintLineDecoration);
       }
     };
 

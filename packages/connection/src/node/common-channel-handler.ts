@@ -3,11 +3,9 @@ import WebSocket from 'ws';
 
 import { ILogger } from '../common';
 import { WSWebSocketConnection } from '../common/connection';
-import { BaseCommonChannelHandler, commonChannelPathHandler } from '../common/server-handler';
+import { BaseCommonChannelHandler, CommonChannelPathHandler } from '../common/server-handler';
 
 import { CommonChannelHandlerOptions, WebSocketHandler } from './ws';
-
-export { commonChannelPathHandler };
 
 export interface WebSocketConnection extends WebSocket {
   routeParam: {
@@ -22,8 +20,13 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
   private wsServer: WebSocket.Server;
   protected handlerRoute: MatchFunction;
 
-  constructor(routePath: string, logger: ILogger = console, private options: CommonChannelHandlerOptions = {}) {
-    super('node-channel-handler', logger);
+  constructor(
+    routePath: string,
+    protected commonChannelPathHandler: CommonChannelPathHandler,
+    logger: ILogger = console,
+    private options: CommonChannelHandlerOptions = {},
+  ) {
+    super('node-channel-handler', commonChannelPathHandler, logger);
     this.handlerRoute = match(routePath, options.pathMatchOptions);
     this.initWSServer();
   }

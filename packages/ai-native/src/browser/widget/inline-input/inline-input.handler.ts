@@ -4,9 +4,11 @@ import {
   CancellationTokenSource,
   Disposable,
   Event,
+  FRAME_THREE,
   IDisposable,
   InlineChatFeatureRegistryToken,
   ReplyResponse,
+  RunOnceScheduler,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
@@ -72,8 +74,8 @@ export class InlineInputHandler extends Disposable {
       return;
     }
 
-    if (strategy === ERunStrategy.PREVIEW && handler.providerPreviewStrategy) {
-      const previewResponse = await handler.providerPreviewStrategy(monacoEditor, value, this.cancelIndicator.token);
+    if (strategy === ERunStrategy.PREVIEW && handler.providePreviewStrategy) {
+      const previewResponse = await handler.providePreviewStrategy(monacoEditor, value, this.cancelIndicator.token);
 
       if (CancelResponse.is(previewResponse)) {
         widget.launchChatStatus(EInlineChatStatus.READY);
@@ -86,25 +88,28 @@ export class InlineInputHandler extends Disposable {
 
         controller.listen();
 
+        let latestContent: string | undefined;
+        const schedulerEdit: RunOnceScheduler = this.registerDispose(
+          new RunOnceScheduler(() => {
+            const range = decoration.getRange(0);
+
+            if (range && latestContent) {
+              model.pushEditOperations(null, [EditOperation.replace(range, latestContent)], () => null);
+            }
+          }, 16 * 12.5),
+        );
+
         inputDisposable.addDispose([
           controller.onData(async (data) => {
             if (!ReplyResponse.is(data)) {
               return;
             }
 
-            const { message } = data;
+            latestContent = data.message;
 
-            model.pushEditOperations(
-              null,
-              [
-                // 直接用 EditOperation.insert 会有问题
-                {
-                  range: monaco.Range.fromPositions(decoration.getRange(0)!.getEndPosition()),
-                  text: message,
-                },
-              ],
-              () => null,
-            );
+            if (!schedulerEdit.isScheduled()) {
+              schedulerEdit.schedule();
+            }
           }),
           controller.onError((error) => {
             widget.launchChatStatus(EInlineChatStatus.ERROR);
@@ -217,7 +222,7 @@ export class InlineInputHandler extends Disposable {
         Event.debounce(
           collection.onDidChange.bind(collection),
           () => {},
-          16 * 3,
+          FRAME_THREE,
         )(() => {
           if (!collection.getRange(0)) {
             return;

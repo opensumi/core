@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/errors.ts
 
+import { isDefined } from './types';
+
 export type ErrorListenerCallback = (error: any) => void;
 
 export type ErrorListenerUnbind = () => void;
@@ -190,7 +192,7 @@ function serializeErrorReplacer(key: string, value: any) {
 }
 
 export function errorReviver(key: string, value: any): Error {
-  if (typeof value === 'object' && value.$isError) {
+  if (isDefined(value) && value.$isError) {
     const result = new Error(value.message);
     result.name = value.name;
     result.stack = value.stack;

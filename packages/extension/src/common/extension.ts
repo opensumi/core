@@ -5,6 +5,7 @@ import {
   Deferred,
   Disposable,
   Emitter,
+  ExtHostSpawnOptions,
   ExtensionConnectOption,
   IAppLifeCycleService,
   IDisposable,
@@ -76,6 +77,7 @@ export interface ICreateProcessOptions {
    * 插件进程连接时候一些配置选项
    */
   extensionConnectOption?: ExtensionConnectOption;
+  extHostSpawnOptions?: ExtHostSpawnOptions;
 }
 
 export const IExtensionNodeService = Symbol('IExtensionNodeService');

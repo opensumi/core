@@ -181,8 +181,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     this.cachedFileStat.delete(resource.uri.toString());
   }
   async shouldCloseResourceWithoutConfirm(resource: IResource) {
-    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
-    if (documentModelRef && documentModelRef.instance.dirty) {
+    const documentModelRef = this.documentModelService.getModelDescription(resource.uri, 'close-resource-check');
+    if (documentModelRef && documentModelRef.dirty) {
       return true;
     }
     return false;
@@ -204,6 +204,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       documentModelRef.dispose();
       return false;
     } else {
+      documentModelRef.dispose();
       return true;
     }
   }
@@ -222,11 +223,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
         }
       }
     }
-    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
-    if (!documentModelRef || !documentModelRef.instance.dirty) {
-      if (documentModelRef) {
-        documentModelRef.dispose();
-      }
+    const documentModelRef = this.documentModelService.getModelDescription(resource.uri, 'close-resource-check');
+    if (!documentModelRef || !documentModelRef.dirty) {
       return true;
     }
 

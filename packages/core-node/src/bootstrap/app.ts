@@ -7,6 +7,7 @@ import path from 'path';
 import Koa from 'koa';
 
 import { Injector } from '@opensumi/di';
+import { injectConnectionProviders } from '@opensumi/ide-connection/lib/common/server-handler';
 import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
 import {
   ContributionProvider,
@@ -114,6 +115,7 @@ export class ServerApp implements IServerApp {
       useValue: this.config,
     });
     injectInnerProviders(this.injector);
+    injectConnectionProviders(this.injector);
   }
 
   private async initializeContribution() {

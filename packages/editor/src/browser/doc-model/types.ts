@@ -11,7 +11,7 @@ import {
 import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
-import { IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
+import { IEditorDocumentDescription, IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
 
 export { IDocModelUpdateOptions } from '../../common/types';
 export interface IEditorDocumentModelContentProvider {
@@ -126,6 +126,7 @@ export interface IEditorDocumentModelService {
    * 当文档从来没有被打开过时，返回null
    */
   getModelReference(uri: URI, reason?: string): IEditorDocumentModelRef | null;
+  getModelDescription(uri: URI, reason?: string): IEditorDocumentDescription | null;
 
   /**
    * 获得全部model
@@ -189,6 +190,7 @@ export interface IEditorDocumentModelOptionChangedEventPayload {
   encoding?: string;
   languageId?: string;
   eol?: EOL;
+  dirty?: boolean;
 }
 
 export class EditorDocumentModelCreationEvent extends BasicEvent<IEditorDocumentModelCreationEventPayload> {}

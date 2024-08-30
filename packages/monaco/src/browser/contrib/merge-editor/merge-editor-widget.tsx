@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor, IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { Disposable, Event, IRange, ISelection, URI } from '@opensumi/ide-core-common';
+import { Disposable, IRange, ISelection, URI } from '@opensumi/ide-core-common';
 import { Selection } from '@opensumi/monaco-editor-core';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IDimension } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/dimension';
@@ -15,12 +15,9 @@ import {
   IEditorViewState,
   ScrollType,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { ILanguageSelection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelDecorationsChangeAccessor, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 
 import { ICodeEditor, IDiffEditorOptions, IEditorOptions, IModelDeltaDecoration } from '../../monaco-api/editor';
-import { StandaloneServices } from '../../monaco-api/services';
 import { IPosition, Position } from '../../monaco-api/types';
 
 import { MergeEditorService } from './merge-editor.service';
@@ -98,16 +95,9 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     this.outputUri = output.uri;
     const uniqueKey = this.outputUri.toString();
 
-    const modelService = StandaloneServices.get(IModelService);
-    const languageSelection: ILanguageSelection = {
-      languageId: (ancestor.textModel as ITextModel).getLanguageId(),
-      onDidChange: Event.None,
-    };
-    const ancestorModel = modelService.createModel(ancestor.baseContent, languageSelection);
-
     this.setModel({
       ours: input1.textModel as ITextModel,
-      result: ancestorModel,
+      result: ancestor.textModel as ITextModel,
       theirs: input2.textModel as ITextModel,
     });
 

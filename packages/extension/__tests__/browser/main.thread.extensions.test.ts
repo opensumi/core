@@ -29,6 +29,7 @@ import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.
 import { MainThreadExtensionLog } from '../../src/browser/vscode/api/main.thread.log';
 import { MainThreadStorage } from '../../src/browser/vscode/api/main.thread.storage';
 import { ExtensionNodeServiceServerPath } from '../../src/common';
+import { ExtHostAppConfig } from '../../src/common/ext.process';
 import { MainThreadExtensionLogIdentifier } from '../../src/common/extension-log';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import * as types from '../../src/common/vscode/ext-types';
@@ -68,6 +69,10 @@ describe('MainThreadExtensions Test Suites', () => {
     {
       token: IReporter,
       useClass: DefaultReporter,
+    },
+    {
+      token: ExtHostAppConfig,
+      useValue: {},
     },
   );
   const injector = createBrowserInjector(

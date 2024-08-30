@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-extension",
-  "version": "3.1.4",
+  "version": "3.2.5",
   "files": [
     "lib",
     "hosted"
@@ -22,6 +22,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@opensumi/events": "^1.0.0",
     "@opensumi/ide-connection": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
@@ -29,10 +30,11 @@
     "@opensumi/ide-file-search": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
     "@opensumi/ide-logs": "workspace:*",
+    "@opensumi/ide-markdown": "workspace:*",
     "@opensumi/ide-task": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
+    "@opensumi/ide-utils": "workspace:*",
     "@opensumi/ide-webview": "workspace:*",
-    "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
     "address": "^1.1.2",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",

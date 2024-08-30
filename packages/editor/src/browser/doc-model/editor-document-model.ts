@@ -45,7 +45,7 @@ import {
   isDocContentCache,
   parseRangeFrom,
 } from '../../common';
-import { IEditorDocumentModel } from '../../common/editor';
+import { AUTO_SAVE_MODE, IEditorDocumentModel } from '../../common/editor';
 import { EditorPreferences } from '../preference/schema';
 import { createEditorPreferenceProxy } from '../preference/util';
 import { CompareResult, ICompareService } from '../types';
@@ -360,7 +360,36 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this.monacoModel;
   }
 
+  async syncDocumentModelToExtThread() {
+    await this.eventBus.fireAndAwait(
+      new EditorDocumentModelOptionChangedEvent({
+        uri: this.uri,
+        languageId: this.languageId,
+        encoding: this.encoding,
+        eol: this.eol,
+        dirty: this.dirty,
+      }),
+    );
+  }
+
   async save(force = false, reason: SaveReason = SaveReason.Manual): Promise<boolean> {
+    if (!this.dirty) {
+      // 如果文档内容没有变化，则只同步新状态到插件进程
+      await this.syncDocumentModelToExtThread();
+      return false;
+    }
+
+    const provider = await this.contentRegistry.getProvider(this.uri);
+    const isReadonly = await provider?.isReadonly(this.uri);
+
+    /**
+     * 只读文件不允许保存
+     * https://github.com/microsoft/vscode/blob/main/src/vscode-dts/vscode.d.ts#L13675
+     */
+    if (isReadonly) {
+      return false;
+    }
+
     const doSave = async (force = false, reason: SaveReason = SaveReason.Manual) => {
       await this.formatOnSave(reason);
       // 发送willSave并等待完成
@@ -635,7 +664,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = [], isRedoing: boolean, isUndoing: boolean) {
-    if (!this.closeAutoSave && this.savable && this.editorPreferences['editor.autoSave'] === 'afterDelay') {
+    if (
+      !this.closeAutoSave &&
+      this.savable &&
+      this.editorPreferences['editor.autoSave'] === AUTO_SAVE_MODE.AFTER_DELAY
+    ) {
       this.tryAutoSaveAfterDelay();
     }
     // 发出内容变化的事件

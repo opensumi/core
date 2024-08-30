@@ -175,6 +175,8 @@ export interface IChatAgentResult {
 export interface IChatAgentCommand {
   name: string;
   description: string;
+  // Whether it is a shortcut command (for display on input)
+  isShortcut?: true;
 }
 
 export interface IChatReplyFollowup {

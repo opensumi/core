@@ -154,8 +154,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   restoreTabbarService = async (service: TabbarService) => {
-    await service.viewReady.promise;
-
     this.state = this.layoutState.getState(LAYOUT_STATE.MAIN, {
       [SlotLocation.left]: {
         currentId: undefined,
@@ -197,12 +195,29 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         defaultContainer = '';
       }
     }
+    /**
+     * ContainerId 存在三种值类型，对应的处理模式如下：
+     * 1. undefined: 采用首个注册的容器作为当前 containerId
+     * 2. string: 直接使用该 containerId 作为当前 containerId
+     * 3. '': 直接清空当前 containerId，不展开相应的 viewContainer
+     */
     if (isUndefined(currentId)) {
-      service.updateCurrentContainerId(defaultContainer);
-    } else {
-      service.updateCurrentContainerId(
-        currentId ? (service.containersMap.has(currentId) ? currentId : defaultContainer) : '',
-      );
+      if (isUndefined(defaultContainer)) {
+        // 默认采用首个注册的容器作为当前 containerId
+        service.updateNextContainerId();
+      } else {
+        service.updateCurrentContainerId(defaultContainer);
+      }
+    } else if (currentId) {
+      if (service.containersMap.has(currentId)) {
+        service.updateCurrentContainerId(currentId);
+      } else {
+        service.updateCurrentContainerId(defaultContainer);
+        // 等待后续新容器注册时，更新当前的 containerId
+        service.updateNextContainerId(currentId);
+      }
+    } else if (currentId === '') {
+      service.updateCurrentContainerId('');
     }
   };
 

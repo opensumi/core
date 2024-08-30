@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-status-bar",
-  "version": "3.1.4",
+  "version": "3.2.5",
   "files": [
     "lib",
     "src"
@@ -17,9 +17,9 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@opensumi/events": "^1.0.0",
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
-    "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {

@@ -13,10 +13,15 @@
 .inline_diff_remove_zone_widget_container {
   width: calc(100% + 10px);
 
-  .inline_diff_remove_zone {
-    background-color: var(--aiNative-inlineDiffRemovedRange);
+  .inline_diff_remove_zone_fixed_box {
+    overflow: hidden;
     height: 100%;
-    width: 100%;
+    position: relative;
+
+    .inline_diff_remove_zone {
+      background-color: var(--aiNative-inlineDiffRemovedRange);
+      height: inherit;
+    }
   }
 }
 
@@ -29,6 +34,8 @@
   width: 1e6px;
 }
 
+@line-height: 18px;
+
 .inline_diff_accept_partial_widget_container {
   width: 100%;
 
@@ -37,7 +44,10 @@
     display: flex;
     border-radius: 4px;
     overflow: hidden;
-    margin-right: 10px;
+    margin-right: 12px;
+    max-height: @line-height;
+    height: @line-height;
+    align-items: center;
   }
 
   .btn {
@@ -45,16 +55,17 @@
     border: none;
     font-size: 12px;
     cursor: pointer;
-    padding: 2px;
+    padding: 2px 6px;
+    height: @line-height;
 
     &.accept_btn {
       background-color: var(--aiNative-inlineDiffAcceptPartialEdit);
-      color: #fff;
+      color: var(--aiNative-inlineDiffAcceptPartialEdit-foreground);
     }
 
     &.discard_btn {
       background-color: var(--aiNative-inlineDiffDiscardPartialEdit);
-      color: #fff;
+      color: var(--aiNative-inlineDiffAcceptPartialEdit-foreground);
     }
   }
 }

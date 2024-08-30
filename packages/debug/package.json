@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-debug",
-  "version": "3.1.4",
+  "version": "3.2.5",
   "files": [
     "lib",
     "src"
@@ -23,11 +23,13 @@
     "@opensumi/ide-file-service": "workspace:*",
     "@opensumi/ide-task": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
-    "@rjsf/core": "5.5.2",
-    "@rjsf/utils": "5.5.2",
-    "@rjsf/validator-ajv6": "5.4.0",
+    "@opensumi/ide-utils": "workspace:*",
+    "@rjsf/core": "5.20.0",
+    "@rjsf/utils": "5.20.0",
+    "@rjsf/validator-ajv6": "5.20.0",
     "anser": "^2.1.1",
-    "btoa": "^1.2.1"
+    "btoa": "^1.2.1",
+    "react-virtualized-auto-sizer": "^1.0.2"
   },
   "devDependencies": {
     "@opensumi/ide-components": "workspace:*",

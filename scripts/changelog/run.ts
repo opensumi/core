@@ -1,10 +1,12 @@
-import simpleGit from 'simple-git';
-import groupBy from 'lodash/groupBy';
 import fs from 'fs';
 import path from 'path';
-import { formatBytes, getType, getChangelog, getNickNameDesc, prettyDate } from './util';
+
+import groupBy from 'lodash/groupBy';
+import simpleGit from 'simple-git';
+
 import * as Github from './github';
 import { ICommitLogFields } from './types';
+import { formatBytes, getChangelog, getNickNameDesc, getType, prettyDate } from './util';
 
 const OTHER_CHANGE_FIELD_KEY = '其他改动';
 const RELEASE_VERSION_REGEX = /^v\d+\.\d+\.\d+$/;
@@ -56,15 +58,13 @@ function convertToEnglishType(type: string) {
 
 function convertToMarkdown(logs: ICommitLogFields[]) {
   const extendedLogs = logs
-    .map((log) => {
-      return {
-        ...log,
-        changelog: getChangelog(log.pullRequestDescription),
-        type: convertToEnglishType(getType(log.pullRequestDescription) || OTHER_CHANGE_FIELD_KEY),
-        href: Github.getPullRequestLink(log.pullRequestId),
-        nickNameDesc: getNickNameDesc(log.author_name, log.loginName),
-      };
-    })
+    .map((log) => ({
+      ...log,
+      changelog: getChangelog(log.pullRequestDescription),
+      type: convertToEnglishType(getType(log.pullRequestDescription) || OTHER_CHANGE_FIELD_KEY),
+      href: Github.getPullRequestLink(log.pullRequestId),
+      nickNameDesc: getNickNameDesc(log.author_name, log.loginName),
+    }))
     .filter((log) => !!log.changelog);
 
   const prTypedList = groupBy(extendedLogs, 'type');
@@ -92,19 +92,18 @@ function convertToMarkdown(logs: ICommitLogFields[]) {
         }
         return a.localeCompare(b);
       })
-      .map((type) => {
-        return [`#### ${type}`].concat(
+      .map((type) =>
+        [`#### ${type}`].concat(
           ...(prTypedList[type]
-            ? prTypedList[type].map((commit) => {
-                return (
+            ? prTypedList[type].map(
+                (commit) =>
                   `- ${commit.changelog || commit.message}` +
                   ` [#${commit.pullRequestId}](${commit.href})` +
-                  ` by ${commit.nickNameDesc}`
-                );
-              })
+                  ` by ${commit.nickNameDesc}`,
+              )
             : []),
-        );
-      }),
+        ),
+      ),
   );
 }
 
@@ -115,8 +114,8 @@ function convertToMarkdown(logs: ICommitLogFields[]) {
  */
 function readLogs(from: string, to: string) {
   return git.log({
-    from: from,
-    to: to,
+    from,
+    to,
     // symmetric revision range cannot works
     // symmetric: `${from}...${to}`
   });
@@ -144,8 +143,8 @@ async function getTagsByV(isRemote?: boolean) {
 
 async function findSymmetricRevision(isRemote: boolean = false) {
   const tagList = await getTagsByV(isRemote);
-  let tagA: string | undefined = undefined;
-  let tagB: string | undefined = undefined;
+  let tagA: string | undefined;
+  let tagB: string | undefined;
   for (const tag of tagList) {
     if (tagB === undefined && RELEASE_VERSION_REGEX.test(tag)) {
       tagB = tag;
