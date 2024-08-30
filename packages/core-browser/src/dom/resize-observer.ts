@@ -1,6 +1,6 @@
 import { DisposableStore, Emitter, IDisposable } from '@opensumi/ide-core-common';
 
-import { fastdom } from '.';
+import fastdom from './fastdom';
 
 export interface IDimension {
   width: number;
