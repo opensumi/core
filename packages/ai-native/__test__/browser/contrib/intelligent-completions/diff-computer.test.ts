@@ -1,11 +1,7 @@
-import { MultiLineDiffComputer } from '@opensumi/ide-ai-native/lib/browser/contrib/intelligent-completions/diff-computer';
+import { multiLineDiffComputer } from '@opensumi/ide-ai-native/lib/browser/contrib/intelligent-completions/diff-computer';
 
 describe('MultiLineDiffComputer', () => {
-  let diffComputer: MultiLineDiffComputer;
-
-  beforeEach(() => {
-    diffComputer = new MultiLineDiffComputer();
-  });
+  const diffComputer = multiLineDiffComputer;
 
   test('equals method should return true for equal strings', () => {
     expect(diffComputer['equals']('a', 'a')).toBe(true);

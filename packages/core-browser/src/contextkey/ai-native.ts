@@ -5,4 +5,4 @@ export const InlineCompletionIsTrigger = new RawContextKey('ai.native.inlineComp
 export const InlineHintWidgetIsVisible = new RawContextKey('ai.native.inlineHintWidgetIsVisible', false);
 export const InlineInputWidgetIsVisible = new RawContextKey('ai.native.inlineInputWidgetIsVisible', false);
 export const InlineDiffPartialEditsIsVisible = new RawContextKey('ai.native.inlineDiffPartialEditsIsVisible', false);
-export const MultiLineCompletionsIsVisible = new RawContextKey('ai.native.multiLineCompletionsIsVisible', false);
+export const MultiLineEditsIsVisible = new RawContextKey('ai.native.multiLineEditsIsVisible', false);

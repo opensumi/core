@@ -432,12 +432,19 @@ export class AINativeContribution implements AINativeCoreContribution {
       };
 
       const insertRandomStrings = (originalString) => {
-        const numberOfInserts = Math.floor(Math.random() * 3) + 1;
+        const minChanges = 2;
+        const maxChanges = 5;
+        const changesCount = Math.floor(Math.random() * (maxChanges - minChanges + 1)) + minChanges;
         let modifiedString = originalString;
-        for (let i = 0; i < numberOfInserts; i++) {
-          const randomString = getRandomString(Math.floor(Math.random() * 2) + 1);
-          const position = Math.floor(Math.random() * (modifiedString.length + 1));
-          modifiedString = modifiedString.slice(0, position) + randomString + modifiedString.slice(position);
+        for (let i = 0; i < changesCount; i++) {
+          const randomIndex = Math.floor(Math.random() * originalString.length);
+          const operation = Math.random() < 0.5 ? 'delete' : 'insert';
+          if (operation === 'delete') {
+            modifiedString = modifiedString.slice(0, randomIndex) + modifiedString.slice(randomIndex + 1);
+          } else {
+            const randomChar = getRandomString(1);
+            modifiedString = modifiedString.slice(0, randomIndex) + randomChar + modifiedString.slice(randomIndex);
+          }
         }
         return modifiedString;
       };
