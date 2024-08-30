@@ -212,6 +212,10 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
     this._group = group;
   }
 
+  get isPending(): boolean {
+    return this.status === 'pending';
+  }
+
   public accept(addedLinesCount: number, deletedLinesCount: number): void {
     this.status = 'accept';
     this.addedLinesCount = addedLinesCount;
