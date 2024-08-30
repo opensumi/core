@@ -1,5 +1,6 @@
 import * as path from 'path';
-import { packagesDir, packageName } from './dir-constants';
+
+import { packageName, packagesDir } from './dir-constants';
 import { run } from './shell';
 
 export function getPkgFromFolder(folderName: string) {
@@ -23,5 +24,5 @@ export async function addBrowserDep(depName: string) {
 
 export async function addDep(depName: string, pkgName: string) {
   await run(`npx lerna add ${depName} --scope ${pkgName}`);
-  await run(`yarn run init`);
+  await run('yarn run init');
 }

@@ -1,5 +1,7 @@
-import fse from 'fs-extra';
 import path from 'path';
+
+import fse from 'fs-extra';
+
 import { startFromFolder } from './fn/module';
 import { run } from './fn/shell';
 
