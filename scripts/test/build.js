@@ -1,12 +1,13 @@
-const fs = require('fs-extra');
 const path = require('path');
+
+const fs = require('fs-extra');
 const glob = require('glob');
 
 const dirs = [
   // 'browser',
   'node',
   'common',
-]
+];
 
 const cwd = process.cwd();
 const packages = fs.readdirSync(cwd + '/packages');

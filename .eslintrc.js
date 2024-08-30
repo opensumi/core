@@ -235,6 +235,14 @@ module.exports = {
       },
     },
     {
+      files: ['scripts/**'],
+      rules: {
+        'no-restricted-imports': 0,
+        'no-console': 0,
+        'import/no-relative-packages': 0,
+      },
+    },
+    {
       files: ['__tests__/**', 'tests/**'],
       plugins: ['jest'],
       extends: ['plugin:jest/recommended'],

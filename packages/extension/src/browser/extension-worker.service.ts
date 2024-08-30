@@ -255,6 +255,10 @@ export class WorkerExtProcessService
     return Object.assign({}, extension.toJSON(), { workerScriptPath });
   }
 
+  getSpawnOptions() {
+    return {};
+  }
+
   dispose(): void {
     super.dispose();
     this.disposeApiFactory();

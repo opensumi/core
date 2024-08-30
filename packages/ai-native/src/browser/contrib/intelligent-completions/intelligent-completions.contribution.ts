@@ -10,7 +10,7 @@ import {
   AI_MULTI_LINE_COMPLETION_ACCEPT,
   AI_MULTI_LINE_COMPLETION_HIDE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { MultiLineCompletionsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { CommandContribution, CommandRegistry, Domain } from '@opensumi/ide-core-common';
 
 import { IntelligentCompletionsHandler } from './intelligent-completions.handler';
@@ -38,7 +38,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
     keybindings.registerKeybinding({
       command: AI_MULTI_LINE_COMPLETION_HIDE.id,
       keybinding: Key.ESCAPE.code,
-      when: MultiLineCompletionsIsVisible.raw,
+      when: MultiLineEditsIsVisible.raw,
       priority: 100,
     });
 
@@ -46,7 +46,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
       {
         command: AI_MULTI_LINE_COMPLETION_ACCEPT.id,
         keybinding: Key.TAB.code,
-        when: MultiLineCompletionsIsVisible.raw,
+        when: MultiLineEditsIsVisible.raw,
       },
       KeybindingScope.USER,
     );

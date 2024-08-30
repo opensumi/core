@@ -1,14 +1,16 @@
+const os = require('os');
 const path = require('path');
 const querystring = require('querystring');
-const rimraf = require('rimraf');
-const fs = require('fs-extra');
+const pipeline = require('stream').pipeline;
+
+const retry = require('async-retry');
+const awaitEvent = require('await-event');
 const compressing = require('compressing');
 const log = require('debug')('InstallExtension');
-const os = require('os');
+const fs = require('fs-extra');
 const nodeFetch = require('node-fetch');
-const awaitEvent = require('await-event');
-const pipeline = require('stream').pipeline;
-const retry = require('async-retry');
+const rimraf = require('rimraf');
+
 const MARKETPLACE_TYPE = {
   OPENVSX: 'openvsx',
   ALIPAY_CLOUD: 'alipay-cloud',
@@ -75,9 +77,7 @@ async function downloadExtension(url, namespace, extensionName) {
   const res = await nodeFetch(url, { timeout: 100000, headers });
 
   if (res.status !== 200) {
-    throw {
-      message: `${res.status} ${res.statusText}`,
-    };
+    throw new Error(`${res.status} ${res.statusText}`);
   }
 
   res.body.pipe(tmpStream);
@@ -112,7 +112,7 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
             stream.resume();
             return;
           }
-          let fileName = header.name.replace(sourcePathRegex, '');
+          const fileName = header.name.replace(sourcePathRegex, '');
           if (/\/$/.test(fileName)) {
             const targetFileName = path.join(extensionDir, fileName);
             fs.mkdirp(targetFileName, (err) => {

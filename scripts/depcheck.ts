@@ -1,7 +1,11 @@
+/* eslint no-console: 0 */
+
 import { join, relative } from 'path';
-import depcheck from 'depcheck';
+
 import chalk from 'chalk';
-import { readdirSync, existsSync } from 'fs-extra';
+import depcheck from 'depcheck';
+import { existsSync, readdirSync } from 'fs-extra';
+
 import { argv } from '../packages/core-common/src/node/cli';
 
 const packagesDir = join(__dirname, '../packages');
@@ -22,19 +26,24 @@ const ghostDepsWhiteLists = [
   '@opensumi/monaco-editor-core',
   '@opensumi/vscode-debugprotocol',
   'vscode',
+  'sumi',
   'vscode-textmate',
   'react-window',
-  'react-ctxmenu-trigger',
   'vscode-languageserver-types',
   'react-is',
   'ws',
   'koa',
 ];
 
+const moduleAllowList = {
+  'core-common': ['electron'],
+  'file-service': ['@furyjs/fury'],
+};
+
 const options = {
   ignoreBinPackage: false, // ignore the packages with bin entry
   skipMissing: false, // skip calculation of missing dependencies
-  ignoreDirs: ['bower_components', 'node_modules', 'lib', '__tests__'],
+  ignoreDirs: ['bower_components', 'node_modules', 'lib', '__tests__', '__test__'],
   ignoreMatches: [
     // devtool related
     '@opensumi/ide-dev-tool',
@@ -42,8 +51,9 @@ const options = {
     'ts-node',
     'webpack-dev-server',
     '@types/*',
+    'tinybench',
   ],
-  ignorePatterns: ['__tests__', '__mocks__'],
+  ignorePatterns: ['__tests__', '__test__', '__mocks__'],
   parsers: {
     // the target parsers
     '**/*.ts': depcheck.parser.typescript,
@@ -63,13 +73,16 @@ const options = {
 
 function check(
   rootDir: string,
+  targetModuleName: string,
   config = {
     unusedDependency: true,
     unusedDevDependency: true,
     missing: true,
   },
 ) {
-  return new Promise<void>((resolve) => {
+  const allowList = moduleAllowList[targetModuleName] || [];
+
+  return new Promise<void>((resolve, reject) => {
     const cwd = process.cwd();
     depcheck(rootDir, options, (unused) => {
       if (config.unusedDependency) {
@@ -89,18 +102,16 @@ function check(
           unused.devDependencies.forEach((dependency) => {
             console.log('* ' + dependency);
           });
-        } else {
-          // console.log(chalk.greenBright('No unused devDependency'));
         }
       }
+
+      let missed = false;
       if (config.missing) {
         let missingDeps = Object.keys(unused.missing).filter(
           (dep) => !ghostDepsWhiteLists.includes(dep) && (!rootDir.endsWith('browser') || !rootDir.endsWith('node')),
         );
         // 排除自身对模块的引用影响
-        missingDeps = missingDeps.filter((dep) => {
-          return !rootDir.endsWith(dep.split('ide-')[1]);
-        });
+        missingDeps = missingDeps.filter((dep) => !rootDir.endsWith(dep.split('ide-')[1]));
         if (missingDeps.length > 0) {
           console.log(chalk.red('Missing dependencies:'));
           missingDeps.forEach((dependency) => {
@@ -108,13 +119,17 @@ function check(
             unused.missing[dependency].forEach((referencePath, index) => {
               console.log(`  ${index + 1}. ${relative(cwd, referencePath)}`);
             });
+            if (!allowList.includes(dependency)) {
+              missed = true;
+            }
           });
-        } else {
-          // console.log(chalk.greenBright('No missing dependency'));
         }
       }
-
-      resolve();
+      if (missed) {
+        reject('has missing dependencies');
+      } else {
+        resolve();
+      }
     });
   });
 }
@@ -129,7 +144,12 @@ async function runTaskWithPackages(targetPacks: string[]) {
     }
 
     console.log(chalk.greenBright(`--- [Deps check: ${targetModuleName}] ---`));
-    await check(packageDir);
+    try {
+      await check(packageDir, targetModuleName);
+    } catch (error) {
+      console.log(chalk.red(`${targetModuleName} has missing dependencies`));
+      process.exit(1);
+    }
     console.log('');
   }
 
@@ -152,13 +172,15 @@ async function bootAll() {
   runTaskWithPackages(targetPacks);
 }
 
-const targetModule = (argv as any).module as string;
+const targetModule = argv.module as string;
 
-// 指定模块加载
 if (targetModule) {
   console.log(`Single module mode dependency check: ${targetModule}`);
-  const moduleName = targetModule.replace(/@ali\//, '');
-  runTaskWithPackages([moduleName]);
+  const moduleName = targetModule.replace(/@opensumi\//, '');
+  runTaskWithPackages([moduleName]).catch((err) => {
+    console.log(chalk.red(`${moduleName} has missing dependencies`));
+    process.exit(1);
+  });
 } else {
   console.log('Project level dependency check');
   bootAll();
