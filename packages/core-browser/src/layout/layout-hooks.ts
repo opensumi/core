@@ -8,8 +8,6 @@ import { useInjectable } from '../react-hooks';
 
 import { ResizeEvent } from './layout.interface';
 
-const ResizeObserver = window.ResizeObserver;
-
 export interface ViewState {
   width: number;
   height: number;
@@ -63,6 +61,7 @@ export const useViewState = (
   }, []);
 
   React.useEffect(() => {
+    const ResizeObserver = window.ResizeObserver;
     // TODO: 统一收敛到 resizeEvent 内
     if (manualObserve && containerRef.current) {
       const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
