@@ -21,10 +21,13 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
   }
 
   send(data: Uint8Array): void {
-    const packet = LengthFieldBasedFrameDecoder.construct(data);
+    const handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
+    const packet = handle.get();
     for (let i = 0; i < packet.byteLength; i += chunkSize) {
       this.socket.send(packet.subarray(i, i + chunkSize));
     }
+
+    handle.dispose();
   }
 
   isOpen(): boolean {
