@@ -17,7 +17,7 @@ import {
   IEventBus,
   ResizeEvent,
   SlotLocation,
-  runWhenIdle,
+  fastdom,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { EDirection, PanelContext } from '@opensumi/ide-core-browser/lib/components';
@@ -63,26 +63,28 @@ export const TabRendererBase: FC<{
     tabbarService.ensureViewReady();
   }, [components]);
 
-  const handleResize = useCallback(() => {
+  const refreshFullSize = useCallback(() => {
     if (rootRef.current) {
       setFullSize(rootRef.current[Layout.getDomSizeProperty(direction)]);
     }
-  }, [fullSize, rootRef.current]);
+  }, []);
 
   useEffect(() => {
-    if (rootRef.current) {
-      handleResize();
-      let dispose: IDisposable | null;
-      eventBus.on(ResizeEvent, (e) => {
-        if (e.payload.slotLocation === side) {
-          if (dispose) {
-            dispose.dispose();
-            dispose = null;
-          }
-          dispose = runWhenIdle(handleResize);
-        }
+    fastdom.measure(() => {
+      refreshFullSize();
+    });
+
+    let toDispose: IDisposable | undefined;
+
+    eventBus.onDirective(ResizeEvent.createDirective(side), () => {
+      if (toDispose) {
+        toDispose.dispose();
+      }
+
+      toDispose = fastdom.measureAtNextFrame(() => {
+        refreshFullSize();
       });
-    }
+    });
   }, []);
 
   return (
