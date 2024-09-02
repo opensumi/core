@@ -21,10 +21,11 @@ export class StreamConnection extends BaseConnection<Uint8Array> {
   }
 
   send(data: Uint8Array): void {
-    const result = LengthFieldBasedFrameDecoder.construct(data);
-    this.writable.write(result, () => {
+    const handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
+    this.writable.write(handle.get(), () => {
       // TODO: logger error
     });
+    handle.dispose();
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {
