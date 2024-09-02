@@ -139,6 +139,9 @@ injector.overrideProviders({
     get() {
       return true;
     },
+    onSpecificPreferenceChange() {
+      return new Disposable();
+    },
     onPreferenceChanged() {
       return new Disposable();
     },
