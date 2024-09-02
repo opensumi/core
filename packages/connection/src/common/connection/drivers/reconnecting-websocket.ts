@@ -4,17 +4,27 @@ import ReconnectingWebSocket, {
   UrlProvider,
 } from '@opensumi/reconnecting-websocket';
 
+import { chunkSize } from '../../constants';
+
 import { BaseConnection } from './base';
+import { LengthFieldBasedFrameDecoder } from './frame-decoder';
 
 import type { ErrorEvent } from '@opensumi/reconnecting-websocket';
 
 export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> {
+  protected decoder = new LengthFieldBasedFrameDecoder();
+
   constructor(private socket: ReconnectingWebSocket) {
     super();
+
+    this.socket.addEventListener('message', this.dataHandler);
   }
 
   send(data: Uint8Array): void {
-    this.socket.send(data);
+    const packet = LengthFieldBasedFrameDecoder.construct(data);
+    for (let i = 0; i < packet.byteLength; i += chunkSize) {
+      this.socket.send(packet.subarray(i, i + chunkSize));
+    }
   }
 
   isOpen(): boolean {
@@ -31,27 +41,7 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {
-    const handler = (e: MessageEvent) => {
-      let buffer: Promise<ArrayBuffer>;
-      if (e.data instanceof Blob) {
-        buffer = e.data.arrayBuffer();
-      } else if (e.data instanceof ArrayBuffer) {
-        buffer = Promise.resolve(e.data);
-      } else if (e.data?.constructor?.name === 'Buffer') {
-        // Compatibility with nodejs Buffer in test environment
-        buffer = Promise.resolve(e.data);
-      } else {
-        throw new Error('unknown message type, expect Blob or ArrayBuffer, received: ' + typeof e.data);
-      }
-      buffer.then((v) => cb(new Uint8Array(v, 0, v.byteLength)));
-    };
-
-    this.socket.addEventListener('message', handler);
-    return {
-      dispose: () => {
-        this.socket.removeEventListener('message', handler);
-      },
-    };
+    return this.decoder.onData(cb);
   }
   onceClose(cb: (code?: number, reason?: string) => void): IDisposable {
     const disposable = this.onClose(wrapper);
@@ -91,8 +81,23 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
     };
   }
 
+  private dataHandler = (e: MessageEvent) => {
+    let buffer: Promise<ArrayBuffer>;
+    if (e.data instanceof Blob) {
+      buffer = e.data.arrayBuffer();
+    } else if (e.data instanceof ArrayBuffer) {
+      buffer = Promise.resolve(e.data);
+    } else if (e.data?.constructor?.name === 'Buffer') {
+      // Compatibility with nodejs Buffer in test environment
+      buffer = Promise.resolve(e.data);
+    } else {
+      throw new Error('unknown message type, expect Blob or ArrayBuffer, received: ' + typeof e.data);
+    }
+    buffer.then((v) => this.decoder.push(new Uint8Array(v, 0, v.byteLength)));
+  };
+
   dispose(): void {
-    // do nothing
+    this.socket.removeEventListener('message', this.dataHandler);
   }
 
   static forURL(url: UrlProvider, protocols?: string | string[], options?: ReconnectingWebSocketOptions) {
