@@ -277,7 +277,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   createEditorGroup(): EditorGroup {
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName(), this.editorGroupIdGen++]);
     this.editorGroups.push(editorGroup);
-    const currentWatchDisposer = new Disposable(
+    editorGroup.addDispose([
       editorGroup.onDidEditorGroupBodyChanged(() => {
         if (editorGroup === this.currentEditorGroup) {
           if (!editorGroup.currentOpenType && editorGroup.currentResource) {
@@ -296,25 +296,15 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
           }
         }
       }),
-    );
-    editorGroup.addDispose({
-      dispose: () => {
-        currentWatchDisposer.dispose();
-      },
-    });
-    const groupChangeDisposer = editorGroup.onDidEditorGroupTabChanged(() => {
-      this.saveOpenedResourceState();
-    });
-    editorGroup.addDispose({
-      dispose: () => {
-        groupChangeDisposer.dispose();
-      },
-    });
-    editorGroup.onCurrentEditorCursorChange((e) => {
-      if (this._currentEditorGroup === editorGroup) {
-        this._onCursorChange.fire(e);
-      }
-    });
+      editorGroup.onDidEditorGroupTabChanged(() => {
+        this.saveOpenedResourceState();
+      }),
+      editorGroup.onCurrentEditorCursorChange((e) => {
+        if (this._currentEditorGroup === editorGroup) {
+          this._onCursorChange.fire(e);
+        }
+      }),
+    ]);
 
     return editorGroup;
   }
