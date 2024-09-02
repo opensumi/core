@@ -1,6 +1,6 @@
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-import { Emitter, readUInt32LE } from '@opensumi/ide-core-common';
+import { MaybeNull, readUInt32LE } from '@opensumi/ide-core-common';
 
 import { Buffers } from '../../buffers/buffers';
 
@@ -14,8 +14,15 @@ export const indicator = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]);
  * we use a length field to represent the length of the data, and then read the data according to the length
  */
 export class LengthFieldBasedFrameDecoder {
-  protected dataEmitter = new Emitter<Uint8Array>();
-  onData = this.dataEmitter.event;
+  private _onDataListener: MaybeNull<(data: Uint8Array) => void>;
+  onData(listener: (data: Uint8Array) => void) {
+    this._onDataListener = listener;
+    return {
+      dispose: () => {
+        this._onDataListener = null;
+      },
+    };
+  }
 
   protected buffers = new Buffers();
   protected cursor = this.buffers.cursor();
@@ -57,7 +64,9 @@ export class LengthFieldBasedFrameDecoder {
 
       const binary = this.buffers.slice(start, end);
 
-      this.dataEmitter.fire(binary);
+      if (this._onDataListener) {
+        this._onDataListener(binary);
+      }
 
       if (this.buffers.byteLength > end) {
         this.contentLength = -1;
@@ -154,7 +163,7 @@ export class LengthFieldBasedFrameDecoder {
   }
 
   dispose() {
-    this.dataEmitter.dispose();
+    this._onDataListener = undefined;
     this.buffers.dispose();
   }
 
@@ -165,6 +174,6 @@ export class LengthFieldBasedFrameDecoder {
     LengthFieldBasedFrameDecoder.writer.buffer(indicator);
     LengthFieldBasedFrameDecoder.writer.uint32(content.byteLength);
     LengthFieldBasedFrameDecoder.writer.buffer(content);
-    return LengthFieldBasedFrameDecoder.writer.dump();
+    return LengthFieldBasedFrameDecoder.writer;
   }
 }
