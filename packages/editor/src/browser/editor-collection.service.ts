@@ -799,8 +799,8 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     ];
   }
 
-  layout(): void {
-    return this.monacoDiffEditor.layout();
+  layout(dimension?: monaco.IDimension, postponeRendering?: boolean) {
+    return this.monacoDiffEditor.layout(dimension, postponeRendering);
   }
 
   focus(): void {

@@ -780,14 +780,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.eventBus.onDirective(
         ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
         () => {
-          this.doLayoutEditors();
+          this.layoutEditors();
         },
       ),
     );
     this.addDispose(
       this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
         if (e.payload.gridId === this.grid.uid) {
-          this.doLayoutEditors();
+          this.layoutEditors();
         }
       }),
     );
@@ -838,13 +838,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   layoutEditors() {
     fastdom.measure(() => {
       if (this._domNode) {
-        const currentWidth = this._domNode.offsetWidth;
-        const currentHeight = this._domNode.offsetHeight;
-        if (currentWidth !== this._prevDomWidth || currentHeight !== this._prevDomHeight) {
-          this.doLayoutEditors();
-        }
-        this._prevDomWidth = currentWidth;
-        this._prevDomHeight = currentHeight;
+        this._prevDomWidth = this._domNode.offsetWidth;
+        this._prevDomHeight = this._domNode.offsetHeight;
+        this.doLayoutEditors();
       }
     });
   }
@@ -852,12 +848,24 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private doLayoutEditors() {
     if (this.codeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
-        this.codeEditor.layout();
+        this.codeEditor.layout(
+          {
+            width: this._prevDomWidth,
+            height: this._prevDomHeight,
+          },
+          true,
+        );
       }
     }
     if (this.diffEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
-        this.diffEditor.layout();
+        this.diffEditor.layout(
+          {
+            width: this._prevDomWidth,
+            height: this._prevDomHeight,
+          },
+          true,
+        );
       }
     }
   }
@@ -1807,7 +1815,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this._currentOpenType = activeOpenType;
       this.notifyBodyChanged();
 
-      this.doLayoutEditors();
+      this.layoutEditors();
 
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
     }
