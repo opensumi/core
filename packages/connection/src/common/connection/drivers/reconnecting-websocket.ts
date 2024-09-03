@@ -14,10 +14,14 @@ import type { ErrorEvent } from '@opensumi/reconnecting-websocket';
 export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();
 
-  constructor(private socket: ReconnectingWebSocket) {
+  protected constructor(private socket: ReconnectingWebSocket) {
     super();
 
-    this.socket.addEventListener('message', this.dataHandler);
+    if (socket.binaryType === 'arraybuffer') {
+      this.socket.addEventListener('message', this.arrayBufferHandler);
+    } else if (socket.binaryType === 'blob') {
+      throw new Error('blob is not implemented');
+    }
   }
 
   send(data: Uint8Array): void {
@@ -42,7 +46,6 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
       },
     };
   }
-
   onMessage(cb: (data: Uint8Array) => void): IDisposable {
     return this.decoder.onData(cb);
   }
@@ -84,23 +87,13 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
     };
   }
 
-  private dataHandler = (e: MessageEvent) => {
-    let buffer: Promise<ArrayBuffer>;
-    if (e.data instanceof Blob) {
-      buffer = e.data.arrayBuffer();
-    } else if (e.data instanceof ArrayBuffer) {
-      buffer = Promise.resolve(e.data);
-    } else if (e.data?.constructor?.name === 'Buffer') {
-      // Compatibility with nodejs Buffer in test environment
-      buffer = Promise.resolve(e.data);
-    } else {
-      throw new Error('unknown message type, expect Blob or ArrayBuffer, received: ' + typeof e.data);
-    }
-    buffer.then((v) => this.decoder.push(new Uint8Array(v, 0, v.byteLength)));
+  private arrayBufferHandler = (e: MessageEvent<ArrayBuffer>) => {
+    const buffer: ArrayBuffer = e.data;
+    this.decoder.push(new Uint8Array(buffer, 0, buffer.byteLength));
   };
 
   dispose(): void {
-    this.socket.removeEventListener('message', this.dataHandler);
+    this.socket.removeEventListener('message', this.arrayBufferHandler);
   }
 
   static forURL(url: UrlProvider, protocols?: string | string[], options?: ReconnectingWebSocketOptions) {
