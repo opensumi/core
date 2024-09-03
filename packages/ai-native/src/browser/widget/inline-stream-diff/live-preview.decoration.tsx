@@ -368,9 +368,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     let modifyContent;
     const range = addedDec?.getRange();
     if (range) {
-      modifyContent = model.getValueInRange(range);
+      modifyContent = model.getValueInRange({
+        ...range,
+        endColumn: model.getLineMaxColumn(range.endLineNumber),
+      });
     }
-
     const discard = (decorationModel: LivePreviewDiffDecorationModel) => {
       // 只有点击行丢弃时才会上报
       if (isReport) {
