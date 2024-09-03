@@ -8,6 +8,7 @@ import { Icon, Scrollbars } from '@opensumi/ide-components';
 import {
   Disposable,
   DomListener,
+  fastdom,
   getIcon,
   useDesignStyles,
   useInjectable,
@@ -122,16 +123,18 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
 
   const scrollToCurrent = useCallback(() => {
-    if (scrollerContainer.current) {
+    fastdom.measure(() => {
       try {
-        const current = scrollerContainer.current.querySelector(`.${styles.navigation_menu_item_current}`);
-        if (current) {
-          current.scrollIntoView({ behavior: 'auto', block: 'center' });
+        if (scrollerContainer.current) {
+          const current = scrollerContainer.current.querySelector(`.${styles.navigation_menu_item_current}`);
+          if (current) {
+            current.scrollIntoView({ behavior: 'auto', block: 'center' });
+          }
         }
       } catch (e) {
         // noop
       }
-    }
+    });
   }, [scrollerContainer.current]);
 
   return (

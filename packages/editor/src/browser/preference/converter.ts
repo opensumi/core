@@ -1,113 +1,9 @@
 import { Uri, objects } from '@opensumi/ide-core-browser';
-import * as monaco from '@opensumi/ide-monaco';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { IConvertedMonacoOptions } from '../types';
 
 const { removeUndefined } = objects;
-
-/**
- * 计算由ConfigurationService设置值带来的monaco编辑器的属性
- * @param configurationService IConfigurationService
- * @param updatingKey 需要处理的Preference key。如果没有这个值，默认处理全部。
- */
-export function getConvertedMonacoOptions(
-  configurationService: IConfigurationService,
-  resourceUri?: string,
-  language?: string,
-  updatingKey?: string[],
-): IConvertedMonacoOptions {
-  const editorOptions: Partial<monaco.editor.IEditorOptions> = {};
-  const diffOptions: Partial<monaco.editor.IDiffEditorOptions> = {};
-  const modelOptions: Partial<monaco.editor.ITextModelUpdateOptions> = {};
-  const editorOptionsKeys = [] as string[];
-  const textModelUpdateOptionsKeys = [] as string[];
-  const diffEditorOptionsKeys = [] as string[];
-
-  if (updatingKey) {
-    updatingKey.forEach((key) => {
-      if (editorOptionsConverters.has(key)) {
-        editorOptionsKeys.push(key);
-      } else if (textModelUpdateOptionsConverters.has(key)) {
-        textModelUpdateOptionsKeys.push(key);
-      } else if (diffEditorOptionsConverters.has(key)) {
-        diffEditorOptionsKeys.push(key);
-      }
-    });
-  } else {
-    editorOptionsKeys.push(...editorOptionsConverters.keys());
-    textModelUpdateOptionsKeys.push(...textModelUpdateOptionsConverters.keys());
-    diffEditorOptionsKeys.push(...diffEditorOptionsConverters.keys());
-  }
-
-  editorOptionsKeys.forEach((key) => {
-    const value = configurationService.getValue(key, {
-      resource: resourceUri ? Uri.parse(resourceUri) : undefined,
-      overrideIdentifier: language,
-    });
-    if (value === undefined) {
-      return;
-    }
-    if (!editorOptionsConverters.get(key)) {
-      editorOptions[key] = value;
-    } else {
-      const converter: IMonacoOptionsConverter = editorOptionsConverters.get(key)! as IMonacoOptionsConverter;
-      if (!editorOptions[converter.monaco]) {
-        editorOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
-      } else {
-        editorOptions[converter.monaco] = {
-          ...editorOptions[converter.monaco],
-          ...(converter.convert ? converter.convert(value) : value),
-        };
-      }
-    }
-  });
-
-  textModelUpdateOptionsKeys.forEach((key) => {
-    const value = configurationService.getValue(key, {
-      resource: resourceUri ? Uri.parse(resourceUri) : undefined,
-      overrideIdentifier: language,
-    });
-    if (value === undefined) {
-      return;
-    }
-    if (!textModelUpdateOptionsConverters.get(key)) {
-      modelOptions[key] = value;
-    } else {
-      const converter: IMonacoOptionsConverter = textModelUpdateOptionsConverters.get(key)! as IMonacoOptionsConverter;
-      modelOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
-    }
-  });
-
-  diffEditorOptionsKeys.forEach((key) => {
-    const value = configurationService.getValue(key, {
-      resource: resourceUri ? Uri.parse(resourceUri) : undefined,
-      overrideIdentifier: language,
-    });
-    if (value === undefined) {
-      return;
-    }
-    if (!diffEditorOptionsConverters.get(key)) {
-      editorOptions[key] = value;
-    } else {
-      const converter: IMonacoOptionsConverter = diffEditorOptionsConverters.get(key)! as IMonacoOptionsConverter;
-      if (diffOptions[converter.monaco]) {
-        diffOptions[converter.monaco] = {
-          ...diffOptions[converter.monaco],
-          ...(converter.convert ? converter.convert(value) : value),
-        };
-      } else {
-        diffOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
-      }
-    }
-  });
-
-  return {
-    editorOptions: removeUndefined(editorOptions),
-    modelOptions: removeUndefined(modelOptions),
-    diffOptions: removeUndefined(diffOptions),
-  };
-}
 
 type NoConverter = false;
 type KaitianPreferenceKey = string;
@@ -899,4 +795,66 @@ export function isEditorOption(key: string) {
 
 export function isDiffEditorOption(key: string): boolean {
   return isContainOptionKey(key, diffEditorOptionsConverters);
+}
+
+const editorOptionsConvertersKey = [...editorOptionsConverters.keys()];
+const textModelUpdateOptionsConvertersKey = [...textModelUpdateOptionsConverters.keys()];
+const diffEditorOptionsConvertersKey = [...diffEditorOptionsConverters.keys()];
+
+/**
+ * 计算由ConfigurationService设置值带来的monaco编辑器的属性
+ * @param configurationService IConfigurationService
+ * @param updatingKey 需要处理的Preference key。如果没有这个值，默认处理全部。
+ */
+export function getConvertedMonacoOptions(
+  configurationService: IConfigurationService,
+  resourceUri?: string,
+  language?: string,
+  updatingKey?: string[],
+): IConvertedMonacoOptions {
+  const resource = resourceUri ? Uri.parse(resourceUri) : undefined;
+
+  const getOptions = (keys: string[], converters: Map<string, NoConverter | IMonacoOptionsConverter>): Partial<any> =>
+    keys.reduce((options, key) => {
+      const value = configurationService.getValue(key, { resource, overrideIdentifier: language });
+      if (value !== undefined) {
+        const converter = converters.get(key);
+        if (!converter) {
+          options[key] = value;
+          return options;
+        }
+
+        const targetKey = converter ? converter.monaco : key;
+        const convertedValue = converter?.convert ? converter.convert(value) : value;
+
+        if (!options[targetKey]) {
+          options[targetKey] = convertedValue;
+        } else {
+          Object.assign(options[targetKey], convertedValue);
+        }
+      }
+      return options;
+    }, {});
+
+  const editorOptionsKeys = updatingKey
+    ? updatingKey.filter((key) => editorOptionsConverters.has(key))
+    : [...editorOptionsConvertersKey];
+
+  const textModelUpdateOptionsKeys = updatingKey
+    ? updatingKey.filter((key) => textModelUpdateOptionsConverters.has(key))
+    : [...textModelUpdateOptionsConvertersKey];
+
+  const diffEditorOptionsKeys = updatingKey
+    ? updatingKey.filter((key) => diffEditorOptionsConverters.has(key))
+    : [...diffEditorOptionsConvertersKey];
+
+  const editorOptions = removeUndefined(getOptions(editorOptionsKeys, editorOptionsConverters));
+  const modelOptions = removeUndefined(getOptions(textModelUpdateOptionsKeys, textModelUpdateOptionsConverters));
+  const diffOptions = removeUndefined(getOptions(diffEditorOptionsKeys, diffEditorOptionsConverters));
+
+  return {
+    editorOptions,
+    modelOptions,
+    diffOptions,
+  };
 }

@@ -17,6 +17,7 @@ import {
   View,
   ViewContextKeyRegistry,
   WithEventBus,
+  fastdom,
   isDefined,
   localize,
 } from '@opensumi/ide-core-browser';
@@ -376,12 +377,14 @@ export class AccordionService extends WithEventBus {
     if (e.payload.slotLocation) {
       if (this.state[e.payload.slotLocation]) {
         const id = e.payload.slotLocation;
-        // get dom of viewId
-        const sectionDom = document.getElementById(id);
-        if (sectionDom) {
-          this.state[id].size = sectionDom.clientHeight;
-          this.storeState();
-        }
+        fastdom.measureAtNextFrame(() => {
+          // get dom of viewId
+          const sectionDom = document.getElementById(id);
+          if (sectionDom) {
+            this.state[id].size = sectionDom.clientHeight;
+            this.storeState();
+          }
+        });
       }
     }
   }

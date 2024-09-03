@@ -8,16 +8,12 @@ import {
   MaybePromise,
   URI,
 } from '@opensumi/ide-core-browser';
-import * as monaco from '@opensumi/ide-monaco';
 import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
 import { IEditorDocumentDescription, IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
 
-export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
-  detectIndentation?: boolean;
-}
-
+export { IDocModelUpdateOptions } from '../../common/types';
 export interface IEditorDocumentModelContentProvider {
   /**
    * 是否处理这个Scheme的uri

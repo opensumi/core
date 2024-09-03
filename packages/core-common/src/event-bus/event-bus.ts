@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter, Event, IAsyncResult } from '@opensumi/ide-utils';
+import { Emitter, Event, IAsyncResult, IDisposable } from '@opensumi/ide-utils';
 
 import { ConstructorOf } from '../declare';
 
@@ -53,5 +53,17 @@ export class EventBusImpl implements IEventBus {
     const emitter = new Emitter();
     this.emitterMap.set(key, emitter);
     return emitter;
+  }
+
+  onDirective<T>(directive: string, listener: IEventListener<T>): IDisposable {
+    const emitter = this.getOrCreateEmitter(directive);
+    return emitter.event(listener);
+  }
+
+  fireDirective(directive: string, payload: any) {
+    const emitter = this.emitterMap.get(directive);
+    if (emitter) {
+      emitter.fire(payload);
+    }
   }
 }

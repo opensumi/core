@@ -13,6 +13,7 @@ import {
   RecentFilesManager,
   ResizeEvent,
   ServiceNames,
+  fastdom,
   getSlotLocation,
   toMarkdown,
 } from '@opensumi/ide-core-browser';
@@ -794,11 +795,19 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string, public readonly groupId: number) {
     super();
-    this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
-      if (e.payload.slotLocation === getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)) {
-        this.doLayoutEditors();
-      }
-    });
+    let toDispose: IDisposable | undefined;
+    this.eventBus.onDirective(
+      ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
+      () => {
+        if (toDispose) {
+          toDispose.dispose();
+        }
+
+        toDispose = fastdom.mutate(() => {
+          this._layoutEditorWorker();
+        });
+      },
+    );
     this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
       if (e.payload.gridId === this.grid.uid) {
         this.doLayoutEditors();
@@ -849,19 +858,20 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   layoutEditors() {
-    if (this._domNode) {
-      const currentWidth = this._domNode.offsetWidth;
-      const currentHeight = this._domNode.offsetHeight;
-      if (currentWidth !== this._prevDomWidth || currentHeight !== this._prevDomHeight) {
-        this.doLayoutEditors();
+    fastdom.measure(() => {
+      if (this._domNode) {
+        const currentWidth = this._domNode.offsetWidth;
+        const currentHeight = this._domNode.offsetHeight;
+        if (currentWidth !== this._prevDomWidth || currentHeight !== this._prevDomHeight) {
+          this.doLayoutEditors();
+        }
+        this._prevDomWidth = currentWidth;
+        this._prevDomHeight = currentHeight;
       }
-      this._prevDomWidth = currentWidth;
-      this._prevDomHeight = currentHeight;
-    }
+    });
   }
 
-  @debounce(100)
-  doLayoutEditors() {
+  private _layoutEditorWorker() {
     if (this.codeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
         this.codeEditor.layout();
@@ -886,6 +896,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this._mergeEditorPendingLayout = true;
       }
     }
+  }
+
+  @debounce(16 * 5)
+  doLayoutEditors() {
+    this._layoutEditorWorker();
   }
 
   setContextKeys() {
@@ -1124,9 +1139,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
+
     setTimeout(() => {
       this.codeEditor.layout();
     });
+    this.addDispose(
+      this.codeEditor.onRefOpen(() => {
+        this.codeEditor.layout();
+      }),
+    );
     this.toDispose.push(
       this.codeEditor.onCursorPositionChanged((e) => {
         this._onCurrentEditorCursorChange.fire(e);
