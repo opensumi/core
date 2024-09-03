@@ -76,6 +76,6 @@ describe('connection browser', () => {
       mockServer.close();
       wsChannelHandler.dispose();
     },
-    20 * 10000000,
+    20 * 1000,
   );
 });
