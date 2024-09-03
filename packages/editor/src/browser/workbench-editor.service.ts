@@ -16,6 +16,7 @@ import {
   toMarkdown,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
+import { IDimension } from '@opensumi/ide-core-browser/lib/dom/resize-observer';
 import { IMergeEditorEditor, MergeEditorInputData } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import {
   CUSTOM_EDITOR_SCHEME,
@@ -840,32 +841,26 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this._domNode) {
         this._prevDomWidth = this._domNode.offsetWidth;
         this._prevDomHeight = this._domNode.offsetHeight;
-        this.doLayoutEditors();
+        this.doLayoutEditors(
+          {
+            width: this._prevDomWidth,
+            height: this._prevDomHeight,
+          },
+          true,
+        );
       }
     });
   }
 
-  private doLayoutEditors() {
+  private doLayoutEditors(e: IDimension, postponeRendering?: boolean) {
     if (this.codeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
-        this.codeEditor.layout(
-          {
-            width: this._prevDomWidth,
-            height: this._prevDomHeight,
-          },
-          true,
-        );
+        this.codeEditor.layout(e, postponeRendering);
       }
     }
     if (this.diffEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
-        this.diffEditor.layout(
-          {
-            width: this._prevDomWidth,
-            height: this._prevDomHeight,
-          },
-          true,
-        );
+        this.diffEditor.layout(e, postponeRendering);
       }
     }
   }
