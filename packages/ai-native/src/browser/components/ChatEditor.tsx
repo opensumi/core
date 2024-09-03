@@ -205,6 +205,9 @@ export const CodeBlockWrapperInput = ({
       setTag(nameWithSlash);
       setTxt(value);
       return;
+    } else {
+      // 恢复历史时，需要基于外部状态同步内部 text
+      setTxt(text);
     }
   }, [text, chatFeatureRegistry]);
 
