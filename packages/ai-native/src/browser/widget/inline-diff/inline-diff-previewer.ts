@@ -253,8 +253,6 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
 
 @Injectable({ multiple: true })
 export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStreamDiffHandler> {
-  protected modifyContent: string;
-
   private listenNode(node: InlineStreamDiffHandler): void {
     node.addDispose(node.onDidEditChange(() => this.layout()));
     node.addDispose(
@@ -341,14 +339,12 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   onEnd(): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy);
     if (diffModel) {
-      // 获取diff变更的内容
-      this.modifyContent = diffModel.newFullRangeTextLines.join('\n');
       this.node?.pushRateFinallyDiffStack(diffModel);
     }
   }
 
   getValue(): string {
-    return this.node!.getVirtualModelValue();
+    return this.node?.getVirtualModelValue() || '';
   }
 
   setValue(content: string): void {

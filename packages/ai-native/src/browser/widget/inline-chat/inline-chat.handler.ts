@@ -497,8 +497,8 @@ export class InlineChatHandler extends Disposable {
 
     this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
-        this.inlineDiffHandler.handleAction(kind);
         const modifyContent = this.inlineDiffHandler.getModifyContent();
+        this.inlineDiffHandler.handleAction(kind);
         if (kind === EResultKind.ACCEPT) {
           this.aiReporter.end(relationId, {
             message: 'accept',
