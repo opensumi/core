@@ -1034,6 +1034,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
     if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
       this._currentOpenType = null;
+      this._codeEditorPendingLayout = false;
+      this._diffEditorPendingLayout = false;
+      this._mergeEditorPendingLayout = false;
+
       this.notifyBodyChanged();
       this.displayResourceComponent(this.currentResource, {});
     }
@@ -1997,6 +2001,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
     this._currentResource = null;
     this._currentOpenType = null;
+    this._codeEditorPendingLayout = false;
+    this._diffEditorPendingLayout = false;
+    this._mergeEditorPendingLayout = false;
+
     this.notifyTabChanged();
     this.notifyBodyChanged();
     this._currentOrPreviousFocusedEditor = null;
