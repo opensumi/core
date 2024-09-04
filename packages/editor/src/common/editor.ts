@@ -310,7 +310,7 @@ export interface IDiffEditor extends IDisposable {
 
   modifiedEditor: IEditor;
 
-  layout(): void;
+  layout(dimension?: IDimension, postponeRendering?: boolean): void;
 
   focus(): void;
 
