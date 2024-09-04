@@ -1,3 +1,5 @@
+import { observable } from 'mobx';
+
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
@@ -16,7 +18,6 @@ import {
   toMarkdown,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { IDimension } from '@opensumi/ide-core-browser/lib/dom/resize-observer';
 import { IMergeEditorEditor, MergeEditorInputData } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import {
   CUSTOM_EDITOR_SCHEME,
@@ -41,6 +42,7 @@ import {
   StorageProvider,
   URI,
   WithEventBus,
+  debounce,
   formatLocalize,
   getDebugLogger,
   isDefined,
@@ -278,7 +280,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   createEditorGroup(): EditorGroup {
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName(), this.editorGroupIdGen++]);
     this.editorGroups.push(editorGroup);
-    editorGroup.addDispose([
+    const currentWatchDisposer = new Disposable(
       editorGroup.onDidEditorGroupBodyChanged(() => {
         if (editorGroup === this.currentEditorGroup) {
           if (!editorGroup.currentOpenType && editorGroup.currentResource) {
@@ -297,15 +299,25 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
           }
         }
       }),
-      editorGroup.onDidEditorGroupTabChanged(() => {
-        this.saveOpenedResourceState();
-      }),
-      editorGroup.onCurrentEditorCursorChange((e) => {
-        if (this._currentEditorGroup === editorGroup) {
-          this._onCursorChange.fire(e);
-        }
-      }),
-    ]);
+    );
+    editorGroup.addDispose({
+      dispose: () => {
+        currentWatchDisposer.dispose();
+      },
+    });
+    const groupChangeDisposer = editorGroup.onDidEditorGroupTabChanged(() => {
+      this.saveOpenedResourceState();
+    });
+    editorGroup.addDispose({
+      dispose: () => {
+        groupChangeDisposer.dispose();
+      },
+    });
+    editorGroup.onCurrentEditorCursorChange((e) => {
+      if (this._currentEditorGroup === editorGroup) {
+        this._onCursorChange.fire(e);
+      }
+    });
 
     return editorGroup;
   }
@@ -677,25 +689,25 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 当编辑器的tab部分发生变更
    */
-  _onDidEditorGroupTabChanged = this.registerDispose(new EventEmitter<void>());
+  _onDidEditorGroupTabChanged = new EventEmitter<void>();
   onDidEditorGroupTabChanged: Event<void> = this._onDidEditorGroupTabChanged.event;
 
   /**
    * 当编辑器的tab部分发生变更
    */
-  _onDidEditorGroupTabOperation = this.registerDispose(new EventEmitter<IResourceTabOperation>());
+  _onDidEditorGroupTabOperation = new EventEmitter<IResourceTabOperation>();
   onDidEditorGroupTabOperation: Event<IResourceTabOperation> = this._onDidEditorGroupTabOperation.event;
 
   /**
    * 当编辑器的主体部分发生变更
    */
-  _onDidEditorGroupBodyChanged = this.registerDispose(new EventEmitter<void>());
+  _onDidEditorGroupBodyChanged = new EventEmitter<void>();
   onDidEditorGroupBodyChanged: Event<void> = this._onDidEditorGroupBodyChanged.event;
 
   /**
    * 当编辑器有内容处于加载状态
    */
-  _onDidEditorGroupContentLoading = this.registerDispose(new EventEmitter<IResource>());
+  _onDidEditorGroupContentLoading = new EventEmitter<IResource>();
   onDidEditorGroupContentLoading: Event<IResource> = this._onDidEditorGroupContentLoading.event;
 
   /**
@@ -721,6 +733,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private cachedResourcesOpenTypes = new Map<string, IEditorOpenType[]>();
 
+  @observable.shallow
   availableOpenTypes: IEditorOpenType[] = [];
 
   activeComponents = new Map<IEditorComponent, IResource[]>();
@@ -730,6 +743,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   public grid: EditorGrid;
 
   private holdDocumentModelRefs: Map<string, IEditorDocumentModelRef> = new Map();
+
+  private readonly toDispose: monaco.IDisposable[] = [];
 
   private _contextKeyService: IContextKeyService;
 
@@ -748,8 +763,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private _prevDomHeight = 0;
   private _prevDomWidth = 0;
 
+  private _codeEditorPendingLayout = false;
+  private _diffEditorPendingLayout = false;
+  private _mergeEditorPendingLayout = false;
+
   // 当前为EditorComponent，且monaco光标变化时触发
-  private _onCurrentEditorCursorChange = this.registerDispose(new EventEmitter<CursorStatus>());
+  private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
   public onCurrentEditorCursorChange = this._onCurrentEditorCursorChange.event;
 
   private resourceOpenHistory: URI[] = [];
@@ -776,28 +795,28 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string, public readonly groupId: number) {
     super();
-
-    this.addDispose(
-      this.eventBus.onDirective(
-        ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
-        () => {
-          this.layoutEditors();
-        },
-      ),
-    );
-    this.addDispose(
-      this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
-        if (e.payload.gridId === this.grid.uid) {
-          this.layoutEditors();
+    let toDispose: IDisposable | undefined;
+    this.eventBus.onDirective(
+      ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
+      () => {
+        if (toDispose) {
+          toDispose.dispose();
         }
-      }),
+
+        toDispose = fastdom.mutate(() => {
+          this._layoutEditorWorker();
+        });
+      },
     );
-    this.addDispose(
-      this.eventBus.on(EditorComponentDisposeEvent, (e: EditorComponentDisposeEvent) => {
-        this.activeComponents.delete(e.payload);
-        this.activateComponentsProps.delete(e.payload);
-      }),
-    );
+    this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
+      if (e.payload.gridId === this.grid.uid) {
+        this.doLayoutEditors();
+      }
+    });
+    this.eventBus.on(EditorComponentDisposeEvent, (e: EditorComponentDisposeEvent) => {
+      this.activeComponents.delete(e.payload);
+      this.activateComponentsProps.delete(e.payload);
+    });
 
     this.listenToExplorerAutoRevealConfig();
   }
@@ -806,8 +825,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private listenToExplorerAutoRevealConfig() {
     this.explorerAutoRevealConfig = !!this.preferenceService.get<boolean>('explorer.autoReveal');
     this.disposables.push(
-      this.preferenceService.onSpecificPreferenceChange('explorer.autoReveal', (change) => {
-        this.explorerAutoRevealConfig = change.newValue;
+      this.preferenceService.onPreferenceChanged((change) => {
+        if (change.preferenceName === 'explorer.autoReveal') {
+          this.explorerAutoRevealConfig = change.newValue;
+        }
       }),
     );
   }
@@ -839,30 +860,47 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   layoutEditors() {
     fastdom.measure(() => {
       if (this._domNode) {
-        this._prevDomWidth = this._domNode.offsetWidth;
-        this._prevDomHeight = this._domNode.offsetHeight;
-        this.doLayoutEditors(
-          {
-            width: this._prevDomWidth,
-            height: this._prevDomHeight,
-          },
-          true,
-        );
+        const currentWidth = this._domNode.offsetWidth;
+        const currentHeight = this._domNode.offsetHeight;
+        if (currentWidth !== this._prevDomWidth || currentHeight !== this._prevDomHeight) {
+          this.doLayoutEditors();
+        }
+        this._prevDomWidth = currentWidth;
+        this._prevDomHeight = currentHeight;
       }
     });
   }
 
-  private doLayoutEditors(e: IDimension, postponeRendering?: boolean) {
+  private _layoutEditorWorker() {
     if (this.codeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
-        this.codeEditor.layout(e, postponeRendering);
+        this.codeEditor.layout();
+        this._codeEditorPendingLayout = false;
+      } else {
+        this._codeEditorPendingLayout = true;
       }
     }
     if (this.diffEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
-        this.diffEditor.layout(e, postponeRendering);
+        this.diffEditor.layout();
+        this._diffEditorPendingLayout = false;
+      } else {
+        this._diffEditorPendingLayout = true;
       }
     }
+    if (this.mergeEditor) {
+      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.mergeEditor) {
+        // this.mergeEditor.layout();
+        this._mergeEditorPendingLayout = false;
+      } else {
+        this._mergeEditorPendingLayout = true;
+      }
+    }
+  }
+
+  @debounce(16 * 5)
+  doLayoutEditors() {
+    this._layoutEditorWorker();
   }
 
   setContextKeys() {
@@ -1103,21 +1141,19 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     );
 
     setTimeout(() => {
-      fastdom.mutate(() => {
-        this.codeEditor.layout();
-      });
+      this.codeEditor.layout();
     });
     this.addDispose(
       this.codeEditor.onRefOpen(() => {
         this.codeEditor.layout();
       }),
     );
-    this.addDispose(
+    this.toDispose.push(
       this.codeEditor.onCursorPositionChanged((e) => {
         this._onCurrentEditorCursorChange.fire(e);
       }),
     );
-    this.addDispose(
+    this.toDispose.push(
       this.codeEditor.onSelectionsChanged((e) => {
         if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
           this.eventBus.fire(
@@ -1132,7 +1168,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }),
     );
-    this.addDispose(
+    this.toDispose.push(
       this.codeEditor.onVisibleRangesChanged((e) => {
         if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
           this.eventBus.fire(
@@ -1146,7 +1182,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }),
     );
-    this.addDispose(
+    this.toDispose.push(
       this.codeEditor.onConfigurationChanged(() => {
         if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
           this.eventBus.fire(
@@ -1189,15 +1225,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       },
     );
     setTimeout(() => {
-      fastdom.mutate(() => {
-        this.diffEditor.layout();
-      });
-    });
-
-    this.diffEditor.onRefOpen(() => {
-      fastdom.mutate(() => {
-        this.diffEditor.layout();
-      });
+      this.diffEditor.layout();
     });
 
     this.addDiffEditorEventListeners(this.diffEditor.originalEditor, 'original');
@@ -1222,7 +1250,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private addDiffEditorEventListeners(editor: IEditor, side?: 'modified' | 'original') {
-    this.addDispose(
+    this.toDispose.push(
       editor.onSelectionsChanged((e) => {
         if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
           this.eventBus.fire(
@@ -1239,7 +1267,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }),
     );
 
-    this.addDispose(
+    this.toDispose.push(
       editor.onVisibleRangesChanged((e) => {
         if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
           this.eventBus.fire(
@@ -1254,7 +1282,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }),
     );
 
-    this.addDispose(
+    this.toDispose.push(
       editor.onConfigurationChanged(() => {
         if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
           this.eventBus.fire(
@@ -1810,7 +1838,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this._currentOpenType = activeOpenType;
       this.notifyBodyChanged();
 
-      this.layoutEditors();
+      if (
+        (!this._codeEditorPendingLayout && activeOpenType.type === EditorOpenType.code) ||
+        (!this._diffEditorPendingLayout && activeOpenType.type === EditorOpenType.diff) ||
+        (!this._mergeEditorPendingLayout && activeOpenType.type === EditorOpenType.mergeEditor)
+      ) {
+        this.doLayoutEditors();
+      }
 
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
     }
@@ -2208,6 +2242,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     super.dispose();
     this.codeEditor && this.codeEditor.dispose();
     this.diffEditor && this.diffEditor.dispose();
+    this.toDispose.forEach((disposable) => disposable.dispose());
     this.eventBus.fire(
       new EditorGroupDisposeEvent({
         group: this,
