@@ -11,6 +11,7 @@ import {
   createContributionProvider,
 } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
+import { suppressNodeJSEpipeError } from '@opensumi/ide-core-common/lib/node';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 
 import { ElectronMainModule } from '../electron-main-module';
@@ -94,6 +95,8 @@ export class ElectronMainApp {
       },
       ...serviceProviders,
     );
+
+    this.bootstrapEPIPESuppression();
     this.injectLifecycleApi();
     createContributionProvider(this.injector, ElectronMainContribution);
     this.createElectronMainModules(this.config.modules);
@@ -105,6 +108,12 @@ export class ElectronMainApp {
   async init() {
     await app.whenReady().then(() => {
       this.onStartContribution();
+    });
+  }
+
+  bootstrapEPIPESuppression() {
+    suppressNodeJSEpipeError(process, () => {
+      // do nothing
     });
   }
 

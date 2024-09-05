@@ -20,6 +20,7 @@ import {
   isWindows,
 } from '@opensumi/ide-core-common';
 import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { suppressNodeJSEpipeError } from '@opensumi/ide-core-common/lib/node';
 
 import { RPCServiceCenter, createNetServerConnection, createServerConnection2 } from '../connection';
 import { NodeModule } from '../node-module';
@@ -54,7 +55,7 @@ export class ServerApp implements IServerApp {
     this._injector = opts.injector || new Injector();
     this.webSocketHandler = opts.webSocketHandler || [];
     // 使用外部传入的中间件
-    this.use = opts.use || ((middleware) => null);
+    this.use = opts.use || (() => null);
     this.config = {
       ...opts,
       injector: this.injector,
@@ -178,6 +179,10 @@ export class ServerApp implements IServerApp {
    * 绑定 process 退出逻辑
    */
   private bindProcessHandler() {
+    suppressNodeJSEpipeError(process, (msg) => {
+      this.logger.error(msg);
+    });
+
     process.on('uncaughtException', (error) => {
       if (error) {
         this.logger.error('Uncaught Exception: ', error.toString());
