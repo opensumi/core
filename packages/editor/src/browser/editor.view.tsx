@@ -91,7 +91,9 @@ export const EditorView = () => {
         }
       }}
     >
-      <EditorGridView grid={workbenchEditorService.topGrid}></EditorGridView>
+      <div className={styles.kt_editor_main_wrapper}>
+        <EditorGridView grid={workbenchEditorService.topGrid} />
+      </div>
       {RightWidget ? (
         <div className={styles.kt_editor_right_widget}>
           <ErrorBoundary>
@@ -206,13 +208,10 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
 
   return (
     <div
-      className={cls(
-        {
-          [styles.kt_grid_vertical]: grid.splitDirection === SplitDirection.Vertical,
-          [styles.kt_grid_horizontal]: grid.splitDirection === SplitDirection.Horizontal,
-        },
-        styles.kt_editor_main_wrapper,
-      )}
+      className={cls({
+        [styles.kt_grid_vertical]: grid.splitDirection === SplitDirection.Vertical,
+        [styles.kt_grid_horizontal]: grid.splitDirection === SplitDirection.Horizontal,
+      })}
     >
       {children}
     </div>
