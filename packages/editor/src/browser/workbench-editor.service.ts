@@ -762,10 +762,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private _prevDomHeight = 0;
   private _prevDomWidth = 0;
 
-  private _codeEditorPendingLayout = false;
-  private _diffEditorPendingLayout = false;
-  private _mergeEditorPendingLayout = false;
-
   // 当前为EditorComponent，且monaco光标变化时触发
   private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
   public onCurrentEditorCursorChange = this._onCurrentEditorCursorChange.event;
@@ -794,17 +790,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string, public readonly groupId: number) {
     super();
-    let toDispose: IDisposable | undefined;
     this.eventBus.onDirective(
       ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
       () => {
-        if (toDispose) {
-          toDispose.dispose();
-        }
-
-        toDispose = fastdom.mutate(() => {
-          this._layoutEditorWorker();
-        });
+        this.doLayoutEditors();
       },
     );
     this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
@@ -874,24 +863,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (this.codeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
         this.codeEditor.layout();
-        this._codeEditorPendingLayout = false;
-      } else {
-        this._codeEditorPendingLayout = true;
       }
     }
     if (this.diffEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
         this.diffEditor.layout();
-        this._diffEditorPendingLayout = false;
-      } else {
-        this._diffEditorPendingLayout = true;
-      }
-    }
-    if (this.mergeEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.mergeEditor) {
-        this._mergeEditorPendingLayout = false;
-      } else {
-        this._mergeEditorPendingLayout = true;
       }
     }
   }
@@ -916,24 +892,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
         return result;
       };
-      this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => {
-        const res = getLanguageFromModel(uri);
-        if (res) {
-          return res;
-        } else {
-          return getLanguageFromModel(uri);
-        }
-      });
+      this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => getLanguageFromModel(uri));
       this._diffResourceContextKey = new ResourceContextKey(
         this.contextKeyService,
-        (uri: URI) => {
-          const res = getLanguageFromModel(uri);
-          if (res) {
-            return res;
-          } else {
-            return getLanguageFromModel(uri);
-          }
-        },
+        (uri: URI) => getLanguageFromModel(uri),
         'diffResource',
       );
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
@@ -1031,9 +993,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   resetOpenType() {
     this._currentOpenType = null;
-    this._codeEditorPendingLayout = false;
-    this._diffEditorPendingLayout = false;
-    this._mergeEditorPendingLayout = false;
   }
 
   @OnEvent(ResourceOpenTypeChangedEvent)
@@ -1848,14 +1807,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.resolveTabChanged(_resource, this.currentResource);
       this._currentOpenType = activeOpenType;
       this.notifyBodyChanged();
-
-      if (
-        (!this._codeEditorPendingLayout && activeOpenType.type === EditorOpenType.code) ||
-        (!this._diffEditorPendingLayout && activeOpenType.type === EditorOpenType.diff) ||
-        (!this._mergeEditorPendingLayout && activeOpenType.type === EditorOpenType.mergeEditor)
-      ) {
-        this.doLayoutEditors();
-      }
+      this.doLayoutEditors();
 
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
     }
