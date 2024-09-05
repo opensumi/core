@@ -415,12 +415,14 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   const renderTabContent = () => {
+    const noTab = group.resources.length === 0;
     const curTabIndex = group.resources.findIndex((resource) => group.currentResource === resource);
     return (
       <div
         draggable={false}
         className={cls({
           [styles_kt_editor_tabs_content]: true,
+          [styles.kt_editor_tabs_content_empty]: noTab,
           [styles_kt_editor_tabs_current_last]: curTabIndex === group.resources.length - 1,
         })}
         ref={contentRef as any}

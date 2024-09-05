@@ -114,7 +114,8 @@
   }
 
   .kt_editor_tabs_scroll_wrapper {
-    flex-grow: 1;
+    flex: 1;
+    overflow: hidden;
     width: 100%;
     position: relative;
     background-color: var(--editorGroupHeader-tabsBackground);
@@ -153,6 +154,10 @@
     bottom: 0;
   }
 
+  & .kt_editor_tabs_content_empty {
+    display: flex !important;
+  }
+
   .kt_editor_wrap_container {
     .kt_editor_tabs_content {
       flex-wrap: wrap;
@@ -179,7 +184,7 @@
   }
   .kt_editor_tabs_content {
     overflow-y: hidden;
-    display: flex;
+    display: inline-flex;
     position: relative;
     height: 100%;
     &.kt_on_drag_over {
@@ -241,6 +246,11 @@
           background-position: 2px;
         }
       }
+
+      &:last-child {
+        margin-right: 10px;
+      }
+
       .editor_readonly_icon {
         margin-left: 8px;
       }
