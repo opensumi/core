@@ -151,6 +151,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     // do nothing
     return '';
   }
+  getOriginValue(): string {
+    // do nothing
+    return '';
+  }
   onError(error: ErrorResponse): void {
     // do nothing
   }
@@ -213,6 +217,11 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
   getValue(): string {
     const model = this.node?.getModifiedModel();
     return model!.getValue();
+  }
+
+  getOriginValue(): string {
+    const model = this.node?.getOriginModel();
+    return model!.getValue() || '';
   }
 
   handleAction(action: EResultKind): void {
@@ -345,6 +354,10 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
 
   getValue(): string {
     return this.node?.getVirtualModelValue() || '';
+  }
+
+  getOriginValue(): string {
+    return this.node?.getOriginModelValue() || '';
   }
 
   setValue(content: string): void {

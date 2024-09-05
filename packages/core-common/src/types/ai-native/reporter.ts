@@ -73,8 +73,10 @@ export interface CommonLogInfo {
   isDrop: boolean;
   language?: string;
   // 针对新版数据增加额外参数
-  // 操作的代码
+  // 采纳代码
   code?: string;
+  // 原始代码
+  originCode?: string;
   // 文件路径
   fileUrl?: string;
   // 仓库地址

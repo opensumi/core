@@ -366,6 +366,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       model.addedRangeDec.getDecorationByGroup(group);
 
     let modifyContent;
+    const removeContent = removedWidget?.getRemovedTextLines().join('\n') || '';
     const range = addedDec?.getRange();
     if (range) {
       modifyContent = model.getValueInRange({
@@ -381,6 +382,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           success: true,
           isDrop: true,
           code: modifyContent,
+          originCode: removeContent,
           actionSource: ActionSourceEnum.InlineChat,
           actionType: ActionTypeEnum.LineDiscard,
         });
@@ -405,6 +407,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
           success: true,
           isReceive: true,
           code: modifyContent,
+          originCode: removeContent,
           actionSource: ActionSourceEnum.InlineChat,
           actionType: ActionTypeEnum.lineAccept,
         });

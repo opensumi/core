@@ -498,6 +498,7 @@ export class InlineChatHandler extends Disposable {
     this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
         const modifyContent = this.inlineDiffHandler.getModifyContent();
+        const originContent = this.inlineDiffHandler.getOriginContent();
         this.inlineDiffHandler.handleAction(kind);
         if (kind === EResultKind.ACCEPT) {
           this.aiReporter.end(relationId, {
@@ -506,6 +507,7 @@ export class InlineChatHandler extends Disposable {
             isReceive: true,
             isDrop: false,
             code: modifyContent,
+            originCode: originContent,
             actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Accept,
           });
@@ -519,6 +521,7 @@ export class InlineChatHandler extends Disposable {
             isDrop: true,
             isReceive: false,
             code: modifyContent,
+            originCode: originContent,
             actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Discard,
           });
@@ -532,6 +535,7 @@ export class InlineChatHandler extends Disposable {
             isDrop: true,
             isReceive: false,
             code: modifyContent,
+            originCode: originContent,
             actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Regenerate,
           });
