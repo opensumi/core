@@ -42,7 +42,6 @@ import {
   StorageProvider,
   URI,
   WithEventBus,
-  debounce,
   formatLocalize,
   getDebugLogger,
   isDefined,
@@ -890,7 +889,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
     if (this.mergeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.mergeEditor) {
-        // this.mergeEditor.layout();
         this._mergeEditorPendingLayout = false;
       } else {
         this._mergeEditorPendingLayout = true;
@@ -898,9 +896,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  @debounce(16 * 5)
+  protected _measure: IDisposable | undefined;
   doLayoutEditors() {
-    this._layoutEditorWorker();
+    if (this._measure) {
+      this._measure.dispose();
+    }
+    this._measure = fastdom.mutate(() => {
+      this._layoutEditorWorker();
+    });
   }
 
   setContextKeys() {
@@ -1026,6 +1029,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  resetOpenType() {
+    this._currentOpenType = null;
+    this._codeEditorPendingLayout = false;
+    this._diffEditorPendingLayout = false;
+    this._mergeEditorPendingLayout = false;
+  }
+
   @OnEvent(ResourceOpenTypeChangedEvent)
   oResourceOpenTypeChangedEvent(e: ResourceOpenTypeChangedEvent) {
     const uri = e.payload;
@@ -1033,10 +1043,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.cachedResourcesOpenTypes.delete(uri.toString());
     }
     if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
-      this._currentOpenType = null;
-      this._codeEditorPendingLayout = false;
-      this._diffEditorPendingLayout = false;
-      this._mergeEditorPendingLayout = false;
+      this.resetOpenType();
 
       this.notifyBodyChanged();
       this.displayResourceComponent(this.currentResource, {});
@@ -2000,11 +2007,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const oldResource = this._currentResource;
 
     this._currentResource = null;
-    this._currentOpenType = null;
-    this._codeEditorPendingLayout = false;
-    this._diffEditorPendingLayout = false;
-    this._mergeEditorPendingLayout = false;
 
+    this.resetOpenType();
     this.notifyTabChanged();
     this.notifyBodyChanged();
     this._currentOrPreviousFocusedEditor = null;
