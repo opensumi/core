@@ -162,8 +162,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   public editorContextKeyService: IScopedContextKeyService;
 
-  private _domNode: HTMLElement;
-
   @Autowired(IOpenerService)
   openner: IOpenerService;
 
@@ -474,7 +472,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   onDomCreated(domNode: HTMLElement) {
-    this._domNode = domNode;
     if (this.editorContextKeyService) {
       this.editorContextKeyService.attachToDomNode(domNode);
     }
@@ -860,15 +857,23 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private _layoutEditorWorker() {
-    if (this.codeEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
-        this.codeEditor.layout();
-      }
+    if (!this.currentOpenType) {
+      return;
     }
-    if (this.diffEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
-        this.diffEditor.layout();
-      }
+
+    switch (this.currentOpenType.type) {
+      case EditorOpenType.code:
+        if (this.codeEditor) {
+          this.codeEditor.layout();
+        }
+        break;
+      case EditorOpenType.diff:
+        if (this.diffEditor) {
+          this.diffEditor.layout();
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -1109,13 +1114,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
-
     setTimeout(() => {
-      this.codeEditor.layout();
+      this.doLayoutEditors();
     });
     this.addDispose(
       this.codeEditor.onRefOpen(() => {
-        this.codeEditor.layout();
+        this.doLayoutEditors();
       }),
     );
     this.toDispose.push(
@@ -1195,7 +1199,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       },
     );
     setTimeout(() => {
-      this.diffEditor.layout();
+      this.doLayoutEditors();
+    });
+    this.diffEditor.onRefOpen(() => {
+      this.doLayoutEditors();
     });
 
     this.addDiffEditorEventListeners(this.diffEditor.originalEditor, 'original');

@@ -2,7 +2,6 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import ReactIs from 'react-is';
 
 import { Scrollbars } from '@opensumi/ide-components';
 import {
@@ -14,7 +13,6 @@ import {
   ErrorBoundary,
   IEventBus,
   MaybeNull,
-  PreferenceService,
   URI,
   View,
   renderView,
@@ -93,13 +91,11 @@ export const EditorView = () => {
         }
       }}
     >
-      <div className={styles.kt_editor_main_wrapper}>
-        <EditorGridView grid={workbenchEditorService.topGrid}></EditorGridView>
-      </div>
+      <EditorGridView grid={workbenchEditorService.topGrid}></EditorGridView>
       {RightWidget ? (
         <div className={styles.kt_editor_right_widget}>
           <ErrorBoundary>
-            <RightWidget></RightWidget>
+            <RightWidget />
           </ErrorBoundary>
         </div>
       ) : null}
@@ -210,10 +206,13 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
 
   return (
     <div
-      className={cls({
-        [styles.kt_grid_vertical]: grid.splitDirection === SplitDirection.Vertical,
-        [styles.kt_grid_horizontal]: grid.splitDirection === SplitDirection.Horizontal,
-      })}
+      className={cls(
+        {
+          [styles.kt_grid_vertical]: grid.splitDirection === SplitDirection.Vertical,
+          [styles.kt_grid_horizontal]: grid.splitDirection === SplitDirection.Horizontal,
+        },
+        styles.kt_editor_main_wrapper,
+      )}
     >
       {children}
     </div>
