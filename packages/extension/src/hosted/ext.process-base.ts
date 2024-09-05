@@ -12,6 +12,7 @@ import {
   locale,
   setLanguageId,
 } from '@opensumi/ide-core-common';
+import { suppressNodeJSEpipeError } from '@opensumi/ide-core-common/lib/node';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 
 import { IExtensionHostService, KT_APP_CONFIG_KEY, KT_PROCESS_SOCK_OPTION_KEY, ProcessMessageType } from '../common';
@@ -177,6 +178,10 @@ function onUnexpectedError(e: any) {
   }
   unexpectedErrorHandler(err);
 }
+
+suppressNodeJSEpipeError(process, (msg) => {
+  getErrorLogger()(msg);
+});
 
 process.on('uncaughtException', (err) => {
   onUnexpectedError(err);
