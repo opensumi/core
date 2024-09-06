@@ -415,12 +415,14 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   const renderTabContent = () => {
+    const noTab = group.resources.length === 0;
     const curTabIndex = group.resources.findIndex((resource) => group.currentResource === resource);
     return (
       <div
         draggable={false}
         className={cls({
           [styles_kt_editor_tabs_content]: true,
+          [styles.kt_editor_tabs_content_empty]: noTab,
           [styles_kt_editor_tabs_current_last]: curTabIndex === group.resources.length - 1,
         })}
         ref={contentRef as any}
@@ -498,9 +500,6 @@ export const Tabs = ({ group }: ITabsProps) => {
             </div>
           );
         })}
-        {wrapMode && (
-          <EditorActions className={styles.kt_editor_wrap_mode_action} ref={editorActionRef} group={group} />
-        )}
       </div>
     );
   };
@@ -526,7 +525,14 @@ export const Tabs = ({ group }: ITabsProps) => {
           <div className={styles.kt_editor_wrap_container}>{renderTabContent()}</div>
         )}
       </div>
-      {!wrapMode && <EditorActions ref={editorActionRef} group={group} />}
+
+      <EditorActions
+        className={cls({
+          [styles.kt_editor_wrap_mode_action]: wrapMode,
+        })}
+        ref={editorActionRef}
+        group={group}
+      />
 
       {renderView(RightExtraContentViewConfig)}
     </div>
