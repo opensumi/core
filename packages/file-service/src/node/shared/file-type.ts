@@ -1,14 +1,21 @@
+import { ReadStream } from 'fs';
+
 import fileType from 'file-type';
 import * as fse from 'fs-extra';
 
-import { BinaryBuffer, Deferred, FileUri, detectEncodingFromBuffer } from '@opensumi/ide-core-common';
-import { listenReadable } from '@opensumi/ide-utils/lib/stream';
+import {
+  BinaryBuffer,
+  FileUri,
+  ZERO_BYTE_DETECTION_BUFFER_MAX_LEN,
+  detectEncodingFromBuffer,
+} from '@opensumi/ide-core-common';
 
 import { EditorFileType, getFileTypeByExt, isErrnoException } from '../../common';
 
 const NO_ENCODING_GUESS_MIN_BYTES = 512; // when not auto guessing the encoding, small number of bytes are enough
 
 export async function getFileType(uri: string): Promise<string | undefined> {
+  let readStream: ReadStream | null = null;
   try {
     // 兼容性处理，本质 disk-file 不支持非 file 协议的文件头嗅探
     if (!uri.startsWith('file:/')) {
@@ -23,7 +30,7 @@ export async function getFileType(uri: string): Promise<string | undefined> {
     } else {
       let ext: string | undefined;
       if (stat.size) {
-        const readStream = fse.createReadStream(fsPath);
+        readStream = fse.createReadStream(fsPath);
         const streamWithType = await fileType.stream(readStream);
 
         // 可以拿到 type.fileType 说明为二进制文件
@@ -41,44 +48,19 @@ export async function getFileType(uri: string): Promise<string | undefined> {
 
         if (!ext) {
           const bufferedChunks: Uint8Array[] = [];
-          let bytesBuffered = 0;
+          let bytesRead = 0;
 
-          const deferred = new Deferred<boolean | undefined>();
+          for await (const chunk of streamWithType) {
+            bufferedChunks.push(chunk);
+            bytesRead += chunk.length;
+            // detectEncodingFromBuffer 只需要 ZERO_BYTE_DETECTION_BUFFER_MAX_LEN 长度的 buffer，剩下的无需读取
+            if (bytesRead >= ZERO_BYTE_DETECTION_BUFFER_MAX_LEN) {
+              break;
+            }
+          }
 
-          let decoded = false;
-
-          const decodeStream = async () => {
-            decoded = true;
-            const detected = await detectEncodingFromBuffer(BinaryBuffer.concat(bufferedChunks), false);
-
-            deferred.resolve(detected.seemsBinary);
-          };
-
-          // read file stream
-          listenReadable(readStream, {
-            onData: async (chunk) => {
-              bufferedChunks.push(chunk);
-              bytesBuffered += chunk.byteLength;
-
-              // buffered enough data for encoding detection, create stream
-              if (bytesBuffered >= NO_ENCODING_GUESS_MIN_BYTES) {
-                readStream.pause();
-
-                await decodeStream();
-                setTimeout(() => readStream.destroy());
-              }
-            },
-            onEnd: async () => {
-              if (!decoded) {
-                await decodeStream();
-              }
-            },
-          });
-          const isBinary = await deferred.promise;
-
-          readStream.destroy();
-          streamWithType.destroy();
-          if (isBinary) {
+          const detected = detectEncodingFromBuffer(BinaryBuffer.concat(bufferedChunks), false);
+          if (detected.seemsBinary) {
             return EditorFileType.Binary;
           }
         }
@@ -91,5 +73,7 @@ export async function getFileType(uri: string): Promise<string | undefined> {
         return undefined;
       }
     }
+  } finally {
+    readStream?.close();
   }
 }

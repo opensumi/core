@@ -2,7 +2,6 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import ReactIs from 'react-is';
 
 import { Scrollbars } from '@opensumi/ide-components';
 import {
@@ -14,7 +13,6 @@ import {
   ErrorBoundary,
   IEventBus,
   MaybeNull,
-  PreferenceService,
   URI,
   View,
   renderView,
@@ -94,12 +92,12 @@ export const EditorView = () => {
       }}
     >
       <div className={styles.kt_editor_main_wrapper}>
-        <EditorGridView grid={workbenchEditorService.topGrid}></EditorGridView>
+        <EditorGridView grid={workbenchEditorService.topGrid} />
       </div>
       {RightWidget ? (
         <div className={styles.kt_editor_right_widget}>
           <ErrorBoundary>
-            <RightWidget></RightWidget>
+            <RightWidget />
           </ErrorBoundary>
         </div>
       ) : null}

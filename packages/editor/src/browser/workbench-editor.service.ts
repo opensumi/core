@@ -42,7 +42,6 @@ import {
   StorageProvider,
   URI,
   WithEventBus,
-  debounce,
   formatLocalize,
   getDebugLogger,
   isDefined,
@@ -162,8 +161,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private initializing: Promise<any>;
 
   public editorContextKeyService: IScopedContextKeyService;
-
-  private _domNode: HTMLElement;
 
   @Autowired(IOpenerService)
   openner: IOpenerService;
@@ -475,7 +472,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   onDomCreated(domNode: HTMLElement) {
-    this._domNode = domNode;
     if (this.editorContextKeyService) {
       this.editorContextKeyService.attachToDomNode(domNode);
     }
@@ -763,10 +759,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private _prevDomHeight = 0;
   private _prevDomWidth = 0;
 
-  private _codeEditorPendingLayout = false;
-  private _diffEditorPendingLayout = false;
-  private _mergeEditorPendingLayout = false;
-
   // 当前为EditorComponent，且monaco光标变化时触发
   private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
   public onCurrentEditorCursorChange = this._onCurrentEditorCursorChange.event;
@@ -795,17 +787,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string, public readonly groupId: number) {
     super();
-    let toDispose: IDisposable | undefined;
     this.eventBus.onDirective(
       ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
       () => {
-        if (toDispose) {
-          toDispose.dispose();
-        }
-
-        toDispose = fastdom.mutate(() => {
-          this._layoutEditorWorker();
-        });
+        this.doLayoutEditors();
       },
     );
     this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
@@ -872,35 +857,34 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private _layoutEditorWorker() {
-    if (this.codeEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
-        this.codeEditor.layout();
-        this._codeEditorPendingLayout = false;
-      } else {
-        this._codeEditorPendingLayout = true;
-      }
+    if (!this.currentOpenType) {
+      return;
     }
-    if (this.diffEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
-        this.diffEditor.layout();
-        this._diffEditorPendingLayout = false;
-      } else {
-        this._diffEditorPendingLayout = true;
-      }
-    }
-    if (this.mergeEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.mergeEditor) {
-        // this.mergeEditor.layout();
-        this._mergeEditorPendingLayout = false;
-      } else {
-        this._mergeEditorPendingLayout = true;
-      }
+
+    switch (this.currentOpenType.type) {
+      case EditorOpenType.code:
+        if (this.codeEditor) {
+          this.codeEditor.layout();
+        }
+        break;
+      case EditorOpenType.diff:
+        if (this.diffEditor) {
+          this.diffEditor.layout();
+        }
+        break;
+      default:
+        break;
     }
   }
 
-  @debounce(16 * 5)
+  protected _measure: IDisposable | undefined;
   doLayoutEditors() {
-    this._layoutEditorWorker();
+    if (this._measure) {
+      this._measure.dispose();
+    }
+    this._measure = fastdom.mutate(() => {
+      this._layoutEditorWorker();
+    });
   }
 
   setContextKeys() {
@@ -913,24 +897,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
         return result;
       };
-      this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => {
-        const res = getLanguageFromModel(uri);
-        if (res) {
-          return res;
-        } else {
-          return getLanguageFromModel(uri);
-        }
-      });
+      this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => getLanguageFromModel(uri));
       this._diffResourceContextKey = new ResourceContextKey(
         this.contextKeyService,
-        (uri: URI) => {
-          const res = getLanguageFromModel(uri);
-          if (res) {
-            return res;
-          } else {
-            return getLanguageFromModel(uri);
-          }
-        },
+        (uri: URI) => getLanguageFromModel(uri),
         'diffResource',
       );
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
@@ -1026,6 +996,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  resetOpenType() {
+    this._currentOpenType = null;
+  }
+
   @OnEvent(ResourceOpenTypeChangedEvent)
   oResourceOpenTypeChangedEvent(e: ResourceOpenTypeChangedEvent) {
     const uri = e.payload;
@@ -1033,7 +1007,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.cachedResourcesOpenTypes.delete(uri.toString());
     }
     if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
-      this._currentOpenType = null;
+      this.resetOpenType();
+
       this.notifyBodyChanged();
       this.displayResourceComponent(this.currentResource, {});
     }
@@ -1139,13 +1114,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
-
     setTimeout(() => {
-      this.codeEditor.layout();
+      this.doLayoutEditors();
     });
     this.addDispose(
       this.codeEditor.onRefOpen(() => {
-        this.codeEditor.layout();
+        this.doLayoutEditors();
       }),
     );
     this.toDispose.push(
@@ -1225,7 +1199,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       },
     );
     setTimeout(() => {
-      this.diffEditor.layout();
+      this.doLayoutEditors();
+    });
+    this.diffEditor.onRefOpen(() => {
+      this.doLayoutEditors();
     });
 
     this.addDiffEditorEventListeners(this.diffEditor.originalEditor, 'original');
@@ -1837,14 +1814,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.resolveTabChanged(_resource, this.currentResource);
       this._currentOpenType = activeOpenType;
       this.notifyBodyChanged();
-
-      if (
-        (!this._codeEditorPendingLayout && activeOpenType.type === EditorOpenType.code) ||
-        (!this._diffEditorPendingLayout && activeOpenType.type === EditorOpenType.diff) ||
-        (!this._mergeEditorPendingLayout && activeOpenType.type === EditorOpenType.mergeEditor)
-      ) {
-        this.doLayoutEditors();
-      }
+      this.doLayoutEditors();
 
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
     }
@@ -1996,7 +1966,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const oldResource = this._currentResource;
 
     this._currentResource = null;
-    this._currentOpenType = null;
+
+    this.resetOpenType();
     this.notifyTabChanged();
     this.notifyBodyChanged();
     this._currentOrPreviousFocusedEditor = null;
