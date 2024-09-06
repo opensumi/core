@@ -259,6 +259,14 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     this.previewer?.handleAction(action);
   }
 
+  getModifyContent() {
+    return this.previewer?.getValue();
+  }
+
+  getOriginContent() {
+    return this.previewer?.getOriginValue();
+  }
+
   destroyPreviewer(uriString?: string) {
     this.previewer?.dispose();
     this.previewer = undefined;

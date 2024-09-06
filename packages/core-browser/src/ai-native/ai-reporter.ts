@@ -15,7 +15,7 @@ export class AIReporter implements IAIReporter {
   private reportInfoCache: Map<string, ReportInfo> = new Map();
   private reporterCancelHandler: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
-  private getRelationId() {
+  getRelationId() {
     return uuid();
   }
 

@@ -18,6 +18,8 @@ import {
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
+  ActionSourceEnum,
+  ActionTypeEnum,
   ChatAgentViewServiceToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
@@ -47,6 +49,8 @@ interface IChatReplyProps {
   relationId: string;
   request: ChatRequestModel;
   startTime?: number;
+  agentId?: string;
+  command?: string;
   onRegenerate?: () => void;
   onDidChange?: () => void;
   onDone?: () => void;
@@ -159,7 +163,7 @@ const ComponentRender = (props: { component: string; value?: unknown }) => {
 };
 
 export const ChatReply = (props: IChatReplyProps) => {
-  const { relationId, request, startTime = 0, onRegenerate, onDidChange, onDone } = props;
+  const { relationId, request, startTime = 0, onRegenerate, onDidChange, onDone, agentId, command } = props;
 
   const [, update] = useReducer((num) => (num + 1) % 1_000_000, 0);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
@@ -201,6 +205,8 @@ export const ChatReply = (props: IChatReplyProps) => {
             replytime: Date.now() - startTime,
             success: true,
             isStop: false,
+            command,
+            agentId,
           });
         }
         update();
@@ -224,6 +230,8 @@ export const ChatReply = (props: IChatReplyProps) => {
       replytime: Date.now() - startTime,
       success: false,
       isStop: true,
+      command,
+      agentId,
     });
     aiChatService.cancelRequest();
   };
@@ -279,7 +287,17 @@ export const ChatReply = (props: IChatReplyProps) => {
       let node: React.ReactNode = null;
       if (item.kind === 'reply') {
         const a = (
-          <a onClick={() => chatApiService.sendMessage(chatAgentService.parseMessage(item.message))}>
+          <a
+            onClick={() => {
+              chatApiService.sendMessage({
+                ...chatAgentService.parseMessage(item.message),
+                reportExtra: {
+                  actionSource: ActionSourceEnum.Chat,
+                  actionType: ActionTypeEnum.Followup,
+                },
+              });
+            }}
+          >
             {item.title || item.message}
           </a>
         );

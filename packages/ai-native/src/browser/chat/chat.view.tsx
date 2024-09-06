@@ -7,6 +7,8 @@ import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/compone
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   AISerivceType,
+  ActionSourceEnum,
+  ActionTypeEnum,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
@@ -197,7 +199,9 @@ export const AIChatView = observer(() => {
           message: chunk,
         });
 
-        let renderContent = <ChatMarkdown markdown={chunk} fillInIncompleteTokens />;
+        let renderContent = (
+          <ChatMarkdown markdown={chunk} fillInIncompleteTokens agentId={agentId} command={command} />
+        );
 
         if (chatRenderRegistry.chatAIRoleRender) {
           const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
@@ -322,8 +326,10 @@ export const AIChatView = observer(() => {
       relationId: string;
       requestId: string;
       startTime: number;
+      command?: string;
+      agentId?: string;
     }) => {
-      const { userMessage, relationId, requestId, render, startTime } = value;
+      const { userMessage, relationId, requestId, render, startTime, command, agentId } = value;
 
       msgHistoryManager.addAssistantMessage({
         type: 'component',
@@ -341,6 +347,8 @@ export const AIChatView = observer(() => {
             relationId={relationId}
             requestId={requestId}
             renderContent={render}
+            command={command}
+            agentId={agentId}
           />
         ),
       });
@@ -352,7 +360,8 @@ export const AIChatView = observer(() => {
 
   const handleAgentReply = React.useCallback(
     async (value: IChatMessageStructure) => {
-      const { message, agentId, command } = value;
+      const { message, agentId, command, reportExtra } = value;
+      const { actionType, actionSource } = reportExtra || {};
 
       const request = aiChatService.createRequest(message, agentId!, command);
       if (!request) {
@@ -369,7 +378,10 @@ export const AIChatView = observer(() => {
       const relationId = aiReporter.start(command || reportType, {
         message,
         agentId,
+        command,
         userMessage: message,
+        actionType,
+        actionSource,
       });
 
       msgHistoryManager.addUserMessage({
@@ -405,6 +417,8 @@ export const AIChatView = observer(() => {
             relationId,
             requestId: request.requestId,
             startTime,
+            agentId,
+            command,
           });
         }
       }
@@ -418,6 +432,8 @@ export const AIChatView = observer(() => {
             relationId={relationId}
             request={request}
             startTime={startTime}
+            agentId={visibleAgentId}
+            command={command}
             onDidChange={() => {
               scrollToBottom();
             }}
@@ -438,10 +454,10 @@ export const AIChatView = observer(() => {
   );
 
   const handleSend = React.useCallback(async (value: IChatMessageStructure) => {
-    const { message, command } = value;
+    const { message, command, reportExtra } = value;
 
     const agentId = value.agentId ? value.agentId : ChatProxyService.AGENT_ID;
-    return handleAgentReply({ message, agentId, command });
+    return handleAgentReply({ message, agentId, command, reportExtra });
   }, []);
 
   const handleClear = React.useCallback(() => {
@@ -531,7 +547,17 @@ export const AIChatView = observer(() => {
               <div className={styles.header_operate_right}></div>
             </div>
             <ChatInputWrapperRender
-              onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
+              onSend={(value, agentId, command) =>
+                handleSend({
+                  message: value,
+                  agentId,
+                  command,
+                  reportExtra: {
+                    actionSource: ActionSourceEnum.Chat,
+                    actionType: ActionTypeEnum.Send,
+                  },
+                })
+              }
               disabled={loading}
               enableOptions={true}
               theme={theme}
