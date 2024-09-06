@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { StackingLevel } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { ActionSourceEnum, ActionTypeEnum, Disposable, Emitter, Event, IAIReporter } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Position, Range } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -57,6 +57,9 @@ export interface ITotalCodeInfo {
 export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
 
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
@@ -324,8 +327,14 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     return operation;
   }
 
-  private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget, isPushStack: boolean = true) {
+  private handlePartialEditAction(
+    type: EPartialEdit,
+    widget: AcceptPartialEditWidget,
+    isPushStack: boolean = true,
+    isReport: boolean = false,
+  ) {
     const position = widget.getPosition()!.position!;
+    const relationId = this.aiReporter.getRelationId();
     const model = this.model;
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
@@ -356,7 +365,28 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const findAddedRangeDecByGroup = (model: LivePreviewDiffDecorationModel) =>
       model.addedRangeDec.getDecorationByGroup(group);
 
+    let modifyContent;
+    const removeContent = removedWidget?.getRemovedTextLines().join('\n') || '';
+    const range = addedDec?.getRange();
+    if (range) {
+      modifyContent = model.getValueInRange({
+        ...range,
+        endColumn: model.getLineMaxColumn(range.endLineNumber),
+      });
+    }
     const discard = (decorationModel: LivePreviewDiffDecorationModel) => {
+      // 只有点击行丢弃时才会上报
+      if (isReport) {
+        this.aiReporter.end(relationId, {
+          message: 'discard',
+          success: true,
+          isDrop: true,
+          code: modifyContent,
+          originCode: removeContent,
+          actionSource: ActionSourceEnum.InlineChat,
+          actionType: ActionTypeEnum.LineDiscard,
+        });
+      }
       const removedWidget = findRemovedWidgetByGroup(decorationModel);
       removedWidget?.hide();
 
@@ -370,6 +400,18 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     };
 
     const accpet = (decorationModel: LivePreviewDiffDecorationModel) => {
+      // 只有点击行采纳时才会上报
+      if (isReport) {
+        this.aiReporter.end(relationId, {
+          message: 'accept',
+          success: true,
+          isReceive: true,
+          code: modifyContent,
+          originCode: removeContent,
+          actionSource: ActionSourceEnum.InlineChat,
+          actionType: ActionTypeEnum.lineAccept,
+        });
+      }
       const partialEditWidget = findPartialWidgetByGroup(decorationModel);
       partialEditWidget?.accept(addedLinesCount, deletedLinesCount);
 
@@ -541,10 +583,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     acceptPartialEditWidget.addDispose([
       acceptPartialEditWidget.onAccept(() => {
-        this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget);
+        this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget, true, true);
       }),
       acceptPartialEditWidget.onDiscard(() => {
-        this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget);
+        this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget, true, true);
       }),
     ]);
 

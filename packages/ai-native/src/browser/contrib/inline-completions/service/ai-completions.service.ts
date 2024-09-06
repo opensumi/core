@@ -2,6 +2,8 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
+  ActionSourceEnum,
+  ActionTypeEnum,
   CancellationTokenSource,
   Disposable,
   Emitter,
@@ -51,6 +53,8 @@ export class AICompletionsService extends Disposable {
   private lastRelationId: string;
   private lastRenderTime: number;
   private lastCompletionUseTime: number;
+  // 补全内容
+  private lastCompletionContent: string;
 
   protected validCompletionThreshold = 750;
 
@@ -99,16 +103,18 @@ export class AICompletionsService extends Disposable {
   }
 
   public async report(data: IAIReportCompletionOption) {
-    if (!this.aiBackService.reportCompletion) {
-      return;
-    }
-
     const { relationId, accept } = data;
 
     data.renderingTime = Date.now() - this.lastRenderTime;
     data.completionUseTime = this.lastCompletionUseTime;
-    this.aiBackService.reportCompletion(data);
-    this.reporterEnd(relationId, { success: true, isReceive: accept, renderingTime: data.renderingTime });
+    this.reporterEnd(relationId, {
+      success: true,
+      isReceive: accept,
+      renderingTime: data.renderingTime,
+      code: data.code,
+      actionSource: ActionSourceEnum.Completion,
+      actionType: ActionTypeEnum.Completion,
+    });
 
     this._isVisibleCompletion = false;
   }
@@ -118,13 +124,21 @@ export class AICompletionsService extends Disposable {
       ...data,
       isValid: typeof data.renderingTime === 'number' ? data.renderingTime > this.validCompletionThreshold : false,
     };
-    this.aiReporter.end(relationId, reportData);
+    // 排除掉无效数据，避免多余数据上报
+    if (reportData.isValid) {
+      this.aiReporter.end(relationId, reportData);
+    }
   }
 
   public setVisibleCompletion(visible: boolean) {
     // 如果之前是 true，现在是 false，说明并没有进行采纳
     if (this._isVisibleCompletion === true && visible === false) {
-      this.report({ sessionId: this.lastSessionId, accept: false, relationId: this.lastRelationId });
+      this.report({
+        sessionId: this.lastSessionId,
+        accept: false,
+        relationId: this.lastRelationId,
+        code: this.lastCompletionContent,
+      });
     }
 
     this._isVisibleCompletion = visible;
@@ -142,6 +156,10 @@ export class AICompletionsService extends Disposable {
 
   public setLastRelationId(relationId: string) {
     this.lastRelationId = relationId;
+  }
+
+  public setLastCompletionContent(content: string) {
+    this.lastCompletionContent = content;
   }
 
   public async cancelRequest() {

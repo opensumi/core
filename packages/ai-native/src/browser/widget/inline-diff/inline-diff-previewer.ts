@@ -151,6 +151,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     // do nothing
     return '';
   }
+  getOriginValue(): string {
+    // do nothing
+    return '';
+  }
   onError(error: ErrorResponse): void {
     // do nothing
   }
@@ -214,6 +218,12 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     const model = this.node?.getModifiedModel();
     return model!.getValue();
   }
+
+  getOriginValue(): string {
+    const model = this.node?.getOriginModel();
+    return model!.getValue() || '';
+  }
+
   handleAction(action: EResultKind): void {
     if (action === EResultKind.ACCEPT) {
       const newValue = this.getValue();
@@ -341,6 +351,15 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       this.node?.pushRateFinallyDiffStack(diffModel);
     }
   }
+
+  getValue(): string {
+    return this.node?.getVirtualModelValue() || '';
+  }
+
+  getOriginValue(): string {
+    return this.node?.getOriginModelValue() || '';
+  }
+
   setValue(content: string): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
     if (diffModel) {

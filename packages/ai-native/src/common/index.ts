@@ -1,6 +1,8 @@
 import {
   AIInlineChatContentWidgetId,
   AISerivceType,
+  ActionSourceEnum,
+  ActionTypeEnum,
   CancellationToken,
   Event,
   IChatComponent,
@@ -59,6 +61,15 @@ export interface IChatMessageStructure {
    * 是否立即发送，默认为 true
    */
   immediate?: boolean;
+  /**
+   * 上报数据时需要增加额外的字段
+   */
+  reportExtra?: {
+    // 行动点类型
+    actionType?: ActionTypeEnum | string;
+    // 行动点来源
+    actionSource?: ActionSourceEnum | string;
+  };
 }
 
 export interface IChatMessageListUserItem {
@@ -241,9 +252,13 @@ export interface ITerminalCommandSuggestionDesc {
 }
 
 export enum EInlineChatStatus {
+  // 准备渲染、渲染中
   READY,
+  // 正在请求数据中
   THINKING,
+  // 渲染结束
   DONE,
+  // 异常
   ERROR,
 }
 
