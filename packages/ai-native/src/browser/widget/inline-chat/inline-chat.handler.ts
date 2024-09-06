@@ -249,7 +249,7 @@ export class InlineChatHandler extends Disposable {
               type: AISerivceType.InlineChat,
               source,
               runByCodeAction: source === 'codeAction',
-              actionSource: ActionSourceEnum.InlineChat,
+              actionSource: source === 'codeAction' ? ActionSourceEnum.CodeAction : ActionSourceEnum.InlineChat,
               actionType: action.name,
             });
             return relationId;
