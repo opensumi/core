@@ -76,6 +76,7 @@ import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
 import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
+import { ProblemFixHandler } from './contrib/problem-fix/problem-fix.handler';
 import { RenameHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
@@ -176,6 +177,9 @@ export class AINativeBrowserContribution
   @Autowired(RenameHandler)
   private readonly renameHandler: RenameHandler;
 
+  @Autowired(ProblemFixHandler)
+  private readonly problemfixHandler: ProblemFixHandler;
+
   @Autowired(InlineCompletionHandler)
   private readonly inlineCompletionHandler: InlineCompletionHandler;
 
@@ -222,6 +226,9 @@ export class AINativeBrowserContribution
 
     if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
       this.renameHandler.load();
+    }
+    if (this.aiNativeConfigService.capabilities.supportsProblemFix) {
+      this.problemfixHandler.load();
     }
     if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
       this.inlineCompletionHandler.load();

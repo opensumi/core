@@ -1224,6 +1224,8 @@ export const localizationBundle = {
     'aiNative.inline.chat.input.placeholder.default': '可以问我任何问题，支持 shift + 回车换行',
     'aiNative.inline.hint.widget.placeholder': '按 {0} 唤起 Inline Chat',
 
+    'aiNative.inline.problem.fix.title': 'AI 修复',
+
     'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
     'aiNative.resolve.conflict.dialog.detection':
       '检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。',

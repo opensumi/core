@@ -13,7 +13,7 @@ import {
   MaybePromise,
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, IRange, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
@@ -206,6 +206,10 @@ export interface IIntelligentCompletionsRegistry {
   registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
 }
 
+export interface IProblemFixProviderRegistry {
+  registerHoverFixProvider(provider: NewSymbolNamesProviderFn): void;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
@@ -230,6 +234,10 @@ export interface AINativeCoreContribution {
    * 注册智能重命名相关功能
    */
   registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
+  /**
+   * 注册智能修复相关功能
+   */
+  registerProblemFixFeature?(registry: IProblemFixProviderRegistry): void;
   /**
    * 注册智能终端相关功能
    */
