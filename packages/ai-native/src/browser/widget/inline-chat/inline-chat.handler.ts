@@ -281,7 +281,6 @@ export class InlineChatHandler extends Disposable {
               type: AISerivceType.InlineChatInput,
               source: 'input',
               actionSource: ActionSourceEnum.InlineChatInput,
-              actionType: ActionTypeEnum.Send,
             });
             return relationId;
           },
