@@ -159,6 +159,9 @@
   }
 
   .kt_editor_wrap_container {
+    display: flex;
+    flex-direction: column;
+
     .kt_editor_tabs_content {
       flex-wrap: wrap;
       width: 100%;
@@ -352,6 +355,7 @@
   .editorGroupHeader {
     z-index: var(--stacking-level-workbench, 1);
     position: relative;
+    background-color: var(--editorGroupHeader-tabsBackground);
   }
 
   .kt_editor_body {
