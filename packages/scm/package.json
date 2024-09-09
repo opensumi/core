@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-scm",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "files": [
     "lib",
     "src"
