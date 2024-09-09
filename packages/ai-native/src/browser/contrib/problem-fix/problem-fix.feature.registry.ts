@@ -1,16 +1,16 @@
 import { Injectable } from '@opensumi/di';
 
-import { IProblemFixProviderRegistry, NewSymbolNamesProviderFn } from '../../types';
+import { IHoverFixHandler, IProblemFixProviderRegistry } from '../../types';
 
 @Injectable()
 export class ProblemFixProviderRegistry implements IProblemFixProviderRegistry {
-  registerHoverFixProvider(provider: NewSymbolNamesProviderFn): void {
-    throw new Error('Method not implemented.');
+  private hoverFixProvider: IHoverFixHandler | undefined;
+
+  registerHoverFixProvider(provider: IHoverFixHandler): void {
+    this.hoverFixProvider = provider;
   }
 
-  registerFixProvider(provider: NewSymbolNamesProviderFn): void {}
-
-  getFixProviders(): NewSymbolNamesProviderFn[] {
-    return [];
+  getHoverFixProvider(): IHoverFixHandler | undefined {
+    return this.hoverFixProvider;
   }
 }

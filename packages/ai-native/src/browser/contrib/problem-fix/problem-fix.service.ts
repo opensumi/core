@@ -1,17 +1,13 @@
-import { Autowired, Injectable } from '@opensumi/di';
-import {
-  CancellationToken,
-  ProblemFixRegistryToken,
-  RenameCandidatesProviderRegistryToken,
-} from '@opensumi/ide-core-common';
-import { IRange, ITextModel, NewSymbolName } from '@opensumi/ide-monaco';
-
-import { IProblemFixProviderRegistry, IRenameCandidatesProviderRegistry } from '../../types';
+import { Injectable } from '@opensumi/di';
+import { Emitter, Event } from '@opensumi/ide-core-common';
+import { MarkerHover } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/hover/browser/markerHoverParticipant';
 
 @Injectable()
 export class ProblemFixService {
-  @Autowired(ProblemFixRegistryToken)
-  private readonly problemFixProviderRegistry: IProblemFixProviderRegistry;
+  private readonly _onHoverFixTrigger = new Emitter<MarkerHover>();
+  public readonly onHoverFixTrigger: Event<MarkerHover> = this._onHoverFixTrigger.event;
 
-  async provideProblemFix(model: ITextModel, range: IRange, token: CancellationToken) {}
+  public triggerHoverFix(isTrigger: MarkerHover) {
+    this._onHoverFixTrigger.fire(isTrigger);
+  }
 }

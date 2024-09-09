@@ -46,6 +46,7 @@ import {
   CommandService,
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
+  ProblemFixRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
   TerminalRegistryToken,
@@ -86,6 +87,7 @@ import {
   IChatFeatureRegistry,
   IChatRenderRegistry,
   IIntelligentCompletionsRegistry,
+  IProblemFixProviderRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
@@ -143,6 +145,9 @@ export class AINativeBrowserContribution
 
   @Autowired(IntelligentCompletionsRegistryToken)
   private readonly intelligentCompletionsRegistry: IIntelligentCompletionsRegistry;
+
+  @Autowired(ProblemFixRegistryToken)
+  private readonly problemFixProviderRegistry: IProblemFixProviderRegistry;
 
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
@@ -247,6 +252,7 @@ export class AINativeBrowserContribution
       contribution.registerChatRender?.(this.chatRenderRegistry);
       contribution.registerTerminalProvider?.(this.terminalProviderRegistry);
       contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
+      contribution.registerProblemFixFeature?.(this.problemFixProviderRegistry);
     });
   }
 

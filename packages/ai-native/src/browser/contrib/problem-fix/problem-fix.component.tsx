@@ -2,13 +2,23 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { Button } from '@opensumi/ide-components';
-import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
+import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-common';
+import { MarkerHover } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/hover/browser/markerHoverParticipant';
 
 import styles from './problem-fix.module.less';
+import { ProblemFixService } from './problem-fix.service';
 
-export const ProblemFixComponent = () => {
-  const handleClick = () => {};
+interface IProblemFixComponentProps {
+  part: MarkerHover;
+}
+
+export const ProblemFixComponent = ({ part }: IProblemFixComponentProps) => {
+  const problemFixService = useInjectable(ProblemFixService);
+
+  const handleClick = () => {
+    problemFixService.triggerHoverFix(part);
+  };
 
   return (
     <Button size='small' onClick={handleClick}>
@@ -18,16 +28,19 @@ export const ProblemFixComponent = () => {
 };
 
 export const MarkerHoverParticipantComponent = {
-  mount(container: DocumentFragment, configContext: AppConfig) {
-    const dom = document.createElement('div');
-    dom.className = styles.problem_fix_btn_container;
+  mount(container: DocumentFragment, hoverParts: MarkerHover[], configContext: AppConfig) {
+    container.childNodes.forEach((node, index) => {
+      const dom = document.createElement('div');
+      dom.className = styles.problem_fix_btn_container;
 
-    ReactDOM.createRoot(dom).render(
-      <ConfigProvider value={configContext}>
-        <ProblemFixComponent />
-      </ConfigProvider>,
-    );
+      const part = hoverParts[index];
 
-    container.appendChild(dom);
+      ReactDOM.createRoot(dom).render(
+        <ConfigProvider value={configContext}>
+          <ProblemFixComponent part={part} />
+        </ConfigProvider>,
+      );
+      node.appendChild(dom);
+    });
   },
 };

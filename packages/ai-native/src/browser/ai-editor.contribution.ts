@@ -10,6 +10,7 @@ import { BrowserCodeEditor, BrowserDiffEditor } from '@opensumi/ide-editor/lib/b
 import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
 import { IntelligentCompletionsHandler } from './contrib/intelligent-completions/intelligent-completions.handler';
+import { ProblemFixHandler } from './contrib/problem-fix/problem-fix.handler';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
 import { InlineDiffHandler } from './widget/inline-diff/inline-diff.handler';
@@ -41,6 +42,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(InlineCompletionHandler)
   private readonly inlineCompletionHandler: InlineCompletionHandler;
+
+  @Autowired(ProblemFixHandler)
+  private readonly problemfixHandler: ProblemFixHandler;
 
   @Autowired(IntelligentCompletionsHandler)
   private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
@@ -190,6 +194,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       this.modelSessionDisposable.addDispose(this.codeActionHandler.mountEditor(editor));
+    }
+    if (this.aiNativeConfigService.capabilities.supportsProblemFix) {
+      this.modelSessionDisposable.addDispose(this.problemfixHandler.mountEditor(editor));
     }
 
     this.modelSessionDisposable.addDispose(this.inlineDiffHandler.mountEditor(editor));

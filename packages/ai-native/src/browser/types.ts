@@ -13,8 +13,9 @@ import {
   MaybePromise,
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
@@ -206,8 +207,21 @@ export interface IIntelligentCompletionsRegistry {
   registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
 }
 
+export interface IProblemFixContext {
+  marker: IMarker;
+  editRange: IRange;
+}
+
+export interface IHoverFixHandler {
+  provideFix: (
+    editor: ICodeEditor,
+    context: IProblemFixContext,
+    token: CancellationToken,
+  ) => MaybePromise<ChatResponse | InlineChatController>;
+}
+
 export interface IProblemFixProviderRegistry {
-  registerHoverFixProvider(provider: NewSymbolNamesProviderFn): void;
+  registerHoverFixProvider(handler: IHoverFixHandler): void;
 }
 
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
