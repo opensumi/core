@@ -1,6 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
-import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
   AIInlineChatContentWidgetId,
   AINativeSettingSectionsId,
@@ -249,14 +248,17 @@ export class InlineChatHandler extends Disposable {
               type: AISerivceType.InlineChat,
               source,
               runByCodeAction: source === 'codeAction',
-              actionSource: ActionSourceEnum.InlineChat,
+              actionSource: source === 'codeAction' ? ActionSourceEnum.CodeAction : ActionSourceEnum.InlineChat,
               actionType: action.name,
             });
             return relationId;
           },
           execute: handler.execute ? handler.execute!.bind(this, monacoEditor, this.cancelIndicator.token) : undefined,
           providerPreview: previewer(),
-          action,
+          extraData: {
+            actionSource: source === 'codeAction' ? ActionSourceEnum.CodeAction : ActionSourceEnum.InlineChat,
+            actionType: action.name,
+          },
         });
       }),
     );
@@ -278,8 +280,7 @@ export class InlineChatHandler extends Disposable {
               message: value,
               type: AISerivceType.InlineChatInput,
               source: 'input',
-              actionSource: ActionSourceEnum.InlineChat,
-              actionType: ActionTypeEnum.Send,
+              actionSource: ActionSourceEnum.InlineChatInput,
             });
             return relationId;
           },
@@ -291,6 +292,10 @@ export class InlineChatHandler extends Disposable {
             handler.providePreviewStrategy && strategy === ERunStrategy.PREVIEW
               ? handler.providePreviewStrategy.bind(this, monacoEditor, value, this.cancelIndicator.token)
               : undefined,
+          extraData: {
+            actionSource: ActionSourceEnum.InlineChatInput,
+            actionType: strategy,
+          },
         });
       }),
     );
@@ -508,7 +513,6 @@ export class InlineChatHandler extends Disposable {
             isDrop: false,
             code: modifyContent,
             originCode: originContent,
-            actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Accept,
           });
           runWhenIdle(() => {
@@ -522,7 +526,6 @@ export class InlineChatHandler extends Disposable {
             isReceive: false,
             code: modifyContent,
             originCode: originContent,
-            actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Discard,
           });
           runWhenIdle(() => {
@@ -536,7 +539,6 @@ export class InlineChatHandler extends Disposable {
             isReceive: false,
             code: modifyContent,
             originCode: originContent,
-            actionSource: ActionSourceEnum.InlineChat,
             actionType: ActionTypeEnum.Regenerate,
           });
           this.handleDiffPreviewStrategy({
@@ -570,9 +572,12 @@ export class InlineChatHandler extends Disposable {
     reporterFn: () => string;
     execute?: () => MaybePromise<void>;
     providerPreview?: () => MaybePromise<ChatResponse | InlineChatController>;
-    action?: AIActionItem;
+    extraData?: {
+      actionSource: string;
+      actionType: string;
+    };
   }) {
-    const { monacoEditor, reporterFn, execute, providerPreview, action } = params;
+    const { monacoEditor, reporterFn, execute, providerPreview, extraData } = params;
     const selection = monacoEditor.getSelection();
     if (!selection) {
       this.logger.error('No selection found, aborting inline chat action.');
@@ -597,8 +602,8 @@ export class InlineChatHandler extends Disposable {
         crossSelection,
         relationId,
         isRetry: false,
-        actionSource: ActionSourceEnum.InlineChat,
-        actionType: action?.name,
+        actionSource: extraData?.actionSource,
+        actionType: extraData?.actionType,
       });
     }
   }

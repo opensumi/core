@@ -18,6 +18,8 @@ export enum ActionSourceEnum {
   Chat = 'chat',
   // 编辑器内联 Chat
   InlineChat = 'inlineChat',
+  // 编辑器内联 ChatInput
+  InlineChatInput = 'inlineChatInput',
   // 编辑器内 Action
   CodeAction = 'codeAction',
   // 终端
