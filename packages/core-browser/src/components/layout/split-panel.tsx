@@ -248,10 +248,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
             } else if (getProp(childList[index - 1], 'flexGrow')) {
               flexMode = ResizeFlexMode.Next;
             }
-            const noResize =
-              splitPanelService.checkChildNoResize(targetElement) ||
-              getProp(targetElement, 'noResize') ||
-              locks[index - 1];
+            const noResize = getProp(targetElement, 'noResize') || locks[index - 1];
             if (!noResize) {
               result.push(
                 <ResizeHandle
