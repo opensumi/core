@@ -2897,7 +2897,7 @@ __metadata:
     "@opensumi/textmate-languages": "npm:^2.6.1"
     browserfs: "npm:^1.4.3"
     css-loader: "npm:^6.9.1"
-    electron: "npm:^22.3.21"
+    electron: "npm:^32.0.2"
     less-loader: "npm:^12.1.0"
     nodemon: "npm:^2.0.15"
     npm-run: "npm:^5.0.1"
@@ -4073,19 +4073,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.26":
-  version: 16.18.89
-  resolution: "@types/node@npm:16.18.89"
-  checksum: 10/b412f78cd52c6640a215838aae5f69adc8ce1bcc30e61d8c2437a384478dcd7e182e802a85ed18b23fb99dd337821ed67846579b1db828f2e99144195a0ee23b
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^20.11.30":
   version: 20.11.30
   resolution: "@types/node@npm:20.11.30"
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10/78515bc768d2b878e2e06a1c20eb4f5840072b79b8d28ff3dd0a7feaaf48fd3a2ac03cfa5bc7564da82db5906b43e9ba0e5df9f43d870b7aae2942306e208815
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^20.9.0":
+  version: 20.16.5
+  resolution: "@types/node@npm:20.16.5"
+  dependencies:
+    undici-types: "npm:~6.19.2"
+  checksum: 10/39a8457149dc17cdea57afc90d4da53182fdb8b958d5bb065a15d123d81d4efa6b51a0de92428d05ead2e63ce07195586f71083401b99cdbcd04662344fbf7a1
   languageName: node
   linkType: hard
 
@@ -8002,16 +8004,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^22.3.21":
-  version: 22.3.27
-  resolution: "electron@npm:22.3.27"
+"electron@npm:^32.0.2":
+  version: 32.0.2
+  resolution: "electron@npm:32.0.2"
   dependencies:
     "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^16.11.26"
+    "@types/node": "npm:^20.9.0"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10/1b3e83c352326078d6abc6bda2124938d32351f9d0cd7898e0eb9165513f6fdfb1db802b0c66e0e761519bcd39e37663634eb935f88d1598edc91e725939bdbb
+  checksum: 10/1de5c05e44cde6e9e9799a5867c5dfae587bf13a5d35273c75d8508d71ab488641333bee959785b4074cd9cf7940c3fbcb5b8b3e58a428e196dafa33cfa92962
   languageName: node
   linkType: hard
 
@@ -19178,6 +19180,13 @@ __metadata:
   version: 5.26.5
   resolution: "undici-types@npm:5.26.5"
   checksum: 10/0097779d94bc0fd26f0418b3a05472410408877279141ded2bd449167be1aed7ea5b76f756562cb3586a07f251b90799bab22d9019ceba49c037c76445f7cddd
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.19.2":
+  version: 6.19.8
+  resolution: "undici-types@npm:6.19.8"
+  checksum: 10/cf0b48ed4fc99baf56584afa91aaffa5010c268b8842f62e02f752df209e3dea138b372a60a963b3b2576ed932f32329ce7ddb9cb5f27a6c83040d8cd74b7a70
   languageName: node
   linkType: hard
 
