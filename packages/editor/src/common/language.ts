@@ -201,6 +201,7 @@ export interface LanguageFilter {
   scheme?: string;
   pattern?: string | IRelativePattern;
   hasAccessToAllModels?: boolean;
+  notebookType?: string;
 }
 
 export type LanguageSelector = string | LanguageFilter | (string | LanguageFilter)[];

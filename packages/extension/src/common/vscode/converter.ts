@@ -17,6 +17,7 @@ import {
   UriComponents,
   arrays,
   isDefined,
+  isNumber,
   objects,
   once,
   path,
@@ -26,12 +27,15 @@ import { ChatMessageRole as ChatMessageRoleEnum, IChatMessage } from '@opensumi/
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import {
+  CellKind,
   EditorGroupColumn,
+  ICellRange,
   IContentDecorationRenderOptions,
   IDecorationRenderOptions,
   IThemeDecorationRenderOptions,
   LanguageFilter,
   LanguageSelector,
+  NotebookCellInternalMetadata,
   TrackedRangeStickiness,
 } from '@opensumi/ide-editor/lib/common';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
@@ -2007,6 +2011,60 @@ export namespace ChatMessageRole {
       case types.ChatMessageRole.User:
       default:
         return ChatMessageRoleEnum.User;
+    }
+  }
+}
+
+export namespace NotebookRange {
+  export function from(range: vscode.NotebookRange): ICellRange {
+    return { start: range.start, end: range.end };
+  }
+
+  export function to(range: ICellRange): types.NotebookRange {
+    return new types.NotebookRange(range.start, range.end);
+  }
+}
+
+export namespace NotebookCellExecutionSummary {
+  export function to(data: NotebookCellInternalMetadata): vscode.NotebookCellExecutionSummary {
+    return {
+      timing:
+        isNumber(data.runStartTime) && isNumber(data.runEndTime)
+          ? { startTime: data.runStartTime, endTime: data.runEndTime }
+          : undefined,
+      executionOrder: data.executionOrder,
+      success: data.lastRunSuccess,
+    };
+  }
+
+  export function from(data: vscode.NotebookCellExecutionSummary): Partial<NotebookCellInternalMetadata> {
+    return {
+      lastRunSuccess: data.success,
+      runStartTime: data.timing?.startTime,
+      runEndTime: data.timing?.endTime,
+      executionOrder: data.executionOrder,
+    };
+  }
+}
+
+export namespace NotebookCellKind {
+  export function from(data: vscode.NotebookCellKind): CellKind {
+    switch (data) {
+      case types.NotebookCellKind.Markup:
+        return CellKind.Markup;
+      case types.NotebookCellKind.Code:
+      default:
+        return CellKind.Code;
+    }
+  }
+
+  export function to(data: CellKind): vscode.NotebookCellKind {
+    switch (data) {
+      case CellKind.Markup:
+        return types.NotebookCellKind.Markup;
+      case CellKind.Code:
+      default:
+        return types.NotebookCellKind.Code;
     }
   }
 }
