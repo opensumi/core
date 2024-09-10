@@ -3,7 +3,7 @@ import { AINativeConfigService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { Disposable, Event, IDisposable, InlineChatFeatureRegistryToken, Schemes } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
-import { EditorCollectionService, IEditorDocumentModelRef } from '@opensumi/ide-editor';
+import { EditorCollectionService, IEditorDocumentModelRef, notebookCellScheme } from '@opensumi/ide-editor';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { BrowserCodeEditor, BrowserDiffEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 
@@ -93,7 +93,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const { monacoEditor } = editor;
 
     const { uri } = e.instance;
-    if (uri.codeUri.scheme !== Schemes.file || this.editorReady) {
+    const editorSchemes = [Schemes.file, notebookCellScheme];
+    if (!editorSchemes.includes(uri.codeUri.scheme) || this.editorReady) {
       return disposables;
     }
 
