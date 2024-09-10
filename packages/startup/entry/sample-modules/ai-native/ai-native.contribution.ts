@@ -32,16 +32,14 @@ import {
   AIBackSerivcePath,
   CancelResponse,
   CancellationToken,
+  ChatResponse,
   ChatServiceToken,
   ErrorResponse,
   IAIBackService,
-  IPosition,
-  MaybePromise,
   MergeConflictEditorMode,
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ChatResponse } from '@opensumi/ide-core-common';
 import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
@@ -392,14 +390,18 @@ export class AINativeContribution implements AINativeCoreContribution {
 
   registerProblemFixFeature(registry: IProblemFixProviderRegistry): void {
     registry.registerHoverFixProvider({
-      provideFix (
+      provideFix: async (
         editor: ICodeEditor,
         context: IProblemFixContext,
         token: CancellationToken,
-      ): MaybePromise<ChatResponse | InlineChatController> {
+      ): Promise<ChatResponse | InlineChatController> => {
         const { marker, editRange } = context;
-        // 返回一个 ChatResponse 或 InlineChatController 的 Promise
-        return Promise.resolve(new ReplyResponse('这是一个示例响应'));
+
+        const controller = new InlineChatController({ enableCodeblockRender: true });
+        const stream = await this.aiBackService.requestStream('', {}, token);
+        controller.mountReadable(stream);
+
+        return controller;
       },
     });
   }

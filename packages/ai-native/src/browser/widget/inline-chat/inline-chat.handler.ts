@@ -70,11 +70,14 @@ export class InlineChatHandler extends Disposable {
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposable: Disposable = new Disposable();
   private aiInlineChatOperationDisposable: Disposable = new Disposable();
-  private cancelIndicator = new CancellationTokenSource();
+  private _cancelIndicator = new CancellationTokenSource();
+  get cancelIndicator() {
+    return this._cancelIndicator;
+  }
 
-  private cancelToken() {
-    this.cancelIndicator.cancel();
-    this.cancelIndicator = new CancellationTokenSource();
+  public cancelToken() {
+    this._cancelIndicator.cancel();
+    this._cancelIndicator = new CancellationTokenSource();
   }
 
   private disposeAllWidget() {
@@ -228,6 +231,11 @@ export class InlineChatHandler extends Disposable {
           return;
         }
 
+        const crossSelection = this.getCrossSelection(monacoEditor);
+        if (!crossSelection) {
+          return;
+        }
+
         const previewer = () => {
           // 兼容 providerDiffPreviewStrategy api
           const strategy = handler.providerDiffPreviewStrategy
@@ -237,11 +245,12 @@ export class InlineChatHandler extends Disposable {
             return undefined;
           }
 
-          return strategy.bind(this, monacoEditor, this.cancelIndicator.token);
+          return strategy.bind(this, monacoEditor, this._cancelIndicator.token);
         };
 
-        this.runInlineChatAction({
+        this.runAction({
           monacoEditor,
+          crossSelection,
           reporterFn: () => {
             const relationId = this.aiReporter.start(action.name, {
               message: action.name,
@@ -253,7 +262,7 @@ export class InlineChatHandler extends Disposable {
             });
             return relationId;
           },
-          execute: handler.execute ? handler.execute!.bind(this, monacoEditor, this.cancelIndicator.token) : undefined,
+          execute: handler.execute ? handler.execute!.bind(this, monacoEditor, this._cancelIndicator.token) : undefined,
           providerPreview: previewer(),
           extraData: {
             actionSource: source === 'codeAction' ? ActionSourceEnum.CodeAction : ActionSourceEnum.InlineChat,
@@ -273,8 +282,14 @@ export class InlineChatHandler extends Disposable {
 
         const strategy = await this.inlineChatFeatureRegistry.getInteractiveInputStrategyHandler()(monacoEditor, value);
 
-        this.runInlineChatAction({
+        const crossSelection = this.getCrossSelection(monacoEditor);
+        if (!crossSelection) {
+          return;
+        }
+
+        this.runAction({
           monacoEditor,
+          crossSelection,
           reporterFn: () => {
             const relationId = this.aiReporter.start(AISerivceType.InlineChatInput, {
               message: value,
@@ -286,11 +301,11 @@ export class InlineChatHandler extends Disposable {
           },
           execute:
             handler.execute && strategy === ERunStrategy.EXECUTE
-              ? handler.execute!.bind(this, monacoEditor, value, this.cancelIndicator.token)
+              ? handler.execute!.bind(this, monacoEditor, value, this._cancelIndicator.token)
               : undefined,
           providerPreview:
             handler.providePreviewStrategy && strategy === ERunStrategy.PREVIEW
-              ? handler.providePreviewStrategy.bind(this, monacoEditor, value, this.cancelIndicator.token)
+              ? handler.providePreviewStrategy.bind(this, monacoEditor, value, this._cancelIndicator.token)
               : undefined,
           extraData: {
             actionSource: ActionSourceEnum.InlineChatInput,
@@ -299,6 +314,18 @@ export class InlineChatHandler extends Disposable {
         });
       }),
     );
+  }
+
+  private getCrossSelection(monacoEditor: monaco.ICodeEditor) {
+    const selection = monacoEditor.getSelection();
+    if (!selection) {
+      this.logger.error('No selection found, aborting inline chat action.');
+      return;
+    }
+
+    return selection
+      .setStartPosition(selection.startLineNumber, 1)
+      .setEndPosition(selection.endLineNumber, monacoEditor.getModel()!.getLineMaxColumn(selection.endLineNumber));
   }
 
   private convertInlineChatStatus(
@@ -438,9 +465,6 @@ export class InlineChatHandler extends Disposable {
     }
   }
 
-  /**
-   * 重新生成代码
-   */
   private async handleDiffPreviewStrategy(params: {
     monacoEditor: monaco.ICodeEditor;
     strategy: (...arg: any[]) => MaybePromise<ChatResponse | InlineChatController>;
@@ -464,7 +488,7 @@ export class InlineChatHandler extends Disposable {
 
     const startTime = Date.now();
 
-    if (this.cancelIndicator.token.isCancellationRequested) {
+    if (this._cancelIndicator.token.isCancellationRequested) {
       this.convertInlineChatStatus(EInlineChatStatus.READY, {
         relationId,
         message: 'abort',
@@ -566,9 +590,10 @@ export class InlineChatHandler extends Disposable {
     ]);
   }
 
-  private async runInlineChatAction(params: {
+  public async runAction(params: {
     monacoEditor: monaco.ICodeEditor;
     reporterFn: () => string;
+    crossSelection: monaco.Selection;
     execute?: () => MaybePromise<void>;
     providerPreview?: () => MaybePromise<ChatResponse | InlineChatController>;
     extraData?: {
@@ -576,12 +601,7 @@ export class InlineChatHandler extends Disposable {
       actionType: string;
     };
   }) {
-    const { monacoEditor, reporterFn, execute, providerPreview, extraData } = params;
-    const selection = monacoEditor.getSelection();
-    if (!selection) {
-      this.logger.error('No selection found, aborting inline chat action.');
-      return;
-    }
+    const { monacoEditor, crossSelection, reporterFn, execute, providerPreview, extraData } = params;
 
     if (execute) {
       await execute();
@@ -589,10 +609,6 @@ export class InlineChatHandler extends Disposable {
     }
 
     if (providerPreview) {
-      const crossSelection = selection
-        .setStartPosition(selection.startLineNumber, 1)
-        .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
-
       const relationId = reporterFn();
 
       await this.handleDiffPreviewStrategy({
