@@ -21,8 +21,8 @@ import {
   MarkerHoverParticipant,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/hover/browser/markerHoverParticipant';
 
-
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { IHoverFixHandler } from '../../types';
 import { InlineChatHandler } from '../../widget/inline-chat/inline-chat.handler';
 import { IAIMonacoContribHandler } from '../base';
 
@@ -70,6 +70,11 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
   doContribute() {
     const disposable = new Disposable();
 
+    const provider = this.problemFixProviderRegistry.getHoverFixProvider();
+    if (!provider) {
+      return disposable;
+    }
+
     // 先去掉 monaco 默认的 MarkerHoverParticipant
     HoverParticipantRegistry._participants = HoverParticipantRegistry._participants.filter(
       (participant) => participant !== MarkerHoverParticipant,
@@ -85,19 +90,14 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
           hoverController.hideContentHover();
         }
 
-        this.handleHoverFix(part);
+        this.handleHoverFix(part, provider);
       }),
     );
 
     return disposable;
   }
 
-  private async handleHoverFix(part: MarkerHover) {
-    const provider = this.problemFixProviderRegistry.getHoverFixProvider();
-    if (!provider) {
-      return;
-    }
-
+  private async handleHoverFix(part: MarkerHover, provider: IHoverFixHandler) {
     const monacoEditor = this.editor?.monacoEditor;
 
     if (!monacoEditor) {
@@ -142,7 +142,8 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
                 return relationId;
               },
               crossSelection: monacoEditor.getSelection()!,
-              providerPreview: () => provider.provideFix(monacoEditor, context, this.inlineChatHandler.cancelIndicator.token),
+              providerPreview: () =>
+                provider.provideFix(monacoEditor, context, this.inlineChatHandler.cancelIndicator.token),
               extraData: {
                 actionSource: ActionSourceEnum.Hover,
                 actionType: ActionTypeEnum.HoverFix,
