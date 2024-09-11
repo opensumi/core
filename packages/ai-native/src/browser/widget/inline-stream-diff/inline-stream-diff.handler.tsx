@@ -61,7 +61,6 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
   public previewerOptions: IDiffPreviewerOptions;
 
-  private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
   private originalModel: ITextModel;
   private virtualModel: ITextModel;
 
@@ -69,6 +68,8 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   private rawOriginalTextLines: string[];
   private rawOriginalTextLinesTokens: LineTokens[] = [];
   private undoRedoGroup: UndoRedoGroup;
+
+  public livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
 
   constructor(private readonly monacoEditor: ICodeEditor) {
     super();

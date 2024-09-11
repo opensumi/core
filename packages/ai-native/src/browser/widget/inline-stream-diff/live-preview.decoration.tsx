@@ -159,6 +159,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.updateZone(zone);
   }
 
+  getRemovedWidgets(): RemovedZoneWidget[] {
+    return this.removedZoneWidgets;
+  }
+
   restoreSnapshot(snapshot: ILivePreviewDiffDecorationSnapshotData): void {
     const {
       addedDecList,

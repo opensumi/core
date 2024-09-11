@@ -157,15 +157,13 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     );
   }, [operationList, moreOperation, customOperationRender, onResultClick, status, interactiveInputVisible]);
 
-  return (
-    <div className={styles.inline_chat_controller_box} style={isDone ? { transform: 'translateY(-15px)' } : {}}>
-      {renderContent()}
-    </div>
-  );
+  return <div className={styles.inline_chat_controller_box}>{renderContent()}</div>;
 };
 
 @Injectable({ multiple: true })
 export class AIInlineContentWidget extends ReactInlineContentWidget {
+  allowEditorOverflow = true;
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -173,8 +171,6 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   private readonly aiNativeContextKey: AINativeContextKey;
-
-  private originTop = 0;
 
   private readonly _onActionClickEmitter = new Emitter<{ actionId: string; source: string }>();
   public readonly onActionClick = this._onActionClickEmitter.event;
@@ -279,13 +275,8 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     this.options = options;
   }
 
-  public offsetTop(top: number): void {
-    if (this.originTop === 0) {
-      const top = this.domNode.style.top;
-      this.originTop = top ? parseInt(top, 10) : 0;
-    }
-
-    this.domNode.style.top = `${this.originTop + top}px`;
+  public setOffsetTop(top: number): void {
+    this.domNode.style.transform = `translateY(${top}px)`;
   }
 
   id(): string {
