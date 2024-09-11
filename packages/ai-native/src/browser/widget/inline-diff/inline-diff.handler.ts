@@ -177,7 +177,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       previewer.onReady(() => {
         if (InlineChatController.is(chatResponse)) {
           const controller = chatResponse as InlineChatController;
-          controller.listen();
 
           disposable.addDispose([
             controller.onData((data) => {
@@ -198,6 +197,8 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
               onFinish();
             }),
           ]);
+
+          controller.listen();
         } else {
           previewer.setValue((chatResponse as ReplyResponse).message);
           onFinish();
