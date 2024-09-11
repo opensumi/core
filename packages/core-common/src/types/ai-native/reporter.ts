@@ -11,6 +11,7 @@ export enum AISerivceType {
   MergeConflict = 'mergeConflict',
   Rename = 'rename',
   TerminalAICommand = 'terminalAICommand',
+  ProblemFix = 'problemFix',
 }
 
 export enum ActionSourceEnum {
@@ -26,6 +27,8 @@ export enum ActionSourceEnum {
   Terminal = 'terminal',
   // 下拉补全 | 自动补全
   Completion = 'completion',
+  // 编辑器内悬停操作
+  Hover = 'hover',
 }
 
 export enum ActionTypeEnum {
@@ -55,6 +58,8 @@ export enum ActionTypeEnum {
   LineDiscard = 'lineDiscard',
   // 生成代码后的行动点：重新生成
   Regenerate = 'regenerate',
+  // 悬停的问题修复
+  HoverFix = 'hoverFix',
   // 包含业务自定义的Action
 }
 

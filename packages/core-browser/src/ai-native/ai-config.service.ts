@@ -11,6 +11,7 @@ const DEFAULT_CAPABILITIES: Required<IAINativeCapabilities> = {
   supportsInlineCompletion: true,
   supportsConflictResolve: true,
   supportsRenameSuggestions: true,
+  supportsProblemFix: true,
   supportsTerminalDetection: true,
   supportsTerminalCommandSuggest: true,
 };

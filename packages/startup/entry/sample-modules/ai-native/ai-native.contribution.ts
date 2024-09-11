@@ -15,6 +15,8 @@ import {
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
   IIntelligentCompletionsRegistry,
+  IProblemFixContext,
+  IProblemFixProviderRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
@@ -29,6 +31,8 @@ import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancelResponse,
+  CancellationToken,
+  ChatResponse,
   ChatServiceToken,
   ErrorResponse,
   IAIBackService,
@@ -381,6 +385,24 @@ export class AINativeContribution implements AINativeCoreContribution {
           tags: [NewSymbolNameTag.AIGenerated],
         }));
       }
+    });
+  }
+
+  registerProblemFixFeature(registry: IProblemFixProviderRegistry): void {
+    registry.registerHoverFixProvider({
+      provideFix: async (
+        editor: ICodeEditor,
+        context: IProblemFixContext,
+        token: CancellationToken,
+      ): Promise<ChatResponse | InlineChatController> => {
+        const { marker, editRange } = context;
+
+        const controller = new InlineChatController({ enableCodeblockRender: true });
+        const stream = await this.aiBackService.requestStream('', {}, token);
+        controller.mountReadable(stream);
+
+        return controller;
+      },
     });
   }
 
