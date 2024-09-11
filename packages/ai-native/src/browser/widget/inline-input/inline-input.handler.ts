@@ -86,8 +86,6 @@ export class InlineInputHandler extends Disposable {
       if (InlineChatController.is(previewResponse)) {
         const controller = previewResponse as InlineChatController;
 
-        controller.listen();
-
         let latestContent: string | undefined;
         const schedulerEdit: RunOnceScheduler = this.registerDispose(
           new RunOnceScheduler(() => {
@@ -122,6 +120,8 @@ export class InlineInputHandler extends Disposable {
             widget.launchChatStatus(EInlineChatStatus.DONE);
           }),
         ]);
+
+        controller.listen();
       }
     }
   }

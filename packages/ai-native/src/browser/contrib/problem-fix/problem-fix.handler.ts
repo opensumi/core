@@ -107,11 +107,12 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
     const model = monacoEditor.getModel();
 
     // 以 marker 的 range 为中心，向上取 2 行，向下取 3 行
+    const endLineNumber = Math.min(part.range.endLineNumber + 3, model!.getLineCount());
     const editRange = new Range(
       Math.max(part.range.startLineNumber - 2, 0),
       1,
-      Math.min(part.range.endLineNumber + 3, model!.getLineCount() ?? 0),
-      model!.getLineMaxColumn(part.range.endLineNumber + 3) ?? 0,
+      endLineNumber,
+      model!.getLineMaxColumn(endLineNumber),
     );
 
     const context = {
