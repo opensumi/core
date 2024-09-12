@@ -1,5 +1,5 @@
-import debounce from 'lodash/debounce';
 import merge from 'lodash/merge';
+import throttle from 'lodash/throttle';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -229,7 +229,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   protected propertiesChangeCache = new Map<string, IEditorStatusChangeDTO>();
 
-  triggerPropertiesChange = debounce(
+  triggerPropertiesChange = throttle(
     () => {
       const changes: IEditorStatusChangeDTO[] = [];
       this.propertiesChangeCache.forEach((change) => {
@@ -239,9 +239,8 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
       this.proxy.$acceptPropertiesChanges(changes);
     },
-    300,
+    16,
     {
-      maxWait: 500,
       leading: true,
       trailing: true,
     },
@@ -265,7 +264,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   startEvents() {
-    this.addDispose(
+    this.addDispose([
       this.eventBus.on(EditorGroupChangeEvent, (event) => {
         const payload = event.payload;
         if (
@@ -355,9 +354,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           this.proxy.$acceptChange(change);
         }
       }),
-    );
-
-    this.addDispose(
       this.editorService.onActiveEditorUriChange((uri) => {
         if (
           uri &&
@@ -371,56 +367,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           });
         }
       }),
-    );
-
-    const selectionChange = (e: EditorSelectionChangeEvent) => {
-      const editorId = getTextEditorId(e.payload.group, e.payload.editorUri, e.payload.side);
-
-      this.batchPropertiesChanges({
-        id: editorId,
-        selections: {
-          selections: e.payload.selections,
-          source: e.payload.source,
-        },
-      });
-
-      this.acceptCurrentEditor(e.payload.editorUri);
-    };
-
-    const debouncedSelectionChange = debounce((e) => selectionChange(e), 50, {
-      maxWait: 200,
-      leading: true,
-      trailing: true,
-    });
-
-    this.addDispose(
-      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
-        if (e.payload.source === 'mouse') {
-          debouncedSelectionChange(e);
-        } else {
-          debouncedSelectionChange.cancel();
-          selectionChange(e);
-        }
-      }),
-    );
-
-    this.addDispose(
-      this.eventBus.on(
-        EditorVisibleChangeEvent,
-        debounce(
-          (e: EditorVisibleChangeEvent) => {
-            const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
-            this.batchPropertiesChanges({
-              id: editorId,
-              visibleRanges: e.payload.visibleRanges,
-            });
-          },
-          50,
-          { maxWait: 200, leading: true, trailing: true },
-        ),
-      ),
-    );
-    this.addDispose(
       this.eventBus.on(EditorConfigurationChangedEvent, (e: EditorConfigurationChangedEvent) => {
         const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
         if (e.payload.group.currentEditor && (e.payload.group.currentEditor as ISumiEditor).monacoEditor.getModel()) {
@@ -430,8 +376,26 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           });
         }
       }),
-    );
-    this.addDispose(
+      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+        const editorId = getTextEditorId(e.payload.group, e.payload.editorUri, e.payload.side);
+
+        this.batchPropertiesChanges({
+          id: editorId,
+          selections: {
+            selections: e.payload.selections,
+            source: e.payload.source,
+          },
+        });
+
+        this.acceptCurrentEditor(e.payload.editorUri);
+      }),
+      this.eventBus.on(EditorVisibleChangeEvent, (e: EditorVisibleChangeEvent) => {
+        const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
+        this.batchPropertiesChanges({
+          id: editorId,
+          visibleRanges: e.payload.visibleRanges,
+        });
+      }),
       this.eventBus.on(EditorGroupIndexChangedEvent, (e) => {
         if (isGroupEditorState(e.payload.group)) {
           const editorId = getTextEditorId(e.payload.group, e.payload.group.currentResource!.uri);
@@ -441,7 +405,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           });
         }
       }),
-    );
+    ]);
   }
 
   private acceptCurrentEditor(uri: URI) {
