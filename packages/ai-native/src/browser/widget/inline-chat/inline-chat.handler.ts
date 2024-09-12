@@ -583,7 +583,7 @@ export class InlineChatHandler extends Disposable {
           if (crossSelection.endLineNumber === model!.getLineCount()) {
             // 如果用户是选中了最后一行，直接显示在最后一行
             const lineHeight = monacoEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
-            this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
+            this.aiInlineContentWidget.setOffsetTop(lineHeight * count + 12);
           }
         });
       }),
