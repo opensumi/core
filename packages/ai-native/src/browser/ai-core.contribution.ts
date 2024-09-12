@@ -387,6 +387,8 @@ export class AINativeBrowserContribution
   registerComponent(registry: ComponentRegistry): void {
     registry.register(AI_CHAT_CONTAINER_ID, [], {
       component: AIChatView,
+      title: localize('aiNative.chat.ai.assistant.name'),
+      iconClass: getIcon('magic-wand'),
       containerId: AI_CHAT_CONTAINER_ID,
     });
     registry.register(AI_MENU_BAR_DEBUG_TOOLBAR, {

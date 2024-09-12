@@ -15,6 +15,7 @@ import { localize } from '@opensumi/ide-core-common';
 import { DesignLeftTabRenderer, DesignRightTabRenderer } from '@opensumi/ide-design/lib/browser/layout/tabbar.view';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import {
+  ChatTabbarRenderer2,
   IconElipses,
   IconTabView,
   LeftTabbarRenderer,
@@ -51,11 +52,11 @@ export const AIChatTabRenderer = ({
 }) => (
   <TabRendererBase
     side={AI_CHAT_VIEW_ID}
-    direction={EDirection.LeftToRight}
+    direction={EDirection.RightToLeft}
     id={styles.ai_chat_panel}
-    className={cls(className, `${AI_CHAT_VIEW_ID}-slot`)}
+    className={cls(className, `${AI_CHAT_VIEW_ID}-slot`, 'design_right_slot')}
     components={components}
-    TabbarView={() => <ChatTabbarRenderer />}
+    TabbarView={() => <ChatTabbarRenderer2 />}
     TabpanelView={() => (
       <BaseTabPanelView
         PanelView={ContainerView}

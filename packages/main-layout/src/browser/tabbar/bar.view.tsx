@@ -387,3 +387,27 @@ export const BottomTabbarRenderer: React.FC = () => {
     </div>
   );
 };
+
+export const ChatTabbarRenderer2: React.FC<{ barSize?: number; style?: React.CSSProperties }> = (props) => {
+  const { barSize = 32, style } = props;
+  const { side } = React.useContext(TabbarConfig);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  useEffect(() => {
+    tabbarService.setIsLatter(true);
+  }, [tabbarService]);
+  const styles_right_tab_bar = useDesignStyles(styles.ai_right_tab_bar, 'ai_right_tab_bar');
+  const styles_right_tab = useDesignStyles(styles.ai_right_tab, 'ai_right_tab');
+
+  return (
+    <div id={side} className={styles_right_tab_bar} style={style} onContextMenu={tabbarService.handleContextMenu}>
+      <TabbarViewBase
+        tabSize={32}
+        MoreTabView={IconElipses}
+        tabClassName={styles_right_tab}
+        TabView={IconTabView}
+        barSize={barSize}
+        panelBorderSize={1}
+      />
+    </div>
+  );
+};
