@@ -659,7 +659,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     const modified = this.modifiedDocModel.getMonacoModel();
     const key = `${original.uri.toString()}-${modified.uri.toString()}`;
     let model = this.diffEditorModelCache.get(key);
-    if (!model || (model as any)._store.isDisposed) {
+    if (!model) {
       model = this.monacoDiffEditor.createViewModel({ original, modified });
       this.diffEditorModelCache.set(key, model);
     }
@@ -726,7 +726,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   }
 
   private async updateOptionsOnModelChange() {
-    this.diffEditorModelCache.clear();
     await this.doUpdateDiffOptions();
   }
 
