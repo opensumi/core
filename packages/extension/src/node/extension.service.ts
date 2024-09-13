@@ -548,7 +548,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         /**
          * in web, if current connection is closed, kill the ext process after a threshold
          */
-        const timer = global.setTimeout(() => {
+        const timer = setTimeout(() => {
           this.logger.log(`Dispose client by connectionClientId ${connectionClientId}`);
           this.disposeClientExtProcess(connectionClientId);
         }, this.appConfig.processCloseExitThreshold ?? ExtensionNodeServiceImpl.ProcessCloseExitThreshold);
