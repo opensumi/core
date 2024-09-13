@@ -52,7 +52,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     // 如果有相同的setClient clientId被调用，则取消延时触发closeClient，否则会导致终端无响应
     const timeOutHandler = this.closeTimeOutMap.get(clientId);
     if (timeOutHandler) {
-      global.clearTimeout(timeOutHandler);
+      clearTimeout(timeOutHandler);
       this.closeTimeOutMap.delete(clientId);
     }
   }
@@ -77,7 +77,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   public closeClient(clientId: string) {
     // 延时触发，因为WS本身有重连逻辑，因此通过延时触发来避免断开后不就重连但是回调方法都被dispose的问题
-    const closeTimer = global.setTimeout(
+    const closeTimer = setTimeout(
       () => {
         this.disposeClient(clientId);
         this.logger.debug(`Remove pty process from ${clientId} client`);
@@ -119,7 +119,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     this.batchedPtyDataMap.delete(sessionId);
 
     if (this.batchedPtyDataTimer.has(sessionId)) {
-      global.clearTimeout(this.batchedPtyDataTimer.get(sessionId)!);
+      clearTimeout(this.batchedPtyDataTimer.get(sessionId)!);
       this.batchedPtyDataTimer.delete(sessionId);
     }
 
@@ -164,7 +164,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
           if (!this.batchedPtyDataTimer.has(sessionId)) {
             this.batchedPtyDataTimer.set(
               sessionId,
-              global.setTimeout(() => this.flushPtyData(clientId, sessionId), BATCH_DURATION_MS),
+              setTimeout(() => this.flushPtyData(clientId, sessionId), BATCH_DURATION_MS),
             );
           }
         } else {

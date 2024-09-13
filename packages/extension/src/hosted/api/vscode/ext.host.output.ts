@@ -89,7 +89,7 @@ export class OutputChannelImpl implements types.OutputChannel {
     }
 
     if (!this.batchedTimer) {
-      this.batchedTimer = global.setTimeout(() => this.flushOutputString(), OUTPUT_BATCH_DURATION_MS);
+      this.batchedTimer = setTimeout(() => this.flushOutputString(), OUTPUT_BATCH_DURATION_MS);
     }
   }
 
@@ -107,7 +107,7 @@ export class OutputChannelImpl implements types.OutputChannel {
     this.proxy.$append(this.name, this.batchedOutputLine);
     this.batchedOutputLine = '';
     if (this.batchedTimer) {
-      global.clearTimeout(this.batchedTimer);
+      clearTimeout(this.batchedTimer);
       this.batchedTimer = null;
     }
   }

@@ -133,7 +133,7 @@ export abstract class BaseCommonChannelHandler {
       clearTimeout(this.heartbeatTimer);
     }
 
-    this.heartbeatTimer = global.setTimeout(() => {
+    this.heartbeatTimer = setTimeout(() => {
       this.doHeartbeat(connection);
       this.heartbeat(connection);
     }, 5000);
