@@ -317,6 +317,8 @@ export interface IDiffEditor extends IDisposable {
   getLineChanges(): ILineChange[] | null;
 
   onRefOpen: Event<IEditorDocumentModelRef>;
+
+  disposeModel(originalUri: string, modifiedUri: string): void;
 }
 
 @Injectable()

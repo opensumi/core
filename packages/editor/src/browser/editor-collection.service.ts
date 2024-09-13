@@ -9,6 +9,7 @@ import {
   Emitter as EventEmitter,
   ILineChange,
   ISelection,
+  LRUCache,
   OnEvent,
   URI,
   WithEventBus,
@@ -604,6 +605,8 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
 
   public onRefOpen = this._onRefOpen.event;
 
+  private diffEditorModelCache = new LRUCache<string, monaco.editor.IDiffEditorViewModel>(100);
+
   protected saveCurrentState() {
     if (this.currentUri) {
       const state = this.monacoDiffEditor.saveViewState();
@@ -635,6 +638,11 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     );
   }
 
+  disposeModel(originalUri: string, modifiedUri: string) {
+    const key = `${originalUri}-${modifiedUri}`;
+    this.diffEditorModelCache.delete(key);
+  }
+
   async compare(
     originalDocModelRef: IEditorDocumentModelRef,
     modifiedDocModelRef: IEditorDocumentModelRef,
@@ -649,7 +657,13 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     }
     const original = this.originalDocModel.getMonacoModel();
     const modified = this.modifiedDocModel.getMonacoModel();
-    const model = this.monacoDiffEditor.createViewModel({ original, modified });
+    const key = `${original.uri.toString()}-${modified.uri.toString()}`;
+    let model = this.diffEditorModelCache.get(key);
+    if (!model) {
+      model = this.monacoDiffEditor.createViewModel({ original, modified });
+      this.diffEditorModelCache.set(key, model);
+    }
+
     this.monacoDiffEditor.setModel(model);
 
     if (rawUri) {
@@ -658,6 +672,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
       this.currentUri = URI.from({
         scheme: DIFF_SCHEME,
         query: URI.stringifyQuery({
+          name,
           original: this.originalDocModel!.uri.toString(),
           modified: this.modifiedDocModel!.uri.toString(),
         }),
@@ -682,6 +697,8 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
           currentEditor.revealRangeInCenter(range);
         });
       });
+    } else {
+      this.restoreState();
     }
     this._onRefOpen.fire(originalDocModelRef);
     this._onRefOpen.fire(modifiedDocModelRef);
