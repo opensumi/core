@@ -239,7 +239,7 @@ export const localizationBundle = {
     'search.fileResults.notfound': 'No files matching',
     'search.fileSymbolResults': 'symbols ({0})',
     'search.fileSymbolResults.notfound': 'No symbols matching',
-    'search.historyMatches': 'Recently opened',
+    'search.historyMatches': 'Recently Opened',
     'search.replaceAll.occurrencesMessage': "Replaced {0} occurrences across {1} files with '{2}'.",
     'search.replace.toggle.button.title': 'Toggle Replace',
     'search.caseDescription': 'Match Case',
