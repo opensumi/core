@@ -56,7 +56,16 @@ declare const self: any;
 const isElectronRenderer = typeof nodeProcess?.versions?.electron === 'string' && nodeProcess.type === 'renderer';
 
 // OS detection
-if (typeof nodeProcess === 'object') {
+if (typeof navigator === 'object' && !isElectronRenderer) {
+  const userAgent = navigator.userAgent;
+  _isWindows = userAgent.indexOf('Windows') >= 0;
+  _isMacintosh = userAgent.indexOf('Macintosh') >= 0;
+  _isLinux = userAgent.indexOf('Linux') >= 0;
+  _isWeb = true;
+  _locale = navigator.language;
+  _language = _locale;
+  _isWebKit = userAgent.indexOf('AppleWebKit') >= 0;
+} else if (typeof nodeProcess === 'object') {
   _isWindows = nodeProcess.platform === 'win32';
   _isMacintosh = nodeProcess.platform === 'darwin';
   _isLinux = nodeProcess.platform === 'linux';
@@ -74,15 +83,6 @@ if (typeof nodeProcess === 'object') {
     } catch (e) {}
   }
   _isNative = true;
-} else if (typeof navigator === 'object' && !isElectronRenderer) {
-  const userAgent = navigator.userAgent;
-  _isWindows = userAgent.indexOf('Windows') >= 0;
-  _isMacintosh = userAgent.indexOf('Macintosh') >= 0;
-  _isLinux = userAgent.indexOf('Linux') >= 0;
-  _isWeb = true;
-  _locale = navigator.language;
-  _language = _locale;
-  _isWebKit = userAgent.indexOf('AppleWebKit') >= 0;
 }
 
 export const enum Platform {
