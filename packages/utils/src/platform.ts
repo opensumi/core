@@ -55,7 +55,7 @@ interface INavigator {
 declare const navigator: INavigator;
 declare const self: any;
 
-const isElectronRenderer = isString(nodeProcess?.versions?.electron) && nodeProcess.type === 'renderer';
+const isElectronRenderer = nodeProcess && isString(nodeProcess?.versions?.electron) && nodeProcess.type === 'renderer';
 const isNodeNavigator =
   typeof navigator === 'object' && isString(navigator.userAgent) && navigator.userAgent.startsWith('Node.js');
 
