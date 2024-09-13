@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/01d1ea52e639615c4513689ce66576829438f748/src/vs/base/common/platform.ts
 
+import { isString } from './types';
+
 export const LANGUAGE_DEFAULT = 'en';
 
 let _isWindows = false;
@@ -53,10 +55,22 @@ interface INavigator {
 declare const navigator: INavigator;
 declare const self: any;
 
-const isElectronRenderer = typeof nodeProcess?.versions?.electron === 'string' && nodeProcess.type === 'renderer';
+const isElectronRenderer = nodeProcess && isString(nodeProcess?.versions?.electron) && nodeProcess.type === 'renderer';
+const isNodeNavigator =
+  typeof navigator === 'object' && isString(navigator.userAgent) && navigator.userAgent.startsWith('Node.js');
 
 // OS detection
-if (typeof nodeProcess === 'object') {
+if (typeof navigator === 'object' && !isNodeNavigator && !isElectronRenderer) {
+  const userAgent = navigator.userAgent;
+  // Node 21+ has navigator property
+  _isWindows = userAgent.indexOf('Windows') >= 0;
+  _isMacintosh = userAgent.indexOf('Macintosh') >= 0;
+  _isLinux = userAgent.indexOf('Linux') >= 0;
+  _isWeb = true;
+  _locale = navigator.language;
+  _language = _locale;
+  _isWebKit = userAgent.indexOf('AppleWebKit') >= 0;
+} else if (typeof nodeProcess === 'object') {
   _isWindows = nodeProcess.platform === 'win32';
   _isMacintosh = nodeProcess.platform === 'darwin';
   _isLinux = nodeProcess.platform === 'linux';
@@ -74,15 +88,6 @@ if (typeof nodeProcess === 'object') {
     } catch (e) {}
   }
   _isNative = true;
-} else if (typeof navigator === 'object' && !isElectronRenderer) {
-  const userAgent = navigator.userAgent;
-  _isWindows = userAgent.indexOf('Windows') >= 0;
-  _isMacintosh = userAgent.indexOf('Macintosh') >= 0;
-  _isLinux = userAgent.indexOf('Linux') >= 0;
-  _isWeb = true;
-  _locale = navigator.language;
-  _language = _locale;
-  _isWebKit = userAgent.indexOf('AppleWebKit') >= 0;
 }
 
 export const enum Platform {
