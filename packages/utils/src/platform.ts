@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/01d1ea52e639615c4513689ce66576829438f748/src/vs/base/common/platform.ts
 
+import { isString } from './types';
+
 export const LANGUAGE_DEFAULT = 'en';
 
 let _isWindows = false;
@@ -53,11 +55,14 @@ interface INavigator {
 declare const navigator: INavigator;
 declare const self: any;
 
-const isElectronRenderer = typeof nodeProcess?.versions?.electron === 'string' && nodeProcess.type === 'renderer';
+const isElectronRenderer = isString(nodeProcess?.versions?.electron) && nodeProcess.type === 'renderer';
+const isNodeNavigator =
+  typeof navigator === 'object' && isString(navigator.userAgent) && navigator.userAgent.startsWith('Node.js');
 
 // OS detection
-if (typeof navigator === 'object' && !isElectronRenderer) {
+if (typeof navigator === 'object' && !isNodeNavigator && !isElectronRenderer) {
   const userAgent = navigator.userAgent;
+  // Node 21+ has navigator property
   _isWindows = userAgent.indexOf('Windows') >= 0;
   _isMacintosh = userAgent.indexOf('Macintosh') >= 0;
   _isLinux = userAgent.indexOf('Linux') >= 0;
