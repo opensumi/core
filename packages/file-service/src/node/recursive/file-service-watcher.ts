@@ -22,6 +22,7 @@ import {
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
 import { FileChangeCollection } from '../file-change-collection';
+import { isTempFile } from '../shared';
 
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[];
@@ -57,7 +58,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
   protected client: FileSystemWatcherClient | undefined;
 
-  protected readonly toDispose = new DisposableCollection(Disposable.create(() => this.setClient(undefined)));
+  protected readonly _disposeables = new DisposableCollection();
 
   protected changes = new FileChangeCollection();
 
@@ -71,8 +72,9 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   }
 
   dispose(): void {
-    this.toDispose.dispose();
+    this._disposeables.dispose();
     this.WATCHER_HANDLERS.clear();
+    this.client = undefined;
   }
 
   /**
@@ -150,7 +152,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     });
     toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watcherId as number)));
     toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
-    this.toDispose.push(toDisposeWatcher);
+    this._disposeables.push(toDisposeWatcher);
     return watcherId;
   }
 
@@ -182,7 +184,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   protected trimChangeEvent(events: ParcelWatcher.Event[]): ParcelWatcher.Event[] {
     events = events.filter((event: ParcelWatcher.Event) => {
       if (event.path) {
-        if (this.isTempFile(event.path)) {
+        if (isTempFile(event.path)) {
           // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
           // 这类文件的更新应当完全隐藏掉
           return false;
@@ -192,10 +194,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     });
 
     return events;
-  }
-
-  private isTempFile(path: string) {
-    return /\.\d{7}\d+$/.test(path);
   }
 
   private getDefaultWatchExclude() {
@@ -251,20 +249,13 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       return undefined; // watch 失败则返回 undefined
     };
 
-    /**
-     * 由于 parcel/watcher 在 Linux 下存在内存越界访问问题触发了 sigsegv 导致 crash，所以在 Linux 下仍旧使用 nsfw
-     * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
-     * 后续这里的 watcher 模块需要重构掉，先暂时这样处理
-     *
-     * 代码来自 issue: https://github.com/opensumi/core/pull/1437/files?diff=split&w=0#diff-9de963117a88a70d7c58974bf2b092c61a196d6eef719846d78ca5c9d100b796 的旧代码处理
-     */
     if (this.isEnableNSFW()) {
       const nsfw = await this.withNSFWModule();
       const watcher: INsfw.NSFW = await nsfw(
         realPath,
         (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
         {
-          errorCallback: (error: any) => {
+          errorCallback: () => {
             // see https://github.com/atom/github/issues/342
             this.unwatchFileChanges(watcherId);
           },
@@ -314,15 +305,15 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.toDispose.disposed) {
+    if (client && this._disposeables.disposed) {
       return;
     }
     this.client = client;
   }
 
   /**
-   * @deprecated
-   * 主要是用来跳过 jest 测试
+   * 由于 parcel/watcher 在 Linux 下存在内存越界访问问题触发了 sigsegv 导致 crash，所以在 Linux 下仍旧使用 nsfw
+   * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
    */
   private isEnableNSFW(): boolean {
     return isLinux;
@@ -347,7 +338,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         return true;
       }
 
-      return !this.isTempFile(event.file!);
+      return !isTempFile(event.file!);
     });
     // 合并下事件，由于 resolvePath 耗时较久，这里只用当前事件路径及文件名去重，后续处理事件再获取真实路径
     const mergedEvents = uniqBy(filterEvents, (event) => {
@@ -362,7 +353,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
     for (const event of mergedEvents) {
       if (event.action === INsfw.actions.RENAMED) {
-        const deletedPath = this.resolvePath(event.directory, event.oldFile!);
+        const deletedPath = await this.resolvePath(event.directory, event.oldFile!);
         if (isIgnored(watcherId, deletedPath)) {
           continue;
         }
@@ -370,14 +361,14 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         this.pushDeleted(deletedPath);
 
         if (event.newDirectory) {
-          const path = this.resolvePath(event.newDirectory, event.newFile!);
+          const path = await this.resolvePath(event.newDirectory, event.newFile!);
           if (isIgnored(watcherId, path)) {
             continue;
           }
 
           this.pushAdded(path);
         } else {
-          const path = this.resolvePath(event.directory, event.newFile!);
+          const path = await this.resolvePath(event.directory, event.newFile!);
           if (isIgnored(watcherId, path)) {
             continue;
           }
@@ -385,7 +376,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
           this.pushAdded(path);
         }
       } else {
-        const path = this.resolvePath(event.directory, event.file!);
+        const path = await this.resolvePath(event.directory, event.file!);
         if (isIgnored(watcherId, path)) {
           continue;
         }
@@ -426,16 +417,16 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     this.fireDidFilesChanged();
   }
 
-  protected resolvePath(directory: string, file: string): string {
+  protected async resolvePath(directory: string, file: string): Promise<string> {
     const path = paths.join(directory, file);
     // 如果是 linux 则获取一下真实 path，以防返回的是软连路径被过滤
     if (isLinux) {
       try {
-        return fs.realpathSync.native(path);
+        return await fs.realpath.native(path);
       } catch (_e) {
         try {
           // file does not exist try to resolve directory
-          return paths.join(fs.realpathSync.native(directory), file);
+          return paths.join(await fs.realpath.native(directory), file);
         } catch (_e) {
           // directory does not exist fall back to symlink
           return path;
