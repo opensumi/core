@@ -22,7 +22,7 @@ import { IIntelligentCompletionsResult } from '../intelligent-completions/intell
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { AICompletionsService } from './service/ai-completions.service';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class InlineCompletionHandler extends IAIMonacoContribHandler {
   @Autowired(IEventBus)
   private eventBus: IEventBus;

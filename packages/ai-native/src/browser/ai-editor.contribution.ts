@@ -1,9 +1,9 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AINativeConfigService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
-import { Disposable, Event, IDisposable, InlineChatFeatureRegistryToken, Schemes } from '@opensumi/ide-core-common';
+import { Disposable, Event, FRAME_THREE, IDisposable, InlineChatFeatureRegistryToken } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
-import { EditorCollectionService, IEditorDocumentModelRef, notebookCellScheme } from '@opensumi/ide-editor';
+import { IDiffEditor } from '@opensumi/ide-editor';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { BrowserCodeEditor, BrowserDiffEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 
@@ -17,98 +17,65 @@ import { InlineDiffHandler } from './widget/inline-diff/inline-diff.handler';
 import { InlineHintHandler } from './widget/inline-hint/inline-hint.handler';
 import { InlineInputHandler } from './widget/inline-input/inline-input.handler';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
+
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
-
-  @Autowired(IBrowserCtxMenu)
-  private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
-
-  @Autowired(InlineChatHandler)
-  private readonly inlineChatHandler: InlineChatHandler;
-
-  @Autowired(InlineHintHandler)
-  private readonly inlineHintHandler: InlineHintHandler;
-
-  @Autowired(InlineInputHandler)
-  private readonly inlineInputHandler: InlineInputHandler;
-
-  @Autowired(CodeActionHandler)
-  private readonly codeActionHandler: CodeActionHandler;
-
-  @Autowired(InlineDiffHandler)
-  private readonly inlineDiffHandler: InlineDiffHandler;
-
-  @Autowired(InlineCompletionHandler)
-  private readonly inlineCompletionHandler: InlineCompletionHandler;
-
-  @Autowired(ProblemFixHandler)
-  private readonly problemfixHandler: ProblemFixHandler;
-
-  @Autowired(IntelligentCompletionsHandler)
-  private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
-
-  @Autowired(EditorCollectionService)
-  private readonly editorCollectionService: EditorCollectionService;
 
   @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
-  private modelSessionDisposable: Disposable;
-  private editorReady: boolean = false;
-  private diffEditorReady: boolean = false;
+  @Autowired(IBrowserCtxMenu)
+  private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
+
+  private modelSessionDisposable: Disposable = new Disposable();
+  private handlerDisposable: Disposable = new Disposable();
+
+  private handlers: { [key: string]: any } = {};
 
   dispose(): void {
     super.dispose();
-    this.editorReady = false;
-    if (this.modelSessionDisposable) {
-      this.modelSessionDisposable.dispose();
-    }
+    this.modelSessionDisposable?.dispose();
+    this.handlerDisposable?.dispose();
   }
 
-  contribute(editor: IEditor): IDisposable {
-    if (this.editorReady) {
-      return this;
-    }
-    this.handleDiffEditorCreated();
+  contribute(editor: IEditor | IDiffEditor): IDisposable {
+    this.handlers.inlineChatHandler = this.injector.get(InlineChatHandler);
+    this.handlers.inlineHintHandler = this.injector.get(InlineHintHandler);
+    this.handlers.inlineInputHandler = this.injector.get(InlineInputHandler);
+    this.handlers.codeActionHandler = this.injector.get(CodeActionHandler);
+    this.handlers.inlineDiffHandler = this.injector.get(InlineDiffHandler);
+    this.handlers.inlineCompletionHandler = this.injector.get(InlineCompletionHandler);
+    this.handlers.problemfixHandler = this.injector.get(ProblemFixHandler);
+    this.handlers.intelligentCompletionsHandler = this.injector.get(IntelligentCompletionsHandler);
+
+    this.handlerDisposable.addDispose(
+      Disposable.create(() => {
+        Object.values(this.handlers).forEach((handler) => handler.dispose());
+      }),
+    );
+
     if (editor instanceof BrowserCodeEditor) {
-      this.disposables.push(
-        editor.onRefOpen((e) => {
-          this.disposables.push(...this.handleBrowserEditor(editor, e));
-        }),
-      );
+      this.disposables.push(...this.handleBrowserEditor(editor));
+    }
+    if (editor instanceof BrowserDiffEditor) {
+      this.disposables.push(...this.handleDiffEditor(editor));
     }
     return this;
   }
 
-  private handleDiffEditorCreated() {
-    Event.once(this.editorCollectionService.onDiffEditorCreate)((editor) => {
-      this.disposables.push(
-        editor.onRefOpen((e) => {
-          this.disposables.push(...this.handleDiffEditor(editor as any, e));
-        }),
-      );
-    });
-  }
-
-  private handleBrowserEditor(editor: BrowserCodeEditor, e: IEditorDocumentModelRef): IDisposable[] {
+  private handleBrowserEditor(editor: IEditor): IDisposable[] {
     const disposables: IDisposable[] = [];
     const { monacoEditor } = editor;
-
-    const { uri } = e.instance;
-    const editorSchemes = [Schemes.file, notebookCellScheme];
-    if (!editorSchemes.includes(uri.codeUri.scheme) || this.editorReady) {
-      return disposables;
-    }
-
-    this.editorReady = true;
 
     disposables.push(
       Event.debounce(
         monacoEditor.onWillChangeModel,
         (_, e) => e,
-        150,
+        FRAME_THREE,
       )(() => {
         this.mount(editor);
       }),
@@ -126,22 +93,15 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     return disposables;
   }
 
-  private handleDiffEditor(editor: BrowserDiffEditor, e: IEditorDocumentModelRef): IDisposable[] {
+  private handleDiffEditor(editor: BrowserDiffEditor): IDisposable[] {
     const disposables: IDisposable[] = [];
     const { monacoDiffEditor } = editor;
-
-    const { uri } = e.instance;
-    if (uri.codeUri.scheme !== Schemes.file || this.diffEditorReady) {
-      return disposables;
-    }
-
-    this.diffEditorReady = true;
 
     disposables.push(
       Event.debounce(
         monacoDiffEditor.onDidUpdateDiff,
         (_, e) => e,
-        150,
+        FRAME_THREE,
       )(() => {
         this.mount(editor.modifiedEditor);
         this.mount(editor.originalEditor);
@@ -158,19 +118,19 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   private registerFeatures(editor: IEditor, isDiffEditor = false) {
     const disposables: IDisposable[] = [];
     if (!isDiffEditor) {
-      disposables.push(this.inlineCompletionHandler.registerInlineCompletionFeature(editor));
+      disposables.push(this.handlers.inlineCompletionHandler.registerInlineCompletionFeature(editor));
     }
-    disposables.push(this.inlineChatHandler.registerInlineChatFeature(editor));
+    disposables.push(this.handlers.inlineChatHandler.registerInlineChatFeature(editor));
 
     if (this.inlineChatFeatureRegistry.getInteractiveInputHandler() && !isDiffEditor) {
-      this.addDispose(this.inlineHintHandler.registerHintLineFeature(editor));
-      this.addDispose(this.inlineInputHandler.registerInlineInputFeature(editor));
+      this.addDispose(this.handlers.inlineHintHandler.registerHintLineFeature(editor));
+      this.addDispose(this.handlers.inlineInputHandler.registerInlineInputFeature(editor));
     }
 
-    this.addDispose(this.inlineDiffHandler.registerInlineDiffFeature(editor));
+    this.addDispose(this.handlers.inlineDiffHandler.registerInlineDiffFeature(editor));
 
     if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-      this.addDispose(this.intelligentCompletionsHandler.registerFeature(editor));
+      this.addDispose(this.handlers.intelligentCompletionsHandler.registerFeature(editor));
     }
 
     return disposables;
@@ -191,15 +151,15 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.modelSessionDisposable = new Disposable();
 
     if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-      this.modelSessionDisposable.addDispose(this.inlineCompletionHandler.mountEditor(editor));
+      this.modelSessionDisposable.addDispose(this.handlers.inlineCompletionHandler.mountEditor(editor));
     }
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-      this.modelSessionDisposable.addDispose(this.codeActionHandler.mountEditor(editor));
+      this.modelSessionDisposable.addDispose(this.handlers.codeActionHandler.mountEditor(editor));
     }
     if (this.aiNativeConfigService.capabilities.supportsProblemFix) {
-      this.modelSessionDisposable.addDispose(this.problemfixHandler.mountEditor(editor));
+      this.modelSessionDisposable.addDispose(this.handlers.problemfixHandler.mountEditor(editor));
     }
 
-    this.modelSessionDisposable.addDispose(this.inlineDiffHandler.mountEditor(editor));
+    this.modelSessionDisposable.addDispose(this.handlers.inlineDiffHandler.mountEditor(editor));
   }
 }

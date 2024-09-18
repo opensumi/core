@@ -14,7 +14,7 @@ import { InlineInputPreviewDecorationID } from '../internal.type';
 
 import { InlineHintLineDecoration } from './inline-hint-line-widget';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class InlineHintHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;

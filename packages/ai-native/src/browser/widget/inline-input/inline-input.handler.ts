@@ -28,7 +28,7 @@ import { InlineInputChatWidget } from './inline-input-widget';
 import styles from './inline-input.module.less';
 import { InlineInputChatService } from './inline-input.service';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class InlineInputHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
