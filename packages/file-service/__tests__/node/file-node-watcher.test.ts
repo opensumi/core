@@ -22,13 +22,10 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
     await watcherServer.watchFileChanges(root.toString());
     return { root, watcherServer };
   }
-  const watcherServerList: UnRecursiveFileSystemWatcher[] = [];
-  afterAll(async () => {
+  afterAll(() => {
     track.cleanupSync();
-    watcherServerList.forEach((watcherServer) => {
-      watcherServer.dispose();
-    });
   });
+
   it('Rename the files under the folder', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
@@ -60,7 +57,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
     await triggered.promise;
     expect([...addUris]).toEqual(expectedAddUris);
     expect([...deleteUris]).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
   it('Add the files under the folder', async () => {
     const addUris = new Set<string>();
@@ -95,7 +92,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
 
     expect(Array.from(addUris)).toEqual(expectedAddUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
   it('Update the files under the folder', async () => {
     const updatedUris = new Set<string>();
@@ -127,7 +124,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
 
     expect(Array.from(updatedUris)).toEqual(expectedUpdatedUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
   it('Delete the files under the folder', async () => {
     const addUris = new Set<string>();
@@ -160,7 +157,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
 
     expect(Array.from(addUris)).toEqual(expectedAddUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
   it('Rename the watched folder', async () => {
     const addUris = new Set<string>();
@@ -195,7 +192,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
 
     expect([...addUris]).toEqual(expectedAddUris);
     expect([...deleteUris]).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
   it('Add the watched folder', async () => {
     const addUris = new Set<string>();
@@ -228,7 +225,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
 
     expect(Array.from(addUris)).toEqual(expectedAddUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
 
   it('Delete the watched folder', async () => {
@@ -259,7 +256,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
 
     expect(Array.from(addUris)).toEqual(expectedAddUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
 });
 
@@ -314,7 +311,7 @@ describe('Delete and update monitored files', () => {
 
     expect(Array.from(addUris)).toEqual(expectedAddUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
 
   it('Update watched files', async () => {
@@ -348,6 +345,6 @@ describe('Delete and update monitored files', () => {
 
     expect(Array.from(updatedUris)).toEqual(expectedUpdatedUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
+    watcherServer.dispose();
   });
 });
