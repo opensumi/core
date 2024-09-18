@@ -84,7 +84,7 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
     const d = this.inlineChatFeatureRegistry.registerInteractiveInput(
       { handleStrategy: () => ERunStrategy.PREVIEW },
       {
-        providerPreviewStrategy: async (editor, value, token) => {
+        providePreviewStrategy: async (editor, value, token) => {
           const controller = new InlineChatController({ enableCodeblockRender: !!metadata.enableCodeblockRender });
           const request = this.chatInternalService!.createRequest(value, name)!;
 
