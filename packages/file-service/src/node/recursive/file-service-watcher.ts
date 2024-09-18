@@ -47,6 +47,8 @@ export interface NsfwFileSystemWatcherOption {
 
 @Injectable({ multiple: true })
 export class FileSystemWatcherServer implements IFileSystemWatcherServer {
+  protected readonly _disposables = new DisposableCollection();
+
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private WATCHER_HANDLERS = new Map<
@@ -57,8 +59,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   protected watcherOptions = new Map<number, WatcherOptions>();
 
   protected client: FileSystemWatcherClient | undefined;
-
-  protected readonly _disposeables = new DisposableCollection();
 
   protected changes = new FileChangeCollection();
 
@@ -72,7 +72,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   }
 
   dispose(): void {
-    this._disposeables.dispose();
+    this._disposables.dispose();
     this.WATCHER_HANDLERS.clear();
     this.client = undefined;
   }
@@ -152,7 +152,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     });
     toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watcherId as number)));
     toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
-    this._disposeables.push(toDisposeWatcher);
+    this._disposables.push(toDisposeWatcher);
     return watcherId;
   }
 
@@ -305,7 +305,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this._disposeables.disposed) {
+    if (client && this._disposables.disposed) {
       return;
     }
     this.client = client;
