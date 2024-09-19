@@ -331,7 +331,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
       return !shouldIgnorePath(event.file);
     });
-    // 合并下事件，由于 resolvePath 耗时较久，这里只用当前事件路径及文件名去重，后续处理事件再获取真实路径
+
     const mergedEvents = uniqBy(filterEvents, (event) => {
       if (event.action === INsfw.actions.RENAMED) {
         const deletedPath = paths.join(event.directory, event.oldFile!);
@@ -343,44 +343,53 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     });
 
     for (const event of mergedEvents) {
-      if (event.action === INsfw.actions.RENAMED) {
-        const deletedPath = await this.resolvePath(event.directory, event.oldFile!);
-        if (isIgnored(watcherId, deletedPath)) {
-          continue;
-        }
+      switch (event.action) {
+        case INsfw.actions.RENAMED:
+          {
+            const deletedPath = await this.resolvePath(event.directory, event.oldFile!);
+            if (isIgnored(watcherId, deletedPath)) {
+              continue;
+            }
 
-        this.pushDeleted(deletedPath);
+            this.pushDeleted(deletedPath);
 
-        if (event.newDirectory) {
-          const path = await this.resolvePath(event.newDirectory, event.newFile!);
-          if (isIgnored(watcherId, path)) {
-            continue;
+            if (event.newDirectory) {
+              const path = await this.resolvePath(event.newDirectory, event.newFile!);
+              if (isIgnored(watcherId, path)) {
+                continue;
+              }
+
+              this.pushAdded(path);
+            } else {
+              const path = await this.resolvePath(event.directory, event.newFile!);
+              if (isIgnored(watcherId, path)) {
+                continue;
+              }
+
+              this.pushAdded(path);
+            }
           }
+          break;
+        default:
+          {
+            const path = await this.resolvePath(event.directory, event.file!);
+            if (isIgnored(watcherId, path)) {
+              continue;
+            }
 
-          this.pushAdded(path);
-        } else {
-          const path = await this.resolvePath(event.directory, event.newFile!);
-          if (isIgnored(watcherId, path)) {
-            continue;
+            switch (event.action) {
+              case INsfw.actions.CREATED:
+                this.pushAdded(path);
+                break;
+              case INsfw.actions.DELETED:
+                this.pushDeleted(path);
+                break;
+              case INsfw.actions.MODIFIED:
+                this.pushUpdated(path);
+                break;
+            }
           }
-
-          this.pushAdded(path);
-        }
-      } else {
-        const path = await this.resolvePath(event.directory, event.file!);
-        if (isIgnored(watcherId, path)) {
-          continue;
-        }
-
-        if (event.action === INsfw.actions.CREATED) {
-          this.pushAdded(path);
-        }
-        if (event.action === INsfw.actions.DELETED) {
-          this.pushDeleted(path);
-        }
-        if (event.action === INsfw.actions.MODIFIED) {
-          this.pushUpdated(path);
-        }
+          break;
       }
     }
   }
