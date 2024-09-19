@@ -2,13 +2,14 @@ import paths from 'path';
 
 import ParcelWatcher from '@parcel/watcher';
 import fs from 'fs-extra';
-import debounce from 'lodash/debounce';
+import throttle from 'lodash/throttle';
 import uniqBy from 'lodash/uniqBy';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
+  FRAME_FIVE,
   FileUri,
   IDisposable,
   ILogService,
@@ -74,7 +75,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   dispose(): void {
     this._disposables.dispose();
     this.WATCHER_HANDLERS.clear();
-    this.client = undefined;
   }
 
   /**
@@ -431,7 +431,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    * Fires file changes to clients.
    * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
    */
-  protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
+  protected readonly fireDidFilesChanged: () => void = throttle(() => this.doFireDidFilesChanged(), FRAME_FIVE);
   protected doFireDidFilesChanged(): void {
     const changes = this.changes.values();
     this.changes = new FileChangeCollection();
