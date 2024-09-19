@@ -17,9 +17,7 @@ import {
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
-
 const { join, basename, normalize } = path;
-
 @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private WATCHER_HANDLERS = new Map<
@@ -72,18 +70,16 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private async doWatch(basePath: string) {
     try {
       const watcher = watch(basePath);
-      this.toDispose.push(Disposable.create(() => watcher.close()));
-
       this.logger.log('start watching', basePath);
-      const isDirectory = (await fs.lstat(basePath)).isDirectory();
+      const isDirectory = fs.lstatSync(basePath).isDirectory();
 
       const docChildren = new Set<string>();
       let signalDoc = '';
       if (isDirectory) {
         try {
-          for (const child of await fs.readdir(basePath)) {
+          for (const child of fs.readdirSync(basePath)) {
             const base = join(basePath, String(child));
-            if (!(await fs.lstat(base)).isDirectory()) {
+            if (!fs.lstatSync(base).isDirectory()) {
               docChildren.add(child);
             }
           }
@@ -123,7 +119,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
             // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
             if (docChildren.has(changeFileName)) {
               if ((type === 'rename' || type === 'change') && changeFileName === filename) {
-                const fileExists = await fs.exists(changePath);
+                const fileExists = fs.existsSync(changePath);
                 if (fileExists) {
                   this.pushUpdated(changePath);
                 } else {
@@ -131,8 +127,8 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
                   this.pushDeleted(changePath);
                 }
               }
-            } else if (await fs.pathExists(changePath)) {
-              if (!(await fs.lstat(changePath)).isDirectory()) {
+            } else if (fs.pathExistsSync(changePath)) {
+              if (!fs.lstatSync(changePath).isDirectory()) {
                 this.pushAdded(changePath);
                 docChildren.add(changeFileName);
               }
@@ -141,7 +137,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         } else {
           setTimeout(async () => {
             if (changeFileName === signalDoc) {
-              if (await fs.pathExists(basePath)) {
+              if (fs.pathExistsSync(basePath)) {
                 this.pushUpdated(basePath);
               } else {
                 this.pushDeleted(basePath);
@@ -173,7 +169,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     let watchPath = '';
 
     if (exist) {
-      const stat = await fs.lstat(basePath);
+      const stat = await fs.lstatSync(basePath);
       if (stat) {
         watchPath = basePath;
       }
