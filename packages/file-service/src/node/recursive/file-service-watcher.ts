@@ -342,56 +342,58 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       return event.action + paths.join(event.directory, event.file!);
     });
 
-    for (const event of mergedEvents) {
-      switch (event.action) {
-        case INsfw.actions.RENAMED:
-          {
-            const deletedPath = await this.resolvePath(event.directory, event.oldFile!);
-            if (isIgnored(watcherId, deletedPath)) {
-              continue;
-            }
-
-            this.pushDeleted(deletedPath);
-
-            if (event.newDirectory) {
-              const path = await this.resolvePath(event.newDirectory, event.newFile!);
-              if (isIgnored(watcherId, path)) {
-                continue;
+    await Promise.all(
+      mergedEvents.map(async (event) => {
+        switch (event.action) {
+          case INsfw.actions.RENAMED:
+            {
+              const deletedPath = await this.resolvePath(event.directory, event.oldFile!);
+              if (isIgnored(watcherId, deletedPath)) {
+                return;
               }
 
-              this.pushAdded(path);
-            } else {
-              const path = await this.resolvePath(event.directory, event.newFile!);
-              if (isIgnored(watcherId, path)) {
-                continue;
-              }
+              this.pushDeleted(deletedPath);
 
-              this.pushAdded(path);
-            }
-          }
-          break;
-        default:
-          {
-            const path = await this.resolvePath(event.directory, event.file!);
-            if (isIgnored(watcherId, path)) {
-              continue;
-            }
+              if (event.newDirectory) {
+                const path = await this.resolvePath(event.newDirectory, event.newFile!);
+                if (isIgnored(watcherId, path)) {
+                  return;
+                }
 
-            switch (event.action) {
-              case INsfw.actions.CREATED:
                 this.pushAdded(path);
-                break;
-              case INsfw.actions.DELETED:
-                this.pushDeleted(path);
-                break;
-              case INsfw.actions.MODIFIED:
-                this.pushUpdated(path);
-                break;
+              } else {
+                const path = await this.resolvePath(event.directory, event.newFile!);
+                if (isIgnored(watcherId, path)) {
+                  return;
+                }
+
+                this.pushAdded(path);
+              }
             }
-          }
-          break;
-      }
-    }
+            break;
+          default:
+            {
+              const path = await this.resolvePath(event.directory, event.file!);
+              if (isIgnored(watcherId, path)) {
+                return;
+              }
+
+              switch (event.action) {
+                case INsfw.actions.CREATED:
+                  this.pushAdded(path);
+                  break;
+                case INsfw.actions.DELETED:
+                  this.pushDeleted(path);
+                  break;
+                case INsfw.actions.MODIFIED:
+                  this.pushUpdated(path);
+                  break;
+              }
+            }
+            break;
+        }
+      }),
+    );
   }
 
   private async withNSFWModule(): Promise<typeof import('nsfw')> {
