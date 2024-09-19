@@ -9,7 +9,7 @@ import {
   IDisposable,
   getDebugLogger,
 } from '@opensumi/ide-core-browser';
-import { CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken, MaybePromise } from '@opensumi/ide-core-common';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
@@ -25,7 +25,7 @@ import {
 
 import { DebugSessionManager } from './debug-session-manager';
 
-export type DebugRequestHandler = (request: DebugProtocol.Request) => any;
+export type DebugRequestHandler = (request: DebugProtocol.Request) => MaybePromise<any>;
 
 const standardDebugEvents = new Set<Required<keyof DebugEventTypes>>([
   'breakpoint',
@@ -258,7 +258,9 @@ export class DebugSessionConnection implements IDisposable {
     const handler = this.requestHandlers.get(request.command);
     if (handler) {
       try {
-        response.body = handler(request);
+        // 这里之前没有 await, 是有问题的, 会导致 Server 拿不到对应的结果
+        // 这也就是为什么之前 debug 时选择 console integrated 会导致打不上断点
+        response.body = await handler(request);
       } catch (error) {
         response.success = false;
         response.message = error.message;
