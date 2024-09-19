@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   AINativeConfigService,
   AINativeSettingSectionsId,
@@ -44,18 +44,22 @@ import {
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
   CommandService,
+  Disposable,
+  Event,
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
   ProblemFixRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
+  Schemes,
   TerminalRegistryToken,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
-import { IEditor } from '@opensumi/ide-editor';
+import { EditorCollectionService, EditorType, ICodeEditor, IDiffEditor, IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { BrowserCodeEditor, DiffEditorPart } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { Position } from '@opensumi/ide-monaco';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
@@ -120,7 +124,13 @@ export class AINativeBrowserContribution
     MonacoContribution
 {
   @Autowired(AppConfig)
-  private appConfig: AppConfig;
+  private readonly appConfig: AppConfig;
+
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
+
+  @Autowired(EditorCollectionService)
+  private readonly editorCollectionService: EditorCollectionService;
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
@@ -156,7 +166,7 @@ export class AINativeBrowserContribution
   private readonly designLayoutConfig: DesignLayoutConfig;
 
   @Autowired(AICompletionsService)
-  private aiCompletionsService: AICompletionsService;
+  private readonly aiCompletionsService: AICompletionsService;
 
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
@@ -172,9 +182,6 @@ export class AINativeBrowserContribution
 
   @Autowired(ChatProxyServiceToken)
   private readonly chatProxyService: ChatProxyService;
-
-  @Autowired(AIEditorContribution)
-  private readonly aiEditorFeatureContribution: AIEditorContribution;
 
   @Autowired(IAIInlineChatService)
   private readonly aiInlineChatService: AIInlineChatService;
@@ -326,7 +333,42 @@ export class AINativeBrowserContribution
 
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
     registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => this.aiEditorFeatureContribution.contribute(editor),
+      contribute: (editor: IEditor) => {
+        const editorType = editor.getType();
+        const allowType = [EditorType.CODE, EditorType.MODIFIED_DIFF];
+        const allowSchemes = [Schemes.file, Schemes.notebookCell];
+
+        if (!allowType.includes(editorType)) {
+          return Disposable.NULL;
+        }
+
+        const disposable: Disposable = new Disposable();
+
+        const doContribute = (editor: ICodeEditor | IDiffEditor): void => {
+          const refOpen = editor.onRefOpen((e) => {
+            const { uri } = e.instance;
+            if (!allowSchemes.includes(uri.codeUri.scheme)) {
+              return;
+            }
+
+            const aiEditorFeatureContribution = this.injector.get(AIEditorContribution);
+            disposable.addDispose(aiEditorFeatureContribution.contribute(editor));
+            refOpen.dispose();
+          });
+        };
+
+        if (editor instanceof BrowserCodeEditor) {
+          doContribute(editor);
+        }
+
+        if (editor instanceof DiffEditorPart) {
+          Event.once(this.editorCollectionService.onDiffEditorCreate)((diffEditor) => {
+            doContribute(diffEditor);
+          });
+        }
+
+        return disposable;
+      },
     });
   }
 

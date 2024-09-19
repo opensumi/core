@@ -28,7 +28,7 @@ import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 import { IPartialEditEvent } from '../inline-stream-diff/live-preview.component';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class InlineDiffHandler extends IAIMonacoContribHandler {
   protected allowAnyScheme = true;
 

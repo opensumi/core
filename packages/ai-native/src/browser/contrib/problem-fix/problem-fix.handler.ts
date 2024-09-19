@@ -43,7 +43,7 @@ class AIMonacoHoverParticipant extends MarkerHoverParticipant {
   }
 }
 
-@Injectable()
+@Injectable({ multiple: true })
 export class ProblemFixHandler extends IAIMonacoContribHandler {
   @Autowired(InlineChatHandler)
   private readonly inlineChatHandler: InlineChatHandler;

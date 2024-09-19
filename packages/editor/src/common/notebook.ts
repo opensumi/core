@@ -193,4 +193,7 @@ export interface INotebookService {
   onDidChangeNotebookDocument: Event<NotebookDocumentChangeDto>;
 }
 
+/**
+ * @deprecated use Schemes.notebookCell
+ */
 export const notebookCellScheme = 'vscode-notebook-cell';

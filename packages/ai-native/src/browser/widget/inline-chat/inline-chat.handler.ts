@@ -35,7 +35,7 @@ import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import { AIInlineChatService, EInlineChatStatus, EResultKind } from './inline-chat.service';
 import { AIInlineContentWidget } from './inline-content-widget';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class InlineChatHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;

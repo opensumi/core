@@ -852,7 +852,7 @@ function preventNavigation(this: HTMLDivElement, e: WheelEvent) {
 }
 
 @Injectable({ multiple: true })
-class DiffEditorPart extends BaseMonacoEditorWrapper implements IEditor {
+export class DiffEditorPart extends BaseMonacoEditorWrapper implements IEditor {
   get currentDocumentModel() {
     return this.getDocumentModel();
   }

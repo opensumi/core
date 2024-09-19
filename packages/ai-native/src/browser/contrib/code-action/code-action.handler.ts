@@ -11,7 +11,7 @@ import { IAIMonacoContribHandler } from '../base';
 
 import { CodeActionService } from './code-action.service';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class CodeActionHandler extends IAIMonacoContribHandler {
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;

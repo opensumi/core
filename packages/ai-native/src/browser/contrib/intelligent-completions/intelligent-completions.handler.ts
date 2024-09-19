@@ -27,7 +27,7 @@ import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 import { MultiLineDecorationModel } from './multi-line.decoration';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class IntelligentCompletionsHandler extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
