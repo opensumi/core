@@ -16,7 +16,7 @@ import {
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
-import { isTempFile } from '../shared';
+import { shouldIgnorePath } from '../shared';
 
 const { join, basename, normalize } = path;
 
@@ -101,7 +101,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       });
 
       watcher.on('change', (type: string, filename: string | Buffer) => {
-        if (isTempFile(filename as string)) {
+        if (shouldIgnorePath(filename as string)) {
           return;
         }
 

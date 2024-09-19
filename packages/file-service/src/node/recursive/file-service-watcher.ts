@@ -22,7 +22,7 @@ import {
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
 import { FileChangeCollection } from '../file-change-collection';
-import { isTempFile } from '../shared';
+import { shouldIgnorePath } from '../shared';
 
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[];
@@ -182,17 +182,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    * @param events
    */
   protected trimChangeEvent(events: ParcelWatcher.Event[]): ParcelWatcher.Event[] {
-    events = events.filter((event: ParcelWatcher.Event) => {
-      if (event.path) {
-        if (isTempFile(event.path)) {
-          // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
-          // 这类文件的更新应当完全隐藏掉
-          return false;
-        }
-      }
-      return true;
-    });
-
+    events = events.filter((event: ParcelWatcher.Event) => !shouldIgnorePath(event.path));
     return events;
   }
 
@@ -255,7 +245,8 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         realPath,
         (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
         {
-          errorCallback: () => {
+          errorCallback: (err) => {
+            this.logger.error('NSFW watcher encountered an error and will stop watching.', err);
             // see https://github.com/atom/github/issues/342
             this.unwatchFileChanges(watcherId);
           },
@@ -338,7 +329,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         return true;
       }
 
-      return !isTempFile(event.file!);
+      return !shouldIgnorePath(event.file);
     });
     // 合并下事件，由于 resolvePath 耗时较久，这里只用当前事件路径及文件名去重，后续处理事件再获取真实路径
     const mergedEvents = uniqBy(filterEvents, (event) => {
