@@ -39,8 +39,6 @@ export class InlineInputHandler extends Disposable {
   @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
-  private aiNativeContextKey: AINativeContextKey;
-
   private cancelIndicator = new CancellationTokenSource();
 
   private cancelToken() {
@@ -127,9 +125,8 @@ export class InlineInputHandler extends Disposable {
   }
 
   public registerInlineInputFeature(editor: IEditor): IDisposable {
-    const { monacoEditor } = editor;
     const inputDisposable = new Disposable();
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
+    const aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
 
     const hideInput = () => {
       inputDisposable.dispose();
@@ -140,14 +137,31 @@ export class InlineInputHandler extends Disposable {
         hideInput();
 
         if (position) {
-          showInput(position);
+          showInput(position, editor);
         }
       }),
     );
 
-    const showInput = (position: monaco.Position) => {
+    const showInput = (position: monaco.Position, editor: IEditor) => {
+      const { monacoEditor } = editor;
+
+      this.addDispose(
+        monacoEditor.onWillChangeModel(() => {
+          hideInput();
+        }),
+      );
+
       const model = monacoEditor.getModel();
       if (!model) {
+        return;
+      }
+
+      /**
+       * 只有当前编辑器的光标聚焦，才会展示
+       * 用于解决多栏的情况下，同时打开多个 input 的问题
+       */
+      const hasFocus = monacoEditor.hasTextFocus();
+      if (!hasFocus) {
         return;
       }
 
@@ -172,13 +186,13 @@ export class InlineInputHandler extends Disposable {
 
       inlineInputChatWidget.show({ position: decorationRange.getStartPosition() });
 
-      this.aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
+      aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
 
       inputDisposable.addDispose(
         inlineInputChatWidget.onDispose(() => {
           this.cancelToken();
           collection.clear();
-          this.aiNativeContextKey.inlineInputWidgetIsVisible.set(false);
+          aiNativeContextKey.inlineInputWidgetIsVisible.set(false);
         }),
       );
 
@@ -258,12 +272,6 @@ export class InlineInputHandler extends Disposable {
     };
 
     this.addDispose(inputDisposable);
-
-    this.addDispose(
-      monacoEditor.onWillChangeModel(() => {
-        hideInput();
-      }),
-    );
 
     return this;
   }

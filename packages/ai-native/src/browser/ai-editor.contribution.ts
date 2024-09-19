@@ -9,13 +9,71 @@ import { BrowserCodeEditor, BrowserDiffEditor } from '@opensumi/ide-editor/lib/b
 
 import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
-import { IntelligentCompletionsHandler } from './contrib/intelligent-completions/intelligent-completions.handler';
 import { ProblemFixHandler } from './contrib/problem-fix/problem-fix.handler';
+import { RenameHandler } from './contrib/rename/rename.handler';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatHandler } from './widget/inline-chat/inline-chat.handler';
 import { InlineDiffHandler } from './widget/inline-diff/inline-diff.handler';
 import { InlineHintHandler } from './widget/inline-hint/inline-hint.handler';
 import { InlineInputHandler } from './widget/inline-input/inline-input.handler';
+
+class HandlersCollection extends Disposable {
+  constructor(private readonly injector: Injector) {
+    super();
+    this.addDispose([
+      this.inlineChatHandler,
+      this.inlineHintHandler,
+      this.inlineInputHandler,
+      this.inlineDiffHandler,
+      this.inlineCompletionHandler,
+      this.problemfixHandler,
+      this.renameHandler,
+    ]);
+  }
+
+  private _inlineHintHandler: InlineHintHandler;
+  get inlineHintHandler() {
+    return this._inlineHintHandler || (this._inlineHintHandler = this.injector.get(InlineHintHandler));
+  }
+
+  private _inlineInputHandler: InlineInputHandler;
+  get inlineInputHandler() {
+    return this._inlineInputHandler || (this._inlineInputHandler = this.injector.get(InlineInputHandler));
+  }
+
+  private _inlineDiffHandler: InlineDiffHandler;
+  get inlineDiffHandler() {
+    return this._inlineDiffHandler || (this._inlineDiffHandler = this.injector.get(InlineDiffHandler));
+  }
+
+  private _inlineChatHandler: InlineChatHandler;
+  get inlineChatHandler() {
+    return (
+      this._inlineChatHandler ||
+      (this._inlineChatHandler = this.injector.get(InlineChatHandler, [this.inlineDiffHandler]))
+    );
+  }
+
+  private _inlineCompletionHandler: InlineCompletionHandler;
+  get inlineCompletionHandler() {
+    return (
+      this._inlineCompletionHandler || (this._inlineCompletionHandler = this.injector.get(InlineCompletionHandler))
+    );
+  }
+
+  private _problemfixHandler: ProblemFixHandler;
+  get problemfixHandler() {
+    return (
+      this._problemfixHandler ||
+      (this._problemfixHandler = this.injector.get(ProblemFixHandler, [this.inlineChatHandler]))
+    );
+  }
+
+  private _renameHandler: RenameHandler;
+  get renameHandler() {
+    return this._renameHandler || (this._renameHandler = this.injector.get(RenameHandler));
+  }
+}
 
 @Injectable({ multiple: true })
 export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -31,32 +89,20 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IBrowserCtxMenu)
   private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
 
-  private modelSessionDisposable: Disposable = new Disposable();
-  private handlerDisposable: Disposable = new Disposable();
+  @Autowired(CodeActionHandler)
+  private readonly codeActionHandler: CodeActionHandler;
 
-  private handlers: { [key: string]: any } = {};
+  private modelSessionDisposable: Disposable = new Disposable();
+  private handlersCollection: HandlersCollection;
 
   dispose(): void {
     super.dispose();
     this.modelSessionDisposable?.dispose();
-    this.handlerDisposable?.dispose();
+    this.handlersCollection?.dispose();
   }
 
   contribute(editor: IEditor | IDiffEditor): IDisposable {
-    this.handlers.inlineChatHandler = this.injector.get(InlineChatHandler);
-    this.handlers.inlineHintHandler = this.injector.get(InlineHintHandler);
-    this.handlers.inlineInputHandler = this.injector.get(InlineInputHandler);
-    this.handlers.codeActionHandler = this.injector.get(CodeActionHandler);
-    this.handlers.inlineDiffHandler = this.injector.get(InlineDiffHandler);
-    this.handlers.inlineCompletionHandler = this.injector.get(InlineCompletionHandler);
-    this.handlers.problemfixHandler = this.injector.get(ProblemFixHandler);
-    this.handlers.intelligentCompletionsHandler = this.injector.get(IntelligentCompletionsHandler);
-
-    this.handlerDisposable.addDispose(
-      Disposable.create(() => {
-        Object.values(this.handlers).forEach((handler) => handler.dispose());
-      }),
-    );
+    this.handlersCollection = new HandlersCollection(this.injector);
 
     if (editor instanceof BrowserCodeEditor) {
       this.disposables.push(...this.handleBrowserEditor(editor));
@@ -118,20 +164,16 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   private registerFeatures(editor: IEditor, isDiffEditor = false) {
     const disposables: IDisposable[] = [];
     if (!isDiffEditor) {
-      disposables.push(this.handlers.inlineCompletionHandler.registerInlineCompletionFeature(editor));
+      disposables.push(this.handlersCollection.inlineCompletionHandler.registerInlineCompletionFeature(editor));
     }
-    disposables.push(this.handlers.inlineChatHandler.registerInlineChatFeature(editor));
+    disposables.push(this.handlersCollection.inlineChatHandler.registerInlineChatFeature(editor));
 
     if (this.inlineChatFeatureRegistry.getInteractiveInputHandler() && !isDiffEditor) {
-      this.addDispose(this.handlers.inlineHintHandler.registerHintLineFeature(editor));
-      this.addDispose(this.handlers.inlineInputHandler.registerInlineInputFeature(editor));
+      this.addDispose(this.handlersCollection.inlineHintHandler.registerHintLineFeature(editor));
+      this.addDispose(this.handlersCollection.inlineInputHandler.registerInlineInputFeature(editor));
     }
 
-    this.addDispose(this.handlers.inlineDiffHandler.registerInlineDiffFeature(editor));
-
-    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-      this.addDispose(this.handlers.intelligentCompletionsHandler.registerFeature(editor));
-    }
+    this.addDispose(this.handlersCollection.inlineDiffHandler.registerInlineDiffFeature(editor));
 
     return disposables;
   }
@@ -151,15 +193,23 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.modelSessionDisposable = new Disposable();
 
     if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-      this.modelSessionDisposable.addDispose(this.handlers.inlineCompletionHandler.mountEditor(editor));
-    }
-    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-      this.modelSessionDisposable.addDispose(this.handlers.codeActionHandler.mountEditor(editor));
+      this.handlersCollection.inlineCompletionHandler.load();
+      this.modelSessionDisposable.addDispose(this.handlersCollection.inlineCompletionHandler.mountEditor(editor));
     }
     if (this.aiNativeConfigService.capabilities.supportsProblemFix) {
-      this.modelSessionDisposable.addDispose(this.handlers.problemfixHandler.mountEditor(editor));
+      this.handlersCollection.problemfixHandler.load();
+      this.modelSessionDisposable.addDispose(this.handlersCollection.problemfixHandler.mountEditor(editor));
+    }
+    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+      this.handlersCollection.renameHandler.load();
     }
 
-    this.modelSessionDisposable.addDispose(this.handlers.inlineDiffHandler.mountEditor(editor));
+    // 以下是需要全局单例的 handler
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+      this.codeActionHandler.load();
+      this.modelSessionDisposable.addDispose(this.codeActionHandler.mountEditor(editor));
+    }
+
+    this.modelSessionDisposable.addDispose(this.handlersCollection.inlineDiffHandler.mountEditor(editor));
   }
 }

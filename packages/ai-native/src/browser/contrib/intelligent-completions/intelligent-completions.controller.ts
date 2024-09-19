@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Injectable, Injector, Optional } from '@opensumi/di';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
   CancellationTokenSource,
@@ -9,9 +9,9 @@ import {
   IntelligentCompletionsRegistryToken,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
+import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
@@ -27,13 +27,22 @@ import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 import { MultiLineDecorationModel } from './multi-line.decoration';
 
-@Injectable({ multiple: true })
-export class IntelligentCompletionsHandler extends Disposable {
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
+@Injectable()
+export class IntelligentCompletionsController extends Disposable implements IEditorContribution {
+  public static readonly ID = 'editor.contrib.intelligent.completions';
 
-  @Autowired(IntelligentCompletionsRegistryToken)
-  private intelligentCompletionsRegistry: IntelligentCompletionsRegistry;
+  public static get(editor: ICodeEditor): IntelligentCompletionsController | null {
+    return editor.getContribution<IntelligentCompletionsController>(IntelligentCompletionsController.ID);
+  }
+
+  constructor(@Optional() private readonly injector: Injector, @Optional() private readonly monacoEditor: ICodeEditor) {
+    super();
+    this.registerFeature(this.monacoEditor);
+  }
+
+  private get intelligentCompletionsRegistry(): IntelligentCompletionsRegistry {
+    return this.injector.get(IntelligentCompletionsRegistryToken);
+  }
 
   private cancelIndicator = new CancellationTokenSource();
 
@@ -45,12 +54,7 @@ export class IntelligentCompletionsHandler extends Disposable {
   private multiLineDecorationModel: MultiLineDecorationModel;
   private additionsDeletionsDecorationModel: AdditionsDeletionsDecorationModel;
 
-  private editor: IEditor;
   private aiNativeContextKey: AINativeContextKey;
-
-  private get monacoEditor(): ICodeEditor {
-    return this.editor.monacoEditor;
-  }
 
   private get model(): ITextModel {
     return this.monacoEditor.getModel()!;
@@ -59,7 +63,7 @@ export class IntelligentCompletionsHandler extends Disposable {
   private rewriteWidget: RewriteWidget | null;
   private whenMultiLineEditsVisibleDisposable: Disposable = new Disposable();
 
-  private disposeRewriteWidget() {
+  private destroyRewriteWidget() {
     if (this.rewriteWidget) {
       this.rewriteWidget.dispose();
       this.rewriteWidget = null;
@@ -174,7 +178,7 @@ export class IntelligentCompletionsHandler extends Disposable {
     range: IRange,
     insertTextString: string,
   ) {
-    this.disposeRewriteWidget();
+    this.destroyRewriteWidget();
 
     const cursorPosition = this.monacoEditor.getPosition();
     if (!cursorPosition) {
@@ -218,7 +222,7 @@ export class IntelligentCompletionsHandler extends Disposable {
     this.aiNativeContextKey.multiLineEditsIsVisible.reset();
     this.multiLineDecorationModel.clearDecorations();
     this.additionsDeletionsDecorationModel.clearDeletionsDecorations();
-    this.disposeRewriteWidget();
+    this.destroyRewriteWidget();
   }
 
   public accept() {
@@ -246,10 +250,7 @@ export class IntelligentCompletionsHandler extends Disposable {
     this.hide();
   }
 
-  public registerFeature(editor: IEditor): IDisposable {
-    this.editor = editor;
-    const { monacoEditor } = editor;
-
+  public registerFeature(monacoEditor: ICodeEditor): IDisposable {
     this.multiLineDecorationModel = new MultiLineDecorationModel(monacoEditor);
     this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [monacoEditor.contextKeyService]);

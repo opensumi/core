@@ -1,15 +1,12 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { KeybindingRegistry, KeybindingScope } from '@opensumi/ide-core-browser';
-import { AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { InlineHintWidgetIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
-import { Position } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { AICompletionsService } from '../../contrib/inline-completions/service/ai-completions.service';
+import { InlineInputChatService } from '../inline-input/inline-input.service';
 import { InlineInputPreviewDecorationID } from '../internal.type';
 
 import { InlineHintLineDecoration } from './inline-hint-line-widget';
@@ -22,17 +19,13 @@ export class InlineHintHandler extends Disposable {
   @Autowired(AICompletionsService)
   private readonly inlineCompletionsService: AICompletionsService;
 
-  @Autowired(KeybindingRegistry)
-  private readonly keybindingRegistry: KeybindingRegistry;
-
-  private aiNativeContextKey: AINativeContextKey;
+  @Autowired(InlineInputChatService)
+  private readonly inlineInputChatService: InlineInputChatService;
 
   public registerHintLineFeature(editor: IEditor): IDisposable {
     const { monacoEditor } = editor;
     const hintDisposable = new Disposable();
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
-
-    let currentVisiblePosition: Position | undefined;
+    const aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
 
     const hideHint = () => {
       hintDisposable.dispose();
@@ -60,14 +53,14 @@ export class InlineHintHandler extends Disposable {
       if (isEmpty && isEmptySelection && !hasPreviewDecoration) {
         const inlineHintLineDecoration = this.injector.get(InlineHintLineDecoration, [monacoEditor]);
         inlineHintLineDecoration.show(position);
-        currentVisiblePosition = position;
+        this.inlineInputChatService.setCurrentVisiblePosition(position);
 
-        this.aiNativeContextKey.inlineHintWidgetIsVisible.set(true);
+        aiNativeContextKey.inlineHintWidgetIsVisible.set(true);
 
         hintDisposable.addDispose(
           inlineHintLineDecoration.onDispose(() => {
-            currentVisiblePosition = undefined;
-            this.aiNativeContextKey.inlineHintWidgetIsVisible.set(false);
+            this.inlineInputChatService.setCurrentVisiblePosition(undefined);
+            aiNativeContextKey.inlineHintWidgetIsVisible.set(false);
           }),
         );
 
@@ -108,19 +101,6 @@ export class InlineHintHandler extends Disposable {
     );
 
     this.addDispose(hintDisposable);
-
-    this.addDispose(
-      this.keybindingRegistry.registerKeybinding(
-        {
-          command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
-          keybinding: 'ctrlcmd+k',
-          args: () => currentVisiblePosition,
-          priority: 0,
-          when: `editorTextFocus && ${InlineHintWidgetIsVisible.raw}`,
-        },
-        KeybindingScope.USER,
-      ),
-    );
 
     return this;
   }

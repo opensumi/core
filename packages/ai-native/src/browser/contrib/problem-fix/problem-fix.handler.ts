@@ -45,9 +45,6 @@ class AIMonacoHoverParticipant extends MarkerHoverParticipant {
 
 @Injectable({ multiple: true })
 export class ProblemFixHandler extends IAIMonacoContribHandler {
-  @Autowired(InlineChatHandler)
-  private readonly inlineChatHandler: InlineChatHandler;
-
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -62,6 +59,10 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
 
   private aiNativeContextKey: AINativeContextKey;
 
+  constructor(private readonly inlineChatHandler: InlineChatHandler) {
+    super();
+  }
+
   mountEditor(editor: IEditor) {
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
     return super.mountEditor(editor);
@@ -75,9 +76,9 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
       return disposable;
     }
 
-    // 先去掉 monaco 默认的 MarkerHoverParticipant
+    // 先去掉 monaco 默认的 MarkerHoverParticipant，以及之前注册的 AIMonacoHoverParticipant
     HoverParticipantRegistry._participants = HoverParticipantRegistry._participants.filter(
-      (participant) => participant !== MarkerHoverParticipant,
+      (participant) => participant !== MarkerHoverParticipant && participant !== AIMonacoHoverParticipant,
     );
 
     AIMonacoHoverParticipant.injector = this.injector;
@@ -100,7 +101,7 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
   private async handleHoverFix(part: MarkerHover, provider: IHoverFixHandler) {
     const monacoEditor = this.editor?.monacoEditor;
 
-    if (!monacoEditor) {
+    if (!monacoEditor || !monacoEditor.hasTextFocus()) {
       return;
     }
 

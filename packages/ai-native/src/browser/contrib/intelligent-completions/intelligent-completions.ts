@@ -9,6 +9,10 @@ export interface IIntelligentCompletionsResult<T = any> {
    */
   readonly enableMultiLine?: boolean | undefined;
   /**
+   * 总是保持显示，优先级高于下拉补全的内联提示
+   */
+  readonly alwaysVisible?: boolean | undefined;
+  /**
    * 定义的额外信息
    */
   extra?: T;

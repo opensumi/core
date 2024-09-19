@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
-import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { LanguageParserService } from '../../languages/service';
@@ -11,7 +11,7 @@ import { IAIMonacoContribHandler } from '../base';
 
 import { CodeActionService } from './code-action.service';
 
-@Injectable({ multiple: true })
+@Injectable()
 export class CodeActionHandler extends IAIMonacoContribHandler {
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
@@ -22,7 +22,7 @@ export class CodeActionHandler extends IAIMonacoContribHandler {
   @Autowired(LanguageParserService)
   private readonly languageParserService: LanguageParserService;
 
-  inlineChatActionEnabled: boolean;
+  private inlineChatActionEnabled: boolean;
 
   constructor() {
     super();
@@ -48,7 +48,7 @@ export class CodeActionHandler extends IAIMonacoContribHandler {
   }
 
   doContribute() {
-    return languageFeaturesService.codeActionProvider.register('*', {
+    return monacoApi.languages.registerCodeActionProvider('*', {
       provideCodeActions: async (model, range) => {
         if (!this.inlineChatActionEnabled) {
           return;

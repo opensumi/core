@@ -36,6 +36,7 @@ import {
 import {
   InlineChatIsVisible,
   InlineDiffPartialEditsIsVisible,
+  InlineHintWidgetIsVisible,
   InlineInputWidgetIsVisible,
 } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -61,10 +62,10 @@ import { EditorCollectionService, EditorType, ICodeEditor, IDiffEditor, IEditor 
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { BrowserCodeEditor, DiffEditorPart } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { Position } from '@opensumi/ide-monaco';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commands';
+import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import {
   AI_CHAT_CONTAINER_ID,
@@ -77,12 +78,9 @@ import {
 import { AIEditorContribution } from './ai-editor.contribution';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
-import { CodeActionHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
-import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
-import { ProblemFixHandler } from './contrib/problem-fix/problem-fix.handler';
-import { RenameHandler } from './contrib/rename/rename.handler';
+import { IntelligentCompletionsController } from './contrib/intelligent-completions/intelligent-completions.controller';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
@@ -186,18 +184,6 @@ export class AINativeBrowserContribution
   @Autowired(IAIInlineChatService)
   private readonly aiInlineChatService: AIInlineChatService;
 
-  @Autowired(RenameHandler)
-  private readonly renameHandler: RenameHandler;
-
-  @Autowired(ProblemFixHandler)
-  private readonly problemfixHandler: ProblemFixHandler;
-
-  @Autowired(InlineCompletionHandler)
-  private readonly inlineCompletionHandler: InlineCompletionHandler;
-
-  @Autowired(CodeActionHandler)
-  private readonly codeActionHandler: CodeActionHandler;
-
   @Autowired(InlineInputChatService)
   private readonly inlineInputChatService: InlineInputChatService;
 
@@ -219,9 +205,16 @@ export class AINativeBrowserContribution
   }
 
   registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
-    const { supportsInlineChat } = this.aiNativeConfigService.capabilities;
+    const { supportsInlineChat, supportsInlineCompletion } = this.aiNativeConfigService.capabilities;
     if (supportsInlineChat) {
       register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+    }
+    if (supportsInlineCompletion) {
+      register(
+        IntelligentCompletionsController.ID,
+        new SyncDescriptor(IntelligentCompletionsController, [this.injector]),
+        EditorContributionInstantiation.Eventually,
+      );
     }
   }
 
@@ -235,19 +228,6 @@ export class AINativeBrowserContribution
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, false);
       }
     });
-
-    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
-      this.renameHandler.load();
-    }
-    if (this.aiNativeConfigService.capabilities.supportsProblemFix) {
-      this.problemfixHandler.load();
-    }
-    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-      this.inlineCompletionHandler.load();
-    }
-    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-      this.codeActionHandler.load();
-    }
   }
 
   private registerFeature() {
@@ -380,18 +360,14 @@ export class AINativeBrowserContribution
     });
 
     commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE, {
-      execute: (positionFn: () => Position) => {
-        if (positionFn) {
-          const posi = positionFn();
-
-          if (posi) {
-            this.inlineInputChatService.visibleInPosition(posi);
-          } else {
-            this.inlineInputChatService.hide();
-          }
+      execute: (isVisible: boolean) => {
+        if (isVisible) {
+          this.inlineInputChatService.visible();
+        } else {
+          this.inlineInputChatService.hide();
         }
 
-        this.aiInlineChatService._onInteractiveInputVisible.fire(true);
+        this.aiInlineChatService._onInteractiveInputVisible.fire(isVisible);
       },
     });
 
@@ -492,6 +468,7 @@ export class AINativeBrowserContribution
           {
             command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
             keybinding: 'ctrlcmd+k',
+            args: true,
             priority: 0,
             when: `editorFocus && ${InlineChatIsVisible.raw}`,
           },
@@ -501,10 +478,21 @@ export class AINativeBrowserContribution
         keybindings.registerKeybinding({
           command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
           keybinding: 'esc',
-          args: () => undefined,
+          args: false,
           priority: 0,
           when: `editorFocus && ${InlineInputWidgetIsVisible.raw}`,
         });
+
+        keybindings.registerKeybinding(
+          {
+            command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
+            keybinding: 'ctrlcmd+k',
+            args: true,
+            priority: 0,
+            when: `editorFocus && ${InlineHintWidgetIsVisible.raw} && ${InlineChatIsVisible.not}`,
+          },
+          KeybindingScope.USER,
+        );
       }
     }
   }

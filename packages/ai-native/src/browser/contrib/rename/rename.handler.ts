@@ -16,7 +16,7 @@ import { IAIMonacoContribHandler } from '../base';
 
 import { RenameSuggestionsService } from './rename.service';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class RenameHandler extends IAIMonacoContribHandler {
   @Autowired(RenameSuggestionsService)
   private readonly renameSuggestionService: RenameSuggestionsService;

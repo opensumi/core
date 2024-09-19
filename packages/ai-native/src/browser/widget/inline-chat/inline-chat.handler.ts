@@ -61,11 +61,12 @@ export class InlineChatHandler extends Disposable {
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
 
-  @Autowired(InlineDiffHandler)
-  private readonly inlineDiffHandler: InlineDiffHandler;
-
   @Autowired(ILogger)
   private logger: ILogServiceClient;
+
+  constructor(private readonly inlineDiffHandler: InlineDiffHandler) {
+    super();
+  }
 
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposable: Disposable = new Disposable();
@@ -108,7 +109,8 @@ export class InlineChatHandler extends Disposable {
       this.codeActionService.onCodeActionRun(({ id, range }) => {
         const currentEditor = this.workbenchEditorService.currentEditor;
 
-        if (currentEditor?.currentUri !== editor.currentUri) {
+        // 可能存在两个 editor 但 uri 是同一个的情况，所以需要根据 editor 的 id 来判断
+        if (currentEditor?.getId() !== editor.getId()) {
           return;
         }
 
