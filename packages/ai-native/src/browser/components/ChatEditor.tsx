@@ -14,7 +14,6 @@ import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-c
 import { InstructionEnum, highLightLanguageSupport } from '../../common/index';
 
 import * as styles from './components.module.less';
-import './highlightTheme.less';
 
 const ChatEditor = ({ input, language }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
@@ -133,6 +132,11 @@ export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
 
   const [isCoping, setIsCoping] = useState<boolean>(false);
   const useUUID = useMemo(() => uuid(12), [ref, ref.current]);
+
+  useEffect(() => {
+    // 全局样式复写
+    import('./highlightTheme.less');
+  }, []);
 
   const handleCopy = useCallback(async () => {
     setIsCoping(true);
