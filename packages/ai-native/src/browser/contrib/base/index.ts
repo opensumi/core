@@ -68,28 +68,26 @@ export abstract class BaseAIMonacoEditorController extends Disposable implements
     const contribDisposable: Disposable = new Disposable();
     let isMounted = false;
 
-    if (monacoEditor instanceof StandaloneEditor) {
-      monacoEditor.onDidChangeModel(({ newModelUrl }) => {
-        const shouldMount = newModelUrl && this.allowedSchemes.includes(newModelUrl.scheme);
-        if (shouldMount !== isMounted) {
-          isMounted = !!shouldMount;
-          if (isMounted) {
-            contribDisposable.addDispose(this.mount());
-          } else {
-            contribDisposable.dispose();
-          }
+    monacoEditor.onDidChangeModel(({ newModelUrl }) => {
+      const shouldMount = newModelUrl && this.allowedSchemes.includes(newModelUrl.scheme);
+      if (shouldMount !== isMounted) {
+        isMounted = !!shouldMount;
+        if (isMounted) {
+          contribDisposable.addDispose(this.mount());
+        } else {
+          contribDisposable.dispose();
         }
-      });
-
-      const model = monacoEditor.getModel();
-
-      if (model && this.allowedSchemes.includes(model.uri.scheme)) {
-        isMounted = true;
-        contribDisposable.addDispose(this.mount());
       }
+    });
 
-      this.addDispose(contribDisposable);
+    const model = monacoEditor.getModel();
+
+    if (model && this.allowedSchemes.includes(model.uri.scheme)) {
+      isMounted = true;
+      contribDisposable.addDispose(this.mount());
     }
+
+    this.addDispose(contribDisposable);
   }
 
   abstract mount(): IDisposable;

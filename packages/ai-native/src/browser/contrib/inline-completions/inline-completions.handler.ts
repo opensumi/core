@@ -39,8 +39,7 @@ export class InlineCompletionSingleHandler extends BaseAIMonacoContribHandler {
   private sequencer = new Sequencer();
   private preDidShowItems: InlineCompletions | undefined;
 
-  public registerInlineCompletionFeature(editor: IEditor): IDisposable {
-    const { monacoEditor } = editor;
+  private registerInlineCompletionFeature(monacoEditor: ICodeEditor): IDisposable {
     // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
     const selectionChange = () => {
       this.aiCompletionsService.hideStatusBarItem();
@@ -89,15 +88,18 @@ export class InlineCompletionSingleHandler extends BaseAIMonacoContribHandler {
     return this;
   }
 
+  private editorDispose: Disposable = new Disposable();
   mountEditor(monacoEditor: ICodeEditor) {
-    const toDispose = new Disposable();
-    this.aiInlineCompletionsProvider.mount();
+    super.mountEditor(monacoEditor);
 
-    toDispose.addDispose(super.mountEditor(monacoEditor));
-    toDispose.addDispose(this.aiInlineCompletionsProvider);
+    if (this.editorDispose) {
+      this.editorDispose.dispose();
+    }
+
+    this.editorDispose = new Disposable();
 
     const inlineVisibleKey = new Set([InlineCompletionContextKeys.inlineSuggestionVisible.key]);
-    toDispose.addDispose(
+    this.editorDispose.addDispose(
       monacoEditor.contextKeyService.onDidChangeContext((e) => {
         // inline completion 真正消失时
         if (e.affectsSome(inlineVisibleKey)) {
@@ -113,10 +115,15 @@ export class InlineCompletionSingleHandler extends BaseAIMonacoContribHandler {
         }
       }),
     );
-    return toDispose;
+
+    return this.editorDispose;
   }
 
   doContribute(): IDisposable {
+    if (this.monacoEditor) {
+      this.registerInlineCompletionFeature(this.monacoEditor);
+    }
+
     let prePosition: Position | undefined;
 
     return monacoApi.languages.registerInlineCompletionsProvider('*', {

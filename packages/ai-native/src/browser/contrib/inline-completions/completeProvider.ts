@@ -77,6 +77,8 @@ export class AIInlineCompletionsProvider extends WithEventBus {
         },
       ),
     );
+
+    this.mount();
   }
 
   public mount(): void {

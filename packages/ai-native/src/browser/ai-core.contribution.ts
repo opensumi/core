@@ -40,27 +40,25 @@ import {
   InlineInputWidgetIsVisible,
 } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
   CommandService,
-  Disposable,
-  Event,
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
   ProblemFixRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
-  Schemes,
   TerminalRegistryToken,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
-import { EditorCollectionService, EditorType, ICodeEditor, IDiffEditor, IEditor } from '@opensumi/ide-editor';
+import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
+import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
-import { BrowserCodeEditor, DiffEditorPart } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
@@ -75,7 +73,7 @@ import {
   ChatProxyServiceToken,
 } from '../common';
 
-import { AIEditorContribution } from './ai-editor.contribution';
+
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -135,8 +133,8 @@ export class AINativeBrowserContribution
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
-  @Autowired(EditorCollectionService)
-  private readonly editorCollectionService: EditorCollectionService;
+  @Autowired(IBrowserCtxMenu)
+  private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
@@ -378,42 +376,16 @@ export class AINativeBrowserContribution
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => {
+        const { monacoEditor } = editor;
+
         this.codeActionSingleHandler.mountEditor(editor.monacoEditor);
+        this.inlineCompletionSingleHandler.mountEditor(editor.monacoEditor);
 
-        const editorType = editor.getType();
-        const allowType = [EditorType.CODE, EditorType.MODIFIED_DIFF];
-        const allowSchemes = [Schemes.file, Schemes.notebookCell];
-
-        if (!allowType.includes(editorType)) {
-          return Disposable.NULL;
-        }
-
-        const disposable: Disposable = new Disposable();
-
-        const doContribute = (editor: ICodeEditor | IDiffEditor): void => {
-          const refOpen = editor.onRefOpen((e) => {
-            const { uri } = e.instance;
-            if (!allowSchemes.includes(uri.codeUri.scheme)) {
-              return;
-            }
-
-            const aiEditorFeatureContribution = this.injector.get(AIEditorContribution);
-            disposable.addDispose(aiEditorFeatureContribution.contribute(editor));
-            refOpen.dispose();
-          });
-        };
-
-        if (editor instanceof BrowserCodeEditor) {
-          doContribute(editor);
-        }
-
-        if (editor instanceof DiffEditorPart) {
-          Event.once(this.editorCollectionService.onDiffEditorCreate)((diffEditor) => {
-            doContribute(diffEditor);
-          });
-        }
-
-        return disposable;
+        return monacoEditor.onDidScrollChange(() => {
+          if (this.ctxMenuRenderer.visible) {
+            this.ctxMenuRenderer.hide(true);
+          }
+        });
       },
     });
   }
