@@ -14,7 +14,7 @@ import {
 import { EditorGroupCloseEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 
-import { IAIMonacoContribHandler } from '../../contrib/base';
+import { BaseAIMonacoContribHandler } from '../../contrib/base';
 import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { EResultKind } from '../inline-chat/inline-chat.service';
@@ -29,7 +29,7 @@ import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-dif
 import { IPartialEditEvent } from '../inline-stream-diff/live-preview.component';
 
 @Injectable({ multiple: true })
-export class InlineDiffHandler extends IAIMonacoContribHandler {
+export class InlineDiffHandler extends BaseAIMonacoContribHandler {
   protected allowAnyScheme = true;
 
   @Autowired(INJECTOR_TOKEN)
@@ -70,6 +70,9 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
   doContribute(): IDisposable {
     this.logger.log('InlineDiffHandler doContribute');
+    if (this.monacoEditor) {
+      this.registerInlineDiffFeature(this.monacoEditor);
+    }
     return Disposable.NULL;
   }
 
@@ -114,10 +117,9 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     }
   }
 
-  registerInlineDiffFeature(editor: IEditor): IDisposable {
+  registerInlineDiffFeature(monacoEditor: monaco.ICodeEditor): IDisposable {
     const disposable = new Disposable();
 
-    const monacoEditor = editor.monacoEditor;
     const model = monacoEditor.getModel();
 
     disposable.addDispose(

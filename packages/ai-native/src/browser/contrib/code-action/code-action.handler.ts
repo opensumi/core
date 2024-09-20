@@ -7,12 +7,12 @@ import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { LanguageParserService } from '../../languages/service';
 import { ICodeBlockInfo } from '../../languages/tree-sitter/language-facts/base';
-import { IAIMonacoContribHandler } from '../base';
+import { BaseAIMonacoContribHandler } from '../base';
 
 import { CodeActionService } from './code-action.service';
 
 @Injectable()
-export class CodeActionHandler extends IAIMonacoContribHandler {
+export class CodeActionSingleHandler extends BaseAIMonacoContribHandler {
   @Autowired(CodeActionService)
   private readonly codeActionService: CodeActionService;
 
@@ -118,9 +118,9 @@ export class CodeActionHandler extends IAIMonacoContribHandler {
           return;
         }
 
-        if (this.editor) {
+        if (this.monacoEditor) {
           // 获取视窗范围内的代码块
-          const ranges = this.editor.monacoEditor.getVisibleRanges();
+          const ranges = this.monacoEditor.getVisibleRanges();
           if (ranges.length === 0) {
             return;
           }

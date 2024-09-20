@@ -9,8 +9,7 @@ import {
   IAIReporter,
   ProblemFixRegistryToken,
 } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor';
-import { Range } from '@opensumi/ide-monaco';
+import { ICodeEditor, Range } from '@opensumi/ide-monaco';
 import { HoverController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/hover/browser/hover';
 import {
   HoverParticipantRegistry,
@@ -23,8 +22,8 @@ import {
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { IHoverFixHandler } from '../../types';
-import { InlineChatHandler } from '../../widget/inline-chat/inline-chat.handler';
-import { IAIMonacoContribHandler } from '../base';
+import { InlineChatEditorController } from '../../widget/inline-chat/inline-chat-editor.controller';
+import { BaseAIMonacoContribHandler } from '../base';
 
 import { MarkerHoverParticipantComponent } from './problem-fix.component';
 import { ProblemFixProviderRegistry } from './problem-fix.feature.registry';
@@ -44,7 +43,7 @@ class AIMonacoHoverParticipant extends MarkerHoverParticipant {
 }
 
 @Injectable({ multiple: true })
-export class ProblemFixHandler extends IAIMonacoContribHandler {
+export class ProblemFixHandler extends BaseAIMonacoContribHandler {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -59,12 +58,8 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
 
   private aiNativeContextKey: AINativeContextKey;
 
-  constructor(private readonly inlineChatHandler: InlineChatHandler) {
-    super();
-  }
-
-  mountEditor(editor: IEditor) {
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
+  mountEditor(editor: ICodeEditor) {
+    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.contextKeyService]);
     return super.mountEditor(editor);
   }
 
@@ -86,7 +81,7 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
 
     disposable.addDispose(
       this.problemFixService.onHoverFixTrigger((part) => {
-        const hoverController = this.editor?.monacoEditor.getContribution<HoverController>(HoverController.ID);
+        const hoverController = this.monacoEditor?.getContribution<HoverController>(HoverController.ID);
         if (hoverController) {
           hoverController.hideContentHover();
         }
@@ -99,7 +94,7 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
   }
 
   private async handleHoverFix(part: MarkerHover, provider: IHoverFixHandler) {
-    const monacoEditor = this.editor?.monacoEditor;
+    const monacoEditor = this.monacoEditor;
 
     if (!monacoEditor || !monacoEditor.hasTextFocus()) {
       return;
@@ -131,7 +126,9 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
         if (e.payload.affectsSome(inlineChatIsVisible)) {
           const isVisible = this.aiNativeContextKey.inlineChatIsVisible.get();
           if (isVisible) {
-            this.inlineChatHandler.runAction({
+            const inlineChatEditorController = InlineChatEditorController.get(monacoEditor);
+
+            inlineChatEditorController?.runAction({
               monacoEditor,
               reporterFn: (): string => {
                 const relationId = this.aiReporter.start(AISerivceType.ProblemFix, {
@@ -144,8 +141,7 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
                 return relationId;
               },
               crossSelection: monacoEditor.getSelection()!,
-              providerPreview: () =>
-                provider.provideFix(monacoEditor, context, this.inlineChatHandler.cancelIndicator.token),
+              providerPreview: () => provider.provideFix(monacoEditor, context, inlineChatEditorController.token),
               extraData: {
                 actionSource: ActionSourceEnum.Hover,
                 actionType: ActionTypeEnum.HoverFix,

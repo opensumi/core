@@ -5,6 +5,7 @@ import * as monaco from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { BaseAIMonacoContribHandler } from '../../contrib/base';
 import { AICompletionsService } from '../../contrib/inline-completions/service/ai-completions.service';
 import { InlineInputChatService } from '../inline-input/inline-input.service';
 import { InlineInputPreviewDecorationID } from '../internal.type';
@@ -12,7 +13,7 @@ import { InlineInputPreviewDecorationID } from '../internal.type';
 import { InlineHintLineDecoration } from './inline-hint-line-widget';
 
 @Injectable({ multiple: true })
-export class InlineHintHandler extends Disposable {
+export class InlineHintHandler extends BaseAIMonacoContribHandler {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -22,10 +23,16 @@ export class InlineHintHandler extends Disposable {
   @Autowired(InlineInputChatService)
   private readonly inlineInputChatService: InlineInputChatService;
 
-  public registerHintLineFeature(editor: IEditor): IDisposable {
-    const { monacoEditor } = editor;
+  doContribute(): IDisposable {
+    if (this.monacoEditor) {
+      return this.registerHintLineFeature(this.monacoEditor);
+    }
+    return this;
+  }
+
+  private registerHintLineFeature(monacoEditor: monaco.ICodeEditor): IDisposable {
     const hintDisposable = new Disposable();
-    const aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
+    const aiNativeContextKey = this.injector.get(AINativeContextKey, [monacoEditor.contextKeyService]);
 
     const hideHint = () => {
       hintDisposable.dispose();

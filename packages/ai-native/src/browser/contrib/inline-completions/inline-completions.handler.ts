@@ -12,18 +12,18 @@ import {
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
-import { InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
+import { ICodeEditor, InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 
-import { IAIMonacoContribHandler } from '../base';
+import { BaseAIMonacoContribHandler } from '../base';
 import { IIntelligentCompletionsResult } from '../intelligent-completions/intelligent-completions';
 
 import { AIInlineCompletionsProvider } from './completeProvider';
 import { AICompletionsService } from './service/ai-completions.service';
 
-@Injectable({ multiple: true })
-export class InlineCompletionHandler extends IAIMonacoContribHandler {
+@Injectable()
+export class InlineCompletionSingleHandler extends BaseAIMonacoContribHandler {
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
@@ -89,20 +89,20 @@ export class InlineCompletionHandler extends IAIMonacoContribHandler {
     return this;
   }
 
-  mountEditor(editor: IEditor) {
+  mountEditor(monacoEditor: ICodeEditor) {
     const toDispose = new Disposable();
-    this.aiInlineCompletionsProvider.mountEditor(editor);
+    this.aiInlineCompletionsProvider.mount();
 
-    toDispose.addDispose(super.mountEditor(editor));
+    toDispose.addDispose(super.mountEditor(monacoEditor));
     toDispose.addDispose(this.aiInlineCompletionsProvider);
 
     const inlineVisibleKey = new Set([InlineCompletionContextKeys.inlineSuggestionVisible.key]);
     toDispose.addDispose(
-      editor.monacoEditor.contextKeyService.onDidChangeContext((e) => {
+      monacoEditor.contextKeyService.onDidChangeContext((e) => {
         // inline completion 真正消失时
         if (e.affectsSome(inlineVisibleKey)) {
           const inlineSuggestionVisible = InlineCompletionContextKeys.inlineSuggestionVisible.getValue(
-            editor.monacoEditor.contextKeyService,
+            monacoEditor.contextKeyService,
           );
           if (!inlineSuggestionVisible && this.preDidShowItems) {
             runWhenIdle(() => {

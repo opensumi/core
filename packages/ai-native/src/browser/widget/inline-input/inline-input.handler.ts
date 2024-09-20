@@ -10,7 +10,6 @@ import {
   ReplyResponse,
   RunOnceScheduler,
 } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
@@ -18,6 +17,7 @@ import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/cor
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { BaseAIMonacoContribHandler } from '../../contrib/base';
 import { ERunStrategy } from '../../types';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { InlineChatFeatureRegistry } from '../inline-chat/inline-chat.feature.registry';
@@ -28,8 +28,9 @@ import { InlineInputChatWidget } from './inline-input-widget';
 import styles from './inline-input.module.less';
 import { InlineInputChatService } from './inline-input.service';
 
+
 @Injectable({ multiple: true })
-export class InlineInputHandler extends Disposable {
+export class InlineInputHandler extends BaseAIMonacoContribHandler {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -38,6 +39,13 @@ export class InlineInputHandler extends Disposable {
 
   @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
+
+  doContribute(): IDisposable {
+    if (this.monacoEditor) {
+      return this.registerInlineInputFeature(this.monacoEditor);
+    }
+    return this;
+  }
 
   private cancelIndicator = new CancellationTokenSource();
 
@@ -124,9 +132,9 @@ export class InlineInputHandler extends Disposable {
     }
   }
 
-  public registerInlineInputFeature(editor: IEditor): IDisposable {
+  private registerInlineInputFeature(monacoEditor: ICodeEditor): IDisposable {
     const inputDisposable = new Disposable();
-    const aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
+    const aiNativeContextKey = this.injector.get(AINativeContextKey, [monacoEditor.contextKeyService]);
 
     const hideInput = () => {
       inputDisposable.dispose();
@@ -137,14 +145,12 @@ export class InlineInputHandler extends Disposable {
         hideInput();
 
         if (position) {
-          showInput(position, editor);
+          showInput(position, monacoEditor);
         }
       }),
     );
 
-    const showInput = (position: monaco.Position, editor: IEditor) => {
-      const { monacoEditor } = editor;
-
+    const showInput = (position: monaco.Position, monacoEditor: ICodeEditor) => {
       this.addDispose(
         monacoEditor.onWillChangeModel(() => {
           hideInput();

@@ -15,6 +15,7 @@ import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
+import { BaseAIMonacoEditorController } from '../base';
 
 import { AdditionsDeletionsDecorationModel } from './additions-deletions.decoration';
 import {
@@ -27,17 +28,14 @@ import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 import { MultiLineDecorationModel } from './multi-line.decoration';
 
-@Injectable()
-export class IntelligentCompletionsController extends Disposable implements IEditorContribution {
-  public static readonly ID = 'editor.contrib.intelligent.completions';
+/**
+ * @internal
+ */
+export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
+  public static readonly ID = 'editor.contrib.ai.intelligent.completions';
 
   public static get(editor: ICodeEditor): IntelligentCompletionsController | null {
     return editor.getContribution<IntelligentCompletionsController>(IntelligentCompletionsController.ID);
-  }
-
-  constructor(@Optional() private readonly injector: Injector, @Optional() private readonly monacoEditor: ICodeEditor) {
-    super();
-    this.registerFeature(this.monacoEditor);
   }
 
   private get intelligentCompletionsRegistry(): IntelligentCompletionsRegistry {
@@ -61,7 +59,12 @@ export class IntelligentCompletionsController extends Disposable implements IEdi
   }
 
   private rewriteWidget: RewriteWidget | null;
-  private whenMultiLineEditsVisibleDisposable: Disposable = new Disposable();
+  private whenMultiLineEditsVisibleDisposable: Disposable;
+
+  public mount(): IDisposable {
+    this.whenMultiLineEditsVisibleDisposable = new Disposable();
+    return this.registerFeature(this.monacoEditor);
+  }
 
   private destroyRewriteWidget() {
     if (this.rewriteWidget) {

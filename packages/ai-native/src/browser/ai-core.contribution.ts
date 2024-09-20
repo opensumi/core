@@ -78,9 +78,13 @@ import {
 import { AIEditorContribution } from './ai-editor.contribution';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
+import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
+import { InlineCompletionSingleHandler } from './contrib/inline-completions/inline-completions.handler';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
 import { IntelligentCompletionsController } from './contrib/intelligent-completions/intelligent-completions.controller';
+import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
+import { RenameSingleHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
@@ -94,8 +98,12 @@ import {
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
 } from './types';
+import { InlineChatEditorController } from './widget/inline-chat/inline-chat-editor.controller';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { InlineDiffController } from './widget/inline-diff/inline-diff.controller';
+import { InlineHintController } from './widget/inline-hint/inline-hint.controller';
+import { InlineInputController } from './widget/inline-input/inline-input.controller';
 import { InlineInputChatService } from './widget/inline-input/inline-input.service';
 import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
@@ -190,6 +198,15 @@ export class AINativeBrowserContribution
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
 
+  @Autowired(RenameSingleHandler)
+  private readonly renameSingleHandler: RenameSingleHandler;
+
+  @Autowired(InlineCompletionSingleHandler)
+  private readonly inlineCompletionSingleHandler: InlineCompletionSingleHandler;
+
+  @Autowired(CodeActionSingleHandler)
+  private readonly codeActionSingleHandler: CodeActionSingleHandler;
+
   constructor() {
     this.registerFeature();
   }
@@ -205,27 +222,74 @@ export class AINativeBrowserContribution
   }
 
   registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
-    const { supportsInlineChat, supportsInlineCompletion } = this.aiNativeConfigService.capabilities;
+    const { supportsInlineChat, supportsInlineCompletion, supportsProblemFix } =
+      this.aiNativeConfigService.capabilities;
+
+    register(
+      InlineDiffController.ID,
+      new SyncDescriptor(InlineDiffController, [this.injector]),
+      EditorContributionInstantiation.Lazy,
+    );
+
     if (supportsInlineChat) {
       register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+      register(
+        InlineChatEditorController.ID,
+        new SyncDescriptor(InlineChatEditorController, [this.injector]),
+        EditorContributionInstantiation.BeforeFirstInteraction,
+      );
+
+      if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+        register(
+          InlineHintController.ID,
+          new SyncDescriptor(InlineHintController, [this.injector]),
+          EditorContributionInstantiation.AfterFirstRender,
+        );
+        register(
+          InlineInputController.ID,
+          new SyncDescriptor(InlineInputController, [this.injector]),
+          EditorContributionInstantiation.AfterFirstRender,
+        );
+      }
     }
     if (supportsInlineCompletion) {
       register(
         IntelligentCompletionsController.ID,
         new SyncDescriptor(IntelligentCompletionsController, [this.injector]),
-        EditorContributionInstantiation.Eventually,
+        EditorContributionInstantiation.AfterFirstRender,
+      );
+    }
+    if (supportsProblemFix) {
+      register(
+        ProblemFixController.ID,
+        new SyncDescriptor(ProblemFixController, [this.injector]),
+        EditorContributionInstantiation.AfterFirstRender,
       );
     }
   }
 
   onDidStart() {
     runWhenIdle(() => {
+      const { supportsInlineCompletion, supportsRenameSuggestions, supportsInlineChat } =
+        this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, true);
       } else if (prefChatVisibleType === 'never') {
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, false);
+      }
+
+      if (supportsRenameSuggestions) {
+        this.renameSingleHandler.load();
+      }
+
+      if (supportsInlineCompletion) {
+        this.inlineCompletionSingleHandler.load();
+      }
+
+      if (supportsInlineChat) {
+        this.codeActionSingleHandler.load();
       }
     });
   }
@@ -314,6 +378,8 @@ export class AINativeBrowserContribution
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => {
+        this.codeActionSingleHandler.mountEditor(editor.monacoEditor);
+
         const editorType = editor.getType();
         const allowType = [EditorType.CODE, EditorType.MODIFIED_DIFF];
         const allowSchemes = [Schemes.file, Schemes.notebookCell];
