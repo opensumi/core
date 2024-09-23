@@ -65,7 +65,7 @@ export class OpenSumiApp extends Disposable {
   protected async load(workspace: OpenSumiWorkspace): Promise<void> {
     this.disposables.push(workspace);
     const now = Date.now();
-    await this.loadOrReload(this.page, `/#${workspace.workspace.codeUri.fsPath}`);
+    await this.loadOrReload(this.page, `/?workspaceDir=${workspace.workspace.codeUri.fsPath}`);
     await this.page.waitForSelector(this.appData.loadingSelector, { state: 'detached' });
     const time = Date.now() - now;
     // eslint-disable-next-line no-console
