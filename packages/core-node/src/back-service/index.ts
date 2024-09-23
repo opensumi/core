@@ -1,11 +1,13 @@
 import { Injectable, Injector, Optional } from '@opensumi/di';
+import { RPCProtocol } from '@opensumi/ide-core-common/lib/types/rpc';
 
-const BackServiceCreatingFlag = Symbol('BackServiceFlag');
-const _BackServiceCreatingFlag = Math.random().toString(36).substring(2);
+const BackServiceInstantiateFlag = Symbol('BackServiceFlag');
+const __BackServiceInstantiateFlag = Math.random().toString(36).substring(2);
 
 @Injectable({ multiple: true })
 export abstract class BackService {
   abstract readonly servicePath: string;
+  protocol?: RPCProtocol<any>;
 
   private _clientId: string;
   private _client: any;
@@ -16,8 +18,8 @@ export abstract class BackService {
     return this._clientId;
   }
 
-  constructor(@Optional(BackServiceCreatingFlag) flag: string) {
-    if (flag !== _BackServiceCreatingFlag) {
+  constructor(@Optional(BackServiceInstantiateFlag) flag: string) {
+    if (flag !== __BackServiceInstantiateFlag) {
       throw new Error('Cannot create BackService instance directly');
     }
   }
@@ -28,24 +30,37 @@ export abstract class BackService {
   }
 }
 
+/**
+ * 如何使用
+ * ```ts
+ * @Autowired(MessageDataStore, { tag: 'session' })
+ * private sessionDataStore: MessageDataStore;
+ *
+ * @Autowired(MessageDataStore, { tag: 'persisted' })
+ * private persistedDataStore: MessageDataStore;
+ * ```
+ */
 @Injectable({ multiple: true })
-export abstract class BackDataStore {
+export abstract class BackServiceDataStore {
+  static Session = 'session';
+  static Persisted = 'persisted';
+
   readonly _dataStoreBrand = undefined;
 }
 
 export function createBackServiceChildInjector(injector: Injector, fn: (childInjector: Injector) => void): Injector {
   const child = injector.createChild([
     {
-      token: BackServiceCreatingFlag,
-      useValue: _BackServiceCreatingFlag,
+      token: BackServiceInstantiateFlag,
+      useValue: __BackServiceInstantiateFlag,
     },
   ]);
 
   fn(child);
 
   child.overrideProviders({
-    token: BackServiceCreatingFlag,
-    useValue: 'do_not_use_autowired_to_get_back_service',
+    token: BackServiceInstantiateFlag,
+    useValue: 'avoid_use_autowired_to_get_back_service',
     override: true,
   });
 

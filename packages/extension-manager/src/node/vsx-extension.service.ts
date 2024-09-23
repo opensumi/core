@@ -10,7 +10,7 @@ import nodeFetch, { RequestInit } from 'node-fetch';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
 import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
-import { BackService } from '@opensumi/ide-core-node/lib/back-service';
+import { BackService, BackServiceDataStore } from '@opensumi/ide-core-node/lib/back-service';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import {
@@ -29,7 +29,7 @@ function cleanup(paths: string[]) {
 
 @Injectable()
 export class VSXExtensionService extends BackService implements IVSXExtensionBackService {
-  servicePath: string = VSXExtensionServicePath;
+  servicePath = VSXExtensionServicePath;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;

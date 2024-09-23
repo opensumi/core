@@ -7,7 +7,7 @@ import { CommonChannelPathHandler, RPCServiceChannelPath } from '@opensumi/ide-c
 import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
 
-import { createBackServiceChildInjector } from './back-service';
+import { BackService, BackServiceDataStore, createBackServiceChildInjector } from './back-service';
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
 import { IServerAppOpts } from './types';
@@ -141,16 +141,42 @@ export function bindModuleBackService(
         }
       }
 
+      if (m.backServiceDataStores) {
+        for (const service of m.backServiceDataStores) {
+          // todo: check service is BackServiceDataStore
+
+          childInjector.addProviders({
+            token: service,
+            useClass: service,
+            tag: BackServiceDataStore.Session,
+          });
+
+          injector.addProviders({
+            token: service,
+            useClass: service,
+            tag: BackServiceDataStore.Persisted,
+          });
+        }
+      }
+
       if (m.backServices2) {
         for (const service of m.backServices2) {
           const serviceInstance = childInjector.get(service);
-
-          if (!Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
-            throw new Error('Invalid BackService instance, missing `servicePath`');
+          if (!(serviceInstance instanceof BackService)) {
+            throw new Error('Invalid back service: ' + service);
           }
 
-          const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
-          serviceInstance.init(clientId, stub);
+          // back service
+          if (Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
+            if (serviceInstance.protocol) {
+              serviceCenter.loadProtocol(serviceInstance.protocol);
+            }
+
+            const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
+            serviceInstance.init(clientId, stub);
+          } else {
+            throw new Error(`Back service ${service.name} must have servicePath`);
+          }
         }
       }
     }
