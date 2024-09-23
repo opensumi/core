@@ -7,6 +7,7 @@ import { CommonChannelPathHandler, RPCServiceChannelPath } from '@opensumi/ide-c
 import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
 
+import { createBackServiceChildInjector } from './back-service';
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
 import { IServerAppOpts } from './types';
@@ -88,60 +89,70 @@ export function bindModuleBackService(
   injector: Injector,
   modules: NodeModule[],
   serviceCenter: RPCServiceCenter,
-  clientId?: string,
+  clientId: string,
 ) {
   const { createRPCService } = initRPCService(serviceCenter);
 
-  const childInjector = injector.createChild();
-  for (const m of modules) {
-    if (!m.backServices) {
-      continue;
+  return createBackServiceChildInjector(injector, (childInjector) => {
+    for (const m of modules) {
+      if (m.backServices) {
+        for (const service of m.backServices) {
+          if (!service.token) {
+            continue;
+          }
+
+          if (service.protocol) {
+            serviceCenter.loadProtocol(service.protocol);
+          }
+
+          const serviceToken = service.token;
+
+          if (!injector.creatorMap.has(serviceToken)) {
+            continue;
+          }
+
+          const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
+
+          if ((creator as FactoryCreator).useFactory) {
+            const serviceFactory = (creator as FactoryCreator).useFactory;
+            childInjector.addProviders({
+              token: serviceToken,
+              useValue: serviceFactory(childInjector),
+            });
+          } else {
+            const serviceClass = (creator as ClassCreator).useClass;
+            childInjector.addProviders({
+              token: serviceToken,
+              useClass: serviceClass,
+            });
+          }
+
+          const serviceInstance = childInjector.get(serviceToken);
+
+          if (serviceInstance.setConnectionClientId && clientId) {
+            serviceInstance.setConnectionClientId(clientId);
+          }
+
+          const stub = createRPCService(service.servicePath, serviceInstance);
+
+          if (!serviceInstance.rpcClient) {
+            serviceInstance.rpcClient = [stub];
+          }
+        }
+      }
+
+      if (m.backServices2) {
+        for (const service of m.backServices2) {
+          const serviceInstance = childInjector.get(service);
+
+          if (!Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
+            throw new Error('Invalid BackService instance, missing `servicePath`');
+          }
+
+          const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
+          serviceInstance.init(clientId, stub);
+        }
+      }
     }
-
-    for (const service of m.backServices) {
-      if (!service.token) {
-        continue;
-      }
-
-      if (service.protocol) {
-        serviceCenter.loadProtocol(service.protocol);
-      }
-
-      const serviceToken = service.token;
-
-      if (!injector.creatorMap.has(serviceToken)) {
-        continue;
-      }
-
-      const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
-
-      if ((creator as FactoryCreator).useFactory) {
-        const serviceFactory = (creator as FactoryCreator).useFactory;
-        childInjector.addProviders({
-          token: serviceToken,
-          useValue: serviceFactory(childInjector),
-        });
-      } else {
-        const serviceClass = (creator as ClassCreator).useClass;
-        childInjector.addProviders({
-          token: serviceToken,
-          useClass: serviceClass,
-        });
-      }
-
-      const serviceInstance = childInjector.get(serviceToken);
-
-      if (serviceInstance.setConnectionClientId && clientId) {
-        serviceInstance.setConnectionClientId(clientId);
-      }
-
-      const stub = createRPCService(service.servicePath, serviceInstance);
-
-      if (!serviceInstance.rpcClient) {
-        serviceInstance.rpcClient = [stub];
-      }
-    }
-  }
-
-  return childInjector;
+  });
 }

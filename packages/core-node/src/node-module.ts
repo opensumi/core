@@ -1,3 +1,7 @@
-import { BasicModule } from '@opensumi/ide-core-common';
+import { BasicModule, ConstructorOf } from '@opensumi/ide-core-common';
 
-export abstract class NodeModule extends BasicModule {}
+import { BackService } from './back-service';
+
+export abstract class NodeModule extends BasicModule {
+  backServices2?: ConstructorOf<BackService>[];
+}

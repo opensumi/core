@@ -1,4 +1,4 @@
-import { BasicModule } from '@opensumi/ide-core-common';
+import { NodeModule } from './node-module';
 
 import type { Injector } from '@opensumi/di';
 import type { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
@@ -9,7 +9,7 @@ import type https from 'https';
 import type Koa from 'koa';
 import type ws from 'ws';
 
-export abstract class NodeModule extends BasicModule {}
+export { NodeModule };
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
 export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
