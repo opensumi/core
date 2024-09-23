@@ -163,7 +163,7 @@ export function bindModuleBackService(
         for (const service of m.backServices2) {
           const serviceInstance = childInjector.get(service);
           if (!(serviceInstance instanceof BackService)) {
-            throw new Error('Invalid back service: ' + service);
+            throw new Error('Invalid back service: ' + service.name);
           }
 
           // back service
