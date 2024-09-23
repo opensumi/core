@@ -19,6 +19,10 @@ export interface InlineChatControllerOptions {
    */
   enableCodeblockRender: boolean;
 }
+
+/**
+ * inline chat 的流式控制器
+ */
 export class InlineChatController {
   static is(controller: any): controller is InlineChatController {
     return controller instanceof InlineChatController && typeof controller.mountReadable === 'function';

@@ -12,12 +12,12 @@ import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
 
-import { IAIMonacoContribHandler } from '../base';
+import { BaseAIMonacoContribHandler } from '../base';
 
 import { RenameSuggestionsService } from './rename.service';
 
 @Injectable()
-export class RenameHandler extends IAIMonacoContribHandler {
+export class RenameSingleHandler extends BaseAIMonacoContribHandler {
   @Autowired(RenameSuggestionsService)
   private readonly renameSuggestionService: RenameSuggestionsService;
 

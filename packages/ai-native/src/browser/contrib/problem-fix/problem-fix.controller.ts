@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
@@ -7,10 +7,10 @@ import {
   ActionTypeEnum,
   Disposable,
   IAIReporter,
+  IDisposable,
   ProblemFixRegistryToken,
 } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor';
-import { Range } from '@opensumi/ide-monaco';
+import { ICodeEditor, Range } from '@opensumi/ide-monaco';
 import { HoverController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/hover/browser/hover';
 import {
   HoverParticipantRegistry,
@@ -23,8 +23,8 @@ import {
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { IHoverFixHandler } from '../../types';
-import { InlineChatHandler } from '../../widget/inline-chat/inline-chat.handler';
-import { IAIMonacoContribHandler } from '../base';
+import { InlineChatEditorController } from '../../widget/inline-chat/inline-chat-editor.controller';
+import { BaseAIMonacoEditorController } from '../base';
 
 import { MarkerHoverParticipantComponent } from './problem-fix.component';
 import { ProblemFixProviderRegistry } from './problem-fix.feature.registry';
@@ -43,31 +43,30 @@ class AIMonacoHoverParticipant extends MarkerHoverParticipant {
   }
 }
 
-@Injectable({ multiple: true })
-export class ProblemFixHandler extends IAIMonacoContribHandler {
-  @Autowired(InlineChatHandler)
-  private readonly inlineChatHandler: InlineChatHandler;
+export class ProblemFixController extends BaseAIMonacoEditorController {
+  public static readonly ID = 'editor.contrib.ai.problem.fix';
 
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
+  public static get(editor: ICodeEditor): ProblemFixController | null {
+    return editor.getContribution(ProblemFixController.ID);
+  }
 
-  @Autowired(ProblemFixService)
-  private readonly problemFixService: ProblemFixService;
+  private get problemFixService(): ProblemFixService {
+    return this.injector.get(ProblemFixService);
+  }
 
-  @Autowired(ProblemFixRegistryToken)
-  private readonly problemFixProviderRegistry: ProblemFixProviderRegistry;
+  private get problemFixProviderRegistry(): ProblemFixProviderRegistry {
+    return this.injector.get(ProblemFixRegistryToken);
+  }
 
-  @Autowired(IAIReporter)
-  private readonly aiReporter: IAIReporter;
+  private get aiReporter(): IAIReporter {
+    return this.injector.get(IAIReporter);
+  }
 
   private aiNativeContextKey: AINativeContextKey;
 
-  mountEditor(editor: IEditor) {
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [editor.monacoEditor.contextKeyService]);
-    return super.mountEditor(editor);
-  }
+  mount(): IDisposable {
+    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
 
-  doContribute() {
     const disposable = new Disposable();
 
     const provider = this.problemFixProviderRegistry.getHoverFixProvider();
@@ -75,9 +74,9 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
       return disposable;
     }
 
-    // 先去掉 monaco 默认的 MarkerHoverParticipant
+    // 先去掉 monaco 默认的 MarkerHoverParticipant，以及之前注册的 AIMonacoHoverParticipant
     HoverParticipantRegistry._participants = HoverParticipantRegistry._participants.filter(
-      (participant) => participant !== MarkerHoverParticipant,
+      (participant) => participant !== MarkerHoverParticipant && participant !== AIMonacoHoverParticipant,
     );
 
     AIMonacoHoverParticipant.injector = this.injector;
@@ -85,7 +84,7 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
 
     disposable.addDispose(
       this.problemFixService.onHoverFixTrigger((part) => {
-        const hoverController = this.editor?.monacoEditor.getContribution<HoverController>(HoverController.ID);
+        const hoverController = this.monacoEditor?.getContribution<HoverController>(HoverController.ID);
         if (hoverController) {
           hoverController.hideContentHover();
         }
@@ -98,9 +97,9 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
   }
 
   private async handleHoverFix(part: MarkerHover, provider: IHoverFixHandler) {
-    const monacoEditor = this.editor?.monacoEditor;
+    const monacoEditor = this.monacoEditor;
 
-    if (!monacoEditor) {
+    if (!monacoEditor || !monacoEditor.hasTextFocus()) {
       return;
     }
 
@@ -130,7 +129,9 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
         if (e.payload.affectsSome(inlineChatIsVisible)) {
           const isVisible = this.aiNativeContextKey.inlineChatIsVisible.get();
           if (isVisible) {
-            this.inlineChatHandler.runAction({
+            const inlineChatEditorController = InlineChatEditorController.get(monacoEditor);
+
+            inlineChatEditorController?.runAction({
               monacoEditor,
               reporterFn: (): string => {
                 const relationId = this.aiReporter.start(AISerivceType.ProblemFix, {
@@ -143,8 +144,7 @@ export class ProblemFixHandler extends IAIMonacoContribHandler {
                 return relationId;
               },
               crossSelection: monacoEditor.getSelection()!,
-              providerPreview: () =>
-                provider.provideFix(monacoEditor, context, this.inlineChatHandler.cancelIndicator.token),
+              providerPreview: () => provider.provideFix(monacoEditor, context, inlineChatEditorController.token),
               extraData: {
                 actionSource: ActionSourceEnum.Hover,
                 actionType: ActionTypeEnum.HoverFix,

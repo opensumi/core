@@ -1,14 +1,16 @@
-import { Disposable, IDisposable, Schemes } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor/lib/browser';
+import { Injector, Optional } from '@opensumi/di';
+import { CancellationTokenSource, Disposable, IDisposable, Schemes } from '@opensumi/ide-core-common';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
-export abstract class IAIMonacoContribHandler extends Disposable {
+export abstract class BaseAIMonacoContribHandler extends Disposable {
   protected allowAnyScheme: boolean = false;
   protected allowedSchemes: string[] = [Schemes.file];
 
   sessionDisposable = new Disposable();
 
-  editor: IEditor | undefined;
+  monacoEditor: ICodeEditor | undefined;
 
   constructor() {
     super();
@@ -38,12 +40,67 @@ export abstract class IAIMonacoContribHandler extends Disposable {
     this.sessionDisposable.addDispose(this.doContribute());
   }
 
-  mountEditor(editor: IEditor) {
-    this.editor = editor;
+  mountEditor(editor: ICodeEditor) {
+    this.monacoEditor = editor;
     return {
       dispose: () => {
-        this.editor = undefined;
+        this.monacoEditor = undefined;
       },
     };
   }
+}
+
+export abstract class BaseAIMonacoEditorController extends Disposable implements IEditorContribution {
+  static ID: string;
+  static get(editor: ICodeEditor): BaseAIMonacoEditorController | null {
+    return editor.getContribution<BaseAIMonacoEditorController>(BaseAIMonacoEditorController.ID);
+  }
+
+  protected cancellationTokenSource = new CancellationTokenSource();
+
+  public get token() {
+    return this.cancellationTokenSource.token;
+  }
+
+  public cancelToken() {
+    this.cancellationTokenSource.cancel();
+    this.cancellationTokenSource = new CancellationTokenSource();
+  }
+
+  protected allowedSchemes: string[] = [Schemes.file, Schemes.notebookCell];
+
+  constructor(
+    @Optional() protected readonly injector: Injector,
+    @Optional() protected readonly monacoEditor: ICodeEditor,
+  ) {
+    super();
+
+    const contribDisposable: Disposable = new Disposable();
+    let isMounted = false;
+
+    this.addDispose(
+      this.monacoEditor.onDidChangeModel(({ newModelUrl }) => {
+        const shouldMount = newModelUrl && this.allowedSchemes.includes(newModelUrl.scheme);
+        if (shouldMount !== isMounted) {
+          isMounted = !!shouldMount;
+          if (isMounted) {
+            contribDisposable.addDispose(this.mount());
+          } else {
+            contribDisposable.dispose();
+          }
+        }
+      }),
+    );
+
+    const model = monacoEditor.getModel();
+
+    if (model && this.allowedSchemes.includes(model.uri.scheme)) {
+      isMounted = true;
+      contribDisposable.addDispose(this.mount());
+    }
+
+    this.addDispose(contribDisposable);
+  }
+
+  abstract mount(): IDisposable;
 }

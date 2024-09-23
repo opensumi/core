@@ -14,7 +14,7 @@ interface IProblemFixComponentProps {
 }
 
 export const ProblemFixComponent = ({ part }: IProblemFixComponentProps) => {
-  const problemFixService = useInjectable(ProblemFixService);
+  const problemFixService = useInjectable<ProblemFixService>(ProblemFixService);
 
   const handleClick = React.useCallback(() => {
     problemFixService.triggerHoverFix(part);

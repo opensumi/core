@@ -36,35 +36,34 @@ import {
 import {
   InlineChatIsVisible,
   InlineDiffPartialEditsIsVisible,
+  InlineHintWidgetIsVisible,
   InlineInputWidgetIsVisible,
 } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
   CommandService,
-  Disposable,
-  Event,
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
   ProblemFixRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
-  Schemes,
   TerminalRegistryToken,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
-import { EditorCollectionService, EditorType, ICodeEditor, IDiffEditor, IEditor } from '@opensumi/ide-editor';
+import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
+import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
-import { BrowserCodeEditor, DiffEditorPart } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { Position } from '@opensumi/ide-monaco';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commands';
+import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import {
   AI_CHAT_CONTAINER_ID,
@@ -74,15 +73,16 @@ import {
   ChatProxyServiceToken,
 } from '../common';
 
-import { AIEditorContribution } from './ai-editor.contribution';
+
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
-import { CodeActionHandler } from './contrib/code-action/code-action.handler';
+import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
-import { InlineCompletionHandler } from './contrib/inline-completions/inline-completions.handler';
+import { InlineCompletionSingleHandler } from './contrib/inline-completions/inline-completions.handler';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
-import { ProblemFixHandler } from './contrib/problem-fix/problem-fix.handler';
-import { RenameHandler } from './contrib/rename/rename.handler';
+import { IntelligentCompletionsController } from './contrib/intelligent-completions/intelligent-completions.controller';
+import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
+import { RenameSingleHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
@@ -96,8 +96,12 @@ import {
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
 } from './types';
+import { InlineChatEditorController } from './widget/inline-chat/inline-chat-editor.controller';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { InlineDiffController } from './widget/inline-diff/inline-diff.controller';
+import { InlineHintController } from './widget/inline-hint/inline-hint.controller';
+import { InlineInputController } from './widget/inline-input/inline-input.controller';
 import { InlineInputChatService } from './widget/inline-input/inline-input.service';
 import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
@@ -129,8 +133,8 @@ export class AINativeBrowserContribution
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
-  @Autowired(EditorCollectionService)
-  private readonly editorCollectionService: EditorCollectionService;
+  @Autowired(IBrowserCtxMenu)
+  private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
@@ -186,23 +190,20 @@ export class AINativeBrowserContribution
   @Autowired(IAIInlineChatService)
   private readonly aiInlineChatService: AIInlineChatService;
 
-  @Autowired(RenameHandler)
-  private readonly renameHandler: RenameHandler;
-
-  @Autowired(ProblemFixHandler)
-  private readonly problemfixHandler: ProblemFixHandler;
-
-  @Autowired(InlineCompletionHandler)
-  private readonly inlineCompletionHandler: InlineCompletionHandler;
-
-  @Autowired(CodeActionHandler)
-  private readonly codeActionHandler: CodeActionHandler;
-
   @Autowired(InlineInputChatService)
   private readonly inlineInputChatService: InlineInputChatService;
 
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
+
+  @Autowired(RenameSingleHandler)
+  private readonly renameSingleHandler: RenameSingleHandler;
+
+  @Autowired(InlineCompletionSingleHandler)
+  private readonly inlineCompletionSingleHandler: InlineCompletionSingleHandler;
+
+  @Autowired(CodeActionSingleHandler)
+  private readonly codeActionSingleHandler: CodeActionSingleHandler;
 
   constructor() {
     this.registerFeature();
@@ -219,14 +220,56 @@ export class AINativeBrowserContribution
   }
 
   registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
-    const { supportsInlineChat } = this.aiNativeConfigService.capabilities;
+    const { supportsInlineChat, supportsInlineCompletion, supportsProblemFix } =
+      this.aiNativeConfigService.capabilities;
+
+    register(
+      InlineDiffController.ID,
+      new SyncDescriptor(InlineDiffController, [this.injector]),
+      EditorContributionInstantiation.Lazy,
+    );
+
     if (supportsInlineChat) {
       register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+      register(
+        InlineChatEditorController.ID,
+        new SyncDescriptor(InlineChatEditorController, [this.injector]),
+        EditorContributionInstantiation.BeforeFirstInteraction,
+      );
+
+      if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+        register(
+          InlineHintController.ID,
+          new SyncDescriptor(InlineHintController, [this.injector]),
+          EditorContributionInstantiation.AfterFirstRender,
+        );
+        register(
+          InlineInputController.ID,
+          new SyncDescriptor(InlineInputController, [this.injector]),
+          EditorContributionInstantiation.AfterFirstRender,
+        );
+      }
+    }
+    if (supportsInlineCompletion) {
+      register(
+        IntelligentCompletionsController.ID,
+        new SyncDescriptor(IntelligentCompletionsController, [this.injector]),
+        EditorContributionInstantiation.AfterFirstRender,
+      );
+    }
+    if (supportsProblemFix) {
+      register(
+        ProblemFixController.ID,
+        new SyncDescriptor(ProblemFixController, [this.injector]),
+        EditorContributionInstantiation.AfterFirstRender,
+      );
     }
   }
 
   onDidStart() {
     runWhenIdle(() => {
+      const { supportsInlineCompletion, supportsRenameSuggestions, supportsInlineChat } =
+        this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
@@ -234,20 +277,19 @@ export class AINativeBrowserContribution
       } else if (prefChatVisibleType === 'never') {
         this.commandService.executeCommand(AI_CHAT_VISIBLE.id, false);
       }
-    });
 
-    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
-      this.renameHandler.load();
-    }
-    if (this.aiNativeConfigService.capabilities.supportsProblemFix) {
-      this.problemfixHandler.load();
-    }
-    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
-      this.inlineCompletionHandler.load();
-    }
-    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-      this.codeActionHandler.load();
-    }
+      if (supportsRenameSuggestions) {
+        this.renameSingleHandler.load();
+      }
+
+      if (supportsInlineCompletion) {
+        this.inlineCompletionSingleHandler.load();
+      }
+
+      if (supportsInlineChat) {
+        this.codeActionSingleHandler.load();
+      }
+    });
   }
 
   private registerFeature() {
@@ -334,40 +376,16 @@ export class AINativeBrowserContribution
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => {
-        const editorType = editor.getType();
-        const allowType = [EditorType.CODE, EditorType.MODIFIED_DIFF];
-        const allowSchemes = [Schemes.file, Schemes.notebookCell];
+        const { monacoEditor } = editor;
 
-        if (!allowType.includes(editorType)) {
-          return Disposable.NULL;
-        }
+        this.codeActionSingleHandler.mountEditor(editor.monacoEditor);
+        this.inlineCompletionSingleHandler.mountEditor(editor.monacoEditor);
 
-        const disposable: Disposable = new Disposable();
-
-        const doContribute = (editor: ICodeEditor | IDiffEditor): void => {
-          const refOpen = editor.onRefOpen((e) => {
-            const { uri } = e.instance;
-            if (!allowSchemes.includes(uri.codeUri.scheme)) {
-              return;
-            }
-
-            const aiEditorFeatureContribution = this.injector.get(AIEditorContribution);
-            disposable.addDispose(aiEditorFeatureContribution.contribute(editor));
-            refOpen.dispose();
-          });
-        };
-
-        if (editor instanceof BrowserCodeEditor) {
-          doContribute(editor);
-        }
-
-        if (editor instanceof DiffEditorPart) {
-          Event.once(this.editorCollectionService.onDiffEditorCreate)((diffEditor) => {
-            doContribute(diffEditor);
-          });
-        }
-
-        return disposable;
+        return monacoEditor.onDidScrollChange(() => {
+          if (this.ctxMenuRenderer.visible) {
+            this.ctxMenuRenderer.hide(true);
+          }
+        });
       },
     });
   }
@@ -380,18 +398,14 @@ export class AINativeBrowserContribution
     });
 
     commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE, {
-      execute: (positionFn: () => Position) => {
-        if (positionFn) {
-          const posi = positionFn();
-
-          if (posi) {
-            this.inlineInputChatService.visibleInPosition(posi);
-          } else {
-            this.inlineInputChatService.hide();
-          }
+      execute: (isVisible: boolean) => {
+        if (isVisible) {
+          this.inlineInputChatService.visible();
+        } else {
+          this.inlineInputChatService.hide();
         }
 
-        this.aiInlineChatService._onInteractiveInputVisible.fire(true);
+        this.aiInlineChatService._onInteractiveInputVisible.fire(isVisible);
       },
     });
 
@@ -492,6 +506,7 @@ export class AINativeBrowserContribution
           {
             command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
             keybinding: 'ctrlcmd+k',
+            args: true,
             priority: 0,
             when: `editorFocus && ${InlineChatIsVisible.raw}`,
           },
@@ -501,10 +516,21 @@ export class AINativeBrowserContribution
         keybindings.registerKeybinding({
           command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
           keybinding: 'esc',
-          args: () => undefined,
+          args: false,
           priority: 0,
           when: `editorFocus && ${InlineInputWidgetIsVisible.raw}`,
         });
+
+        keybindings.registerKeybinding(
+          {
+            command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
+            keybinding: 'ctrlcmd+k',
+            args: true,
+            priority: 0,
+            when: `editorFocus && ${InlineHintWidgetIsVisible.raw} && ${InlineChatIsVisible.not}`,
+          },
+          KeybindingScope.USER,
+        );
       }
     }
   }
