@@ -306,7 +306,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
    * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
    */
   private isEnableNSFW(): boolean {
-    return true;
+    return isLinux;
   }
 
   private async handleNSFWEvents(events: INsfw.ChangeEvent[], watcherId: number): Promise<void> {
