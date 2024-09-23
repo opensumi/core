@@ -1,7 +1,5 @@
-import { Injectable, Injector, Optional } from '@opensumi/di';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
-  CancellationTokenSource,
   Disposable,
   Event,
   IAICompletionOption,
@@ -11,7 +9,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
-import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
@@ -28,9 +25,6 @@ import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 import { MultiLineDecorationModel } from './multi-line.decoration';
 
-/**
- * @internal
- */
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.intelligent.completions';
 
@@ -40,13 +34,6 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
 
   private get intelligentCompletionsRegistry(): IntelligentCompletionsRegistry {
     return this.injector.get(IntelligentCompletionsRegistryToken);
-  }
-
-  private cancelIndicator = new CancellationTokenSource();
-
-  private cancelToken() {
-    this.cancelIndicator.cancel();
-    this.cancelIndicator = new CancellationTokenSource();
   }
 
   private multiLineDecorationModel: MultiLineDecorationModel;
@@ -80,7 +67,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     }
 
     const position = this.monacoEditor.getPosition()!;
-    const intelligentCompletionModel = await provider(this.monacoEditor, position, bean, this.cancelIndicator.token);
+    const intelligentCompletionModel = await provider(this.monacoEditor, position, bean, this.token);
 
     if (
       intelligentCompletionModel &&

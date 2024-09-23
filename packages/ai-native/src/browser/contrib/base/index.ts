@@ -1,9 +1,8 @@
 import { Injector, Optional } from '@opensumi/di';
-import { Disposable, IDisposable, Schemes } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, Disposable, IDisposable, Schemes } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { StandaloneEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 export abstract class BaseAIMonacoContribHandler extends Disposable {
   protected allowAnyScheme: boolean = false;
@@ -55,6 +54,17 @@ export abstract class BaseAIMonacoEditorController extends Disposable implements
   static ID: string;
   static get(editor: ICodeEditor): BaseAIMonacoEditorController | null {
     return editor.getContribution<BaseAIMonacoEditorController>(BaseAIMonacoEditorController.ID);
+  }
+
+  protected cancellationTokenSource = new CancellationTokenSource();
+
+  public get token() {
+    return this.cancellationTokenSource.token;
+  }
+
+  public cancelToken() {
+    this.cancellationTokenSource.cancel();
+    this.cancellationTokenSource = new CancellationTokenSource();
   }
 
   protected allowedSchemes: string[] = [Schemes.file, Schemes.notebookCell];
