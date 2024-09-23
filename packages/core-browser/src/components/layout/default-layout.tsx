@@ -6,7 +6,7 @@ import { BoxPanel } from './box-panel';
 import { SplitPanel } from './split-panel';
 
 export interface ILayoutConfigCache {
-  [key: string]: { size: number; currentId: string };
+  [key: string]: { size?: number; currentId?: string };
 }
 
 export const getStorageValue = () => {
@@ -26,7 +26,7 @@ export const getStorageValue = () => {
   } catch (err) {}
 
   return {
-    layout: savedLayout,
+    layout: fixLayout(savedLayout),
     colors: savedColors,
   };
 };
@@ -74,4 +74,22 @@ export function ToolbarActionBasedLayout(
       <SlotRenderer id='statusBar' defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );
+}
+
+/**
+ * if layout has currentId, but its size is zero
+ * we cannot acknowledge the currentId, so we should remove it
+ */
+export function fixLayout(layout: ILayoutConfigCache) {
+  const newLayout = { ...layout };
+  for (const key in layout) {
+    if (!layout[key]) {
+      continue;
+    }
+
+    if (!layout[key].size) {
+      newLayout[key].currentId = '';
+    }
+  }
+  return newLayout;
 }

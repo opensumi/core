@@ -18,6 +18,7 @@ import {
   WithEventBus,
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
+import { fixLayout } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import {
@@ -170,7 +171,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   restoreTabbarService = async (service: TabbarService) => {
-    this.state = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultLayoutState);
+    this.state = fixLayout(this.layoutState.getState(LAYOUT_STATE.MAIN, defaultLayoutState));
 
     const { currentId, size } = this.state[service.location] || {};
     service.prevSize = size;
