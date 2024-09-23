@@ -53,6 +53,7 @@ const diffEditorOptions: IDiffEditorOptions = {
 
 interface IDiffWidgetHandler {
   getModifiedModel: () => monaco.editor.ITextModel;
+  getOriginModel: () => monaco.editor.ITextModel;
   layout: () => void;
 }
 
@@ -132,6 +133,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     if (onReady) {
       onReady({
         getModifiedModel: () => modifiedModel,
+        getOriginModel: () => originalModel,
         layout,
       });
     }
@@ -232,6 +234,10 @@ export class InlineDiffWidget extends ZoneWidget implements IInlineDiffPreviewer
 
   getModifiedModel(): monaco.editor.ITextModel | undefined {
     return this.diffWidgetHandler?.getModifiedModel();
+  }
+
+  getOriginModel(): monaco.editor.ITextModel | undefined {
+    return this.diffWidgetHandler?.getOriginModel();
   }
 
   layout(): void {

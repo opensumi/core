@@ -207,10 +207,7 @@ export class EditorContribution
     const globalContextKeyService: IContextKeyService = this.injector.get(IContextKeyService);
     const editorContextKeyService = globalContextKeyService.createScoped();
     this.workbenchEditorService.setEditorContextKeyService(editorContextKeyService);
-    registry.registerOverrideService(
-      ServiceNames.CONTEXT_KEY_SERVICE,
-      (editorContextKeyService as any).contextKeyService,
-    );
+    registry.registerOverrideService(ServiceNames.CONTEXT_KEY_SERVICE, editorContextKeyService.contextKeyService);
 
     // Monaco CodeEditorService
     registry.registerOverrideService(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);

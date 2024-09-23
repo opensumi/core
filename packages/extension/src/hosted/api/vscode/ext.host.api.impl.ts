@@ -40,6 +40,7 @@ import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
 import { ExtHostLanguages, createLanguagesApiFactory } from './ext.host.language';
 import { ExtHostLocalization, createLocalizationApiFactory } from './ext.host.localization';
 import { ExtHostMessage } from './ext.host.message';
+import { ExtensionNotebookDocumentManagerImpl } from './ext.host.notebook';
 import { ExtHostOutput } from './ext.host.output';
 import { ExtHostPreference } from './ext.host.preference';
 import { ExtHostProgress } from './ext.host.progress';
@@ -70,6 +71,11 @@ export function createApiFactory(
     new ExtensionDocumentDataManagerImpl(rpcProtocol),
   );
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
+
+  const extHostNotebook = rpcProtocol.set(
+    ExtHostAPIIdentifier.ExtHostNotebook,
+    new ExtensionNotebookDocumentManagerImpl(rpcProtocol, extHostDocs),
+  );
 
   const extHostCommands = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostCommands,
@@ -213,11 +219,12 @@ export function createApiFactory(
       extHostCustomEditor,
       extHostEditorTabs,
     ),
-    languages: createLanguagesApiFactory(extHostLanguages, extension),
+    languages: createLanguagesApiFactory(extHostLanguages, extHostNotebook, extension),
     workspace: createWorkspaceApiFactory(
       extHostWorkspace,
       extHostPreference,
       extHostDocs,
+      extHostNotebook,
       extHostFileSystem,
       extHostFileSystemEvent,
       extHostTasks,

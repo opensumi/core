@@ -1,4 +1,3 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AINativeSettingSectionsId,
@@ -8,41 +7,42 @@ import {
   Event,
   IDisposable,
   IEventBus,
-  ILogger,
   ReplyResponse,
 } from '@opensumi/ide-core-common';
-import { EditorGroupCloseEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
+import { EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 
-import { IAIMonacoContribHandler } from '../../contrib/base';
+import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { EResultKind } from '../inline-chat/inline-chat.service';
+import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { IPartialEditEvent } from '../inline-stream-diff/live-preview.component';
+
 import {
   BaseInlineDiffPreviewer,
   IDiffPreviewerOptions,
   LiveInlineDiffPreviewer,
   SideBySideInlineDiffWidget,
-} from '../inline-diff/inline-diff-previewer';
-import { InlineDiffWidget } from '../inline-diff/inline-diff-widget';
-import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { IPartialEditEvent } from '../inline-stream-diff/live-preview.component';
+} from './inline-diff-previewer';
+import { InlineDiffWidget } from './inline-diff-widget';
 
-@Injectable()
-export class InlineDiffHandler extends IAIMonacoContribHandler {
-  protected allowAnyScheme = true;
 
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
+export class InlineDiffController extends BaseAIMonacoEditorController {
+  public static readonly ID = 'editor.contrib.ai.inline.diff';
 
-  @Autowired(PreferenceService)
-  private readonly preferenceService: PreferenceService;
+  public static get(editor: ICodeEditor): InlineDiffController | null {
+    return editor.getContribution<InlineDiffController>(InlineDiffController.ID);
+  }
 
-  @Autowired(IEventBus)
-  private readonly eventBus: IEventBus;
+  private get preferenceService(): PreferenceService {
+    return this.injector.get(PreferenceService);
+  }
 
-  @Autowired(ILogger)
-  private logger: ILogger;
+  private get eventBus(): IEventBus {
+    return this.injector.get(IEventBus);
+  }
 
   private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
   public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
@@ -51,11 +51,9 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
   public readonly onMaxLineCount: Event<number> = this._onMaxLineCount.event;
 
   private previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined;
-
   private _previewerNodeStore = new Map<string, InlineStreamDiffHandler | null>();
 
-  constructor() {
-    super();
+  mount(): IDisposable {
     this.registerDispose(
       this.eventBus.on(EditorGroupCloseEvent, (e: EditorGroupCloseEvent) => {
         const uriString = e.payload.resource.uri.toString();
@@ -66,11 +64,10 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
         }
       }),
     );
-  }
 
-  doContribute(): IDisposable {
-    this.logger.log('InlineDiffHandler doContribute');
-    return Disposable.NULL;
+    this.registerInlineDiffFeature(this.monacoEditor);
+
+    return this;
   }
 
   storeState(key: string) {
@@ -114,10 +111,9 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
     }
   }
 
-  registerInlineDiffFeature(editor: IEditor): IDisposable {
+  registerInlineDiffFeature(monacoEditor: monaco.ICodeEditor): IDisposable {
     const disposable = new Disposable();
 
-    const monacoEditor = editor.monacoEditor;
     const model = monacoEditor.getModel();
 
     disposable.addDispose(
@@ -177,7 +173,6 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
       previewer.onReady(() => {
         if (InlineChatController.is(chatResponse)) {
           const controller = chatResponse as InlineChatController;
-          controller.listen();
 
           disposable.addDispose([
             controller.onData((data) => {
@@ -198,6 +193,8 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
               onFinish();
             }),
           ]);
+
+          controller.listen();
         } else {
           previewer.setValue((chatResponse as ReplyResponse).message);
           onFinish();
@@ -257,6 +254,14 @@ export class InlineDiffHandler extends IAIMonacoContribHandler {
 
   handleAction(action: EResultKind): void {
     this.previewer?.handleAction(action);
+  }
+
+  getModifyContent() {
+    return this.previewer?.getValue();
+  }
+
+  getOriginContent() {
+    return this.previewer?.getOriginValue();
   }
 
   destroyPreviewer(uriString?: string) {

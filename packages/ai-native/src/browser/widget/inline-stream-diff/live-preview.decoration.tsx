@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { StackingLevel } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { ActionSourceEnum, ActionTypeEnum, Disposable, Emitter, Event, IAIReporter } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Position, Range } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -44,10 +44,22 @@ export interface ILivePreviewDiffDecorationSnapshotData {
   zone: LineRange;
 }
 
+export interface ITotalCodeInfo {
+  totalAddedLinesCount: number;
+  totalDeletedLinesCount: number;
+  totalChangedLinesCount: number;
+  unresolvedAddedLinesCount: number;
+  unresolvedDeletedLinesCount: number;
+  unresolvedChangedLinesCount: number;
+}
+
 @Injectable({ multiple: true })
 export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
 
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
@@ -145,6 +157,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   initialize(zone: LineRange): void {
     this.updateZone(zone);
+  }
+
+  getRemovedWidgets(): RemovedZoneWidget[] {
+    return this.removedZoneWidgets;
   }
 
   restoreSnapshot(snapshot: ILivePreviewDiffDecorationSnapshotData): void {
@@ -315,8 +331,14 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     return operation;
   }
 
-  private handlePartialEditAction(type: EPartialEdit, widget: AcceptPartialEditWidget, isPushStack: boolean = true) {
+  private handlePartialEditAction(
+    type: EPartialEdit,
+    widget: AcceptPartialEditWidget,
+    isPushStack: boolean = true,
+    isReport: boolean = false,
+  ) {
     const position = widget.getPosition()!.position!;
+    const relationId = this.aiReporter.getRelationId();
     const model = this.model;
     /**
      * added widget 通常是在 removed widget 的下面一行的位置
@@ -347,7 +369,28 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const findAddedRangeDecByGroup = (model: LivePreviewDiffDecorationModel) =>
       model.addedRangeDec.getDecorationByGroup(group);
 
+    let modifyContent;
+    const removeContent = removedWidget?.getRemovedTextLines().join('\n') || '';
+    const range = addedDec?.getRange();
+    if (range) {
+      modifyContent = model.getValueInRange({
+        ...range,
+        endColumn: model.getLineMaxColumn(range.endLineNumber),
+      });
+    }
     const discard = (decorationModel: LivePreviewDiffDecorationModel) => {
+      // 只有点击行丢弃时才会上报
+      if (isReport) {
+        this.aiReporter.end(relationId, {
+          message: 'discard',
+          success: true,
+          isDrop: true,
+          code: modifyContent,
+          originCode: removeContent,
+          actionSource: ActionSourceEnum.InlineChat,
+          actionType: ActionTypeEnum.LineDiscard,
+        });
+      }
       const removedWidget = findRemovedWidgetByGroup(decorationModel);
       removedWidget?.hide();
 
@@ -361,6 +404,18 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     };
 
     const accpet = (decorationModel: LivePreviewDiffDecorationModel) => {
+      // 只有点击行采纳时才会上报
+      if (isReport) {
+        this.aiReporter.end(relationId, {
+          message: 'accept',
+          success: true,
+          isReceive: true,
+          code: modifyContent,
+          originCode: removeContent,
+          actionSource: ActionSourceEnum.InlineChat,
+          actionType: ActionTypeEnum.lineAccept,
+        });
+      }
       const partialEditWidget = findPartialWidgetByGroup(decorationModel);
       partialEditWidget?.accept(addedLinesCount, deletedLinesCount);
 
@@ -430,7 +485,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         deletedLinesCount,
         type,
       },
-      ...this.getTotalCodeCount(),
+      ...this.getTotalCodeInfo(),
     };
 
     this.monacoEditor.focus();
@@ -451,15 +506,43 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     return newElement;
   }
 
-  protected getTotalCodeCount(): {
-    totalAddedLinesCount: number;
-    totalDeletedLinesCount: number;
-  } {
-    const list = this.partialEditWidgetList.filter((w) => w.isAccepted);
+  /**
+   * 获取当前编辑器的代码采纳状态
+   * 1. 已经采纳的代码信息
+   * 2. 还未处理的代码信息
+   */
+  getTotalCodeInfo(): ITotalCodeInfo {
+    const resolvedList = this.partialEditWidgetList.filter((w) => w.isAccepted);
+    const unresolvedList = this.partialEditWidgetList.filter((w) => w.isPending);
+
+    const resolvedStatus = caculate(resolvedList);
+    const unresolvedStatus = caculate(unresolvedList);
+
     return {
-      totalAddedLinesCount: list.reduce((prev, current) => prev + current.addedLinesCount, 0),
-      totalDeletedLinesCount: list.reduce((prev, current) => prev + current.deletedLinesCount, 0),
+      totalAddedLinesCount: resolvedStatus.added,
+      totalDeletedLinesCount: resolvedStatus.deleted,
+      totalChangedLinesCount: resolvedStatus.changed,
+      unresolvedAddedLinesCount: unresolvedStatus.added,
+      unresolvedDeletedLinesCount: unresolvedStatus.deleted,
+      unresolvedChangedLinesCount: unresolvedStatus.changed,
     };
+
+    // 代码除了新增和删除行，还需要统计变更行
+    // 1. 新增 N 行 => N
+    // 2. 删除 N 行 => N
+    // 3. 新增 M 行，删除 N 行 => max(M, N)
+    // 综上所述，变更行数 = sum(list.map(item => max(新增行数, 删除行数)))
+    function caculate(list: AcceptPartialEditWidget[]) {
+      const result = { added: 0, deleted: 0, changed: 0 };
+      list.forEach((widget) => {
+        const addedLinesCount = widget.addedLinesCount;
+        const deletedLinesCount = widget.deletedLinesCount;
+        result.added += addedLinesCount;
+        result.deleted += deletedLinesCount;
+        result.changed += Math.max(addedLinesCount, deletedLinesCount);
+      });
+      return result;
+    }
   }
 
   /**
@@ -504,10 +587,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     acceptPartialEditWidget.addDispose([
       acceptPartialEditWidget.onAccept(() => {
-        this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget);
+        this.handlePartialEditAction(EPartialEdit.accept, acceptPartialEditWidget, true, true);
       }),
       acceptPartialEditWidget.onDiscard(() => {
-        this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget);
+        this.handlePartialEditAction(EPartialEdit.discard, acceptPartialEditWidget, true, true);
       }),
     ]);
 

@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 import util from 'util';
 
+
 import temp = require('temp');
 import vscode from 'vscode';
 
@@ -33,6 +34,8 @@ import {
 } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorComponentRegistry,
@@ -61,6 +64,7 @@ import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/ho
 import { ExtHostFileSystem } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
 import { ExtHostFileSystemEvent } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system-event';
 import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
+import { ExtensionNotebookDocumentManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.notebook';
 import { ExtHostPreference } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.preference';
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
 import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
@@ -91,8 +95,6 @@ import { MonacoBulkEditService } from '@opensumi/ide-workspace-edit/lib/browser/
 import { WorkspaceEditServiceImpl } from '@opensumi/ide-workspace-edit/lib/browser/workspace-edit.service';
 import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { mockExtensions } from '../../__mocks__/extensions';
 import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MainThreadFileSystemEvent } from '../../lib/browser/vscode/api/main.thread.file-system-event';
@@ -261,6 +263,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
       ExtHostAPIIdentifier.ExtHostDocuments,
       injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]),
     );
+    const extHostNotebook = rpcProtocolExt.set(
+      ExtHostAPIIdentifier.ExtHostNotebook,
+      new ExtensionNotebookDocumentManagerImpl(rpcProtocolExt, extHostDocs),
+    );
     const extWorkspace = new ExtHostWorkspace(rpcProtocolExt, extHostMessage, extHostDocs);
     const extHostTerminal = new ExtHostTerminal(rpcProtocolExt);
     const extHostTask = new ExtHostTasks(rpcProtocolExt, extHostTerminal, extWorkspace);
@@ -301,6 +307,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
       extHostWorkspace,
       extHostPreference,
       extHostDocs,
+      extHostNotebook,
       extHostFileSystem,
       extHostFileSystemEvent,
       extHostTask,

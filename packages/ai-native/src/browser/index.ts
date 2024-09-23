@@ -13,7 +13,11 @@ import {
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-browser';
-import { IntelligentCompletionsRegistryToken, TerminalRegistryToken } from '@opensumi/ide-core-common';
+import {
+  IntelligentCompletionsRegistryToken,
+  ProblemFixRegistryToken,
+  TerminalRegistryToken,
+} from '@opensumi/ide-core-common';
 
 import { ChatProxyServiceToken, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
 
@@ -32,6 +36,7 @@ import { IntelligentCompletionsRegistry } from './contrib/intelligent-completion
 import { InterfaceNavigationContribution } from './contrib/interface-navigation/interface-navigation.contribution';
 import { MergeConflictContribution } from './contrib/merge-conflict';
 import { ResolveConflictRegistry } from './contrib/merge-conflict/merge-conflict.feature.registry';
+import { ProblemFixProviderRegistry } from './contrib/problem-fix/problem-fix.feature.registry';
 import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.feature.registry';
 import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
 import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
@@ -111,6 +116,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: RenameCandidatesProviderRegistryToken,
       useClass: RenameCandidatesProviderRegistry,
+    },
+    {
+      token: ProblemFixRegistryToken,
+      useClass: ProblemFixProviderRegistry,
     },
     {
       token: TerminalRegistryToken,

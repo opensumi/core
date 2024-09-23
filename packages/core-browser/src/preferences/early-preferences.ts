@@ -97,7 +97,7 @@ export function registerLocalStorageProvider(key: string, workspaceFolder?: stri
         return;
       }
 
-      if (global.localStorage) {
+      if (typeof localStorage !== 'undefined') {
         if (value !== undefined) {
           localStorage.setItem(createLocalStorageKey(scope), value);
         } else {
@@ -106,7 +106,7 @@ export function registerLocalStorageProvider(key: string, workspaceFolder?: stri
       }
     },
     get: (scope) => {
-      if (global.localStorage) {
+      if (typeof localStorage !== 'undefined') {
         return localStorage.getItem(createLocalStorageKey(scope)) || undefined;
       }
     },

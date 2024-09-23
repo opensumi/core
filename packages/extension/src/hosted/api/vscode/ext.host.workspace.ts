@@ -4,6 +4,7 @@ import { FileStat } from '@opensumi/ide-file-service';
 
 import {
   ExtensionDocumentDataManager,
+  ExtensionNotebookDocumentManager,
   IExtHostMessage,
   IExtHostWorkspace,
   IMainThreadWorkspace,
@@ -29,6 +30,7 @@ export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
   extHostPreference: ExtHostPreference,
   extHostDocument: ExtensionDocumentDataManager,
+  extHostNotebook: ExtensionNotebookDocumentManager,
   extHostFileSystem: ExtHostFileSystem,
   extHostFileSystemEvent: ExtHostFileSystemEvent,
   extHostTasks: IExtHostTasks,
@@ -126,10 +128,13 @@ export function createWorkspaceApiFactory(
         token,
       ),
     // Notebook API
-    onDidOpenNotebookDocument: Event.None,
-    onDidChangeNotebookDocument: Event.None,
-    onDidCloseNotebookDocument: Event.None,
-    notebookDocuments: [],
+    onDidOpenNotebookDocument: extHostNotebook.onDidOpenNotebookDocument.bind(extHostNotebook),
+    onDidChangeNotebookDocument: extHostNotebook.onDidChangeNotebookDocument.bind(extHostNotebook),
+    onDidCloseNotebookDocument: extHostNotebook.onDidCloseNotebookDocument.bind(extHostNotebook),
+    onDidSaveNotebookDocument: extHostNotebook.onDidSaveNotebookDocument.bind(extHostNotebook),
+    get notebookDocuments() {
+      return extHostNotebook.notebookDocuments;
+    },
     // empty handler for compatibility with the experimental API , see https://github.com/opensumi/core/issues/2424
     registerTimelineProvider: () => toDisposable(() => {}),
     registerPortAttributesProvider: () => toDisposable(() => {}),

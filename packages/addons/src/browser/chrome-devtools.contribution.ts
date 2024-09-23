@@ -25,7 +25,7 @@ export class ChromeDevtoolsContribution extends Disposable implements ClientAppC
       }
     } else if (command === DevtoolsLantencyCommand.Stop) {
       if (this.interval) {
-        global.clearInterval(this.interval);
+        clearInterval(this.interval);
         this.interval = undefined;
       }
     }
@@ -41,7 +41,7 @@ export class ChromeDevtoolsContribution extends Disposable implements ClientAppC
         Disposable.create(() => {
           window.removeEventListener(EDevtoolsEvent.Latency, this.lantencyHandler);
           if (this.interval) {
-            global.clearInterval(this.interval);
+            clearInterval(this.interval);
             this.interval = undefined;
           }
         }),
@@ -57,7 +57,7 @@ export class ChromeDevtoolsContribution extends Disposable implements ClientAppC
   }
 
   private startRTTInterval() {
-    this.interval = global.setInterval(async () => {
+    this.interval = setInterval(async () => {
       const start = Date.now();
       await this.rttService.measure();
       const rtt = Date.now() - start;

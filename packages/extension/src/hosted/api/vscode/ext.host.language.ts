@@ -66,6 +66,7 @@ import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 
 import {
   ExtensionDocumentDataManager,
+  ExtensionNotebookDocumentManager,
   ICodeActionListDto,
   IExtHostLanguages,
   IExtensionDescription,
@@ -148,13 +149,14 @@ import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } fro
 import { SignatureHelpAdapter } from './language/signature';
 import { TypeDefinitionAdapter } from './language/type-definition';
 import { TypeHierarchyAdapter } from './language/type-hierarchy';
-import { getDurationTimer, score } from './language/util';
+import { getDurationTimer, score, targetsNotebooks } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 
 import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export function createLanguagesApiFactory(
   extHostLanguages: ExtHostLanguages,
+  extHostNotebook: ExtensionNotebookDocumentManager,
   extension: IExtensionDescription,
 ): typeof vscode.languages {
   return {
@@ -199,7 +201,14 @@ export function createLanguagesApiFactory(
       return extHostLanguages.registerReferenceProvider(selector, provider, extension);
     },
     match(selector: DocumentSelector, document: TextDocument): number {
-      return score(typeConvert.fromLanguageSelector(selector), document.uri, document.languageId, true);
+      const interalSelector = typeConvert.fromLanguageSelector(selector);
+      let notebook: vscode.NotebookDocument | undefined;
+      if (interalSelector && targetsNotebooks(interalSelector)) {
+        notebook = extHostNotebook.notebookDocuments.find((value) =>
+          value.getCells().find((c) => c.document === document),
+        );
+      }
+      return score(interalSelector, document.uri, document.languageId, true, notebook?.uri, notebook?.notebookType);
     },
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
       return extHostLanguages.setLanguageConfiguration(language, configuration);

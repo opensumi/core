@@ -282,6 +282,10 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
         if (prop[name].properties) {
           recursionPropertiesDescription(prop[name].properties!);
         }
+        // 避免某些不规范的 json 配置打挂整个 debug 功能，做个防御
+        if (typeof prop[name] !== 'object') {
+          return;
+        }
         prop[name].description = replaceLocalizePlaceholder(prop[name].description, extension.id);
         prop[name].markdownDescription = replaceLocalizePlaceholder(prop[name].markdownDescription, extension.id);
       });

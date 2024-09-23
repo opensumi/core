@@ -61,7 +61,6 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
   public previewerOptions: IDiffPreviewerOptions;
 
-  private livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
   private originalModel: ITextModel;
   private virtualModel: ITextModel;
 
@@ -69,6 +68,8 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   private rawOriginalTextLines: string[];
   private rawOriginalTextLinesTokens: LineTokens[] = [];
   private undoRedoGroup: UndoRedoGroup;
+
+  public livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
 
   constructor(private readonly monacoEditor: ICodeEditor) {
     super();
@@ -164,6 +165,14 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
       decorationSnapshotData: this.livePreviewDiffDecorationModel.createSnapshot(),
       previewerOptions: this.previewerOptions,
     };
+  }
+
+  getVirtualModelValue() {
+    return this.virtualModel.getValue();
+  }
+
+  getOriginModelValue() {
+    return this.rawOriginalTextLines.join('\n');
   }
 
   get onPartialEditWidgetListChange() {
@@ -519,5 +528,9 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
   getZone(): LineRange {
     return this.livePreviewDiffDecorationModel.getZone();
+  }
+
+  getTotalCodeInfo() {
+    return this.livePreviewDiffDecorationModel.getTotalCodeInfo();
   }
 }

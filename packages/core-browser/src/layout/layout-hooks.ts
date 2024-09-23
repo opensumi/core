@@ -1,7 +1,9 @@
+import throttle from 'lodash/throttle';
 import React from 'react';
 
 import { IEventBus } from '@opensumi/ide-core-common';
 
+import { fastdom } from '../dom';
 import { useInjectable } from '../react-hooks';
 
 import { ResizeEvent } from './layout.interface';
@@ -20,16 +22,35 @@ export const useViewState = (
   const [viewState, setViewState] = React.useState({ width: 0, height: 0 });
   const viewStateRef = React.useRef<ViewState>(viewState);
 
+  const updateViewState = throttle(
+    (height: number, width: number) => {
+      // 当视图被隐藏 (display: none) 时不更新 viewState
+      // 避免视图切换时触发无效的渲染
+      // 真正的 resize 操作不会出现 width/height 为 0 的情况
+      if (
+        (width !== viewStateRef.current.width || height !== viewStateRef.current.height) &&
+        (width !== 0 || height !== 0)
+      ) {
+        setViewState({ width, height });
+        viewStateRef.current = { width, height };
+      }
+    },
+    16 * 3,
+    {
+      leading: true,
+      trailing: true,
+    },
+  );
+
   React.useEffect(() => {
-    let lastFrame: number | null;
-    const disposer = eventBus.on(ResizeEvent, (e) => {
-      if (!manualObserve && e.payload.slotLocation === location) {
-        if (lastFrame) {
-          window.cancelAnimationFrame(lastFrame);
-        }
-        lastFrame = window.requestAnimationFrame(() => {
-          if (containerRef.current && containerRef.current.clientHeight && containerRef.current.clientWidth) {
-            setViewState({ height: containerRef.current.clientHeight, width: containerRef.current.clientWidth });
+    const disposer = eventBus.onDirective(ResizeEvent.createDirective(location), () => {
+      if (!manualObserve) {
+        fastdom.measureAtNextFrame(() => {
+          if (containerRef.current) {
+            const height = containerRef.current.clientHeight;
+            const width = containerRef.current.clientWidth;
+
+            updateViewState(height, width);
           }
         });
       }
@@ -37,27 +58,17 @@ export const useViewState = (
     return () => {
       disposer.dispose();
     };
-  }, [containerRef.current]);
+  }, []);
 
   React.useEffect(() => {
+    const ResizeObserver = window.ResizeObserver;
     // TODO: 统一收敛到 resizeEvent 内
     if (manualObserve && containerRef.current) {
-      const ResizeObserver = (window as any).ResizeObserver;
-      const doUpdate = (entries) => {
+      const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
         const width = entries[0].contentRect.width;
         const height = entries[0].contentRect.height;
-        // 当视图被隐藏 (display: none) 时不更新 viewState
-        // 避免视图切换时触发无效的渲染
-        // 真正的 resize 操作不会出现 width/height 为 0 的情况
-        if (
-          (width !== viewStateRef.current.width || height !== viewStateRef.current.height) &&
-          (width !== 0 || height !== 0)
-        ) {
-          setViewState({ width, height });
-          viewStateRef.current = { width, height };
-        }
-      };
-      const resizeObserver = new ResizeObserver(doUpdate);
+        updateViewState(height, width);
+      });
       resizeObserver.observe(containerRef.current);
       return () => {
         if (containerRef.current) {

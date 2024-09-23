@@ -104,6 +104,12 @@ export function createDebugApiFactory(extHostDebugService: IExtHostDebugService)
     asDebugSourceUri(source: vscode.DebugProtocolSource, session?: vscode.DebugSession) {
       return extHostDebugService.asDebugSourceUri(source, session);
     },
+    registerDebugVisualizationTreeProvider() {
+      return Disposable.create(() => {});
+    },
+    registerDebugVisualizationProvider() {
+      return Disposable.create(() => {});
+    },
   };
 
   return debug;

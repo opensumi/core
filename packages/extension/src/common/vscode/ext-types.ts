@@ -1,4 +1,18 @@
-import { Event, Uri, UriUtils, es5ClassCompat, isStringArray, strings, uuid } from '@opensumi/ide-core-common';
+import {
+  Event,
+  Mimes,
+  Uri,
+  UriUtils,
+  arrays,
+  es5ClassCompat,
+  isNumber,
+  isString,
+  isStringArray,
+  isTextStreamMime,
+  normalizeMimeType,
+  strings,
+  uuid,
+} from '@opensumi/ide-core-common';
 
 import { FileOperationOptions } from './model.api';
 import { escapeCodicons } from './models/html-content';
@@ -6,7 +20,9 @@ import { illegalArgument } from './utils';
 
 import type vscode from 'vscode';
 
+export { TextEditorRevealType } from './editor';
 export { UriComponents } from './models/uri';
+export { Uri };
 const { startsWithIgnoreCase } = strings;
 
 // vscode 中的 uri 存在 static 方法。。内容是 vscode-uri 的 Utils 中的内容...
@@ -43,7 +59,6 @@ export enum QuickPickItemKind {
   Default = 0,
 }
 
-export { Uri };
 export enum ProgressLocation {
   /**
    * Show progress for the source control viewlet, as overlay for the icon and as progress bar
@@ -2007,8 +2022,6 @@ export enum TextDocumentChangeReason {
   Redo = 2,
 }
 
-export { TextEditorRevealType } from './editor';
-
 @es5ClassCompat
 export class TaskGroup implements vscode.TaskGroup {
   isDefault?: boolean;
@@ -3460,5 +3473,292 @@ export class TerminalEditorTabInput {
 }
 export class InteractiveWindowInput {
   constructor(readonly uri: Uri, readonly inputBoxUri: Uri) {}
+}
+// #endregion
+
+// #region notebook
+export class NotebookRange {
+  static isNotebookRange(thing: any): thing is vscode.NotebookRange {
+    if (thing instanceof NotebookRange) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return isNumber((thing as NotebookRange).start) && isNumber((thing as NotebookRange).end);
+  }
+
+  private _start: number;
+  private _end: number;
+
+  get start() {
+    return this._start;
+  }
+
+  get end() {
+    return this._end;
+  }
+
+  get isEmpty(): boolean {
+    return this._start === this._end;
+  }
+
+  constructor(start: number, end: number) {
+    if (start < 0) {
+      throw illegalArgument('start must be positive');
+    }
+    if (end < 0) {
+      throw illegalArgument('end must be positive');
+    }
+    this._start = Math.min(start, end);
+    this._end = Math.max(start, end);
+  }
+
+  with(change: { start?: number; end?: number }): NotebookRange {
+    let start = this._start;
+    let end = this._end;
+
+    if (change.start !== undefined) {
+      start = change.start;
+    }
+    if (change.end !== undefined) {
+      end = change.end;
+    }
+    if (start === this._start && end === this._end) {
+      return this;
+    }
+    return new NotebookRange(start, end);
+  }
+}
+
+export class NotebookCellData {
+  static validate(data: NotebookCellData): void {
+    if (!isNumber(data.kind)) {
+      throw new Error("NotebookCellData MUST have 'kind' property");
+    }
+    if (!isString(data.value)) {
+      throw new Error("NotebookCellData MUST have 'value' property");
+    }
+    if (!isString(data.languageId)) {
+      throw new Error("NotebookCellData MUST have 'languageId' property");
+    }
+  }
+
+  static isNotebookCellDataArray(value: unknown): value is vscode.NotebookCellData[] {
+    return Array.isArray(value) && (value as unknown[]).every((elem) => NotebookCellData.isNotebookCellData(elem));
+  }
+
+  static isNotebookCellData(value: unknown): value is vscode.NotebookCellData {
+    // return value instanceof NotebookCellData;
+    return true;
+  }
+
+  kind: NotebookCellKind;
+  value: string;
+  languageId: string;
+  mime?: string;
+  outputs?: vscode.NotebookCellOutput[];
+  metadata?: Record<string, any>;
+  executionSummary?: vscode.NotebookCellExecutionSummary;
+
+  constructor(
+    kind: NotebookCellKind,
+    value: string,
+    languageId: string,
+    mime?: string,
+    outputs?: vscode.NotebookCellOutput[],
+    metadata?: Record<string, any>,
+    executionSummary?: vscode.NotebookCellExecutionSummary,
+  ) {
+    this.kind = kind;
+    this.value = value;
+    this.languageId = languageId;
+    this.mime = mime;
+    this.outputs = outputs ?? [];
+    this.metadata = metadata;
+    this.executionSummary = executionSummary;
+
+    NotebookCellData.validate(this);
+  }
+}
+
+export class NotebookData {
+  cells: NotebookCellData[];
+  metadata?: { [key: string]: any };
+
+  constructor(cells: NotebookCellData[]) {
+    this.cells = cells;
+  }
+}
+
+export class NotebookCellOutputItem {
+  static isNotebookCellOutputItem(obj: unknown): obj is vscode.NotebookCellOutputItem {
+    if (obj instanceof NotebookCellOutputItem) {
+      return true;
+    }
+    if (!obj) {
+      return false;
+    }
+    return (
+      isString((obj as vscode.NotebookCellOutputItem).mime) &&
+      (obj as vscode.NotebookCellOutputItem).data instanceof Uint8Array
+    );
+  }
+
+  static error(err: Error | { name: string; message?: string; stack?: string }): NotebookCellOutputItem {
+    const obj = {
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+    };
+    return NotebookCellOutputItem.json(obj, 'application/vnd.code.notebook.error');
+  }
+
+  static stdout(value: string): NotebookCellOutputItem {
+    return NotebookCellOutputItem.text(value, 'application/vnd.code.notebook.stdout');
+  }
+
+  static stderr(value: string): NotebookCellOutputItem {
+    return NotebookCellOutputItem.text(value, 'application/vnd.code.notebook.stderr');
+  }
+
+  static bytes(value: Uint8Array, mime: string = 'application/octet-stream'): NotebookCellOutputItem {
+    return new NotebookCellOutputItem(value, mime);
+  }
+
+  static #encoder = new TextEncoder();
+
+  static text(value: string, mime: string = Mimes.text): NotebookCellOutputItem {
+    const bytes = NotebookCellOutputItem.#encoder.encode(String(value));
+    return new NotebookCellOutputItem(bytes, mime);
+  }
+
+  static json(value: any, mime: string = 'text/x-json'): NotebookCellOutputItem {
+    const rawStr = JSON.stringify(value, undefined, '\t');
+    return NotebookCellOutputItem.text(rawStr, mime);
+  }
+
+  constructor(public data: Uint8Array, public mime: string) {
+    const mimeNormalized = normalizeMimeType(mime, true);
+    if (!mimeNormalized) {
+      throw new Error(`INVALID mime type: ${mime}. Must be in the format "type/subtype[;optionalparameter]"`);
+    }
+    this.mime = mimeNormalized;
+  }
+}
+
+export class NotebookCellOutput {
+  static isNotebookCellOutput(candidate: any): candidate is vscode.NotebookCellOutput {
+    if (candidate instanceof NotebookCellOutput) {
+      return true;
+    }
+    if (!candidate || typeof candidate !== 'object') {
+      return false;
+    }
+    return (
+      typeof (candidate as NotebookCellOutput).id === 'string' && Array.isArray((candidate as NotebookCellOutput).items)
+    );
+  }
+
+  static ensureUniqueMimeTypes(items: NotebookCellOutputItem[], warn: boolean = false): NotebookCellOutputItem[] {
+    const seen = new Set<string>();
+    const removeIdx = new Set<number>();
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const normalMime = normalizeMimeType(item.mime);
+      // We can have multiple text stream mime types in the same output.
+      if (!seen.has(normalMime) || isTextStreamMime(normalMime)) {
+        seen.add(normalMime);
+        continue;
+      }
+      // duplicated mime types... first has won
+      removeIdx.add(i);
+      if (warn) {
+        // eslint-disable-next-line no-console
+        console.warn(`DUPLICATED mime type '${item.mime}' will be dropped`);
+      }
+    }
+    if (removeIdx.size === 0) {
+      return items;
+    }
+    return items.filter((_item, index) => !removeIdx.has(index));
+  }
+
+  id: string;
+  items: NotebookCellOutputItem[];
+  metadata?: Record<string, any>;
+
+  constructor(
+    items: NotebookCellOutputItem[],
+    idOrMetadata?: string | Record<string, any>,
+    metadata?: Record<string, any>,
+  ) {
+    this.items = NotebookCellOutput.ensureUniqueMimeTypes(items, true);
+    if (typeof idOrMetadata === 'string') {
+      this.id = idOrMetadata;
+      this.metadata = metadata;
+    } else {
+      this.id = uuid();
+      this.metadata = idOrMetadata ?? metadata;
+    }
+  }
+}
+
+export enum NotebookCellKind {
+  Markup = 1,
+  Code = 2,
+}
+
+export enum NotebookCellExecutionState {
+  Idle = 1,
+  Pending = 2,
+  Executing = 3,
+}
+
+export enum NotebookCellStatusBarAlignment {
+  Left = 1,
+  Right = 2,
+}
+
+export enum NotebookEditorRevealType {
+  Default = 0,
+  InCenter = 1,
+  InCenterIfOutsideViewport = 2,
+  AtTop = 3,
+}
+
+export class NotebookCellStatusBarItem {
+  constructor(public text: string, public alignment: NotebookCellStatusBarAlignment) {}
+}
+
+export enum NotebookControllerAffinity {
+  Default = 1,
+  Preferred = 2,
+}
+
+export enum NotebookControllerAffinity2 {
+  Default = 1,
+  Preferred = 2,
+  Hidden = -1,
+}
+
+export class NotebookRendererScript {
+  public provides: readonly string[];
+
+  constructor(public uri: vscode.Uri, provides: string | readonly string[] = []) {
+    this.provides = arrays.asArray(provides);
+  }
+}
+
+export class NotebookKernelSourceAction {
+  description?: string;
+  detail?: string;
+  command?: vscode.Command;
+  constructor(public label: string) {}
+}
+
+export enum NotebookVariablesRequestKind {
+  Named = 1,
+  Indexed = 2,
 }
 // #endregion

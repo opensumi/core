@@ -1,5 +1,6 @@
-import { Event, Uri, match as matchGlobPattern } from '@opensumi/ide-core-common';
-import { LanguageSelector } from '@opensumi/ide-editor';
+import { Event, IRelativePattern, Uri, match as matchGlobPattern } from '@opensumi/ide-core-common';
+import { LanguageFilter, LanguageSelector } from '@opensumi/ide-editor';
+import { normalize } from '@opensumi/ide-utils/lib/path';
 
 import * as types from '../../../../common/vscode/ext-types';
 
@@ -47,11 +48,20 @@ export function score(
   candidateUri: Uri,
   candidateLanguage: string,
   candidateIsSynchronized: boolean,
+  candidateNotebookUri: Uri | undefined,
+  candidateNotebookType: string | undefined,
 ): number {
   if (Array.isArray(selector)) {
     let ret = 0;
     for (const filter of selector) {
-      const value = score(filter, candidateUri, candidateLanguage, candidateIsSynchronized);
+      const value = score(
+        filter,
+        candidateUri,
+        candidateLanguage,
+        candidateIsSynchronized,
+        candidateNotebookUri,
+        candidateNotebookType,
+      );
       if (value === 10) {
         return value;
       }
@@ -73,10 +83,14 @@ export function score(
       return 0;
     }
   } else if (selector) {
-    const { language, pattern, scheme, hasAccessToAllModels } = selector;
+    const { language, pattern, scheme, hasAccessToAllModels, notebookType } = selector;
 
     if (!candidateIsSynchronized && !hasAccessToAllModels) {
       return 0;
+    }
+
+    if (notebookType && candidateNotebookUri) {
+      candidateUri = candidateNotebookUri;
     }
 
     let result = 0;
@@ -101,8 +115,24 @@ export function score(
       }
     }
 
+    if (notebookType) {
+      if (notebookType === candidateNotebookType) {
+        result = 10;
+      } else if (notebookType === '*' && candidateNotebookType !== undefined) {
+        result = Math.max(result, 5);
+      } else {
+        return 0;
+      }
+    }
+
     if (pattern) {
-      if (pattern === candidateUri.fsPath || matchGlobPattern(pattern, candidateUri.fsPath)) {
+      let normalizedPattern: string | IRelativePattern;
+      if (typeof pattern === 'string') {
+        normalizedPattern = pattern;
+      } else {
+        normalizedPattern = { ...pattern, base: normalize(pattern.base) };
+      }
+      if (normalizedPattern === candidateUri.fsPath || matchGlobPattern(pattern, candidateUri.fsPath)) {
         result = 10;
       } else {
         return 0;
@@ -143,3 +173,13 @@ export const getDurationTimer = () => {
     },
   };
 };
+
+export function targetsNotebooks(selector: LanguageSelector): boolean {
+  if (typeof selector === 'string') {
+    return false;
+  } else if (Array.isArray(selector)) {
+    return selector.some(targetsNotebooks);
+  } else {
+    return !!(selector as LanguageFilter).notebookType;
+  }
+}

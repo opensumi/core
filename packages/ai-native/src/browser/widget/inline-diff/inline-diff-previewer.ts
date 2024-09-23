@@ -151,6 +151,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     // do nothing
     return '';
   }
+  getOriginValue(): string {
+    // do nothing
+    return '';
+  }
   onError(error: ErrorResponse): void {
     // do nothing
   }
@@ -214,6 +218,12 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     const model = this.node?.getModifiedModel();
     return model!.getValue();
   }
+
+  getOriginValue(): string {
+    const model = this.node?.getOriginModel();
+    return model!.getValue() || '';
+  }
+
   handleAction(action: EResultKind): void {
     if (action === EResultKind.ACCEPT) {
       const newValue = this.getValue();
@@ -305,7 +315,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
   getPosition(): IPosition {
     const zone = this.node?.getZone();
     if (zone) {
-      return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
+      return Position.lift({ lineNumber: zone.startLineNumber, column: 1 });
     }
     return Position.lift({ lineNumber: 1, column: 1 });
   }
@@ -328,8 +338,30 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     return Disposable.NULL;
   }
   layout(): void {
-    this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
+    this.inlineContentWidget?.setPositionPreference([
+      ContentWidgetPositionPreference.ABOVE,
+      ContentWidgetPositionPreference.BELOW,
+    ]);
     super.layout();
+
+    const position = this.getPosition();
+    if (position && this.inlineContentWidget) {
+      // 如果第一个 removed widget 的 lineNumber 和 position 的 lineNumber 相等，则需要将 inline content widget 往上移动被删除的行数，避免遮挡
+      const removedWidgets = this.node?.livePreviewDiffDecorationModel.getRemovedWidgets();
+      if (removedWidgets?.length) {
+        const lineNumber = position.lineNumber;
+        const firstRemovedWidget = removedWidgets[0];
+
+        if (firstRemovedWidget) {
+          const firstRemovedWidgetLineNumber = firstRemovedWidget.getLastPosition()?.lineNumber;
+          if (firstRemovedWidgetLineNumber <= lineNumber) {
+            const lineHeight = this.inlineContentWidget.getLineHeight();
+            const len = firstRemovedWidget.height;
+            this.inlineContentWidget.setOffsetTop(-lineHeight * len - 4);
+          }
+        }
+      }
+    }
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
@@ -341,6 +373,15 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       this.node?.pushRateFinallyDiffStack(diffModel);
     }
   }
+
+  getValue(): string {
+    return this.node?.getVirtualModelValue() || '';
+  }
+
+  getOriginValue(): string {
+    return this.node?.getOriginModelValue() || '';
+  }
+
   setValue(content: string): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
     if (diffModel) {

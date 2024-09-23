@@ -104,6 +104,10 @@ export class ResizePayload {
    */
   constructor(public slotLocation: SlotLocation) {}
 }
-export class ResizeEvent extends BasicEvent<ResizePayload> {}
+export class ResizeEvent extends BasicEvent<ResizePayload> {
+  static createDirective(location: SlotLocation) {
+    return `resize:${location}`;
+  }
+}
 
 export class RenderedEvent extends BasicEvent<void> {}
