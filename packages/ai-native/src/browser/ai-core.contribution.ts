@@ -78,7 +78,12 @@ import { InlineCompletionHandler } from './contrib/inline-completions/inline-com
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
 import { RenameHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
-import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
+import {
+  AIChatTabRenderer,
+  AIChatTabRendererWithTab,
+  AILeftTabRenderer,
+  AIRightTabRenderer,
+} from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import {
   AINativeCoreContribution,
@@ -377,7 +382,12 @@ export class AINativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer);
+    if (this.designLayoutConfig.supportExternalChatPanel) {
+      registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRendererWithTab);
+    } else {
+      registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer);
+    }
+
     if (this.designLayoutConfig.useMergeRightWithLeftPanel) {
       registry.registerSlotRenderer(SlotLocation.left, AILeftTabRenderer);
       registry.registerSlotRenderer(SlotLocation.right, AIRightTabRenderer);

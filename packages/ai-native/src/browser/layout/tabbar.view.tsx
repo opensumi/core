@@ -52,6 +52,31 @@ export const AIChatTabRenderer = ({
 }) => (
   <TabRendererBase
     side={AI_CHAT_VIEW_ID}
+    direction={EDirection.LeftToRight}
+    id={styles.ai_chat_panel}
+    className={cls(className, `${AI_CHAT_VIEW_ID}-slot`)}
+    components={components}
+    TabbarView={() => <ChatTabbarRenderer />}
+    TabpanelView={() => (
+      <BaseTabPanelView
+        PanelView={ContainerView}
+        PanelViewProps={{
+          className: styles.ai_chat_view_container,
+        }}
+      />
+    )}
+  />
+);
+
+export const AIChatTabRendererWithTab = ({
+  className,
+  components,
+}: {
+  className: string;
+  components: ComponentRegistryInfo[];
+}) => (
+  <TabRendererBase
+    side={AI_CHAT_VIEW_ID}
     direction={EDirection.RightToLeft}
     id={styles.ai_chat_panel}
     className={cls(className, `${AI_CHAT_VIEW_ID}-slot`, 'design_right_slot')}
