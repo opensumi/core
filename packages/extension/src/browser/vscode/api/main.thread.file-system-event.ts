@@ -78,15 +78,15 @@ export class MainThreadFileSystemEvent extends Disposable {
         for (const change of changes) {
           switch (change.type) {
             case FileChangeType.ADDED:
-              events.created.push(new URI(change.uri).codeUri);
+              events.created.push(Uri.parse(change.uri));
               hasResult = true;
               break;
             case FileChangeType.UPDATED:
-              events.changed.push(new URI(change.uri).codeUri);
+              events.changed.push(Uri.parse(change.uri));
               hasResult = true;
               break;
             case FileChangeType.DELETED:
-              events.deleted.push(new URI(change.uri).codeUri);
+              events.deleted.push(Uri.parse(change.uri));
               hasResult = true;
               break;
           }
