@@ -60,6 +60,7 @@ export interface IDesignLayoutConfig {
    * set menubar logo
    */
   menubarLogo?: string;
+  supportExternalChatPanel?: boolean;
 }
 
 export interface IAINativeConfig {

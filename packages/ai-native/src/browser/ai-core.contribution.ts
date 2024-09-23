@@ -84,7 +84,12 @@ import { IntelligentCompletionsController } from './contrib/intelligent-completi
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
 import { RenameSingleHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
-import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
+import {
+  AIChatTabRenderer,
+  AIChatTabRendererWithTab,
+  AILeftTabRenderer,
+  AIRightTabRenderer,
+} from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import {
   AINativeCoreContribution,
@@ -446,7 +451,12 @@ export class AINativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer);
+    if (this.designLayoutConfig.supportExternalChatPanel) {
+      registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRendererWithTab);
+    } else {
+      registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer);
+    }
+
     if (this.designLayoutConfig.useMergeRightWithLeftPanel) {
       registry.registerSlotRenderer(SlotLocation.left, AILeftTabRenderer);
       registry.registerSlotRenderer(SlotLocation.right, AIRightTabRenderer);
@@ -456,6 +466,8 @@ export class AINativeBrowserContribution
   registerComponent(registry: ComponentRegistry): void {
     registry.register(AI_CHAT_CONTAINER_ID, [], {
       component: AIChatView,
+      title: localize('aiNative.chat.ai.assistant.name'),
+      iconClass: getIcon('magic-wand'),
       containerId: AI_CHAT_CONTAINER_ID,
     });
     registry.register(AI_MENU_BAR_DEBUG_TOOLBAR, {
