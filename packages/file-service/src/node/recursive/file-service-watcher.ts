@@ -2,14 +2,13 @@ import paths from 'path';
 
 import ParcelWatcher from '@parcel/watcher';
 import fs from 'fs-extra';
-import throttle from 'lodash/throttle';
+import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
-  FRAME_FIVE,
   FileUri,
   IDisposable,
   ILogService,
@@ -307,7 +306,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
    * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
    */
   private isEnableNSFW(): boolean {
-    return isLinux;
+    return true;
   }
 
   private async handleNSFWEvents(events: INsfw.ChangeEvent[], watcherId: number): Promise<void> {
@@ -442,7 +441,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
    * Fires file changes to clients.
    * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
    */
-  protected readonly fireDidFilesChanged: () => void = throttle(() => this.doFireDidFilesChanged(), FRAME_FIVE);
+  protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
   protected doFireDidFilesChanged(): void {
     const changes = this.changes.values();
     this.changes = new FileChangeCollection();
