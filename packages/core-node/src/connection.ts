@@ -129,7 +129,7 @@ export function bindModuleBackService(
 
           const serviceInstance = childInjector.get(serviceToken);
 
-          if (serviceInstance.setConnectionClientId && clientId) {
+          if (serviceInstance.setConnectionClientId) {
             serviceInstance.setConnectionClientId(clientId);
           }
 
