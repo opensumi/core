@@ -1,7 +1,7 @@
 import debounce from 'lodash/debounce';
 import { action, makeObservable, observable, reaction, runInAction } from 'mobx';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import {
   CommandRegistry,
   ComponentRegistryInfo,
@@ -47,6 +47,11 @@ import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent
 import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
+export const TabbarServiceFactoryFn = (injector: Injector) => (location: string) => {
+  const manager: IMainLayoutService = injector.get(IMainLayoutService);
+  return manager.getTabbarService(location);
+};
+
 export interface TabState {
   hidden: boolean;
   // 排序位置，数字越小优先级越高
