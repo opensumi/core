@@ -154,9 +154,9 @@ flask 中在处理每个请求时，你可以用 session 或者 g 来存储内�
 
 同时 GDataStore 也可以在普通的后端 Service 中使用，GDataStore 还可以提供数据变更的监听。
 
-想象一下这个场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalClient) 的 created/removed 事件，然后做相关的处理。
-
 GDataStore 会实现好默认的 CRUD 接口，让你使用它就像使用一个 mongodb 数据库一样。
+
+想象一下这个场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalClient) 的 created/removed 事件，然后做相关的处理。
 
 ```ts
 class TerminalClientRemoteService {
@@ -188,6 +188,18 @@ class TerminalClientRemoteService {
 
   dispose() {
     this.gDataStore.remove(clientId);
+  }
+}
+
+class TerminalService {
+  @Autowired(GDataStore, { tag: 'TerminalClientRemoteService' })
+  gDataStore: GDataStore;
+
+  initialize() {
+    this.gDataStore.on('created', () => {});
+    this.gDataStore.on('updated', () => {});
+    this.gDataStore.on('removed', () => {});
+    this.gDataStore.on('custom-event', () => {});
   }
 }
 ```
