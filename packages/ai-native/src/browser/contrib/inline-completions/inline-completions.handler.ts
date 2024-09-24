@@ -11,7 +11,7 @@ import {
   Sequencer,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
-import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
+import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { ICodeEditor, InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';

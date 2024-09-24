@@ -494,6 +494,7 @@ export class AINativeContribution implements AINativeCoreContribution {
             },
           ],
           enableMultiLine: true,
+          alwaysVisible: true,
         };
       } catch (error) {
         if (error.name === 'AbortError') {
