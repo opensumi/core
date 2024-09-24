@@ -1,25 +1,27 @@
-# Rethinking Back Service
+# 重新思考 Back Service
 
-在 OpenSumi 中，`back service` 是用来处理某一个前端连接打开后的交互，在前端连接释放后，`back service` 也会被释放。
+在 OpenSumi 中，`back service` 用于处理前端连接打开后的交互，并在前端连接释放后被释放。
 
-在我们过去的实践中，我们会遇到以下几个场景的问题：
+在过去的实践中，我们遇到了以下问题：
 
-1. back service 中的数据无法持久化，导致重连后数据消失
-2. back service 将自己的数据储存在外部，导致内存泄露
-3. back service 机制比较隐晦，比如会自动多例，自动创建 child injector
-4. 由于 3 的原因，back service 会被创建为多例，导致某些模块错误使用 `@Autowired` 引用 back service 后, 每次拿到一个空状态的 back service
+1. back service 中的数据无法持久化，导致重连后数据丢失。
+2. back service 将数据存储在外部，导致内存泄漏。
+3. back service 机制较为隐晦，例如它是自动多例，是创建在 child injector 中而不是全局 injector。
+4. 由于第 3 点，back service 会被创建为多个实例，导致某些模块错误地使用 `@Autowired` 引用 back service，每次都会得到一个空状态的 back service。
 
-将自己的数据储存在外部也会有很多问题：
+将数据存储在外部也存在许多问题：
 
-1. 数据的保存需要大量的 Map 来存储状态
-2. 多个 back service 不小心对同样的一个外部状态进行了清空
-3. 每个 back service 要写一份自己的存储逻辑
+1. 数据保存需要大量的 Map 来存储状态。
+2. 多个 back service 可能会意外地清空同一个外部状态。
+3. 每个 back service 都需要编写自己的存储逻辑，比如 Terminal/Extension 等模块的储存和逻辑非常耦合
 
-一个 back service 能被其他实例引用到就很奇怪，大家都是后端的接口层，所以应该禁止这种行为，有共同的业务逻辑需要抽出成一个通用 Service 来做。而不是用 back service，所以这里明确一下 back service 的职责，只做前端对后端的接口使用，那么我们定下第一个目标：
+back service 被其他实例引用是很奇怪的，因为它们都是后端接口层，所以应该禁止这种行为。共有的业务逻辑应提取为通用 Service，而不是使用 back service。因此，我们的第一个目标是：
 
-## 1. back service 不可被 `@Autowired` 引用到
+## 1. back service 不可被 `@Autowired` 引用
 
-这个也比较容易实现，使用 di 机制的自动注入即可实现，我们想禁止一个类被实例化，可以看下面这个最简单的例子：
+这可以通过使用 DI 机制的自动注入来实现，让我们一步步来看。
+
+我们想禁止一个类被实例化，可以看下面这个最简单的例子：
 
 ```ts
 class NeedPassword {
@@ -34,7 +36,7 @@ class NeedPassword {
 const ins = new NeedPassword('wrong_password'); // throw Error: Invalid password
 ```
 
-然后我们可以实现一个基类，让所有继承这个类的 class 都需要正确的密码才能创建成功：
+我们可以实现一个基类，所有继承这个类的类都需要正确的密码才能创建成功：
 
 ```ts
 abstract class NeedPassword {
@@ -53,7 +55,7 @@ const instance1 = new CustomPassword('custom_password_here'); // OK
 const instance2 = new CustomPassword('wrong_password'); // Error: Invalid password
 ```
 
-那么升级一下，使用 di 机制：
+接下来，使用 DI 机制：
 
 ```ts
 import 'reflect-metadata';
@@ -89,9 +91,9 @@ console.log(`flag`, d2.flag); // print `flag {you_got_it}`
 const d1 = injectorA.get(Service2); // Error: Invalid secret
 ```
 
-我们通过 `@Optional` 机制，让 childInjector 中存在 `SECRET_TOKEN` 但 injectorA 中不存在该 token，则该类可以在 childInjector 中被初始化，在其他 injector 中则不行。
+通过 `@Optional` `机制，childInjector` 中存在 `SECRET_TOKEN`，但 `injectorA` 中不存在该 token，因此该类只能在 `childInjector` 中被初始化，而不能在其他 injector 中初始化。
 
-我们可以更进一步，因为所有 BackService 实际上只需要实例化一遍，所以我们可以在创建之后再把 SECRET_TOKEN 重置掉。
+我们可以更进一步，因为所有 BackService 实际上只需要实例化一次，所以可以在创建之后重置 `SECRET_TOKEN。`
 
 ```ts
 // ...
@@ -114,49 +116,45 @@ child.overrideProviders({
 const d3 = child.get(Service2); // Error: Invalid secret
 ```
 
-可见，d3 是创建不出来的，会 throw Error。
+可以看到，d3 无法创建，会抛出错误。
 
-这个时候我又想到一个问题，我们确实有一部分代码是跟 client 无关的，比如 VSXExtensionService，它只用来搜索插件，不保存前端状态，这样的一个后端 Service 也需要用多例来保存吗？
+### 引入 Remote Service
 
-2. 内置 back service 配套的储存层 back service data store
+分析上述问题后，我们考虑用一种新的约束规则，改变原来使用 back service 的方式，使声明 back service 更加程序化和简洁。
 
-### Introduce Remote Service
+在设计后端架构时，通常会提到架构分层，将后端服务划分为 [`controller`]()、[`service`](https://martinfowler.com/eaaCatalog/serviceLayer.html) 和 [`dao`]() 等。
 
-分析出来以上问题，我们考虑可以用一种新的约束规则，改变一下原来使用 back service 的方式，让声明 back service 更程序化，更简洁。
+原来的 back service 模糊了 controller 和 service 的概念，前后端都能用，所以使用起来不明不白。
 
-我们在考虑设计后端架构的时候，通常会提到架构分层，将后端服务划分为 `controller`, [`service`](https://martinfowler.com/eaaCatalog/serviceLayer.html), `dao` 等。
-
-我们原来的 back service 模糊了 controller 和 service 的概念，前后端都能用，所以才会让人用的不明不白。
-
-所以现在我们需要做一个澄清，我们引入了一个新概念：Remote Service，它是仅面向前端的远程 Service，后端其他的 Service 不可引用该 Service，你可以在这个 Service 内编写校验、逻辑、调度，但它更像 controller，只接受外部的请求调用才会触发。
+因此，我们引入了一个新概念：Remote Service，它是仅面向前端的远程 Service，后端其他 Service 不可引用该 Service。你可以在这个 Service 内编写校验、逻辑和调度，但它更像 controller，只接受外部请求调用。
 
 > Martin Fowler 的《企业架构模式》中的 [Service Layer] 定义：服务层从连接客户层的角度定义了应用程序的边界及其可用操作集。它封装了应用程序的业务逻辑，在执行操作时控制事务并协调响应。
 
-我们可以先列一下这个新的 Remote Service 的原则，能让我们明白什么做，什么不做：
+我们可以先列出这个新的 Remote Service 的原则，以便明确什么该做，什么不该做：
 
-1. 前后端 1 对 1 通信
-2. Remote Service 只能在通信连接上后进行实例化，然后无法再次实例化
-3. 所有的 Remote Service 的命名推荐以 RemoteService 结尾
+1. 前后端 1 对 1 通信。
+2. Remote Service 只能在通信连接后实例化，且无法再次实例化。
+3. 所有的 Remote Service 命名推荐以 RemoteService 结尾。
 
 ## 2. back service 存储逻辑优化
 
-现在我们应该叫它 remote service 存储逻辑优化了。
+现在我们应该称它为 remote service 存储逻辑优化。
 
-之前 back service 的状态存取都是靠各个类自己往 service 里存，现在我们仍然推荐这么做。
+之前 back service 的状态存取都是各个类自己存储，现在我们仍然推荐这么做。
 
-但是我们现在推出了一款非常通用的 InMemoryDataStore，如果你没有特殊需求，尽管使用它，它提供了 `find`/`update`/`create`/`patch` 多种方便快捷管理资源的功能。
+但我们现在推出了一款非常通用的 InMemoryDataStore，如果没有特殊需求，可以使用它。它提供了 `find`/`update`/`create`/`patch` 等多种便捷的资源管理功能。
 
-它非常适合 OpenSumi 的后端架构，提供了 `clientId`/`sessionId` 的自动存储以及转换，断开连接后自动 dispose 相关属性。
+它非常适合 OpenSumi 的后端架构，你可以根据 `clientId`/`sessionId` 去存储，查询数据，断开连接后删除数据。
 
-### the idea from flask and feathers
+### 灵感来自 flask 和 feathers
 
-flask 中在处理每个请求时，你可以用 session 或者 g 来存储内容，存在 session 里的东西在会话结束后会被删掉，存在 g 上的则会一直储存。于是我就在想，如果 OpenSumi 提供一个 SessionDataStore 和 GDataStore，让用户在 RemoteService 中使用这个 DataStore，是不是就可以缓解大部分的痛苦？
+在 flask 中处理每个请求时，可以用 session 或 g 来存储内容，存在 session 里的内容在会话结束后会被删除，存在 g 上的则会一直存储。因此，我们考虑如果 OpenSumi 提供一个 SessionDataStore 和 GDataStore，让用户在 RemoteService 中使用这个 DataStore，是不是可以缓解大部分问题？
 
-同时 GDataStore 也可以在普通的后端 Service 中使用，GDataStore 还可以提供数据变更的监听。
+同时，GDataStore 也可以在普通的后端 Service 中使用，并提供数据变更的监听。
 
-GDataStore 会实现好默认的 CRUD 接口，让你使用它就像使用一个 mongodb 数据库一样。
+GDataStore 会实现默认的 CRUD 接口，让你使用它就像使用一个 MongoDB 数据库一样。
 
-想象一下这个场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalClient) 的 created/removed 事件，然后做相关的处理。
+来看一个实际的场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalClient) 的 created/removed 事件，然后做相关处理。
 
 ```ts
 interface Item {
