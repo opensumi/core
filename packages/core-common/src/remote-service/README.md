@@ -159,6 +159,19 @@ GDataStore 会实现好默认的 CRUD 接口，让你使用它就像使用一个
 想象一下这个场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalClient) 的 created/removed 事件，然后做相关的处理。
 
 ```ts
+interface Item {
+  id: string;
+}
+
+interface GDataStore<T extends Item> {
+  create(item: Item): void;
+  find(query: Record<string, any>): void;
+  size(query: Record<string, any>): void;
+  get(id: string, query?: Record<string, any>): Item;
+  update(id: string, item: Partial<Item>): void;
+  remove(id: string): void;
+}
+
 class TerminalClientRemoteService {
   @Autowired(GDataStore, { tag: 'TerminalClientRemoteService' })
   gDataStore: GDataStore;
