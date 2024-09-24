@@ -17,7 +17,7 @@
 
 一个 back service 能被其他实例引用到就很奇怪，大家都是后端的接口层，所以应该禁止这种行为，有共同的业务逻辑需要抽出成一个通用 Service 来做。而不是用 back service，所以这里明确一下 back service 的职责，只做前端对后端的接口使用，那么我们定下第一个目标：
 
-1. back service 不可被 `@Autowired` 引用到
+## 1. back service 不可被 `@Autowired` 引用到
 
 这个也比较容易实现，使用 di 机制的自动注入即可实现，我们想禁止一个类被实例化，可以看下面这个最简单的例子：
 
@@ -120,7 +120,7 @@ const d3 = child.get(Service2); // Error: Invalid secret
 
 2. 内置 back service 配套的储存层 back service data store
 
-## Introduce Remote Service
+### Introduce Remote Service
 
 分析出来以上问题，我们考虑可以用一种新的约束规则，改变一下原来使用 back service 的方式，让声明 back service 更程序化，更简洁。
 
@@ -137,3 +137,57 @@ const d3 = child.get(Service2); // Error: Invalid secret
 1. 前后端 1 对 1 通信
 2. Remote Service 只能在通信连接上后进行实例化，然后无法再次实例化
 3. 所有的 Remote Service 的命名推荐以 RemoteService 结尾
+
+## 2. back service 存储逻辑优化
+
+现在我们应该叫它 remote service 存储逻辑优化了。
+
+之前 back service 的状态存取都是靠各个类自己往 service 里存，现在我们仍然推荐这么做。
+
+但是我们现在推出了一款非常通用的 InMemoryDataStore，如果你没有特殊需求，尽管使用它，它提供了 `find`/`update`/`create`/`patch` 多种方便快捷管理资源的功能。
+
+它非常适合 OpenSumi 的后端架构，提供了 `clientId`/`sessionId` 的自动存储以及转换，断开连接后自动 dispose 相关属性。
+
+### the idea from flask and feathers
+
+flask 中在处理每个请求时，你可以用 session 或者 g 来存储内容，存在 session 里的东西在会话结束后会被删掉，存在 g 上的则会一直储存。于是我就在想，如果 OpenSumi 提供一个 SessionDataStore 和 GDataStore，让用户在 RemoteService 中使用这个 DataStore，是不是就可以缓解大部分的痛苦？
+
+同时 GDataStore 也可以在普通的后端 Service 中使用，GDataStore 还可以提供数据变更的监听。
+
+想象一下这个场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalClient) 的 created/removed 事件，然后做相关的处理。
+
+GDataStore 会实现好默认的 CRUD 接口，让你使用它就像使用一个 mongodb 数据库一样。
+
+```ts
+class TerminalClientRemoteService {
+  @Autowired(GDataStore, { tag: 'TerminalClientRemoteService' })
+  gDataStore: GDataStore;
+
+  init(clientId: string) {
+    this.gDataStore.create({
+      id: clientId,
+      client: this,
+    });
+  }
+
+  createTerminal(sessionId: string, terminal: Terminal) {
+    this.gDataStore.create({
+      id: clientId,
+      sessionId,
+      type: 'terminal',
+      terminal,
+    });
+  }
+
+  getAllTerminals() {
+    return this.gDataStore.find({
+      type: 'terminal',
+      id: clientId,
+    });
+  }
+
+  dispose() {
+    this.gDataStore.remove(clientId);
+  }
+}
+```
