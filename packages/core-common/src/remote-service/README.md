@@ -253,7 +253,8 @@ class TerminalClientRemoteService extends RemoteService {
     });
   }
 
-  createTerminal(sessionId: string, terminal: Terminal) {
+  createTerminal(sessionId: string, options: TerminalOptions) {
+    const terminal = this.terminalService.createTerminal(options);
     this.gTerminalDataStore.create({
       id: sessionId,
       clientId,
