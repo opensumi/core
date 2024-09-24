@@ -6,7 +6,7 @@ import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-conne
 import { CommonChannelPathHandler, RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
-import { RemoteService, RemoteServiceDataStore, createRemoteServiceChildInjector } from '@opensumi/ide-core-common';
+import { RemoteService, createRemoteServiceChildInjector } from '@opensumi/ide-core-common';
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
@@ -138,24 +138,6 @@ export function bindModuleBackService(
           if (!serviceInstance.rpcClient) {
             serviceInstance.rpcClient = [stub];
           }
-        }
-      }
-
-      if (m.remoteServiceDataStores) {
-        for (const service of m.remoteServiceDataStores) {
-          // todo: check service is RemoteServiceDataStore
-
-          childInjector.addProviders({
-            token: service,
-            useClass: service,
-            tag: RemoteServiceDataStore.Session,
-          });
-
-          injector.addProviders({
-            token: service,
-            useClass: service,
-            tag: RemoteServiceDataStore.Persisted,
-          });
         }
       }
 

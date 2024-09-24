@@ -13,6 +13,7 @@ import {
   ContributionProvider,
   ILogService,
   ILogServiceManager,
+  ModuleDependenciesKey,
   StoragePaths,
   SupportLogNamespace,
   createContributionProvider,
@@ -93,7 +94,7 @@ export class ServerApp implements IServerApp {
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
    */
   public resolveModuleDeps(moduleConstructor: ModuleConstructor, modules: any[]) {
-    const dependencies = Reflect.getMetadata('dependencies', moduleConstructor) as [];
+    const dependencies = Reflect.getMetadata(ModuleDependenciesKey, moduleConstructor) as [];
     if (dependencies) {
       dependencies.forEach((dep) => {
         if (modules.indexOf(dep) === -1) {

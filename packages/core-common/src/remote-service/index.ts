@@ -38,24 +38,6 @@ export abstract class RemoteService<Client = any> {
   }
 }
 
-/**
- * 如何使用
- * ```ts
- * @Autowired(MessageDataStore, { tag: RemoteServiceDataStore.Session })
- * private sessionDataStore: MessageDataStore;
- *
- * @Autowired(MessageDataStore, { tag: RemoteServiceDataStore.Persisted })
- * private persistedDataStore: MessageDataStore;
- * ```
- */
-@Injectable({ multiple: true })
-export abstract class RemoteServiceDataStore {
-  static Session = 'session';
-  static Persisted = 'persisted';
-
-  readonly _dataStoreBrand = undefined;
-}
-
 export function createRemoteServiceChildInjector(injector: Injector, fn: (childInjector: Injector) => void): Injector {
   const child = injector.createChild([
     {
