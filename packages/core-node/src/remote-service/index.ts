@@ -5,12 +5,12 @@ const RemoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag');
 const __remoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag_internal');
 
 @Injectable({ multiple: true })
-export abstract class RemoteService {
-  abstract readonly servicePath: string;
+export abstract class RemoteService<Client = any> {
+  readonly servicePath: string;
   protocol?: RPCProtocol<any>;
 
   private _clientId: string;
-  private _client: any;
+  private _client: Client;
   get rpcClient() {
     return this._client;
   }
@@ -24,7 +24,7 @@ export abstract class RemoteService {
     }
   }
 
-  init(clientId: string, client?: any) {
+  init(clientId: string, client: Client) {
     this._clientId = clientId;
     this._client = client;
   }

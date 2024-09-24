@@ -4,7 +4,7 @@ import { NodeModule } from '@opensumi/ide-core-node';
 import { IAlipayCloudMarketplaceService, IOpenvsxMarketplaceService } from '../common';
 
 import { AlipayCloudMarketplaceService, OpenvsxMarketplaceService } from './marketplace';
-import { VSXExtensionService } from './vsx-extension.service';
+import { VSXExtensionRemoteService } from './vsx-extension.service';
 
 @Injectable()
 export class OpenVsxExtensionManagerModule extends NodeModule {
@@ -19,5 +19,5 @@ export class OpenVsxExtensionManagerModule extends NodeModule {
     },
   ];
 
-  remoteServices = [VSXExtensionService];
+  remoteServices = [VSXExtensionRemoteService];
 }

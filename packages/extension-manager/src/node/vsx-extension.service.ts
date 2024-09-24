@@ -28,7 +28,7 @@ function cleanup(paths: string[]) {
 }
 
 @Injectable()
-export class VSXExtensionService extends RemoteService implements IVSXExtensionBackService {
+export class VSXExtensionRemoteService extends RemoteService implements IVSXExtensionBackService {
   servicePath = VSXExtensionServicePath;
 
   @Autowired(AppConfig)

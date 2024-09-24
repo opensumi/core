@@ -8,7 +8,7 @@ import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
 
 import { INodeLogger } from './logger/node-logger';
-import { NodeModule } from './node-module';
+import { NodeModule, getServiceName } from './node-module';
 import { RemoteService, RemoteServiceDataStore, createRemoteServiceChildInjector } from './remote-service';
 import { IServerAppOpts } from './types';
 
@@ -163,7 +163,7 @@ export function bindModuleBackService(
         for (const service of m.remoteServices) {
           const serviceInstance = childInjector.get(service);
           if (!(serviceInstance instanceof RemoteService)) {
-            throw new Error('Invalid remote service: ' + service.name);
+            throw new Error('Invalid remote service: ' + getServiceName(service));
           }
 
           if (Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
@@ -174,7 +174,7 @@ export function bindModuleBackService(
             const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
             serviceInstance.init(clientId, stub);
           } else {
-            throw new Error(`Remote service ${service.name} must have servicePath`);
+            throw new Error(`Remote service ${getServiceName(service)} must have servicePath`);
           }
         }
       }
