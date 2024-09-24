@@ -147,17 +147,16 @@ export function bindModuleBackService(
           if (!(serviceInstance instanceof RemoteService)) {
             throw new Error('Invalid remote service: ' + RemoteService.getName(service));
           }
-
-          if (Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
-            if (serviceInstance.protocol) {
-              serviceCenter.loadProtocol(serviceInstance.protocol);
-            }
-
-            const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
-            serviceInstance.init(clientId, stub);
-          } else {
+          if (!Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
             throw new Error(`Remote service ${RemoteService.getName(service)} must have servicePath`);
           }
+
+          if (serviceInstance.protocol) {
+            serviceCenter.loadProtocol(serviceInstance.protocol);
+          }
+
+          const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
+          serviceInstance.init(clientId, stub);
         }
       }
     }

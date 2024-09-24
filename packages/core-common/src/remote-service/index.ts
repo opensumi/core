@@ -7,7 +7,7 @@ const __remoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag_inte
 
 @Injectable()
 export abstract class RemoteService<Client = any> {
-  readonly servicePath: string;
+  abstract readonly servicePath: string;
   protocol?: RPCProtocol<any>;
 
   private _clientId: string;
