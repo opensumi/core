@@ -99,7 +99,7 @@ console.log(`flag`, d2.flag); // print `flag {you_got_it}`
 const d1 = injectorA.get(Service2); // Error: Invalid secret
 ```
 
-通过 `@Optional` 机制，childInjector`中存在`SECRET_TOKEN`，但 `injectorA`中不存在该 token，因此该类只能在`childInjector` 中被初始化，而不能在其他 injector 中初始化。
+通过 `@Optional` 机制，`childInjector` 中存在 `SECRET_TOKEN`，但 `injectorA` 中不存在该 token，因此该类只能在 `childInjector` 中被初始化，而不能在其他 injector 中初始化。
 
 我们可以更进一步，因为所有 BackService 实际上只需要实例化一次，所以可以在创建之后重置 `SECRET_TOKEN`。
 
