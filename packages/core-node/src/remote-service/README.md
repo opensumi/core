@@ -116,4 +116,24 @@ const d3 = child.get(Service2); // Error: Invalid secret
 
 可见，d3 是创建不出来的，会 throw Error。
 
+这个时候我又想到一个问题，我们确实有一部分代码是跟 client 无关的，比如 VSXExtensionService，它只用来搜索插件，不保存前端状态，这样的一个后端 Service 也需要用多例来保存吗？
+
 2. 内置 back service 配套的储存层 back service data store
+
+## Introduce Remote Service
+
+分析出来以上问题，我们考虑可以用一种新的约束规则，改变一下原来使用 back service 的方式，让声明 back service 更程序化，更简洁。
+
+我们在考虑设计后端架构的时候，通常会提到架构分层，将后端服务划分为 `controller`, [`service`](https://martinfowler.com/eaaCatalog/serviceLayer.html), `dao` 等。
+
+我们原来的 back service 模糊了 controller 和 service 的概念，前后端都能用，所以才会让人用的不明不白。
+
+所以现在我们需要做一个澄清，我们引入了一个新概念：Remote Service，它是仅面向前端的远程 Service，后端其他的 Service 不可引用该 Service，你可以在这个 Service 内编写校验、逻辑、调度，但它更像 controller，只接受外部的请求调用才会触发。
+
+> Martin Fowler 的《企业架构模式》中的 [Service Layer] 定义：服务层从连接客户层的角度定义了应用程序的边界及其可用操作集。它封装了应用程序的业务逻辑，在执行操作时控制事务并协调响应。
+
+我们可以先列一下这个新的 Remote Service 的原则，能让我们明白什么做，什么不做：
+
+1. 前后端 1 对 1 通信
+2. Remote Service 只能在通信连接上后进行实例化，然后无法再次实例化
+3. 所有的 Remote Service 的命名推荐以 RemoteService 结尾
