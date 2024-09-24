@@ -170,7 +170,7 @@ interface GDataStore<T extends Item> {
   remove(id: string): void;
 }
 
-class TerminalClientRemoteService {
+class TerminalClientRemoteService extends RemoteService {
   @Autowired(GDataStore, { tag: 'TerminalClientRemoteService' })
   gDataStore: GDataStore;
 
@@ -178,6 +178,14 @@ class TerminalClientRemoteService {
     this.gDataStore.create({
       id: clientId,
       client: this,
+    });
+
+    this.gDataStore.on('removed', (item) => {
+      switch (item.type) {
+        case 'terminal': {
+          this.rpcClient.close(item.sessionId);
+        }
+      }
     });
   }
 
@@ -212,5 +220,16 @@ class TerminalService {
     this.gDataStore.on('removed', () => {});
     this.gDataStore.on('custom-event', () => {});
   }
+
+  closeTerminal(id: string) {
+    this.gDataStore.remove(id);
+  }
 }
 ```
+
+以上便是使用 GDataStore 之后优化的代码，代码很优雅。而优化前的代码非常混乱：
+
+1. [TerminalService](https://github.com/opensumi/core/blob/v3.3/packages/terminal-next/src/node/terminal.service.ts#L47)
+2. [TerminalServiceClient](https://github.com/opensumi/core/blob/v3.3/packages/terminal-next/src/node/terminal.service.client.ts#L88)
+
+可以看到，原来的 TerminalService 不仅是逻辑层，还包含了数据的存储，clientId/sessionId 和具体 Terminal 的之间通过 4 个 map 来存储，其中还牵涉到隐式的长短 id 转换。
