@@ -301,6 +301,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       env: {
         // 显式设置 env，因为需要和插件运行环境的 env merge
         ...process.env,
+        ...options?.extHostSpawnOptions?.env,
       },
     };
     // 软链模式下的路径兼容性存在问题
@@ -386,6 +387,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         forkOptions.execArgv.push(`--inspect=${port}`);
       }
       this.clientExtProcessInspectPortMap.set(clientId, port);
+    }
+
+    if (options?.extHostSpawnOptions?.execArgv) {
+      forkOptions.execArgv = forkOptions.execArgv.concat(options.extHostSpawnOptions.execArgv);
     }
 
     const forkTimer = this.reporterService.time(`${clientId} fork ext process`);
@@ -543,7 +548,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         /**
          * in web, if current connection is closed, kill the ext process after a threshold
          */
-        const timer = global.setTimeout(() => {
+        const timer = setTimeout(() => {
           this.logger.log(`Dispose client by connectionClientId ${connectionClientId}`);
           this.disposeClientExtProcess(connectionClientId);
         }, this.appConfig.processCloseExitThreshold ?? ExtensionNodeServiceImpl.ProcessCloseExitThreshold);

@@ -5,6 +5,7 @@ import {
   CommandContribution,
   CommandRegistry,
   CommandService,
+  DisposableStore,
   FILE_COMMANDS,
   IApplicationService,
   IClipboardService,
@@ -76,6 +77,8 @@ export class FileTreeContribution
     ClientAppContribution,
     MainLayoutContribution
 {
+  private _disposables = new DisposableStore();
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -156,12 +159,14 @@ export class FileTreeContribution
       EXPLORER_CONTAINER_ID,
     );
     // 监听工作区变化更新标题
-    this.workspaceService.onWorkspaceLocationChanged(() => {
-      const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
-      if (handler) {
-        handler.updateViewTitle(RESOURCE_VIEW_ID, this.getWorkspaceTitle());
-      }
-    });
+    this._disposables.add(
+      this.workspaceService.onWorkspaceLocationChanged(() => {
+        const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
+        if (handler) {
+          handler.updateViewTitle(RESOURCE_VIEW_ID, this.getWorkspaceTitle());
+        }
+      }),
+    );
   }
 
   onDidStart() {
@@ -1254,5 +1259,9 @@ export class FileTreeContribution
     const uris = this.willDeleteUris.slice();
     this.willDeleteUris = [];
     return this.fileTreeModelService.deleteFileByUris(uris);
+  }
+
+  dispose() {
+    this._disposables.dispose();
   }
 }

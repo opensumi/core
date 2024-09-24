@@ -27,6 +27,13 @@ export interface IChatInputParam {
   prompt: string;
 }
 
+/**
+ * proposed api
+ */
+export interface IInlineChatPreviewProviderMetadata {
+  enableCodeblockRender?: boolean;
+}
+
 export interface IMainThreadChatAgents {
   $registerAgent(handle: number, name: string, metadata: IExtensionChatAgentMetadata): void;
   $updateAgent(handle: number, metadataUpdate: IExtensionChatAgentMetadata): void;
@@ -38,6 +45,11 @@ export interface IMainThreadChatAgents {
   ): Promise<number | void>;
   $populateChatInput: (handle: number, param: IChatInputParam) => void;
   $sendMessage: (chunk: IChatProgress) => void;
+
+  /**
+   * proposed api，会随时更改
+   */
+  $registerInlineChatProvider(handle: number, name: string, metadata: IInlineChatPreviewProviderMetadata): void;
 }
 
 export interface IExtHostChatAgents {

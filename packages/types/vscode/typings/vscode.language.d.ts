@@ -2090,6 +2090,11 @@ declare module 'vscode' {
      * to filter documents to a [workspace folder](#WorkspaceFolder).
      */
     pattern?: GlobPattern;
+
+    /**
+     * notebook type, like `jupyter-notebook`
+     */
+    notebookType?: string;
   }
 
   /**

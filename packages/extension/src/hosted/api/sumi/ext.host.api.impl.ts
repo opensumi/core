@@ -1,8 +1,8 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IReporter, REPORT_HOST, ReporterService } from '@opensumi/ide-core-common';
+import { IReporter, REPORT_HOST, ReporterService, isFunction } from '@opensumi/ide-core-common';
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
-import { ExtHostSumiAPIIdentifier } from '../../../common/sumi';
+import { ExtHostSumiAPIIdentifier, SumiApiExtenders } from '../../../common/sumi';
 import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
 
@@ -21,6 +21,7 @@ export function createAPIFactory(
   extensionService: IExtensionHostService | IExtensionWorkerHost,
   type: string,
   reporterEmitter: IReporter,
+  sumiApiExtenders: SumiApiExtenders = {},
 ) {
   if (type === 'worker') {
     rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
@@ -58,6 +59,20 @@ export function createAPIFactory(
     new ExtHostChatAgents(rpcProtocol),
   ) as ExtHostChatAgents;
 
+  const externalSumiApis = Object.keys(sumiApiExtenders).reduce((acc, key) => {
+    const SumiApiExtender = sumiApiExtenders[key];
+    const extender = new SumiApiExtender(rpcProtocol);
+    let rpcService;
+    // register external api rpc protocol
+    if (isFunction(extender.createRPCService)) {
+      const [identifier, service] = extender.createRPCService();
+      rpcService = service;
+      rpcProtocol.set(identifier, service);
+    }
+    acc[key] = extender.createApiFactory(rpcService);
+    return acc;
+  }, {});
+
   return (extension: IExtensionDescription) => {
     const reporter = new ReporterService(reporterEmitter, {
       extensionId: extension.extensionId,
@@ -75,6 +90,7 @@ export function createAPIFactory(
       commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
       toolbar: createToolbarAPIFactory(extension, extHostToolbar),
       chat: createChatApiFactory(extension, extHostChatAgents),
+      ...externalSumiApis,
     };
   };
 }

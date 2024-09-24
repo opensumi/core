@@ -1,10 +1,12 @@
 import assert from 'assert';
 import { ChildProcess, SpawnOptions, fork, spawn } from 'child_process';
 import net from 'net';
+import { EventEmitter } from 'node:events';
+import stream from 'stream';
 
 import { DebugAdapterForkExecutable, DebugStreamConnection } from '@opensumi/ide-debug';
 
-import { CustomChildProcess, CustomChildProcessModule } from '../../../ext.process-base';
+import { CustomChildProcess, CustomChildProcessModule } from '../../../../common/ext.process';
 
 import { DirectDebugAdapter } from './abstract-debug-adapter-session';
 
@@ -82,17 +84,99 @@ export function connectDebugAdapter(server: vscode.DebugAdapterServer): DebugStr
 }
 
 /**
+ * Custom MessageReader to parse DAP messages from the input stream
+ */
+class MessageReader extends EventEmitter {
+  private contentLength: number = -1;
+  private buffer: Buffer = Buffer.alloc(0);
+
+  constructor(private input: stream.Readable) {
+    super();
+    input.on('data', this.onData.bind(this));
+  }
+
+  private onData(data: Buffer) {
+    this.buffer = Buffer.concat([this.buffer, data]);
+
+    while (true) {
+      if (this.contentLength === -1) {
+        const headerEnd = this.buffer.indexOf('\r\n\r\n');
+        if (headerEnd === -1) {
+          break; // Not enough data
+        }
+        const header = this.buffer.slice(0, headerEnd).toString();
+        const match = header.match(/Content-Length: (\d+)/);
+        if (match) {
+          this.contentLength = parseInt(match[1], 10);
+          this.buffer = this.buffer.slice(headerEnd + 4);
+        } else {
+          this.emit('error', new Error('Invalid header'));
+          return;
+        }
+      }
+
+      if (this.buffer.length >= this.contentLength) {
+        const messageBytes = this.buffer.slice(0, this.contentLength);
+        this.buffer = this.buffer.slice(this.contentLength);
+        this.contentLength = -1;
+
+        const message = JSON.parse(messageBytes.toString());
+        this.emit('message', message);
+      } else {
+        break; // Not enough data
+      }
+    }
+  }
+}
+
+/**
+ * Custom MessageWriter to serialize DAP messages to the output stream
+ */
+class MessageWriter {
+  constructor(private output: stream.Writable) {}
+
+  write(message: any) {
+    const json = message;
+    const contentLength = Buffer.byteLength(message, 'utf8');
+    const header = `Content-Length: ${contentLength}\r\n\r\n`;
+    this.output.write(header + json);
+  }
+}
+
+/**
  * 直接调用插件自己实现的调试适配器
  * 这里通过 server 服务来拉起适配器
+ * Modify directDebugAdapter to directly interface with DebugStreamConnection
  */
 export function directDebugAdapter(id: string, da: vscode.DebugAdapter): DebugStreamConnection {
-  const server = net
-    .createServer(() => {
-      const session = new DirectDebugAdapter(id, da);
-      session.start();
-    })
-    .listen(0);
-  return connectDebugAdapter({ port: (server.address() as net.AddressInfo).port });
+  const input = new stream.PassThrough();
+  const output = new stream.PassThrough();
+
+  const adapter = new DirectDebugAdapter(id, da);
+  adapter.start();
+
+  const reader = new MessageReader(input);
+  const writer = new MessageWriter(output);
+
+  // Pass messages from the input stream to the adapter
+  reader.on('message', (message) => {
+    adapter.sendMessage(message);
+  });
+
+  // Send messages from the adapter to the output stream
+  adapter.onMessageReceived((message) => {
+    writer.write(message);
+  });
+
+  return {
+    input,
+    output,
+    dispose: () => {
+      input.destroy();
+      output.destroy();
+      adapter.dispose();
+    },
+  };
 }
 
 /**

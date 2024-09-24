@@ -36,3 +36,20 @@ export const designInlineDiffDiscardPartialEdit = registerColor(
   '',
   true,
 );
+
+/**
+ * multi-line edits colors
+ */
+export const designMultiLineEditsDeletionsBackground = registerColor(
+  'aiNative.multiLineEditsDeletionsBackground',
+  { dark: defaultRemoveColor, light: defaultRemoveColor, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
+export const designMultiLineEditsAdditionsBackground = registerColor(
+  'aiNative.multiLineEditsAdditionsBackground',
+  { dark: defaultInsertColor, light: defaultInsertColor, hcDark: null, hcLight: null },
+  '',
+  true,
+);

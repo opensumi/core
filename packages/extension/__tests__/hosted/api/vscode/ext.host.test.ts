@@ -10,6 +10,7 @@ import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread
 import { MainThreadStorage } from '../../../../__mocks__/api/mathread.storage';
 import { mockExtensionProps, mockExtensionProps2 } from '../../../../__mocks__/extensions';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
+import { ExtHostAppConfig } from '../../../../src/common/ext.process';
 import { ExtHostAPIIdentifier, IExtHostLocalization } from '../../../../src/common/vscode';
 import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
 
@@ -23,7 +24,7 @@ describe('Extension process test', () => {
       injector = createBrowserInjector([]);
       injector.addProviders(
         {
-          token: AppConfig,
+          token: ExtHostAppConfig,
           useValue: {
             builtinCommands: [
               {

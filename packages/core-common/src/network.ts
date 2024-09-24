@@ -56,4 +56,6 @@ export namespace Schemes {
    * Scheme used to loading the monaco utilities.
    */
   export const monaco = 'monaco';
+
+  export const notebookCell = 'vscode-notebook-cell';
 }

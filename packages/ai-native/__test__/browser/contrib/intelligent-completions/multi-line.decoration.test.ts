@@ -6,7 +6,7 @@ import {
 import { ICodeEditor, IPosition } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
-import { IDiffChangeResult } from '../../../../lib/browser/contrib/intelligent-completions/diff-computer';
+import { IMultiLineDiffChangeResult } from '../../../../src/browser/contrib/intelligent-completions/diff-computer';
 import { EnhanceDecorationsCollection } from '../../../../src/browser/model/enhanceDecorationsCollection';
 
 describe('MultiLineDecorationModel', () => {
@@ -43,7 +43,7 @@ greet(person); // Output: "Hello, OpenSumi!"`);
   });
 
   it('should split diff changes correctly', () => {
-    const lines: IDiffChangeResult[] = [
+    const lines: IMultiLineDiffChangeResult[] = [
       { value: 'line1\nline2', added: true, removed: false },
       { value: 'line3', added: false, removed: true },
     ];
@@ -81,7 +81,7 @@ greet(person); // Output: "Hello, OpenSumi!"`);
   });
 
   it('should apply inline decorations correctly', () => {
-    const changes: IDiffChangeResult[] = [
+    const changes: IMultiLineDiffChangeResult[] = [
       { value: 'const person: Person = {\n  name: "' },
       { value: 'Hello ', added: true, removed: undefined },
       { value: 'OpenSumi",\n  age: 18' },
@@ -96,20 +96,13 @@ greet(person); // Output: "Hello, OpenSumi!"`);
       cursorPosition,
     );
 
-    expect(result).toEqual([
-      {
-        lineNumber: 8,
-        column: 10,
-        newValue: '  name: "Hello ',
-        oldValue: '  name: "',
-      },
-      {
-        lineNumber: 9,
-        column: 10,
-        newValue: '  age: 18 + 1',
-        oldValue: '  age: 18',
-      },
-    ]);
+    expect(result).toEqual({
+      fullLineMods: { 10: [], 6: [], 7: [], 8: [], 9: [] },
+      inlineMods: [
+        { column: 10, lineNumber: 8, newValue: '  name: "Hello ', oldValue: '  name: "' },
+        { column: 10, lineNumber: 9, newValue: '  age: 18 + 1', oldValue: '  age: 18' },
+      ],
+    });
   });
 
   it('should update line modification decorations correctly', () => {

@@ -405,11 +405,11 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
       const uriString = event.uri.toString();
 
-      const docModel = this.documentModelManager.getModelReference(event.uri);
-      if (!docModel) {
+      const docModelRef = this.documentModelManager.getModelReference(event.uri);
+      if (!docModelRef) {
         return;
       }
-      const resultData = this.searchFromDocModel(searchOptions, docModel.instance, this.searchValue, rootDirs);
+      const resultData = this.searchFromDocModel(searchOptions, docModelRef.instance, this.searchValue, rootDirs);
 
       const oldResults = this.searchResults.get(uriString);
 
@@ -435,7 +435,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       }
 
       this.onDidChangeEmitter.fire();
-      docModel.dispose();
+      docModelRef.dispose();
     });
   }
 

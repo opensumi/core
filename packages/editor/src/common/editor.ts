@@ -15,24 +15,81 @@ import {
   MaybeNull,
   URI,
 } from '@opensumi/ide-core-common';
-
-// eslint-disable-next-line import/no-restricted-paths
-import { IDocModelUpdateOptions } from '../browser/doc-model/types';
+import { IDimension } from '@opensumi/ide-monaco';
 
 import { IResource } from './resource';
+import { IDocModelUpdateOptions } from './types';
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { EOL, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-// eslint-disable-next-line import/no-restricted-paths
-import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import type { ITextModel, ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type {
+  EOL,
+  IEditorOptions,
+  ICodeEditor as IMonacoCodeEditor,
+  ITextModel,
+  ITextModelUpdateOptions,
+} from '@opensumi/ide-monaco';
 
 export { ShowLightbulbIconMode } from '@opensumi/ide-monaco';
+
+export interface IEditorDocumentDescription {
+  /**
+   * 文档URI
+   */
+  readonly uri: URI;
+
+  /**
+   * A unique identifier associated with this model.
+   */
+  readonly id: string;
+
+  /**
+   * 编码
+   */
+  readonly encoding: string;
+
+  /**
+   * 行末结束
+   */
+  readonly eol: EOL;
+
+  /**
+   * 语言Id
+   */
+  readonly languageId: string;
+
+  /**
+   * 是否被修改过
+   */
+  readonly dirty: boolean;
+
+  /**
+   * 能否修改
+   */
+  readonly readonly: boolean;
+
+  /**
+   * 能否保存
+   */
+  readonly savable: boolean;
+
+  /**
+   * 是否永远都显示 dirty
+   */
+  readonly alwaysDirty: boolean;
+
+  /**
+   * 即便是 dirty 也要被 dispose
+   */
+  readonly disposeEvenDirty: boolean;
+
+  /**
+   * 是否关闭自动保存功能
+   */
+  readonly closeAutoSave: boolean;
+}
 
 /**
  * editorDocumentModel is a wrapped concept for monaco's textModel
  */
-
 export interface IEditorDocumentModel extends IDisposable {
   /**
    * 文档URI
@@ -119,7 +176,8 @@ export interface IEditorDocumentModel extends IDisposable {
   updateEncoding(encoding: string): Promise<void>;
 
   // setEncoding(encoding: string, preferredEncoding, mode: EncodingMode): Promise<void>;
-  updateOptions(options: IDocModelUpdateOptions);
+
+  updateOptions(options: IDocModelUpdateOptions): void;
 }
 
 export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
@@ -149,7 +207,7 @@ export enum EditorType {
 }
 
 /**
- * 一个IEditor代表了一个最小的编辑器单元，可以是 CodeEditor 中的一个，也可以是 DiffEditor 中的两个
+ * 一个 IEditor 代表了一个最小的编辑器单元，可以是 CodeEditor 中的一个，也可以是 DiffEditor 中的两个
  */
 export interface IEditor {
   /**
@@ -222,7 +280,7 @@ export interface IUndoStopOptions {
 }
 
 export interface ICodeEditor extends IEditor, IDisposable {
-  layout(): void;
+  layout(dimension?: IDimension, postponeRendering?: boolean): void;
 
   /**
    * 打开一个 document
@@ -259,6 +317,8 @@ export interface IDiffEditor extends IDisposable {
   getLineChanges(): ILineChange[] | null;
 
   onRefOpen: Event<IEditorDocumentModelRef>;
+
+  disposeModel(originalUri: string, modifiedUri: string): void;
 }
 
 @Injectable()
@@ -636,6 +696,8 @@ export interface IResourceOpenOptions {
    * 当关闭时指定 force 参数，用来跳过 shouldClose 等逻辑
    */
   forceClose?: boolean;
+
+  supportsRevive?: boolean;
 }
 
 export interface IResourceOpenResult {

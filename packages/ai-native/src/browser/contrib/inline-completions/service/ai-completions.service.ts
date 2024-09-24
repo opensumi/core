@@ -2,6 +2,8 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
+  ActionSourceEnum,
+  ActionTypeEnum,
   CancellationTokenSource,
   Disposable,
   Emitter,
@@ -13,10 +15,12 @@ import {
   IntelligentCompletionsRegistryToken,
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
 import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
+import { IntelligentCompletionsController } from '../../intelligent-completions/intelligent-completions.controller';
 import { IntelligentCompletionsRegistry } from '../../intelligent-completions/intelligent-completions.feature.registry';
-import { IntelligentCompletionsHandler } from '../../intelligent-completions/intelligent-completions.handler';
 
 @Injectable()
 export class AICompletionsService extends Disposable {
@@ -34,8 +38,8 @@ export class AICompletionsService extends Disposable {
   @Autowired(IntelligentCompletionsRegistryToken)
   private readonly intelligentCompletionsRegistry: IntelligentCompletionsRegistry;
 
-  @Autowired(IntelligentCompletionsHandler)
-  private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
   private readonly _onVisibleCompletion = new Emitter<boolean>();
   public readonly onVisibleCompletion: Event<boolean> = this._onVisibleCompletion.event;
@@ -51,6 +55,8 @@ export class AICompletionsService extends Disposable {
   private lastRelationId: string;
   private lastRenderTime: number;
   private lastCompletionUseTime: number;
+  // 补全内容
+  private lastCompletionContent: string;
 
   protected validCompletionThreshold = 750;
 
@@ -69,11 +75,15 @@ export class AICompletionsService extends Disposable {
   public async complete(data: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
     this.isDefaultCompletionModel = true;
     const completionStart = Date.now();
+    const editor = this.workbenchEditorService.currentCodeEditor;
+    if (!editor) {
+      return;
+    }
 
     const provider = this.intelligentCompletionsRegistry.getProvider();
-
     if (provider) {
-      return this.intelligentCompletionsHandler.fetchProvider(data);
+      const intelligentCompletionsHandler = IntelligentCompletionsController.get(editor.monacoEditor);
+      return intelligentCompletionsHandler?.fetchProvider(data);
     }
 
     // 兼容旧的 requestCompletion 接口
@@ -99,16 +109,18 @@ export class AICompletionsService extends Disposable {
   }
 
   public async report(data: IAIReportCompletionOption) {
-    if (!this.aiBackService.reportCompletion) {
-      return;
-    }
-
     const { relationId, accept } = data;
 
     data.renderingTime = Date.now() - this.lastRenderTime;
     data.completionUseTime = this.lastCompletionUseTime;
-    this.aiBackService.reportCompletion(data);
-    this.reporterEnd(relationId, { success: true, isReceive: accept, renderingTime: data.renderingTime });
+    this.reporterEnd(relationId, {
+      success: true,
+      isReceive: accept,
+      renderingTime: data.renderingTime,
+      code: data.code,
+      actionSource: ActionSourceEnum.Completion,
+      actionType: ActionTypeEnum.Completion,
+    });
 
     this._isVisibleCompletion = false;
   }
@@ -118,13 +130,21 @@ export class AICompletionsService extends Disposable {
       ...data,
       isValid: typeof data.renderingTime === 'number' ? data.renderingTime > this.validCompletionThreshold : false,
     };
-    this.aiReporter.end(relationId, reportData);
+    // 排除掉无效数据，避免多余数据上报
+    if (reportData.isValid) {
+      this.aiReporter.end(relationId, reportData);
+    }
   }
 
   public setVisibleCompletion(visible: boolean) {
     // 如果之前是 true，现在是 false，说明并没有进行采纳
     if (this._isVisibleCompletion === true && visible === false) {
-      this.report({ sessionId: this.lastSessionId, accept: false, relationId: this.lastRelationId });
+      this.report({
+        sessionId: this.lastSessionId,
+        accept: false,
+        relationId: this.lastRelationId,
+        code: this.lastCompletionContent,
+      });
     }
 
     this._isVisibleCompletion = visible;
@@ -142,6 +162,10 @@ export class AICompletionsService extends Disposable {
 
   public setLastRelationId(relationId: string) {
     this.lastRelationId = relationId;
+  }
+
+  public setLastCompletionContent(content: string) {
+    this.lastCompletionContent = content;
   }
 
   public async cancelRequest() {

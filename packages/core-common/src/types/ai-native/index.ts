@@ -33,6 +33,10 @@ export interface IAINativeCapabilities {
    */
   supportsRenameSuggestions?: boolean;
   /**
+   * Use ai to provide fix error or warning
+   */
+  supportsProblemFix?: boolean;
+  /**
    * Use ai terminal detection capabilities
    */
   supportsTerminalDetection?: boolean;
@@ -56,6 +60,7 @@ export interface IDesignLayoutConfig {
    * set menubar logo
    */
   menubarLogo?: string;
+  supportExternalChatPanel?: boolean;
 }
 
 export interface IAINativeConfig {
@@ -228,6 +233,7 @@ export const ChatFeatureRegistryToken = Symbol('ChatFeatureRegistryToken');
 export const ChatRenderRegistryToken = Symbol('ChatRenderRegistryToken');
 export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
 export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');
+export const ProblemFixRegistryToken = Symbol('ProblemFixRegistryToken');
 export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 export const IntelligentCompletionsRegistryToken = Symbol('IntelligentCompletionsRegistryToken');
 

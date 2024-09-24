@@ -31,6 +31,7 @@ import { ExtHostFileSystemInfo } from '../vscode/ext.host.file-system-info';
 import { ExtHostLanguages, createLanguagesApiFactory } from '../vscode/ext.host.language';
 import { ExtHostLocalization, createLocalizationApiFactory } from '../vscode/ext.host.localization';
 import { ExtHostMessage } from '../vscode/ext.host.message';
+import { ExtensionNotebookDocumentManagerImpl } from '../vscode/ext.host.notebook';
 import { ExtHostOutput } from '../vscode/ext.host.output';
 import { ExtHostPreference } from '../vscode/ext.host.preference';
 import { ExtHostProgress } from '../vscode/ext.host.progress';
@@ -60,6 +61,11 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostDocuments,
     new ExtensionDocumentDataManagerImpl(rpcProtocol),
   );
+  const extHostNotebook = rpcProtocol.set(
+    ExtHostAPIIdentifier.ExtHostNotebook,
+    new ExtensionNotebookDocumentManagerImpl(rpcProtocol, extHostDocs),
+  );
+
   const extHostCommands = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostCommands,
     new ExtHostCommands(rpcProtocol),
@@ -184,12 +190,13 @@ export function createAPIFactory(
     // VS Code 纯前端插件 API
     // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
     env: createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),
-    languages: createLanguagesApiFactory(extHostLanguages, extension),
+    languages: createLanguagesApiFactory(extHostLanguages, extHostNotebook, extension),
     extensions: createExtensionsApiFactory(extensionService),
     workspace: createWorkspaceApiFactory(
       extHostWorkspace,
       extHostPreference,
       extHostDocs,
+      extHostNotebook,
       extHostFileSystem,
       extHostFileSystemEvent,
       extHostTasks,

@@ -13,6 +13,7 @@ import {
   RecentFilesManager,
   ResizeEvent,
   ServiceNames,
+  fastdom,
   getSlotLocation,
   toMarkdown,
 } from '@opensumi/ide-core-browser';
@@ -41,9 +42,9 @@ import {
   StorageProvider,
   URI,
   WithEventBus,
-  debounce,
   formatLocalize,
   getDebugLogger,
+  isDefined,
   isUndefinedOrNull,
   localize,
   makeRandomHexString,
@@ -160,8 +161,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private initializing: Promise<any>;
 
   public editorContextKeyService: IScopedContextKeyService;
-
-  private _domNode: HTMLElement;
 
   @Autowired(IOpenerService)
   openner: IOpenerService;
@@ -435,10 +434,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     // contextKeys
     const getLanguageFromModel = (uri: URI) => {
       let result: string | null = null;
-      const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
+      const modelRef = this.documentModelManager.getModelDescription(uri, 'resourceContextKey');
       if (modelRef) {
-        result = modelRef.instance.languageId;
-        modelRef.dispose();
+        result = modelRef.languageId;
       }
       return result;
     };
@@ -474,7 +472,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   onDomCreated(domNode: HTMLElement) {
-    this._domNode = domNode;
     if (this.editorContextKeyService) {
       this.editorContextKeyService.attachToDomNode(domNode);
     }
@@ -717,12 +714,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 当前打开的所有resource
    */
-  // @observable.shallow
   resources: IResource[] = [];
 
   resourceStatus: Map<IResource, Promise<void>> = new Map();
 
-  // @observable.ref
   _currentResource: IResource | null;
 
   _currentOpenType: IEditorOpenType | null;
@@ -764,10 +759,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private _prevDomHeight = 0;
   private _prevDomWidth = 0;
 
-  private _codeEditorPendingLayout = false;
-  private _diffEditorPendingLayout = false;
-  private _mergeEditorPendingLayout = false;
-
   // 当前为EditorComponent，且monaco光标变化时触发
   private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
   public onCurrentEditorCursorChange = this._onCurrentEditorCursorChange.event;
@@ -796,11 +787,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string, public readonly groupId: number) {
     super();
-    this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
-      if (e.payload.slotLocation === getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)) {
+    this.eventBus.onDirective(
+      ResizeEvent.createDirective(getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)),
+      () => {
         this.doLayoutEditors();
-      }
-    });
+      },
+    );
     this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
       if (e.payload.gridId === this.grid.uid) {
         this.doLayoutEditors();
@@ -851,76 +843,64 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   layoutEditors() {
-    if (this._domNode) {
-      const currentWidth = this._domNode.offsetWidth;
-      const currentHeight = this._domNode.offsetHeight;
-      if (currentWidth !== this._prevDomWidth || currentHeight !== this._prevDomHeight) {
-        this.doLayoutEditors();
+    fastdom.measure(() => {
+      if (this._domNode) {
+        const currentWidth = this._domNode.offsetWidth;
+        const currentHeight = this._domNode.offsetHeight;
+        if (currentWidth !== this._prevDomWidth || currentHeight !== this._prevDomHeight) {
+          this.doLayoutEditors();
+        }
+        this._prevDomWidth = currentWidth;
+        this._prevDomHeight = currentHeight;
       }
-      this._prevDomWidth = currentWidth;
-      this._prevDomHeight = currentHeight;
+    });
+  }
+
+  private _layoutEditorWorker() {
+    if (!this.currentOpenType) {
+      return;
+    }
+
+    switch (this.currentOpenType.type) {
+      case EditorOpenType.code:
+        if (this.codeEditor) {
+          this.codeEditor.layout();
+        }
+        break;
+      case EditorOpenType.diff:
+        if (this.diffEditor) {
+          this.diffEditor.layout();
+        }
+        break;
+      default:
+        break;
     }
   }
 
-  @debounce(100)
+  protected _measure: IDisposable | undefined;
   doLayoutEditors() {
-    if (this.codeEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
-        this.codeEditor.layout();
-        this._codeEditorPendingLayout = false;
-      } else {
-        this._codeEditorPendingLayout = true;
-      }
+    if (this._measure) {
+      this._measure.dispose();
     }
-    if (this.diffEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
-        this.diffEditor.layout();
-        this._diffEditorPendingLayout = false;
-      } else {
-        this._diffEditorPendingLayout = true;
-      }
-    }
-    if (this.mergeEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.mergeEditor) {
-        // this.mergeEditor.layout();
-        this._mergeEditorPendingLayout = false;
-      } else {
-        this._mergeEditorPendingLayout = true;
-      }
-    }
+    this._measure = fastdom.mutate(() => {
+      this._layoutEditorWorker();
+    });
   }
 
   setContextKeys() {
     if (!this._resourceContext) {
       const getLanguageFromModel = (uri: URI) => {
         let result: string | null = null;
-        const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
+        const modelRef = this.documentModelManager.getModelDescription(uri, 'resourceContextKey');
         if (modelRef) {
-          if (modelRef) {
-            result = modelRef.instance.languageId;
-          }
-          modelRef.dispose();
+          result = modelRef.languageId;
         }
         return result;
       };
-      this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => {
-        const res = getLanguageFromModel(uri);
-        if (res) {
-          return res;
-        } else {
-          return getLanguageFromModel(uri);
-        }
-      });
+      this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => getLanguageFromModel(uri));
       this._diffResourceContextKey = new ResourceContextKey(
         this.contextKeyService,
-        (uri: URI) => {
-          const res = getLanguageFromModel(uri);
-          if (res) {
-            return res;
-          } else {
-            return getLanguageFromModel(uri);
-          }
-        },
+        (uri: URI) => getLanguageFromModel(uri),
         'diffResource',
       );
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
@@ -1016,6 +996,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  resetOpenType() {
+    this._currentOpenType = null;
+  }
+
   @OnEvent(ResourceOpenTypeChangedEvent)
   oResourceOpenTypeChangedEvent(e: ResourceOpenTypeChangedEvent) {
     const uri = e.payload;
@@ -1023,7 +1007,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.cachedResourcesOpenTypes.delete(uri.toString());
     }
     if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
-      this._currentOpenType = null;
+      this.resetOpenType();
+
       this.notifyBodyChanged();
       this.displayResourceComponent(this.currentResource, {});
     }
@@ -1130,8 +1115,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       },
     );
     setTimeout(() => {
-      this.codeEditor.layout();
+      this.doLayoutEditors();
     });
+    this.addDispose(
+      this.codeEditor.onRefOpen(() => {
+        this.doLayoutEditors();
+      }),
+    );
     this.toDispose.push(
       this.codeEditor.onCursorPositionChanged((e) => {
         this._onCurrentEditorCursorChange.fire(e);
@@ -1209,7 +1199,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       },
     );
     setTimeout(() => {
-      this.diffEditor.layout();
+      this.doLayoutEditors();
+    });
+    this.diffEditor.onRefOpen(() => {
+      this.doLayoutEditors();
     });
 
     this.addDiffEditorEventListeners(this.diffEditor.originalEditor, 'original');
@@ -1414,6 +1407,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (options && options.label) {
             resource.name = options.label;
           }
+          if (options && isDefined(options.supportsRevive)) {
+            resource.supportsRevive = options.supportsRevive;
+          }
           let replaceResource: IResource | null = null;
           if (options && options.index !== undefined && options.index < this.resources.length) {
             replaceResource = this.resources[options.index];
@@ -1572,6 +1568,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const query = uri.getParsedQuery();
       this.doDisposeDocRef(new URI(query.original));
       this.doDisposeDocRef(new URI(query.modified));
+      this.diffEditor.disposeModel(query.original, query.modified);
     } else if (uri.scheme === 'mergeEditor') {
       this.mergeEditor && this.mergeEditor.dispose();
     } else {
@@ -1818,14 +1815,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.resolveTabChanged(_resource, this.currentResource);
       this._currentOpenType = activeOpenType;
       this.notifyBodyChanged();
-
-      if (
-        (!this._codeEditorPendingLayout && activeOpenType.type === EditorOpenType.code) ||
-        (!this._diffEditorPendingLayout && activeOpenType.type === EditorOpenType.diff) ||
-        (!this._mergeEditorPendingLayout && activeOpenType.type === EditorOpenType.mergeEditor)
-      ) {
-        this.doLayoutEditors();
-      }
+      this.doLayoutEditors();
 
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
     }
@@ -1977,7 +1967,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const oldResource = this._currentResource;
 
     this._currentResource = null;
-    this._currentOpenType = null;
+
+    this.resetOpenType();
     this.notifyTabChanged();
     this.notifyBodyChanged();
     this._currentOrPreviousFocusedEditor = null;
@@ -2305,9 +2296,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     // 否则使用 document 进行保存 (如果有)
     const docRef = this.documentModelManager.getModelReference(resource.uri);
     if (docRef) {
-      if (docRef.instance.dirty) {
-        await docRef.instance.save(undefined, reason);
-      }
+      await docRef.instance.save(undefined, reason);
       docRef.dispose();
     }
   }
@@ -2340,11 +2329,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   hasDirty(): boolean {
     for (const r of this.resources) {
-      const docRef = this.documentModelManager.getModelReference(r.uri);
+      const docRef = this.documentModelManager.getModelDescription(r.uri);
       if (docRef) {
-        const isDirty = docRef.instance.dirty;
-        docRef.dispose();
-        if (isDirty) {
+        if (docRef.dirty) {
           return true;
         }
       }
@@ -2358,15 +2345,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   calcDirtyCount(countedUris: Set<string> = new Set<string>()): number {
     let count = 0;
     for (const r of this.resources) {
-      const docRef = this.documentModelManager.getModelReference(r.uri, 'calc-dirty-count');
+      const docRef = this.documentModelManager.getModelDescription(r.uri, 'calc-dirty-count');
       if (countedUris.has(r.uri.toString())) {
         continue;
       }
       countedUris.add(r.uri.toString());
       if (docRef) {
-        const isDirty = docRef.instance.dirty;
-        docRef.dispose();
-        if (isDirty) {
+        if (docRef.dirty) {
           count += 1;
         }
       }

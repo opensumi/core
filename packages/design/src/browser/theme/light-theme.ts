@@ -562,7 +562,7 @@ export default {
     'editorGroup.dropBackground': '#5F656B40',
     'editorGroup.emptyBackground': '#ffffff',
     'editorGroupHeader.tabsBackground': '#DDE8F4',
-    'editorSuggestWidget.selectedBackground': '#1A66AC',
+    'editorSuggestWidget.selectedBackground': '#6eb6fa40',
     errorForeground: '#D21F28',
     focusBorder: '#151b2129',
     foreground: '#151b21d9',

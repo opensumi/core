@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-logs",
-  "version": "3.2.4",
+  "version": "3.3.3",
   "files": [
     "lib",
     "src"
@@ -20,7 +20,7 @@
     "@opensumi/ide-connection": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
-    "compressing": "^1.6.2",
+    "compressing": "^1.10.0",
     "spdlog": "^0.9.0"
   },
   "devDependencies": {

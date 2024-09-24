@@ -59,10 +59,19 @@
     align-items: center;
     white-space: nowrap;
     padding: 0 10px;
+    .item_action {
+      height: 22px;
+      line-height: 22px;
+      display: none;
+      &:hover {
+        color: var(--textLink-activeForeground);
+      }
+    }
     &:hover {
       background: var(--kt-tree-hoverBackground);
       .item_action {
         display: block;
+        line-height: 22px;
         &:hover {
           transform: scale(1.1);
         }
@@ -97,15 +106,6 @@
   .item_action {
     color: var(--textLink-foreground);
     margin-left: 6px;
-  }
-
-  .item_action {
-    display: none;
-    height: 22px;
-    line-height: 22px;
-    &:hover {
-      color: var(--textLink-activeForeground);
-    }
   }
 
   .item_label_name,

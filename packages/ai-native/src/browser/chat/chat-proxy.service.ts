@@ -100,6 +100,7 @@ export class ChatProxyService extends Disposable {
               this.aiReporter.end(request.sessionId + '_' + request.requestId, {
                 message: error.message,
                 success: false,
+                command,
               });
             },
           });

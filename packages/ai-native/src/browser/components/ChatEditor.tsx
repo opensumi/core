@@ -5,7 +5,14 @@ import Highlight from 'react-highlight';
 import { IClipboardService, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
 import { Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { ChatFeatureRegistryToken, IAIReporter, localize, runWhenIdle } from '@opensumi/ide-core-common';
+import {
+  ActionSourceEnum,
+  ActionTypeEnum,
+  ChatFeatureRegistryToken,
+  IAIReporter,
+  localize,
+  runWhenIdle,
+} from '@opensumi/ide-core-common';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';
@@ -18,7 +25,15 @@ import { highLightLanguageSupport } from './highLight';
 
 import './highlightTheme.less';
 
-export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
+interface Props {
+  input: string;
+  relationId: string;
+  language?: string;
+  agentId?: string;
+  command?: string;
+}
+export const CodeEditorWithHighlight = (props: Props) => {
+  const { input, language, relationId, agentId, command } = props;
   const ref = React.useRef<HTMLDivElement | null>(null);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);
@@ -50,7 +65,15 @@ export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
   const handleCopy = useCallback(async () => {
     setIsCoping(true);
     await clipboardService.writeText(input);
-    aiReporter.end(relationId, { copy: true });
+    aiReporter.end(relationId, {
+      copy: true,
+      code: input,
+      language,
+      agentId,
+      command,
+      actionSource: ActionSourceEnum.Chat,
+      actionType: ActionTypeEnum.ChatCopyCode,
+    });
     runWhenIdle(() => {
       setIsCoping(false);
     }, 1000);
@@ -62,7 +85,15 @@ export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
       const selection = editor.getSelection();
       if (selection) {
         insertSnippetWithMonacoEditor(editor, input, [selection], { undoStopBefore: false, undoStopAfter: false });
-        aiReporter.end(relationId, { insert: true });
+        aiReporter.end(relationId, {
+          insert: true,
+          code: input,
+          language,
+          agentId,
+          command,
+          actionSource: ActionSourceEnum.Chat,
+          actionType: ActionTypeEnum.ChatCopyCode,
+        });
       }
     }
   }, [monacoCommandRegistry]);
@@ -103,10 +134,14 @@ const CodeBlock = ({
   content = '',
   relationId,
   renderText,
+  agentId = '',
+  command = '',
 }: {
   content?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
+  agentId?: string;
+  command?: string;
 }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
@@ -121,7 +156,13 @@ const CodeBlock = ({
     return (
       <div className={styles.code_block}>
         <div className={styles.code_language}>{capitalize(heighLightLang)}</div>
-        <CodeEditorWithHighlight input={content} language={language} relationId={relationId} />
+        <CodeEditorWithHighlight
+          input={content}
+          language={language}
+          relationId={relationId}
+          agentId={agentId}
+          command={command}
+        />
       </div>
     );
   };
@@ -171,14 +212,16 @@ export const CodeBlockWrapper = ({
   text,
   renderText,
   relationId,
+  agentId,
 }: {
   text?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
+  agentId?: string;
 }) => (
   <div className={styles.ai_chat_code_wrapper}>
     <div className={styles.render_text}>
-      <CodeBlock content={text} renderText={renderText} relationId={relationId} />
+      <CodeBlock content={text} renderText={renderText} relationId={relationId} agentId={agentId} />
     </div>
   </div>
 );
@@ -225,7 +268,7 @@ export const CodeBlockWrapperInput = ({
           </div>
         )}
         {command && <div className={styles.tag}>/ {command}</div>}
-        <CodeBlock content={txt} relationId={relationId} />
+        <CodeBlock content={txt} relationId={relationId} agentId={agentId} command={command} />
       </div>
     </div>
   );

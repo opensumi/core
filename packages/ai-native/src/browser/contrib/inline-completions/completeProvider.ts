@@ -77,9 +77,11 @@ export class AIInlineCompletionsProvider extends WithEventBus {
         },
       ),
     );
+
+    this.mount();
   }
 
-  public mountEditor(editor: IEditor): void {
+  public mount(): void {
     this.isManual = false;
     this.isDelEvent = false;
     this.reqStack = new ReqStack();

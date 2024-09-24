@@ -23,6 +23,11 @@ export interface ExtensionConnectOption {
   host?: string;
 }
 
+export interface ExtHostSpawnOptions {
+  env?: Record<string, string>;
+  execArgv?: string[];
+}
+
 /**
  * 插件 browser 层的样式表配置项
  */

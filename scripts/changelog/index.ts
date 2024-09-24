@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+import chalk from 'chalk';
+
 import { argv } from '../../packages/core-common/src/node/cli';
 
 import { run } from './run';
-import chalk from 'chalk';
 
 if (!process.env.GITHUB_TOKEN) {
   console.log(chalk.red('Please export your github personal access token as env `GITHUB_TOKEN`'));

@@ -1,4 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { AI_CHAT_VIEW_ID } from '@opensumi/ide-ai-native';
 import { DisposableCollection, LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService, IconType } from '@opensumi/ide-theme';
@@ -6,7 +7,7 @@ import { IIconService, IconType } from '@opensumi/ide-theme';
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
-type LocationKey = 'panel' | 'activitybar';
+type LocationKey = 'panel' | 'activitybar' | 'ai-chat';
 
 export type ViewContainersContribution = {
   [key in LocationKey]: ViewContainerItem;
@@ -35,11 +36,17 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  private convertLocationToSide(location: 'activitybar' | 'panel'): 'left' | 'bottom' {
-    if (location === 'activitybar') {
-      return 'left';
+  private convertLocationToSide(location: LocationKey): 'left' | 'bottom' | typeof AI_CHAT_VIEW_ID {
+    switch (location) {
+      case 'activitybar': {
+        return 'left';
+      }
+      case 'ai-chat': {
+        return AI_CHAT_VIEW_ID;
+      }
+      default:
+        return 'bottom';
     }
-    return 'bottom';
   }
 
   contribute() {
@@ -50,7 +57,8 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
         continue;
       }
       for (const location of Object.keys(contributes)) {
-        const side = this.convertLocationToSide(location as LocationKey);
+        const side: string = this.convertLocationToSide(location as LocationKey);
+
         for (const container of contributes[location]) {
           const handlerId = this.mainlayoutService.collectTabbarComponent(
             [],

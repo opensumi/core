@@ -3,7 +3,16 @@ import { createPortal } from 'react-dom';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, ConfigProvider, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  ConfigProvider,
+  Emitter,
+  Event,
+  MonacoService,
+  Schemes,
+  randomString,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { IDiffEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
@@ -44,6 +53,7 @@ const diffEditorOptions: IDiffEditorOptions = {
 
 interface IDiffWidgetHandler {
   getModifiedModel: () => monaco.editor.ITextModel;
+  getOriginModel: () => monaco.editor.ITextModel;
   layout: () => void;
 }
 
@@ -85,8 +95,24 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     const modelService = StandaloneServices.get(IModelService);
     const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
 
-    const originalModel = modelService.createModel(codeValueInRange, languageSelection);
-    const modifiedModel = modelService.createModel('', languageSelection);
+    const originalModel = modelService.createModel(
+      codeValueInRange,
+      languageSelection,
+      monaco.Uri.from({
+        scheme: Schemes.inMemory,
+        path: 'inline-diff-widget/' + randomString(8),
+      }),
+      true,
+    );
+    const modifiedModel = modelService.createModel(
+      '',
+      languageSelection,
+      monaco.Uri.from({
+        scheme: Schemes.inMemory,
+        path: 'inline-diff-widget/' + randomString(8),
+      }),
+      true,
+    );
 
     diffEditor.setModel({
       original: originalModel,
@@ -107,6 +133,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     if (onReady) {
       onReady({
         getModifiedModel: () => modifiedModel,
+        getOriginModel: () => originalModel,
         layout,
       });
     }
@@ -207,6 +234,10 @@ export class InlineDiffWidget extends ZoneWidget implements IInlineDiffPreviewer
 
   getModifiedModel(): monaco.editor.ITextModel | undefined {
     return this.diffWidgetHandler?.getModifiedModel();
+  }
+
+  getOriginModel(): monaco.editor.ITextModel | undefined {
+    return this.diffWidgetHandler?.getOriginModel();
   }
 
   layout(): void {

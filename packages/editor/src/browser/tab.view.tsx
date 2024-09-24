@@ -26,6 +26,7 @@ import {
   PreferenceService,
   ResizeEvent,
   URI,
+  fastdom,
   getExternalIcon,
   getIcon,
   getSlotLocation,
@@ -184,9 +185,9 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   const scrollToCurrent = useCallback(() => {
-    if (tabContainer.current) {
-      if (group.currentResource) {
-        try {
+    fastdom.measure(() => {
+      try {
+        if (tabContainer.current && group.currentResource) {
           const currentTab = tabContainer.current.querySelector(
             '.' + styles.kt_editor_tab + "[data-uri='" + group.currentResource.uri.toString() + "']",
           );
@@ -196,24 +197,25 @@ export const Tabs = ({ group }: ITabsProps) => {
               inline: 'nearest',
             });
           }
-        } catch (e) {
-          // noop
         }
+      } catch (e) {
+        // noop
       }
-    }
+    });
   }, [group, tabContainer.current]);
 
   const updateTabMarginRight = useCallback(() => {
     if (editorActionUpdateTimer.current) {
       clearTimeout(editorActionUpdateTimer.current);
-      editorActionUpdateTimer.current = null;
     }
-    const timer = setTimeout(() => {
-      if (editorActionRef.current?.offsetWidth !== lastMarginRight) {
-        setLastMarginRight(editorActionRef.current?.offsetWidth);
-      }
+    editorActionUpdateTimer.current = setTimeout(() => {
+      fastdom.measure(() => {
+        const _marginReight = editorActionRef.current?.offsetWidth;
+        if (_marginReight !== lastMarginRight) {
+          setLastMarginRight(_marginReight);
+        }
+      });
     }, 200);
-    editorActionUpdateTimer.current = timer;
   }, [editorActionRef.current, editorActionUpdateTimer.current, lastMarginRight]);
 
   useEffect(() => {
@@ -231,17 +233,13 @@ export const Tabs = ({ group }: ITabsProps) => {
         disposer.addDispose(new DomListener(tabContainer.current, 'mousewheel', preventNavigation));
       }
       disposer.addDispose(
-        eventBus.on(ResizeEvent, (event) => {
-          if (event.payload.slotLocation === slotLocation) {
-            scrollToCurrent();
-          }
+        eventBus.onDirective(ResizeEvent.createDirective(slotLocation), () => {
+          scrollToCurrent();
         }),
       );
       disposer.addDispose(
-        eventBus.on(GridResizeEvent, (event) => {
-          if (event.payload.gridId === group.grid.uid) {
-            scrollToCurrent();
-          }
+        eventBus.onDirective(GridResizeEvent.createDirective(group.grid.uid), () => {
+          scrollToCurrent();
         }),
       );
       return () => {
@@ -251,27 +249,29 @@ export const Tabs = ({ group }: ITabsProps) => {
   }, [wrapMode]);
 
   const layoutLastInRow = useCallback(() => {
-    if (contentRef.current && wrapMode) {
-      const newMap: Map<number, boolean> = new Map();
+    fastdom.measureAtNextFrame(() => {
+      if (contentRef.current && wrapMode) {
+        const newMap: Map<number, boolean> = new Map();
 
-      let currentTabY: number | undefined;
-      let lastTab: HTMLDivElement | undefined;
-      const tabs = Array.from(contentRef.current.children);
-      // 最后一个元素是editorAction
-      tabs.pop();
-      tabs.forEach((child: HTMLDivElement) => {
-        if (child.offsetTop !== currentTabY) {
-          currentTabY = child.offsetTop;
-          if (lastTab) {
-            newMap.set(tabs.indexOf(lastTab), true);
+        let currentTabY: number | undefined;
+        let lastTab: HTMLDivElement | undefined;
+        const tabs = Array.from(contentRef.current.children);
+        // 最后一个元素是editorAction
+        tabs.pop();
+        tabs.forEach((child: HTMLDivElement) => {
+          if (child.offsetTop !== currentTabY) {
+            currentTabY = child.offsetTop;
+            if (lastTab) {
+              newMap.set(tabs.indexOf(lastTab), true);
+            }
           }
-        }
-        lastTab = child;
-        newMap.set(tabs.indexOf(child), false);
-      });
-      // 最后一个 tab 不做 grow 处理
-      setTabMap(newMap);
-    }
+          lastTab = child;
+          newMap.set(tabs.indexOf(child), false);
+        });
+        // 最后一个 tab 不做 grow 处理
+        setTabMap(newMap);
+      }
+    });
   }, [contentRef.current, wrapMode]);
 
   useEffect(() => {
@@ -282,10 +282,8 @@ export const Tabs = ({ group }: ITabsProps) => {
   useEffect(() => {
     const disposable = new DisposableCollection();
     disposable.push(
-      eventBus.on(ResizeEvent, (e) => {
-        if (e.payload.slotLocation === slotLocation) {
-          layoutLastInRow();
-        }
+      eventBus.onDirective(ResizeEvent.createDirective(slotLocation), () => {
+        layoutLastInRow();
       }),
     );
     disposable.push(
@@ -298,7 +296,7 @@ export const Tabs = ({ group }: ITabsProps) => {
     // 当前选中的group变化时宽度变化
     disposable.push(
       editorService.onDidCurrentEditorGroupChanged(() => {
-        window.requestAnimationFrame(updateTabMarginRight);
+        updateTabMarginRight();
       }),
     );
     // editorMenu变化时宽度可能变化
@@ -308,7 +306,7 @@ export const Tabs = ({ group }: ITabsProps) => {
         () => {},
         200,
       )(() => {
-        window.requestAnimationFrame(updateTabMarginRight);
+        updateTabMarginRight();
       }),
     );
 
@@ -417,12 +415,14 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   const renderTabContent = () => {
+    const noTab = group.resources.length === 0;
     const curTabIndex = group.resources.findIndex((resource) => group.currentResource === resource);
     return (
       <div
         draggable={false}
         className={cls({
           [styles_kt_editor_tabs_content]: true,
+          [styles.kt_editor_tabs_content_empty]: noTab,
           [styles_kt_editor_tabs_current_last]: curTabIndex === group.resources.length - 1,
         })}
         ref={contentRef as any}
@@ -500,9 +500,6 @@ export const Tabs = ({ group }: ITabsProps) => {
             </div>
           );
         })}
-        {wrapMode && (
-          <EditorActions className={styles.kt_editor_wrap_mode_action} ref={editorActionRef} group={group} />
-        )}
       </div>
     );
   };
@@ -528,7 +525,14 @@ export const Tabs = ({ group }: ITabsProps) => {
           <div className={styles.kt_editor_wrap_container}>{renderTabContent()}</div>
         )}
       </div>
-      {!wrapMode && <EditorActions ref={editorActionRef} group={group} />}
+
+      <EditorActions
+        className={cls({
+          [styles.kt_editor_wrap_mode_action]: wrapMode,
+        })}
+        ref={editorActionRef}
+        group={group}
+      />
 
       {renderView(RightExtraContentViewConfig)}
     </div>
@@ -567,6 +571,11 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
 
+    /**
+     * 集成场景下可以不展示任何菜单，可以用以下代码取消菜单注册
+     * registry.unregisterMenuId(MenuId.EditorTitle);
+     * registry.unregisterMenuId(MenuId.EditorTitleRun);
+     */
     const noActions = menu.getMergedMenuNodes().length === 0;
 
     useEffect(() => {

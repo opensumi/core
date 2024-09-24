@@ -15,6 +15,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, IRange, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
@@ -215,6 +216,23 @@ export interface IIntelligentCompletionsRegistry {
   registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
 }
 
+export interface IProblemFixContext {
+  marker: IMarker;
+  editRange: IRange;
+}
+
+export interface IHoverFixHandler {
+  provideFix: (
+    editor: ICodeEditor,
+    context: IProblemFixContext,
+    token: CancellationToken,
+  ) => MaybePromise<ChatResponse | InlineChatController>;
+}
+
+export interface IProblemFixProviderRegistry {
+  registerHoverFixProvider(handler: IHoverFixHandler): void;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
@@ -239,6 +257,10 @@ export interface AINativeCoreContribution {
    * 注册智能重命名相关功能
    */
   registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
+  /**
+   * 注册智能修复相关功能
+   */
+  registerProblemFixFeature?(registry: IProblemFixProviderRegistry): void;
   /**
    * 注册智能终端相关功能
    */

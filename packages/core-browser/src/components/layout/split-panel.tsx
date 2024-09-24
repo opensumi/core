@@ -224,6 +224,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
     (location?: string) => {
       if (location) {
         eventBus.fire(new ResizeEvent({ slotLocation: location }));
+        eventBus.fireDirective(ResizeEvent.createDirective(location));
       }
     },
     [eventBus],
@@ -329,12 +330,10 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
     if (rootRef.current) {
       splitPanelService.setRootNode(rootRef.current);
     }
-    const disposer = eventBus.on(ResizeEvent, (e) => {
-      if (e.payload.slotLocation === id) {
-        childList.forEach((c) => {
-          fireResizeEvent(getProp(c, 'slot') || getProp(c, 'id'));
-        });
-      }
+    const disposer = eventBus.onDirective(ResizeEvent.createDirective(id), () => {
+      childList.forEach((c) => {
+        fireResizeEvent(getProp(c, 'slot') || getProp(c, 'id'));
+      });
     });
     return () => {
       disposer.dispose();
@@ -342,7 +341,8 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
   }, []);
 
   const renderSplitPanel = React.useMemo(() => {
-    const { minResize, flexGrow, minSize, maxSize, savedSize, defaultSize, flex, noResize, slot, ...rest } = props;
+    const { minResize, flexGrow, minSize, maxSize, savedSize, defaultSize, flex, noResize, slot, headerSize, ...rest } =
+      props;
 
     delete rest['resizeHandleClassName'];
     delete rest['dynamicTarget'];
@@ -361,6 +361,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
         data-max-size={maxSize}
         data-saved-size={savedSize}
         data-default-size={defaultSize}
+        data-header-size={headerSize}
         data-flex={flex}
         data-flex-grow={flexGrow}
         data-no-resize={noResize}

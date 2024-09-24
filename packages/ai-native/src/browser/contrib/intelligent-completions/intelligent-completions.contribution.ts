@@ -1,7 +1,7 @@
 import { Autowired } from '@opensumi/di';
-import { Key } from '@opensumi/ide-core-browser';
 import {
   ClientAppContribution,
+  Key,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
@@ -10,26 +10,34 @@ import {
   AI_MULTI_LINE_COMPLETION_ACCEPT,
   AI_MULTI_LINE_COMPLETION_HIDE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { MultiLineCompletionsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { CommandContribution, CommandRegistry, Domain } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { IntelligentCompletionsHandler } from './intelligent-completions.handler';
+import { IntelligentCompletionsController } from './intelligent-completions.controller';
 
 @Domain(ClientAppContribution, KeybindingContribution, CommandContribution)
 export class IntelligentCompletionsContribution implements KeybindingContribution, CommandContribution {
-  @Autowired(IntelligentCompletionsHandler)
-  private readonly intelligentCompletionsHandler: IntelligentCompletionsHandler;
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(AI_MULTI_LINE_COMPLETION_HIDE, {
       execute: () => {
-        this.intelligentCompletionsHandler.hide();
+        const editor = this.workbenchEditorService.currentCodeEditor;
+        if (editor) {
+          IntelligentCompletionsController.get(editor.monacoEditor)?.hide();
+        }
       },
     });
 
     commands.registerCommand(AI_MULTI_LINE_COMPLETION_ACCEPT, {
       execute: () => {
-        this.intelligentCompletionsHandler.accept();
+        const editor = this.workbenchEditorService.currentCodeEditor;
+        if (editor) {
+          IntelligentCompletionsController.get(editor.monacoEditor)?.accept();
+        }
       },
     });
   }
@@ -38,7 +46,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
     keybindings.registerKeybinding({
       command: AI_MULTI_LINE_COMPLETION_HIDE.id,
       keybinding: Key.ESCAPE.code,
-      when: MultiLineCompletionsIsVisible.raw,
+      when: MultiLineEditsIsVisible.raw,
       priority: 100,
     });
 
@@ -46,7 +54,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
       {
         command: AI_MULTI_LINE_COMPLETION_ACCEPT.id,
         keybinding: Key.TAB.code,
-        when: MultiLineCompletionsIsVisible.raw,
+        when: MultiLineEditsIsVisible.raw,
       },
       KeybindingScope.USER,
     );

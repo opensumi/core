@@ -893,6 +893,11 @@ declare module 'sumi' {
     token: CancellationToken,
   ) => ProviderResult<ChatAgentResult2>;
 
+  // proposed api
+  export interface InlineChatAgent {
+    dispose(): void;
+  }
+
   export interface ChatAgent extends ChatAgent2 {
     sampleQuestionProvider?: ChatAgentSampleQuestionProvider;
     chatWelcomMessageProvider?: ChatAgentWelcomeMessageProvider;
@@ -909,5 +914,8 @@ declare module 'sumi' {
     export function createChatAgent(name: string, handler: ChatAgentHandler): ChatAgent;
 
     export function sendMessage(chunk: ChatAgentCustomReplyMessage): void;
+
+    // proposed api
+    export function createInlineChatAgent(name: string, handler: ChatAgentHandler): InlineChatAgent;
   }
 }

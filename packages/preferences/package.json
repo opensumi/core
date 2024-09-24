@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-preferences",
-  "version": "3.2.4",
+  "version": "3.3.3",
   "files": [
     "lib",
     "src"
@@ -17,7 +17,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "workspace:*"
+    "@opensumi/events": "^1.0.0",
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*",
+    "react-virtualized-auto-sizer": "^1.0.2"
   },
   "devDependencies": {
     "@opensumi/ide-components": "workspace:*",

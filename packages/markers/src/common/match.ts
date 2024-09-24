@@ -68,7 +68,7 @@ export function relativePath(from: URI, to: URI, ignoreCase = hasToIgnoreCase(fr
 }
 
 /**
- * Tests wheter the two authorities are the same
+ * Tests whether the two authorities are the same
  */
 export function isEqualAuthority(a1: string, a2: string) {
   return a1 === a2 || strings.equalsIgnoreCase(a1, a2);
