@@ -175,13 +175,16 @@ class TerminalClientRemoteService extends RemoteService {
   @Autowired(GDataStore, { tag: 'TerminalClientRemoteService' })
   gDataStore: GDataStore;
 
+  @Autowired(GDataStore, { tag: 'TerminalClientRemoteServiceTerminalDataStore' })
+  gTerminalDataStore: GDataStore;
+
   init(clientId: string) {
     this.gDataStore.create({
       id: clientId,
       client: this,
     });
 
-    this.gDataStore.on('removed', (item) => {
+    this.gTerminalDataStore.on('removed', (item) => {
       switch (item.type) {
         case 'terminal': {
           this.rpcClient.close(item.sessionId);
@@ -191,7 +194,7 @@ class TerminalClientRemoteService extends RemoteService {
   }
 
   createTerminal(sessionId: string, terminal: Terminal) {
-    this.gDataStore.create({
+    this.gTerminalDataStore.create({
       id: clientId,
       sessionId,
       type: 'terminal',
@@ -200,7 +203,7 @@ class TerminalClientRemoteService extends RemoteService {
   }
 
   getAllTerminals() {
-    return this.gDataStore.find({
+    return this.gTerminalDataStore.find({
       type: 'terminal',
       id: clientId,
     });
@@ -212,18 +215,18 @@ class TerminalClientRemoteService extends RemoteService {
 }
 
 class TerminalService {
-  @Autowired(GDataStore, { tag: 'TerminalClientRemoteService' })
-  gDataStore: GDataStore;
+  @Autowired(GDataStore, { tag: 'TerminalClientRemoteServiceTerminalDataStore' })
+  gTerminalDataStore: GDataStore;
 
   initialize() {
-    this.gDataStore.on('created', () => {});
-    this.gDataStore.on('updated', () => {});
-    this.gDataStore.on('removed', () => {});
-    this.gDataStore.on('custom-event', () => {});
+    this.gTerminalDataStore.on('created', () => {});
+    this.gTerminalDataStore.on('updated', () => {});
+    this.gTerminalDataStore.on('removed', () => {});
+    this.gTerminalDataStore.on('custom-event', () => {});
   }
 
   closeTerminal(id: string) {
-    this.gDataStore.remove(id);
+    this.gTerminalDataStore.remove(id);
   }
 }
 ```
