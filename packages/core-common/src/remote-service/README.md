@@ -118,7 +118,7 @@ const d3 = child.get(Service2); // Error: Invalid secret
 
 可以看到，d3 无法创建，会抛出错误。
 
-### 引入 Remote Service
+## 2. 引入 Remote Service
 
 分析上述问题后，我们考虑用一种新的约束规则，改变原来使用 back service 的方式，使声明 back service 更加程序化和简洁。
 
@@ -137,7 +137,71 @@ const d3 = child.get(Service2); // Error: Invalid secret
 2. Remote Service 只能在通信连接后实例化，且无法再次实例化。
 3. 所有的 Remote Service 命名推荐以 RemoteService 结尾。
 
-## 2. back service 存储逻辑优化
+我们在 BasicModule 中新增一个字段 `remoteServices` 区分以前的 `backServices`：
+
+```ts
+@Injectable()
+export class BasicModule {
+  // ...
+  backServices?: BackService[];
+
+  remoteServices?: (Token | ConstructorOf<RemoteService>)[];
+}
+```
+
+同时我们定义 RemoteService 为一个 abstract class:
+
+```ts
+@Injectable({ multiple: true })
+export abstract class RemoteService<Client = any> {
+  abstract readonly servicePath: string;
+  protocol?: RPCProtocol<any>;
+
+  constructor(@Optional(RemoteServiceInstantiateFlag) flag: symbol) {
+    if (flag !== __remoteServiceInstantiateFlag) {
+      throw new Error('Cannot create RemoteService instance directly');
+    }
+  }
+}
+```
+
+所有的 Remote Service 必须继承自这个 RemoteService，我们在前端连接建立后会实例化每一个 XRemoteService。逻辑见： [core-node/src/connection.ts#L144](https://github.com/opensumi/core/blob/37906914e7c3ff325d74e0be1945f1a66def6232/packages/core-node/src/connection.ts#L144)。
+
+原有的 `backServices` 也非常容易迁移到新的 RemoteService 上，能让你写更少的代码。
+
+用起来就像这样：
+
+```ts
+@Injectable()
+export class OpenVsxExtensionManagerModule extends NodeModule {
+  remoteServices = [VSXExtensionRemoteService];
+}
+```
+
+而以前则是：
+
+```ts
+@Injectable()
+export class OpenVsxExtensionManagerModule extends NodeModule {
+  providers: Provider[] = [
+    {
+      token: VSXExtensionBackSerivceToken,
+      useClass: VSXExtensionService,
+    },
+  ];
+
+  backServices = [
+    {
+      servicePath: VSXExtensionServicePath,
+      token: VSXExtensionBackSerivceToken,
+    },
+  ];
+}
+```
+
+可以看到这种写法可以省掉一个无用的 token: VSXExtensionBackSerivceToken，这也减少了很多的复杂性。
+
+## 3. Remote Service 存储逻辑优化
 
 现在我们应该称它为 remote service 存储逻辑优化。
 
