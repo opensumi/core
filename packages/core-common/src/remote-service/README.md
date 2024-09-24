@@ -91,9 +91,9 @@ console.log(`flag`, d2.flag); // print `flag {you_got_it}`
 const d1 = injectorA.get(Service2); // Error: Invalid secret
 ```
 
-通过 `@Optional` `机制，childInjector` 中存在 `SECRET_TOKEN`，但 `injectorA` 中不存在该 token，因此该类只能在 `childInjector` 中被初始化，而不能在其他 injector 中初始化。
+通过 `@Optional` 机制，childInjector`中存在`SECRET_TOKEN`，但 `injectorA`中不存在该 token，因此该类只能在`childInjector` 中被初始化，而不能在其他 injector 中初始化。
 
-我们可以更进一步，因为所有 BackService 实际上只需要实例化一次，所以可以在创建之后重置 `SECRET_TOKEN。`
+我们可以更进一步，因为所有 BackService 实际上只需要实例化一次，所以可以在创建之后重置 `SECRET_TOKEN`。
 
 ```ts
 // ...
@@ -124,11 +124,12 @@ const d3 = child.get(Service2); // Error: Invalid secret
 
 在设计后端架构时，通常会提到架构分层，将后端服务划分为 [`controller`]()、[`service`](https://martinfowler.com/eaaCatalog/serviceLayer.html) 和 [`dao`]() 等。
 
-原来的 back service 模糊了 controller 和 service 的概念，前后端都能用，所以使用起来不明不白。
+原来的 back service 模糊了 controller 和 service 的概念，一个 back service 前后端都能用，所以使用起来不明不白。
 
-因此，我们引入了一个新概念：Remote Service，它是仅面向前端的远程 Service，后端其他 Service 不可引用该 Service。你可以在这个 Service 内编写校验、逻辑和调度，但它更像 controller，只接受外部请求调用。
+因此，我们引入了一个新概念：Remote Service，它是仅面向前端的远程 Service，后端其他 Service 不可引用该 Service。你可以在这个 Service 内编写校验、逻辑和调度，但它的使用场景更像 Controller，只接受外部请求调用。
 
-> Martin Fowler 的《企业架构模式》中的 [Service Layer] 定义：服务层从连接客户层的角度定义了应用程序的边界及其可用操作集。它封装了应用程序的业务逻辑，在执行操作时控制事务并协调响应。
+> Martin Fowler 的《企业架构模式》中的 Service Layer 定义：  
+> 服务层从连接客户层的角度定义了应用程序的边界及其可用操作集。它封装了应用程序的业务逻辑，在执行操作时控制事务并协调响应。
 
 我们可以先列出这个新的 Remote Service 的原则，以便明确什么该做，什么不该做：
 
