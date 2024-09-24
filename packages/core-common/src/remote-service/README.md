@@ -160,7 +160,7 @@ export class BasicModule {
 同时我们定义 RemoteService 为一个 abstract class:
 
 ```ts
-@Injectable({ multiple: true })
+@Injectable()
 export abstract class RemoteService<Client = any> {
   abstract readonly servicePath: string;
   protocol?: RPCProtocol<any>;

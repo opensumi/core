@@ -5,7 +5,7 @@ import { RPCProtocol } from '../types/rpc';
 const RemoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag');
 const __remoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag_internal');
 
-@Injectable({ multiple: true })
+@Injectable()
 export abstract class RemoteService<Client = any> {
   readonly servicePath: string;
   protocol?: RPCProtocol<any>;
