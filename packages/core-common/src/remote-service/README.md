@@ -143,7 +143,7 @@ const d3 = child.get(Service2); // Error: Invalid secret
 
 之前 back service 的状态存取都是各个类自己存储，现在我们仍然推荐这么做。
 
-但我们现在推出了一款非常通用的 InMemoryDataStore，如果没有特殊需求，可以使用它。它提供了 `find`/`update`/`create`/`patch` 等多种便捷的资源管理功能。
+但我们现在推出了一款非常通用的 InMemoryDataStore，如果没有特殊需求，可以使用它。它提供了 `find`/`update`/`create`/`remove` 等多种便捷的资源管理功能。
 
 它非常适合 OpenSumi 的后端架构，你可以根据 `clientId`/`sessionId` 去存储，查询数据，断开连接后删除数据。
 
