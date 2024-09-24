@@ -6,10 +6,10 @@ import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-conne
 import { CommonChannelPathHandler, RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
+import { RemoteService, RemoteServiceDataStore, createRemoteServiceChildInjector } from '@opensumi/ide-core-common';
 
 import { INodeLogger } from './logger/node-logger';
-import { NodeModule, getServiceName } from './node-module';
-import { RemoteService, RemoteServiceDataStore, createRemoteServiceChildInjector } from './remote-service';
+import { NodeModule } from './node-module';
 import { IServerAppOpts } from './types';
 
 export { RPCServiceCenter };
@@ -163,7 +163,7 @@ export function bindModuleBackService(
         for (const service of m.remoteServices) {
           const serviceInstance = childInjector.get(service);
           if (!(serviceInstance instanceof RemoteService)) {
-            throw new Error('Invalid remote service: ' + getServiceName(service));
+            throw new Error('Invalid remote service: ' + RemoteService.getName(service));
           }
 
           if (Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
@@ -174,7 +174,7 @@ export function bindModuleBackService(
             const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
             serviceInstance.init(clientId, stub);
           } else {
-            throw new Error(`Remote service ${getServiceName(service)} must have servicePath`);
+            throw new Error(`Remote service ${RemoteService.getName(service)} must have servicePath`);
           }
         }
       }

@@ -1,5 +1,6 @@
-import { Injectable, Injector, Optional } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-core-common/lib/types/rpc';
+import { ConstructorOf, Injectable, Injector, Optional, Token } from '@opensumi/di';
+
+import { RPCProtocol } from '../types/rpc';
 
 const RemoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag');
 const __remoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag_internal');
@@ -27,6 +28,13 @@ export abstract class RemoteService<Client = any> {
   init(clientId: string, client: Client) {
     this._clientId = clientId;
     this._client = client;
+  }
+
+  static getName(service: Token | ConstructorOf<RemoteService>): string {
+    if (typeof service === 'function') {
+      return service.name;
+    }
+    return String(service);
   }
 }
 

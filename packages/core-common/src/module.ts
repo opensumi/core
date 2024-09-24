@@ -4,6 +4,7 @@
 
 import { Autowired, ConstructorOf, Domain, INJECTOR_TOKEN, Injector, Provider, Token } from '@opensumi/di';
 
+import { RemoteService, RemoteServiceDataStore } from './remote-service';
 import { RPCProtocol } from './types/rpc';
 
 interface FrontService {
@@ -35,6 +36,9 @@ export class BasicModule {
   backServices?: BackService[];
   frontServices?: FrontService[];
   contributionProvider: Domain | Domain[];
+
+  remoteServices?: (Token | ConstructorOf<RemoteService>)[];
+  remoteServiceDataStores?: ConstructorOf<RemoteServiceDataStore>[];
 }
 
 export function ModuleDependencies<T extends BasicModule>(dependencies: ConstructorOf<BasicModule>[]) {
