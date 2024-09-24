@@ -15,7 +15,15 @@
 2. 多个 back service 可能会意外地清空同一个外部状态。
 3. 每个 back service 都需要编写自己的存储逻辑，比如 Terminal/Extension 等模块的储存和逻辑非常耦合
 
-back service 被其他实例引用是很奇怪的，因为它们都是后端接口层，所以应该禁止这种行为。共有的业务逻辑应提取为通用 Service，而不是使用 back service。因此，我们的第一个目标是：
+back service 被其他实例引用是很奇怪的，因为它们都是后端接口层，所以应该禁止这种行为。共有的业务逻辑应提取为通用 Service，而不是使用 back service。
+
+back service 以前是默认多例，比如说我打开了三个前端页面，每个前端页面是一个不同的仓库，然后后端有一个 GitBackService，前端可以通过这个 GitBackService 来拿到当前仓库的 branch 信息等，但是要先通过 api 传给 GitBackService 一些 workspaceDir 相关的内容。
+
+但是如果你在后端的 TerminalServiceClient（多例）里引用了 GitBackService，你期望 gitBackService.currentBranch 是什么？期望的应该要是当前仓库的 branch，实际上它会创建一个新的 instance，这个 instance 里全部是空数据（因为没有前端传 workspaceDir 这一步）
+
+而如果用了文章里提到的 SessionDataStore 的话，同一会话内共享 sessionDataStore，所以你是能取到正确的 currentBranch 的，以前这种情况，你又要手动去声明一个 GitBackendData 放到 node module 的 providers 里，将这个 GitBackendData 全局掉才行，而且全局掉你还得做很多 clientId 的隔离。
+
+因此，我们的第一个目标是：
 
 ## 1. back service 不可被 `@Autowired` 引用
 
