@@ -203,11 +203,7 @@ export class OpenVsxExtensionManagerModule extends NodeModule {
 
 ## 3. Remote Service 存储逻辑优化
 
-现在我们应该称它为 remote service 存储逻辑优化。
-
-之前 back service 的状态存取都是各个类自己存储，现在我们仍然推荐这么做。
-
-但我们现在推出了一款非常通用的 InMemoryDataStore，如果没有特殊需求，可以使用它。它提供了 `find`/`update`/`create`/`remove` 等多种便捷的资源管理功能。
+之前 back service 的状态存取都是各个类自己存储，现在我们仍然推荐这么做，但我们现在推出了一款非常通用的 InMemoryDataStore，如果没有特殊需求，可以使用它。它提供了 `find`/`update`/`create`/`remove` 等多种便捷的资源管理功能。
 
 它非常适合 OpenSumi 的后端架构，你可以根据 `clientId`/`sessionId` 去存储，查询数据，断开连接后删除数据。
 
@@ -219,7 +215,7 @@ export class OpenVsxExtensionManagerModule extends NodeModule {
 
 GDataStore 会实现默认的 CRUD 接口，让你使用它就像使用一个 MongoDB 数据库一样。
 
-来看一个实际的场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalClient) 的 created/removed 事件，然后做相关处理。
+来看一个实际的场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalDataStore) 的 created/removed 事件，然后做相关处理。
 
 ```ts
 interface Item {
@@ -239,7 +235,7 @@ class TerminalClientRemoteService extends RemoteService {
   @Autowired(GDataStore, { tag: 'TerminalClientRemoteService' })
   gDataStore: GDataStore;
 
-  @Autowired(GDataStore, { tag: 'TerminalClientRemoteServiceTerminalDataStore' })
+  @Autowired(GDataStore, { tag: 'TerminalDataStore' })
   gTerminalDataStore: GDataStore;
 
   init(clientId: string) {
@@ -251,7 +247,7 @@ class TerminalClientRemoteService extends RemoteService {
     this.gTerminalDataStore.on('removed', (item) => {
       switch (item.type) {
         case 'terminal': {
-          this.rpcClient.close(item.sessionId);
+          this.rpcClient.close(item.id);
         }
       }
     });
@@ -259,17 +255,15 @@ class TerminalClientRemoteService extends RemoteService {
 
   createTerminal(sessionId: string, terminal: Terminal) {
     this.gTerminalDataStore.create({
-      id: clientId,
-      sessionId,
-      type: 'terminal',
+      id: sessionId,
+      clientId,
       terminal,
     });
   }
 
-  getAllTerminals() {
+  getAllTerminals(clientId: string) {
     return this.gTerminalDataStore.find({
-      type: 'terminal',
-      id: clientId,
+      clientId,
     });
   }
 
@@ -279,7 +273,7 @@ class TerminalClientRemoteService extends RemoteService {
 }
 
 class TerminalService {
-  @Autowired(GDataStore, { tag: 'TerminalClientRemoteServiceTerminalDataStore' })
+  @Autowired(GDataStore, { tag: 'TerminalDataStore' })
   gTerminalDataStore: GDataStore;
 
   initialize() {
@@ -289,8 +283,14 @@ class TerminalService {
     this.gTerminalDataStore.on('custom-event', () => {});
   }
 
-  closeTerminal(id: string) {
-    this.gTerminalDataStore.remove(id);
+  closeTerminal(sessionId: string) {
+    this.gTerminalDataStore.remove(sessionId);
+  }
+
+  removeClient(clientId: string) {
+    this.gTerminalDataStore.removeAll({
+      clientId,
+    });
   }
 }
 ```
