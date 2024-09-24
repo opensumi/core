@@ -19,5 +19,5 @@ export class OpenVsxExtensionManagerModule extends NodeModule {
     },
   ];
 
-  backServices2 = [VSXExtensionService];
+  remoteServices = [VSXExtensionService];
 }

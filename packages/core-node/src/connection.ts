@@ -7,9 +7,9 @@ import { CommonChannelPathHandler, RPCServiceChannelPath } from '@opensumi/ide-c
 import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
 
-import { BackService, BackServiceDataStore, createBackServiceChildInjector } from './back-service';
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
+import { RemoteService, RemoteServiceDataStore, createRemoteServiceChildInjector } from './remote-service';
 import { IServerAppOpts } from './types';
 
 export { RPCServiceCenter };
@@ -93,7 +93,7 @@ export function bindModuleBackService(
 ) {
   const { createRPCService } = initRPCService(serviceCenter);
 
-  return createBackServiceChildInjector(injector, (childInjector) => {
+  return createRemoteServiceChildInjector(injector, (childInjector) => {
     for (const m of modules) {
       if (m.backServices) {
         for (const service of m.backServices) {
@@ -141,32 +141,31 @@ export function bindModuleBackService(
         }
       }
 
-      if (m.backServiceDataStores) {
-        for (const service of m.backServiceDataStores) {
-          // todo: check service is BackServiceDataStore
+      if (m.remoteServiceDataStores) {
+        for (const service of m.remoteServiceDataStores) {
+          // todo: check service is RemoteServiceDataStore
 
           childInjector.addProviders({
             token: service,
             useClass: service,
-            tag: BackServiceDataStore.Session,
+            tag: RemoteServiceDataStore.Session,
           });
 
           injector.addProviders({
             token: service,
             useClass: service,
-            tag: BackServiceDataStore.Persisted,
+            tag: RemoteServiceDataStore.Persisted,
           });
         }
       }
 
-      if (m.backServices2) {
-        for (const service of m.backServices2) {
+      if (m.remoteServices) {
+        for (const service of m.remoteServices) {
           const serviceInstance = childInjector.get(service);
-          if (!(serviceInstance instanceof BackService)) {
-            throw new Error('Invalid back service: ' + service.name);
+          if (!(serviceInstance instanceof RemoteService)) {
+            throw new Error('Invalid remote service: ' + service.name);
           }
 
-          // back service
           if (Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
             if (serviceInstance.protocol) {
               serviceCenter.loadProtocol(serviceInstance.protocol);
@@ -175,7 +174,7 @@ export function bindModuleBackService(
             const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
             serviceInstance.init(clientId, stub);
           } else {
-            throw new Error(`Back service ${service.name} must have servicePath`);
+            throw new Error(`Remote service ${service.name} must have servicePath`);
           }
         }
       }

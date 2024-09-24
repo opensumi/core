@@ -12,3 +12,4 @@ export * from './common-module';
 export * from './types';
 
 export * from './ai-native';
+export * from './remote-service';

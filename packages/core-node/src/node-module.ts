@@ -1,8 +1,8 @@
 import { BasicModule, ConstructorOf } from '@opensumi/ide-core-common';
 
-import { BackService, BackServiceDataStore } from './back-service';
+import { RemoteService, RemoteServiceDataStore } from './remote-service';
 
 export abstract class NodeModule extends BasicModule {
-  backServices2?: ConstructorOf<BackService>[];
-  backServiceDataStores?: ConstructorOf<BackServiceDataStore>[];
+  remoteServices?: ConstructorOf<RemoteService>[];
+  remoteServiceDataStores?: ConstructorOf<RemoteServiceDataStore>[];
 }

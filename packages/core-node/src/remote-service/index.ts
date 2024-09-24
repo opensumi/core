@@ -1,11 +1,11 @@
 import { Injectable, Injector, Optional } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-core-common/lib/types/rpc';
 
-const BackServiceInstantiateFlag = Symbol('BackServiceFlag');
-const __BackServiceInstantiateFlag = Math.random().toString(36).substring(2);
+const RemoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag');
+const __remoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag_internal');
 
 @Injectable({ multiple: true })
-export abstract class BackService {
+export abstract class RemoteService {
   abstract readonly servicePath: string;
   protocol?: RPCProtocol<any>;
 
@@ -18,9 +18,9 @@ export abstract class BackService {
     return this._clientId;
   }
 
-  constructor(@Optional(BackServiceInstantiateFlag) flag: string) {
-    if (flag !== __BackServiceInstantiateFlag) {
-      throw new Error('Cannot create BackService instance directly');
+  constructor(@Optional(RemoteServiceInstantiateFlag) flag: symbol) {
+    if (flag !== __remoteServiceInstantiateFlag) {
+      throw new Error('Cannot create RemoteService instance directly');
     }
   }
 
@@ -33,34 +33,34 @@ export abstract class BackService {
 /**
  * 如何使用
  * ```ts
- * @Autowired(MessageDataStore, { tag: 'session' })
+ * @Autowired(MessageDataStore, { tag: RemoteServiceDataStore.Session })
  * private sessionDataStore: MessageDataStore;
  *
- * @Autowired(MessageDataStore, { tag: 'persisted' })
+ * @Autowired(MessageDataStore, { tag: RemoteServiceDataStore.Persisted })
  * private persistedDataStore: MessageDataStore;
  * ```
  */
 @Injectable({ multiple: true })
-export abstract class BackServiceDataStore {
+export abstract class RemoteServiceDataStore {
   static Session = 'session';
   static Persisted = 'persisted';
 
   readonly _dataStoreBrand = undefined;
 }
 
-export function createBackServiceChildInjector(injector: Injector, fn: (childInjector: Injector) => void): Injector {
+export function createRemoteServiceChildInjector(injector: Injector, fn: (childInjector: Injector) => void): Injector {
   const child = injector.createChild([
     {
-      token: BackServiceInstantiateFlag,
-      useValue: __BackServiceInstantiateFlag,
+      token: RemoteServiceInstantiateFlag,
+      useValue: __remoteServiceInstantiateFlag,
     },
   ]);
 
   fn(child);
 
   child.overrideProviders({
-    token: BackServiceInstantiateFlag,
-    useValue: 'avoid_use_autowired_to_get_back_service',
+    token: RemoteServiceInstantiateFlag,
+    useValue: 'avoid_use_autowired_to_get_remote_service',
     override: true,
   });
 
