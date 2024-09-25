@@ -158,7 +158,6 @@ export class InlineCompletionRequestTask extends Disposable {
       try {
         this.aiCompletionsService.updateStatusBarItem('running', true);
         completeResult = await this.aiCompletionsService.complete(requestBean);
-        this.aiCompletionsService.hideStatusBarItem();
       } catch (error) {
         this.aiCompletionsService.reporterEnd(relationId, {
           success: false,
@@ -167,6 +166,8 @@ export class InlineCompletionRequestTask extends Disposable {
         });
         this.aiCompletionsService.hideStatusBarItem();
         return [];
+      } finally {
+        this.aiCompletionsService.hideStatusBarItem();
       }
     }
 
