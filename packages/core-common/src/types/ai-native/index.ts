@@ -120,6 +120,7 @@ export interface IAIBackServiceResponse<T = string> {
 export interface IAIBackServiceOption {
   type?: string;
   requestId?: string;
+  sessionId?: string;
   history?: IHistoryChatMessage[];
 }
 
@@ -340,11 +341,11 @@ export interface IHistoryChatMessage extends IChatMessage {
 
   type?: 'string' | 'component';
   relationId?: string;
-  component?: React.ReactNode;
-  componentProps?: {
-    [key in string]: any;
-  };
+  componentId?: string;
+  componentValue?: any;
 
   agentId?: string;
   agentCommand?: string;
+  requestId?: string;
+  replyStartTime?: number;
 }

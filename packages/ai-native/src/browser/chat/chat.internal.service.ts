@@ -24,6 +24,9 @@ export class ChatInternalService extends Disposable {
   private readonly _onChangeRequestId = new Emitter<string>();
   public readonly onChangeRequestId: Event<string> = this._onChangeRequestId.event;
 
+  private readonly _onChangeSession = new Emitter<string>();
+  public readonly onChangeSession: Event<string> = this._onChangeSession.event;
+
   private _latestRequestId: string;
   public get latestRequestId(): string {
     return this._latestRequestId;
@@ -59,6 +62,16 @@ export class ChatInternalService extends Disposable {
   clearSessionModel() {
     this.chatManagerService.clearSession(this.#sessionModel.sessionId);
     this.#sessionModel = this.chatManagerService.startSession();
+    this._onChangeSession.fire(this.#sessionModel.sessionId);
+  }
+
+  activateSession(sessionId: string) {
+    const targetSession = this.chatManagerService.getSession(sessionId);
+    if (!targetSession) {
+      throw new Error(`There is no session with session id ${sessionId}`);
+    }
+    this.#sessionModel = targetSession;
+    this._onChangeSession.fire(this.#sessionModel.sessionId);
   }
 
   override dispose(): void {

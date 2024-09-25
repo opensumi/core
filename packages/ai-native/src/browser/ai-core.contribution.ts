@@ -73,7 +73,6 @@ import {
   ChatProxyServiceToken,
 } from '../common';
 
-
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';

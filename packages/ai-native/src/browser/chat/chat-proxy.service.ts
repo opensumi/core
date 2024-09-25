@@ -83,6 +83,7 @@ export class ChatProxyService extends Disposable {
             prompt,
             {
               requestId: request.requestId,
+              sessionId: request.sessionId,
               history: this.aiChatService.getHistoryMessages(),
             },
             token,

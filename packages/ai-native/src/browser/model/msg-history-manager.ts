@@ -42,7 +42,9 @@ export class MsgHistoryManager extends Disposable {
     return Array.from(this.messageMap.values()).sort((a, b) => a.order - b.order);
   }
 
-  public addUserMessage(message: Required<Pick<IExcludeMessage, 'agentId' | 'agentCommand' | 'content'>>): string {
+  public addUserMessage(
+    message: Required<Pick<IExcludeMessage, 'agentId' | 'agentCommand' | 'content' | 'relationId'>>,
+  ): string {
     return this.doAddMessage({
       ...message,
       role: ChatMessageRole.User,

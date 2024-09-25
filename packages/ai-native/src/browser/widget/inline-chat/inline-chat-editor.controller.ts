@@ -1,5 +1,3 @@
-
-
 import { AINativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 import {

@@ -2,14 +2,17 @@ import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   AISerivceType,
   ActionSourceEnum,
   ActionTypeEnum,
+  CancellationToken,
+  CancellationTokenSource,
   ChatFeatureRegistryToken,
+  ChatMessageRole,
   ChatRenderRegistryToken,
   ChatServiceToken,
   Disposable,
@@ -37,9 +40,9 @@ import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
 import { MsgHistoryManager } from '../model/msg-history-manager';
-import { TSlashCommandCustomRender } from '../types';
+import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
 
-import { ChatSlashCommandItemModel } from './chat-model';
+import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
@@ -62,7 +65,7 @@ export const AIChatView = observer(() => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  const msgHistoryManager = useInjectable<MsgHistoryManager>(MsgHistoryManager);
+  const msgHistoryManager = aiChatService.sessionModel.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
 
@@ -86,8 +89,6 @@ export const AIChatView = observer(() => {
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
-
-  const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
 
   React.useEffect(() => {
     const featureSlashCommands = chatFeatureRegistry.getAllShortcutSlashCommand();
@@ -117,6 +118,8 @@ export const AIChatView = observer(() => {
 
     return () => dispose.dispose();
   }, [chatFeatureRegistry, chatAgentService]);
+
+  useUpdateOnEvent(aiChatService.onChangeSession);
 
   const ChatInputWrapperRender = React.useMemo(() => {
     if (chatRenderRegistry.chatInputRender) {
@@ -194,32 +197,28 @@ export const AIChatView = observer(() => {
     );
 
     disposer.addDispose(
-      chatApiService.onChatReplyMessageLaunch((chunk) => {
-        const relationId = aiReporter.start(AISerivceType.CustomReplay, {
-          message: chunk,
-        });
-
-        let renderContent = (
-          <ChatMarkdown markdown={chunk} fillInIncompleteTokens agentId={agentId} command={command} />
-        );
-
-        if (chatRenderRegistry.chatAIRoleRender) {
-          const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
-          renderContent = <ChatAIRoleRender content={chunk} />;
+      chatApiService.onChatReplyMessageLaunch((data) => {
+        if (data.kind === 'content') {
+          const relationId = aiReporter.start(AISerivceType.CustomReplay, {
+            message: data.content,
+          });
+          msgHistoryManager.addAssistantMessage({
+            content: data.content,
+            relationId,
+          });
+          renderSimpleMarkdownReply({ chunk: data.content, relationId });
+        } else {
+          const relationId = aiReporter.start(AISerivceType.CustomReplay, {
+            message: 'component#' + data.component,
+          });
+          msgHistoryManager.addAssistantMessage({
+            componentId: data.component,
+            componentValue: data.value,
+            content: '',
+            relationId,
+          });
+          renderCustomComponent({ chunk: data, relationId });
         }
-
-        msgHistoryManager.addAssistantMessage({
-          content: chunk,
-        });
-
-        const aiMessage = createMessageByAI({
-          id: uuid(6),
-          relationId,
-          text: renderContent,
-          className: styles.chat_with_more_actions,
-        });
-
-        handleDispatchMessage({ type: 'add', payload: [aiMessage] });
       }),
     );
 
@@ -358,37 +357,11 @@ export const AIChatView = observer(() => {
     [containerRef, msgHistoryManager],
   );
 
-  const handleAgentReply = React.useCallback(
-    async (value: IChatMessageStructure) => {
-      const { message, agentId, command, reportExtra } = value;
-      const { actionType, actionSource } = reportExtra || {};
-
-      const request = aiChatService.createRequest(message, agentId!, command);
-      if (!request) {
-        return;
-      }
-
-      setLoading(true);
-      aiChatService.setLatestRequestId(request.requestId);
-
+  const renderUserMessage = React.useCallback(
+    async (renderModel: { message: string; agentId?: string; relationId: string; command?: string }) => {
       const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
-      const startTime = Date.now();
-      const reportType = ChatProxyService.AGENT_ID === agentId ? AISerivceType.Chat : AISerivceType.Agent;
-      const relationId = aiReporter.start(command || reportType, {
-        message,
-        agentId,
-        command,
-        userMessage: message,
-        actionType,
-        actionSource,
-      });
-
-      msgHistoryManager.addUserMessage({
-        content: message,
-        agentId: agentId!,
-        agentCommand: command!,
-      });
+      const { message, agentId, relationId, command } = renderModel;
 
       const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
 
@@ -406,6 +379,23 @@ export const AIChatView = observer(() => {
       );
 
       handleDispatchMessage({ type: 'add', payload: [userMessage] });
+    },
+    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom],
+  );
+
+  const renderReply = React.useCallback(
+    async (renderModel: {
+      message: string;
+      agentId?: string;
+      request: ChatRequestModel;
+      relationId: string;
+      command?: string;
+      startTime: number;
+      msgId: string;
+    }) => {
+      const { message, agentId, request, relationId, command, startTime, msgId } = renderModel;
+
+      const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
 
       if (agentId === ChatProxyService.AGENT_ID && command) {
         const commandHandler = chatFeatureRegistry.getSlashCommandHandler(command);
@@ -437,32 +427,135 @@ export const AIChatView = observer(() => {
             onDidChange={() => {
               scrollToBottom();
             }}
+            history={msgHistoryManager}
             onDone={() => {
               setLoading(false);
             }}
             onRegenerate={() => {
               aiChatService.sendRequest(request, true);
             }}
+            msgId={msgId}
           />
         ),
       });
+      handleDispatchMessage({ type: 'add', payload: [aiMessage] });
+    },
+    [chatRenderRegistry, msgHistoryManager, scrollToBottom],
+  );
+
+  const renderSimpleMarkdownReply = React.useCallback(
+    (renderModel: { chunk: string; relationId: string }) => {
+      const { chunk, relationId } = renderModel;
+      let renderContent = <ChatMarkdown markdown={chunk} fillInIncompleteTokens agentId={agentId} command={command} />;
+
+      if (chatRenderRegistry.chatAIRoleRender) {
+        const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
+        renderContent = <ChatAIRoleRender content={chunk} />;
+      }
+
+      const aiMessage = createMessageByAI({
+        id: uuid(6),
+        relationId,
+        text: renderContent,
+        className: styles.chat_with_more_actions,
+      });
+
+      handleDispatchMessage({ type: 'add', payload: [aiMessage] });
+    },
+    [chatRenderRegistry, msgHistoryManager, scrollToBottom],
+  );
+
+  const renderCustomComponent = React.useCallback(
+    (renderModel: { chunk: IChatComponent; relationId: string }) => {
+      const { chunk, relationId } = renderModel;
+
+      const aiMessage = createMessageByAI(
+        {
+          id: uuid(6),
+          relationId,
+          text: <ChatNotify requestId={relationId} chunk={chunk} />,
+        },
+        styles.chat_notify,
+      );
+      handleDispatchMessage({ type: 'add', payload: [aiMessage] });
+    },
+    [chatRenderRegistry, msgHistoryManager, scrollToBottom],
+  );
+
+  const handleAgentReply = React.useCallback(
+    async (value: IChatMessageStructure) => {
+      const { message, agentId, command, reportExtra } = value;
+      const { actionType, actionSource } = reportExtra || {};
+
+      const request = aiChatService.createRequest(message, agentId!, command);
+      if (!request) {
+        return;
+      }
+
+      setLoading(true);
+      aiChatService.setLatestRequestId(request.requestId);
+
+      const startTime = Date.now();
+      const reportType = ChatProxyService.AGENT_ID === agentId ? AISerivceType.Chat : AISerivceType.Agent;
+      const relationId = aiReporter.start(command || reportType, {
+        message,
+        agentId,
+        userMessage: message,
+        actionType,
+        actionSource,
+      });
+
+      msgHistoryManager.addUserMessage({
+        content: message,
+        agentId: agentId!,
+        agentCommand: command!,
+        relationId,
+      });
+
+      await renderUserMessage({
+        relationId,
+        message,
+        agentId,
+      });
 
       aiChatService.sendRequest(request);
-      handleDispatchMessage({ type: 'add', payload: [aiMessage] });
+
+      const msgId = msgHistoryManager.addAssistantMessage({
+        content: '',
+        relationId,
+        requestId: request.requestId,
+        replyStartTime: startTime,
+      });
+
+      await renderReply({
+        startTime,
+        relationId,
+        message,
+        agentId,
+        request,
+        msgId,
+      });
     },
     [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom],
   );
 
-  const handleSend = React.useCallback(async (value: IChatMessageStructure) => {
-    const { message, command, reportExtra } = value;
+  const handleSend = React.useCallback(
+    async (value: IChatMessageStructure) => {
+      const { message, command, reportExtra } = value;
 
-    const agentId = value.agentId ? value.agentId : ChatProxyService.AGENT_ID;
-    return handleAgentReply({ message, agentId, command, reportExtra });
-  }, []);
+      const agentId = value.agentId ? value.agentId : ChatProxyService.AGENT_ID;
+      return handleAgentReply({ message, agentId, command, reportExtra });
+    },
+    [handleAgentReply],
+  );
 
   const handleClear = React.useCallback(() => {
     aiChatService.clearSessionModel();
     chatApiService.clearHistoryMessages();
+    clearChatContent();
+  }, [messageListData]);
+
+  const clearChatContent = React.useCallback(() => {
     containerRef?.current?.classList.remove(SCROLL_CLASSNAME);
     handleDispatchMessage({ type: 'init', payload: [firstMsg] });
   }, [messageListData]);
@@ -480,43 +573,70 @@ export const AIChatView = observer(() => {
     layoutService.toggleSlot(AI_CHAT_VIEW_ID);
   }, [layoutService]);
 
+  const HeaderRender: ChatViewHeaderRender = chatRenderRegistry.chatViewHeaderRender || DefaultChatViewHeader;
+
+  const recover = React.useCallback(
+    async (cancellationToken: CancellationToken) => {
+      for (const msg of msgHistoryManager.getMessages()) {
+        if (cancellationToken.isCancellationRequested) {
+          return;
+        }
+        if (msg.role === ChatMessageRole.User) {
+          await renderUserMessage({
+            relationId: msg.relationId!,
+            message: msg.content,
+            agentId: msg.agentId,
+            command: msg.agentCommand,
+          });
+        } else if (msg.role === ChatMessageRole.Assistant && msg.requestId) {
+          const request = aiChatService.sessionModel.getRequest(msg.requestId)!;
+          if (!request.response.isComplete) {
+            setLoading(true);
+          }
+          await renderReply({
+            msgId: msg.id,
+            relationId: msg.relationId!,
+            message: msg.content,
+            agentId: msg.agentId,
+            command: msg.agentCommand,
+            startTime: msg.replyStartTime!,
+            request: aiChatService.sessionModel.getRequest(msg.requestId)!,
+          });
+        } else if (msg.role === ChatMessageRole.Assistant && msg.content) {
+          await renderSimpleMarkdownReply({
+            relationId: msg.relationId!,
+            chunk: msg.content,
+          });
+        } else if (msg.role === ChatMessageRole.Assistant && msg.componentId) {
+          await renderCustomComponent({
+            relationId: msg.relationId!,
+            chunk: {
+              kind: 'component',
+              component: msg.componentId,
+              value: msg.componentValue,
+            },
+          });
+        }
+      }
+    },
+    [renderReply],
+  );
+
+  React.useEffect(() => {
+    // 尝试重新渲染历史记录
+    clearChatContent();
+    const cancellationTokenSource = new CancellationTokenSource();
+    setLoading(false);
+    recover(cancellationTokenSource.token);
+    return () => {
+      cancellationTokenSource.cancel();
+    };
+  }, [aiChatService.sessionModel]);
+
   return (
     <div id={styles.ai_chat_view}>
       <div className={styles.header_container}>
-        <div className={styles.left}>
-          <span className={styles.title}>{aiAssistantName}</span>
-        </div>
-        <div className={styles.right}>
-          <Popover
-            overlayClassName={styles.popover_icon}
-            id={'ai-chat-header-clear'}
-            title={localize('aiNative.operate.clear.title')}
-          >
-            <EnhanceIcon
-              wrapperClassName={styles.action_btn}
-              className={getIcon('clear')}
-              onClick={handleClear}
-              tabIndex={0}
-              role='button'
-              ariaLabel={localize('aiNative.operate.clear.title')}
-            />
-          </Popover>
-          <Popover
-            overlayClassName={styles.popover_icon}
-            id={'ai-chat-header-close'}
-            position={PopoverPosition.left}
-            title={localize('aiNative.operate.close.title')}
-          >
-            <EnhanceIcon
-              wrapperClassName={styles.action_btn}
-              className={getIcon('window-close')}
-              onClick={handleCloseChatView}
-              tabIndex={0}
-              role='button'
-              ariaLabel={localize('aiNative.operate.close.title')}
-            />
-          </Popover>
-        </div>
+        <HeaderRender handleClear={handleClear} handleCloseChatView={handleCloseChatView}></HeaderRender>
       </div>
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
@@ -575,3 +695,52 @@ export const AIChatView = observer(() => {
     </div>
   );
 });
+
+export function DefaultChatViewHeader({
+  handleClear,
+  handleCloseChatView,
+}: {
+  handleClear: () => any;
+  handleCloseChatView: () => any;
+}) {
+  const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
+
+  return (
+    <>
+      <div className={styles.left}>
+        <span className={styles.title}>{aiAssistantName}</span>
+      </div>
+      <div className={styles.right}>
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-clear'}
+          title={localize('aiNative.operate.clear.title')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('clear')}
+            onClick={handleClear}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.operate.clear.title')}
+          />
+        </Popover>
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-close'}
+          position={PopoverPosition.left}
+          title={localize('aiNative.operate.close.title')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('window-close')}
+            onClick={handleCloseChatView}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.operate.close.title')}
+          />
+        </Popover>
+      </div>
+    </>
+  );
+}

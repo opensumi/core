@@ -48,12 +48,14 @@ import styles from './components.module.less';
 interface IChatReplyProps {
   relationId: string;
   request: ChatRequestModel;
+  history: MsgHistoryManager;
   startTime?: number;
   agentId?: string;
   command?: string;
   onRegenerate?: () => void;
   onDidChange?: () => void;
   onDone?: () => void;
+  msgId: string;
 }
 
 const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) => {
@@ -157,13 +159,24 @@ const ComponentRender = (props: { component: string; value?: unknown }) => {
     deferred.promise.then(({ component: Component, initialProps }) => {
       setNode(<Component {...initialProps} value={props.value} />);
     });
-  }, []);
+  }, [props.component, props.value]);
 
   return node;
 };
 
 export const ChatReply = (props: IChatReplyProps) => {
-  const { relationId, request, startTime = 0, onRegenerate, onDidChange, onDone, agentId, command } = props;
+  const {
+    relationId,
+    request,
+    startTime = 0,
+    onRegenerate,
+    onDidChange,
+    onDone,
+    agentId,
+    command,
+    history,
+    msgId,
+  } = props;
 
   const [, update] = useReducer((num) => (num + 1) % 1_000_000, 0);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
@@ -173,12 +186,9 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const msgHistoryManager = useInjectable<MsgHistoryManager>(MsgHistoryManager);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
-
-    let msgId = '';
 
     disposableCollection.push(
       request.response.onDidChange(() => {
@@ -186,14 +196,7 @@ export const ChatReply = (props: IChatReplyProps) => {
           onDidChange();
         }
 
-        if (!msgId) {
-          msgId = msgHistoryManager.addAssistantMessage({
-            content: '',
-            relationId,
-          });
-        }
-
-        msgHistoryManager.updateAssistantMessage(msgId, { content: request.response.responseText });
+        history.updateAssistantMessage(msgId, { content: request.response.responseText });
 
         if (request.response.isComplete) {
           if (onDone) {
