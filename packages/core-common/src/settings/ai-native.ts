@@ -15,7 +15,7 @@ export enum AINativeSettingSectionsId {
   IntelligentCompletionsPromptEngineeringEnabled = 'ai.native.intelligentCompletions.promptEngineering.enabled',
   IntelligentCompletionsDebounceTime = 'ai.native.intelligentCompletions.debounceTime',
   IntelligentCompletionsCacheEnabled = 'ai.native.intelligentCompletions.cache.enabled',
-  IntelligentCompletionsAlwaysVisible = 'ai.native.intelligentCompletions.always.visible',
+  IntelligentCompletionsAlwaysVisible = 'ai.native.intelligentCompletions.alwaysVisible',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';

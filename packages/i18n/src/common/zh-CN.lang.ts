@@ -1259,7 +1259,7 @@ export const localizationBundle = {
       '是否启用提示词工程，一些 LLM 模型在提示词工程上可能表现不佳。',
     'preference.ai.native.intelligentCompletions.debounceTime': '智能补全的延迟时间（毫秒）',
     'preference.ai.native.intelligentCompletions.cache.enabled': '是否启用智能补全的缓存',
-    'preference.ai.native.intelligentCompletions.always.visible': '是否总是展示智能补全',
+    'preference.ai.native.intelligentCompletions.alwaysVisible': '是否总是展示智能补全',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

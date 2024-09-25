@@ -345,7 +345,7 @@ export class AINativeBrowserContribution
           },
           {
             id: AINativeSettingSectionsId.IntelligentCompletionsAlwaysVisible,
-            localized: 'preference.ai.native.intelligentCompletions.always.visible',
+            localized: 'preference.ai.native.intelligentCompletions.alwaysVisible',
           },
         ],
       });

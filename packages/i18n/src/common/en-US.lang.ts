@@ -1494,7 +1494,7 @@ export const localizationBundle = {
       'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
     'preference.ai.native.intelligentCompletions.debounceTime': 'Debounce time for intelligent completions',
     'preference.ai.native.intelligentCompletions.cache.enabled': 'Whether to enable cache for intelligent completions',
-    'preference.ai.native.intelligentCompletions.always.visible': 'Whether to always show intelligent completions',
+    'preference.ai.native.intelligentCompletions.alwaysVisible': 'Whether to always show intelligent completions',
     // #endregion AI Native
 
     // #endregion merge editor
