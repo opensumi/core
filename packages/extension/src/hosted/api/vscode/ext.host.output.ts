@@ -57,23 +57,23 @@ const OUTPUT_BATCH_DURATION_MS = 5;
 export class OutputChannelImpl implements types.OutputChannel {
   private disposed: boolean;
 
-  private proxy: IMainThreadOutput;
+  readonly #proxy: IMainThreadOutput;
 
   private batchedOutputLine = '';
 
   private batchedTimer: NodeJS.Timeout | null = null;
 
-  constructor(readonly name: string, private rpcProtocol: IRPCProtocol) {
-    this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadOutput);
+  constructor(readonly name: string, rpcProtocol: IRPCProtocol) {
+    this.#proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadOutput);
   }
 
   replace(value: string): void {
-    this.proxy.$replace(this.name, value);
+    this.#proxy.$replace(this.name, value);
   }
 
   dispose(): void {
     if (!this.disposed) {
-      this.proxy.$dispose(this.name).then(() => {
+      this.#proxy.$dispose(this.name).then(() => {
         this.disposed = true;
       });
     }
@@ -100,11 +100,11 @@ export class OutputChannelImpl implements types.OutputChannel {
 
   clear(): void {
     this.validate();
-    this.proxy.$clear(this.name);
+    this.#proxy.$clear(this.name);
   }
 
   protected flushOutputString() {
-    this.proxy.$append(this.name, this.batchedOutputLine);
+    this.#proxy.$append(this.name, this.batchedOutputLine);
     this.batchedOutputLine = '';
     if (this.batchedTimer) {
       clearTimeout(this.batchedTimer);
@@ -114,16 +114,16 @@ export class OutputChannelImpl implements types.OutputChannel {
 
   show(preserveFocus: boolean | undefined): void {
     this.validate();
-    this.proxy.$reveal(this.name, !!preserveFocus);
+    this.#proxy.$reveal(this.name, !!preserveFocus);
   }
 
   hide(): void {
     this.validate();
-    this.proxy.$close(this.name);
+    this.#proxy.$close(this.name);
   }
 
   setLanguageId(languageId: string): void {
-    this.proxy.$setLanguageId(this.name, languageId);
+    this.#proxy.$setLanguageId(this.name, languageId);
   }
 
   protected validate(): void {

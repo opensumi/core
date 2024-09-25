@@ -375,4 +375,10 @@ export class SumiConnection implements IDisposable {
   private traceRequestError(requestId: number, method: string, args: any[], error: any) {
     this.capturer.captureSendRequestFail(requestId, method, error);
   }
+
+  toJSON() {
+    throw new Error(
+      "You're trying to serialize a SumiConnection instance, which is not allowed.\nPlease check your code, and remove the rpc proxy reference.",
+    );
+  }
 }

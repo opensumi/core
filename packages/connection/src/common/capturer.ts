@@ -71,7 +71,7 @@ export class Capturer implements IDisposable {
     }
   };
 
-  constructor(protected source: string) {
+  constructor(public source: string) {
     this.prefix = randomString(6);
     this.capturer = getCapturer();
 
