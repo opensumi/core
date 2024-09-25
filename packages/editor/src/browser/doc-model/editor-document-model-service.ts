@@ -307,11 +307,10 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       throw new Error(`No document provider found for ${uri.toString()}`);
     }
 
-    const [content, readonly, languageId, eol, alwaysDirty, closeAutoSave, disposeEvenDirty] = await Promise.all([
+    const [content, readonly, languageId, alwaysDirty, closeAutoSave, disposeEvenDirty] = await Promise.all([
       provider.provideEditorDocumentModelContent(uri, encoding),
       provider.isReadonly ? provider.isReadonly(uri) : undefined,
       provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined,
-      provider.provideEOL ? provider.provideEOL(uri) : undefined,
       provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false,
       provider.closeAutoSave ? provider.closeAutoSave(uri) : false,
       provider.disposeEvenDirty ? provider.disposeEvenDirty(uri) : false,
@@ -321,6 +320,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     if (!encoding && provider.provideEncoding) {
       encoding = await provider.provideEncoding(uri);
     }
+
+    const eol = provider.provideEOL ? await provider.provideEOL(uri) : EOL.LF;
 
     const savable = !!provider.saveDocumentModel;
 
