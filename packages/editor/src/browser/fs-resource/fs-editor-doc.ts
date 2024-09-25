@@ -48,6 +48,7 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
   protected _fileContentMd5OnBrowserFs: Set<string> = new Set();
 
   private _detectedEncodingMap = new Map<string, string>();
+  private _detectedEolMap = new Map<string, EOL>();
 
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
@@ -85,21 +86,15 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
   }
 
   async provideEOL(uri: URI) {
-    const backendOS = await this.applicationService.getBackendOS();
-    const eol = this.preferenceService.get<EOL | 'auto'>(
-      'files.eol',
-      'auto',
-      uri.toString(),
-      getLanguageIdFromMonaco(uri)!,
-    )!;
-
-    if (eol !== 'auto') {
-      return eol;
+    const cache = this._detectedEolMap.get(uri.toString());
+    if (cache) {
+      return cache;
     }
+    const backendOS = await this.applicationService.getBackendOS();
     return backendOS === OperatingSystem.Windows ? EOL.CRLF : EOL.LF;
   }
 
-  async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string; content: string }> {
+  async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string; content: string; eol: EOL }> {
     const { content: buffer } = await this.fileServiceClient.readFile(uri.toString());
 
     const guessEncoding =
@@ -118,17 +113,61 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
 
     const content = buffer.toString(detected.encoding);
 
+    const eol = await this.getEol(uri, content);
     const uriString = uri.toString();
 
     this._detectedEncodingMap.set(uriString, detected.encoding);
+    this._detectedEolMap.set(uriString, eol);
 
-    // 记录表示这个文档被[这个editorDocumentProvider]引用了
+    // 记录表示这个文档被引用了
     this._fileContentMd5OnBrowserFs.add(uriString);
 
     return {
       encoding: detected.encoding || UTF8,
       content,
+      eol,
     };
+  }
+
+  private async getEol(uri: URI, content: string) {
+    const contentToDetect = content.slice(0, 2000);
+    let cr = 0;
+    let lf = 0;
+    let crlf = 0;
+    const len = contentToDetect.length;
+    for (let i = 0; i < len; i++) {
+      if (contentToDetect[i] === '\r') {
+        if (contentToDetect[i + 1] === '\n') {
+          crlf++;
+          // 跳过后续 \n
+          i++;
+        } else {
+          cr++;
+        }
+      } else if (contentToDetect[i] === '\n') {
+        lf++;
+      }
+    }
+
+    const totalEOLCount = cr + lf + crlf;
+    const totalCRCount = cr + crlf;
+    const eol = this.preferenceService.get<EOL | 'auto'>(
+      'files.eol',
+      'auto',
+      uri.toString(),
+      getLanguageIdFromMonaco(uri)!,
+    )!;
+    if (eol !== 'auto') {
+      return eol;
+    }
+    const defaultEOL = await this.provideEOL(uri);
+    if (totalEOLCount === 0) {
+      return defaultEOL;
+    }
+    if (totalCRCount > totalEOLCount / 2) {
+      return EOL.CRLF;
+    }
+    return EOL.LF;
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding: string) {
