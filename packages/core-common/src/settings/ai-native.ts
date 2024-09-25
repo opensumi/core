@@ -12,9 +12,10 @@ export enum AINativeSettingSectionsId {
   /**
    * Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.
    */
-  InlineCompletionsPromptEngineeringEnabled = 'ai.native.inlineCompletions.promptEngineering.enabled',
-  InlineCompletionsDebounceTime = 'ai.native.inlineCompletions.debounceTime',
-  InlineCompletionsCacheEnabled = 'ai.native.inlineCompletions.cache.enabled',
+  IntelligentCompletionsPromptEngineeringEnabled = 'ai.native.intelligentCompletions.promptEngineering.enabled',
+  IntelligentCompletionsDebounceTime = 'ai.native.intelligentCompletions.debounceTime',
+  IntelligentCompletionsCacheEnabled = 'ai.native.intelligentCompletions.cache.enabled',
+  IntelligentCompletionsAlwaysVisible = 'ai.native.intelligentCompletions.always.visible',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';

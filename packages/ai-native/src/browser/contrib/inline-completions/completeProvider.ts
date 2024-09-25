@@ -65,13 +65,13 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     super();
 
     this.inlineComletionsDebounceTime = this.preferenceService.getValid(
-      AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+      AINativeSettingSectionsId.IntelligentCompletionsDebounceTime,
       150,
     );
 
     this.addDispose(
       this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.InlineCompletionsDebounceTime,
+        AINativeSettingSectionsId.IntelligentCompletionsDebounceTime,
         ({ newValue }) => {
           this.inlineComletionsDebounceTime = newValue;
         },

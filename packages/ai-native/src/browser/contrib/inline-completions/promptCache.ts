@@ -36,13 +36,13 @@ export class PromptCache implements IDisposable {
   protected _isCacheEnabled = false;
   constructor() {
     this._isCacheEnabled = this.preferenceService.getValid(
-      AINativeSettingSectionsId.InlineCompletionsCacheEnabled,
+      AINativeSettingSectionsId.IntelligentCompletionsCacheEnabled,
       true,
     );
 
     this._disposables.add(
       this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.InlineCompletionsCacheEnabled,
+        AINativeSettingSectionsId.IntelligentCompletionsCacheEnabled,
         (e) => {
           this._isCacheEnabled = e.newValue;
         },

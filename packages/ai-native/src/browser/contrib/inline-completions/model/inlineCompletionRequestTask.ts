@@ -67,13 +67,13 @@ export class InlineCompletionRequestTask extends Disposable {
     this.isCancelFlag = false;
 
     this.isEnablePromptEngineering = this.preferenceService.getValid(
-      AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
+      AINativeSettingSectionsId.IntelligentCompletionsPromptEngineeringEnabled,
       this.isEnablePromptEngineering,
     );
 
     this._disposables.add(
       this.preferenceService.onSpecificPreferenceChange(
-        AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
+        AINativeSettingSectionsId.IntelligentCompletionsPromptEngineeringEnabled,
         ({ newValue }) => {
           this.isEnablePromptEngineering = newValue;
         },
@@ -143,7 +143,6 @@ export class InlineCompletionRequestTask extends Disposable {
       return [];
     }
 
-    this.aiCompletionsService.updateStatusBarItem('running', true);
     const requestStartTime = Date.now();
 
     let completeResult: IIntelligentCompletionsResult | undefined;
@@ -157,7 +156,9 @@ export class InlineCompletionRequestTask extends Disposable {
       completeResult = cacheData;
     } else {
       try {
+        this.aiCompletionsService.updateStatusBarItem('running', true);
         completeResult = await this.aiCompletionsService.complete(requestBean);
+        this.aiCompletionsService.hideStatusBarItem();
       } catch (error) {
         this.aiCompletionsService.reporterEnd(relationId, {
           success: false,
