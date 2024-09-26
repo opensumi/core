@@ -223,6 +223,8 @@ export class OpenVsxExtensionManagerModule extends NodeModule {
 
 GDataStore 会实现默认的 CRUD 接口，让你使用它就像使用一个 MongoDB 数据库一样。
 
+这部分的思路来自 feathers，这是一个很有个性的后端框架，提供了非常方便的接口声明以及数据操作。
+
 来看一个实际的场景，我们有一个全局的 TerminalService，它会监听 GDataStore(TerminalDataStore) 的 created/removed 事件，然后做相关处理。
 
 ```ts
@@ -230,12 +232,12 @@ interface Item {
   id: string;
 }
 
-interface GDataStore<T extends Item> {
-  create(item: Item): void;
+export interface GDataStore<T extends Item> {
+  create(item: T): void;
   find(query: Record<string, any>): void;
   size(query: Record<string, any>): void;
-  get(id: string, query?: Record<string, any>): Item;
-  update(id: string, item: Partial<Item>): void;
+  get(id: string, query?: Record<string, any>): T;
+  update(id: string, item: Partial<T>): void;
   remove(id: string): void;
 }
 

@@ -238,3 +238,11 @@ export type RemoveReadonly<T> = {
 export function removeReadonly<T>(obj: T): RemoveReadonly<T> {
   return obj as any;
 }
+
+export function isIterable<T = any>(obj: any): obj is Iterable<T> {
+  // checks for null and undefined
+  if (obj == null) {
+    return false;
+  }
+  return typeof obj[Symbol.iterator] === 'function';
+}
