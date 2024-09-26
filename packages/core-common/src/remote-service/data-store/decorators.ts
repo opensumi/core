@@ -9,7 +9,8 @@ const dataStore = {
 
 function addTokenTo(type: 'global' | 'session', token: string, options?: DataStoreOptions) {
   if (dataStore[type].find((v) => v[0] === token)) {
-    throw new Error(`Token ${token} has been declared in type ${type}`);
+    // 同样的 token 只能被注入一次，options 也以第一次为准
+    return;
   }
 
   dataStore[type].push([token, options || {}]);
