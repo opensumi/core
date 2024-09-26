@@ -8,7 +8,7 @@ import fs from 'fs-extra';
 import nodeFetch, { RequestInit } from 'node-fetch';
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { CLIENT_ID_TOKEN, sleep, uuid } from '@opensumi/ide-core-common';
+import { sleep, uuid } from '@opensumi/ide-core-common';
 import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { AppConfig, RemoteService } from '@opensumi/ide-core-node';
 

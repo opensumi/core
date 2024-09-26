@@ -9,10 +9,9 @@ import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@o
 import {
   CLIENT_ID_TOKEN,
   RemoteService,
-  RemoteServiceInternal,
-  createRemoteService,
-  createRemoteServiceChildInjector,
+  getRemoteServiceData,
   injectSessionDataStores,
+  runInRemoteServiceContext,
 } from '@opensumi/ide-core-common';
 
 import { INodeLogger } from './logger/node-logger';
@@ -99,78 +98,83 @@ export function bindModuleBackService(
   clientId: string,
 ) {
   const { createRPCService } = initRPCService(serviceCenter);
+  const childInjector = injector.createChild();
 
-  return createRemoteServiceChildInjector(injector, (childInjector) => {
-    injectSessionDataStores(childInjector);
-    childInjector.addProviders({
-      token: CLIENT_ID_TOKEN,
-      useValue: clientId,
-    });
+  injectSessionDataStores(childInjector);
+  childInjector.addProviders({
+    token: CLIENT_ID_TOKEN,
+    useValue: clientId,
+  });
 
-    function bindService(serviceInstance: RemoteServiceInternal) {
-      if (serviceInstance.setConnectionClientId) {
-        serviceInstance.setConnectionClientId(clientId);
-      }
-      const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
-      if (!serviceInstance.rpcClient) {
-        serviceInstance.rpcClient = [stub];
+  for (const m of modules) {
+    if (m.backServices) {
+      for (const service of m.backServices) {
+        if (!service.token) {
+          continue;
+        }
+
+        if (service.protocol) {
+          serviceCenter.loadProtocol(service.protocol);
+        }
+
+        const serviceToken = service.token;
+
+        if (!injector.creatorMap.has(serviceToken)) {
+          continue;
+        }
+
+        const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
+
+        if ((creator as FactoryCreator).useFactory) {
+          const serviceFactory = (creator as FactoryCreator).useFactory;
+          childInjector.addProviders({
+            token: serviceToken,
+            useValue: serviceFactory(childInjector),
+          });
+        } else {
+          const serviceClass = (creator as ClassCreator).useClass;
+          childInjector.addProviders({
+            token: serviceToken,
+            useClass: serviceClass,
+          });
+        }
+
+        const serviceInstance = childInjector.get(serviceToken);
+
+        if (serviceInstance.setConnectionClientId) {
+          serviceInstance.setConnectionClientId(clientId);
+        }
+        const stub = createRPCService(service.servicePath, serviceInstance);
+        if (!serviceInstance.rpcClient) {
+          serviceInstance.rpcClient = [stub];
+        }
       }
     }
 
-    for (const m of modules) {
-      if (m.backServices) {
-        for (const service of m.backServices) {
-          if (!service.token) {
-            continue;
-          }
-
-          if (service.protocol) {
-            serviceCenter.loadProtocol(service.protocol);
-          }
-
-          const serviceToken = service.token;
-
-          if (!injector.creatorMap.has(serviceToken)) {
-            continue;
-          }
-
-          const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
-
-          if ((creator as FactoryCreator).useFactory) {
-            const serviceFactory = (creator as FactoryCreator).useFactory;
-            childInjector.addProviders({
-              token: serviceToken,
-              useValue: serviceFactory(childInjector),
-            });
-          } else {
-            const serviceClass = (creator as ClassCreator).useClass;
-            childInjector.addProviders({
-              token: serviceToken,
-              useClass: serviceClass,
-            });
-          }
-
-          const serviceInstance = childInjector.get(serviceToken);
-
-          bindService(serviceInstance);
-        }
-      }
-
+    runInRemoteServiceContext(childInjector, () => {
       if (m.remoteServices) {
         for (const service of m.remoteServices) {
-          const serviceInstance = createRemoteService(childInjector, service);
-
-          if (!Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
+          const serviceInstance = childInjector.get(service);
+          const data = getRemoteServiceData(service);
+          if (!data || !data.servicePath) {
             throw new Error(`Remote service ${RemoteService.getName(service)} must have servicePath`);
           }
 
-          if (serviceInstance.protocol) {
-            serviceCenter.loadProtocol(serviceInstance.protocol);
+          if (data.protocol) {
+            serviceCenter.loadProtocol(data.protocol);
           }
 
-          bindService(serviceInstance);
+          if (serviceInstance.setConnectionClientId) {
+            serviceInstance.setConnectionClientId(clientId);
+          }
+          const stub = createRPCService(data.servicePath, serviceInstance);
+          if (!serviceInstance.rpcClient) {
+            serviceInstance.rpcClient = [stub];
+          }
         }
       }
-    }
-  });
+    });
+  }
+
+  return childInjector;
 }
