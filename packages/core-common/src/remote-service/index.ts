@@ -1,44 +1,56 @@
-import { ConstructorOf, Injectable, Injector, Optional, Token } from '@opensumi/di';
+import { ConstructorOf, Injector, Token, markInjectable } from '@opensumi/di';
 
 import { RPCProtocol } from '../types/rpc';
 
 export * from './data-store';
 
+export const CLIENT_ID_TOKEN = Symbol('CLIENT_ID_TOKEN');
+
 const RemoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag');
 const __remoteServiceInstantiateFlagAllowed = Symbol('RemoteServiceInstantiateFlag_allow');
 const __remoteServiceInstantiateFlagDisallowed = Symbol('RemoteServiceInstantiateFlag_disallow');
 
-@Injectable()
-export abstract class RemoteService<Client = any> {
-  abstract readonly servicePath: string;
+export function RemoteService(servicePath: string, protocol?: RPCProtocol<any>) {
+  return function <T extends new (...args: any[]) => any>(constructor: T) {
+    markInjectable(constructor);
+
+    return class extends constructor {
+      servicePath = servicePath;
+      protocol = protocol;
+
+      constructor(...args: any[]) {
+        if (args.length > 1) {
+          throw new Error('RemoteService can be only instantiated when frontend first connected.');
+        }
+        if (__remoteServiceInstantiateFlagAllowed !== args[0]) {
+          throw new Error('RemoteService can be only instantiated when frontend first connected.');
+        }
+
+        super(...args);
+      }
+    };
+  };
+}
+
+RemoteService.getName = function (service: Token | ConstructorOf<any>): string {
+  if (typeof service === 'function') {
+    return service.name;
+  }
+  return String(service);
+};
+
+export interface RemoteServiceInternal<Client = any> {
+  servicePath: string;
   protocol?: RPCProtocol<any>;
 
-  private _clientId: string;
-  private _client: Client;
-  get rpcClient() {
-    return this._client;
-  }
-  get clientId() {
-    return this._clientId;
-  }
+  rpcClient: Client[];
 
-  protected constructor(@Optional(RemoteServiceInstantiateFlag) flag: symbol) {
-    if (flag !== __remoteServiceInstantiateFlagAllowed) {
-      throw new Error('Cannot use RemoteService instance directly.');
-    }
-  }
+  setConnectionClientId?(clientId: string): void;
+}
 
-  init(clientId: string, client: Client) {
-    this._clientId = clientId;
-    this._client = client;
-  }
-
-  static getName(service: Token | ConstructorOf<RemoteService>): string {
-    if (typeof service === 'function') {
-      return service.name;
-    }
-    return String(service);
-  }
+export function createRemoteService(injector: Injector, service: Token | ConstructorOf<any>): RemoteServiceInternal {
+  const flag = injector.get(RemoteServiceInstantiateFlag);
+  return injector.get(service, [flag]);
 }
 
 export function createRemoteServiceChildInjector(injector: Injector, fn: (childInjector: Injector) => void): Injector {

@@ -7,11 +7,10 @@ import compressing from 'compressing';
 import fs from 'fs-extra';
 import nodeFetch, { RequestInit } from 'node-fetch';
 
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { uuid } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { CLIENT_ID_TOKEN, sleep, uuid } from '@opensumi/ide-core-common';
 import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
-import { RemoteService } from '@opensumi/ide-core-node';
-import { AppConfig } from '@opensumi/ide-core-node/lib/types';
+import { AppConfig, RemoteService } from '@opensumi/ide-core-node';
 
 import {
   IAlipayCloudMarketplaceService,
@@ -27,10 +26,8 @@ function cleanup(paths: string[]) {
   return Promise.all(paths.map((path) => fs.remove(path)));
 }
 
-@Injectable()
-export class VSXExtensionRemoteService extends RemoteService implements IVSXExtensionBackService {
-  servicePath = VSXExtensionServicePath;
-
+@RemoteService(VSXExtensionServicePath)
+export class VSXExtensionRemoteService implements IVSXExtensionBackService {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -181,10 +178,6 @@ export class VSXExtensionRemoteService extends RemoteService implements IVSXExte
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
     return await this.getMarketplace().search(param);
   }
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const nodeFetchRetry = async (

@@ -153,27 +153,39 @@ export class BasicModule {
   // ...
   backServices?: BackService[];
 
-  remoteServices?: (Token | ConstructorOf<RemoteService>)[];
+  remoteServices?: (Token | ConstructorOf<any>)[];
 }
 ```
 
-同时我们定义 RemoteService 为一个 abstract class:
+我们决定将 RemoteService 定义为装饰器:
 
 ```ts
-@Injectable()
-export abstract class RemoteService<Client = any> {
-  abstract readonly servicePath: string;
-  protocol?: RPCProtocol<any>;
+export function RemoteService(servicePath: string, protocol?: RPCProtocol<any>) {
+  return function <T extends new (...args: any[]) => any>(constructor: T) {
+    markInjectable(constructor);
 
-  constructor(@Optional(RemoteServiceInstantiateFlag) flag: symbol) {
-    if (flag !== __remoteServiceInstantiateFlag) {
-      throw new Error('Cannot create RemoteService instance directly');
-    }
-  }
+    return class extends constructor {
+      servicePath = servicePath;
+      protocol = protocol;
+
+      constructor(...args: any[]) {
+        if (args.length > 1) {
+          throw new Error('Cannot use RemoteService instance directly.');
+        }
+        if (__remoteServiceInstantiateFlagAllowed !== args[0]) {
+          throw new Error('Cannot use RemoteService instance directly.');
+        }
+
+        super(...args);
+      }
+    };
+  };
 }
 ```
 
-所有的 Remote Service 必须继承自这个 RemoteService，我们在前端连接建立后会实例化每一个 XRemoteService。逻辑见： [core-node/src/connection.ts#L144](https://github.com/opensumi/core/blob/37906914e7c3ff325d74e0be1945f1a66def6232/packages/core-node/src/connection.ts#L144)。
+TypeScript 的装饰器是可以装饰 class 的 constructor 的，见：[Class Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#class-decorators)
+
+用 RemoteService 装饰的类在前端连接建立后会实例化每一个 XRemoteService。逻辑见： [core-node/src/connection.ts#L144](https://github.com/opensumi/core/blob/37906914e7c3ff325d74e0be1945f1a66def6232/packages/core-node/src/connection.ts#L144)。
 
 原有的 `backServices` 也非常容易迁移到新的 RemoteService 上，能让你写更少的代码。
 

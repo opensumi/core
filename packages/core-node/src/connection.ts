@@ -6,7 +6,14 @@ import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-conne
 import { CommonChannelPathHandler, RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
-import { RemoteService, createRemoteServiceChildInjector, injectSessionDataStores } from '@opensumi/ide-core-common';
+import {
+  CLIENT_ID_TOKEN,
+  RemoteService,
+  RemoteServiceInternal,
+  createRemoteService,
+  createRemoteServiceChildInjector,
+  injectSessionDataStores,
+} from '@opensumi/ide-core-common';
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
@@ -95,6 +102,20 @@ export function bindModuleBackService(
 
   return createRemoteServiceChildInjector(injector, (childInjector) => {
     injectSessionDataStores(childInjector);
+    childInjector.addProviders({
+      token: CLIENT_ID_TOKEN,
+      useValue: clientId,
+    });
+
+    function bindService(serviceInstance: RemoteServiceInternal) {
+      if (serviceInstance.setConnectionClientId) {
+        serviceInstance.setConnectionClientId(clientId);
+      }
+      const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
+      if (!serviceInstance.rpcClient) {
+        serviceInstance.rpcClient = [stub];
+      }
+    }
 
     for (const m of modules) {
       if (m.backServices) {
@@ -131,24 +152,14 @@ export function bindModuleBackService(
 
           const serviceInstance = childInjector.get(serviceToken);
 
-          if (serviceInstance.setConnectionClientId) {
-            serviceInstance.setConnectionClientId(clientId);
-          }
-
-          const stub = createRPCService(service.servicePath, serviceInstance);
-
-          if (!serviceInstance.rpcClient) {
-            serviceInstance.rpcClient = [stub];
-          }
+          bindService(serviceInstance);
         }
       }
 
       if (m.remoteServices) {
         for (const service of m.remoteServices) {
-          const serviceInstance = childInjector.get(service);
-          if (!(serviceInstance instanceof RemoteService)) {
-            throw new Error('Invalid remote service: ' + RemoteService.getName(service));
-          }
+          const serviceInstance = createRemoteService(childInjector, service);
+
           if (!Object.prototype.hasOwnProperty.call(serviceInstance, 'servicePath')) {
             throw new Error(`Remote service ${RemoteService.getName(service)} must have servicePath`);
           }
@@ -157,8 +168,7 @@ export function bindModuleBackService(
             serviceCenter.loadProtocol(serviceInstance.protocol);
           }
 
-          const stub = createRPCService(serviceInstance.servicePath, serviceInstance);
-          serviceInstance.init(clientId, stub);
+          bindService(serviceInstance);
         }
       }
     }
