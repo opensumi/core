@@ -61,6 +61,8 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   private whenMultiLineEditsVisibleDisposable: Disposable;
 
   public mount(): IDisposable {
+    this.handlerAlwaysVisiblePreference();
+
     const provider = this.intelligentCompletionsRegistry.getProvider();
     if (!provider) {
       return this;
@@ -72,7 +74,6 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
 
     this.registerFeature(this.monacoEditor);
-    this.handlerAlwaysVisiblePreference();
     return this;
   }
 
