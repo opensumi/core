@@ -130,21 +130,21 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
   }
 
   private async getEol(uri: URI, content: string) {
-    const contentToDetect = content.slice(0, 2000);
+    const MAX_DETECT_LENGTH = 2000;
     let cr = 0;
     let lf = 0;
     let crlf = 0;
-    const len = contentToDetect.length;
+    const len = Math.min(MAX_DETECT_LENGTH, content.length);
     for (let i = 0; i < len; i++) {
-      if (contentToDetect[i] === '\r') {
-        if (contentToDetect[i + 1] === '\n') {
+      if (content[i] === '\r') {
+        if (content[i + 1] === '\n') {
           crlf++;
           // 跳过后续 \n
           i++;
         } else {
           cr++;
         }
-      } else if (contentToDetect[i] === '\n') {
+      } else if (content[i] === '\n') {
         lf++;
       }
     }
