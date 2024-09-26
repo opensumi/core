@@ -31,7 +31,8 @@ export function regExpLeadsToEndlessLoop(regexp: RegExp): boolean {
 }
 
 export class ExtHostDocumentData extends MirrorTextModel {
-  private _proxy: IMainThreadDocumentsShape;
+  readonly #proxy: IMainThreadDocumentsShape;
+
   private _languageId: string;
   private _isDirty: boolean;
   private _document: vscode.TextDocument;
@@ -48,7 +49,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
     isDirty: boolean,
   ) {
     super(uri, lines, eol, versionId);
-    this._proxy = proxy;
+    this.#proxy = proxy;
     this._languageId = languageId;
     this._isDirty = isDirty;
   }
@@ -147,7 +148,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
     if (this._isDisposed) {
       return Promise.reject(new Error('Document has been closed'));
     }
-    return this._proxy.$trySaveDocument(this._uri.toString());
+    return this.#proxy.$trySaveDocument(this._uri.toString());
   }
 
   private _getTextInRange(_range: vscode.Range): string {

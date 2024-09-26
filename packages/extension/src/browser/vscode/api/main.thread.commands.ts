@@ -13,7 +13,7 @@ export interface IExtCommandHandler extends IDisposable {
 }
 @Injectable({ multiple: true })
 export class MainThreadCommands implements IMainThreadCommands {
-  private readonly proxy: IExtHostCommands;
+  readonly #proxy: IExtHostCommands;
 
   private readonly commands = new Map<string, IExtCommandHandler>();
 
@@ -34,9 +34,9 @@ export class MainThreadCommands implements IMainThreadCommands {
   private disposable = new Disposable();
 
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
-    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
-    this.proxy.$registerBuiltInCommands();
-    this.proxy.$registerCommandConverter();
+    this.#proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
+    this.#proxy.$registerBuiltInCommands();
+    this.#proxy.$registerCommandConverter();
     this.registerUriArgProcessor();
   }
 
@@ -83,7 +83,7 @@ export class MainThreadCommands implements IMainThreadCommands {
   }
 
   $registerCommand(id: string): void {
-    const proxy = this.proxy;
+    const proxy = this.#proxy;
 
     const execute = (...args) => {
       args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
@@ -129,7 +129,7 @@ export class MainThreadCommands implements IMainThreadCommands {
       return this.commands.get(id)!.execute(...args);
     } else {
       args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
-      return this.proxy.$executeContributedCommand(id, ...args);
+      return this.#proxy.$executeContributedCommand(id, ...args);
     }
   }
 

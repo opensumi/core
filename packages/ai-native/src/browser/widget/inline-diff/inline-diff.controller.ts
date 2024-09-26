@@ -28,7 +28,6 @@ import {
 } from './inline-diff-previewer';
 import { InlineDiffWidget } from './inline-diff-widget';
 
-
 export class InlineDiffController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.inline.diff';
 

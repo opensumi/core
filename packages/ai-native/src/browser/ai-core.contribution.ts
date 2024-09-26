@@ -73,12 +73,10 @@ import {
   ChatProxyServiceToken,
 } from '../common';
 
-
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
-import { InlineCompletionSingleHandler } from './contrib/inline-completions/inline-completions.handler';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
 import { IntelligentCompletionsController } from './contrib/intelligent-completions/intelligent-completions.controller';
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
@@ -204,9 +202,6 @@ export class AINativeBrowserContribution
   @Autowired(RenameSingleHandler)
   private readonly renameSingleHandler: RenameSingleHandler;
 
-  @Autowired(InlineCompletionSingleHandler)
-  private readonly inlineCompletionSingleHandler: InlineCompletionSingleHandler;
-
   @Autowired(CodeActionSingleHandler)
   private readonly codeActionSingleHandler: CodeActionSingleHandler;
 
@@ -273,8 +268,7 @@ export class AINativeBrowserContribution
 
   onDidStart() {
     runWhenIdle(() => {
-      const { supportsInlineCompletion, supportsRenameSuggestions, supportsInlineChat } =
-        this.aiNativeConfigService.capabilities;
+      const { supportsRenameSuggestions, supportsInlineChat } = this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
@@ -285,10 +279,6 @@ export class AINativeBrowserContribution
 
       if (supportsRenameSuggestions) {
         this.renameSingleHandler.load();
-      }
-
-      if (supportsInlineCompletion) {
-        this.inlineCompletionSingleHandler.load();
       }
 
       if (supportsInlineChat) {
@@ -339,19 +329,23 @@ export class AINativeBrowserContribution
 
     if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
-        title: localize('preference.ai.native.inlineCompletions.title'),
+        title: localize('preference.ai.native.intelligentCompletions.title'),
         preferences: [
           {
-            id: AINativeSettingSectionsId.InlineCompletionsCacheEnabled,
-            localized: 'preference.ai.native.inlineCompletions.cache.enabled',
+            id: AINativeSettingSectionsId.IntelligentCompletionsCacheEnabled,
+            localized: 'preference.ai.native.intelligentCompletions.cache.enabled',
           },
           {
-            id: AINativeSettingSectionsId.InlineCompletionsDebounceTime,
-            localized: 'preference.ai.native.inlineCompletions.debounceTime',
+            id: AINativeSettingSectionsId.IntelligentCompletionsDebounceTime,
+            localized: 'preference.ai.native.intelligentCompletions.debounceTime',
           },
           {
-            id: AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled,
-            localized: 'preference.ai.native.inlineCompletions.promptEngineering.enabled',
+            id: AINativeSettingSectionsId.IntelligentCompletionsPromptEngineeringEnabled,
+            localized: 'preference.ai.native.intelligentCompletions.promptEngineering.enabled',
+          },
+          {
+            id: AINativeSettingSectionsId.IntelligentCompletionsAlwaysVisible,
+            localized: 'preference.ai.native.intelligentCompletions.alwaysVisible',
           },
         ],
       });
@@ -384,7 +378,6 @@ export class AINativeBrowserContribution
         const { monacoEditor } = editor;
 
         this.codeActionSingleHandler.mountEditor(editor.monacoEditor);
-        this.inlineCompletionSingleHandler.mountEditor(editor.monacoEditor);
 
         return monacoEditor.onDidScrollChange(() => {
           if (this.ctxMenuRenderer.visible) {

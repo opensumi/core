@@ -149,6 +149,10 @@ export type ChatInputRender = (props: {
   command: string;
   setCommand: (theme: string) => void;
 }) => React.ReactElement | React.JSX.Element;
+export type ChatViewHeaderRender = (props: {
+  handleClear: () => any;
+  handleCloseChatView: () => any;
+}) => React.ReactElement | React.JSX.Element;
 
 export interface IChatRenderRegistry {
   registerWelcomeRender(render: ChatWelcomeRender): void;
@@ -166,6 +170,11 @@ export interface IChatRenderRegistry {
    * 输入框渲染
    */
   registerInputRender(render: ChatInputRender): void;
+
+  /**
+   * 顶部栏渲染
+   */
+  registerChatViewHeaderRender(render: ChatViewHeaderRender): void;
 }
 
 export interface IResolveConflictRegistry {

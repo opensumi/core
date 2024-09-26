@@ -1,5 +1,7 @@
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
+  AINativeSettingSectionsId,
   Disposable,
   Event,
   IAICompletionOption,
@@ -9,6 +11,13 @@ import {
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
+import { autorun, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observable';
+import { ObservableValue } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
+import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController';
+import {
+  SuggestItemInfo,
+  SuggestWidgetAdaptor,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
@@ -23,6 +32,7 @@ import {
 } from './diff-computer';
 import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
+import { InlineCompletionsSource } from './intelligent-completions.source';
 import { MultiLineDecorationModel } from './multi-line.decoration';
 
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
@@ -36,21 +46,92 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     return this.injector.get(IntelligentCompletionsRegistryToken);
   }
 
-  private multiLineDecorationModel: MultiLineDecorationModel;
-  private additionsDeletionsDecorationModel: AdditionsDeletionsDecorationModel;
-
-  private aiNativeContextKey: AINativeContextKey;
-
   private get model(): ITextModel {
     return this.monacoEditor.getModel()!;
   }
 
+  private get preferenceService(): PreferenceService {
+    return this.injector.get(PreferenceService);
+  }
+
+  private multiLineDecorationModel: MultiLineDecorationModel;
+  private additionsDeletionsDecorationModel: AdditionsDeletionsDecorationModel;
+  private aiNativeContextKey: AINativeContextKey;
   private rewriteWidget: RewriteWidget | null;
   private whenMultiLineEditsVisibleDisposable: Disposable;
+  private inlineCompletionsSource: InlineCompletionsSource;
 
   public mount(): IDisposable {
     this.whenMultiLineEditsVisibleDisposable = new Disposable();
-    return this.registerFeature(this.monacoEditor);
+    this.multiLineDecorationModel = new MultiLineDecorationModel(this.monacoEditor);
+    this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(this.monacoEditor);
+    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
+    this.inlineCompletionsSource = this.injector.get(InlineCompletionsSource, [this.monacoEditor]);
+
+    this.registerFeature(this.monacoEditor);
+    this.handlerAlwaysVisiblePreference();
+    return this;
+  }
+
+  private handlerAlwaysVisiblePreference(): void {
+    let observableDisposable = new Disposable();
+
+    const register = () => {
+      const inlineCompletionsController = InlineCompletionsController.get(this.monacoEditor);
+      if (inlineCompletionsController) {
+        observableDisposable.addDispose(
+          autorun((reader) => {
+            /**
+             * https://github.com/microsoft/vscode/blob/1.88.1/src/vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider.ts#L23
+             * SuggestWidgetAdaptor 是 inline completions 模块专门用来处理 suggest widget 的适配器
+             * 主要控制当下拉补全出现时阴影字符串的显示与隐藏
+             * 当 selectedItem 有值的时候（也就是选中下拉补全列表项时），会把原来的 inline completions 本身的阴影字符给屏蔽掉
+             * 所以可以利用这点，把 selectedItem 重新置为空即可
+             */
+            const suggestWidgetAdaptor = inlineCompletionsController['_suggestWidgetAdaptor'] as SuggestWidgetAdaptor;
+            const selectedItemObservable = suggestWidgetAdaptor.selectedItem as ObservableValue<
+              SuggestItemInfo | undefined
+            >;
+            const selectedItem = selectedItemObservable.read(reader);
+
+            if (selectedItem) {
+              transaction((tx) => {
+                selectedItemObservable.set(undefined, tx);
+              });
+            }
+          }),
+        );
+      }
+    };
+
+    const unregister = () => {
+      if (observableDisposable) {
+        observableDisposable.dispose();
+        observableDisposable = new Disposable();
+      }
+    };
+
+    const isAlwaysVisible = this.preferenceService.getValid(
+      AINativeSettingSectionsId.IntelligentCompletionsAlwaysVisible,
+      true,
+    );
+
+    if (isAlwaysVisible) {
+      register();
+    }
+
+    this.addDispose(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.IntelligentCompletionsAlwaysVisible,
+        ({ newValue }) => {
+          if (newValue) {
+            register();
+          } else {
+            unregister();
+          }
+        },
+      ),
+    );
   }
 
   private destroyRewriteWidget() {
@@ -63,6 +144,12 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   public async fetchProvider(bean: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
     const provider = this.intelligentCompletionsRegistry.getProvider();
     if (!provider) {
+      return;
+    }
+
+    // 如果上一次补全结果还在，则不重复请求
+    const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
+    if (isVisible) {
       return;
     }
 
@@ -240,11 +327,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     this.hide();
   }
 
-  public registerFeature(monacoEditor: ICodeEditor): IDisposable {
-    this.multiLineDecorationModel = new MultiLineDecorationModel(monacoEditor);
-    this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(monacoEditor);
-    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [monacoEditor.contextKeyService]);
-
+  private registerFeature(monacoEditor: ICodeEditor): void {
     this.addDispose(
       Event.any<any>(
         monacoEditor.onDidChangeCursorPosition,
@@ -279,6 +362,6 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    return this;
+    this.addDispose(this.inlineCompletionsSource.fetch());
   }
 }

@@ -1,49 +1,49 @@
 import debounce from 'lodash/debounce';
 
-import { Autowired, Injectable } from '@opensumi/di';
-import { IDisposable } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import { AI_INLINE_COMPLETION_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import {
-  CommandService,
-  CommandServiceImpl,
-  Disposable,
-  IEventBus,
-  Sequencer,
-  runWhenIdle,
-} from '@opensumi/ide-core-common';
-import { EditorSelectionChangeEvent, IEditor } from '@opensumi/ide-editor/lib/browser';
+import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { CommandService, CommandServiceImpl, IEventBus, Sequencer, runWhenIdle } from '@opensumi/ide-core-common';
+import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { ICodeEditor, InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { empty } from '@opensumi/ide-utils/lib/strings';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 
-import { BaseAIMonacoContribHandler } from '../base';
-import { IIntelligentCompletionsResult } from '../intelligent-completions/intelligent-completions';
 
-import { AIInlineCompletionsProvider } from './completeProvider';
-import { AICompletionsService } from './service/ai-completions.service';
+import { AIInlineCompletionsProvider } from '../inline-completions/completeProvider';
+import { AICompletionsService } from '../inline-completions/service/ai-completions.service';
 
-@Injectable()
-export class InlineCompletionSingleHandler extends BaseAIMonacoContribHandler {
+import { IIntelligentCompletionsResult } from './intelligent-completions';
+
+
+@Injectable({ multiple: true })
+export class InlineCompletionsSource extends Disposable {
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
+
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
   @Autowired(CommandService)
   private commandService: CommandServiceImpl;
 
-  @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
-
-  @Autowired(AICompletionsService)
-  private aiCompletionsService: AICompletionsService;
+  private readonly aiCompletionsService: AICompletionsService;
 
   private sequencer = new Sequencer();
   private preDidShowItems: InlineCompletions | undefined;
 
-  private registerInlineCompletionFeature(monacoEditor: ICodeEditor): IDisposable {
-    // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
+  constructor(@Optional() private readonly monacoEditor: ICodeEditor) {
+    super();
+
+    this.aiInlineCompletionsProvider = this.injector.get(AIInlineCompletionsProvider);
+    this.aiCompletionsService = this.injector.get(AICompletionsService);
+
+    // 判断用户是否选择了一块区域或者移动光标 取消掉请补全请求
     const selectionChange = () => {
       this.aiCompletionsService.hideStatusBarItem();
-      const selection = monacoEditor.getSelection();
+      const selection = this.monacoEditor.getSelection();
       if (!selection) {
         return;
       }
@@ -60,51 +60,13 @@ export class InlineCompletionSingleHandler extends BaseAIMonacoContribHandler {
       trailing: true,
     });
 
-    this.disposables.push(
-      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
-        if (e.payload.source === 'mouse') {
-          debouncedSelectionChange();
-        } else {
-          debouncedSelectionChange.cancel();
-          selectionChange();
-        }
-      }),
-      monacoEditor.onDidChangeModelContent((e) => {
-        const changes = e.changes;
-        for (const change of changes) {
-          if (change.text === '') {
-            this.aiInlineCompletionsProvider.isDelEvent = true;
-            this.aiInlineCompletionsProvider.cancelRequest();
-          } else {
-            this.aiInlineCompletionsProvider.isDelEvent = false;
-          }
-        }
-      }),
-      monacoEditor.onDidBlurEditorText(() => {
-        this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
-      }),
-    );
-
-    return this;
-  }
-
-  private editorDispose: Disposable = new Disposable();
-  mountEditor(monacoEditor: ICodeEditor) {
-    super.mountEditor(monacoEditor);
-
-    if (this.editorDispose) {
-      this.editorDispose.dispose();
-    }
-
-    this.editorDispose = new Disposable();
-
     const inlineVisibleKey = new Set([InlineCompletionContextKeys.inlineSuggestionVisible.key]);
-    this.editorDispose.addDispose(
-      monacoEditor.contextKeyService.onDidChangeContext((e) => {
+    this.addDispose(
+      this.monacoEditor.contextKeyService.onDidChangeContext((e) => {
         // inline completion 真正消失时
         if (e.affectsSome(inlineVisibleKey)) {
           const inlineSuggestionVisible = InlineCompletionContextKeys.inlineSuggestionVisible.getValue(
-            monacoEditor.contextKeyService,
+            this.monacoEditor.contextKeyService,
           );
           if (!inlineSuggestionVisible && this.preDidShowItems) {
             runWhenIdle(() => {
@@ -116,23 +78,44 @@ export class InlineCompletionSingleHandler extends BaseAIMonacoContribHandler {
       }),
     );
 
-    return this.editorDispose;
+    this.addDispose(
+      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+        if (e.payload.source === 'mouse') {
+          debouncedSelectionChange();
+        } else {
+          debouncedSelectionChange.cancel();
+          selectionChange();
+        }
+      }),
+    );
+
+    this.addDispose(
+      this.monacoEditor.onDidChangeModelContent((e) => {
+        const changes = e.changes;
+        for (const change of changes) {
+          if (change.text === empty) {
+            this.aiInlineCompletionsProvider.isDelEvent = true;
+            this.aiInlineCompletionsProvider.cancelRequest();
+          } else {
+            this.aiInlineCompletionsProvider.isDelEvent = false;
+          }
+        }
+      }),
+    );
+
+    this.addDispose(
+      this.monacoEditor.onDidBlurEditorText(() => {
+        this.commandService.executeCommand(AI_INLINE_COMPLETION_VISIBLE.id, false);
+      }),
+    );
   }
 
-  doContribute(): IDisposable {
-    if (this.monacoEditor) {
-      this.registerInlineCompletionFeature(this.monacoEditor);
-    }
-
+  public fetch(): IDisposable {
     let prePosition: Position | undefined;
 
     return monacoApi.languages.registerInlineCompletionsProvider('*', {
-      groupId: 'ai-native-inline-completions',
+      groupId: 'ai-native-intelligent-completions',
       provideInlineCompletions: async (model, position, context, token) => {
-        if (!this.shouldHandle(model.uri)) {
-          return;
-        }
-
         /**
          * 如果新字符在 inline completion 的 ghost text 内，则走缓存，不重新请求
          */

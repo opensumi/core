@@ -112,10 +112,17 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
         if (typeof name === 'symbol') {
           return null;
         }
+
         // charCodeAt(0) === 36 means starts with $
-        if (!target[name] && name.charCodeAt(0) === 36) {
-          const rpcName = SumiConnectionMultiplexer.getRPCName(rpcId, name);
-          target[name] = (...args: any[]) => this.sendRequest(rpcName, ...args);
+        if (!target[name]) {
+          if (name.charCodeAt(0) === 36) {
+            const rpcName = SumiConnectionMultiplexer.getRPCName(rpcId, name);
+            target[name] = (...args: any[]) => this.sendRequest(rpcName, ...args);
+          } else if (name === 'toJSON') {
+            target[name] = () => {
+              throw new Error('Cannot serialize a rpc protocol proxy object');
+            };
+          }
         }
 
         return target[name];

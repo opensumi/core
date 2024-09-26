@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   Disposable,
   Emitter,
@@ -8,6 +8,7 @@ import {
   IChatProgress,
   IChatTreeData,
   ILogger,
+  memoize,
   uuid,
 } from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -22,6 +23,7 @@ import {
   ISampleQuestions,
   SLASH_SYMBOL,
 } from '../../common';
+import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
 
 export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
@@ -222,6 +224,9 @@ export class ChatModel extends Disposable implements IChatModel {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
   #sessionId: string = uuid();
   get sessionId(): string {
     return this.#sessionId;
@@ -230,6 +235,11 @@ export class ChatModel extends Disposable implements IChatModel {
   #requests: Map<string, ChatRequestModel> = new Map();
   get requests(): ChatRequestModel[] {
     return Array.from(this.#requests.values());
+  }
+
+  @memoize
+  get history(): MsgHistoryManager {
+    return this.injector.get(MsgHistoryManager, []);
   }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
