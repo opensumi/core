@@ -5,7 +5,8 @@ import { RPCProtocol } from '../types/rpc';
 export * from './data-store';
 
 const RemoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag');
-const __remoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag_internal');
+const __remoteServiceInstantiateFlagAllowed = Symbol('RemoteServiceInstantiateFlag_allow');
+const __remoteServiceInstantiateFlagDisallowed = Symbol('RemoteServiceInstantiateFlag_disallow');
 
 @Injectable()
 export abstract class RemoteService<Client = any> {
@@ -21,9 +22,9 @@ export abstract class RemoteService<Client = any> {
     return this._clientId;
   }
 
-  constructor(@Optional(RemoteServiceInstantiateFlag) flag: symbol) {
-    if (flag !== __remoteServiceInstantiateFlag) {
-      throw new Error('Cannot create RemoteService instance directly');
+  protected constructor(@Optional(RemoteServiceInstantiateFlag) flag: symbol) {
+    if (flag !== __remoteServiceInstantiateFlagAllowed) {
+      throw new Error('Cannot use RemoteService instance directly.');
     }
   }
 
@@ -44,7 +45,7 @@ export function createRemoteServiceChildInjector(injector: Injector, fn: (childI
   const child = injector.createChild([
     {
       token: RemoteServiceInstantiateFlag,
-      useValue: __remoteServiceInstantiateFlag,
+      useValue: __remoteServiceInstantiateFlagAllowed,
     },
   ]);
 
@@ -52,7 +53,7 @@ export function createRemoteServiceChildInjector(injector: Injector, fn: (childI
 
   child.overrideProviders({
     token: RemoteServiceInstantiateFlag,
-    useValue: 'avoid_use_autowired_to_get_remote_service',
+    useValue: __remoteServiceInstantiateFlagDisallowed,
     override: true,
   });
 
