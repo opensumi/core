@@ -13,11 +13,12 @@ import {
   ContributionProvider,
   ILogService,
   ILogServiceManager,
-  ModuleDependenciesKey,
   StoragePaths,
   SupportLogNamespace,
   createContributionProvider,
   getDebugLogger,
+  getModuleDependencies,
+  injectGDataStores,
   isWindows,
 } from '@opensumi/ide-core-common';
 import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
@@ -94,7 +95,7 @@ export class ServerApp implements IServerApp {
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
    */
   public resolveModuleDeps(moduleConstructor: ModuleConstructor, modules: any[]) {
-    const dependencies = Reflect.getMetadata(ModuleDependenciesKey, moduleConstructor) as [];
+    const dependencies = getModuleDependencies(moduleConstructor);
     if (dependencies) {
       dependencies.forEach((dep) => {
         if (modules.indexOf(dep) === -1) {
@@ -218,6 +219,8 @@ export class ServerApp implements IServerApp {
    * @param modules
    */
   private createNodeModules(Constructors: ModuleConstructor[] = [], modules: NodeModule[] = []) {
+    injectGDataStores(this.injector);
+
     const allModules = [...modules];
     Constructors.forEach((c) => {
       this.resolveModuleDeps(c, Constructors);

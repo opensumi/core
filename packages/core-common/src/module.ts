@@ -48,3 +48,7 @@ export function ModuleDependencies<T extends BasicModule>(dependencies: Construc
     Reflect.defineMetadata(ModuleDependenciesKey, dependencies, target);
   };
 }
+
+export function getModuleDependencies(target: ConstructorOf<BasicModule>): ConstructorOf<BasicModule>[] {
+  return Reflect.getMetadata(ModuleDependenciesKey, target);
+}

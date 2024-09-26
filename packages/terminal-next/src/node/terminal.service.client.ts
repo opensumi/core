@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
+import { GDataStore } from '@opensumi/ide-core-common';
 import { INodeLogger, OperatingSystem, isMacintosh, isWindows } from '@opensumi/ide-core-node';
 
 import {
@@ -13,6 +14,7 @@ import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
 import { IPtyProcessProxy } from '../common/pty';
 import { WINDOWS_DEFAULT_SHELL_PATH_MAPS, WindowsShellType } from '../common/shell';
 
+import { PtyProcessData, TerminalClientData } from './data-store';
 import { WINDOWS_GIT_BASH_PATHS, findShellExecutableAsync, getSystemShell } from './shell';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
 
@@ -39,6 +41,12 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   @Autowired(ITerminalProfileServiceNode)
   private terminalProfileService: TerminalProfileServiceNode;
 
+  @GDataStore(PtyProcessData)
+  private ptyProcessGDataStore: GDataStore<PtyProcessData>;
+
+  @GDataStore(TerminalClientData, { id: 'clientId' })
+  private terminalClientGDataStore: GDataStore<TerminalClientData>;
+
   private clientId: string;
 
   @Autowired(INodeLogger)
@@ -47,7 +55,10 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   setConnectionClientId(clientId: string) {
     this.clientId = clientId;
     this.logger.debug('TerminalServiceClientImpl', 'setConnectionClientId', clientId);
-    this.terminalService.setClient(this.clientId, this);
+    this.terminalClientGDataStore.create({
+      client: this,
+      clientId,
+    });
   }
 
   clientMessage(id: string, data: string) {
@@ -87,7 +98,12 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     try {
       const pty = await this.terminalService.create2(id, cols, rows, launchConfig);
       if (pty) {
-        this.terminalService.setClient(this.clientId, this);
+        this.ptyProcessGDataStore.create({
+          id,
+          clientId: this.clientId,
+          pty,
+        });
+
         this.logger.log(`client ${id} create ${pty.pid} with options `, launchConfig);
         this.logger.log(
           `terminal client ${id} and clientID: ${this.clientId} create ${pty.pid} with options `,

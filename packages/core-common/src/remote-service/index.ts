@@ -2,6 +2,8 @@ import { ConstructorOf, Injectable, Injector, Optional, Token } from '@opensumi/
 
 import { RPCProtocol } from '../types/rpc';
 
+export * from './data-store';
+
 const RemoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag');
 const __remoteServiceInstantiateFlag = Symbol('RemoteServiceInstantiateFlag_internal');
 
