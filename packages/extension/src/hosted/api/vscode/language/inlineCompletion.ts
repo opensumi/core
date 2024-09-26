@@ -2,13 +2,13 @@
 import { CancellationToken } from 'vscode';
 
 import { DisposableStore, Uri as URI } from '@opensumi/ide-core-common';
-import { Command } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import { IPosition, languages } from '@opensumi/ide-monaco/lib/common';
 
 import * as typeConvert from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode/doc';
 import { InlineCompletionTriggerKind } from '../../../../common/vscode/ext-types';
-import * as languages from '../../../../common/vscode/languages';
-import { Position } from '../../../../common/vscode/model.api';
+import { IExtensionDescription } from '../../../../common/vscode/extension';
+import { IdentifiableInlineCompletion, IdentifiableInlineCompletions } from '../../../../common/vscode/languages';
 import { CommandsConverter } from '../ext.host.command';
 
 import type vscode from 'vscode';
@@ -37,16 +37,18 @@ class ReferenceMap<T> {
 export class InlineCompletionAdapterBase {
   async provideInlineCompletions(
     resource: URI,
-    position: Position,
+    position: IPosition,
     context: languages.InlineCompletionContext,
     token: CancellationToken,
-  ): Promise<languages.IdentifiableInlineCompletions | undefined> {
+  ): Promise<IdentifiableInlineCompletions | undefined> {
     return undefined;
   }
 
   disposeCompletions(pid: number): void {}
 
-  handleDidShowCompletionItem(pid: number, idx: number): void {}
+  handleDidShowCompletionItem(pid: number, idx: number, updatedInsertText: string): void {}
+
+  handlePartialAccept(pid: number, idx: number, acceptedCharacters: number): void {}
 }
 
 export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
@@ -56,6 +58,7 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
   }>();
 
   constructor(
+    private readonly _extension: IExtensionDescription,
     private readonly _documents: ExtensionDocumentDataManager,
     private readonly _provider: vscode.InlineCompletionItemProvider,
     private readonly _commands: CommandsConverter,
@@ -73,10 +76,10 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 
   override async provideInlineCompletions(
     resource: URI,
-    position: Position,
+    position: IPosition,
     context: languages.InlineCompletionContext,
     token: CancellationToken,
-  ): Promise<languages.IdentifiableInlineCompletions | undefined> {
+  ): Promise<IdentifiableInlineCompletions | undefined> {
     const doc = this._documents.getDocument(resource);
     const pos = typeConvert.Position.to(position);
 
@@ -107,9 +110,8 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
     }
 
     const normalizedResult = Array.isArray(result) ? result : result.items;
-    // proposed api
-    // @ts-ignore
     const commands = Array.isArray(result) ? [] : result.commands || [];
+    const enableForwardStability = !Array.isArray(result) ? result.enableForwardStability : undefined;
 
     let disposableStore: DisposableStore | undefined;
     const pid = this._references.createReferenceId({
@@ -121,8 +123,8 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
 
     return {
       pid,
-      items: normalizedResult.map<languages.IdentifiableInlineCompletion>((item, idx) => {
-        let command: Command | undefined;
+      items: normalizedResult.map<IdentifiableInlineCompletion>((item, idx) => {
+        let command: languages.Command | undefined;
         if (item.command) {
           if (!disposableStore) {
             disposableStore = new DisposableStore();
@@ -137,9 +139,7 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
           range: item.range ? typeConvert.Range.from(item.range) : undefined,
           command,
           idx,
-          // proposed api
-          // @ts-ignore
-          completeBracketPairs: !!item.completeBracketPairs,
+          completeBracketPairs: item.completeBracketPairs,
         };
       }),
       commands: commands.map((c) => {
@@ -147,7 +147,9 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
           disposableStore = new DisposableStore();
         }
         return this._commands.toInternal(c, disposableStore);
-      }) as Command[],
+      }) as languages.Command[],
+      suppressSuggestions: false,
+      enableForwardStability,
     };
   }
 
@@ -156,11 +158,20 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
     data?.dispose();
   }
 
-  override handleDidShowCompletionItem(pid: number, idx: number): void {
+  override handleDidShowCompletionItem(pid: number, idx: number, updatedInsertText: string): void {
     const completionItem = this._references.get(pid)?.items[idx];
     if (completionItem) {
       if (this._provider.handleDidShowCompletionItem) {
-        this._provider.handleDidShowCompletionItem(completionItem);
+        this._provider.handleDidShowCompletionItem(completionItem, updatedInsertText);
+      }
+    }
+  }
+
+  override handlePartialAccept(pid: number, idx: number, acceptedCharacters: number): void {
+    const completionItem = this._references.get(pid)?.items[idx];
+    if (completionItem) {
+      if (this._provider.handleDidPartiallyAcceptCompletionItem) {
+        this._provider.handleDidPartiallyAcceptCompletionItem(completionItem, acceptedCharacters);
       }
     }
   }
