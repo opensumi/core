@@ -24,6 +24,8 @@ import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
 import { IShellIntegrationService } from './shell-integration.service';
 
+export { IPtyService };
+
 @Injectable({ multiple: true })
 export class PtyService extends Disposable implements IPtyService {
   @Autowired(INodeLogger)
@@ -259,7 +261,7 @@ export class PtyService extends Disposable implements IPtyService {
     });
   }
 
-  parseCwd() {
+  protected parseCwd() {
     if (this.shellLaunchConfig.cwd) {
       return typeof this.shellLaunchConfig.cwd === 'string'
         ? this.shellLaunchConfig.cwd
