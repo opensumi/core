@@ -60,6 +60,10 @@ export class InMemoryDataStore<Item> extends EventEmitter<DataStoreEvent<Item>> 
     return this.store.get(id);
   }
 
+  has(id: string): boolean {
+    return this.store.has(id);
+  }
+
   update(id: string, item: Partial<Item>): void {
     const current = this.store.get(id);
     if (!current) {
