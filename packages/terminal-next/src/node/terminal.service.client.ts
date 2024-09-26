@@ -1,6 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { GDataStore } from '@opensumi/ide-core-common';
 import { INodeLogger, OperatingSystem, isMacintosh, isWindows } from '@opensumi/ide-core-node';
 
 import {
@@ -14,7 +13,6 @@ import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
 import { IPtyProcessProxy } from '../common/pty';
 import { WINDOWS_DEFAULT_SHELL_PATH_MAPS, WindowsShellType } from '../common/shell';
 
-import { PtyProcessData, TerminalClientData } from './data-store';
 import { WINDOWS_GIT_BASH_PATHS, findShellExecutableAsync, getSystemShell } from './shell';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
 
