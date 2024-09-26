@@ -59,17 +59,21 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   private aiNativeContextKey: AINativeContextKey;
   private rewriteWidget: RewriteWidget | null;
   private whenMultiLineEditsVisibleDisposable: Disposable;
-  private inlineCompletionsSource: InlineCompletionsSource;
 
   public mount(): IDisposable {
+    this.handlerAlwaysVisiblePreference();
+
+    const provider = this.intelligentCompletionsRegistry.getProvider();
+    if (!provider) {
+      return this;
+    }
+
     this.whenMultiLineEditsVisibleDisposable = new Disposable();
     this.multiLineDecorationModel = new MultiLineDecorationModel(this.monacoEditor);
     this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(this.monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
-    this.inlineCompletionsSource = this.injector.get(InlineCompletionsSource, [this.monacoEditor]);
 
     this.registerFeature(this.monacoEditor);
-    this.handlerAlwaysVisiblePreference();
     return this;
   }
 
@@ -362,6 +366,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    this.addDispose(this.inlineCompletionsSource.fetch());
+    const inlineCompletionsSource = this.injector.get(InlineCompletionsSource, [this.monacoEditor]);
+    this.addDispose(inlineCompletionsSource.fetch());
   }
 }

@@ -14,6 +14,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
+import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
 export const IAINativeService = Symbol('IAINativeService');
 
@@ -266,4 +267,18 @@ export enum EResultKind {
   ACCEPT = 'ACCEPT',
   DISCARD = 'DISCARD',
   REGENERATE = 'REGENERATE',
+}
+
+export const IAIInlineCompletionsProvider = Symbol('IAIInlineCompletionsProvider');
+export interface IAIInlineCompletionsProvider {
+  hideStatusBarItem(): void;
+  cancelRequest(): void;
+  isDelEvent: boolean;
+  provideInlineCompletionItems<T>(
+    model: ITextModel,
+    position: IPosition,
+    context: InlineCompletionContext,
+    token: CancellationToken,
+  ): Promise<T>;
+  setVisibleCompletion(arg0: boolean): void;
 }

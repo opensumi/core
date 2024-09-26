@@ -1,8 +1,9 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AINativeSettingSectionsId, WithEventBus, raceCancellation, sleep } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/ide-monaco';
+
+import { IAIInlineCompletionsProvider } from '../../../common';
 
 import { IInlineCompletionCache } from './model/competionModel';
 import { InlineCompletionRequestTask } from './model/inlineCompletionRequestTask';
@@ -42,7 +43,7 @@ class ReqStack {
 }
 
 @Injectable()
-export class AIInlineCompletionsProvider extends WithEventBus {
+export class AIInlineCompletionsProvider extends WithEventBus implements IAIInlineCompletionsProvider {
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
 
@@ -87,6 +88,14 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     this.reqStack = new ReqStack();
   }
 
+  setVisibleCompletion(visible: boolean) {
+    this.aiCompletionsService.setVisibleCompletion(visible);
+  }
+
+  hideStatusBarItem() {
+    this.aiCompletionsService.hideStatusBarItem();
+  }
+
   cancelRequest() {
     this.aiCompletionsService.cancelRequest();
     if (this.reqStack) {
@@ -122,7 +131,7 @@ export class AIInlineCompletionsProvider extends WithEventBus {
     }
 
     this.cancelRequest();
-    this.aiCompletionsService.hideStatusBarItem();
+    this.hideStatusBarItem();
 
     // step 1 判断生成开关,如果关闭不进行后续操作
     const _isManual = this.isManual;

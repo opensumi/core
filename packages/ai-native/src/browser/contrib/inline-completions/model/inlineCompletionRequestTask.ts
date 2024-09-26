@@ -1,13 +1,24 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTER } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AINativeSettingSectionsId, Disposable, DisposableStore, URI } from '@opensumi/ide-core-common';
-import { IAICompletionOption, uuid } from '@opensumi/ide-core-common';
-import { IAICompletionResultModel } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  Disposable,
+  DisposableStore,
+  IAICompletionOption,
+  IAICompletionResultModel,
+  IntelligentCompletionsRegistryToken,
+  URI,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 
 import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
+import { IntelligentCompletionsController } from '../../intelligent-completions/intelligent-completions.controller';
+import { IntelligentCompletionsRegistry } from '../../intelligent-completions/intelligent-completions.feature.registry';
 import { InlineCompletionItem } from '../model/competionModel';
 import { PromptCache } from '../promptCache';
 import { lineBasedPromptProcessor } from '../provider';
@@ -52,6 +63,12 @@ export class InlineCompletionRequestTask extends Disposable {
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
+
+  @Autowired(IntelligentCompletionsRegistryToken)
+  private readonly intelligentCompletionsRegistry: IntelligentCompletionsRegistry;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
   isCancelFlag: boolean;
 
@@ -157,7 +174,17 @@ export class InlineCompletionRequestTask extends Disposable {
     } else {
       try {
         this.aiCompletionsService.updateStatusBarItem('running', true);
-        completeResult = await this.aiCompletionsService.complete(requestBean);
+        const provider = this.intelligentCompletionsRegistry.getProvider();
+        if (provider) {
+          const editor = this.workbenchEditorService.currentCodeEditor;
+          if (!editor) {
+            return [];
+          }
+          const intelligentCompletionsHandler = IntelligentCompletionsController.get(editor.monacoEditor);
+          completeResult = await intelligentCompletionsHandler?.fetchProvider(requestBean);
+        } else {
+          completeResult = await this.aiCompletionsService.complete(requestBean);
+        }
       } catch (error) {
         this.aiCompletionsService.reporterEnd(relationId, {
           success: false,
