@@ -114,38 +114,42 @@ export class InlineCompletionsSource extends Disposable {
   public fetch(): IDisposable {
     let prePosition: Position | undefined;
 
-    return monacoApi.languages.registerInlineCompletionsProvider('*', {
-      groupId: 'ai-native-intelligent-completions',
-      provideInlineCompletions: async (model, position, context, token) => {
-        /**
-         * 如果新字符在 inline completion 的 ghost text 内，则走缓存，不重新请求
-         */
-        if (this.preDidShowItems) {
-          if (!prePosition) {
-            prePosition = position.delta(0, -1);
+    this.addDispose(
+      monacoApi.languages.registerInlineCompletionsProvider('*', {
+        groupId: 'ai-native-intelligent-completions',
+        provideInlineCompletions: async (model, position, context, token) => {
+          /**
+           * 如果新字符在 inline completion 的 ghost text 内，则走缓存，不重新请求
+           */
+          if (this.preDidShowItems) {
+            if (!prePosition) {
+              prePosition = position.delta(0, -1);
+            }
+
+            const lineBefore = model.getValueInRange(Range.fromPositions(prePosition, position));
+            if (this.preDidShowItems.items[0].insertText.toString().startsWith(lineBefore)) {
+              return this.preDidShowItems;
+            } else {
+              prePosition = undefined;
+            }
           }
 
-          const lineBefore = model.getValueInRange(Range.fromPositions(prePosition, position));
-          if (this.preDidShowItems.items[0].insertText.toString().startsWith(lineBefore)) {
-            return this.preDidShowItems;
-          } else {
-            prePosition = undefined;
+          const completionsResult: IIntelligentCompletionsResult = await this.sequencer.queue(() =>
+            this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
+          );
+
+          return completionsResult;
+        },
+        freeInlineCompletions() {},
+        handleItemDidShow: (completions) => {
+          if (completions.items.length > 0) {
+            this.preDidShowItems = completions;
+            this.aiInlineCompletionsProvider.setVisibleCompletion(true);
           }
-        }
+        },
+      }),
+    );
 
-        const completionsResult: IIntelligentCompletionsResult = await this.sequencer.queue(() =>
-          this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
-        );
-
-        return completionsResult;
-      },
-      freeInlineCompletions() {},
-      handleItemDidShow: (completions) => {
-        if (completions.items.length > 0) {
-          this.preDidShowItems = completions;
-          this.aiInlineCompletionsProvider.setVisibleCompletion(true);
-        }
-      },
-    });
+    return this;
   }
 }
