@@ -6,7 +6,7 @@ export type Store<T> = Iterable<T> | Record<string, T> | Map<string, T>;
 function makeMatcher(query: Query) {
   const statements = [] as string[];
   Object.entries(query).forEach(([key, value]) => {
-    statements.push(`item['${key}'] === ${value}`);
+    statements.push(`item[${JSON.stringify(key)}] === ${JSON.stringify(value)}`);
   });
 
   const matcher = `

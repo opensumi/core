@@ -1,6 +1,5 @@
 import extend from 'lodash/extend';
 
-import { Injectable, Optional } from '@opensumi/di';
 import { EventEmitter } from '@opensumi/events';
 
 import { select } from './select';

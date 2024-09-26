@@ -232,21 +232,21 @@ interface Item {
   id: string;
 }
 
-export interface GDataStore<T extends Item> {
-  create(item: T): void;
-  find(query: Record<string, any>): void;
-  size(query: Record<string, any>): void;
-  get(id: string, query?: Record<string, any>): T;
-  update(id: string, item: Partial<T>): void;
+export interface GDataStore<Item> {
+  create(item: Item): Item;
+  find(query: Record<string, any>): Item[] | undefined;
+  size(query: Record<string, any>): number;
+  get(id: string, query?: Record<string, any>): Item | undefined;
+  update(id: string, item: Partial<Item>): void;
   remove(id: string): void;
 }
 
 class TerminalClientRemoteService extends RemoteService {
-  @Autowired(GDataStore, { tag: 'TerminalClientRemoteService' })
-  gDataStore: GDataStore;
+  @GDataStore(TerminalClientData)
+  gDataStore: GDataStore<TerminalClientData>;
 
-  @Autowired(GDataStore, { tag: 'TerminalDataStore' })
-  gTerminalDataStore: GDataStore;
+  @GDataStore(TerminalDataStore)
+  gTerminalDataStore: GDataStore<TerminalDataStore>;
 
   init(clientId: string) {
     this.gDataStore.create({
@@ -284,8 +284,8 @@ class TerminalClientRemoteService extends RemoteService {
 }
 
 class TerminalService {
-  @Autowired(GDataStore, { tag: 'TerminalDataStore' })
-  gTerminalDataStore: GDataStore;
+  @GDataStore(TerminalDataStore)
+  gTerminalDataStore: GDataStore<TerminalDataStore>;
 
   initialize() {
     this.gTerminalDataStore.on('created', () => {});
@@ -312,3 +312,54 @@ class TerminalService {
 2. [TerminalServiceClient](https://github.com/opensumi/core/blob/v3.3/packages/terminal-next/src/node/terminal.service.client.ts#L88)
 
 可以看到，原来的 TerminalService 不仅是逻辑层，还包含了数据的存储，clientId/sessionId 和具体 Terminal 的之间通过 4 个 map 来存储，其中还牵涉到隐式的长短 id 转换。
+
+### 自动化创建 Data Store
+
+我们想让用户使用装饰器模式来使用 Data Store，提供一种及其简单的使用方法，无需声明，直接装饰即可使用。
+
+```ts
+export const TerminalDataStore = 'TerminalDataStore';
+export interface TerminalDataStore {
+  clientId: string;
+  client: ITerminalServiceClient;
+}
+
+class TerminalService {
+  @GDataStore(TerminalDataStore)
+  gTerminalDataStore: GDataStore<TerminalDataStore>;
+}
+```
+
+由于装饰器的执行是在类实例化之前，所以我们可以在 `GDataStore` 这个装饰器中收集 token，然后将它们加入 Injector 即可：
+
+```ts
+const dataStore = [] as [string, DataStoreOptions][];
+export function GDataStore(token: string, options?: DataStoreOptions): PropertyDecorator {
+  dataStore.push([token, options]);
+
+  return Autowired(GDataStore, {
+    tag: String(token),
+  });
+}
+
+export type GDataStore<T> = InMemoryDataStore<T>;
+```
+
+用一个闭包中的变量 `dataStore` 来储存，然后在创建 Injector 的时候将所有的 token 放入 injector:
+
+```ts
+function _injectDataStores(injector: Injector) {
+  dataStore.forEach(([token, opts]) => {
+    injector.addProviders({
+      token: GDataStore,
+      useValue: new InMemoryDataStore(opts),
+      tag: String(token),
+      dropdownForTag: false,
+    });
+  });
+}
+```
+
+这样在整个 injector 中通过 token + tag 的方式就能获取到唯一一个实例了。
+
+这里在添加 provider 的时候用了 `dropdownForTag: false`，这个标记告诉 injector 在创建 child injector 的时候不泄露这个 tag。
