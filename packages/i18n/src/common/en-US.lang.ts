@@ -1485,14 +1485,16 @@ export const localizationBundle = {
       'Does Inline Chat related code actions automatically appear when code are selected?',
     'preference.ai.native.chat.visible.type': 'Control how the chat panel is displayed by default',
 
-    'preference.ai.native.inlineCompletions.title': 'Inline Completions',
-    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
-      'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
-    'preference.ai.native.inlineCompletions.debounceTime': 'Debounce time for inline completions',
     'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff preview mode',
     'preference.ai.native.inlineDiff.preview.mode.sideBySide': 'Displayed in the editor as left and right diff panels',
     'preference.ai.native.inlineDiff.preview.mode.inlineLive': 'Displayed in the editor through streaming rendering',
-    'preference.ai.native.inlineCompletions.cache.enabled': 'Whether to enable cache for inline completions',
+
+    'preference.ai.native.intelligentCompletions.title': 'Intelligent Completions',
+    'preference.ai.native.intelligentCompletions.promptEngineering.enabled':
+      'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
+    'preference.ai.native.intelligentCompletions.debounceTime': 'Debounce time for intelligent completions',
+    'preference.ai.native.intelligentCompletions.cache.enabled': 'Whether to enable cache for intelligent completions',
+    'preference.ai.native.intelligentCompletions.alwaysVisible': 'Whether to always show intelligent completions',
     // #endregion AI Native
 
     // #endregion merge editor
