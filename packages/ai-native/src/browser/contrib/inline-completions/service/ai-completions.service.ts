@@ -12,15 +12,10 @@ import {
   IAICompletionOption,
   IAICompletionResultModel,
   IAIReportCompletionOption,
-  IntelligentCompletionsRegistryToken,
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
 import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
-import { IntelligentCompletionsController } from '../../intelligent-completions/intelligent-completions.controller';
-import { IntelligentCompletionsRegistry } from '../../intelligent-completions/intelligent-completions.feature.registry';
 
 @Injectable()
 export class AICompletionsService extends Disposable {
@@ -34,12 +29,6 @@ export class AICompletionsService extends Disposable {
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
-
-  @Autowired(IntelligentCompletionsRegistryToken)
-  private readonly intelligentCompletionsRegistry: IntelligentCompletionsRegistry;
-
-  @Autowired(WorkbenchEditorService)
-  private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
   private readonly _onVisibleCompletion = new Emitter<boolean>();
   public readonly onVisibleCompletion: Event<boolean> = this._onVisibleCompletion.event;
@@ -75,16 +64,6 @@ export class AICompletionsService extends Disposable {
   public async complete(data: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
     this.isDefaultCompletionModel = true;
     const completionStart = Date.now();
-    const editor = this.workbenchEditorService.currentCodeEditor;
-    if (!editor) {
-      return;
-    }
-
-    const provider = this.intelligentCompletionsRegistry.getProvider();
-    if (provider) {
-      const intelligentCompletionsHandler = IntelligentCompletionsController.get(editor.monacoEditor);
-      return intelligentCompletionsHandler?.fetchProvider(data);
-    }
 
     // 兼容旧的 requestCompletion 接口
     try {

@@ -20,6 +20,7 @@ import {
 } from '@opensumi/ide-core-common';
 
 import { ChatProxyServiceToken, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
+import { IAIInlineCompletionsProvider } from '../common';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { ChatAgentService } from './chat/chat-agent.service';
@@ -31,6 +32,7 @@ import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
 import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
+import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
 import { IntelligentCompletionsContribution } from './contrib/intelligent-completions/intelligent-completions.contribution';
 import { IntelligentCompletionsRegistry } from './contrib/intelligent-completions/intelligent-completions.feature.registry';
 import { InterfaceNavigationContribution } from './contrib/interface-navigation/interface-navigation.contribution';
@@ -128,6 +130,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: LanguageParserService,
       useClass: LanguageParserService,
+    },
+    {
+      token: IAIInlineCompletionsProvider,
+      useClass: AIInlineCompletionsProvider,
     },
   ];
 
