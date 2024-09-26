@@ -5,12 +5,12 @@ describe('RemoteService', () => {
   it('cannot create RemoteService if not in context', () => {
     @RemoteService('test')
     class ARemoteService {}
-
+    const ERROR_MESSAGE = 'Do_Not_Allow_Instantiate_RemoteService';
     const injector = new Injector([ARemoteService]);
 
     expect(() => {
       injector.get(ARemoteService);
-    }).toThrow();
+    }).toThrow(ERROR_MESSAGE);
 
     runInRemoteServiceContext(injector, () => {
       expect(() => {
@@ -23,6 +23,6 @@ describe('RemoteService', () => {
 
     expect(() => {
       injector.get(ARemoteService);
-    }).toThrow('Do_Not_Allow_Instantiate_RemoteService');
+    }).toThrow(ERROR_MESSAGE);
   });
 });

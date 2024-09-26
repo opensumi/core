@@ -43,7 +43,7 @@ export interface RemoteServiceInternal<Client = any> {
 export function runInRemoteServiceContext(injector: Injector, fn: () => void): Injector {
   injector.overrideProviders({
     token: RemoteServiceInstantiateFlag,
-    useValue: 1,
+    useValue: RemoteServiceInstantiateFlag,
     override: true,
   });
 
