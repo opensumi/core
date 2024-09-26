@@ -635,24 +635,25 @@ class ExtHostSourceControl implements vscode.SourceControl {
         }),
       );
 
-      this._historyProviderDisposable.value.add(
-        historyProvider.onDidChangeActionButton(() => {
-          this._historyProviderActionButtonDisposable.value = new DisposableStore();
-          const internal =
-            historyProvider.actionButton !== undefined
-              ? {
-                  command: this._commands.converter.toInternal(
-                    historyProvider.actionButton.command,
-                    this._historyProviderActionButtonDisposable.value,
-                  )!,
-                  description: historyProvider.actionButton.description,
-                  enabled: historyProvider.actionButton.enabled,
-                }
-              : undefined;
-
-          this.#proxy.$onDidChangeHistoryProviderActionButton(this.handle, internal ?? null);
-        }),
-      );
+      if (historyProvider.onDidChangeActionButton) {
+        this._historyProviderDisposable.value.add(
+          historyProvider.onDidChangeActionButton(() => {
+            this._historyProviderActionButtonDisposable.value = new DisposableStore();
+            const internal =
+              historyProvider.actionButton !== undefined
+                ? {
+                    command: this._commands.converter.toInternal(
+                      historyProvider.actionButton.command,
+                      this._historyProviderActionButtonDisposable.value,
+                    )!,
+                    description: historyProvider.actionButton.description,
+                    enabled: historyProvider.actionButton.enabled,
+                  }
+                : undefined;
+            this.#proxy.$onDidChangeHistoryProviderActionButton(this.handle, internal ?? null);
+          }),
+        );
+      }
     }
   }
 
