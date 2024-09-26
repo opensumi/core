@@ -130,7 +130,7 @@ const d3 = child.get(Service2); // Error: Invalid secret
 
 分析上述问题后，我们考虑用一种新的约束规则，改变原来使用 back service 的方式，使声明 back service 更加程序化和简洁。
 
-在设计后端架构时，通常会提到架构分层，将后端服务划分为 [`controller`]()、[`service`](https://martinfowler.com/eaaCatalog/serviceLayer.html) 和 [`dao`]() 等。
+在设计后端架构时，通常会提到架构分层，将后端服务划分为 [`controller`](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)、[`service`](https://martinfowler.com/eaaCatalog/serviceLayer.html) 和 [`dao`](https://en.wikipedia.org/wiki/Data_access_object) 等。
 
 原来的 back service 模糊了 controller 和 service 的概念，一个 back service 前后端都能用，所以使用起来不明不白。
 
