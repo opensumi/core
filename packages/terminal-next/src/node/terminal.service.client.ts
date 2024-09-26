@@ -41,12 +41,6 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   @Autowired(ITerminalProfileServiceNode)
   private terminalProfileService: TerminalProfileServiceNode;
 
-  @GDataStore(PtyProcessData)
-  private ptyProcessGDataStore: GDataStore<PtyProcessData>;
-
-  @GDataStore(TerminalClientData, { id: 'clientId' })
-  private terminalClientGDataStore: GDataStore<TerminalClientData>;
-
   private clientId: string;
 
   @Autowired(INodeLogger)
@@ -55,10 +49,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   setConnectionClientId(clientId: string) {
     this.clientId = clientId;
     this.logger.debug('TerminalServiceClientImpl', 'setConnectionClientId', clientId);
-    this.terminalClientGDataStore.create({
-      client: this,
-      clientId,
-    });
+    this.terminalService.setClient(this.clientId, this);
   }
 
   clientMessage(id: string, data: string) {
@@ -98,12 +89,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     try {
       const pty = await this.terminalService.create2(id, cols, rows, launchConfig);
       if (pty) {
-        this.ptyProcessGDataStore.create({
-          id,
-          clientId: this.clientId,
-          pty,
-        });
-
+        this.terminalService.setClient(this.clientId, this);
         this.logger.log(`client ${id} create ${pty.pid} with options `, launchConfig);
         this.logger.log(
           `terminal client ${id} and clientID: ${this.clientId} create ${pty.pid} with options `,

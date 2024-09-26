@@ -13,9 +13,7 @@ function makeMatcher(query: Query) {
     return ${statements.join(' && ')};
   `;
 
-  const func = new Function('item', matcher) as (item: Query) => boolean;
-
-  return (item: Query) => func(item);
+  return new Function('item', matcher) as (item: Query) => boolean;
 }
 
 export function select<I, T extends Store<I>>(items: T, query: Query): I[] {

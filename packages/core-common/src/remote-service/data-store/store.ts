@@ -14,9 +14,9 @@ export interface DataStore<Item> {
 }
 
 export interface DataStoreEvent<Item> extends Record<string, any> {
-  created: [Item];
-  updated: [oldValue: Item, newValue: Item];
-  removed: [Item];
+  created: [item: Item];
+  updated: [oldItem: Item, newItem: Item];
+  removed: [item: Item];
 }
 
 export interface DataStoreOptions {
@@ -25,7 +25,10 @@ export interface DataStoreOptions {
 
 export class InMemoryDataStore<Item> extends EventEmitter<DataStoreEvent<Item>> implements DataStore<Item> {
   private store = new Map<string, Item>();
-  private _uId = 0;
+  private _uid = 0;
+  /**
+   * primary key
+   */
   private id: string;
 
   constructor(protected options?: DataStoreOptions) {
@@ -34,7 +37,7 @@ export class InMemoryDataStore<Item> extends EventEmitter<DataStoreEvent<Item>> 
   }
 
   create(item: Item): Item {
-    const id = item[this.id] || String(this._uId++);
+    const id = item[this.id] || String(this._uid++);
     const result = extend({}, item, { [this.id]: id }) as Item;
 
     this.store.set(id, result);

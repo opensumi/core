@@ -1,11 +1,10 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AppConfig, GDataStore, INodeLogger, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
 import { getChunks } from '@opensumi/ide-utils/lib/strings';
 
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient, TERMINAL_ID_SEPARATOR } from '../common';
 import { IPtyProcessProxy, IShellLaunchConfig } from '../common/pty';
 
-import { PtyProcessData, TerminalClientData } from './data-store';
 import { PtyService } from './pty';
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 
@@ -30,12 +29,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
   private closeTimeOutMap: Map<string, NodeJS.Timeout> = new Map();
 
-  @GDataStore(PtyProcessData)
-  private terminalGDataStore: GDataStore<PtyProcessData>;
-
-  @GDataStore(TerminalClientData, { id: 'clientId' })
-  private terminalClientGDataStore: GDataStore<TerminalClientData>;
-
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
@@ -50,12 +43,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   private batchedPtyDataMap: Map<string, string> = new Map();
   private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
-
-  constructor() {
-    this.terminalClientGDataStore.on('created', (data) => {
-      this.setClient(data.clientId, data.client);
-    });
-  }
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
     if (clientId.indexOf(TERMINAL_ID_SEPARATOR) >= 0) {
