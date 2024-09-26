@@ -7,12 +7,6 @@ import { Autowired, ConstructorOf, Domain, INJECTOR_TOKEN, Injectable, Injector,
 import { RemoteService } from './remote-service';
 import { RPCProtocol } from './types/rpc';
 
-interface FrontService {
-  token: Token;
-  servicePath: string;
-  protocol?: RPCProtocol<any>;
-}
-
 export interface BackService {
   token?: Token;
   clientToken?: Token;
@@ -35,7 +29,6 @@ export class BasicModule {
    */
   webProviders?: Provider[];
   backServices?: BackService[];
-  frontServices?: FrontService[];
   contributionProvider: Domain | Domain[];
 
   remoteServices?: (Token | ConstructorOf<RemoteService>)[];
@@ -43,12 +36,12 @@ export class BasicModule {
 
 export const ModuleDependenciesKey = 'dependencies';
 
-export function ModuleDependencies<T extends BasicModule>(dependencies: ConstructorOf<BasicModule>[]) {
+export function ModuleDependencies<T extends BasicModule>(dependencies: ConstructorOf<T>[]) {
   return (target) => {
     Reflect.defineMetadata(ModuleDependenciesKey, dependencies, target);
   };
 }
 
-export function getModuleDependencies(target: ConstructorOf<BasicModule>): ConstructorOf<BasicModule>[] {
+export function getModuleDependencies<T extends BasicModule>(target: ConstructorOf<T>): ConstructorOf<T>[] {
   return Reflect.getMetadata(ModuleDependenciesKey, target);
 }
