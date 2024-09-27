@@ -19,8 +19,8 @@
   },
   "dependencies": {
     "@opensumi/ide-components": "workspace:*",
-    "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
+    "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {

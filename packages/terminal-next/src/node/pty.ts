@@ -18,16 +18,16 @@ import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessExitEvent, IProcessReadyEvent } from '../common/process';
-import { IPtyProcessProxy, IPtySpawnOptions } from '../common/pty';
+import { IPtyProcessProxy, IPtyService, IPtySpawnOptions } from '../common/pty';
 
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
 import { IShellIntegrationService } from './shell-integration.service';
 
-export const IPtyService = Symbol('IPtyService');
+export { IPtyService };
 
 @Injectable({ multiple: true })
-export class PtyService extends Disposable {
+export class PtyService extends Disposable implements IPtyService {
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
@@ -261,7 +261,7 @@ export class PtyService extends Disposable {
     });
   }
 
-  parseCwd() {
+  protected parseCwd() {
     if (this.shellLaunchConfig.cwd) {
       return typeof this.shellLaunchConfig.cwd === 'string'
         ? this.shellLaunchConfig.cwd

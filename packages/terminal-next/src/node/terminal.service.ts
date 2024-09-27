@@ -1,9 +1,9 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AppConfig, INodeLogger, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, Sequencer, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
 import { getChunks } from '@opensumi/ide-utils/lib/strings';
 
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient, TERMINAL_ID_SEPARATOR } from '../common';
-import { IPtyProcessProxy, IShellLaunchConfig } from '../common/pty';
+import { IPtyProcessProxy, IPtyService, IShellLaunchConfig } from '../common/pty';
 
 import { PtyService } from './pty';
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
@@ -23,11 +23,14 @@ const BATCH_CHUNK_MAX_SIZE = 20 * 1024 * 1024;
 export class TerminalServiceImpl implements ITerminalNodeService {
   static TerminalPtyCloseThreshold = 10 * 1000;
 
-  private terminalProcessMap: Map<string, PtyService> = new Map();
+  private terminalProcessMap: Map<string, IPtyService> = new Map();
   private clientTerminalMap: Map<string, Map<string, PtyService>> = new Map();
 
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
   private closeTimeOutMap: Map<string, NodeJS.Timeout> = new Map();
+
+  private batchedPtyDataMap: Map<string, string> = new Map();
+  private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -40,9 +43,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   @Autowired(PtyServiceManagerToken)
   private readonly ptyServiceManager: IPtyServiceManager;
-
-  private batchedPtyDataMap: Map<string, string> = new Map();
-  private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
     if (clientId.indexOf(TERMINAL_ID_SEPARATOR) >= 0) {
@@ -149,15 +149,11 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       // 存的数据，避免因为输出较多时阻塞 RPC 通信
       ptyService.onData((chunk: string) => {
         if (this.serviceClientMap.has(clientId)) {
-          if (!this.batchedPtyDataMap.has(sessionId)) {
-            this.batchedPtyDataMap.set(sessionId, '');
-          }
-
-          const ptyData = this.batchedPtyDataMap.get(sessionId)!;
+          const ptyData = this.batchedPtyDataMap.get(sessionId) || '';
 
           this.batchedPtyDataMap.set(sessionId, ptyData + chunk);
 
-          if (ptyData?.length + chunk.length >= BATCH_MAX_SIZE) {
+          if (ptyData.length + chunk.length >= BATCH_MAX_SIZE) {
             this.flushPtyData(clientId, sessionId);
           }
 

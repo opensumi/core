@@ -6,6 +6,13 @@ import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-conne
 import { CommonChannelPathHandler, RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import { CommonChannelHandler, WebSocketHandler, WebSocketServerRoute } from '@opensumi/ide-connection/lib/node';
+import {
+  CLIENT_ID_TOKEN,
+  RemoteService,
+  getRemoteServiceData,
+  injectSessionDataStores,
+  runInRemoteServiceContext,
+} from '@opensumi/ide-core-common';
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
@@ -23,7 +30,7 @@ function handleClientChannel(
   logger.log(`New RPC connection ${clientId}`);
 
   const serviceCenter = new RPCServiceCenter(undefined, logger);
-  const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
+  const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId, logger);
 
   const remove = serviceCenter.setSumiConnection(channel.createSumiConnection());
 
@@ -88,60 +95,87 @@ export function bindModuleBackService(
   injector: Injector,
   modules: NodeModule[],
   serviceCenter: RPCServiceCenter,
-  clientId?: string,
+  clientId: string,
+  logger: INodeLogger,
 ) {
   const { createRPCService } = initRPCService(serviceCenter);
-
   const childInjector = injector.createChild();
-  for (const m of modules) {
-    if (!m.backServices) {
-      continue;
+
+  runInRemoteServiceContext(childInjector, () => {
+    injectSessionDataStores(childInjector);
+    childInjector.addProviders({
+      token: CLIENT_ID_TOKEN,
+      useValue: clientId,
+    });
+
+    for (const m of modules) {
+      if (m.backServices) {
+        for (const service of m.backServices) {
+          if (!service.token) {
+            continue;
+          }
+
+          if (service.protocol) {
+            serviceCenter.loadProtocol(service.protocol);
+          }
+
+          const serviceToken = service.token;
+
+          const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
+          if (!creator) {
+            continue;
+          }
+
+          if ((creator as FactoryCreator).useFactory) {
+            const serviceFactory = (creator as FactoryCreator).useFactory;
+            childInjector.addProviders({
+              token: serviceToken,
+              useValue: serviceFactory(childInjector),
+            });
+          } else {
+            const serviceClass = (creator as ClassCreator).useClass;
+            childInjector.addProviders({
+              token: serviceToken,
+              useClass: serviceClass,
+            });
+          }
+
+          const serviceInstance = childInjector.get(serviceToken);
+
+          if (serviceInstance.setConnectionClientId) {
+            serviceInstance.setConnectionClientId(clientId);
+          }
+          const stub = createRPCService(service.servicePath, serviceInstance);
+          if (!serviceInstance.rpcClient) {
+            serviceInstance.rpcClient = [stub];
+          }
+        }
+      }
+
+      if (m.remoteServices) {
+        for (const service of m.remoteServices) {
+          const serviceInstance = childInjector.get(service);
+          const data = getRemoteServiceData(service);
+          if (!data || !data.servicePath) {
+            logger.error(`Remote service ${RemoteService.getName(service)} must have servicePath`);
+            continue;
+          }
+
+          if (data.protocol) {
+            serviceCenter.loadProtocol(data.protocol);
+          }
+
+          if (serviceInstance.setConnectionClientId) {
+            serviceInstance.setConnectionClientId(clientId);
+          }
+          const stub = createRPCService(data.servicePath, serviceInstance);
+          if (!serviceInstance.rpcClient) {
+            serviceInstance.rpcClient = [stub];
+          }
+        }
+      }
     }
-
-    for (const service of m.backServices) {
-      if (!service.token) {
-        continue;
-      }
-
-      if (service.protocol) {
-        serviceCenter.loadProtocol(service.protocol);
-      }
-
-      const serviceToken = service.token;
-
-      if (!injector.creatorMap.has(serviceToken)) {
-        continue;
-      }
-
-      const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
-
-      if ((creator as FactoryCreator).useFactory) {
-        const serviceFactory = (creator as FactoryCreator).useFactory;
-        childInjector.addProviders({
-          token: serviceToken,
-          useValue: serviceFactory(childInjector),
-        });
-      } else {
-        const serviceClass = (creator as ClassCreator).useClass;
-        childInjector.addProviders({
-          token: serviceToken,
-          useClass: serviceClass,
-        });
-      }
-
-      const serviceInstance = childInjector.get(serviceToken);
-
-      if (serviceInstance.setConnectionClientId && clientId) {
-        serviceInstance.setConnectionClientId(clientId);
-      }
-
-      const stub = createRPCService(service.servicePath, serviceInstance);
-
-      if (!serviceInstance.rpcClient) {
-        serviceInstance.rpcClient = [stub];
-      }
-    }
-  }
+  });
 
   return childInjector;
 }

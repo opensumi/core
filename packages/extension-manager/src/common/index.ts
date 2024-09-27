@@ -89,8 +89,6 @@ export interface IVSXExtensionService {
   openVSXRegistry: string;
 }
 
-export const VSXExtensionBackSerivceToken = Symbol('VSXExtensionBackSerivceToken');
-
 export const VSXExtensionServicePath = 'VSXExtensionServicePath';
 
 export interface IExtensionInstallParam {
