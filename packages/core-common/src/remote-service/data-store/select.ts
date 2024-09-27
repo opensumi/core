@@ -1,7 +1,7 @@
 import { isIterable } from '@opensumi/ide-utils';
 
-export type Query = Record<string, any>;
-export type Store<T> = Iterable<T> | Record<string, T> | Map<string, T>;
+export type Query = Record<any, any>;
+export type Store<T> = Iterable<T> | Record<any, T> | Map<any, T>;
 
 function makeMatcher(query: Query) {
   const statements = [] as string[];

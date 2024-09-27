@@ -14,11 +14,13 @@ import {
   Emitter,
   Event,
   FileUri,
+  GDataStore,
   IDisposable,
   IFileStatOptions,
   ILogService,
   ILogServiceManager,
   IReadFileStreamOptions,
+  SessionDataStore,
   SupportLogNamespace,
   URI,
   Uri,
@@ -129,7 +131,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   /**
    * @param {Uri} uri
    * @param {{ excludes: string[] }}
-   * @memberof DiskFileSystemProvider
    */
   async watch(uri: UriComponents, options?: { excludes?: string[] }): Promise<number> {
     await this.whenReady;
@@ -174,11 +175,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     try {
       const dirList = await fse.readdir(_uri.fsPath);
 
-      dirList.forEach((name) => {
-        const filePath = paths.join(_uri.fsPath, name);
-        // eslint-disable-next-line import/namespace
-        result.push([name, this.getFileStatType(fse.statSync(filePath))]);
-      });
+      await Promise.all(
+        dirList.map(async (name) => {
+          const filePath = paths.join(_uri.fsPath, name);
+          result.push([name, this.getFileStatType(await fse.stat(filePath))]);
+        }),
+      );
       return result;
     } catch (e) {
       return result;
@@ -357,7 +359,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     return this.stat(FileUri.create(os.homedir()).codeUri);
   }
 
-  // 出于通信成本的考虑，排除文件的逻辑必须放在node层（fs provider层，不同的fs实现的exclude应该不一样）
+  /**
+   * 出于通信成本的考虑，排除文件的逻辑必须放在node层（fs provider层，不同的fs实现的exclude应该不一样）
+   */
   setWatchFileExcludes(excludes: string[]) {
     let watchExcludes = excludes;
     if (excludes.includes(UNSUPPORTED_NODE_MODULES_EXCLUDE)) {
@@ -391,22 +395,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     } else {
       this.watcherServer = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
     }
-    this.watcherServer.setClient({
-      onDidFilesChanged: (events: DidFilesChangedParams) => {
-        this.logger.log(events.changes, 'events.change');
-        if (events.changes.length > 0) {
-          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
-          this.fileChangeEmitter.fire(changes);
-          if (Array.isArray(this.rpcClient)) {
-            this.rpcClient.forEach((client) => {
-              client.onDidFilesChanged({
-                changes,
-              });
-            });
-          }
-        }
-      },
-    });
+
     this.watcherServerDisposeCollection.push({
       dispose: () => {
         this.watcherServer.dispose();
@@ -418,6 +407,24 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     } else {
       this._whenReadyDeferred.resolve();
     }
+
+    this.watcherServerDisposeCollection.push(
+      this.watcherServer.onFilesChange((data) => {
+        if (data.changes.length > 0) {
+          this.logger.log('changes', data.changes);
+          const changes = data.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
+          this.fileChangeEmitter.fire(changes);
+          if (Array.isArray(this.rpcClient)) {
+            this.rpcClient.forEach((client) => {
+              client.onDidFilesChanged({
+                changes,
+              });
+            });
+          }
+        }
+      }),
+    );
+
     this.isInitialized = true;
   }
 

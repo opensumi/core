@@ -9,18 +9,23 @@ import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
+  Emitter,
   FileUri,
+  GDataStore,
   IDisposable,
   ILogService,
   ILogServiceManager,
   ParsedPattern,
+  RefCountedDisposable,
   SupportLogNamespace,
   isLinux,
   isWindows,
   parseGlob,
+  sleep,
 } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
+import { FileChangeData, WatchInsData } from '../data-store';
 import { FileChangeCollection } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
@@ -28,13 +33,6 @@ export interface WatcherOptions {
   excludesPattern: ParsedPattern[];
   excludes: string[];
 }
-
-const watcherPlaceHolder = {
-  disposable: {
-    dispose: () => {},
-  },
-  handlers: [],
-};
 
 /**
  * @deprecated
@@ -49,43 +47,22 @@ export interface NsfwFileSystemWatcherOption {
 export class FileSystemWatcherServer extends Disposable implements IFileSystemWatcherServer {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
-  private WATCHER_HANDLERS = new Map<
-    number,
-    { path: string; handlers: ParcelWatcher.SubscribeCallback[]; disposable: IDisposable }
-  >();
   private static WATCHER_SEQUENCE = 1;
   protected watcherOptions = new Map<number, WatcherOptions>();
-
-  protected client: FileSystemWatcherClient | undefined;
 
   protected changes = new FileChangeCollection();
 
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
 
+  @GDataStore(WatchInsData, { id: 'watcherId' })
+  private watcherGDataStore: GDataStore<WatchInsData, number>;
+
   private logger: ILogService;
 
   constructor(@Optional() private readonly excludes: string[] = []) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
-
-    this.addDispose(
-      Disposable.create(() => {
-        this.WATCHER_HANDLERS.clear();
-      }),
-    );
-  }
-
-  /**
-   * 查找某个路径是否已被监听
-   * @param watcherPath
-   */
-  checkIsAlreadyWatched(watcherPath: string): number | undefined {
-    for (const [watcherId, watcher] of this.WATCHER_HANDLERS) {
-      if (watcherPath.indexOf(watcher.path) === 0) {
-        return watcherId;
-      }
-    }
   }
 
   /**
@@ -97,18 +74,26 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const basePath = FileUri.fsPath(uri);
 
-    let watcherId = this.checkIsAlreadyWatched(basePath);
-    if (watcherId) {
-      return watcherId;
-    }
-
-    watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
-    this.WATCHER_HANDLERS.set(watcherId, {
-      ...watcherPlaceHolder,
+    const existsWatcher = this.watcherGDataStore.find({
       path: basePath,
     });
 
-    const toDisposeWatcher = new DisposableCollection();
+    if (existsWatcher && existsWatcher.length > 0) {
+      const watcher = existsWatcher[0];
+      watcher.disposable.acquire();
+      return watcher.watcherId;
+    }
+
+    const watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
+    const session = new DisposableCollection();
+    const refCountDisposable = new RefCountedDisposable(session);
+
+    this.watcherGDataStore.create({
+      watcherId,
+      disposable: refCountDisposable,
+      path: basePath,
+    });
+
     let watchPath: string;
 
     const exist = await fs.pathExists(basePath);
@@ -122,36 +107,35 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     } else {
       watchPath = await this.lookup(basePath);
     }
-    this.logger.log('Starting watching:', watchPath, options);
-    const handler = (err, events: ParcelWatcher.Event[]) => {
-      if (err) {
-        this.logger.error(`Watching ${watchPath} error: `, err);
-        return;
-      }
-      events = this.trimChangeEvent(events);
-      for (const event of events) {
-        switch (event.type) {
-          case 'create':
-            this.pushAdded(event.path);
-            break;
-          case 'delete':
-            this.pushDeleted(event.path);
-            break;
-          case 'update':
-            this.pushUpdated(event.path);
-            break;
-        }
-      }
-    };
 
-    this.WATCHER_HANDLERS.set(watcherId, {
-      path: watchPath,
-      disposable: toDisposeWatcher,
-      handlers: [handler],
-    });
-    toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watcherId as number)));
-    toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
-    this.addDispose(toDisposeWatcher);
+    if (!watchPath) {
+      this.logger.error('watch path not found:', basePath);
+      throw new Error('watch path not found: ' + basePath);
+    }
+
+    this.logger.log('Starting watching:', watchPath, options);
+
+    session.push(Disposable.create(() => this.watcherGDataStore.remove(watcherId)));
+    const realPath = await fs.realpath(basePath);
+
+    // 如果监听的路径不是真实路径，则记录一个新的监听
+    if (realPath !== watchPath) {
+      const newWatcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
+      session.push(
+        Disposable.create(() => {
+          this.watcherGDataStore.remove(newWatcherId);
+        }),
+      );
+
+      this.watcherGDataStore.create({
+        watcherId: newWatcherId,
+        disposable: refCountDisposable,
+        path: watchPath,
+      });
+    }
+
+    session.push(await this.start(watcherId, realPath, options));
+
     return watcherId;
   }
 
@@ -191,55 +175,55 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
   protected async start(
     watcherId: number,
-    basePath: string,
+    realPath: string,
     rawOptions: WatchOptions | undefined,
   ): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
-    if (!(await fs.pathExists(basePath))) {
-      return disposables;
-    }
-    const realPath = await fs.realpath(basePath);
-    const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
-      for (let times = 0; times < maxRetries; times++) {
-        try {
-          return await ParcelWatcher.subscribe(
-            realPath,
-            (err, events: ParcelWatcher.Event[]) => {
-              // 对于超过 5000 数量的 events 做屏蔽优化，避免潜在的卡死问题
-              if (events.length > 5000) {
-                // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
-                return;
-              }
-              const handlers = this.WATCHER_HANDLERS.get(watcherId)?.handlers;
 
-              if (!handlers) {
-                return;
-              }
-              for (const handler of handlers) {
-                (handler as ParcelWatcher.SubscribeCallback)(err, events);
-              }
-            },
-            {
-              backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
-              ignore: this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
-            },
-          );
-        } catch (e) {
-          // Watcher 启动失败，尝试重试
-          this.logger.error('watcher subscribe failed ', e, ' try times ', times);
-          await new Promise((resolve) => {
-            setTimeout(resolve, retryDelay);
-          });
-        }
-      }
+    const tryWatchDirByParcelWatcher = async () => {
+      const handle = await ParcelWatcher.subscribe(
+        realPath,
+        (err, events: ParcelWatcher.Event[]) => {
+          if (err) {
+            this.logger.error(`Watching ${realPath} error: `, err);
+            this.unwatchFileChanges(watcherId);
+            return;
+          }
 
-      // 经过若干次的尝试后，Parcel Watcher 依然启动失败，此时就不再尝试重试
-      this.logger.error(`watcher subscribe finally failed after ${maxRetries} times`);
-      return undefined; // watch 失败则返回 undefined
+          events = this.trimChangeEvent(events);
+
+          // 对于超过 5000 数量的 events 做屏蔽优化，避免潜在的卡死问题
+          if (events.length > 5000) {
+            // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
+            return;
+          }
+
+          for (const event of events) {
+            switch (event.type) {
+              case 'create':
+                this.pushAdded(event.path);
+                break;
+              case 'delete':
+                this.pushDeleted(event.path);
+                break;
+              case 'update':
+                this.pushUpdated(event.path);
+                break;
+            }
+          }
+        },
+        {
+          backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
+          ignore: this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
+        },
+      );
+      return {
+        dispose: () => handle.unsubscribe(),
+      };
     };
 
-    if (this.isEnableNSFW()) {
-      const nsfw = await this.withNSFWModule();
+    const tryWatchDirByNSFW = async (): Promise<IDisposable> => {
+      const nsfw = requireNSFWModule();
       const watcher: INsfw.NSFW = await nsfw(
         realPath,
         (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
@@ -254,10 +238,15 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
       await watcher.start();
 
+      const stop: IDisposable = {
+        dispose: async () => {
+          await watcher.stop();
+        },
+      };
+
       disposables.push(
         Disposable.create(async () => {
           this.watcherOptions.delete(watcherId);
-          await watcher.stop();
         }),
       );
 
@@ -267,29 +256,42 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
         excludesPattern: excludes.map((pattern) => parseGlob(pattern)),
         excludes,
       });
-    } else {
-      const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
 
-      if (hanlder) {
-        // watch 成功才加入 disposables，否则也就无需 dispose
-        disposables.push(
-          Disposable.create(async () => {
-            if (hanlder) {
-              await hanlder.unsubscribe();
-            }
-          }),
-        );
+      return stop;
+    };
+
+    const tryWatchDir = async (maxRetries = 3, retryDelay = 1000): Promise<IDisposable | undefined> => {
+      for (let times = 0; times < maxRetries; times++) {
+        try {
+          if (this.isEnableNSFW()) {
+            return tryWatchDirByNSFW();
+          }
+          return tryWatchDirByParcelWatcher();
+        } catch (e) {
+          // Watcher 启动失败，尝试重试
+          this.logger.error('watcher subscribe failed ', e, ' try times ', times);
+          await sleep(retryDelay);
+        }
       }
+
+      // 经过若干次的尝试后, Watcher 依然启动失败，此时就不再尝试重试
+      this.logger.error(`watcher subscribe finally failed after ${maxRetries} times`);
+      return undefined; // watch 失败则返回 undefined
+    };
+
+    const hanlder: IDisposable | undefined = await tryWatchDir();
+
+    if (hanlder) {
+      disposables.push(hanlder);
     }
 
     return disposables;
   }
 
   unwatchFileChanges(watcherId: number): Promise<void> {
-    const watcher = this.WATCHER_HANDLERS.get(watcherId);
-    if (watcher) {
-      this.WATCHER_HANDLERS.delete(watcherId);
-      watcher.disposable.dispose();
+    const data = this.watcherGDataStore.get(watcherId);
+    if (data) {
+      data.disposable.release();
     }
     return Promise.resolve();
   }
@@ -298,7 +300,6 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     if (client && this.disposed) {
       return;
     }
-    this.client = client;
   }
 
   /**
@@ -395,10 +396,6 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     );
   }
 
-  private async withNSFWModule(): Promise<typeof import('nsfw')> {
-    return require('nsfw');
-  }
-
   protected pushAdded(path: string): void {
     this.pushFileChange(path, FileChangeType.ADDED);
   }
@@ -437,6 +434,9 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     return path;
   }
 
+  private _onFilesChangeEmitter = this.registerDispose(new Emitter<FileChangeData>());
+  onFilesChange = this._onFilesChangeEmitter.event;
+
   /**
    * Fires file changes to clients.
    * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
@@ -445,9 +445,10 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   protected doFireDidFilesChanged(): void {
     const changes = this.changes.values();
     this.changes = new FileChangeCollection();
-    const event = { changes };
-    if (this.client) {
-      this.client.onDidFilesChanged(event);
-    }
+    this._onFilesChangeEmitter.fire({ changes });
   }
+}
+
+function requireNSFWModule(): typeof import('nsfw') {
+  return require('nsfw');
 }

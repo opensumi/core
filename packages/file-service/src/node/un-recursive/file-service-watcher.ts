@@ -5,6 +5,7 @@ import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
+  Emitter,
   FileUri,
   IDisposable,
   ILogService,
@@ -14,12 +15,14 @@ import {
   path,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
+import { FileChangeType, IFileSystemWatcherServer } from '../../common/index';
+import { FileChangeData } from '../data-store';
 import { FileChangeCollection } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
+
 const { join, basename, normalize } = path;
 @Injectable({ multiple: true })
-export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
+export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSystemWatcherServer {
   private WATCHER_HANDLERS = new Map<
     number,
     {
@@ -28,6 +31,9 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       disposable: IDisposable;
     }
   >();
+
+  private _onFilesChangeEmitter = this.registerDispose(new Emitter<FileChangeData>());
+  onFilesChange = this._onFilesChangeEmitter.event;
 
   private static WATCHER_SEQUENCE = 1;
 
@@ -40,19 +46,16 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   // 收集发生改变的文件
   protected changes = new FileChangeCollection();
 
-  protected readonly toDispose = new DisposableCollection(Disposable.create(() => this.setClient(undefined)));
-
-  protected client: FileSystemWatcherClient | undefined;
-
   private logger: ILogService;
 
   constructor(@Optional() private readonly excludes: string[] = []) {
+    super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
   }
 
   dispose(): void {
-    this.toDispose.dispose();
     this.WATCHER_HANDLERS.clear();
+    super.dispose();
   }
 
   /**
@@ -169,7 +172,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     let watchPath = '';
 
     if (exist) {
-      const stat = await fs.lstatSync(basePath);
+      const stat = await fs.lstat(basePath);
       if (stat) {
         watchPath = basePath;
       }
@@ -177,7 +180,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       this.logger.warn('This path does not exist. Please try again');
     }
     disposables.push(await this.start(watchPath));
-    this.toDispose.push(disposables);
+    this.addDispose(disposables);
     return watcherId;
   }
 
@@ -238,15 +241,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     const changes = this.changes.values();
     this.changes = new FileChangeCollection();
     const event = { changes };
-    if (this.client) {
-      this.client.onDidFilesChanged(event);
-    }
-  }
-
-  setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.toDispose.disposed) {
-      return;
-    }
-    this.client = client;
+    this._onFilesChangeEmitter.fire(event);
   }
 }

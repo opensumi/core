@@ -1,18 +1,10 @@
 import { Injectable, Injector } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
-import {
-  DiskFileServicePath,
-  FileServicePath,
-  FileSystemProvider,
-  IDiskFileProvider,
-  IFileService,
-  IShadowFileProvider,
-  ShadowFileServicePath,
-} from '../common';
-import { DiskFileServiceProtocol } from '../common/protocols/disk-file-service';
+import { FileServicePath, FileSystemProvider, IDiskFileProvider, IFileService } from '../common';
 
 import { DiskFileSystemProvider } from './disk-file-system.provider';
+import { DiskFileRemoteService } from './disk-file.remote-service';
 import { getSafeFileservice } from './file-service';
 
 export * from './file-service';
@@ -34,16 +26,9 @@ export class FileServiceModule extends NodeModule {
     { token: IDiskFileProvider, useFactory: (injector: Injector) => getFileservice(injector, DiskFileSystemProvider) },
   ];
 
+  remoteServices = [DiskFileRemoteService];
+
   backServices = [
-    {
-      servicePath: DiskFileServicePath,
-      token: IDiskFileProvider,
-      protocol: DiskFileServiceProtocol,
-    },
-    {
-      servicePath: ShadowFileServicePath,
-      token: IShadowFileProvider,
-    },
     {
       servicePath: FileServicePath,
       token: IFileService,

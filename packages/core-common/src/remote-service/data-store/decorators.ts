@@ -16,7 +16,7 @@ function saveToken(type: 'global' | 'session', token: string, options?: DataStor
   dataStore[type][token] = options;
 }
 
-export type GDataStore<T> = InMemoryDataStore<T>;
+export type GDataStore<T, K = number> = InMemoryDataStore<T, K>;
 export function GDataStore(token: string, options?: DataStoreOptions): PropertyDecorator {
   saveToken('global', token, options);
 
@@ -25,7 +25,7 @@ export function GDataStore(token: string, options?: DataStoreOptions): PropertyD
   });
 }
 
-export type SessionDataStore<T> = InMemoryDataStore<T>;
+export type SessionDataStore<T, K = number> = InMemoryDataStore<T, K>;
 export function SessionDataStore(token: string, options?: DataStoreOptions): PropertyDecorator {
   saveToken('session', token, options);
 
