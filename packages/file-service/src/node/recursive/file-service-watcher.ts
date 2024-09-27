@@ -3,13 +3,13 @@ import paths from 'path';
 import ParcelWatcher from '@parcel/watcher';
 import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
+import groupBy from 'lodash/groupBy';
 import uniqBy from 'lodash/uniqBy';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
-  Emitter,
   FileUri,
   GDataStore,
   IDisposable,
@@ -25,7 +25,7 @@ import {
 } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
-import { FileChangeData, WatchInsData } from '../data-store';
+import { WatchInsData, fileChangeEvent } from '../data-store';
 import { FileChangeCollection } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
@@ -56,7 +56,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   private readonly loggerManager: ILogServiceManager;
 
   @GDataStore(WatchInsData, { id: 'watcherId' })
-  private watcherGDataStore: GDataStore<WatchInsData, number>;
+  private watcherGDataStore: GDataStore<WatchInsData>;
 
   private logger: ILogService;
 
@@ -201,13 +201,13 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
           for (const event of events) {
             switch (event.type) {
               case 'create':
-                this.pushAdded(event.path);
+                this.pushAdded(watcherId, event.path);
                 break;
               case 'delete':
-                this.pushDeleted(event.path);
+                this.pushDeleted(watcherId, event.path);
                 break;
               case 'update':
-                this.pushUpdated(event.path);
+                this.pushUpdated(watcherId, event.path);
                 break;
             }
           }
@@ -352,7 +352,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
                 return;
               }
 
-              this.pushDeleted(deletedPath);
+              this.pushDeleted(watcherId, deletedPath);
 
               if (event.newDirectory) {
                 const path = await this.resolvePath(event.newDirectory, event.newFile!);
@@ -360,14 +360,14 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
                   return;
                 }
 
-                this.pushAdded(path);
+                this.pushAdded(watcherId, path);
               } else {
                 const path = await this.resolvePath(event.directory, event.newFile!);
                 if (isIgnored(watcherId, path)) {
                   return;
                 }
 
-                this.pushAdded(path);
+                this.pushAdded(watcherId, path);
               }
             }
             break;
@@ -380,13 +380,13 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
               switch (event.action) {
                 case INsfw.actions.CREATED:
-                  this.pushAdded(path);
+                  this.pushAdded(watcherId, path);
                   break;
                 case INsfw.actions.DELETED:
-                  this.pushDeleted(path);
+                  this.pushDeleted(watcherId, path);
                   break;
                 case INsfw.actions.MODIFIED:
-                  this.pushUpdated(path);
+                  this.pushUpdated(watcherId, path);
                   break;
               }
             }
@@ -396,21 +396,21 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     );
   }
 
-  protected pushAdded(path: string): void {
-    this.pushFileChange(path, FileChangeType.ADDED);
+  protected pushAdded(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.ADDED);
   }
 
-  protected pushUpdated(path: string): void {
-    this.pushFileChange(path, FileChangeType.UPDATED);
+  protected pushUpdated(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.UPDATED);
   }
 
-  protected pushDeleted(path: string): void {
-    this.pushFileChange(path, FileChangeType.DELETED);
+  protected pushDeleted(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.DELETED);
   }
 
-  protected pushFileChange(path: string, type: FileChangeType): void {
+  protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
     const uri = FileUri.create(path).toString();
-    this.changes.push({ uri, type });
+    this.changes.push({ watcherId, uri, type });
 
     this.fireDidFilesChanged();
   }
@@ -434,9 +434,6 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     return path;
   }
 
-  private _onFilesChangeEmitter = this.registerDispose(new Emitter<FileChangeData>());
-  onFilesChange = this._onFilesChangeEmitter.event;
-
   /**
    * Fires file changes to clients.
    * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
@@ -445,7 +442,12 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   protected doFireDidFilesChanged(): void {
     const changes = this.changes.values();
     this.changes = new FileChangeCollection();
-    this._onFilesChangeEmitter.fire({ changes });
+
+    const data = groupBy(changes, 'watcherId');
+
+    Object.keys(data).forEach((watcherId) => {
+      this.watcherGDataStore.emit(fileChangeEvent(watcherId), data[watcherId]);
+    });
   }
 }
 

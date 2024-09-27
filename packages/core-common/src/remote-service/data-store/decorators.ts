@@ -3,48 +3,61 @@ import { Autowired, Injector } from '@opensumi/di';
 import { DataStoreOptions, InMemoryDataStore } from './store';
 
 const dataStore = {
-  global: {} as Record<string, DataStoreOptions | undefined>,
-  session: {} as Record<string, DataStoreOptions | undefined>,
+  global: {} as Record<
+    string,
+    {
+      token: symbol;
+      options: DataStoreOptions | undefined;
+    }
+  >,
+  session: {} as Record<
+    string,
+    {
+      token: symbol;
+      options: DataStoreOptions | undefined;
+    }
+  >,
 } as const;
 
-function saveToken(type: 'global' | 'session', token: string, options?: DataStoreOptions) {
+function generateToken(type: 'global' | 'session', token: string, options?: DataStoreOptions) {
   if (dataStore[type][token]) {
     // 同样的 token 只能被注入一次，options 也以第一次为准
-    return;
+    return dataStore[type][token].token;
   }
 
-  dataStore[type][token] = options;
+  const sym = Symbol(token);
+  dataStore[type][token] = {
+    token: sym,
+    options,
+  };
+  return sym;
 }
 
 export type GDataStore<T, K = number> = InMemoryDataStore<T, K>;
 export function GDataStore(token: string, options?: DataStoreOptions): PropertyDecorator {
-  saveToken('global', token, options);
+  const sym = generateToken('global', token, options);
 
-  return Autowired(GDataStore, {
-    tag: String(token),
+  return Autowired(sym, {
+    tag: token,
   });
 }
 
 export type SessionDataStore<T, K = number> = InMemoryDataStore<T, K>;
 export function SessionDataStore(token: string, options?: DataStoreOptions): PropertyDecorator {
-  saveToken('session', token, options);
+  const sym = generateToken('session', token, options);
 
-  return Autowired(SessionDataStore, {
-    tag: String(token),
+  return Autowired(sym, {
+    tag: token,
   });
 }
 
 function _injectDataStores(type: 'global' | 'session', injector: Injector) {
   const stores = dataStore[type];
   if (stores) {
-    const token = type === 'global' ? GDataStore : SessionDataStore;
-
     injector.addProviders(
-      ...Object.entries(stores).map(([tag, opts]) => ({
-        token,
-        useValue: new InMemoryDataStore(opts),
-        tag,
-        dropdownForTag: false,
+      ...Object.entries(stores).map(([_, opts]) => ({
+        token: opts.token,
+        useValue: new InMemoryDataStore(opts.options),
       })),
     );
   }

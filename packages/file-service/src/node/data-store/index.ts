@@ -1,4 +1,4 @@
-import { FileChange, RefCountedDisposable } from '@opensumi/ide-core-common';
+import { RefCountedDisposable } from '@opensumi/ide-core-common';
 
 export const WatchInsData = 'WatchIns';
 export interface WatchInsData {
@@ -8,7 +8,4 @@ export interface WatchInsData {
   disposable: RefCountedDisposable;
 }
 
-export const FileChangeData = 'FileChange';
-export interface FileChangeData {
-  changes: FileChange[];
-}
+export const fileChangeEvent = (watcherId: number | string) => `file-changes-${watcherId}`;

@@ -20,7 +20,6 @@ import {
   ILogService,
   ILogServiceManager,
   IReadFileStreamOptions,
-  SessionDataStore,
   SupportLogNamespace,
   URI,
   Uri,
@@ -46,6 +45,7 @@ import {
   notEmpty,
 } from '../common/';
 
+import { WatchInsData, fileChangeEvent } from './data-store';
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
 import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
@@ -86,6 +86,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
+
+  @GDataStore(WatchInsData, { id: 'watcherId' })
+  private watcherGDataStore: GDataStore<WatchInsData, number>;
 
   private logger: ILogService;
 
@@ -138,9 +141,15 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
       excludes: options?.excludes ?? [],
     });
+
+    const unwatch = this.watcherGDataStore.on(fileChangeEvent(id), (data) => {
+      this.handleFileChanges(data);
+    });
+
     const disposable = {
       dispose: () => {
         this.watcherServer.unwatchFileChanges(id);
+        unwatch.dispose();
       },
     };
     this.watcherCollection.set(_uri.toString(), { id, options, disposable });
@@ -396,34 +405,14 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       this.watcherServer = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
     }
 
-    this.watcherServerDisposeCollection.push({
-      dispose: () => {
-        this.watcherServer.dispose();
-      },
-    });
+    this.watcherServerDisposeCollection.push(this.watcherServer);
+
     if (this.isInitialized) {
       // 当服务已经初始化一次后，重新初始化时需要重新绑定原有的监听服务
       this.rewatch();
     } else {
       this._whenReadyDeferred.resolve();
     }
-
-    this.watcherServerDisposeCollection.push(
-      this.watcherServer.onFilesChange((data) => {
-        if (data.changes.length > 0) {
-          this.logger.log('changes', data.changes);
-          const changes = data.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
-          this.fileChangeEmitter.fire(changes);
-          if (Array.isArray(this.rpcClient)) {
-            this.rpcClient.forEach((client) => {
-              client.onDidFilesChanged({
-                changes,
-              });
-            });
-          }
-        }
-      }),
-    );
 
     this.isInitialized = true;
   }
@@ -690,5 +679,18 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   async getFileType(uri: string): Promise<string | undefined> {
     return await getFileType(uri);
+  }
+
+  protected handleFileChanges(changes: FileChangeEvent): void {
+    if (changes.length > 0) {
+      const _changes = changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
+      this.fileChangeEmitter.fire(_changes);
+
+      if (this.client) {
+        this.client.onDidFilesChanged({
+          changes: _changes,
+        });
+      }
+    }
   }
 }

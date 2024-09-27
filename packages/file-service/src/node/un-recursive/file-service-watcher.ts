@@ -1,22 +1,24 @@
 import fs, { watch } from 'fs-extra';
 import debounce from 'lodash/debounce';
+import groupBy from 'lodash/groupBy';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
-  Emitter,
   FileUri,
+  GDataStore,
   IDisposable,
   ILogService,
   ILogServiceManager,
   SupportLogNamespace,
   isMacintosh,
   path,
+  sleep,
 } from '@opensumi/ide-core-node';
 
 import { FileChangeType, IFileSystemWatcherServer } from '../../common/index';
-import { FileChangeData } from '../data-store';
+import { WatchInsData, fileChangeEvent } from '../data-store';
 import { FileChangeCollection } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
@@ -32,16 +34,15 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
     }
   >();
 
-  private _onFilesChangeEmitter = this.registerDispose(new Emitter<FileChangeData>());
-  onFilesChange = this._onFilesChangeEmitter.event;
-
   private static WATCHER_SEQUENCE = 1;
 
   private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
   @Autowired(ILogServiceManager)
-  // 一个 symbol 关键字，内容是 ILogServiceManager
   private readonly loggerManager: ILogServiceManager;
+
+  @GDataStore(WatchInsData, { id: 'watcherId' })
+  private watcherGDataStore: GDataStore<WatchInsData, number>;
 
   // 收集发生改变的文件
   protected changes = new FileChangeCollection();
@@ -70,7 +71,7 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
     }
   }
 
-  private async doWatch(basePath: string) {
+  private async doWatch(basePath: string, watcherId: number) {
     try {
       const watcher = watch(basePath);
       this.logger.log('start watching', basePath);
@@ -124,15 +125,15 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
               if ((type === 'rename' || type === 'change') && changeFileName === filename) {
                 const fileExists = fs.existsSync(changePath);
                 if (fileExists) {
-                  this.pushUpdated(changePath);
+                  this.pushUpdated(watcherId, changePath);
                 } else {
                   docChildren.delete(changeFileName);
-                  this.pushDeleted(changePath);
+                  this.pushDeleted(watcherId, changePath);
                 }
               }
             } else if (fs.pathExistsSync(changePath)) {
               if (!fs.lstatSync(changePath).isDirectory()) {
-                this.pushAdded(changePath);
+                this.pushAdded(watcherId, changePath);
                 docChildren.add(changeFileName);
               }
             }
@@ -141,9 +142,9 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
           setTimeout(async () => {
             if (changeFileName === signalDoc) {
               if (fs.pathExistsSync(basePath)) {
-                this.pushUpdated(basePath);
+                this.pushUpdated(watcherId, basePath);
               } else {
-                this.pushDeleted(basePath);
+                this.pushDeleted(watcherId, basePath);
                 signalDoc = '';
               }
             }
@@ -179,12 +180,12 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
     } else {
       this.logger.warn('This path does not exist. Please try again');
     }
-    disposables.push(await this.start(watchPath));
+    disposables.push(await this.start(watchPath, watcherId));
     this.addDispose(disposables);
     return watcherId;
   }
 
-  protected async start(basePath: string): Promise<DisposableCollection> {
+  protected async start(basePath: string, watcherId: number): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
     if (!(await fs.pathExists(basePath))) {
       return disposables;
@@ -193,11 +194,9 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
     const realPath = await fs.realpath(basePath);
     const tryWatchDir = async (retryDelay = 1000) => {
       try {
-        this.doWatch(realPath);
+        await this.doWatch(realPath, watcherId);
       } catch (error) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, retryDelay);
-        });
+        await sleep(retryDelay);
       }
       return undefined;
     };
@@ -213,21 +212,21 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
     return Promise.resolve();
   }
 
-  protected pushAdded(path: string): void {
-    this.pushFileChange(path, FileChangeType.ADDED);
+  protected pushAdded(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.ADDED);
   }
 
-  protected pushUpdated(path: string): void {
-    this.pushFileChange(path, FileChangeType.UPDATED);
+  protected pushUpdated(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.UPDATED);
   }
 
-  protected pushDeleted(path: string): void {
-    this.pushFileChange(path, FileChangeType.DELETED);
+  protected pushDeleted(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.DELETED);
   }
 
-  protected pushFileChange(path: string, type: FileChangeType): void {
+  protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
     const uri = FileUri.create(path).toString();
-    this.changes.push({ uri, type });
+    this.changes.push({ watcherId, uri, type });
     this.fireDidFilesChanged();
   }
 
@@ -240,7 +239,11 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
   protected doFireDidFilesChanged(): void {
     const changes = this.changes.values();
     this.changes = new FileChangeCollection();
-    const event = { changes };
-    this._onFilesChangeEmitter.fire(event);
+
+    const data = groupBy(changes, 'watcherId');
+
+    Object.keys(data).forEach((watcherId) => {
+      this.watcherGDataStore.emit(fileChangeEvent(watcherId), data[watcherId]);
+    });
   }
 }
