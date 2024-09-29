@@ -10,7 +10,6 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@open
 import { RPCService } from '@opensumi/ide-connection';
 import {
   Deferred,
-  DisposableCollection,
   Emitter,
   Event,
   FileUri,
@@ -45,7 +44,8 @@ import {
   notEmpty,
 } from '../common/';
 
-import { WatchInsData, fileChangeEvent } from './data-store';
+import { WatchInsData } from './data-store';
+import { FileChangeCollectionManager } from './file-change-collection';
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
 import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
@@ -88,6 +88,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   @GDataStore(WatchInsData, { id: 'watcherId' })
   private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
+
+  @Autowired(FileChangeCollectionManager)
+  private readonly fileChangeCollectionManager: FileChangeCollectionManager;
 
   private logger: ILogService;
 
@@ -141,8 +144,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       excludes: options?.excludes ?? [],
     });
 
-    const listenHandle = this.watcherGDataStore.on(fileChangeEvent(id), (data) => {
-      this.handleFileChanges(data);
+    const listenHandle = this.fileChangeCollectionManager.onFileChange(id, (changes) => {
+      this.handleFileChanges(changes);
     });
 
     const disposable = {

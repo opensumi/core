@@ -16,7 +16,10 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/node/file-change-collection.ts
 
-import groupBy from 'lodash/groupBy';
+import debounce from 'lodash/debounce';
+
+import { Injectable } from '@opensumi/di';
+import { DefaultMap, Dispatcher, FileUri } from '@opensumi/ide-utils';
 
 import { FileChange, FileChangeType } from '../common';
 
@@ -71,11 +74,49 @@ export class FileChangeCollection {
     return Array.from(this.changes.values());
   }
 
-  groupByWatcherId(): Record<string, FileChange[]> {
-    return groupBy(this.values(), 'watcherId');
-  }
-
   reset(): void {
     this.changes.clear();
+  }
+}
+
+@Injectable()
+export class FileChangeCollectionManager {
+  private _onFileChangeEmitter = new Dispatcher<FileChange[]>();
+  public readonly onFileChange = (watcherId: number, cb: (change: FileChange[]) => void) =>
+    this._onFileChangeEmitter.on(String(watcherId))(cb);
+
+  protected changes = new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection());
+
+  /**
+   * Fires file changes to clients.
+   * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
+   */
+  protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
+  protected doFireDidFilesChanged(): void {
+    this.changes.forEach((change, watcherId) => {
+      const data = change.values();
+      change.reset();
+
+      this._onFileChangeEmitter.dispatch(String(watcherId), data);
+    });
+  }
+
+  pushAdded(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.ADDED);
+  }
+
+  pushUpdated(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.UPDATED);
+  }
+
+  pushDeleted(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.DELETED);
+  }
+
+  protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
+    const uri = FileUri.create(path).toString();
+    this.changes.get(watcherId).push({ uri, type });
+
+    this.fireDidFilesChanged();
   }
 }

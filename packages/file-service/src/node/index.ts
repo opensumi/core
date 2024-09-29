@@ -5,6 +5,7 @@ import { FileServicePath, FileSystemProvider, IDiskFileProvider, IFileService } 
 
 import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { DiskFileRemoteService } from './disk-file.remote-service';
+import { FileChangeCollectionManager } from './file-change-collection';
 import { getSafeFileservice } from './file-service';
 
 export * from './file-service';
@@ -24,6 +25,11 @@ export class FileServiceModule extends NodeModule {
   providers = [
     { token: IFileService, useFactory: (injector: Injector) => getSafeFileservice(injector) },
     { token: IDiskFileProvider, useFactory: (injector: Injector) => getFileservice(injector, DiskFileSystemProvider) },
+    // 单例 FileChangeCollectionManager
+    {
+      token: FileChangeCollectionManager,
+      useClass: FileChangeCollectionManager,
+    },
   ];
 
   remoteServices = [DiskFileRemoteService];

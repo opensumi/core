@@ -1,10 +1,7 @@
 import fs, { watch } from 'fs-extra';
-import debounce from 'lodash/debounce';
-import groupBy from 'lodash/groupBy';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
-  DefaultMap,
   Disposable,
   DisposableCollection,
   FileUri,
@@ -18,9 +15,9 @@ import {
   sleep,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, IFileSystemWatcherServer } from '../../common/index';
-import { WatchInsData, fileChangeEvent } from '../data-store';
-import { FileChangeCollection } from '../file-change-collection';
+import { IFileSystemWatcherServer } from '../../common/index';
+import { WatchInsData } from '../data-store';
+import { FileChangeCollectionManager } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
 const { join, basename, normalize } = path;
@@ -45,8 +42,8 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
   @GDataStore(WatchInsData, { id: 'watcherId' })
   private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
 
-  // 收集发生改变的文件
-  protected changes = new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection());
+  @Autowired(FileChangeCollectionManager)
+  private readonly fileChangeCollectionManager: FileChangeCollectionManager;
 
   private logger: ILogService;
 
@@ -126,15 +123,15 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
               if ((type === 'rename' || type === 'change') && changeFileName === filename) {
                 const fileExists = fs.existsSync(changePath);
                 if (fileExists) {
-                  this.pushUpdated(watcherId, changePath);
+                  this.fileChangeCollectionManager.pushUpdated(watcherId, changePath);
                 } else {
                   docChildren.delete(changeFileName);
-                  this.pushDeleted(watcherId, changePath);
+                  this.fileChangeCollectionManager.pushDeleted(watcherId, changePath);
                 }
               }
             } else if (fs.pathExistsSync(changePath)) {
               if (!fs.lstatSync(changePath).isDirectory()) {
-                this.pushAdded(watcherId, changePath);
+                this.fileChangeCollectionManager.pushAdded(watcherId, changePath);
                 docChildren.add(changeFileName);
               }
             }
@@ -143,9 +140,9 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
           setTimeout(async () => {
             if (changeFileName === signalDoc) {
               if (fs.pathExistsSync(basePath)) {
-                this.pushUpdated(watcherId, basePath);
+                this.fileChangeCollectionManager.pushUpdated(watcherId, basePath);
               } else {
-                this.pushDeleted(watcherId, basePath);
+                this.fileChangeCollectionManager.pushDeleted(watcherId, basePath);
                 signalDoc = '';
               }
             }
@@ -211,37 +208,5 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
       watcher.disposable.dispose();
     }
     return Promise.resolve();
-  }
-
-  protected pushAdded(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.ADDED);
-  }
-
-  protected pushUpdated(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.UPDATED);
-  }
-
-  protected pushDeleted(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.DELETED);
-  }
-
-  protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
-    const uri = FileUri.create(path).toString();
-
-    this.changes.get(watcherId).push({ uri, type });
-    this.fireDidFilesChanged();
-  }
-
-  /**
-   * Fires file changes to clients.
-   * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
-   */
-  protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
-
-  protected doFireDidFilesChanged(): void {
-    this.changes.forEach((change, watcherId) => {
-      const data = change.values();
-      this.watcherGDataStore.emit(fileChangeEvent(watcherId), data);
-    });
   }
 }

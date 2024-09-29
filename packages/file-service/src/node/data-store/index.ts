@@ -7,5 +7,3 @@ export interface WatchInsData {
 
   disposable: RefCountedDisposable;
 }
-
-export const fileChangeEvent = (watcherId: number | string) => `file-changes-${watcherId}`;

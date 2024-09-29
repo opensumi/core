@@ -2,12 +2,10 @@ import paths from 'path';
 
 import ParcelWatcher from '@parcel/watcher';
 import fs from 'fs-extra';
-import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
-  DefaultMap,
   Disposable,
   DisposableCollection,
   FileUri,
@@ -24,9 +22,9 @@ import {
   sleep,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
-import { WatchInsData, fileChangeEvent } from '../data-store';
-import { FileChangeCollection } from '../file-change-collection';
+import { FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
+import { WatchInsData } from '../data-store';
+import { FileChangeCollectionManager } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
 export interface WatcherOptions {
@@ -50,13 +48,14 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   private static WATCHER_SEQUENCE = 1;
   protected watcherOptions = new Map<number, WatcherOptions>();
 
-  protected changes = new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection());
-
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
 
   @GDataStore(WatchInsData, { id: 'watcherId' })
   private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
+
+  @Autowired(FileChangeCollectionManager)
+  private readonly fileChangeCollectionManager: FileChangeCollectionManager;
 
   private logger: ILogService;
 
@@ -201,13 +200,13 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
           for (const event of events) {
             switch (event.type) {
               case 'create':
-                this.pushAdded(watcherId, event.path);
+                this.fileChangeCollectionManager.pushAdded(watcherId, event.path);
                 break;
               case 'delete':
-                this.pushDeleted(watcherId, event.path);
+                this.fileChangeCollectionManager.pushDeleted(watcherId, event.path);
                 break;
               case 'update':
-                this.pushUpdated(watcherId, event.path);
+                this.fileChangeCollectionManager.pushUpdated(watcherId, event.path);
                 break;
             }
           }
@@ -361,7 +360,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
                 return;
               }
 
-              this.pushDeleted(watcherId, deletedPath);
+              this.fileChangeCollectionManager.pushDeleted(watcherId, deletedPath);
 
               if (event.newDirectory) {
                 const path = await this.resolvePath(event.newDirectory, event.newFile!);
@@ -369,14 +368,14 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
                   return;
                 }
 
-                this.pushAdded(watcherId, path);
+                this.fileChangeCollectionManager.pushAdded(watcherId, path);
               } else {
                 const path = await this.resolvePath(event.directory, event.newFile!);
                 if (isIgnored(watcherId, path)) {
                   return;
                 }
 
-                this.pushAdded(watcherId, path);
+                this.fileChangeCollectionManager.pushAdded(watcherId, path);
               }
             }
             break;
@@ -389,13 +388,13 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
               switch (event.action) {
                 case INsfw.actions.CREATED:
-                  this.pushAdded(watcherId, path);
+                  this.fileChangeCollectionManager.pushAdded(watcherId, path);
                   break;
                 case INsfw.actions.DELETED:
-                  this.pushDeleted(watcherId, path);
+                  this.fileChangeCollectionManager.pushDeleted(watcherId, path);
                   break;
                 case INsfw.actions.MODIFIED:
-                  this.pushUpdated(watcherId, path);
+                  this.fileChangeCollectionManager.pushUpdated(watcherId, path);
                   break;
               }
             }
@@ -403,25 +402,6 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
         }
       }),
     );
-  }
-
-  protected pushAdded(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.ADDED);
-  }
-
-  protected pushUpdated(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.UPDATED);
-  }
-
-  protected pushDeleted(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.DELETED);
-  }
-
-  protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
-    const uri = FileUri.create(path).toString();
-    this.changes.get(watcherId).push({ uri, type });
-
-    this.fireDidFilesChanged();
   }
 
   protected async resolvePath(directory: string, file: string): Promise<string> {
@@ -441,18 +421,6 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
       }
     }
     return path;
-  }
-
-  /**
-   * Fires file changes to clients.
-   * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
-   */
-  protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
-  protected doFireDidFilesChanged(): void {
-    this.changes.forEach((change, watcherId) => {
-      const data = change.values();
-      this.watcherGDataStore.emit(fileChangeEvent(watcherId), data);
-    });
   }
 }
 
