@@ -3,11 +3,11 @@ import paths from 'path';
 import ParcelWatcher from '@parcel/watcher';
 import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
-import groupBy from 'lodash/groupBy';
 import uniqBy from 'lodash/uniqBy';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
+  DefaultMap,
   Disposable,
   DisposableCollection,
   FileUri,
@@ -50,7 +50,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   private static WATCHER_SEQUENCE = 1;
   protected watcherOptions = new Map<number, WatcherOptions>();
 
-  protected changes = new FileChangeCollection();
+  protected changes = new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection());
 
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
@@ -419,7 +419,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
   protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
     const uri = FileUri.create(path).toString();
-    this.changes.push({ watcherId, uri, type });
+    this.changes.get(watcherId).push({ uri, type });
 
     this.fireDidFilesChanged();
   }
@@ -449,13 +449,9 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
    */
   protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
   protected doFireDidFilesChanged(): void {
-    const changes = this.changes.values();
-    this.changes = new FileChangeCollection();
-
-    const data = groupBy(changes, 'watcherId');
-
-    Object.keys(data).forEach((watcherId) => {
-      this.watcherGDataStore.emit(fileChangeEvent(watcherId), data[watcherId]);
+    this.changes.forEach((change, watcherId) => {
+      const data = change.values();
+      this.watcherGDataStore.emit(fileChangeEvent(watcherId), data);
     });
   }
 }

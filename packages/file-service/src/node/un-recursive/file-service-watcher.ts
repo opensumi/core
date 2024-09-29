@@ -4,6 +4,7 @@ import groupBy from 'lodash/groupBy';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
+  DefaultMap,
   Disposable,
   DisposableCollection,
   FileUri,
@@ -45,7 +46,7 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
   private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
 
   // 收集发生改变的文件
-  protected changes = new FileChangeCollection();
+  protected changes = new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection());
 
   private logger: ILogService;
 
@@ -226,7 +227,8 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
 
   protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
     const uri = FileUri.create(path).toString();
-    this.changes.push({ watcherId, uri, type });
+
+    this.changes.get(watcherId).push({ uri, type });
     this.fireDidFilesChanged();
   }
 
@@ -237,13 +239,9 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
   protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
 
   protected doFireDidFilesChanged(): void {
-    const changes = this.changes.values();
-    this.changes = new FileChangeCollection();
-
-    const data = groupBy(changes, 'watcherId');
-
-    Object.keys(data).forEach((watcherId) => {
-      this.watcherGDataStore.emit(fileChangeEvent(watcherId), data[watcherId]);
+    this.changes.forEach((change, watcherId) => {
+      const data = change.values();
+      this.watcherGDataStore.emit(fileChangeEvent(watcherId), data);
     });
   }
 }

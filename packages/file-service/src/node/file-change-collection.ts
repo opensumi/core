@@ -16,6 +16,8 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/node/file-change-collection.ts
 
+import groupBy from 'lodash/groupBy';
+
 import { FileChange, FileChangeType } from '../common';
 
 /**
@@ -67,5 +69,13 @@ export class FileChangeCollection {
 
   values(): FileChange[] {
     return Array.from(this.changes.values());
+  }
+
+  groupByWatcherId(): Record<string, FileChange[]> {
+    return groupBy(this.values(), 'watcherId');
+  }
+
+  reset(): void {
+    this.changes.clear();
   }
 }

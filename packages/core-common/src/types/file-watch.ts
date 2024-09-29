@@ -35,8 +35,6 @@ export interface DidFilesChangedParams {
 }
 
 export interface FileChange {
-  watcherId: number;
-
   uri: string;
   type: FileChangeType;
 }
