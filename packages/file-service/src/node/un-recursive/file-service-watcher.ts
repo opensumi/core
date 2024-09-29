@@ -42,7 +42,7 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
   private readonly loggerManager: ILogServiceManager;
 
   @GDataStore(WatchInsData, { id: 'watcherId' })
-  private watcherGDataStore: GDataStore<WatchInsData, number>;
+  private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
 
   // 收集发生改变的文件
   protected changes = new FileChangeCollection();

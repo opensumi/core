@@ -73,7 +73,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private watcherServer: UnRecursiveFileSystemWatcher | FileSystemWatcherServer;
 
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
-  protected watcherServerDisposeCollection: DisposableCollection;
 
   protected readonly watcherCollection = new Map<string, IWatcher>();
   protected watchFileExcludes: string[] = [];
@@ -88,7 +87,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private readonly loggerManager: ILogServiceManager;
 
   @GDataStore(WatchInsData, { id: 'watcherId' })
-  private watcherGDataStore: GDataStore<WatchInsData, number>;
+  private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
 
   private logger: ILogService;
 
@@ -128,7 +127,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   dispose(): void {
-    this.watcherServerDisposeCollection?.dispose();
+    this.watcherServer?.dispose();
   }
 
   /**
@@ -142,14 +141,14 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       excludes: options?.excludes ?? [],
     });
 
-    const unwatch = this.watcherGDataStore.on(fileChangeEvent(id), (data) => {
+    const listenHandle = this.watcherGDataStore.on(fileChangeEvent(id), (data) => {
       this.handleFileChanges(data);
     });
 
     const disposable = {
       dispose: () => {
         this.watcherServer.unwatchFileChanges(id);
-        unwatch.dispose();
+        listenHandle.dispose();
       },
     };
     this.watcherCollection.set(_uri.toString(), { id, options, disposable });
@@ -157,7 +156,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   unwatch(watcherId: number) {
-    for (const [_uri, { id, disposable }] of this.watcherCollection) {
+    for (const [_, { id, disposable }] of this.watcherCollection) {
       if (watcherId === id) {
         disposable.dispose();
       }
@@ -395,17 +394,15 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     if (!this.injector) {
       return;
     }
-    if (this.watcherServerDisposeCollection) {
-      this.watcherServerDisposeCollection.dispose();
+    if (this.watcherServer) {
+      this.watcherServer.dispose();
     }
-    this.watcherServerDisposeCollection = new DisposableCollection();
+
     if (this.recursive) {
       this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
     } else {
       this.watcherServer = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
     }
-
-    this.watcherServerDisposeCollection.push(this.watcherServer);
 
     if (this.isInitialized) {
       // 当服务已经初始化一次后，重新初始化时需要重新绑定原有的监听服务

@@ -186,7 +186,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
         (err, events: ParcelWatcher.Event[]) => {
           if (err) {
             this.logger.error(`Watching ${realPath} error: `, err);
-            this.unwatchFileChanges(watcherId);
+            this.terminateWatcher(watcherId);
             return;
           }
 
@@ -231,7 +231,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
           errorCallback: (err) => {
             this.logger.error('NSFW watcher encountered an error and will stop watching.', err);
             // see https://github.com/atom/github/issues/342
-            this.unwatchFileChanges(watcherId);
+            this.terminateWatcher(watcherId);
           },
         },
       );
@@ -286,6 +286,15 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     }
 
     return disposables;
+  }
+
+  private terminateWatcher(watcherId: number): void {
+    const data = this.watcherGDataStore.get(watcherId);
+    if (data) {
+      while (!data.disposable.disposed) {
+        data.disposable.release();
+      }
+    }
   }
 
   unwatchFileChanges(watcherId: number): Promise<void> {
