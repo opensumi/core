@@ -13,7 +13,7 @@ function makeMatcher(query: Query) {
     return ${statements.join(' && ')};
   `;
 
-  return new Function('item', matcher) as (item: Query) => boolean;
+  return new Function('item', matcher) as (item: any) => boolean;
 }
 
 export function select<I, T extends Store<I>>(items: T, query: Query): I[] {

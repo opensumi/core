@@ -1,9 +1,15 @@
 import extend from 'lodash/extend';
 
 import { EventEmitter } from '@opensumi/events';
+import { isUndefined } from '@opensumi/ide-utils';
 
 import { select } from './select';
 
+/**
+ * The query looks like:
+ *   { field: value }
+ *   { field: conditions }
+ */
 export type Query = Record<string, any>;
 
 export interface DataStoreEvent<Item> {
@@ -46,14 +52,14 @@ export class InMemoryDataStore<
   }
 
   find(query?: Query): Item[] | undefined {
-    if (!query) {
+    if (isUndefined(query)) {
       return Array.from(this.store.values());
     }
     return select(this.store, query);
   }
 
   count(query?: Query): number {
-    if (!query) {
+    if (isUndefined(query)) {
       return this.store.size;
     }
 
@@ -70,7 +76,7 @@ export class InMemoryDataStore<
 
   update(id: PrimaryKeyType, item: Partial<Item>): void {
     const current = this.store.get(id);
-    if (!current) {
+    if (isUndefined(current)) {
       return;
     }
 
@@ -91,14 +97,20 @@ export class InMemoryDataStore<
 
   removeItem(item: Item): void {
     const id = item[this.id] as PrimaryKeyType;
+    if (isUndefined(id)) {
+      return;
+    }
+
     this.remove(id);
   }
 
   removeAll(query?: Query): void {
-    if (!query) {
-      this.store.forEach((item, key) => {
+    if (isUndefined(query)) {
+      const items = Array.from(this.store.values());
+      this.store.clear();
+
+      items.forEach((item) => {
         this.emit('removed', item);
-        this.store.delete(key);
       });
       return;
     }
@@ -106,8 +118,8 @@ export class InMemoryDataStore<
     const items = this.find(query);
     if (items) {
       items.forEach((item) => {
-        this.emit('removed', item);
         this.store.delete(item[this.id]);
+        this.emit('removed', item);
       });
     }
   }

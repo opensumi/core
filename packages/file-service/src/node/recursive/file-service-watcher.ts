@@ -73,9 +73,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const basePath = FileUri.fsPath(uri);
 
-    const existsWatcher = this.watcherGDataStore.find({
-      path: basePath,
-    });
+    const existsWatcher = this.watcherGDataStore.find()?.filter((watcher) => basePath.indexOf(watcher.path) === 0);
 
     if (existsWatcher && existsWatcher.length > 0) {
       const watcher = existsWatcher[0];
@@ -177,8 +175,6 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     realPath: string,
     rawOptions: WatchOptions | undefined,
   ): Promise<DisposableCollection> {
-    const disposables = new DisposableCollection();
-
     const tryWatchDirByParcelWatcher = async () => {
       const handle = await ParcelWatcher.subscribe(
         realPath,
@@ -240,14 +236,9 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
       const stop: IDisposable = {
         dispose: async () => {
           await watcher.stop();
+          this.watcherOptions.delete(watcherId);
         },
       };
-
-      disposables.push(
-        Disposable.create(async () => {
-          this.watcherOptions.delete(watcherId);
-        }),
-      );
 
       const excludes = this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude());
 
@@ -278,10 +269,12 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
       return undefined; // watch 失败则返回 undefined
     };
 
-    const hanlder: IDisposable | undefined = await tryWatchDir();
+    const disposables = new DisposableCollection();
 
-    if (hanlder) {
-      disposables.push(hanlder);
+    const handler: IDisposable | undefined = await tryWatchDir();
+
+    if (handler) {
+      disposables.push(handler);
     }
 
     return disposables;
@@ -302,12 +295,6 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
       data.disposable.release();
     }
     return Promise.resolve();
-  }
-
-  setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.disposed) {
-      return;
-    }
   }
 
   /**

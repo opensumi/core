@@ -21,7 +21,7 @@ import debounce from 'lodash/debounce';
 import { Injectable } from '@opensumi/di';
 import { DefaultMap, Dispatcher, FileUri } from '@opensumi/ide-utils';
 
-import { FileChange, FileChangeType } from '../common';
+import { DidFilesChangedParams, FileChange, FileChangeType } from '../common';
 
 /**
  * A file change collection guarantees that only one change is reported for each URI.
@@ -82,7 +82,7 @@ export class FileChangeCollection {
 @Injectable()
 export class FileChangeCollectionManager {
   private _onFileChangeEmitter = new Dispatcher<FileChange[]>();
-  public readonly onFileChange = (watcherId: number, cb: (change: FileChange[]) => void) =>
+  public readonly onFileChange = (watcherId: number, cb: (changes: FileChange[]) => void) =>
     this._onFileChangeEmitter.on(String(watcherId))(cb);
 
   protected changes = new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection());
@@ -118,5 +118,19 @@ export class FileChangeCollectionManager {
     this.changes.get(watcherId).push({ uri, type });
 
     this.fireDidFilesChanged();
+  }
+
+  /**
+   * @deprecated Use `onFileChange` instead.
+   * 兼容测试接口
+   */
+  setClient = (watcherId: number, client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
+    this.onFileChange(watcherId, (changes) => {
+      client.onDidFilesChanged({ changes });
+    });
+
+  dispose(): void {
+    this._onFileChangeEmitter.dispose();
+    this.changes.clear();
   }
 }

@@ -47,7 +47,7 @@ export type SessionDataStore<
   PrimaryKeyType = Item[PrimaryKey],
 > = InMemoryDataStore<Item, PrimaryKey, PrimaryKeyType>;
 export function SessionDataStore(token: string, options?: DataStoreOptions): PropertyDecorator {
-  const sym = generateToken('GDataStore', token, options);
+  const sym = generateToken('SessionDataStore', token, options);
 
   return Autowired(sym);
 }
