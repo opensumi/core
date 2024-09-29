@@ -6,34 +6,24 @@ import { select } from './select';
 
 export type Query = Record<string, any>;
 
-export interface DataStore<Item, PrimaryKey = string> {
-  create(item: Item): Item;
-  find(query: Query): Item[] | undefined;
-  size(query: Query): number;
-  has(id: PrimaryKey): boolean;
-  get(id: PrimaryKey, query?: Query): Item | undefined;
-  update(id: PrimaryKey, item: Partial<Item>): void;
-
-  remove(id: PrimaryKey): void;
-  removeItem(item: Item): void;
-  removeAll(query?: Query): void;
-}
-
-export interface DataStoreEvent<Item> extends Record<string, any> {
+export interface DataStoreEvent<Item> {
   created: [item: Item];
   updated: [oldItem: Item, newItem: Item];
   removed: [item: Item];
+
+  [key: string]: any[];
 }
 
 export interface DataStoreOptions {
   id?: string;
 }
 
-export class InMemoryDataStore<Item, PrimaryKey = number>
-  extends EventEmitter<DataStoreEvent<Item>>
-  implements DataStore<Item, PrimaryKey>
-{
-  private store = new Map<PrimaryKey, Item>();
+export class InMemoryDataStore<
+  Item extends Record<any, any>,
+  PrimaryKey extends keyof Item,
+  PrimaryKeyType = Item[PrimaryKey],
+> extends EventEmitter<DataStoreEvent<Item>> {
+  private store = new Map<PrimaryKeyType, Item>();
   private _uid = 0;
   /**
    * primary key
@@ -55,11 +45,14 @@ export class InMemoryDataStore<Item, PrimaryKey = number>
     return result;
   }
 
-  find(query: Query): Item[] | undefined {
+  find(query?: Query): Item[] | undefined {
+    if (!query) {
+      return Array.from(this.store.values());
+    }
     return select(this.store, query);
   }
 
-  size(query?: Query): number {
+  count(query?: Query): number {
     if (!query) {
       return this.store.size;
     }
@@ -67,15 +60,15 @@ export class InMemoryDataStore<Item, PrimaryKey = number>
     return this.find(query)?.length || 0;
   }
 
-  get(id: PrimaryKey): Item | undefined {
+  get(id: PrimaryKeyType): Item | undefined {
     return this.store.get(id);
   }
 
-  has(id: PrimaryKey): boolean {
+  has(id: PrimaryKeyType): boolean {
     return this.store.has(id);
   }
 
-  update(id: PrimaryKey, item: Partial<Item>): void {
+  update(id: PrimaryKeyType, item: Partial<Item>): void {
     const current = this.store.get(id);
     if (!current) {
       return;
@@ -87,7 +80,7 @@ export class InMemoryDataStore<Item, PrimaryKey = number>
     this.store.set(id, result);
   }
 
-  remove(id: PrimaryKey): void {
+  remove(id: PrimaryKeyType): void {
     const item = this.store.get(id);
     if (item) {
       this.emit('removed', item);
@@ -97,7 +90,7 @@ export class InMemoryDataStore<Item, PrimaryKey = number>
   }
 
   removeItem(item: Item): void {
-    const id = item[this.id] as PrimaryKey;
+    const id = item[this.id] as PrimaryKeyType;
     this.remove(id);
   }
 

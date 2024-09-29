@@ -56,7 +56,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   private readonly loggerManager: ILogServiceManager;
 
   @GDataStore(WatchInsData, { id: 'watcherId' })
-  private watcherGDataStore: GDataStore<WatchInsData>;
+  private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
 
   private logger: ILogService;
 
