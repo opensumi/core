@@ -22,36 +22,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ant-design/colors@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "@ant-design/colors@npm:6.0.0"
+"@ant-design/colors@npm:^7.0.0":
+  version: 7.1.0
+  resolution: "@ant-design/colors@npm:7.1.0"
   dependencies:
-    "@ctrl/tinycolor": "npm:^3.4.0"
-  checksum: 10/302ad54f5b9594d2ecebbeee460fae44cecde47f46e137fe4148d7a86add991e66e435cf371bf8941d2e2b13b36adfb004114dba0cf1eba99e87add4daa337ec
+    "@ctrl/tinycolor": "npm:^3.6.1"
+  checksum: 10/207f6d98e9d7f85c676279d516d87b6faa1794fdcbef17779dbc09ab033ca2dff048dc7bce71cb7095fcc053a84a65aff4d786e5b55af24a372a8bfa0ebf8fc8
   languageName: node
   linkType: hard
 
-"@ant-design/icons-svg@npm:^4.3.0":
+"@ant-design/icons-svg@npm:^4.4.0":
   version: 4.4.2
   resolution: "@ant-design/icons-svg@npm:4.4.2"
   checksum: 10/cb926eb6b0386c8364514fd60760a7a467bdef1146f1edd3cdfc28b025a06fc84ceb179dea773ef357de88f33f2c27f10c091d5d1bdec94c28dc02a72aa0ac0b
   languageName: node
   linkType: hard
 
-"@ant-design/icons@npm:^4.6.4":
-  version: 4.8.1
-  resolution: "@ant-design/icons@npm:4.8.1"
+"@ant-design/icons@npm:^5.5.1":
+  version: 5.5.1
+  resolution: "@ant-design/icons@npm:5.5.1"
   dependencies:
-    "@ant-design/colors": "npm:^6.0.0"
-    "@ant-design/icons-svg": "npm:^4.3.0"
-    "@babel/runtime": "npm:^7.11.2"
+    "@ant-design/colors": "npm:^7.0.0"
+    "@ant-design/icons-svg": "npm:^4.4.0"
+    "@babel/runtime": "npm:^7.24.8"
     classnames: "npm:^2.2.6"
-    lodash: "npm:^4.17.15"
-    rc-util: "npm:^5.9.4"
+    rc-util: "npm:^5.31.1"
   peerDependencies:
     react: ">=16.0.0"
     react-dom: ">=16.0.0"
-  checksum: 10/b6ec5f0febe50f9f6ad9b6e6736d57fd09a19496f54cdda051667fd3ecdea0011257b6c9f9be1f985dd5e5eb49bf116540197732bcff4d5275cf576a40c8a6eb
+  checksum: 10/8e5c75df40285af0b87fbb88adaa0c2f566c7fda3282233e802981034a99e968f03f39705ecc7870824d4b4b3ee5dc1b8e733a3073717441dc5c691e07c28536
   languageName: node
   linkType: hard
 
@@ -498,6 +497,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.24.8":
+  version: 7.25.6
+  resolution: "@babel/runtime@npm:7.25.6"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10/0c4134734deb20e1005ffb9165bf342e1074576621b246d8e5e41cc7cb315a885b7d98950fbf5c63619a2990a56ae82f444d35fe8c4691a0b70c2fe5673667dc
+  languageName: node
+  linkType: hard
+
 "@babel/runtime@npm:^7.3.4":
   version: 7.24.1
   resolution: "@babel/runtime@npm:7.24.1"
@@ -755,7 +763,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ctrl/tinycolor@npm:^3.4.0":
+"@ctrl/tinycolor@npm:^3.6.1":
   version: 3.6.1
   resolution: "@ctrl/tinycolor@npm:3.6.1"
   checksum: 10/f3c77b2d29076402d6b94632975cea1ce11942b05ca65d9108c951ff4d61965184dd7e480296e6625cb6df9e7de8b7938ce36a88cf1794c3b8ac83c908af468e
@@ -2136,7 +2144,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-components@workspace:packages/components"
   dependencies:
-    "@ant-design/icons": "npm:^4.6.4"
+    "@ant-design/icons": "npm:^5.5.1"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
@@ -12912,7 +12920,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.17.5":
+"lodash@npm:^4.17.14, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.17.5":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 10/c08619c038846ea6ac754abd6dd29d2568aa705feb69339e836dfa8d8b09abbb2f859371e86863eda41848221f9af43714491467b5b0299122431e202bb0c532
@@ -16496,7 +16504,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.28.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0, rc-util@npm:^5.9.4":
+"rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.28.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0":
   version: 5.39.1
   resolution: "rc-util@npm:5.39.1"
   dependencies:
@@ -16506,6 +16514,19 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/475e7755f8a8aaf8428c535e14ad1475d3d764108852a011cb5186fb7d905e064c0d56b77818ddaea0c5fbde439d3606b52f459cef7725fde8abf15e3e2ece2b
+  languageName: node
+  linkType: hard
+
+"rc-util@npm:^5.31.1":
+  version: 5.43.0
+  resolution: "rc-util@npm:5.43.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    react-is: "npm:^18.2.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/6d5be9d79182c6b4c5a033ad6517b2940d3d2ac42a8e77ef5735591d182f8236f61bc7628d61e82a122d2046ec849462f3fe57c08d3a2a20279646785c34ec4a
   languageName: node
   linkType: hard
 
