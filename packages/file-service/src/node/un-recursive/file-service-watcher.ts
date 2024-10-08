@@ -15,12 +15,13 @@ import {
   sleep,
 } from '@opensumi/ide-core-node';
 
-import { IFileSystemWatcherServer } from '../../common/index';
+import { FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { WatchInsData } from '../data-store';
 import { FileChangeCollectionManager } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
 const { join, basename, normalize } = path;
+
 @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSystemWatcherServer {
   private WATCHER_HANDLERS = new Map<
@@ -38,9 +39,6 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
 
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
-
-  @GDataStore(WatchInsData, { id: 'watcherId' })
-  private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
 
   @Autowired(FileChangeCollectionManager)
   private readonly fileChangeCollectionManager: FileChangeCollectionManager;
@@ -208,5 +206,14 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
       watcher.disposable.dispose();
     }
     return Promise.resolve();
+  }
+
+  /**
+   * @deprecated Just for test compatibility
+   *
+   * please use `FileChangeCollectionManager.onFileChange` instead.
+   */
+  setClient(client: FileSystemWatcherClient | undefined) {
+    this.fileChangeCollectionManager.setClient(client);
   }
 }

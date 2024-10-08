@@ -1,16 +1,15 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { sleep } from '@opensumi/ide-core-common';
+import { isMacintosh, sleep } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
-import { FileChangeCollectionManager } from '../../src/node/file-change-collection';
+import { FileChangeCollectionManager, FileChangeCollectionManagerOptions } from '../../src/node/file-change-collection';
 import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 
 const sleepTime = 1000;
-const isMacintosh = false;
 
 (isMacintosh ? describe.skip : describe)('ParceWatcher Test', () => {
   const track = temp.track();
@@ -21,12 +20,16 @@ const isMacintosh = false;
     const root = FileUri.create(fse.realpathSync(await temp.mkdir(`parce-watcher-test-${seed++}`)));
     // @ts-ignore
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
+    injector.addProviders({
+      token: FileChangeCollectionManagerOptions,
+      useValue: { debounceTimeout: 0 },
+    });
     const fileChangeCollectionManager = injector.get(FileChangeCollectionManager);
     const watcherServer = injector.get(FileSystemWatcherServer);
     const watcherId = await watcherServer.watchFileChanges(root.toString());
 
     const setClient = (client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
-      watcherServer.addDispose(fileChangeCollectionManager.setClient(watcherId, client));
+      watcherServer.addDispose(fileChangeCollectionManager.setClientForTest(watcherId, client));
 
     return { root, watcherServer, watcherId, setClient };
   }
@@ -164,6 +167,10 @@ const isMacintosh = false;
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('nfsw-test')));
     // @ts-ignore
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
+    injector.addProviders({
+      token: FileChangeCollectionManagerOptions,
+      useValue: { debounceTimeout: 0 },
+    });
     const fileChangeCollectionManager = injector.get(FileChangeCollectionManager);
 
     const watcherServer = injector.get(FileSystemWatcherServer);
@@ -173,7 +180,7 @@ const isMacintosh = false;
 
     const watcherId = await watcherServer.watchFileChanges(root.toString());
     const setClient = (client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
-      watcherServer.addDispose(fileChangeCollectionManager.setClient(watcherId, client));
+      watcherServer.addDispose(fileChangeCollectionManager.setClientForTest(watcherId, client));
 
     return { root, watcherServer, setClient };
   }

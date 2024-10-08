@@ -865,6 +865,10 @@ export class DefaultMap<K, V> {
   forEach(fn: (value: V, key: K) => void): void {
     this.map.forEach(fn);
   }
+
+  dispose() {
+    this.clear();
+  }
 }
 
 export class SetMap<K, V> {

@@ -18,10 +18,10 @@
 
 import debounce from 'lodash/debounce';
 
-import { Injectable } from '@opensumi/di';
-import { DefaultMap, Dispatcher, FileUri } from '@opensumi/ide-utils';
+import { Injectable, Optional } from '@opensumi/di';
+import { DefaultMap, Dispatcher, Disposable, FileUri } from '@opensumi/ide-utils';
 
-import { DidFilesChangedParams, FileChange, FileChangeType } from '../common';
+import { DidFilesChangedParams, FileChange, FileChangeType, FileSystemWatcherClient } from '../common';
 
 /**
  * A file change collection guarantees that only one change is reported for each URI.
@@ -79,25 +79,41 @@ export class FileChangeCollection {
   }
 }
 
+export const FileChangeCollectionManagerOptions = Symbol('FileChangeCollectionManagerOptions');
+
 @Injectable()
-export class FileChangeCollectionManager {
-  private _onFileChangeEmitter = new Dispatcher<FileChange[]>();
+export class FileChangeCollectionManager extends Disposable {
+  private _onFileChangeEmitter = this.registerDispose(new Dispatcher<FileChange[]>());
   public readonly onFileChange = (watcherId: number, cb: (changes: FileChange[]) => void) =>
     this._onFileChangeEmitter.on(String(watcherId))(cb);
 
-  protected changes = new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection());
+  protected changesMap = this.registerDispose(
+    new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection()),
+  );
+
+  constructor(@Optional(FileChangeCollectionManagerOptions) protected options?: { debounceTimeout?: number }) {
+    super();
+  }
 
   /**
    * Fires file changes to clients.
    * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
    */
-  protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
+  protected readonly fireDidFilesChanged: () => void = debounce(
+    () => this.doFireDidFilesChanged(),
+    this.options?.debounceTimeout || 100,
+  );
+  client: FileSystemWatcherClient | undefined;
   protected doFireDidFilesChanged(): void {
-    this.changes.forEach((change, watcherId) => {
+    this.changesMap.forEach((change, watcherId) => {
       const data = change.values();
       change.reset();
 
       this._onFileChangeEmitter.dispatch(String(watcherId), data);
+
+      if (this.client) {
+        this.client.onDidFilesChanged({ changes: data });
+      }
     });
   }
 
@@ -115,22 +131,29 @@ export class FileChangeCollectionManager {
 
   protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
     const uri = FileUri.create(path).toString();
-    this.changes.get(watcherId).push({ uri, type });
+    this.changesMap.get(watcherId).push({ uri, type });
 
     this.fireDidFilesChanged();
+  }
+
+  /**
+   * @deprecated Just for test compatibility
+   *
+   * please use `FileChangeCollectionManager.onFileChange` instead.
+   */
+  setClient(client: FileSystemWatcherClient | undefined) {
+    if (client && this.disposed) {
+      return;
+    }
+    this.client = client;
   }
 
   /**
    * @deprecated Use `onFileChange` instead.
    * 兼容测试接口
    */
-  setClient = (watcherId: number, client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
+  setClientForTest = (watcherId: number, client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
     this.onFileChange(watcherId, (changes) => {
       client.onDidFilesChanged({ changes });
     });
-
-  dispose(): void {
-    this._onFileChangeEmitter.dispose();
-    this.changes.clear();
-  }
 }

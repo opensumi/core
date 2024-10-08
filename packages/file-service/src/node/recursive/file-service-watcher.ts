@@ -59,6 +59,8 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
   private logger: ILogService;
 
+  client: FileSystemWatcherClient | undefined;
+
   constructor(@Optional() private readonly excludes: string[] = []) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
@@ -295,6 +297,15 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
       data.disposable.release();
     }
     return Promise.resolve();
+  }
+
+  /**
+   * @deprecated Just for test compatibility
+   *
+   * please use `FileChangeCollectionManager.onFileChange` instead.
+   */
+  setClient(client: FileSystemWatcherClient | undefined) {
+    this.fileChangeCollectionManager.setClient(client);
   }
 
   /**
