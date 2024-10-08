@@ -1,7 +1,7 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { isMacintosh, sleep } from '@opensumi/ide-core-common';
+import { Disposable, isMacintosh, sleep } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
@@ -32,6 +32,14 @@ jest.setTimeout(10000000);
 
     const setClient = (client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
       watcherServer.addDispose(fileChangeCollectionManager.setClientForTest(watcherId, client));
+
+    watcherServer.addDispose(
+      Disposable.create(() => {
+        // eslint-disable-next-line no-console
+        console.log('dispose watcher id', watcherId);
+        watcherServer.terminateWatcher(watcherId);
+      }),
+    );
 
     return { root, watcherServer, watcherId, setClient };
   }
@@ -190,7 +198,13 @@ jest.setTimeout(10000000);
     const watcherId = await watcherServer.watchFileChanges(root.toString());
     const setClient = (client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
       watcherServer.addDispose(fileChangeCollectionManager.setClientForTest(watcherId, client));
-
+    watcherServer.addDispose(
+      Disposable.create(() => {
+        // eslint-disable-next-line no-console
+        console.log('dispose watcher id', watcherId);
+        watcherServer.terminateWatcher(watcherId);
+      }),
+    );
     return { root, watcherServer, setClient };
   }
 
