@@ -282,7 +282,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     return disposables;
   }
 
-  private terminateWatcher(watcherId: number): void {
+  terminateWatcher(watcherId: number): void {
     const data = this.watcherGDataStore.get(watcherId);
     if (data) {
       while (!data.disposable.disposed) {
@@ -297,15 +297,6 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
       data.disposable.release();
     }
     return Promise.resolve();
-  }
-
-  /**
-   * @deprecated Just for test compatibility
-   *
-   * please use `FileChangeCollectionManager.onFileChange` instead.
-   */
-  setClient(client: FileSystemWatcherClient | undefined) {
-    this.fileChangeCollectionManager.setClient(client);
   }
 
   /**

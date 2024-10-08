@@ -110,10 +110,6 @@ export class FileChangeCollectionManager extends Disposable {
       change.reset();
 
       this._onFileChangeEmitter.dispatch(String(watcherId), data);
-
-      if (this.client) {
-        this.client.onDidFilesChanged({ changes: data });
-      }
     });
   }
 
@@ -132,20 +128,7 @@ export class FileChangeCollectionManager extends Disposable {
   protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
     const uri = FileUri.create(path).toString();
     this.changesMap.get(watcherId).push({ uri, type });
-
     this.fireDidFilesChanged();
-  }
-
-  /**
-   * @deprecated Just for test compatibility
-   *
-   * please use `FileChangeCollectionManager.onFileChange` instead.
-   */
-  setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.disposed) {
-      return;
-    }
-    this.client = client;
   }
 
   /**

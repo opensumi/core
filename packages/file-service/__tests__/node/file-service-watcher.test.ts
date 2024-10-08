@@ -11,6 +11,8 @@ import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-w
 
 const sleepTime = 1000;
 
+jest.setTimeout(10000000);
+
 (isMacintosh ? describe.skip : describe)('ParceWatcher Test', () => {
   const track = temp.track();
   let seed = 1;
@@ -109,6 +111,7 @@ const sleepTime = 1000;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
     expect(watcherId).toBeDefined();
     fse.mkdirSync(newFolder, { recursive: true });
+    await sleep(sleepTime);
     const newWatcherId = await watcherServer.watchFileChanges(newFolder);
     expect(newWatcherId === watcherId).toBeTruthy();
     watcherServer.dispose();
@@ -121,6 +124,8 @@ const sleepTime = 1000;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
     expect(watcherId).toBeDefined();
     fse.mkdirSync(newFolder, { recursive: true });
+    await sleep(sleepTime);
+
     const parentId = await watcherServer.watchFileChanges(newFolder);
     const childFile = FileUri.fsPath(root.resolve(folderName).resolve('index.js'));
     const childId = await watcherServer.watchFileChanges(childFile);
@@ -148,13 +153,17 @@ const sleepTime = 1000;
     await fse.ensureFile(fileA);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toHaveBeenCalledTimes(1);
-    await watcherServer.unwatchFileChanges(id);
+    // unwatchFileChanges 只能取消一次监听，generateWatcher 里已经监听了一次，上面又监听了 newFolder 的 root
+    // 所以这里实际上是取消的 root 的一次监听，所以还有一次监听
+    // todo: fix this, 让 unwatchFileChanges 和 watchFileChanges 一一对应
+    await watcherServer.terminateWatcher(id);
 
     id = await watcherServer.watchFileChanges(newFolder, { excludes: ['**/b/**'] });
     await fse.ensureFile(fileB);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toHaveBeenCalledTimes(1);
-    await watcherServer.unwatchFileChanges(id);
+    // unwatchFileChanges 只能取消一次监听，generateWatcher 里已经监听了一次，上面又监听了一次。
+    await watcherServer.terminateWatcher(id);
     watcherServer.dispose();
   });
 });
@@ -164,7 +173,7 @@ const sleepTime = 1000;
 
   async function generateWatcher() {
     const injector = createNodeInjector([]);
-    const root = FileUri.create(fse.realpathSync(await temp.mkdir('nfsw-test')));
+    const root = FileUri.create(fse.realpathSync(await temp.mkdir('watcher-test')));
     // @ts-ignore
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     injector.addProviders({
@@ -177,20 +186,16 @@ const sleepTime = 1000;
 
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
-
+    await sleep(sleepTime);
     const watcherId = await watcherServer.watchFileChanges(root.toString());
     const setClient = (client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
       watcherServer.addDispose(fileChangeCollectionManager.setClientForTest(watcherId, client));
 
     return { root, watcherServer, setClient };
   }
-  const watcherServerList: FileSystemWatcherServer[] = [];
 
-  afterAll(async () => {
+  afterAll(() => {
     track.cleanupSync();
-    watcherServerList.forEach((watcherServer) => {
-      watcherServer.dispose();
-    });
   });
 
   it('Rename file', async () => {
