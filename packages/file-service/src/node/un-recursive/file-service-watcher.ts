@@ -207,13 +207,4 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
     }
     return Promise.resolve();
   }
-
-  /**
-   * @deprecated Just for test compatibility
-   *
-   * please use `FileChangeCollectionManager.onFileChange` instead.
-   */
-  setClient(client: FileSystemWatcherClient | undefined) {
-    this.fileChangeCollectionManager.setClient(client);
-  }
 }

@@ -122,7 +122,7 @@ if (_isNative) {
 }
 
 export const isWindows = _isWindows;
-export const isMacintosh = false;
+export const isMacintosh = _isMacintosh;
 export const isOSX = _isMacintosh;
 export const isLinux = _isLinux;
 export const isNative = _isNative;

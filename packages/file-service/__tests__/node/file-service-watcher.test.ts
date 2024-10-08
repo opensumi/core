@@ -201,7 +201,7 @@ jest.setTimeout(10000000);
     watcherServer.addDispose(
       Disposable.create(() => {
         // eslint-disable-next-line no-console
-        console.log('dispose watcher id', watcherId);
+        console.log('terminate watcher id', watcherId);
         watcherServer.terminateWatcher(watcherId);
       }),
     );
