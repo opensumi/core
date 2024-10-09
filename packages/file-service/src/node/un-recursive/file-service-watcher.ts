@@ -5,18 +5,16 @@ import {
   Disposable,
   DisposableCollection,
   FileUri,
-  GDataStore,
   IDisposable,
   ILogService,
   ILogServiceManager,
   SupportLogNamespace,
   isMacintosh,
   path,
-  sleep,
+  retry,
 } from '@opensumi/ide-core-node';
 
-import { FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
-import { WatchInsData } from '../data-store';
+import { IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollectionManager } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
@@ -154,7 +152,6 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
 
   async watchFileChanges(uri: string) {
     const basePath = FileUri.fsPath(uri);
-    const exist = await fs.pathExists(basePath);
 
     let watcherId = this.checkIsAlreadyWatched(basePath);
 
@@ -167,6 +164,7 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
     const disposables = new DisposableCollection(); // 管理可释放的资源
 
     let watchPath = '';
+    const exist = await fs.pathExists(basePath);
 
     if (exist) {
       const stat = await fs.lstat(basePath);
@@ -175,7 +173,9 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
       }
     } else {
       this.logger.warn('This path does not exist. Please try again');
+      throw new Error('This path does not exist. Please try again');
     }
+
     disposables.push(await this.start(watchPath, watcherId));
     this.addDispose(disposables);
     return watcherId;
@@ -188,17 +188,16 @@ export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSys
     }
 
     const realPath = await fs.realpath(basePath);
-    const tryWatchDir = async (retryDelay = 1000) => {
-      try {
-        await this.doWatch(realPath, watcherId);
-      } catch (error) {
-        await sleep(retryDelay);
-      }
-      return undefined;
+    const tryWatchDir = async () => {
+      await this.doWatch(realPath, watcherId);
     };
-    await tryWatchDir();
+    await retry(tryWatchDir, {
+      delay: 1000,
+      retries: 5,
+    });
     return disposables;
   }
+
   unwatchFileChanges(watcherId: number): Promise<void> {
     const watcher = this.WATCHER_HANDLERS.get(watcherId);
     if (watcher) {
