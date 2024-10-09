@@ -1,7 +1,7 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { Disposable, FileUri, sleep } from '@opensumi/ide-core-node';
+import { Disposable, FileUri, URI, sleep } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common/index';
@@ -10,32 +10,35 @@ import { UnRecursiveFileSystemWatcher } from '../../src/node/un-recursive/file-s
 
 const sleepTime = 1000;
 
+async function generateWatcher(track: typeof temp, watchPathCb: (root: URI) => string) {
+  const injector = createNodeInjector([]);
+  const root = FileUri.create(await fse.realpath(await track.mkdir('unRecursive-test')));
+  injector.addProviders({
+    token: FileChangeCollectionManagerOptions,
+    useValue: { debounceTimeout: 0 },
+  });
+  const fileChangeCollectionManager = injector.get(FileChangeCollectionManager);
+  const watcherServer = injector.get(UnRecursiveFileSystemWatcher);
+  fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
+  fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
+  const watcherId = await watcherServer.watchFileChanges(watchPathCb(root));
+
+  const setClient = (client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
+    watcherServer.addDispose(fileChangeCollectionManager.setClientForTest(watcherId, client));
+  watcherServer.addDispose(
+    Disposable.create(() => {
+      // eslint-disable-next-line no-console
+      console.log('dispose watcher id', watcherId);
+      watcherServer.unwatchFileChanges(watcherId);
+    }),
+  );
+  return { root, watcherServer, setClient };
+}
+
 describe('unRecursively watch for folder additions, deletions, rename,and updates', () => {
   const track = temp.track();
-  async function generateWatcher() {
-    const injector = createNodeInjector([]);
-    const root = FileUri.create(fse.realpathSync(await temp.mkdir('unRecursive-test')));
-    injector.addProviders({
-      token: FileChangeCollectionManagerOptions,
-      useValue: { debounceTimeout: 0 },
-    });
-    const fileChangeCollectionManager = injector.get(FileChangeCollectionManager);
-    const watcherServer = injector.get(UnRecursiveFileSystemWatcher);
-    fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
-    fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
-    const watcherId = await watcherServer.watchFileChanges(root.toString());
+  const rootPathCb = (root: URI) => root.toString();
 
-    const setClient = (client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
-      watcherServer.addDispose(fileChangeCollectionManager.setClientForTest(watcherId, client));
-    watcherServer.addDispose(
-      Disposable.create(() => {
-        // eslint-disable-next-line no-console
-        console.log('dispose watcher id', watcherId);
-        watcherServer.unwatchFileChanges(watcherId);
-      }),
-    );
-    return { root, watcherServer, setClient };
-  }
   afterAll(() => {
     track.cleanupSync();
   });
@@ -55,7 +58,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
 
     const expectedAddUris = [root.resolve('for_rename_renamed').toString()];
@@ -84,7 +87,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
 
     const expectedAddUris = [root.resolve('README.md').toString()];
@@ -113,7 +116,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
     const expectedDeleteUris = [];
     const expectedUpdatedUris = [root.resolve('for_rename').toString()];
@@ -139,7 +142,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
@@ -167,7 +170,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
 
     const expectedAddUris = [];
@@ -198,7 +201,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
 
     const expectedAddUris = [];
@@ -229,7 +232,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
 
     const expectedDeleteUris = [];
@@ -245,30 +248,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
 
 describe('Delete and update monitored files', () => {
   const track = temp.track();
-  async function generateWatcher() {
-    const injector = createNodeInjector([]);
-    const root = FileUri.create(fse.realpathSync(await temp.mkdir('unRecursive-test')));
-
-    injector.addProviders({
-      token: FileChangeCollectionManagerOptions,
-      useValue: { debounceTimeout: 0 },
-    });
-    const fileChangeCollectionManager = injector.get(FileChangeCollectionManager);
-
-    const watcherServer = injector.get(UnRecursiveFileSystemWatcher);
-    fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
-    const watcherId = await watcherServer.watchFileChanges(root.toString() + '/for_rename');
-    const setClient = (client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
-      watcherServer.addDispose(fileChangeCollectionManager.setClientForTest(watcherId, client));
-    watcherServer.addDispose(
-      Disposable.create(() => {
-        // eslint-disable-next-line no-console
-        console.log('dispose watcher id', watcherId);
-        watcherServer.unwatchFileChanges(watcherId);
-      }),
-    );
-    return { root, watcherServer, setClient };
-  }
+  const rootPathCb = (root: URI) => root.toString() + '/for_rename';
 
   afterAll(() => {
     track.cleanupSync();
@@ -290,7 +270,7 @@ describe('Delete and update monitored files', () => {
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
@@ -319,7 +299,7 @@ describe('Delete and update monitored files', () => {
         });
       },
     };
-    const { root, watcherServer, setClient } = await generateWatcher();
+    const { root, watcherServer, setClient } = await generateWatcher(track, rootPathCb);
     setClient(watcherClient);
     const expectedDeleteUris = [];
     const expectedUpdatedUris = [root.resolve('for_rename').toString()];
