@@ -6,7 +6,7 @@
 
 import { IRange } from '@opensumi/ide-core-common/lib/types';
 
-import type { IBuffer, IBufferCellPosition, IBufferLine, IBufferRange, IViewportRange } from 'xterm';
+import type { IBuffer, IBufferCellPosition, IBufferLine, IBufferRange, IViewportRange } from '@xterm/xterm';
 
 export function convertLinkRangeToBuffer(lines: IBufferLine[], bufferWidth: number, range: IRange, startLine: number) {
   const bufferRange: IBufferRange = {

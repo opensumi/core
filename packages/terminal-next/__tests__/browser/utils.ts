@@ -1,4 +1,4 @@
-import { IBufferCell, IBufferLine } from 'xterm';
+import { IBufferCell, IBufferLine } from '@xterm/xterm';
 
 export async function delay(ms: number) {
   return new Promise<void>((resolve) => {

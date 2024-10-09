@@ -19,7 +19,7 @@ import ResizeView, { ResizeDirection } from './resize.view';
 import styles from './terminal.module.less';
 import TerminalWidget from './terminal.widget';
 
-import 'xterm/css/xterm.css';
+import '@xterm/xterm/css/xterm.css';
 
 export default observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);

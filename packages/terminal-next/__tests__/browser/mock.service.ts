@@ -1,5 +1,5 @@
+import { Terminal } from '@xterm/xterm';
 import WebSocket from 'ws';
-import { Terminal } from 'xterm';
 
 import { Injectable } from '@opensumi/di';
 import { WSChannel } from '@opensumi/ide-connection';

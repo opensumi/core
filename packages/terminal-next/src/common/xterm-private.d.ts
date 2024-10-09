@@ -1,4 +1,4 @@
-import { IBufferCell } from 'xterm';
+import { IBufferCell } from '@xterm/xterm';
 
 export type XTermAttributes = Omit<IBufferCell, 'getWidth' | 'getChars' | 'getCode'> & { clone?(): XTermAttributes };
 
