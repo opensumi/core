@@ -216,7 +216,12 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
       this.previewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor]);
     } else {
-      this.previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
+      this.previewer = this.injector.get(LiveInlineDiffPreviewer, [
+        monacoEditor,
+        {
+          previewerOptions: options,
+        },
+      ]);
     }
 
     this.previewer.create(selection, options);

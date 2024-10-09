@@ -19,6 +19,10 @@ import { InlineDiffWidget } from './inline-diff-widget';
 
 export interface IDiffPreviewerOptions {
   disposeWhenEditorClosed: boolean;
+  /**
+   * 是否隐藏接受部分编辑的 widget，用于只展示 diff 的场景
+   */
+  hideAcceptPartialEditWidget?: boolean;
 }
 
 export interface IInlineDiffPreviewerNode extends IDisposable {
