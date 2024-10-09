@@ -491,20 +491,6 @@ export class AINativeBrowserContribution
         args: false,
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
       });
-      keybindings.registerKeybinding({
-        command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
-        keybinding: 'ctrl+y',
-        args: true,
-        priority: 100,
-        when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
-      });
-      keybindings.registerKeybinding({
-        command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
-        keybinding: 'ctrl+n',
-        args: false,
-        priority: 100,
-        when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
-      });
 
       if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
         keybindings.registerKeybinding(
@@ -538,5 +524,20 @@ export class AINativeBrowserContribution
         );
       }
     }
+
+    keybindings.registerKeybinding({
+      command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
+      keybinding: 'ctrl+y',
+      args: true,
+      priority: 100,
+      when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
+    });
+    keybindings.registerKeybinding({
+      command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
+      keybinding: 'ctrl+n',
+      args: false,
+      priority: 100,
+      when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
+    });
   }
 }
