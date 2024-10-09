@@ -101,6 +101,12 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
   setPreviewerOptions(options: IDiffPreviewerOptions): void {
     this.previewerOptions = options;
+
+    this.livePreviewDiffDecorationModel.setPreviewerOptions({
+      partialEditWidgetOptions: {
+        hideAcceptPartialEditWidget: options.hideAcceptPartialEditWidget,
+      },
+    });
   }
 
   initialize(selection: Selection): void {

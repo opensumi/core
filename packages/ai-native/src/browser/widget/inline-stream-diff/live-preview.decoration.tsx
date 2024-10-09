@@ -29,6 +29,7 @@ import {
   AddedRangeDecoration,
   EPartialEdit,
   IPartialEditEvent,
+  IPartialEditWidgetOptions,
   IRemovedWidgetState,
   IRemovedZoneWidgetOptions,
   ITextLinesTokens,
@@ -53,6 +54,10 @@ export interface ITotalCodeInfo {
   unresolvedChangedLinesCount: number;
 }
 
+export interface IModelOptions {
+  partialEditWidgetOptions?: IPartialEditWidgetOptions;
+}
+
 @Injectable({ multiple: true })
 export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(INJECTOR_TOKEN)
@@ -75,6 +80,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   protected readonly _onPartialEditWidgetListChange = this.registerDispose(new Emitter<AcceptPartialEditWidget[]>());
   public readonly onPartialEditWidgetListChange: Event<AcceptPartialEditWidget[]> =
     this._onPartialEditWidgetListChange.event;
+
+  protected options: IModelOptions = {
+    partialEditWidgetOptions: {},
+  };
 
   protected model: ITextModel;
 
@@ -575,7 +584,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   private createPartialEditWidget(lineNumber: number): AcceptPartialEditWidget {
-    const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [this.monacoEditor]);
+    const acceptPartialEditWidget = this.injector.get(AcceptPartialEditWidget, [
+      this.monacoEditor,
+      this.options.partialEditWidgetOptions,
+    ]);
     acceptPartialEditWidget.show({ position: { lineNumber, column: 1 } });
 
     const disposable = acceptPartialEditWidget.onDispose(() => {
@@ -701,5 +713,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
         this.monacoEditor.revealLineInCenterIfOutsideViewport(pos.lineNumber);
       }
     }
+  }
+
+  setPreviewerOptions(options: IModelOptions) {
+    this.options = options;
   }
 }
