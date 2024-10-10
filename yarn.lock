@@ -2584,6 +2584,7 @@ __metadata:
     "@opensumi/ide-file-service": "workspace:*"
     "@opensumi/ide-preferences": "workspace:*"
     "@opensumi/ide-quick-open": "workspace:*"
+    ajv: "npm:^6.10.0"
   languageName: unknown
   linkType: soft
 
