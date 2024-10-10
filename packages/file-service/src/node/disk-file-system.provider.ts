@@ -10,10 +10,10 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@open
 import { RPCService } from '@opensumi/ide-connection';
 import {
   Deferred,
-  DisposableCollection,
   Emitter,
   Event,
   FileUri,
+  GDataStore,
   IDisposable,
   IFileStatOptions,
   ILogService,
@@ -44,6 +44,8 @@ import {
   notEmpty,
 } from '../common/';
 
+import { WatchInsData } from './data-store';
+import { FileChangeCollectionManager } from './file-change-collection';
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
 import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
@@ -71,7 +73,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private watcherServer: UnRecursiveFileSystemWatcher | FileSystemWatcherServer;
 
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
-  protected watcherServerDisposeCollection: DisposableCollection;
 
   protected readonly watcherCollection = new Map<string, IWatcher>();
   protected watchFileExcludes: string[] = [];
@@ -84,6 +85,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
+
+  @GDataStore(WatchInsData, { id: 'watcherId' })
+  private watcherGDataStore: GDataStore<WatchInsData, 'watcherId'>;
+
+  @Autowired(FileChangeCollectionManager)
+  private readonly fileChangeCollectionManager: FileChangeCollectionManager;
 
   private logger: ILogService;
 
@@ -123,13 +130,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   dispose(): void {
-    this.watcherServerDisposeCollection?.dispose();
+    this.watcherServer?.dispose();
   }
 
   /**
    * @param {Uri} uri
    * @param {{ excludes: string[] }}
-   * @memberof DiskFileSystemProvider
    */
   async watch(uri: UriComponents, options?: { excludes?: string[] }): Promise<number> {
     await this.whenReady;
@@ -137,9 +143,15 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
       excludes: options?.excludes ?? [],
     });
+
+    const listenHandle = this.fileChangeCollectionManager.onFileChange(id, (changes) => {
+      this.handleFileChanges(changes);
+    });
+
     const disposable = {
       dispose: () => {
         this.watcherServer.unwatchFileChanges(id);
+        listenHandle.dispose();
       },
     };
     this.watcherCollection.set(_uri.toString(), { id, options, disposable });
@@ -147,7 +159,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   unwatch(watcherId: number) {
-    for (const [_uri, { id, disposable }] of this.watcherCollection) {
+    for (const [_, { id, disposable }] of this.watcherCollection) {
       if (watcherId === id) {
         disposable.dispose();
       }
@@ -174,11 +186,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     try {
       const dirList = await fse.readdir(_uri.fsPath);
 
-      dirList.forEach((name) => {
-        const filePath = paths.join(_uri.fsPath, name);
-        // eslint-disable-next-line import/namespace
-        result.push([name, this.getFileStatType(fse.statSync(filePath))]);
-      });
+      await Promise.all(
+        dirList.map(async (name) => {
+          const filePath = paths.join(_uri.fsPath, name);
+          result.push([name, this.getFileStatType(await fse.stat(filePath))]);
+        }),
+      );
       return result;
     } catch (e) {
       return result;
@@ -357,7 +370,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     return this.stat(FileUri.create(os.homedir()).codeUri);
   }
 
-  // 出于通信成本的考虑，排除文件的逻辑必须放在node层（fs provider层，不同的fs实现的exclude应该不一样）
+  /**
+   * 出于通信成本的考虑，排除文件的逻辑必须放在node层（fs provider层，不同的fs实现的exclude应该不一样）
+   */
   setWatchFileExcludes(excludes: string[]) {
     let watchExcludes = excludes;
     if (excludes.includes(UNSUPPORTED_NODE_MODULES_EXCLUDE)) {
@@ -382,42 +397,23 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     if (!this.injector) {
       return;
     }
-    if (this.watcherServerDisposeCollection) {
-      this.watcherServerDisposeCollection.dispose();
+    if (this.watcherServer) {
+      this.watcherServer.dispose();
     }
-    this.watcherServerDisposeCollection = new DisposableCollection();
+
     if (this.recursive) {
       this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
     } else {
       this.watcherServer = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
     }
-    this.watcherServer.setClient({
-      onDidFilesChanged: (events: DidFilesChangedParams) => {
-        this.logger.log(events.changes, 'events.change');
-        if (events.changes.length > 0) {
-          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
-          this.fileChangeEmitter.fire(changes);
-          if (Array.isArray(this.rpcClient)) {
-            this.rpcClient.forEach((client) => {
-              client.onDidFilesChanged({
-                changes,
-              });
-            });
-          }
-        }
-      },
-    });
-    this.watcherServerDisposeCollection.push({
-      dispose: () => {
-        this.watcherServer.dispose();
-      },
-    });
+
     if (this.isInitialized) {
       // 当服务已经初始化一次后，重新初始化时需要重新绑定原有的监听服务
       this.rewatch();
     } else {
       this._whenReadyDeferred.resolve();
     }
+
     this.isInitialized = true;
   }
 
@@ -683,5 +679,18 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   async getFileType(uri: string): Promise<string | undefined> {
     return await getFileType(uri);
+  }
+
+  protected handleFileChanges(changes: FileChangeEvent): void {
+    if (changes.length > 0) {
+      const _changes = changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
+      this.fileChangeEmitter.fire(_changes);
+
+      if (this.client) {
+        this.client.onDidFilesChanged({
+          changes: _changes,
+        });
+      }
+    }
   }
 }
