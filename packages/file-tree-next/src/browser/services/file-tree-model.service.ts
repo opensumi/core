@@ -1005,15 +1005,19 @@ export class FileTreeModelService {
       // 当存在选中的文件时，默认选中首个文件作为焦点
       nextFocusedFile = this.selectedFiles[0];
     } else {
-      const lastFile = roots[roots.length - 1].node;
-      const lastIndex = this.treeModel.root.getIndexAtTreeNode(lastFile);
-      let nextIndex = lastIndex + 1;
-      if (nextIndex >= this.treeModel.root.branchSize) {
-        const firstFile = roots[0].node;
-        const firstIndex = this.treeModel.root.getIndexAtTreeNode(firstFile);
-        nextIndex = firstIndex - 1;
+      const lastFile = roots[roots.length - 1]?.node;
+      if (!lastFile) {
+        nextFocusedFile = undefined;
+      } else {
+        const lastIndex = this.treeModel.root.getIndexAtTreeNode(lastFile);
+        let nextIndex = lastIndex + 1;
+        if (nextIndex >= this.treeModel.root.branchSize) {
+          const firstFile = roots[0].node;
+          const firstIndex = this.treeModel.root.getIndexAtTreeNode(firstFile);
+          nextIndex = firstIndex - 1;
+        }
+        nextFocusedFile = this.treeModel.root.getTreeNodeAtIndex(nextIndex);
       }
-      nextFocusedFile = this.treeModel.root.getTreeNodeAtIndex(nextIndex);
     }
 
     const toPromise = [] as Promise<boolean>[];
@@ -1233,7 +1237,7 @@ export class FileTreeModelService {
             this.selectFileDecoration(node as File, false);
           }
           this.fileTreeService.updateRefreshable(true);
-        } else if (Directory.is(target)) {
+        } else if (Directory.is(target) && !Directory.isRoot(target)) {
           // 更新压缩目录展示名称
           // 由于节点移动时默认仅更新节点路径
           // 我们需要自己更新额外的参数，如uri, filestat等
@@ -1295,7 +1299,7 @@ export class FileTreeModelService {
         }
         if (this.fileTreeService.isCompactMode) {
           if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-            const isEmptyDirectory = !parent.children || parent.children.length === 0;
+            const isEmptyDirectory = (!parent.children || parent.children.length === 0) && !Directory.isRoot(parent);
             if (isEmptyDirectory) {
               const parentUri = parent.uri.resolve(newName);
               const newNodeName = [parent.name].concat(newName).join(Path.separator);
