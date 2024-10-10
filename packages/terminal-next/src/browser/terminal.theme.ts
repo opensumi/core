@@ -6,7 +6,7 @@ import { ITerminalTheme } from '../common';
 
 import * as TERMINAL_COLOR from './terminal.color';
 
-import type { ITheme } from 'xterm';
+import type { ITheme } from '@xterm/xterm';
 
 @Injectable()
 export class TerminalTheme extends Themable implements ITerminalTheme {

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { IViewportRange, Terminal } from 'xterm';
+import { IViewportRange, Terminal } from '@xterm/xterm';
 
 import { Injector } from '@opensumi/di';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';

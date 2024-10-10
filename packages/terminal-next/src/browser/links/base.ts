@@ -1,6 +1,6 @@
 import { TerminalLink } from './link';
 
-import type { ILink, ILinkProvider } from 'xterm';
+import type { ILink, ILinkProvider } from '@xterm/xterm';
 
 export abstract class TerminalBaseLinkProvider implements ILinkProvider {
   private _activeLinks: TerminalLink[] | undefined;

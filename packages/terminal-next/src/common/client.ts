@@ -1,4 +1,4 @@
-import { Terminal } from 'xterm';
+import { Terminal } from '@xterm/xterm';
 
 import { Deferred, Disposable, Event, IDisposable } from '@opensumi/ide-core-common';
 

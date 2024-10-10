@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ITerminalOptions, ITheme, Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import { ISearchOptions, SearchAddon } from 'xterm-addon-search';
+import { FitAddon } from '@xterm/addon-fit';
+import { ISearchOptions, SearchAddon } from '@xterm/addon-search';
+import { ITerminalOptions, ITheme, Terminal } from '@xterm/xterm';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IClipboardService } from '@opensumi/ide-core-browser';
@@ -26,8 +26,8 @@ import {
   TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR,
 } from './terminal.color';
 
-import type { CanvasAddon as CanvasAddonType } from 'xterm-addon-canvas';
-import type { WebglAddon as WebglAddonType } from 'xterm-addon-webgl';
+import type { CanvasAddon as CanvasAddonType } from '@xterm/addon-canvas';
+import type { WebglAddon as WebglAddonType } from '@xterm/addon-webgl';
 
 export interface XTermOptions {
   cwd?: string;
@@ -85,7 +85,7 @@ export class XTerm extends Disposable implements IXTerm {
     try {
       if (!this._canvasAddon) {
         // @ts-ignore
-        this._canvasAddon = new (await import('xterm-addon-canvas')).CanvasAddon();
+        this._canvasAddon = new (await import('@xterm/addon-canvas')).CanvasAddon();
       }
 
       this.addDispose(this._canvasAddon);
@@ -104,7 +104,7 @@ export class XTerm extends Disposable implements IXTerm {
     try {
       if (!this._webglAddon) {
         // @ts-ignore
-        this._webglAddon = new (await import('xterm-addon-webgl')).WebglAddon();
+        this._webglAddon = new (await import('@xterm/addon-webgl')).WebglAddon();
       }
 
       this.addDispose(this._webglAddon);
