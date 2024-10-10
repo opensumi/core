@@ -1233,7 +1233,7 @@ export class FileTreeModelService {
             this.selectFileDecoration(node as File, false);
           }
           this.fileTreeService.updateRefreshable(true);
-        } else if (Directory.is(target)) {
+        } else if (Directory.is(target) && !Directory.isRoot(target)) {
           // 更新压缩目录展示名称
           // 由于节点移动时默认仅更新节点路径
           // 我们需要自己更新额外的参数，如uri, filestat等
@@ -1295,7 +1295,7 @@ export class FileTreeModelService {
         }
         if (this.fileTreeService.isCompactMode) {
           if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-            const isEmptyDirectory = !parent.children || parent.children.length === 0;
+            const isEmptyDirectory = (!parent.children || parent.children.length === 0) && !Directory.isRoot(parent);
             if (isEmptyDirectory) {
               const parentUri = parent.uri.resolve(newName);
               const newNodeName = [parent.name].concat(newName).join(Path.separator);
