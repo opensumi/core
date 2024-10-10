@@ -1,4 +1,4 @@
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Key, KeybindingRegistry, KeybindingScope, PreferenceService } from '@opensumi/ide-core-browser';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
   AINativeSettingSectionsId,
@@ -13,11 +13,15 @@ import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } f
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { autorun, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observable';
 import { ObservableValue } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
+import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
+import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commandIds';
+import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController';
 import {
   SuggestItemInfo,
   SuggestWidgetAdaptor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
@@ -54,6 +58,10 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     return this.injector.get(PreferenceService);
   }
 
+  private get keybindingRegistry(): KeybindingRegistry {
+    return this.injector.get(KeybindingRegistry);
+  }
+
   private multiLineDecorationModel: MultiLineDecorationModel;
   private additionsDeletionsDecorationModel: AdditionsDeletionsDecorationModel;
   private aiNativeContextKey: AINativeContextKey;
@@ -76,6 +84,27 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     let observableDisposable = new Disposable();
 
     const register = () => {
+      /**
+       * by: https://github.com/microsoft/vscode/blob/release/1.87/src/vs/editor/contrib/inlineCompletions/browser/commands.ts#L136
+       * 修改了原生的 inline completion 的 tab keybinding when 条件，使其不受 suggest 的影响
+       */
+      observableDisposable.addDispose(
+        this.keybindingRegistry.registerKeybinding(
+          {
+            command: inlineSuggestCommitId,
+            keybinding: Key.TAB.code,
+            when: ContextKeyExpr.and(
+              InlineCompletionContextKeys.inlineSuggestionVisible,
+              EditorContextKeys.tabMovesFocus.toNegated(),
+              InlineCompletionContextKeys.inlineSuggestionHasIndentationLessThanTabSize,
+              // SuggestContext.Visible.toNegated(), // 只去除了这个 when 条件
+              EditorContextKeys.hoverFocused.toNegated(),
+            ),
+          },
+          KeybindingScope.USER,
+        ),
+      );
+
       const inlineCompletionsController = InlineCompletionsController.get(this.monacoEditor);
       if (inlineCompletionsController) {
         observableDisposable.addDispose(
