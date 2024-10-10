@@ -3,12 +3,12 @@ import { IWebviewChannel } from './common';
 
 export class WebIframeChannel implements IWebviewChannel {
   private handlers = new Map();
-  focusIframeOnCreate?: boolean | undefined;
-  ready?: Promise<void> | undefined;
+  focusIframeOnCreate?: boolean;
+  ready?: Promise<void>;
   fakeLoad = false;
   private isInDevelopmentMode = false;
 
-  private _id: string | undefined;
+  private _id: string;
   get id() {
     if (!this._id) {
       this._id = this.getId?.() ?? '';
