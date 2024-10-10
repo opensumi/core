@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron';
 
 import { IWebviewChannel } from '../webview-host/common';
+import { getIdFromSearch } from '../webview-host/web-iframe-channel';
 import { WebviewPanelManager } from '../webview-host/webview-manager';
 
 export class ElectronWebviewChannel implements IWebviewChannel {
@@ -12,8 +13,7 @@ export class ElectronWebviewChannel implements IWebviewChannel {
   public isInDevelopmentMode = false;
 
   get id() {
-    const idMatch = document.location.search.match(/\bid=([\w-]+)/);
-    return idMatch ? idMatch[1] : '';
+    return getIdFromSearch();
   }
 
   constructor() {
