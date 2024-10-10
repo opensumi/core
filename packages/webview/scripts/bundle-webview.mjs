@@ -11,6 +11,7 @@ const result = await esbuild.build({
   sourcemap: false,
   write: false,
   bundle: true,
+  minify: true,
 });
 
 log(
