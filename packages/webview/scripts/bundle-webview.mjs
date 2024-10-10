@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { readFile, writeFile } from 'fs/promises';
+import { mkdir, readFile, writeFile } from 'fs/promises';
 
 import debug from 'debug';
 import * as esbuild from 'esbuild';
@@ -23,8 +23,23 @@ log(
 
 const output = result.outputFiles[0].text;
 
+function simpleReplace(str, from, to) {
+  const index = str.indexOf(from);
+  if (index === -1) {
+    return str;
+  }
+
+  return str.slice(0, index) + to + str.slice(index + from.length);
+}
+
 const html = await readFile('src/webview-host/webview.html', 'utf8');
-const htmlWithScript = html.replace('<!-- | REPLACE_BY_SCRIPT_TAG | -->', `<script>${output}</script>`);
+const htmlWithScript = simpleReplace(
+  html,
+  '<!-- | REPLACE_BY_SCRIPT_TAG | -->',
+  `<script>
+${output}
+</script>`,
+);
 
 const toWrite = /** javascript */ `
 /* prettier-ignore */
@@ -42,3 +57,13 @@ export const createHTML = (channelId: string) => {
 await writeFile('src/browser/iframe/prebuilt.ts', toWrite);
 
 console.log('Successfully bundled webview, write to src/browser/iframe/prebuilt.ts');
+
+if (process.env.DEBUG) {
+  try {
+    await mkdir('lib/prebuilt', { recursive: true });
+    await writeFile('lib/prebuilt/output.js', output);
+    await writeFile('lib/prebuilt/webview.html', htmlWithScript);
+  } catch (error) {
+    console.log('===== ~ error:', error);
+  }
+}
