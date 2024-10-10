@@ -5,7 +5,7 @@ mockElectronRenderer();
 import { MockedElectronIpcRenderer } from '@opensumi/ide-core-common/lib/mocks/electron/ipcRenderer';
 
 import { ElectronWebviewChannel } from '../../src/electron-webview/host-channel';
-import { WebIframeChannel } from '../../src/webview-host/web-preload';
+import { WebIframeChannel, getIdFromSearch } from '../../src/webview-host/web-iframe-channel';
 import { WebviewPanelManager } from '../../src/webview-host/webview-manager';
 
 const { JSDOM } = require('jsdom');
@@ -31,7 +31,7 @@ describe('electron webview test', () => {
 });
 
 describe('web iframe webview test', () => {
-  const manager = new WebviewPanelManager(new WebIframeChannel());
+  const manager = new WebviewPanelManager(new WebIframeChannel(getIdFromSearch));
 
   it.skip('iframe webview test', () => {
     (manager as any).init();

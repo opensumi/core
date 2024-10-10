@@ -1,6 +1,16 @@
 /* istanbul ignore file */
 import { IWebviewChannel } from './common';
 
+export const getIdFromSearch = () => {
+  const params = new URLSearchParams(document.location.search);
+  const id = params.get('id');
+  if (id) {
+    return id;
+  } else {
+    throw new Error('Missing "id" parameter in URL');
+  }
+};
+
 export class WebIframeChannel implements IWebviewChannel {
   private handlers = new Map();
   focusIframeOnCreate?: boolean;
