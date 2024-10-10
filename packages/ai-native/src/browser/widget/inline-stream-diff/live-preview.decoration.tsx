@@ -90,7 +90,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   // Parts that require snapshots
   private addedRangeDec: EnhanceDecorationsCollection;
   private partialEditWidgetList: AcceptPartialEditWidget[] = [];
-  private removedZoneWidgets: Array<RemovedZoneWidget> = [];
+  private removedZoneWidgets: RemovedZoneWidget[] = [];
   private zone: LineRange;
 
   constructor(private readonly monacoEditor: ICodeEditor) {
@@ -515,17 +515,29 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     return newElement;
   }
 
-  /**
-   * 获取当前编辑器的代码采纳状态
-   * 1. 已经采纳的代码信息
-   * 2. 还未处理的代码信息
-   */
-  getTotalCodeInfo(): ITotalCodeInfo {
-    const resolvedList = this.partialEditWidgetList.filter((w) => w.isAccepted);
-    const unresolvedList = this.partialEditWidgetList.filter((w) => w.isPending);
-
-    const resolvedStatus = caculate(resolvedList);
-    const unresolvedStatus = caculate(unresolvedList);
+  static computeCodeInfo(
+    partialEditWidgetList: AcceptPartialEditWidget[],
+    addedDecList: IEnhanceModelDeltaDecoration[],
+    removedWidgetList: RemovedZoneWidget[],
+  ): ITotalCodeInfo {
+    // 代码除了新增和删除行，还需要统计变更行
+    // 1. 新增 N 行 => N
+    // 2. 删除 N 行 => N
+    // 3. 新增 M 行，删除 N 行 => max(M, N)
+    // 综上所述，变更行数 = sum(list.map(item => max(新增行数, 删除行数)))
+    const resolvedStatus = caculate(partialEditWidgetList);
+    const unresolvedStatus = { added: 0, deleted: 0, changed: 0 };
+    partialEditWidgetList.forEach((v, idx) => {
+      if (v.status === 'pending') {
+        const addedDec = addedDecList[idx];
+        const removedWidget = removedWidgetList[idx];
+        const addedLinesCount = addedDec?.length || 0;
+        const deletedLinesCount = removedWidget?.height || 0;
+        unresolvedStatus.added += addedLinesCount;
+        unresolvedStatus.deleted += deletedLinesCount;
+        unresolvedStatus.changed += Math.max(addedLinesCount, deletedLinesCount);
+      }
+    });
 
     return {
       totalAddedLinesCount: resolvedStatus.added,
@@ -536,11 +548,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       unresolvedChangedLinesCount: unresolvedStatus.changed,
     };
 
-    // 代码除了新增和删除行，还需要统计变更行
-    // 1. 新增 N 行 => N
-    // 2. 删除 N 行 => N
-    // 3. 新增 M 行，删除 N 行 => max(M, N)
-    // 综上所述，变更行数 = sum(list.map(item => max(新增行数, 删除行数)))
     function caculate(list: AcceptPartialEditWidget[]) {
       const result = { added: 0, deleted: 0, changed: 0 };
       list.forEach((widget) => {
@@ -552,6 +559,19 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       });
       return result;
     }
+  }
+
+  /**
+   * 获取当前编辑器的代码采纳状态
+   * 1. 已经采纳的代码信息
+   * 2. 还未处理的代码信息
+   */
+  getTotalCodeInfo(): ITotalCodeInfo {
+    const partialEditWidgetList = this.partialEditWidgetList;
+    const addedDecList = this.addedRangeDec.getDecorations();
+    const removedWidgetList = this.removedZoneWidgets;
+
+    return LivePreviewDiffDecorationModel.computeCodeInfo(partialEditWidgetList, addedDecList, removedWidgetList);
   }
 
   /**
