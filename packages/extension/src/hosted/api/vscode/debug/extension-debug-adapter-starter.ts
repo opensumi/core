@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { ChildProcess, SpawnOptions, fork, spawn } from 'child_process';
+import { EventEmitter } from 'events';
 import net from 'net';
-import { EventEmitter } from 'node:events';
 import stream from 'stream';
 
 import { DebugAdapterForkExecutable, DebugStreamConnection } from '@opensumi/ide-debug';
