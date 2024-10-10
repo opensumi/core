@@ -1005,15 +1005,19 @@ export class FileTreeModelService {
       // 当存在选中的文件时，默认选中首个文件作为焦点
       nextFocusedFile = this.selectedFiles[0];
     } else {
-      const lastFile = roots[roots.length - 1].node;
-      const lastIndex = this.treeModel.root.getIndexAtTreeNode(lastFile);
-      let nextIndex = lastIndex + 1;
-      if (nextIndex >= this.treeModel.root.branchSize) {
-        const firstFile = roots[0].node;
-        const firstIndex = this.treeModel.root.getIndexAtTreeNode(firstFile);
-        nextIndex = firstIndex - 1;
+      const lastFile = roots[roots.length - 1]?.node;
+      if (!lastFile) {
+        nextFocusedFile = undefined;
+      } else {
+        const lastIndex = this.treeModel.root.getIndexAtTreeNode(lastFile);
+        let nextIndex = lastIndex + 1;
+        if (nextIndex >= this.treeModel.root.branchSize) {
+          const firstFile = roots[0].node;
+          const firstIndex = this.treeModel.root.getIndexAtTreeNode(firstFile);
+          nextIndex = firstIndex - 1;
+        }
+        nextFocusedFile = this.treeModel.root.getTreeNodeAtIndex(nextIndex);
       }
-      nextFocusedFile = this.treeModel.root.getTreeNodeAtIndex(nextIndex);
     }
 
     const toPromise = [] as Promise<boolean>[];
