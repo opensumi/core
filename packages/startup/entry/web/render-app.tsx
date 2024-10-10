@@ -102,6 +102,7 @@ export const getDefaultClientAppOpts = ({
     },
     useCdnIcon: true,
     useExperimentalShadowDom: true,
+    useBuiltinWebview: true,
     defaultPreferences: {
       'general.language': defaultLanguage,
       'general.theme': 'opensumi-design-dark-theme',

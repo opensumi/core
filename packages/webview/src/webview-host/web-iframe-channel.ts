@@ -1,22 +1,22 @@
-import { ipcRenderer } from 'electron';
+/* istanbul ignore file */
+import { IWebviewChannel } from './common';
 
-import { IWebviewChannel } from '../webview-host/common';
-import { WebviewPanelManager } from '../webview-host/webview-manager';
-
-export class ElectronWebviewChannel implements IWebviewChannel {
+export class WebIframeChannel implements IWebviewChannel {
   private handlers = new Map();
   focusIframeOnCreate?: boolean | undefined;
   ready?: Promise<void> | undefined;
   fakeLoad = false;
+  private isInDevelopmentMode = false;
 
-  public isInDevelopmentMode = false;
-
+  private _id: string | undefined;
   get id() {
-    const idMatch = document.location.search.match(/\bid=([\w-]+)/);
-    return idMatch ? idMatch[1] : '';
+    if (!this._id) {
+      this._id = this.getId?.() ?? '';
+    }
+    return this._id;
   }
 
-  constructor() {
+  constructor(protected getId: () => string) {
     window.addEventListener('message', (e) => {
       if (e.data && (e.data.command === 'onmessage' || e.data.command === 'do-update-state')) {
         // Came from inner iframe
@@ -30,11 +30,12 @@ export class ElectronWebviewChannel implements IWebviewChannel {
         handler(e, e.data.data);
       } else {
         // eslint-disable-next-line no-console
-        console.warn('no handler for ', e);
+        console.log('no handler for ', e);
       }
     });
 
     this.ready = new Promise<void>((resolve) => {
+      // TODO 等待service worker完成  未来资源使用service worker时需要加入
       resolve();
     });
 
@@ -43,12 +44,18 @@ export class ElectronWebviewChannel implements IWebviewChannel {
     });
   }
 
+  get inDev() {
+    return this.isInDevelopmentMode;
+  }
+
   postMessage(channel, data?) {
-    ipcRenderer.sendToHost(channel, data);
+    if (window.parent !== window) {
+      window.parent.postMessage({ target: this.id, channel, data }, '*');
+    }
   }
 
   onMessage(channel, handler) {
-    ipcRenderer.on(channel, handler);
+    this.handlers.set(channel, handler);
   }
 
   onIframeLoaded(newFrame) {
@@ -62,6 +69,12 @@ export class ElectronWebviewChannel implements IWebviewChannel {
     //   return false;
     // };
   }
-}
 
-new WebviewPanelManager(new ElectronWebviewChannel());
+  onKeydown(event: KeyboardEvent) {
+    // 在浏览器上，需要阻止一些默认的keydown快捷键
+    if (event.key === 's' && (event.metaKey || event.ctrlKey)) {
+      // 阻止保存
+      event.preventDefault();
+    }
+  }
+}

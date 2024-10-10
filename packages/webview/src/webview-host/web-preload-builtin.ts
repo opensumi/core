@@ -2,4 +2,4 @@
 import { WebIframeChannel } from './web-iframe-channel';
 import { WebviewPanelManager } from './webview-manager';
 
-new WebviewPanelManager(new WebIframeChannel(() => document!.location!.search!.match(/\bid=([\w-]+)/)![1]));
+new WebviewPanelManager(new WebIframeChannel(() => (window as any).channelId));

@@ -63,6 +63,7 @@ export interface IWebviewChannel {
   ready?: Promise<void>;
   onIframeLoaded?: (iframe: HTMLIFrameElement) => void;
   fakeLoad: boolean;
+  id: string;
   onKeydown?: (event: KeyboardEvent) => void;
 }
 
