@@ -11,7 +11,7 @@ export class WebIframeChannel implements IWebviewChannel {
   private _id: string;
   get id() {
     if (!this._id) {
-      this._id = this.getId?.() ?? '';
+      this._id = this.getId() ?? '';
     }
     return this._id;
   }
