@@ -57,9 +57,6 @@ export async function renderApp(opts: IClientAppOpts) {
 
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST;
 
-  const anotherHostName = process.env.WEBVIEW_HOST || defaultHost;
-  opts.webviewEndpoint = opts.webviewEndpoint || `http://${anotherHostName}:8899`;
-
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
 
@@ -102,6 +99,7 @@ export const getDefaultClientAppOpts = ({
     },
     useCdnIcon: true,
     useExperimentalShadowDom: true,
+    useBuiltinWebview: true,
     defaultPreferences: {
       'general.language': defaultLanguage,
       'general.theme': 'opensumi-design-dark-theme',

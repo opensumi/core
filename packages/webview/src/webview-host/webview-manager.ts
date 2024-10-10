@@ -9,15 +9,16 @@ export class WebviewPanelManager {
   private loadTimeout;
   private pendingMessages: any[] = [];
   private initialScrollProgress: number;
-  private ID: string | undefined;
+
+  get ID() {
+    return this.channel.id;
+  }
 
   constructor(private channel: IWebviewChannel) {
     document.addEventListener('DOMContentLoaded', this.init.bind(this));
   }
 
   private init() {
-    const idMatch = document.location.search.match(/\bid=([\w-]+)/);
-    this.ID = idMatch ? idMatch[1] : undefined;
     if (!document.body) {
       return;
     }

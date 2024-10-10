@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron';
 
 import { IWebviewChannel } from '../webview-host/common';
+import { getIdFromSearch } from '../webview-host/web-iframe-channel';
 import { WebviewPanelManager } from '../webview-host/webview-manager';
 
 export class ElectronWebviewChannel implements IWebviewChannel {
@@ -10,6 +11,10 @@ export class ElectronWebviewChannel implements IWebviewChannel {
   fakeLoad = false;
 
   public isInDevelopmentMode = false;
+
+  get id() {
+    return getIdFromSearch();
+  }
 
   constructor() {
     window.addEventListener('message', (e) => {

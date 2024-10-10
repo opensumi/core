@@ -1,7 +1,6 @@
 const path = require('path');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const distDir = path.join(__dirname, '../lib/node/webview');
 
@@ -43,9 +42,6 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join(__dirname, '../src/webview/webview-host/webview.html'),
-    }),
-    new NodePolyfillPlugin({
-      includeAliases: ['process', 'Buffer'],
     }),
   ],
 };

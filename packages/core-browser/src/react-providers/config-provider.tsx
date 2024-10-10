@@ -122,6 +122,11 @@ export interface AppConfig {
    */
   webviewEndpoint?: string;
   /**
+   * if you don't want to use the webviewEndpoint, you can use the built-in webview.
+   * webview content will be loaded by `iframe.srcdoc`.
+   */
+  useBuiltinWebview?: boolean;
+  /**
    * Worker 插件的默认启动路径
    */
   extWorkerHost?: string;
