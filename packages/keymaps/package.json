@@ -17,7 +17,8 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "workspace:*"
+    "@opensumi/ide-core-common": "workspace:*",
+    "ajv": "^6.10.0"
   },
   "devDependencies": {
     "@opensumi/ide-components": "workspace:*",
