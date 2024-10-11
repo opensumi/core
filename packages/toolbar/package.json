@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-toolbar",
-  "version": "3.4.1",
+  "version": "3.4.3",
   "files": [
     "lib",
     "src"
