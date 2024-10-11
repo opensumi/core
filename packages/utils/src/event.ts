@@ -1045,9 +1045,7 @@ export class Dispatcher<T = void> implements IDisposable {
   }
 
   dispose(): void {
-    if (this._emitter) {
-      this._emitter.dispose();
-    }
+    this._emitter.dispose();
   }
 }
 

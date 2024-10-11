@@ -1,30 +1,35 @@
 import extend from 'lodash/extend';
 
 import { EventEmitter } from '@opensumi/events';
+import { isUndefined } from '@opensumi/ide-utils';
 
 import { select } from './select';
 
-export interface DataStore<Item> {
-  create(item: Item): Item;
-  find(query: Record<string, any>): Item[] | undefined;
-  size(query: Record<string, any>): number;
-  get(id: string, query?: Record<string, any>): Item | undefined;
-  update(id: string, item: Partial<Item>): void;
-  remove(id: string): void;
-}
+/**
+ * The query looks like:
+ *   { field: value }
+ *   { field: conditions }
+ */
+export type Query = Record<string, any>;
 
-export interface DataStoreEvent<Item> extends Record<string, any> {
+export interface DataStoreEvent<Item> {
   created: [item: Item];
   updated: [oldItem: Item, newItem: Item];
   removed: [item: Item];
+
+  [key: string]: any[];
 }
 
 export interface DataStoreOptions {
   id?: string;
 }
 
-export class InMemoryDataStore<Item> extends EventEmitter<DataStoreEvent<Item>> implements DataStore<Item> {
-  private store = new Map<string, Item>();
+export class InMemoryDataStore<
+  Item extends Record<any, any>,
+  PrimaryKey extends keyof Item,
+  PrimaryKeyType = Item[PrimaryKey],
+> extends EventEmitter<DataStoreEvent<Item>> {
+  private store = new Map<PrimaryKeyType, Item>();
   private _uid = 0;
   /**
    * primary key
@@ -37,7 +42,7 @@ export class InMemoryDataStore<Item> extends EventEmitter<DataStoreEvent<Item>> 
   }
 
   create(item: Item): Item {
-    const id = item[this.id] || String(this._uid++);
+    const id = item[this.id] || this._uid++;
     const result = extend({}, item, { [this.id]: id }) as Item;
 
     this.store.set(id, result);
@@ -46,29 +51,32 @@ export class InMemoryDataStore<Item> extends EventEmitter<DataStoreEvent<Item>> 
     return result;
   }
 
-  find(query: Record<string, any>): Item[] | undefined {
+  find(query?: Query): Item[] | undefined {
+    if (isUndefined(query)) {
+      return Array.from(this.store.values());
+    }
     return select(this.store, query);
   }
 
-  size(query?: Record<string, any>): number {
-    if (!query) {
+  count(query?: Query): number {
+    if (isUndefined(query)) {
       return this.store.size;
     }
 
     return this.find(query)?.length || 0;
   }
 
-  get(id: string): Item | undefined {
+  get(id: PrimaryKeyType): Item | undefined {
     return this.store.get(id);
   }
 
-  has(id: string): boolean {
+  has(id: PrimaryKeyType): boolean {
     return this.store.has(id);
   }
 
-  update(id: string, item: Partial<Item>): void {
+  update(id: PrimaryKeyType, item: Partial<Item>): void {
     const current = this.store.get(id);
-    if (!current) {
+    if (isUndefined(current)) {
       return;
     }
 
@@ -78,12 +86,41 @@ export class InMemoryDataStore<Item> extends EventEmitter<DataStoreEvent<Item>> 
     this.store.set(id, result);
   }
 
-  remove(id: string): void {
+  remove(id: PrimaryKeyType): void {
     const item = this.store.get(id);
     if (item) {
       this.emit('removed', item);
     }
 
     this.store.delete(id);
+  }
+
+  removeItem(item: Item): void {
+    const id = item[this.id] as PrimaryKeyType;
+    if (isUndefined(id)) {
+      return;
+    }
+
+    this.remove(id);
+  }
+
+  removeAll(query?: Query): void {
+    if (isUndefined(query)) {
+      const items = Array.from(this.store.values());
+      this.store.clear();
+
+      items.forEach((item) => {
+        this.emit('removed', item);
+      });
+      return;
+    }
+
+    const items = this.find(query);
+    if (items) {
+      items.forEach((item) => {
+        this.store.delete(item[this.id]);
+        this.emit('removed', item);
+      });
+    }
   }
 }

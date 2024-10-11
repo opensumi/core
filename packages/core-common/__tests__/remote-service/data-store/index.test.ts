@@ -8,7 +8,7 @@ describe('InMemoryDataStore', () => {
       { user: 'pebbles', age: 1, active: true },
     ];
 
-    const store = new InMemoryDataStore<(typeof users)[0]>({
+    const store = new InMemoryDataStore<(typeof users)[0], 'user'>({
       id: 'user',
     });
 
@@ -23,12 +23,12 @@ describe('InMemoryDataStore', () => {
 
     const userBarney = store.get('barney');
     expect(userBarney).toEqual(users[0]);
-    expect(store.size()).toBe(3);
+    expect(store.count()).toBe(3);
     expect(addCount).toBe(3);
 
     const items = store.find({ active: true });
     expect(items).toEqual([users[0], users[2]]);
-    expect(store.size({ active: true })).toBe(2);
+    expect(store.count({ active: true })).toBe(2);
 
     store.on('updated', (oldValue, newValue) => {
       expect(oldValue.user).toBe('barney');
@@ -46,10 +46,10 @@ interface TestItem {
 }
 
 describe('InMemoryDataStore2', () => {
-  let store: InMemoryDataStore<TestItem>;
+  let store: InMemoryDataStore<TestItem, 'id'>;
 
   beforeEach(() => {
-    store = new InMemoryDataStore<TestItem>();
+    store = new InMemoryDataStore<TestItem, 'id'>();
   });
 
   test('should initialize correctly', () => {
@@ -87,8 +87,8 @@ describe('InMemoryDataStore2', () => {
     store.create({ name: 'test1' });
     store.create({ name: 'test2' });
 
-    expect(store.size()).toBe(2);
-    expect(store.size({ name: 'test1' })).toBe(1);
+    expect(store.count()).toBe(2);
+    expect(store.count({ name: 'test1' })).toBe(1);
   });
 
   test('should get item by id', () => {

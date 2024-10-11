@@ -345,16 +345,18 @@ class TerminalService {
 由于装饰器的执行是在类实例化之前，所以我们可以在 `GDataStore` 这个装饰器中收集 token，然后将它们加入 Injector 即可：
 
 ```ts
-const dataStore = [] as [string, DataStoreOptions][];
-export function GDataStore(token: string, options?: DataStoreOptions): PropertyDecorator {
-  dataStore.push([token, options]);
-
-  return Autowired(GDataStore, {
-    tag: String(token),
-  });
+function generateToken(type: 'global' | 'session', token: string, options?: DataStoreOptions) {
+  // ...
 }
 
-export type GDataStore<T> = InMemoryDataStore<T>;
+export type GDataStore<T, K = number> = InMemoryDataStore<T, K>;
+export function GDataStore(token: string, options?: DataStoreOptions): PropertyDecorator {
+  const sym = generateToken('global', token, options);
+
+  return Autowired(sym, {
+    tag: token,
+  });
+}
 ```
 
 用一个闭包中的变量 `dataStore` 来储存，然后在创建 Injector 的时候将所有的 token 放入 injector:
@@ -363,10 +365,8 @@ export type GDataStore<T> = InMemoryDataStore<T>;
 function _injectDataStores(injector: Injector) {
   dataStore.forEach(([token, opts]) => {
     injector.addProviders({
-      token: GDataStore,
+      token,
       useValue: new InMemoryDataStore(opts),
-      tag: String(token),
-      dropdownForTag: false,
     });
   });
 }
