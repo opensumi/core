@@ -92,7 +92,7 @@ export const CodeEditorWithHighlight = (props: Props) => {
           agentId,
           command,
           actionSource: ActionSourceEnum.Chat,
-          actionType: ActionTypeEnum.ChatCopyCode,
+          actionType: ActionTypeEnum.ChatInsertCode,
         });
       }
     }
