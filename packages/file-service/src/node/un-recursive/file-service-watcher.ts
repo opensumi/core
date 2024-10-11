@@ -1,5 +1,4 @@
 import fs, { watch } from 'fs-extra';
-import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
@@ -12,14 +11,17 @@ import {
   SupportLogNamespace,
   isMacintosh,
   path,
+  retry,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
-import { FileChangeCollection } from '../file-change-collection';
+import { IFileSystemWatcherServer } from '../../common/index';
+import { FileChangeCollectionManager } from '../file-change-collection';
 import { shouldIgnorePath } from '../shared';
+
 const { join, basename, normalize } = path;
+
 @Injectable({ multiple: true })
-export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
+export class UnRecursiveFileSystemWatcher extends Disposable implements IFileSystemWatcherServer {
   private WATCHER_HANDLERS = new Map<
     number,
     {
@@ -34,25 +36,21 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
   @Autowired(ILogServiceManager)
-  // 一个 symbol 关键字，内容是 ILogServiceManager
   private readonly loggerManager: ILogServiceManager;
 
-  // 收集发生改变的文件
-  protected changes = new FileChangeCollection();
-
-  protected readonly toDispose = new DisposableCollection(Disposable.create(() => this.setClient(undefined)));
-
-  protected client: FileSystemWatcherClient | undefined;
+  @Autowired(FileChangeCollectionManager)
+  private readonly fileChangeCollectionManager: FileChangeCollectionManager;
 
   private logger: ILogService;
 
   constructor(@Optional() private readonly excludes: string[] = []) {
+    super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
   }
 
   dispose(): void {
-    this.toDispose.dispose();
     this.WATCHER_HANDLERS.clear();
+    super.dispose();
   }
 
   /**
@@ -67,7 +65,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     }
   }
 
-  private async doWatch(basePath: string) {
+  private async doWatch(basePath: string, watcherId: number) {
     try {
       const watcher = watch(basePath);
       this.logger.log('start watching', basePath);
@@ -121,15 +119,15 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
               if ((type === 'rename' || type === 'change') && changeFileName === filename) {
                 const fileExists = fs.existsSync(changePath);
                 if (fileExists) {
-                  this.pushUpdated(changePath);
+                  this.fileChangeCollectionManager.pushUpdated(watcherId, changePath);
                 } else {
                   docChildren.delete(changeFileName);
-                  this.pushDeleted(changePath);
+                  this.fileChangeCollectionManager.pushDeleted(watcherId, changePath);
                 }
               }
             } else if (fs.pathExistsSync(changePath)) {
               if (!fs.lstatSync(changePath).isDirectory()) {
-                this.pushAdded(changePath);
+                this.fileChangeCollectionManager.pushAdded(watcherId, changePath);
                 docChildren.add(changeFileName);
               }
             }
@@ -138,9 +136,9 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
           setTimeout(async () => {
             if (changeFileName === signalDoc) {
               if (fs.pathExistsSync(basePath)) {
-                this.pushUpdated(basePath);
+                this.fileChangeCollectionManager.pushUpdated(watcherId, basePath);
               } else {
-                this.pushDeleted(basePath);
+                this.fileChangeCollectionManager.pushDeleted(watcherId, basePath);
                 signalDoc = '';
               }
             }
@@ -154,7 +152,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   async watchFileChanges(uri: string) {
     const basePath = FileUri.fsPath(uri);
-    const exist = await fs.pathExists(basePath);
 
     let watcherId = this.checkIsAlreadyWatched(basePath);
 
@@ -167,40 +164,40 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     const disposables = new DisposableCollection(); // 管理可释放的资源
 
     let watchPath = '';
+    const exist = await fs.pathExists(basePath);
 
     if (exist) {
-      const stat = await fs.lstatSync(basePath);
+      const stat = await fs.lstat(basePath);
       if (stat) {
         watchPath = basePath;
       }
     } else {
       this.logger.warn('This path does not exist. Please try again');
+      throw new Error('This path does not exist. Please try again');
     }
-    disposables.push(await this.start(watchPath));
-    this.toDispose.push(disposables);
+
+    disposables.push(await this.start(watchPath, watcherId));
+    this.addDispose(disposables);
     return watcherId;
   }
 
-  protected async start(basePath: string): Promise<DisposableCollection> {
+  protected async start(basePath: string, watcherId: number): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
     if (!(await fs.pathExists(basePath))) {
       return disposables;
     }
 
     const realPath = await fs.realpath(basePath);
-    const tryWatchDir = async (retryDelay = 1000) => {
-      try {
-        this.doWatch(realPath);
-      } catch (error) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, retryDelay);
-        });
-      }
-      return undefined;
+    const tryWatchDir = async () => {
+      await this.doWatch(realPath, watcherId);
     };
-    await tryWatchDir();
+    await retry(tryWatchDir, {
+      delay: 1000,
+      retries: 5,
+    });
     return disposables;
   }
+
   unwatchFileChanges(watcherId: number): Promise<void> {
     const watcher = this.WATCHER_HANDLERS.get(watcherId);
     if (watcher) {
@@ -208,45 +205,5 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       watcher.disposable.dispose();
     }
     return Promise.resolve();
-  }
-
-  protected pushAdded(path: string): void {
-    this.pushFileChange(path, FileChangeType.ADDED);
-  }
-
-  protected pushUpdated(path: string): void {
-    this.pushFileChange(path, FileChangeType.UPDATED);
-  }
-
-  protected pushDeleted(path: string): void {
-    this.pushFileChange(path, FileChangeType.DELETED);
-  }
-
-  protected pushFileChange(path: string, type: FileChangeType): void {
-    const uri = FileUri.create(path).toString();
-    this.changes.push({ uri, type });
-    this.fireDidFilesChanged();
-  }
-
-  /**
-   * Fires file changes to clients.
-   * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
-   */
-  protected readonly fireDidFilesChanged: () => void = debounce(() => this.doFireDidFilesChanged(), 100);
-
-  protected doFireDidFilesChanged(): void {
-    const changes = this.changes.values();
-    this.changes = new FileChangeCollection();
-    const event = { changes };
-    if (this.client) {
-      this.client.onDidFilesChanged(event);
-    }
-  }
-
-  setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.toDispose.disposed) {
-      return;
-    }
-    this.client = client;
   }
 }

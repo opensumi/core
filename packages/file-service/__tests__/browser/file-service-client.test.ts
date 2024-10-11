@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import temp from 'temp';
 
-import { DisposableCollection, FileUri, UTF8 } from '@opensumi/ide-core-common';
+import { DisposableCollection, FileUri, UTF8, injectGDataStores } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
@@ -29,6 +29,7 @@ describe('FileServiceClient should be work', () => {
       useClass: DiskFileSystemProvider,
     },
   );
+  injectGDataStores(injector);
 
   beforeAll(() => {
     // @ts-ignore

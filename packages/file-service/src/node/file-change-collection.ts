@@ -16,7 +16,12 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/node/file-change-collection.ts
 
-import { FileChange, FileChangeType } from '../common';
+import debounce from 'lodash/debounce';
+
+import { Injectable, Optional } from '@opensumi/di';
+import { DefaultMap, Dispatcher, Disposable, FileUri } from '@opensumi/ide-utils';
+
+import { DidFilesChangedParams, FileChange, FileChangeType, FileSystemWatcherClient } from '../common';
 
 /**
  * A file change collection guarantees that only one change is reported for each URI.
@@ -68,4 +73,70 @@ export class FileChangeCollection {
   values(): FileChange[] {
     return Array.from(this.changes.values());
   }
+
+  reset(): void {
+    this.changes.clear();
+  }
+}
+
+export const FileChangeCollectionManagerOptions = Symbol('FileChangeCollectionManagerOptions');
+
+@Injectable()
+export class FileChangeCollectionManager extends Disposable {
+  private _onFileChangeEmitter = this.registerDispose(new Dispatcher<FileChange[]>());
+  public readonly onFileChange = (watcherId: number, cb: (changes: FileChange[]) => void) =>
+    this._onFileChangeEmitter.on(String(watcherId))(cb);
+
+  protected changesMap = this.registerDispose(
+    new DefaultMap<number, FileChangeCollection>(() => new FileChangeCollection()),
+  );
+
+  constructor(@Optional(FileChangeCollectionManagerOptions) protected options?: { debounceTimeout?: number }) {
+    super();
+  }
+
+  /**
+   * Fires file changes to clients.
+   * It is debounced in the case if the filesystem is spamming to avoid overwhelming clients with events.
+   */
+  protected readonly fireDidFilesChanged: () => void = debounce(
+    () => this.doFireDidFilesChanged(),
+    this.options?.debounceTimeout || 100,
+  );
+  client: FileSystemWatcherClient | undefined;
+  protected doFireDidFilesChanged(): void {
+    this.changesMap.forEach((change, watcherId) => {
+      const data = change.values();
+      change.reset();
+
+      this._onFileChangeEmitter.dispatch(String(watcherId), data);
+    });
+  }
+
+  pushAdded(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.ADDED);
+  }
+
+  pushUpdated(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.UPDATED);
+  }
+
+  pushDeleted(watcherId: number, path: string): void {
+    this.pushFileChange(watcherId, path, FileChangeType.DELETED);
+  }
+
+  protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
+    const uri = FileUri.create(path).toString();
+    this.changesMap.get(watcherId).push({ uri, type });
+    this.fireDidFilesChanged();
+  }
+
+  /**
+   * @deprecated Use `onFileChange` instead.
+   * 兼容测试接口
+   */
+  setClientForTest = (watcherId: number, client: { onDidFilesChanged: (event: DidFilesChangedParams) => void }) =>
+    this.onFileChange(watcherId, (changes) => {
+      client.onDidFilesChanged({ changes });
+    });
 }
