@@ -515,6 +515,7 @@ export const AIChatView = observer(() => {
       await renderUserMessage({
         relationId,
         message,
+        command,
         agentId,
       });
 
@@ -532,6 +533,7 @@ export const AIChatView = observer(() => {
         relationId,
         message,
         agentId,
+        command,
         request,
         msgId,
       });
