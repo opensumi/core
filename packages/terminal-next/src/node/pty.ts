@@ -194,7 +194,12 @@ export class PtyService extends Disposable implements IPtyService {
         options.args = [];
       }
       if (Array.isArray(options.args)) {
-        options.args.push('--init-file', bashIntegrationPath);
+        // bash 的参数中，如果有 --init-file 则不再添加
+        // --init-file 要放在最前面，如 `bash -l --init-file /path/to/init.sh` 就会报错。
+        //                           `bash --init-file /path/to/init.sh -l` 就不会报错。
+        if (!options.args.includes('--init-file')) {
+          options.args.unshift('--init-file', bashIntegrationPath);
+        }
       }
     }
 
