@@ -93,7 +93,6 @@ export interface IExtensionNodeService {
   ensureProcessReady(clientId: string): Promise<boolean>;
   getExtProcessId(clientId: string): Promise<number | null>;
   getElectronMainThreadListenPath(clientId: string): Promise<string>;
-  getElectronMainThreadListenPath2(clientId: string): Promise<string>;
   getExtServerListenOption(clientId: string);
   getExtension(
     extensionPath: string,
