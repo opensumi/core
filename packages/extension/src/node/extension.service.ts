@@ -74,7 +74,7 @@ function detectExtFileType(): 'js' | 'ts' {
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {
-  private instanceId = 'ExtensionNodeServiceImpl:' + Date.now();
+  private LOG_TAG = 'ExtensionNodeServiceImpl:' + Date.now();
   static MaxExtProcessCount = 5;
   // ws 断开 5 分钟后杀掉插件进程
   static ProcessCloseExitThreshold: number = 5 * 60 * 1000;
@@ -187,14 +187,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return this.electronMainThreadListenPaths.get(clientId)!;
   }
 
-  public async getElectronMainThreadListenPath2(clientId: string): Promise<string> {
-    return await this.getElectronMainThreadListenPath(clientId);
-  }
-
   private setExtProcessConnectionForward() {
-    this.logger.log('setExtProcessConnectionForward', this.instanceId);
-    this._setMainThreadConnection(async (connectionResult) => {
-      const { channel, clientId } = connectionResult;
+    this.logger.log('setExtProcessConnectionForward', this.LOG_TAG);
+    this._setMainThreadConnection(async ({ channel, clientId }) => {
       this.maybeZombieClients.delete(clientId);
 
       if (this.clientExtProcessExtConnectionDeferredMap.get(clientId)) {
@@ -249,9 +244,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   @pMemoize((clientId: string) => clientId)
   public async createProcess(clientId: string, options?: ICreateProcessOptions) {
-    this.logger.log('createProcess instanceId', this.instanceId);
+    this.logger.log(this.LOG_TAG, 'create extension process for client:', clientId);
     this.logger.log('appconfig exthost', this.appConfig.extHost);
-    this.logger.log('createProcess clientId', clientId);
 
     // 检查是否超过限制最大的进程数
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
@@ -259,7 +253,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (processClientIdArr.length >= maxExtProcessCount) {
       const killProcessClientId = processClientIdArr[0];
       this.disposeClientExtProcess(killProcessClientId);
-      this.logger.error(`Process count is over limit, max count is ${maxExtProcessCount}`);
+      this.logger.error(
+        `Process count is over limit, max count is ${maxExtProcessCount}, try kill`,
+        killProcessClientId,
+      );
     }
     await this._createExtServer(clientId, options);
     await this._createExtHostProcess(clientId, options);
