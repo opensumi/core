@@ -1,4 +1,4 @@
-import { AINativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 import {
   AIInlineChatContentWidgetId,
@@ -46,7 +46,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
   }
 
   private get aiInlineChatService(): AIInlineChatService {
-    return this.injector.get(AIInlineChatService);
+    return this.injector.get(IAIInlineChatService);
   }
 
   private get inlineChatFeatureRegistry(): InlineChatFeatureRegistry {
