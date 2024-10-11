@@ -634,7 +634,29 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     }
     if (path) {
-      return this.root?.getTreeNodeByPath(path) as File | Directory;
+      const node = this.root?.getTreeNodeByPath(path) as File | Directory;
+      if (!node) {
+        // 尝试从再上层获取节点，可能为压缩节点
+        let parentNode: Directory | undefined;
+        const paths = path.split(Path.separator);
+        while (paths.length >= 1) {
+          paths.pop();
+          const parentPath = paths.join(Path.separator);
+          parentNode = this.root?.getTreeNodeByPath(parentPath) as Directory;
+          if (parentNode) {
+            break;
+          }
+        }
+        // 找到最相邻的父节点，从父节点的子节点中筛选出节点
+        if (parentNode && Directory.is(parentNode)) {
+          for (const child of (parentNode as Directory).children || []) {
+            if (child.path.includes(path)) {
+              return child as Directory | File;
+            }
+          }
+        }
+      }
+      return node;
     }
   }
 
@@ -713,13 +735,14 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }))
       .filter((node) => node && !!node.node) as ISortNode[];
 
-    nodes.sort((pathA, pathB) => {
-      // 直接获取节点深度比通过path取深度更可靠
-      const pathADepth = pathA.node?.depth || 0;
-      const pathBDepth = pathB.node?.depth || 0;
-      return pathADepth - pathBDepth;
-    });
-
+    if (_paths.length > 1) {
+      nodes.sort((pathA, pathB) => {
+        // 直接获取节点深度比通过path取深度更可靠
+        const pathADepth = pathA.node?.depth || 0;
+        const pathBDepth = pathB.node?.depth || 0;
+        return pathADepth - pathBDepth;
+      });
+    }
     const roots = [] as ISortNode[];
     for (let index = nodes.length - 1; index >= 0; index--) {
       // 从后往前遍历整个列表
