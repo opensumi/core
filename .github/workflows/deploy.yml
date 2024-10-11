@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     permissions:
       contents: write
     concurrency:
@@ -25,7 +25,7 @@ jobs:
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+      - uses: useblacksmith/cache@v5
         id: yarn_cache
         with:
           path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
