@@ -41,15 +41,15 @@ describe('InMemoryDataStore', () => {
 });
 
 interface TestItem {
-  id?: string;
+  id: string;
   name: string;
 }
 
 describe('InMemoryDataStore2', () => {
-  let store: InMemoryDataStore<TestItem, 'id'>;
+  let store: InMemoryDataStore<TestItem>;
 
   beforeEach(() => {
-    store = new InMemoryDataStore<TestItem, 'id'>();
+    store = new InMemoryDataStore<TestItem>();
   });
 
   test('should initialize correctly', () => {
@@ -123,9 +123,9 @@ describe('InMemoryDataStore2', () => {
 
   test('should remove item', () => {
     const item = store.create({ name: 'test' });
-    store.remove(item.id!);
+    store.remove(item.id);
 
-    expect(store.get(item.id!)).toBeUndefined();
+    expect(store.get(item.id)).toBeUndefined();
   });
 
   test('should emit removed event on remove', () => {

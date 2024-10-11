@@ -24,10 +24,12 @@ export interface DataStoreOptions {
   id?: string;
 }
 
+type MarkOptional<T, K extends keyof T> = Omit<T, K> & Partial<T>;
+
 export class InMemoryDataStore<
   Item extends Record<any, any>,
-  PrimaryKey extends keyof Item,
-  PrimaryKeyType = Item[PrimaryKey],
+  PrimaryKey extends keyof Item = 'id',
+  PrimaryKeyType = Required<Item>[PrimaryKey],
 > extends EventEmitter<DataStoreEvent<Item>> {
   private store = new Map<PrimaryKeyType, Item>();
   private _uid = 0;
@@ -41,8 +43,8 @@ export class InMemoryDataStore<
     this.id = options?.id || 'id';
   }
 
-  create(item: Item): Item {
-    const id = item[this.id] || this._uid++;
+  create(item: MarkOptional<Item, PrimaryKey>): Item {
+    const id = item[this.id] || (this._uid++ as PrimaryKeyType);
     const result = extend({}, item, { [this.id]: id }) as Item;
 
     this.store.set(id, result);
