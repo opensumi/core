@@ -137,9 +137,10 @@ export class AINativeModule extends BrowserModule {
       token: IAIInlineCompletionsProvider,
       useClass: AIInlineCompletionsProvider,
     },
+    // Used in `codeblitz`, do not remove it.
     {
       token: PartialEventEmitter,
-      useValue: new Emitter(),
+      useValue: new Emitter() as PartialEventEmitter,
     },
   ];
 
