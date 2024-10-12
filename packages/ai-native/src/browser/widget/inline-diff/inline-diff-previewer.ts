@@ -392,9 +392,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       this.node?.finallyRender(diffModel);
     }
   }
-  get onPartialEditEvent() {
-    return this.node?.onPartialEditEvent;
-  }
+
   revealFirstDiff(): void {
     this.node?.revealFirstDiff();
   }
