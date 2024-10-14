@@ -18,16 +18,16 @@ import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessExitEvent, IProcessReadyEvent } from '../common/process';
-import { IPtyProcessProxy, IPtySpawnOptions } from '../common/pty';
+import { IPtyProcessProxy, IPtyService, IPtySpawnOptions } from '../common/pty';
 
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
 import { IShellIntegrationService } from './shell-integration.service';
 
-export const IPtyService = Symbol('IPtyService');
+export { IPtyService };
 
 @Injectable({ multiple: true })
-export class PtyService extends Disposable {
+export class PtyService extends Disposable implements IPtyService {
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
@@ -194,7 +194,11 @@ export class PtyService extends Disposable {
         options.args = [];
       }
       if (Array.isArray(options.args)) {
-        options.args.push('--init-file', bashIntegrationPath);
+        // bash 的参数中，如果有 --init-file 则不再添加
+        if (!options.args.includes('--init-file')) {
+          // --init-file 要放在最前面，bash 的启动参数必须要 long options 在前面，否则会启动失败
+          options.args.unshift('--init-file', bashIntegrationPath);
+        }
       }
     }
 
@@ -261,7 +265,7 @@ export class PtyService extends Disposable {
     });
   }
 
-  parseCwd() {
+  protected parseCwd() {
     if (this.shellLaunchConfig.cwd) {
       return typeof this.shellLaunchConfig.cwd === 'string'
         ? this.shellLaunchConfig.cwd

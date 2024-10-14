@@ -29,13 +29,4 @@ export class BaseAIBackService implements IAIBackService<IAIBackServiceResponse,
   ): Promise<ChatReadableStream> {
     return new ChatReadableStream();
   }
-
-  async requestCompletion(input: IAICompletionOption, cancelToken?: CancellationToken) {
-    return {
-      sessionId: '',
-      codeModelList: [{ content: '' }],
-    };
-  }
-
-  async reportCompletion(input: IAIReportCompletionOption) {}
 }

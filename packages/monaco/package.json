@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-monaco",
-  "version": "3.2.3",
+  "version": "3.4.3",
   "files": [
     "lib",
     "src",
@@ -16,9 +16,12 @@
     "clean": "rimraf worker"
   },
   "dependencies": {
+    "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
+    "@opensumi/ide-utils": "workspace:*",
     "@opensumi/monaco-editor-core": "0.47.0-patch.15"
   },
   "devDependencies": {

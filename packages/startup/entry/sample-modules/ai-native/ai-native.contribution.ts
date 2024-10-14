@@ -14,6 +14,9 @@ import {
   ERunStrategy,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
+  IIntelligentCompletionsRegistry,
+  IProblemFixContext,
+  IProblemFixProviderRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
@@ -28,6 +31,8 @@ import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancelResponse,
+  CancellationToken,
+  ChatResponse,
   ChatServiceToken,
   ErrorResponse,
   IAIBackService,
@@ -85,31 +90,27 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
-    const doPreview = async (editor, value, token) => {
-      const crossCode = this.getCrossCode(editor);
-      const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
-      const controller = new InlineChatController({ enableCodeblockRender: true });
-      const stream = await this.aiBackService.requestStream(prompt, {}, token);
-      controller.mountReadable(stream);
-
-      return controller;
-    };
-
     registry.registerInteractiveInput(
       {
         handleStrategy: (editor, value) => {
-          const isEmptySelection = editor.getSelection()?.isEmpty();
-          if (isEmptySelection) {
-            return ERunStrategy.PREVIEW;
+          if (value.includes('execute')) {
+            return ERunStrategy.EXECUTE;
           }
 
-          return ERunStrategy.DIFF_PREVIEW;
+          return ERunStrategy.PREVIEW;
         },
       },
       {
         execute: async (editor, value, token) => {},
-        providerPreviewStrategy: doPreview,
-        providerDiffPreviewStrategy: doPreview,
+        providePreviewStrategy: async (editor, value, token) => {
+          const crossCode = this.getCrossCode(editor);
+          const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
+          const controller = new InlineChatController({ enableCodeblockRender: true });
+          const stream = await this.aiBackService.requestStream(prompt, {}, token);
+          controller.mountReadable(stream);
+
+          return controller;
+        },
       },
     );
 
@@ -125,9 +126,9 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
+        providePreviewStrategy: async (editor: ICodeEditor, token) => {
           const crossCode = this.getCrossCode(editor);
-          const prompt = `Add Chinese comments to the code: \`\`\`\n ${crossCode}\`\`\`.`;
+          const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
           const controller = new InlineChatController({ enableCodeblockRender: true });
           const stream = await this.aiBackService.requestStream(prompt, {}, token);
@@ -149,7 +150,7 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
+        providePreviewStrategy: async (editor: ICodeEditor, token) => {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
@@ -387,6 +388,24 @@ export class AINativeContribution implements AINativeCoreContribution {
     });
   }
 
+  registerProblemFixFeature(registry: IProblemFixProviderRegistry): void {
+    registry.registerHoverFixProvider({
+      provideFix: async (
+        editor: ICodeEditor,
+        context: IProblemFixContext,
+        token: CancellationToken,
+      ): Promise<ChatResponse | InlineChatController> => {
+        const { marker, editRange } = context;
+
+        const controller = new InlineChatController({ enableCodeblockRender: true });
+        const stream = await this.aiBackService.requestStream('', {}, token);
+        controller.mountReadable(stream);
+
+        return controller;
+      },
+    });
+  }
+
   registerTerminalProvider(register: ITerminalProviderRegistry): void {
     register.registerCommandSuggestionsProvider(async (message, token) => {
       const stream = TerminalSuggestionReadableStream.create();
@@ -402,6 +421,86 @@ export class AINativeContribution implements AINativeCoreContribution {
         stream.end();
       }, 2000);
       return stream;
+    });
+  }
+
+  registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
+    registry.registerIntelligentCompletionProvider(async (editor, position, bean, token) => {
+      const model = editor.getModel()!;
+      const value = model.getValueInRange({
+        startLineNumber: position.lineNumber,
+        startColumn: 1,
+        endLineNumber: position.lineNumber + 3,
+        endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
+      });
+
+      const cancelController = new AbortController();
+      const { signal } = cancelController;
+
+      token.onCancellationRequested(() => {
+        cancelController.abort();
+      });
+
+      /**
+       * mock randown
+       */
+      const getRandomString = (length) => {
+        const characters = 'opensumi';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+      };
+
+      const insertRandomStrings = (originalString) => {
+        const minChanges = 2;
+        const maxChanges = 5;
+        const changesCount = Math.floor(Math.random() * (maxChanges - minChanges + 1)) + minChanges;
+        let modifiedString = originalString;
+        for (let i = 0; i < changesCount; i++) {
+          const randomIndex = Math.floor(Math.random() * originalString.length);
+          const operation = Math.random() < 0.5 ? 'delete' : 'insert';
+          if (operation === 'delete') {
+            modifiedString = modifiedString.slice(0, randomIndex) + modifiedString.slice(randomIndex + 1);
+          } else {
+            const randomChar = getRandomString(1);
+            modifiedString = modifiedString.slice(0, randomIndex) + randomChar + modifiedString.slice(randomIndex);
+          }
+        }
+        return modifiedString;
+      };
+
+      try {
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(resolve, 1000);
+
+          signal.addEventListener('abort', () => {
+            clearTimeout(timeout);
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+
+        return {
+          items: [
+            {
+              insertText: insertRandomStrings(value),
+              range: {
+                startLineNumber: position.lineNumber,
+                startColumn: 1,
+                endLineNumber: position.lineNumber + 3,
+                endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
+              },
+            },
+          ],
+          enableMultiLine: true,
+        };
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          return { items: [] };
+        }
+        throw error;
+      }
     });
   }
 }

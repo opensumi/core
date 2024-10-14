@@ -157,15 +157,13 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     );
   }, [operationList, moreOperation, customOperationRender, onResultClick, status, interactiveInputVisible]);
 
-  return (
-    <div className={styles.inline_chat_controller_box} style={isDone ? { transform: 'translateY(-15px)' } : {}}>
-      {renderContent()}
-    </div>
-  );
+  return <div className={styles.inline_chat_controller_box}>{renderContent()}</div>;
 };
 
 @Injectable({ multiple: true })
 export class AIInlineContentWidget extends ReactInlineContentWidget {
+  allowEditorOverflow = true;
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -173,8 +171,6 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   private readonly aiNativeContextKey: AINativeContextKey;
-
-  private originTop = 0;
 
   private readonly _onActionClickEmitter = new Emitter<{ actionId: string; source: string }>();
   public readonly onActionClick = this._onActionClickEmitter.event;
@@ -279,13 +275,8 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     this.options = options;
   }
 
-  public offsetTop(top: number): void {
-    if (this.originTop === 0) {
-      const top = this.domNode.style.top;
-      this.originTop = top ? parseInt(top, 10) : 0;
-    }
-
-    this.domNode.style.top = `${this.originTop + top}px`;
+  public setOffsetTop(top: number): void {
+    this.domNode.style.transform = `translateY(${top}px)`;
   }
 
   id(): string {
@@ -351,39 +342,42 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     };
   }
 
-  private recheckPosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
-    const preNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber - 1);
-    const curNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber);
-    const nextNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber + 1);
+  /**
+   * 以当前 selection 为中心取上下各 1 行重新计算
+   */
+  private recheckSelection(selection: monaco.Selection): monaco.editor.IContentWidgetPosition {
+    const preStartPosition = selection.getStartPosition();
+    const preEndPosition = selection.getEndPosition();
 
-    let newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE];
-    let newLineNumber = lineNumber;
-    let newColumn = column;
+    const model = this.editor.getModel()!;
+    const maxCount = model.getLineCount();
 
-    if (curNonWhitespaceColumn >= nextNonWhitespaceColumn) {
-      newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.BELOW];
-    } else if (curNonWhitespaceColumn >= preNonWhitespaceColumn) {
-      newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE];
-    } else {
-      newColumn = Math.min(preNonWhitespaceColumn, nextNonWhitespaceColumn);
+    const safeAboveStartLine = Math.max(1, preEndPosition.lineNumber - 1);
+    const safeBelowEndLine = Math.min(maxCount, preEndPosition.lineNumber + 1);
 
-      if (preNonWhitespaceColumn >= nextNonWhitespaceColumn) {
-        newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.BELOW];
-        newLineNumber = lineNumber - 1;
-      } else {
-        newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE];
-        newLineNumber = lineNumber + 1;
-      }
+    const newStartPosition = preStartPosition.with(safeAboveStartLine, 1);
+    const newEndPosition = preEndPosition.with(
+      safeBelowEndLine,
+      this.safeGetLineLastNonWhitespaceColumn(safeBelowEndLine),
+    );
+
+    // 如果整个文档只有 1 行，则直接显示在右下角
+    if (maxCount === 1) {
+      return this.toBelowPosition(safeBelowEndLine, this.safeGetLineLastNonWhitespaceColumn(safeBelowEndLine));
     }
 
-    if (lineNumber === 1 || lineNumber === 2) {
-      newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.BELOW];
+    if (newEndPosition.lineNumber === 1 && preEndPosition.lineNumber !== preStartPosition.lineNumber) {
+      return this.computePosition(monaco.Selection.fromPositions(newStartPosition, newEndPosition));
     }
 
-    return {
-      position: new monaco.Position(newLineNumber, newColumn),
-      preference: newPreference,
-    };
+    const aboveMaxColumn = this.safeGetLineLastNonWhitespaceColumn(safeAboveStartLine);
+    const belowMaxColumn = this.safeGetLineLastNonWhitespaceColumn(safeBelowEndLine);
+    const currentMaxColumn = this.safeGetLineLastNonWhitespaceColumn(preEndPosition.lineNumber);
+    if (belowMaxColumn > currentMaxColumn && belowMaxColumn > aboveMaxColumn) {
+      return this.computePosition(monaco.Selection.fromPositions(newEndPosition, newStartPosition));
+    }
+
+    return this.computePosition(monaco.Selection.fromPositions(newStartPosition, newEndPosition));
   }
 
   private isProtrudeAbove(line: number) {
@@ -408,25 +402,27 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
    * 2. 靠近光标处周围没有字符的空白区域作为要显示的区域
    * 3. 显示的区域方向在右侧，左侧不考虑
    */
-  protected computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
-    const startPosition = selection.getStartPosition();
-    const endPosition = selection.getEndPosition();
-    const model = this.editor.getModel();
+  protected computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition {
+    let startPosition = selection.getStartPosition();
+    let endPosition = selection.getEndPosition();
+    let cursorPosition = selection.getPosition();
 
-    if (!model) {
-      return null;
+    const model = this.editor.getModel()!;
+    const maxCount = model.getLineCount();
+
+    // 只选中了一行
+    if (startPosition.lineNumber === endPosition.lineNumber) {
+      return this.recheckSelection(selection);
     }
 
-    const cursorPosition = selection.getPosition();
+    if (endPosition.lineNumber - startPosition.lineNumber === 1) {
+      cursorPosition = endPosition;
+    }
+
     const getCursorLastNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber);
 
-    let targetLine: number | null = null;
-    let direction: 'above' | 'below' | null = null;
-
-    // 用户只选中了一行
-    if (startPosition.lineNumber === endPosition.lineNumber) {
-      return this.recheckPosition(cursorPosition.lineNumber, cursorPosition.column);
-    }
+    let targetLine: number = cursorPosition.lineNumber;
+    let direction: 'above' | 'below' = 'below';
 
     // 用户选中了多行，光标在选中的开始位置
     if (cursorPosition.equals(startPosition)) {
@@ -435,10 +431,9 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 2),
       );
 
-      // 如果上面两行的最后一个非空白字符的列数小于当前行的最后一个非空白字符的列数 + 10
-      // 则直接显示在上面
-      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn + 10) {
-        return this.toAbovePosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
+      // 如果上面两行的最后一个非空白字符的列数小于当前行的最后一个非空白字符的列数, 则直接显示在上面
+      if (getMaxLastWhitespaceColumn <= getCursorLastNonWhitespaceColumn) {
+        return this.toAbovePosition(cursorPosition.lineNumber, getCursorLastNonWhitespaceColumn);
       }
 
       for (let i = startPosition.lineNumber; i <= endPosition.lineNumber; i++) {
@@ -459,11 +454,11 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber + 2),
       );
 
-      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn + 10) {
-        return this.toBelowPosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
+      if (getMaxLastWhitespaceColumn <= getCursorLastNonWhitespaceColumn) {
+        return this.toBelowPosition(cursorPosition.lineNumber, getCursorLastNonWhitespaceColumn);
       }
 
-      for (let i = endPosition.lineNumber; i >= startPosition.lineNumber; i--) {
+      for (let i = Math.min(maxCount, endPosition.lineNumber + 1); i >= startPosition.lineNumber; i--) {
         if (this.isProtrudeBelow(i)) {
           targetLine = i;
           direction = 'below';
@@ -477,18 +472,11 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
       }
     }
 
-    if (targetLine && direction) {
-      const column = this.safeGetLineLastNonWhitespaceColumn(targetLine) + 1;
+    const column = this.safeGetLineLastNonWhitespaceColumn(targetLine) + 1;
 
-      if (direction === 'below') {
-        return this.toBelowPosition(targetLine, column);
-      }
-      return this.toAbovePosition(targetLine, column);
+    if (direction === 'below') {
+      return this.toBelowPosition(targetLine, column);
     }
-
-    return this.recheckPosition(
-      cursorPosition.lineNumber,
-      this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber),
-    );
+    return this.toAbovePosition(targetLine, column);
   }
 }

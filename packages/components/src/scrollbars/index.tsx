@@ -1,9 +1,10 @@
 import cls from 'classnames';
 import throttle from 'lodash/throttle';
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Scrollbars as CustomScrollbars } from 'react-custom-scrollbars';
 
 import { DisposableCollection } from '@opensumi/ide-utils';
+import { Scrollbars as CustomScrollbars } from '@opensumi/react-custom-scrollbars-2';
+
 import './styles.less';
 
 export interface ICustomScrollbarProps {

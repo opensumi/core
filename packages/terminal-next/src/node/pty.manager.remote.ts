@@ -97,7 +97,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
       if (reconnectTimer) {
         return;
       }
-      reconnectTimer = global.setTimeout(() => {
+      reconnectTimer = setTimeout(() => {
         this.logger.log('PtyServiceManagerRemote reconnect');
         socket.destroy();
         this.initRemoteConnectionMode(opts);
@@ -111,7 +111,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
         socket.setTimeout(0);
       }
       if (reconnectTimer) {
-        global.clearTimeout(reconnectTimer);
+        clearTimeout(reconnectTimer);
         reconnectTimer = null;
       }
       this.disposer.addDispose(this.initRPCService(socket));

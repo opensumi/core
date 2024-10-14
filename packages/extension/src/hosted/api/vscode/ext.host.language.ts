@@ -63,9 +63,12 @@ import {
   disposableTimeout,
 } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
+import { IPosition } from '@opensumi/ide-monaco/lib/common';
 
 import {
   ExtensionDocumentDataManager,
+  ExtensionIdentifier,
+  ExtensionNotebookDocumentManager,
   ICodeActionListDto,
   IExtHostLanguages,
   IExtensionDescription,
@@ -148,13 +151,14 @@ import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } fro
 import { SignatureHelpAdapter } from './language/signature';
 import { TypeDefinitionAdapter } from './language/type-definition';
 import { TypeHierarchyAdapter } from './language/type-hierarchy';
-import { getDurationTimer, score } from './language/util';
+import { getDurationTimer, score, targetsNotebooks } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 
 import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export function createLanguagesApiFactory(
   extHostLanguages: ExtHostLanguages,
+  extHostNotebook: ExtensionNotebookDocumentManager,
   extension: IExtensionDescription,
 ): typeof vscode.languages {
   return {
@@ -174,8 +178,9 @@ export function createLanguagesApiFactory(
     registerInlineCompletionItemProvider(
       selector: vscode.DocumentSelector,
       provider: vscode.InlineCompletionItemProvider,
+      metadata?: vscode.InlineCompletionItemProviderMetadata,
     ): vscode.Disposable {
-      return extHostLanguages.registerInlineCompletionsProvider(selector, provider, extension);
+      return extHostLanguages.registerInlineCompletionsProvider(extension, selector, provider, metadata);
     },
     registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
       return extHostLanguages.registerDefinitionProvider(selector, provider, extension);
@@ -199,7 +204,14 @@ export function createLanguagesApiFactory(
       return extHostLanguages.registerReferenceProvider(selector, provider, extension);
     },
     match(selector: DocumentSelector, document: TextDocument): number {
-      return score(typeConvert.fromLanguageSelector(selector), document.uri, document.languageId, true);
+      const interalSelector = typeConvert.fromLanguageSelector(selector);
+      let notebook: vscode.NotebookDocument | undefined;
+      if (interalSelector && targetsNotebooks(interalSelector)) {
+        notebook = extHostNotebook.notebookDocuments.find((value) =>
+          value.getCells().find((c) => c.document === document),
+        );
+      }
+      return score(interalSelector, document.uri, document.languageId, true, notebook?.uri, notebook?.notebookType);
     },
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
       return extHostLanguages.setLanguageConfiguration(language, configuration);
@@ -592,22 +604,27 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   // ### Inline Completion begin
   registerInlineCompletionsProvider(
+    extension: IExtensionDescription,
     selector: vscode.DocumentSelector,
     provider: vscode.InlineCompletionItemProvider,
-    extension: IExtensionDescription,
+    metadata: vscode.InlineCompletionItemProviderMetadata | undefined,
   ): Disposable {
-    const callId = this.addNewAdapter(
-      new InlineCompletionAdapter(this.documents, provider, this.commands.converter),
-      extension,
+    const adapter = new InlineCompletionAdapter(extension, this.documents, provider, this.commands.converter);
+    const callId = this.addNewAdapter(adapter, extension);
+    this.proxy.$registerInlineCompletionsSupport(
+      callId,
+      this.transformDocumentSelector(selector),
+      true,
+      ExtensionIdentifier.toKey(extension.identifier.value),
+      metadata?.yieldTo?.map((extId) => ExtensionIdentifier.toKey(extId)) || [],
     );
-    this.proxy.$registerInlineCompletionsSupport(callId, this.transformDocumentSelector(selector), true);
     return this.createDisposable(callId);
   }
 
   $provideInlineCompletions(
     handle: number,
     resource: UriComponents,
-    position: Position,
+    position: IPosition,
     context: InlineCompletionContext,
     token: CancellationToken,
   ): Promise<IdentifiableInlineCompletions | undefined> {
@@ -619,12 +636,25 @@ export class ExtHostLanguages implements IExtHostLanguages {
       undefined,
     );
   }
-  $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void {
+
+  $handleInlineCompletionDidShow(handle: number, pid: number, idx: number, updatedInsertText: string): void {
     this.withAdapter(
       handle,
       InlineCompletionAdapterBase,
       async (adapter) => {
-        adapter.handleDidShowCompletionItem(pid, idx);
+        adapter.handleDidShowCompletionItem(pid, idx, updatedInsertText);
+      },
+      undefined,
+      undefined,
+    );
+  }
+
+  $handleInlineCompletionPartialAccept(handle: number, pid: number, idx: number, acceptedCharacters: number): void {
+    this.withAdapter(
+      handle,
+      InlineCompletionAdapterBase,
+      async (adapter) => {
+        adapter.handlePartialAccept(pid, idx, acceptedCharacters);
       },
       undefined,
       undefined,

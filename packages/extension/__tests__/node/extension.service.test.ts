@@ -157,7 +157,7 @@ describe('Extension Service', () => {
     });
 
     it('should create connect listenPath', async () => {
-      const listenPath = await extensionService.getElectronMainThreadListenPath2(mockExtClientId);
+      const listenPath = await extensionService.getElectronMainThreadListenPath(mockExtClientId);
       expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'sumi-ipc'));
     });
     it('should create ext server listen option', async () => {

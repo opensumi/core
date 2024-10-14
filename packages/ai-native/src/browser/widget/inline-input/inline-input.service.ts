@@ -4,22 +4,24 @@ import { Position } from '@opensumi/ide-monaco';
 
 @Injectable()
 export class InlineInputChatService {
-  private _interactiveInputVisible: boolean = false;
-  public get interactiveInputVisible(): boolean {
-    return this._interactiveInputVisible;
+  private _currentVisiblePosition: Position | undefined;
+  public get currentVisiblePosition(): Position | undefined {
+    return this._currentVisiblePosition;
   }
 
   private readonly _onInteractiveInputVisibleInPosition = new Emitter<Position | undefined>();
   public readonly onInteractiveInputVisibleInPosition: Event<Position | undefined> =
     this._onInteractiveInputVisibleInPosition.event;
 
-  public visibleInPosition(position: Position): void {
-    this._interactiveInputVisible = true;
-    this._onInteractiveInputVisibleInPosition.fire(position);
+  public setCurrentVisiblePosition(position: Position | undefined): void {
+    this._currentVisiblePosition = position;
+  }
+
+  public visible(): void {
+    this._onInteractiveInputVisibleInPosition.fire(this._currentVisiblePosition);
   }
 
   public hide(): void {
-    this._interactiveInputVisible = false;
     this._onInteractiveInputVisibleInPosition.fire(undefined);
   }
 }

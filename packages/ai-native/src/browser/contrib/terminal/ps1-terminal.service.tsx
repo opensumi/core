@@ -1,12 +1,13 @@
+import { IDecoration, IDisposable, IMarker, Terminal } from '@xterm/xterm';
 import domAlign from 'dom-align';
 import React from 'react';
 import { Root, createRoot } from 'react-dom/client';
-import { IDecoration, IDisposable, IMarker, Terminal } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { localize } from '@opensumi/ide-core-browser';
 import {
   AISerivceType,
+  ActionSourceEnum,
   CancellationTokenSource,
   Disposable,
   IAIReporter,
@@ -244,7 +245,11 @@ export class PS1TerminalService extends Disposable {
       },
       onEnd: (): void => {
         doneCallback();
-        this.aiReporter.end(reportRelationId, { message: commandDescription, success: true });
+        this.aiReporter.end(reportRelationId, {
+          message: commandDescription,
+          success: true,
+          actionSource: ActionSourceEnum.Terminal,
+        });
       },
     });
   }

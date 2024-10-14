@@ -243,7 +243,7 @@ export class WebviewServiceImpl implements IWebviewService {
 
   getWebviewThemeData(theme: ITheme): IWebviewThemeData {
     const editorFontFamily = this.editorPreferences['editor.fontFamily'];
-    const editorFontWeight = this.editorPreferences['editor.fontFamily'];
+    const editorFontWeight = this.editorPreferences['editor.fontWeight'];
     const editorFontSize = this.editorPreferences['editor.fontSize'];
 
     const exportedColors = getColorRegistry()

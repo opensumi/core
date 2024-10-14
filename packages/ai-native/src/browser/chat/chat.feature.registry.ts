@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Disposable, getDebugLogger } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, getDebugLogger } from '@opensumi/ide-core-common';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, SLASH_SYMBOL } from '../../common';
 import { IChatFeatureRegistry, IChatSlashCommandHandler, IChatSlashCommandItem } from '../types';
@@ -15,6 +15,9 @@ export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegis
 
   public chatWelcomeMessageModel?: ChatWelcomeMessageModel;
 
+  private _onDidWelcomeMessageChange: Emitter<void> = new Emitter<void>();
+  public onDidWelcomeMessageChange: Event<void> = this._onDidWelcomeMessageChange.event;
+
   override dispose() {
     super.dispose();
     this.slashCommandsMap.clear();
@@ -23,6 +26,7 @@ export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegis
 
   registerWelcome(content: IChatWelcomeMessageContent, sampleQuestions: ISampleQuestions[]): void {
     this.chatWelcomeMessageModel = new ChatWelcomeMessageModel(content, sampleQuestions);
+    this._onDidWelcomeMessageChange.fire();
   }
 
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void {

@@ -31,8 +31,6 @@ interface IRPCTerminalService {
  */
 @Injectable()
 export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> implements ITerminalServiceClient {
-  private terminalMap: Map<string, IPtyProcessProxy> = new Map();
-
   @Autowired(ITerminalNodeService)
   private terminalService: ITerminalNodeService;
 
@@ -93,7 +91,6 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
           `terminal client ${id} and clientID: ${this.clientId} create ${pty.pid} with options `,
           launchConfig,
         );
-        this.terminalMap.set(id, pty);
         return {
           id,
           pid: pty.pid,

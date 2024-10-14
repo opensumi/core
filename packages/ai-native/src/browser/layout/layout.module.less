@@ -1,14 +1,5 @@
-/**
-* -------------------------------------------- 右侧 chat 面板样式 --------------------------------------------
-*/
 #ai_chat_panel {
   height: 100%;
-
-  div[class*='tab_panel'] {
-    &::before {
-      content: none;
-    }
-  }
 
   :global {
     .rce-mbox-left-notch,
@@ -177,4 +168,8 @@
 
 .ai_chat_view_container {
   background-color: unset;
+}
+
+.AI-Chat-slot {
+  background-color: var(--activityBar-background) !important;
 }

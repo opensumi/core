@@ -1,4 +1,7 @@
 import { Injectable, Injector } from '@opensumi/di';
+import { ChatInternalService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.internal.service';
+import { ERunStrategy, IInlineChatFeatureRegistry } from '@opensumi/ide-ai-native/lib/browser/types';
+import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
 import {
   IChatAgentService,
   IChatAgentWelcomeMessage,
@@ -6,13 +9,21 @@ import {
   IChatReplyFollowup,
 } from '@opensumi/ide-ai-native/lib/common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Deferred, IChatContent, IChatProgress, IChatTreeData, IMarkdownString } from '@opensumi/ide-core-common';
+import {
+  Deferred,
+  IChatProgress,
+  IChatTreeData,
+  IMarkdownString,
+  InlineChatFeatureRegistryToken,
+} from '@opensumi/ide-core-common';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import {
   IChatInputParam,
   IExtHostChatAgents,
   IExtensionChatAgentMetadata,
+  IInlineChatPreviewProviderMetadata,
   IMainThreadChatAgents,
 } from '../../common/sumi/chat-agents';
 
@@ -46,8 +57,86 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
     }
   }
 
+  get inlineChatFeatureRegistry(): IInlineChatFeatureRegistry | null {
+    try {
+      return this.injector.get(InlineChatFeatureRegistryToken);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  get chatInternalService(): ChatInternalService | null {
+    try {
+      return this.injector.get(ChatInternalService);
+    } catch (err) {
+      return null;
+    }
+  }
+
   constructor(rpcProtocol: IRPCProtocol, private injector: Injector) {
     this.#proxy = rpcProtocol.getProxy(ExtHostSumiAPIIdentifier.ExtHostChatAgents);
+  }
+  $registerInlineChatProvider(handle: number, name: string, metadata: IInlineChatPreviewProviderMetadata): void {
+    if (!this.inlineChatFeatureRegistry || !this.chatInternalService) {
+      return;
+    }
+
+    const d = this.inlineChatFeatureRegistry.registerInteractiveInput(
+      { handleStrategy: () => ERunStrategy.PREVIEW },
+      {
+        providePreviewStrategy: async (editor, value, token) => {
+          const controller = new InlineChatController({ enableCodeblockRender: !!metadata.enableCodeblockRender });
+          const request = this.chatInternalService!.createRequest(value, name)!;
+
+          const stream = new SumiReadableStream<IChatProgress>();
+          controller.mountReadable(stream);
+
+          const progressCallback = (progress: IChatProgress) => {
+            if (token.isCancellationRequested) {
+              stream.abort();
+              return;
+            }
+
+            stream.emitData(progress);
+          };
+
+          this.pendingProgress.set(request.requestId, progressCallback);
+          const requestProps = {
+            sessionId: this.chatInternalService?.sessionModel.sessionId!,
+            requestId: request.requestId,
+            message: request.message.prompt,
+            command: request.message.command,
+          };
+          this.#proxy
+            .$invokeAgent(handle, requestProps, { history: [] }, token)
+            .then((result) => {
+              if (!result) {
+                stream.end();
+                return;
+              }
+
+              if (!token.isCancellationRequested) {
+                if (result.errorDetails) {
+                  request.response.setErrorDetails(result.errorDetails);
+                }
+                stream.end();
+              } else {
+                stream.abort();
+              }
+            })
+            .finally(() => {
+              this.pendingProgress.delete(request.requestId);
+            });
+
+          return controller;
+        },
+      },
+    );
+
+    this.agents.set(handle, {
+      name,
+      dispose: d.dispose,
+    });
   }
 
   $registerAgent(handle: number, name: string, metadata: IExtensionChatAgentMetadata) {

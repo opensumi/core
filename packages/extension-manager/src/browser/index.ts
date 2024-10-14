@@ -1,7 +1,7 @@
 import { Injectable, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
-import { VSXExtensionBackSerivceToken, VSXExtensionServicePath, VSXExtensionServiceToken } from '../common';
+import { VSXExtensionServicePath, VSXExtensionServiceToken } from '../common';
 
 import { VSXExtensionContribution } from './vsx-extension.contribution';
 import { VSXExtensionService } from './vsx-extension.service';
@@ -19,7 +19,6 @@ export class OpenVsxExtensionManagerModule extends BrowserModule {
   backServices = [
     {
       servicePath: VSXExtensionServicePath,
-      token: VSXExtensionBackSerivceToken,
     },
   ];
 }

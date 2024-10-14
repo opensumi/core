@@ -139,6 +139,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     const userBeforeWorkspace = this.preferenceService.get<boolean>('settings.userBeforeWorkspace', false);
     if (userBeforeWorkspace) {
       this.updateTabList(userBeforeWorkspace);
+      this._currentScope = this.tabList[this.tabIndex];
     }
 
     this.addDispose([

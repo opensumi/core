@@ -1,6 +1,6 @@
+import { Terminal as XTerm } from '@xterm/xterm';
 import { IPty as INodePty } from 'node-pty';
 import * as pty from 'node-pty';
-import { Terminal as XTerm } from 'xterm';
 
 import { IThemeColor, MaybePromise, OperatingSystem, Uri } from '@opensumi/ide-core-common';
 
@@ -632,4 +632,14 @@ export function asTerminalIcon(
     id: iconPath.id,
     color: iconPath.color as IThemeColor,
   };
+}
+
+export const IPtyService = Symbol('IPtyService');
+export interface IPtyService {
+  onMessage(data: string): void;
+  resize(rows: number, cols: number): boolean;
+  getCwd(): Promise<string | undefined>;
+  getPid(): number;
+  getShellName(): string;
+  kill(): Promise<void>;
 }

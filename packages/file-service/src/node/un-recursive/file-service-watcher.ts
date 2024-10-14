@@ -16,6 +16,7 @@ import {
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
+import { shouldIgnorePath } from '../shared';
 const { join, basename, normalize } = path;
 @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
@@ -96,7 +97,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       });
 
       watcher.on('change', (type: string, filename: string | Buffer) => {
-        if (this.isTemporaryFile(filename as string)) {
+        if (shouldIgnorePath(filename as string)) {
           return;
         }
 
@@ -247,16 +248,5 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       return;
     }
     this.client = client;
-  }
-
-  protected isTemporaryFile(path: string): boolean {
-    if (path) {
-      if (/\.\d{7}\d+$/.test(path)) {
-        // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
-        // 这类文件的更新应当完全隐藏掉
-        return true;
-      }
-    }
-    return false;
   }
 }

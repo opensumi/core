@@ -1,7 +1,9 @@
-import { join } from 'path';
-import { readdirSync, existsSync } from 'fs';
-import { readJSONSync, readFileSync, writeFileSync } from 'fs-extra';
 import { execSync } from 'child_process';
+import { existsSync, readdirSync } from 'fs';
+import { join } from 'path';
+
+import { readFileSync, readJSONSync, writeFileSync } from 'fs-extra';
+
 import { argv } from '../packages/core-common/src/node/cli';
 
 export default class Package {

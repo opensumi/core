@@ -239,7 +239,7 @@ export const localizationBundle = {
     'search.fileResults.notfound': 'No files matching',
     'search.fileSymbolResults': 'symbols ({0})',
     'search.fileSymbolResults.notfound': 'No symbols matching',
-    'search.historyMatches': 'Recently opened',
+    'search.historyMatches': 'Recently Opened',
     'search.replaceAll.occurrencesMessage': "Replaced {0} occurrences across {1} files with '{2}'.",
     'search.replace.toggle.button.title': 'Toggle Replace',
     'search.caseDescription': 'Match Case',
@@ -524,7 +524,7 @@ export const localizationBundle = {
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info':
       'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
-    'preference.general.language.change.refresh.now': 'Now',
+    'preference.general.language.change.refresh.now': 'Refresh',
     'preference.general.language.change.refresh.later': 'Later',
 
     'preference.debug.internalConsoleOptions': 'Controls when the internal debug console should open.',
@@ -1458,6 +1458,8 @@ export const localizationBundle = {
     'aiNative.inline.chat.input.placeholder.default': 'Ask Copilot（shift + enter newline）',
     'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
 
+    'aiNative.inline.problem.fix.title': 'Fix with AI',
+
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':
       'It is detected that you have made modifications. Regeneration will overwrite\nyour modifications. Are you sure to regenerate?',
@@ -1483,14 +1485,16 @@ export const localizationBundle = {
       'Does Inline Chat related code actions automatically appear when code are selected?',
     'preference.ai.native.chat.visible.type': 'Control how the chat panel is displayed by default',
 
-    'preference.ai.native.inlineCompletions.title': 'Inline Completions',
-    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
-      'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
-    'preference.ai.native.inlineCompletions.debounceTime': 'Debounce time for inline completions',
     'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff preview mode',
     'preference.ai.native.inlineDiff.preview.mode.sideBySide': 'Displayed in the editor as left and right diff panels',
     'preference.ai.native.inlineDiff.preview.mode.inlineLive': 'Displayed in the editor through streaming rendering',
-    'preference.ai.native.inlineCompletions.cache.enabled': 'Whether to enable cache for inline completions',
+
+    'preference.ai.native.intelligentCompletions.title': 'Intelligent Completions',
+    'preference.ai.native.intelligentCompletions.promptEngineering.enabled':
+      'Whether to enable prompt engineering, some LLM models may not perform well on prompt engineering.',
+    'preference.ai.native.intelligentCompletions.debounceTime': 'Debounce time for intelligent completions',
+    'preference.ai.native.intelligentCompletions.cache.enabled': 'Whether to enable cache for intelligent completions',
+    'preference.ai.native.intelligentCompletions.alwaysVisible': 'Whether to always show intelligent completions',
     // #endregion AI Native
 
     // #endregion merge editor

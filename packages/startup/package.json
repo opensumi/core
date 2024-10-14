@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-startup",
-  "version": "3.2.3",
+  "version": "3.4.3",
   "files": [
     "lib",
     "src"
@@ -11,9 +11,8 @@
   "scripts": {
     "prepublishOnly": "yarn run build",
     "start:lite": "webpack-dev-server --config ./webpack.lite.config.js",
-    "start": "run-p start:client:open start:server start:webview",
-    "start:e2e": "run-p start:client:e2e start:server start:webview",
-    "start:webview": "webpack-dev-server --config ./webpack.webview.js",
+    "start": "run-p start:client:open start:server",
+    "start:e2e": "run-p start:client:e2e start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "cross-env IS_DEV=1 NODE_ENV=development EXT_MODE=js KTLOG_SHOW_DEBUG=1 nodemon --inspect=9999 ./entry/web/server.ts",
     "start:no-inspect:client": "yarn start:client",
@@ -66,6 +65,7 @@
     "@opensumi/ide-ai-native": "workspace:*",
     "@opensumi/ide-collaboration": "workspace:*",
     "@opensumi/ide-comments": "workspace:*",
+    "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
@@ -74,6 +74,7 @@
     "@opensumi/ide-design": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",
     "@opensumi/ide-explorer": "workspace:*",
+    "@opensumi/ide-express-file-server": "workspace:*",
     "@opensumi/ide-extension": "workspace:*",
     "@opensumi/ide-extension-manager": "workspace:*",
     "@opensumi/ide-extension-storage": "workspace:*",

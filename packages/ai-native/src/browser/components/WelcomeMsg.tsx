@@ -1,9 +1,11 @@
 import * as React from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { Icon, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { withPrevented } from '@opensumi/ide-core-browser/lib/dom/event';
 import {
+  ActionSourceEnum,
+  ActionTypeEnum,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
   ChatServiceToken,
@@ -29,6 +31,8 @@ export const WelcomeMessage = () => {
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
   const [sampleQuestions, setSampleQuestions] = React.useState<ISampleQuestions[]>([]);
+
+  useUpdateOnEvent(chatFeatureRegistry.onDidWelcomeMessageChange);
 
   const welcomeSampleQuestions = React.useMemo(() => {
     if (!chatFeatureRegistry.chatWelcomeMessageModel) {
@@ -83,7 +87,13 @@ export const WelcomeMessage = () => {
               <a
                 className={styles.link_item}
                 onClick={withPrevented(() => {
-                  aiChatService.sendMessage(chatAgentService.parseMessage(data.message));
+                  aiChatService.sendMessage({
+                    ...chatAgentService.parseMessage(data.message),
+                    reportExtra: {
+                      actionType: ActionTypeEnum.Welcome,
+                      actionSource: ActionSourceEnum.Chat,
+                    },
+                  });
                 })}
               >
                 {data.icon ? <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} /> : ''}

@@ -1,4 +1,4 @@
-import { IMarker } from 'xterm';
+import { IMarker } from '@xterm/xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';

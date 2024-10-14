@@ -25,27 +25,30 @@ import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/b
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
-import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
+import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 
 const CLIENT_ID = 'W_' + uuid();
 
+const queries = new URLSearchParams(window.location.search);
+
 export async function renderApp(opts: IClientAppOpts) {
+  // eslint-disable-next-line no-console
+  console.time('Render');
+
   const defaultHost = process.env.HOST || window.location.hostname;
   const injector = new Injector();
 
   opts.workspaceDir = findFirstTruthy(
-    () => {
-      const queries = new URLSearchParams(window.location.search);
-      const dir = queries.get('workspaceDir');
-      if (dir) {
-        return dir;
-      }
-    },
-    window.location.hash.slice(1),
+    () => queries.get('workspaceDir') || undefined,
+    process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH && window.location.hash.slice(1),
     opts.workspaceDir,
     process.env.WORKSPACE_DIR,
+  );
+  opts.extensionDevelopmentPath = findFirstTruthy(
+    () => queries.get('extensionDevelopmentPath') || undefined,
+    process.env.EXTENSION_DEVELOPMENT_PATH,
   );
 
   opts.injector = injector;
@@ -53,9 +56,6 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.wsPath = opts.wsPath || process.env.WS_PATH || `ws://${defaultHost}:8000`;
 
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST;
-
-  const anotherHostName = process.env.WEBVIEW_HOST || defaultHost;
-  opts.webviewEndpoint = opts.webviewEndpoint || `http://${anotherHostName}:8899`;
 
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
@@ -99,6 +99,7 @@ export const getDefaultClientAppOpts = ({
     },
     useCdnIcon: true,
     useExperimentalShadowDom: true,
+    useBuiltinWebview: true,
     defaultPreferences: {
       'general.language': defaultLanguage,
       'general.theme': 'opensumi-design-dark-theme',

@@ -27,10 +27,8 @@ export class LayoutState {
     await this.preferenceService.ready;
     this.saveLayoutWithWorkspace = this.preferenceService.get<boolean>('view.saveLayoutWithWorkspace') || false;
     this.disposableCollection.push(
-      this.preferenceService.onPreferenceChanged((e) => {
-        if (e.preferenceName === 'view.saveLayoutWithWorkspace') {
-          this.saveLayoutWithWorkspace = e.newValue;
-        }
+      this.preferenceService.onSpecificPreferenceChange('view.saveLayoutWithWorkspace', (e) => {
+        this.saveLayoutWithWorkspace = e.newValue;
       }),
     );
   }

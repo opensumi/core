@@ -244,6 +244,9 @@ describe('file-search-quickopen', () => {
         },
         dispose: jest.fn(),
       }),
+      getModelDescription: () => ({
+        languageId: 'javascript',
+      }),
     });
     fileSearchQuickOpenHandler = injector.get(FileSearchQuickCommandHandler);
   });

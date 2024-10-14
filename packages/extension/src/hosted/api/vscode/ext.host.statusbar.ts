@@ -29,7 +29,7 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
     let handle: NodeJS.Timeout | undefined;
 
     if (typeof arg === 'number') {
-      handle = global.setTimeout(() => this.proxy.$dispose(), arg);
+      handle = setTimeout(() => this.proxy.$dispose(), arg);
     } else if (typeof arg !== 'undefined') {
       arg.then(
         () => this.proxy.$dispose(),
@@ -206,7 +206,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
       clearTimeout(this._timeoutHandle);
     }
     // Defer the update so that multiple changes to setters don't cause a redraw each
-    this._timeoutHandle = global.setTimeout(() => {
+    this._timeoutHandle = setTimeout(() => {
       this._timeoutHandle = undefined;
       const commandId = typeof this.command === 'string' ? this.command : this.command?.command;
       const commandArgs = typeof this.command === 'string' ? undefined : this.command?.arguments;

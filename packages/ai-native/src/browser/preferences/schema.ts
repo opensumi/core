@@ -34,17 +34,21 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       enum: ['never', 'always', 'default'],
       default: 'default',
     },
-    [AINativeSettingSectionsId.InlineCompletionsPromptEngineeringEnabled]: {
+    [AINativeSettingSectionsId.IntelligentCompletionsPromptEngineeringEnabled]: {
       type: 'boolean',
       default: true,
     },
-    [AINativeSettingSectionsId.InlineCompletionsDebounceTime]: {
+    [AINativeSettingSectionsId.IntelligentCompletionsDebounceTime]: {
       type: 'number',
       default: 150,
     },
-    [AINativeSettingSectionsId.InlineCompletionsCacheEnabled]: {
+    [AINativeSettingSectionsId.IntelligentCompletionsCacheEnabled]: {
       type: 'boolean',
       default: true,
+    },
+    [AINativeSettingSectionsId.IntelligentCompletionsAlwaysVisible]: {
+      type: 'boolean',
+      default: false,
     },
   },
 };

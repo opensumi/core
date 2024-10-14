@@ -12,6 +12,7 @@ import {
   validateConstraint,
 } from '@opensumi/ide-core-common';
 
+import { IBuiltInCommand } from '../../../common/ext.process';
 import {
   ArgumentProcessor,
   CommandHandler,
@@ -26,7 +27,6 @@ import * as extHostTypeConverter from '../../../common/vscode/converter';
 import { Disposable, Location, Position, Range } from '../../../common/vscode/ext-types';
 import * as modes from '../../../common/vscode/model.api';
 import { CommandDto } from '../../../common/vscode/scm';
-import { IBuiltInCommand } from '../../ext.process-base';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ApiCommand, ApiCommandResult, newCommands } from './ext.host.api.command';
@@ -110,8 +110,7 @@ export function createCommandsApiFactory(
 }
 
 export class ExtHostCommands implements IExtHostCommands {
-  protected readonly proxy: IMainThreadCommands;
-  protected readonly rpcProtocol: IRPCProtocol;
+  readonly #proxy: IMainThreadCommands;
   protected readonly logger = getDebugLogger();
   protected readonly commands = new Map<string, CommandHandler<any>>();
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
@@ -119,8 +118,7 @@ export class ExtHostCommands implements IExtHostCommands {
   public converter: CommandsConverter;
 
   constructor(rpcProtocol: IRPCProtocol, private buildInCommands?: IBuiltInCommand[]) {
-    this.rpcProtocol = rpcProtocol;
-    this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
+    this.#proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
     this.registerUriArgProcessor();
   }
 
@@ -247,13 +245,13 @@ export class ExtHostCommands implements IExtHostCommands {
       this.commands.set(id, handler);
     }
     if (global) {
-      this.proxy.$registerCommand(id);
+      this.#proxy.$registerCommand(id);
     }
 
     return Disposable.create(() => {
       if (this.commands.delete(id)) {
         if (global) {
-          this.proxy.$unregisterCommand(id);
+          this.#proxy.$unregisterCommand(id);
         }
       }
     });
@@ -301,7 +299,7 @@ export class ExtHostCommands implements IExtHostCommands {
       // automagically convert some argument types
       args = this.convertArguments(args);
 
-      return this.proxy
+      return this.#proxy
         .$executeCommandWithExtensionInfo<T>(id, extensionInfo, ...args)
         .then((result) => revive(result, 0));
     }
@@ -316,7 +314,7 @@ export class ExtHostCommands implements IExtHostCommands {
       // automagically convert some argument types
       args = this.convertArguments(args);
 
-      return this.proxy.$executeCommand<T>(id, ...args).then((result) => revive(result, 0));
+      return this.#proxy.$executeCommand<T>(id, ...args).then((result) => revive(result, 0));
     }
   }
 
@@ -369,7 +367,7 @@ export class ExtHostCommands implements IExtHostCommands {
   async getCommands(filterUnderscoreCommands = false): Promise<string[]> {
     this.logger.log('ExtHostCommands#getCommands', filterUnderscoreCommands);
 
-    const result = await this.proxy.$getCommands();
+    const result = await this.#proxy.$getCommands();
     if (filterUnderscoreCommands) {
       return result.filter((command) => command[0] !== '_');
     }
@@ -392,16 +390,17 @@ export class ExtHostCommands implements IExtHostCommands {
 }
 
 export class CommandsConverter {
+  readonly #commands: ExtHostCommands;
+
   private readonly _delegatingCommandId: string;
-  private readonly _commands: ExtHostCommands;
   private readonly _cache = new Map<number, vscode.Command>();
   private _cachIdPool = 0;
 
   // --- conversion between internal and api commands
   constructor(commands: ExtHostCommands, private readonly _lookupApiCommand: (id: string) => ApiCommand | undefined) {
     this._delegatingCommandId = `_vscode_delegate_cmd_${Date.now().toString(36)}`;
-    this._commands = commands;
-    this._commands.registerCommand(true, this._delegatingCommandId, this._executeConvertedCommand, this);
+    this.#commands = commands;
+    this.#commands.registerCommand(true, this._delegatingCommandId, this._executeConvertedCommand, this);
   }
 
   toInternal(command: vscode.Command | undefined, disposables: DisposableStore): CommandDto | undefined {
@@ -459,6 +458,6 @@ export class CommandsConverter {
     if (!actualCmd) {
       return Promise.reject('actual command NOT FOUND');
     }
-    return this._commands.executeCommand(actualCmd.command, ...(actualCmd.arguments || []));
+    return this.#commands.executeCommand(actualCmd.command, ...(actualCmd.arguments || []));
   }
 }

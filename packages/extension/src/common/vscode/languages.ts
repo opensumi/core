@@ -12,6 +12,7 @@ import {
   FoldingRangeProvider,
   InlayHintsProvider,
   InlineCompletionItemProvider,
+  InlineCompletionItemProviderMetadata,
   TypeDefinitionProvider,
   TypeHierarchyProvider,
   // eslint-disable-next-line import/no-unresolved
@@ -29,6 +30,7 @@ import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri'
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
+import { IDocumentFilterDto } from './converter';
 import { Disposable } from './ext-types';
 import { IExtensionDescription } from './extension';
 import {
@@ -98,8 +100,10 @@ export interface IMainThreadLanguages {
   ): void;
   $registerInlineCompletionsSupport(
     handle: number,
-    selector: SerializedDocumentFilter[],
+    selector: IDocumentFilterDto[],
     supportsHandleDidShowCompletionItem: boolean,
+    extensionId: string,
+    yieldsToExtensionIds: string[],
   ): void;
   $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
@@ -220,9 +224,10 @@ export interface IExtHostLanguages {
   $releaseCompletionItems(handle: number, id: number): void;
 
   registerInlineCompletionsProvider(
+    extension: IExtensionDescription,
     selector: DocumentSelector,
     provider: InlineCompletionItemProvider,
-    extension: IExtensionDescription,
+    metadata: InlineCompletionItemProviderMetadata | undefined,
   ): Disposable;
   $provideInlineCompletions(
     handle: number,
@@ -231,7 +236,8 @@ export interface IExtHostLanguages {
     context: languages.InlineCompletionContext,
     token: CancellationToken,
   ): Promise<IdentifiableInlineCompletions | undefined>;
-  $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void;
+  $handleInlineCompletionDidShow(handle: number, pid: number, idx: number, updatedInsertText: string): void;
+  $handleInlineCompletionPartialAccept(handle: number, pid: number, idx: number, acceptedCharacters: number): void;
   $freeInlineCompletionsList(handle: number, pid: number): void;
 
   $provideDefinition(

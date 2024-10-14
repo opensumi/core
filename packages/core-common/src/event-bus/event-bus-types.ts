@@ -65,4 +65,7 @@ export interface IEventBus {
    * 监听 EventBus 中的事件，只会触发一次
    */
   once<T>(constructor: ConstructorOf<T>, listener: IEventListener<T>): IDisposable;
+
+  onDirective<T>(directive: string, listener: IEventListener<T>): IDisposable;
+  fireDirective(directive: string, payload?: any): void;
 }

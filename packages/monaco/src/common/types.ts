@@ -35,7 +35,6 @@ export type IEvent<T> = (listener: (e: T) => any, thisArg?: any) => IDisposable;
  */
 export const enum EOL {
   LF = '\n',
-
   CRLF = '\r\n',
 }
 

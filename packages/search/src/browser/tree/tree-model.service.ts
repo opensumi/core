@@ -268,6 +268,7 @@ export class SearchModelService extends Disposable {
           }),
           {
             preview,
+            supportsRevive: false,
           },
         );
         if (openResourceResult) {
@@ -334,6 +335,11 @@ export class SearchModelService extends Disposable {
 
   expandAll() {
     return this.treeModel.root.expandedAll();
+  }
+
+  clearSearchResults() {
+    this.searchService.clean();
+    this.searchService.search();
   }
 
   private toReplaceResource(fileResource: URI) {

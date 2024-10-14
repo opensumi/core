@@ -7,6 +7,7 @@ import {
   IDebuggerContribution,
 } from '@opensumi/ide-debug';
 
+import { CustomChildProcessModule } from '../../../../common/ext.process';
 import {
   IExtHostCommands,
   IExtHostDebugService,
@@ -25,7 +26,6 @@ import {
   Uri,
 } from '../../../../common/vscode/ext-types';
 import { Breakpoint } from '../../../../common/vscode/models';
-import { CustomChildProcessModule } from '../../../ext.process-base';
 
 import { IDebugConfigurationProvider } from './common';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
@@ -103,6 +103,12 @@ export function createDebugApiFactory(extHostDebugService: IExtHostDebugService)
     },
     asDebugSourceUri(source: vscode.DebugProtocolSource, session?: vscode.DebugSession) {
       return extHostDebugService.asDebugSourceUri(source, session);
+    },
+    registerDebugVisualizationTreeProvider() {
+      return Disposable.create(() => {});
+    },
+    registerDebugVisualizationProvider() {
+      return Disposable.create(() => {});
     },
   };
 

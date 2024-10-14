@@ -34,6 +34,8 @@
   width: 1e6px;
 }
 
+@line-height: 18px;
+
 .inline_diff_accept_partial_widget_container {
   width: 100%;
 
@@ -42,9 +44,9 @@
     display: flex;
     border-radius: 4px;
     overflow: hidden;
-    margin-right: 10px;
-    max-height: 18px;
-    height: 18px;
+    margin-right: 12px;
+    max-height: @line-height;
+    height: @line-height;
     align-items: center;
   }
 
@@ -53,16 +55,17 @@
     border: none;
     font-size: 12px;
     cursor: pointer;
-    padding: 2px;
+    padding: 2px 6px;
+    height: @line-height;
 
     &.accept_btn {
       background-color: var(--aiNative-inlineDiffAcceptPartialEdit);
-      color: #fff;
+      color: var(--aiNative-inlineDiffAcceptPartialEdit-foreground);
     }
 
     &.discard_btn {
       background-color: var(--aiNative-inlineDiffDiscardPartialEdit);
-      color: #fff;
+      color: var(--aiNative-inlineDiffAcceptPartialEdit-foreground);
     }
   }
 }

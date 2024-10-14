@@ -412,7 +412,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
           break;
         }
       case ERestartPolicy.Always:
-        this.progressService.withProgress(
+        await this.progressService.withProgress(
           {
             location: ProgressLocation.Notification,
             title: localize('extension.exthostRestarting.content'),

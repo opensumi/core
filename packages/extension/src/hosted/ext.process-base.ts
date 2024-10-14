@@ -1,25 +1,22 @@
 import net from 'net';
 import { performance } from 'perf_hooks';
-import Stream from 'stream';
 
-import { ConstructorOf, Injector } from '@opensumi/di';
+import { Injector } from '@opensumi/di';
 import { SumiConnectionMultiplexer, createExtMessageIO } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   Emitter,
-  ILogService,
   IReporter,
-  LogLevel,
   ReporterProcessMessage,
   isPromiseCanceledError,
   locale,
   setLanguageId,
 } from '@opensumi/ide-core-common';
+import { suppressNodeJSEpipeError } from '@opensumi/ide-core-common/lib/node';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
-import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import { IExtensionHostService, KT_APP_CONFIG_KEY, KT_PROCESS_SOCK_OPTION_KEY, ProcessMessageType } from '../common';
-import { CommandHandler } from '../common/vscode';
+import { ExtHostAppConfig, ExtProcessConfig } from '../common/ext.process';
 import { knownProtocols } from '../common/vscode/protocols';
 
 import { setPerformance } from './api/vscode/language/util';
@@ -33,51 +30,6 @@ setPerformance(performance);
 Error.stackTraceLimit = 100;
 let logger: any = console;
 let preload: IExtensionHostService;
-export interface IBuiltInCommand {
-  id: string;
-  handler: CommandHandler;
-}
-
-export interface CustomChildProcess {
-  stdin: Stream.Writable;
-  stdout: Stream.Readable;
-  kill: () => void;
-}
-
-export interface CustomChildProcessModule {
-  spawn(command: string, args: string | string[], options: any): CustomChildProcess;
-}
-
-export interface ExtHostAppConfig extends Partial<AppConfig> {
-  builtinCommands?: IBuiltInCommand[];
-  customDebugChildProcess?: CustomChildProcessModule;
-  /**
-   * 集成方自定义 vscode.version 版本
-   * 设置该参数可能会导致插件运行异常
-   * @type {string} 插件版本号
-   * @memberof ExtHostAppConfig
-   */
-  customVSCodeEngineVersion?: string;
-}
-
-export interface ExtProcessConfig {
-  injector?: Injector;
-  LogServiceClass?: ConstructorOf<ILogService>;
-  logDir?: string;
-  logLevel?: LogLevel;
-  /**
-   * 这种 command 只有插件能调用到，且只能在插件进程调用到
-   */
-  builtinCommands?: IBuiltInCommand[];
-  customDebugChildProcess?: CustomChildProcessModule;
-  customVSCodeEngineVersion?: string;
-  /**
-   * control rpcProtocol message timeout
-   * default -1，it means disable
-   */
-  rpcMessageTimeout?: number;
-}
-
 async function initRPCProtocol(extInjector: Injector): Promise<any> {
   const extConnection = argv[KT_PROCESS_SOCK_OPTION_KEY];
 
@@ -86,7 +38,7 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
 
   const socket = net.createConnection(JSON.parse(extConnection));
 
-  const appConfig = extInjector.get(AppConfig);
+  const appConfig: ExtHostAppConfig = extInjector.get(ExtHostAppConfig);
 
   const extProtocol = new SumiConnectionMultiplexer(new NetSocketConnection(socket), {
     timeout: appConfig.rpcMessageTimeout,
@@ -136,7 +88,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
   const reporterEmitter = new Emitter<ReporterProcessMessage>();
   extInjector.addProviders(
     {
-      token: AppConfig,
+      token: ExtHostAppConfig,
       useValue: { ...extAppConfig, ...extConfig },
     },
     {
@@ -226,6 +178,10 @@ function onUnexpectedError(e: any) {
   }
   unexpectedErrorHandler(err);
 }
+
+suppressNodeJSEpipeError(process, (msg) => {
+  getErrorLogger()(msg);
+});
 
 process.on('uncaughtException', (err) => {
   onUnexpectedError(err);

@@ -13,6 +13,7 @@ import {
   LRUMap,
   MarkerManager,
   REPORT_NAME,
+  Schemes,
   URI,
   path,
   revive,
@@ -53,7 +54,7 @@ import {
   RangeSuggestDataDto,
   testGlob,
 } from '../../../common/vscode';
-import { fromLanguageSelector } from '../../../common/vscode/converter';
+import { IDocumentFilterDto, fromLanguageSelector } from '../../../common/vscode/converter';
 import { CancellationError, UriComponents } from '../../../common/vscode/ext-types';
 import { IExtensionDescription } from '../../../common/vscode/extension';
 import {
@@ -169,7 +170,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   isLanguageFeatureEnabled(model: ITextModel) {
-    if (model.uri.scheme === 'inmemory') {
+    if (model.uri.scheme === Schemes.inMemory) {
       return false;
     }
 
@@ -351,27 +352,40 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   $registerInlineCompletionsSupport(
     handle: number,
-    selector: SerializedDocumentFilter[],
-    supportsHandleDidShowCompletionItem: boolean,
+    selector: IDocumentFilterDto[],
+    supportsHandleEvents: boolean,
+    extensionId: string,
+    yieldsToExtensionIds: string[],
   ): void {
     const provider: monaco.languages.InlineCompletionsProvider<IdentifiableInlineCompletions> = {
       provideInlineCompletions: async (
         model: ITextModel,
         position: monaco.Position,
-        context: InlineCompletionContext,
+        context: monaco.languages.InlineCompletionContext,
         token: CancellationToken,
       ): Promise<IdentifiableInlineCompletions | undefined> =>
         this.proxy.$provideInlineCompletions(handle, model.uri, position, context, token),
       handleItemDidShow: async (
         completions: IdentifiableInlineCompletions,
         item: IdentifiableInlineCompletion,
+        updatedInsertText: string,
       ): Promise<void> => {
-        if (supportsHandleDidShowCompletionItem) {
-          await this.proxy.$handleInlineCompletionDidShow(handle, completions.pid, item.idx);
+        if (supportsHandleEvents) {
+          await this.proxy.$handleInlineCompletionDidShow(handle, completions.pid, item.idx, updatedInsertText);
+        }
+      },
+      handlePartialAccept: async (completions, item, acceptedCharacters): Promise<void> => {
+        if (supportsHandleEvents) {
+          await this.proxy.$handleInlineCompletionPartialAccept(handle, completions.pid, item.idx, acceptedCharacters);
         }
       },
       freeInlineCompletions: (completions: IdentifiableInlineCompletions): void => {
         this.proxy.$freeInlineCompletionsList(handle, completions.pid);
+      },
+      groupId: extensionId,
+      yieldsToGroupIds: yieldsToExtensionIds,
+      toString() {
+        return `InlineCompletionsProvider(${extensionId})`;
       },
     };
     this.disposables.set(

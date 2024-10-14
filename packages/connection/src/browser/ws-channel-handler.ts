@@ -64,7 +64,7 @@ export class WSChannelHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
-    this.heartbeatMessageTimer = global.setTimeout(() => {
+    this.heartbeatMessageTimer = setTimeout(() => {
       this.channelMap.forEach((channel) => {
         channel.ping();
       });

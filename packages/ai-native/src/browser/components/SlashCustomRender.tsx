@@ -14,8 +14,10 @@ export const SlashCustomRender = (props: {
   relationId: string;
   renderContent: TSlashCommandCustomRender;
   startTime: number;
+  agentId?: string;
+  command?: string;
 }) => {
-  const { userMessage, relationId, requestId, renderContent, startTime } = props;
+  const { userMessage, relationId, requestId, renderContent, startTime, agentId, command } = props;
 
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
@@ -28,6 +30,8 @@ export const SlashCustomRender = (props: {
       replytime: Date.now() - startTime,
       success: true,
       isStop: false,
+      agentId,
+      command,
     });
   }, [renderContent, requestId, relationId]);
 

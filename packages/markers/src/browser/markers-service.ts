@@ -48,7 +48,7 @@ export class MarkerService extends Themable implements IMarkerService {
 
   // resource 事件
   protected readonly onResourceOpenEmitter = new Emitter<string>();
-  public readonly onResouceOpen: Event<string> = this.onResourceOpenEmitter.event;
+  public readonly onResourceOpen: Event<string> = this.onResourceOpenEmitter.event;
 
   protected readonly onResourceCloseEmitter = new Emitter<string>();
   public readonly onResourceClose: Event<string> = this.onResourceCloseEmitter.event;

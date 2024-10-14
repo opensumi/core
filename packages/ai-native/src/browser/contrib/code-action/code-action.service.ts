@@ -46,6 +46,7 @@ export class CodeActionService extends Disposable {
       disabled: codeAction.disabled,
       command: {
         id: AI_CODE_ACTION.id,
+        title: codeAction.title || operational.name,
         arguments: [operational.id],
       },
     } as CodeAction;

@@ -8,6 +8,8 @@ export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 export const FRAME_ONE = 16;
 export const FRAME_TWO = FRAME_ONE * 2;
 export const FRAME_THREE = FRAME_ONE * 3;
+export const FRAME_FOUR = FRAME_ONE * 4;
+export const FRAME_FIVE = FRAME_ONE * 5;
 
 export interface CancelablePromise<T> extends Promise<T> {
   cancel(): void;

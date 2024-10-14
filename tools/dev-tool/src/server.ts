@@ -6,7 +6,7 @@ import Koa from 'koa';
 import KoaRouter from 'koa-router';
 import Static from 'koa-static';
 
-import { Injector, Provider } from '@opensumi/di';
+import { Injector } from '@opensumi/di';
 import { Deferred } from '@opensumi/ide-core-common';
 import { IServerAppOpts, NodeModule, ServerApp } from '@opensumi/ide-core-node';
 import {
@@ -46,6 +46,10 @@ export async function startServer(
     } catch (err: any) {
       ctx.body = `Error: ${err.message}`;
     }
+  });
+
+  router.get('/', (ctx) => {
+    ctx.body = 'OpenSumi';
   });
 
   app.use(router.routes());

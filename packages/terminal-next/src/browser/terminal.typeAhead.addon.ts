@@ -22,7 +22,7 @@ import { CodeTerminalSettingId } from '../common/preference';
 import { Color, RGBA } from './terminal.typeAhead.ext';
 import { IXtermCore, XtermAttributes } from './xterm-private';
 
-import type { IBuffer, IBufferCell, IDisposable, ITerminalAddon, Terminal } from 'xterm';
+import type { IBuffer, IBufferCell, IDisposable, ITerminalAddon, Terminal } from '@xterm/xterm';
 
 export const DEFAULT_LOCAL_ECHO_EXCLUDE: ReadonlyArray<string> = ['vim', 'vi', 'nano', 'tmux'];
 

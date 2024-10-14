@@ -1,9 +1,9 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AppConfig, INodeLogger, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, Sequencer, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
 import { getChunks } from '@opensumi/ide-utils/lib/strings';
 
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient, TERMINAL_ID_SEPARATOR } from '../common';
-import { IPtyProcessProxy, IShellLaunchConfig } from '../common/pty';
+import { IPtyProcessProxy, IPtyService, IShellLaunchConfig } from '../common/pty';
 
 import { PtyService } from './pty';
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
@@ -23,11 +23,14 @@ const BATCH_CHUNK_MAX_SIZE = 20 * 1024 * 1024;
 export class TerminalServiceImpl implements ITerminalNodeService {
   static TerminalPtyCloseThreshold = 10 * 1000;
 
-  private terminalProcessMap: Map<string, PtyService> = new Map();
+  private terminalProcessMap: Map<string, IPtyService> = new Map();
   private clientTerminalMap: Map<string, Map<string, PtyService>> = new Map();
 
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
   private closeTimeOutMap: Map<string, NodeJS.Timeout> = new Map();
+
+  private batchedPtyDataMap: Map<string, string> = new Map();
+  private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -41,9 +44,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   @Autowired(PtyServiceManagerToken)
   private readonly ptyServiceManager: IPtyServiceManager;
 
-  private batchedPtyDataMap: Map<string, string> = new Map();
-  private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
-
   public setClient(clientId: string, client: ITerminalServiceClient) {
     if (clientId.indexOf(TERMINAL_ID_SEPARATOR) >= 0) {
       clientId = clientId.split(TERMINAL_ID_SEPARATOR)[0];
@@ -52,7 +52,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     // 如果有相同的setClient clientId被调用，则取消延时触发closeClient，否则会导致终端无响应
     const timeOutHandler = this.closeTimeOutMap.get(clientId);
     if (timeOutHandler) {
-      global.clearTimeout(timeOutHandler);
+      clearTimeout(timeOutHandler);
       this.closeTimeOutMap.delete(clientId);
     }
   }
@@ -77,7 +77,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   public closeClient(clientId: string) {
     // 延时触发，因为WS本身有重连逻辑，因此通过延时触发来避免断开后不就重连但是回调方法都被dispose的问题
-    const closeTimer = global.setTimeout(
+    const closeTimer = setTimeout(
       () => {
         this.disposeClient(clientId);
         this.logger.debug(`Remove pty process from ${clientId} client`);
@@ -119,7 +119,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     this.batchedPtyDataMap.delete(sessionId);
 
     if (this.batchedPtyDataTimer.has(sessionId)) {
-      global.clearTimeout(this.batchedPtyDataTimer.get(sessionId)!);
+      clearTimeout(this.batchedPtyDataTimer.get(sessionId)!);
       this.batchedPtyDataTimer.delete(sessionId);
     }
 
@@ -149,22 +149,18 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       // 存的数据，避免因为输出较多时阻塞 RPC 通信
       ptyService.onData((chunk: string) => {
         if (this.serviceClientMap.has(clientId)) {
-          if (!this.batchedPtyDataMap.has(sessionId)) {
-            this.batchedPtyDataMap.set(sessionId, '');
-          }
-
-          const ptyData = this.batchedPtyDataMap.get(sessionId)!;
+          const ptyData = this.batchedPtyDataMap.get(sessionId) || '';
 
           this.batchedPtyDataMap.set(sessionId, ptyData + chunk);
 
-          if (ptyData?.length + chunk.length >= BATCH_MAX_SIZE) {
+          if (ptyData.length + chunk.length >= BATCH_MAX_SIZE) {
             this.flushPtyData(clientId, sessionId);
           }
 
           if (!this.batchedPtyDataTimer.has(sessionId)) {
             this.batchedPtyDataTimer.set(
               sessionId,
-              global.setTimeout(() => this.flushPtyData(clientId, sessionId), BATCH_DURATION_MS),
+              setTimeout(() => this.flushPtyData(clientId, sessionId), BATCH_DURATION_MS),
             );
           }
         } else {

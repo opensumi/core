@@ -1224,6 +1224,8 @@ export const localizationBundle = {
     'aiNative.inline.chat.input.placeholder.default': '可以问我任何问题，支持 shift + 回车换行',
     'aiNative.inline.hint.widget.placeholder': '按 {0} 唤起 Inline Chat',
 
+    'aiNative.inline.problem.fix.title': 'AI 修复',
+
     'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
     'aiNative.resolve.conflict.dialog.detection':
       '检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。',
@@ -1247,14 +1249,17 @@ export const localizationBundle = {
     'preference.ai.native.inlineChat.codeAction.enabled':
       '是否启用在选中代码片段时显示 Inline Chat 相关的 Code Actions?',
     'preference.ai.native.chat.visible.type': '控制 Chat 面板默认的展示方式',
-    'preference.ai.native.inlineCompletions.title': '内联补全',
-    'preference.ai.native.inlineCompletions.promptEngineering.enabled':
-      '是否启用提示词工程，一些 LLM 模型在提示词工程上可能表现不佳。',
-    'preference.ai.native.inlineCompletions.debounceTime': '内联补全的延迟时间（毫秒）',
+
     'preference.ai.native.inlineDiff.preview.mode': 'Inline Diff 的预览模式',
     'preference.ai.native.inlineDiff.preview.mode.sideBySide': '在编辑器当中以左右 diff 面板的方式展示',
     'preference.ai.native.inlineDiff.preview.mode.inlineLive': '在编辑器当中以流式渲染的方式展示',
-    'preference.ai.native.inlineCompletions.cache.enabled': '是否启用内联补全的缓存',
+
+    'preference.ai.native.intelligentCompletions.title': '智能补全',
+    'preference.ai.native.intelligentCompletions.promptEngineering.enabled':
+      '是否启用提示词工程，一些 LLM 模型在提示词工程上可能表现不佳。',
+    'preference.ai.native.intelligentCompletions.debounceTime': '智能补全的延迟时间（毫秒）',
+    'preference.ai.native.intelligentCompletions.cache.enabled': '是否启用智能补全的缓存',
+    'preference.ai.native.intelligentCompletions.alwaysVisible': '是否总是展示智能补全',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

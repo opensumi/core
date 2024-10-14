@@ -369,6 +369,10 @@ export class RefCountedDisposable {
 
   constructor(private readonly _disposable: IDisposable) {}
 
+  get disposed() {
+    return this._counter <= 0;
+  }
+
   acquire() {
     this._counter++;
     return this;

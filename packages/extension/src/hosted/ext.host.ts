@@ -13,11 +13,12 @@ import {
   arrays,
   timeout,
 } from '@opensumi/ide-core-common';
-import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { join } from '@opensumi/ide-utils/lib/path';
 
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtendProxy, IExtensionHostService, getExtensionId } from '../common';
 import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from '../common/activator';
+import { ExtHostAppConfig } from '../common/ext.process';
+import { getNodeRequire } from '../common/utils';
 import {
   ExtHostAPIIdentifier,
   ExtensionIdentifier,
@@ -36,18 +37,6 @@ import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { KTExtension } from './vscode.extension';
 
 const { enumValueToArray } = arrays;
-
-/**
- * 对 extension-host 使用 webpack bundle 后，require 方法会被覆盖为 webpack 内部的 require
- * 这里是一个 webpack 提供的 workaround，用于获取原始的 require
- */
-declare let __webpack_require__: any;
-declare let __non_webpack_require__: any;
-
-// https://github.com/webpack/webpack/issues/4175#issuecomment-342931035
-export function getNodeRequire() {
-  return typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require;
-}
 
 enum EInternalModule {
   VSCODE = 'vscode',
@@ -107,7 +96,7 @@ class VSCodeAPIImpl extends ApiImplFactory {
     extHost: IExtensionHostService,
     injector: Injector,
   ) {
-    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(AppConfig));
+    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(ExtHostAppConfig));
   }
 }
 
@@ -117,7 +106,8 @@ class OpenSumiAPIImpl extends ApiImplFactory {
     extHost: IExtensionHostService,
     injector: Injector,
   ) {
-    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter));
+    const appConfig: ExtHostAppConfig = injector.get(ExtHostAppConfig);
+    return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter), appConfig.sumiApiExtenders);
   }
 }
 

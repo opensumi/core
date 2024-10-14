@@ -48,6 +48,7 @@
     position: absolute;
     width: 100%;
     height: 100%;
+    pointer-events: none;
   }
   .kt_editor_tabs {
     display: flex;
@@ -73,7 +74,7 @@
         left: 0;
         position: absolute;
         display: block;
-        z-index: 0;
+        z-index: var(--stacking-level-background, 0);
       }
       &::after {
         content: '';
@@ -84,7 +85,7 @@
         left: 0;
         position: absolute;
         display: block;
-        z-index: 0;
+        z-index: var(--stacking-level-background, 0);
       }
       .editor_action_wrapper {
         margin-left: 8px;
@@ -113,7 +114,8 @@
   }
 
   .kt_editor_tabs_scroll_wrapper {
-    flex-grow: 1;
+    flex: 1;
+    overflow: hidden;
     width: 100%;
     position: relative;
     background-color: var(--editorGroupHeader-tabsBackground);
@@ -130,12 +132,6 @@
     &.kt_on_drag_over {
       background-color: var(--editorGroup-dropBackground);
     }
-  }
-
-  .kt_editor_tabs_scroll_wrapper {
-    flex-grow: 1;
-    width: 100%;
-    position: relative;
   }
 
   .kt_editor_tabs_scroll {
@@ -158,7 +154,14 @@
     bottom: 0;
   }
 
+  .kt_editor_tabs_content_empty {
+    display: flex !important;
+  }
+
   .kt_editor_wrap_container {
+    display: flex;
+    flex-direction: column;
+
     .kt_editor_tabs_content {
       flex-wrap: wrap;
       width: 100%;
@@ -175,7 +178,7 @@
         left: 0;
         position: absolute;
         display: block;
-        z-index: 0;
+        z-index: var(--stacking-level-background, 0);
       }
     }
   }
@@ -197,8 +200,6 @@
       display: flex;
       position: relative;
       align-items: center;
-      flex-shrink: 1;
-      flex-grow: 1;
       padding: 0 12px;
       border-right: 1px solid var(--tab-border);
       height: 100%;
@@ -209,7 +210,6 @@
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
       border-top: 1px solid transparent;
-      box-sizing: border-box;
       z-index: 1;
       word-break: keep-all;
       white-space: nowrap;
@@ -249,6 +249,11 @@
           background-position: 2px;
         }
       }
+
+      &:last-child {
+        margin-right: 10px;
+      }
+
       .editor_readonly_icon {
         margin-left: 8px;
       }
@@ -304,7 +309,7 @@
         position: relative;
         background: var(--tab-activeBackground);
         color: var(--tab-activeForeground);
-        z-index: 11;
+        z-index: var(--stacking-level-editor-tabbar-current, 11);
         &::before {
           position: absolute;
           content: '';
@@ -312,7 +317,7 @@
           width: 100%;
           top: -1px;
           left: 0;
-          z-index: 999;
+          z-index: var(--stacking-level-overlay, 800);
           background-color: var(--tab-activeBorderTop);
         }
         .dirty {
@@ -348,8 +353,9 @@
   }
 
   .editorGroupHeader {
-    z-index: 0;
+    z-index: var(--stacking-level-workbench, 1);
     position: relative;
+    background-color: var(--editorGroupHeader-tabsBackground);
   }
 
   .kt_editor_body {
@@ -489,7 +495,7 @@
   .overlay-shadow();
   border-radius: 2px;
   padding: 5px 10px;
-  z-index: 10001;
+  z-index: var(--stacking-level-overlay-top, 1000);
   white-space: nowrap;
   .editor_action_tip_close {
     cursor: pointer;

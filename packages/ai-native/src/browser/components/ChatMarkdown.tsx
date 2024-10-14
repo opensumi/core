@@ -13,6 +13,8 @@ import styles from './components.module.less';
 
 interface MarkdownProps {
   markdown: IMarkdownString | string;
+  agentId?: string;
+  command?: string;
   relationId?: string;
   className?: string;
   fillInIncompleteTokens?: boolean; // 补齐不完整的 token，如代码块或表格
@@ -45,7 +47,13 @@ export const ChatMarkdown = (props: MarkdownProps) => {
         <ConfigProvider value={appConfig}>
           <div className={styles.code_block}>
             <div className={styles.code_language}>{language}</div>
-            <CodeEditorWithHighlight input={code} language={language} relationId={props.relationId} />
+            <CodeEditorWithHighlight
+              input={code}
+              language={language}
+              relationId={props.relationId || ''}
+              agentId={props.agentId}
+              command={props.command}
+            />
           </div>
         </ConfigProvider>,
       );
@@ -96,7 +104,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
     };
   }, [props.markdown]);
 
-  return <div className={cls(styles.markdown_container, props.className)} ref={ref} />;
+  return <div className={cls(styles.markdown_container, props.className)} ref={ref} tabIndex={0} />;
 };
 
 export function postProcessCodeBlockLanguageId(lang: string | undefined): string {

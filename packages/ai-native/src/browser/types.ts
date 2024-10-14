@@ -8,15 +8,18 @@ import {
   IAICompletionOption,
   IAICompletionResultModel,
   IDisposable,
+  IPosition,
   IResolveConflictHandler,
   MaybePromise,
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
+import { IIntelligentCompletionsResult } from './contrib/intelligent-completions/intelligent-completions';
 import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
@@ -26,13 +29,13 @@ interface IBaseInlineChatHandler<T extends any[]> {
    */
   execute?: (...args: T) => MaybePromise<void>;
   /**
-   * 提供 diff editor 的预览策略
+   * 在 editor 里预览输出的结果
+   */
+  providePreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
+  /**
+   * @deprecated use providePreviewStrategy api
    */
   providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
-  /**
-   * 在 editor 里直接预览输出的结果
-   */
-  providerPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
 }
 
 export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
@@ -45,10 +48,6 @@ export enum ERunStrategy {
    * 正常执行，执行后 input 直接消失
    */
   EXECUTE = 'EXECUTE',
-  /**
-   * 预览 diff，执行后 input 保留，显示 inline diff editor
-   */
-  DIFF_PREVIEW = 'DIFF_PREVIEW',
   /**
    * 预览输出结果，执行后 input 保留，并在 editor 里直接展示输出结果
    */
@@ -150,6 +149,10 @@ export type ChatInputRender = (props: {
   command: string;
   setCommand: (theme: string) => void;
 }) => React.ReactElement | React.JSX.Element;
+export type ChatViewHeaderRender = (props: {
+  handleClear: () => any;
+  handleCloseChatView: () => any;
+}) => React.ReactElement | React.JSX.Element;
 
 export interface IChatRenderRegistry {
   registerWelcomeRender(render: ChatWelcomeRender): void;
@@ -167,6 +170,11 @@ export interface IChatRenderRegistry {
    * 输入框渲染
    */
   registerInputRender(render: ChatInputRender): void;
+
+  /**
+   * 顶部栏渲染
+   */
+  registerChatViewHeaderRender(render: ChatViewHeaderRender): void;
 }
 
 export interface IResolveConflictRegistry {
@@ -198,14 +206,36 @@ export interface ITerminalProviderRegistry {
   registerCommandSuggestionsProvider(provider: TTerminalCommandSuggestionsProviderFn): void;
 }
 
+export type IIntelligentCompletionProvider = (
+  editor: ICodeEditor,
+  position: IPosition,
+  contextBean: IAICompletionOption,
+  token: CancellationToken,
+) => MaybePromise<IIntelligentCompletionsResult>;
+export interface IIntelligentCompletionsRegistry {
+  registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
+}
+
+export interface IProblemFixContext {
+  marker: IMarker;
+  editRange: IRange;
+}
+
+export interface IHoverFixHandler {
+  provideFix: (
+    editor: ICodeEditor,
+    context: IProblemFixContext,
+    token: CancellationToken,
+  ) => MaybePromise<ChatResponse | InlineChatController>;
+}
+
+export interface IProblemFixProviderRegistry {
+  registerHoverFixProvider(handler: IHoverFixHandler): void;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
-  /**
-   * 通过中间件扩展部分 ai 能力
-   */
-  middleware?: IAIMiddleware;
-
   /**
    * 注册 inline chat 相关功能
    * @param registry: IInlineChatFeatureRegistry
@@ -228,9 +258,17 @@ export interface AINativeCoreContribution {
    */
   registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
   /**
+   * 注册智能修复相关功能
+   */
+  registerProblemFixFeature?(registry: IProblemFixProviderRegistry): void;
+  /**
    * 注册智能终端相关功能
    */
   registerTerminalProvider?(registry: ITerminalProviderRegistry): void;
+  /**
+   * 注册智能代码补全相关功能
+   */
+  registerIntelligentCompletionFeature?(registry: IIntelligentCompletionsRegistry): void;
 }
 
 export interface IChatComponentConfig {
@@ -245,6 +283,9 @@ export interface IChatAgentViewService {
   getChatComponentDeferred(componentId: string): Deferred<IChatComponentConfig> | null;
 }
 
+/**
+ * @deprecated use registerIntelligentCompletionProvider API
+ */
 export type IProvideInlineCompletionsSignature = (
   this: void,
   model: ITextModel,
@@ -254,6 +295,9 @@ export type IProvideInlineCompletionsSignature = (
   requestOption: IAICompletionOption,
 ) => MaybePromise<IAICompletionResultModel | null>;
 
+/**
+ * @deprecated use registerIntelligentCompletionProvider API
+ */
 export interface IAIMiddleware {
   language?: {
     provideInlineCompletions?: IProvideInlineCompletionsSignature;

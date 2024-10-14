@@ -1,6 +1,8 @@
 import {
   AIInlineChatContentWidgetId,
   AISerivceType,
+  ActionSourceEnum,
+  ActionTypeEnum,
   CancellationToken,
   Event,
   IChatComponent,
@@ -12,6 +14,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
+import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
 export const IAINativeService = Symbol('IAINativeService');
 
@@ -59,6 +62,15 @@ export interface IChatMessageStructure {
    * 是否立即发送，默认为 true
    */
   immediate?: boolean;
+  /**
+   * 上报数据时需要增加额外的字段
+   */
+  reportExtra?: {
+    // 行动点类型
+    actionType?: ActionTypeEnum | string;
+    // 行动点来源
+    actionSource?: ActionSourceEnum | string;
+  };
 }
 
 export interface IChatMessageListUserItem {
@@ -175,6 +187,8 @@ export interface IChatAgentResult {
 export interface IChatAgentCommand {
   name: string;
   description: string;
+  // Whether it is a shortcut command (for display on input)
+  isShortcut?: true;
 }
 
 export interface IChatReplyFollowup {
@@ -239,9 +253,13 @@ export interface ITerminalCommandSuggestionDesc {
 }
 
 export enum EInlineChatStatus {
+  // 准备渲染、渲染中
   READY,
+  // 正在请求数据中
   THINKING,
+  // 渲染结束
   DONE,
+  // 异常
   ERROR,
 }
 
@@ -249,4 +267,18 @@ export enum EResultKind {
   ACCEPT = 'ACCEPT',
   DISCARD = 'DISCARD',
   REGENERATE = 'REGENERATE',
+}
+
+export const IAIInlineCompletionsProvider = Symbol('IAIInlineCompletionsProvider');
+export interface IAIInlineCompletionsProvider {
+  hideStatusBarItem(): void;
+  cancelRequest(): void;
+  isDelEvent: boolean;
+  provideInlineCompletionItems<T>(
+    model: ITextModel,
+    position: IPosition,
+    context: InlineCompletionContext,
+    token: CancellationToken,
+  ): Promise<T>;
+  setVisibleCompletion(arg0: boolean): void;
 }

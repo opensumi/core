@@ -23,7 +23,7 @@ import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calcul
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-import { IEditorDocumentModel } from '../../common/editor';
+import { IEditorDocumentDescription, IEditorDocumentModel } from '../../common/editor';
 
 import { EditorDocumentModel } from './editor-document-model';
 import {
@@ -230,6 +230,30 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     return this._modelReferenceManager.getReferenceIfHasInstance(uri.toString(), reason);
   }
 
+  getModelDescription(uri: URI, reason?: string): IEditorDocumentDescription | null {
+    const ref = this.getModelReference(uri, reason);
+    if (!ref) {
+      return null;
+    }
+
+    const instance = ref.instance;
+    const resullt = {
+      alwaysDirty: instance.alwaysDirty,
+      closeAutoSave: instance.closeAutoSave,
+      disposeEvenDirty: instance.disposeEvenDirty,
+      eol: instance.eol,
+      encoding: instance.encoding,
+      dirty: instance.dirty,
+      languageId: instance.languageId,
+      readonly: instance.readonly,
+      uri: instance.uri,
+      id: instance.id,
+      savable: instance.savable,
+    };
+    ref.dispose();
+    return resullt;
+  }
+
   getAllModels(): IEditorDocumentModel[] {
     return Array.from(this.editorDocModels.values());
   }
@@ -283,11 +307,10 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       throw new Error(`No document provider found for ${uri.toString()}`);
     }
 
-    const [content, readonly, languageId, eol, alwaysDirty, closeAutoSave, disposeEvenDirty] = await Promise.all([
+    const [content, readonly, languageId, alwaysDirty, closeAutoSave, disposeEvenDirty] = await Promise.all([
       provider.provideEditorDocumentModelContent(uri, encoding),
       provider.isReadonly ? provider.isReadonly(uri) : undefined,
       provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined,
-      provider.provideEOL ? provider.provideEOL(uri) : undefined,
       provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false,
       provider.closeAutoSave ? provider.closeAutoSave(uri) : false,
       provider.disposeEvenDirty ? provider.disposeEvenDirty(uri) : false,
@@ -297,6 +320,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     if (!encoding && provider.provideEncoding) {
       encoding = await provider.provideEncoding(uri);
     }
+
+    const eol = provider.provideEOL ? await provider.provideEOL(uri) : EOL.LF;
 
     const savable = !!provider.saveDocumentModel;
 

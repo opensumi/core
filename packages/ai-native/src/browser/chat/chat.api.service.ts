@@ -1,15 +1,16 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
-import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IChatComponent, IChatContent, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
-import { AI_CHAT_VIEW_ID, IChatMessageListItem, IChatMessageStructure } from '../../common';
-import { MsgHistoryManager } from '../model/msg-history-manager';
+import { AI_CHAT_VIEW_ID, IChatInternalService, IChatMessageListItem, IChatMessageStructure } from '../../common';
+
+import { ChatInternalService } from './chat.internal.service';
 
 @Injectable()
 export class ChatService extends Disposable {
-  @Autowired(MsgHistoryManager)
-  private msgHistoryManager: MsgHistoryManager;
+  @Autowired(IChatInternalService)
+  chatInternalService: ChatInternalService;
 
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
@@ -17,8 +18,8 @@ export class ChatService extends Disposable {
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
-  private readonly _onChatReplyMessageLaunch = new Emitter<string>();
-  public readonly onChatReplyMessageLaunch: Event<string> = this._onChatReplyMessageLaunch.event;
+  private readonly _onChatReplyMessageLaunch = new Emitter<IChatContent | IChatComponent>();
+  public readonly onChatReplyMessageLaunch: Event<IChatContent | IChatComponent> = this._onChatReplyMessageLaunch.event;
 
   private readonly _onChatMessageListLaunch = new Emitter<IChatMessageListItem[]>();
   public readonly onChatMessageListLaunch: Event<IChatMessageListItem[]> = this._onChatMessageListLaunch.event;
@@ -28,7 +29,6 @@ export class ChatService extends Disposable {
 
   constructor() {
     super();
-    this.addDispose(this.msgHistoryManager);
   }
 
   /**
@@ -44,14 +44,21 @@ export class ChatService extends Disposable {
   }
 
   public clearHistoryMessages() {
-    this.msgHistoryManager.clearMessages();
+    this.chatInternalService.sessionModel?.history.clearMessages();
   }
 
   /**
    * 主动以 ai role 的身份回复消息
    */
-  public sendReplyMessage(data: string) {
-    this._onChatReplyMessageLaunch.fire(data);
+  public sendReplyMessage(data: string | IChatComponent | IChatContent) {
+    if (typeof data === 'string') {
+      this._onChatReplyMessageLaunch.fire({
+        kind: 'content',
+        content: data,
+      });
+    } else {
+      this._onChatReplyMessageLaunch.fire(data);
+    }
   }
 
   public sendMessageList(list: IChatMessageListItem[]) {
@@ -59,7 +66,7 @@ export class ChatService extends Disposable {
   }
 
   public getHistoryMessages(): IHistoryChatMessage[] {
-    return this.msgHistoryManager.getMessages();
+    return this.chatInternalService.sessionModel?.history.getMessages() || [];
   }
 
   public scrollToBottom(): void {

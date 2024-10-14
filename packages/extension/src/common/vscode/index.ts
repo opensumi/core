@@ -28,6 +28,7 @@ import { IExtHostEnv, IMainThreadEnv } from './env';
 import { IMainThreadFileSystemShape } from './file-system';
 import { IMainThreadLanguages } from './languages';
 import { IExtHostLocalization, IMainThreadLocalization } from './localization';
+import { ExtensionNotebookDocumentManager, IMainThreadNotebookDocumentsShape } from './notebook';
 import { IExtHostPreference, IMainThreadPreference } from './preference';
 import { IExtHostProgress, IMainThreadProgress } from './progress';
 import { IExtHostSCMShape, IMainThreadSCMShape } from './scm';
@@ -77,6 +78,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionService: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionService'),
   MainThreadDocuments: createMainContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
+  MainThreadNotebook: createMainContextProxyIdentifier<IMainThreadNotebookDocumentsShape>('MainThreadNotebook'),
   MainThreadEditors: createMainContextProxyIdentifier<IMainThreadEditorsService>('MainThreadEditors'),
   MainThreadMessages: createMainContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
   MainThreadWorkspace: createMainContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
@@ -116,6 +118,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommandsRegistry'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionHostService>('ExtHostExtensionService'),
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
+  ExtHostNotebook: createExtHostContextProxyIdentifier<ExtensionNotebookDocumentManager>('ExtHostNotebook'),
   ExtHostEditors: createExtHostContextProxyIdentifier<IExtensionHostEditorService>('ExtHostEditors'),
   ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
   ExtHostWorkspace: createExtHostContextProxyIdentifier<IExtHostWorkspace>('ExtHostWorkspace'),
@@ -169,32 +172,33 @@ export interface IExtensionProcessService {
   storage: ExtHostStorage;
 }
 
-export * from './doc';
+export * from './authentication';
 export * from './command';
+export * from './comments';
+export * from './connection';
+export * from './debug';
+export * from './decoration';
+export * from './doc';
+export * from './editor';
+export * from './editor-tabs';
+export * from './env';
+export * from './extension';
+export * from './languages';
+export * from './localization';
+export * from './notebook';
+export * from './preference';
+export * from './progress';
+export * from './scm';
+export * from './secret';
+export * from './storage';
+export * from './strings';
+export * from './tasks';
+export * from './terminal';
+export * from './tests';
+export * from './theming';
+export * from './treeview';
+export * from './urls';
+export * from './walkthrough';
+export * from './webview';
 export * from './window';
 export * from './workspace';
-export * from './editor';
-export * from './preference';
-export * from './strings';
-export * from './storage';
-export * from './env';
-export * from './languages';
-export * from './webview';
-export * from './treeview';
-export * from './debug';
-export * from './extension';
-export * from './connection';
-export * from './terminal';
-export * from './progress';
-export * from './tasks';
-export * from './comments';
-export * from './urls';
-export * from './theming';
-export * from './authentication';
-export * from './secret';
-export * from './tests';
-export * from './editor-tabs';
-export * from './scm';
-export * from './decoration';
-export * from './walkthrough';
-export * from './localization';

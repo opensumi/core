@@ -61,7 +61,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) =>
   return (
     <div
       id={id}
-      className={cls(styles_tab_panel, {
+      className={cls('kt-tab-panel', styles_tab_panel, {
         [styles_tab_panel_hidden]: !tabbarService.currentContainerId,
       })}
     >

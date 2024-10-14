@@ -57,23 +57,23 @@ const OUTPUT_BATCH_DURATION_MS = 5;
 export class OutputChannelImpl implements types.OutputChannel {
   private disposed: boolean;
 
-  private proxy: IMainThreadOutput;
+  readonly #proxy: IMainThreadOutput;
 
   private batchedOutputLine = '';
 
   private batchedTimer: NodeJS.Timeout | null = null;
 
-  constructor(readonly name: string, private rpcProtocol: IRPCProtocol) {
-    this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadOutput);
+  constructor(readonly name: string, rpcProtocol: IRPCProtocol) {
+    this.#proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadOutput);
   }
 
   replace(value: string): void {
-    this.proxy.$replace(this.name, value);
+    this.#proxy.$replace(this.name, value);
   }
 
   dispose(): void {
     if (!this.disposed) {
-      this.proxy.$dispose(this.name).then(() => {
+      this.#proxy.$dispose(this.name).then(() => {
         this.disposed = true;
       });
     }
@@ -89,7 +89,7 @@ export class OutputChannelImpl implements types.OutputChannel {
     }
 
     if (!this.batchedTimer) {
-      this.batchedTimer = global.setTimeout(() => this.flushOutputString(), OUTPUT_BATCH_DURATION_MS);
+      this.batchedTimer = setTimeout(() => this.flushOutputString(), OUTPUT_BATCH_DURATION_MS);
     }
   }
 
@@ -100,30 +100,30 @@ export class OutputChannelImpl implements types.OutputChannel {
 
   clear(): void {
     this.validate();
-    this.proxy.$clear(this.name);
+    this.#proxy.$clear(this.name);
   }
 
   protected flushOutputString() {
-    this.proxy.$append(this.name, this.batchedOutputLine);
+    this.#proxy.$append(this.name, this.batchedOutputLine);
     this.batchedOutputLine = '';
     if (this.batchedTimer) {
-      global.clearTimeout(this.batchedTimer);
+      clearTimeout(this.batchedTimer);
       this.batchedTimer = null;
     }
   }
 
   show(preserveFocus: boolean | undefined): void {
     this.validate();
-    this.proxy.$reveal(this.name, !!preserveFocus);
+    this.#proxy.$reveal(this.name, !!preserveFocus);
   }
 
   hide(): void {
     this.validate();
-    this.proxy.$close(this.name);
+    this.#proxy.$close(this.name);
   }
 
   setLanguageId(languageId: string): void {
-    this.proxy.$setLanguageId(this.name, languageId);
+    this.#proxy.$setLanguageId(this.name, languageId);
   }
 
   protected validate(): void {
@@ -163,6 +163,12 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
   private now(): string {
     const now = new Date();
     return (
+      padLeft(now.getFullYear() + '', 4, '0') +
+      '-' +
+      padLeft(now.getMonth() + 1 + '', 2, '0') +
+      '-' +
+      padLeft(now.getDate() + '', 2, '0') +
+      ' ' +
       padLeft(now.getUTCHours() + '', 2, '0') +
       ':' +
       padLeft(now.getMinutes() + '', 2, '0') +
@@ -173,8 +179,25 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
     );
   }
 
+  private label(level: types.OutputChannelLogLevel) {
+    switch (level) {
+      case types.OutputChannelLogLevel.Trace:
+        return 'trace';
+      case types.OutputChannelLogLevel.Error:
+        return 'error';
+      case types.OutputChannelLogLevel.Warning:
+        return 'warning';
+      case types.OutputChannelLogLevel.Info:
+        return 'info';
+      case types.OutputChannelLogLevel.Debug:
+        return 'debug';
+      default:
+        return '';
+    }
+  }
+
   private logWithLevel(level: types.OutputChannelLogLevel, message: string, data?: any): void {
-    this.append(`[${level}  - ${this.now()}] ${message}`);
+    this.append(`${this.now()} [${this.label(level)}] ${message}`);
     if (data) {
       this.append(this.data2String(data));
     }

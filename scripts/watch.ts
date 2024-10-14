@@ -1,8 +1,10 @@
-import glob from 'glob';
 import path from 'path';
-import { run } from './fn/shell';
-import { copy } from 'fs-extra';
+
 import ParcelWatcher from '@parcel/watcher';
+import { copy } from 'fs-extra';
+import glob from 'glob';
+
+import { run } from './fn/shell';
 
 let handler: ParcelWatcher.AsyncSubscription;
 (async () => {

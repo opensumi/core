@@ -47,13 +47,6 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
-  async requestCompletion(input: IAICompletionOption, cancelToken?: CancellationToken) {
-    return {
-      sessionId: '123',
-      codeModelList: [{ content: 'Hello OpenSumi!' }],
-    };
-  }
-
   async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
 

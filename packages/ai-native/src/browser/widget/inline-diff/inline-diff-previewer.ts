@@ -14,49 +14,41 @@ import {
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { SerializableState } from '../inline-stream-diff/live-preview.decoration';
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
 export interface IDiffPreviewerOptions {
   disposeWhenEditorClosed: boolean;
+  /**
+   * 是否隐藏接受部分编辑的 widget，用于只展示 diff 的场景
+   */
+  hideAcceptPartialEditWidget?: boolean;
 }
 
-export interface IExtendedSerializedState extends SerializableState {
-  readonly options: IDiffPreviewerOptions;
+export interface IInlineDiffPreviewerNode extends IDisposable {
+  previewerOptions: IDiffPreviewerOptions;
+  setPreviewerOptions(options: IDiffPreviewerOptions): void;
 }
 
 @Injectable({ multiple: true })
-export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Disposable {
+export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
   protected inlineContentWidget: AIInlineContentWidget | null = null;
-
+  protected selection: Selection;
   protected model: ITextModel;
 
-  get disposeWhenEditorClosed() {
-    return this.options.disposeWhenEditorClosed;
-  }
-
-  constructor(
-    protected readonly monacoEditor: ICodeEditor,
-    protected readonly selection: Selection,
-    public options: IDiffPreviewerOptions = {
-      disposeWhenEditorClosed: true,
-    },
-  ) {
+  constructor(protected readonly monacoEditor: ICodeEditor) {
     super();
-    this.node = this.createNode();
     this.model = this.monacoEditor.getModel()!;
     this.addDispose(
       Disposable.create(() => {
         if (this.inlineContentWidget) {
           this.inlineContentWidget.dispose();
         }
-        if (this.node) {
-          this.node.dispose();
-        }
+
+        this.attachNode(undefined);
       }),
     );
   }
@@ -64,24 +56,52 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
   protected formatIndentation(content: string): string {
     const startLineNumber = this.selection.startLineNumber;
     const oldIndentation = getLeadingWhitespace(this.model.getLineContent(startLineNumber));
-
+    if (content === empty) {
+      return content;
+    }
     if (oldIndentation === empty) {
       return content;
     }
-
     const { tabSize, insertSpaces } = this.model.getOptions();
     const eol = this.model.getEOL();
-
     const originalSpacesCnt = getSpaceCnt(oldIndentation, tabSize);
-    const newIndentation = generateIndent(originalSpacesCnt, tabSize, insertSpaces);
+
+    let newIndentation = generateIndent(originalSpacesCnt, tabSize, insertSpaces);
 
     const linesText = content.split(eol);
-    const newTextLines = linesText.map((content) => newIndentation + content);
+
+    const firstLines = linesText[0];
+    let isShrinkLeft = false;
+    if (firstLines) {
+      const firstIndentation = getLeadingWhitespace(firstLines);
+      if (newIndentation === firstIndentation) {
+        newIndentation = '';
+      } else if (newIndentation.length > firstIndentation.length) {
+        newIndentation = newIndentation.slice(firstIndentation.length);
+      } else {
+        newIndentation = firstIndentation.slice(newIndentation.length);
+        isShrinkLeft = true;
+      }
+    }
+
+    const newTextLines = linesText.map((content) => {
+      if (isShrinkLeft) {
+        const currentIndentation = getLeadingWhitespace(content);
+        content = newIndentation + content.substring(currentIndentation.length);
+        return content;
+      }
+
+      return newIndentation + content;
+    });
     return newTextLines.join(eol);
   }
 
-  protected node: N;
-  public getNode(): N {
+  protected node: N | undefined;
+  public getNode(): N | undefined {
+    return this.node;
+  }
+
+  public createNodeSnapshot(): N | undefined {
     return this.node;
   }
 
@@ -99,10 +119,25 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     return Disposable.NULL;
   }
 
-  abstract createNode(): N;
+  protected abstract createNode(): N;
   abstract onData(data: ReplyResponse): void;
   abstract handleAction(action: EResultKind): void;
   abstract getPosition(): IPosition;
+
+  create(
+    selection: Selection,
+    options: IDiffPreviewerOptions = {
+      disposeWhenEditorClosed: true,
+    },
+  ): void {
+    this.selection = selection;
+    this.node = this.createNode();
+    this.node.setPreviewerOptions(options);
+  }
+
+  attachNode(node: N | undefined): void {
+    this.node = node;
+  }
 
   show(line: number, heightInLines: number): void {
     // do nothing
@@ -117,6 +152,10 @@ export abstract class BaseInlineDiffPreviewer<N extends IDisposable> extends Dis
     // do nothing
   }
   getValue(): string {
+    // do nothing
+    return '';
+  }
+  getOriginValue(): string {
     // do nothing
     return '';
   }
@@ -167,19 +206,28 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     super.layout();
   }
   onReady(exec: () => void): IDisposable {
-    return this.node.onReady(exec.bind(this));
+    if (this.node) {
+      return this.node!.onReady(exec.bind(this));
+    }
+    return Disposable.NULL;
   }
   show(line: number, heightInLines: number): void {
-    this.node.showByLine(line, heightInLines);
+    this.node?.showByLine(line, heightInLines);
   }
   setValue(content: string): void {
-    const modifiedModel = this.node.getModifiedModel();
+    const modifiedModel = this.node?.getModifiedModel();
     modifiedModel?.setValue(this.formatIndentation(content));
   }
   getValue(): string {
-    const model = this.node.getModifiedModel();
+    const model = this.node?.getModifiedModel();
     return model!.getValue();
   }
+
+  getOriginValue(): string {
+    const model = this.node?.getOriginModel();
+    return model!.getValue() || '';
+  }
+
   handleAction(action: EResultKind): void {
     if (action === EResultKind.ACCEPT) {
       const newValue = this.getValue();
@@ -188,14 +236,14 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     }
   }
   onLineCount(event: (count: number) => void): Disposable {
-    this.node.onMaxLineCount(event.bind(this));
+    this.node?.onMaxLineCount(event.bind(this));
     return this;
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
 
     const indentMessage = this.formatIndentation(message);
-    const modifiedModel = this.node.getModifiedModel()!;
+    const modifiedModel = this.node?.getModifiedModel()!;
 
     const defaultEOL = modifiedModel.getEOL() === EOL.CRLF ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF;
     const { textBuffer, disposable } = createTextBuffer(indentMessage, defaultEOL);
@@ -203,29 +251,24 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     modifiedModel.pushEditOperations([], singleEditOperation, () => []);
 
     disposable.dispose();
-    this.node.layout();
+    this.node?.layout();
   }
   onError(error: ErrorResponse): void {
-    this.node.layout();
+    this.node?.layout();
   }
   onAbort(): void {
-    this.node.layout();
+    this.node?.layout();
   }
   onEnd(): void {
-    this.node.layout();
+    this.node?.layout();
   }
 }
 
 @Injectable({ multiple: true })
 export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStreamDiffHandler> {
-  createNode(): InlineStreamDiffHandler {
-    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor, this.selection]);
-
-    this.addDispose(node.onDidEditChange(() => this.layout()));
-    this.addDispose(node.onDispose(() => this.dispose()));
-    this.addDispose(node);
-
-    this.addDispose(
+  private listenNode(node: InlineStreamDiffHandler): void {
+    node.addDispose(node.onDidEditChange(() => this.layout()));
+    node.addDispose(
       node.onPartialEditWidgetListChange((widgets) => {
         if (widgets.every((widget) => widget.isHidden)) {
           this.dispose();
@@ -233,22 +276,62 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
         }
       }),
     );
-    return node;
-  }
-  getPosition(): IPosition {
-    const zone = this.node.getZone();
-    return Position.lift({ lineNumber: Math.max(0, zone.startLineNumber - 1), column: 1 });
+
+    const dispose = node.onDispose(() => {
+      this.dispose();
+      dispose.dispose();
+    });
+
+    this.addDispose(node);
   }
 
+  createNode(): InlineStreamDiffHandler {
+    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
+    node.initialize(this.selection);
+    this.listenNode(node);
+    return node;
+  }
+  attachNode(node: InlineStreamDiffHandler): void {
+    this.node?.dispose();
+    this.node = node;
+
+    if (node) {
+      const snapshot = node.currentSnapshotStore;
+      if (snapshot) {
+        this.node.restoreDecorationSnapshot(snapshot.decorationSnapshotData);
+        this.listenNode(node);
+      }
+    }
+  }
+  public createNodeSnapshot(): InlineStreamDiffHandler | undefined {
+    if (!this.node) {
+      return this.createNode();
+    }
+
+    // 拿前一个 node 的快照信息
+    const snapshot = this.node.createSnapshot();
+    // 创建新的实例
+    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
+    node.restoreSnapshot(snapshot);
+    return node;
+  }
+
+  getPosition(): IPosition {
+    const zone = this.node?.getZone();
+    if (zone) {
+      return Position.lift({ lineNumber: zone.startLineNumber, column: 1 });
+    }
+    return Position.lift({ lineNumber: 1, column: 1 });
+  }
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
-        this.node.acceptAll();
+        this.node?.acceptAll();
         break;
 
       case EResultKind.DISCARD:
       case EResultKind.REGENERATE:
-        this.node.rejectAll();
+        this.node?.rejectAll();
         break;
 
       default:
@@ -259,34 +342,60 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     return Disposable.NULL;
   }
   layout(): void {
-    this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.EXACT]);
+    this.inlineContentWidget?.setPositionPreference([
+      ContentWidgetPositionPreference.ABOVE,
+      ContentWidgetPositionPreference.BELOW,
+    ]);
     super.layout();
+
+    const position = this.getPosition();
+    if (position && this.inlineContentWidget) {
+      // 如果第一个 removed widget 的 lineNumber 和 position 的 lineNumber 相等，则需要将 inline content widget 往上移动被删除的行数，避免遮挡
+      const removedWidgets = this.node?.livePreviewDiffDecorationModel.getRemovedWidgets();
+      if (removedWidgets?.length) {
+        const lineNumber = position.lineNumber;
+        const firstRemovedWidget = removedWidgets[0];
+
+        if (firstRemovedWidget) {
+          const firstRemovedWidgetLineNumber = firstRemovedWidget.getLastPosition()?.lineNumber;
+          if (firstRemovedWidgetLineNumber <= lineNumber) {
+            const lineHeight = this.inlineContentWidget.getLineHeight();
+            const len = firstRemovedWidget.height;
+            this.inlineContentWidget.setOffsetTop(-lineHeight * len - 4);
+          }
+        }
+      }
+    }
   }
   onData(data: ReplyResponse): void {
     const { message } = data;
-    this.node.addLinesToDiff(this.formatIndentation(message));
+    this.node?.addLinesToDiff(this.formatIndentation(message));
   }
   onEnd(): void {
-    const diffModel = this.node.recompute(EComputerMode.legacy);
-    this.node.pushRateFinallyDiffStack(diffModel);
+    const diffModel = this.node?.recompute(EComputerMode.legacy);
+    if (diffModel) {
+      this.node?.pushRateFinallyDiffStack(diffModel);
+    }
   }
+
+  getValue(): string {
+    return this.node?.getVirtualModelValue() || '';
+  }
+
+  getOriginValue(): string {
+    return this.node?.getOriginModelValue() || '';
+  }
+
   setValue(content: string): void {
-    const diffModel = this.node.recompute(EComputerMode.legacy, this.formatIndentation(content));
-    this.node.finallyRender(diffModel);
-  }
-  serializeState(): IExtendedSerializedState {
-    return {
-      ...this.node.serializeState(),
-      options: this.options,
-    };
-  }
-  restoreState(state: IExtendedSerializedState): void {
-    this.node.restoreState(state);
+    const diffModel = this.node?.recompute(EComputerMode.legacy, this.formatIndentation(content));
+    if (diffModel) {
+      this.node?.finallyRender(diffModel);
+    }
   }
   get onPartialEditEvent() {
-    return this.node.onPartialEditEvent;
+    return this.node?.onPartialEditEvent;
   }
   revealFirstDiff(): void {
-    this.node.revealFirstDiff();
+    this.node?.revealFirstDiff();
   }
 }

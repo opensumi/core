@@ -78,6 +78,9 @@ describe('file scheme tests', () => {
     },
     dispose: () => null,
   }));
+  injector.mock(IEditorDocumentModelService, 'getModelDescription', () => ({
+    dirty: true,
+  }));
 
   injector.addProviders({
     token: FileSchemeDocNodeServicePath,

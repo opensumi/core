@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-main-layout",
-  "version": "3.2.3",
+  "version": "3.4.3",
   "description": "@opensumi/ide-main-layout",
   "files": [
     "lib",
@@ -19,11 +19,11 @@
   },
   "dependencies": {
     "@opensumi/ide-components": "workspace:*",
-    "@opensumi/ide-core-common": "workspace:*"
+    "@opensumi/ide-core-browser": "workspace:*",
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "workspace:*",
-    "@opensumi/ide-dev-tool": "workspace:*",
-    "@opensumi/ide-theme": "workspace:*"
+    "@opensumi/ide-dev-tool": "workspace:*"
   }
 }

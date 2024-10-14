@@ -1,7 +1,7 @@
 import debounce from 'lodash/debounce';
 import { action, makeObservable, observable, reaction, runInAction } from 'mobx';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import {
   CommandRegistry,
   ComponentRegistryInfo,
@@ -14,12 +14,12 @@ import {
   IContextKeyService,
   IScopedContextKeyService,
   KeybindingRegistry,
-  OnEvent,
   ResizeEvent,
   SlotLocation,
   ViewContextKeyRegistry,
   WithEventBus,
   createFormatLocalizedStr,
+  fastdom,
   formatLocalize,
   getTabbarCtxKey,
   isDefined,
@@ -47,6 +47,11 @@ import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent
 import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
+export const TabbarServiceFactoryFn = (injector: Injector) => (location: string) => {
+  const manager: IMainLayoutService = injector.get(IMainLayoutService);
+  return manager.getTabbarService(location);
+};
+
 export interface TabState {
   hidden: boolean;
   // 排序位置，数字越小优先级越高
@@ -168,6 +173,10 @@ export class TabbarService extends WithEventBus {
       this.registerPanelCommands();
       this.registerPanelMenus();
     }
+
+    this.eventBus.onDirective(ResizeEvent.createDirective(this.location), () => {
+      this.onResize();
+    });
   }
 
   get onDidRegisterContainer() {
@@ -863,19 +872,19 @@ export class TabbarService extends WithEventBus {
     return info && info.options && info.options.expanded;
   }
 
-  @OnEvent(ResizeEvent)
-  protected onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === this.location) {
+  protected onResize() {
+    fastdom.measureAtNextFrame(() => {
       if (!this.currentContainerId || !this.resizeHandle) {
         // 折叠时不监听变化
         return;
       }
+
       const size = this.resizeHandle.getSize();
       if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
         this.prevSize = size;
         this.onSizeChangeEmitter.fire({ size });
       }
-    }
+    });
   }
 
   protected listenCurrentChange() {
