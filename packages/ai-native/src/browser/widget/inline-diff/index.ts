@@ -1,4 +1,4 @@
 export * from './inline-diff.controller';
 export * from './inline-diff-previewer';
 export * from './inline-diff-widget';
-export * from './partial-event-emitter';
+export * from './inline-diff.service';

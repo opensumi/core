@@ -14,7 +14,6 @@ import {
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-browser';
 import {
-  Emitter,
   IntelligentCompletionsRegistryToken,
   ProblemFixRegistryToken,
   TerminalRegistryToken,
@@ -48,7 +47,7 @@ import { AINativePreferencesContribution } from './preferences';
 import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
-import { PartialEventEmitter } from './widget/inline-diff';
+import { InlineDiffService } from './widget/inline-diff';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
@@ -137,10 +136,9 @@ export class AINativeModule extends BrowserModule {
       token: IAIInlineCompletionsProvider,
       useClass: AIInlineCompletionsProvider,
     },
-    // Used in `codeblitz`, do not remove it.
     {
-      token: PartialEventEmitter,
-      useValue: new Emitter() as PartialEventEmitter,
+      token: InlineDiffService,
+      useClass: InlineDiffService,
     },
   ];
 

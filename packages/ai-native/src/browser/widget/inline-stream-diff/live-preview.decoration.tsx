@@ -19,7 +19,7 @@ import {
   IDecorationSerializableState,
   IEnhanceModelDeltaDecoration,
 } from '../../model/enhanceDecorationsCollection';
-import { PartialEventEmitter } from '../inline-diff';
+import { InlineDiffService } from '../inline-diff';
 
 import styles from './inline-stream-diff.module.less';
 import { InlineStreamDiffService } from './inline-stream-diff.service';
@@ -70,8 +70,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
 
-  @Autowired(PartialEventEmitter)
-  private readonly _onPartialEditEvent: PartialEventEmitter;
+  @Autowired(InlineDiffService)
+  private readonly inlineDiffService: InlineDiffService;
 
   private activeLineDec: IEditorDecorationsCollection;
   private pendingRangeDec: IEditorDecorationsCollection;
@@ -500,7 +500,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
     this.monacoEditor.focus();
 
-    this._onPartialEditEvent.fire(event);
+    this.inlineDiffService.firePartialEdit(event);
     this.firePartialEditWidgetList();
   }
 
