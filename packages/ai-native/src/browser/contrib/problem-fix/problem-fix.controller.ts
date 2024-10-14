@@ -67,11 +67,9 @@ export class ProblemFixController extends BaseAIMonacoEditorController {
   mount(): IDisposable {
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
 
-    const disposable = new Disposable();
-
     const provider = this.problemFixProviderRegistry.getHoverFixProvider();
     if (!provider) {
-      return disposable;
+      return this.featureDisposable;
     }
 
     // 先去掉 monaco 默认的 MarkerHoverParticipant，以及之前注册的 AIMonacoHoverParticipant
@@ -82,7 +80,7 @@ export class ProblemFixController extends BaseAIMonacoEditorController {
     AIMonacoHoverParticipant.injector = this.injector;
     HoverParticipantRegistry.register(AIMonacoHoverParticipant);
 
-    disposable.addDispose(
+    this.featureDisposable.addDispose(
       this.problemFixService.onHoverFixTrigger((part) => {
         const hoverController = this.monacoEditor?.getContribution<HoverController>(HoverController.ID);
         if (hoverController) {
@@ -93,7 +91,7 @@ export class ProblemFixController extends BaseAIMonacoEditorController {
       }),
     );
 
-    return disposable;
+    return this.featureDisposable;
   }
 
   private async handleHoverFix(part: MarkerHover, provider: IHoverFixHandler) {
