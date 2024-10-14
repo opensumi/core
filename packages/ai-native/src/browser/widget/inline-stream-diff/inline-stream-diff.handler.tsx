@@ -514,10 +514,6 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     this.monacoEditor.focus();
   }
 
-  get onPartialEditEvent() {
-    return this.livePreviewDiffDecorationModel.onPartialEditEvent;
-  }
-
   acceptAll(): void {
     this.livePreviewDiffDecorationModel.acceptUnProcessed();
     this.dispose();

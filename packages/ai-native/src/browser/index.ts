@@ -47,6 +47,7 @@ import { AINativePreferencesContribution } from './preferences';
 import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { InlineDiffService } from './widget/inline-diff';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
@@ -134,6 +135,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: IAIInlineCompletionsProvider,
       useClass: AIInlineCompletionsProvider,
+    },
+    {
+      token: InlineDiffService,
+      useClass: InlineDiffService,
     },
   ];
 
