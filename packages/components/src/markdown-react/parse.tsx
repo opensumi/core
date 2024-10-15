@@ -3,6 +3,9 @@ import React, { ReactNode } from 'react';
 
 import { HeadingLevels, MarkdownReactRenderer } from './render';
 
+/**
+ * 这里通过重新实现 marked.Renderer 的所有方法，实现一个能直接渲染 React 的 Markdown 渲染器
+ */
 export class MarkdownReactParser extends marked.Renderer {
   private renderer: MarkdownReactRenderer;
 
@@ -67,16 +70,20 @@ export class MarkdownReactParser extends marked.Renderer {
 
         case 'table': {
           const tableToken = token as marked.Tokens.Table;
-          const headerCells = tableToken.header.map((cell, index) => this.renderer.tableCell(this.parseInline(cell.tokens), { header: true, align: token.align[index] }));
+          const headerCells = tableToken.header.map((cell, index) =>
+            this.renderer.tableCell(this.parseInline(cell.tokens), { header: true, align: token.align[index] }),
+          );
 
           const headerRow = this.renderer.tableRow(headerCells);
           const header = this.renderer.tableHeader(headerRow);
 
           const bodyChilren = tableToken.rows.map((row) => {
-            const rowChildren = row.map((cell, index) => this.renderer.tableCell(this.parseInline(cell.tokens), {
+            const rowChildren = row.map((cell, index) =>
+              this.renderer.tableCell(this.parseInline(cell.tokens), {
                 header: false,
                 align: token.align[index],
-              }));
+              }),
+            );
 
             return this.renderer.tableRow(rowChildren);
           });

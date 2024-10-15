@@ -1,7 +1,5 @@
 import { ElementType, ReactElement, ReactNode, createElement } from 'react';
 
-import { joinBase } from './helpers';
-
 export type HeadingLevels = 1 | 2 | 3 | 4 | 5 | 6;
 export interface TableFlags {
   header?: boolean;
@@ -47,14 +45,26 @@ export class MarkdownReactRenderer {
     return this.node('p', children);
   }
 
+  private joinBase(path: string, base?: string) {
+    if (!base) {
+      return path;
+    }
+
+    try {
+      return new URL(path, base).href;
+    } catch {
+      return path;
+    }
+  }
+
   link(href: string, text: ReactNode) {
-    const url = joinBase(href, this.options.baseURL);
+    const url = this.joinBase(href, this.options.baseURL);
     const target = this.options.openLinksInNewTab ? '_blank' : null;
     return this.node('a', text, { href: url, target });
   }
 
   image(src: string, alt: string, title: string | null = null) {
-    const url = joinBase(src, this.options.baseURL);
+    const url = this.joinBase(src, this.options.baseURL);
     return this.node('img', null, { src: url, alt, title });
   }
 
