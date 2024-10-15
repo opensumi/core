@@ -69,7 +69,7 @@ export class ProblemFixController extends BaseAIMonacoEditorController {
 
     const provider = this.problemFixProviderRegistry.getHoverFixProvider();
     if (!provider) {
-      return this.featureDisposable;
+      return Disposable.NULL;
     }
 
     // 先去掉 monaco 默认的 MarkerHoverParticipant，以及之前注册的 AIMonacoHoverParticipant
