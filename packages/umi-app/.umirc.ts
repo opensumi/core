@@ -15,8 +15,8 @@ export default defineConfig({
     'babel-plugin-parameter-decorator',
   ],
   define: {
-    'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../tools/workspace')),
-    'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../tools/extensions')),
+    'process.env.WORKSPACE_DIR': path.join(__dirname, '../../tools/workspace'),
+    'process.env.EXTENSION_DIR': path.join(__dirname, '../../tools/extensions'),
   },
   npmClient: 'yarn',
   mfsu: false,

@@ -31,6 +31,7 @@ export class LibroOpensumiContentSaveContribution implements ContentSaveContribu
         created: stat?.createTime?.toString() || model.currentFileContents.created,
         last_modified: stat?.lastModification.toString() || model.currentFileContents.last_modified,
         size: stat?.size || model.currentFileContents.size,
+        // @ts-ignore
         type: 'notebook' || model.currentFileContents.type,
       });
       this.modalService.openModal(SaveFileErrorModal);

@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "rootDir": "../../../packages/notebook/src",
+    "outDir": "../../../packages/notebook/lib"
+  },
+  "include": ["../../../packages/notebook/src"]
+}

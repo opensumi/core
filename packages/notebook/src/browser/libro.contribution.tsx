@@ -10,6 +10,7 @@ import {
   CommandContribution,
   type CommandRegistry,
   Domain,
+  IClientApp,
   Schemes,
   URI,
 } from '@opensumi/ide-core-browser';
@@ -65,11 +66,14 @@ export class LibroContribution
   @Autowired(IThemeService)
   protected readonly themeService: IThemeService;
 
+  initialize(app: IClientApp) {
+    initLibroOpensumi(app.injector, manaContainer);
+  }
+
   registerClientAppContext(Layout: React.FC, injector: Injector): React.FC {
     initLibroColorToken();
     initKernelPanelColorToken();
     initTocPanelColorToken();
-    initLibroOpensumi(injector, manaContainer);
     return () => (
       <LayoutWrapper>
         <Layout />

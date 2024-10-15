@@ -1,4 +1,4 @@
-import { LibroSearchToggleCommand, LibroService, LibroView, NotebookCommands } from '@difizen/libro-jupyter';
+import { LibroSearchToggleCommand, NotebookCommands } from '@difizen/libro-jupyter';
 import { ApplicationContribution, CommandRegistry, inject, singleton } from '@difizen/mana-app';
 
 import { Injector } from '@opensumi/di';
@@ -17,7 +17,7 @@ import { OpensumiInjector } from '../../mana/index';
 export class Keybindhandler implements ApplicationContribution {
   @inject(OpensumiInjector) injector: Injector;
   @inject(CommandRegistry) protected readonly commandRegistry: CommandRegistry;
-  @inject(LibroService) protected readonly libroService: LibroService;
+  // @inject(LibroService) protected readonly libroService: LibroService;
 
   onStart() {
     this.registerContextKey();
@@ -40,7 +40,8 @@ export class Keybindhandler implements ApplicationContribution {
   }
 
   hasActiveNotebook() {
-    return this.libroService.active instanceof LibroView;
+    return false;
+    // return this.libroService.active instanceof LibroView;
   }
 
   registerCommand() {
