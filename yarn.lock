@@ -2265,9 +2265,9 @@ __metadata:
     "@xterm/xterm": "npm:5.5.0"
     ansi-regex: "npm:^2.0.0"
     dom-align: "npm:^1.7.0"
-    js-tiktoken: "npm:1.0.12"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
+    tiktoken: "npm:1.0.12"
     web-tree-sitter: "npm:0.22.6"
   languageName: unknown
   linkType: soft
@@ -12221,15 +12221,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-tiktoken@npm:1.0.12":
-  version: 1.0.12
-  resolution: "js-tiktoken@npm:1.0.12"
-  dependencies:
-    base64-js: "npm:^1.5.1"
-  checksum: 10/21aaa9302409fefc5ac18695579b04e0223cdda2566e5cc4a95de228333bbadfc2e16110fceca1824d7faa43081ef378e6bc72238a2230374a85f88638556305
-  languageName: node
-  linkType: hard
-
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -18886,6 +18877,13 @@ __metadata:
   version: 1.1.0
   resolution: "thunky@npm:1.1.0"
   checksum: 10/825e3bd07ab3c9fd6f753c457a60957c628cacba5dd0656fd93b037c445e2828b43cf0805a9f2b16b0c5f5a10fd561206271acddb568df4f867f0aea0eb2772f
+  languageName: node
+  linkType: hard
+
+"tiktoken@npm:1.0.12":
+  version: 1.0.12
+  resolution: "tiktoken@npm:1.0.12"
+  checksum: 10/595ab2e93f1937a1af8baf057f1a2951cfd7b5d4c0986807c1fc8e1a2118800a31cec81cdbcb115c4be5eec4fd9d5c23ac23691a227658c1010aeefec5dfa3ea
   languageName: node
   linkType: hard
 
