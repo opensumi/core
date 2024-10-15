@@ -142,5 +142,3 @@ export class MarkdownReactRenderer {
     return this.node('br');
   }
 }
-
-export default MarkdownReactRenderer;
