@@ -77,7 +77,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
 
     this.registerFeature(this.monacoEditor);
-    return this;
+    return this.featureDisposable;
   }
 
   private handlerAlwaysVisiblePreference(): void {
@@ -148,7 +148,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       register();
     }
 
-    this.addDispose(
+    this.featureDisposable.addDispose(
       this.preferenceService.onSpecificPreferenceChange(
         AINativeSettingSectionsId.IntelligentCompletionsAlwaysVisible,
         ({ newValue }) => {
@@ -356,7 +356,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   }
 
   private registerFeature(monacoEditor: ICodeEditor): void {
-    this.addDispose(
+    this.featureDisposable.addDispose(
       Event.any<any>(
         monacoEditor.onDidChangeCursorPosition,
         monacoEditor.onDidChangeModelContent,
@@ -367,8 +367,8 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     );
 
     const multiLineEditsIsVisibleKey = new Set([MultiLineEditsIsVisible.raw]);
-    this.addDispose(this.whenMultiLineEditsVisibleDisposable);
-    this.addDispose(
+    this.featureDisposable.addDispose(this.whenMultiLineEditsVisibleDisposable);
+    this.featureDisposable.addDispose(
       this.aiNativeContextKey.contextKeyService!.onDidChangeContext((e) => {
         if (e.payload.affectsSome(multiLineEditsIsVisibleKey)) {
           const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
@@ -379,7 +379,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    this.addDispose(
+    this.featureDisposable.addDispose(
       Event.any<any>(
         monacoEditor.onDidChangeModel,
         monacoEditor.onDidChangeModelContent,
@@ -391,6 +391,6 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     );
 
     const inlineCompletionsSource = this.injector.get(InlineCompletionsSource, [this.monacoEditor]);
-    this.addDispose(inlineCompletionsSource.fetch());
+    this.featureDisposable.addDispose(inlineCompletionsSource.fetch());
   }
 }

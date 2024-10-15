@@ -67,6 +67,8 @@ export abstract class BaseAIMonacoEditorController extends Disposable implements
     this.cancellationTokenSource = new CancellationTokenSource();
   }
 
+  public featureDisposable = new Disposable();
+
   protected allowedSchemes: string[] = [Schemes.file, Schemes.notebookCell];
 
   constructor(
@@ -80,7 +82,11 @@ export abstract class BaseAIMonacoEditorController extends Disposable implements
 
     this.addDispose(
       this.monacoEditor.onDidChangeModel(({ newModelUrl }) => {
-        const shouldMount = newModelUrl && this.allowedSchemes.includes(newModelUrl.scheme);
+        if (!newModelUrl) {
+          return;
+        }
+
+        const shouldMount = this.allowedSchemes.includes(newModelUrl.scheme);
         if (shouldMount !== isMounted) {
           isMounted = !!shouldMount;
           if (isMounted) {

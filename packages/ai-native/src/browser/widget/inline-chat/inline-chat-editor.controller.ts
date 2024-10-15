@@ -83,59 +83,47 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
   mount(): IDisposable {
     this.inlineDiffController = InlineDiffController.get(this.monacoEditor)!;
 
-    this.doContribute();
-    return this;
-  }
-
-  private disposeAllWidget() {
-    [this.aiInlineContentWidget, this.aiInlineChatDisposable, this.aiInlineChatOperationDisposable].forEach(
-      (widget) => {
-        widget?.dispose();
-      },
-    );
-
-    this.inlineChatInUsing = false;
-    this.cancelToken();
-  }
-
-  public doContribute(): IDisposable {
     if (!this.monacoEditor) {
-      return this;
+      return this.featureDisposable;
     }
 
-    const monacoEditor = this.monacoEditor;
-
-    this.disposables.push(
+    this.featureDisposable.addDispose(
       this.aiInlineChatService.onInlineChatVisible((value: boolean) => {
         if (value) {
-          this.showInlineChat(monacoEditor);
+          this.showInlineChat(this.monacoEditor);
         } else {
           this.cancelToken();
           this.disposeAllWidget();
         }
       }),
+    );
+
+    this.featureDisposable.addDispose(
       this.codeActionService.onCodeActionRun(({ id, range }) => {
         const currentEditor = this.workbenchEditorService.currentEditor;
 
         // 可能存在两个 editor 但 uri 是同一个的情况，所以需要根据 editor 的 id 来判断
-        if (currentEditor?.getId() !== monacoEditor!.getId()) {
+        if (currentEditor?.getId() !== this.monacoEditor!.getId()) {
           return;
         }
 
-        monacoEditor.setSelection(range);
-        this.showInlineChat(monacoEditor);
+        this.monacoEditor.setSelection(range);
+        this.showInlineChat(this.monacoEditor);
         if (this.aiInlineContentWidget) {
           this.aiInlineContentWidget.clickActionId(id, 'codeAction');
         }
       }),
-      monacoEditor.onWillChangeModel(() => {
+    );
+
+    this.featureDisposable.addDispose(
+      this.monacoEditor.onWillChangeModel(() => {
         this.disposeAllWidget();
       }),
     );
 
     let needShowInlineChat = false;
-    this.disposables.push(
-      monacoEditor.onMouseDown((event: monaco.IEditorMouseEvent) => {
+    this.featureDisposable.addDispose(
+      this.monacoEditor.onMouseDown((event: monaco.IEditorMouseEvent) => {
         const target = event.target;
         const detail = (target as any).detail;
 
@@ -149,7 +137,10 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
           this.disposeAllWidget();
         }
       }),
-      monacoEditor.onMouseUp((event: monaco.IEditorMouseEvent) => {
+    );
+
+    this.featureDisposable.addDispose(
+      this.monacoEditor.onMouseUp((event: monaco.IEditorMouseEvent) => {
         const target = event.target;
         const detail = (target as any).detail;
         if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidgetId) {
@@ -164,7 +155,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
       AINativeSettingSectionsId.InlineChatAutoVisible,
       true,
     );
-    this.disposables.push(
+    this.featureDisposable.addDispose(
       this.preferenceService.onSpecificPreferenceChange(
         AINativeSettingSectionsId.InlineChatAutoVisible,
         ({ newValue }) => {
@@ -173,9 +164,9 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
       ),
     );
 
-    this.disposables.push(
+    this.featureDisposable.addDispose(
       Event.debounce(
-        Event.any<any>(monacoEditor.onDidChangeCursorSelection, monacoEditor.onMouseUp),
+        Event.any<any>(this.monacoEditor.onDidChangeCursorSelection, this.monacoEditor.onMouseUp),
         (_, e) => e,
         100,
       )(() => {
@@ -189,11 +180,22 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
           return;
         }
 
-        this.showInlineChat(monacoEditor);
+        this.showInlineChat(this.monacoEditor);
       }),
     );
 
-    return this;
+    return this.featureDisposable;
+  }
+
+  private disposeAllWidget() {
+    [this.aiInlineContentWidget, this.aiInlineChatDisposable, this.aiInlineChatOperationDisposable].forEach(
+      (widget) => {
+        widget?.dispose();
+      },
+    );
+
+    this.inlineChatInUsing = false;
+    this.cancelToken();
   }
 
   protected showInlineContentWidget(monacoEditor: monaco.ICodeEditor, selection: monaco.Selection): void {
