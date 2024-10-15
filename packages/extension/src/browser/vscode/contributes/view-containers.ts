@@ -36,16 +36,18 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  private convertLocationToSide(location: LocationKey): 'left' | 'bottom' | typeof AI_CHAT_VIEW_ID {
+  private convertLocationToSide(
+    location: LocationKey,
+  ): ['left' | 'bottom' | typeof AI_CHAT_VIEW_ID, 'vertical' | 'horizontal'] {
     switch (location) {
       case 'activitybar': {
-        return 'left';
+        return ['left', 'vertical'];
       }
       case 'ai-chat': {
-        return AI_CHAT_VIEW_ID;
+        return [AI_CHAT_VIEW_ID, 'vertical'];
       }
       default:
-        return 'bottom';
+        return ['bottom', 'horizontal'];
     }
   }
 
@@ -57,7 +59,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
         continue;
       }
       for (const location of Object.keys(contributes)) {
-        const side: string = this.convertLocationToSide(location as LocationKey);
+        const [side, alignment] = this.convertLocationToSide(location as LocationKey);
 
         for (const container of contributes[location]) {
           const handlerId = this.mainlayoutService.collectTabbarComponent(
@@ -71,7 +73,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
               fromExtension: true,
               // 插件注册的视图容器无view时默认都隐藏tab
               hideIfEmpty: true,
-              alignment: side === 'left' ? 'vertical' : 'horizontal',
+              alignment,
             },
             side,
           );

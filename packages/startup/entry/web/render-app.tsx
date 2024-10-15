@@ -28,6 +28,8 @@ import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
 import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
+import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
+import { AI_CHAT_LOGO_AVATAR_ID } from '@opensumi/ide-ai-native';
 
 const CLIENT_ID = 'W_' + uuid();
 
@@ -94,6 +96,9 @@ export const getDefaultClientAppOpts = ({
       },
       [SlotLocation.action]: {
         modules: ['@opensumi/ide-toolbar-action'],
+      },
+      [DESIGN_MENU_BAR_RIGHT]: {
+        modules: [AI_CHAT_LOGO_AVATAR_ID],
       },
       ...layoutConfig,
     },
