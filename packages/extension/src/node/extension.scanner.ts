@@ -124,6 +124,8 @@ export class ExtensionScanner {
       packageJSON.sumiContributes = packageJSON.kaitianContributes;
     }
 
+    packageJSON.contributes = packageJSON.contributes || {};
+
     // merge for `sumiContributes` and `contributes`
     // `sumiContributesOverride` is used for override the `contributes`
     if (packageJSON.sumiContributesOverride) {
