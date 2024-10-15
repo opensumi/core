@@ -140,7 +140,10 @@ export const AIChatView = observer(() => {
 
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
-      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+      const lastElement = containerRef.current.lastElementChild;
+      if (lastElement) {
+        lastElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
       // 出现滚动条时出现分割线
       if (containerRef.current.scrollHeight > containerRef.current.clientHeight) {
         containerRef.current.classList.add(SCROLL_CLASSNAME);
@@ -161,10 +164,6 @@ export const AIChatView = observer(() => {
   React.useEffect(() => {
     handleDispatchMessage({ type: 'init', payload: [firstMsg] });
   }, []);
-
-  React.useEffect(() => {
-    scrollToBottom();
-  }, [loading]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
