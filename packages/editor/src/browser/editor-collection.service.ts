@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IContextKeyService, IRange, PreferenceService } from '@opensumi/ide-core-browser';
+import { AppConfig, IContextKeyService, IRange, PreferenceService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
 import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
@@ -559,6 +559,9 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   private originalDocModelRef: IEditorDocumentModelRef | null;
 
   private modifiedDocModelRef: IEditorDocumentModelRef | null;
@@ -639,8 +642,10 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   }
 
   disposeModel(originalUri: string, modifiedUri: string) {
-    const key = `${originalUri}-${modifiedUri}`;
-    this.diffEditorModelCache.delete(key);
+    if (this.diffEditorModelCache.size > 0) {
+      const key = `${originalUri}-${modifiedUri}`;
+      this.diffEditorModelCache.delete(key);
+    }
   }
 
   async compare(
@@ -658,7 +663,11 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     const original = this.originalDocModel.getMonacoModel();
     const modified = this.modifiedDocModel.getMonacoModel();
     const key = `${original.uri.toString()}-${modified.uri.toString()}`;
-    let model = this.diffEditorModelCache.get(key);
+    let model: monaco.editor.IDiffEditorViewModel | undefined;
+    if (this.appConfig.enableRestoreDiffEditorState) {
+      model = this.diffEditorModelCache.get(key);
+    }
+
     if (!model) {
       model = this.monacoDiffEditor.createViewModel({ original, modified });
       this.diffEditorModelCache.set(key, model);

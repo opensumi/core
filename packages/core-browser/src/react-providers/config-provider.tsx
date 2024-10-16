@@ -303,6 +303,10 @@ export interface AppConfig {
    * This is useful when your scenario is one-time use, and you can control the opening of the editor tab yourself.
    */
   disableRestoreEditorGroupState?: boolean;
+  /**
+   * 启用 Diff 编辑器状态恢复逻辑
+   */
+  enableRestoreDiffEditorState?: boolean;
 }
 
 export interface ICollaborationClientOpts {
