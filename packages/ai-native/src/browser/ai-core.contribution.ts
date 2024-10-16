@@ -56,7 +56,6 @@ import {
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
-import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -137,7 +136,7 @@ export class AINativeBrowserContribution
   protected readonly injector: Injector;
 
   @Autowired(IBrowserCtxMenu)
-  private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
+  private readonly ctxMenuRenderer: IBrowserCtxMenu;
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
