@@ -129,6 +129,7 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
 
       const lineCount = currentLineNumber - range.startLineNumber;
       const spaceWidth = virtualEditor!.getOption(monaco.editor.EditorOption.fontInfo).spaceWidth;
+      const contentLeft = virtualEditor!.getOption(monaco.editor.EditorOption.layoutInfo).contentLeft;
       let maxColumnWidth = 0;
       const tabSize = virtualModel.getOptions().tabSize;
       Array.from(
@@ -149,7 +150,7 @@ const TextBoxProvider = React.memo((props: ITextBoxProviderProps) => {
         }
       });
 
-      setEditorSize({ width: maxColumnWidth * spaceWidth, height: lineHeight * (lineCount + 1) });
+      setEditorSize({ width: maxColumnWidth * spaceWidth + contentLeft * 2, height: lineHeight * (lineCount + 1) });
     },
     [editorSize, editor],
   );
