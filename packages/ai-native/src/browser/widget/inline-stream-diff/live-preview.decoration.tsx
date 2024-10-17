@@ -1,6 +1,14 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { StackingLevel } from '@opensumi/ide-core-browser';
-import { ActionSourceEnum, ActionTypeEnum, Disposable, Emitter, Event, IAIReporter } from '@opensumi/ide-core-common';
+import {
+  ActionSourceEnum,
+  ActionTypeEnum,
+  Disposable,
+  Emitter,
+  Event,
+  IAIReporter,
+  runWhenIdle,
+} from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Position, Range } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
@@ -668,10 +676,11 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public touchRemovedWidget(states: IRemovedWidgetState[]) {
-    this.clearRemovedWidgets();
-
-    states.forEach(({ textLines, position }) => {
-      this.showRemovedWidgetByLineNumber(position.lineNumber, textLines, {});
+    runWhenIdle(() => {
+      this.clearRemovedWidgets();
+      states.forEach(({ textLines, position }) => {
+        this.showRemovedWidgetByLineNumber(position.lineNumber, textLines, {});
+      });
     });
   }
 
