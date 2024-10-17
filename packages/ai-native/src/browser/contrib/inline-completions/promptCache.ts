@@ -9,7 +9,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
-import { IIntelligentCompletionsResult } from '../intelligent-completions/intelligent-completions';
+import { IIntelligentCompletionsResult } from '../intelligent-completions';
 
 /**
  * 缓存服务

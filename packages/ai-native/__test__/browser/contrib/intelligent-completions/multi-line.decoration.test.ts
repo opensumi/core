@@ -1,11 +1,11 @@
+import { ICodeEditor, IPosition } from '@opensumi/ide-monaco';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+
 import {
   GHOST_TEXT,
   GHOST_TEXT_DESCRIPTION,
   MultiLineDecorationModel,
-} from '@opensumi/ide-ai-native/lib/browser/contrib/intelligent-completions/multi-line.decoration';
-import { ICodeEditor, IPosition } from '@opensumi/ide-monaco';
-import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-
+} from '../../../../lib/browser/contrib/intelligent-completions/multi-line.decoration';
 import { IMultiLineDiffChangeResult } from '../../../../src/browser/contrib/intelligent-completions/diff-computer';
 import { EnhanceDecorationsCollection } from '../../../../src/browser/model/enhanceDecorationsCollection';
 

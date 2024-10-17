@@ -15,7 +15,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 
-import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
+import { IIntelligentCompletionsResult } from '../../intelligent-completions';
 
 @Injectable()
 export class AICompletionsService extends Disposable {
