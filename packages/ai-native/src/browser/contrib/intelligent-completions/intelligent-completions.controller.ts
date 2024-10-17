@@ -21,6 +21,7 @@ import {
   SuggestItemInfo,
   SuggestWidgetAdaptor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider';
+import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestController';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
@@ -126,6 +127,19 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
               transaction((tx) => {
                 selectedItemObservable.set(undefined, tx);
               });
+            }
+          }),
+        );
+
+        observableDisposable.addDispose(
+          autorun((reader) => {
+            const state = inlineCompletionsController.model.read(reader)?.state.read(reader);
+            const suggestController = SuggestController.get(this.monacoEditor);
+            // 当阴影字符超出一行的时候，强制让 suggest 面板向上展示，避免遮挡补全内容
+            if (state && state.primaryGhostText?.lineCount >= 2) {
+              suggestController?.forceRenderingAbove();
+            } else {
+              suggestController?.stopForceRenderingAbove();
             }
           }),
         );

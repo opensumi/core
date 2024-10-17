@@ -422,8 +422,8 @@ export class AINativeBrowserContribution
       execute: async (visible: boolean) => {
         if (!visible) {
           this.aiCompletionsService.hideStatusBarItem();
+          this.aiInlineCompletionsProvider.setVisibleCompletion(false);
           this.aiInlineCompletionsProvider.cancelRequest();
-          this.aiCompletionsService.setVisibleCompletion(false);
         }
       },
     });
