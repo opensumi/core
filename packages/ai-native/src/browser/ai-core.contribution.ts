@@ -76,6 +76,7 @@ import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
+import { InlineCompletionsController } from './contrib/inline-completions/inline-completions.controller';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
 import { IntelligentCompletionsController } from './contrib/intelligent-completions/intelligent-completions.controller';
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
@@ -253,6 +254,11 @@ export class AINativeBrowserContribution
       register(
         IntelligentCompletionsController.ID,
         new SyncDescriptor(IntelligentCompletionsController, [this.injector]),
+        EditorContributionInstantiation.AfterFirstRender,
+      );
+      register(
+        InlineCompletionsController.ID,
+        new SyncDescriptor(InlineCompletionsController, [this.injector]),
         EditorContributionInstantiation.AfterFirstRender,
       );
     }

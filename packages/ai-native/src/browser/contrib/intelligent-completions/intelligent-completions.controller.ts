@@ -28,17 +28,18 @@ import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.servic
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
 import { BaseAIMonacoEditorController } from '../base';
 
-import { AdditionsDeletionsDecorationModel } from './additions-deletions.decoration';
+import { AdditionsDeletionsDecorationModel } from './decoration/additions-deletions.decoration';
+import { MultiLineDecorationModel } from './decoration/multi-line.decoration';
 import {
   IMultiLineDiffChangeResult,
   computeMultiLineDiffChanges,
   mergeMultiLineDiffChanges,
   wordChangesToLineChangesMap,
 } from './diff-computer';
-import { IIntelligentCompletionsResult } from './intelligent-completions';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
-import { InlineCompletionsSource } from './intelligent-completions.source';
-import { MultiLineDecorationModel } from './multi-line.decoration';
+import { LintErrorCodeEditsSource } from './lint-error.source';
+
+import { IIntelligentCompletionsResult } from '.';
 
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.intelligent.completions';
@@ -184,7 +185,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   }
 
   public async fetchProvider(bean: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
-    const provider = this.intelligentCompletionsRegistry.getProvider();
+    const provider = this.intelligentCompletionsRegistry.getInlineCompletionsProvider();
     if (!provider) {
       return;
     }
@@ -198,11 +199,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     const position = this.monacoEditor.getPosition()!;
     const intelligentCompletionModel = await provider(this.monacoEditor, position, bean, this.token);
 
-    if (
-      intelligentCompletionModel &&
-      intelligentCompletionModel.enableMultiLine &&
-      intelligentCompletionModel.items.length > 0
-    ) {
+    if (intelligentCompletionModel && intelligentCompletionModel.items.length > 0) {
       return this.applyInlineDecorations(intelligentCompletionModel);
     }
 
@@ -404,7 +401,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    const inlineCompletionsSource = this.injector.get(InlineCompletionsSource, [this.monacoEditor]);
-    this.featureDisposable.addDispose(inlineCompletionsSource.fetch());
+    const lintErrorCodeEditsSource = this.injector.get(LintErrorCodeEditsSource, [this.monacoEditor]);
+    this.featureDisposable.addDispose(lintErrorCodeEditsSource.fetch());
   }
 }

@@ -1,17 +1,30 @@
 import { Injectable } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
-import { IIntelligentCompletionProvider, IIntelligentCompletionsRegistry } from '../../types';
+import { ICodeEditsProvider, IIntelligentCompletionProvider, IIntelligentCompletionsRegistry } from '../../types';
 
 @Injectable()
 export class IntelligentCompletionsRegistry extends Disposable implements IIntelligentCompletionsRegistry {
-  private provider: IIntelligentCompletionProvider | undefined;
+  private inlineCompletionsProviderprovider: IIntelligentCompletionProvider | undefined;
+  private codeEditsProvider: ICodeEditsProvider | undefined;
 
   registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void {
-    this.provider = provider;
+    this.inlineCompletionsProviderprovider = provider;
   }
 
-  getProvider(): IIntelligentCompletionProvider | undefined {
-    return this.provider;
+  registerInlineCompletionsProvider(provider: IIntelligentCompletionProvider): void {
+    this.inlineCompletionsProviderprovider = provider;
+  }
+
+  registerCodeEditsProvider(provider: ICodeEditsProvider): void {
+    this.codeEditsProvider = provider;
+  }
+
+  getInlineCompletionsProvider(): IIntelligentCompletionProvider | undefined {
+    return this.inlineCompletionsProviderprovider;
+  }
+
+  getCodeEditsProvider(): ICodeEditsProvider | undefined {
+    return this.codeEditsProvider;
   }
 }
