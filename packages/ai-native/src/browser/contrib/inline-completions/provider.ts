@@ -23,7 +23,7 @@ export async function getPrefixPrompt(
 
   const { maxPromptTokenSize } = promptConfig;
 
-  const prefixPercent = 1 - promptConfig.wishList.afterCursor.extOption.suffixPercent ?? 0.25;
+  const prefixPercent = 1 - (promptConfig.wishList.afterCursor.extOption.suffixPercent ?? 0.25);
   const beforeCursorMaxTokenSize = Math.ceil(prefixPercent * maxPromptTokenSize);
   const leftTokenSize = beforeCursorMaxTokenSize;
 

@@ -836,7 +836,7 @@ export class MirroredTestCollection extends AbstractIncrementalTestCollection<Mi
    * Gets a list of root test items.
    */
   public get rootTests() {
-    return super.roots;
+    return this.roots;
   }
 
   /**

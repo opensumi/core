@@ -138,7 +138,8 @@ export abstract class AbstractLineMatcher {
         if (trim) {
           value = value.trim();
         }
-        (data[property] as string) = value;
+        // TODO: ts will regrard data[property] as undefined
+        (data[property] as any) = value;
       }
     }
   }

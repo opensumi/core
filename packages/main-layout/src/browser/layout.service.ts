@@ -248,7 +248,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId ||
           tabbarService.previousContainerId ||
-          tabbarService.containersMap.keys().next().value,
+          tabbarService.containersMap.keys().next().value!,
       );
     } else if (show === false) {
       tabbarService.updateCurrentContainerId('');
@@ -256,7 +256,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId
           ? ''
-          : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value,
+          : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value!,
       );
     }
     if (tabbarService.currentContainerId && size) {
@@ -552,7 +552,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId ||
           tabbarService.previousContainerId ||
-          tabbarService.containersMap.keys().next().value,
+          tabbarService.containersMap.keys().next().value!,
       );
     }
     tabbarService.doExpand(expand);

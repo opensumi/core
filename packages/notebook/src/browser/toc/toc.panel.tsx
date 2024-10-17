@@ -29,6 +29,7 @@ export const TocPanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState
             id: editorService.currentResource?.uri.toString(),
           })
           .then((libroTocView) => {
+            // @ts-ignore
             libroTocView.parent = libro;
             setLibroTocView(libroTocView);
             return;
@@ -44,6 +45,7 @@ export const TocPanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState
               id: (e.uri as URI).toString(),
             })
             .then((libroTocView) => {
+              // @ts-ignore
               libroTocView.parent = libro;
               setLibroTocView(libroTocView);
               return;
