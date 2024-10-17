@@ -5,18 +5,17 @@ import temp from 'temp';
 
 import { TreeNodeEvent, TreeNodeType } from '@opensumi/ide-components';
 import {
+  AppConfig,
   CorePreferences,
   EDITOR_COMMANDS,
   Emitter,
   IContextKeyService,
+  ILogger,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { ILogger } from '@opensumi/ide-core-browser';
-import { AppConfig } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
-  CommandRegistry,
   Deferred,
   Disposable,
   FileUri,
@@ -25,9 +24,12 @@ import {
   OS,
   StorageProvider,
   URI,
+  injectGDataStores,
 } from '@opensumi/ide-core-common';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileServicePath, FileStat, IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
@@ -41,10 +43,7 @@ import { IThemeService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { FileTreeNextModule } from '../../src';
-import { PasteTypes } from '../../src';
+import { FileTreeNextModule, PasteTypes } from '../../src';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import styles from '../../src/browser/file-tree-node.module.less';
 import { FileTreeService } from '../../src/browser/file-tree.service';
@@ -210,6 +209,8 @@ describe('FileTree should be work while on single workspace model', () => {
         useValue: mockMainLayoutService,
       },
     );
+    injectGDataStores(injector);
+
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
 
@@ -317,7 +318,7 @@ describe('FileTree should be work while on single workspace model', () => {
     it('Style decoration should be right while click the item', async () => {
       const { handleItemClick, decorations } = fileTreeModelService;
 
-      let retracted = jest.fn();
+      const retracted = jest.fn();
       injector.mockCommand(RETRACT_BOTTOM_PANEL.id, () => {
         mockMainLayoutService.bottomExpanded = false;
         retracted();
