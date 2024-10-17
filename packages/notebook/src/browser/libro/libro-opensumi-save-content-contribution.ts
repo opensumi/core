@@ -1,4 +1,9 @@
-import { ContentSaveContribution, LibroJupyterModel, NotebookOption, SaveFileErrorModal } from '@difizen/libro-jupyter';
+import {
+  ContentSaveContribution,
+  LibroJupyterModel,
+  NotebookOption,
+  SaveFileErrorModal,
+} from '@difizen/libro-jupyter/noeditor';
 import { ModalService, URI, getOrigin, inject, singleton } from '@difizen/mana-app';
 
 import { Injector } from '@opensumi/di';

@@ -1,5 +1,5 @@
 import { ContentContribution } from '@difizen/libro-core';
-import { IContentsModel, INotebookContent, LibroJupyterModel, NotebookOption } from '@difizen/libro-jupyter';
+import { IContentsModel, INotebookContent, LibroJupyterModel, NotebookOption } from '@difizen/libro-jupyter/noeditor';
 import { getOrigin, inject, singleton } from '@difizen/mana-app';
 
 import { Injector } from '@opensumi/di';

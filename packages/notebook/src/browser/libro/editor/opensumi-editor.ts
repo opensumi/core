@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-redeclare */
 import { defaultConfig } from '@difizen/libro-code-editor';
 import { MIME } from '@difizen/libro-common';
-import { EditorStateFactory, IEditorStateOptions } from '@difizen/libro-jupyter';
+import { EditorStateFactory, IEditorStateOptions } from '@difizen/libro-jupyter/noeditor';
 import {
   CommandRegistry,
   Deferred,

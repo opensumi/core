@@ -1,4 +1,4 @@
-import { LibroService, LibroView } from '@difizen/libro-jupyter';
+import { LibroService, LibroView } from '@difizen/libro-jupyter/noeditor';
 import { Container } from '@difizen/mana-app';
 import { makeObservable } from 'mobx';
 

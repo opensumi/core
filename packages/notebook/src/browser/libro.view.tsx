@@ -1,4 +1,4 @@
-import { DocumentCommands, LibroView } from '@difizen/libro-jupyter';
+import { DocumentCommands, LibroView } from '@difizen/libro-jupyter/noeditor';
 import { CommandRegistry, Container, ViewRender } from '@difizen/mana-app';
 import * as React from 'react';
 

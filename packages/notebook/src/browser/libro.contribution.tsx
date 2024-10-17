@@ -1,4 +1,4 @@
-import { LibroJupyterNoEditorModule } from '@difizen/libro-jupyter';
+import { LibroJupyterNoEditorModule } from '@difizen/libro-jupyter/noeditor';
 import { LibroTOCModule } from '@difizen/libro-toc';
 import { Container, ManaAppPreset, ManaComponents } from '@difizen/mana-app';
 import React, { useState } from 'react';

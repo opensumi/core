@@ -1,4 +1,4 @@
-import { LibroSearchToggleCommand, NotebookCommands } from '@difizen/libro-jupyter';
+import { LibroSearchToggleCommand, NotebookCommands } from '@difizen/libro-jupyter/noeditor';
 import { ApplicationContribution, CommandRegistry, inject, singleton } from '@difizen/mana-app';
 
 import { Injector } from '@opensumi/di';

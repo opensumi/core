@@ -1,4 +1,4 @@
-import { LibroSearchManager, LibroService } from '@difizen/libro-jupyter';
+import { LibroSearchManager, LibroService } from '@difizen/libro-jupyter/noeditor';
 import { Container } from '@difizen/mana-app';
 
 import { Autowired } from '@opensumi/di';
