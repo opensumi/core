@@ -1,11 +1,6 @@
-import { Autowired, Injectable, Optional } from '@opensumi/di';
-import {
-  CancellationToken,
-  Disposable,
-  IDisposable,
-  IntelligentCompletionsRegistryToken,
-} from '@opensumi/ide-core-common';
-import { ICodeEditor, ICursorPositionChangedEvent, IPosition, Position } from '@opensumi/ide-monaco';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IDisposable } from '@opensumi/ide-core-common';
+import { ICursorPositionChangedEvent, IPosition, Position } from '@opensumi/ide-monaco';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
@@ -16,10 +11,9 @@ import {
   MarkerSeverity,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
-import { IntelligentCompletionsController } from './intelligent-completions.controller';
-import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
+import { ECodeEditsSource } from '..';
 
-import { ECodeEditsSource } from '.';
+import { BaseCodeEditsSource } from './base';
 
 export interface ILinterErrorData {
   relativeWorkspacePath: string;
@@ -59,23 +53,9 @@ namespace MarkerErrorData {
 }
 
 @Injectable({ multiple: true })
-export class LintErrorCodeEditsSource extends Disposable {
-  @Autowired(IntelligentCompletionsRegistryToken)
-  private readonly intelligentCompletionsRegistry: IntelligentCompletionsRegistry;
-
+export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
-
-  private get model() {
-    return this.monacoEditor.getModel();
-  }
-
-  constructor(
-    @Optional() private readonly monacoEditor: ICodeEditor,
-    @Optional() private readonly token: CancellationToken,
-  ) {
-    super();
-  }
 
   public mount(): IDisposable {
     let prePosition = this.monacoEditor.getPosition();
@@ -93,7 +73,7 @@ export class LintErrorCodeEditsSource extends Disposable {
     return this;
   }
 
-  private async doTrigger(position: Position) {
+  protected async doTrigger(position: Position) {
     if (!this.model) {
       return;
     }
@@ -105,26 +85,15 @@ export class LintErrorCodeEditsSource extends Disposable {
     markers = markers.filter((marker) => Math.abs(marker.startLineNumber - position.lineNumber) <= 1);
 
     if (markers.length) {
-      const provider = this.intelligentCompletionsRegistry.getCodeEditsProvider();
-      if (provider) {
-        const relativeWorkspacePath = await this.workspaceService.asRelativePath(resource.path);
-        const result = await provider(
-          this.monacoEditor,
-          position,
-          {
-            typing: ECodeEditsSource.LinterErrors,
-            data: {
-              relativeWorkspacePath: relativeWorkspacePath?.path ?? resource.path,
-              errors: markers.map((marker) => MarkerErrorData.toData(marker)),
-            },
-          },
-          this.token,
-        );
+      const relativeWorkspacePath = await this.workspaceService.asRelativePath(resource.path);
 
-        if (result) {
-          IntelligentCompletionsController.get(this.monacoEditor)?.fetchProvider(result);
-        }
-      }
+      this.launchProvider(this.monacoEditor, position, {
+        typing: ECodeEditsSource.LinterErrors,
+        data: {
+          relativeWorkspacePath: relativeWorkspacePath?.path ?? resource.path,
+          errors: markers.map((marker) => MarkerErrorData.toData(marker)),
+        },
+      });
     }
   }
 }
