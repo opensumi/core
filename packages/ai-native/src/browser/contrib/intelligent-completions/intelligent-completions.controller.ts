@@ -1,13 +1,6 @@
 import { Key, KeybindingRegistry, KeybindingScope, PreferenceService } from '@opensumi/ide-core-browser';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import {
-  AINativeSettingSectionsId,
-  Disposable,
-  Event,
-  IDisposable,
-  IntelligentCompletionsRegistryToken,
-  runWhenIdle,
-} from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId, Disposable, Event, IDisposable, runWhenIdle } from '@opensumi/ide-core-common';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { autorun, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observable';
@@ -35,20 +28,15 @@ import {
   mergeMultiLineDiffChanges,
   wordChangesToLineChangesMap,
 } from './diff-computer';
-import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 import { LintErrorCodeEditsSource } from './lint-error.source';
 
-import { ICodeEditsResult, IIntelligentCompletionsResult } from '.';
+import { ICodeEditsResult } from '.';
 
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.intelligent.completions';
 
   public static get(editor: ICodeEditor): IntelligentCompletionsController | null {
     return editor.getContribution<IntelligentCompletionsController>(IntelligentCompletionsController.ID);
-  }
-
-  private get intelligentCompletionsRegistry(): IntelligentCompletionsRegistry {
-    return this.injector.get(IntelligentCompletionsRegistryToken);
   }
 
   private get model(): ITextModel {
@@ -195,13 +183,13 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     }
   }
 
-  private applyInlineDecorations(completionModel: IIntelligentCompletionsResult) {
+  private applyInlineDecorations(completionModel: ICodeEditsResult) {
     const { items } = completionModel;
     const { range, insertText } = items[0];
 
     // code edits 必须提供 range
     if (!range) {
-      return completionModel;
+      return;
     }
 
     const position = this.monacoEditor.getPosition()!;

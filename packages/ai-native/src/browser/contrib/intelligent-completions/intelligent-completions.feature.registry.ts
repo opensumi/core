@@ -5,15 +5,15 @@ import { ICodeEditsProvider, IIntelligentCompletionProvider, IIntelligentComplet
 
 @Injectable()
 export class IntelligentCompletionsRegistry extends Disposable implements IIntelligentCompletionsRegistry {
-  private inlineCompletionsProviderprovider: IIntelligentCompletionProvider | undefined;
+  private inlineCompletionsProvider: IIntelligentCompletionProvider | undefined;
   private codeEditsProvider: ICodeEditsProvider | undefined;
 
   registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void {
-    this.inlineCompletionsProviderprovider = provider;
+    this.inlineCompletionsProvider = provider;
   }
 
   registerInlineCompletionsProvider(provider: IIntelligentCompletionProvider): void {
-    this.inlineCompletionsProviderprovider = provider;
+    this.inlineCompletionsProvider = provider;
   }
 
   registerCodeEditsProvider(provider: ICodeEditsProvider): void {
@@ -21,7 +21,7 @@ export class IntelligentCompletionsRegistry extends Disposable implements IIntel
   }
 
   getInlineCompletionsProvider(): IIntelligentCompletionProvider | undefined {
-    return this.inlineCompletionsProviderprovider;
+    return this.inlineCompletionsProvider;
   }
 
   getCodeEditsProvider(): ICodeEditsProvider | undefined {
