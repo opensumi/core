@@ -1,4 +1,4 @@
-import { LibroSearchManager, LibroService } from '@difizen/libro-jupyter/noeditor';
+import { LibroSearchManager, LibroService } from '@difizen/libro-jupyter';
 import { Container } from '@difizen/mana-app';
 
 import { Autowired } from '@opensumi/di';
@@ -28,7 +28,6 @@ export class LibroCommandContribution implements CommandContribution {
     });
     commands.registerHandler(EDITOR_COMMANDS.FOCUS_IF_NOT_ACTIVATE_ELEMENT.id, {
       execute: () => {
-        // console.log('manaContainer', this.manaContainer, 'libroService:', LibroService);
         const libroService = this.manaContainer.get(LibroService);
         const libro = libroService.active;
         const libroSearchManager = this.manaContainer.get(LibroSearchManager);

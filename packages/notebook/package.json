@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
-    "@difizen/libro-jupyter": "^0.2.18",
-    "@difizen/libro-toc": "^0.2.18",
+    "@difizen/libro-jupyter": "0.0.0-snapshot-20241017090244",
+    "@difizen/libro-toc": "0.0.0-snapshot-20241017090244",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",

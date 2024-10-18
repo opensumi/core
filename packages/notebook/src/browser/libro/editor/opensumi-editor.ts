@@ -1,4 +1,19 @@
-/* eslint-disable @typescript-eslint/no-redeclare */
+// eslint-disable-next-line import/order
+import type {
+  CodeEditorFactory,
+  CompletionProvider,
+  EditorState,
+  ICoordinate,
+  IEditor,
+  IEditorConfig,
+  IEditorOptions,
+  IModel,
+  IModelContentChange,
+  IPosition,
+  IRange,
+  SearchMatch,
+  TooltipProvider,
+} from '@difizen/libro-code-editor';
 import { defaultConfig } from '@difizen/libro-code-editor';
 import { MIME } from '@difizen/libro-common';
 import { EditorStateFactory, IEditorStateOptions } from '@difizen/libro-jupyter/noeditor';
@@ -18,33 +33,21 @@ import 'resize-observer-polyfill';
 import { v4 } from 'uuid';
 
 import { Injector } from '@opensumi/di';
-import { EditorCollectionService, ICodeEditor as IOpensumiEditor } from '@opensumi/ide-editor';
+import { IEventBus, URI } from '@opensumi/ide-core-common';
+import { EditorCollectionService, IEditorDocumentModelRef, ICodeEditor as IOpensumiEditor } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import * as monacoTypes from '@opensumi/ide-monaco';
-import { URI as MonacoURI, monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { Selection } from '@opensumi/monaco-editor-core';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
-import { OpensumiInjector } from '../../mana/index';
+import { OpensumiInjector } from '../../mana';
 
-import type {
-  CodeEditorFactory,
-  CompletionProvider,
-  EditorState,
-  IEditor,
-  IEditorConfig,
-  IEditorOptions,
-  IModel,
-  IModelContentChange,
-  IPosition,
-  IRange,
-  SearchMatch,
-  TooltipProvider,
-} from '@difizen/libro-code-editor';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import type { LSPProvider } from '@difizen/libro-lsp';
 import type { IStandaloneEditorConstructionOptions as MonacoEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 import './index.less';
 
-export interface LibroE2EditorConfig extends IEditorConfig {
+export interface LibroOpensumiEditorConfig extends IEditorConfig {
   /**
    * The mode to use.
    */
@@ -171,60 +174,21 @@ export interface LibroE2EditorConfig extends IEditorConfig {
    * in which case the "default" (arrow) cursor will be used.
    */
   selectionPointer?: boolean | string;
-
-  //
-  highlightActiveLineGutter?: boolean;
-  highlightSpecialChars?: boolean;
-  history?: boolean;
-  drawSelection?: boolean;
-  dropCursor?: boolean;
-  allowMultipleSelections?: boolean;
-  autocompletion?: boolean;
-  rectangularSelection?: boolean;
-  crosshairCursor?: boolean;
-  highlightSelectionMatches?: boolean;
-  foldGutter?: boolean;
-  syntaxHighlighting?: boolean;
-  /**
-   * 是否从kernel获取completion
-   */
-  jupyterKernelCompletion?: boolean;
-  /**
-   * 是否从kernel获取tooltip
-   */
-  jupyterKernelTooltip?: boolean;
-  indentationMarkers?: boolean;
-  hyperLink?: boolean;
-  /**
-   * 是否开启tab触发completion和tooltip
-   */
-  tabEditorFunction?: boolean;
-
-  lspCompletion?: boolean;
-
-  lspTooltip?: boolean;
-
-  lspLint?: boolean;
-
-  placeholder?: HTMLElement | string;
 }
 
-export const LibroE2EditorOptions = Symbol('LibroE2EditorOptions');
+export const LibroOpensumiEditorOptions = Symbol('LibroOpensumiEditorOptions');
 
-export interface LibroE2EditorOptions extends IEditorOptions {
+export interface LibroOpensumiEditorOptions extends IEditorOptions {
+  lspProvider?: LSPProvider;
+
   /**
    * The configuration options for the editor.
    */
-  config?: Partial<LibroE2EditorConfig>;
+  config?: Partial<LibroOpensumiEditorConfig>;
 }
 
-export const libroE2DefaultConfig: Required<LibroE2EditorConfig> = {
+export const libroOpensumiEditorDefaultConfig: Required<LibroOpensumiEditorConfig> = {
   ...defaultConfig,
-  theme: {
-    dark: 'libro-dark',
-    light: 'libro-light',
-    hc: 'e2-hc',
-  },
   scrollBarHeight: 12,
   mode: 'null',
   mimetype: MIME.python,
@@ -246,30 +210,6 @@ export const libroE2DefaultConfig: Required<LibroE2EditorConfig> = {
   selectionPointer: false,
   handlePaste: true,
   lineWrap: 'off',
-  lspEnabled: true,
-
-  //
-  highlightActiveLineGutter: false,
-  highlightSpecialChars: true,
-  history: true,
-  drawSelection: true,
-  dropCursor: true,
-  allowMultipleSelections: true,
-  autocompletion: true,
-  rectangularSelection: true,
-  crosshairCursor: true,
-  highlightSelectionMatches: true,
-  foldGutter: true,
-  syntaxHighlighting: true,
-  jupyterKernelCompletion: true,
-  indentationMarkers: true,
-  hyperLink: true,
-  jupyterKernelTooltip: true,
-  tabEditorFunction: true,
-  lspCompletion: true,
-  lspTooltip: true,
-  lspLint: true,
-  placeholder: '',
 };
 
 export const LibroOpensumiEditorFactory = Symbol('LibroOpensumiEditorFactory');
@@ -277,21 +217,23 @@ export type LibroOpensumiEditorFactory = CodeEditorFactory;
 
 export const OpensumiEditorClassname = 'libro-opensumi-editor';
 
-type OpensumiEditorState = monacoTypes.editor.ITextModel | null;
+export type OpensumiEditorState = IEditorDocumentModelRef | null;
 export const LibroOpensumiEditorState = Symbol('LibroOpensumiEditorState');
 export type LibroOpensumiEditorState = EditorState<OpensumiEditorState>;
 
-export const stateFactory: EditorStateFactory<OpensumiEditorState> = (options: IEditorStateOptions) => {
-  const uri = MonacoURI.parse(options.uuid);
-  const monacoModel = monaco.editor.createModel(options.model.value, 'python', uri);
-  return {
-    toJSON: () => ({}),
-    dispose: () => {
-      monacoModel.dispose();
-    },
-    state: monacoModel,
+export const stateFactory: (injector: Injector) => EditorStateFactory<OpensumiEditorState> =
+  (injector) => (options: IEditorStateOptions) => {
+    const docModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
+    const uri = URI.parse(options.uuid);
+    const modeRef = getOrigin(docModelService).getModelReference(uri);
+    return {
+      toJSON: () => ({}),
+      dispose: () => {
+        modeRef?.instance.getMonacoModel()?.dispose();
+      },
+      state: modeRef,
+    };
   };
-};
 
 @transient()
 export class LibroOpensumiEditor implements IEditor {
@@ -318,7 +260,7 @@ export class LibroOpensumiEditor implements IEditor {
 
   protected oldDeltaDecorations: string[] = [];
 
-  protected _config: LibroE2EditorConfig;
+  protected _config: LibroOpensumiEditorConfig;
 
   private intersectionObserver: IntersectionObserver;
 
@@ -351,7 +293,7 @@ export class LibroOpensumiEditor implements IEditor {
   }
 
   get monacoEditor(): IMonacoCodeEditor | undefined {
-    return this?._editor?.monacoEditor;
+    return getOrigin(this?._editor)?.monacoEditor;
   }
 
   get lineCount(): number {
@@ -361,6 +303,8 @@ export class LibroOpensumiEditor implements IEditor {
   protected onModelContentChangedEmitter = new Emitter<IModelContentChange[]>();
   onModelContentChanged = this.onModelContentChangedEmitter.event;
 
+  lspProvider?: LSPProvider;
+
   completionProvider?: CompletionProvider;
 
   tooltipProvider?: TooltipProvider;
@@ -369,8 +313,12 @@ export class LibroOpensumiEditor implements IEditor {
 
   protected hasHorizontalScrollbar = false;
 
+  get eventbus() {
+    return this.injector.get(IEventBus);
+  }
+
   constructor(
-    @inject(LibroE2EditorOptions) options: LibroE2EditorOptions,
+    @inject(LibroOpensumiEditorOptions) options: LibroOpensumiEditorOptions,
     @inject(LibroOpensumiEditorState) state: LibroOpensumiEditorState,
     @inject(ThemeService) themeService: ThemeService,
     @inject(OpensumiInjector) injector: Injector,
@@ -385,13 +333,14 @@ export class LibroOpensumiEditor implements IEditor {
 
     const config = options.config || {};
     const fullConfig = (this._config = {
-      ...libroE2DefaultConfig,
+      ...libroOpensumiEditorDefaultConfig,
       ...config,
       mimetype: options.model.mimeType,
     });
 
     this.completionProvider = options.completionProvider;
     this.tooltipProvider = options.tooltipProvider;
+    this.lspProvider = options.lspProvider;
 
     this.editorHost = document.createElement('div');
     this.host.append(this.editorHost);
@@ -413,56 +362,64 @@ export class LibroOpensumiEditor implements IEditor {
     return this._config.theme[themetype];
   }
 
-  protected toMonacoOptions(editorConfig: Partial<LibroE2EditorConfig>): MonacoEditorOptions {
+  protected toMonacoOptions(editorConfig: Partial<LibroOpensumiEditorConfig>): MonacoEditorOptions {
     return {
       minimap: {
         enabled: false,
       },
       lineHeight: editorConfig.lineHeight ?? this.defaultLineHeight,
-      fontSize: editorConfig.fontSize ?? 13,
+      // fontSize: editorConfig.fontSize ?? 13,
       lineNumbers: editorConfig.lineNumbers ? 'on' : 'off',
-      folding: editorConfig.codeFolding,
+      // folding: editorConfig.codeFolding,
       wordWrap: editorConfig.lineWrap,
-      lineDecorationsWidth: 15,
-      lineNumbersMinChars: 3,
-      suggestSelection: 'first',
-      wordBasedSuggestions: 'off',
+      renderLineHighlightOnlyWhenFocus: true,
+      // lineDecorationsWidth: 15,
+      // lineNumbersMinChars: 3,
+      // suggestSelection: 'first',
+      // wordBasedSuggestions: 'off',
+      // lineDecorationsWidth: 15,
+      // lineNumbersMinChars: 3,
+      // suggestSelection: 'first',
+      // wordBasedSuggestions: 'off',
       scrollBeyondLastLine: false,
-      /**
-       * 使用该选项可以让modal widget出现在正确的范围，而不是被遮挡,解决z-index问题,但是会导致hover组件之类的无法被选中
-       * 根据 https://github.com/microsoft/monaco-editor/issues/2156，0.34.x 版本修复了这个问题
-       * TODO: 当前0.31.1 无法开启此选项，升级 E2 3.x 可以解决（monaco 0.39）
-       *
-       * ```html
-       * <div id="monaco-editor-overflow-widgets-root" class="monaco-editor" style="z-index: 999;"></div>
-       * ```
-       *
-       */
       // overflowWidgetsDomNode: document.getElementById('monaco-editor-overflow-widgets-root')!,
       fixedOverflowWidgets: true,
-      suggest: { snippetsPreventQuickSuggestions: false },
-      autoClosingQuotes: editorConfig.autoClosingBrackets ? 'always' : 'never',
-      autoDetectHighContrast: false,
+      // suggest: { snippetsPreventQuickSuggestions: false },
+      // autoClosingQuotes: editorConfig.autoClosingBrackets ? 'always' : 'never',
+      // autoDetectHighContrast: false,
+      // suggest: { snippetsPreventQuickSuggestions: false },
+      // autoClosingQuotes: editorConfig.autoClosingBrackets ? 'always' : 'never',
+      // autoDetectHighContrast: false,
       scrollbar: {
         alwaysConsumeMouseWheel: false,
         verticalScrollbarSize: 0,
       },
+      glyphMargin: false,
       extraEditorClassName: OpensumiEditorClassname,
-      renderLineHighlight: 'all',
-      renderLineHighlightOnlyWhenFocus: true,
+      // renderLineHighlight: 'all',
+      // renderLineHighlightOnlyWhenFocus: true,
+      // renderLineHighlight: 'all',
+      // renderLineHighlightOnlyWhenFocus: true,
       readOnly: editorConfig.readOnly,
-      cursorWidth: 1,
-      tabSize: editorConfig.tabSize,
-      insertSpaces: editorConfig.insertSpaces,
-      matchBrackets: editorConfig.matchBrackets ? 'always' : 'never',
-      rulers: editorConfig.rulers,
-      wordWrapColumn: editorConfig.wordWrapColumn,
-      'semanticHighlighting.enabled': true,
+      // cursorWidth: 1,
+      // tabSize: editorConfig.tabSize,
+      // insertSpaces: editorConfig.insertSpaces,
+      // matchBrackets: editorConfig.matchBrackets ? 'always' : 'never',
+      // rulers: editorConfig.rulers,
+      // wordWrapColumn: editorConfig.wordWrapColumn,
+      // 'semanticHighlighting.enabled': true,
+      // cursorWidth: 1,
+      // tabSize: editorConfig.tabSize,
+      // insertSpaces: editorConfig.insertSpaces,
+      // matchBrackets: editorConfig.matchBrackets ? 'always' : 'never',
+      // rulers: editorConfig.rulers,
+      // wordWrapColumn: editorConfig.wordWrapColumn,
+      // 'semanticHighlighting.enabled': true,
       maxTokenizationLineLength: 10000,
-      // wrappingStrategy: 'advanced',
-      hover: {
-        enabled: true,
-      },
+      wrappingStrategy: 'advanced',
+      // hover: {
+      //   enabled: true,
+      // },
     };
   }
 
@@ -476,27 +433,31 @@ export class LibroOpensumiEditor implements IEditor {
     };
   }
 
-  protected async createEditor(host: HTMLElement, config: LibroE2EditorConfig) {
-    const editorConfig: LibroE2EditorConfig = {
+  protected async createEditor(host: HTMLElement, config: LibroOpensumiEditorConfig) {
+    const editorConfig: LibroOpensumiEditorConfig = {
       ...config,
     };
     this._config = editorConfig;
 
-    const model = this.editorState.state;
+    let modelRef = getOrigin(this.editorState.state);
 
     const options: MonacoEditorOptions = {
       ...this.toMonacoOptions(editorConfig),
-      // theme: this.theme,
-      model: getOrigin(model),
     };
 
-    // this._editor = editorPorvider.create(host, options);
     const editorCollectionService: EditorCollectionService = this.injector.get(EditorCollectionService);
+
+    if (!modelRef) {
+      const docModelService: IEditorDocumentModelService = this.injector.get(IEditorDocumentModelService);
+      const uri = URI.parse(this._uuid);
+      modelRef = await getOrigin(docModelService).createModelReference(uri, 'libro-opensumi-editor');
+    }
     this._editor = getOrigin(editorCollectionService).createCodeEditor(host, options);
 
-    // this._editor.monacoEditor.setModel(this.getState().state)
+    getOrigin(this._editor).open(modelRef);
+
     this.toDispose.push(
-      this.monacoEditor?.onDidChangeModelContent((e) => {
+      modelRef.instance.getMonacoModel()?.onDidChangeContent((e) => {
         const value = this.monacoEditor?.getValue();
         this.model.value = value ?? '';
         this.onModelContentChangedEmitter.fire(
@@ -609,7 +570,7 @@ export class LibroOpensumiEditor implements IEditor {
     }
   }
 
-  getOption<K extends keyof LibroE2EditorConfig>(option: K) {
+  getOption<K extends keyof LibroOpensumiEditorConfig>(option: K) {
     return this._config[option];
   }
 
@@ -618,7 +579,7 @@ export class LibroOpensumiEditor implements IEditor {
    * @param option
    * @param value
    */
-  setOption = <K extends keyof LibroE2EditorConfig>(option: K, value: LibroE2EditorConfig[K]) => {
+  setOption = <K extends keyof LibroOpensumiEditorConfig>(option: K, value: LibroOpensumiEditorConfig[K]) => {
     if (value === null || value === undefined) {
       return;
     }
@@ -636,10 +597,6 @@ export class LibroOpensumiEditor implements IEditor {
     //   >;
     //   this.placeholder.update(value as NonNullable<LibroE2EditorConfig['placeholder']>);
     // }
-
-    if (option === 'lspEnabled') {
-      this._config.lspEnabled = value as NonNullable<LibroE2EditorConfig['lspEnabled']>;
-    }
 
     const sizeKeys = ['fontFamily', 'fontSize', 'lineHeight', 'wordWrapColumn', 'lineWrap'];
     const monacoOptionkeys = sizeKeys.concat(['readOnly', 'insertSpaces', 'tabSize']);
@@ -677,7 +634,8 @@ export class LibroOpensumiEditor implements IEditor {
   resizeToFit = () => {
     this.monacoEditor?.layout();
   };
-  getPositionForCoordinate = () => null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getPositionForCoordinate = (coordinate: ICoordinate) => null;
 
   protected modalChangeEmitter = new Emitter<boolean>();
   get onModalChange() {

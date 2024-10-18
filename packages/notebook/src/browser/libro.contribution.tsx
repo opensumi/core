@@ -1,6 +1,6 @@
 import { LibroJupyterNoEditorModule } from '@difizen/libro-jupyter/noeditor';
 import { LibroTOCModule } from '@difizen/libro-toc';
-import { Container, ManaAppPreset, ManaComponents } from '@difizen/mana-app';
+import { Container, ManaAppPreset, ManaComponents, ThemeService } from '@difizen/mana-app';
 import React, { useState } from 'react';
 
 import { Autowired, Injector } from '@opensumi/di';
@@ -11,6 +11,8 @@ import {
   type CommandRegistry,
   Domain,
   IClientApp,
+  IOpenerService,
+  OpenerContribution,
   Schemes,
   URI,
 } from '@opensumi/ide-core-browser';
@@ -21,15 +23,18 @@ import {
   ResourceService,
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
+import { IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IThemeService, IconType } from '@opensumi/ide-theme/lib/common';
 
 import { initKernelPanelColorToken } from './kernel-panel';
 import { LibroOpensumiModule } from './libro';
+import { LibroOpener } from './libro-opener';
 import { initLibroColorToken } from './libro.color.tokens';
 import { LIBRO_COMPONENTS_ID, LIBRO_COMPONENTS_SCHEME_ID } from './libro.protocol';
 import { OpensumiLibroView } from './libro.view';
 import { ManaContainer, initLibroOpensumi, manaContainer } from './mana/index';
+import { NotebookDocumentContentProvider } from './notebook-document-content-provider';
 import { initTocPanelColorToken } from './toc';
 
 const LIBRO_COMPONENTS_VIEW_COMMAND = {
@@ -50,9 +55,20 @@ const LayoutWrapper: React.FC<React.PropsWithChildren> = ({ children }) => {
   );
 };
 
-@Domain(ClientAppContribution, BrowserEditorContribution, ClientAppContextContribution, CommandContribution)
+@Domain(
+  ClientAppContribution,
+  BrowserEditorContribution,
+  ClientAppContextContribution,
+  CommandContribution,
+  OpenerContribution,
+)
 export class LibroContribution
-  implements ClientAppContribution, BrowserEditorContribution, ClientAppContextContribution, CommandContribution
+  implements
+    ClientAppContribution,
+    BrowserEditorContribution,
+    ClientAppContextContribution,
+    CommandContribution,
+    OpenerContribution
 {
   @Autowired(ManaContainer)
   private readonly manaContainer: Container;
@@ -65,6 +81,15 @@ export class LibroContribution
 
   @Autowired(IThemeService)
   protected readonly themeService: IThemeService;
+
+  @Autowired(NotebookDocumentContentProvider)
+  protected readonly notebookDocumentContentProvider: NotebookDocumentContentProvider;
+  @Autowired(LibroOpener)
+  protected readonly libroOpener: LibroOpener;
+
+  registerOpener(registry: IOpenerService): void {
+    throw registry.registerOpener(this.libroOpener);
+  }
 
   initialize(app: IClientApp) {
     initLibroOpensumi(app.injector, manaContainer);
@@ -109,6 +134,10 @@ export class LibroContribution
     });
   }
 
+  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
+    registry.registerEditorDocumentModelContentProvider(this.notebookDocumentContentProvider);
+  }
+
   registerResource(service: ResourceService) {
     service.registerResourceProvider({
       scheme: LIBRO_COMPONENTS_SCHEME_ID,
@@ -128,11 +157,11 @@ export class LibroContribution
   }
 
   async onDidStart() {
-    // const manaThemeService = this.manaContainer.get(ThemeService);
-    // const curTheme = await this.themeService.getCurrentTheme();
-    // manaThemeService.setCurrentTheme(curTheme.type);
-    // this.themeService.onThemeChange((theme) => {
-    //   manaThemeService.setCurrentTheme(theme.type);
-    // });
+    const manaThemeService = this.manaContainer.get(ThemeService);
+    const curTheme = await this.themeService.getCurrentTheme();
+    manaThemeService.setCurrentTheme(curTheme.type);
+    this.themeService.onThemeChange((theme) => {
+      manaThemeService.setCurrentTheme(theme.type);
+    });
   }
 }

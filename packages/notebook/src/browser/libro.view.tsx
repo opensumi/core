@@ -1,16 +1,18 @@
+
 import { DocumentCommands, LibroView } from '@difizen/libro-jupyter/noeditor';
 import { CommandRegistry, Container, ViewRender } from '@difizen/mana-app';
 import * as React from 'react';
 
 import { INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { URI, useInjectable } from '@opensumi/ide-core-browser';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/types';
 
 import styles from './libro.module.less';
 import { ILibroOpensumiService } from './libro.service';
 import { LibroTracker } from './libro.view.tracker';
-import { ManaContainer } from './mana/index';
+import { ManaContainer } from './mana';
 
-export const OpensumiLibroView = (...params) => {
+export const OpensumiLibroView: ReactEditorComponent = (...params) => {
   const libroOpensumiService = useInjectable<ILibroOpensumiService>(ILibroOpensumiService);
   const manaContainer = useInjectable<Container>(ManaContainer);
   const commandRegistry = manaContainer.get(CommandRegistry);

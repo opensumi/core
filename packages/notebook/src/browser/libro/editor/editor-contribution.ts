@@ -1,38 +1,41 @@
-import { CodeEditorContribution } from '@difizen/libro-code-editor';
-import { MIME } from '@difizen/libro-common';
+import { CodeEditorContribution, CodeEditorFactory, LanguageSpecRegistry } from '@difizen/libro-code-editor';
+import { EditorStateFactory } from '@difizen/libro-jupyter';
 import { inject, singleton } from '@difizen/mana-app';
 
-import { LibroOpensumiEditorFactory, libroE2DefaultConfig, stateFactory } from './opensumi-editor';
+import { Injector } from '@opensumi/di';
 
-import type { CodeEditorFactory } from '@difizen/libro-code-editor';
+import { OpensumiInjector } from '../../common';
+
+import {
+  LibroOpensumiEditorFactory,
+  OpensumiEditorState,
+  libroOpensumiEditorDefaultConfig,
+  stateFactory,
+} from './opensumi-editor';
 
 @singleton({ contrib: [CodeEditorContribution] })
 export class LibroE2EditorContribution implements CodeEditorContribution {
+  @inject(LanguageSpecRegistry)
+  protected readonly languageSpecRegistry: LanguageSpecRegistry;
+
   factory: CodeEditorFactory;
 
-  stateFactory = stateFactory;
+  stateFactory: EditorStateFactory<OpensumiEditorState>;
 
-  defaultConfig = libroE2DefaultConfig;
+  defaultConfig = libroOpensumiEditorDefaultConfig;
 
   constructor(
     @inject(LibroOpensumiEditorFactory)
     libroOpensumiEditorFactory: LibroOpensumiEditorFactory,
+    @inject(OpensumiInjector) injector: Injector,
   ) {
     this.factory = libroOpensumiEditorFactory;
+    this.stateFactory = stateFactory(injector);
   }
 
-  // stateFactory: EditorStateFactory<any> = (options) => {
-  //   return e2StateFactory(this.languageSpecRegistry)({
-  //     uuid: options.uuid,
-  //     model: options.model,
-  //   });
-  // };
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   canHandle(mime: string): number {
-    const mimes = [MIME.odpssql, MIME.python, MIME.prompt] as string[];
-    if (mimes.includes(mime)) {
-      return 50 + 2;
-    }
-    return 0;
+    // 代码编辑都使用opensumi编辑器
+    return 50 + 2;
   }
 }

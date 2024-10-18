@@ -7,13 +7,13 @@ import { URI } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
 
-import { OpensumiInjector } from '../mana/index';
+import { ContentLoaderType, OpensumiInjector } from '../mana';
 
 @singleton({ contrib: ContentContribution })
 export class LibroOpensumiContentContribution implements ContentContribution {
   @inject(OpensumiInjector) injector: Injector;
 
-  canHandle = (options) => (options.loadType === 'libro-opensumi-loader' ? 100 : 1);
+  canHandle = (options) => options.loadType === ContentLoaderType ? 100 : 1;
   async loadContent(options: NotebookOption, model: LibroJupyterModel) {
     const fileServiceClient: IFileServiceClient = this.injector.get(IFileServiceClient);
     const messageService = this.injector.get(IMessageService);
@@ -44,6 +44,7 @@ export class LibroOpensumiContentContribution implements ContentContribution {
       };
       model.currentFileContents = currentFileContents;
       model.filePath = currentFileContents.path;
+      model.id = currentFileContents.path; //
       model.lastModified = model.currentFileContents.last_modified;
       if (model.executable) {
         model.startKernelConnection();

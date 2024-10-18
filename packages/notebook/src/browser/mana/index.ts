@@ -16,3 +16,5 @@ export const initLibroOpensumi = (injector: Injector, container?: Syringe.Contai
 };
 
 export const manaContainer = GlobalContainer.createChild();
+
+export const ContentLoaderType = 'libro-opensumi-loader';
