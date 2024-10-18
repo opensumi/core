@@ -40,7 +40,7 @@ import {
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
+import { ICodeEditor, NewSymbolName, NewSymbolNameTag, Range } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
@@ -425,6 +425,32 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
-    registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({ items: [{ insertText: 'Hello OpenSumi' }] }));
+    registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
+      items: [{ insertText: 'Hello OpenSumi' }],
+    }));
+
+    registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
+      const model = editor.getModel();
+      const maxLine = Math.max(position.lineNumber + 3, model?.getLineCount() ?? 0);
+      const lineMaxColumn = model?.getLineMaxColumn(maxLine);
+
+      return {
+        items: [
+          {
+            insertText: 'Hello OpenSumi',
+            range: Range.fromPositions(
+              {
+                lineNumber: position.lineNumber,
+                column: 1,
+              },
+              {
+                lineNumber: position.lineNumber + 3,
+                column: lineMaxColumn ?? 1,
+              },
+            ),
+          },
+        ],
+      };
+    });
   }
 }

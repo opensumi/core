@@ -16,6 +16,7 @@ import {
   MarkerSeverity,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
+import { IntelligentCompletionsController } from './intelligent-completions.controller';
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 
 import { ECodeEditsSource } from '.';
@@ -107,7 +108,7 @@ export class LintErrorCodeEditsSource extends Disposable {
       const provider = this.intelligentCompletionsRegistry.getCodeEditsProvider();
       if (provider) {
         const relativeWorkspacePath = await this.workspaceService.asRelativePath(resource.path);
-        provider(
+        const result = await provider(
           this.monacoEditor,
           position,
           {
@@ -119,6 +120,10 @@ export class LintErrorCodeEditsSource extends Disposable {
           },
           this.token,
         );
+
+        if (result) {
+          IntelligentCompletionsController.get(this.monacoEditor)?.fetchProvider(result);
+        }
       }
     }
   }

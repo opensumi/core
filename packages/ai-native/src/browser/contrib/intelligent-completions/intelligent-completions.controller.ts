@@ -4,7 +4,6 @@ import {
   AINativeSettingSectionsId,
   Disposable,
   Event,
-  IAICompletionOption,
   IDisposable,
   IntelligentCompletionsRegistryToken,
   runWhenIdle,
@@ -39,7 +38,7 @@ import {
 import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
 import { LintErrorCodeEditsSource } from './lint-error.source';
 
-import { IIntelligentCompletionsResult } from '.';
+import { ICodeEditsResult, IIntelligentCompletionsResult } from '.';
 
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.intelligent.completions';
@@ -184,41 +183,30 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     }
   }
 
-  public async fetchProvider(bean: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
-    const provider = this.intelligentCompletionsRegistry.getInlineCompletionsProvider();
-    if (!provider) {
-      return;
-    }
-
+  public async fetchProvider(editsResult: ICodeEditsResult): Promise<void> {
     // 如果上一次补全结果还在，则不重复请求
     const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
     if (isVisible) {
       return;
     }
 
-    const position = this.monacoEditor.getPosition()!;
-    const intelligentCompletionModel = await provider(this.monacoEditor, position, bean, this.token);
-
-    if (intelligentCompletionModel && intelligentCompletionModel.items.length > 0) {
-      return this.applyInlineDecorations(intelligentCompletionModel);
+    if (editsResult && editsResult.items.length > 0) {
+      this.applyInlineDecorations(editsResult);
     }
-
-    return intelligentCompletionModel;
   }
 
   private applyInlineDecorations(completionModel: IIntelligentCompletionsResult) {
     const { items } = completionModel;
-
-    const position = this.monacoEditor.getPosition()!;
-    const model = this.monacoEditor.getModel();
     const { range, insertText } = items[0];
-    const insertTextString = insertText.toString();
 
-    // 如果只是开启了 enableMultiLine 而没有传递 range ，则不显示 multi line
+    // code edits 必须提供 range
     if (!range) {
       return completionModel;
     }
 
+    const position = this.monacoEditor.getPosition()!;
+    const model = this.monacoEditor.getModel();
+    const insertTextString = insertText.toString();
     const originalContent = model?.getValueInRange(range);
     const eol = this.model.getEOL();
 

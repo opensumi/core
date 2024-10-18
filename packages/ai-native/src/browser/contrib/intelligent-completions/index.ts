@@ -14,7 +14,10 @@ export enum ECodeEditsSource {
   LinterErrors = 'lint_errors',
 }
 
-export interface ICodeEditsContextBean { typing: ECodeEditsSource.LinterErrors; data: ILinterErrorData }
+export interface ICodeEditsContextBean {
+  typing: ECodeEditsSource.LinterErrors;
+  data: ILinterErrorData;
+}
 
 export interface ICodeEdit {
   /**
@@ -24,7 +27,7 @@ export interface ICodeEdit {
   /**
    * 替换的文本范围
    */
-  readonly range?: IRange;
+  readonly range: IRange;
 }
 export interface ICodeEditsResult {
   readonly items: ICodeEdit[];
