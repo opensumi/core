@@ -28,9 +28,9 @@ import {
   mergeMultiLineDiffChanges,
   wordChangesToLineChangesMap,
 } from './diff-computer';
-import { LintErrorCodeEditsSource } from './lint-error.source';
-
-import { ICodeEditsResult } from '.';
+import { CodeEditsResultValue } from './source/base';
+import { LineChangeCodeEditsSource } from './source/line-change.source';
+import { LintErrorCodeEditsSource } from './source/lint-error.source';
 
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.intelligent.completions';
@@ -171,7 +171,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     }
   }
 
-  public async fetchProvider(editsResult: ICodeEditsResult): Promise<void> {
+  private async fetchProvider(editsResult: CodeEditsResultValue): Promise<void> {
     // 如果上一次补全结果还在，则不重复请求
     const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
     if (isVisible) {
@@ -183,7 +183,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     }
   }
 
-  private applyInlineDecorations(completionModel: ICodeEditsResult) {
+  private applyInlineDecorations(completionModel: CodeEditsResultValue) {
     const { items } = completionModel;
     const { range, insertText } = items[0];
 
@@ -377,7 +377,19 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    const lintErrorCodeEditsSource = this.injector.get(LintErrorCodeEditsSource, [this.monacoEditor, this.token]);
+    const lintErrorCodeEditsSource = this.injector.get(LintErrorCodeEditsSource, [this.monacoEditor]);
+    const lineChangeCodeEditsSource = this.injector.get(LineChangeCodeEditsSource, [this.monacoEditor]);
+
+    this.featureDisposable.addDispose(
+      autorun((reader) => {
+        const source = lintErrorCodeEditsSource.codeEditsResult.read(reader);
+        if (source) {
+          this.fetchProvider(source);
+        }
+      }),
+    );
+
     this.featureDisposable.addDispose(lintErrorCodeEditsSource.mount());
+    this.featureDisposable.addDispose(lineChangeCodeEditsSource.mount());
   }
 }
