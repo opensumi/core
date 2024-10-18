@@ -1,5 +1,7 @@
 import { IRange, InlineCompletion } from '@opensumi/ide-monaco';
 
+import type { ILinterErrorData } from './lint-error.source';
+
 export interface IIntelligentCompletionsResult<T = any> {
   readonly items: InlineCompletion[];
   /**
@@ -12,9 +14,7 @@ export enum ECodeEditsSource {
   LinterErrors = 'lint_errors',
 }
 
-export interface ICodeEditsContextBean {
-  typing: ECodeEditsSource;
-}
+export interface ICodeEditsContextBean { typing: ECodeEditsSource.LinterErrors; data: ILinterErrorData }
 
 export interface ICodeEdit {
   /**

@@ -222,7 +222,7 @@ export type ICodeEditsProvider = (
   position: IPosition,
   contextBean: ICodeEditsContextBean,
   token: CancellationToken,
-) => MaybePromise<ICodeEditsResult>;
+) => MaybePromise<ICodeEditsResult | undefined>;
 
 export interface IIntelligentCompletionsRegistry {
   /**

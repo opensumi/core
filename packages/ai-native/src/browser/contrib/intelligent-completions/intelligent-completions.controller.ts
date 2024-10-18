@@ -401,7 +401,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    const lintErrorCodeEditsSource = this.injector.get(LintErrorCodeEditsSource, [this.monacoEditor]);
-    this.featureDisposable.addDispose(lintErrorCodeEditsSource.fetch());
+    const lintErrorCodeEditsSource = this.injector.get(LintErrorCodeEditsSource, [this.monacoEditor, this.token]);
+    this.featureDisposable.addDispose(lintErrorCodeEditsSource.mount());
   }
 }
