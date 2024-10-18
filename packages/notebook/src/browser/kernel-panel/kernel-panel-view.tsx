@@ -1,6 +1,7 @@
 import { LibroKernelManager, LibroSessionManager } from '@difizen/libro-kernel';
 import { Container } from '@difizen/mana-app';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import React from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { IThemeService } from '@opensumi/ide-theme/lib/common';

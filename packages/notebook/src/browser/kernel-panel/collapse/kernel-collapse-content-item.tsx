@@ -42,7 +42,7 @@ export const LibroKernelCollapseContentItem: React.FC<Props> = (props: Props) =>
                 .then(() => {
                   props.refresh();
                 })
-                .catch(() => {
+                .catch((error) => {
                   // console.error(error);
                 });
             }

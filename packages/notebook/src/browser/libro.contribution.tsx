@@ -88,7 +88,7 @@ export class LibroContribution
   protected readonly libroOpener: LibroOpener;
 
   registerOpener(registry: IOpenerService): void {
-    throw registry.registerOpener(this.libroOpener);
+    registry.registerOpener(this.libroOpener);
   }
 
   initialize(app: IClientApp) {
@@ -104,7 +104,6 @@ export class LibroContribution
         <Layout />
       </LayoutWrapper>
     );
-    // return Layout;
   }
 
   registerCommands(registry: CommandRegistry) {

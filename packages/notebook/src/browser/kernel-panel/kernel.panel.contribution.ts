@@ -1,7 +1,7 @@
 import { Autowired } from '@opensumi/di';
 import { ComponentContribution, ComponentRegistry, Domain } from '@opensumi/ide-core-browser';
-import { IconService } from '@opensumi/ide-theme/lib/browser/index';
-import { IconType } from '@opensumi/ide-theme/lib/common/index';
+import { IconService } from '@opensumi/ide-theme/lib/browser';
+import { IconType } from '@opensumi/ide-theme/lib/common';
 
 import { KernelPanel } from './kernel-panel-view';
 import { KERNEL_PANEL_ID } from './kernel.panel.protocol';
@@ -20,7 +20,7 @@ export class KernelPanelContribution implements ComponentContribution {
       },
       IconType.Background,
     );
-    registry.register('@opensumi/libro-kernel-terminal', [], {
+    registry.register('@opensumi/ide-notebook', [], {
       containerId: KERNEL_PANEL_ID,
       iconClass,
       title: '运行的终端和内核',

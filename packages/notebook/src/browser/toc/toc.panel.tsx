@@ -9,7 +9,7 @@ import { OutlinePanel } from '@opensumi/ide-outline/lib/browser/outline';
 
 import { LIBRO_COMPONENTS_SCHEME_ID } from '../libro.protocol';
 import { ILibroOpensumiService } from '../libro.service';
-import { ManaContainer } from '../mana/index';
+import { ManaContainer } from '../mana';
 
 import styles from './toc.module.less';
 
@@ -21,15 +21,15 @@ export const TocPanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState
   const [libroTocView, setLibroTocView] = useState<TOCView | undefined>();
 
   useEffect(() => {
+    return;
     if (editorService.currentResource?.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
       libroOpensumiService.getOrCreatLibroView(editorService.currentResource.uri).then((libro) => {
         const viewManager = manaContainer.get(ViewManager);
         viewManager
           .getOrCreateView<TOCView>(TOCView, {
-            id: editorService.currentResource?.uri.toString(),
+            id: (editorService.currentResource?.uri as URI).toString(),
           })
           .then((libroTocView) => {
-            // @ts-ignore
             libroTocView.parent = libro;
             setLibroTocView(libroTocView);
             return;
@@ -45,7 +45,6 @@ export const TocPanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState
               id: (e.uri as URI).toString(),
             })
             .then((libroTocView) => {
-              // @ts-ignore
               libroTocView.parent = libro;
               setLibroTocView(libroTocView);
               return;
@@ -55,8 +54,7 @@ export const TocPanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState
         setLibroTocView(undefined);
       }
     });
-  }, []);
-
+  });
   if (libroTocView) {
     return (
       <div className={styles.toc}>

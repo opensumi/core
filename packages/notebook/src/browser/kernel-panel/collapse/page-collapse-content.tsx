@@ -12,9 +12,7 @@ export const OpenedTab: React.FC<{ item: URI; refresh: () => void }> = ({ item, 
 
   useEffect(() => {
     resourceService.getResource(item).then((resource) => {
-      if (resource !== null) {
-        setResource(resource);
-      }
+      if (resource !== null) {setResource(resource);}
     });
   }, []);
 
@@ -49,9 +47,7 @@ export const OpenedTabs: React.FC<{ refresh: () => void }> = ({ refresh }) => {
 
   return (
     <div>
-      {openedUris.map((item) => (
-        <OpenedTab item={item} refresh={refresh} key={item.toString()}></OpenedTab>
-      ))}
+      {openedUris.map((item) => <OpenedTab item={item} refresh={refresh} key={item.toString()}></OpenedTab>)}
     </div>
   );
 };

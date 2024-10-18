@@ -11,9 +11,7 @@ interface Props {
 }
 
 export const LibroKernelCollapseContent: React.FC<Props> = (props: Props) => (
-  <>
-    {props.items.map((item) => (
-      <LibroKernelCollapseContentItem item={item} key={item.id} refresh={props.refresh} />
-    ))}
-  </>
-);
+    <>
+      {props.items.map((item) => <LibroKernelCollapseContentItem item={item} key={item.id} refresh={props.refresh} />)}
+    </>
+  );

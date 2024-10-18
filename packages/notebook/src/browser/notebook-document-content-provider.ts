@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { LibroCellURIScheme } from '@difizen/libro-common';
 
 import { Autowired, Injectable } from '@opensumi/di';

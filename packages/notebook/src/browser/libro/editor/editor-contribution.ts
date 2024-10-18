@@ -1,10 +1,10 @@
 import { CodeEditorContribution, CodeEditorFactory, LanguageSpecRegistry } from '@difizen/libro-code-editor';
-import { EditorStateFactory } from '@difizen/libro-jupyter';
+import { EditorStateFactory } from '@difizen/libro-jupyter/noeditor';
 import { inject, singleton } from '@difizen/mana-app';
 
 import { Injector } from '@opensumi/di';
 
-import { OpensumiInjector } from '../../common';
+import { OpensumiInjector } from '../../mana';
 
 import {
   LibroOpensumiEditorFactory,

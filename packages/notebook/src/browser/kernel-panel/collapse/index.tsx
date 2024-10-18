@@ -1,8 +1,9 @@
 import { CaretDownOutlined, CaretRightOutlined } from '@ant-design/icons';
-import React, { useState } from 'react';
+import { ConfigProvider, Empty, Popconfirm, message, theme } from 'antd';
+import React, { useEffect, useState } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IThemeService } from '@opensumi/ide-theme/lib/common';
 
 import {
   LibroPanelCollapseItem,
@@ -21,7 +22,9 @@ const getCollapseContentView = (
   refresh: () => void,
 ) => {
   if (!items) {
-    return <div className='kernel-and-terminal-panel-empty'>暂无内容</div>;
+    return (
+      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='暂无内容' className='kernel-and-terminal-panel-empty' />
+    );
   }
 
   switch (type) {
@@ -46,48 +49,63 @@ const getCollapseHeaderLabel = (type: LibroPanelCollapseItemType) => {
 
 export const LibroCollapse: React.FC<Props> = (props: Props) => {
   const [open, setOpen] = useState<boolean>(true);
-
-  const dialogService: IDialogService = useInjectable(IDialogService);
-  const messageService: IMessageService = useInjectable(IMessageService);
-
-  const confirmCloseAll = () => {
-    dialogService.info('你确定要关闭全部吗？', ['确认', '取消']).then((val) => {
-      if (val === '确认' && props.shutdownAll) {
-        props
-          .shutdownAll()
-          .then(() => {
-            props.refresh();
-          })
-          .catch(() => {
-            messageService.error(`shutdown all ${props.type}s error`);
-          });
-      }
+  const themeService = useInjectable<IThemeService>(IThemeService);
+  const [themeType, setThemeType] = useState('dark');
+  useEffect(() => {
+    themeService.getCurrentTheme().then((theme) => {
+      setThemeType(theme.type);
     });
-  };
-
+    themeService.onThemeChange((e) => {
+      setThemeType(e.type);
+    });
+  }, []);
   return (
-    <div className='libro-panel-collapse-container' key={props.type}>
-      <div className='libro-panel-collapse-header'>
-        <div
-          className='libro-panel-collapse-header-left'
-          onClick={() => {
-            setOpen(!open);
-          }}
-        >
-          <div className='libro-panel-collapse-header-icon'>
-            {open ? <CaretDownOutlined /> : <CaretRightOutlined />}
+    <ConfigProvider
+      theme={{
+        algorithm: themeType === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+      }}
+    >
+      <div className='libro-panel-collapse-container' key={props.type}>
+        <div className='libro-panel-collapse-header'>
+          <div
+            className='libro-panel-collapse-header-left'
+            onClick={() => {
+              setOpen(!open);
+            }}
+          >
+            <div className='libro-panel-collapse-header-icon'>
+              {open ? <CaretDownOutlined /> : <CaretRightOutlined />}
+            </div>
+            <div className='libro-panel-collapse-header-label'>{getCollapseHeaderLabel(props.type)}</div>
           </div>
-          <div className='libro-panel-collapse-header-label'>{getCollapseHeaderLabel(props.type)}</div>
+          <div className='libro-panel-collapse-header-close-all'>
+            <Popconfirm
+              title='你确定要关闭全部吗？'
+              okText='确定'
+              cancelText='取消'
+              onConfirm={() => {
+                if (props.shutdownAll) {
+                  props
+                    .shutdownAll()
+                    .then(() => {
+                      props.refresh();
+                    })
+                    .catch((e) => {
+                      message.error(`shutdown all ${props.type}s error`);
+                    });
+                }
+              }}
+            >
+              关闭全部
+            </Popconfirm>
+          </div>
         </div>
-        <div className='libro-panel-collapse-header-close-all' onClick={confirmCloseAll}>
-          关闭全部
-        </div>
+        {open && (
+          <div className='libro-panel-collapse-content'>
+            {getCollapseContentView(props.type, props.items, props.refresh)}
+          </div>
+        )}
       </div>
-      {open && (
-        <div className='libro-panel-collapse-content'>
-          {getCollapseContentView(props.type, props.items, props.refresh)}
-        </div>
-      )}
-    </div>
+    </ConfigProvider>
   );
 };
