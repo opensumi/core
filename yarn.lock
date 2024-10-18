@@ -31,12 +31,53 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ant-design/colors@npm:^7.0.0":
+"@ant-design/colors@npm:^7.0.0, @ant-design/colors@npm:^7.1.0":
   version: 7.1.0
   resolution: "@ant-design/colors@npm:7.1.0"
   dependencies:
     "@ctrl/tinycolor": "npm:^3.6.1"
   checksum: 10/207f6d98e9d7f85c676279d516d87b6faa1794fdcbef17779dbc09ab033ca2dff048dc7bce71cb7095fcc053a84a65aff4d786e5b55af24a372a8bfa0ebf8fc8
+  languageName: node
+  linkType: hard
+
+"@ant-design/cssinjs-utils@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@ant-design/cssinjs-utils@npm:1.1.1"
+  dependencies:
+    "@ant-design/cssinjs": "npm:^1.21.0"
+    "@babel/runtime": "npm:^7.23.2"
+    rc-util: "npm:^5.38.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/48934bb94f0e5f802223b1d4d8a5c44da7da573a9281d5582d9bc63e71cce212b620bbbcfaddec34a40a41612e081a3c5a107f8876172fffc61054fac0d645b4
+  languageName: node
+  linkType: hard
+
+"@ant-design/cssinjs@npm:^1.21.0, @ant-design/cssinjs@npm:^1.21.1":
+  version: 1.21.1
+  resolution: "@ant-design/cssinjs@npm:1.21.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.11.1"
+    "@emotion/hash": "npm:^0.8.0"
+    "@emotion/unitless": "npm:^0.7.5"
+    classnames: "npm:^2.3.1"
+    csstype: "npm:^3.1.3"
+    rc-util: "npm:^5.35.0"
+    stylis: "npm:^4.3.3"
+  peerDependencies:
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 10/c26b84ec05df784ed83496463a5eb9db21c6ca3a4710aaec7af07090b562cf1bdabd7543b92e8c64da4dc8ac5be88baf94bda53cee1ca83428e45133389079b8
+  languageName: node
+  linkType: hard
+
+"@ant-design/fast-color@npm:^2.0.6":
+  version: 2.0.6
+  resolution: "@ant-design/fast-color@npm:2.0.6"
+  dependencies:
+    "@babel/runtime": "npm:^7.24.7"
+  checksum: 10/94167d70e10d4c267875b97bbe282fe32e6a60aabbfb70dd9f3c5500c559e4c91c4881a364168629ec1c150441e37f0da3fa97d34cb3d24373535a792d91e627
   languageName: node
   linkType: hard
 
@@ -64,7 +105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ant-design/icons@npm:^5.1.0":
+"@ant-design/icons@npm:^5.1.0, @ant-design/icons@npm:^5.5.1":
   version: 5.5.1
   resolution: "@ant-design/icons@npm:5.5.1"
   dependencies:
@@ -77,6 +118,21 @@ __metadata:
     react: ">=16.0.0"
     react-dom: ">=16.0.0"
   checksum: 10/8e5c75df40285af0b87fbb88adaa0c2f566c7fda3282233e802981034a99e968f03f39705ecc7870824d4b4b3ee5dc1b8e733a3073717441dc5c691e07c28536
+  languageName: node
+  linkType: hard
+
+"@ant-design/react-slick@npm:~1.1.2":
+  version: 1.1.2
+  resolution: "@ant-design/react-slick@npm:1.1.2"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.4"
+    classnames: "npm:^2.2.5"
+    json2mq: "npm:^0.2.0"
+    resize-observer-polyfill: "npm:^1.5.1"
+    throttle-debounce: "npm:^5.0.0"
+  peerDependencies:
+    react: ">=16.9.0"
+  checksum: 10/b38e44630936c8fa3b055c9f7cdbd510b78d18ce31fe32165be4d0e8d082ee735216daa9228881d41b79e85f22eac8deee182ed8103f23108517c72606348132
   languageName: node
   linkType: hard
 
@@ -523,7 +579,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.24.8, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:^7.10.4, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.16.7, @babel/runtime@npm:^7.20.0, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.22.5, @babel/runtime@npm:^7.23.6, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.24.4, @babel/runtime@npm:^7.24.7, @babel/runtime@npm:^7.24.8, @babel/runtime@npm:^7.25.6, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
   version: 7.25.7
   resolution: "@babel/runtime@npm:7.25.7"
   dependencies:
@@ -972,38 +1028,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/libro-code-cell@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-code-cell@npm:0.2.41"
+"@difizen/libro-code-cell@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-code-cell@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
   peerDependencies:
     react: ">=16"
-  checksum: 10/0b27b1c76f503a9528090997695617c3bd7cd68e49453e829f25e6f7056811d6ad757c82327557a9fb02a46c9d32c636507348b638fbcf95fb67c778b954d4b0
+  checksum: 10/a6d3bcdca0ee3061ed8901a28efe0281818eeca05014126637d02baf4c8971761f6f2c7326239850be815eda93d6f55f8375293278cdcbe31f3e57c89a15414d
   languageName: node
   linkType: hard
 
-"@difizen/libro-code-editor@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-code-editor@npm:0.2.41"
+"@difizen/libro-code-editor@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-code-editor@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-common": "npm:^0.2.41"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
     uuid: "npm:^9.0.0"
   peerDependencies:
     react: ">=16"
-  checksum: 10/e31d06d003ac1afd9fdcd4b9ec5f259662d389cdfc24932ea7af1a584f6e19ab5c28864fa50f89284b9fd169a50e6ddf890c3129891cdceed28dac735e90c0a1
+  checksum: 10/b3fcfd6a9a339e07f74c05a9579f557b7b9a5149424da18a07216e63172a814d1fbb7fd03427d5f2ae89b3e1bd4fb629f96ddc1f0f5b247bb1d3fe8711ffc5b1
   languageName: node
   linkType: hard
 
-"@difizen/libro-codemirror@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-codemirror@npm:0.2.41"
+"@difizen/libro-codemirror@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-codemirror@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     "@codemirror/autocomplete": "npm:^6.12.0"
     "@codemirror/commands": "npm:^6.3.3"
@@ -1014,10 +1070,10 @@ __metadata:
     "@codemirror/search": "npm:^6.0.0"
     "@codemirror/state": "npm:^6.4.0"
     "@codemirror/view": "npm:^6.23.0"
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-lsp": "npm:^0.2.41"
-    "@difizen/libro-rendermime": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-lsp": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-rendermime": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
     "@lezer/common": "npm:^1.2.1"
@@ -1026,42 +1082,42 @@ __metadata:
     markdown-it: "npm:^13.0.1"
     uuid: "npm:^9.0.0"
     vscode-languageserver-protocol: "npm:^3.17.0"
-  checksum: 10/57d554c1047abe76acb3a462ff1974280f21af88fdbbb3e50eac4576dcb90c5ae9e9bb8a18e64c3e06ca888785a50157edfc4b551e0e650dadf729437e191a13
+  checksum: 10/a3ec3f22f3a4273bba484fe2205243c0982a092607c10c7546a4c64ea74ecd0a2867c021b4a6ce69d769a8e4f1c713a4fe9dc198ed845ef7054de7a30c623e96
   languageName: node
   linkType: hard
 
-"@difizen/libro-cofine-editor-contribution@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-cofine-editor-contribution@npm:0.2.41"
+"@difizen/libro-cofine-editor-contribution@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-cofine-editor-contribution@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     "@difizen/mana-app": "npm:latest"
-  checksum: 10/a8a7459fadd0334a1eca119ea4cebb9f9f0df69643d6e3732a5312b26a944380eb8a12e544ce974066327947e727d3f564d92cb6b206919f03aa58e07993036b
+  checksum: 10/637acc15313860d640ec62a7fe356d442baddef96436c484c154d31f2a7f3760a78ceadae553eaf130e4ea49944d755725f69b3afa7dbea192382a026f5da134
   languageName: node
   linkType: hard
 
-"@difizen/libro-cofine-editor-core@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-cofine-editor-core@npm:0.2.41"
+"@difizen/libro-cofine-editor-core@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-cofine-editor-core@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-cofine-editor-contribution": "npm:^0.2.41"
+    "@difizen/libro-cofine-editor-contribution": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/monaco-editor-core": "npm:0.39.4"
     debug: "npm:^4.3.2"
     reflect-metadata: "npm:^0.1.13"
-  checksum: 10/f0fc2f3c7ade83b6dec4b7f7adb92632251760cd4dff1267b9c5a808c79cf5fc719f42256c75f45eebb32cd238ca6d80abcd1e93f224bbc94fa52a74c09c0dff
+  checksum: 10/943350e93354dcd48d91a853eca1ed3dd440bd83d8f7ace999621c736f8d66735bf552eccced3b2325c3fe8c9c26ef102e872070cde4bd62349dc9d331d2b0bb
   languageName: node
   linkType: hard
 
-"@difizen/libro-cofine-editor@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-cofine-editor@npm:0.2.41"
+"@difizen/libro-cofine-editor@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-cofine-editor@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-cofine-editor-core": "npm:^0.2.41"
-    "@difizen/libro-cofine-textmate": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-lsp": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-cofine-editor-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-cofine-textmate": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-lsp": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/monaco-editor-core": "npm:0.39.4"
     resize-observer-polyfill: "npm:^1.5.1"
@@ -1069,26 +1125,26 @@ __metadata:
     vscode-languageserver-protocol: "npm:^3.17.4"
   peerDependencies:
     react: ">=16"
-  checksum: 10/34732a3d405b2e8e2e5a1063f659cc14103b76356df3ea832bcbd7d48e321ca7c7536dab03e08fbf4e8c622d04b0fc47e0591bbad98fcc7a6c86dd0015476222
+  checksum: 10/b1cbb4159863e470f8246811948e0e9c2fa230c048e171350983b04d41979b3bb55d2a3d55c5a12ed2a91d6d4f4da3b67d8ef2f42b43d1bc29e05c93c2fcf986
   languageName: node
   linkType: hard
 
-"@difizen/libro-cofine-textmate@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-cofine-textmate@npm:0.2.41"
+"@difizen/libro-cofine-textmate@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-cofine-textmate@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-cofine-editor-core": "npm:^0.2.41"
+    "@difizen/libro-cofine-editor-core": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     fast-plist: "npm:^0.1.2"
     vscode-oniguruma: "npm:^1.5.1"
     vscode-textmate: "npm:^9.0.0"
-  checksum: 10/2340a06dbfb84900f8becb1816407c20f00752ece8b3c62a21d1c362abbbf2a5dbfecb5a98985521e7720543ae7764cd48d6b5416b80965ab1b2f5469a1a92c8
+  checksum: 10/0068a8713cda84ea40f35efeb0062250b0262c80fb4b382ba44303b68376bf9c531419b718509ae68a0d5779673e2f4aea83891995247ae8a65b715320f7de92
   languageName: node
   linkType: hard
 
-"@difizen/libro-common@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-common@npm:0.2.41"
+"@difizen/libro-common@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-common@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     "@difizen/mana-app": "npm:latest"
     path-browserify: "npm:^1.0.0"
@@ -1096,19 +1152,19 @@ __metadata:
     url-parse: "npm:^1.5.10"
   peerDependencies:
     react: ">=16"
-  checksum: 10/8c6811134e59be770629b5bcd382adf0d9d8249db0f8b38019efe532e244c5b1f45fd23193dac9e01e10f8545b63d330549c9a79aa80a0211d2d58998ad3e9cf
+  checksum: 10/b4d448de4c7cc2042589dda368eb1e886dc9411073e74cf8a964bbfec387159157a4be779ab62b13ef95217652e743b8fc47ab02c734d34ecc5a29a1bde402f9
   languageName: node
   linkType: hard
 
-"@difizen/libro-core@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-core@npm:0.2.41"
+"@difizen/libro-core@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-core@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     "@ant-design/icons": "npm:^5.1.0"
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-shared-model": "npm:^0.2.41"
-    "@difizen/libro-virtualized": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-shared-model": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-virtualized": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
     "@difizen/mana-react": "npm:latest"
@@ -1122,32 +1178,32 @@ __metadata:
   peerDependencies:
     antd: ^5.8.6
     react: ">=16"
-  checksum: 10/3e9142ed740d0d69c6214d77dfe311300fc3777c8b6e3dedba95a68e15d12bd3a9e1b1265a093689fb545647505b16eb592814c0ff43db5fc329c3fcd7b2aec0
+  checksum: 10/a5db079cb02ad7dc303a6304ee9c95687caf9ce86c537c2d801e45a8232542396dbe5f53799d3618193b4286b073e3dafb00af2d38e4fc42cf99560ff0ca4a5e
   languageName: node
   linkType: hard
 
-"@difizen/libro-jupyter@npm:^0.2.18":
-  version: 0.2.41
-  resolution: "@difizen/libro-jupyter@npm:0.2.41"
+"@difizen/libro-jupyter@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-jupyter@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     "@ant-design/colors": "npm:^7.0.0"
     "@ant-design/icons": "npm:^5.1.0"
-    "@difizen/libro-code-cell": "npm:^0.2.41"
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-codemirror": "npm:^0.2.41"
-    "@difizen/libro-cofine-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-kernel": "npm:^0.2.41"
-    "@difizen/libro-l10n": "npm:^0.2.41"
-    "@difizen/libro-language-client": "npm:^0.2.41"
-    "@difizen/libro-lsp": "npm:^0.2.41"
-    "@difizen/libro-markdown-cell": "npm:^0.2.41"
-    "@difizen/libro-output": "npm:^0.2.41"
-    "@difizen/libro-raw-cell": "npm:^0.2.41"
-    "@difizen/libro-rendermime": "npm:^0.2.41"
-    "@difizen/libro-search": "npm:^0.2.41"
-    "@difizen/libro-search-code-cell": "npm:^0.2.41"
+    "@difizen/libro-code-cell": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-codemirror": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-cofine-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-kernel": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-l10n": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-language-client": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-lsp": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-markdown-cell": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-output": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-raw-cell": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-rendermime": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-search": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-search-code-cell": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
     classnames: "npm:^2.3.2"
@@ -1156,45 +1212,45 @@ __metadata:
   peerDependencies:
     antd: ^5.8.6
     react: ">=16"
-  checksum: 10/b79d0984a1fa0ef34257cd09c66e46317d3be462c6a91b95b096cd528779d021ece4f835353e669621db15d0d5f708ccb356da1dc12e8553c30e7e468598d3ea
+  checksum: 10/e0cc0022949398435053a158c54e37ceb3e37064e9888d51282ab499599bbd4b4e76f72615bc5ab48b18c69c95b26f19b5dd96bf7a1d4140f7fbcad8efc875ce
   languageName: node
   linkType: hard
 
-"@difizen/libro-kernel@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-kernel@npm:0.2.41"
+"@difizen/libro-kernel@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-kernel@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     minimist: "npm:^1.2.8"
     query-string: "npm:^8.1.0"
     uuid: "npm:^9.0.0"
   peerDependencies:
     react: ">=16"
-  checksum: 10/ab938724b1abec9b13b1f2f75ac9821594bde2f7172f6c07fbf8021236d9909dcb260af2731ce0eebbcba53788f9c49c37e8a352e82967ee01f7c30a492e4cfc
+  checksum: 10/b41d92fe043455eef77cb2b16664cfcddcb07d88b8facbd8bea440e966e98616a959092bfcc06babe46a76efdebf1fc929a6ecbbab9cadafb0b1e34a3b1f28ce
   languageName: node
   linkType: hard
 
-"@difizen/libro-l10n@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-l10n@npm:0.2.41"
+"@difizen/libro-l10n@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-l10n@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
-  checksum: 10/fdca7fb95071c9e77b52cf2368f299cb78c5362f08633f61480979174ffc2c5df3c307f4c4f2038bafa8b166b356e004ca3b6695d5dca59d9e4e74df309f09ba
+  checksum: 10/8c37889d175fa00caefc208c3a0ad2caf4f0bd080571ac31189781c09790ba8d9e03bbaae765168f1218a0842fd4c1e6664f0fa7c72569cc2d9415778afdf7ba
   languageName: node
   linkType: hard
 
-"@difizen/libro-language-client@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-language-client@npm:0.2.41"
+"@difizen/libro-language-client@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-language-client@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-kernel": "npm:^0.2.41"
-    "@difizen/libro-lsp": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-kernel": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-lsp": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-common": "npm:latest"
     "@difizen/monaco-editor-core": "npm:^0.39.4"
@@ -1205,18 +1261,18 @@ __metadata:
     vscode-ws-jsonrpc: "npm:^3.1.0"
   peerDependencies:
     react: ">=16"
-  checksum: 10/e956f57a5218debfeca4079a892c1db4973fd694042c1dc3f4e0313ee3f3afcc4a4470419f26f530e21737b6af823d14d7760bf4c8e48179b39a8ff658a63112
+  checksum: 10/84c60c2d21db75f9911a59840145a1451387c6966dfbf608abacf91b0d87f6a427172879edcd760d7b0c72178170fc0fa64497ac46aad095e39c6420099cb744
   languageName: node
   linkType: hard
 
-"@difizen/libro-lsp@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-lsp@npm:0.2.41"
+"@difizen/libro-lsp@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-lsp@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-kernel": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-kernel": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     lodash.mergewith: "npm:^4.6.2"
     uuid: "npm:^9.0.0"
@@ -1225,31 +1281,31 @@ __metadata:
     vscode-ws-jsonrpc: "npm:~1.0.2"
   peerDependencies:
     react: ">=16"
-  checksum: 10/1f7e666844babb6a9627fc6cd6b458415ee1d3b2b1c00e36828a042654c35fa5919834eee7243c027888c0c7c76cafee35860e3d3fef64d8c0877eb3e55a1622
+  checksum: 10/d3fa83ee65d131df9b2d9f422adba14b52b99749b7e4b84c309d3782a241dd30c4b948ad9259121cc2b0d0dc62d997e561d33973663a8b506e2ea1996d2849ce
   languageName: node
   linkType: hard
 
-"@difizen/libro-markdown-cell@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-markdown-cell@npm:0.2.41"
+"@difizen/libro-markdown-cell@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-markdown-cell@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-markdown": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-markdown": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@types/markdown-it": "npm:^12.2.3"
     markdown-it: "npm:^13.0.1"
     markdown-it-anchor: "npm:^8.6.5"
   peerDependencies:
     react: ">=16"
-  checksum: 10/abaed2a7f6fcd94a1d7640a846952bd3b41a959d08075fb2e81cf1598709dd8a88fe04019de532bbd7dde6f9440f0e06af3529876ce4748ae15ceb412809ae01
+  checksum: 10/0b3b3e2d2c7454b20be0d63c70252bcb7cd0eac5321a31978e6c4226406810bcb11b39032ce3b80e4e46d9d1cf4b5edbd0a5c95427e0b9dc68d19d405b8afd1b
   languageName: node
   linkType: hard
 
-"@difizen/libro-markdown@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-markdown@npm:0.2.41"
+"@difizen/libro-markdown@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-markdown@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:^0.1.24"
@@ -1258,77 +1314,77 @@ __metadata:
     katex: "npm:^0.16.10"
     markdown-it: "npm:^13.0.1"
     markdown-it-anchor: "npm:^8.6.5"
-  checksum: 10/b458f762cf89d15ff5ccfe1918315c97d4981ca27e097c70afc97aeaa8527d1f2b29cd8e743dd5293de635e1788dfca10bc0039d5ddfd563d14c352d0beecfb4
+  checksum: 10/60e603044f048efd28455ded17c2660c602c2309eea8b4d4009a633aaee227d0ae5f55a81753602cace7f549c330ad4f5a2813ace40083a6bbe5f1e4efab9a44
   languageName: node
   linkType: hard
 
-"@difizen/libro-output@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-output@npm:0.2.41"
+"@difizen/libro-output@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-output@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-rendermime": "npm:^0.2.41"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-rendermime": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     markdown-it: "npm:^13.0.1"
   peerDependencies:
     antd: ^5.8.6
     react: ">=16"
-  checksum: 10/18d7be2e2e815f1823b0cbe2453474c472bfa35a220ac442204525a9101b6a3a31819cef9fb82fe82eb0dc23a3f23fd67b71be3daec88c8e38773352234f4300
+  checksum: 10/815227a1e1c072e07bf351fe2a05a2c8426d40812a31e0f883fdd59d0cca5cb7eeb0bc477dd0d4cfda05bfc843825de39780d32f8e6a384e73627ab7a1c45e72
   languageName: node
   linkType: hard
 
-"@difizen/libro-raw-cell@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-raw-cell@npm:0.2.41"
+"@difizen/libro-raw-cell@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-raw-cell@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
   peerDependencies:
     react: ">=16"
-  checksum: 10/05db439c0fbf0725c73df3828674a9a032f4690a463e833e958484b1623e680a211e291130e853e1b23fbb4f3d68250220f60afe327d0fa5b49243ac88da73de
+  checksum: 10/528ba663d0de48060d079bae8f4f2a6c4e2455888cc2ebacc2aa3939e80260541d0329541a6d16544c886c3a6583b1ce29cd7ab21148f66030751faafa407851
   languageName: node
   linkType: hard
 
-"@difizen/libro-rendermime@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-rendermime@npm:0.2.41"
+"@difizen/libro-rendermime@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-rendermime@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-markdown": "npm:^0.2.41"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-markdown": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     lodash.escape: "npm:^4.0.1"
   peerDependencies:
     react: ">=16"
-  checksum: 10/bca151c2b41c1ebcbc053f47419f389d983c3193ecfce1e19dff3be9ca40ed44660b5d05e4438fa40d448c64c7117f8c59f3d6eac4a3d689e39d0933cab2c5c0
+  checksum: 10/c89b9df20e8740bca51025bdd64869b094b49cacfd94833077762ecf38a7b3f1342092214b6c14c1d21bb73c8dd28b02b58bcc73b40a791d2392ce12228cace0
   languageName: node
   linkType: hard
 
-"@difizen/libro-search-code-cell@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-search-code-cell@npm:0.2.41"
+"@difizen/libro-search-code-cell@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-search-code-cell@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-code-cell": "npm:^0.2.41"
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-search": "npm:^0.2.41"
+    "@difizen/libro-code-cell": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-search": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
-  checksum: 10/a1e903d4a17e1ce593f01e77b0bad67ad5ab327c71c9dded6caa4dccedd718e0c2d14a6034e712490433cdd7708c4c764ef1f33874cb677c0ba52a062b002ceb
+  checksum: 10/2fc7e9dba7e10d764c62d666905ab810a29eb61c32d6ff7c892f1cad2f7a6faf6f85b10e4a7e1022e9afe10da4d175ed834724f67c5a959e26f8dc8627724526
   languageName: node
   linkType: hard
 
-"@difizen/libro-search@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-search@npm:0.2.41"
+"@difizen/libro-search@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-search@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     "@ant-design/icons": "npm:^5.1.0"
-    "@difizen/libro-code-editor": "npm:^0.2.41"
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
     "@types/lodash.debounce": "npm:^4.0.7"
@@ -1338,49 +1394,49 @@ __metadata:
   peerDependencies:
     antd: ^5.8.6
     react: ">=16"
-  checksum: 10/fd1cc4e8b6b40a1000fab7e490f7ef7c06129b404a3912e0bea8882b4637de17adcbbca2ef1c42ba0e9a094f6feb15350079ec686ee0ef7ebbb44d0b8b19c1db
+  checksum: 10/2d6da2cb6402e4771d4efd9a09e9162921bff4b5c5f45501c8a9b263cde47c1135c28d0cc8cc939ca36044851e8aacb958116b02389ba64c52cc0c6a75a46428
   languageName: node
   linkType: hard
 
-"@difizen/libro-shared-model@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-shared-model@npm:0.2.41"
+"@difizen/libro-shared-model@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-shared-model@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-common": "npm:^0.2.41"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     uuid: "npm:^9.0.0"
     y-protocols: "npm:^1.0.5"
     yjs: "npm:^13.5.40"
-  checksum: 10/860eb97d51da4fcaa2257ae552a2181ee5bc7d82ad78bf521586372fe6813b6f5edf29076453a51bb237e203b1917569c7437ba73930d17a618620bed9e36c80
+  checksum: 10/6883c1082a741554587c021886e6b8c1d367c0895032d9b42289ea6b7248c833189e2c4718dc163ce29794339a35fb43a03e88312da74932deee7b764591132b
   languageName: node
   linkType: hard
 
-"@difizen/libro-toc@npm:^0.2.18":
-  version: 0.2.41
-  resolution: "@difizen/libro-toc@npm:0.2.41"
+"@difizen/libro-toc@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-toc@npm:0.0.0-snapshot-20241017090244"
   dependencies:
-    "@difizen/libro-common": "npm:^0.2.41"
-    "@difizen/libro-core": "npm:^0.2.41"
-    "@difizen/libro-markdown": "npm:^0.2.41"
-    "@difizen/libro-rendermime": "npm:^0.2.41"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-markdown": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-rendermime": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
   peerDependencies:
     react: ">=16"
-  checksum: 10/91c15aaaa5ef4947bd6a2ce9c2f75d4ca9a03066e6a90b33e84ced188bded502fe778839756888d76c79c4e62a891119ea697adc0863e4714a072cc51a5d598b
+  checksum: 10/2b434f39be9338dc673854046fedf677c924f4a54583a73280ac9210d690154257a85f3346c7e6a5274b1441d56b08eddf9bd2b32cd424029d97e91aec2efdfb
   languageName: node
   linkType: hard
 
-"@difizen/libro-virtualized@npm:^0.2.41":
-  version: 0.2.41
-  resolution: "@difizen/libro-virtualized@npm:0.2.41"
+"@difizen/libro-virtualized@npm:0.0.0-snapshot-20241017090244":
+  version: 0.0.0-snapshot-20241017090244
+  resolution: "@difizen/libro-virtualized@npm:0.0.0-snapshot-20241017090244"
   dependencies:
     classnames: "npm:^2.3.2"
     dom-helpers: "npm:^5.2.1"
   peerDependencies:
     react: ">=16"
     react-dom: ">=16"
-  checksum: 10/28eb757a2c0edfb5dfc4a2a1b3876035361b5cfb0854afa25ff9be97769d61fe261b0b3433c8da598011f7509c563fab72cecc20660d79ff161e65b44dec3fb6
+  checksum: 10/ddfd4ca1e29d77c92e28f31cc7a09249fb0238673a0ffaf1e3f9fe3c4aa0227045a0907cddc0feb841238cd14727a3b5b78f09e60ed8ca72a687d225359dd103
   languageName: node
   linkType: hard
 
@@ -1547,6 +1603,20 @@ __metadata:
     global-agent:
       optional: true
   checksum: 10/ac736cdeac52513b23038c761ebcb9fd315d443675f12c975805d7bcddcdabe5be492310ce5f6f1915d27013bcdcf19d0dac73c72353120948bbdf01fb3e11bf
+  languageName: node
+  linkType: hard
+
+"@emotion/hash@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@emotion/hash@npm:0.8.0"
+  checksum: 10/4b35d88a97e67275c1d990c96d3b0450451d089d1508619488fc0acb882cb1ac91e93246d471346ebd1b5402215941ef4162efe5b51534859b39d8b3a0e3ffaa
+  languageName: node
+  linkType: hard
+
+"@emotion/unitless@npm:^0.7.5":
+  version: 0.7.5
+  resolution: "@emotion/unitless@npm:0.7.5"
+  checksum: 10/f976e5345b53fae9414a7b2e7a949aa6b52f8bdbcc84458b1ddc0729e77ba1d1dfdff9960e0da60183877873d3a631fa24d9695dd714ed94bcd3ba5196586a6b
   languageName: node
   linkType: hard
 
@@ -3793,8 +3863,8 @@ __metadata:
   resolution: "@opensumi/ide-notebook@workspace:packages/notebook"
   dependencies:
     "@ant-design/icons": "npm:^4.6.4"
-    "@difizen/libro-jupyter": "npm:^0.2.18"
-    "@difizen/libro-toc": "npm:^0.2.18"
+    "@difizen/libro-jupyter": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-toc": "npm:0.0.0-snapshot-20241017090244"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-editor": "workspace:*"
@@ -4020,6 +4090,7 @@ __metadata:
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
     "@opensumi/textmate-languages": "npm:^2.6.1"
+    antd: "npm:^5.21.4"
     browserfs: "npm:^1.4.3"
     css-loader: "npm:^6.9.1"
     electron: "npm:^22.3.21"
@@ -4456,6 +4527,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rc-component/async-validator@npm:^5.0.3":
+  version: 5.0.4
+  resolution: "@rc-component/async-validator@npm:5.0.4"
+  dependencies:
+    "@babel/runtime": "npm:^7.24.4"
+  checksum: 10/b5e4431a073ec047a3fd1425f30d38bb600d5ad3fc180ec7afa977a6361d7e83df30d66ce9c637910907b6a50debf8bb64d7378fe3d39b352c395144a2eaf1d5
+  languageName: node
+  linkType: hard
+
+"@rc-component/color-picker@npm:~2.0.1":
+  version: 2.0.1
+  resolution: "@rc-component/color-picker@npm:2.0.1"
+  dependencies:
+    "@ant-design/fast-color": "npm:^2.0.6"
+    "@babel/runtime": "npm:^7.23.6"
+    classnames: "npm:^2.2.6"
+    rc-util: "npm:^5.38.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/7c4268063a476184a8cf68fadc6f353ae303832f0e458478c5d6ad12ed4a4ffa77ae3d46aebc8823ebfa9e7efb44207e0478099a3ba0ea323cc338f1aebff6ef
+  languageName: node
+  linkType: hard
+
+"@rc-component/context@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@rc-component/context@npm:1.4.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/77b84e6cea11d7adbf68a89a49142d96129abbe485449851702d83d34ba507872404adacee39171dd47e9000556260cc76ab327e09f3320937ecb0c7e6906caa
+  languageName: node
+  linkType: hard
+
 "@rc-component/mini-decimal@npm:^1.0.1":
   version: 1.1.0
   resolution: "@rc-component/mini-decimal@npm:1.1.0"
@@ -4465,7 +4573,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rc-component/portal@npm:^1.1.0":
+"@rc-component/mutate-observer@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@rc-component/mutate-observer@npm:1.1.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.0"
+    classnames: "npm:^2.3.2"
+    rc-util: "npm:^5.24.4"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/ffd79ad54b1f4dd02a94306373d3ebe408d5348156ac7908a86937f58c169f2fd42457461a5dc27bb874b9af5c2c196dc11a18db6bb6a5ff514cfd6bc1a3bb6a
+  languageName: node
+  linkType: hard
+
+"@rc-component/portal@npm:^1.0.0-8, @rc-component/portal@npm:^1.0.0-9, @rc-component/portal@npm:^1.0.2, @rc-component/portal@npm:^1.1.0, @rc-component/portal@npm:^1.1.1":
   version: 1.1.2
   resolution: "@rc-component/portal@npm:1.1.2"
   dependencies:
@@ -4476,6 +4598,36 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/ae9d4cdf07647fc4da3944f74ab4d25c16cc7021c5760d4db37c0600461a84f480243e5186f3e5760903041d3a3e0927cb4226f44583fa668d3cacd29245fd69
+  languageName: node
+  linkType: hard
+
+"@rc-component/qrcode@npm:~1.0.0":
+  version: 1.0.0
+  resolution: "@rc-component/qrcode@npm:1.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.24.7"
+    classnames: "npm:^2.3.2"
+    rc-util: "npm:^5.38.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/946393e8c5522b5a1431ac433919f0d2c5654dd213d0e5aee1ffc2f9ab3508bd99be152261ccee2d8d6253d3ec25b19094ada54ab46e7373466aa9a20523cade
+  languageName: node
+  linkType: hard
+
+"@rc-component/tour@npm:~1.15.1":
+  version: 1.15.1
+  resolution: "@rc-component/tour@npm:1.15.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.0"
+    "@rc-component/portal": "npm:^1.0.0-9"
+    "@rc-component/trigger": "npm:^2.0.0"
+    classnames: "npm:^2.3.2"
+    rc-util: "npm:^5.24.4"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/6dfbb662c19456d78ac653e4ecdc359cea6590cbf52da5f8a06ddb229d367a567630c8aa493c479d631a11cd9fab12c744757a180324ce1c07861983e7444f43
   languageName: node
   linkType: hard
 
@@ -4493,6 +4645,23 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/6ae8eee1bbc639aa2426d1a0e00cc4bfc93e54e7cd57fcf97971d3acdb72de4b852b2377d4cca778de898f7024444da03ed0f41a94d702daf5a9c73b45fbb920
+  languageName: node
+  linkType: hard
+
+"@rc-component/trigger@npm:^2.1.1, @rc-component/trigger@npm:^2.2.3":
+  version: 2.2.3
+  resolution: "@rc-component/trigger@npm:2.2.3"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.2"
+    "@rc-component/portal": "npm:^1.1.0"
+    classnames: "npm:^2.3.2"
+    rc-motion: "npm:^2.0.0"
+    rc-resize-observer: "npm:^1.3.1"
+    rc-util: "npm:^5.38.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/1747ae80f8dd46f3d288b989ae5b799eaf1b37dbc23166fcbcae6bd5c45c6b3413b7e43724e9d8c363d4f8cd2ed6e91d94f3f26f32006cc65808842f246b2417
   languageName: node
   linkType: hard
 
@@ -6691,6 +6860,66 @@ __metadata:
   languageName: node
   linkType: hard
 
+"antd@npm:^5.21.4":
+  version: 5.21.4
+  resolution: "antd@npm:5.21.4"
+  dependencies:
+    "@ant-design/colors": "npm:^7.1.0"
+    "@ant-design/cssinjs": "npm:^1.21.1"
+    "@ant-design/cssinjs-utils": "npm:^1.1.1"
+    "@ant-design/icons": "npm:^5.5.1"
+    "@ant-design/react-slick": "npm:~1.1.2"
+    "@babel/runtime": "npm:^7.25.6"
+    "@ctrl/tinycolor": "npm:^3.6.1"
+    "@rc-component/color-picker": "npm:~2.0.1"
+    "@rc-component/mutate-observer": "npm:^1.1.0"
+    "@rc-component/qrcode": "npm:~1.0.0"
+    "@rc-component/tour": "npm:~1.15.1"
+    "@rc-component/trigger": "npm:^2.2.3"
+    classnames: "npm:^2.5.1"
+    copy-to-clipboard: "npm:^3.3.3"
+    dayjs: "npm:^1.11.11"
+    rc-cascader: "npm:~3.28.1"
+    rc-checkbox: "npm:~3.3.0"
+    rc-collapse: "npm:~3.8.0"
+    rc-dialog: "npm:~9.6.0"
+    rc-drawer: "npm:~7.2.0"
+    rc-dropdown: "npm:~4.2.0"
+    rc-field-form: "npm:~2.4.0"
+    rc-image: "npm:~7.11.0"
+    rc-input: "npm:~1.6.3"
+    rc-input-number: "npm:~9.2.0"
+    rc-mentions: "npm:~2.16.1"
+    rc-menu: "npm:~9.15.1"
+    rc-motion: "npm:^2.9.3"
+    rc-notification: "npm:~5.6.2"
+    rc-pagination: "npm:~4.3.0"
+    rc-picker: "npm:~4.6.15"
+    rc-progress: "npm:~4.0.0"
+    rc-rate: "npm:~2.13.0"
+    rc-resize-observer: "npm:^1.4.0"
+    rc-segmented: "npm:~2.5.0"
+    rc-select: "npm:~14.15.2"
+    rc-slider: "npm:~11.1.7"
+    rc-steps: "npm:~6.0.1"
+    rc-switch: "npm:~4.1.0"
+    rc-table: "npm:~7.47.5"
+    rc-tabs: "npm:~15.3.0"
+    rc-textarea: "npm:~1.8.2"
+    rc-tooltip: "npm:~6.2.1"
+    rc-tree: "npm:~5.9.0"
+    rc-tree-select: "npm:~5.23.0"
+    rc-upload: "npm:~4.8.1"
+    rc-util: "npm:^5.43.0"
+    scroll-into-view-if-needed: "npm:^3.1.0"
+    throttle-debounce: "npm:^5.0.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/941941375a409f24b941a2cc5d1164d9b2304e703fc5202b31140043351ff4d5803b365bf303947884e7af5f78923aafc833596c26e739543faac5c22974b501
+  languageName: node
+  linkType: hard
+
 "anymatch@npm:^3.0.3, anymatch@npm:~3.1.2":
   version: 3.1.3
   resolution: "anymatch@npm:3.1.3"
@@ -6833,6 +7062,13 @@ __metadata:
   version: 2.2.2
   resolution: "array-rearrange@npm:2.2.2"
   checksum: 10/2de4562457cbd1a5b53c69f0c9bdd0b010658010aecc35815761405804ca822391701114e861b46b00d050d0b551a039ced4301b2f26bfcc4e8e146d185deedf
+  languageName: node
+  linkType: hard
+
+"array-tree-filter@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "array-tree-filter@npm:2.1.0"
+  checksum: 10/ca65dbeb80777eadadfcd4dbd2658d9eb0be66e426a6b6d64f1a71dff5351f2e6f370e0cbcc418e9e6e01d06b337b128441a71c7143abe4d925d027d5aa0100f
   languageName: node
   linkType: hard
 
@@ -7945,7 +8181,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:2.5.1, classnames@npm:2.x, classnames@npm:^2.2.1, classnames@npm:^2.2.3, classnames@npm:^2.2.5, classnames@npm:^2.2.6, classnames@npm:^2.3.1, classnames@npm:^2.3.2":
+"classnames@npm:2.5.1, classnames@npm:2.x, classnames@npm:^2.2.1, classnames@npm:^2.2.3, classnames@npm:^2.2.5, classnames@npm:^2.2.6, classnames@npm:^2.3.1, classnames@npm:^2.3.2, classnames@npm:^2.5.1":
   version: 2.5.1
   resolution: "classnames@npm:2.5.1"
   checksum: 10/58eb394e8817021b153bb6e7d782cfb667e4ab390cb2e9dac2fc7c6b979d1cc2b2a733093955fc5c94aa79ef5c8c89f11ab77780894509be6afbb91dddd79d15
@@ -8416,6 +8652,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"compute-scroll-into-view@npm:^3.0.2":
+  version: 3.1.0
+  resolution: "compute-scroll-into-view@npm:3.1.0"
+  checksum: 10/cc5211d49bced5ad23385da5c2eaf69b6045628581b0dcb9f4dd407bfee51bbd26d2bce426be26edf2feaf8c243706f5a7c3759827d89cc5a01a5cf7d299a5eb
+  languageName: node
+  linkType: hard
+
 "concat-map@npm:0.0.1":
   version: 0.0.1
   resolution: "concat-map@npm:0.0.1"
@@ -8644,6 +8887,15 @@ __metadata:
   dependencies:
     is-what: "npm:^3.14.1"
   checksum: 10/3b41be8f6322c2c13e93cde62a64d532f138f31d44ab85a3405d88601134afccc068be06534c162ed5c06b209788c423d7aaa50f1c34a92db81a1f8560d199eb
+  languageName: node
+  linkType: hard
+
+"copy-to-clipboard@npm:^3.3.3":
+  version: 3.3.3
+  resolution: "copy-to-clipboard@npm:3.3.3"
+  dependencies:
+    toggle-selection: "npm:^1.0.6"
+  checksum: 10/e0a325e39b7615108e6c1c8ac110ae7b829cdc4ee3278b1df6a0e4228c490442cc86444cd643e2da344fbc424b3aab8909e2fec82f8bc75e7e5b190b7c24eecf
   languageName: node
   linkType: hard
 
@@ -9188,7 +9440,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.0.2":
+"csstype@npm:^3.0.2, csstype@npm:^3.1.3":
   version: 3.1.3
   resolution: "csstype@npm:3.1.3"
   checksum: 10/f593cce41ff5ade23f44e77521e3a1bcc2c64107041e1bf6c3c32adc5187d0d60983292fda326154d20b01079e24931aa5b08e4467cc488b60bb1e7f6d478ade
@@ -9406,7 +9658,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:^1.11.10":
+"dayjs@npm:^1.11.10, dayjs@npm:^1.11.11":
   version: 1.11.13
   resolution: "dayjs@npm:1.11.13"
   checksum: 10/7374d63ab179b8d909a95e74790def25c8986e329ae989840bacb8b1888be116d20e1c4eee75a69ea0dfbae13172efc50ef85619d304ee7ca3c01d5878b704f5
@@ -14913,6 +15165,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json2mq@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "json2mq@npm:0.2.0"
+  dependencies:
+    string-convert: "npm:^0.2.0"
+  checksum: 10/0ad2f6a268308beeaf3077652b5ae2b0701ef357840e1542cc838198424a79af21dad759595e2cce8cd9b154e0b0f758c217adea4b3dfbaafff3ff9bf82394a1
+  languageName: node
+  linkType: hard
+
 "json5@npm:^1.0.1, json5@npm:^1.0.2":
   version: 1.0.2
   resolution: "json5@npm:1.0.2"
@@ -19664,6 +19925,52 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rc-cascader@npm:~3.28.1":
+  version: 3.28.2
+  resolution: "rc-cascader@npm:3.28.2"
+  dependencies:
+    "@babel/runtime": "npm:^7.12.5"
+    array-tree-filter: "npm:^2.1.0"
+    classnames: "npm:^2.3.1"
+    rc-select: "npm:~14.15.0"
+    rc-tree: "npm:~5.9.0"
+    rc-util: "npm:^5.37.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/30c583fab14d325959041a6712c045334ba996b5b3370b3d78ca808db52d901f8d18e9c34a0f60352d1df25b7bdb4564fbbbf3cd7a7b361d859c3d94683def45
+  languageName: node
+  linkType: hard
+
+"rc-checkbox@npm:~3.3.0":
+  version: 3.3.0
+  resolution: "rc-checkbox@npm:3.3.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:^2.3.2"
+    rc-util: "npm:^5.25.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/95d48a1012339163e98bea6e158e5c650e45759550c50f1615f610a19ce31b0af384df899dfded147e1b16d2016e90f16a949792bb79f5b7f6709cf95a9eb1a5
+  languageName: node
+  linkType: hard
+
+"rc-collapse@npm:~3.8.0":
+  version: 3.8.0
+  resolution: "rc-collapse@npm:3.8.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:2.x"
+    rc-motion: "npm:^2.3.4"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/b9d44fb1bd406be23803938a9945d73acdbe0412d2f81ea17ef6ea5620a1cbc3404adbbafe9d114f5f9267c9bfc0bb159a522014effb367d9e066fb43b48ea43
+  languageName: node
+  linkType: hard
+
 "rc-dialog@npm:~7.6.0":
   version: 7.6.1
   resolution: "rc-dialog@npm:7.6.1"
@@ -19672,6 +19979,38 @@ __metadata:
     rc-animate: "npm:2.x"
     rc-util: "npm:^4.16.1"
   checksum: 10/4c21da7aea6b7dc7415300ec83438f72771f3d4db3f412f77acf29d7f022f91355197767bd5bad38b9521003c7546575fd4859a345fda948935415ba687ad443
+  languageName: node
+  linkType: hard
+
+"rc-dialog@npm:~9.6.0":
+  version: 9.6.0
+  resolution: "rc-dialog@npm:9.6.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/portal": "npm:^1.0.0-8"
+    classnames: "npm:^2.2.6"
+    rc-motion: "npm:^2.3.0"
+    rc-util: "npm:^5.21.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/f6dcdb066f26f7b59fef458e18ba3c257a73b7036774d12022d548c7e343e8a51db2d1f3bae45928bcefb978fb29c4f2d6954c56fd006b0360fcc47c095c01c8
+  languageName: node
+  linkType: hard
+
+"rc-drawer@npm:~7.2.0":
+  version: 7.2.0
+  resolution: "rc-drawer@npm:7.2.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.9"
+    "@rc-component/portal": "npm:^1.1.1"
+    classnames: "npm:^2.2.6"
+    rc-motion: "npm:^2.6.1"
+    rc-util: "npm:^5.38.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/1c9c7e5a00bd341a996684e5e288e273fee5083c8daf37e61a5ef5db5204df8aeaf48bcb67d89d01cab4d3c484bcf4d73af257a2d8de2dd71a757fa9cabaed3c
   languageName: node
   linkType: hard
 
@@ -19718,6 +20057,52 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rc-dropdown@npm:~4.2.0":
+  version: 4.2.0
+  resolution: "rc-dropdown@npm:4.2.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    "@rc-component/trigger": "npm:^2.0.0"
+    classnames: "npm:^2.2.6"
+    rc-util: "npm:^5.17.0"
+  peerDependencies:
+    react: ">=16.11.0"
+    react-dom: ">=16.11.0"
+  checksum: 10/92aa4b13abf7814b5a692d9a902ea2c282289fb8a2a4325a28c8e6cb6f07ffda3e0c3bed64702bf9ddda3acb94f31337649af2e7024c13664ab4f2df4610ff80
+  languageName: node
+  linkType: hard
+
+"rc-field-form@npm:~2.4.0":
+  version: 2.4.0
+  resolution: "rc-field-form@npm:2.4.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.0"
+    "@rc-component/async-validator": "npm:^5.0.3"
+    rc-util: "npm:^5.32.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/dcf6928749bd750e55a525e67cc012613d9660eae52401caf48760dac20ca665b4d302bed9c498386a7076c20fae767c1f1e235192685a4397b2207d371c8a1a
+  languageName: node
+  linkType: hard
+
+"rc-image@npm:~7.11.0":
+  version: 7.11.0
+  resolution: "rc-image@npm:7.11.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.11.2"
+    "@rc-component/portal": "npm:^1.0.2"
+    classnames: "npm:^2.2.6"
+    rc-dialog: "npm:~9.6.0"
+    rc-motion: "npm:^2.6.2"
+    rc-util: "npm:^5.34.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/e66cee768853cf2acde3c8e01a019352ec378afc11ab5093ff30477f7fe746eaefcba064a6410b0bcb232d2936bae47d3079ea5c4f6c3dc0e95adc5fbaae788b
+  languageName: node
+  linkType: hard
+
 "rc-input-number@npm:^7.4.2":
   version: 7.4.2
   resolution: "rc-input-number@npm:7.4.2"
@@ -19730,6 +20115,54 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/af826860efeada4818e7c08c41a3f8811eafba35ea14af38bebf27aa0a912267f9fa01a88f62ca06c6ade88c8e5b38d6feb2f24eb27fe86f753d10c41c99f556
+  languageName: node
+  linkType: hard
+
+"rc-input-number@npm:~9.2.0":
+  version: 9.2.0
+  resolution: "rc-input-number@npm:9.2.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/mini-decimal": "npm:^1.0.1"
+    classnames: "npm:^2.2.5"
+    rc-input: "npm:~1.6.0"
+    rc-util: "npm:^5.40.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/6e7b4778d911bdd16c0ad39b6519ec3145a88b222ce04ffe06daae0a751710be8db4233375ae9ccc703cc9ee738ab0e0eeb7019cd72755adb4ae3eb78dcce4e0
+  languageName: node
+  linkType: hard
+
+"rc-input@npm:~1.6.0, rc-input@npm:~1.6.3":
+  version: 1.6.3
+  resolution: "rc-input@npm:1.6.3"
+  dependencies:
+    "@babel/runtime": "npm:^7.11.1"
+    classnames: "npm:^2.2.1"
+    rc-util: "npm:^5.18.1"
+  peerDependencies:
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 10/e163a4105a5a7b18b88fc3c9cfa65fa36bf397c526843b30c0484eaab788feb0173b1f5af2fec26e6e31db4ec11b58a3619e35878bc4ea410e16e98f514ac664
+  languageName: node
+  linkType: hard
+
+"rc-mentions@npm:~2.16.1":
+  version: 2.16.1
+  resolution: "rc-mentions@npm:2.16.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.22.5"
+    "@rc-component/trigger": "npm:^2.0.0"
+    classnames: "npm:^2.2.6"
+    rc-input: "npm:~1.6.0"
+    rc-menu: "npm:~9.15.1"
+    rc-textarea: "npm:~1.8.0"
+    rc-util: "npm:^5.34.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/eedea461e0d8e6dff9aacc6fa0bf0617653e3f3cd020e7a0274c588a013f691c4475768372f9d680375de28c46c84a64a199d6a4c5ce8b5b09c57a4f3d8ff553
   languageName: node
   linkType: hard
 
@@ -19747,6 +20180,23 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/afabaadadf662b67461bd7a6bfce982fdc0d6093e3e3d86049cd070e0acd7cd7c68fe76aaa59c7accda6fae657d7eec500728c717c82ea843f7eb58d60b8b30e
+  languageName: node
+  linkType: hard
+
+"rc-menu@npm:~9.15.1":
+  version: 9.15.1
+  resolution: "rc-menu@npm:9.15.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/trigger": "npm:^2.0.0"
+    classnames: "npm:2.x"
+    rc-motion: "npm:^2.4.3"
+    rc-overflow: "npm:^1.3.1"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/9bcb2cfd9e59d371394ce7b5c1bf37f7dc3e46ee2b87580b500bd91c35cb53e0f156034e3937b2edf01bd8a5a3cfabd04ba567c66e4ab6042ee6bc744d70faa1
   languageName: node
   linkType: hard
 
@@ -19782,7 +20232,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-motion@npm:^2.9.0, rc-motion@npm:^2.9.2":
+"rc-motion@npm:^2.0.1, rc-motion@npm:^2.3.0, rc-motion@npm:^2.3.4, rc-motion@npm:^2.4.4, rc-motion@npm:^2.6.1, rc-motion@npm:^2.6.2, rc-motion@npm:^2.9.0, rc-motion@npm:^2.9.2, rc-motion@npm:^2.9.3":
   version: 2.9.3
   resolution: "rc-motion@npm:2.9.3"
   dependencies:
@@ -19796,7 +20246,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-notification@npm:^5.6.0":
+"rc-notification@npm:^5.6.0, rc-notification@npm:~5.6.2":
   version: 5.6.2
   resolution: "rc-notification@npm:5.6.2"
   dependencies:
@@ -19824,7 +20274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-overflow@npm:^1.2.0, rc-overflow@npm:^1.3.1":
+"rc-overflow@npm:^1.2.0, rc-overflow@npm:^1.3.1, rc-overflow@npm:^1.3.2":
   version: 1.3.2
   resolution: "rc-overflow@npm:1.3.2"
   dependencies:
@@ -19839,7 +20289,79 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-resize-observer@npm:^1.0.0, rc-resize-observer@npm:^1.3.1":
+"rc-pagination@npm:~4.3.0":
+  version: 4.3.0
+  resolution: "rc-pagination@npm:4.3.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:^2.3.2"
+    rc-util: "npm:^5.38.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/5ffdf81ae46eccdf308d62483f5e7509a04f8fb60a5e65a2d52373db4e3f19ccf40d71d108fe8aa4c142a292d8688b1726e81fd62e922b914fcff207995fce05
+  languageName: node
+  linkType: hard
+
+"rc-picker@npm:~4.6.15":
+  version: 4.6.15
+  resolution: "rc-picker@npm:4.6.15"
+  dependencies:
+    "@babel/runtime": "npm:^7.24.7"
+    "@rc-component/trigger": "npm:^2.0.0"
+    classnames: "npm:^2.2.1"
+    rc-overflow: "npm:^1.3.2"
+    rc-resize-observer: "npm:^1.4.0"
+    rc-util: "npm:^5.43.0"
+  peerDependencies:
+    date-fns: ">= 2.x"
+    dayjs: ">= 1.x"
+    luxon: ">= 3.x"
+    moment: ">= 2.x"
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  peerDependenciesMeta:
+    date-fns:
+      optional: true
+    dayjs:
+      optional: true
+    luxon:
+      optional: true
+    moment:
+      optional: true
+  checksum: 10/62f7fe5473d01bc52bf3f06f789d9b3386a0624f39f45ca6e4aa3f25e8b98a3df3ef94498b4b2af2b364fb03cdd9f3c434342f41be6594a07fa452cd8bcdbac1
+  languageName: node
+  linkType: hard
+
+"rc-progress@npm:~4.0.0":
+  version: 4.0.0
+  resolution: "rc-progress@npm:4.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:^2.2.6"
+    rc-util: "npm:^5.16.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/c65efbc45fced051715647538c1ebe70a6da761ca6691455d72d38dcbba41d5bb5e7f7de38d4bb8e8939645a2cd120e8d5b2b8690b6d6bb4fa4cf6848700a2d8
+  languageName: node
+  linkType: hard
+
+"rc-rate@npm:~2.13.0":
+  version: 2.13.0
+  resolution: "rc-rate@npm:2.13.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:^2.2.5"
+    rc-util: "npm:^5.0.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/ad56526e394245cb610066e44e9ea90e5febb91a45a144a9485d828aa55706ec83df2f5008d692d153ac8be82a9ea265eae8fee0d6a9b0f802e8e4fb5bcb6b6f
+  languageName: node
+  linkType: hard
+
+"rc-resize-observer@npm:^1.0.0, rc-resize-observer@npm:^1.1.0, rc-resize-observer@npm:^1.3.1, rc-resize-observer@npm:^1.4.0":
   version: 1.4.0
   resolution: "rc-resize-observer@npm:1.4.0"
   dependencies:
@@ -19851,6 +20373,98 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/20af15f915f55f8e046402a209e0de30ecbf720c9a6131aa9d9451f77af9d837fd79dad9218cbbffe200f5d2503a2c03525b1eb38b5c6c21aed2827d535c1e5a
+  languageName: node
+  linkType: hard
+
+"rc-segmented@npm:~2.5.0":
+  version: 2.5.0
+  resolution: "rc-segmented@npm:2.5.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.11.1"
+    classnames: "npm:^2.2.1"
+    rc-motion: "npm:^2.4.4"
+    rc-util: "npm:^5.17.0"
+  peerDependencies:
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 10/f1389a3e0aa0727116ee9adc7861a63dc41c3e0fc8ec9c624cbb51ade433f07784bef328474a375f475a4b218c8551ab915c4152d11160388db93ecb34b4ba95
+  languageName: node
+  linkType: hard
+
+"rc-select@npm:~14.15.0, rc-select@npm:~14.15.2":
+  version: 14.15.2
+  resolution: "rc-select@npm:14.15.2"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/trigger": "npm:^2.1.1"
+    classnames: "npm:2.x"
+    rc-motion: "npm:^2.0.1"
+    rc-overflow: "npm:^1.3.1"
+    rc-util: "npm:^5.16.1"
+    rc-virtual-list: "npm:^3.5.2"
+  peerDependencies:
+    react: "*"
+    react-dom: "*"
+  checksum: 10/707d9de38aaf83063ede754a925b56d6f02740197a3bed93f886c132ce797321d9e70a2fe32cff0546c54d9a11414d6d2c8fc1f914ac665fa11ad2b30a08bc85
+  languageName: node
+  linkType: hard
+
+"rc-slider@npm:~11.1.7":
+  version: 11.1.7
+  resolution: "rc-slider@npm:11.1.7"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:^2.2.5"
+    rc-util: "npm:^5.36.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/3b484d7ba4e4b6fc695666c27b767622c64b5819d0386cc0afb6d186c08f8ed4f93dd72f55377af9a957c77ee77db4d7fa73f85ccdaab0f39d9670daf42a17c5
+  languageName: node
+  linkType: hard
+
+"rc-steps@npm:~6.0.1":
+  version: 6.0.1
+  resolution: "rc-steps@npm:6.0.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.16.7"
+    classnames: "npm:^2.2.3"
+    rc-util: "npm:^5.16.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/4b4ae96caae47e7ac46351cb97e62d23a8193647781d615d12f6bd83ae8669f453f776045d2c877bffe6a06439c33c21f7e6d1b6ba6e70220880c5f2f2147d53
+  languageName: node
+  linkType: hard
+
+"rc-switch@npm:~4.1.0":
+  version: 4.1.0
+  resolution: "rc-switch@npm:4.1.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.21.0"
+    classnames: "npm:^2.2.1"
+    rc-util: "npm:^5.30.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/20e310e1b05515804048aeff1b76c52c00a45ec46c9dd4d5504fa452b25a96ff0f6cc634b7608a360139acd337a308302ea6a7f3218817383e09af189966ab94
+  languageName: node
+  linkType: hard
+
+"rc-table@npm:~7.47.5":
+  version: 7.47.5
+  resolution: "rc-table@npm:7.47.5"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/context": "npm:^1.4.0"
+    classnames: "npm:^2.2.5"
+    rc-resize-observer: "npm:^1.1.0"
+    rc-util: "npm:^5.41.0"
+    rc-virtual-list: "npm:^3.14.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/ba7cb5057dcf2e0be99d8d35566f03905b53f554ef3b0fc2e3ce1ace1939c1f09046cd7e1ed5b953ca8c3c2be95f62085cfdcc572aea0ed5572c3e0de3439919
   languageName: node
   linkType: hard
 
@@ -19868,6 +20482,40 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/6e8e790c378399cc2bdbde3c464cccc8e4e72b610adf4e2e49bd7b38ecc114d3853722a392c0ba2da640490f070eaa0e24214899dc3a7b492ef0df5298fb273d
+  languageName: node
+  linkType: hard
+
+"rc-tabs@npm:~15.3.0":
+  version: 15.3.0
+  resolution: "rc-tabs@npm:15.3.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.11.2"
+    classnames: "npm:2.x"
+    rc-dropdown: "npm:~4.2.0"
+    rc-menu: "npm:~9.15.1"
+    rc-motion: "npm:^2.6.2"
+    rc-resize-observer: "npm:^1.0.0"
+    rc-util: "npm:^5.34.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/17d20aad12db75954cc283aeaed1bf80d288ed63a049178ca0960d5284db25899b0dea51c2826aa1822ac5aee8d68d28441eac5bab048f12af1dd3982147e8d8
+  languageName: node
+  linkType: hard
+
+"rc-textarea@npm:~1.8.0, rc-textarea@npm:~1.8.2":
+  version: 1.8.2
+  resolution: "rc-textarea@npm:1.8.2"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:^2.2.1"
+    rc-input: "npm:~1.6.0"
+    rc-resize-observer: "npm:^1.0.0"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/033145ca79888c4d53a3604829a7b8205610e8ac01e518eadbdf290c981da995a5863e151fa434caeebbf4c0872fbf693fa4a71ebbb098cc0dcda0b44158825b
   languageName: node
   linkType: hard
 
@@ -19896,6 +20544,52 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/2be8fd3da8666df1d83485e5532e11eacf4dd3686efed9b4f0bc78caeb647196cac62104e54b9ce5dbc3051a9df70e07e54557f3273b632bb474a73c8bca0a2d
+  languageName: node
+  linkType: hard
+
+"rc-tooltip@npm:~6.2.1":
+  version: 6.2.1
+  resolution: "rc-tooltip@npm:6.2.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.11.2"
+    "@rc-component/trigger": "npm:^2.0.0"
+    classnames: "npm:^2.3.1"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/a82064d6d521ba4c03d074505402f6c38f9f50439037235969546b694e38977bab3420b46080bde295aca2436e6725d64b0a330a5ccdd51932deabbb1bf7585b
+  languageName: node
+  linkType: hard
+
+"rc-tree-select@npm:~5.23.0":
+  version: 5.23.0
+  resolution: "rc-tree-select@npm:5.23.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:2.x"
+    rc-select: "npm:~14.15.0"
+    rc-tree: "npm:~5.9.0"
+    rc-util: "npm:^5.16.1"
+  peerDependencies:
+    react: "*"
+    react-dom: "*"
+  checksum: 10/c39c3ce6c1738e39f4ca1e232378002bbcb7faa8b1bd9a132941cc1d9629e7d00207bc67141f1bf048573bf21f3035c5fc3e7daf4e78ccc6552475bea2c405ad
+  languageName: node
+  linkType: hard
+
+"rc-tree@npm:~5.9.0":
+  version: 5.9.0
+  resolution: "rc-tree@npm:5.9.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:2.x"
+    rc-motion: "npm:^2.0.1"
+    rc-util: "npm:^5.16.1"
+    rc-virtual-list: "npm:^3.5.1"
+  peerDependencies:
+    react: "*"
+    react-dom: "*"
+  checksum: 10/d7525c4a524c6de8e177ebc90fe9b924046951a02bacee85efd4529fb05a66add936802b43d5ca8d84469f9c63b8d542437365b911480f62a78e03e2c7fbaca0
   languageName: node
   linkType: hard
 
@@ -19930,6 +20624,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rc-upload@npm:~4.8.1":
+  version: 4.8.1
+  resolution: "rc-upload@npm:4.8.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    classnames: "npm:^2.2.5"
+    rc-util: "npm:^5.2.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/aa8703d2f79a2ed3a0ba751844a6f6b1081af4ef79cf039a3912521bb71b8155ce0531b63adeb75dd94e4df6cc8249b2214207a668ffac1108c51326100e32f3
+  languageName: node
+  linkType: hard
+
 "rc-util@npm:^4.0.4, rc-util@npm:^4.15.3, rc-util@npm:^4.16.1, rc-util@npm:^4.21.1, rc-util@npm:^4.4.0":
   version: 4.21.1
   resolution: "rc-util@npm:4.21.1"
@@ -19943,7 +20651,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-util@npm:^5.12.0, rc-util@npm:^5.17.0, rc-util@npm:^5.19.2, rc-util@npm:^5.20.1, rc-util@npm:^5.26.0, rc-util@npm:^5.31.1, rc-util@npm:^5.43.0, rc-util@npm:^5.5.0":
+"rc-util@npm:^5.0.1, rc-util@npm:^5.12.0, rc-util@npm:^5.16.1, rc-util@npm:^5.17.0, rc-util@npm:^5.18.1, rc-util@npm:^5.19.2, rc-util@npm:^5.2.0, rc-util@npm:^5.20.1, rc-util@npm:^5.25.2, rc-util@npm:^5.26.0, rc-util@npm:^5.30.0, rc-util@npm:^5.31.1, rc-util@npm:^5.32.2, rc-util@npm:^5.34.1, rc-util@npm:^5.35.0, rc-util@npm:^5.36.0, rc-util@npm:^5.38.1, rc-util@npm:^5.40.1, rc-util@npm:^5.41.0, rc-util@npm:^5.43.0, rc-util@npm:^5.5.0":
   version: 5.43.0
   resolution: "rc-util@npm:5.43.0"
   dependencies:
@@ -19966,6 +20674,21 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/475e7755f8a8aaf8428c535e14ad1475d3d764108852a011cb5186fb7d905e064c0d56b77818ddaea0c5fbde439d3606b52f459cef7725fde8abf15e3e2ece2b
+  languageName: node
+  linkType: hard
+
+"rc-virtual-list@npm:^3.14.2, rc-virtual-list@npm:^3.5.1, rc-virtual-list@npm:^3.5.2":
+  version: 3.14.8
+  resolution: "rc-virtual-list@npm:3.14.8"
+  dependencies:
+    "@babel/runtime": "npm:^7.20.0"
+    classnames: "npm:^2.2.6"
+    rc-resize-observer: "npm:^1.0.0"
+    rc-util: "npm:^5.36.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/4f37f6adef15d5aeb15120d83ef34ecc73aae0ae274552e2062ef1d8f0b76073a3baa2fe4f7354da94e6c51920f5cc44d7a6c00cc54f80b8eff49353356e132a
   languageName: node
   linkType: hard
 
@@ -20976,6 +21699,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"scroll-into-view-if-needed@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "scroll-into-view-if-needed@npm:3.1.0"
+  dependencies:
+    compute-scroll-into-view: "npm:^3.0.2"
+  checksum: 10/1ea10d84b79db592493ed22563e307a4eaf858527b4c345e70cc26b9c51383636edda31a09d383541fafb5b50a94e59384d85351662cb7d6e5d70805c0d18798
+  languageName: node
+  linkType: hard
+
 "select-hose@npm:^2.0.0":
   version: 2.0.0
   resolution: "select-hose@npm:2.0.0"
@@ -21843,6 +22575,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"string-convert@npm:^0.2.0":
+  version: 0.2.1
+  resolution: "string-convert@npm:0.2.1"
+  checksum: 10/f3eb484a45d29aa2ba2d9fe0471c971d5a56353633b56a4c8bc3e67237a2cdb1b6437f006a67d489b3d41e0a1c1f02e18d334c161a27fd7219e4aee1a9f68aac
+  languageName: node
+  linkType: hard
+
 "string-length@npm:^4.0.1":
   version: 4.0.2
   resolution: "string-length@npm:4.0.2"
@@ -22129,6 +22868,13 @@ __metadata:
   peerDependencies:
     postcss: ^8.2.15
   checksum: 10/bddce1f5a8ba5a129995fc5585fa59fda6c8c580a8b39631955ee03810957eea62d13c7711a61f3a4f3bc2f9a4a9e019846f73b669c4aa0b5c52cd0198824b5c
+  languageName: node
+  linkType: hard
+
+"stylis@npm:^4.3.3":
+  version: 4.3.4
+  resolution: "stylis@npm:4.3.4"
+  checksum: 10/69b902a3c9fc3329c8ddb18d422f8130068356dd4d4a20ae245953679cc88ae08d49c55e32b0b57c8fe8a76f2ed7f32697240b8db4d368a25fc2db045ebaeba8
   languageName: node
   linkType: hard
 
@@ -22442,6 +23188,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"throttle-debounce@npm:^5.0.0, throttle-debounce@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "throttle-debounce@npm:5.0.2"
+  checksum: 10/9a5e5ae7f93127d921e913ad741e75e6d2bb946d15e1898ed541037bc646adb9a759c481385400be917ec6d93f078fd8b016980c1a9143e09ea88c99559b0c93
+  languageName: node
+  linkType: hard
+
 "through2@npm:^0.6.3":
   version: 0.6.5
   resolution: "through2@npm:0.6.5"
@@ -22627,6 +23380,13 @@ __metadata:
   dependencies:
     to-no-case: "npm:^1.0.0"
   checksum: 10/157cebe3e98e7cb465fe1978cf26450cc8ea8e637a01039854fac7ed60ad074e5e18b32333cc5f30df81b81ca374d63df768cd4c1fa0fe672605f965376227f4
+  languageName: node
+  linkType: hard
+
+"toggle-selection@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "toggle-selection@npm:1.0.6"
+  checksum: 10/9a0ed0ecbaac72b4944888dacd79fe0a55eeea76120a4c7e46b3bb3d85b24f086e90560bb22f5a965654a25ab43d79ec47dfdb3f1850ba740b14c5a50abc7040
   languageName: node
   linkType: hard
 

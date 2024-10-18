@@ -97,3 +97,5 @@ tools/workspace
 
 # jupyter
 .ipynb_checkpoints
+
+*.tsbuildinfo

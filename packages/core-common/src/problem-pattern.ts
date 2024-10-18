@@ -15,18 +15,24 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/common/severity.ts
 
-// eslint-disable-next-line import/no-unresolved
-import { Diagnostic, DiagnosticSeverity } from 'vscode';
-
 import { Injectable } from '@opensumi/di';
 import { Disposable, DisposableCollection, IDisposable, URI, isArray, isString } from '@opensumi/ide-utils';
 
 import { ProblemMatcher } from './problem-matcher';
 
+import type { Diagnostic } from 'vscode';
+
 export enum ApplyToKind {
   allDocuments,
   openDocuments,
   closedDocuments,
+}
+
+enum DiagnosticSeverity {
+  Error = 1,
+  Warning = 2,
+  Information = 3,
+  Hint = 4,
 }
 
 export namespace ApplyToKind {
