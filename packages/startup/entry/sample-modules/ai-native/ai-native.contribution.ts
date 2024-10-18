@@ -40,7 +40,7 @@ import {
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
+import { ICodeEditor, NewSymbolName, NewSymbolNameTag, Range } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
@@ -425,82 +425,32 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
-    registry.registerIntelligentCompletionProvider(async (editor, position, bean, token) => {
-      const model = editor.getModel()!;
-      const value = model.getValueInRange({
-        startLineNumber: position.lineNumber,
-        startColumn: 1,
-        endLineNumber: position.lineNumber + 3,
-        endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
-      });
+    registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
+      items: [{ insertText: 'Hello OpenSumi' }],
+    }));
 
-      const cancelController = new AbortController();
-      const { signal } = cancelController;
+    registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
+      const model = editor.getModel();
+      const maxLine = Math.max(position.lineNumber + 3, model?.getLineCount() ?? 0);
+      const lineMaxColumn = model?.getLineMaxColumn(maxLine);
 
-      token.onCancellationRequested(() => {
-        cancelController.abort();
-      });
-
-      /**
-       * mock randown
-       */
-      const getRandomString = (length) => {
-        const characters = 'opensumi';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-          result += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        return result;
-      };
-
-      const insertRandomStrings = (originalString) => {
-        const minChanges = 2;
-        const maxChanges = 5;
-        const changesCount = Math.floor(Math.random() * (maxChanges - minChanges + 1)) + minChanges;
-        let modifiedString = originalString;
-        for (let i = 0; i < changesCount; i++) {
-          const randomIndex = Math.floor(Math.random() * originalString.length);
-          const operation = Math.random() < 0.5 ? 'delete' : 'insert';
-          if (operation === 'delete') {
-            modifiedString = modifiedString.slice(0, randomIndex) + modifiedString.slice(randomIndex + 1);
-          } else {
-            const randomChar = getRandomString(1);
-            modifiedString = modifiedString.slice(0, randomIndex) + randomChar + modifiedString.slice(randomIndex);
-          }
-        }
-        return modifiedString;
-      };
-
-      try {
-        await new Promise((resolve, reject) => {
-          const timeout = setTimeout(resolve, 1000);
-
-          signal.addEventListener('abort', () => {
-            clearTimeout(timeout);
-            reject(new DOMException('Aborted', 'AbortError'));
-          });
-        });
-
-        return {
-          items: [
-            {
-              insertText: insertRandomStrings(value),
-              range: {
-                startLineNumber: position.lineNumber,
-                startColumn: 1,
-                endLineNumber: position.lineNumber + 3,
-                endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
+      return {
+        items: [
+          {
+            insertText: 'Hello OpenSumi',
+            range: Range.fromPositions(
+              {
+                lineNumber: position.lineNumber,
+                column: 1,
               },
-            },
-          ],
-          enableMultiLine: true,
-        };
-      } catch (error) {
-        if (error.name === 'AbortError') {
-          return { items: [] };
-        }
-        throw error;
-      }
+              {
+                lineNumber: position.lineNumber + 3,
+                column: lineMaxColumn ?? 1,
+              },
+            ),
+          },
+        ],
+      };
     });
   }
 }

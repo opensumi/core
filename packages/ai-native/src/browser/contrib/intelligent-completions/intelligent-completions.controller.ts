@@ -1,14 +1,6 @@
 import { Key, KeybindingRegistry, KeybindingScope, PreferenceService } from '@opensumi/ide-core-browser';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import {
-  AINativeSettingSectionsId,
-  Disposable,
-  Event,
-  IAICompletionOption,
-  IDisposable,
-  IntelligentCompletionsRegistryToken,
-  runWhenIdle,
-} from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId, Disposable, Event, IDisposable, runWhenIdle } from '@opensumi/ide-core-common';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { autorun, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observable';
@@ -28,27 +20,23 @@ import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.servic
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
 import { BaseAIMonacoEditorController } from '../base';
 
-import { AdditionsDeletionsDecorationModel } from './additions-deletions.decoration';
+import { AdditionsDeletionsDecorationModel } from './decoration/additions-deletions.decoration';
+import { MultiLineDecorationModel } from './decoration/multi-line.decoration';
 import {
   IMultiLineDiffChangeResult,
   computeMultiLineDiffChanges,
   mergeMultiLineDiffChanges,
   wordChangesToLineChangesMap,
 } from './diff-computer';
-import { IIntelligentCompletionsResult } from './intelligent-completions';
-import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
-import { InlineCompletionsSource } from './intelligent-completions.source';
-import { MultiLineDecorationModel } from './multi-line.decoration';
+import { LintErrorCodeEditsSource } from './lint-error.source';
+
+import { ICodeEditsResult } from '.';
 
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.intelligent.completions';
 
   public static get(editor: ICodeEditor): IntelligentCompletionsController | null {
     return editor.getContribution<IntelligentCompletionsController>(IntelligentCompletionsController.ID);
-  }
-
-  private get intelligentCompletionsRegistry(): IntelligentCompletionsRegistry {
-    return this.injector.get(IntelligentCompletionsRegistryToken);
   }
 
   private get model(): ITextModel {
@@ -183,45 +171,30 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     }
   }
 
-  public async fetchProvider(bean: IAICompletionOption): Promise<IIntelligentCompletionsResult | undefined> {
-    const provider = this.intelligentCompletionsRegistry.getProvider();
-    if (!provider) {
-      return;
-    }
-
+  public async fetchProvider(editsResult: ICodeEditsResult): Promise<void> {
     // 如果上一次补全结果还在，则不重复请求
     const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
     if (isVisible) {
       return;
     }
 
-    const position = this.monacoEditor.getPosition()!;
-    const intelligentCompletionModel = await provider(this.monacoEditor, position, bean, this.token);
-
-    if (
-      intelligentCompletionModel &&
-      intelligentCompletionModel.enableMultiLine &&
-      intelligentCompletionModel.items.length > 0
-    ) {
-      return this.applyInlineDecorations(intelligentCompletionModel);
+    if (editsResult && editsResult.items.length > 0) {
+      this.applyInlineDecorations(editsResult);
     }
-
-    return intelligentCompletionModel;
   }
 
-  private applyInlineDecorations(completionModel: IIntelligentCompletionsResult) {
+  private applyInlineDecorations(completionModel: ICodeEditsResult) {
     const { items } = completionModel;
+    const { range, insertText } = items[0];
+
+    // code edits 必须提供 range
+    if (!range) {
+      return;
+    }
 
     const position = this.monacoEditor.getPosition()!;
     const model = this.monacoEditor.getModel();
-    const { range, insertText } = items[0];
     const insertTextString = insertText.toString();
-
-    // 如果只是开启了 enableMultiLine 而没有传递 range ，则不显示 multi line
-    if (!range) {
-      return completionModel;
-    }
-
     const originalContent = model?.getValueInRange(range);
     const eol = this.model.getEOL();
 
@@ -404,7 +377,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    const inlineCompletionsSource = this.injector.get(InlineCompletionsSource, [this.monacoEditor]);
-    this.featureDisposable.addDispose(inlineCompletionsSource.fetch());
+    const lintErrorCodeEditsSource = this.injector.get(LintErrorCodeEditsSource, [this.monacoEditor, this.token]);
+    this.featureDisposable.addDispose(lintErrorCodeEditsSource.mount());
   }
 }
