@@ -31,14 +31,14 @@ export class NotebookModule extends BrowserModule {
       token: ILibroOpensumiService,
       useClass: LibroOpensumiService,
     },
-    // NotebookDocumentContentProvider,
-    // LibroOpener,
-    // LibroKeybindContribition,
-    // {
-    //   token: INotebookService,
-    //   useClass: NotebookServiceOverride,
-    //   override: true,
-    // },
-    // KernelPanelContribution,
+    NotebookDocumentContentProvider,
+    LibroOpener,
+    LibroKeybindContribition,
+    {
+      token: INotebookService,
+      useClass: NotebookServiceOverride,
+      override: true,
+    },
+    KernelPanelContribution,
   ];
 }
