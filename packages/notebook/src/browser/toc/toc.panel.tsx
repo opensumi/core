@@ -21,7 +21,6 @@ export const TocPanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState
   const [libroTocView, setLibroTocView] = useState<TOCView | undefined>();
 
   useEffect(() => {
-    return;
     if (editorService.currentResource?.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
       libroOpensumiService.getOrCreatLibroView(editorService.currentResource.uri).then((libro) => {
         const viewManager = manaContainer.get(ViewManager);
