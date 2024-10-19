@@ -1,10 +1,11 @@
-import { LibroJupyterNoEditorModule } from '@difizen/libro-jupyter/noeditor';
+import { LibroJupyterNoEditorModule, ServerConnection, ServerManager } from '@difizen/libro-jupyter/noeditor';
 import { LibroTOCModule } from '@difizen/libro-toc';
 import { Container, ManaAppPreset, ManaComponents, ThemeService } from '@difizen/mana-app';
 import React, { useState } from 'react';
 
 import { Autowired, Injector } from '@opensumi/di';
 import {
+  AppConfig,
   ClientAppContextContribution,
   ClientAppContribution,
   CommandContribution,
@@ -84,8 +85,12 @@ export class LibroContribution
 
   @Autowired(NotebookDocumentContentProvider)
   protected readonly notebookDocumentContentProvider: NotebookDocumentContentProvider;
+
   @Autowired(LibroOpener)
   protected readonly libroOpener: LibroOpener;
+
+  @Autowired(AppConfig)
+  config: AppConfig;
 
   registerOpener(registry: IOpenerService): void {
     registry.registerOpener(this.libroOpener);
@@ -156,11 +161,27 @@ export class LibroContribution
   }
 
   async onDidStart() {
+    // TODO: 应该是首次打开 jupyter 文件时连接
+    if (this.config.notebookServerHost) {
+      // TODO: 目前直接从浏览器连接，没有从后端转发一次，对服务的cors等配置会有要求
+      this.connectJupyterServer(this.config.notebookServerHost);
+    }
+
     const manaThemeService = this.manaContainer.get(ThemeService);
     const curTheme = await this.themeService.getCurrentTheme();
     manaThemeService.setCurrentTheme(curTheme.type);
     this.themeService.onThemeChange((theme) => {
       manaThemeService.setCurrentTheme(theme.type);
     });
+  }
+
+  protected connectJupyterServer(serverHost: string) {
+    const libroServerConnection = this.manaContainer.get(ServerConnection);
+    libroServerConnection.updateSettings({
+      baseUrl: `http://${serverHost}/`,
+      wsUrl: `ws://${serverHost}/`,
+    });
+    const serverManager = this.manaContainer.get(ServerManager);
+    serverManager.launch();
   }
 }

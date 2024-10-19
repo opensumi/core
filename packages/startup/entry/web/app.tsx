@@ -27,6 +27,7 @@ renderApp(
           minimumReportThresholdTime: 400,
         },
       },
+      notebookServerHost: 'localhost:8888',
     },
   }),
 );
