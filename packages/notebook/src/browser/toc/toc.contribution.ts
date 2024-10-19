@@ -11,14 +11,14 @@ export class TocContribution implements MainLayoutContribution {
   private mainLayoutService: IMainLayoutService;
 
   onDidRender() {
-    // this.mainLayoutService.collectViewComponent(
-    //   {
-    //     component: TocPanel,
-    //     collapsed: true,
-    //     id: 'outline-view',
-    //     name: localize('outline.title'),
-    //   },
-    //   EXPLORER_CONTAINER_ID,
-    // );
+    this.mainLayoutService.collectViewComponent(
+      {
+        component: TocPanel,
+        collapsed: true,
+        id: 'outline-view',
+        name: localize('outline.title'),
+      },
+      EXPLORER_CONTAINER_ID,
+    );
   }
 }
