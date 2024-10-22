@@ -677,6 +677,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
 
   public touchRemovedWidget(states: IRemovedWidgetState[]) {
     runWhenIdle(() => {
+      if (this.disposed) {
+        return;
+      }
       this.clearRemovedWidgets();
       states.forEach(({ textLines, position }) => {
         this.showRemovedWidgetByLineNumber(position.lineNumber, textLines, {});
