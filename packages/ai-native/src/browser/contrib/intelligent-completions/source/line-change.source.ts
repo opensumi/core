@@ -1,33 +1,37 @@
 import { Injectable } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-common';
-import { ICursorPositionChangedEvent } from '@opensumi/ide-monaco';
+import { ICursorPositionChangedEvent, Position } from '@opensumi/ide-monaco';
 
 import { ECodeEditsSource } from '../index';
 
 import { BaseCodeEditsSource } from './base';
 
+export interface ILineChangeData {
+  currentLineNumber: number;
+  preLineNumber?: number;
+}
+
 @Injectable({ multiple: true })
 export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
   public priority = 2;
 
-  public mount(): IDisposable {
-    let prePosition = this.monacoEditor.getPosition();
+  private prePosition = this.monacoEditor.getPosition();
 
+  public mount(): IDisposable {
     this.addDispose(
       this.monacoEditor.onDidChangeCursorPosition((event: ICursorPositionChangedEvent) => {
         const currentPosition = event.position;
-        if (prePosition && prePosition.lineNumber !== currentPosition.lineNumber) {
-          this.doTrigger();
+        if (this.prePosition && this.prePosition.lineNumber !== currentPosition.lineNumber) {
+          this.doTrigger(currentPosition);
+          this.prePosition = currentPosition;
         }
-        prePosition = currentPosition;
       }),
     );
     return this;
   }
 
   private lastEditTime: number | null = null;
-  protected doTrigger() {
-    const position = this.monacoEditor.getPosition();
+  protected doTrigger(position: Position) {
     if (!position) {
       return;
     }
@@ -41,7 +45,10 @@ export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
     this.lastEditTime = currentTime;
     this.launchProvider(this.monacoEditor, position, {
       typing: ECodeEditsSource.LineChange,
-      data: {},
+      data: {
+        preLineNumber: this.prePosition?.lineNumber,
+        currentLineNumber: position.lineNumber,
+      },
     });
   }
 }

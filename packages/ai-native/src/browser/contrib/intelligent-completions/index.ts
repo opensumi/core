@@ -1,5 +1,6 @@
 import { IRange, InlineCompletion } from '@opensumi/ide-monaco';
 
+import type { ILineChangeData } from './source/line-change.source';
 import type { ILinterErrorData } from './source/lint-error.source';
 
 export interface IIntelligentCompletionsResult<T = any> {
@@ -22,7 +23,7 @@ export type ICodeEditsContextBean =
     }
   | {
       typing: ECodeEditsSource.LineChange;
-      data: unknown;
+      data: ILineChangeData;
     };
 
 export interface ICodeEdit {
