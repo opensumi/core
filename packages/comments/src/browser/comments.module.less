@@ -1,37 +1,100 @@
 :global {
   .monaco-editor {
-    .comments-decoration {
-      border-radius: 50%;
-      // 防止被其他的 decoration 盖住
-      position: absolute;
-      cursor: pointer;
-      z-index: 1;
-      &::before {
-        font-weight: normal;
-        color: var(--foreground);
-        background: var(--editor-background);
-        border-radius: 50%;
+    &.inline-comment {
+      .margin-view-overlays {
+        .codicon-folding-expanded,
+        .codicon-folding-collapsed {
+          margin-left: 11px;
+        }
+      }
+      .dirty-diff-glyph {
+        margin-left: 25px;
       }
     }
 
-    .comments-add {
-      margin-left: 2px;
+    .avatar-icon {
+      background-position: left;
     }
 
-    .comments-thread {
-      left: 4px !important;
+    .comment-thread-range {
+      background-color: var(--editorCommentsWidget-rangeBackground);
+    }
+
+    .comment-thread-range-current {
+      background-color: var(--editorCommentsWidget-rangeActiveBackground);
     }
 
     .cldr.insert-sign,
     .cldr.delete-sign {
       background-position: right;
     }
+
+    .comment-diff-added {
+      border-left-color: var(--editorGutter-commentRangeForeground);
+      border-left-style: solid;
+      border-left-width: 3px;
+    }
+
+    .comment-range {
+      margin-left: 10px;
+      width: 4px !important;
+      cursor: pointer;
+      z-index: 10;
+
+      &.multiline-add {
+        border-left-color: var(--peekView-border);
+        border-left-width: 3px;
+        border-left-style: solid;
+        height: 100%;
+      }
+      &.comment-thread::before {
+        border-radius: 3px;
+        width: 18px !important;
+        padding-left: 1px;
+        background: var(--editorGutter-commentRangeForeground);
+        color: var(--editorGutter-commentGlyphForeground);
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        justify-content: center;
+        left: -8px;
+        position: absolute;
+        text-align: center;
+        z-index: 10;
+        font-size: 12px;
+      }
+
+      &.line-hover:before {
+        content: '\ea60';
+        font-family: 'codicon';
+        border-radius: 3px;
+        width: 18px !important;
+        padding-left: 1px;
+        background: var(--editorGutter-commentRangeForeground);
+        color: var(--editorGutter-commentGlyphForeground);
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        justify-content: center;
+        left: -8px;
+        position: absolute;
+        text-align: center;
+        z-index: 10;
+      }
+    }
+
+    .comment-add,
+    .comment-thread {
+      z-index: 11;
+    }
   }
 }
 
 .comment_container {
   font-size: 12px;
-  background-color: var(--kt-popover-background);
+  background-color: var(--peekViewResult-background);
   border-top: 1px solid var(--peekView-border);
   border-bottom: 1px solid var(--peekView-border);
 }
@@ -146,9 +209,11 @@
 
 .reply_item {
   margin-bottom: 8px;
+
   &:last-child {
     margin-bottom: 0;
   }
+
   &:hover {
     .reply_item_title {
       visibility: visible;
