@@ -54,6 +54,8 @@ namespace MarkerErrorData {
 
 @Injectable({ multiple: true })
 export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
+  public priority = 1;
+
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
 

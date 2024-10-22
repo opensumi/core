@@ -28,7 +28,7 @@ import {
   mergeMultiLineDiffChanges,
   wordChangesToLineChangesMap,
 } from './diff-computer';
-import { CodeEditsResultValue } from './source/base';
+import { CodeEditsResultValue, CodeEditsSourceCollection } from './source/base';
 import { LineChangeCodeEditsSource } from './source/line-change.source';
 import { LintErrorCodeEditsSource } from './source/lint-error.source';
 
@@ -377,19 +377,22 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    const lintErrorCodeEditsSource = this.injector.get(LintErrorCodeEditsSource, [this.monacoEditor]);
-    const lineChangeCodeEditsSource = this.injector.get(LineChangeCodeEditsSource, [this.monacoEditor]);
+    const codeEditsSourceCollection = this.injector.get(CodeEditsSourceCollection, [
+      [LintErrorCodeEditsSource, LineChangeCodeEditsSource],
+      this.monacoEditor,
+    ]);
+
+    codeEditsSourceCollection.mount();
 
     this.featureDisposable.addDispose(
       autorun((reader) => {
-        const source = lintErrorCodeEditsSource.codeEditsResult.read(reader);
+        const source = codeEditsSourceCollection.codeEditsResult.read(reader);
         if (source) {
           this.fetchProvider(source);
         }
       }),
     );
 
-    this.featureDisposable.addDispose(lintErrorCodeEditsSource.mount());
-    this.featureDisposable.addDispose(lineChangeCodeEditsSource.mount());
+    this.featureDisposable.addDispose(codeEditsSourceCollection);
   }
 }
