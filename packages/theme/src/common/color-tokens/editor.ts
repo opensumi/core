@@ -611,16 +611,6 @@ export const editorGutter = registerColor(
     'Background color of the editor gutter. The gutter contains the glyph margins and the line numbers.',
   ),
 );
-export const overviewRulerCommentingRangeForeground = registerColor(
-  'editorGutter.commentRangeForeground',
-  {
-    dark: listInactiveSelectionBackground,
-    light: darken(listInactiveSelectionBackground, 0.05),
-    hcDark: Color.white,
-    hcLight: Color.black,
-  },
-  localize('editorGutterCommentRangeForeground', 'Editor gutter decoration color for commenting ranges.'),
-);
 export const editorUnnecessaryCodeBorder = registerColor(
   'editorUnnecessaryCode.border',
   { dark: null, light: null, hcDark: Color.fromHex('#fff').transparent(0.8), hcLight: contrastBorder },

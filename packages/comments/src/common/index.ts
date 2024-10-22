@@ -2,18 +2,16 @@ import React from 'react';
 
 import type { ITree, ITreeNode } from '@opensumi/ide-components';
 import {
-  IRange,
-  URI,
-  IDisposable,
-  MaybePromise,
-  Event,
   BasicEvent,
+  Event,
   IContextKeyService,
+  IDisposable,
   IMarkdownString,
+  IRange,
+  MaybePromise,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { IEditor } from '@opensumi/ide-editor';
-// eslint-disable-next-line import/no-restricted-paths
-import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 
 export type Writable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -447,7 +445,7 @@ export interface CommentsContribution {
    * 提供可评论的 range
    * @param editor 当前 editor 实例
    */
-  provideCommentingRanges(documentModel: IEditorDocumentModel): MaybePromise<IRange[] | undefined>;
+  provideCommentingRanges(documentModel: any): MaybePromise<IRange[] | undefined>;
   /**
    * 扩展评论模块的能力
    * @param registry
@@ -511,6 +509,15 @@ export interface ICommentsThread extends IDisposable {
    * 评论面板的 context key service
    */
   contextKeyService: IContextKeyService;
+  /**
+   * 评论面板的折叠状态变化事件
+   */
+  onDidChangeCollapsibleState: Event<CommentThreadCollapsibleState>;
+  /**
+   * 更新当前 thread 的评论列表
+   * @param comments
+   */
+  updateComments(comments: IComment[]): void;
   /**
    * 添加评论
    * @param comment
@@ -618,6 +625,11 @@ export interface ICommentsService extends ITree {
    */
   init(): void;
   /**
+   * 设置当前用户激活的 thread
+   * @param thread
+   */
+  setCurrentCommentThread(thread?: ICommentsThread): void;
+  /**
    * 编辑器创建后的处理函数
    * @param editor 当前编辑器
    */
@@ -688,7 +700,7 @@ export const SwitchCommandReaction = 'comments.comment.action.switchCommand';
 export class CommentPanelCollapse extends BasicEvent<void> {}
 
 export interface ICommentRangeProvider {
-  getCommentingRanges(documentModel: IEditorDocumentModel): MaybePromise<IRange[] | undefined>;
+  getCommentingRanges(documentModel: any): MaybePromise<IRange[] | undefined>;
 }
 
 export interface CommentReactionPayload {

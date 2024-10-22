@@ -1253,7 +1253,7 @@ export const localizationBundle = {
     comments: 'Comments',
     'comments.reply.placeholder': 'Reply',
     'comments.participants': 'Participants',
-    'comments.zone.title': 'Start discussion',
+    'comments.zone.title': 'Start Discussion',
     'comments.panel.action.collapse': 'Collapse All',
     'comments.thread.action.close': 'Close Panel',
     'comments.thread.action.openFile': 'Open file',

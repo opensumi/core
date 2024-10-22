@@ -262,6 +262,10 @@ export interface AppConfig {
    * AI Native 相关的配置项
    */
   aiNativeConfig?: AiNativeConfig;
+  /**
+   * 是否启用 Diff 协议文件自动恢复
+   */
+  enableDiffRevive?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
