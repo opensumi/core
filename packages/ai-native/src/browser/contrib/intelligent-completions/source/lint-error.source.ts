@@ -11,7 +11,7 @@ import {
   MarkerSeverity,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
-import { ECodeEditsSource } from '..';
+import { ECodeEditsSource } from '../index';
 
 import { BaseCodeEditsSource } from './base';
 
