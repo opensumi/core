@@ -106,6 +106,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
       partialEditWidgetOptions: {
         hideAcceptPartialEditWidget: options.hideAcceptPartialEditWidget,
       },
+      renderRemovedWidgetImmediately: options.renderRemovedWidgetImmediately,
     });
   }
 

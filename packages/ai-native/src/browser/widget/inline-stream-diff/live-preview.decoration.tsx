@@ -65,6 +65,7 @@ export interface ITotalCodeInfo {
 
 export interface IModelOptions {
   partialEditWidgetOptions?: IPartialEditWidgetOptions;
+  renderRemovedWidgetImmediately?: boolean;
 }
 
 @Injectable({ multiple: true })
@@ -676,15 +677,18 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public touchRemovedWidget(states: IRemovedWidgetState[]) {
-    runWhenIdle(() => {
-      if (this.disposed) {
-        return;
-      }
+    const run = () => {
       this.clearRemovedWidgets();
       states.forEach(({ textLines, position }) => {
         this.showRemovedWidgetByLineNumber(position.lineNumber, textLines, {});
       });
-    });
+    };
+
+    if (this.options.renderRemovedWidgetImmediately) {
+      run();
+    } else {
+      runWhenIdle(run);
+    }
   }
 
   public touchPendingRange(range: LineRange) {
