@@ -1,21 +1,21 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/di';
-import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable } from '@opensumi/di';
+import { AppConfig, ConfigProvider, Emitter, Event, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IEditor } from '@opensumi/ide-editor';
-import { ResizeZoneWidget, IOptions } from '@opensumi/ide-monaco-enhance';
+import { IOptions, ResizeZoneWidget } from '@opensumi/ide-monaco-enhance';
 
 import {
   ICommentReply,
-  ICommentsZoneWidget,
   ICommentThreadTitle,
   ICommentsFeatureRegistry,
   ICommentsThread,
+  ICommentsZoneWidget,
 } from '../common';
 
 import { CommentItem } from './comments-item.view';
@@ -72,7 +72,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   React.useEffect(() => {
     const disposer = widget.onFirstDisplay(() => {
       setTimeout(() => {
-        widget.coreEditor.monacoEditor.revealLine(thread.range.startLineNumber + 1);
+        widget.coreEditor.monacoEditor.revealLine(thread.range.endLineNumber + 1);
       }, 0);
     });
     return () => {
@@ -80,9 +80,32 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
     };
   }, []);
 
+  const handleMouseOver = React.useCallback(() => {
+    commentsZoneService.setCurrentCommentThread(commentsZoneService.thread);
+  }, []);
+
+  const handleMouseOut = React.useCallback(() => {
+    commentsZoneService.setCurrentCommentThread(undefined);
+  }, []);
+
+  const handleFocus = React.useCallback(() => {
+    commentsZoneService.setCurrentCommentThread(commentsZoneService.thread);
+  }, []);
+
+  const handleBlur = React.useCallback(() => {
+    commentsZoneService.setCurrentCommentThread(undefined);
+  }, []);
+
   return (
-    <div className={clx(thread.options.threadClassName, styles.comment_container)}>
-      <div className={clx(thread.options.threadHeadClassName, styles.head)}>
+    <div
+      tabIndex={-1}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      className={cls(thread.options.threadClassName, styles.comment_container)}
+    >
+      <div className={cls(thread.options.threadHeadClassName, styles.head)}>
         <div className={styles.review_title}>{threadHeaderTitle}</div>
         <InlineActionBar<ICommentThreadTitle>
           menus={commentThreadTitle}
@@ -153,7 +176,10 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   public onHide: Event<void> = this._onHide.event;
 
   constructor(editor: IEditor, thread: ICommentsThread, options?: IOptions) {
-    super(editor.monacoEditor, thread.range, options);
+    super(editor.monacoEditor, thread.range, {
+      ...options,
+      showInHiddenAreas: true,
+    });
     this._editor = editor;
     this._wrapper = document.createElement('div');
     this._isShow = !thread.isCollapsed;

@@ -32,4 +32,6 @@ export * from './charts';
 export * from './minimap';
 export * from './testing';
 
+export * from './comment';
+export * from './comment-glyph';
 export * from './custom';

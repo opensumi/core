@@ -257,6 +257,14 @@ export interface AppConfig {
    * default -1，it means disable
    */
   rpcMessageTimeout?: number;
+  /**
+   * AI Native 相关的配置项
+   */
+  aiNativeConfig?: any;
+  /**
+   * 是否启用 Diff 协议文件自动恢复
+   */
+  enableDiffRevive?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
