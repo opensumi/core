@@ -3,7 +3,6 @@ import groupBy from 'lodash/groupBy';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  AppConfig,
   Deferred,
   Disposable,
   Emitter,
@@ -230,7 +229,6 @@ export class CommentsService extends Disposable implements ICommentsService {
       isWholeLine: false,
       zIndex: 20,
       className: 'comment-thread-range-current',
-      shouldFillLineOnLineBreak: true,
     };
 
     return textModel.ModelDecorationOptions.createDynamic(activeDecorationOptions);
@@ -242,7 +240,6 @@ export class CommentsService extends Disposable implements ICommentsService {
       isWholeLine: false,
       zIndex: 20,
       className: 'comment-thread-range',
-      shouldFillLineOnLineBreak: true,
     };
 
     return textModel.ModelDecorationOptions.createDynamic(activeDecorationOptions);
@@ -384,7 +381,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             event.event.stopPropagation();
           }
         } else if (
-          event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+          event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
           event.target.element &&
           event.target.element.className.indexOf('comment-range') > -1 &&
           event.target.element.className.indexOf('comment-thread') < 0
@@ -419,7 +416,8 @@ export class CommentsService extends Disposable implements ICommentsService {
         // 多行评论
         if (this.startCommentRange) {
           if (!event.target.element?.className) {
-            if (event.target.element?.offsetParent?.className.includes('diff-hidden-lines')) {
+            const offsetParent = event.target.element?.parentElement;
+            if (offsetParent instanceof HTMLElement && offsetParent.className.includes('diff-hidden-lines')) {
               // 当多行评论跨过折叠代码时，不创建评论
               hasHiddenArea = true;
             }
@@ -586,7 +584,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   private getExistingCommentEditorOptions(editor: IEditor) {
-    const lineDecorationsWidth: number = editor.monacoEditor.getOption(monaco.EditorOption.lineDecorationsWidth);
+    const lineDecorationsWidth: any = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineDecorationsWidth);
     let extraEditorClassName: string[] = [];
     const configuredExtraClassName = editor.monacoEditor.getRawOptions().extraEditorClassName;
     if (configuredExtraClassName) {
@@ -607,9 +605,9 @@ export class CommentsService extends Disposable implements ICommentsService {
     }
 
     const options = editor.monacoEditor.getOptions();
-    if (options.get(monaco.EditorOption.folding) && options.get(monaco.EditorOption.showFoldingControls) !== 'never') {
-      lineDecorationsWidth += 11; // 11 comes from https://github.com/microsoft/vscode/blob/94ee5f58619d59170983f453fe78f156c0cc73a3/src/vs/workbench/contrib/comments/browser/media/review.css#L485
-    }
+    // if (options.get(monaco.EditorOption.folding) && options.get(monaco.EditorOption.showFoldingControls) !== 'never') {
+    //   lineDecorationsWidth += 11; // 11 comes from https://github.com/microsoft/vscode/blob/94ee5f58619d59170983f453fe78f156c0cc73a3/src/vs/workbench/contrib/comments/browser/media/review.css#L485
+    // }
     lineDecorationsWidth -= 24;
     return { extraEditorClassName, lineDecorationsWidth };
   }
@@ -636,9 +634,9 @@ export class CommentsService extends Disposable implements ICommentsService {
   private getWithCommentsLineDecorationWidth(editor: IEditor, startingLineDecorationsWidth: number) {
     let lineDecorationsWidth = startingLineDecorationsWidth;
     const options = editor.monacoEditor.getOptions();
-    if (options.get(monaco.EditorOption.folding) && options.get(monaco.EditorOption.showFoldingControls) !== 'never') {
-      lineDecorationsWidth -= 11;
-    }
+    // if (options.get(monaco.EditorOption.folding) && options.get(monaco.EditorOption.showFoldingControls) !== 'never') {
+    //   lineDecorationsWidth -= 11;
+    // }
     lineDecorationsWidth += 24;
     this.editorLineDecorationsWidthMap.set(editor.getId(), lineDecorationsWidth);
     return lineDecorationsWidth;
@@ -995,6 +993,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     // 消除 document 引用
     model?.dispose();
     // 拍平，去掉 undefined
+    // @ts-ignore
     const flattenRange: IRange[] = flattenDeep(res).filter(Boolean) as IRange[];
     deferredRes.resolve(flattenRange);
     return flattenRange;
