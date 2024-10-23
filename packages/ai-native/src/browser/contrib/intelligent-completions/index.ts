@@ -1,3 +1,4 @@
+import { Disposable } from '@opensumi/ide-core-common';
 import { IRange, InlineCompletion } from '@opensumi/ide-monaco';
 
 import type { ILineChangeData } from './source/line-change.source';
@@ -17,14 +18,8 @@ export enum ECodeEditsSource {
 }
 
 export type ICodeEditsContextBean =
-  | {
-      typing: ECodeEditsSource.LinterErrors;
-      data: ILinterErrorData;
-    }
-  | {
-      typing: ECodeEditsSource.LineChange;
-      data: ILineChangeData;
-    };
+  | { typing: ECodeEditsSource.LinterErrors; data: ILinterErrorData }
+  | { typing: ECodeEditsSource.LineChange; data: ILineChangeData };
 
 export interface ICodeEdit {
   /**
@@ -38,4 +33,14 @@ export interface ICodeEdit {
 }
 export interface ICodeEditsResult {
   readonly items: ICodeEdit[];
+}
+
+export class CodeEditsResultValue extends Disposable {
+  constructor(private readonly raw: ICodeEditsResult) {
+    super();
+  }
+
+  public get items(): ICodeEdit[] {
+    return this.raw.items;
+  }
 }

@@ -89,7 +89,7 @@ export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
     if (markers.length) {
       const relativeWorkspacePath = await this.workspaceService.asRelativePath(resource.path);
 
-      this.launchProvider(this.monacoEditor, position, {
+      this.setBean({
         typing: ECodeEditsSource.LinterErrors,
         data: {
           relativeWorkspacePath: relativeWorkspacePath?.path ?? resource.path,

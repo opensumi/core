@@ -1,6 +1,13 @@
 import { Key, KeybindingRegistry, KeybindingScope, PreferenceService } from '@opensumi/ide-core-browser';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import { AINativeSettingSectionsId, Disposable, Event, IDisposable, runWhenIdle } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  Disposable,
+  Event,
+  IDisposable,
+  IntelligentCompletionsRegistryToken,
+  runWhenIdle,
+} from '@opensumi/ide-core-common';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { autorun, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observable';
@@ -28,9 +35,12 @@ import {
   mergeMultiLineDiffChanges,
   wordChangesToLineChangesMap,
 } from './diff-computer';
-import { CodeEditsResultValue, CodeEditsSourceCollection } from './source/base';
+import { IntelligentCompletionsRegistry } from './intelligent-completions.feature.registry';
+import { CodeEditsSourceCollection } from './source/base';
 import { LineChangeCodeEditsSource } from './source/line-change.source';
 import { LintErrorCodeEditsSource } from './source/lint-error.source';
+
+import { CodeEditsResultValue } from './index';
 
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.intelligent.completions';
@@ -49,6 +59,10 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
 
   private get keybindingRegistry(): KeybindingRegistry {
     return this.injector.get(KeybindingRegistry);
+  }
+
+  private get intelligentCompletionsRegistry(): IntelligentCompletionsRegistry {
+    return this.injector.get(IntelligentCompletionsRegistryToken);
   }
 
   private multiLineDecorationModel: MultiLineDecorationModel;
@@ -168,18 +182,6 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     if (this.rewriteWidget) {
       this.rewriteWidget.dispose();
       this.rewriteWidget = null;
-    }
-  }
-
-  private async fetchProvider(editsResult: CodeEditsResultValue): Promise<void> {
-    // 如果上一次补全结果还在，则不重复请求
-    const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
-    if (isVisible) {
-      return;
-    }
-
-    if (editsResult && editsResult.items.length > 0) {
-      this.applyInlineDecorations(editsResult);
     }
   }
 
@@ -385,10 +387,26 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     codeEditsSourceCollection.mount();
 
     this.featureDisposable.addDispose(
-      autorun((reader) => {
-        const source = codeEditsSourceCollection.codeEditsResult.read(reader);
-        if (source) {
-          this.fetchProvider(source);
+      autorun(async (reader) => {
+        const context = codeEditsSourceCollection.codeEditsContextBean.read(reader);
+
+        // 如果上一次补全结果还在，则不重复请求
+        const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
+        if (isVisible) {
+          return;
+        }
+
+        const provider = this.intelligentCompletionsRegistry.getCodeEditsProvider();
+        if (context && provider) {
+          const result = await provider(
+            this.monacoEditor,
+            this.monacoEditor.getPosition()!,
+            context.bean,
+            codeEditsSourceCollection.token,
+          );
+          if (result && result.items.length > 0) {
+            this.applyInlineDecorations(new CodeEditsResultValue(result));
+          }
         }
       }),
     );
