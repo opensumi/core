@@ -1,14 +1,13 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import {
   CancellationTokenSource,
+  ConstructorOf,
   Disposable,
   IDisposable,
-  IntelligentCompletionsRegistryToken,
   MaybePromise,
   uuid,
 } from '@opensumi/ide-core-common';
-import { ConstructorOf } from '@opensumi/ide-core-common';
-import { ICodeEditor, IPosition } from '@opensumi/ide-monaco';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 import { DisposableStore } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import {
   autorunDelta,
@@ -18,17 +17,29 @@ import {
   transaction,
 } from '@opensumi/monaco-editor-core/esm/vs/base/common/observable';
 
-import { ICodeEdit, ICodeEditsContextBean, ICodeEditsResult } from '../index';
-import { IntelligentCompletionsRegistry } from '../intelligent-completions.feature.registry';
+import { ICodeEditsContextBean } from '../index';
+
+export class CodeEditsContextBean extends Disposable {
+  public readonly uid = uuid(6);
+
+  constructor(private readonly raw: ICodeEditsContextBean, private readonly source: BaseCodeEditsSource) {
+    super();
+  }
+
+  public get priority() {
+    return this.source.priority;
+  }
+
+  public get bean() {
+    return this.raw;
+  }
+}
 
 @Injectable({ multiple: true })
 export abstract class BaseCodeEditsSource extends Disposable {
-  @Autowired(IntelligentCompletionsRegistryToken)
-  private readonly intelligentCompletionsRegistry: IntelligentCompletionsRegistry;
-
   protected abstract doTrigger(...args: any[]): MaybePromise<void>;
 
-  public readonly codeEditsResult = disposableObservableValue<CodeEditsResultValue | undefined>(this, undefined);
+  public readonly codeEditsContextBean = disposableObservableValue<CodeEditsContextBean | undefined>(this, undefined);
 
   public abstract priority: number;
   public abstract mount(): IDisposable;
@@ -37,56 +48,21 @@ export abstract class BaseCodeEditsSource extends Disposable {
     super();
   }
 
-  protected cancellationTokenSource = new CancellationTokenSource();
-
   protected get model() {
     return this.monacoEditor.getModel();
   }
 
-  protected get token() {
-    return this.cancellationTokenSource.token;
-  }
-
-  public cancelToken() {
-    this.cancellationTokenSource.cancel();
-    this.cancellationTokenSource = new CancellationTokenSource();
-  }
-
-  protected resetCodeEditsResult = derived(this, () => {
+  protected resetBean() {
     transaction((tx) => {
-      this.codeEditsResult.set(undefined, tx);
+      this.codeEditsContextBean.set(undefined, tx);
     });
-  });
-
-  protected async launchProvider(editor: ICodeEditor, position: IPosition, bean: ICodeEditsContextBean): Promise<void> {
-    const provider = this.intelligentCompletionsRegistry.getCodeEditsProvider();
-    if (provider) {
-      const result = await provider(editor, position, bean, this.token);
-
-      if (result) {
-        const codeEditsResultValue = new CodeEditsResultValue(result, this);
-
-        transaction((tx) => {
-          this.codeEditsResult.set(codeEditsResultValue, tx);
-        });
-      }
-    }
-  }
-}
-
-export class CodeEditsResultValue extends Disposable {
-  public readonly uid = uuid(6);
-
-  constructor(private readonly raw: ICodeEditsResult, private readonly source: BaseCodeEditsSource) {
-    super();
   }
 
-  public get items(): ICodeEdit[] {
-    return this.raw.items;
-  }
-
-  public get priority(): number {
-    return this.source.priority;
+  protected setBean(bean: ICodeEditsContextBean) {
+    transaction((tx) => {
+      const context = new CodeEditsContextBean(bean, this);
+      this.codeEditsContextBean.set(context, tx);
+    });
   }
 }
 
@@ -95,7 +71,18 @@ export class CodeEditsSourceCollection extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  public readonly codeEditsResult = disposableObservableValue<CodeEditsResultValue | undefined>(this, undefined);
+  private cancellationTokenSource = new CancellationTokenSource();
+
+  public readonly codeEditsContextBean = disposableObservableValue<CodeEditsContextBean | undefined>(this, undefined);
+
+  public get token() {
+    return this.cancellationTokenSource.token;
+  }
+
+  public cancelToken() {
+    this.cancellationTokenSource.cancel();
+    this.cancellationTokenSource = new CancellationTokenSource();
+  }
 
   constructor(
     private readonly constructorSources: ConstructorOf<BaseCodeEditsSource>[],
@@ -111,38 +98,38 @@ export class CodeEditsSourceCollection extends Disposable {
 
     const store = this.registerDispose(new DisposableStore());
 
-    // 观察所有 source 的 codeEditsResult
-    const observerCodeEditsResult = derived((reader) => ({
-      codeEditsResults: new Map(sources.map((source) => [source, source.codeEditsResult.read(reader)])),
+    // 观察所有 source 的 codeEditsContextBean
+    const observerCodeEditsContextBean = derived((reader) => ({
+      codeEditsContextBean: new Map(sources.map((source) => [source, source.codeEditsContextBean.read(reader)])),
     }));
 
     this.addDispose(
       autorunDelta(
         // 这里需要做 debounce 0 处理，将多次连续的事务通知合并为一次
-        debouncedObservable(observerCodeEditsResult, 0, store),
+        debouncedObservable(observerCodeEditsContextBean, 0, store),
         ({ lastValue, newValue }) => {
           // 只拿最新的订阅值，如果 uid 相同，表示该值没有变化，就不用往下通知了
           const lastSources = sources.filter((source) => {
-            const newValueResult = newValue?.codeEditsResults.get(source);
-            const lastValueResult = lastValue?.codeEditsResults?.get(source);
-            return newValueResult && (!lastValueResult || newValueResult.uid !== lastValueResult.uid);
+            const newBean = newValue?.codeEditsContextBean.get(source);
+            const lastBean = lastValue?.codeEditsContextBean?.get(source);
+            return newBean && (!lastBean || newBean.uid !== lastBean.uid);
           });
 
           let highestPriority = 0;
-          let currentResult: CodeEditsResultValue | undefined;
+          let contextBean: CodeEditsContextBean | undefined;
 
           for (const source of lastSources) {
-            const value = source.codeEditsResult.get();
+            const value = source.codeEditsContextBean.get();
 
-            if (value && value.priority > highestPriority) {
+            if (value && value.priority >= highestPriority) {
               highestPriority = value.priority;
-              currentResult = value;
+              contextBean = value;
             }
           }
 
           transaction((tx) => {
             // 只通知最高优先级的结果
-            this.codeEditsResult.set(currentResult, tx);
+            this.codeEditsContextBean.set(contextBean, tx);
           });
         },
       ),

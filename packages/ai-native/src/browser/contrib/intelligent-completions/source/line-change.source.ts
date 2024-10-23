@@ -43,7 +43,7 @@ export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
     }
 
     this.lastEditTime = currentTime;
-    this.launchProvider(this.monacoEditor, position, {
+    this.setBean({
       typing: ECodeEditsSource.LineChange,
       data: {
         preLineNumber: this.prePosition?.lineNumber,
