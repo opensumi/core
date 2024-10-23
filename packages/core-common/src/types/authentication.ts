@@ -106,10 +106,3 @@ export interface SessionRequest {
 export interface SessionRequestInfo {
   [scopes: string]: SessionRequest;
 }
-
-export interface AuthenticationGetSessionOptions {
-  createIfNone: boolean;
-  clearSessionPreference: boolean;
-  forceNewSession?: boolean | { detail: string };
-  silent?: boolean;
-}
