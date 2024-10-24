@@ -133,7 +133,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       inputDisposable.dispose();
     };
 
-    this.addDispose(
+    this.featureDisposable.addDispose(
       this.inlineInputChatService.onInteractiveInputVisibleInPosition((position) => {
         hideInput();
 
@@ -144,7 +144,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     );
 
     const showInput = (position: monaco.Position, monacoEditor: ICodeEditor) => {
-      this.addDispose(
+      this.featureDisposable.addDispose(
         monacoEditor.onWillChangeModel(() => {
           hideInput();
         }),
@@ -270,8 +270,8 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       inputDisposable.addDispose(inlineInputChatWidget);
     };
 
-    this.addDispose(inputDisposable);
+    this.featureDisposable.addDispose(inputDisposable);
 
-    return this;
+    return this.featureDisposable;
   }
 }

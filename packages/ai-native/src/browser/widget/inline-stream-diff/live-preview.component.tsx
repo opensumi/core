@@ -124,6 +124,13 @@ const PartialEditComponent = (props: {
   );
 };
 
+export interface IPartialEditWidgetOptions {
+  /**
+   * In some case, we don't want to show the accept and reject button
+   */
+  hideAcceptPartialEditWidget?: boolean;
+}
+
 @Injectable({ multiple: true })
 export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   static ID = 'AcceptPartialEditWidgetID';
@@ -141,6 +148,10 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   public readonly onDiscard: Event<void> = this._onDiscard.event;
 
   positionPreference = [ContentWidgetPositionPreference.EXACT];
+
+  constructor(protected readonly editor: ICodeEditor, protected editWidgetOptions?: IPartialEditWidgetOptions) {
+    super(editor);
+  }
 
   public addedLinesCount: number = 0;
   public deletedLinesCount: number = 0;
@@ -166,6 +177,10 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   }
 
   public renderView(): React.ReactNode {
+    if (this.editWidgetOptions?.hideAcceptPartialEditWidget) {
+      return;
+    }
+
     const keyStrings = this.getSequenceKeyStrings();
     if (!keyStrings) {
       return;

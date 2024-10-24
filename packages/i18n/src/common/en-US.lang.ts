@@ -524,7 +524,7 @@ export const localizationBundle = {
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info':
       'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
-    'preference.general.language.change.refresh.now': 'Now',
+    'preference.general.language.change.refresh.now': 'Refresh',
     'preference.general.language.change.refresh.later': 'Later',
 
     'preference.debug.internalConsoleOptions': 'Controls when the internal debug console should open.',

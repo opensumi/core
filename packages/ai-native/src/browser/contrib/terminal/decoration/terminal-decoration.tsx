@@ -1,6 +1,6 @@
+import { IDecoration, IMarker, Terminal } from '@xterm/xterm';
 import React from 'react';
 import { Root, createRoot } from 'react-dom/client';
-import { IDecoration, IMarker, Terminal } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';

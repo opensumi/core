@@ -28,6 +28,8 @@ import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
 import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
+import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
+import { AI_CHAT_LOGO_AVATAR_ID } from '@opensumi/ide-ai-native';
 
 const CLIENT_ID = 'W_' + uuid();
 
@@ -56,9 +58,6 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.wsPath = opts.wsPath || process.env.WS_PATH || `ws://${defaultHost}:8000`;
 
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST;
-
-  const anotherHostName = process.env.WEBVIEW_HOST || defaultHost;
-  opts.webviewEndpoint = opts.webviewEndpoint || `http://${anotherHostName}:8899`;
 
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
@@ -98,10 +97,14 @@ export const getDefaultClientAppOpts = ({
       [SlotLocation.action]: {
         modules: ['@opensumi/ide-toolbar-action'],
       },
+      [DESIGN_MENU_BAR_RIGHT]: {
+        modules: [AI_CHAT_LOGO_AVATAR_ID],
+      },
       ...layoutConfig,
     },
     useCdnIcon: true,
     useExperimentalShadowDom: true,
+    useBuiltinWebview: true,
     defaultPreferences: {
       'general.language': defaultLanguage,
       'general.theme': 'opensumi-design-dark-theme',

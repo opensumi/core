@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-startup",
-  "version": "3.4.1",
+  "version": "3.4.4",
   "files": [
     "lib",
     "src"
@@ -11,9 +11,8 @@
   "scripts": {
     "prepublishOnly": "yarn run build",
     "start:lite": "webpack-dev-server --config ./webpack.lite.config.js",
-    "start": "run-p start:client:open start:server start:webview",
-    "start:e2e": "run-p start:client:e2e start:server start:webview",
-    "start:webview": "webpack-dev-server --config ./webpack.webview.js",
+    "start": "run-p start:client:open start:server",
+    "start:e2e": "run-p start:client:e2e start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "cross-env IS_DEV=1 NODE_ENV=development EXT_MODE=js KTLOG_SHOW_DEBUG=1 nodemon --inspect=9999 ./entry/web/server.ts",
     "start:no-inspect:client": "yarn start:client",

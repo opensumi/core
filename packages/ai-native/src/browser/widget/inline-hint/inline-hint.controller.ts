@@ -76,14 +76,14 @@ export class InlineHintController extends BaseAIMonacoEditorController {
       }
     };
 
-    this.addDispose(
+    this.featureDisposable.addDispose(
       monacoEditor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
         hideHint();
         showHint(e.position);
       }),
     );
 
-    this.addDispose(
+    this.featureDisposable.addDispose(
       monacoEditor.onDidFocusEditorWidget(() => {
         const currentPosition = monacoEditor.getPosition();
 
@@ -94,13 +94,13 @@ export class InlineHintController extends BaseAIMonacoEditorController {
       }),
     );
 
-    this.addDispose(
+    this.featureDisposable.addDispose(
       monacoEditor.onDidBlurEditorWidget(() => {
         hideHint();
       }),
     );
 
-    this.addDispose(
+    this.featureDisposable.addDispose(
       this.inlineCompletionsService.onVisibleCompletion((v) => {
         if (v) {
           hideHint();
@@ -108,8 +108,8 @@ export class InlineHintController extends BaseAIMonacoEditorController {
       }),
     );
 
-    this.addDispose(hintDisposable);
+    this.featureDisposable.addDispose(hintDisposable);
 
-    return this;
+    return this.featureDisposable;
   }
 }

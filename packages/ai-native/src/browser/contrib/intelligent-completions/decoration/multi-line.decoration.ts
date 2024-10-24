@@ -4,9 +4,8 @@ import { empty } from '@opensumi/ide-utils/lib/strings';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/viewLayout/lineDecorations';
 
-import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
-
-import { IMultiLineDiffChangeResult } from './diff-computer';
+import { EnhanceDecorationsCollection } from '../../../model/enhanceDecorationsCollection';
+import { IMultiLineDiffChangeResult } from '../diff-computer';
 
 export interface IModificationsInline {
   newValue: string;

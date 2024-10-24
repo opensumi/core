@@ -56,7 +56,6 @@ import {
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
-import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -77,6 +76,7 @@ import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
+import { InlineCompletionsController } from './contrib/inline-completions/inline-completions.controller';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
 import { IntelligentCompletionsController } from './contrib/intelligent-completions/intelligent-completions.controller';
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
@@ -137,7 +137,7 @@ export class AINativeBrowserContribution
   protected readonly injector: Injector;
 
   @Autowired(IBrowserCtxMenu)
-  private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
+  private readonly ctxMenuRenderer: IBrowserCtxMenu;
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
@@ -254,6 +254,11 @@ export class AINativeBrowserContribution
       register(
         IntelligentCompletionsController.ID,
         new SyncDescriptor(IntelligentCompletionsController, [this.injector]),
+        EditorContributionInstantiation.AfterFirstRender,
+      );
+      register(
+        InlineCompletionsController.ID,
+        new SyncDescriptor(InlineCompletionsController, [this.injector]),
         EditorContributionInstantiation.AfterFirstRender,
       );
     }
@@ -423,8 +428,8 @@ export class AINativeBrowserContribution
       execute: async (visible: boolean) => {
         if (!visible) {
           this.aiCompletionsService.hideStatusBarItem();
+          this.aiInlineCompletionsProvider.setVisibleCompletion(false);
           this.aiInlineCompletionsProvider.cancelRequest();
-          this.aiCompletionsService.setVisibleCompletion(false);
         }
       },
     });
@@ -491,20 +496,6 @@ export class AINativeBrowserContribution
         args: false,
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
       });
-      keybindings.registerKeybinding({
-        command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
-        keybinding: 'ctrl+y',
-        args: true,
-        priority: 100,
-        when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
-      });
-      keybindings.registerKeybinding({
-        command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
-        keybinding: 'ctrl+n',
-        args: false,
-        priority: 100,
-        when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
-      });
 
       if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
         keybindings.registerKeybinding(
@@ -538,5 +529,20 @@ export class AINativeBrowserContribution
         );
       }
     }
+
+    keybindings.registerKeybinding({
+      command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
+      keybinding: 'ctrl+y',
+      args: true,
+      priority: 100,
+      when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
+    });
+    keybindings.registerKeybinding({
+      command: AI_INLINE_DIFF_PARTIAL_EDIT.id,
+      keybinding: 'ctrl+n',
+      args: false,
+      priority: 100,
+      when: `editorTextFocus && ${InlineDiffPartialEditsIsVisible.raw}`,
+    });
   }
 }

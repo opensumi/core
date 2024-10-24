@@ -1,10 +1,9 @@
 import { ICodeEditor, IModelDeltaDecoration, IRange, TrackedRangeStickiness } from '@opensumi/ide-monaco';
 
-import { EnhanceDecorationsCollection } from '../../model/enhanceDecorationsCollection';
-import { REWRITE_DECORATION_INLINE_ADD } from '../../widget/rewrite/rewrite-widget';
-
-import { IMultiLineDiffChangeResult } from './diff-computer';
-import styles from './intelligent-completions.module.less';
+import { EnhanceDecorationsCollection } from '../../../model/enhanceDecorationsCollection';
+import { REWRITE_DECORATION_INLINE_ADD } from '../../../widget/rewrite/rewrite-widget';
+import { IMultiLineDiffChangeResult } from '../diff-computer';
+import styles from '../intelligent-completions.module.less';
 
 export class AdditionsDeletionsDecorationModel {
   private deletionsDecorations: EnhanceDecorationsCollection;

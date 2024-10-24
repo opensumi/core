@@ -22,6 +22,8 @@ import { IDocModelUpdateOptions } from './types';
 
 import type {
   EOL,
+  ICodeEditorViewState,
+  IDiffEditorViewState,
   IEditorOptions,
   ICodeEditor as IMonacoCodeEditor,
   ITextModel,
@@ -317,8 +319,6 @@ export interface IDiffEditor extends IDisposable {
   getLineChanges(): ILineChange[] | null;
 
   onRefOpen: Event<IEditorDocumentModelRef>;
-
-  disposeModel(originalUri: string, modifiedUri: string): void;
 }
 
 @Injectable()
@@ -989,3 +989,23 @@ export function getSimpleEditorOptions(): IEditorOptions {
  * in case the column does not exist yet.
  */
 export type EditorGroupColumn = number;
+
+export function isTextEditorViewState(candidate: unknown): candidate is ICodeEditorViewState | IDiffEditorViewState {
+  const viewState = candidate as (ICodeEditorViewState | IDiffEditorViewState) | undefined;
+  if (!viewState) {
+    return false;
+  }
+
+  const diffEditorViewState = viewState as IDiffEditorViewState;
+  if (diffEditorViewState.modified) {
+    return isTextEditorViewState(diffEditorViewState.modified);
+  }
+
+  const codeEditorViewState = viewState as ICodeEditorViewState;
+
+  return !!(
+    codeEditorViewState.contributionsState &&
+    codeEditorViewState.viewState &&
+    Array.isArray(codeEditorViewState.cursorState)
+  );
+}

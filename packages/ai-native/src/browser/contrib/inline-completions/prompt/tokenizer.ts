@@ -1,5 +1,4 @@
-// @ts-ignore
-import { Tiktoken, getEncoding } from 'js-tiktoken';
+import { Tiktoken, get_encoding } from 'tiktoken';
 
 import { TokenizerName } from '../types';
 
@@ -10,7 +9,7 @@ export const getTokenizer = (tokenizerName = TokenizerName.cl100k_base) => {
   if (tokenizer) {
     return tokenizer;
   }
-  tokenizer = getEncoding('cl100k_base');
+  tokenizer = get_encoding('cl100k_base');
   TOKENIZER_CACHE.set(tokenizerName, tokenizer);
   return tokenizer;
 };

@@ -1,6 +1,6 @@
 import * as monaco from '@opensumi/ide-monaco';
 
-import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
+import { IIntelligentCompletionsResult } from '../../intelligent-completions';
 
 /**
  * 缓存的结果

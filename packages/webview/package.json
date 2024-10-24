@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-webview",
-  "version": "3.4.1",
+  "version": "3.4.4",
   "files": [
     "lib",
     "src"
@@ -10,7 +10,8 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.webview.json"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.webview.json",
+    "bundle-webview": "node ./scripts/bundle-webview.mjs"
   },
   "repository": {
     "type": "git",

@@ -1,11 +1,9 @@
 import cls from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom/client';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 
+import { MarkdownReactParser, MarkdownReactRenderer } from '@opensumi/ide-components/lib/markdown-react';
 import { IMarkedOptions, marked } from '@opensumi/ide-components/lib/utils';
 import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
-import { defaultGenerator } from '@opensumi/ide-core-common/lib/id-generator';
-import { escape } from '@opensumi/ide-utils/lib/strings';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { CodeEditorWithHighlight } from './ChatEditor';
@@ -24,45 +22,49 @@ interface MarkdownProps {
 export const ChatMarkdown = (props: MarkdownProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const [reactParser, setReactParser] = useState<MarkdownReactParser>();
+  const [tokensList, setTokensList] = useState<marked.TokensList>();
 
   useEffect(() => {
     const element = ref.current;
     if (!element) {
       return;
     }
-    const codeRenderedElements = new Map<string, { container: HTMLDivElement; root: ReactDOM.Root }>();
 
     const markdown: IMarkdownString =
       typeof props.markdown === 'string' ? new MarkdownString(props.markdown) : props.markdown;
 
-    const renderer = new marked.Renderer();
-    renderer.link = (href: string | null, title: string | null, text: string): string =>
-      `<a rel="noopener" target="_blank" href="${href}" target="${href}" title="${title || href}">${text}</a>`;
-    renderer.code = (code, lang) => {
-      const id = defaultGenerator.nextId();
-      const container = document.createElement('div');
-      const language = postProcessCodeBlockLanguageId(lang);
-      const dom = ReactDOM.createRoot(container);
-      dom.render(
-        <ConfigProvider value={appConfig}>
-          <div className={styles.code_block}>
-            <div className={styles.code_language}>{language}</div>
-            <CodeEditorWithHighlight
-              input={code}
-              language={language}
-              relationId={props.relationId || ''}
-              agentId={props.agentId}
-              command={props.command}
-            />
-          </div>
-        </ConfigProvider>,
+    const renderer: MarkdownReactRenderer = new MarkdownReactRenderer();
+    renderer.link = (href: string, text: ReactNode): React.ReactElement => (
+        <a rel='noopener' target='_blank' href={href} title={href}>
+          {text}
+        </a>
       );
-      codeRenderedElements.set(id, { container, root: dom });
-      return `<div class="code" data-code="${id}">${escape(code)}</div>`;
+    renderer.code = (code, lang) => {
+      const language = postProcessCodeBlockLanguageId(lang);
+
+      return (
+        <div className={styles.code}>
+          <ConfigProvider value={appConfig}>
+            <div className={styles.code_block}>
+              <div className={styles.code_language}>{language}</div>
+              <CodeEditorWithHighlight
+                input={code as string}
+                language={language}
+                relationId={props.relationId || ''}
+                agentId={props.agentId}
+                command={props.command}
+              />
+            </div>
+          </ConfigProvider>
+        </div>
+      );
     };
-    renderer.codespan = (code) => `<code class=${styles.code_inline}>${code}</code>`;
+    renderer.codespan = (code) => <code className={styles.code_inline}>{code}</code>;
+
+    const reactParser = new MarkdownReactParser({ renderer });
     const markedOptions = props.markedOptions ?? {};
-    markedOptions.renderer = renderer;
+    markedOptions.renderer = reactParser;
 
     let value = markdown.value ?? '';
     if (value.length > 100_000) {
@@ -70,6 +72,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
     }
 
     let renderedMarkdown: string;
+    let tokensList: marked.TokensList;
     if (props.fillInIncompleteTokens) {
       const opts = {
         ...marked.defaults,
@@ -78,33 +81,22 @@ export const ChatMarkdown = (props: MarkdownProps) => {
       const tokens = marked.lexer(value, opts);
       const newTokens = fillInIncompleteTokens(tokens);
       renderedMarkdown = marked.parser(newTokens, opts);
+      tokensList = newTokens;
     } else {
-      renderedMarkdown = marked.parse(value, markedOptions);
+      const tokens = marked.lexer(value, marked.defaults);
+      renderedMarkdown = marked.parser(tokens, markedOptions);
+      tokensList = tokens;
     }
 
-    element.innerHTML = renderedMarkdown;
-
-    const codePlaceholderElements = element.querySelectorAll<HTMLDivElement>('div[data-code]');
-    codePlaceholderElements.forEach((placeholderElement) => {
-      const renderedElement = codeRenderedElements.get(placeholderElement.dataset['code'] ?? '');
-      if (renderedElement && renderedElement.container) {
-        placeholderElement.innerText = '';
-        placeholderElement.append(renderedElement.container);
-      }
-    });
-
-    return () => {
-      if (codeRenderedElements.size > 0) {
-        codeRenderedElements.forEach(({ root }) => {
-          requestAnimationFrame(() => {
-            root.unmount();
-          });
-        });
-      }
-    };
+    setTokensList(tokensList);
+    setReactParser(reactParser);
   }, [props.markdown]);
 
-  return <div className={cls(styles.markdown_container, props.className)} ref={ref} tabIndex={0} />;
+  return (
+    <div className={cls(styles.markdown_container, props.className)} ref={ref} tabIndex={0}>
+      {tokensList && reactParser && reactParser.parse(tokensList)}
+    </div>
+  );
 };
 
 export function postProcessCodeBlockLanguageId(lang: string | undefined): string {

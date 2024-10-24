@@ -7,6 +7,7 @@ export class OverrideExtensionNodeService extends NodeExtProcessService {
         VSCODE_NLS: JSON.stringify({
           locale: 'zh-CN',
         }),
+        CF_RUNTIME: 'codefuse-ide',
       },
     };
   }

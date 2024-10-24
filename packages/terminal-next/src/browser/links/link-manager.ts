@@ -1,4 +1,4 @@
-import { ILinkProvider, IViewportRange, Terminal } from 'xterm';
+import { ILinkProvider, IViewportRange, Terminal } from '@xterm/xterm';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IOpenerService, PreferenceService } from '@opensumi/ide-core-browser';
