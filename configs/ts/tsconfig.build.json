@@ -182,6 +182,9 @@
     },
     {
       "path": "./references/tsconfig.playwright.json"
+    },
+    {
+      "path": "./references/tsconfig.notebook.json"
     }
   ]
 }

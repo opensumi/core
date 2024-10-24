@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDom from 'react-dom/client';
 
 import { ComponentContextProvider, IIconResourceOptions } from '@opensumi/ide-components';
-import { IEventBus, URI, getDebugLogger, localize } from '@opensumi/ide-core-common';
+import { ContributionProvider, IEventBus, URI, getDebugLogger, localize } from '@opensumi/ide-core-common';
 
 import { IClientApp } from '../browser-module';
 import { DefaultLayout } from '../components/layout/default-layout';
@@ -11,6 +11,8 @@ import { ConfigProvider } from '../react-providers/config-provider';
 import { allSlot } from '../react-providers/slot';
 import { LabelService } from '../services';
 import { getIcon } from '../style/icon/icon';
+
+import { ClientAppContextContribution } from './context-contribution';
 
 export interface AppProps {
   app: IClientApp;
@@ -70,7 +72,7 @@ const defaultAppRender =
 const debugLogger = getDebugLogger();
 
 export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRenderer) {
-  const Layout = app.config.layoutComponent || DefaultLayout;
+  let Layout = app.config.layoutComponent || DefaultLayout;
   const overlayComponents = app.browserModules
     .filter((mod) => mod.isOverlay)
     .map((mod) => {
@@ -81,6 +83,12 @@ export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRe
       return mod.component;
     })
     .filter(Boolean) as React.ComponentType[];
+
+  const injector = app.injector;
+  const clientAppContextContribution: ContributionProvider<ClientAppContextContribution> =
+    injector.get(ClientAppContextContribution);
+  const contextContrib = clientAppContextContribution.getContributions();
+  contextContrib.forEach((contextProvider) => (Layout = contextProvider.registerClientAppContext(Layout, injector)));
 
   const IdeApp = (props) => <App {...props} app={app} main={Layout} overlays={overlayComponents} />;
 

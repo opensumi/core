@@ -21,6 +21,7 @@ export interface MenuItemProps
   onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void;
   onMouseEnter?: (e: { key: string; domEvent: React.MouseEvent<HTMLElement> }) => void;
   onMouseLeave?: (e: { key: string; domEvent: React.MouseEvent<HTMLElement> }) => void;
+  ref?: React.Ref<HTMLElement> | undefined;
 }
 
 export default class MenuItem extends React.Component<MenuItemProps> {

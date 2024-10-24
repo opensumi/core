@@ -1,0 +1,27 @@
+{
+  "name": "@opensumi/ide-notebook",
+  "version": "3.4.3",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "src",
+    "worker"
+  ],
+  "scripts": {
+    "build": "tsc --build ../../configs/ts/references/tsconfig.notebook.json",
+    "prepublishOnly": "yarn run build"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^4.6.4",
+    "@difizen/libro-jupyter": "0.0.0-snapshot-20241017090244",
+    "@difizen/libro-toc": "0.0.0-snapshot-20241017090244",
+    "@opensumi/ide-core-browser": "workspace:*",
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-editor": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*",
+    "@opensumi/ide-theme": "workspace:*",
+    "@opensumi/monaco-editor-core": "0.47.0-patch.15"
+  }
+}

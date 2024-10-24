@@ -71,10 +71,6 @@
         "version": "1.55.2"
       },
       {
-        "name": "python",
-        "version": "1.55.2"
-      },
-      {
         "name": "rust",
         "version": "1.55.2"
       },

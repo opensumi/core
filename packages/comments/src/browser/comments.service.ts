@@ -1104,7 +1104,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   public getProviderIdsByLine(line: number): string[] {
     const result: string[] = [];
     if (this.rangeOwner.size === 1) {
-      return [this.rangeOwner.keys().next().value];
+      return [this.rangeOwner.keys().next().value!];
     }
     for (const rangeOwner of this.rangeOwner) {
       const [id, ranges] = rangeOwner;

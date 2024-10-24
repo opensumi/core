@@ -36,6 +36,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   @observable.shallow
   public edits: Array<IWorkspaceTextEdit | IWorkspaceFileEdit> = [];
 
+  // @ts-expect-error 貌似是 observable 的类型 BUG，和 Set 类型不兼容
   public selectedFileOrTextEdits = observable.set<IWorkspaceTextEdit | IWorkspaceFileEdit>([], { deep: false });
 
   @Autowired(IMainLayoutService)
@@ -43,7 +44,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
 
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
-
+  p;
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 

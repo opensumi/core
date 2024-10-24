@@ -303,6 +303,11 @@ export interface AppConfig {
    * This is useful when your scenario is one-time use, and you can control the opening of the editor tab yourself.
    */
   disableRestoreEditorGroupState?: boolean;
+  /**
+   * Notebook Server Host
+   * Provide when you want to connect to a notebook server
+   */
+  notebookServerHost?: string;
 }
 
 export interface ICollaborationClientOpts {

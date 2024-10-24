@@ -16,6 +16,7 @@ import { run } from './fn/shell';
     const childProcess = command(cmd, {
       stdio: 'pipe',
       shell: true,
+      //   TODO: 支持不同包使用包内安装的 tsc，避免单个包的 typescript 无法升级
     });
 
     const tscErrorRegex = /error TS\d+:/;

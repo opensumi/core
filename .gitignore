@@ -94,3 +94,8 @@ iteration-plan.md
 tools/electron/app
 tools/electron/extensions
 tools/workspace
+
+# jupyter
+.ipynb_checkpoints
+
+*.tsbuildinfo
