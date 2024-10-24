@@ -2,7 +2,12 @@
 import vscode from 'vscode';
 
 import * as types from './ext-types';
-import { SerializedIndentationRule, SerializedOnEnterRule, SerializedRegExp } from './model.api';
+import {
+  SerializedAutoClosingPair,
+  SerializedIndentationRule,
+  SerializedOnEnterRule,
+  SerializedRegExp,
+} from './model.api';
 
 import type {
   IndentationRule,
@@ -137,4 +142,17 @@ export function serializeIndentation(indentationRules?: vscode.IndentationRule):
     indentNextLinePattern: serializeRegExp(indentationRules.indentNextLinePattern),
     unIndentedLinePattern: serializeRegExp(indentationRules.unIndentedLinePattern),
   };
+}
+
+export function serializeAutoClosingPairs(
+  pairs: vscode.AutoClosingPair[] | undefined,
+): SerializedAutoClosingPair[] | undefined {
+  if (!pairs) {
+    return undefined;
+  }
+  return pairs.map((pair) => ({
+    open: pair.open,
+    close: pair.close,
+    notIn: pair.notIn ? pair.notIn.map((tokenType) => types.SyntaxTokenType.toString(tokenType)) : undefined,
+  }));
 }

@@ -119,7 +119,12 @@ import {
   WithDuration,
   WorkspaceEditDto,
 } from '../../../common/vscode/model.api';
-import { serializeEnterRules, serializeIndentation, serializeRegExp } from '../../../common/vscode/utils';
+import {
+  serializeAutoClosingPairs,
+  serializeEnterRules,
+  serializeIndentation,
+  serializeRegExp,
+} from '../../../common/vscode/utils';
 
 import { ExtHostCommands } from './ext.host.command';
 import { CallHierarchyAdapter } from './language/callhierarchy';
@@ -1180,6 +1185,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
       onEnterRules: serializeEnterRules(configuration.onEnterRules),
       wordPattern: serializeRegExp(configuration.wordPattern),
       indentationRules: serializeIndentation(configuration.indentationRules),
+      autoClosingPairs: serializeAutoClosingPairs(configuration.autoClosingPairs),
     };
     this.proxy.$setLanguageConfiguration(callId, language, config);
     return this.createDisposable(callId);
