@@ -58,7 +58,7 @@ export class MarkdownReactRenderer {
 
   link(href: string, text: ReactNode) {
     const url = this.joinBase(href, this.options.baseURL);
-    return this.node('a', text, { href: url, target: '_blank', rel: 'noopener' });
+    return this.node('a', text, { href: url, target: '_blank', rel: 'noopener noreferrer' });
   }
 
   image(src: string, alt: string, title: string | null = null) {
