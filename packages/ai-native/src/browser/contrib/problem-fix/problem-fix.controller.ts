@@ -2,7 +2,7 @@ import { Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
-  AISerivceType,
+  AIServiceType,
   ActionSourceEnum,
   ActionTypeEnum,
   Disposable,
@@ -132,9 +132,9 @@ export class ProblemFixController extends BaseAIMonacoEditorController {
             inlineChatEditorController?.runAction({
               monacoEditor,
               reporterFn: (): string => {
-                const relationId = this.aiReporter.start(AISerivceType.ProblemFix, {
+                const relationId = this.aiReporter.start(AIServiceType.ProblemFix, {
                   message: ActionTypeEnum.HoverFix,
-                  type: AISerivceType.InlineChat,
+                  type: AIServiceType.InlineChat,
                   source: ActionTypeEnum.HoverFix,
                   actionSource: ActionSourceEnum.Hover,
                   actionType: ActionTypeEnum.HoverFix,

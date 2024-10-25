@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import {
-  AISerivceType,
+  AIServiceType,
   CodeEditsRT,
   ConstructorOf,
   Disposable,
@@ -107,8 +107,8 @@ export abstract class BaseCodeEditsSource extends Disposable {
   public reporterStart() {
     const context = this.codeEditsContextBean.get();
     if (context) {
-      const relationID = this.aiReporter.start(AISerivceType.CodeEdits, {
-        type: AISerivceType.CodeEdits,
+      const relationID = this.aiReporter.start(AIServiceType.CodeEdits, {
+        type: AIServiceType.CodeEdits,
         actionSource: context?.bean.typing,
       });
 

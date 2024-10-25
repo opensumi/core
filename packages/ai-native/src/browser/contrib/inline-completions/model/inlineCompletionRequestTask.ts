@@ -11,7 +11,7 @@ import {
   URI,
   uuid,
 } from '@opensumi/ide-core-common';
-import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
+import { AIServiceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
@@ -165,7 +165,7 @@ export class InlineCompletionRequestTask extends Disposable {
     let completeResult: IIntelligentCompletionsResult | undefined;
     const cacheData = this.promptCache.getCache(requestBean);
     const relationId =
-      cacheData?.relationId || this.aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
+      cacheData?.relationId || this.aiReporter.start(AIServiceType.Completion, { message: AIServiceType.Completion });
 
     this.aiCompletionsService.setLastRelationId(relationId);
     // 如果存在缓存

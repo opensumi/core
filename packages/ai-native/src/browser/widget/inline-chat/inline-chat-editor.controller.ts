@@ -3,7 +3,7 @@ import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 import {
   AIInlineChatContentWidgetId,
   AINativeSettingSectionsId,
-  AISerivceType,
+  AIServiceType,
   ActionSourceEnum,
   ActionTypeEnum,
   CancelResponse,
@@ -264,7 +264,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
           reporterFn: () => {
             const relationId = this.aiReporter.start(action.name, {
               message: action.name,
-              type: AISerivceType.InlineChat,
+              type: AIServiceType.InlineChat,
               source,
               runByCodeAction: source === 'codeAction',
               actionSource: source === 'codeAction' ? ActionSourceEnum.CodeAction : ActionSourceEnum.InlineChat,
@@ -301,9 +301,9 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
           monacoEditor,
           crossSelection,
           reporterFn: () => {
-            const relationId = this.aiReporter.start(AISerivceType.InlineChatInput, {
+            const relationId = this.aiReporter.start(AIServiceType.InlineChatInput, {
               message: value,
-              type: AISerivceType.InlineChatInput,
+              type: AIServiceType.InlineChatInput,
               source: 'input',
               actionSource: ActionSourceEnum.InlineChatInput,
             });

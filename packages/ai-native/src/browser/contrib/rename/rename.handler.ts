@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  AISerivceType,
+  AIServiceType,
   ActionSourceEnum,
   ActionTypeEnum,
   CancellationToken,
@@ -41,9 +41,9 @@ export class RenameSingleHandler extends BaseAIMonacoContribHandler {
       this.lastModelRequestRenameSessionId = undefined;
 
       const startTime = +new Date();
-      const relationId = this.aiReporter.start(AISerivceType.Rename, {
+      const relationId = this.aiReporter.start(AIServiceType.Rename, {
         message: 'start',
-        type: AISerivceType.Rename,
+        type: AIServiceType.Rename,
         modelRequestStartTime: startTime,
         code: model.getValueInRange(range),
         actionSource: ActionSourceEnum.CodeAction,
