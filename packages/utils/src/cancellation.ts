@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/cancellation.ts
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.87.2/src/vs/base/common/cancellation.ts
 
 import { IDisposable } from './disposable';
 import { Emitter, Event } from './event';
@@ -13,20 +13,24 @@ export interface CancellationToken {
    * An event emitted when cancellation is requested
    * @event
    */
-  readonly onCancellationRequested: Event<any>;
+  readonly onCancellationRequested: (
+    listener: (e: any) => any,
+    thisArgs?: any,
+    disposables?: IDisposable[],
+  ) => IDisposable;
 }
 
-const shortcutEvent = Object.freeze(function (callback, context?): IDisposable {
+const shortcutEvent: Event<any> = Object.freeze(function (callback, context?): IDisposable {
   const handle = setTimeout(callback.bind(context), 0);
   return {
     dispose() {
       clearTimeout(handle);
     },
   };
-} as Event<any>);
+});
 
 export namespace CancellationToken {
-  export function isCancellationToken(thing: any): thing is CancellationToken {
+  export function isCancellationToken(thing: unknown): thing is CancellationToken {
     if (thing === CancellationToken.None || thing === CancellationToken.Cancelled) {
       return true;
     }
@@ -42,28 +46,19 @@ export namespace CancellationToken {
     );
   }
 
-  export function resolveIfCancelled<T>(token: CancellationToken, value: T): Promise<T> {
-    return new Promise((resolve) => {
-      const listener = token.onCancellationRequested(() => {
-        listener.dispose();
-        resolve(value);
-      });
-    });
-  }
-
-  export const None: CancellationToken = Object.freeze({
+  export const None = Object.freeze<CancellationToken>({
     isCancellationRequested: false,
     onCancellationRequested: Event.None,
   });
 
-  export const Cancelled: CancellationToken = Object.freeze({
+  export const Cancelled = Object.freeze<CancellationToken>({
     isCancellationRequested: true,
     onCancellationRequested: shortcutEvent,
   });
 }
 
 class MutableToken implements CancellationToken {
-  private _isCancelled = false;
+  private _isCancelled: boolean = false;
   private _emitter: Emitter<any> | null = null;
 
   public cancel() {
@@ -127,13 +122,11 @@ export class CancellationTokenSource {
     }
   }
 
-  dispose(cancel = false): void {
+  dispose(cancel: boolean = false): void {
     if (cancel) {
       this.cancel();
     }
-    if (this._parentListener) {
-      this._parentListener.dispose();
-    }
+    this._parentListener?.dispose();
     if (!this._token) {
       // ensure to initialize with an empty token if we had none
       this._token = CancellationToken.None;

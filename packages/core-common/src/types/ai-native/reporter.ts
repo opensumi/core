@@ -1,3 +1,5 @@
+import { ECodeEditsSourceTyping } from './index';
+
 export const AI_REPORTER_NAME = 'AI';
 
 export enum AISerivceType {
@@ -12,6 +14,7 @@ export enum AISerivceType {
   Rename = 'rename',
   TerminalAICommand = 'terminalAICommand',
   ProblemFix = 'problemFix',
+  CodeEdits = 'codeEdits',
 }
 
 export enum ActionSourceEnum {
@@ -172,6 +175,13 @@ export interface InlineChatRT extends Partial<CommonLogInfo> {
   runByCodeAction?: boolean;
 }
 
+export interface CodeEditsRT extends Partial<CommonLogInfo> {
+  actionSource?: ECodeEditsSourceTyping;
+  isCancel?: boolean;
+  accept?: boolean;
+  discard?: boolean;
+}
+
 export type ReportInfo =
   | Partial<CommonLogInfo>
   | ({ type: AISerivceType.Completion } & CompletionRT)
@@ -180,7 +190,8 @@ export type ReportInfo =
   | ({ type: AISerivceType.InlineChat } & InlineChatRT)
   | ({ type: AISerivceType.InlineChatInput } & InlineChatRT)
   | ({ type: AISerivceType.Chat } & ChatRT)
-  | ({ type: AISerivceType.Agent } & ChatRT);
+  | ({ type: AISerivceType.Agent } & ChatRT)
+  | ({ type: AISerivceType.CodeEdits } & CodeEditsRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 

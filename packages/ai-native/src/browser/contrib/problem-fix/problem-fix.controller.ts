@@ -21,7 +21,7 @@ import {
   MarkerHoverParticipant,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/hover/browser/markerHoverParticipant';
 
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { IHoverFixHandler } from '../../types';
 import { InlineChatEditorController } from '../../widget/inline-chat/inline-chat-editor.controller';
 import { BaseAIMonacoEditorController } from '../base';
