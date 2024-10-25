@@ -1026,18 +1026,17 @@ export enum SyntaxTokenType {
   RegEx = 3,
 }
 export namespace SyntaxTokenType {
-  export function toString(v: SyntaxTokenType | unknown): 'other' | 'comment' | 'string' | 'regex' {
-    switch (v) {
-      case SyntaxTokenType.Other:
-        return 'other';
-      case SyntaxTokenType.Comment:
-        return 'comment';
-      case SyntaxTokenType.String:
-        return 'string';
-      case SyntaxTokenType.RegEx:
-        return 'regex';
-    }
-    return 'other';
+  type returnType = 'other' | 'comment' | 'string' | 'regex';
+
+  const tokenTypeMap: Record<SyntaxTokenType, returnType> = {
+    [SyntaxTokenType.Other]: 'other',
+    [SyntaxTokenType.Comment]: 'comment',
+    [SyntaxTokenType.String]: 'string',
+    [SyntaxTokenType.RegEx]: 'regex',
+  };
+
+  export function toString(v: SyntaxTokenType | unknown): returnType {
+    return tokenTypeMap[v as SyntaxTokenType] || 'other';
   }
 }
 
