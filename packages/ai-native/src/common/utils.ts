@@ -23,8 +23,8 @@ export const isDocumentValid = (document: IEditorDocumentModel) => {
   return true;
 };
 
-// 从文本当中提取代码块内容（可能有多条）
-export const extractCodeBlocks = (content: string): string[] => {
+// 从文本当中提取代码块内容
+export const extractCodeBlocks = (content: string): string => {
   const lines = content.split('\n');
 
   let newContents: string[] = [];
@@ -46,5 +46,5 @@ export const extractCodeBlocks = (content: string): string[] => {
     }
   });
 
-  return newContents;
+  return newContents.join('\n');
 };

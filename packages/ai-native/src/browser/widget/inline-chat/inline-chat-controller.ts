@@ -46,7 +46,7 @@ export class InlineChatController {
       return content;
     }
 
-    return extractCodeBlocks(content).join('\n');
+    return extractCodeBlocks(content);
   }
 
   protected _stream: SumiReadableStream<IChatProgress> | null = null;
