@@ -35,11 +35,6 @@ export const ChatMarkdown = (props: MarkdownProps) => {
       typeof props.markdown === 'string' ? new MarkdownString(props.markdown) : props.markdown;
 
     const renderer: MarkdownReactRenderer = new MarkdownReactRenderer();
-    renderer.link = (href: string, text: ReactNode): React.ReactElement => (
-        <a rel='noopener' target='_blank' href={href} title={href}>
-          {text}
-        </a>
-      );
     renderer.code = (code, lang) => {
       const language = postProcessCodeBlockLanguageId(lang);
 

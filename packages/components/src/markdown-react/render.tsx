@@ -1,4 +1,4 @@
-import { ElementType, ReactElement, ReactNode, createElement } from 'react';
+import React, { ElementType, ReactElement, ReactNode, createElement } from 'react';
 
 export type HeadingLevels = 1 | 2 | 3 | 4 | 5 | 6;
 export interface TableFlags {
@@ -11,7 +11,6 @@ export type RendererMethods = keyof MarkdownReactRenderer;
 
 export interface ReactRendererOptions {
   baseURL?: string;
-  openLinksInNewTab?: boolean;
   langPrefix?: string;
   renderer?: CustomReactRenderer;
 }
@@ -59,8 +58,7 @@ export class MarkdownReactRenderer {
 
   link(href: string, text: ReactNode) {
     const url = this.joinBase(href, this.options.baseURL);
-    const target = this.options.openLinksInNewTab ? '_blank' : null;
-    return this.node('a', text, { href: url, target });
+    return this.node('a', text, { href: url, target: '_blank' });
   }
 
   image(src: string, alt: string, title: string | null = null) {
@@ -130,8 +128,8 @@ export class MarkdownReactRenderer {
     return text;
   }
 
-  html(html: ReactNode) {
-    return html;
+  html(text: string) {
+    return <div dangerouslySetInnerHTML={{ __html: text }} />;
   }
 
   hr() {

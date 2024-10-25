@@ -1,5 +1,5 @@
 import { marked } from 'marked';
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 import { HeadingLevels, MarkdownReactRenderer } from './render';
 
@@ -19,7 +19,7 @@ export class MarkdownReactParser extends marked.Renderer {
     return tokens.map((token) => {
       switch (token.type) {
         case 'html': {
-          return <div dangerouslySetInnerHTML={{ __html: token.raw }} />;
+          return this.renderer.html(token.text);
         }
 
         case 'space': {
@@ -106,11 +106,21 @@ export class MarkdownReactParser extends marked.Renderer {
     });
   }
 
+  private unescapeInfo = new Map<string, string>([
+    ['&quot;', '"'],
+    ['&nbsp;', ' '],
+    ['&amp;', '&'],
+    ['&#39;', "'"],
+    ['&lt;', '<'],
+    ['&gt;', '>'],
+  ]);
+
   parseInline(tokens: marked.Token[] = []): ReactNode[] {
     return tokens.map((token) => {
       switch (token.type) {
         case 'text': {
-          return this.renderer.text(unescape(token.text));
+          const text = token.text.replace(/&(#\d+|[a-zA-Z]+);/g, (m) => this.unescapeInfo.get(m) ?? m);
+          return this.renderer.text(text);
         }
 
         case 'strong': {
