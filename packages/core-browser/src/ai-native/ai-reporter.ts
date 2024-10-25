@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IReporterService, uuid } from '@opensumi/ide-core-common';
 import {
-  AISerivceType,
+  AIServiceType,
   AI_REPORTER_NAME,
   IAIReporter,
   ReportInfo,
@@ -29,7 +29,7 @@ export class AIReporter implements IAIReporter {
   }
 
   // 返回关联 ID
-  start(msg: AISerivceType, data: ReportInfo): string {
+  start(msg: AIServiceType, data: ReportInfo): string {
     const relationId = this.getRelationId();
 
     this.report(relationId, { ...data, msgType: msg, isStart: true });

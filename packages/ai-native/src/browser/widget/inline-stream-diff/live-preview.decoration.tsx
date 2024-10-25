@@ -21,7 +21,7 @@ import {
   UndoRedoGroup,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { AINativeContextKey } from '../../ai-core.contextkeys';
 import {
   EnhanceDecorationsCollection,
   IDecorationSerializableState,

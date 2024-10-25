@@ -4,7 +4,7 @@ import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/ide-monaco';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { AICompletionsService } from '../../contrib/inline-completions/service/ai-completions.service';
 import { InlineInputChatService } from '../inline-input/inline-input.service';

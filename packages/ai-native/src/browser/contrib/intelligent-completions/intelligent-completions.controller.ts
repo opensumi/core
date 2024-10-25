@@ -2,16 +2,25 @@ import { Key, KeybindingRegistry, KeybindingScope, PreferenceService } from '@op
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
   AINativeSettingSectionsId,
+  CodeEditsRT,
   Disposable,
   Event,
   IDisposable,
+  ILogger,
   IntelligentCompletionsRegistryToken,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
+import {
+  ISettableObservable,
+  ObservableValue,
+  autorun,
+  autorunWithStoreHandleChanges,
+  derived,
+  observableValue,
+  transaction,
+} from '@opensumi/ide-monaco/lib/common/observable';
 import { empty } from '@opensumi/ide-utils/lib/strings';
-import { autorun, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observable';
-import { ObservableValue } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commandIds';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
@@ -23,7 +32,7 @@ import {
 import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestController';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
 import { BaseAIMonacoEditorController } from '../base';
 
@@ -65,8 +74,14 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     return this.injector.get(IntelligentCompletionsRegistryToken);
   }
 
+  private get logger(): ILogger {
+    return this.injector.get(ILogger);
+  }
+
+  private codeEditsResult: ISettableObservable<CodeEditsResultValue | undefined>;
   private multiLineDecorationModel: MultiLineDecorationModel;
   private additionsDeletionsDecorationModel: AdditionsDeletionsDecorationModel;
+  private codeEditsSourceCollection: CodeEditsSourceCollection;
   private aiNativeContextKey: AINativeContextKey;
   private rewriteWidget: RewriteWidget | null;
   private whenMultiLineEditsVisibleDisposable: Disposable;
@@ -74,10 +89,16 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   public mount(): IDisposable {
     this.handlerAlwaysVisiblePreference();
 
+    this.codeEditsResult = observableValue<CodeEditsResultValue | undefined>(this, undefined);
+
     this.whenMultiLineEditsVisibleDisposable = new Disposable();
     this.multiLineDecorationModel = new MultiLineDecorationModel(this.monacoEditor);
     this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(this.monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
+    this.codeEditsSourceCollection = this.injector.get(CodeEditsSourceCollection, [
+      [LintErrorCodeEditsSource, LineChangeCodeEditsSource],
+      this.monacoEditor,
+    ]);
 
     this.registerFeature(this.monacoEditor);
     return this.featureDisposable;
@@ -219,7 +240,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     const maxWordChanges = 20;
 
     if (
-      position &&
+      range &&
       isOnlyAddingToEachWord &&
       charChanges.length <= maxCharChanges &&
       wordChanges.length <= maxWordChanges
@@ -227,7 +248,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       const modificationsResult = this.multiLineDecorationModel.applyInlineDecorations(
         this.monacoEditor,
         mergeMultiLineDiffChanges(singleLineCharChanges, eol),
-        position.lineNumber,
+        range.startLineNumber,
         position,
       );
 
@@ -248,7 +269,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     if (this.whenMultiLineEditsVisibleDisposable.disposed) {
       this.whenMultiLineEditsVisibleDisposable = new Disposable();
     }
-    // 监听当前光标位置的变化，如果超出 range 区域则取消 multiLine edits
+    // 监听当前光标位置的变化，如果超出 range 区域则表示弃用
     this.whenMultiLineEditsVisibleDisposable.addDispose(
       this.monacoEditor.onDidChangeCursorPosition((event: ICursorPositionChangedEvent) => {
         const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
@@ -256,7 +277,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
           const position = event.position;
           if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
             runWhenIdle(() => {
-              this.hide();
+              this.discard.get();
             });
           }
         } else {
@@ -319,7 +340,46 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     this.destroyRewriteWidget();
   }
 
-  public accept() {
+  private readonly reportData = derived(this, (reader) => {
+    const contextBean = this.codeEditsSourceCollection.codeEditsContextBean.read(reader);
+    const codeEditsResult = this.codeEditsResult.read(reader);
+    if (contextBean && codeEditsResult) {
+      const { range, insertText } = codeEditsResult.items[0];
+      const newCode = insertText;
+      const originCode = this.model.getValueInRange(range);
+      return (type: keyof Pick<CodeEditsRT, 'accept' | 'discard' | 'isCancel'>) => {
+        contextBean.reporterEnd({
+          [type]: true,
+          code: newCode,
+          originCode,
+        });
+      };
+    }
+  });
+
+  private lastVisibleTime = derived(this, (reader) => {
+    const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
+    return isVisible ? Date.now() : undefined;
+  });
+
+  public discard = derived(this, (reader) => {
+    const lastVisibleTime = this.lastVisibleTime.read(reader);
+    const report = this.reportData.read(reader);
+
+    // 在可见的情况下超过 750ms 弃用才算有效数据，否则视为取消
+    if (lastVisibleTime && Date.now() - lastVisibleTime > 750) {
+      report?.('discard');
+    } else {
+      report?.('isCancel');
+    }
+
+    this.hide();
+  });
+
+  public accept = derived(this, (reader) => {
+    const report = this.reportData.read(reader);
+    report?.('accept');
+
     this.multiLineDecorationModel.accept();
 
     if (this.rewriteWidget) {
@@ -342,7 +402,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     }
 
     this.hide();
-  }
+  });
 
   private registerFeature(monacoEditor: ICodeEditor): void {
     this.featureDisposable.addDispose(
@@ -379,38 +439,56 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }),
     );
 
-    const codeEditsSourceCollection = this.injector.get(CodeEditsSourceCollection, [
-      [LintErrorCodeEditsSource, LineChangeCodeEditsSource],
-      this.monacoEditor,
-    ]);
+    this.featureDisposable.addDispose(
+      autorunWithStoreHandleChanges(
+        {
+          createEmptyChangeSummary: () => ({}),
+          handleChange: (context, changeSummary) => {
+            if (context.didChange(this.codeEditsSourceCollection.codeEditsContextBean)) {
+              // 如果上一次补全结果还在，则不重复请求
+              const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
+              return !isVisible;
+            }
+            return false;
+          },
+        },
+        async (reader, _, store) => {
+          const context = this.codeEditsSourceCollection.codeEditsContextBean.read(reader);
 
-    codeEditsSourceCollection.mount();
+          const provider = this.intelligentCompletionsRegistry.getCodeEditsProvider();
+          if (context && provider) {
+            // 新的请求进来且上一次的请求还在继续时，则取消掉上一次的请求
+            store.add(Disposable.create(() => context.cancelToken()));
+
+            context.reporterStart();
+
+            const result = await provider(this.monacoEditor, context.position, context.bean, context.token);
+
+            if (result && result.items.length > 0) {
+              transaction((tx) => {
+                this.codeEditsResult.set(new CodeEditsResultValue(result), tx);
+              });
+            }
+          }
+        },
+      ),
+    );
 
     this.featureDisposable.addDispose(
-      autorun(async (reader) => {
-        const context = codeEditsSourceCollection.codeEditsContextBean.read(reader);
-
-        // 如果上一次补全结果还在，则不重复请求
-        const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
-        if (isVisible) {
+      autorun((reader) => {
+        const completionModel = this.codeEditsResult.read(reader);
+        if (!completionModel) {
           return;
         }
 
-        const provider = this.intelligentCompletionsRegistry.getCodeEditsProvider();
-        if (context && provider) {
-          const result = await provider(
-            this.monacoEditor,
-            this.monacoEditor.getPosition()!,
-            context.bean,
-            codeEditsSourceCollection.token,
-          );
-          if (result && result.items.length > 0) {
-            this.applyInlineDecorations(new CodeEditsResultValue(result));
-          }
+        try {
+          this.applyInlineDecorations(completionModel);
+        } catch (error) {
+          this.logger.warn('IntelligentCompletionsController applyInlineDecorations error', error);
         }
       }),
     );
 
-    this.featureDisposable.addDispose(codeEditsSourceCollection);
+    this.featureDisposable.addDispose(this.codeEditsSourceCollection);
   }
 }

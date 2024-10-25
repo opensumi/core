@@ -1,8 +1,6 @@
 import { Injectable } from '@opensumi/di';
-import { IDisposable } from '@opensumi/ide-core-common';
+import { ECodeEditsSourceTyping, IDisposable } from '@opensumi/ide-core-common';
 import { ICursorPositionChangedEvent, Position } from '@opensumi/ide-monaco';
-
-import { ECodeEditsSource } from '../index';
 
 import { BaseCodeEditsSource } from './base';
 
@@ -44,7 +42,8 @@ export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
 
     this.lastEditTime = currentTime;
     this.setBean({
-      typing: ECodeEditsSource.LineChange,
+      typing: ECodeEditsSourceTyping.LineChange,
+      position,
       data: {
         preLineNumber: this.prePosition?.lineNumber,
         currentLineNumber: position.lineNumber,

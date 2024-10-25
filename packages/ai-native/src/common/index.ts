@@ -1,6 +1,6 @@
 import {
   AIInlineChatContentWidgetId,
-  AISerivceType,
+  AIServiceType,
   ActionSourceEnum,
   ActionTypeEnum,
   CancellationToken,
@@ -48,7 +48,7 @@ export interface IChatMessageStructure {
   /**
    * 数据采集上报消息类型
    */
-  reportType?: AISerivceType;
+  reportType?: AIServiceType;
   /*
    * agent id
    */

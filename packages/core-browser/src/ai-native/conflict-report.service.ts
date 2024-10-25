@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  AISerivceType,
+  AIServiceType,
   Disposable,
   IAIReporter,
   MergeConflictEditorMode,
@@ -36,8 +36,8 @@ export class MergeConflictReportService extends Disposable {
     } else {
       relationId = this.aiReporter.record({
         ...rt,
-        msgType: AISerivceType.MergeConflict,
-        message: AISerivceType.MergeConflict,
+        msgType: AIServiceType.MergeConflict,
+        message: AIServiceType.MergeConflict,
         editorMode: rt.editorMode || MergeConflictEditorMode.traditional,
       }).relationId!;
       this.unique2RelationMap.set(uniqueId, relationId);
