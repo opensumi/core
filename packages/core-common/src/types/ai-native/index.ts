@@ -349,3 +349,10 @@ export interface IHistoryChatMessage extends IChatMessage {
   requestId?: string;
   replyStartTime?: number;
 }
+
+// ## Code Edits start ##
+export enum ECodeEditsSourceTyping {
+  LinterErrors = 'lint_errors',
+  LineChange = 'line_change',
+}
+// ## Code Edits ends ##

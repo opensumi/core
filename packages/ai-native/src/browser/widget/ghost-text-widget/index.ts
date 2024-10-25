@@ -28,7 +28,7 @@ export interface LineData {
 
 /**
  * 这里复用 monaco 的 ghostTextWidget 逻辑，需要对其做部分逻辑修改
- * 目的是为了能让 zone widhet 里渲染的代码块能使用 tokenization 以达到高亮效果
+ * 目的是为了能让 zone widget 里渲染的代码块能使用 tokenization 以达到高亮效果
  */
 export const renderLines = (
   domNode: HTMLElement,

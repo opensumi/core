@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IDisposable } from '@opensumi/ide-core-common';
+import { ECodeEditsSourceTyping, Event, FRAME_THREE, IDisposable } from '@opensumi/ide-core-common';
 import { ICursorPositionChangedEvent, IPosition, Position } from '@opensumi/ide-monaco';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -10,8 +10,6 @@ import {
   IRelatedInformation,
   MarkerSeverity,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
-
-import { ECodeEditsSource } from '../index';
 
 import { BaseCodeEditsSource } from './base';
 
@@ -64,10 +62,21 @@ export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
 
     this.addDispose(
       // 仅在光标的行号发生变化时，才触发
-      this.monacoEditor.onDidChangeCursorPosition((event: ICursorPositionChangedEvent) => {
+      Event.debounce(
+        this.monacoEditor.onDidChangeCursorPosition,
+        (_, e) => e,
+        FRAME_THREE,
+      )(async (event: ICursorPositionChangedEvent) => {
         const currentPosition = event.position;
+
+        // 如果是 selection 则不触发
+        const selection = this.monacoEditor.getSelection();
+        if (!selection?.isEmpty()) {
+          return;
+        }
+
         if (prePosition && prePosition.lineNumber !== currentPosition.lineNumber) {
-          this.doTrigger(currentPosition);
+          await this.doTrigger(currentPosition);
         }
         prePosition = currentPosition;
       }),
@@ -90,7 +99,8 @@ export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
       const relativeWorkspacePath = await this.workspaceService.asRelativePath(resource.path);
 
       this.setBean({
-        typing: ECodeEditsSource.LinterErrors,
+        typing: ECodeEditsSourceTyping.LinterErrors,
+        position,
         data: {
           relativeWorkspacePath: relativeWorkspacePath?.path ?? resource.path,
           errors: markers.map((marker) => MarkerErrorData.toData(marker)),

@@ -432,25 +432,82 @@ export class AINativeContribution implements AINativeCoreContribution {
     registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
       const model = editor.getModel();
       const maxLine = Math.max(position.lineNumber + 3, model?.getLineCount() ?? 0);
-      const lineMaxColumn = model?.getLineMaxColumn(maxLine);
+      const lineMaxColumn = model!.getLineMaxColumn(maxLine) ?? 1;
 
-      return {
-        items: [
-          {
-            insertText: 'Hello OpenSumi',
-            range: Range.fromPositions(
-              {
-                lineNumber: position.lineNumber,
-                column: 1,
-              },
-              {
-                lineNumber: position.lineNumber + 3,
-                column: lineMaxColumn ?? 1,
-              },
-            ),
-          },
-        ],
+      const value = model!.getValueInRange({
+        startLineNumber: position.lineNumber,
+        startColumn: 1,
+        endLineNumber: position.lineNumber + 3,
+        endColumn: lineMaxColumn,
+      });
+
+      const cancelController = new AbortController();
+      const { signal } = cancelController;
+
+      token.onCancellationRequested(() => {
+        cancelController.abort();
+      });
+
+      /**
+       * mock randown
+       */
+      const getRandomString = (length) => {
+        const characters = 'opensumi';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
       };
+
+      const insertRandomStrings = (originalString) => {
+        const minChanges = 2;
+        const maxChanges = 5;
+        const changesCount = Math.floor(Math.random() * (maxChanges - minChanges + 1)) + minChanges;
+        let modifiedString = originalString;
+        for (let i = 0; i < changesCount; i++) {
+          const randomIndex = Math.floor(Math.random() * originalString.length);
+          const operation = Math.random() < 0.5 ? 'delete' : 'insert';
+          if (operation === 'delete') {
+            modifiedString = modifiedString.slice(0, randomIndex) + modifiedString.slice(randomIndex + 1);
+          } else {
+            const randomChar = getRandomString(1);
+            modifiedString = modifiedString.slice(0, randomIndex) + randomChar + modifiedString.slice(randomIndex);
+          }
+        }
+        return modifiedString;
+      };
+
+      try {
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(resolve, 1000);
+
+          signal.addEventListener('abort', () => {
+            clearTimeout(timeout);
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+
+        return {
+          items: [
+            {
+              insertText: insertRandomStrings(value),
+              range: Range.fromPositions(
+                {
+                  lineNumber: position.lineNumber,
+                  column: 1,
+                },
+                {
+                  lineNumber: position.lineNumber + 3,
+                  column: lineMaxColumn ?? 1,
+                },
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        throw error;
+      }
     });
   }
 }

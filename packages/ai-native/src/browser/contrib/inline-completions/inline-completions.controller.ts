@@ -18,7 +18,7 @@ import { empty } from '@opensumi/ide-utils/lib/strings';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 
 import { IAIInlineCompletionsProvider } from '../../../common';
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { BaseAIMonacoEditorController } from '../base';
 import { IIntelligentCompletionsResult } from '../intelligent-completions';
 import { IntelligentCompletionsRegistry } from '../intelligent-completions/intelligent-completions.feature.registry';

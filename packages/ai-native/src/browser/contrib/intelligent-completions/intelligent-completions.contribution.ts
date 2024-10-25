@@ -8,7 +8,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import {
   AI_MULTI_LINE_COMPLETION_ACCEPT,
-  AI_MULTI_LINE_COMPLETION_HIDE,
+  AI_MULTI_LINE_COMPLETION_DISCARD,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { CommandContribution, CommandRegistry, Domain } from '@opensumi/ide-core-common';
@@ -23,11 +23,11 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(AI_MULTI_LINE_COMPLETION_HIDE, {
+    commands.registerCommand(AI_MULTI_LINE_COMPLETION_DISCARD, {
       execute: () => {
         const editor = this.workbenchEditorService.currentCodeEditor;
         if (editor) {
-          IntelligentCompletionsController.get(editor.monacoEditor)?.hide();
+          IntelligentCompletionsController.get(editor.monacoEditor)?.discard.get();
         }
       },
     });
@@ -36,7 +36,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
       execute: () => {
         const editor = this.workbenchEditorService.currentCodeEditor;
         if (editor) {
-          IntelligentCompletionsController.get(editor.monacoEditor)?.accept();
+          IntelligentCompletionsController.get(editor.monacoEditor)?.accept.get();
         }
       },
     });
@@ -44,7 +44,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
-      command: AI_MULTI_LINE_COMPLETION_HIDE.id,
+      command: AI_MULTI_LINE_COMPLETION_DISCARD.id,
       keybinding: Key.ESCAPE.code,
       when: MultiLineEditsIsVisible.raw,
       priority: 100,
