@@ -1,5 +1,8 @@
 import { IEditorDocumentModel } from '@opensumi/ide-editor';
 
+const BACK_QUOTE_3_SYMBOL = '```';
+const MIN_PROMPT_CHARS = 10;
+
 export const isDocumentTooLarge = (document: IEditorDocumentModel) => {
   try {
     document.getText();
@@ -11,8 +14,6 @@ export const isDocumentTooLarge = (document: IEditorDocumentModel) => {
   return false;
 };
 
-const MIN_PROMPT_CHARS = 10;
-
 export const isDocumentTooShort = (document: IEditorDocumentModel) => document.getText().length < MIN_PROMPT_CHARS;
 
 export const isDocumentValid = (document: IEditorDocumentModel) => {
@@ -20,4 +21,30 @@ export const isDocumentValid = (document: IEditorDocumentModel) => {
     return false;
   }
   return true;
+};
+
+// 从文本当中提取代码块内容
+export const extractCodeBlocks = (content: string): string => {
+  const lines = content.split('\n');
+
+  let newContents: string[] = [];
+  let inBlock = false;
+  let startLine = 0;
+
+  lines.forEach((line, i) => {
+    if (!inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
+      inBlock = true;
+      startLine = i + 1;
+    } else if (inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
+      inBlock = false;
+      const endLine = i;
+      newContents = lines.slice(startLine, endLine);
+    }
+
+    if (inBlock && startLine !== i + 1) {
+      newContents.push(line);
+    }
+  });
+
+  return newContents.join('\n');
 };
