@@ -1481,6 +1481,16 @@ declare module 'vscode' {
   }
 
   /**
+	 * Additional data about a workspace edit.
+	 */
+	export interface WorkspaceEditMetadata {
+		/**
+		 * Signal to the editor that this edit is a refactoring.
+		 */
+		isRefactoring?: boolean;
+	}
+
+  /**
    * A workspace edit is a collection of textual and files changes for
    * multiple resources and documents.
    *

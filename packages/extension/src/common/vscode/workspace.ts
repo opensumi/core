@@ -12,7 +12,7 @@ import type vscode from 'vscode';
 
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;
-  $tryApplyWorkspaceEdit(dto: model.WorkspaceEditDto): Promise<boolean>;
+  $tryApplyWorkspaceEdit(dto: model.WorkspaceEditDto, metadata?: model.WorkspaceEditMetadataDto): Promise<boolean>;
   $updateWorkspaceFolders(
     start: number,
     deleteCount?: number,
