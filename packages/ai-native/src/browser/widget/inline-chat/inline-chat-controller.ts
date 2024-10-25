@@ -1,6 +1,5 @@
 import {
   AbortError,
-  Deferred,
   Emitter,
   ErrorResponse,
   Event,
@@ -10,7 +9,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { SumiReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
-import { BACK_QUOTE_3_SYMBOL } from '../../../common';
+import { extractCodeBlocks } from '../../../common/utils';
 
 export interface InlineChatControllerOptions {
   /**
@@ -47,28 +46,7 @@ export class InlineChatController {
       return content;
     }
 
-    const lines = content.split('\n');
-
-    let newContents: string[] = [];
-    let inBlock = false;
-    let startLine = 0;
-
-    lines.forEach((line, i) => {
-      if (!inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
-        inBlock = true;
-        startLine = i + 1;
-      } else if (inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
-        inBlock = false;
-        const endLine = i;
-        newContents = lines.slice(startLine, endLine);
-      }
-
-      if (inBlock && startLine !== i + 1) {
-        newContents.push(line);
-      }
-    });
-
-    return newContents.join('\n');
+    return extractCodeBlocks(content).join('\n');
   }
 
   protected _stream: SumiReadableStream<IChatProgress> | null = null;
