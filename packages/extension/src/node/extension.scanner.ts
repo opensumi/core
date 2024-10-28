@@ -124,7 +124,14 @@ export class ExtensionScanner {
       packageJSON.sumiContributes = packageJSON.kaitianContributes;
     }
 
+    packageJSON.contributes = packageJSON.contributes || {};
+
     // merge for `sumiContributes` and `contributes`
+    // `sumiContributesOverride` is used for override the `contributes`
+    if (packageJSON.sumiContributesOverride) {
+      packageJSON.contributes = Object.assign(packageJSON.contributes, packageJSON.sumiContributesOverride);
+    }
+    // `sumiContributes` is used for merge the `contributes`
     packageJSON.contributes = mergeContributes(packageJSON.sumiContributes, packageJSON.contributes);
 
     const extension = {

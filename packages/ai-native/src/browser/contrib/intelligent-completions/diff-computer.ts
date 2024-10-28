@@ -316,15 +316,15 @@ export const computeMultiLineDiffChanges = (
     };
 
     const prefix = originalLines.slice(0, lineAndColumn.lineNumber - 1).join(eol);
-    const linePrefix = originalLines[lineAndColumn.lineNumber - 1].slice(0, lineAndColumn.column - 1);
+    const linePrefix = originalLines[lineAndColumn.lineNumber - 1]?.slice(0, lineAndColumn.column - 1);
 
     const prefixMatch = prefix === modifiedLines.slice(0, lineAndColumn.lineNumber - 1).join(eol);
     const linePrefixMatch =
-      linePrefix === modifiedLines[lineAndColumn.lineNumber - 1].slice(0, lineAndColumn.column - 1);
+      linePrefix === modifiedLines[lineAndColumn.lineNumber - 1]?.slice(0, lineAndColumn.column - 1);
 
     if (prefixMatch && linePrefixMatch) {
       const suffix = (line: string[]) =>
-        line[lineAndColumn.lineNumber - 1].slice(lineAndColumn.column - 1) +
+        line[lineAndColumn.lineNumber - 1]?.slice(lineAndColumn.column - 1) +
         eol +
         line.slice(lineAndColumn.lineNumber).join(eol);
 

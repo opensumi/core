@@ -4,7 +4,7 @@ import { IAINativeCapabilities } from '@opensumi/ide-core-common';
 import { LayoutViewSizeConfig } from '../layout/constants';
 import { AppConfig } from '../react-providers/config-provider';
 
-const DEFAULT_CAPABILITIES: Required<IAINativeCapabilities> = {
+export const DEFAULT_CAPABILITIES: Required<IAINativeCapabilities> = {
   supportsMarkers: true,
   supportsChatAssistant: true,
   supportsInlineChat: true,

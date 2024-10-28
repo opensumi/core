@@ -19,7 +19,11 @@ import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/co
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
 
-import { IIntelligentCompletionsResult } from './contrib/intelligent-completions/intelligent-completions';
+import {
+  ICodeEditsContextBean,
+  ICodeEditsResult,
+  IIntelligentCompletionsResult,
+} from './contrib/intelligent-completions';
 import { BaseTerminalDetectionLineMatcher } from './contrib/terminal/matcher';
 import { InlineChatController } from './widget/inline-chat/inline-chat-controller';
 
@@ -81,11 +85,11 @@ export interface IInlineChatFeatureRegistry {
    */
   registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
   /**
-   * 注销 terminal 内联功能
+   * 注册 terminal 内联功能
    */
   unregisterTerminalInlineChat(operational: AIActionItem): void;
   /**
-   * proposed api，可能随时都会有变化
+   * 注册 interactive input 功能
    */
   registerInteractiveInput(
     strategyOptions: IInteractiveInputRunStrategy,
@@ -212,8 +216,24 @@ export type IIntelligentCompletionProvider = (
   contextBean: IAICompletionOption,
   token: CancellationToken,
 ) => MaybePromise<IIntelligentCompletionsResult>;
+
+export type ICodeEditsProvider = (
+  editor: ICodeEditor,
+  position: IPosition,
+  contextBean: ICodeEditsContextBean,
+  token: CancellationToken,
+) => MaybePromise<ICodeEditsResult | undefined>;
+
 export interface IIntelligentCompletionsRegistry {
+  /**
+   *  @deprecated use registerInlineCompletionProvider API
+   */
   registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
+  registerInlineCompletionsProvider(provider: IIntelligentCompletionProvider): void;
+  /**
+   * 注册 code edits 功能
+   */
+  registerCodeEditsProvider(provider: ICodeEditsProvider): void;
 }
 
 export interface IProblemFixContext {
@@ -267,6 +287,7 @@ export interface AINativeCoreContribution {
   registerTerminalProvider?(registry: ITerminalProviderRegistry): void;
   /**
    * 注册智能代码补全相关功能
+   * proposed api
    */
   registerIntelligentCompletionFeature?(registry: IIntelligentCompletionsRegistry): void;
 }

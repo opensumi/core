@@ -6,7 +6,7 @@ import { getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-bro
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
-  AISerivceType,
+  AIServiceType,
   ActionSourceEnum,
   ActionTypeEnum,
   CancellationToken,
@@ -140,7 +140,10 @@ export const AIChatView = observer(() => {
 
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
-      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+      const lastElement = containerRef.current.lastElementChild;
+      if (lastElement) {
+        lastElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
       // 出现滚动条时出现分割线
       if (containerRef.current.scrollHeight > containerRef.current.clientHeight) {
         containerRef.current.classList.add(SCROLL_CLASSNAME);
@@ -161,10 +164,6 @@ export const AIChatView = observer(() => {
   React.useEffect(() => {
     handleDispatchMessage({ type: 'init', payload: [firstMsg] });
   }, []);
-
-  React.useEffect(() => {
-    scrollToBottom();
-  }, [loading]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -199,7 +198,7 @@ export const AIChatView = observer(() => {
     disposer.addDispose(
       chatApiService.onChatReplyMessageLaunch((data) => {
         if (data.kind === 'content') {
-          const relationId = aiReporter.start(AISerivceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
             message: data.content,
           });
           msgHistoryManager.addAssistantMessage({
@@ -208,7 +207,7 @@ export const AIChatView = observer(() => {
           });
           renderSimpleMarkdownReply({ chunk: data.content, relationId });
         } else {
-          const relationId = aiReporter.start(AISerivceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
             message: 'component#' + data.component,
           });
           msgHistoryManager.addAssistantMessage({
@@ -229,7 +228,7 @@ export const AIChatView = observer(() => {
         list.forEach((item) => {
           const { role } = item;
 
-          const relationId = aiReporter.start(AISerivceType.Chat, {
+          const relationId = aiReporter.start(AIServiceType.Chat, {
             message: '',
           });
 
@@ -291,7 +290,7 @@ export const AIChatView = observer(() => {
     disposer.addDispose(
       chatAgentService.onDidSendMessage((chunk) => {
         const newChunk = chunk as IChatComponent | IChatContent;
-        const relationId = aiReporter.start(AISerivceType.Agent, {
+        const relationId = aiReporter.start(AIServiceType.Agent, {
           message: '',
         });
 
@@ -496,7 +495,7 @@ export const AIChatView = observer(() => {
       aiChatService.setLatestRequestId(request.requestId);
 
       const startTime = Date.now();
-      const reportType = ChatProxyService.AGENT_ID === agentId ? AISerivceType.Chat : AISerivceType.Agent;
+      const reportType = ChatProxyService.AGENT_ID === agentId ? AIServiceType.Chat : AIServiceType.Agent;
       const relationId = aiReporter.start(command || reportType, {
         message,
         agentId,

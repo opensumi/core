@@ -1,4 +1,14 @@
-import React, { Fragment, ReactNode, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, {
+  Fragment,
+  ReactNode,
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 
 import { Button } from '@opensumi/ide-components/lib/button';
 import { BasicRecycleTree, IBasicRecycleTreeHandle, IBasicTreeData } from '@opensumi/ide-components/lib/recycle-tree';
@@ -192,10 +202,6 @@ export const ChatReply = (props: IChatReplyProps) => {
 
     disposableCollection.push(
       request.response.onDidChange(() => {
-        if (onDidChange) {
-          onDidChange();
-        }
-
         history.updateAssistantMessage(msgId, { content: request.response.responseText });
 
         if (request.response.isComplete) {
@@ -212,7 +218,11 @@ export const ChatReply = (props: IChatReplyProps) => {
             agentId,
           });
         }
-        update();
+
+        startTransition(() => {
+          onDidChange?.();
+          update();
+        });
       }),
     );
 

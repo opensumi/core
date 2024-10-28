@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IContextKeyService, IRange, PreferenceService } from '@opensumi/ide-core-browser';
+import { AppConfig, IContextKeyService, IRange, PreferenceService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
 import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
@@ -9,7 +9,6 @@ import {
   Emitter as EventEmitter,
   ILineChange,
   ISelection,
-  LRUCache,
   OnEvent,
   URI,
   WithEventBus,
@@ -32,7 +31,7 @@ import {
   IUndoStopOptions,
   ResourceDecorationNeedChangeEvent,
 } from '../common';
-import { IEditorDocumentModel, IEditorDocumentModelRef } from '../common/editor';
+import { IEditorDocumentModel, IEditorDocumentModelRef, isTextEditorViewState } from '../common/editor';
 
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
@@ -514,7 +513,7 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
   protected restoreState() {
     if (this.currentUri) {
       const state = this.editorState.get(this.currentUri.toString());
-      if (state) {
+      if (isTextEditorViewState(state)) {
         this.monacoEditor.restoreViewState(state);
       }
     }
@@ -558,6 +557,9 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
 export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   private originalDocModelRef: IEditorDocumentModelRef | null;
 
@@ -605,8 +607,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
 
   public onRefOpen = this._onRefOpen.event;
 
-  private diffEditorModelCache = new LRUCache<string, monaco.editor.IDiffEditorViewModel>(100);
-
   protected saveCurrentState() {
     if (this.currentUri) {
       const state = this.monacoDiffEditor.saveViewState();
@@ -616,10 +616,13 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     }
   }
 
-  protected restoreState() {
+  protected restoreState(options: IResourceOpenOptions) {
     if (this.currentUri) {
       const state = this.editorState.get(this.currentUri.toString());
-      if (state) {
+      if (isTextEditorViewState(state)) {
+        if (options.range || options.originalRange) {
+          state.modified!.cursorState = []; // 避免重复的选中态
+        }
         this.monacoDiffEditor.restoreViewState(state);
       }
     }
@@ -638,11 +641,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     );
   }
 
-  disposeModel(originalUri: string, modifiedUri: string) {
-    const key = `${originalUri}-${modifiedUri}`;
-    this.diffEditorModelCache.delete(key);
-  }
-
   async compare(
     originalDocModelRef: IEditorDocumentModelRef,
     modifiedDocModelRef: IEditorDocumentModelRef,
@@ -657,13 +655,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     }
     const original = this.originalDocModel.getMonacoModel();
     const modified = this.modifiedDocModel.getMonacoModel();
-    const key = `${original.uri.toString()}-${modified.uri.toString()}`;
-    let model = this.diffEditorModelCache.get(key);
-    if (!model) {
-      model = this.monacoDiffEditor.createViewModel({ original, modified });
-      this.diffEditorModelCache.set(key, model);
-    }
-
+    const model = this.monacoDiffEditor.createViewModel({ original, modified });
     this.monacoDiffEditor.setModel(model);
 
     if (rawUri) {
@@ -678,11 +670,14 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
         }),
       });
     }
+    await model?.waitForDiff();
+
+    // 需要等待 Diff 渲染，否则无法获取当前的 Diff 代码折叠状态
+    this.restoreState(options);
 
     if (options.range || options.originalRange) {
       const range = (options.range || options.originalRange) as monaco.IRange;
       const currentEditor = options.range ? this.modifiedEditor.monacoEditor : this.originalEditor.monacoEditor;
-      await model?.waitForDiff();
       // 必须使用 setTimeout, 因为两边的 editor 出现时机问题，diffEditor 是异步显示和渲染
       setTimeout(() => {
         currentEditor.revealRangeInCenter(range);
@@ -697,8 +692,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
           currentEditor.revealRangeInCenter(range);
         });
       });
-    } else {
-      this.restoreState();
     }
     this._onRefOpen.fire(originalDocModelRef);
     this._onRefOpen.fire(modifiedDocModelRef);

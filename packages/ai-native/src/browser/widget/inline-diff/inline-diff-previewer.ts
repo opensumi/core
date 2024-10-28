@@ -23,6 +23,11 @@ export interface IDiffPreviewerOptions {
    * 是否隐藏接受部分编辑的 widget，用于只展示 diff 的场景
    */
   hideAcceptPartialEditWidget?: boolean;
+
+  /**
+   * 默认情况下，removed widget 会在 `runWhenIdle` 内被添加，如果需要立即添加，可以设置为 true
+   */
+  renderRemovedWidgetImmediately?: boolean;
 }
 
 export interface IInlineDiffPreviewerNode extends IDisposable {

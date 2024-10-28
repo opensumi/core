@@ -6,7 +6,7 @@ import { Root, createRoot } from 'react-dom/client';
 import { Autowired, Injectable } from '@opensumi/di';
 import { localize } from '@opensumi/ide-core-browser';
 import {
-  AISerivceType,
+  AIServiceType,
   ActionSourceEnum,
   CancellationTokenSource,
   Disposable,
@@ -229,7 +229,7 @@ export class PS1TerminalService extends Disposable {
   ) {
     await this.stopAIStreamRequest();
 
-    const reportRelationId = this.aiReporter.start(AISerivceType.TerminalAICommand, { message: commandDescription });
+    const reportRelationId = this.aiReporter.start(AIServiceType.TerminalAICommand, { message: commandDescription });
 
     const terminalReadableStream = await this.terminalFeatureRegistry.readableCommandSuggestions(
       commandDescription,
