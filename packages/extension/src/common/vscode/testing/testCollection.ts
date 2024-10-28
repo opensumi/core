@@ -434,7 +434,7 @@ export class SingleUseTestCollection extends Disposable {
       }
     };
 
-    let r: Thenable<void> | void;
+    let r: Thenable<void> | void = undefined;
     try {
       r = this._resolveHandler(internal.actual === this.root ? undefined : internal.actual);
     } catch (err) {
