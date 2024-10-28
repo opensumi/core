@@ -11,7 +11,6 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
-    "suppressImplicitAnyIndexErrors": true,
     "declaration": true,
     "baseUrl": "../src/node",
     "outDir": "../lib/node"
