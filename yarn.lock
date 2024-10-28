@@ -2329,7 +2329,7 @@ __metadata:
     raf: "npm:^3.4.1"
     rc-dialog: "npm:~7.6.0"
     rc-dropdown: "npm:~2.4.1"
-    rc-input-number: "npm:^7.4.2"
+    rc-input-number: "npm:^9.2.0"
     rc-menu: "npm:^9.3.2"
     rc-notification: "npm:~3.3.1"
     rc-tooltip: "npm:^6.2.0"
@@ -16661,18 +16661,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-input-number@npm:^7.4.2":
-  version: 7.4.2
-  resolution: "rc-input-number@npm:7.4.2"
+"rc-input-number@npm:^9.2.0":
+  version: 9.2.0
+  resolution: "rc-input-number@npm:9.2.0"
   dependencies:
     "@babel/runtime": "npm:^7.10.1"
     "@rc-component/mini-decimal": "npm:^1.0.1"
     classnames: "npm:^2.2.5"
-    rc-util: "npm:^5.28.0"
+    rc-input: "npm:~1.6.0"
+    rc-util: "npm:^5.40.1"
   peerDependencies:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
-  checksum: 10/af826860efeada4818e7c08c41a3f8811eafba35ea14af38bebf27aa0a912267f9fa01a88f62ca06c6ade88c8e5b38d6feb2f24eb27fe86f753d10c41c99f556
+  checksum: 10/6e7b4778d911bdd16c0ad39b6519ec3145a88b222ce04ffe06daae0a751710be8db4233375ae9ccc703cc9ee738ab0e0eeb7019cd72755adb4ae3eb78dcce4e0
+  languageName: node
+  linkType: hard
+
+"rc-input@npm:~1.6.0":
+  version: 1.6.3
+  resolution: "rc-input@npm:1.6.3"
+  dependencies:
+    "@babel/runtime": "npm:^7.11.1"
+    classnames: "npm:^2.2.1"
+    rc-util: "npm:^5.18.1"
+  peerDependencies:
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 10/e163a4105a5a7b18b88fc3c9cfa65fa36bf397c526843b30c0484eaab788feb0173b1f5af2fec26e6e31db4ec11b58a3619e35878bc4ea410e16e98f514ac664
   languageName: node
   linkType: hard
 
@@ -16792,7 +16807,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.28.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0, rc-util@npm:^5.9.4":
+"rc-util@npm:^5.18.1, rc-util@npm:^5.40.1":
+  version: 5.43.0
+  resolution: "rc-util@npm:5.43.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    react-is: "npm:^18.2.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/6d5be9d79182c6b4c5a033ad6517b2940d3d2ac42a8e77ef5735591d182f8236f61bc7628d61e82a122d2046ec849462f3fe57c08d3a2a20279646785c34ec4a
+  languageName: node
+  linkType: hard
+
+"rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0, rc-util@npm:^5.9.4":
   version: 5.39.1
   resolution: "rc-util@npm:5.39.1"
   dependencies:
