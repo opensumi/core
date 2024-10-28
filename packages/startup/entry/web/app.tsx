@@ -8,7 +8,6 @@ import { getDefaultClientAppOpts, renderApp } from './render-app';
 
 renderApp(
   getDefaultClientAppOpts({
-    // modules: [...AIModules],
     modules: [...AIModules, NotebookModule],
     opts: {
       layoutViewSize: {

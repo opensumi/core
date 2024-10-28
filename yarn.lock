@@ -3871,6 +3871,7 @@ __metadata:
     "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/monaco-editor-core": "npm:0.47.0-patch.15"
+    antd: "npm:^5.21.4"
   languageName: unknown
   linkType: soft
 
@@ -4090,7 +4091,6 @@ __metadata:
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
     "@opensumi/textmate-languages": "npm:^2.6.1"
-    antd: "npm:^5.21.4"
     browserfs: "npm:^1.4.3"
     css-loader: "npm:^6.9.1"
     electron: "npm:^22.3.21"

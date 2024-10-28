@@ -113,8 +113,7 @@
     "@opensumi/ide-webview": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
     "@opensumi/ide-workspace-edit": "workspace:*",
-    "@opensumi/textmate-languages": "^2.6.1",
-    "antd": "^5.21.4"
+    "@opensumi/textmate-languages": "^2.6.1"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",
