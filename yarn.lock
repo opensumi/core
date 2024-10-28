@@ -3086,7 +3086,7 @@ __metadata:
     "@opensumi/ide-startup": "workspace:*"
     "@types/ejs": "npm:^3.0.2"
     "@types/koa-mount": "npm:^4.0.0"
-    "@types/node": "npm:^20.11.30"
+    "@types/node": "npm:^22.7.6"
     "@types/react": "npm:^18.2.0"
     "@types/react-dom": "npm:^18.2.0"
     assets-webpack-plugin: "npm:^7.1.1"
@@ -3116,7 +3116,7 @@ __metadata:
     tsconfig-paths: "npm:^4.2.0"
     tsconfig-paths-webpack-plugin: "npm:^4.1.0"
     tslib: "npm:^2.6.2"
-    typescript: "npm:4.9.3"
+    typescript: "npm:^5.6.3"
     webpack: "npm:^5.90.0"
     webpack-cli: "npm:^5.1.4"
   languageName: unknown
@@ -3515,7 +3515,7 @@ __metadata:
     ts-loader: "npm:^9.5.1"
     tsconfig-paths: "npm:^4.2.0"
     tsconfig-paths-webpack-plugin: "npm:^4.1.0"
-    typescript: "npm:4.9.3"
+    typescript: "npm:^5.6.3"
     webpack: "npm:^5.90.0"
     webpack-cli: "npm:^5.1.4"
     webpack-merge: "npm:^5.10.0"
@@ -4322,7 +4322,7 @@ __metadata:
     "@playwright/test": "npm:1.43.0"
     allure-commandline: "npm:^2.25.0"
     allure-playwright: "npm:^2.10.0"
-    typescript: "npm:4.9.3"
+    typescript: "npm:^5.6.3"
   languageName: unknown
   linkType: soft
 
@@ -5618,15 +5618,6 @@ __metadata:
   version: 16.18.89
   resolution: "@types/node@npm:16.18.89"
   checksum: 10/b412f78cd52c6640a215838aae5f69adc8ce1bcc30e61d8c2437a384478dcd7e182e802a85ed18b23fb99dd337821ed67846579b1db828f2e99144195a0ee23b
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^20.11.30":
-  version: 20.11.30
-  resolution: "@types/node@npm:20.11.30"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/78515bc768d2b878e2e06a1c20eb4f5840072b79b8d28ff3dd0a7feaaf48fd3a2ac03cfa5bc7564da82db5906b43e9ba0e5df9f43d870b7aae2942306e208815
   languageName: node
   linkType: hard
 
@@ -23868,16 +23859,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.9.3":
-  version: 4.9.3
-  resolution: "typescript@npm:4.9.3"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10/dda600a5a37b945ad1fff76f0c874e7bfda3fd56cfc43b9f328780d602b6e7127b4342bbc6ad68ccf7bf6645047be329586ea1b393a80fb942d608a796aba0de
-  languageName: node
-  linkType: hard
-
 "typescript@npm:>=3 < 6":
   version: 5.4.2
   resolution: "typescript@npm:5.4.2"
@@ -23895,16 +23876,6 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10/c328e418e124b500908781d9f7b9b93cf08b66bf5936d94332b463822eea2f4e62973bfb3b8a745fdc038785cb66cf59d1092bac3ec2ac6a3e5854687f7833f1
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@npm%3A4.9.3#optional!builtin<compat/typescript>":
-  version: 4.9.3
-  resolution: "typescript@patch:typescript@npm%3A4.9.3#optional!builtin<compat/typescript>::version=4.9.3&hash=a66ed4"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10/cc7506c7cb5419b3e64bff50082307ed31d0de163ed6ccd9f418e94c364ebde2aba3f57087ac431805410855421917718a1a6ed85f46620cf03c87e86d1ce9c5
   languageName: node
   linkType: hard
 
