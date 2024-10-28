@@ -434,6 +434,7 @@ export class SingleUseTestCollection extends Disposable {
       }
     };
 
+    // eslint-disable-next-line no-undef-init
     let r: Thenable<void> | void = undefined;
     try {
       r = this._resolveHandler(internal.actual === this.root ? undefined : internal.actual);
