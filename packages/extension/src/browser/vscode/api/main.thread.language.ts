@@ -1091,6 +1091,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       wordPattern: reviveRegExp(configuration.wordPattern),
       indentationRules: reviveIndentationRule(configuration.indentationRules),
       onEnterRules: reviveOnEnterRules(configuration.onEnterRules),
+      autoClosingPairs: configuration.autoClosingPairs,
     };
     this.disposables.set(handle, monacoApi.languages.setLanguageConfiguration(languageId, config));
   }

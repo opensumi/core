@@ -1019,6 +1019,27 @@ export class FileDecoration {
   }
 }
 
+export enum SyntaxTokenType {
+  Other = 0,
+  Comment = 1,
+  String = 2,
+  RegEx = 3,
+}
+export namespace SyntaxTokenType {
+  type returnType = 'other' | 'comment' | 'string' | 'regex';
+
+  const tokenTypeMap: Record<SyntaxTokenType, returnType> = {
+    [SyntaxTokenType.Other]: 'other',
+    [SyntaxTokenType.Comment]: 'comment',
+    [SyntaxTokenType.String]: 'string',
+    [SyntaxTokenType.RegEx]: 'regex',
+  };
+
+  export function toString(v: SyntaxTokenType | unknown): returnType {
+    return tokenTypeMap[v as SyntaxTokenType] || 'other';
+  }
+}
+
 /**
  * These values match very carefully the values of `TrackedRangeStickiness`
  */
