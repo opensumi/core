@@ -1440,7 +1440,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/mana-app@npm:latest":
+"@difizen/mana-app@npm:^0.1.27, @difizen/mana-app@npm:latest":
   version: 0.1.27
   resolution: "@difizen/mana-app@npm:0.1.27"
   dependencies:
@@ -3863,12 +3863,23 @@ __metadata:
   resolution: "@opensumi/ide-notebook@workspace:packages/notebook"
   dependencies:
     "@ant-design/icons": "npm:^4.6.4"
+    "@difizen/libro-code-editor": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-common": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-core": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/libro-jupyter": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-kernel": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/libro-lsp": "npm:0.0.0-snapshot-20241017090244"
     "@difizen/libro-toc": "npm:0.0.0-snapshot-20241017090244"
+    "@difizen/mana-app": "npm:^0.1.27"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-editor": "workspace:*"
+    "@opensumi/ide-explorer": "workspace:*"
+    "@opensumi/ide-file-service": "workspace:*"
+    "@opensumi/ide-main-layout": "workspace:*"
     "@opensumi/ide-monaco": "workspace:*"
+    "@opensumi/ide-outline": "workspace:*"
+    "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/monaco-editor-core": "npm:0.47.0-patch.15"
     antd: "npm:^5.21.4"

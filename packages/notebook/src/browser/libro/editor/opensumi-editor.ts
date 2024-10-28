@@ -29,11 +29,9 @@ import {
   transient,
   watch,
 } from '@difizen/mana-app';
-import 'resize-observer-polyfill';
-import { v4 } from 'uuid';
 
 import { Injector } from '@opensumi/di';
-import { IEventBus, URI } from '@opensumi/ide-core-common';
+import { IEventBus, URI, uuid } from '@opensumi/ide-core-common';
 import { EditorCollectionService, IEditorDocumentModelRef, ICodeEditor as IOpensumiEditor } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import * as monacoTypes from '@opensumi/ide-monaco';
@@ -327,7 +325,7 @@ export class LibroOpensumiEditor implements IEditor {
     this.injector = injector;
     this.host = options.host;
     this.host.classList.add('libro-opensumi-editor-container');
-    this._uuid = options.uuid || v4();
+    this._uuid = options.uuid || uuid();
 
     this._model = options.model;
 
