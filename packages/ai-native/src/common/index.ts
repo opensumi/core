@@ -1,6 +1,6 @@
 import {
   AIInlineChatContentWidgetId,
-  AISerivceType,
+  AIServiceType,
   ActionSourceEnum,
   ActionTypeEnum,
   CancellationToken,
@@ -35,7 +35,6 @@ export const AI_MENUBAR_CONTAINER_VIEW_ID = DESIGN_MENUBAR_CONTAINER_VIEW_ID;
 
 export const SLASH_SYMBOL = '/';
 export const AT_SIGN_SYMBOL = '@';
-export const BACK_QUOTE_3_SYMBOL = '```';
 
 export interface IChatMessageStructure {
   /**
@@ -49,7 +48,7 @@ export interface IChatMessageStructure {
   /**
    * 数据采集上报消息类型
    */
-  reportType?: AISerivceType;
+  reportType?: AIServiceType;
   /*
    * agent id
    */

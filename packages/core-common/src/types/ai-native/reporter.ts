@@ -1,6 +1,8 @@
+import { ECodeEditsSourceTyping } from './index';
+
 export const AI_REPORTER_NAME = 'AI';
 
-export enum AISerivceType {
+export enum AIServiceType {
   Chat = 'chat',
   InlineChat = 'inlineChat',
   CodeAction = 'codeAction',
@@ -12,6 +14,7 @@ export enum AISerivceType {
   Rename = 'rename',
   TerminalAICommand = 'terminalAICommand',
   ProblemFix = 'problemFix',
+  CodeEdits = 'codeEdits',
 }
 
 export enum ActionSourceEnum {
@@ -64,7 +67,7 @@ export enum ActionTypeEnum {
 }
 
 export interface CommonLogInfo {
-  msgType: AISerivceType | string;
+  msgType: AIServiceType | string;
   relationId: string;
   replytime: number;
   success: boolean;
@@ -172,15 +175,23 @@ export interface InlineChatRT extends Partial<CommonLogInfo> {
   runByCodeAction?: boolean;
 }
 
+export interface CodeEditsRT extends Partial<CommonLogInfo> {
+  actionSource?: ECodeEditsSourceTyping;
+  isCancel?: boolean;
+  accept?: boolean;
+  discard?: boolean;
+}
+
 export type ReportInfo =
   | Partial<CommonLogInfo>
-  | ({ type: AISerivceType.Completion } & CompletionRT)
-  | ({ type: AISerivceType.MergeConflict } & MergeConflictRT)
-  | ({ type: AISerivceType.Rename } & RenameRT)
-  | ({ type: AISerivceType.InlineChat } & InlineChatRT)
-  | ({ type: AISerivceType.InlineChatInput } & InlineChatRT)
-  | ({ type: AISerivceType.Chat } & ChatRT)
-  | ({ type: AISerivceType.Agent } & ChatRT);
+  | ({ type: AIServiceType.Completion } & CompletionRT)
+  | ({ type: AIServiceType.MergeConflict } & MergeConflictRT)
+  | ({ type: AIServiceType.Rename } & RenameRT)
+  | ({ type: AIServiceType.InlineChat } & InlineChatRT)
+  | ({ type: AIServiceType.InlineChatInput } & InlineChatRT)
+  | ({ type: AIServiceType.Chat } & ChatRT)
+  | ({ type: AIServiceType.Agent } & ChatRT)
+  | ({ type: AIServiceType.CodeEdits } & CodeEditsRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 

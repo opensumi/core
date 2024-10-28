@@ -5,7 +5,6 @@ export * from './command';
 export * from './editor';
 export * from './common';
 export * from './base';
-
 export * from './transform';
 
 export * as editor from './editor';

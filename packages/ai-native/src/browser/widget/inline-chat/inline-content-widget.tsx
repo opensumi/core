@@ -21,7 +21,7 @@ import {
   ShowAIContentOptions,
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { InlineResultAction } from '../inline-actions/result-items/index';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';

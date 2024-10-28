@@ -2,7 +2,6 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, ILogger, QuickPickService, formatLocalize, localize } from '@opensumi/ide-core-browser';
 import {
-  AuthenticationGetSessionOptions,
   AuthenticationSession,
   AuthenticationSessionsChangeEvent,
   IAuthenticationProvider,
@@ -12,6 +11,8 @@ import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import { ExtHostAPIIdentifier, IExtHostAuthentication, IMainThreadAuthentication } from '../../../common/vscode';
 import { IActivationEventService } from '../../types';
+
+import type vscode from 'vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadAuthenticationProvider extends Disposable implements IAuthenticationProvider {
@@ -248,7 +249,7 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     scopes: string[],
     extensionId: string,
     extensionName: string,
-    options: AuthenticationGetSessionOptions,
+    options: vscode.AuthenticationGetSessionOptions,
   ): Promise<AuthenticationSession | undefined> {
     const sessions = await this.authenticationService.getSessions(providerId, scopes, true);
     const supportsMultipleAccounts = this.authenticationService.supportsMultipleAccounts(providerId);

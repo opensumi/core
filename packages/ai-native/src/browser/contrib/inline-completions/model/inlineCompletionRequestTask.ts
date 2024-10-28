@@ -11,14 +11,14 @@ import {
   URI,
   uuid,
 } from '@opensumi/ide-core-common';
-import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
+import { AIServiceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
 
-import { IIntelligentCompletionsResult } from '../../intelligent-completions/intelligent-completions';
-import { IntelligentCompletionsController } from '../../intelligent-completions/intelligent-completions.controller';
+import { IIntelligentCompletionsResult } from '../../intelligent-completions';
 import { IntelligentCompletionsRegistry } from '../../intelligent-completions/intelligent-completions.feature.registry';
+import { InlineCompletionsController } from '../inline-completions.controller';
 import { InlineCompletionItem } from '../model/competionModel';
 import { PromptCache } from '../promptCache';
 import { lineBasedPromptProcessor } from '../provider';
@@ -165,7 +165,7 @@ export class InlineCompletionRequestTask extends Disposable {
     let completeResult: IIntelligentCompletionsResult | undefined;
     const cacheData = this.promptCache.getCache(requestBean);
     const relationId =
-      cacheData?.relationId || this.aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
+      cacheData?.relationId || this.aiReporter.start(AIServiceType.Completion, { message: AIServiceType.Completion });
 
     this.aiCompletionsService.setLastRelationId(relationId);
     // 如果存在缓存
@@ -174,14 +174,14 @@ export class InlineCompletionRequestTask extends Disposable {
     } else {
       try {
         this.aiCompletionsService.updateStatusBarItem('running', true);
-        const provider = this.intelligentCompletionsRegistry.getProvider();
+        const provider = this.intelligentCompletionsRegistry.getInlineCompletionsProvider();
         if (provider) {
           const editor = this.workbenchEditorService.currentCodeEditor;
           if (!editor) {
             return [];
           }
-          const intelligentCompletionsHandler = IntelligentCompletionsController.get(editor.monacoEditor);
-          completeResult = await intelligentCompletionsHandler?.fetchProvider(requestBean);
+          const inlineCompletionsHandler = InlineCompletionsController.get(editor.monacoEditor);
+          completeResult = await inlineCompletionsHandler?.fetchProvider(requestBean);
         } else {
           completeResult = await this.aiCompletionsService.complete(requestBean);
         }

@@ -15,7 +15,7 @@ import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 
-import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
+import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { ERunStrategy } from '../../types';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
@@ -133,7 +133,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       inputDisposable.dispose();
     };
 
-    this.addDispose(
+    this.featureDisposable.addDispose(
       this.inlineInputChatService.onInteractiveInputVisibleInPosition((position) => {
         hideInput();
 
@@ -144,7 +144,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     );
 
     const showInput = (position: monaco.Position, monacoEditor: ICodeEditor) => {
-      this.addDispose(
+      this.featureDisposable.addDispose(
         monacoEditor.onWillChangeModel(() => {
           hideInput();
         }),
@@ -270,8 +270,8 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       inputDisposable.addDispose(inlineInputChatWidget);
     };
 
-    this.addDispose(inputDisposable);
+    this.featureDisposable.addDispose(inputDisposable);
 
-    return this;
+    return this.featureDisposable;
   }
 }

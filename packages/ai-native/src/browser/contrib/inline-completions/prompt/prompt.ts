@@ -1,5 +1,4 @@
-// @ts-ignore
-import { Tiktoken } from 'js-tiktoken';
+import { Tiktoken } from 'tiktoken/lite';
 
 import { Injector } from '@opensumi/di';
 
@@ -59,7 +58,12 @@ export const getMarkerForSnippets = (text: string, language: string) => {
   return lines.map((line) => getMarkerByLanguage(line, language)).join('\n');
 };
 
-export const getCroppedTextByLine = (text: string, maxTokenSize: number, textTokens: number[][], reverse = false) => {
+export const getCroppedTextByLine = (
+  text: string,
+  maxTokenSize: number,
+  textTokens: Uint32Array[],
+  reverse = false,
+) => {
   const currentTokenSize = textTokens.reduce((prev, cur) => prev + cur.length, 0);
   if (currentTokenSize < maxTokenSize) {
     return text;
@@ -110,7 +114,7 @@ export const getCroppedTextByLine = (text: string, maxTokenSize: number, textTok
 export const getCroppedText = async (
   text: string,
   maxTokenSize: number,
-  textTokens: number[][],
+  textTokens: Uint32Array[],
   strategy = StrategyType.InterceptBasedOnLine,
   tokenizer: Tiktoken,
   parser?: LanguageParser,
@@ -118,7 +122,7 @@ export const getCroppedText = async (
   reverse = false,
   token?: monaco.CancellationToken,
 ): Promise<string> => {
-  let tokens: number[];
+  let tokens: Uint32Array;
   if (strategy === StrategyType.InterceptBasedOnLine) {
     // 按行进行裁剪
     text = getCroppedTextByLine(text, maxTokenSize, textTokens, reverse);

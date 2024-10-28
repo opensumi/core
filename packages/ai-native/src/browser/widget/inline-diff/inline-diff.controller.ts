@@ -18,7 +18,6 @@ import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
-import { IPartialEditEvent } from '../inline-stream-diff/live-preview.component';
 
 import {
   BaseInlineDiffPreviewer,
@@ -43,9 +42,6 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     return this.injector.get(IEventBus);
   }
 
-  private readonly _onPartialEditEvent = this.registerDispose(new Emitter<IPartialEditEvent>());
-  public readonly onPartialEditEvent: Event<IPartialEditEvent> = this._onPartialEditEvent.event;
-
   private readonly _onMaxLineCount = new Emitter<number>();
   public readonly onMaxLineCount: Event<number> = this._onMaxLineCount.event;
 
@@ -53,7 +49,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
   private _previewerNodeStore = new Map<string, InlineStreamDiffHandler | null>();
 
   mount(): IDisposable {
-    this.registerDispose(
+    this.featureDisposable.addDispose(
       this.eventBus.on(EditorGroupCloseEvent, (e: EditorGroupCloseEvent) => {
         const uriString = e.payload.resource.uri.toString();
         const node = this.getStoredState(uriString);
@@ -66,7 +62,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
 
     this.registerInlineDiffFeature(this.monacoEditor);
 
-    return this;
+    return this.featureDisposable;
   }
 
   storeState(key: string) {
@@ -110,12 +106,10 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     }
   }
 
-  registerInlineDiffFeature(monacoEditor: monaco.ICodeEditor): IDisposable {
-    const disposable = new Disposable();
-
+  registerInlineDiffFeature(monacoEditor: monaco.ICodeEditor): void {
     const model = monacoEditor.getModel();
 
-    disposable.addDispose(
+    this.featureDisposable.addDispose(
       monacoEditor.onWillChangeModel((e) => {
         if (!e.oldModelUrl) {
           return;
@@ -128,7 +122,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
       }),
     );
 
-    disposable.addDispose(
+    this.featureDisposable.addDispose(
       monacoEditor.onDidChangeModel((e) => {
         if (!e.newModelUrl) {
           return;
@@ -138,15 +132,13 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     );
 
     if (model) {
-      disposable.addDispose(
+      this.featureDisposable.addDispose(
         model.onWillDispose(() => {
           const uriString = model.uri.toString();
           this.destroyPreviewer(uriString);
         }),
       );
     }
-
-    return disposable;
   }
 
   showPreviewerByStream(
@@ -230,14 +222,6 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
   private listenPreviewer(previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined) {
     if (!previewer) {
       return;
-    }
-
-    if (previewer instanceof LiveInlineDiffPreviewer) {
-      previewer.addDispose(
-        previewer.onPartialEditEvent!((event) => {
-          this._onPartialEditEvent.fire(event);
-        }),
-      );
     }
 
     previewer.addDispose(previewer.onLineCount((lineCount) => this._onMaxLineCount.fire(lineCount)));

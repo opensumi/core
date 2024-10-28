@@ -46,6 +46,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
       cache: {
         type: 'filesystem',
       },
+      experiments: {
+        asyncWebAssembly: true, // 启用 WebAssembly 支持
+      },
       resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
         plugins: [

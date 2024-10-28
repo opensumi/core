@@ -106,6 +106,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
       partialEditWidgetOptions: {
         hideAcceptPartialEditWidget: options.hideAcceptPartialEditWidget,
       },
+      renderRemovedWidgetImmediately: options.renderRemovedWidgetImmediately,
     });
   }
 
@@ -512,10 +513,6 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     this.handleEdits(diffModel);
     this.pushStackElement();
     this.monacoEditor.focus();
-  }
-
-  get onPartialEditEvent() {
-    return this.livePreviewDiffDecorationModel.onPartialEditEvent;
   }
 
   acceptAll(): void {

@@ -40,7 +40,7 @@ import {
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
+import { ICodeEditor, NewSymbolName, NewSymbolNameTag, Range } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
@@ -425,13 +425,20 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
-    registry.registerIntelligentCompletionProvider(async (editor, position, bean, token) => {
-      const model = editor.getModel()!;
-      const value = model.getValueInRange({
+    registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
+      items: [{ insertText: 'Hello OpenSumi' }],
+    }));
+
+    registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
+      const model = editor.getModel();
+      const maxLine = Math.max(position.lineNumber + 3, model?.getLineCount() ?? 0);
+      const lineMaxColumn = model!.getLineMaxColumn(maxLine) ?? 1;
+
+      const value = model!.getValueInRange({
         startLineNumber: position.lineNumber,
         startColumn: 1,
         endLineNumber: position.lineNumber + 3,
-        endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
+        endColumn: lineMaxColumn,
       });
 
       const cancelController = new AbortController();
@@ -485,20 +492,20 @@ export class AINativeContribution implements AINativeCoreContribution {
           items: [
             {
               insertText: insertRandomStrings(value),
-              range: {
-                startLineNumber: position.lineNumber,
-                startColumn: 1,
-                endLineNumber: position.lineNumber + 3,
-                endColumn: model?.getLineMaxColumn(position.lineNumber + 3),
-              },
+              range: Range.fromPositions(
+                {
+                  lineNumber: position.lineNumber,
+                  column: 1,
+                },
+                {
+                  lineNumber: position.lineNumber + 3,
+                  column: lineMaxColumn ?? 1,
+                },
+              ),
             },
           ],
-          enableMultiLine: true,
         };
       } catch (error) {
-        if (error.name === 'AbortError') {
-          return { items: [] };
-        }
         throw error;
       }
     });
