@@ -92,6 +92,8 @@ export class LibroContribution
   @Autowired(AppConfig)
   config: AppConfig;
 
+  private serverManagerInited = false;
+
   registerOpener(registry: IOpenerService): void {
     registry.registerOpener(this.libroOpener);
   }
@@ -130,6 +132,12 @@ export class LibroContribution
 
     registry.registerEditorComponentResolver(Schemes.file, (resource, results) => {
       if (resource.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
+        // 首次打开 notebook 文件时初始化 jupyter 服务连接
+        if (!this.serverManagerInited && this.config.notebookServerHost) {
+          this.serverManagerInited = true;
+          // 目前直接从浏览器连接 jupyter 服务，对服务的cors等配置会有要求
+          this.connectJupyterServer(this.config.notebookServerHost);
+        }
         results.push({
           type: 'component',
           componentId: LIBRO_COMPONENTS_ID,
@@ -161,12 +169,6 @@ export class LibroContribution
   }
 
   async onDidStart() {
-    // TODO: 应该是首次打开 jupyter 文件时连接
-    if (this.config.notebookServerHost) {
-      // TODO: 目前直接从浏览器连接，没有从后端转发一次，对服务的cors等配置会有要求
-      this.connectJupyterServer(this.config.notebookServerHost);
-    }
-
     const manaThemeService = this.manaContainer.get(ThemeService);
     const curTheme = await this.themeService.getCurrentTheme();
     manaThemeService.setCurrentTheme(curTheme.type);

@@ -3,20 +3,20 @@ import { CellUri, EditorCellView, ExecutableNotebookModel } from '@difizen/libro
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IOpener, IPosition, IRange, URI } from '@opensumi/ide-core-browser';
-import { notebookCellScheme } from '@opensumi/ide-editor';
+import { Schemes } from '@opensumi/ide-core-common';
 
 import { LibroOpensumiService } from './libro.service';
 
 export const toEditorRange = (range: IRange): LibroRange => ({
-    start: {
-      line: range.startLineNumber - 1,
-      column: range.startColumn - 1,
-    },
-    end: {
-      line: range.endLineNumber - 1,
-      column: range.endColumn - 1,
-    },
-  });
+  start: {
+    line: range.startLineNumber - 1,
+    column: range.startColumn - 1,
+  },
+  end: {
+    line: range.endLineNumber - 1,
+    column: range.endColumn - 1,
+  },
+});
 
 export const toMonacoPosition = (position: IPosition | undefined): LibroPosition => {
   if (!position) {
@@ -68,10 +68,11 @@ export class LibroOpener implements IOpener {
       return false;
     }
 
-    const cell = libroView.model.cells.find((item) => (
+    const cell = libroView.model.cells.find(
+      (item) =>
         ExecutableNotebookModel.is(libroView.model) &&
-        CellUri.from(libroView.model.filePath, item.model.id).toString() === decodeURIComponent(uri.toString())
-      ));
+        CellUri.from(libroView.model.filePath, item.model.id).toString() === decodeURIComponent(uri.toString()),
+    );
 
     if (!EditorCellView.is(cell)) {
       return;
@@ -90,6 +91,6 @@ export class LibroOpener implements IOpener {
 
   handleScheme(scheme: string) {
     // 使用 handleURI 后会忽略 handleScheme
-    return scheme === notebookCellScheme;
+    return scheme === Schemes.notebookCell;
   }
 }
