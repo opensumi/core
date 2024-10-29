@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Badge, BasicRecycleTree, CheckBox, IBasicTreeData } from '@opensumi/ide-components';
@@ -14,6 +13,7 @@ import {
   getExternalIcon,
   getIcon,
   localize,
+  useAutorun,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
@@ -46,11 +46,13 @@ export interface BreakpointItem {
   breakpoint: IDebugBreakpoint | DebugExceptionBreakpoint;
 }
 
-export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
+export const DebugBreakpointView = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const debugBreakpointsService: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
-  const { enable, toggleBreakpointEnable } = debugBreakpointsService;
   const isDisposed = useRef<boolean>(false);
   const [treeData, setTreeData] = useState<IBreakpointTreeData[]>([]);
+  const { enable, inDebugMode, toggleBreakpointEnable } = debugBreakpointsService;
+  const autorunEnable = useAutorun(enable);
+  const autorunInDebugMode = useAutorun(inDebugMode);
 
   const getBreakpointClsState = (options: {
     data: BreakpointItem;
@@ -127,8 +129,8 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               iconClassName: cls(
                 getBreakpointClsState({
                   data: item.rawData,
-                  inDebugMode: debugBreakpointsService.inDebugMode,
-                  breakpointEnabled: enable,
+                  inDebugMode: autorunInDebugMode,
+                  breakpointEnabled: autorunEnable,
                 }),
                 styles.debug_breakpoints_icon,
               ),
@@ -173,7 +175,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
   }, [treeData]);
 
   return (
-    <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
+    <div className={cls(styles.debug_breakpoints, !autorunEnable && styles.debug_breakpoints_disabled)}>
       <BasicRecycleTree
         onIconClick={(_, item) => {
           if (item.raw.breakpoint) {
@@ -193,7 +195,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
       />
     </div>
   );
-});
+};
 
 interface BreakpointFileItemProps {
   label: string;

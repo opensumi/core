@@ -116,7 +116,7 @@ describe('Debug Configuration Service', () => {
 
   it('should have enough API', () => {
     expect(typeof debugConfigurationService.init).toBe('function');
-    expect(debugConfigurationService.currentValue).toBe(
+    expect(debugConfigurationService.currentValue.get()).toBe(
       `test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`,
     );
     expect(debugConfigurationService.float).toBeTruthy();
@@ -141,12 +141,12 @@ describe('Debug Configuration Service', () => {
   it('updateCurrentValue method should be work', () => {
     const value = 'test';
     debugConfigurationService.updateCurrentValue(value);
-    expect(debugConfigurationService.currentValue).toBe(value);
+    expect(debugConfigurationService.currentValue.get()).toBe(value);
   });
 
   it('updateConfigurationOptions method should be work', () => {
     debugConfigurationService.updateConfigurationOptions();
-    expect(debugConfigurationService.currentValue).toBe(
+    expect(debugConfigurationService.currentValue.get()).toBe(
       `test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`,
     );
   });

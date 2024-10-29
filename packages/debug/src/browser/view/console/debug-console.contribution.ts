@@ -158,6 +158,7 @@ export class DebugConsoleContribution
       command: DEBUG_COMMANDS.CONSOLE_ENTER_EVALUATE.id,
       keybinding: 'enter',
       when: `${CONTEXT_IN_DEBUG_REPL.raw} && ${CONTEXT_IN_DEBUG_MODE.raw}`,
+      priority: 0,
     });
     bindings.registerKeybinding({
       command: DEBUG_COMMANDS.CONSOLE_INPUT_DOWN_ARROW.id,

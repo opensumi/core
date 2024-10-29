@@ -426,7 +426,7 @@ export class DebugContribution
     commands.registerCommand(DEBUG_COMMANDS.ACTIVE_BREAKPOINTS, {
       execute: () => {
         const { enable } = this.debugBreakpointsService;
-        if (!enable) {
+        if (!enable.get()) {
           this.debugBreakpointsService.toggleBreakpoints();
         }
       },
@@ -434,7 +434,7 @@ export class DebugContribution
     commands.registerCommand(DEBUG_COMMANDS.DEACTIVE_BREAKPOINTS, {
       execute: () => {
         const { enable } = this.debugBreakpointsService;
-        if (enable) {
+        if (enable.get()) {
           this.debugBreakpointsService.toggleBreakpoints();
         }
       },

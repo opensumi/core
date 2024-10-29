@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { RecycleList } from '@opensumi/ide-components';
@@ -30,7 +29,7 @@ export interface DebugStackSessionViewProps {
   isBottom?: boolean;
 }
 
-export const DebugStackFramesView = observer((props: DebugStackSessionViewProps) => {
+export const DebugStackFramesView = (props: DebugStackSessionViewProps) => {
   const { viewState, frames: rawFrames, thread, indent = 0, session, isBottom } = props;
   const [selected, setSelected] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -360,4 +359,4 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       footer={isLoading || canLoadMore ? footer : undefined}
     />
   );
-});
+};

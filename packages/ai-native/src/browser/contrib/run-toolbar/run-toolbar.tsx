@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { localize, useDerived, useInjectable } from '@opensumi/ide-core-browser';
+import { localize, useAutorun, useInjectable } from '@opensumi/ide-core-browser';
 import { DebugState } from '@opensumi/ide-debug';
 import { DebugAction } from '@opensumi/ide-debug/lib/browser/components';
 import { DebugConfigurationService } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-configuration.service';
@@ -27,7 +27,7 @@ const CustomDebugBar = () => {
 
 export const AIRunToolbar = () => {
   const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
-  const state = useDerived(debugToolbarService.state);
+  const state = useAutorun(debugToolbarService.state);
 
   return (
     <div className={styles.run_toolbar_container}>

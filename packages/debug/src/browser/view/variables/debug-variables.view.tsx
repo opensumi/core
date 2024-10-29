@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import {
@@ -28,15 +27,13 @@ import styles from './debug-variables.module.less';
 
 export const DEBUG_VARIABLE_TREE_FIELD_NAME = 'DEBUG_VARIABLE_TREE_FIELD';
 
-export const DebugVariableView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
-  const DEBUG_VARIABLE_ITEM_HEIGHT = 22;
-
-  const { width, height } = viewState;
+export const DebugVariableView = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
+  const debugVariablesModelService = useInjectable<DebugVariablesModelService>(DebugVariablesModelService);
 
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const [model, setModel] = React.useState<TreeModel>();
-
-  const debugVariablesModelService = useInjectable<DebugVariablesModelService>(DebugVariablesModelService);
+  const DEBUG_VARIABLE_ITEM_HEIGHT = 22;
+  const { width, height } = viewState;
 
   React.useEffect(() => {
     const disposable = debugVariablesModelService.onDidUpdateTreeModel(async (nextModel: TreeModel) => {
@@ -150,7 +147,7 @@ export const DebugVariableView = observer(({ viewState }: React.PropsWithChildre
       {renderContent()}
     </div>
   );
-});
+};
 
 export interface IDebugVariableNodeProps {
   item: any;

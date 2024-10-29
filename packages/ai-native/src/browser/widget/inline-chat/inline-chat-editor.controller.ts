@@ -1,5 +1,9 @@
-import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
-import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import {
+  AINativeConfigService,
+  IAIInlineChatService,
+  IContextKeyService,
+  PreferenceService,
+} from '@opensumi/ide-core-browser';
 import {
   AIInlineChatContentWidgetId,
   AINativeSettingSectionsId,
@@ -7,21 +11,23 @@ import {
   ActionSourceEnum,
   ActionTypeEnum,
   CancelResponse,
-  CancellationTokenSource,
   ChatResponse,
+  Disposable,
   ErrorResponse,
   Event,
   IAIReporter,
+  IDisposable,
   ILogServiceClient,
   ILogger,
   InlineChatFeatureRegistryToken,
   MaybePromise,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
+import { CONTEXT_IN_DEBUG_MODE_KEY } from '@opensumi/ide-debug';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/ide-monaco';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { BaseAIMonacoEditorController } from '../../contrib/base';
@@ -71,6 +77,10 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
 
   private get logger(): ILogServiceClient {
     return this.injector.get(ILogger);
+  }
+
+  private get contextKeyService(): IContextKeyService {
+    return this.injector.get(IContextKeyService);
   }
 
   private aiInlineContentWidget: AIInlineContentWidget;
@@ -208,6 +218,12 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
   }
 
   protected async showInlineChat(monacoEditor: monaco.ICodeEditor): Promise<void> {
+    // 调试状态下禁用 inline chat。影响调试体验
+    const inDebugMode = this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY);
+    if (inDebugMode) {
+      return;
+    }
+
     if (!this.aiNativeConfigService.capabilities.supportsInlineChat) {
       return;
     }

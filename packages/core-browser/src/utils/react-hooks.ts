@@ -4,7 +4,6 @@ import { DependencyList, useEffect, useMemo, useRef, useState } from 'react';
 import { Disposable, DisposableStore, IDisposable } from '@opensumi/ide-core-common';
 import { autorun } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/autorun';
 import { IObservable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
-import { derived } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/derived';
 
 import { IDesignStyleService } from '../design';
 import { MenuNode } from '../menu/next/base';
@@ -139,13 +138,16 @@ export const useLatest = <T>(value: T): { readonly current: T } => {
   return ref;
 };
 
-export const useDerived = <T>(observable: IObservable<T, void>): T => {
+export const useAutorun = <T, TChange = unknown>(observable: IObservable<T, TChange>): T => {
   const [value, setValue] = useState<T>(observable.get());
 
-  useDisposable(() => autorun((reader) => {
-      // console.log("🚀 ~ returnautorun ~ observable:", observable.get())
-      setValue(observable.read(reader));
-    }), [observable]);
+  useDisposable(
+    () =>
+      autorun((reader) => {
+        setValue(observable.read(reader));
+      }),
+    [observable],
+  );
 
   return value;
 };

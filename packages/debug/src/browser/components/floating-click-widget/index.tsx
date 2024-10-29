@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@opensumi/ide-components';
-import { getIcon, localize, useDerived, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, localize, useAutorun, useInjectable } from '@opensumi/ide-core-browser';
 import { EditorContext } from '@opensumi/ide-editor/lib/browser/editor.context';
 
 import { DebugConfigurationService } from '../../view/configuration/debug-configuration.service';
@@ -12,7 +12,7 @@ import styles from './index.module.less';
 export const FloatingClickWidget = () => {
   const { addConfiguration, openLaunchEditor, showDynamicQuickPickToInsert, dynamicConfigurations } =
     useInjectable<DebugConfigurationService>(DebugConfigurationService);
-  const derivedDynamicConfigurations = useDerived(dynamicConfigurations);
+  const autorunDynamicConfigurations = useAutorun(dynamicConfigurations);
 
   const { minimapWidth } = React.useContext(EditorContext);
 
@@ -20,12 +20,12 @@ export const FloatingClickWidget = () => {
 
   useEffect(() => {
     // 如果没有注册的 Dynamic Configuration Provider，就不显示智能添加配置按钮
-    if (Array.isArray(derivedDynamicConfigurations) && derivedDynamicConfigurations.length > 0) {
+    if (Array.isArray(autorunDynamicConfigurations) && autorunDynamicConfigurations.length > 0) {
       setShowSmartWidget(true);
     } else {
       setShowSmartWidget(false);
     }
-  }, [derivedDynamicConfigurations]);
+  }, [autorunDynamicConfigurations]);
 
   return (
     <div className={styles.floating_click_widget} style={{ right: 20 + minimapWidth }}>

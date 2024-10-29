@@ -1,6 +1,4 @@
 import cls from 'classnames';
-import { action, makeObservable, observable } from 'mobx';
-import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Injectable } from '@opensumi/di';
@@ -12,7 +10,7 @@ import {
   electronEnv,
   getIcon,
   localize,
-  useDerived,
+  useAutorun,
   useDesignStyles,
   useInjectable,
 } from '@opensumi/ide-core-browser';
@@ -20,6 +18,7 @@ import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { derived, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { DebugState } from '../../../common';
 import { DebugAction } from '../../components';
@@ -32,50 +31,45 @@ import { DebugToolbarService } from './debug-toolbar.service';
 
 @Injectable()
 class FloatController {
-  @observable
-  x: number;
+  private _x = observableValue(this, 0);
+  private _line = observableValue(this, 0);
+  private _enable = observableValue(this, false);
 
-  @observable
-  line: number;
+  private y: number = 0;
+  private last: number = 0;
+  private origin: number = 0;
 
-  @observable
-  enable: boolean;
+  state = derived(this, (reader) => ({
+      enable: this._enable.read(reader),
+      x: this._x.read(reader),
+      line: this._line.read(reader),
+    }));
 
-  private _origin: number;
-  private _last: number;
-
-  private _y: number;
-
-  constructor() {
-    makeObservable(this);
-    this.x = 0;
-    this.line = 0;
-    this.enable = false;
-    this._origin = 0;
-    this._last = 0;
-    this._y = 0;
+  setEnable(value: boolean) {
+    transaction((tx) => {
+      this._enable.set(value, tx);
+    });
   }
 
-  @action.bound
   onMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    this.enable = true;
-    this._origin = e.clientX;
-    this._y = e.clientY;
+    this.setEnable(true);
+    this.y = e.clientY;
+    this.origin = e.clientX;
   }
 
-  @action.bound
   onMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     e.stopPropagation();
-    if (this.enable) {
-      this.x = e.clientX - this._origin + this._last;
-      this.line = e.clientY - this._y > 10 ? 1 : 0;
-    }
+    transaction((tx) => {
+      if (this._enable.get()) {
+        this._x.set(e.clientX - this.origin + this.last, tx);
+        this._line.set(e.clientY - this.y > 10 ? 1 : 0, tx);
+      }
+    });
   }
 
-  @action.bound
   onMouseUp() {
-    this.enable = false;
-    this._last = this.x;
+    this.setEnable(false);
+    this.last = this._x.get();
   }
 }
 
@@ -88,7 +82,7 @@ export interface DebugToolbarViewProps {
  * 该组件支持用户导入
  * 后续如果有一些改动需要考虑是否有 breakchange
  */
-export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
+export const DebugToolbarView = (props: DebugToolbarViewProps) => {
   const {
     state,
     toolBarMenuMap,
@@ -103,17 +97,17 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
     sessions,
     updateCurrentSession,
   } = useInjectable<DebugToolbarService>(DebugToolbarService);
-  const derivedState = useDerived(state);
-  const derivedCurrentSession = useDerived(currentSession);
-  const derivedSessions = useDerived(sessions);
+  const autorunState = useAutorun(state);
+  const autorunCurrentSession = useAutorun(currentSession);
+  const autorunSessions = useAutorun(sessions);
 
   const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
   const isAttach =
-    !!derivedCurrentSession &&
-    derivedCurrentSession.configuration?.request === 'attach' &&
-    !isExtensionHostDebugging(derivedCurrentSession.configuration);
+    !!autorunCurrentSession &&
+    autorunCurrentSession.configuration?.request === 'attach' &&
+    !isExtensionHostDebugging(autorunCurrentSession.configuration);
 
-  const currentSessionId = derivedCurrentSession && derivedCurrentSession.id;
+  const currentSessionId = autorunCurrentSession && autorunCurrentSession.id;
 
   const renderToolBar = useCallback(
     (session: DebugSession | undefined): React.ReactNode => {
@@ -134,7 +128,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
         return (
           <DebugAction
             run={doStop}
-            enabled={derivedState !== DebugState.Inactive}
+            enabled={autorunState !== DebugState.Inactive}
             icon={'disconnect'}
             label={localize('debug.action.disattach')}
           />
@@ -143,7 +137,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
       return (
         <DebugAction
           run={doStop}
-          enabled={derivedState !== DebugState.Inactive}
+          enabled={autorunState !== DebugState.Inactive}
           icon={'stop'}
           label={localize('debug.action.stop')}
         />
@@ -160,7 +154,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
       return (
         <DebugAction
           run={doPause}
-          enabled={derivedState === DebugState.Running}
+          enabled={autorunState === DebugState.Running}
           icon={'pause'}
           label={localize('debug.action.pause')}
         />
@@ -222,70 +216,71 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
         value = (event as React.ChangeEvent<HTMLSelectElement>).target.value;
       }
 
-      if (!derivedSessions) {
+      if (!autorunSessions) {
         return;
       }
-      for (const session of derivedSessions) {
+      for (const session of autorunSessions) {
         if (session.id === value) {
           updateCurrentSession(session);
         }
       }
     },
-    [derivedSessions, updateCurrentSession],
+    [autorunSessions, updateCurrentSession],
   );
 
   return (
     <div className={cls(styles.debug_action_bar, props.className || '')}>
-      {renderSelections(derivedSessions.filter((s: DebugSession) => !s.parentSession))}
+      {renderSelections(autorunSessions.filter((s: DebugSession) => !s.parentSession))}
       <div className={styles.debug_actions}>
-        {renderContinue(derivedState)}
+        {renderContinue(autorunState)}
         <DebugAction
           run={doStepOver}
-          enabled={derivedState === DebugState.Stopped}
+          enabled={autorunState === DebugState.Stopped}
           icon={'step'}
           label={localize('debug.action.step-over')}
         />
         <DebugAction
           run={doStepIn}
-          enabled={derivedState === DebugState.Stopped}
+          enabled={autorunState === DebugState.Stopped}
           icon={'step-in'}
           label={localize('debug.action.step-into')}
         />
         <DebugAction
           run={doStepOut}
-          enabled={derivedState === DebugState.Stopped}
+          enabled={autorunState === DebugState.Stopped}
           icon={'step-out'}
           label={localize('debug.action.step-out')}
         />
         <DebugAction
           run={doRestart}
-          enabled={derivedState !== DebugState.Inactive}
+          enabled={autorunState !== DebugState.Inactive}
           icon={'reload'}
           label={localize('debug.action.restart')}
         />
-        {renderStop(derivedState)}
-        {renderToolBar(derivedCurrentSession)}
+        {renderStop(autorunState)}
+        {renderToolBar(autorunCurrentSession)}
       </div>
     </div>
   );
-});
+};
 
 const DebugPreferenceTopKey = 'debug.toolbar.top';
 const DebugPreferenceHeightKey = 'debug.toolbar.height';
 
-const FloatDebugToolbarView = observer(() => {
-  const controller = useInjectable<FloatController>(FloatController);
+const FloatDebugToolbarView = () => {
   const preference = useInjectable<PreferenceService>(PreferenceService);
   const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
   const styles_debug_toolbar_wrapper = useDesignStyles(styles.debug_toolbar_wrapper, 'debug_toolbar_wrapper');
   const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
 
+  const controller = useInjectable<FloatController>(FloatController);
+  const derivedController = useAutorun(controller.state);
+
   const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
-  const state = useDerived(debugToolbarService.state);
+  const state = useAutorun(debugToolbarService.state);
 
   useEffect(() => {
-    makeObservable(controller);
     const disposableCollection = new DisposableCollection();
     const value = preference.get<number>(DebugPreferenceTopKey) || 0;
     if (isElectronRenderer) {
@@ -321,15 +316,15 @@ const FloatDebugToolbarView = observer(() => {
   if (state) {
     return (
       <div
-        style={{ pointerEvents: controller.enable ? 'all' : 'none' }}
+        style={{ pointerEvents: derivedController.enable ? 'all' : 'none' }}
         className={styles.debug_toolbar_container}
         onMouseMove={(e) => controller.onMouseMove(e)}
         onMouseUp={(e) => controller.onMouseUp()}
       >
         <div
           style={{
-            transform: `translateX(${controller.x}px) translateY(${
-              toolbarOffsetTop + controller.line * customHeight
+            transform: `translateX(${derivedController.x}px) translateY(${
+              toolbarOffsetTop + derivedController.line * customHeight
             }px)`,
             height: `${customHeight}px`,
           }}
@@ -348,15 +343,17 @@ const FloatDebugToolbarView = observer(() => {
     );
   }
 
-  controller.enable = false;
+  controller.setEnable(false);
   return null;
-});
+};
 
-export const DebugToolbarOverlayWidget = observer(() => {
-  const { float } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+export const DebugToolbarOverlayWidget = () => {
+  const debugConfigurationService = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+  const float = useAutorun(debugConfigurationService.float);
+
   if (!float) {
     return null;
   }
 
   return <FloatDebugToolbarView />;
-});
+};
