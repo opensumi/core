@@ -173,20 +173,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       ).toKeybinding();
       return new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry);
     };
-
-    const oldLookup = keybindingService.lookupKeybinding;
-    keybindingService.lookupKeybinding = (commandId: string, context) => {
-      const resolvedKeybinding = oldLookup.call(keybindingService, commandId, context);
-      if (resolvedKeybinding) {
-        return resolvedKeybinding;
-      }
-
-      const keybindings = this.keybindingRegistry.getKeybindingsForCommand(commandId);
-
-      if (keybindings && keybindings.length) {
-        return new MonacoResolvedKeybinding(keybindings[0].resolved!, this.keybindingRegistry);
-      }
-    };
   }
 
   public registerOverride(serviceName: ServiceNames, service: any) {
