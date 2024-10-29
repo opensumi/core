@@ -95,6 +95,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
           pickItems.push({
             label: item.label,
             groupLabel,
+            iconPath: item.iconPath as QuickPickItem<number>['iconPath'],
             description: item.description,
             detail: item.detail,
             value: index, // handle
