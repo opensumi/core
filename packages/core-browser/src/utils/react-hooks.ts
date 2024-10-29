@@ -2,6 +2,9 @@ import _debounce from 'lodash/debounce';
 import { DependencyList, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Disposable, DisposableStore, IDisposable } from '@opensumi/ide-core-common';
+import { autorun } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/autorun';
+import { IObservable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
+import { derived } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/derived';
 
 import { IDesignStyleService } from '../design';
 import { MenuNode } from '../menu/next/base';
@@ -134,4 +137,15 @@ export const useLatest = <T>(value: T): { readonly current: T } => {
   const ref = useRef(value);
   ref.current = value;
   return ref;
+};
+
+export const useDerived = <T>(observable: IObservable<T, void>): T => {
+  const [value, setValue] = useState<T>(observable.get());
+
+  useDisposable(() => autorun((reader) => {
+      // console.log("🚀 ~ returnautorun ~ observable:", observable.get())
+      setValue(observable.read(reader));
+    }), [observable]);
+
+  return value;
 };

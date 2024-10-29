@@ -1,7 +1,6 @@
-import { observer } from 'mobx-react-lite';
-import React, { useEffect } from 'react';
+import React from 'react';
 
-import { localize, useInjectable } from '@opensumi/ide-core-browser';
+import { localize, useDerived, useInjectable } from '@opensumi/ide-core-browser';
 import { DebugState } from '@opensumi/ide-debug';
 import { DebugAction } from '@opensumi/ide-debug/lib/browser/components';
 import { DebugConfigurationService } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-configuration.service';
@@ -11,7 +10,7 @@ import { DebugToolbarView } from '@opensumi/ide-debug/lib/browser/view/configura
 
 import styles from './run-toolbar.module.less';
 
-const CustomDebugBar = observer(() => {
+const CustomDebugBar = () => {
   const { start } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
 
   return (
@@ -24,10 +23,11 @@ const CustomDebugBar = observer(() => {
       ></DebugAction>
     </div>
   );
-});
+};
 
-export const AIRunToolbar = observer(() => {
-  const { state } = useInjectable<DebugToolbarService>(DebugToolbarService);
+export const AIRunToolbar = () => {
+  const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
+  const state = useDerived(debugToolbarService.state);
 
   return (
     <div className={styles.run_toolbar_container}>
@@ -38,4 +38,4 @@ export const AIRunToolbar = observer(() => {
       )}
     </div>
   );
-});
+};

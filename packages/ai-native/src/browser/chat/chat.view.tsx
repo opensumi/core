@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
@@ -25,13 +24,7 @@ import {
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import 'react-chat-elements/dist/main.css';
-import {
-  AI_CHAT_VIEW_ID,
-  IChatAgentService,
-  IChatInternalService,
-  IChatMessageStructure,
-  SLASH_SYMBOL,
-} from '../../common';
+import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -39,7 +32,6 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
-import { MsgHistoryManager } from '../model/msg-history-manager';
 import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
@@ -57,7 +49,7 @@ interface TDispatchAction {
   payload?: MessageData[];
 }
 
-export const AIChatView = observer(() => {
+export const AIChatView = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
@@ -695,7 +687,7 @@ export const AIChatView = observer(() => {
       </div>
     </div>
   );
-});
+};
 
 export function DefaultChatViewHeader({
   handleClear,

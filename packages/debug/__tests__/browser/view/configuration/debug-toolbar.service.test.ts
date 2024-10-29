@@ -114,12 +114,7 @@ describe('Debug Configuration Service', () => {
     const session = {} as any;
     debugToolbarService.updateCurrentSession(session);
     debugToolbarService.updateModel();
-    expect(debugToolbarService.currentSession).toEqual(session);
-  });
-
-  it('updateModel method should be work', () => {
-    debugToolbarService.updateModel();
-    expect(debugToolbarService.sessionCount).toBe(0);
+    expect(debugToolbarService.currentSession.get()).toEqual(session);
   });
 
   it('updateToolBarMenu method should be work', () => {

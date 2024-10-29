@@ -2,6 +2,7 @@ import { action, makeObservable, observable, runInAction } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IEventBus, PreferenceConfigurations, PreferenceService, URI, isUndefined } from '@opensumi/ide-core-browser';
+import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 
@@ -70,8 +71,7 @@ export class DebugConfigurationService {
   @observable.shallow
   configurationOptions: DebugSessionOptions[] = observable.array([]);
 
-  @observable.shallow
-  dynamicConfigurations: DebugConfigurationType[] = [];
+  dynamicConfigurations = observableValue<DebugConfigurationType[]>(this, []);
 
   get whenReady() {
     return this._whenReady;
@@ -113,9 +113,11 @@ export class DebugConfigurationService {
     });
   }
 
-  @action
   async updateDynamicConfigurations() {
-    this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    const types = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    transaction((tx) => {
+      this.dynamicConfigurations.set(types, tx);
+    });
   }
 
   @action

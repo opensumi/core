@@ -12,6 +12,7 @@ import {
   electronEnv,
   getIcon,
   localize,
+  useDerived,
   useDesignStyles,
   useInjectable,
 } from '@opensumi/ide-core-browser';
@@ -102,13 +103,17 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
     sessions,
     updateCurrentSession,
   } = useInjectable<DebugToolbarService>(DebugToolbarService);
+  const derivedState = useDerived(state);
+  const derivedCurrentSession = useDerived(currentSession);
+  const derivedSessions = useDerived(sessions);
+
   const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
   const isAttach =
-    !!currentSession &&
-    currentSession.configuration.request === 'attach' &&
-    !isExtensionHostDebugging(currentSession.configuration);
+    !!derivedCurrentSession &&
+    derivedCurrentSession.configuration?.request === 'attach' &&
+    !isExtensionHostDebugging(derivedCurrentSession.configuration);
 
-  const currentSessionId = currentSession && currentSession.id;
+  const currentSessionId = derivedCurrentSession && derivedCurrentSession.id;
 
   const renderToolBar = useCallback(
     (session: DebugSession | undefined): React.ReactNode => {
@@ -129,7 +134,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
         return (
           <DebugAction
             run={doStop}
-            enabled={typeof state === 'number' && state !== DebugState.Inactive}
+            enabled={derivedState !== DebugState.Inactive}
             icon={'disconnect'}
             label={localize('debug.action.disattach')}
           />
@@ -138,7 +143,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
       return (
         <DebugAction
           run={doStop}
-          enabled={typeof state === 'number' && state !== DebugState.Inactive}
+          enabled={derivedState !== DebugState.Inactive}
           icon={'stop'}
           label={localize('debug.action.stop')}
         />
@@ -155,7 +160,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
       return (
         <DebugAction
           run={doPause}
-          enabled={typeof state === 'number' && state === DebugState.Running}
+          enabled={derivedState === DebugState.Running}
           icon={'pause'}
           label={localize('debug.action.pause')}
         />
@@ -183,29 +188,32 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
     [],
   );
 
-  const renderSelections = useCallback((sessions: DebugSession[]) => {
-    if (sessions.length > 1) {
-      return (
-        <div className={cls(styles.debug_selection)}>
-          {isElectronRenderer ? (
-            <NativeSelect value={currentSessionId} onChange={setCurrentSession}>
-              {renderSessionOptions(sessions)}
-            </NativeSelect>
-          ) : (
-            <Select
-              className={cls(styles.debug_selection, styles.special_radius)}
-              size={props.float ? 'small' : 'default'}
-              value={currentSessionId}
-              options={sessions.map((s) => ({ label: s.label, value: s.id }))}
-              onChange={setCurrentSession}
-            >
-              {renderSessionOptions(sessions)}
-            </Select>
-          )}
-        </div>
-      );
-    }
-  }, []);
+  const renderSelections = useCallback(
+    (sessions: DebugSession[]) => {
+      if (sessions.length > 1) {
+        return (
+          <div className={cls(styles.debug_selection)}>
+            {isElectronRenderer ? (
+              <NativeSelect value={currentSessionId} onChange={setCurrentSession}>
+                {renderSessionOptions(sessions)}
+              </NativeSelect>
+            ) : (
+              <Select
+                className={cls(styles.debug_selection, styles.special_radius)}
+                size={props.float ? 'small' : 'default'}
+                value={currentSessionId}
+                options={sessions.map((s) => ({ label: s.label, value: s.id }))}
+                onChange={setCurrentSession}
+              >
+                {renderSessionOptions(sessions)}
+              </Select>
+            )}
+          </div>
+        );
+      }
+    },
+    [currentSessionId],
+  );
 
   const setCurrentSession = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement> | string | number) => {
@@ -214,49 +222,49 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
         value = (event as React.ChangeEvent<HTMLSelectElement>).target.value;
       }
 
-      if (!sessions) {
+      if (!derivedSessions) {
         return;
       }
-      for (const session of sessions) {
+      for (const session of derivedSessions) {
         if (session.id === value) {
           updateCurrentSession(session);
         }
       }
     },
-    [updateCurrentSession],
+    [derivedSessions, updateCurrentSession],
   );
 
   return (
     <div className={cls(styles.debug_action_bar, props.className || '')}>
-      {renderSelections(sessions.filter((s: DebugSession) => !s.parentSession))}
+      {renderSelections(derivedSessions.filter((s: DebugSession) => !s.parentSession))}
       <div className={styles.debug_actions}>
-        {renderContinue(state)}
+        {renderContinue(derivedState)}
         <DebugAction
           run={doStepOver}
-          enabled={typeof state === 'number' && state === DebugState.Stopped}
+          enabled={derivedState === DebugState.Stopped}
           icon={'step'}
           label={localize('debug.action.step-over')}
         />
         <DebugAction
           run={doStepIn}
-          enabled={typeof state === 'number' && state === DebugState.Stopped}
+          enabled={derivedState === DebugState.Stopped}
           icon={'step-in'}
           label={localize('debug.action.step-into')}
         />
         <DebugAction
           run={doStepOut}
-          enabled={typeof state === 'number' && state === DebugState.Stopped}
+          enabled={derivedState === DebugState.Stopped}
           icon={'step-out'}
           label={localize('debug.action.step-out')}
         />
         <DebugAction
           run={doRestart}
-          enabled={typeof state === 'number' && state !== DebugState.Inactive}
+          enabled={derivedState !== DebugState.Inactive}
           icon={'reload'}
           label={localize('debug.action.restart')}
         />
-        {renderStop(state)}
-        {renderToolBar(currentSession)}
+        {renderStop(derivedState)}
+        {renderToolBar(derivedCurrentSession)}
       </div>
     </div>
   );
@@ -270,12 +278,14 @@ const FloatDebugToolbarView = observer(() => {
   const preference = useInjectable<PreferenceService>(PreferenceService);
   const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
-  const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
   const styles_debug_toolbar_wrapper = useDesignStyles(styles.debug_toolbar_wrapper, 'debug_toolbar_wrapper');
   const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
-  const { state } = debugToolbarService;
+
+  const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
+  const state = useDerived(debugToolbarService.state);
 
   useEffect(() => {
+    makeObservable(controller);
     const disposableCollection = new DisposableCollection();
     const value = preference.get<number>(DebugPreferenceTopKey) || 0;
     if (isElectronRenderer) {

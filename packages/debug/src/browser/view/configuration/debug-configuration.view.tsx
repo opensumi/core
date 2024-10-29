@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Option, Popover, Select } from '@opensumi/ide-components';
-import { AppConfig, URI, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, URI, localize, useDerived, useInjectable } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 
 import {
@@ -295,6 +295,8 @@ export const DebugControllerView = observer((props: DebugControllerViewProps) =>
     isMultiRootWorkspace,
     workspaceRoots,
   } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+  const derivedDynamicConfigurations = useDerived(dynamicConfigurations);
+
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const addConfigurationLabel = localize('debug.action.add.configuration');
   const editConfigurationLabel = localize('debug.action.edit.configuration');
@@ -331,7 +333,7 @@ export const DebugControllerView = observer((props: DebugControllerViewProps) =>
       <ConfigurationSelector
         currentValue={currentValue}
         options={configurationOptions}
-        dynamicOptions={dynamicConfigurations}
+        dynamicOptions={derivedDynamicConfigurations}
         onChangeConfiguration={setCurrentConfiguration}
         isMultiRootWorkspace={isMultiRootWorkspace}
         addConfigurationLabel={addConfigurationLabel}

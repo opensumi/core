@@ -4,12 +4,14 @@ import { SlotRenderer } from '@opensumi/ide-core-browser';
 import { BoxPanel, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
+import { AIRunToolbar } from '../contrib/run-toolbar/run-toolbar';
 
 export const AILayout = () => {
   const { layout } = getStorageValue();
 
   return (
     <BoxPanel direction='top-to-bottom'>
+      <AIRunToolbar />
       <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 35 : 0} slot='top' />
       <SplitPanel
         id='main-horizontal-ai'
