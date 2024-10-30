@@ -49,3 +49,5 @@
 /// <reference path='./vscode/typings/vscode.proposed.newSymbolNamesProvider.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.env.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.terminalDataWriteEvent.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.documentPaste.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.dropMetadata.d.ts' />
