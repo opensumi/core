@@ -125,6 +125,7 @@ export interface QuickOpenItemOptions {
    * 图标
    */
   iconClass?: string;
+  iconPath?: URI | { light: URI; dark: URI } | ThemeIcon;
   /**
    * 对应绑定的快捷键
    */
@@ -197,6 +198,9 @@ export class QuickOpenItem {
   }
   getIconClass(): string | undefined {
     return this.options.iconClass;
+  }
+  getIconPath(): URI | { light: URI; dark: URI } | ThemeIcon | undefined {
+    return this.options.iconPath;
   }
   getKeybinding(): Keybinding | undefined {
     return this.options.keybinding;
@@ -401,6 +405,7 @@ export interface QuickPickItem<T> {
   value: T;
   description?: string;
   detail?: string;
+  iconPath?: URI | { light: URI; dark: URI } | ThemeIcon;
   iconClass?: string;
   buttons?: QuickInputButton[];
 }
