@@ -22,6 +22,7 @@
     "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {
+    "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*"
