@@ -1,8 +1,8 @@
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { CheckBox } from '@opensumi/ide-components/lib/checkbox';
 import { RecycleList } from '@opensumi/ide-components/lib/recycle-list';
+import { useAutorun } from '@opensumi/ide-core-browser';
 import { ViewState } from '@opensumi/ide-core-browser/lib/layout';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services/label-service';
@@ -12,7 +12,7 @@ import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/do
 import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-import { IRefactorPreviewService } from './refactor-preview.service';
+import { IRefactorPreviewService, WorkspaceEditModel } from './refactor-preview.service';
 import styles from './refactor_preview.module.less';
 import { isResourceFileEdit } from './utils';
 
@@ -23,18 +23,8 @@ import type {
 import type { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 interface IRefactorNodeProps {
-  data: ResourceTextEdit | ResourceFileEdit;
-  onClick: (item: ResourceTextEdit | ResourceFileEdit) => void;
-}
-
-interface ITextEditNodeProps {
-  data: ResourceTextEdit;
-  onClick: (item: ResourceTextEdit) => void;
-}
-
-interface IFileEditNodeProps {
-  data: ResourceFileEdit;
-  onClick: (item: ResourceFileEdit) => void;
+  data: WorkspaceEditModel;
+  onClick: (item: WorkspaceEditModel) => void;
 }
 
 /**
@@ -79,24 +69,27 @@ const ResourceIcon: React.FC<{ uri: Uri }> = (props) => {
   return <span className={`file-icon ${iconClass}`} />;
 };
 
-const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
+const TextEditNode = ({ data: item }: IRefactorNodeProps) => {
+  const edit = item.edit as ResourceTextEdit;
+  const isChecked = useAutorun(item.isChecked);
+
   const modelService = useInjectable<IEditorDocumentModelService>(IEditorDocumentModelService);
   const refactorPreviewService = useInjectable<IRefactorPreviewService>(IRefactorPreviewService);
 
   const renderTextEditDiff = () => {
-    const modelRef = modelService.getModelReference(URI.from(item.resource));
+    const modelRef = modelService.getModelReference(URI.from(edit.resource));
     if (!modelRef) {
-      return <div className={styles.refactor_preview_node_wrapper}>{item.textEdit.text}</div>;
+      return <div className={styles.refactor_preview_node_wrapper}>{edit.textEdit.text}</div>;
     }
 
     const textModel = modelRef.instance.getMonacoModel();
-    const { leftPad, base, rightPad } = splitLeftAndRightPadInTextModel(item.textEdit.range, textModel);
+    const { leftPad, base, rightPad } = splitLeftAndRightPadInTextModel(edit.textEdit.range, textModel);
     modelRef.dispose();
     return (
       <div className={styles.refactor_preview_node_wrapper}>
         {leftPad}
         <span className={styles.refactor_preview_node_base}>{base}</span>
-        <span className={styles.refactor_preview_node_new}>{item.textEdit.text}</span>
+        <span className={styles.refactor_preview_node_new}>{edit.textEdit.text}</span>
         {rightPad}
       </div>
     );
@@ -105,17 +98,17 @@ const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
   return (
     <div className={styles.resource_node} data-workspace-edit-type='text'>
       <CheckBox
-        checked={refactorPreviewService.selectedFileOrTextEdits.has(item)}
+        checked={isChecked}
         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           refactorPreviewService.filterEdit(item, event.target.checked);
         }}
       />
-      <ResourceIcon uri={item.resource as unknown as Uri /* monaco#Uri */} />
+      <ResourceIcon uri={edit.resource as unknown as Uri /* monaco#Uri */} />
       {renderTextEditDiff()}
-      <span className={styles.resource_node_path}>{item.resource.path}</span>
+      <span className={styles.resource_node_path}>{edit.resource.path}</span>
     </div>
   );
-});
+};
 
 function mapDescForFileEdit(edit: ResourceFileEdit) {
   if (edit.newResource && edit.oldResource) {
@@ -141,10 +134,13 @@ function mapDescForFileEdit(edit: ResourceFileEdit) {
   return undefined;
 }
 
-const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
+const FileEditNode = ({ data: item }: IRefactorNodeProps) => {
+  const edit = item.edit as ResourceFileEdit;
+  const isChecked = useAutorun(item.isChecked);
+
   const refactorPreviewService = useInjectable<IRefactorPreviewService>(IRefactorPreviewService);
 
-  const editDesc = mapDescForFileEdit(item);
+  const editDesc = mapDescForFileEdit(edit);
   if (editDesc === undefined) {
     return null;
   }
@@ -155,7 +151,7 @@ const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
   return (
     <div className={styles.resource_node} data-workspace-edit-type='file'>
       <CheckBox
-        checked={refactorPreviewService.selectedFileOrTextEdits.has(item)}
+        checked={isChecked}
         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           refactorPreviewService.filterEdit(item, event.target.checked);
         }}
@@ -167,29 +163,30 @@ const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
       </span>
     </div>
   );
-});
+};
 
-const RefactorNode = observer<IRefactorNodeProps>(({ data, ...restProps }) => {
+const RefactorNode = ({ data, ...restProps }: IRefactorNodeProps) => {
   if (isResourceFileEdit(data)) {
     return <FileEditNode data={data} {...restProps} />;
   }
   return <TextEditNode data={data} {...restProps} />;
-});
+};
 
-export const RefactorPreview = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
+export const RefactorPreview = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const refactorPreviewService = useInjectable<IRefactorPreviewService>(IRefactorPreviewService);
+  const edits = useAutorun(refactorPreviewService.edits);
 
   return (
     <div>
-      {refactorPreviewService.edits.length > 0 && (
+      {edits.length > 0 && (
         <RecycleList
           itemHeight={23}
           width={viewState.width}
           height={viewState.height}
-          data={refactorPreviewService.edits}
+          data={edits}
           template={RefactorNode}
         />
       )}
     </div>
   );
-});
+};
