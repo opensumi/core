@@ -1867,21 +1867,27 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return result;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   registerDocumentDropEditProvider(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     extension: IExtensionDescription,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     selector: vscode.DocumentSelector,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     provider: vscode.DocumentDropEditProvider,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     metadata?: vscode.DocumentDropEditProviderMetadata,
   ) {
     return toDisposable(() => {});
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   registerDocumentPasteEditProvider(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     extension: IExtensionDescription,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     selector: vscode.DocumentSelector,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     provider: vscode.DocumentPasteEditProvider,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     metadata: vscode.DocumentPasteProviderMetadata,
   ) {
     return toDisposable(() => {});
