@@ -8,6 +8,7 @@ import {
   QuickOpenTabOptions,
 } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+import { IObservable } from '@opensumi/ide-monaco/lib/common/observable';
 
 export const QuickOpenContext = React.createContext<{
   widget: IQuickOpenWidget;
@@ -92,23 +93,24 @@ export interface QuickOpenInputOptions extends QuickOpenTabOptions {
 }
 
 export interface IQuickOpenWidget extends QuickOpenTabOptions {
-  inputValue: string;
-  selectIndex: number;
-  validateType?: VALIDATE_TYPE;
-  keepScrollPosition?: boolean;
-  busy?: boolean;
+  readonly inputValue: IObservable<string>;
+  readonly selectIndex: IObservable<number>;
+  readonly validateType: IObservable<VALIDATE_TYPE | undefined>;
+  readonly keepScrollPosition: IObservable<boolean>;
+  readonly busy: IObservable<boolean>;
+  readonly isShow: IObservable<boolean>;
+  readonly items: IObservable<QuickOpenItem[]>;
+  readonly actionProvider: IObservable<QuickOpenActionProvider | null>;
+  readonly autoFocus: IObservable<IAutoFocus | null>;
+  readonly selectAll: IObservable<boolean>;
+  readonly isPassword: IObservable<boolean>;
+  readonly valueSelection: IObservable<[number, number] | undefined>;
+  readonly canSelectMany: IObservable<boolean | undefined>;
+  readonly inputPlaceholder: IObservable<string | undefined>;
+  readonly inputEnable: IObservable<boolean | undefined>;
+
   readonly MAX_HEIGHT: number;
-  readonly isShow: boolean;
-  readonly items: QuickOpenItem[];
   readonly callbacks: IQuickOpenCallbacks;
-  readonly selectAll: boolean;
-  readonly isPassword?: boolean;
-  readonly inputPlaceholder?: string;
-  readonly inputEnable?: boolean;
-  readonly actionProvider: QuickOpenActionProvider | null;
-  readonly autoFocus: IAutoFocus | null;
-  readonly valueSelection?: [number, number];
-  readonly canSelectMany?: boolean;
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void;
   show(prefix: string, options: QuickOpenInputOptions): void;
   hide(reason?: HideReason): void;
