@@ -543,24 +543,35 @@ declare module 'sumi-worker' {
     Nine = 9,
   }
 
+  /**
+   * Additional data about a workspace edit.
+   */
+  export interface WorkspaceEditMetadata {
+    /**
+     * Signal to the editor that this edit is a refactoring.
+     */
+    isRefactoring?: boolean;
+  }
+
   export namespace workspace {
     /**
      * Make changes to one or many resources or create, delete, and rename resources as defined by the given
-     * [workspace edit](#WorkspaceEdit).
+     * {@link WorkspaceEdit workspace edit}.
      *
      * All changes of a workspace edit are applied in the same order in which they have been added. If
      * multiple textual inserts are made at the same position, these strings appear in the resulting text
-     * in the order the 'inserts' were made. Invalid sequences like 'delete file a' -> 'insert text in file a'
-     * cause failure of the operation.
+     * in the order the 'inserts' were made, unless that are interleaved with resource edits. Invalid sequences
+     * like 'delete file a' -> 'insert text in file a' cause failure of the operation.
      *
      * When applying a workspace edit that consists only of text edits an 'all-or-nothing'-strategy is used.
      * A workspace edit with resource creations or deletions aborts the operation, e.g. consecutive edits will
      * not be attempted, when a single edit fails.
      *
      * @param edit A workspace edit.
-     * @return A thenable that resolves when the edit could be applied.
+     * @param metadata Optional {@link WorkspaceEditMetadata metadata} for the edit.
+     * @returns A thenable that resolves when the edit could be applied.
      */
-    export function applyEdit(edit: WorkspaceEdit): Thenable<boolean>;
+    export function applyEdit(edit: WorkspaceEdit, metadata?: WorkspaceEditMetadata): Thenable<boolean>;
   }
 
   export namespace window {

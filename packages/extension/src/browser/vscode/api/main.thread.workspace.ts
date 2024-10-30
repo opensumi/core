@@ -112,10 +112,15 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     );
   }
 
-  async $tryApplyWorkspaceEdit(dto: model.WorkspaceEditDto): Promise<boolean> {
+  async $tryApplyWorkspaceEdit(
+    dto: model.WorkspaceEditDto,
+    metadata?: model.WorkspaceEditMetadataDto,
+  ): Promise<boolean> {
     try {
       const edits = ResourceEdit.convert(dto);
-      const { success } = (await this.bulkEditService.apply(edits)) as IBulkEditResult & { success: boolean };
+      const { success } = (await this.bulkEditService.apply(edits, {
+        respectAutoSaveConfig: metadata?.isRefactoring,
+      })) as IBulkEditResult & { success: boolean };
       return success;
     } catch (e) {
       return false;

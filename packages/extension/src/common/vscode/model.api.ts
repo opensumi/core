@@ -63,6 +63,10 @@ export interface CustomCodeAction {
   isPreferred?: boolean;
 }
 
+export interface WorkspaceEditMetadataDto {
+  isRefactoring?: boolean;
+}
+
 /**
  * A position in the editor. This interface is suitable for serialization.
  */
