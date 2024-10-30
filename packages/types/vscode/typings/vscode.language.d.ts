@@ -484,6 +484,16 @@ declare module 'vscode' {
     export function registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
 
     /**
+		 * Registers a new {@link DocumentDropEditProvider}.
+		 *
+		 * @param selector A selector that defines the documents this provider applies to.
+		 * @param provider A drop provider.
+		 *
+		 * @returns A {@link Disposable} that unregisters this provider when disposed of.
+		 */
+		export function registerDocumentDropEditProvider(selector: DocumentSelector, provider: DocumentDropEditProvider): Disposable;
+
+    /**
      * Register a provider that locates evaluatable expressions in text documents.
      * VS Code will evaluate the expression in the active debug session and will show the result in the debug hover.
      *

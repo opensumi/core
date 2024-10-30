@@ -1481,6 +1481,16 @@ declare module 'vscode' {
   }
 
   /**
+	 * Additional data about a workspace edit.
+	 */
+	export interface WorkspaceEditMetadata {
+		/**
+		 * Signal to the editor that this edit is a refactoring.
+		 */
+		isRefactoring?: boolean;
+	}
+
+  /**
    * A workspace edit is a collection of textual and files changes for
    * multiple resources and documents.
    *
@@ -4033,6 +4043,28 @@ declare module 'vscode' {
      */
     provideDocumentRangeSemanticTokens(document: TextDocument, range: Range, token: CancellationToken): ProviderResult<SemanticTokens>;
   }
+
+  /**
+	 * Provider which handles dropping of resources into a text editor.
+	 *
+	 * This allows users to drag and drop resources (including resources from external apps) into the editor. While dragging
+	 * and dropping files, users can hold down `shift` to drop the file into the editor instead of opening it.
+	 * Requires `editor.dropIntoEditor.enabled` to be on.
+	 */
+	export interface DocumentDropEditProvider {
+		/**
+		 * Provide edits which inserts the content being dragged and dropped into the document.
+		 *
+		 * @param document The document in which the drop occurred.
+		 * @param position The position in the document where the drop occurred.
+		 * @param dataTransfer A {@link DataTransfer} object that holds data about what is being dragged and dropped.
+		 * @param token A cancellation token.
+		 *
+		 * @returns A {@link DocumentDropEdit} or a thenable that resolves to such. The lack of a result can be
+		 * signaled by returning `undefined` or `null`.
+		 */
+		provideDocumentDropEdits(document: TextDocument, position: Position, dataTransfer: DataTransfer, token: CancellationToken): ProviderResult<DocumentDropEdit>;
+	}
 
   //#endregion Semantic Tokens
 
