@@ -61,6 +61,7 @@ import {
   Uri,
   UriComponents,
   disposableTimeout,
+  toDisposable,
 } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import { IPosition } from '@opensumi/ide-monaco/lib/common';
@@ -345,6 +346,20 @@ export function createLanguagesApiFactory(
     },
     createLanguageStatusItem(id: string, selector: vscode.DocumentSelector): vscode.LanguageStatusItem {
       return extHostLanguages.createLanguageStatusItem(extension, id, selector);
+    },
+    registerDocumentDropEditProvider(
+      selector: vscode.DocumentSelector,
+      provider: vscode.DocumentDropEditProvider,
+      metadata?: vscode.DocumentDropEditProviderMetadata,
+    ): vscode.Disposable {
+      return extHostLanguages.registerDocumentDropEditProvider(extension, selector, provider, metadata);
+    },
+    registerDocumentPasteEditProvider(
+      selector: vscode.DocumentSelector,
+      provider: vscode.DocumentPasteEditProvider,
+      metadata: vscode.DocumentPasteProviderMetadata,
+    ): vscode.Disposable {
+      return extHostLanguages.registerDocumentPasteEditProvider(extension, selector, provider, metadata);
     },
   };
 }
@@ -1850,5 +1865,25 @@ export class ExtHostLanguages implements IExtHostLanguages {
     };
     updateAsync();
     return result;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  registerDocumentDropEditProvider(
+    extension: IExtensionDescription,
+    selector: vscode.DocumentSelector,
+    provider: vscode.DocumentDropEditProvider,
+    metadata?: vscode.DocumentDropEditProviderMetadata,
+  ) {
+    return toDisposable(() => {});
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  registerDocumentPasteEditProvider(
+    extension: IExtensionDescription,
+    selector: vscode.DocumentSelector,
+    provider: vscode.DocumentPasteEditProvider,
+    metadata: vscode.DocumentPasteProviderMetadata,
+  ) {
+    return toDisposable(() => {});
   }
 }
