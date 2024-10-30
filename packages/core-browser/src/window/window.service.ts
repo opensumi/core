@@ -49,7 +49,14 @@ export class WindowService implements IWindowService {
         });
       }
     } else {
-      throw new Error('Method not implemented.');
+      let workspacePath = workspace.toString().replace("file://", "");
+      const url = `${window.location.protocol}//${window.location.host}?workspaceDir=${workspacePath}`
+      console.log('This from web, url is: ' + url);
+      if (options.newWindow) {
+          window.open(url)
+      } else {
+          parent.window.location.href = url;
+      }
     }
   }
 
