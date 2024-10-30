@@ -89,6 +89,7 @@ export class QuickPickServiceImpl implements QuickPickService {
     const groupLabel = typeof element === 'string' ? undefined : element.groupLabel;
     const showBorder = typeof element === 'string' ? undefined : element.showBorder;
     const buttons = typeof element === 'string' ? undefined : element.buttons;
+    const iconPath = typeof element === 'string' ? undefined : element.iconPath;
     const [icon, text] = getIconClass(label);
 
     if (icon) {
@@ -103,6 +104,7 @@ export class QuickPickServiceImpl implements QuickPickService {
       groupLabel,
       showBorder,
       buttons,
+      iconPath,
       run: (mode) => {
         if (mode !== Mode.OPEN) {
           return false;

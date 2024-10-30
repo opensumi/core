@@ -1,9 +1,10 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
+import { getExternalIcon } from '@opensumi/ide-core-browser';
 import { QuickTitleButton, QuickTitleButtonSide } from '@opensumi/ide-core-browser/lib/quick-open';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
-import { Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
+import { Emitter, Event, ThemeIcon, URI, isUndefined } from '@opensumi/ide-core-common';
 import './quick-title-bar.less';
 import { IIconService, IThemeService, IconType } from '@opensumi/ide-theme';
 
@@ -75,7 +76,18 @@ export class QuickTitleBar {
       return [];
     }
     return this._buttons.map((btn, i) => {
-      const iconUri = iconPath2URI(btn.iconPath, this.themeService.getCurrentThemeSync().type);
+      if (ThemeIcon.isThemeIcon(btn.iconPath)) {
+        return {
+          ...btn,
+          iconClass: getExternalIcon(btn.iconPath.id),
+          handle: i,
+        };
+      }
+
+      const iconUri = iconPath2URI(
+        btn.iconPath as URI | { light: URI; dark: URI },
+        this.themeService.getCurrentThemeSync().type,
+      );
       const iconPath = iconUri && this.staticResourceService.resolveStaticResource(iconUri).toString();
       const iconClass = iconPath && this.iconService.fromIcon('', iconPath, IconType.Background);
       return {
