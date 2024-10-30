@@ -49,8 +49,14 @@ export class WindowService implements IWindowService {
         });
       }
     } else {
-      const workspacePath = workspace.toString().replace("file://", "");
-      const url = `${window.location.protocol}//${window.location.host}?workspaceDir=${workspacePath}`
+      const workspaceUri = new URI(workspace);
+      let workspacePath: string;
+      if (workspaceUri.scheme === 'file') {
+        workspacePath = workspaceUri.fsPath;
+      } else {
+        workspacePath = workspaceUri.path.toString();
+      }
+      const url = `${window.location.protocol}//${window.location.host}?workspaceDir=${encodeURIComponent(workspacePath)}`;
       if (options.newWindow) {
           window.open(url)
       } else {
