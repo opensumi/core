@@ -5,6 +5,8 @@ import { AbstractMessageService, IDialogService, Icon } from '../common';
 
 import { DialogContextKey } from './dialog.contextkey';
 
+import type vscode from 'vscode';
+
 @Injectable()
 export class DialogService extends AbstractMessageService implements IDialogService {
   protected type: MessageType | undefined;
@@ -17,6 +19,8 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   protected _visible = false;
 
   protected message: string | React.ReactNode = '';
+
+  protected detail: string | undefined;
 
   protected title = '';
 
@@ -40,6 +44,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     message: string | React.ReactNode,
     type: MessageType,
     buttons?: any[],
+    options?: vscode.MessageOptions,
     closable = true,
     _?: string,
     props?: Record<string, any>,
@@ -47,6 +52,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     this.deferred = new Deferred<string>();
     this.type = type;
     this.message = message;
+    this.detail = options?.detail;
     this._visible = true;
     this.closable = closable;
     this.props = props ?? {};
@@ -73,6 +79,10 @@ export class DialogService extends AbstractMessageService implements IDialogServ
 
   getMessage(): string | React.ReactNode {
     return this.message;
+  }
+
+  getDetail(): string | undefined {
+    return this.detail;
   }
 
   getType(): MessageType | undefined {

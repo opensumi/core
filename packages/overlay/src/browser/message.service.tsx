@@ -8,6 +8,8 @@ import { MayCancelablePromise, MessageType, localize, uuid } from '@opensumi/ide
 
 import { AbstractMessageService, IMessageService, MAX_MESSAGE_LENGTH } from '../common';
 
+import type vscode from 'vscode';
+
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
   @Autowired(IOpenerService)
@@ -41,6 +43,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     rawMessage: string | React.ReactNode,
     type: MessageType,
     buttons?: string[],
+    options?: vscode.MessageOptions,
     closable = true,
     from?: string,
   ): MayCancelablePromise<T | undefined> {

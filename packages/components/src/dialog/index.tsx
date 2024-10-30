@@ -24,6 +24,7 @@ export interface IDialogProps extends IOverlayProps {
   type?: ModalType;
   icon?: IconDesc;
   message: string | React.ReactNode;
+  detail?: string;
   buttons?: JSX.Element[] | JSX.Element;
   closable?: boolean;
   onOk?: () => void;
@@ -69,8 +70,8 @@ export const DialogContent: React.FC<IDialogProps> = ({
           />
         )}
         <div className={'kt-dialog-content_area'}>
-          {type !== 'basic' && title && <p className={'kt-dialog-content_title'}>{title}</p>}
-          <span className={'kt-dialog-message'}>{message}</span>
+          <p className={'kt-dialog-content_title'}>{title}</p>
+          {message && <span className={'kt-dialog-message'}>{message}</span>}
         </div>
         {closable && type !== 'basic' && (
           <button className={cls('kt-dialog-closex', getIcon('close'))} onClick={onClose}></button>
@@ -97,6 +98,7 @@ export const Dialog: React.FC<IDialogProps> = ({
   messageType,
   icon,
   message,
+  detail,
   buttons,
   type = 'confirm',
   title,
@@ -123,6 +125,6 @@ export const Dialog: React.FC<IDialogProps> = ({
     afterClose={afterClose}
     {...restProps}
   >
-    <DialogContent message={message} buttons={buttons} visible={visible} {...restProps}></DialogContent>
+    <DialogContent title={message} message={detail} buttons={buttons} visible={visible} icon={icon} {...restProps} />
   </Overlay>
 );

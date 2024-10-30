@@ -2,6 +2,8 @@ import React from 'react';
 
 import { Event, MayCancelablePromise, MessageType, URI } from '@opensumi/ide-core-common';
 
+import type vscode from 'vscode';
+
 export const IMessageService = Symbol('IMessageService');
 
 export interface IMessageService {
@@ -27,6 +29,7 @@ export interface IMessageService {
     message: string | React.ReactNode,
     type: MessageType,
     buttons?: string[],
+    options?: vscode.MessageOptions,
     closable?: boolean,
     from?: string,
     props?: Record<string, any>,
@@ -47,6 +50,7 @@ export interface IDialogService extends IMessageService {
   visible: boolean;
   onDidDialogVisibleChange: Event<boolean>;
   getMessage(): string | React.ReactNode;
+  getDetail(): string | undefined;
   getIcon(): Icon | undefined;
   getButtons(): string[] | undefined;
   getType(): MessageType | undefined;
@@ -61,7 +65,7 @@ export abstract class AbstractMessageService implements IMessageService {
     closable?: boolean,
     props?: Record<string, any>,
   ): Promise<string | undefined> {
-    return this.open(message, MessageType.Info, buttons, closable, undefined, props);
+    return this.open(message, MessageType.Info, buttons, undefined, closable, undefined, props);
   }
 
   warning(
@@ -70,7 +74,7 @@ export abstract class AbstractMessageService implements IMessageService {
     closable?: boolean,
     props?: Record<string, any>,
   ): Promise<string | undefined> {
-    return this.open(message, MessageType.Warning, buttons, closable, undefined, props);
+    return this.open(message, MessageType.Warning, buttons, undefined, closable, undefined, props);
   }
 
   error(
@@ -79,12 +83,13 @@ export abstract class AbstractMessageService implements IMessageService {
     closable?: boolean,
     props?: Record<string, any>,
   ): Promise<string | undefined> {
-    return this.open(message, MessageType.Error, buttons, closable, undefined, props);
+    return this.open(message, MessageType.Error, buttons, undefined, closable, undefined, props);
   }
   abstract open<T = string>(
     message: string | React.ReactNode,
     type: MessageType,
     buttons?: any[],
+    options?: vscode.MessageOptions,
     closable?: boolean,
     from?: string,
     props?: Record<string, any>,
