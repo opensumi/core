@@ -186,6 +186,17 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
   const showBorder = React.useMemo(() => data.showBorder(), [data]);
 
+  const iconPath = React.useMemo(() => data.getIconPath(), [data]);
+
+  const finalIconClass = React.useMemo(
+    () =>
+      quickOpenItemService.getIconClass({
+        iconPath,
+        iconClass,
+      }),
+    [iconClass, iconPath],
+  );
+
   const buttons = React.useMemo(() => quickOpenItemService.getButtons(data.getButtons()), [data]);
 
   const [labelHighlights, descriptionHighlights, detailHighlights] = React.useMemo(() => data.getHighlights(), [data]);
@@ -257,7 +268,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
       {/* tabIndex is needed here, pls see https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null */}
       <div tabIndex={0} className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
         <div className={styles.item_label}>
-          {iconClass && <span className={cls(styles.item_icon, iconClass)}></span>}
+          {finalIconClass && <span className={cls(styles.item_icon, finalIconClass)}></span>}
           <HighlightLabel
             className={styles.item_label_name}
             labelClassName={styles.label_icon_container}

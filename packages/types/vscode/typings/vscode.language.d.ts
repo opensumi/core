@@ -484,6 +484,16 @@ declare module 'vscode' {
     export function registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
 
     /**
+		 * Registers a new {@link DocumentDropEditProvider}.
+		 *
+		 * @param selector A selector that defines the documents this provider applies to.
+		 * @param provider A drop provider.
+		 *
+		 * @returns A {@link Disposable} that unregisters this provider when disposed of.
+		 */
+		export function registerDocumentDropEditProvider(selector: DocumentSelector, provider: DocumentDropEditProvider): Disposable;
+
+    /**
      * Register a provider that locates evaluatable expressions in text documents.
      * VS Code will evaluate the expression in the active debug session and will show the result in the debug hover.
      *
@@ -1584,6 +1594,47 @@ declare module 'vscode' {
      */
     Outdent = 3,
   }
+
+  /**
+	 * Enumeration of commonly encountered syntax token types.
+	 */
+	export enum SyntaxTokenType {
+		/**
+		 * Everything except tokens that are part of comments, string literals and regular expressions.
+		 */
+		Other = 0,
+		/**
+		 * A comment.
+		 */
+		Comment = 1,
+		/**
+		 * A string literal.
+		 */
+		String = 2,
+		/**
+		 * A regular expression.
+		 */
+		RegEx = 3
+	}
+
+  /**
+	 * Describes pairs of strings where the close string will be automatically inserted when typing the opening string.
+	 */
+	export interface AutoClosingPair {
+		/**
+		 * The string that will trigger the automatic insertion of the closing string.
+		 */
+		open: string;
+		/**
+		 * The closing string that will be automatically inserted when typing the opening string.
+		 */
+		close: string;
+		/**
+		 * A set of tokens where the pair should not be auto closed.
+		 */
+		notIn?: SyntaxTokenType[];
+	}
+
   export interface LanguageConfiguration {
     /**
      * The language's comment settings.
@@ -1610,6 +1661,10 @@ declare module 'vscode' {
      * The language's rules to be evaluated when pressing Enter.
      */
     onEnterRules?: OnEnterRule[];
+    /**
+     * The language's auto closing pairs.
+     */
+    autoClosingPairs?: AutoClosingPair[];
 
     /**
      * **Deprecated** Do not use.

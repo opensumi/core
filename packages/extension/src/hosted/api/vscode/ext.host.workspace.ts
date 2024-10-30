@@ -70,7 +70,7 @@ export function createWorkspaceApiFactory(
       console.warn(false, '[Deprecated warning]: Use the corresponding function on the `tasks` namespace instead');
       return extHostTasks.registerTaskProvider(type, provider, extension);
     },
-    applyEdit: (edit) => extHostWorkspace.applyEdit(edit),
+    applyEdit: (edit, metadata?: vscode.WorkspaceEditMetadata) => extHostWorkspace.applyEdit(edit, metadata),
     get textDocuments() {
       return extHostDocument.getAllDocument();
     },
@@ -405,9 +405,9 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     return this.folders.some((folder) => folder.uri.toString() === uri.toString());
   }
 
-  applyEdit(edit: WorkspaceEdit): Promise<boolean> {
+  applyEdit(edit: WorkspaceEdit, metadata?: vscode.WorkspaceEditMetadata): Promise<boolean> {
     const dto = TypeConverts.WorkspaceEdit.from(edit, this.extHostDoc);
-    return this.proxy.$tryApplyWorkspaceEdit(dto);
+    return this.proxy.$tryApplyWorkspaceEdit(dto, metadata);
   }
 
   saveAll(): Promise<boolean> {

@@ -79,7 +79,7 @@ import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platf
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 
 import { editor } from '../common';
-import { DELEGATE_COMMANDS } from '../common/command';
+import { DELEGATE_COMMANDS, SKIP_UNREGISTER_MONACO_KEYBINDINGS } from '../common/command';
 
 import {
   EditorExtensionsRegistry,
@@ -596,13 +596,15 @@ export class MonacoClientContribution
           // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
           priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
         };
-        // 注册快捷键前先卸载 Monaco 内对应命令的快捷键实现
-        monacoKeybindingsRegistry.registerKeybindingRule({
-          id: `-${command}`,
-          weight: item.weight1,
-          primary: this.toMonacoKeybindingNumber(KeySequence.parse(rawKeybinding)),
-          when,
-        });
+        if (!SKIP_UNREGISTER_MONACO_KEYBINDINGS.includes(command)) {
+          // 注册快捷键前先卸载 Monaco 内对应命令的快捷键实现
+          monacoKeybindingsRegistry.registerKeybindingRule({
+            id: `-${command}`,
+            weight: item.weight1,
+            primary: this.toMonacoKeybindingNumber(KeySequence.parse(rawKeybinding)),
+            when,
+          });
+        }
         // 将 Monaco 内默认快捷键注册进 OpenSumi 中
         keybindings.registerKeybinding(keybinding);
       }

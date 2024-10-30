@@ -186,8 +186,8 @@ export class PtyService extends Disposable implements IPtyService {
       ) as { [key: string]: string };
     }
 
-    // HACK: 这里的处理逻辑有些黑，后续需要整体去整理下 Shell Intergration，然后整体优化一下
-    // 如果是启动 bash，则使用 init file 植入 Intergration 能力
+    // HACK: 这里的处理逻辑有些黑，后续需要整体去整理下 Shell Integration，然后整体优化一下
+    // 如果是启动 bash，则使用 init file 植入 Integration 能力
     if (options.executable?.includes('bash')) {
       const bashIntegrationPath = await this.shellIntegrationService.initBashInitFile();
       if (!options.args) {
@@ -200,6 +200,18 @@ export class PtyService extends Disposable implements IPtyService {
           options.args.unshift('--init-file', bashIntegrationPath);
         }
       }
+    }
+
+    // ZSH 相关的能力注入
+    if (options.executable?.includes('zsh')) {
+      const zshDotFilesPath = await this.shellIntegrationService.initZshDotFiles();
+
+      if (!ptyEnv) {
+        ptyEnv = {};
+      }
+
+      ptyEnv['USER_ZDOTDIR'] = ptyEnv['ZDOTDIR'] || os.homedir() || '~';
+      ptyEnv['ZDOTDIR'] = zshDotFilesPath;
     }
 
     this._ptyOptions['env'] = ptyEnv;
