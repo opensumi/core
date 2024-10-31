@@ -31,8 +31,8 @@ export class MainThreadMessage implements IMainThreadMessage {
     from,
   ): Promise<number | undefined> {
     const action = options.modal
-      ? await this.dialogService.open(message, type, actions, options)
-      : await this.messageService.open(message, type, actions, undefined, true, from);
+      ? await this.dialogService.open({ message, type, buttons: actions, options })
+      : await this.messageService.open({ message, type, buttons: actions, closable: true, from });
     return action ? actions.indexOf(action) : undefined;
   }
 }

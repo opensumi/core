@@ -6,6 +6,15 @@ import type vscode from 'vscode';
 
 export const IMessageService = Symbol('IMessageService');
 
+export interface OpenMessageOptions {
+  message: string | React.ReactNode;
+  type: MessageType;
+  buttons?: any[];
+  options?: vscode.MessageOptions;
+  closable?: boolean;
+  from?: string;
+  props?: Record<string, any>;
+}
 export interface IMessageService {
   info(
     message: string | React.ReactNode,
@@ -25,15 +34,7 @@ export interface IMessageService {
     closable?: boolean,
     props?: Record<string, any>,
   ): MayCancelablePromise<string | undefined>;
-  open<T = string>(
-    message: string | React.ReactNode,
-    type: MessageType,
-    buttons?: string[],
-    options?: vscode.MessageOptions,
-    closable?: boolean,
-    from?: string,
-    props?: Record<string, any>,
-  ): MayCancelablePromise<T | undefined>;
+  open<T = string>(options: OpenMessageOptions): MayCancelablePromise<T | undefined>;
   hide<T = string>(value?: T): void;
 }
 
@@ -65,7 +66,7 @@ export abstract class AbstractMessageService implements IMessageService {
     closable?: boolean,
     props?: Record<string, any>,
   ): Promise<string | undefined> {
-    return this.open(message, MessageType.Info, buttons, undefined, closable, undefined, props);
+    return this.open({ message, type: MessageType.Info, buttons, closable, props });
   }
 
   warning(
@@ -74,7 +75,7 @@ export abstract class AbstractMessageService implements IMessageService {
     closable?: boolean,
     props?: Record<string, any>,
   ): Promise<string | undefined> {
-    return this.open(message, MessageType.Warning, buttons, undefined, closable, undefined, props);
+    return this.open({ message, type: MessageType.Warning, buttons, closable, props });
   }
 
   error(
@@ -83,17 +84,9 @@ export abstract class AbstractMessageService implements IMessageService {
     closable?: boolean,
     props?: Record<string, any>,
   ): Promise<string | undefined> {
-    return this.open(message, MessageType.Error, buttons, undefined, closable, undefined, props);
+    return this.open({ message, type: MessageType.Error, buttons, closable, props });
   }
-  abstract open<T = string>(
-    message: string | React.ReactNode,
-    type: MessageType,
-    buttons?: any[],
-    options?: vscode.MessageOptions,
-    closable?: boolean,
-    from?: string,
-    props?: Record<string, any>,
-  ): Promise<T | undefined>;
+  abstract open<T = string>(options: OpenMessageOptions): Promise<T | undefined>;
   abstract hide<T = string>(value?: T): void;
 }
 

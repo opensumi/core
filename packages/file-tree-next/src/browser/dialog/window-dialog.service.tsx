@@ -130,15 +130,13 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       }
       await fileTreeDialogService.whenReady;
       const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
-      const res = await this.dialogService.open<string[]>(
-        <FileDialog model={model} options={{ ...defaultOptions, ...options }} isOpenDialog={true} />,
-        MessageType.Empty,
-        [],
-        undefined,
-        true,
-        undefined,
-        { className: styles.file_dialog_wrapper },
-      );
+      const res = await this.dialogService.open<string[]>({
+        message: <FileDialog model={model} options={{ ...defaultOptions, ...options }} isOpenDialog={true} />,
+        type: MessageType.Empty,
+        buttons: [],
+        closable: true,
+        props: { className: styles.file_dialog_wrapper },
+      });
       this.dialogService.reset();
       if (res && res.length > 0) {
         const files = res.map((r) => URI.file(r));
@@ -181,15 +179,13 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       }
       await fileTreeDialogService.whenReady;
       const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
-      const res = await this.dialogService.open<string[]>(
-        <FileDialog model={model} options={options} isOpenDialog={false} />,
-        MessageType.Empty,
-        [],
-        undefined,
-        true,
-        undefined,
-        { className: styles.file_dialog_wrapper },
-      );
+      const res = await this.dialogService.open<string[]>({
+        message: <FileDialog model={model} options={options} isOpenDialog={false} />,
+        type: MessageType.Empty,
+        buttons: [],
+        closable: true,
+        props: { className: styles.file_dialog_wrapper },
+      });
       this.dialogService.reset();
       if (res && res.length > 0) {
         const file = URI.file(res[0]);

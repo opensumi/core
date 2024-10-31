@@ -1,11 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, Emitter, MessageType } from '@opensumi/ide-core-common';
 
-import { AbstractMessageService, IDialogService, Icon } from '../common';
+import { AbstractMessageService, IDialogService, Icon, OpenMessageOptions } from '../common';
 
 import { DialogContextKey } from './dialog.contextkey';
-
-import type vscode from 'vscode';
 
 @Injectable()
 export class DialogService extends AbstractMessageService implements IDialogService {
@@ -40,15 +38,14 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     return this._visible;
   }
 
-  open<T = string>(
-    message: string | React.ReactNode,
-    type: MessageType,
-    buttons?: any[],
-    options?: vscode.MessageOptions,
+  open<T = string>({
+    message,
+    type,
+    buttons,
+    options,
     closable = true,
-    _?: string,
-    props?: Record<string, any>,
-  ): Promise<T | undefined> {
+    props,
+  }: OpenMessageOptions): Promise<T | undefined> {
     this.deferred = new Deferred<string>();
     this.type = type;
     this.message = message;

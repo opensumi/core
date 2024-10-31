@@ -159,11 +159,14 @@ export class SearchContribution
           [localize('search.replace.buttonCancel')]: false,
           [localize('search.replace.buttonOK')]: true,
         };
-        const selection = await this.dialogService.open(
-          formatLocalize('search.removeAll.occurrences.file.confirmation.message', String(contentSearchResult.length)),
-          MessageType.Warning,
-          Object.keys(buttons),
-        );
+        const selection = await this.dialogService.open({
+          message: formatLocalize(
+            'search.removeAll.occurrences.file.confirmation.message',
+            String(contentSearchResult.length),
+          ),
+          type: MessageType.Warning,
+          buttons: Object.keys(buttons),
+        });
         if (selection && !buttons[selection]) {
           return buttons[selection];
         }
