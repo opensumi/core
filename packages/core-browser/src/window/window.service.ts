@@ -49,10 +49,10 @@ export class WindowService implements IWindowService {
         });
       }
     } else {
-      const workspaceUri = new URI(workspace);
+      const workspaceUri = new URI(workspace.toString());
       let workspacePath: string;
       if (workspaceUri.scheme === 'file') {
-        workspacePath = workspaceUri.fsPath;
+        workspacePath = workspaceUri.codeUri.fsPath;
       } else {
         workspacePath = workspaceUri.path.toString();
       }
