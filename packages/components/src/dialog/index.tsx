@@ -47,11 +47,11 @@ const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
 export const DialogContent: React.FC<IDialogProps> = ({
   onClose,
   closable,
+  type = 'confirm',
   messageType = MessageType.Info,
   icon,
   message,
   buttons,
-  type = 'confirm',
   title,
   onOk,
   onCancel,
