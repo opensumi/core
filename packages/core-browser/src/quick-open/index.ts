@@ -1,5 +1,6 @@
-import { makeObservable, observable } from 'mobx';
 import React from 'react';
+
+import { observableValue, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 
 import type { Keybinding } from '../keybinding';
 import type { VALIDATE_TYPE } from '@opensumi/ide-components';
@@ -161,12 +162,12 @@ export class QuickOpenItem {
 
   private detailHighlights?: Highlight[];
 
-  @observable
-  public checked = false;
+  public readonly checked = observableValue<boolean>(this, false);
 
   constructor(protected options: QuickOpenItemOptions) {
-    makeObservable(this);
-    this.checked = options.checked || false;
+    transaction((tx) => {
+      this.checked.set(options.checked || false, tx);
+    });
   }
 
   getTooltip(): string | undefined {

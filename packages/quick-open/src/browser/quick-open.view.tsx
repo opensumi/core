@@ -30,6 +30,7 @@ import {
   QuickTitleButton,
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@opensumi/ide-monaco/lib/browser/monaco.keycode-map';
+import { transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 
 import { HighlightLabel } from './components/highlight-label';
@@ -168,14 +169,16 @@ export const QuickOpenInput = () => {
     (event) => {
       const selected = event.target.checked;
       for (const item of items) {
-        item.checked = selected;
+        transaction((tx) => {
+          item.checked.set(selected, tx);
+        });
       }
     },
     [items],
   );
 
   const handleConfirm = React.useCallback(() => {
-    widget.callbacks.onConfirm(items.filter((item) => item.checked));
+    widget.callbacks.onConfirm(items.filter((item) => item.checked.get()));
     widget.hide(HideReason.ELEMENT_SELECTED);
   }, [items]);
 
@@ -207,6 +210,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = ({ data, index }) => {
   const actionProvider = useAutorun(widget.actionProvider);
   const selectIndex = useAutorun(widget.selectIndex);
   const canSelectMany = useAutorun(widget.canSelectMany);
+  const checked = useAutorun(data.checked);
 
   const quickOpenItemService = useInjectable<QuickOpenItemService>(QuickOpenItemService);
 
@@ -243,7 +247,9 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = ({ data, index }) => {
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       // 如果为多选，则点击 item 为切换选中状态
       if (canSelectMany) {
-        data.checked = !data.checked;
+        transaction((tx) => {
+          data.checked.set(!checked, tx);
+        });
         event.stopPropagation();
       } else {
         // 如果为鼠标中键，则为 BACKGROUND 类型
@@ -290,8 +296,12 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = ({ data, index }) => {
       {canSelectMany && (
         <CheckBox
           wrapTabIndex={0}
-          checked={data.checked}
-          onChange={(event) => (data.checked = (event.target as HTMLInputElement).checked)}
+          checked={checked}
+          onChange={(event) => {
+            transaction((tx) => {
+              data.checked.set((event.target as HTMLInputElement).checked, tx);
+            });
+          }}
         />
       )}
       {/* tabIndex is needed here, pls see https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null */}

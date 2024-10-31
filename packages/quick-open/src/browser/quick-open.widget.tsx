@@ -34,7 +34,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   readonly items = observableValue<QuickOpenItem[]>(this, []);
   readonly actionProvider = observableValue<QuickOpenActionProvider | null>(this, null);
   readonly autoFocus = observableValue<IAutoFocus | null>(this, null);
-  readonly selectAll = derived(this, (reader) => this.items.read(reader).every((item) => item.checked));
+  readonly selectAll = derived(this, (reader) => this.items.read(reader).every((item) => item.checked.read(reader)));
   readonly isPassword = observableValue<boolean>(this, false);
   readonly selectIndex = observableValue<number>(this, 0);
   readonly keepScrollPosition = observableValue<boolean>(this, false);

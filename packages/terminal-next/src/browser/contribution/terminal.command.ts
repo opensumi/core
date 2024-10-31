@@ -114,7 +114,7 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
       },
       {
         execute: () => {
-          const group = this.view.currentGroup;
+          const group = this.view.currentGroup.get();
           if (!group) {
             return;
           }
@@ -161,7 +161,7 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
       },
       {
         execute: async () => {
-          const widgetId = this.view.currentWidgetId;
+          const widgetId = this.view.currentWidgetId.get();
           if (widgetId) {
             this.view.removeWidget(widgetId);
           }
@@ -193,7 +193,7 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
       },
       {
         execute: () => {
-          const widgetId = this.view.currentWidgetId;
+          const widgetId = this.view.currentWidgetId.get();
           const client = this.terminalController.findClientFromWidgetId(widgetId);
           if (client) {
             client.selectAll();
@@ -209,7 +209,7 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
       },
       {
         execute: () => {
-          const current = this.view.currentWidgetId;
+          const current = this.view.currentWidgetId.get();
           const client = this.terminalController.findClientFromWidgetId(current);
           if (client) {
             client.clear();
@@ -267,7 +267,7 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
 
     registry.registerCommand(TERMINAL_COMMANDS.COPY, {
       execute: async () => {
-        const current = this.view.currentWidgetId;
+        const current = this.view.currentWidgetId.get();
         const client = this.terminalController.findClientFromWidgetId(current);
         if (client) {
           await this.clipboardService.writeText(client.getSelection());
@@ -277,7 +277,7 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
 
     registry.registerCommand(TERMINAL_COMMANDS.PASTE, {
       execute: async () => {
-        const current = this.view.currentWidgetId;
+        const current = this.view.currentWidgetId.get();
         const client = this.terminalController.findClientFromWidgetId(current);
         if (client) {
           client.paste(await this.clipboardService.readText());
@@ -287,7 +287,7 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_ALL, {
       execute: () => {
-        const current = this.view.currentWidgetId;
+        const current = this.view.currentWidgetId.get();
         const client = this.terminalController.findClientFromWidgetId(current);
         if (client) {
           client.selectAll();
@@ -297,9 +297,10 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
 
     registry.registerCommand(TERMINAL_COMMANDS.RE_LAUNCH, {
       execute: () => {
-        const groups = this.view.groups;
+        const groups = this.view.groups.get();
         for (const group of groups) {
-          group.widgets.forEach((widget) => {
+          const widgets = group.widgets.get();
+          widgets.forEach((widget) => {
             const client = this.terminalController.findClientFromWidgetId(widget.id);
             if (client) {
               client.reset();
@@ -318,8 +319,8 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
 
     registry.registerCommand(TERMINAL_COMMANDS.FOCUS_NEXT_TERMINAL, {
       execute: () => {
-        const group = this.view.currentGroup;
-        if (group.widgets.length <= 1) {
+        const group = this.view.currentGroup.get();
+        if (group && group.widgets.get().length <= 1) {
           return;
         }
         const client = this.getNextOrPrevTerminalClient('next');
@@ -329,8 +330,8 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
 
     registry.registerCommand(TERMINAL_COMMANDS.FOCUS_PREVIOUS_TERMINAL, {
       execute: () => {
-        const group = this.view.currentGroup;
-        if (group.widgets.length <= 1) {
+        const group = this.view.currentGroup.get();
+        if (group && group.widgets.get().length <= 1) {
           return;
         }
         const client = this.getNextOrPrevTerminalClient('prev');
@@ -340,7 +341,7 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
 
     registry.registerCommand(TERMINAL_COMMANDS.KILL_PROCESS, {
       execute: async () => {
-        const current = this.view.currentWidgetId;
+        const current = this.view.currentWidgetId.get();
         const client = this.terminalController.findClientFromWidgetId(current);
         if (client) {
           const select = client.getSelection();
@@ -357,17 +358,22 @@ export class TerminalCommandContribution implements CommandContribution, ClientA
   }
 
   private getNextOrPrevTerminalClient(kind: 'next' | 'prev'): ITerminalClient | undefined {
-    const group = this.view.currentGroup;
-    const currentIdx = group.widgets.findIndex((w) => w.id === this.view.currentWidgetId);
-
-    let index;
-    if (kind === 'next') {
-      index = currentIdx === group.widgets.length - 1 ? 0 : currentIdx + 1;
-    } else {
-      index = currentIdx === 0 ? group.widgets.length - 1 : currentIdx - 1;
+    const group = this.view.currentGroup.get();
+    if (!group) {
+      return;
     }
 
-    const widget = group.widgets[index];
+    const widgets = group.widgets.get();
+    const currentIdx = widgets.findIndex((w) => w.id === this.view.currentWidgetId.get());
+
+    let index: number;
+    if (kind === 'next') {
+      index = currentIdx === widgets.length - 1 ? 0 : currentIdx + 1;
+    } else {
+      index = currentIdx === 0 ? widgets.length - 1 : currentIdx - 1;
+    }
+
+    const widget = widgets[index];
     return this.terminalController.findClientFromWidgetId(widget.id);
   }
 }
