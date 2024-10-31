@@ -73,6 +73,7 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
     hoverContents,
     color: propsColor,
     backgroundColor: propsBackgroundColor,
+    side,
   } = props;
 
   const themeService = useInjectable<IThemeService>(IThemeService);
@@ -129,7 +130,9 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
         content={popoverContent}
         trigger={PopoverTriggerType.hover}
         delay={0.2}
-        position={PopoverPosition.top}
+        position={
+          side === 'left' ? PopoverPosition.topLeft : side === 'right' ? PopoverPosition.topRight : PopoverPosition.top
+        }
         disable={disablePopover}
       >
         <div className={styles.popover_item}>
