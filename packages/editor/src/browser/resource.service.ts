@@ -1,5 +1,3 @@
-import { observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { IDisposable, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, ILogger, LRUMap, arrays } from '@opensumi/ide-core-common';
@@ -100,7 +98,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
         return null;
       }
       const resource = {
-        resource: observable(Object.assign({}, r.resource)),
+        resource: Object.assign({}, r.resource),
         provider: r.provider,
       };
       this.resources.set(uri.toString(), resource);
@@ -233,7 +231,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
 
   public getResourceDecoration(uri: URI): IResourceDecoration {
     if (!this.resourceDecoration.has(uri.toString())) {
-      this.resourceDecoration.set(uri.toString(), observable(DefaultResourceDecoration));
+      this.resourceDecoration.set(uri.toString(), DefaultResourceDecoration);
     }
     return this.resourceDecoration.get(uri.toString()) as IResourceDecoration;
   }

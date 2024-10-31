@@ -1,5 +1,3 @@
-import { observable } from 'mobx';
-
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
@@ -729,7 +727,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private cachedResourcesOpenTypes = new Map<string, IEditorOpenType[]>();
 
-  @observable.shallow
   availableOpenTypes: IEditorOpenType[] = [];
 
   activeComponents = new Map<IEditorComponent, IResource[]>();
