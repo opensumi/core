@@ -46,6 +46,7 @@ export const StatusBarView = memo(
           {statusBar.leftEntries.length
             ? statusBar.leftEntries.map((entry: StatusBarEntry, index: number) => (
                 <StatusBarItem
+                  side='left'
                   key={`${entry.entryId}-${index}`}
                   {...{ ...entry, color: foregroundColor ?? entry.color }}
                 />
@@ -56,6 +57,7 @@ export const StatusBarView = memo(
           {statusBar.rightEntries.length
             ? statusBar.rightEntries.map((entry: StatusBarEntry, index: number) => (
                 <StatusBarItem
+                  side='right'
                   key={`${entry.entryId}-${index}`}
                   {...{ ...entry, color: foregroundColor ?? entry.color }}
                 />
