@@ -58,7 +58,10 @@ export class WindowService implements IWindowService {
       }
       const url = `${window.location.protocol}//${window.location.host}?workspaceDir=${encodeURIComponent(workspacePath)}`;
       if (options.newWindow) {
-          window.open(url)
+          const newWindow = window.open(url);
+          if (!newWindow) {
+            throw new Error('无法打开新窗口，请检查浏览器是否阻止弹出窗口');
+          }
       } else {
           parent.window.location.href = url;
       }
