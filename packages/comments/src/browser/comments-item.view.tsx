@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Button } from '@opensumi/ide-components';
@@ -10,6 +9,7 @@ import {
   localize,
   toLocalString,
   toMarkdownHtml,
+  useAutorun,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
@@ -111,7 +111,7 @@ const useCommentContext = (
 const ReplyItem: React.FC<{
   reply: IThreadComment;
   thread: ICommentsThread;
-}> = observer(({ reply, thread }) => {
+}> = ({ reply, thread }) => {
   const { contextKeyService } = thread;
   const { author, label, body, mode, timestamp } = reply;
   const iconUrl = author.iconPath?.toString();
@@ -214,17 +214,20 @@ const ReplyItem: React.FC<{
       {reply.reactions && reply.reactions.length > 0 && <CommentReactions thread={thread} comment={reply} />}
     </div>
   );
-});
+};
 
 export const CommentItem: React.FC<{
   thread: ICommentsThread;
   commentThreadContext: IMenu;
   widget: ICommentsZoneWidget;
-}> = observer(({ thread, commentThreadContext, widget }) => {
-  const { readOnly, contextKeyService } = thread;
+}> = ({ thread, commentThreadContext, widget }) => {
   const [showReply, setShowReply] = React.useState(false);
   const [replyText, setReplyText] = React.useState('');
-  const [comment, ...replies] = thread.comments;
+
+  const { contextKeyService } = thread;
+  const readOnly = useAutorun(thread.readOnly);
+  const [comment, ...replies] = useAutorun(thread.comments);
+
   const { author, label, body, mode, timestamp } = comment;
   const iconUrl = !isString(author.iconPath)
     ? author.iconPath?.authority
@@ -364,4 +367,4 @@ export const CommentItem: React.FC<{
       </div>
     </div>
   );
-});
+};

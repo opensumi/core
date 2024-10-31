@@ -160,8 +160,8 @@ export class CommentsService extends Disposable implements ICommentsService {
    */
   private createThreadDecoration(thread: ICommentsThread): model.IModelDecorationOptions {
     // 对于新增的空的 thread，默认显示当前用户的头像，否则使用第一个用户的头像
-    const avatar =
-      thread.comments.length === 0 ? this.currentAuthorAvatar : thread.comments[0].author.iconPath?.toString();
+    const comments = thread.comments.get();
+    const avatar = comments.length === 0 ? this.currentAuthorAvatar : comments[0].author.iconPath?.toString();
     const icon = avatar
       ? `${this.iconService.fromIcon('', avatar, IconType.Background)} avatar-icon`
       : this.iconService.fromString('$(comment)');
@@ -190,7 +190,7 @@ export class CommentsService extends Disposable implements ICommentsService {
 
     if (thread) {
       const range = thread.range;
-      if (!thread.isCollapsed) {
+      if (!thread.isCollapsed.get()) {
         this.currentThreadCollapseStateListener = thread.onDidChangeCollapsibleState((state) => {
           if (state === CommentThreadCollapsibleState.Collapsed) {
             this.updateActiveThreadDecoration(undefined);
@@ -375,7 +375,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             if (
               !this.commentsThreads.some(
                 (thread) =>
-                  thread.comments.length === 0 &&
+                  thread.comments.get().length === 0 &&
                   editor.currentUri &&
                   thread.uri.isEqual(editor.currentUri) &&
                   thread.range.startLineNumber === range.startLineNumber &&
@@ -399,7 +399,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             if (
               !this.commentsThreads.some(
                 (thread) =>
-                  thread.comments.length === 0 &&
+                  thread.comments.get().length === 0 &&
                   editor.currentUri &&
                   thread.uri.isEqual(editor.currentUri) &&
                   thread.range.startLineNumber === range.startLineNumber &&
@@ -568,7 +568,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const shouldShowComments = editor.currentUri ? this.shouldShowCommentsSchemes.has(editor.currentUri.scheme) : false;
 
     const hasComments = this.commentsThreads.some(
-      (thread) => editor.currentUri && thread.uri.isEqual(editor.currentUri) && thread.comments.length > 0,
+      (thread) => editor.currentUri && thread.uri.isEqual(editor.currentUri) && thread.comments.get().length > 0,
     );
 
     const hasCommentsOrRanges = shouldShowComments || hasComments;
@@ -863,7 +863,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   public handleCommentFileNode(parent: CommentRoot): CommentFileNode[] {
     const childs: CommentFileNode[] = [];
 
-    const commentThreads = [...this.threads.values()].filter((thread) => thread.comments.length);
+    const commentThreads = [...this.threads.values()].filter((thread) => thread.comments.get().length);
     const threadUris = groupBy(commentThreads, (thread: ICommentsThread) => thread.uri);
     Object.keys(threadUris).map((uri) => {
       const threads: ICommentsThread[] = threadUris[uri];
@@ -893,7 +893,8 @@ export class CommentsService extends Disposable implements ICommentsService {
     const childs: CommentContentNode[] = [];
 
     for (const thread of (parent as CommentFileNode).threads) {
-      const [first] = thread.comments;
+      const comments = thread.comments.get();
+      const [first] = comments;
       const comment = typeof first.body === 'string' ? first.body : first.body.value;
       let description = `[Ln ${thread.range.startLineNumber}]`;
       if (thread.range.startLineNumber !== thread.range.endLineNumber) {
@@ -922,7 +923,8 @@ export class CommentsService extends Disposable implements ICommentsService {
     const childs: CommentReplyNode[] = [];
 
     const thread = parent.thread;
-    const [_, ...others] = thread.comments;
+    const comments = thread.comments.get();
+    const [_, ...others] = comments;
     const lastReply = others[others.length - 1].author.name;
     childs.push(
       new CommentReplyNode(
@@ -1020,7 +1022,7 @@ export class CommentsService extends Disposable implements ICommentsService {
         this.commentsThreads
           .map((thread) => {
             if (thread.uri.isEqual(uri)) {
-              if (thread.comments.length) {
+              if (thread.comments.get().length) {
                 // 存在评论内容 恢复之前的现场
                 thread.showWidgetsIfShowed();
               }

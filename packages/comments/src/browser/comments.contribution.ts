@@ -101,7 +101,7 @@ export class CommentsBrowserContribution
       {
         execute: (threadTitle: ICommentThreadTitle) => {
           const { thread, widget } = threadTitle;
-          if (!thread.comments.length) {
+          if (!thread.comments.get().length) {
             thread.dispose();
           } else {
             if (widget.isShow) {
