@@ -56,6 +56,9 @@ export class WindowService implements IWindowService {
       } else {
         workspacePath = workspaceUri.path.toString();
       }
+      if (!workspacePath) {
+        throw new Error('工作区路径无效');
+      }
       const url = `${window.location.protocol}//${window.location.host}?workspaceDir=${encodeURIComponent(workspacePath)}`;
       if (options.newWindow) {
           const newWindow = window.open(url);
