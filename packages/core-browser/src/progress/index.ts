@@ -7,12 +7,13 @@ import {
   IProgressStep,
   IProgressWindowOptions,
 } from '@opensumi/ide-core-common';
+import { IObservable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 
 export interface IProgressModel {
-  show: boolean;
-  fade: boolean;
-  worked: number;
-  total: number | undefined;
+  show: IObservable<boolean>;
+  fade: IObservable<boolean>;
+  worked: IObservable<number>;
+  total: IObservable<number | undefined>;
 }
 
 export const IProgressService = Symbol('IProgressService');

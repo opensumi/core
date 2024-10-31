@@ -1,41 +1,40 @@
-import { action, makeObservable, observable } from 'mobx';
-
 import { Injectable } from '@opensumi/di';
+import { observableValue, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 
-import { IProgressIndicator, IProgressModel, IProgressRunner } from '.';
+import { IProgressIndicator, IProgressRunner } from '.';
 
 @Injectable({ multiple: true })
 export class ProgressIndicator implements IProgressIndicator {
-  @observable
-  public progressModel: IProgressModel = {
-    show: false,
-    fade: false,
-    worked: 0,
-    total: undefined,
+  public readonly progressModel = {
+    show: observableValue<boolean>(this, false),
+    fade: observableValue<boolean>(this, false),
+    worked: observableValue<number>(this, 0),
+    total: observableValue<number | undefined>(this, undefined),
   };
 
-  constructor() {
-    makeObservable(this);
-  }
-
-  @action
   show(totalOrInfinite: true | number, delay?: number | undefined): IProgressRunner {
     if (totalOrInfinite !== true) {
-      this.progressModel.total = totalOrInfinite;
+      transaction((tx) => {
+        this.progressModel.total.set(totalOrInfinite, tx);
+      });
     }
     this.showOnceScheduler(delay);
     return {
       total: (value) => {
-        this.progressModel.worked = 0;
-        this.progressModel.total = value;
+        transaction((tx) => {
+          this.progressModel.worked.set(0, tx);
+          this.progressModel.total.set(value, tx);
+        });
       },
       worked: (value) => {
-        if (this.progressModel.total) {
-          const worked = Math.max(1, Number(value));
-          const fullWorked = Math.min(worked + this.progressModel.worked, this.progressModel.total);
-          this.progressModel.worked = fullWorked;
-        }
-        this.progressModel.show = true;
+        transaction((tx) => {
+          if (this.progressModel.total.get()) {
+            const worked = Math.max(1, Number(value));
+            const fullWorked = Math.min(worked + this.progressModel.worked.get(), this.progressModel.total.get()!);
+            this.progressModel.worked.set(fullWorked, tx);
+          }
+          this.progressModel.show.set(true, tx);
+        });
       },
       done: () => {
         this.doDone(true);
@@ -43,9 +42,11 @@ export class ProgressIndicator implements IProgressIndicator {
     };
   }
 
-  @action
   async showWhile(promise: Promise<unknown>, delay?: number | undefined): Promise<void> {
-    this.progressModel.total = undefined;
+    transaction((tx) => {
+      this.progressModel.total.set(undefined, tx);
+    });
+
     this.showOnceScheduler(delay);
     await promise;
     this.doDone(false);
@@ -61,12 +62,17 @@ export class ProgressIndicator implements IProgressIndicator {
     }
   }
 
-  @action
   private doDone(delayed?: boolean) {
-    this.progressModel.fade = true;
-    if (this.progressModel.total) {
+    transaction((tx) => {
+      this.progressModel.fade.set(true, tx);
+    });
+
+    if (this.progressModel.total.get()) {
       // 进度100%随后隐藏
-      this.progressModel.worked = this.progressModel.total;
+      transaction((tx) => {
+        this.progressModel.worked.set(this.progressModel.total.get()!, tx);
+      });
+
       if (delayed) {
         setTimeout(this.off, 800);
       } else {
@@ -82,16 +88,18 @@ export class ProgressIndicator implements IProgressIndicator {
     }
   }
 
-  @action.bound
   private off() {
-    this.progressModel.total = undefined;
-    this.progressModel.worked = 0;
-    this.progressModel.show = false;
-    this.progressModel.fade = false;
+    transaction((tx) => {
+      this.progressModel.total.set(undefined, tx);
+      this.progressModel.worked.set(0, tx);
+      this.progressModel.show.set(false, tx);
+      this.progressModel.fade.set(false, tx);
+    });
   }
 
-  @action.bound
   private on() {
-    this.progressModel.show = true;
+    transaction((tx) => {
+      this.progressModel.show.set(true, tx);
+    });
   }
 }

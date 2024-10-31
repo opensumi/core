@@ -9,6 +9,7 @@ import {
   ComponentRenderer,
   ConfigProvider,
   ErrorBoundary,
+  useAutorun,
   useDesignStyles,
   useInjectable,
   useViewState,

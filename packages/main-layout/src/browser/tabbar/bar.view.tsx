@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import { Badge, Icon } from '@opensumi/ide-components';
 import {
@@ -10,6 +10,7 @@ import {
   addClassName,
   createClassNameTokens,
   getIcon,
+  useAutorun,
   useDesignStyles,
   useInjectable,
   usePreference,
@@ -206,7 +207,10 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = o
     const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
     const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
     const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
-    const inProgress = progressService.getIndicator(component.options?.containerId || '')?.progressModel.show;
+    const indicator = progressService.getIndicator(component.options?.containerId || '');
+
+    const inProgress = useAutorun(indicator!.progressModel.show);
+
     const title = React.useMemo(() => {
       const options = component.options;
       if (options?.activateKeyBinding) {
