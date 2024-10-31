@@ -1,5 +1,4 @@
 import debounce from 'lodash/debounce';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { useDesignStyles, useDisposable, useInjectable } from '@opensumi/ide-core-browser';
@@ -15,7 +14,7 @@ import Messages from './messages';
 /**
  * Marker过滤面板
  */
-export const MarkerFilterPanel = observer(() => {
+export const MarkerFilterPanel = () => {
   const markerService: MarkerService = useInjectable(IMarkerService);
   const styles_markerFilterContent = useDesignStyles(styles.markerFilterContent, 'markerFilterContent');
   const styles_filterInput = useDesignStyles(styles.filterInput, 'filterInput');
@@ -47,4 +46,4 @@ export const MarkerFilterPanel = observer(() => {
       />
     </div>
   );
-});
+};
