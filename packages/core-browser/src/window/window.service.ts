@@ -57,13 +57,13 @@ export class WindowService implements IWindowService {
         workspacePath = workspaceUri.path.toString();
       }
       if (!workspacePath) {
-        throw new Error('工作区路径无效');
+        throw new Error('Invalid workspace path');
       }
       const url = `${window.location.protocol}//${window.location.host}?workspaceDir=${encodeURIComponent(workspacePath)}`;
       if (options.newWindow) {
           const newWindow = window.open(url);
           if (!newWindow) {
-            throw new Error('无法打开新窗口，请检查浏览器是否阻止弹出窗口');
+            throw new Error('Unable to open new window, please check if your browser blocks pop-ups');
           }
       } else {
           parent.window.location.href = url;
