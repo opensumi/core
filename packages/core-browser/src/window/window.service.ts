@@ -2,6 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
+import { Logger } from '../logger';
 import { AppConfig } from '../react-providers/config-provider';
 import { IExternalUriService } from '../services';
 import { electronEnv } from '../utils/electron';
@@ -15,6 +16,9 @@ export class WindowService implements IWindowService {
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
+
+  @Autowired()
+  private logger: Logger;
 
   openNewWindow(url: string, options?: NewWindowOptions): Window | undefined {
     if (this.appConfig.isElectronRenderer) {
@@ -49,24 +53,33 @@ export class WindowService implements IWindowService {
         });
       }
     } else {
-      const workspaceUri = new URI(workspace.toString());
-      let workspacePath: string;
-      if (workspaceUri.scheme === 'file') {
-        workspacePath = workspaceUri.codeUri.fsPath;
-      } else {
-        workspacePath = workspaceUri.path.toString();
-      }
-      if (!workspacePath) {
-        throw new Error('Invalid workspace path');
-      }
-      const url = `${window.location.protocol}//${window.location.host}?workspaceDir=${encodeURIComponent(workspacePath)}`;
-      if (options.newWindow) {
+      try {
+        const workspaceUri = new URI(workspace.toString());
+        let workspacePath: string;
+        if (workspaceUri.scheme === 'file') {
+          workspacePath = workspaceUri.codeUri.fsPath;
+        } else {
+          workspacePath = workspaceUri.path.toString();
+        }
+        if (!workspacePath) {
+          throw new Error('Invalid workspace path');
+        }
+        const url = `${window.location.protocol}//${window.location.host}?workspaceDir=${encodeURIComponent(
+          workspacePath,
+        )}`;
+        this.logger.debug(`Opening workspace with URL: ${url}`);
+        if (options.newWindow) {
           const newWindow = window.open(url);
           if (!newWindow) {
+            this.logger.error('Failed to open new window');
             throw new Error('Unable to open new window, please check if your browser blocks pop-ups');
           }
-      } else {
+        } else {
           parent.window.location.href = url;
+        }
+      } catch (error) {
+        this.logger.error('Failed to open workspace:', error);
+        throw error;
       }
     }
   }
