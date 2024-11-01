@@ -121,7 +121,7 @@ export const DesignMenuBarView = () => {
 
   const isVisiable = React.useCallback(() => {
     const tabbarService = mainLayoutService.getTabbarService(SlotLocation.left);
-    return !!tabbarService.currentContainerId;
+    return !!tabbarService.currentContainerId.get();
   }, [mainLayoutService]);
 
   return (

@@ -25,7 +25,7 @@ export class TabBarHandler {
 
   constructor(public readonly containerId: string, private tabbarService: TabbarService) {
     // 如果当前视图已经激活，则设置一些激活的标志
-    if (tabbarService.currentContainerId === this.containerId) {
+    if (tabbarService.currentContainerId.get() === this.containerId) {
       this.onActivateEmitter.fire();
       this.isVisible = true;
     }
@@ -70,7 +70,7 @@ export class TabBarHandler {
    * 当前视图激活状态
    */
   isActivated() {
-    return this.tabbarService.currentContainerId === this.containerId;
+    return this.tabbarService.currentContainerId.get() === this.containerId;
   }
   /**
    * 显示当前视图（区别于激活）
