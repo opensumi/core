@@ -5,7 +5,6 @@ import {
   IToolbarActionService,
 } from '@opensumi/ide-core-browser/lib/menu/next/toolbar-action.service';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
-import { IToolBarViewService } from '@opensumi/ide-toolbar/lib/browser';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 
@@ -32,9 +31,6 @@ export type ActionContributionSchema = Array<ActionContribution | EnumContributi
 @Contributes('actions')
 @LifeCycle(LifeCyclePhase.Starting)
 export class ActionsContributionPoint extends VSCodeContributePoint<ActionContributionSchema> {
-  @Autowired(IToolBarViewService)
-  toolbarViewService: IToolBarViewService;
-
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 

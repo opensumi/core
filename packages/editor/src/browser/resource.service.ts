@@ -98,7 +98,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
         return null;
       }
       const resource = {
-        resource: Object.assign({}, r.resource),
+        resource: r.resource,
         provider: r.provider,
       };
       this.resources.set(uri.toString(), resource);
@@ -231,7 +231,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
 
   public getResourceDecoration(uri: URI): IResourceDecoration {
     if (!this.resourceDecoration.has(uri.toString())) {
-      this.resourceDecoration.set(uri.toString(), DefaultResourceDecoration);
+      this.resourceDecoration.set(uri.toString(), { ...DefaultResourceDecoration });
     }
     return this.resourceDecoration.get(uri.toString()) as IResourceDecoration;
   }
