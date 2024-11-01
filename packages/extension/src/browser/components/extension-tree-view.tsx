@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react-lite';
 import React, {
   DragEvent,
   MouseEvent,
@@ -34,187 +33,190 @@ export interface ExtensionTabBarTreeViewProps {
   treeViewId: string;
 }
 
-export const ExtensionTabBarTreeView = observer(
-  ({ viewState, model, dataProvider, treeViewId }: PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
-    const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-    const decorationService = useInjectable<IDecorationsService>(IDecorationsService);
-    const accordionService = useMemo(() => layoutService.getViewAccordionService(treeViewId), []);
+export const ExtensionTabBarTreeView = ({
+  viewState,
+  model,
+  dataProvider,
+  treeViewId,
+}: PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const decorationService = useInjectable<IDecorationsService>(IDecorationsService);
+  const accordionService = useMemo(() => layoutService.getViewAccordionService(treeViewId), []);
 
-    const isVisible = useMemo(() => {
-      const state = accordionService?.getViewState(treeViewId);
-      if (!state) {
-        return false;
+  const isVisible = useMemo(() => {
+    const state = accordionService?.getViewState(treeViewId);
+    if (!state) {
+      return false;
+    }
+    return !state.collapsed && !state.hidden;
+  }, [accordionService]);
+
+  const { height } = viewState;
+  const { canSelectMany } = model.treeViewOptions || {};
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+  const handleTreeReady = useCallback(
+    (handle: IRecycleTreeHandle) => {
+      model.handleTreeHandler({
+        ...handle,
+        getModel: () => model.treeModel,
+        hasDirectFocus: () => wrapperRef.current === document.activeElement,
+      });
+    },
+    [model],
+  );
+
+  const handleTwistierClick = useCallback(
+    (ev: MouseEvent, item: ExtensionCompositeTreeNode) => {
+      // 阻止点击事件冒泡
+      ev.stopPropagation();
+
+      const { toggleDirectory } = model;
+
+      toggleDirectory(item);
+    },
+    [model],
+  );
+
+  const hasShiftMask = useCallback((event): boolean => {
+    // Ctrl/Cmd 权重更高
+    if (hasCtrlCmdMask(event)) {
+      return false;
+    }
+    return event.shiftKey;
+  }, []);
+
+  const hasCtrlCmdMask = useCallback((event): boolean => {
+    const { metaKey, ctrlKey } = event;
+    return (isOSX && metaKey) || ctrlKey;
+  }, []);
+
+  const handleItemClicked = useCallback(
+    (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
+      // 阻止点击事件冒泡
+      ev.stopPropagation();
+
+      const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = model;
+      if (!item) {
+        return;
       }
-      return !state.collapsed && !state.hidden;
-    }, [accordionService]);
-
-    const { height } = viewState;
-    const { canSelectMany } = model.treeViewOptions || {};
-    const wrapperRef = useRef<HTMLDivElement | null>(null);
-
-    const handleTreeReady = useCallback(
-      (handle: IRecycleTreeHandle) => {
-        model.handleTreeHandler({
-          ...handle,
-          getModel: () => model.treeModel,
-          hasDirectFocus: () => wrapperRef.current === document.activeElement,
-        });
-      },
-      [model],
-    );
-
-    const handleTwistierClick = useCallback(
-      (ev: MouseEvent, item: ExtensionCompositeTreeNode) => {
-        // 阻止点击事件冒泡
-        ev.stopPropagation();
-
-        const { toggleDirectory } = model;
-
-        toggleDirectory(item);
-      },
-      [model],
-    );
-
-    const hasShiftMask = useCallback((event): boolean => {
-      // Ctrl/Cmd 权重更高
-      if (hasCtrlCmdMask(event)) {
-        return false;
-      }
-      return event.shiftKey;
-    }, []);
-
-    const hasCtrlCmdMask = useCallback((event): boolean => {
-      const { metaKey, ctrlKey } = event;
-      return (isOSX && metaKey) || ctrlKey;
-    }, []);
-
-    const handleItemClicked = useCallback(
-      (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
-        // 阻止点击事件冒泡
-        ev.stopPropagation();
-
-        const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = model;
-        if (!item) {
-          return;
-        }
-        const shiftMask = hasShiftMask(event);
-        const ctrlCmdMask = hasCtrlCmdMask(event);
-        if (canSelectMany) {
-          if (shiftMask) {
-            handleItemRangeClick(item, type);
-          } else if (ctrlCmdMask) {
-            handleItemToggleClick(item, type);
-          } else {
-            handleItemClick(item, type);
-          }
+      const shiftMask = hasShiftMask(event);
+      const ctrlCmdMask = hasCtrlCmdMask(event);
+      if (canSelectMany) {
+        if (shiftMask) {
+          handleItemRangeClick(item, type);
+        } else if (ctrlCmdMask) {
+          handleItemToggleClick(item, type);
         } else {
           handleItemClick(item, type);
         }
-      },
-      [canSelectMany, model],
-    );
+      } else {
+        handleItemClick(item, type);
+      }
+    },
+    [canSelectMany, model],
+  );
 
-    const handleContextMenu = useCallback(
-      (ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-        const { handleContextMenu } = model;
-        handleContextMenu(ev, node);
-      },
-      [model],
-    );
-
-    const handleOuterContextMenu = (ev: MouseEvent) => {
+  const handleContextMenu = useCallback(
+    (ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
       const { handleContextMenu } = model;
-      // 空白区域右键菜单
-      handleContextMenu(ev);
+      handleContextMenu(ev, node);
+    },
+    [model],
+  );
+
+  const handleOuterContextMenu = (ev: MouseEvent) => {
+    const { handleContextMenu } = model;
+    // 空白区域右键菜单
+    handleContextMenu(ev);
+  };
+
+  const handleOuterClick = useCallback(() => {
+    // 空白区域点击，取消焦点状态
+    const { enactiveNodeDecoration } = model;
+    enactiveNodeDecoration();
+  }, [model]);
+
+  const handleDragStart = useCallback(
+    (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+      const { handleDragStart } = model;
+      handleDragStart(ev, node);
+    },
+    [model],
+  );
+
+  const handleDragOver = useCallback(
+    (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+      const { handleDragOver } = model;
+      handleDragOver(ev, node);
+    },
+    [model],
+  );
+
+  const handleDragEnter = useCallback(
+    (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+      const { handleDragEnter } = model;
+      handleDragEnter(ev, node);
+    },
+    [model],
+  );
+
+  const handleDrop = useCallback(
+    (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+      const { handleDrop } = model;
+      handleDrop(ev, node);
+    },
+    [model],
+  );
+
+  const handleDragLeave = useCallback(
+    (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+      const { handleDragLeave } = model;
+      handleDragLeave(ev, node);
+    },
+    [model],
+  );
+
+  useEffect(() => {
+    const handleBlur = () => {
+      model.handleTreeBlur();
     };
+    wrapperRef.current?.addEventListener('blur', handleBlur, true);
+    return () => {
+      wrapperRef.current?.removeEventListener('blur', handleBlur, true);
+    };
+  }, [wrapperRef.current]);
 
-    const handleOuterClick = useCallback(() => {
-      // 空白区域点击，取消焦点状态
-      const { enactiveNodeDecoration } = model;
-      enactiveNodeDecoration();
-    }, [model]);
-
-    const handleDragStart = useCallback(
-      (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-        const { handleDragStart } = model;
-        handleDragStart(ev, node);
-      },
-      [model],
-    );
-
-    const handleDragOver = useCallback(
-      (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-        const { handleDragOver } = model;
-        handleDragOver(ev, node);
-      },
-      [model],
-    );
-
-    const handleDragEnter = useCallback(
-      (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-        const { handleDragEnter } = model;
-        handleDragEnter(ev, node);
-      },
-      [model],
-    );
-
-    const handleDrop = useCallback(
-      (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-        const { handleDrop } = model;
-        handleDrop(ev, node);
-      },
-      [model],
-    );
-
-    const handleDragLeave = useCallback(
-      (ev: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-        const { handleDragLeave } = model;
-        handleDragLeave(ev, node);
-      },
-      [model],
-    );
-
-    useEffect(() => {
-      const handleBlur = () => {
-        model.handleTreeBlur();
-      };
-      wrapperRef.current?.addEventListener('blur', handleBlur, true);
-      return () => {
-        wrapperRef.current?.removeEventListener('blur', handleBlur, true);
-      };
-    }, [wrapperRef.current]);
-
-    return (
-      <div
-        className={styles.kt_extension_view}
-        tabIndex={-1}
-        ref={wrapperRef}
-        onContextMenu={handleOuterContextMenu}
-        onClick={handleOuterClick}
-        data-tree-view-id={treeViewId}
-      >
-        <TreeView
-          height={height}
-          isVisible={isVisible}
-          handleTreeReady={handleTreeReady}
-          handleItemClicked={handleItemClicked}
-          handleTwistierClick={handleTwistierClick}
-          handleContextMenu={handleContextMenu}
-          handleDragStart={handleDragStart}
-          handleDragOver={handleDragOver}
-          handleDragEnter={handleDragEnter}
-          handleDragLeave={handleDragLeave}
-          handleDrop={handleDrop}
-          draggable={model.draggable}
-          treeViewId={treeViewId}
-          model={model}
-          dataProvider={dataProvider}
-          decorationService={decorationService}
-        />
-      </div>
-    );
-  },
-);
+  return (
+    <div
+      className={styles.kt_extension_view}
+      tabIndex={-1}
+      ref={wrapperRef}
+      onContextMenu={handleOuterContextMenu}
+      onClick={handleOuterClick}
+      data-tree-view-id={treeViewId}
+    >
+      <TreeView
+        height={height}
+        isVisible={isVisible}
+        handleTreeReady={handleTreeReady}
+        handleItemClicked={handleItemClicked}
+        handleTwistierClick={handleTwistierClick}
+        handleContextMenu={handleContextMenu}
+        handleDragStart={handleDragStart}
+        handleDragOver={handleDragOver}
+        handleDragEnter={handleDragEnter}
+        handleDragLeave={handleDragLeave}
+        handleDrop={handleDrop}
+        draggable={model.draggable}
+        treeViewId={treeViewId}
+        model={model}
+        dataProvider={dataProvider}
+        decorationService={decorationService}
+      />
+    </div>
+  );
+};
 
 interface TreeViewProps {
   isVisible: boolean;
