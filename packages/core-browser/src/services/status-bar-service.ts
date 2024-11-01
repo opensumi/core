@@ -1,4 +1,5 @@
 import { IDisposable, IMarkdownString, IThemeColor, StatusBarHoverCommand } from '@opensumi/ide-core-common';
+import { IObservable } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { IMenu } from '../menu/next';
 
@@ -24,8 +25,8 @@ export interface IStatusBarService {
    */
   toggleElement(entryId: string): void;
   contextMenu: IMenu;
-  leftEntries: StatusBarEntry[];
-  rightEntries: StatusBarEntry[];
+  leftEntries: IObservable<StatusBarEntry[]>;
+  rightEntries: IObservable<StatusBarEntry[]>;
 }
 
 export interface StatusBarHoverContent {
