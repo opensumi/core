@@ -1,6 +1,7 @@
 import omit from 'lodash/omit';
 
 import { Autowired, Injectable } from '@opensumi/di';
+import { IObservable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 
 import { MenuNode } from '../../base';
 import { AbstractContextMenuService } from '../../menu.interface';
@@ -14,6 +15,8 @@ export interface IMenuRenderProps {
 
 export abstract class IBrowserCtxMenu extends ICtxMenuRenderer {
   visible: boolean;
+  visibleObservable: IObservable<boolean>;
+
   onHide: ((canceled: boolean) => void) | undefined;
   point?: {
     pageX: number;

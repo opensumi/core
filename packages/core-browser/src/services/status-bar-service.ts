@@ -1,5 +1,5 @@
 import { IDisposable, IMarkdownString, IThemeColor, StatusBarHoverCommand } from '@opensumi/ide-core-common';
-import { IObservable } from '@opensumi/ide-monaco/lib/common/observable';
+import { IObservable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 
 import { IMenu } from '../menu/next';
 
