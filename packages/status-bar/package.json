@@ -20,10 +20,10 @@
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {
-    "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
     "@opensumi/ide-theme": "workspace:*"

@@ -31,12 +31,12 @@
     "os-locale": "^4.0.0"
   },
   "devDependencies": {
-    "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",
     "@opensumi/ide-main-layout": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-status-bar": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
