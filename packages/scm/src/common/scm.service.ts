@@ -1,5 +1,3 @@
-import { action, computed, makeObservable, observable } from 'mobx';
-
 import { Injectable } from '@opensumi/di';
 import { IInputBaseProps } from '@opensumi/ide-components';
 import {
@@ -131,10 +129,8 @@ class SCMRepository implements ISCMRepository, IDisposable {
   private _onDidFocus = this._disposables.add(new Emitter<void>());
   readonly onDidFocus: Event<void> = this._onDidFocus.event;
 
-  @observable
   private _selected = false;
 
-  @computed
   get selected(): boolean {
     return this._selected;
   }
@@ -144,15 +140,12 @@ class SCMRepository implements ISCMRepository, IDisposable {
 
   readonly input: ISCMInput = new SCMInput();
 
-  constructor(public readonly provider: ISCMProvider, private disposable: IDisposable) {
-    makeObservable(this);
-  }
+  constructor(public readonly provider: ISCMProvider, private disposable: IDisposable) {}
 
   focus(): void {
     this._onDidFocus.fire();
   }
 
-  @action
   setSelected(selected: boolean): void {
     this._selected = selected;
     this._onDidChangeSelection.fire(this);
