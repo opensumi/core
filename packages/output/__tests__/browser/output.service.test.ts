@@ -117,16 +117,16 @@ describe('Output.service.ts', () => {
   });
 
   test('deleteChannel', () => {
-    const origLength = outputService.getChannels().length;
+    const origLength = outputService.getChannels.get().length;
     outputService.getChannel('1');
     outputService.deleteChannel('1');
-    expect(outputService.getChannels().length).toEqual(origLength);
+    expect(outputService.getChannels.get().length).toEqual(origLength);
   });
 
   test('getChannels', () => {
-    const origLength = outputService.getChannels().length;
+    const origLength = outputService.getChannels.get().length;
     outputService.getChannel('1');
     outputService.deleteChannel('1');
-    expect(outputService.getChannels().length).toEqual(origLength);
+    expect(outputService.getChannels.get().length).toEqual(origLength);
   });
 });

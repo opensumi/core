@@ -124,7 +124,7 @@ describe('quick-open service test', () => {
     });
     quickOpenService.hide(HideReason.ELEMENT_SELECTED);
     expect($widgetHide).toHaveBeenCalledTimes(1);
-    expect(widget.isShow).toBeFalsy();
+    expect(widget.isShow.get()).toBeFalsy();
     expect($onClose).toHaveBeenCalledTimes(1);
     // false 为非取消类型的关闭
     expect($onClose).toHaveBeenCalledWith(false);
@@ -138,7 +138,7 @@ describe('quick-open service test', () => {
     });
     quickOpenService.hide(HideReason.FOCUS_LOST);
     expect($widgetHide).toHaveBeenCalledTimes(1);
-    expect(widget.isShow).toBeFalsy();
+    expect(widget.isShow.get()).toBeFalsy();
     // true 为取消类型的关闭
     expect($onClose).toHaveBeenCalledWith(true);
   });
@@ -147,15 +147,15 @@ describe('quick-open service test', () => {
     quickOpenService.open(model);
     quickOpenService.refresh();
     // refresh 时 onType 会被重新调用
-    expect(model.onType).toHaveBeenCalledWith(widget.inputValue, expect.anything());
+    expect(model.onType).toHaveBeenCalledWith(widget.inputValue.get(), expect.anything());
   });
 
   it('show quick-open decoration', () => {
     quickOpenService.open(model);
     quickOpenService.showDecoration(VALIDATE_TYPE.ERROR);
-    expect(widget.validateType).toBe(VALIDATE_TYPE.ERROR);
+    expect(widget.validateType.get()).toBe(VALIDATE_TYPE.ERROR);
     quickOpenService.hideDecoration();
-    expect(widget.validateType).toBeUndefined();
+    expect(widget.validateType.get()).toBeUndefined();
   });
 
   it('show quick-open item buttons', () => {
@@ -201,7 +201,7 @@ describe('quick-open service test', () => {
       quickOpenService.open(model, {
         prefix: 'AAA',
       });
-      expect(widget.items).toStrictEqual(items);
+      expect(widget.items.get()).toStrictEqual(items);
     });
 
     it('match label', () => {
@@ -209,9 +209,9 @@ describe('quick-open service test', () => {
         prefix: 'AAA',
         fuzzyMatchLabel: true,
       });
-      expect(widget.items).toHaveLength(2);
-      expect(widget.items[0].getLabel()).toBe('AAAAA');
-      expect(widget.items[1].getLabel()).toBe('AAAAA2');
+      expect(widget.items.get()).toHaveLength(2);
+      expect(widget.items.get()[0].getLabel()).toBe('AAAAA');
+      expect(widget.items.get()[1].getLabel()).toBe('AAAAA2');
     });
 
     it('match label width enableSeparateSubstringMatching', () => {
@@ -221,8 +221,8 @@ describe('quick-open service test', () => {
           enableSeparateSubstringMatching: true,
         },
       });
-      expect(widget.items).toHaveLength(1);
-      const [labelHighlights] = widget.items[0].getHighlights();
+      expect(widget.items.get()).toHaveLength(1);
+      const [labelHighlights] = widget.items.get()[0].getHighlights();
       expect(labelHighlights).toStrictEqual([
         { end: 1, start: 0 },
         { end: 3, start: 2 },
@@ -244,7 +244,7 @@ describe('quick-open service test', () => {
       quickOpenService.open(model, {
         prefix: 'AAA',
       });
-      expect(widget.items).toHaveLength(1);
+      expect(widget.items.get()).toHaveLength(1);
     });
 
     it('match description', () => {
@@ -252,8 +252,8 @@ describe('quick-open service test', () => {
         prefix: 'BBB',
         fuzzyMatchDescription: true,
       });
-      expect(widget.items).toHaveLength(4);
-      const [, descriptionHighlights] = widget.items[2].getHighlights();
+      expect(widget.items.get()).toHaveLength(4);
+      const [, descriptionHighlights] = widget.items.get()[2].getHighlights();
       expect(descriptionHighlights).toStrictEqual([{ start: 23, end: 26 }]);
     });
 
@@ -262,8 +262,8 @@ describe('quick-open service test', () => {
         prefix: 'Hello',
         fuzzyMatchDetail: true,
       });
-      expect(widget.items).toHaveLength(4);
-      const [, , detailHighlights] = widget.items[3].getHighlights();
+      expect(widget.items.get()).toHaveLength(4);
+      const [, , detailHighlights] = widget.items.get()[3].getHighlights();
       expect(detailHighlights).toStrictEqual([{ start: 8, end: 13 }]);
     });
 
@@ -283,8 +283,8 @@ describe('quick-open service test', () => {
           enableSeparateSubstringMatching: true,
         },
       });
-      expect(widget.items).toHaveLength(2);
-      expect(widget.items[0].getLabel()).toBe('Hon');
+      expect(widget.items.get()).toHaveLength(2);
+      expect(widget.items.get()[0].getLabel()).toBe('Hon');
     });
   });
 

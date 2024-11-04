@@ -24,14 +24,14 @@ describe('Terminal View Test', () => {
   });
 
   it('Create Widget Without Id', () => {
-    const group = view.currentGroup;
+    const group = view.currentGroup.get();
     const widget = view.createWidget(group);
     expect(widget).toBeInstanceOf(Widget);
     expect(view.empty()).toBeFalsy();
   });
 
   it('Remove Group', () => {
-    const index = view.currentGroupIndex;
+    const index = view.currentGroupIndex.get();
     view.removeGroup(index);
     expect(view.empty()).toBeTruthy();
   });
@@ -39,7 +39,7 @@ describe('Terminal View Test', () => {
   it('Create Widget With Id', () => {
     const id = uuid();
     view.createGroup();
-    const widget = view.createWidget(view.currentGroup, id);
+    const widget = view.createWidget(view.currentGroup.get(), id);
     expect(view.empty()).toBeFalsy();
     expect(widget.id).toEqual(id);
   });
@@ -53,9 +53,9 @@ describe('Terminal View Test', () => {
     const widget11 = view.createWidget(group1);
     const widget12 = view.createWidget(group1);
     view.selectWidget(widget11.id);
-    expect(view.currentWidgetId === widget11.id).toBeTruthy();
+    expect(view.currentWidgetId.get() === widget11.id).toBeTruthy();
     view.selectWidget(widget12.id);
-    expect(view.currentWidgetId === widget12.id).toBeTruthy();
+    expect(view.currentWidgetId.get() === widget12.id).toBeTruthy();
   });
 
   it('Clear View And Clear Event', () => {
@@ -83,7 +83,7 @@ describe('Terminal View Test', () => {
     const group = view.getGroup(index);
     const widget = view.createWidget(group);
     view.selectWidget(widget.id);
-    view.removeWidget(view.currentWidgetId);
+    view.removeWidget(view.currentWidgetId.get());
   });
 
   afterAll(() => {

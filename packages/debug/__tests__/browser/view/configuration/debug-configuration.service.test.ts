@@ -119,8 +119,8 @@ describe('Debug Configuration Service', () => {
     expect(debugConfigurationService.currentValue.get()).toBe(
       `test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`,
     );
-    expect(debugConfigurationService.float).toBeTruthy();
-    expect(debugConfigurationService.configurationOptions).toEqual(mockDebugConfigurationManager.all);
+    expect(debugConfigurationService.float.get()).toBeTruthy();
+    expect(debugConfigurationService.configurationOptions.get()).toEqual(mockDebugConfigurationManager.all);
     expect(typeof debugConfigurationService.updateCurrentValue).toBe('function');
     expect(typeof debugConfigurationService.updateConfigurationOptions).toBe('function');
     expect(typeof debugConfigurationService.start).toBe('function');

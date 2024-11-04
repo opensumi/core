@@ -56,7 +56,7 @@ export class ProgressIndicator implements IProgressIndicator {
   private showOnceScheduler(delay?: number) {
     if (typeof delay === 'number') {
       clearTimeout(this.scheduled);
-      this.scheduled = setTimeout(this.on, delay);
+      this.scheduled = setTimeout(() => this.on(), delay);
     } else {
       this.on();
     }

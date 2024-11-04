@@ -72,15 +72,14 @@ export class DebugToolbarService {
   }
 
   private instrumentReporter(name: string): () => void {
-    const currentSession = this.currentSession.get();
-    const session = currentSession!;
+    const session = this.model.currentSession!;
     const languageType = session.configuration?.type;
     const currentThread = this.model.currentThread;
     const threadId = currentThread?.raw?.id;
     this.model.reportAction(session.id, threadId, name);
     const extra = {
       type: languageType,
-      request: currentSession?.configuration?.request,
+      request: this.currentSession.get()?.configuration?.request,
       sessionId: session.id,
       threadId,
     };
@@ -91,7 +90,7 @@ export class DebugToolbarService {
     };
   }
 
-  doStart = () => this.model.start();
+  doStart = async () => await this.model.start();
 
   doRestart = async () => {
     const reportTimeEnd = this.instrumentReporter('restart');

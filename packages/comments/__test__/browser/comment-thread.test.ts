@@ -78,7 +78,7 @@ describe('comment service test', () => {
       },
     });
     expect(thread.data).toEqual({ a: 1 });
-    expect(thread.comments[0].data).toEqual({ b: 1 });
+    expect(thread.comments.get()[0].data).toEqual({ b: 1 });
   });
 
   it('thread add comment', () => {
@@ -100,8 +100,8 @@ describe('comment service test', () => {
         body: 'Comment Text 2',
       },
     );
-    expect(thread.comments.length).toBe(2);
-    expect(thread.comments[1].mode).toBe(CommentMode.Editor);
+    expect(thread.comments.get().length).toBe(2);
+    expect(thread.comments.get()[1].mode).toBe(CommentMode.Editor);
   });
 
   it('thread dispose', () => {
@@ -124,7 +124,7 @@ describe('comment service test', () => {
       },
     );
     thread.dispose();
-    expect(thread.comments.length).toBe(0);
+    expect(thread.comments.get().length).toBe(0);
   });
 
   it('thread context service', () => {
