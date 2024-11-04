@@ -16677,8 +16677,8 @@ __metadata:
   linkType: hard
 
 "rc-menu@npm:^9.3.2":
-  version: 9.13.0
-  resolution: "rc-menu@npm:9.13.0"
+  version: 9.16.0
+  resolution: "rc-menu@npm:9.16.0"
   dependencies:
     "@babel/runtime": "npm:^7.10.1"
     "@rc-component/trigger": "npm:^2.0.0"
@@ -16689,7 +16689,7 @@ __metadata:
   peerDependencies:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
-  checksum: 10/afabaadadf662b67461bd7a6bfce982fdc0d6093e3e3d86049cd070e0acd7cd7c68fe76aaa59c7accda6fae657d7eec500728c717c82ea843f7eb58d60b8b30e
+  checksum: 10/53dadc8a42509fdc92d0a4da4ec5ceb257c81258c5bb4460af607424cabd82c006d2d96eb673fa43ad052f3d5999f64539289ea50034e6bc04c588665032932f
   languageName: node
   linkType: hard
 
