@@ -199,7 +199,7 @@ export class MainThreadFileSystemEvent extends Disposable {
           localize('refactoring-changes.msg.skipChanges'),
         ];
         // edit#metadata.needsConfirmation#true --> show dialog
-        const answer = await this.dialogService.open(message, MessageType.Info, choices);
+        const answer = await this.dialogService.open({ message, type: MessageType.Info, buttons: choices });
         showPreview = 'show';
         if (answer === choices[1]) {
           // Skip changes
@@ -211,7 +211,7 @@ export class MainThreadFileSystemEvent extends Disposable {
           localize('refactoring-changes.msg.skipChanges'),
           localize('component.modal.okText'),
         ];
-        const answer = await this.dialogService.open(message, MessageType.Info, choices);
+        const answer = await this.dialogService.open({ message, type: MessageType.Info, buttons: choices });
         if (answer === choices[1]) {
           // Skip changes
           return;

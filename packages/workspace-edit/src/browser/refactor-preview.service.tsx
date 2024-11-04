@@ -97,14 +97,16 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     this.registerRefactorPreviewView();
 
     if (this.previewDeferred) {
-      const continued = await this.dialogService.open(
-        <div>
-          {localize('refactor-preview.overlay.title')}
-          <p>{localize('refactor-preview.overlay.detail')}</p>
-        </div>,
-        MessageType.Warning,
-        [localize('refactor-preview.overlay.cancel'), localize('refactor-preview.overlay.continue')],
-      );
+      const continued = await this.dialogService.open({
+        message: (
+          <div>
+            {localize('refactor-preview.overlay.title')}
+            <p>{localize('refactor-preview.overlay.detail')}</p>
+          </div>
+        ),
+        type: MessageType.Warning,
+        buttons: [localize('refactor-preview.overlay.cancel'), localize('refactor-preview.overlay.continue')],
+      });
 
       if (continued === localize('refactor-preview.overlay.cancel')) {
         return [];

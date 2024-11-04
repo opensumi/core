@@ -43,6 +43,10 @@ export class ExtHostMessage implements IExtHostMessage {
       } else {
         if ('modal' in optionsOrFirstItem) {
           options.modal = optionsOrFirstItem.modal;
+
+          if ('detail' in optionsOrFirstItem) {
+            options.detail = optionsOrFirstItem.detail;
+          }
         }
       }
     }

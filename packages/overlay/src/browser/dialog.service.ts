@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, Emitter, MessageType } from '@opensumi/ide-core-common';
 
-import { AbstractMessageService, IDialogService, Icon } from '../common';
+import { AbstractMessageService, IDialogService, Icon, OpenMessageOptions } from '../common';
 
 import { DialogContextKey } from './dialog.contextkey';
 
@@ -17,6 +17,8 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   protected _visible = false;
 
   protected message: string | React.ReactNode = '';
+
+  protected detail: string | undefined;
 
   protected title = '';
 
@@ -36,17 +38,18 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     return this._visible;
   }
 
-  open<T = string>(
-    message: string | React.ReactNode,
-    type: MessageType,
-    buttons?: any[],
+  open<T = string>({
+    message,
+    type,
+    buttons,
+    options,
     closable = true,
-    _?: string,
-    props?: Record<string, any>,
-  ): Promise<T | undefined> {
+    props,
+  }: OpenMessageOptions): Promise<T | undefined> {
     this.deferred = new Deferred<string>();
     this.type = type;
     this.message = message;
+    this.detail = options?.detail;
     this._visible = true;
     this.closable = closable;
     this.props = props ?? {};
@@ -73,6 +76,10 @@ export class DialogService extends AbstractMessageService implements IDialogServ
 
   getMessage(): string | React.ReactNode {
     return this.message;
+  }
+
+  getDetail(): string | undefined {
+    return this.detail;
   }
 
   getType(): MessageType | undefined {

@@ -234,11 +234,11 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       [localize('file.prompt.save', 'Save')]: AskSaveResult.SAVE,
       [localize('file.prompt.cancel', 'Cancel')]: AskSaveResult.CANCEL,
     };
-    const selection = await this.dialogService.open(
-      formatLocalize('saveChangesMessage', resource.name),
-      MessageType.Info,
-      Object.keys(buttons),
-    );
+    const selection = await this.dialogService.open({
+      message: formatLocalize('saveChangesMessage', resource.name),
+      type: MessageType.Info,
+      buttons: Object.keys(buttons),
+    });
     const result = buttons[selection!];
     return this.close(resource, result);
   }

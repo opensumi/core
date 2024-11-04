@@ -27,16 +27,16 @@ export async function replaceAll(
       [localize('search.replace.buttonCancel')]: false,
       [localize('search.replace.buttonOK')]: true,
     };
-    const selection = await dialogService!.open(
-      formatLocalize(
+    const selection = await dialogService!.open({
+      message: formatLocalize(
         'search.removeAll.occurrences.files.confirmation.message',
         String(resultTotal.resultNum),
         String(resultTotal.fileNum),
         replaceText,
       ),
-      MessageType.Warning,
-      Object.keys(buttons),
-    );
+      type: MessageType.Warning,
+      buttons: Object.keys(buttons),
+    });
     if (!buttons[selection!]) {
       return buttons[selection!];
     }
