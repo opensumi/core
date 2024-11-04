@@ -179,10 +179,17 @@ export class LibroContribution
 
   protected connectJupyterServer(serverHost: string) {
     const libroServerConnection = this.manaContainer.get(ServerConnection);
-    libroServerConnection.updateSettings({
-      baseUrl: `http://${serverHost}/`,
-      wsUrl: `ws://${serverHost}/`,
-    });
+    libroServerConnection.updateSettings(
+      window.location.protocol === 'https:'
+        ? {
+            baseUrl: `https://${serverHost}/`,
+            wsUrl: `wss://${serverHost}/`,
+          }
+        : {
+            baseUrl: `http://${serverHost}/`,
+            wsUrl: `ws://${serverHost}/`,
+          },
+    );
     const serverManager = this.manaContainer.get(ServerManager);
     serverManager.launch();
   }
