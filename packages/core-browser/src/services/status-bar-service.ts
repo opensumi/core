@@ -56,7 +56,7 @@ export interface StatusBarEntry {
    * 标识当前状态栏组件 contextmenu 显示的名称，如果没有使用 text 代替
    */
   name?: string;
-  // 状态栏项的对其方式
+  // 状态栏项的对齐方式
   alignment: StatusBarAlignment;
   // 状态栏项的颜色
   color?: IThemeColor | string;
@@ -80,19 +80,11 @@ export interface StatusBarEntry {
   role?: string;
   // 状态栏项的位置，可以是左侧或右侧
   side?: 'left' | 'right';
-  /**
-   * 是否默认展示，可以通过右键菜单控制
-   */
+  // 是否默认展示，可以通过右键菜单控制
   hidden?: boolean;
-
-  /**
-   * 鼠标移上去 Content 的内容
-   */
+  // 鼠标移上去 Content 的内容
   hoverContents?: StatusBarHoverContent[];
-
-  /**
-   * 点击事件
-   */
+  // 点击事件
   onClick?: (e: any) => void;
 }
 
