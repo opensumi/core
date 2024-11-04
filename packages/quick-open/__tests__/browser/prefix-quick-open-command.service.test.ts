@@ -14,7 +14,6 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { PrefixQuickOpenServiceImpl, QuickOpenHandlerRegistry } from '../../src/browser/prefix-quick-open.service';
 import { QuickCommandHandler } from '../../src/browser/quick-open.command.service';
-import { QuickTitleBar } from '../../src/browser/quick-title-bar';
 
 describe('prefix quick open command service test', () => {
   let injector: MockInjector;
@@ -29,10 +28,6 @@ describe('prefix quick open command service test', () => {
         useValue: {
           getMostRecentlyUsedCommands: () => [{ id: 'a', label: 'aaa' }],
         },
-      },
-      {
-        token: QuickTitleBar,
-        useValue: mockService({}),
       },
       {
         token: IThemeService,
