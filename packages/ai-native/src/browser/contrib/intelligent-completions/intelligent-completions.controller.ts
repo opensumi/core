@@ -347,7 +347,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       const { range, insertText } = codeEditsResult.items[0];
       const newCode = insertText;
       const originCode = this.model.getValueInRange(range);
-      return (type: keyof Pick<CodeEditsRT, 'accept' | 'discard' | 'isCancel'>) => {
+      return (type: keyof Pick<CodeEditsRT, 'isReceive' | 'isDrop' | 'isValid'>) => {
         contextBean.reporterEnd({
           [type]: true,
           code: newCode,
@@ -368,9 +368,9 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
 
     // 在可见的情况下超过 750ms 弃用才算有效数据，否则视为取消
     if (lastVisibleTime && Date.now() - lastVisibleTime > 750) {
-      report?.('discard');
+      report?.('isDrop');
     } else {
-      report?.('isCancel');
+      report?.('isValid');
     }
 
     this.hide();
@@ -378,7 +378,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
 
   public accept = derived(this, (reader) => {
     const report = this.reportData.read(reader);
-    report?.('accept');
+    report?.('isReceive');
 
     this.multiLineDecorationModel.accept();
 
