@@ -79,7 +79,7 @@ export abstract class BaseCodeEditsSource extends Disposable {
     this.cancellationTokenSource.cancel();
     this.cancellationTokenSource = new CancellationTokenSource();
 
-    this.reporterEnd({ isCancel: true });
+    this.reporterEnd({ isValid: false });
   }
 
   constructor(@Optional() protected readonly monacoEditor: ICodeEditor) {

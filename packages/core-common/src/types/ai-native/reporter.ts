@@ -80,7 +80,6 @@ export interface CommonLogInfo {
   copy: boolean;
   insert: boolean;
   isRetry: boolean;
-  isDrop: boolean;
   language?: string;
   // 针对新版数据增加额外参数
   // 采纳代码
@@ -95,10 +94,13 @@ export interface CommonLogInfo {
   actionSource?: ActionSourceEnum | string;
   // 行动点类型，内置通用，但是很多来自业务
   actionType?: ActionTypeEnum | string;
+  // 是否采纳(采纳必须使用这个字段)
+  isReceive?: boolean;
+  // 是否弃用(弃用必须使用这个字段)
+  isDrop?: boolean;
 }
 
 export interface CompletionRT extends Partial<CommonLogInfo> {
-  isReceive?: boolean;
   // 是否取消
   isStop?: boolean;
   // 补全条数
@@ -177,9 +179,6 @@ export interface InlineChatRT extends Partial<CommonLogInfo> {
 
 export interface CodeEditsRT extends Partial<CommonLogInfo> {
   actionSource?: ECodeEditsSourceTyping;
-  isCancel?: boolean;
-  accept?: boolean;
-  discard?: boolean;
 }
 
 export type ReportInfo =
