@@ -71,7 +71,6 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   @observable
   private _valueSelection?: [number, number];
 
-  @computed
   get valueSelection() {
     return this._valueSelection;
   }
