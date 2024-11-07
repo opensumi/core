@@ -121,6 +121,7 @@ export class AccordionService extends WithEventBus {
 
   readonly visibleViews = derived(this, (reader) => {
     const views = this.viewsObservable.read(reader);
+    this.stateObservable.read(reader);
     return views.filter((view) => {
       const viewState = this.getViewState(view.id);
       return !viewState.hidden;
