@@ -354,6 +354,19 @@ export class AINativeBrowserContribution
           },
         ],
       });
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.codeEdits.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.CodeEditsLintErrors,
+            localized: 'preference.ai.native.codeEdits.lintErrors',
+          },
+          {
+            id: AINativeSettingSectionsId.CodeEditsLineChange,
+            localized: 'preference.ai.native.codeEdits.lineChange',
+          },
+        ],
+      });
     }
 
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
