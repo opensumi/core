@@ -1296,7 +1296,7 @@ export interface FileSnippetTextEdit {
 
 type WorkspaceEditEntry = FileOperation | FileTextEdit | FileSnippetTextEdit;
 
-export const enum WorkspaceEditType {
+export enum WorkspaceEditType {
   File = 1,
   Text = 2,
   // Cell = 3, // not supported yet
