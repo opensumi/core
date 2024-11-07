@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { ECodeEditsSourceTyping, IDisposable } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId, ECodeEditsSourceTyping, IDisposable } from '@opensumi/ide-core-common';
 import { ICursorPositionChangedEvent, Position } from '@opensumi/ide-monaco';
 
 import { BaseCodeEditsSource } from './base';
@@ -30,7 +30,9 @@ export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
 
   private lastEditTime: number | null = null;
   protected doTrigger(position: Position) {
-    if (!position) {
+    const isLineChangeEnabled = this.preferenceService.getValid(AINativeSettingSectionsId.CodeEditsLineChange, false);
+
+    if (!isLineChangeEnabled || !position) {
       return;
     }
 

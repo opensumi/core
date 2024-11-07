@@ -1,5 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { ECodeEditsSourceTyping, Event, FRAME_THREE, IDisposable } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  ECodeEditsSourceTyping,
+  Event,
+  FRAME_THREE,
+  IDisposable,
+} from '@opensumi/ide-core-common';
 import { ICursorPositionChangedEvent, IPosition, Position } from '@opensumi/ide-monaco';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -85,7 +91,9 @@ export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
   }
 
   protected async doTrigger(position: Position) {
-    if (!this.model) {
+    const isLintErrorsEnabled = this.preferenceService.getValid(AINativeSettingSectionsId.CodeEditsLintErrors, false);
+
+    if (!isLintErrorsEnabled || !this.model) {
       return;
     }
 

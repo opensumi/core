@@ -1,4 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIServiceType,
   CodeEditsRT,
@@ -62,6 +63,9 @@ export class CodeEditsContextBean extends Disposable {
 export abstract class BaseCodeEditsSource extends Disposable {
   @Autowired(IAIReporter)
   private aiReporter: IAIReporter;
+
+  @Autowired(PreferenceService)
+  protected preferenceService: PreferenceService;
 
   private cancellationTokenSource = new CancellationTokenSource();
   private readonly relationID = observableValue<string | undefined>(this, undefined);
