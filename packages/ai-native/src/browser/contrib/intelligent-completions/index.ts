@@ -1,8 +1,16 @@
 import { Disposable, ECodeEditsSourceTyping } from '@opensumi/ide-core-common';
-import { IPosition, IRange, InlineCompletion } from '@opensumi/ide-monaco';
+import { IDisposable, IPosition, IRange, InlineCompletion } from '@opensumi/ide-monaco';
+import { ISettableObservable } from '@opensumi/ide-monaco/lib/common/observable';
+import { IGhostTextWidgetModel } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/ghostTextWidget';
+import { InlineCompletionsModel } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionsModel';
+
 
 import type { ILineChangeData } from './source/line-change.source';
 import type { ILinterErrorData } from './source/lint-error.source';
+
+export interface IGhostTextWidgetModelEnhanced extends IGhostTextWidgetModel {
+  readonly targetCompletionModel: ISettableObservable<InlineCompletionsModel | undefined, void> & IDisposable;
+}
 
 export interface IIntelligentCompletionsResult<T = any> {
   readonly items: InlineCompletion[];

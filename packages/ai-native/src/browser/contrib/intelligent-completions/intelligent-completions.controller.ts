@@ -12,17 +12,21 @@ import {
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import {
+  IObservable,
   ISettableObservable,
   ObservableValue,
   autorun,
   autorunWithStoreHandleChanges,
+  constObservable,
   derived,
+  mapObservableArrayCached,
   observableValue,
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commandIds';
+import { GhostTextOrReplacement } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/ghostText';
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
 import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController';
 import {
@@ -31,12 +35,14 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider';
 import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestController';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 
 import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewrite/rewrite-widget';
 import { BaseAIMonacoEditorController } from '../base';
 
 import { AdditionsDeletionsDecorationModel } from './decoration/additions-deletions.decoration';
+import { GhostTextTokenization } from './decoration/ghost-text.decoration';
 import { MultiLineDecorationModel } from './decoration/multi-line.decoration';
 import {
   IMultiLineDiffChangeResult,
@@ -49,7 +55,7 @@ import { CodeEditsSourceCollection } from './source/base';
 import { LineChangeCodeEditsSource } from './source/line-change.source';
 import { LintErrorCodeEditsSource } from './source/lint-error.source';
 
-import { CodeEditsResultValue } from './index';
+import { CodeEditsResultValue, IGhostTextWidgetModelEnhanced } from './index';
 
 export class IntelligentCompletionsController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.intelligent.completions';
@@ -130,6 +136,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       );
 
       const inlineCompletionsController = InlineCompletionsController.get(this.monacoEditor);
+
       if (inlineCompletionsController) {
         observableDisposable.addDispose(
           autorun((reader) => {
@@ -154,9 +161,42 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
           }),
         );
 
+        mapObservableArrayCached(
+          inlineCompletionsController,
+          inlineCompletionsController['_stablizedGhostTexts'] as IObservable<
+            IObservable<GhostTextOrReplacement, unknown>[],
+            unknown
+          >,
+          (ghostText, store) => store.add(
+              (inlineCompletionsController['_instantiationService'] as IInstantiationService).createInstance(
+                GhostTextTokenization,
+                this.monacoEditor,
+                {
+                  ghostText,
+                  minReservedLineCount: constObservable(0),
+                  targetTextModel: inlineCompletionsController.model.map((v) => v?.textModel),
+                  targetCompletionModel: inlineCompletionsController.model,
+                } as IGhostTextWidgetModelEnhanced,
+              ),
+            ),
+        ).recomputeInitiallyAndOnChange(inlineCompletionsController['_store']);
+
         observableDisposable.addDispose(
           autorun((reader) => {
-            const state = inlineCompletionsController.model.read(reader)?.state.read(reader);
+            // 销毁原有的补全提示
+            const ghostTextWidget = (
+              inlineCompletionsController['_ghostTextWidgets'] as IObservable<readonly GhostTextTokenization[], unknown>
+            ).read(reader);
+            ghostTextWidget.forEach((widget) => {
+              widget.dispose();
+            });
+          }),
+        );
+
+        observableDisposable.addDispose(
+          autorun((reader) => {
+            const model = inlineCompletionsController.model.read(reader);
+            const state = model?.state.read(reader);
             const suggestController = SuggestController.get(this.monacoEditor);
             // 当阴影字符超出一行的时候，强制让 suggest 面板向上展示，避免遮挡补全内容
             if (state && state.primaryGhostText?.lineCount >= 2) {
