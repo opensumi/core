@@ -1,7 +1,6 @@
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Deferred, Disposable, Event, IDisposable, Uri } from '@opensumi/ide-core-common';
-
-// eslint-disable-next-line import/no-restricted-paths
+import { IObservable } from '@opensumi/ide-monaco/lib/common/observable';
 
 import {
   ITerminalClient,
@@ -129,12 +128,12 @@ export interface ITerminalSearchService {
 
 export const ITerminalGroupViewService = Symbol('ITerminalGroupViewService');
 export interface ITerminalGroupViewService {
-  currentGroupIndex: number;
-  currentGroupId: string;
-  currentWidgetId: string;
-  currentGroup: IWidgetGroup;
-  currentWidget: IWidget;
-  groups: IWidgetGroup[];
+  readonly groups: IObservable<IWidgetGroup[]>;
+  readonly currentGroupIndex: IObservable<number>;
+  readonly currentGroup: IObservable<IWidgetGroup>;
+  readonly currentGroupId: IObservable<string>;
+  readonly currentWidgetId: IObservable<string>;
+  readonly currentWidget: IObservable<IWidget>;
 
   createGroup(): number;
   getGroup(index: number): IWidgetGroup;

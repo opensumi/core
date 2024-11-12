@@ -91,10 +91,6 @@ describe('prefix quick open service test', () => {
     let d: Deferred<void>;
     injector.addProviders(
       {
-        token: QuickTitleBar,
-        useValue: mockService({}),
-      },
-      {
         token: IThemeService,
         useValue: mockService({}),
       },

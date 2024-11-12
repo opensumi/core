@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree, TreeModel, TreeNodeType } from '@opensumi/ide-components';
-import { IDisposable, isOSX } from '@opensumi/ide-core-browser';
+import { IDisposable, isOSX, useAutorun } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import { ViewModelContext } from '../../scm-model';
@@ -194,6 +194,8 @@ const SCMTreeView = memo(
     onContextMenu,
   }: TreeViewProps) => {
     const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
+    const iconThemeDesc = useAutorun(scmTreeModelService.iconThemeDesc);
+
     const scmTreeService = useInjectable<SCMTreeService>(SCMTreeService);
     const renderSCMTreeNode = useCallback(
       (props: ISCMTreeNodeProps) => (
@@ -210,10 +212,10 @@ const SCMTreeView = memo(
           onContextMenu={onContextMenu}
           defaultLeftPadding={scmTreeService.isTreeMode ? -4 : 4}
           leftPadding={scmTreeService.isTreeMode ? 8 : 0}
-          iconTheme={scmTreeModelService.iconThemeDesc}
+          iconTheme={iconThemeDesc}
         />
       ),
-      [model, scmTreeService, scmTreeModelService],
+      [model, scmTreeService, scmTreeModelService, iconThemeDesc],
     );
 
     if (isReady && !!model) {

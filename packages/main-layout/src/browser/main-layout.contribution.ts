@@ -258,7 +258,7 @@ export class MainLayoutModuleContribution
     });
     commands.registerCommand(WORKBENCH_ACTION_CLOSEPANEL);
     commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND, {
-      execute: () => this.mainLayoutService.getTabbarService('bottom').currentContainerId !== '',
+      execute: () => this.mainLayoutService.getTabbarService('bottom').currentContainerId.get() !== '',
     });
     commands.registerCommand(IS_VISIBLE_LEFT_PANEL_COMMAND, {
       execute: () => this.mainLayoutService.isVisible(SlotLocation.left),

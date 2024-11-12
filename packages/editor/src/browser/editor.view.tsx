@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
@@ -238,7 +237,7 @@ const EditorEmptyComponent: React.FC<{
   );
 };
 
-export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
+export const EditorGroupView = ({ group }: { group: EditorGroup }) => {
   const groupWrapperRef = React.useRef<HTMLElement | null>();
 
   const [isEmpty, setIsEmpty] = React.useState(group.resources.length === 0);
@@ -305,9 +304,9 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
       )}
     </div>
   );
-});
+};
 
-export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
+export const EditorGroupBody = ({ group }: { group: EditorGroup }) => {
   const [context, setContext] = React.useState<IEditorContext>(defaultEditorContext);
 
   const editorBodyRef = React.useRef<HTMLDivElement>(null);
@@ -490,7 +489,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
       </div>
     </EditorContext.Provider>
   );
-});
+};
 
 export const ComponentsWrapper = ({
   component,

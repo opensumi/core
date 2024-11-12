@@ -1,5 +1,3 @@
-import { action, makeObservable, observable, runInAction } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   Emitter,
@@ -15,6 +13,7 @@ import {
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { EditorCollectionService, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceEditDidDeleteFileEvent, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
 
@@ -78,17 +77,13 @@ export class DebugBreakpointsService extends WithEventBus {
 
   public treeNodeMap: Map<string, BreakpointsTreeNode[]> = new Map();
 
-  @observable
-  public enable: boolean;
-
-  @observable
-  public inDebugMode: boolean;
+  public enable = observableValue(this, false);
+  public inDebugMode = observableValue(this, false);
 
   public roots: URI[];
 
   constructor() {
     super();
-    makeObservable(this);
     this.init();
   }
 
@@ -113,8 +108,8 @@ export class DebugBreakpointsService extends WithEventBus {
     });
     this.contextKeyService.onDidChangeContext((e) => {
       if (e.payload.affectsSome(new Set([CONTEXT_IN_DEBUG_MODE_KEY]))) {
-        runInAction(() => {
-          this.inDebugMode = this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY) || false;
+        transaction((tx) => {
+          this.inDebugMode.set(this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY) || false, tx);
         });
       }
     });
@@ -139,15 +134,15 @@ export class DebugBreakpointsService extends WithEventBus {
     this.updateBreakpoints();
   }
 
-  @action
   async updateRoots() {
-    this.enable = this.breakpoints.breakpointsEnabled;
-    this.inDebugMode = this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY) || false;
+    transaction((tx) => {
+      this.enable.set(this.breakpoints.breakpointsEnabled, tx);
+      this.inDebugMode.set(this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY) || false, tx);
+    });
     const roots = await this.workspaceService.roots;
     this.roots = roots.map((file) => new URI(file.uri));
   }
 
-  @action.bound
   toggleBreakpointEnable(data: IDebugBreakpoint | DebugExceptionBreakpoint) {
     if (isDebugBreakpoint(data)) {
       const real = this.breakpoints.getBreakpoint(URI.parse(data.uri), {
@@ -185,7 +180,6 @@ export class DebugBreakpointsService extends WithEventBus {
     }
   }
 
-  @action
   private async updateBreakpoints() {
     await this.breakpoints.whenReady;
     this.treeNodeMap.clear();
@@ -244,12 +238,13 @@ export class DebugBreakpointsService extends WithEventBus {
     this.breakpoints.delBreakpoint(bp);
   }
 
-  @action
   toggleBreakpoints() {
     this.breakpoints.breakpointsEnabled = !this.breakpoints.breakpointsEnabled;
-    this.enable = this.breakpoints.breakpointsEnabled;
+    transaction((tx) => {
+      this.enable.set(this.breakpoints.breakpointsEnabled, tx);
+    });
 
-    if (this.enable) {
+    if (this.enable.get()) {
       this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'enabled');
     } else {
       this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'unenabled');

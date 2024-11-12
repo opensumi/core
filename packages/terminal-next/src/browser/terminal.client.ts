@@ -17,6 +17,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IVariableResolverService } from '@opensumi/ide-variable/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
@@ -191,7 +192,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.addDispose(
       this.internalService.onProcessChange((e) => {
         if (e.sessionId === this.id) {
-          this.widget.processName = e.processName;
+          transaction((tx) => {
+            this.widget.processName.set(e.processName, tx);
+          });
         }
       }),
     );
@@ -281,8 +284,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (!options.cwd) {
       // resolve cwd from the group first widget
       const group = widget.group;
-      if (group.widgets.length > 1 && group.widgets[0]) {
-        const cwd = await this.internalService.getCwd(group.widgets[0].id);
+      const widgets = group.widgets.get();
+      if (widgets.length > 1 && widgets[0]) {
+        const cwd = await this.internalService.getCwd(widgets[0].id);
         if (cwd) {
           options.cwd = cwd;
         }
@@ -755,7 +759,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   updateTerminalName(options: { name: string }) {
-    if (!this.name && !this._widget.name) {
+    if (!this.name && !this._widget.name.get()) {
       this._widget.rename(options.name || this.name);
     }
   }

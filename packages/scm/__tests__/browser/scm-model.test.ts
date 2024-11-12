@@ -72,8 +72,8 @@ describe('test for scm.store.ts', () => {
       // 只会注册进去首个 SCMProvider
       expect(store.repoList[0].provider).toEqual(provider1);
 
-      expect(store.selectedRepos.length).toBe(1);
-      expect(store.selectedRepos[0]).toEqual(repo1);
+      expect(store.selectedRepos.get().length).toBe(1);
+      expect(store.selectedRepos.get()[0]).toEqual(repo1);
 
       repo1.dispose();
       expect(store.repoList.length).toBe(0);
@@ -101,12 +101,12 @@ describe('test for scm.store.ts', () => {
 
         repo1.setSelected(false);
         repo2.setSelected(true);
-        expect(store.selectedRepos).toEqual([repo2]);
+        expect(store.selectedRepos.get()).toEqual([repo2]);
         expect(store.selectedRepo).toEqual(repo2);
 
         repo2.setSelected(false);
         repo1.setSelected(true);
-        expect(store.selectedRepos).toEqual([repo1]);
+        expect(store.selectedRepos.get()).toEqual([repo1]);
         expect(store.selectedRepo).toEqual(repo1);
       });
 

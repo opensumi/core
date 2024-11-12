@@ -63,7 +63,7 @@ describe('quick-pick service test', () => {
       expect(item).toBe('sumi');
       done();
     });
-    const [item] = widget.items;
+    const [item] = widget.items.get();
     item.run(QuickOpenMode.OPEN);
   });
 
@@ -78,6 +78,6 @@ describe('quick-pick service test', () => {
         expect(items![1]).toBe('vscode');
         done();
       });
-    widget.callbacks.onConfirm(widget.items);
+    widget.callbacks.onConfirm(widget.items.get());
   });
 });

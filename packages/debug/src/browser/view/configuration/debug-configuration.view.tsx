@@ -1,9 +1,8 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Option, Popover, Select } from '@opensumi/ide-components';
-import { AppConfig, URI, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, URI, localize, useAutorun, useInjectable } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 
 import {
@@ -260,8 +259,9 @@ export const DebugActionBar = React.memo(({ runDebug, openConfiguration, openDeb
   </div>
 ));
 
-export const DebugConfigurationContainerView = observer(() => {
-  const { float } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+export const DebugConfigurationContainerView = () => {
+  const debugConfigurationService = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+  const float = useAutorun(debugConfigurationService.float);
 
   return (
     <>
@@ -269,7 +269,7 @@ export const DebugConfigurationContainerView = observer(() => {
       {!float && <DebugToolbarView float={false} className={styles.debug_action_bar_internal} />}
     </>
   );
-});
+};
 
 export interface DebugControllerViewProps {
   className?: string;
@@ -280,21 +280,27 @@ export interface DebugControllerViewProps {
  * 该组件支持用户导入
  * 后续如果有一些改动需要考虑是否有 breakchange
  */
-export const DebugControllerView = observer((props: DebugControllerViewProps) => {
+export const DebugControllerView = (props: DebugControllerViewProps) => {
   const {
-    configurationOptions,
-    dynamicConfigurations,
     toValue,
-    currentValue,
     openConfiguration,
     addConfiguration,
     openDebugConsole,
     updateConfiguration,
     start,
     showDynamicQuickPick,
+    currentValue,
+    configurationOptions,
+    dynamicConfigurations,
     isMultiRootWorkspace,
     workspaceRoots,
   } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+  const autorunDynamicConfigurations = useAutorun(dynamicConfigurations);
+  const autorunCurrentValue = useAutorun(currentValue);
+  const autorunConfigurationOptions = useAutorun(configurationOptions);
+  const autorunIsMultiRootWorkspace = useAutorun(isMultiRootWorkspace);
+  const autorunWorkspaceRoots = useAutorun(workspaceRoots);
+
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const addConfigurationLabel = localize('debug.action.add.configuration');
   const editConfigurationLabel = localize('debug.action.edit.configuration');
@@ -329,16 +335,16 @@ export const DebugControllerView = observer((props: DebugControllerViewProps) =>
   return (
     <div className={cls(styles.debug_configuration_toolbar, props.className || '')}>
       <ConfigurationSelector
-        currentValue={currentValue}
-        options={configurationOptions}
-        dynamicOptions={dynamicConfigurations}
+        currentValue={autorunCurrentValue}
+        options={autorunConfigurationOptions}
+        dynamicOptions={autorunDynamicConfigurations}
+        workspaceRoots={autorunWorkspaceRoots}
+        isMultiRootWorkspace={autorunIsMultiRootWorkspace}
         onChangeConfiguration={setCurrentConfiguration}
-        isMultiRootWorkspace={isMultiRootWorkspace}
         addConfigurationLabel={addConfigurationLabel}
         editConfigurationLabel={editConfigurationLabel}
         toValue={toValue}
         isElectronRenderer={appConfig.isElectronRenderer}
-        workspaceRoots={workspaceRoots}
       />
       {CustomActionBar ? (
         <CustomActionBar />
@@ -347,4 +353,4 @@ export const DebugControllerView = observer((props: DebugControllerViewProps) =>
       )}
     </div>
   );
-});
+};

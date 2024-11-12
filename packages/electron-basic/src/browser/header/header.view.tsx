@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -130,65 +129,63 @@ interface ElectronHeaderBarPorps {
 /**
  * autoHide: Hide the HeaderBar when the macOS full screen
  */
-export const ElectronHeaderBar = observer(
-  ({
-    LeftComponent,
-    RightComponent,
-    TitleComponent,
-    autoHide = true,
-    height,
-  }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
-    const windowService: IWindowService = useInjectable(IWindowService);
-    const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
+export const ElectronHeaderBar = ({
+  LeftComponent,
+  RightComponent,
+  TitleComponent,
+  autoHide = true,
+  height,
+}: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
+  const windowService: IWindowService = useInjectable(IWindowService);
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
-    const { isFullScreen } = useFullScreen();
-    const { getMaximized } = useMaximize();
-    if (!LeftComponent) {
-      LeftComponent = HeaderBarLeftComponent;
-    }
-    if (!RightComponent) {
-      RightComponent = HeaderBarRightComponent;
-    }
-    if (!TitleComponent) {
-      TitleComponent = HeaderBarTitleComponent;
-    }
+  const { isFullScreen } = useFullScreen();
+  const { getMaximized } = useMaximize();
+  if (!LeftComponent) {
+    LeftComponent = HeaderBarLeftComponent;
+  }
+  if (!RightComponent) {
+    RightComponent = HeaderBarRightComponent;
+  }
+  if (!TitleComponent) {
+    TitleComponent = HeaderBarTitleComponent;
+  }
 
-    const safeHeight = useMemo(() => {
-      if (height) {
-        return height;
-      }
-
-      return layoutViewSize.calcElectronHeaderHeight();
-    }, [layoutViewSize, height]);
-
-    // in Mac, hide the header bar if it is in full screen mode
-    if (isMacintosh && isFullScreen && autoHide) {
-      return (
-        <div>
-          <TitleComponent hidden={true} />
-        </div>
-      );
+  const safeHeight = useMemo(() => {
+    if (height) {
+      return height;
     }
 
+    return layoutViewSize.calcElectronHeaderHeight();
+  }, [layoutViewSize, height]);
+
+  // in Mac, hide the header bar if it is in full screen mode
+  if (isMacintosh && isFullScreen && autoHide) {
     return (
-      <div
-        className={styles.header}
-        style={{ height: safeHeight }}
-        onDoubleClick={async () => {
-          if (await getMaximized()) {
-            windowService.unmaximize();
-          } else {
-            windowService.maximize();
-          }
-        }}
-      >
-        <LeftComponent />
-        <TitleComponent />
-        <RightComponent />
+      <div>
+        <TitleComponent hidden={true} />
       </div>
     );
-  },
-);
+  }
+
+  return (
+    <div
+      className={styles.header}
+      style={{ height: safeHeight }}
+      onDoubleClick={async () => {
+        if (await getMaximized()) {
+          windowService.unmaximize();
+        } else {
+          windowService.maximize();
+        }
+      }}
+    >
+      <LeftComponent />
+      <TitleComponent />
+      <RightComponent />
+    </div>
+  );
+};
 
 declare const ResizeObserver: any;
 
@@ -204,7 +201,7 @@ export interface TitleBarProps {
   hidden?: boolean;
 }
 
-export const HeaderBarTitleComponent = observer(({ hidden }: TitleBarProps) => {
+export const HeaderBarTitleComponent = ({ hidden }: TitleBarProps) => {
   const headerService = useInjectable(IElectronHeaderService) as IElectronHeaderService;
   const ref = useRef<HTMLDivElement>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
@@ -270,4 +267,4 @@ export const HeaderBarTitleComponent = observer(({ hidden }: TitleBarProps) => {
       <span ref={spanRef}>{appTitle}</span>
     </div>
   );
-});
+};

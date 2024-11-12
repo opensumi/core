@@ -1,5 +1,3 @@
-import { makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Deferred, Emitter, Event, IBaseMarkerManager, MarkerManager, OnEvent } from '@opensumi/ide-core-common';
@@ -16,10 +14,6 @@ import { MarkerGroupNode, MarkerNode, MarkerRoot } from './tree/tree-node.define
 
 const MAX_DIAGNOSTICS_BADGE = 1000;
 
-export interface ViewSize {
-  h: number;
-}
-
 @Injectable()
 export class MarkerService extends Themable implements IMarkerService {
   @Autowired(LabelService)
@@ -30,9 +24,6 @@ export class MarkerService extends Themable implements IMarkerService {
 
   // marker 显示模型
   private markerViewModel: MarkerViewModel;
-
-  @observable
-  public viewSize: ViewSize = { h: 0 };
 
   @Autowired(MarkersContextKey)
   markersContextKey: MarkersContextKey;
@@ -55,7 +46,6 @@ export class MarkerService extends Themable implements IMarkerService {
 
   constructor() {
     super();
-    makeObservable(this);
     this.markerViewModel = new MarkerViewModel(this, this.labelService);
   }
 

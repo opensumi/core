@@ -1,7 +1,6 @@
-import { action, computed, makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
+import { derived, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 import {
   IShellLaunchConfig,
@@ -13,32 +12,18 @@ import {
 } from '../common';
 
 export class Widget extends Disposable implements IWidget {
-  protected _id: string;
   protected _group: WidgetGroup;
   protected _element: HTMLDivElement;
   protected _show: boolean;
   protected _error: boolean;
 
-  @observable
-  dynamic = 0;
+  readonly dynamic = observableValue<number>(this, 0);
+  readonly shadowDynamic = observableValue<number>(this, 0);
+  readonly name = observableValue<string>(this, '');
+  readonly processName = observableValue<string>(this, '');
 
-  @observable
-  shadowDynamic = 0;
-
-  @observable
-  name = '';
-
-  @observable
-  processName: string | undefined;
-
-  constructor(id: string, public reuse: boolean = false, public recovery: boolean = false) {
+  constructor(public readonly id: string, public reuse: boolean = false, public recovery: boolean = false) {
     super();
-    makeObservable(this);
-    this._id = id;
-  }
-
-  get id() {
-    return this._id;
   }
 
   get group() {
@@ -88,22 +73,28 @@ export class Widget extends Disposable implements IWidget {
   onShow: Event<boolean> = this._onShow.event;
   onError: Event<boolean> = this._onError.event;
 
-  @action
   resize(dynamic?: number) {
-    this.dynamic = dynamic || this.shadowDynamic;
-    this.shadowDynamic = this.dynamic;
+    transaction((tx) => {
+      const dynamicValue = dynamic || this.shadowDynamic.get();
+
+      this.dynamic.set(dynamicValue, tx);
+      this.shadowDynamic.set(dynamicValue, tx);
+    });
     this._onResize.fire();
   }
 
-  @action
   increase(increment: number) {
-    this.shadowDynamic += increment;
+    transaction((tx) => {
+      const preValue = this.shadowDynamic.get();
+      this.shadowDynamic.set(preValue + increment, tx);
+    });
     this._onResize.fire();
   }
 
-  @action
   rename(name: string) {
-    this.name = name;
+    transaction((tx) => {
+      this.name.set(name, tx);
+    });
   }
 }
 
@@ -116,20 +107,11 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
   protected _name: string;
   protected _activated: boolean;
 
-  @observable
-  widgets: Widget[] = [];
-
-  @observable
-  editable = false;
-
-  @observable
-  activated = false;
-
-  @observable
-  name = '';
-
-  @observable
-  currentId: string;
+  readonly widgets = observableValue<Widget[]>(this, []);
+  readonly editable = observableValue<boolean>(this, false);
+  readonly activated = observableValue<boolean>(this, false);
+  readonly name = observableValue<string>(this, '');
+  readonly currentId = observableValue<string>(this, '');
 
   widgetsMap: Map<string, Widget> = new Map();
 
@@ -149,54 +131,62 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
   }
 
   get length() {
-    return this.widgets.length;
+    return this.widgets.get().length;
   }
 
   get first() {
-    return this.widgets[0];
+    return this.widgets.get()[0];
   }
 
   get last() {
-    return this.widgets[this.length - 1];
+    return this.widgets.get()[this.length - 1];
   }
 
-  get current() {
-    return this.widgetsMap.get(this.currentId);
-  }
+  readonly current = derived(this, (reader) => {
+    const currentId = this.currentId.read(reader);
+    return this.widgetsMap.get(currentId);
+  });
 
-  @computed
-  get snapshot() {
-    return this.name || this.current?.name || this.processName || '';
-  }
+  readonly snapshot = derived(this, (reader) => {
+    const current = this.current.read(reader);
+    return this.name.read(reader) || current?.name.read(reader) || current?.processName.read(reader) || '';
+  });
 
-  @computed
-  get processName() {
-    return this.current?.processName;
-  }
-
-  @action
   addWidget(widget: Widget) {
-    this.widgets.push(widget);
+    transaction((tx) => {
+      const preWidgets = this.widgets.get();
+      this.widgets.set([...preWidgets, widget], tx);
+    });
     this.widgetsMap.set(widget.id, widget);
 
-    if (!this.currentId) {
-      this.currentId = widget.id;
+    if (!this.currentId.get()) {
+      transaction((tx) => {
+        this.currentId.set(widget.id, tx);
+      });
     }
     this._averageLayout();
   }
 
   findWidget(widget: Widget) {
-    return this.widgets.findIndex((item) => item.id === widget.id);
+    return this.widgets.get().findIndex((item) => item.id === widget.id);
   }
 
-  @action
   selectWidget(widget: Widget) {
-    this.currentId = widget.id;
+    transaction((tx) => {
+      this.currentId.set(widget.id, tx);
+    });
   }
 
   removeWidgetByIndex(index: number) {
-    const widget = this.widgets.splice(index, 1);
+    const widgets = this.widgets.get();
+    const widget = widgets.splice(index, 1);
     this.widgetsMap.delete(widget[0].id);
+    transaction((tx) => {
+      this.widgets.set(
+        widgets.filter((w) => w !== widget[0]),
+        tx,
+      );
+    });
     this._averageLayout();
 
     if (this.last) {
@@ -206,31 +196,34 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return widget[0];
   }
 
-  @action
   edit() {
-    this.editable = true;
+    transaction((tx) => {
+      this.editable.set(true, tx);
+    });
   }
 
-  @action
   unedit() {
-    this.editable = false;
+    transaction((tx) => {
+      this.editable.set(false, tx);
+    });
   }
 
-  @action
   rename(name: string) {
-    this.name = name;
-    this.editable = false;
+    transaction((tx) => {
+      this.name.set(name, tx);
+      this.editable.set(false, tx);
+    });
   }
 
   private _isLast(widget: Widget) {
-    return widget.id === this.widgets[this.widgets.length - 1].id;
+    return widget.id === this.widgets.get()[this.widgets.get().length - 1].id;
   }
 
   private _averageLayout() {
-    const average = Math.round((WidgetGroup.whole / this.widgets.length) * WidgetGroup.float) / WidgetGroup.float;
-    this.widgets.forEach((widget) => {
+    const average = Math.round((WidgetGroup.whole / this.widgets.get().length) * WidgetGroup.float) / WidgetGroup.float;
+    this.widgets.get().forEach((widget) => {
       if (this._isLast(widget)) {
-        widget.resize(WidgetGroup.whole - average * (this.widgets.length - 1));
+        widget.resize(WidgetGroup.whole - average * (this.widgets.get().length - 1));
       } else {
         widget.resize(average);
       }
@@ -240,41 +233,35 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 
 @Injectable()
 export class TerminalGroupViewService implements ITerminalGroupViewService {
-  protected _widgets: Map<string, Widget>;
-
-  @observable
-  groups: WidgetGroup[] = observable.array([]);
-
-  @observable
-  currentGroupId = '';
-
-  @observable
-  currentGroupIndex = -1;
-
   @Autowired(ITerminalInternalService)
   private readonly service: ITerminalInternalService;
+
+  protected _widgets: Map<string, Widget> = new Map();
+
+  readonly groups = observableValue<WidgetGroup[]>(this, []);
+  readonly currentGroupIndex = observableValue<number>(this, -1);
+  readonly currentGroupId = observableValue<string>(this, '');
 
   protected _onWidgetCreated = new Emitter<Widget>();
   protected _onWidgetSelected = new Emitter<Widget>();
   protected _onWidgetDisposed = new Emitter<Widget>();
   protected _onWidgetEmpty = new Emitter<void>();
 
-  constructor() {
-    makeObservable(this);
-    this._widgets = new Map();
-  }
+  readonly currentGroup = derived(this, (reader) => {
+    const groups = this.groups.read(reader);
+    const index = this.currentGroupIndex.read(reader);
+    return groups[index];
+  });
 
-  get currentGroup() {
-    return this.groups[this.currentGroupIndex];
-  }
+  readonly currentWidget = derived(this, (reader) => {
+    const group = this.currentGroup.read(reader);
+    return group && this.getWidget(group.currentId.read(reader));
+  });
 
-  get currentWidget() {
-    return this.getWidget(this.currentGroup.currentId);
-  }
-
-  get currentWidgetId() {
-    return this.currentGroup && this.currentGroup.currentId;
-  }
+  readonly currentWidgetId = derived(this, (reader) => {
+    const group = this.currentGroup.read(reader);
+    return group && group.currentId.read(reader);
+  });
 
   onWidgetCreated = this._onWidgetCreated.event;
   onWidgetSelected = this._onWidgetSelected.event;
@@ -282,24 +269,26 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   onWidgetEmpty = this._onWidgetEmpty.event;
 
   getGroup(index: number): WidgetGroup {
-    if (index > this.groups.length - 1) {
+    if (index > this.groups.get().length - 1) {
       throw new Error('out of groups length');
     }
-    return this.groups[index];
+    return this.groups.get()[index];
   }
 
-  @action
   private _doSelectGroup(index: number) {
     const group = this.getGroup(index);
-    this.currentGroupIndex = index;
-    this.currentGroupId = group.id;
-    group.activated = true;
+    transaction((tx) => {
+      this.currentGroupIndex.set(index, tx);
+      this.currentGroupId.set(group.id, tx);
+      group.activated.set(true, tx);
+    });
     // 恢复的 group.current 为空，手动选择第一个 widget
     if (!group.current && group.first) {
       group.selectWidget(group.first);
     }
-    if (group.current) {
-      this._onWidgetSelected.fire(group.current);
+    const current = group.current.get();
+    if (current) {
+      this._onWidgetSelected.fire(current);
       this.resize();
     }
   }
@@ -308,11 +297,13 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this._doSelectGroup(index);
   }
 
-  @action
   private _doCreateGroup(id?: string, options?: IShellLaunchConfig) {
     const group = new WidgetGroup(id, options);
-    this.groups.push(group);
-    return this.groups.length - 1;
+    transaction((tx) => {
+      const preGroups = this.groups.get();
+      this.groups.set([...preGroups, group], tx);
+    });
+    return this.groups.get().length - 1;
   }
 
   createGroup(options?: IShellLaunchConfig) {
@@ -325,26 +316,35 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     if (this.empty()) {
       this._onWidgetEmpty.fire();
     } else {
-      if (index === this.currentGroupIndex) {
-        this._doSelectGroup(this.groups.length - 1);
+      const currentGroupIndex = this.currentGroupIndex.get();
+      if (index === currentGroupIndex) {
+        this._doSelectGroup(this.groups.get().length - 1);
       }
-      if (index < this.currentGroupIndex) {
-        this._doSelectGroup(this.currentGroupIndex - 1);
+      if (index < currentGroupIndex) {
+        this._doSelectGroup(currentGroupIndex - 1);
       }
     }
   }
 
-  @action
   private _doRemoveGroup(index: number) {
-    const [group] = this.groups.splice(index, 1);
+    const preGroups = this.groups.get();
+
+    const [group] = preGroups.splice(index, 1);
 
     if (group) {
-      group.widgets.forEach((widget) => {
+      group.widgets.get().forEach((widget) => {
         this._widgets.delete(widget.id);
         widget.dispose();
         this._onWidgetDisposed.fire(widget);
       });
       group.dispose();
+
+      transaction((tx) => {
+        this.groups.set(
+          preGroups.filter((g) => g.id !== group.id),
+          tx,
+        );
+      });
     }
 
     this._checkIfEmpty(index);
@@ -367,7 +367,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   selectWidget(id: string) {
     const widget = this.getWidget(id);
     const group = widget.group;
-    const index = this.groups.findIndex((g) => g.id === group.id);
+    const index = this.groups.get().findIndex((g) => g.id === group.id);
     group.selectWidget(widget);
     this.selectGroup(index);
   }
@@ -392,22 +392,26 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   removeWidget(id: string) {
     const widget = this.getWidget(id);
     const group = widget.group;
-    const groupIndex = this.groups.findIndex((g) => group.id === g.id);
+
+    const groupIndex = this.groups.get().findIndex((g) => group.id === g.id);
     const index = group.findWidget(widget);
     group.removeWidgetByIndex(index);
+
     this._widgets.delete(id);
     widget.dispose();
     this._onWidgetDisposed.fire(widget);
     this._checkIfGroupEmpty(groupIndex);
 
-    if (group.current) {
-      this._onWidgetSelected.fire(group.current);
+    const current = group.current.get();
+    if (current) {
+      this._onWidgetSelected.fire(current);
     }
   }
 
   resize() {
-    if (this.currentGroup) {
-      this.currentGroup.widgets.forEach((widget) => {
+    const group = this.currentGroup.get();
+    if (group) {
+      group.widgets.get().forEach((widget) => {
         widget.resize();
       });
     }
@@ -417,9 +421,10 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     return this._widgets.size === 0;
   }
 
-  @action
   clear() {
-    this.groups = observable.array([]);
+    transaction((tx) => {
+      this.groups.set([], tx);
+    });
     this._widgets.clear();
     this._onWidgetEmpty.fire();
   }

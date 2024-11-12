@@ -1,7 +1,6 @@
-import { observer } from 'mobx-react-lite';
 import React, { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { AppConfig, IContextKeyService, View, ViewState, useInjectable } from '@opensumi/ide-core-browser';
+import { IContextKeyService, View, ViewState, useAutorun, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IContextMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -26,7 +25,7 @@ const SCM_EXTRA_PADDING_TOP = 10;
 export const SCMResourcesView: FC<{
   repository: ISCMRepository;
   viewState: ViewState;
-}> = observer(({ repository, viewState }) => {
+}> = ({ repository, viewState }) => {
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
@@ -118,24 +117,25 @@ export const SCMResourcesView: FC<{
       </div>
     </div>
   );
-});
+};
 
 SCMResourcesView.displayName = 'SCMResourcesView';
 
-export const SCMResourcesViewWrapper: FC<{ viewState: ViewState }> = observer((props) => {
+export const SCMResourcesViewWrapper: FC<{ viewState: ViewState }> = (props) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
+  const selectedRepos = useAutorun(viewModel.selectedRepos);
 
-  if (!viewModel.selectedRepos.length) {
+  if (!selectedRepos.length) {
     return <WelcomeView viewId={SCM_WELCOME_ID} />;
   }
-  const selectedRepo = viewModel.selectedRepos[0];
+  const selectedRepo = selectedRepos[0];
 
   if (!selectedRepo || !selectedRepo.provider) {
     return null;
   }
 
   return <SCMResourcesView repository={selectedRepo} viewState={props.viewState} />;
-});
+};
 
 SCMResourcesViewWrapper.displayName = 'SCMResourcesViewWrapper';
 

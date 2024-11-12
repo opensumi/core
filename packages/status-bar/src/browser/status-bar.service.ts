@@ -1,5 +1,3 @@
-import { action, computed, makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { EventEmitter } from '@opensumi/events';
 import { AppConfig, Disposable, IContextKeyService, IDisposable, isUndefined } from '@opensumi/ide-core-browser';
@@ -15,6 +13,7 @@ import {
   StatusBarState,
 } from '@opensumi/ide-core-browser/lib/services';
 import { CommandService, DisposableCollection, memoize } from '@opensumi/ide-core-common';
+import { derived, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 @Injectable()
 export class StatusBarService extends Disposable implements IStatusBarService {
@@ -28,8 +27,7 @@ export class StatusBarService extends Disposable implements IStatusBarService {
   private background: string | undefined;
   private foreground: string | undefined;
 
-  @observable
-  private entries: Map<string, StatusBarEntry> = new Map();
+  private entriesObservable = observableValue<Map<string, StatusBarEntry>>(this, new Map());
 
   @Autowired(CommandService)
   private commandService: CommandService;
@@ -51,11 +49,6 @@ export class StatusBarService extends Disposable implements IStatusBarService {
 
   protected disposableCollection = new Map<string, IDisposable>();
 
-  constructor() {
-    super();
-    makeObservable(this);
-  }
-
   /**
    * 获取背景颜色
    */
@@ -74,7 +67,6 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * 设置整个 Status Bar 背景颜色
    * @param color
    */
-  @action
   setBackgroundColor(color?: string | undefined) {
     this.background = color;
     this.emitter.emit('backgroundColor', color);
@@ -83,7 +75,6 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * 设置 Status Bar 所有文字颜色，当设置值为 undefined 时，文件将回复原有颜色配置
    * @param color
    */
-  @action
   setColor(color?: string | undefined) {
     this.foreground = color;
     this.emitter.emit('color', color);
@@ -91,7 +82,6 @@ export class StatusBarService extends Disposable implements IStatusBarService {
 
   // 暴露给其他地方获取配置数据以自定义渲染
   // 目前 scm 使用
-  @action
   getElementConfig(entryId: string, entry: StatusBarEntry): StatusBarEntry {
     // 如果有 command，覆盖自定义的 click 方法
     if (entry.command) {
@@ -112,7 +102,7 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @returns
    */
   private getEntriesById(id: string) {
-    return this.entriesArray.filter((entry) => entry.id === id);
+    return this.entriesArray.get().filter((entry) => entry.id === id);
   }
 
   /**
@@ -134,7 +124,6 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @param id
    * @param entry
    */
-  @action
   addElement(entryId: string, entry: StatusBarEntry): StatusBarEntryAccessor {
     const disposables = new DisposableCollection();
     entry = this.getElementConfig(entryId, entry);
@@ -164,12 +153,22 @@ export class StatusBarService extends Disposable implements IStatusBarService {
       });
       disposables.push(menuDisposer);
     }
-    this.entries.set(entryId, entry);
+    const preEntries = this.entriesObservable.get();
+    preEntries.set(entryId, entry);
+    transaction((tx) => {
+      this.entriesObservable.set(new Map(preEntries), tx);
+    });
+
     disposables.push(
       Disposable.create(() => {
-        this.entries.delete(entryId);
+        const preEntries = this.entriesObservable.get();
+        preEntries.delete(entryId);
+        transaction((tx) => {
+          this.entriesObservable.set(new Map(preEntries), tx);
+        });
       }),
     );
+
     this.disposableCollection.set(entryId, disposables);
     return {
       dispose: () => {
@@ -181,9 +180,9 @@ export class StatusBarService extends Disposable implements IStatusBarService {
     };
   }
 
-  @action
   toggleElement(entryId: string): void {
-    const entry = this.entries.get(entryId);
+    const entries = this.entriesObservable.get();
+    const entry = entries.get(entryId);
     if (entry?.id) {
       const toggleContextKey = `${entry.id}:toggle`;
       const hidden = !entry.hidden;
@@ -204,15 +203,18 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @param id
    * @param fields
    */
-  @action
   setElement(entryId: string, fields: Partial<StatusBarEntry>) {
-    const current = this.entries.get(entryId);
+    const entries = this.entriesObservable.get();
+    const current = entries.get(entryId);
     if (current) {
       const entry = {
         ...current,
         ...fields,
       };
-      this.entries.set(entryId, this.getElementConfig(entryId, entry));
+      entries.set(entryId, this.getElementConfig(entryId, entry));
+      transaction((tx) => {
+        this.entriesObservable.set(new Map(entries), tx);
+      });
     } else {
       throw new Error(`not found id is ${entryId} element`);
     }
@@ -222,7 +224,6 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * 删除一个元素
    * @param id
    */
-  @action
   removeElement(entryId: string) {
     this.disposableCollection.get(entryId)?.dispose();
     this.disposableCollection.delete(entryId);
@@ -235,14 +236,14 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @type {StatusBarEntry[]}
    * @memberof StatusBarService
    */
-  @computed
-  get entriesArray(): StatusBarEntry[] {
-    return Array.from(this.entries.values()).sort((left, right) => {
+  readonly entriesArray = derived(this, (reader) => {
+    const entries = this.entriesObservable.read(reader);
+    return Array.from(entries.values()).sort((left, right) => {
       const lp = left.priority || 0;
       const rp = right.priority || 0;
       return rp - lp;
     });
-  }
+  });
 
   /**
    * Status Bar 左边的 Item
@@ -250,10 +251,10 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @type {StatusBarEntry[]}
    * @memberof StatusBarService
    */
-  @computed
-  public get leftEntries(): StatusBarEntry[] {
-    return this.entriesArray.filter((entry) => !entry.hidden && entry.alignment === StatusBarAlignment.LEFT);
-  }
+  readonly leftEntries = derived(this, (reader) => {
+    const entries = this.entriesArray.read(reader);
+    return entries.filter((entry) => !entry.hidden && entry.alignment === StatusBarAlignment.LEFT);
+  });
 
   /**
    * Status Bar 右边的 Item
@@ -262,10 +263,10 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @type {StatusBarEntry[]}
    * @memberof StatusBarService
    */
-  @computed
-  public get rightEntries(): StatusBarEntry[] {
-    return this.entriesArray.filter((entry) => !entry.hidden && entry.alignment === StatusBarAlignment.RIGHT);
-  }
+  readonly rightEntries = derived(this, (reader) => {
+    const entries = this.entriesArray.read(reader);
+    return entries.filter((entry) => !entry.hidden && entry.alignment === StatusBarAlignment.RIGHT);
+  });
 
   /**
    * command 转换 onClick 的方法

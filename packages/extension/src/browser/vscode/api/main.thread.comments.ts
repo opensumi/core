@@ -23,6 +23,7 @@ import {
   isUndefined,
 } from '@opensumi/ide-core-common';
 import { positionToRange } from '@opensumi/ide-monaco';
+import { transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import {
   CommentInput,
   CommentThread,
@@ -242,11 +243,13 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
   }
 
   get label(): string | undefined {
-    return this._thread.label;
+    return this._thread.label?.get();
   }
 
   set label(label: string | undefined) {
-    this._thread.label = label;
+    transaction((tx) => {
+      this._thread.label?.set(label, tx);
+    });
     this._onDidChangeLabel.fire(label);
   }
 
@@ -311,7 +314,7 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
   }
 
   public get comments(): CoreComment[] | undefined {
-    return this._thread.comments.map((comment) => this.convertToCoreComment(comment));
+    return this._thread.comments.get().map((comment) => this.convertToCoreComment(comment));
   }
 
   public set comments(newComments: CoreComment[] | undefined) {
@@ -343,12 +346,12 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
     return this._onDidChangeCanReply.event;
   }
   set canReply(state: boolean) {
-    this._thread.readOnly = !state;
+    this._thread.setReadOnly(!state);
     this._onDidChangeCanReply.fire(state);
   }
 
   get canReply() {
-    return !this._thread.readOnly;
+    return !this._thread.readOnly.get();
   }
 
   private readonly _onDidChangeRange = new Emitter<IRange>();
@@ -356,11 +359,15 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
 
   private _collapsibleState: CommentThreadCollapsibleState | undefined;
   get collapsibleState() {
-    return this._thread.isCollapsed ? CommentThreadCollapsibleState.Collapsed : CommentThreadCollapsibleState.Expanded;
+    return this._thread.isCollapsed.get()
+      ? CommentThreadCollapsibleState.Collapsed
+      : CommentThreadCollapsibleState.Expanded;
   }
 
   set collapsibleState(newState: CommentThreadCollapsibleState | undefined) {
-    this._thread.isCollapsed = newState === CommentThreadCollapsibleState.Collapsed;
+    transaction((tx) => {
+      this._thread.isCollapsed.set(newState === CommentThreadCollapsibleState.Collapsed, tx);
+    });
     this._onDidChangeCollasibleState.fire(this._collapsibleState);
   }
 

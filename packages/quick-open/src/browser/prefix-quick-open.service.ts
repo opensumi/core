@@ -271,7 +271,7 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   }
 
   protected doOpen(options?: QuickOpenOptions): void {
-    if (this.quickTitleBar.isAttached) {
+    if (this.quickTitleBar.isAttached.get()) {
       this.quickTitleBar.hide();
     }
 

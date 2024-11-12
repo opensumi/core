@@ -1,24 +1,30 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
+
+import { useAutorun } from '../utils';
 
 import styles from './progress.module.less';
 
 import { IProgressModel } from '.';
 
-export const ProgressBar: React.FC<{ progressModel: IProgressModel; className?: string }> = observer(
-  ({ progressModel, className }) => {
-    const { worked, total, show, fade } = progressModel;
-    return (
-      <div className={cls(className, styles.progressBar, { [styles.hide]: !show }, { [styles.fade]: fade })}>
-        <div
-          className={cls(styles.progress, { [styles.infinite]: !total })}
-          style={total ? { width: (worked / total || 0.02) * 100 + '%' } : { width: '2%' }}
-        ></div>
-      </div>
-    );
-  },
-);
+export const ProgressBar: React.FC<{ progressModel: IProgressModel; className?: string }> = ({
+  progressModel,
+  className,
+}) => {
+  const worked = useAutorun(progressModel.worked);
+  const total = useAutorun(progressModel.total);
+  const show = useAutorun(progressModel.show);
+  const fade = useAutorun(progressModel.fade);
+
+  return (
+    <div className={cls(className, styles.progressBar, { [styles.hide]: !show }, { [styles.fade]: fade })}>
+      <div
+        className={cls(styles.progress, { [styles.infinite]: !total })}
+        style={total ? { width: (worked / total || 0.02) * 100 + '%' } : { width: '2%' }}
+      ></div>
+    </div>
+  );
+};
 
 export const Progress: React.FC<{
   loading: boolean;

@@ -82,21 +82,21 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
   });
 
   it('ok for state#menubarItems', () => {
-    expect(menubarStore.menubarItems).toEqual([]);
+    expect(menubarStore.menubarItems.get()).toEqual([]);
 
     menubarService.menubarItems = [
       { id: 'helpMenu', label: 'help' },
       { id: 'windowMenu', label: 'window' },
     ];
 
-    expect(menubarStore.menubarItems).toEqual([
+    expect(menubarStore.menubarItems.get()).toEqual([
       { id: 'helpMenu', label: 'help' },
       { id: 'windowMenu', label: 'window' },
     ]);
 
     menubarService.menubarItems = [{ id: 'helpMenu', label: 'help' }];
 
-    expect(menubarStore.menubarItems).toEqual([{ id: 'helpMenu', label: 'help' }]);
+    expect(menubarStore.menubarItems.get()).toEqual([{ id: 'helpMenu', label: 'help' }]);
   });
 
   it('ok for state#menuItems', () => {

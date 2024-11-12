@@ -29,8 +29,6 @@
     "jsonc-parser": "^2.1.0",
     "keycode": "^2.2.0",
     "lodash": "^4.17.21",
-    "mobx": "^6.12.0",
-    "mobx-react-lite": "^4.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-is": "^18.2.0",

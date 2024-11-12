@@ -13,11 +13,7 @@ import { QuickTitleBar } from './quick-title-bar';
 
 @Injectable({ multiple: true })
 export class InputBoxImpl {
-  private _options: QuickInputOptions = {};
-
-  constructor(options: QuickInputOptions) {
-    this._options = options;
-  }
+  constructor(private _options: QuickInputOptions) {}
 
   getDerivedOptionsFromValue: ((value: string) => Promise<QuickInputOptions | undefined>) | undefined;
 

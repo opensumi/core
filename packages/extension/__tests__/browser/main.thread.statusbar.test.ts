@@ -65,8 +65,8 @@ describe('MainThreadStatusBar API Test Suites', () => {
     statusbar.tooltip = 'testtooltip';
 
     setTimeout(() => {
-      expect(statusbarService.rightEntries.length).toBe(1);
-      const mainthreadStatusbarItem = statusbarService.rightEntries[0];
+      expect(statusbarService.rightEntries.get().length).toBe(1);
+      const mainthreadStatusbarItem = statusbarService.rightEntries.get()[0];
       expect(mainthreadStatusbarItem.text).toBe('test1');
       expect(mainthreadStatusbarItem.alignment).toBe(1);
       expect(mainthreadStatusbarItem.color).toBe('#ff004f');
@@ -96,7 +96,7 @@ describe('MainThreadStatusBar API Test Suites', () => {
     statusbar.command = 'test:statusbar';
     statusbar.show();
     setTimeout(() => {
-      const mainthreadStatusbarItem = statusbarService.leftEntries[0];
+      const mainthreadStatusbarItem = statusbarService.leftEntries.get()[0];
       if (mainthreadStatusbarItem.onClick) {
         mainthreadStatusbarItem.onClick({});
       }

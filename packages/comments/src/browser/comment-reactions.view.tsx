@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Disposable, IEventBus, getExternalIcon, useInjectable } from '@opensumi/ide-core-browser';
@@ -21,7 +20,7 @@ export const CommentReactionSwitcher: React.FC<{
   thread: ICommentsThread;
   comment: IThreadComment;
   className?: string;
-}> = observer(({ thread, comment, className }) => {
+}> = ({ thread, comment, className }) => {
   const key = `${thread.providerId}_${thread.id}_${comment.id}`;
   const menuId = `${MenuId.CommentReactionSwitcherMenu}_${key}`;
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
@@ -68,12 +67,12 @@ export const CommentReactionSwitcher: React.FC<{
   }, []);
 
   return <InlineActionBar className={className} menus={reactionsContext} regroup={(nav) => [nav, []]} type='icon' />;
-});
+};
 
 export const CommentReactions: React.FC<{
   thread: ICommentsThread;
   comment: IThreadComment;
-}> = observer(({ thread, comment }) => {
+}> = ({ thread, comment }) => {
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const iconService = useInjectable<IIconService>(IIconService);
   const handleClickReaction = React.useCallback((reaction: CommentReaction) => {
@@ -105,4 +104,4 @@ export const CommentReactions: React.FC<{
         ))}
     </div>
   );
-});
+};

@@ -1,7 +1,6 @@
-import { action, makeObservable, observable, runInAction } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { IEventBus, PreferenceConfigurations, PreferenceService, URI, isUndefined } from '@opensumi/ide-core-browser';
+import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 
@@ -51,27 +50,15 @@ export class DebugConfigurationService {
   private _whenReady: Promise<void>;
 
   constructor() {
-    makeObservable(this);
     this._whenReady = this.init();
   }
 
-  @observable
-  currentValue: string = DEFAULT_ADD_CONFIGURATION_KEY;
-
-  @observable
-  float = true;
-
-  @observable
-  isMultiRootWorkspace: boolean;
-
-  @observable.shallow
-  workspaceRoots: string[] = observable.array([]);
-
-  @observable.shallow
-  configurationOptions: DebugSessionOptions[] = observable.array([]);
-
-  @observable.shallow
-  dynamicConfigurations: DebugConfigurationType[] = [];
+  currentValue = observableValue(this, DEFAULT_ADD_CONFIGURATION_KEY);
+  float = observableValue(this, false);
+  configurationOptions = observableValue<DebugSessionOptions[]>(this, []);
+  dynamicConfigurations = observableValue<DebugConfigurationType[]>(this, []);
+  isMultiRootWorkspace = observableValue(this, false);
+  workspaceRoots = observableValue<string[]>(this, []);
 
   get whenReady() {
     return this._whenReady;
@@ -88,7 +75,7 @@ export class DebugConfigurationService {
     this.preferenceService.onPreferenceChanged((event) => {
       const { preferenceName, newValue } = event;
       if (preferenceName === 'debug.toolbar.float') {
-        if (this.float !== newValue) {
+        if (this.float.get() !== newValue) {
           this.updateFloat(newValue);
         }
       }
@@ -107,30 +94,33 @@ export class DebugConfigurationService {
 
   async updateWorkspaceState() {
     const roots = (await this.workspaceService.tryGetRoots()).map((root) => root.uri);
-    runInAction(() => {
-      this.isMultiRootWorkspace = this.workspaceService.isMultiRootWorkspaceOpened;
-      this.workspaceRoots = roots;
+    transaction((tx) => {
+      this.isMultiRootWorkspace.set(this.workspaceService.isMultiRootWorkspaceOpened, tx);
+      this.workspaceRoots.set(roots, tx);
     });
   }
 
-  @action
   async updateDynamicConfigurations() {
-    this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    const types = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    transaction((tx) => {
+      this.dynamicConfigurations.set(types, tx);
+    });
   }
 
-  @action
   updateFloat(value: boolean) {
-    this.float = value;
+    this.float.set(value, undefined);
   }
 
-  @action
   updateCurrentValue(value: string) {
-    this.currentValue = value;
+    transaction((tx) => {
+      this.currentValue.set(value, tx);
+    });
   }
 
-  @action
   async updateConfigurationOptions() {
-    this.configurationOptions = this.debugConfigurationManager.all;
+    transaction((tx) => {
+      this.configurationOptions.set(this.debugConfigurationManager.all, tx);
+    });
     const { current } = this.debugConfigurationManager;
     if (current) {
       const currentValue = this.toValue(current);
@@ -203,13 +193,12 @@ export class DebugConfigurationService {
     if (config) {
       this.debugSessionManager.start({
         configuration: config,
-        workspaceFolderUri: this.workspaceRoots[0],
+        workspaceFolderUri: this.workspaceRoots.get()[0],
         index: -1,
       });
     }
   };
 
-  @action.bound
   toValue({ configuration, workspaceFolderUri, index }: DebugSessionOptions) {
     if (!workspaceFolderUri) {
       return configuration.name;
@@ -219,7 +208,7 @@ export class DebugConfigurationService {
       if (options && options.index) {
         return this.toValue(options);
       }
-      return this.currentValue;
+      return this.currentValue.get();
     }
     return (
       configuration.name +

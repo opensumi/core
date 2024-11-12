@@ -2375,8 +2375,6 @@ __metadata:
     jsonc-parser: "npm:^2.1.0"
     keycode: "npm:^2.2.0"
     lodash: "npm:^4.17.21"
-    mobx: "npm:^6.12.0"
-    mobx-react-lite: "npm:^4.0.5"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-is: "npm:^18.2.0"
@@ -2508,8 +2506,6 @@ __metadata:
     less: "npm:^3.9.0"
     less-loader: "npm:^12.1.0"
     mini-css-extract-plugin: "npm:^2.7.7"
-    mobx: "npm:^6.12.0"
-    mobx-react-lite: "npm:^4.0.5"
     null-loader: "npm:^4.0.1"
     optimize-css-assets-webpack-plugin: "npm:^6.0.1"
     react-dom: "npm:^18.2.0"
@@ -2597,6 +2593,7 @@ __metadata:
     "@opensumi/ide-extension": "workspace:*"
     "@opensumi/ide-main-layout": "workspace:*"
     "@opensumi/ide-markdown": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@types/node-fetch": "npm:^2.6.1"
@@ -2788,6 +2785,7 @@ __metadata:
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
   languageName: unknown
   linkType: soft
@@ -2827,6 +2825,7 @@ __metadata:
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
   languageName: unknown
   linkType: soft
@@ -3113,6 +3112,7 @@ __metadata:
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
   languageName: unknown
   linkType: soft
@@ -3158,6 +3158,7 @@ __metadata:
     "@opensumi/ide-editor": "workspace:*"
     "@opensumi/ide-file-service": "workspace:*"
     "@opensumi/ide-main-layout": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-status-bar": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
@@ -13978,30 +13979,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx-react-lite@npm:^4.0.5":
-  version: 4.0.7
-  resolution: "mobx-react-lite@npm:4.0.7"
-  dependencies:
-    use-sync-external-store: "npm:^1.2.0"
-  peerDependencies:
-    mobx: ^6.9.0
-    react: ^16.8.0 || ^17 || ^18
-  peerDependenciesMeta:
-    react-dom:
-      optional: true
-    react-native:
-      optional: true
-  checksum: 10/294754f8a3b44aa83ace02397530f059cce40dda09bdd546f0fca6b004be4dff2dfc6e180ab24686957e45d244408b08e13754cc74c3c2af3076f6ad0ecaa898
-  languageName: node
-  linkType: hard
-
-"mobx@npm:^6.12.0":
-  version: 6.12.0
-  resolution: "mobx@npm:6.12.0"
-  checksum: 10/65d784abfc141a807160e0147b25e56069fb8942caafe4ffcd53542f58695bcfa7840cc266a2386efb8f9c4e8ccc1ed662f0dab784a2e449e055a9d49a2a2126
-  languageName: node
-  linkType: hard
-
 "modify-values@npm:^1.0.1":
   version: 1.0.1
   resolution: "modify-values@npm:1.0.1"
@@ -19645,15 +19622,6 @@ __metadata:
     punycode: "npm:^1.4.1"
     qs: "npm:^6.11.2"
   checksum: 10/a3a5ba64d8afb4dda111355d94073a9754b88b1de4035554c398b75f3e4d4244d5e7ae9e4554f0d91be72efd416aedbb646fbb1f3dd4cacecca45ed6c9b75145
-  languageName: node
-  linkType: hard
-
-"use-sync-external-store@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "use-sync-external-store@npm:1.2.0"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/a676216affc203876bd47981103f201f28c2731361bb186367e12d287a7566763213a8816910c6eb88265eccd4c230426eb783d64c373c4a180905be8820ed8e
   languageName: node
   linkType: hard
 

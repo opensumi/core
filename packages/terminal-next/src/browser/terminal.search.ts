@@ -24,7 +24,7 @@ export class TerminalSearchService implements ITerminalSearchService {
   onVisibleChange: Event<boolean> = this._onVisibleChange.event;
 
   get client(): ITerminalClient | undefined {
-    return this.controller.findClientFromWidgetId(this.terminalView.currentWidget.id);
+    return this.controller.findClientFromWidgetId(this.terminalView.currentWidget.get().id);
   }
 
   open() {

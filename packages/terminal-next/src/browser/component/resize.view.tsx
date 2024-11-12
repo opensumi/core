@@ -1,8 +1,7 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, useAutorun, useInjectable } from '@opensumi/ide-core-browser';
 
 import { ITerminalGroupViewService } from '../../common/controller';
 import { IWidget, IWidgetGroup } from '../../common/resize';
@@ -23,8 +22,46 @@ export interface IResizeViewProps {
   draw: (widget: IWidget) => JSX.Element;
 }
 
-export default observer((props: IResizeViewProps) => {
+const ResizeItem = ({ index, widget, wholeWidth, setEvent, self, left, right, last }) => {
+  const shadowDynamic = useAutorun(widget.shadowDynamic);
+
+  return (
+    <div key={`resize-item-${index}`} style={{ width: `${shadowDynamic}%` }} className={styles.resizeHandler}>
+      <ResizeDelegate
+        wholeWidth={wholeWidth}
+        start={() => setEvent(true)}
+        stop={() => setEvent(false)}
+        self={self}
+        left={left}
+        right={right}
+        last={last}
+      />
+    </div>
+  );
+};
+
+const ResizePanelItem = ({ widget, dynamic, draw, handleRemoveWidget, widgetsLength }) => {
+  const _dynamic = useAutorun(dynamic);
+
+  return (
+    <div key={widget.id} style={{ width: `${_dynamic}%` }} className={styles.resizeItem}>
+      {draw(widget)}
+      {widgetsLength > 1 && (
+        <div
+          className={cls(styles.closeBtn, getIcon('close'))}
+          onClick={() => {
+            handleRemoveWidget(widget.id);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+export default (props: IResizeViewProps) => {
   const { group, shadow } = props;
+  const widgets = useAutorun(group.widgets);
+
   const [event, setEvent] = React.useState(false);
   const [wholeWidth, setWholeWidth] = React.useState(Infinity);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
@@ -42,61 +79,39 @@ export default observer((props: IResizeViewProps) => {
 
   return (
     <div className={styles.resizeWrapper} ref={whole}>
-      <div
-        style={{
-          pointerEvents: event ? 'all' : 'none',
-        }}
-        className={styles.resizeDelegate}
-      >
-        {group &&
-          group.widgets.map((widget, index) => {
-            const left = index - 1 > -1 ? group.widgets[index - 1] : null;
-            const self = group.widgets[index];
-            const right = index + 1 < group.widgets.length ? group.widgets[index + 1] : null;
+      <div style={{ pointerEvents: event ? 'all' : 'none' }} className={styles.resizeDelegate}>
+        {widgets &&
+          widgets.map((widget, index) => {
+            const left = index - 1 > -1 ? widgets[index - 1] : null;
+            const self = widgets[index];
+            const right = index + 1 < widgets.length ? widgets[index + 1] : null;
+
             return (
-              <div
-                key={`resize-item-${index}`}
-                style={{ width: `${widget.shadowDynamic}%` }}
-                className={styles.resizeHandler}
-              >
-                <ResizeDelegate
-                  wholeWidth={wholeWidth}
-                  start={() => setEvent(true)}
-                  stop={() => setEvent(false)}
-                  self={self}
-                  left={left}
-                  right={right}
-                  last={index === group.widgets.length - 1}
-                />
-              </div>
+              <ResizeItem
+                index={index}
+                widget={widget}
+                wholeWidth={wholeWidth}
+                setEvent={setEvent}
+                self={self}
+                left={left}
+                right={right}
+                last={index === widgets.length - 1}
+              />
             );
           })}
       </div>
-      <div
-        style={{
-          pointerEvents: !event ? 'all' : 'none',
-        }}
-        className={styles.resizePanel}
-      >
-        {group &&
-          group.widgets.map((widget) => (
-            <div
-              key={widget.id}
-              style={{ width: `${shadow ? widget.dynamic : widget.shadowDynamic}%` }}
-              className={styles.resizeItem}
-            >
-              {props.draw(widget)}
-              {group.widgets.length > 1 && (
-                <div
-                  className={cls(styles.closeBtn, getIcon('close'))}
-                  onClick={() => {
-                    handleRemoveWidget(widget.id);
-                  }}
-                />
-              )}
-            </div>
-          ))}
+      <div style={{ pointerEvents: !event ? 'all' : 'none' }} className={styles.resizePanel}>
+        {widgets &&
+          widgets.map((widget) => (
+              <ResizePanelItem
+                widget={widget}
+                dynamic={shadow ? widget.dynamic : widget.shadowDynamic}
+                draw={props.draw}
+                handleRemoveWidget={handleRemoveWidget}
+                widgetsLength={widgets.length}
+              />
+            ))}
       </div>
     </div>
   );
-});
+};

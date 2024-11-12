@@ -11,6 +11,7 @@ import {
   URI,
 } from '@opensumi/ide-core-browser';
 import { IEditor } from '@opensumi/ide-editor';
+import { IObservable, ISettableObservable } from '@opensumi/ide-monaco/lib/common/observable';
 
 import type { ITree, ITreeNode } from '@opensumi/ide-components';
 import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/common/editor';
@@ -470,7 +471,7 @@ export interface ICommentsThread extends IDisposable {
   /**
    * 评论
    */
-  comments: IThreadComment[];
+  comments: IObservable<IThreadComment[]>;
   /**
    * 当前 thread 的 uri
    */
@@ -482,7 +483,7 @@ export interface ICommentsThread extends IDisposable {
   /**
    * 是否折叠，默认为 false
    */
-  isCollapsed: boolean;
+  isCollapsed: ISettableObservable<boolean>;
   /**
    * 附属数据
    */
@@ -494,7 +495,7 @@ export interface ICommentsThread extends IDisposable {
   /**
    * 在 header 组件显示的文案
    */
-  label?: string;
+  label?: ISettableObservable<string | undefined>;
   /**
    * thread 参数
    */
@@ -502,11 +503,11 @@ export interface ICommentsThread extends IDisposable {
   /**
    * thread 头部文案
    */
-  threadHeaderTitle: string;
+  threadHeaderTitle: IObservable<string>;
   /**
    * 是否是只读
    */
-  readOnly: boolean;
+  readOnly: IObservable<boolean>;
   /**
    * 评论面板的 context key service
    */
@@ -582,6 +583,10 @@ export interface ICommentsThread extends IDisposable {
    * dispise 时会执行
    */
   onDispose: Event<void>;
+  /**
+   * 设置只读状态
+   */
+  setReadOnly(readOnly: boolean): void;
 }
 
 export interface ICommentsThreadOptions {
