@@ -1,19 +1,3 @@
-// eslint-disable-next-line import/order
-import type {
-  CodeEditorFactory,
-  CompletionProvider,
-  EditorState,
-  ICoordinate,
-  IEditor,
-  IEditorConfig,
-  IEditorOptions,
-  IModel,
-  IModelContentChange,
-  IPosition,
-  IRange,
-  SearchMatch,
-  TooltipProvider,
-} from '@difizen/libro-code-editor';
 import { defaultConfig } from '@difizen/libro-code-editor';
 import { MIME } from '@difizen/libro-common';
 import { EditorStateFactory, IEditorStateOptions } from '@difizen/libro-jupyter/noeditor';
@@ -41,6 +25,20 @@ import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor
 
 import { OpensumiInjector } from '../../mana';
 
+import type {
+  CodeEditorFactory,
+  CompletionProvider,
+  EditorState,
+  IEditor,
+  IEditorConfig,
+  IEditorOptions,
+  IModel,
+  IModelContentChange,
+  IPosition,
+  IRange,
+  SearchMatch,
+  TooltipProvider,
+} from '@difizen/libro-code-editor';
 import type { LSPProvider } from '@difizen/libro-lsp';
 import type { IStandaloneEditorConstructionOptions as MonacoEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 import './index.less';
@@ -55,9 +53,6 @@ export interface LibroOpensumiEditorConfig extends IEditorConfig {
    * content mimetype
    */
   mimetype?: string;
-
-  // FIXME-TRANS: Handle theme localizable names
-  // themeDisplayName?: string
 
   /**
    * Whether to use the context-sensitive indentation that the mode provides
@@ -83,7 +78,6 @@ export interface LibroOpensumiEditorConfig extends IEditorConfig {
    * Can be used to specify extra keybindings for the editor, alongside the
    * ones defined by keyMap. Should be either null, or a valid keymap value.
    */
-  // extraKeys?: KeyBinding[] | null;
 
   /**
    * Can be used to add extra gutters (beyond or instead of the line number
@@ -193,7 +187,6 @@ export const libroOpensumiEditorDefaultConfig: Required<LibroOpensumiEditorConfi
   smartIndent: true,
   electricChars: true,
   keyMap: 'default',
-  // extraKeys: null,
   gutters: [],
   fixedGutter: true,
   showCursorWhenSelecting: false,
@@ -330,11 +323,12 @@ export class LibroOpensumiEditor implements IEditor {
     this._model = options.model;
 
     const config = options.config || {};
-    const fullConfig = (this._config = {
+    const fullConfig = {
       ...libroOpensumiEditorDefaultConfig,
       ...config,
       mimetype: options.model.mimeType,
-    });
+    };
+    this._config = fullConfig;
 
     this.completionProvider = options.completionProvider;
     this.tooltipProvider = options.tooltipProvider;
@@ -350,9 +344,7 @@ export class LibroOpensumiEditor implements IEditor {
     this.onCursorActivity();
 
     this.toDispose.push(watch(this._model, 'mimeType', this.onMimeTypeChanged));
-    // this.toDispose.push(watch(this._model, 'value', this.onValueChange));
     this.toDispose.push(watch(this._model, 'selections', this.onSelectionChange));
-    // this.toDispose.push(this.themeService.onDidColorThemeChange(this.onThemeChange));
   }
 
   get theme(): string {
@@ -366,58 +358,20 @@ export class LibroOpensumiEditor implements IEditor {
         enabled: false,
       },
       lineHeight: editorConfig.lineHeight ?? this.defaultLineHeight,
-      // fontSize: editorConfig.fontSize ?? 13,
       lineNumbers: editorConfig.lineNumbers ? 'on' : 'off',
-      // folding: editorConfig.codeFolding,
       wordWrap: editorConfig.lineWrap,
       renderLineHighlightOnlyWhenFocus: true,
-      // lineDecorationsWidth: 15,
-      // lineNumbersMinChars: 3,
-      // suggestSelection: 'first',
-      // wordBasedSuggestions: 'off',
-      // lineDecorationsWidth: 15,
-      // lineNumbersMinChars: 3,
-      // suggestSelection: 'first',
-      // wordBasedSuggestions: 'off',
       scrollBeyondLastLine: false,
-      // overflowWidgetsDomNode: document.getElementById('monaco-editor-overflow-widgets-root')!,
       fixedOverflowWidgets: true,
-      // suggest: { snippetsPreventQuickSuggestions: false },
-      // autoClosingQuotes: editorConfig.autoClosingBrackets ? 'always' : 'never',
-      // autoDetectHighContrast: false,
-      // suggest: { snippetsPreventQuickSuggestions: false },
-      // autoClosingQuotes: editorConfig.autoClosingBrackets ? 'always' : 'never',
-      // autoDetectHighContrast: false,
       scrollbar: {
         alwaysConsumeMouseWheel: false,
         verticalScrollbarSize: 0,
       },
       glyphMargin: false,
       extraEditorClassName: OpensumiEditorClassname,
-      // renderLineHighlight: 'all',
-      // renderLineHighlightOnlyWhenFocus: true,
-      // renderLineHighlight: 'all',
-      // renderLineHighlightOnlyWhenFocus: true,
       readOnly: editorConfig.readOnly,
-      // cursorWidth: 1,
-      // tabSize: editorConfig.tabSize,
-      // insertSpaces: editorConfig.insertSpaces,
-      // matchBrackets: editorConfig.matchBrackets ? 'always' : 'never',
-      // rulers: editorConfig.rulers,
-      // wordWrapColumn: editorConfig.wordWrapColumn,
-      // 'semanticHighlighting.enabled': true,
-      // cursorWidth: 1,
-      // tabSize: editorConfig.tabSize,
-      // insertSpaces: editorConfig.insertSpaces,
-      // matchBrackets: editorConfig.matchBrackets ? 'always' : 'never',
-      // rulers: editorConfig.rulers,
-      // wordWrapColumn: editorConfig.wordWrapColumn,
-      // 'semanticHighlighting.enabled': true,
       maxTokenizationLineLength: 10000,
       wrappingStrategy: 'advanced',
-      // hover: {
-      //   enabled: true,
-      // },
     };
   }
 
@@ -531,42 +485,23 @@ export class LibroOpensumiEditor implements IEditor {
     }
   }
 
-  protected onValueChange() {
-    // this.editor?.codeEditor.setValue(this.model.value);
-  }
+  protected onValueChange() {}
 
   protected onSelectionChange() {
     this.setSelections(this.model.selections);
   }
-
-  // protected onThemeChange = () => {
-  //   this.monacoEditor?.updateOptions({ theme: this.theme });
-  // };
 
   /**
    * Handles a mime type change.
    * 切换语言
    * cell 切换没走这里
    */
-  protected onMimeTypeChanged(): void {
-    // const model = this.monacoEditor?.getModel();
-    // model?.setLanguage('')
-    // if (this.languageSpec && model) {
-    //   editor.setModelLanguage(model, this.languageSpec.language);
-    // }
-  }
+  protected onMimeTypeChanged(): void {}
 
   /**
    * Handles a cursor activity event.
    */
-  protected onCursorActivity(): void {
-    // Only add selections if the editor has focus. This avoids unwanted
-    // triggering of cursor activity due to collaborator actions.
-    if (this.hasFocus()) {
-      // const selections = this.getSelections();
-      // this.model.selections = selections;
-    }
-  }
+  protected onCursorActivity(): void {}
 
   getOption<K extends keyof LibroOpensumiEditorConfig>(option: K) {
     return this._config[option];
@@ -581,20 +516,6 @@ export class LibroOpensumiEditor implements IEditor {
     if (value === null || value === undefined) {
       return;
     }
-
-    // if (option === 'theme') {
-    //   this._config.theme = value as NonNullable<LibroE2EditorConfig['theme']>;
-    //   this.monacoEditor?.updateOptions({
-    //     theme: this.theme,
-    //   });
-    // }
-
-    // if (option === 'placeholder') {
-    //   this._config.placeholder = value as NonNullable<
-    //     LibroE2EditorConfig['placeholder']
-    //   >;
-    //   this.placeholder.update(value as NonNullable<LibroE2EditorConfig['placeholder']>);
-    // }
 
     const sizeKeys = ['fontFamily', 'fontSize', 'lineHeight', 'wordWrapColumn', 'lineWrap'];
     const monacoOptionkeys = sizeKeys.concat(['readOnly', 'insertSpaces', 'tabSize']);
@@ -632,8 +553,7 @@ export class LibroOpensumiEditor implements IEditor {
   resizeToFit = () => {
     this.monacoEditor?.layout();
   };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getPositionForCoordinate = (coordinate: ICoordinate) => null;
+  getPositionForCoordinate = () => null;
 
   protected modalChangeEmitter = new Emitter<boolean>();
   get onModalChange() {
@@ -771,7 +691,6 @@ export class LibroOpensumiEditor implements IEditor {
           return {
             range: item,
             options: {
-              className: 'currentFindMatch', // 当前高亮
               description: '',
             },
           };
@@ -779,7 +698,6 @@ export class LibroOpensumiEditor implements IEditor {
         return {
           range: item,
           options: {
-            className: 'findMatch', // 匹配高亮
             description: '',
           },
         };

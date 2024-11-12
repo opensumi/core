@@ -17,6 +17,7 @@ import {
   Schemes,
   URI,
 } from '@opensumi/ide-core-browser';
+import { message } from '@opensumi/ide-core-browser/lib/components';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
@@ -136,7 +137,7 @@ export class LibroContribution
         if (!this.serverManagerInited && this.config.notebookServerHost) {
           this.serverManagerInited = true;
           // 目前直接从浏览器连接 jupyter 服务，对服务的cors等配置会有要求
-          this.connectJupyterServer(this.config.notebookServerHost);
+          this.connectJupyterServer(this.config.notebookServerHost).catch((err) => message.error(err.message));
         }
         results.push({
           type: 'component',
@@ -177,7 +178,7 @@ export class LibroContribution
     });
   }
 
-  protected connectJupyterServer(serverHost: string) {
+  protected async connectJupyterServer(serverHost: string) {
     const libroServerConnection = this.manaContainer.get(ServerConnection);
     libroServerConnection.updateSettings(
       window.location.protocol === 'https:'
@@ -191,6 +192,6 @@ export class LibroContribution
           },
     );
     const serverManager = this.manaContainer.get(ServerManager);
-    serverManager.launch();
+    await serverManager.launch();
   }
 }

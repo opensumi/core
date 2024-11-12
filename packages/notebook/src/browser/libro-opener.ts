@@ -33,11 +33,6 @@ export const toMonacoPosition = (position: IPosition | undefined): LibroPosition
 
 @Injectable()
 export class LibroOpener implements IOpener {
-  // @Autowired(ResourceService)
-  // resourceService: ResourceService;
-
-  // @Autowired(WorkbenchEditorService)
-  // workbenchEditorService: WorkbenchEditorService;
   @Autowired(LibroOpensumiService)
   libroOpensumiService: LibroOpensumiService;
 
