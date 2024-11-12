@@ -16,10 +16,10 @@ export interface ILibroOpensumiService {
   // manaContainer: Container;
   libroTrackerMap: Map<string, LibroTracker>;
   // editorService: WorkbenchEditorService;
-  getOrCreatLibroView: (uri: URI) => Promise<LibroView>;
+  getOrCreateLibroView: (uri: URI) => Promise<LibroView>;
   updateDirtyStatus: (uri: URI, dirty: boolean) => void;
   getCellViewByUri: (uri: URI) => Promise<CellView | undefined>;
-  getCellLangauge: (cell: CellView) => string | undefined;
+  getCellLanguage: (cell: CellView) => string | undefined;
 }
 
 @Injectable()
@@ -40,7 +40,7 @@ export class LibroOpensumiService extends WithEventBus implements ILibroOpensumi
     return libroService;
   }
 
-  getOrCreatLibroView = async (uri: URI) => {
+  getOrCreateLibroView = async (uri: URI) => {
     const libroOption = {
       modelId: uri.toString(),
       resource: uri.toString(),
@@ -65,7 +65,7 @@ export class LibroOpensumiService extends WithEventBus implements ILibroOpensumi
     return libroView?.model.cells.find((cell) => cell.model.id === cellId);
   };
 
-  getCellLangauge = (cell: CellView) => {
+  getCellLanguage = (cell: CellView) => {
     const languageSpecRegistry = this.manaContainer.get(LanguageSpecRegistry);
     return getOrigin(languageSpecRegistry.languageSpecs).find((item) => item.mime === cell.model.mimeType)?.language;
   };

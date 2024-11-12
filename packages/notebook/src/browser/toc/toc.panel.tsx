@@ -22,7 +22,7 @@ export const TocPanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState
 
   useEffect(() => {
     if (editorService.currentResource?.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
-      libroOpensumiService.getOrCreatLibroView(editorService.currentResource.uri).then((libro) => {
+      libroOpensumiService.getOrCreateLibroView(editorService.currentResource.uri).then((libro) => {
         const viewManager = manaContainer.get(ViewManager);
         viewManager
           .getOrCreateView<TOCView>(TOCView, {
@@ -37,7 +37,7 @@ export const TocPanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     }
     editorService.onActiveResourceChange((e) => {
       if (e?.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
-        libroOpensumiService.getOrCreatLibroView(e.uri).then((libro) => {
+        libroOpensumiService.getOrCreateLibroView(e.uri).then((libro) => {
           const viewManager = manaContainer.get(ViewManager);
           viewManager
             .getOrCreateView<TOCView>(TOCView, {

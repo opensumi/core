@@ -57,7 +57,7 @@ export class LibroOpener implements IOpener {
 
   protected async openCell(uri: URI, range?: IRange) {
     const notebookUri = URI.file(uri.path.toString());
-    const libroView = await this.libroOpensumiService.getOrCreatLibroView(notebookUri);
+    const libroView = await this.libroOpensumiService.getOrCreateLibroView(notebookUri);
 
     if (!libroView) {
       return false;

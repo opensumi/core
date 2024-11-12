@@ -51,7 +51,7 @@ export class NotebookDocumentContentProvider implements IEditorDocumentModelCont
     if (!cell) {
       return;
     }
-    return this.libroOpensumiService.getCellLangauge(cell);
+    return this.libroOpensumiService.getCellLanguage(cell);
   }
   provideEncoding?(uri: URI): MaybePromise<string> {
     const encoding = this.preferenceService.get<string>(

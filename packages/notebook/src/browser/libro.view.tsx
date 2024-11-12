@@ -1,4 +1,3 @@
-
 import { DocumentCommands, LibroView } from '@difizen/libro-jupyter/noeditor';
 import { CommandRegistry, Container, ViewRender } from '@difizen/mana-app';
 import * as React from 'react';
@@ -27,7 +26,7 @@ export const OpensumiLibroView: ReactEditorComponent = (...params) => {
       libroView?.dispose();
     }
     let autoSaveHandle: undefined | number;
-    libroOpensumiService.getOrCreatLibroView(params[0].resource.uri).then((libro) => {
+    libroOpensumiService.getOrCreateLibroView(params[0].resource.uri).then((libro) => {
       setLibroView(libro);
       if (!libroOpensumiService.libroTrackerMap.has((params[0].resource.uri as URI).toString())) {
         const tracker = injector.get(LibroTracker);

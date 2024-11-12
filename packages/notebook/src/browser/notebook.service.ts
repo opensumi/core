@@ -33,7 +33,7 @@ export class NotebookServiceOverride extends NotebookService {
   listenEditor() {
     return this.workbenchEditorService.onActiveResourceChange((e) => {
       if (e?.uri?.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
-        this.libroOpensumiService.getOrCreatLibroView(e.uri).then((libroView) => {
+        this.libroOpensumiService.getOrCreateLibroView(e.uri).then((libroView) => {
           this.handleOpenNotebook(libroView);
         });
       }
@@ -82,7 +82,7 @@ export class NotebookServiceOverride extends NotebookService {
       cellKind: this.isCodeCell(cell.model.mimeType) ? CellKind.Code : CellKind.Markup,
       eol: '\n',
       handle: 1,
-      language: this.libroOpensumiService.getCellLangauge(cell) ?? 'plaintext',
+      language: this.libroOpensumiService.getCellLanguage(cell) ?? 'plaintext',
       mime: cell.model.mimeType,
       outputs: [],
       source: cell.model.value.split('\n'),
