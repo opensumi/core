@@ -326,7 +326,7 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
   }
 
   updateOptions(options?: QuickOpenOptions) {
-    this.options = QuickOpenOptions.resolve(options);
+    this.options = QuickOpenOptions.resolve(options, this.options);
   }
 
   /**

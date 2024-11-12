@@ -90,6 +90,7 @@ export interface QuickOpenInputOptions extends QuickOpenTabOptions {
   canSelectMany?: boolean;
   keepScrollPosition?: boolean;
   busy?: boolean;
+  enabled?: boolean;
 }
 
 export interface IQuickOpenWidget extends QuickOpenTabOptions {

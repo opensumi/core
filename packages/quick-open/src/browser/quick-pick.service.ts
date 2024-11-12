@@ -62,6 +62,10 @@ export class QuickPickServiceImpl implements QuickPickService {
     });
   }
 
+  updateOptions(options: QuickPickOptions): void {
+    this.quickOpenService.updateOptions(options);
+  }
+
   hide(reason?: HideReason): void {
     this.quickOpenService.hide(reason);
   }

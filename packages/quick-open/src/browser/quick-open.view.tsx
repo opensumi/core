@@ -587,10 +587,7 @@ export const QuickOpenView = () => {
           if (!item) {
             return;
           }
-          const hide = item.run(QuickOpenMode.OPEN);
-          if (hide) {
-            widget.hide(HideReason.ELEMENT_SELECTED);
-          }
+          item.run(QuickOpenMode.OPEN);
           break;
         }
         case Key.TAB.keyCode: {

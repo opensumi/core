@@ -44,6 +44,7 @@ export interface IMainThreadQuickOpen {
   $hideQuickPick(): void;
   $showQuickInput(options: QuickInputOptions, validateInput: boolean): Promise<string | undefined>;
   $hideQuickInput(): void;
+  $updateQuickPick(options: QuickPickOptions): void;
   $createOrUpdateInputBox(id: number, options: QuickInputOptions): void;
   $hideInputBox(id: number): void;
   $disposeInputBox(id: number): void;
