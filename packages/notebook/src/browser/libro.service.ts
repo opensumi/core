@@ -1,21 +1,16 @@
 import { CellUri, CellView, LanguageSpecRegistry, LibroService, LibroView } from '@difizen/libro-jupyter/noeditor';
 import { Container, URI as ManaURI, getOrigin } from '@difizen/mana-app';
-import { makeObservable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI, WithEventBus, path } from '@opensumi/ide-core-browser';
 import { ResourceDecorationNeedChangeEvent, WorkbenchEditorService } from '@opensumi/ide-editor';
 
-import { LibroTracker } from './libro.view.tracker';
 import { ContentLoaderType, ManaContainer } from './mana';
 
 export const ILibroOpensumiService = Symbol('ILibroOpensumiService');
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export interface ILibroOpensumiService {
-  // manaContainer: Container;
-  libroTrackerMap: Map<string, LibroTracker>;
-  // editorService: WorkbenchEditorService;
   getOrCreateLibroView: (uri: URI) => Promise<LibroView>;
   updateDirtyStatus: (uri: URI, dirty: boolean) => void;
   getCellViewByUri: (uri: URI) => Promise<CellView | undefined>;
@@ -29,11 +24,6 @@ export class LibroOpensumiService extends WithEventBus implements ILibroOpensumi
 
   @Autowired(WorkbenchEditorService)
   protected readonly editorService: WorkbenchEditorService;
-
-  constructor() {
-    super();
-    makeObservable(this);
-  }
 
   get libroService() {
     const libroService = this.manaContainer.get(LibroService);
@@ -80,6 +70,4 @@ export class LibroOpensumiService extends WithEventBus implements ILibroOpensumi
       }),
     );
   }
-
-  libroTrackerMap: Map<string, LibroTracker> = new Map();
 }

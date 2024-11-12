@@ -4,12 +4,9 @@ import { INotebookService } from '@opensumi/ide-editor';
 
 import { KernelPanelContribution } from './kernel-panel/kernel.panel.contribution';
 import { LibroKeybindContribition } from './libro-keybind-contribution';
-import { LibroOpener } from './libro-opener';
 import { LibroCommandContribution } from './libro.command';
 import { LibroContribution } from './libro.contribution';
 import { ILibroOpensumiService, LibroOpensumiService } from './libro.service';
-import { LibroTracker } from './libro.view.tracker';
-import { NotebookDocumentContentProvider } from './notebook-document-content-provider';
 import { NotebookServiceOverride } from './notebook.service';
 import { TocContribution } from './toc/toc.contribution';
 
@@ -26,13 +23,10 @@ export class NotebookModule extends BrowserModule {
     LibroContribution,
     LibroCommandContribution,
     TocContribution,
-    LibroTracker,
     {
       token: ILibroOpensumiService,
       useClass: LibroOpensumiService,
     },
-    NotebookDocumentContentProvider,
-    LibroOpener,
     LibroKeybindContribition,
     {
       token: INotebookService,
