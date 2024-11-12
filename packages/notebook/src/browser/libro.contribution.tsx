@@ -15,6 +15,7 @@ import {
   ClientAppContribution,
   CommandContribution,
   type CommandRegistry,
+  Disposable,
   Domain,
   IClientApp,
   IOpenerService,
@@ -26,6 +27,7 @@ import { message } from '@opensumi/ide-core-browser/lib/components';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
+  INotebookService,
   IResource,
   ResourceService,
   WorkbenchEditorService,
@@ -42,6 +44,7 @@ import { LIBRO_COMPONENTS_ID, LIBRO_COMPONENTS_SCHEME_ID } from './libro.protoco
 import { OpensumiLibroView } from './libro.view';
 import { ManaContainer, initLibroOpensumi, manaContainer } from './mana/index';
 import { NotebookDocumentContentProvider } from './notebook-document-content-provider';
+import { NotebookServiceOverride } from './notebook.service';
 import { initTocPanelColorToken } from './toc';
 
 const LIBRO_COMPONENTS_VIEW_COMMAND = {
@@ -70,6 +73,7 @@ const LayoutWrapper: React.FC<React.PropsWithChildren> = ({ children }) => {
   OpenerContribution,
 )
 export class LibroContribution
+  extends Disposable
   implements
     ClientAppContribution,
     BrowserEditorContribution,
@@ -88,6 +92,9 @@ export class LibroContribution
 
   @Autowired(IThemeService)
   protected readonly themeService: IThemeService;
+
+  @Autowired(INotebookService)
+  protected readonly notebookService: NotebookServiceOverride;
 
   @Autowired(NotebookDocumentContentProvider)
   protected readonly notebookDocumentContentProvider: NotebookDocumentContentProvider;
@@ -175,12 +182,17 @@ export class LibroContribution
   }
 
   async onDidStart() {
+    this.addDispose(this.notebookService.listenLibro());
+    this.addDispose(this.notebookService.listenEditor());
+
     const manaThemeService = this.manaContainer.get(ThemeService);
     const curTheme = await this.themeService.getCurrentTheme();
     manaThemeService.setCurrentTheme(curTheme.type);
-    this.themeService.onThemeChange((theme) => {
-      manaThemeService.setCurrentTheme(theme.type);
-    });
+    this.addDispose(
+      this.themeService.onThemeChange((theme) => {
+        manaThemeService.setCurrentTheme(theme.type);
+      }),
+    );
   }
 
   protected async connectJupyterServer(serverHost: string) {

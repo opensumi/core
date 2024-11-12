@@ -2,8 +2,8 @@ import { CellUri, CellView, LibroJupyterView, LibroService, LibroView, MIME } fr
 import { Container, getOrigin } from '@difizen/mana-app';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { ClientAppContribution, URI } from '@opensumi/ide-core-browser';
-import { Domain, MaybePromise, Uri } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-browser';
+import { DisposableCollection, Uri } from '@opensumi/ide-core-common';
 import {
   CellKind,
   INotebookModelAddedData,
@@ -20,8 +20,7 @@ import { ILibroOpensumiService } from './libro.service';
 import { ManaContainer } from './mana';
 
 @Injectable()
-@Domain(ClientAppContribution)
-export class NotebookServiceOverride extends NotebookService implements ClientAppContribution {
+export class NotebookServiceOverride extends NotebookService {
   @Autowired(ManaContainer)
   private readonly manaContainer: Container;
   @Autowired(IEditorDocumentModelService)
@@ -31,13 +30,8 @@ export class NotebookServiceOverride extends NotebookService implements ClientAp
   @Autowired(ILibroOpensumiService)
   private readonly libroOpensumiService: ILibroOpensumiService;
 
-  onDidStart(): MaybePromise<void> {
-    this.listenLibro();
-    this.listenEditor();
-  }
-
   listenEditor() {
-    this.workbenchEditorService.onActiveResourceChange((e) => {
+    return this.workbenchEditorService.onActiveResourceChange((e) => {
       if (e?.uri?.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
         this.libroOpensumiService.getOrCreatLibroView(e.uri).then((libroView) => {
           this.handleOpenNotebook(libroView);
@@ -110,78 +104,88 @@ export class NotebookServiceOverride extends NotebookService implements ClientAp
   }
 
   listenLibro() {
+    const disposables = new DisposableCollection();
     const libroService = this.manaContainer.get(LibroService);
-    libroService.onNotebookViewCreated(this.handleOpenNotebook);
-    libroService.onNotebookViewClosed((libroView) => {
-      if (!this.isValidNotebook(libroView)) {
-        return;
-      }
-      this.deleteNotebookVersion(libroView);
-      this._onDidCloseNotebookDocument.fire(this.getNotebookUri(libroView as LibroJupyterView));
-    });
-    libroService.onNotebookViewSaved((libroView) => {
-      if (!this.isValidNotebook(libroView)) {
-        return;
-      }
-      this.updateNotebookVersion(libroView);
-      this._onDidSaveNotebookDocument.fire(this.getNotebookUri(libroView as LibroJupyterView));
-    });
-    libroService.onNotebookViewChanged((event) => {
-      if (!this.isValidNotebook(event.libroView)) {
-        return;
-      }
+    disposables.push(libroService.onNotebookViewCreated(this.handleOpenNotebook));
+    disposables.push(
+      libroService.onNotebookViewClosed((libroView) => {
+        if (!this.isValidNotebook(libroView)) {
+          return;
+        }
+        this.deleteNotebookVersion(libroView);
+        this._onDidCloseNotebookDocument.fire(this.getNotebookUri(libroView as LibroJupyterView));
+      }),
+    );
+    disposables.push(
+      libroService.onNotebookViewSaved((libroView) => {
+        if (!this.isValidNotebook(libroView)) {
+          return;
+        }
+        this.updateNotebookVersion(libroView);
+        this._onDidSaveNotebookDocument.fire(this.getNotebookUri(libroView as LibroJupyterView));
+      }),
+    );
+    disposables.push(
+      libroService.onNotebookViewChanged((event) => {
+        if (!this.isValidNotebook(event.libroView)) {
+          return;
+        }
 
-      if (!event.libroView.model.isInitialized) {
-        return;
-      }
+        if (!event.libroView.model.isInitialized) {
+          return;
+        }
 
-      const events: NotebookRawContentEventDto[] = [];
+        const events: NotebookRawContentEventDto[] = [];
 
-      if (event.contentChanges) {
-        event.contentChanges.forEach((item) => {
-          if (item.addedCells.length > 0) {
-            events.push({
-              kind: NotebookCellsChangeType.ModelChange,
-              changes: [[item.range.start, 0, item.addedCells.map((cell) => this.asNotebookCell(cell))]],
-            });
-          }
-          if (item.removedCells.length > 0) {
-            events.push({
-              kind: NotebookCellsChangeType.ModelChange,
-              changes: [[item.range.start, item.range.end - item.range.start, []]],
-            });
-          }
+        if (event.contentChanges) {
+          event.contentChanges.forEach((item) => {
+            if (item.addedCells.length > 0) {
+              events.push({
+                kind: NotebookCellsChangeType.ModelChange,
+                changes: [[item.range.start, 0, item.addedCells.map((cell) => this.asNotebookCell(cell))]],
+              });
+            }
+            if (item.removedCells.length > 0) {
+              events.push({
+                kind: NotebookCellsChangeType.ModelChange,
+                changes: [[item.range.start, item.range.end - item.range.start, []]],
+              });
+            }
+          });
+        }
+
+        this.updateNotebookVersion(event.libroView);
+        this._onDidChangeNotebookDocument.fire({
+          uri: this.getNotebookUri(event.libroView as LibroJupyterView),
+          event: {
+            rawEvents: events,
+            versionId: 1,
+          },
+          isDirty: getOrigin(event.libroView.model.dirty),
         });
-      }
+      }),
+    );
 
-      this.updateNotebookVersion(event.libroView);
-      this._onDidChangeNotebookDocument.fire({
-        uri: this.getNotebookUri(event.libroView as LibroJupyterView),
-        event: {
-          rawEvents: events,
-          versionId: 1,
-        },
-        isDirty: getOrigin(event.libroView.model.dirty),
-      });
-    });
-
-    libroService.onNotebookCellChanged((event) => {
-      const events: NotebookRawContentEventDto[] = [];
-      const index = event.cell.parent.findCellIndex(event.cell);
-      const modelRef = this.getCellModelRef(event.cell);
-      events.push({
-        kind: NotebookCellsChangeType.ChangeCellContent,
-        index,
-      });
-      this._onDidChangeNotebookDocument.fire({
-        uri: this.getNotebookUri(event.cell.parent as LibroJupyterView),
-        event: {
-          rawEvents: events,
-          versionId: modelRef?.instance.getMonacoModel().getVersionId() ?? 1,
-        },
-        isDirty: getOrigin(event.cell.parent.model.dirty),
-      });
-    });
+    disposables.push(
+      libroService.onNotebookCellChanged((event) => {
+        const events: NotebookRawContentEventDto[] = [];
+        const index = event.cell.parent.findCellIndex(event.cell);
+        const modelRef = this.getCellModelRef(event.cell);
+        events.push({
+          kind: NotebookCellsChangeType.ChangeCellContent,
+          index,
+        });
+        this._onDidChangeNotebookDocument.fire({
+          uri: this.getNotebookUri(event.cell.parent as LibroJupyterView),
+          event: {
+            rawEvents: events,
+            versionId: modelRef?.instance.getMonacoModel().getVersionId() ?? 1,
+          },
+          isDirty: getOrigin(event.cell.parent.model.dirty),
+        });
+      }),
+    );
+    return disposables;
   }
 
   protected handleOpenNotebook = async (libroView: LibroView) => {
