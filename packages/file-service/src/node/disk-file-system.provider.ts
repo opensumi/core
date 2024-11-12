@@ -393,7 +393,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
-        this.logger.log(events.changes, 'events.change');
         if (events.changes.length > 0) {
           const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
           this.fileChangeEmitter.fire(changes);

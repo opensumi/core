@@ -8,6 +8,8 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IFileTreeAPI } from '../../common';
 import { Directory } from '../../common/file-tree-node.define';
 
+import { FileDialogContextKey } from './file-dialog.contextkey';
+
 @Injectable({ multiple: true })
 export class FileTreeDialogService extends Tree {
   @Autowired(IFileTreeAPI)
@@ -18,6 +20,9 @@ export class FileTreeDialogService extends Tree {
 
   @Autowired(LabelService)
   public labelService: LabelService;
+
+  @Autowired(FileDialogContextKey)
+  private fileDialogContextKey: FileDialogContextKey;
 
   private workspaceRoot: FileStat;
 
@@ -109,6 +114,14 @@ export class FileTreeDialogService extends Tree {
       return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
     }
     return a.type === TreeNodeType.CompositeTreeNode ? -1 : b.type === TreeNodeType.CompositeTreeNode ? 1 : 0;
+  }
+
+  initContextKey(dom: HTMLDivElement) {
+    this.fileDialogContextKey.initScopedContext(dom);
+  }
+
+  get contextKey() {
+    return this.fileDialogContextKey;
   }
 
   dispose() {

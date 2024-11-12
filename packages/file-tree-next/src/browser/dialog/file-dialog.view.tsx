@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   Button,
@@ -10,7 +10,7 @@ import {
   Select,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { URI, isMacintosh, localize, path, useInjectable } from '@opensumi/ide-core-browser';
+import { Key, KeyCode, URI, isMacintosh, localize, path, useInjectable } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { IDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@opensumi/ide-overlay';
 
@@ -19,19 +19,26 @@ import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeDialogModel } from './file-dialog-model.service';
 import { FileTreeDialogNode } from './file-dialog-node';
 import styles from './file-dialog.module.less';
+import { FileTreeDialogService } from './file-dialog.service';
 
 export interface IFileDialogProps {
   options: ISaveDialogOptions | IOpenDialogOptions;
   model: FileTreeDialogModel;
+  fileService: FileTreeDialogService;
   isOpenDialog: boolean;
 }
 
 export const FILE_TREE_DIALOG_HEIGHT = 22;
 
-export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChildren<IFileDialogProps>) => {
+export const FileDialog = ({
+  options,
+  model,
+  isOpenDialog,
+  fileService,
+}: React.PropsWithChildren<IFileDialogProps>) => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const [fileName, setFileName] = useState<string>('');
+  const [fileName, setFileName] = useState<string>((options as ISaveDialogOptions).defaultFileName || '');
   const [isReady, setIsReady] = useState<boolean>(false);
   const [selectPath, setSelectPath] = useState<string>('');
   const [directoryList, setDirectoryList] = useState<string[]>([]);
@@ -40,6 +47,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     if (model) {
       setIsReady(false);
       ensureIsReady();
+      fileService.contextKey.fileDialogViewVisibleContext?.set(true);
     }
     return () => {
       model.dispose();
@@ -59,7 +67,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     }
   }, [isReady]);
 
-  const hide = useCallback(() => {
+  const ensure = useCallback(() => {
     const value: string[] = model.selectedFiles.map((file) => file.uri.path.toString());
     // 如果有文件名的，说明肯定是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
@@ -77,11 +85,13 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
       }
     }
     setIsReady(false);
+    fileService.contextKey.fileDialogViewVisibleContext.set(false);
   }, [isReady, dialogService, model, fileName, options]);
 
   const close = useCallback(() => {
     setIsReady(false);
     dialogService.hide();
+    fileService.contextKey.fileDialogViewVisibleContext.set(false);
   }, [isReady, dialogService]);
 
   const ensureIsReady = useCallback(async () => {
@@ -100,7 +110,6 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
       model.handleTreeHandler({
         ...handle,
         getModel: () => model.treeModel,
-        hasDirectFocus: () => wrapperRef.current === document.activeElement,
       });
     },
     [model],
@@ -232,58 +241,83 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     }
   }, [directoryList, selectPath]);
 
-  if (isOpenDialog) {
-    return (
-      <div className={styles.file_dialog_wrapper}>
-        <div className={styles.file_dialog_directory_title}>{options.title || localize('dialog.file.openLabel')}</div>
-        <div className={styles.file_dialog_directory}>{renderDirectorySelection()}</div>
-        <div className={styles.file_dialog_content} ref={wrapperRef}>
-          {renderDialogTree()}
-        </div>
-        <div className={styles.file_dialog_buttons}>
-          <Button onClick={() => close()} type='secondary' className={styles.button}>
-            {localize('dialog.file.close')}
-          </Button>
-          <Button onClick={() => hide()} type='primary' className={styles.button}>
-            {(options as IOpenDialogOptions).openLabel || localize('dialog.file.ok')}
-          </Button>
-        </div>
-      </div>
-    );
-  } else {
-    return (
-      <div className={styles.file_dialog_wrapper}>
-        <div className={styles.file_dialog_directory_title}>
-          {(options as ISaveDialogOptions).saveLabel || localize('dialog.file.saveLabel')}
-        </div>
+  const handleKeyUp = useCallback(
+    (event: KeyboardEvent) => {
+      const { key } = KeyCode.createKeyCode(event);
+      const hasModifyKey = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
+      if (key && Key.ENTER.keyCode === key.keyCode && !hasModifyKey) {
+        ensure();
+      }
+    },
+    [ensure],
+  );
+
+  useEffect(() => {
+    if (wrapperRef.current) {
+      fileService.initContextKey(wrapperRef.current);
+      fileService.contextKey.fileDialogViewVisibleContext.set(true);
+      wrapperRef.current?.addEventListener('keyup', handleKeyUp);
+    }
+    return () => {
+      wrapperRef.current?.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  const DialogContent = useMemo(
+    () => (
+      <>
         <div className={styles.file_dialog_directory}>{renderDirectorySelection()}</div>
         <div className={styles.file_dialog_content}>{renderDialogTree()}</div>
-        {(options as ISaveDialogOptions).showNameInput && (
-          <div className={styles.file_dialog_file_container}>
-            <span className={styles.file_dialog_file_name}>{localize('dialog.file.name')}: </span>
-            <Input
-              size='small'
-              value={fileName}
-              autoFocus={true}
-              selection={{ start: 0, end: fileName.indexOf('.') || fileName.length }}
-              onChange={(event) => setFileName(event.target.value)}
-            ></Input>
-          </div>
-        )}
-        <div className={styles.file_dialog_buttons}>
-          <Button onClick={() => close()} type='secondary' className={styles.button}>
-            {localize('dialog.file.close')}
-          </Button>
-          <Button
-            onClick={() => hide()}
-            type='primary'
-            className={styles.button}
-            disabled={(options as ISaveDialogOptions).showNameInput && fileName.length === 0 ? true : false}
-          >
-            {localize('dialog.file.ok')}
-          </Button>
-        </div>
+      </>
+    ),
+    [renderDirectorySelection, renderDialogTree],
+  );
+
+  const DialogButtons = useMemo(
+    () => (
+      <div className={styles.file_dialog_buttons}>
+        <Button onClick={close} type='secondary' className={styles.button}>
+          {localize('dialog.file.close')}
+        </Button>
+        <Button
+          onClick={ensure}
+          type='primary'
+          className={styles.button}
+          disabled={isSaveDialog && (options as ISaveDialogOptions).showNameInput && fileName.length === 0}
+        >
+          {isOpenDialog
+            ? (options as IOpenDialogOptions).openLabel || localize('dialog.file.ok')
+            : localize('dialog.file.ok')}
+        </Button>
       </div>
-    );
-  }
+    ),
+    [close, ensure, isSaveDialog, isOpenDialog, fileName, options],
+  );
+
+  return (
+    <div className={styles.file_dialog_wrapper} ref={wrapperRef}>
+      <div className={styles.file_dialog_directory_title}>
+        {isOpenDialog
+          ? options.title || localize('dialog.file.openLabel')
+          : (options as ISaveDialogOptions).saveLabel || localize('dialog.file.saveLabel')}
+      </div>
+
+      {DialogContent}
+
+      {!isOpenDialog && (options as ISaveDialogOptions).showNameInput && (
+        <div className={styles.file_dialog_file_container}>
+          <span className={styles.file_dialog_file_name}>{localize('dialog.file.name')}: </span>
+          <Input
+            size='small'
+            value={fileName}
+            autoFocus={true}
+            selection={{ start: 0, end: fileName.indexOf('.') || fileName.length }}
+            onChange={(event) => setFileName(event.target.value)}
+          />
+        </div>
+      )}
+
+      {DialogButtons}
+    </div>
+  );
 };
