@@ -42,7 +42,7 @@ import { REWRITE_DECORATION_INLINE_ADD, RewriteWidget } from '../../widget/rewri
 import { BaseAIMonacoEditorController } from '../base';
 
 import { AdditionsDeletionsDecorationModel } from './decoration/additions-deletions.decoration';
-import { GhostTextTokenization } from './decoration/ghost-text.decoration';
+import { GhostTextTokenization } from './decoration/ghost-text-tokenization.decoration';
 import { MultiLineDecorationModel } from './decoration/multi-line.decoration';
 import {
   IMultiLineDiffChangeResult,
@@ -167,7 +167,8 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
             IObservable<GhostTextOrReplacement, unknown>[],
             unknown
           >,
-          (ghostText, store) => store.add(
+          (ghostText, store) =>
+            store.add(
               (inlineCompletionsController['_instantiationService'] as IInstantiationService).createInstance(
                 GhostTextTokenization,
                 this.monacoEditor,

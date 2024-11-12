@@ -27,7 +27,7 @@ import styles from '../intelligent-completions.module.less';
 import { GHOST_TEXT_DESCRIPTION } from './multi-line.decoration';
 
 interface LineData {
-  content: string; // Must not contain a linebreak!
+  content: string;
   decorations: LineDecoration[];
 }
 
@@ -361,12 +361,15 @@ export class AdditionalLinesWidget extends Disposable {
 
             return {
               content: text.content,
-              decorations: text.decorations.map((dec) => new LineDecoration(
-                  dec.startColumn,
-                  dec.endColumn,
-                  styles.inline_completion_ghost_text_decoration,
-                  dec.type,
-                )),
+              decorations: text.decorations.map(
+                (dec) =>
+                  new LineDecoration(
+                    dec.startColumn,
+                    dec.endColumn,
+                    styles.inline_completion_ghost_text_decoration,
+                    dec.type,
+                  ),
+              ),
               lineTokens: virtualModel.tokenization.getLineTokens(line),
             };
           })
