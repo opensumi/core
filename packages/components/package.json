@@ -15,7 +15,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@ant-design/icons": "^4.6.4",
+    "@ant-design/icons": "^5.5.1",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
     "@opensumi/react-custom-scrollbars-2": "^4.3.4",
