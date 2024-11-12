@@ -1,4 +1,9 @@
-import { LibroJupyterNoEditorModule, ServerConnection, ServerManager } from '@difizen/libro-jupyter/noeditor';
+import {
+  ISettings,
+  LibroJupyterNoEditorModule,
+  ServerConnection,
+  ServerManager,
+} from '@difizen/libro-jupyter/noeditor';
 import { LibroTOCModule } from '@difizen/libro-toc';
 import { Container, ManaAppPreset, ManaComponents, ThemeService } from '@difizen/mana-app';
 import React, { useState } from 'react';
@@ -180,7 +185,8 @@ export class LibroContribution
 
   protected async connectJupyterServer(serverHost: string) {
     const libroServerConnection = this.manaContainer.get(ServerConnection);
-    libroServerConnection.updateSettings(
+    const token = this.config.notebookServerToken;
+    const setting: Partial<ISettings> =
       window.location.protocol === 'https:'
         ? {
             baseUrl: `https://${serverHost}/`,
@@ -189,8 +195,9 @@ export class LibroContribution
         : {
             baseUrl: `http://${serverHost}/`,
             wsUrl: `ws://${serverHost}/`,
-          },
-    );
+          };
+
+    libroServerConnection.updateSettings({ ...setting, token });
     const serverManager = this.manaContainer.get(ServerManager);
     await serverManager.launch();
   }

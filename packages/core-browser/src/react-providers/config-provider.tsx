@@ -308,6 +308,10 @@ export interface AppConfig {
    * Provide when you want to connect to a notebook server
    */
   notebookServerHost?: string;
+  /**
+   * The authentication token for requests.  Use an empty string to disable.
+   */
+  notebookServerToken?: string;
 }
 
 export interface ICollaborationClientOpts {

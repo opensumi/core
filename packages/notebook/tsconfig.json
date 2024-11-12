@@ -1,3 +1,11 @@
 {
-  "extends": "../../configs/ts/references/tsconfig.notebook.json"
+  "extends": "../../configs/ts/tsconfig.resolve.json",
+  "compilerOptions": {
+    "sourceMap": true,
+    "skipLibCheck": false,
+    "outDir": "./lib",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noUnusedLocals": false
+  }
 }
