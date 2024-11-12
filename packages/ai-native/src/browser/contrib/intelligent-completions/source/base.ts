@@ -1,4 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIServiceType,
   CodeEditsRT,
@@ -63,6 +64,9 @@ export abstract class BaseCodeEditsSource extends Disposable {
   @Autowired(IAIReporter)
   private aiReporter: IAIReporter;
 
+  @Autowired(PreferenceService)
+  protected preferenceService: PreferenceService;
+
   private cancellationTokenSource = new CancellationTokenSource();
   private readonly relationID = observableValue<string | undefined>(this, undefined);
 
@@ -79,7 +83,7 @@ export abstract class BaseCodeEditsSource extends Disposable {
     this.cancellationTokenSource.cancel();
     this.cancellationTokenSource = new CancellationTokenSource();
 
-    this.reporterEnd({ isCancel: true });
+    this.reporterEnd({ isValid: false });
   }
 
   constructor(@Optional() protected readonly monacoEditor: ICodeEditor) {

@@ -4,6 +4,10 @@ import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
+function flushPromises() {
+  return Promise.resolve();
+}
+
 describe('Debug Configuration Service', () => {
   const mockInjector = createBrowserInjector(
     [],
@@ -62,16 +66,18 @@ describe('Debug Configuration Service', () => {
     expect(typeof debugToolbarService.doStepOut).toBe('function');
     expect(typeof debugToolbarService.updateCurrentSession).toBe('function');
     expect(typeof debugToolbarService.toolBarMenuMap).toBe('object');
-    expect(Array.isArray(debugToolbarService.sessions)).toBeTruthy();
-    expect(debugToolbarService.currentSession).toBeUndefined();
+    expect(Array.isArray(debugToolbarService.sessions.get())).toBeTruthy();
+    expect(debugToolbarService.currentSession.get()).toBeUndefined();
   });
 
   it('should init success', () => {
     expect(mockDebugViewModel.onDidChange).toHaveBeenCalledTimes(1);
   });
 
-  it('onStart method should be work', () => {
-    debugToolbarService.doStart();
+  it('onStart method should be work', async () => {
+    await debugToolbarService.doStart();
+    jest.useFakeTimers({ advanceTimers: 100 });
+    await flushPromises();
     expect(mockDebugViewModel.start).toHaveBeenCalledTimes(1);
   });
 
@@ -114,12 +120,7 @@ describe('Debug Configuration Service', () => {
     const session = {} as any;
     debugToolbarService.updateCurrentSession(session);
     debugToolbarService.updateModel();
-    expect(debugToolbarService.currentSession).toEqual(session);
-  });
-
-  it('updateModel method should be work', () => {
-    debugToolbarService.updateModel();
-    expect(debugToolbarService.sessionCount).toBe(0);
+    expect(debugToolbarService.currentSession.get()).toEqual(session);
   });
 
   it('updateToolBarMenu method should be work', () => {

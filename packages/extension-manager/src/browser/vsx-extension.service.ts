@@ -1,5 +1,3 @@
-import { action, makeObservable, observable, runInAction } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandService,
@@ -15,6 +13,7 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
 import { AbstractExtInstanceManagementService } from '@opensumi/ide-extension/lib/browser/types';
+import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { IIconService, IProductIconService, IThemeService } from '@opensumi/ide-theme';
 import {
   ICON_THEME_TOGGLE_COMMAND,
@@ -57,14 +56,20 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
 
-  @observable.shallow
-  public extensions: VSXExtension[] = observable.array([]);
+  public readonly extensionsObservable = observableValue<VSXExtension[]>(this, []);
+  get extensions() {
+    return this.extensionsObservable.get();
+  }
 
-  @observable
-  public installedExtensions: VSXExtension[] = observable.array([]);
+  public readonly installedExtensionsObservable = observableValue<VSXExtension[]>(this, []);
+  get installedExtensions() {
+    return this.installedExtensionsObservable.get();
+  }
 
-  @observable
-  public openVSXRegistry = '';
+  public readonly openVSXRegistryObservable = observableValue<string>(this, '');
+  get openVSXRegistry() {
+    return this.openVSXRegistryObservable.get();
+  }
 
   @Autowired(IStatusBarService)
   protected readonly statusBarService: IStatusBarService;
@@ -72,12 +77,10 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
   private installStatus?: StatusBarEntryAccessor;
   private searchValue: string;
 
-  @observable
   private tasks: Map<string, Promise<string>> = new Map();
 
   constructor() {
     super();
-    makeObservable(this);
     this.getInstalledExtensions();
     this.disposables.push(
       this.extensionInstanceService.onDidChange(() => {
@@ -200,7 +203,10 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
   }
 
   async getOpenVSXRegistry() {
-    this.openVSXRegistry = await this.backService.getOpenVSXRegistry();
+    const res = await this.backService.getOpenVSXRegistry();
+    transaction((tx) => {
+      this.openVSXRegistryObservable.set(res, tx);
+    });
   }
 
   async openExtensionEditor(extensionId: string, state: InstallState) {
@@ -220,38 +226,45 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
 
     const res = await this.backService.search(param);
     if (res.extensions) {
-      runInAction(() => {
-        this.extensions = res.extensions
-          .filter((ext) => !this.installedExtensions.find((e) => this.getExtensionId(e) === this.getExtensionId(ext)))
-          .map((ext) => ({
-            ...ext,
-            publisher: ext.namespace,
-            iconUrl: ext.files.icon,
-            downloadUrl: ext.files.download,
-            readme: ext.files.readme,
-          }));
+      transaction((tx) => {
+        this.extensionsObservable.set(
+          res.extensions
+            .filter((ext) => !this.installedExtensions.find((e) => this.getExtensionId(e) === this.getExtensionId(ext)))
+            .map((ext) => ({
+              ...ext,
+              publisher: ext.namespace,
+              iconUrl: ext.files.icon,
+              downloadUrl: ext.files.download,
+              readme: ext.files.readme,
+            })),
+          tx,
+        );
       });
     }
   }
 
-  @action
   async searchInstalledExtensions(keyword: string) {
-    this.installedExtensions = this.installedExtensions.sort((a, b) => {
-      const scoreA = fuzzyScore(keyword, keyword.toLowerCase(), 0, a.name, a.name.toLowerCase(), 0, true);
-      const scoreB = fuzzyScore(keyword, keyword.toLowerCase(), 0, b.name, b.name.toLowerCase(), 0, true);
-      if (!scoreA) {
-        return 1;
-      }
-      if (!scoreB) {
-        return -1;
-      }
-      return scoreB[0] - scoreA[0];
+    transaction((tx) => {
+      const prev = this.installedExtensions;
+      this.installedExtensionsObservable.set(
+        prev.sort((a, b) => {
+          const scoreA = fuzzyScore(keyword, keyword.toLowerCase(), 0, a.name, a.name.toLowerCase(), 0, true);
+          const scoreB = fuzzyScore(keyword, keyword.toLowerCase(), 0, b.name, b.name.toLowerCase(), 0, true);
+          if (!scoreA) {
+            return 1;
+          }
+          if (!scoreB) {
+            return -1;
+          }
+          return scoreB[0] - scoreA[0];
+        }),
+        tx,
+      );
     });
   }
 
-  @action
   getInstalledExtensions() {
-    this.installedExtensions = this.extensionInstanceService.getExtensionInstances().map((e) => {
+    const installedExtensions = this.extensionInstanceService.getExtensionInstances().map((e) => {
       const extensionId = e.extensionId;
       const namespace = extensionId && extensionId.includes('.') ? extensionId.split('.')[0] : e.packageJSON.publisher;
 
@@ -267,6 +280,9 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
         path: e.path,
         realpath: e.realPath,
       };
+    });
+    transaction((tx) => {
+      this.installedExtensionsObservable.set(installedExtensions, tx);
     });
   }
 }

@@ -1,5 +1,6 @@
-import { makeObservable, observable } from 'mobx';
 import React from 'react';
+
+import { observableValue, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 
 import type { Keybinding } from '../keybinding';
 import type { VALIDATE_TYPE } from '@opensumi/ide-components';
@@ -125,6 +126,7 @@ export interface QuickOpenItemOptions {
    * 图标
    */
   iconClass?: string;
+  iconPath?: URI | { light: URI; dark: URI } | ThemeIcon;
   /**
    * 对应绑定的快捷键
    */
@@ -160,12 +162,12 @@ export class QuickOpenItem {
 
   private detailHighlights?: Highlight[];
 
-  @observable
-  public checked = false;
+  public readonly checked = observableValue<boolean>(this, false);
 
   constructor(protected options: QuickOpenItemOptions) {
-    makeObservable(this);
-    this.checked = options.checked || false;
+    transaction((tx) => {
+      this.checked.set(options.checked || false, tx);
+    });
   }
 
   getTooltip(): string | undefined {
@@ -197,6 +199,9 @@ export class QuickOpenItem {
   }
   getIconClass(): string | undefined {
     return this.options.iconClass;
+  }
+  getIconPath(): URI | { light: URI; dark: URI } | ThemeIcon | undefined {
+    return this.options.iconPath;
   }
   getKeybinding(): Keybinding | undefined {
     return this.options.keybinding;
@@ -401,6 +406,7 @@ export interface QuickPickItem<T> {
   value: T;
   description?: string;
   detail?: string;
+  iconPath?: URI | { light: URI; dark: URI } | ThemeIcon;
   iconClass?: string;
   buttons?: QuickInputButton[];
 }

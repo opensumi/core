@@ -1,6 +1,5 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -9,6 +8,7 @@ import {
   ComponentRenderer,
   ConfigProvider,
   ErrorBoundary,
+  useAutorun,
   useDesignStyles,
   useInjectable,
   useViewState,
@@ -43,12 +43,14 @@ export interface IBaseTabPanelView {
   panelSize?: number;
 }
 
-export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) => {
+export const BaseTabPanelView: React.FC<IBaseTabPanelView> = (props) => {
   const { PanelView, panelSize, id, PanelViewProps } = props;
   const { side } = React.useContext(TabbarConfig);
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const appConfig: AppConfig = useInjectable(AppConfig);
   const customPanelSize = appConfig.panelSizes && appConfig.panelSizes[side];
+
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const currentContainerId = useAutorun(tabbarService.currentContainerId);
 
   const styles_tab_panel = useDesignStyles(styles.tab_panel, 'tab_panel');
   const styles_tab_panel_hidden = useDesignStyles(styles.tab_panel_hidden, 'tab_panel_hidden');
@@ -62,7 +64,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) =>
     <div
       id={id}
       className={cls('kt-tab-panel', styles_tab_panel, {
-        [styles_tab_panel_hidden]: !tabbarService.currentContainerId,
+        [styles_tab_panel_hidden]: !currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
@@ -76,11 +78,11 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) =>
             key={containerId}
             className={cls(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
             data-viewlet-id={containerId}
-            style={tabbarService.currentContainerId === containerId ? panelVisible : panelInVisible}
+            style={currentContainerId === containerId ? panelVisible : panelInVisible}
             id={id}
           >
             <ErrorBoundary>
-              <NoUpdateBoundary visible={tabbarService.currentContainerId === containerId}>
+              <NoUpdateBoundary visible={currentContainerId === containerId}>
                 <PanelView titleMenu={titleMenu} side={side} component={component} {...PanelViewProps} />
               </NoUpdateBoundary>
             </ErrorBoundary>
@@ -89,7 +91,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) =>
       })}
     </div>
   );
-});
+};
 
 export const ContainerView: React.FC<{
   component: ComponentRegistryInfo;
@@ -99,7 +101,7 @@ export const ContainerView: React.FC<{
     children: React.ReactNode;
   }>;
   className?: string;
-}> = observer(({ component, titleMenu, side, renderContainerWrap, className }) => {
+}> = ({ component, titleMenu, side, renderContainerWrap, className }) => {
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
@@ -107,10 +109,14 @@ export const ContainerView: React.FC<{
   const injector: Injector = useInjectable(INJECTOR_TOKEN);
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
-  const handleContextMenu = (e: React.MouseEvent) => {
-    const accordionService: AccordionService = injector.get(AccordionServiceFactory)(containerId);
-    accordionService.handleContextMenu(e);
-  };
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      const accordionService: AccordionService = injector.get(AccordionServiceFactory)(containerId);
+      accordionService.handleContextMenu(e);
+    },
+    [containerId],
+  );
+
   if (!containerId) {
     return null;
   }
@@ -173,13 +179,13 @@ export const ContainerView: React.FC<{
       </div>
     </div>
   );
-});
+};
 
 const BottomPanelView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = observer(({ component, titleMenu, side }) => {
+}> = ({ component, titleMenu, side }) => {
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
@@ -236,7 +242,7 @@ const BottomPanelView: React.FC<{
       </div>
     </div>
   );
-});
+};
 
 export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 

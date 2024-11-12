@@ -9,6 +9,7 @@ export const Dialog: FC = () => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const icon = dialogService.getIcon();
   const message = dialogService.getMessage();
+  const detail = dialogService.getDetail();
   const buttons = dialogService.getButtons();
   const type = dialogService.getType();
 
@@ -48,6 +49,7 @@ export const Dialog: FC = () => {
       closable={dialogService.closable ?? true}
       afterClose={afterClose}
       message={message}
+      detail={detail}
       type='confirm'
       messageType={type}
       icon={icon}

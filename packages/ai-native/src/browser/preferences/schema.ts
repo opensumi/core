@@ -50,5 +50,13 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [AINativeSettingSectionsId.CodeEditsLintErrors]: {
+      type: 'boolean',
+      default: false,
+    },
+    [AINativeSettingSectionsId.CodeEditsLineChange]: {
+      type: 'boolean',
+      default: false,
+    },
   },
 };

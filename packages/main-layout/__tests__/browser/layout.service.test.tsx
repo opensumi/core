@@ -279,13 +279,13 @@ describe('main layout test', () => {
     act(() => {
       handler.activate();
     });
-    expect(tabbarService.currentContainerId).toEqual(testContainerId2);
+    expect(tabbarService.currentContainerId.get()).toEqual(testContainerId2);
     expect(handler.isActivated()).toBeTruthy();
     act(() => {
       handler.deactivate();
     });
     expect(handler.isActivated()).toBeFalsy();
-    expect(tabbarService.currentContainerId).toEqual('');
+    expect(tabbarService.currentContainerId.get()).toEqual('');
     act(() => {
       handler.disposeView('test-view-id4');
     });
@@ -428,11 +428,11 @@ describe('main layout test', () => {
   it('toggle slot should work', async () => {
     const rightTabbarService = service.getTabbarService('right');
     // currentContainerId 空字符串表示当前未选中任何tab
-    expect(rightTabbarService.currentContainerId).toEqual('');
+    expect(rightTabbarService.currentContainerId.get()).toEqual('');
     act(() => {
       service.toggleSlot('right');
     });
-    expect(rightTabbarService.currentContainerId).toBeTruthy();
+    expect(rightTabbarService.currentContainerId.get()).toBeTruthy();
     // panel visible
     expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('block');
   });

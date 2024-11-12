@@ -1,7 +1,5 @@
-import { runInAction } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
-import { IEventBus, URI, isUndefined, isWindows } from '@opensumi/ide-core-browser';
+import { IEventBus, URI, isUndefined, isWindows, runWhenIdle } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IResource, isDiffResource } from '@opensumi/ide-editor/lib/browser';
 import { EditorGroup } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -250,7 +248,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
       editorService.editorGroups.map(async (g) => {
         const index = g.resources.findIndex((r) => r.uri.isEqual(oldResource));
         if (index !== -1) {
-          await runInAction(async () => {
+          runWhenIdle(async () => {
             await g.open(newResource, {
               index,
               backend: !(g.currentResource && g.currentResource.uri.isEqual(oldResource)),

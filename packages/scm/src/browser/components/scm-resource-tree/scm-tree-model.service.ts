@@ -1,5 +1,3 @@
-import { makeObservable, observable } from 'mobx';
-
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType } from '@opensumi/ide-components';
 import {
@@ -19,6 +17,7 @@ import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/rende
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { IIconService, IIconTheme } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -128,10 +127,6 @@ export class SCMTreeModelService {
     }
   > = new Map();
 
-  constructor() {
-    makeObservable(this);
-  }
-
   init() {
     this.showProgress((this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode)));
     this._whenReady.then(() => {
@@ -178,16 +173,19 @@ export class SCMTreeModelService {
     );
   }
 
-  @observable.deep
-  public iconThemeDesc: Pick<IIconTheme, 'hasFileIcons' | 'hasFolderIcons' | 'hidesExplorerArrows'> =
-    defaultIconThemeDesc;
+  public readonly iconThemeDesc = observableValue(this, defaultIconThemeDesc);
 
   private setIconThemeDesc(theme: IIconTheme) {
-    this.iconThemeDesc = {
-      hasFolderIcons: !!theme.hasFolderIcons,
-      hasFileIcons: !!theme.hasFileIcons,
-      hidesExplorerArrows: !!theme.hidesExplorerArrows,
-    };
+    transaction((tx) => {
+      this.iconThemeDesc.set(
+        {
+          hasFolderIcons: !!theme.hasFolderIcons,
+          hasFileIcons: !!theme.hasFileIcons,
+          hidesExplorerArrows: !!theme.hidesExplorerArrows,
+        },
+        tx,
+      );
+    });
   }
 
   private showProgress(promise: Promise<any>) {

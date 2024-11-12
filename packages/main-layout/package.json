@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-main-layout",
-  "version": "3.4.4",
+  "version": "3.5.0",
   "description": "@opensumi/ide-main-layout",
   "files": [
     "lib",
@@ -24,6 +24,7 @@
     "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {
-    "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-dev-tool": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*"
   }
 }

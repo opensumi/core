@@ -211,11 +211,11 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
       [localize('file.prompt.save', 'Save')]: AskSaveResult.SAVE,
       [localize('file.prompt.cancel', 'Cancel')]: AskSaveResult.CANCEL,
     };
-    const selection = await this.dialogService.open(
-      formatLocalize('saveChangesMessage', resource.name),
-      MessageType.Info,
-      Object.keys(buttons),
-    );
+    const selection = await this.dialogService.open({
+      message: formatLocalize('saveChangesMessage', resource.name),
+      type: MessageType.Info,
+      buttons: Object.keys(buttons),
+    });
     return await this.close(resource, buttons[selection!]);
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-extension-manager",
-  "version": "3.4.4",
+  "version": "3.5.0",
   "files": [
     "lib",
     "src"
@@ -25,6 +25,7 @@
     "@opensumi/ide-editor": "workspace:*",
     "@opensumi/ide-main-layout": "workspace:*",
     "@opensumi/ide-markdown": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
     "@types/node-fetch": "^2.6.1"

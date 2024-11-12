@@ -1,5 +1,3 @@
-import { makeObservable, observable } from 'mobx';
-
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Disposable, IMarker, MarkerSeverity, URI, arrays, compareRangesUsingStarts } from '@opensumi/ide-core-common';
 
@@ -17,8 +15,6 @@ function compareMarkers(a: IMarker, b: IMarker): number {
  * marker view model for display
  */
 export class MarkerViewModel extends Disposable {
-  // view data
-  @observable
   public markers: Map<string, IRenderableMarkerModel> = new Map<string, IRenderableMarkerModel>();
 
   // marker filter
@@ -26,7 +22,6 @@ export class MarkerViewModel extends Disposable {
 
   constructor(private _service: IMarkerService, private labelService: LabelService) {
     super();
-    makeObservable(this);
     this.addDispose([
       this._service.getManager().onMarkerChanged(this._onMarkerChanged, this),
       this._service.onMarkerFilterChanged(this._onMarkerFilterChanged, this),

@@ -1,7 +1,14 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { ErrorBoundary, getIcon, useDesignStyles, useInjectable, useViewState } from '@opensumi/ide-core-browser';
+import {
+  ErrorBoundary,
+  getIcon,
+  useAutorun,
+  useDesignStyles,
+  useInjectable,
+  useViewState,
+} from '@opensumi/ide-core-browser';
 import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IContextMenu, IMenu, isIMenu } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -146,6 +153,7 @@ export const AccordionSection = ({
   const viewState = useViewState(viewId, contentRef, true);
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(viewId);
+
   const Component: any = children;
   const computedHeaderSize = React.useMemo(() => {
     if (expanded) {
@@ -196,7 +204,7 @@ export const AccordionSection = ({
         style={bodyStyle}
         ref={contentRef}
       >
-        <ProgressBar className={styles.progressBar} progressModel={indicator!.progressModel} />
+        {<ProgressBar className={styles.progressBar} progressModel={indicator!.progressModel} />}
         <ErrorBoundary>
           {metadata.message && <div className={styles.kt_split_panel_message}>{metadata.message}</div>}
           <Component

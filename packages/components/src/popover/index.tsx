@@ -45,6 +45,7 @@ export interface IPopoverProps {
   zIndex?: number;
   onClickAction?: (args: any) => void;
   onVisibleChange?: (visible: boolean) => void;
+  getTooltipContainer?: (triggerNode: HTMLElement) => HTMLElement;
   [key: string]: any;
 }
 
@@ -65,6 +66,7 @@ export const Popover: React.FC<IPopoverProps> = ({
   zIndex = 1000,
   onClickAction,
   onVisibleChange,
+  getTooltipContainer,
   ...restProps
 }) => {
   const handleActionClick = useCallback(
@@ -117,6 +119,7 @@ export const Popover: React.FC<IPopoverProps> = ({
       overlayClassName={overlayClassName}
       prefixCls='kt-popover'
       overlayStyle={overlayStyle}
+      getTooltipContainer={getTooltipContainer}
       overlay={overlayContent}
       zIndex={zIndex}
     >

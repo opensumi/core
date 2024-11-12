@@ -1,10 +1,9 @@
 import debounce from 'lodash/debounce';
-import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 
 import { Tabs } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { useAutorun, useInjectable } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { localize } from '@opensumi/ide-core-common';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
@@ -17,10 +16,14 @@ import styles from './vsx-extension.module.less';
 
 const tabMap = [TabActiveKey.MARKETPLACE, TabActiveKey.INSTALLED];
 
-export const VSXExtensionView = observer(() => {
+export const VSXExtensionView = () => {
   const [activeKey, setActiveKey] = useState<TabActiveKey>(TabActiveKey.MARKETPLACE);
   const [loading, setLoading] = useState<boolean>(false);
+
   const vsxExtensionService = useInjectable<IVSXExtensionService>(VSXExtensionServiceToken);
+  const extensions = useAutorun(vsxExtensionService.extensionsObservable);
+  const installedExtensions = useAutorun(vsxExtensionService.installedExtensionsObservable);
+  const openVSXRegistry = useAutorun(vsxExtensionService.openVSXRegistryObservable);
 
   const onChange = debounce((keyword: string) => {
     setLoading(true);
@@ -71,33 +74,33 @@ export const VSXExtensionView = observer(() => {
       {activeKey === TabActiveKey.MARKETPLACE && (
         <div className={styles.extensions_view}>
           <Progress loading={loading} />
-          {vsxExtensionService.extensions.map((e: VSXExtension, index: number) => (
+          {extensions.map((e: VSXExtension, index: number) => (
             <Extension
               key={`${index}:${e.namespace}-${e.name}`}
               onClick={onClick}
               onInstall={onInstall}
               extension={e}
               type={ExtensionViewType.MARKETPLACE}
-              installedExtensions={vsxExtensionService.installedExtensions}
-              openVSXRegistry={vsxExtensionService.openVSXRegistry}
+              installedExtensions={installedExtensions}
+              openVSXRegistry={openVSXRegistry}
             />
           ))}
         </div>
       )}
       {activeKey === TabActiveKey.INSTALLED && (
         <div className={styles.extensions_view}>
-          {vsxExtensionService.installedExtensions.map((e: VSXExtension, index: number) => (
+          {installedExtensions.map((e: VSXExtension, index: number) => (
             <Extension
               key={`${index}:${e.namespace}-${e.name}`}
               onClick={onClick}
               onInstall={onInstall}
               extension={e}
               type={ExtensionViewType.INSTALLED}
-              openVSXRegistry={vsxExtensionService.openVSXRegistry}
+              openVSXRegistry={openVSXRegistry}
             />
           ))}
         </div>
       )}
     </div>
   );
-});
+};

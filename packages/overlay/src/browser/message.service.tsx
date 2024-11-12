@@ -6,7 +6,9 @@ import { parseWithoutEscape } from '@opensumi/ide-components/lib/utils';
 import { IOpenerService, toMarkdown } from '@opensumi/ide-core-browser';
 import { MayCancelablePromise, MessageType, localize, uuid } from '@opensumi/ide-core-common';
 
-import { AbstractMessageService, IMessageService, MAX_MESSAGE_LENGTH } from '../common';
+import { AbstractMessageService, IMessageService, MAX_MESSAGE_LENGTH, OpenMessageOptions } from '../common';
+
+import type vscode from 'vscode';
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
@@ -37,13 +39,13 @@ export class MessageService extends AbstractMessageService implements IMessageSe
    * @param closable true | false
    * @param from from extension
    */
-  open<T = string>(
-    rawMessage: string | React.ReactNode,
-    type: MessageType,
-    buttons?: string[],
+  open<T = string>({
+    type,
+    buttons,
+    from,
     closable = true,
-    from?: string,
-  ): MayCancelablePromise<T | undefined> {
+    message: rawMessage,
+  }: OpenMessageOptions): MayCancelablePromise<T | undefined> {
     if (!rawMessage) {
       return Promise.resolve(undefined);
     }

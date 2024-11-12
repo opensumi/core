@@ -321,16 +321,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     let firstAvailableId = '';
     const { groups, current } = history;
 
-    // const ids: (string | { client: string })[] = [];
-
-    // groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
-
-    // 之前OpenSumi的Check终端活跃机制是有问题的，暂时不启用，这部分逻辑在PtyService会兜住
-    // const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
-    // if (!checked) {
-    //   return;
-    // }
-
     for (const widgets of groups) {
       if (!widgets) {
         continue;
@@ -397,7 +387,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       await Promise.all(promises);
     }
 
-    const selectedIndex = this.terminalView.groups.findIndex((group) => group.widgetsMap.has(currentWidgetId));
+    const selectedIndex = this.terminalView.groups.get().findIndex((group) => group.widgetsMap.has(currentWidgetId));
 
     if (selectedIndex > -1 && currentWidgetId) {
       this.terminalView.selectWidget(currentWidgetId);
@@ -501,7 +491,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
             this.terminalView.selectWidget(current.id);
           } else {
             this.terminalView.selectGroup(
-              this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0,
+              this.terminalView.currentGroupIndex.get() > -1 ? this.terminalView.currentGroupIndex.get() : 0,
             );
           }
         }),
@@ -521,7 +511,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           this.terminalView.selectWidget(widget.id);
         } else {
           this.terminalView.selectGroup(
-            this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0,
+            this.terminalView.currentGroupIndex.get() > -1 ? this.terminalView.currentGroupIndex.get() : 0,
           );
         }
       }
@@ -569,11 +559,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   toJSON() {
     const groups: { client: string }[][] = [];
-    let cClient = this._clients.get(this.terminalView.currentWidgetId);
-    this.terminalView.groups.forEach((wGroup) => {
+    let cClient = this._clients.get(this.terminalView.currentWidgetId.get());
+    this.terminalView.groups.get().forEach((wGroup) => {
       const group: { client: string }[] = [];
 
-      wGroup.widgets.forEach((widget) => {
+      const widgets = wGroup.widgets.get();
+      widgets.forEach((widget) => {
         const client = this._clients.get(widget.id);
         const disablePersistence =
           !this.preferenceService.get(CodeTerminalSettingId.EnablePersistentSessions) ||
@@ -723,13 +714,16 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   clearCurrentGroup() {
-    this.terminalView.currentGroup &&
-      this.terminalView.currentGroup.widgets.forEach((widget) => {
+    const group = this.terminalView.currentGroup.get();
+    if (group) {
+      const widgets = group.widgets.get();
+      widgets.forEach((widget) => {
         const client = this._clients.get(widget.id);
         if (client) {
           client.clear();
         }
       });
+    }
   }
 
   clearAllGroups() {

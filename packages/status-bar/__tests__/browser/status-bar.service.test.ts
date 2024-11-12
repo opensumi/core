@@ -48,7 +48,7 @@ describe('template test', () => {
   });
 
   it('new StatusBar elements', () => {
-    expect(statusBarService.leftEntries.length).toBe(1);
+    expect(statusBarService.leftEntries.get().length).toBe(1);
   });
 
   it('modify StatusBar elements', () => {
@@ -56,7 +56,7 @@ describe('template test', () => {
       text: 'GBK',
       alignment: StatusBarAlignment.RIGHT,
     });
-    expect(statusBarService.rightEntries[0].text).toBe('GBK');
+    expect(statusBarService.rightEntries.get()[0].text).toBe('GBK');
   });
 
   it('modify not exists StatusBar elements will throw error', () => {
@@ -89,7 +89,7 @@ describe('template test', () => {
   it('delete elements', () => {
     statusBarService.removeElement(EN_CODING_ENTRY_ID);
 
-    expect(statusBarService.leftEntries.length).toBe(0);
+    expect(statusBarService.leftEntries.get().length).toBe(0);
   });
 
   it('compare elements', () => {
@@ -101,9 +101,9 @@ describe('template test', () => {
     });
 
     // 加上 beforeEach 的应该有两个
-    expect(statusBarService.leftEntries.length).toBe(2);
+    expect(statusBarService.leftEntries.get().length).toBe(2);
     // 权重高的在前面
-    expect(statusBarService.leftEntries[0].id).toBe('git');
+    expect(statusBarService.leftEntries.get()[0].id).toBe('git');
 
     statusBarService.removeElement('git');
   });
@@ -124,7 +124,7 @@ describe('template test', () => {
       text: 'scm',
       alignment: StatusBarAlignment.RIGHT,
     });
-    expect(statusBarService.rightEntries[0].name).toBe('Source Control');
+    expect(statusBarService.rightEntries.get()[0].name).toBe('Source Control');
     expect($registerMenu).toHaveBeenCalledTimes(1);
     expect($registerMenu).toHaveBeenCalledWith('statusbar/context', {
       command: { id: 'statusbar.toggleElement', label: 'Source Control' },
@@ -149,8 +149,8 @@ describe('template test', () => {
       text: 'scm-1',
       alignment: StatusBarAlignment.RIGHT,
     });
-    expect(statusBarService.rightEntries.length).toBe(2);
-    expect(statusBarService.rightEntries[0].name).toBe('Source Control');
+    expect(statusBarService.rightEntries.get().length).toBe(2);
+    expect(statusBarService.rightEntries.get()[0].name).toBe('Source Control');
     // 菜单只应该注册一次
     expect($registerMenu).toHaveBeenCalledTimes(1);
   });
@@ -185,7 +185,7 @@ describe('template test', () => {
   });
 
   it('setting element tobe hidden', () => {
-    expect(statusBarService.leftEntries.length).toBe(1);
+    expect(statusBarService.leftEntries.get().length).toBe(1);
 
     statusBarService.addElement('status.scm', {
       text: 'scm',
@@ -193,15 +193,15 @@ describe('template test', () => {
       hidden: true,
     });
     // 设置隐藏后 leftEntries 长度应该还是一个
-    expect(statusBarService.leftEntries.length).toBe(1);
+    expect(statusBarService.leftEntries.get().length).toBe(1);
   });
 
   it('toggle element visible', () => {
     // 默认显示
-    expect(statusBarService.leftEntries[0].hidden).toBeFalsy();
+    expect(statusBarService.leftEntries.get()[0].hidden).toBeFalsy();
     statusBarService.toggleElement(EN_CODING_ENTRY_ID);
     // 隐藏后 leftEntries 应该长度为 0
-    expect(statusBarService.leftEntries.length).toBe(0);
+    expect(statusBarService.leftEntries.get().length).toBe(0);
   });
 
   it('the same StatusBar elements should be triggered at the same time', () => {
@@ -225,10 +225,10 @@ describe('template test', () => {
       text: 'other',
       alignment: StatusBarAlignment.RIGHT,
     });
-    expect(statusBarService.rightEntries.length).toBe(3);
+    expect(statusBarService.rightEntries.get().length).toBe(3);
     // 隐藏 scm 相关状态栏
     statusBarService.toggleElement('status.scm');
     // 隐藏后 leftEntries 应该长度为 1
-    expect(statusBarService.rightEntries.length).toBe(1);
+    expect(statusBarService.rightEntries.get().length).toBe(1);
   });
 });

@@ -39,6 +39,9 @@ module.exports = {
       fs: false,
     },
   },
+  experiments: {
+    asyncWebAssembly: true, // 启用 WebAssembly 支持
+  },
   bail: true,
   mode: nodeEnv,
   devtool: false,

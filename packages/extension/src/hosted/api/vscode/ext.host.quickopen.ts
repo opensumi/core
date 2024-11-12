@@ -95,6 +95,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
           pickItems.push({
             label: item.label,
             groupLabel,
+            iconPath: item.iconPath as QuickPickItem<number>['iconPath'],
             description: item.description,
             detail: item.detail,
             value: index, // handle
@@ -445,6 +446,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
   abstract type: QuickInputType;
 
   private _value: string;
+  private _valueSelection: [number, number] | undefined;
   private _placeholder: string | undefined;
   private _password: boolean;
   private _buttons: vscode.QuickInputButton[];
@@ -562,6 +564,15 @@ abstract class ExtQuickInput implements vscode.InputBox {
   set value(value: string) {
     this._value = value;
     this.update({ value });
+  }
+
+  get valueSelection(): [number, number] | undefined {
+    return this._valueSelection;
+  }
+
+  set valueSelection(valueSelection: [number, number] | undefined) {
+    this._valueSelection = valueSelection;
+    this.update({ valueSelection });
   }
 
   get totalSteps(): number | undefined {

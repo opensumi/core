@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { ViewState, useInjectable } from '@opensumi/ide-core-browser';
@@ -10,7 +9,7 @@ import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugStackSessionView } from './debug-call-stack-session.view';
 import styles from './debug-call-stack.module.less';
 
-export const DebugCallStackView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
+export const DebugCallStackView = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const [sessions, setSessions] = React.useState<DebugSession[]>([]);
 
@@ -41,4 +40,4 @@ export const DebugCallStackView = observer(({ viewState }: React.PropsWithChildr
         ))}
     </div>
   );
-});
+};

@@ -1,5 +1,3 @@
-import { observable } from 'mobx';
-
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
@@ -563,11 +561,11 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         filesDetail += formatLocalize('file.prompt.more.number', toClose.length - MAX_CONFIRM_RESOURCES);
       }
     }
-    const selection = await this.dialogService.open(
-      toMarkdown(formatLocalize('saveNFilesChangesMessage', toClose.length, filesDetail), this.openner),
-      MessageType.Info,
-      Object.keys(buttons),
-    );
+    const selection = await this.dialogService.open({
+      message: toMarkdown(formatLocalize('saveNFilesChangesMessage', toClose.length, filesDetail), this.openner),
+      type: MessageType.Info,
+      buttons: Object.keys(buttons),
+    });
     const result = buttons[selection!];
     if (result === AskSaveResult.SAVE) {
       await Promise.all(toClose.map((v) => this.resourceService.close?.(v.resource, AskSaveResult.SAVE)));
@@ -729,7 +727,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private cachedResourcesOpenTypes = new Map<string, IEditorOpenType[]>();
 
-  @observable.shallow
   availableOpenTypes: IEditorOpenType[] = [];
 
   activeComponents = new Map<IEditorComponent, IResource[]>();

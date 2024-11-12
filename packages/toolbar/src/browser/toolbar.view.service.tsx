@@ -1,4 +1,3 @@
-import { makeObservable, observable } from 'mobx';
 import React from 'react';
 
 import { Autowired, Injectable } from '@opensumi/di';
@@ -91,25 +90,15 @@ export class ToolBarViewService implements IToolBarViewService {
    * @deprecated
    */
   getVisibleElements(position: ToolBarPosition): (IToolBarComponent | IToolBarAction)[] {
-    // const index = mappedIndex[position];
-    // if (index === undefined) {
-    //   getDebugLogger('Toolbar').warn('getVisibleElements with invalid position:', position);
-    //   return [];
-    // }
-    // return this.elements[index]
-    //   .filter((handle) => handle.visible)
-    //   .map((handle) => handle.element);
     return [];
   }
 }
 
 export class ToolBarElementHandle extends Disposable implements IToolBarElementHandle {
-  @observable
   public visible = true;
 
   constructor(public readonly element: IToolBarAction | IToolBarComponent) {
     super();
-    makeObservable(this);
   }
 
   setVisible(visible: boolean) {

@@ -1,8 +1,7 @@
-import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Scrollbars } from '@opensumi/ide-components';
-import { KeybindingRegistry, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
+import { KeybindingRegistry, useAutorun, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
 import { IThemeService, ThemeType } from '@opensumi/ide-theme';
 
 import { ITerminalGroupViewService, ITerminalRenderProvider, ItemType } from '../../common';
@@ -11,7 +10,7 @@ import { TerminalContextMenuService } from '../terminal.context-menu';
 import TabItem from './tab.item';
 import styles from './tab.module.less';
 
-export default observer(() => {
+export default () => {
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const provider = useInjectable<ITerminalRenderProvider>(ITerminalRenderProvider);
   const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
@@ -20,6 +19,9 @@ export default observer(() => {
   const tabContainer = useRef<HTMLDivElement | null>();
   const [theme, setTheme] = useState<ThemeType>('dark');
   const styles_tab_contents = useDesignStyles(styles.tab_contents, 'tab_contents');
+
+  const groups = useAutorun(view.groups);
+  const currentGroup = useAutorun(view.currentGroup);
 
   const init = useCallback(() => {
     themeService.getCurrentTheme().then((theme) => {
@@ -36,33 +38,26 @@ export default observer(() => {
       disposable.dispose();
     };
   }, []);
+
   return (
     <div className={styles.view_container}>
       <div className={styles.tabs}>
         <Scrollbars forwardedRef={(el) => (el ? (tabContainer.current = el.ref) : null)}>
           <div className={styles_tab_contents}>
-            {view.groups.map((group, index) => {
-              if (!group) {
-                return;
-              }
-              return (
-                <TabItem
-                  key={group.id}
-                  id={group.id}
-                  options={group.options}
-                  editable={group.editable}
-                  name={group.snapshot}
-                  selected={view.currentGroup && view.currentGroup.id === group.id}
-                  onInputBlur={() => group.unedit()}
-                  onInputEnter={(_: string, name: string) => group.rename(name)}
-                  onClick={() => view.selectGroup(index)}
-                  onClose={() => view.removeGroup(index)}
-                  onContextMenu={(event) => menuService.onTabContextMenu(event, index)}
-                  provider={provider}
-                  theme={theme}
-                ></TabItem>
-              );
-            })}
+            {groups.filter(Boolean).map((group, index) => (
+              <TabItem
+                key={group.id}
+                group={group}
+                selected={currentGroup && currentGroup.id === group.id}
+                onInputBlur={() => group.unedit()}
+                onInputEnter={(_: string, name: string) => group.rename(name)}
+                onClick={() => view.selectGroup(index)}
+                onClose={() => view.removeGroup(index)}
+                onContextMenu={(event) => menuService.onTabContextMenu(event, index)}
+                provider={provider}
+                theme={theme}
+              ></TabItem>
+            ))}
             <div className={styles.button}>
               <TabItem
                 type={ItemType.add}
@@ -89,4 +84,4 @@ export default observer(() => {
       </div>
     </div>
   );
-});
+};

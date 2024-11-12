@@ -1,6 +1,6 @@
 import { ThemeType } from '@opensumi/ide-theme/lib/common';
 
-import { IShellLaunchConfig } from './pty';
+import { IWidgetGroup } from '../index';
 
 export enum ItemType {
   info = 0,
@@ -8,12 +8,9 @@ export enum ItemType {
 }
 
 export interface ItemProps {
-  id?: string;
-  name?: string;
+  group?: IWidgetGroup;
   selected?: boolean;
   type?: ItemType;
-  editable?: boolean;
-  options?: IShellLaunchConfig;
   onClick?: () => void;
   onClose?: () => void;
   onInputBlur?: (id: string) => void;

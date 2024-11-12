@@ -1,8 +1,7 @@
-import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef } from 'react';
 
 import { Option, Select } from '@opensumi/ide-components';
-import { AppConfig, ViewState, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, ViewState, useAutorun, useInjectable } from '@opensumi/ide-core-browser';
 import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
@@ -10,7 +9,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-la
 import styles from './output.module.less';
 import { OutputService } from './output.service';
 
-export const Output = observer(({ viewState }: { viewState: ViewState }) => {
+export const Output = ({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);
   const outputRef = useRef<HTMLDivElement | null>(null);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
@@ -38,16 +37,18 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
       <div className={styles.output} ref={outputRef} />
     </React.Fragment>
   );
-});
+};
 
-export const ChannelSelector = observer(() => {
+export const ChannelSelector = () => {
   const NONE = '<no channels>';
 
   const appConfig = useInjectable<AppConfig>(AppConfig);
-  const outputService = useInjectable<OutputService>(OutputService);
   const channelOptionElements: React.ReactNode[] = [];
   const [name, setName] = React.useState<string>('');
-  outputService.getChannels().forEach((channel, idx) => {
+  const outputService = useInjectable<OutputService>(OutputService);
+  const channels = useAutorun(outputService.getChannels);
+
+  channels.forEach((channel, idx) => {
     channelOptionElements.push(
       appConfig.isElectronRenderer ? (
         <option value={channel.name} key={`${idx} - ${channel.name}`}>
@@ -60,6 +61,7 @@ export const ChannelSelector = observer(() => {
       ),
     );
   });
+
   useEffect(() => {
     const dispose = outputService.onDidSelectedChannelChange((channel) => {
       setName(channel.name);
@@ -68,6 +70,7 @@ export const ChannelSelector = observer(() => {
       dispose.dispose();
     };
   }, []);
+
   if (channelOptionElements.length === 0) {
     channelOptionElements.push(
       appConfig.isElectronRenderer ? (
@@ -110,4 +113,4 @@ export const ChannelSelector = observer(() => {
       {channelOptionElements}
     </Select>
   );
-});
+};

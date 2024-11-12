@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import {
@@ -35,15 +34,13 @@ import styles from './debug-watch.module.less';
 
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 
-export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
+export const DebugWatchView = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
+  const debugWatchModelService = useInjectable<DebugWatchModelService>(DebugWatchModelService);
+
   const DEBUG_VARIABLE_ITEM_HEIGHT = 22;
-
-  const { height } = viewState;
-
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const [model, setModel] = React.useState<TreeModel>();
-
-  const debugWatchModelService = useInjectable<DebugWatchModelService>(DebugWatchModelService);
+  const { height } = viewState;
 
   React.useEffect(() => initTreeModel(), []);
 
@@ -170,7 +167,7 @@ export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{
       {renderContent()}
     </div>
   );
-});
+};
 
 export interface IDebugVariableNodeProps {
   item: any;

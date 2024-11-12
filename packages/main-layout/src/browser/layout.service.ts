@@ -226,7 +226,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   isVisible(location: string) {
     const tabbarService = this.getTabbarService(location);
-    return !!tabbarService.currentContainerId;
+    return !!tabbarService.currentContainerId.get();
   }
 
   isViewVisible(viewId: string): boolean {
@@ -246,7 +246,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
     if (show === true) {
       tabbarService.updateCurrentContainerId(
-        tabbarService.currentContainerId ||
+        tabbarService.currentContainerId.get() ||
           tabbarService.previousContainerId ||
           tabbarService.containersMap.keys().next().value!,
       );
@@ -254,12 +254,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       tabbarService.updateCurrentContainerId('');
     } else {
       tabbarService.updateCurrentContainerId(
-        tabbarService.currentContainerId
+        tabbarService.currentContainerId.get()
           ? ''
           : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value!,
       );
     }
-    if (tabbarService.currentContainerId && size) {
+    if (tabbarService.currentContainerId.get() && size) {
       tabbarService.resizeHandle?.setSize(size);
     }
   }
@@ -287,7 +287,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         .catch((err) => {
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
-      const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId), 100);
+      const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId.get()), 100);
       service.addDispose(service.onSizeChange(debouncedStoreState));
       if (location === SlotLocation.bottom) {
         // use this getter's side effect to set bottomExpanded contextKey
@@ -451,7 +451,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     const containerId = this.viewToContainerMap.get(viewId)!;
     const viewReady = new Deferred<void>();
     const accordionService = this.getAccordionService(containerId);
-    if (!accordionService.visibleViews.find((view) => view.id === viewId)) {
+    if (!accordionService.visibleViews.get().find((view) => view.id === viewId)) {
       accordionService.addDispose(
         accordionService.onAfterAppendViewEvent((id) => {
           if (id === viewId) {
@@ -548,9 +548,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   // TODO 这样很耦合，不能做到tab renderer自由拆分
   expandBottom(expand: boolean): void {
     const tabbarService = this.getTabbarService(SlotLocation.bottom);
-    if (!tabbarService.currentContainerId) {
+    if (!tabbarService.currentContainerId.get()) {
       tabbarService.updateCurrentContainerId(
-        tabbarService.currentContainerId ||
+        tabbarService.currentContainerId.get() ||
           tabbarService.previousContainerId ||
           tabbarService.containersMap.keys().next().value!,
       );

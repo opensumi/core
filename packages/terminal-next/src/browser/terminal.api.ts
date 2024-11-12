@@ -2,6 +2,7 @@ import capitalize from 'lodash/capitalize';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter, Event } from '@opensumi/ide-core-common';
+import { transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 import {
   ITerminalApiService,
@@ -67,7 +68,7 @@ export class TerminalApiService implements ITerminalApiService {
     return Array.from(this.controller.clients.values()).map((v) => ({
       id: v.id,
       name: v.name,
-      isActive: this.view.currentWidgetId === v.id,
+      isActive: this.view.currentWidgetId.get() === v.id,
     }));
   }
 
@@ -164,7 +165,10 @@ export class TerminalApiService implements ITerminalApiService {
     const groupIndex = this.view.createGroup();
     const group = this.view.getGroup(groupIndex);
     const widget = this.view.createWidget(group, widgetId, false, true);
-    widget.name = capitalize(uniqName);
+    transaction((tx) => {
+      widget.name.set(capitalize(uniqName), tx);
+    });
+
     this.view.selectWidget(widgetId);
 
     widget.onRender(() => {

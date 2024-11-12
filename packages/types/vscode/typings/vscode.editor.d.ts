@@ -142,6 +142,14 @@ declare module 'vscode' {
     tabSize?: number | string;
 
     /**
+     * The number of spaces to insert when {@link TextEditorOptions.insertSpaces insertSpaces} is true.
+     *
+     * When getting a text editor's options, this property will always be a number (resolved).
+     * When setting a text editor's options, this property is optional and it can be a number or `"tabSize"`.
+     */
+    indentSize?: number | string;
+
+    /**
      * When pressing Tab insert [n](#TextEditorOptions.tabSize) spaces.
      * When getting a text editor's options, this property will always be a boolean (resolved).
      * When setting a text editor's options, this property is optional and it can be a boolean or `"auto"`.

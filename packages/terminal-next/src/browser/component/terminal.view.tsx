@@ -1,9 +1,8 @@
 import cls from 'classnames';
 import debounce from 'lodash/debounce';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { FRAME_THREE, getIcon, localize, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
+import { FRAME_THREE, getIcon, localize, useAutorun, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
   ITerminalController,
@@ -21,15 +20,19 @@ import TerminalWidget from './terminal.widget';
 
 import '@xterm/xterm/css/xterm.css';
 
-export default observer(() => {
+export default () => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
-  const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const searchService = useInjectable<ITerminalSearchService>(ITerminalSearchService);
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const network = useInjectable<ITerminalNetwork>(ITerminalNetwork);
-  const { groups, currentGroupIndex, currentGroupId } = view;
+
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+
+  const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
+  const currentGroupId = useAutorun(view.currentGroupId);
+  const currentGroupIndex = useAutorun(view.currentGroupIndex);
+  const groups = useAutorun(view.groups);
 
   React.useEffect(() => {
     const dispose = searchService.onVisibleChange((show) => {
@@ -130,12 +133,12 @@ export default observer(() => {
         </div>
       )}
       {groups.map((group, index) => {
-        if (!group.activated) {
+        if (!group.activated.get()) {
           return;
         }
         return (
           <div
-            data-group-rendered={group.activated}
+            data-group-rendered={group.activated.get()}
             key={`terminal-${group.id}`}
             style={{ display: currentGroupIndex === index ? 'block' : 'none' }}
             className={styles.group}
@@ -155,4 +158,4 @@ export default observer(() => {
       })}
     </div>
   );
-});
+};

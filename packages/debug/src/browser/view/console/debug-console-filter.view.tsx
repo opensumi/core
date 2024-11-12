@@ -1,5 +1,4 @@
 import debounce from 'lodash/debounce';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { HistoryInputBox, IHistoryInputBoxHandler } from '@opensumi/ide-components/lib/input/HistoryInputBox';
@@ -11,7 +10,7 @@ import styles from './debug-console.module.less';
 /**
  * 调试控制台筛选器
  */
-export const DebugConsoleFilterView = observer(() => {
+export const DebugConsoleFilterView = () => {
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const [filterValue, setFilterValue] = React.useState<string>('');
   const [historyApi, setHistoryApi] = React.useState<IHistoryInputBoxHandler>();
@@ -75,4 +74,4 @@ export const DebugConsoleFilterView = observer(() => {
       ></HistoryInputBox>
     </div>
   );
-});
+};

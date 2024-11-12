@@ -3373,8 +3373,6 @@ __metadata:
     jsonc-parser: "npm:^2.1.0"
     keycode: "npm:^2.2.0"
     lodash: "npm:^4.17.21"
-    mobx: "npm:^6.12.0"
-    mobx-react-lite: "npm:^4.0.5"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-is: "npm:^18.2.0"
@@ -3506,8 +3504,6 @@ __metadata:
     less: "npm:^3.9.0"
     less-loader: "npm:^12.1.0"
     mini-css-extract-plugin: "npm:^2.7.7"
-    mobx: "npm:^6.12.0"
-    mobx-react-lite: "npm:^4.0.5"
     null-loader: "npm:^4.0.1"
     optimize-css-assets-webpack-plugin: "npm:^6.0.1"
     react-dom: "npm:^18.2.0"
@@ -3595,6 +3591,7 @@ __metadata:
     "@opensumi/ide-extension": "workspace:*"
     "@opensumi/ide-main-layout": "workspace:*"
     "@opensumi/ide-markdown": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@types/node-fetch": "npm:^2.6.1"
@@ -3786,6 +3783,7 @@ __metadata:
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
   languageName: unknown
   linkType: soft
@@ -3825,6 +3823,7 @@ __metadata:
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
   languageName: unknown
   linkType: soft
@@ -4140,6 +4139,7 @@ __metadata:
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
   languageName: unknown
   linkType: soft
@@ -4185,6 +4185,7 @@ __metadata:
     "@opensumi/ide-editor": "workspace:*"
     "@opensumi/ide-file-service": "workspace:*"
     "@opensumi/ide-main-layout": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-status-bar": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
@@ -10398,8 +10399,8 @@ __metadata:
   linkType: hard
 
 "elliptic@npm:^6.5.3, elliptic@npm:^6.5.5":
-  version: 6.5.7
-  resolution: "elliptic@npm:6.5.7"
+  version: 6.6.0
+  resolution: "elliptic@npm:6.6.0"
   dependencies:
     bn.js: "npm:^4.11.9"
     brorand: "npm:^1.1.0"
@@ -10408,7 +10409,7 @@ __metadata:
     inherits: "npm:^2.0.4"
     minimalistic-assert: "npm:^1.0.1"
     minimalistic-crypto-utils: "npm:^1.0.1"
-  checksum: 10/fbad1fad0a5cc07df83f80cc1f7a784247ef59075194d3e340eaeb2f4dd594825ee24c7e9b0cf279c9f1982efe610503bb3139737926428c4821d4fca1bcf348
+  checksum: 10/27575b0403e010e5d7e7a131fcadce6a7dd1ae82ccb24cc7c20b275d32ab1cb7ecb6a070225795df08407441dc8c7a32efd986596d48d1d6846f64ff8f094af7
   languageName: node
   linkType: hard
 
@@ -13372,8 +13373,8 @@ __metadata:
   linkType: hard
 
 "http-proxy-middleware@npm:^2.0.3":
-  version: 2.0.6
-  resolution: "http-proxy-middleware@npm:2.0.6"
+  version: 2.0.7
+  resolution: "http-proxy-middleware@npm:2.0.7"
   dependencies:
     "@types/http-proxy": "npm:^1.17.8"
     http-proxy: "npm:^1.18.1"
@@ -13385,7 +13386,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/express":
       optional: true
-  checksum: 10/768e7ae5a422bbf4b866b64105b4c2d1f468916b7b0e9c96750551c7732383069b411aa7753eb7b34eab113e4f77fb770122cb7fb9c8ec87d138d5ddaafda891
+  checksum: 10/4a51bf612b752ad945701995c1c029e9501c97e7224c0cf3f8bf6d48d172d6a8f2b57c20fec469534fdcac3aa8a6f332224a33c6b0d7f387aa2cfff9b67216fd
   languageName: node
   linkType: hard
 
@@ -15388,8 +15389,8 @@ __metadata:
   linkType: hard
 
 "koa@npm:^2.15.0":
-  version: 2.15.0
-  resolution: "koa@npm:2.15.0"
+  version: 2.15.3
+  resolution: "koa@npm:2.15.3"
   dependencies:
     accepts: "npm:^1.3.5"
     cache-content-type: "npm:^1.0.0"
@@ -15414,7 +15415,7 @@ __metadata:
     statuses: "npm:^1.5.0"
     type-is: "npm:^1.6.16"
     vary: "npm:^1.1.2"
-  checksum: 10/8063140a80f274f5075880cb4b19bdc7e7ce34a590fc4a7b6ae9c6876f93cfe099276769767419da5d74c1a74ead63437ecc90e9bc23edce9236656743d27350
+  checksum: 10/b2c2771a4ee5268f9d039ce025b9c3798a0baba8c3cf3895a6fc2d286363e0cd2c98c02a5b87f14100baa2bc17d854eed6ed80f9bd41afda1d056f803b206514
   languageName: node
   linkType: hard
 
@@ -16877,30 +16878,6 @@ __metadata:
   bin:
     mkdirp: bin/cmd.js
   checksum: 10/d71b8dcd4b5af2fe13ecf3bd24070263489404fe216488c5ba7e38ece1f54daf219e72a833a3a2dc404331e870e9f44963a33399589490956bff003a3404d3b2
-  languageName: node
-  linkType: hard
-
-"mobx-react-lite@npm:^4.0.5":
-  version: 4.0.7
-  resolution: "mobx-react-lite@npm:4.0.7"
-  dependencies:
-    use-sync-external-store: "npm:^1.2.0"
-  peerDependencies:
-    mobx: ^6.9.0
-    react: ^16.8.0 || ^17 || ^18
-  peerDependenciesMeta:
-    react-dom:
-      optional: true
-    react-native:
-      optional: true
-  checksum: 10/294754f8a3b44aa83ace02397530f059cce40dda09bdd546f0fca6b004be4dff2dfc6e180ab24686957e45d244408b08e13754cc74c3c2af3076f6ad0ecaa898
-  languageName: node
-  linkType: hard
-
-"mobx@npm:^6.12.0":
-  version: 6.12.0
-  resolution: "mobx@npm:6.12.0"
-  checksum: 10/65d784abfc141a807160e0147b25e56069fb8942caafe4ffcd53542f58695bcfa7840cc266a2386efb8f9c4e8ccc1ed662f0dab784a2e449e055a9d49a2a2126
   languageName: node
   linkType: hard
 
@@ -24126,15 +24103,6 @@ __metadata:
     punycode: "npm:^1.4.1"
     qs: "npm:^6.11.2"
   checksum: 10/a3a5ba64d8afb4dda111355d94073a9754b88b1de4035554c398b75f3e4d4244d5e7ae9e4554f0d91be72efd416aedbb646fbb1f3dd4cacecca45ed6c9b75145
-  languageName: node
-  linkType: hard
-
-"use-sync-external-store@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "use-sync-external-store@npm:1.2.0"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/a676216affc203876bd47981103f201f28c2731361bb186367e12d287a7566763213a8816910c6eb88265eccd4c230426eb783d64c373c4a180905be8820ed8e
   languageName: node
   linkType: hard
 

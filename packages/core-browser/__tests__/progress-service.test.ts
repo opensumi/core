@@ -91,16 +91,16 @@ describe('progress service test', () => {
       },
     );
     const indicator = service.getIndicator('scm');
-    expect(indicator?.progressModel.show).toBeFalsy();
-    expect(indicator?.progressModel.total).toEqual(100);
+    expect(indicator?.progressModel.show.get()).toBeFalsy();
+    expect(indicator?.progressModel.total.get()).toEqual(100);
     jest.advanceTimersByTime(200);
-    expect(indicator?.progressModel.show).toBeTruthy();
+    expect(indicator?.progressModel.show.get()).toBeTruthy();
     jest.advanceTimersByTime(100);
     await flushPromises();
-    expect(indicator?.progressModel.worked).toEqual(20);
+    expect(indicator?.progressModel.worked.get()).toEqual(20);
     jest.advanceTimersByTime(200);
     await flushPromises();
-    expect(indicator?.progressModel.worked).toEqual(50);
+    expect(indicator?.progressModel.worked.get()).toEqual(50);
     jest.advanceTimersByTime(200);
   });
 
@@ -113,10 +113,10 @@ describe('progress service test', () => {
       (_) => new Promise((resolve) => setTimeout(resolve, 400)),
     );
     const indicator = service.getIndicator('explorer');
-    expect(indicator?.progressModel.total).toBeUndefined();
-    expect(indicator?.progressModel.show).toBeTruthy();
+    expect(indicator?.progressModel.total.get()).toBeUndefined();
+    expect(indicator?.progressModel.show.get()).toBeTruthy();
     jest.advanceTimersByTime(400);
     await flushPromises();
-    expect(indicator?.progressModel.show).toBeFalsy();
+    expect(indicator?.progressModel.show.get()).toBeFalsy();
   });
 });

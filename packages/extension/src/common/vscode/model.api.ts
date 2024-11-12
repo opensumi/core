@@ -63,6 +63,10 @@ export interface CustomCodeAction {
   isPreferred?: boolean;
 }
 
+export interface WorkspaceEditMetadataDto {
+  isRefactoring?: boolean;
+}
+
 /**
  * A position in the editor. This interface is suitable for serialization.
  */
@@ -159,12 +163,19 @@ export interface SerializedOnEnterRule {
 
 export type CharacterPair = [string, string];
 
+export interface SerializedAutoClosingPair {
+  open: string;
+  close: string;
+  notIn?: string[];
+}
+
 export interface SerializedLanguageConfiguration {
   comments?: CommentRule;
   brackets?: CharacterPair[];
   wordPattern?: SerializedRegExp;
   indentationRules?: SerializedIndentationRule;
   onEnterRules?: SerializedOnEnterRule[];
+  autoClosingPairs?: SerializedAutoClosingPair[];
 }
 
 /**

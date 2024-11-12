@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
 
 import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
@@ -16,7 +15,7 @@ import { TestTreeItem, TestTreeViewModelImpl } from '../test-tree-view.model';
 
 import styles from './testing.module.less';
 
-export const TestingExplorerTree: React.FC<{}> = observer(() => {
+export const TestingExplorerTree: React.FC<{}> = () => {
   const testViewModel = useInjectable<TestTreeViewModelImpl>(TestTreeViewModelToken);
   const testService = useInjectable<ITestService>(TestServiceToken);
   const commandService = useInjectable<CommandService>(CommandService);
@@ -137,4 +136,4 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
       )}
     </div>
   );
-});
+};

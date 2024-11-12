@@ -1,5 +1,3 @@
-import { action, makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
@@ -16,6 +14,7 @@ import {
   dispose,
   toDisposable,
 } from '@opensumi/ide-core-common';
+import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { ISCMMenus, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../common';
 
@@ -244,14 +243,12 @@ export class ViewModelContext extends Disposable {
 
   private _currentWorkspace: Uri;
 
-  @observable
-  public selectedRepos = observable.array<ISCMRepository>([]);
+  public readonly selectedRepos = observableValue<ISCMRepository[]>(this, []);
 
   public alwaysShowActions: boolean;
 
   constructor() {
     super();
-    makeObservable(this);
     this.start();
 
     this.initTreeAlwaysShowActions();
@@ -396,9 +393,10 @@ export class ViewModelContext extends Disposable {
     this.onDidSCMRepoListChangeEmitter.fire(this.repoList);
   }
 
-  @action
   private changeSelectedRepos(repos: ISCMRepository[]) {
-    this.selectedRepos.replace(repos);
+    transaction((tx) => {
+      this.selectedRepos.set(repos, tx);
+    });
     const selectedRepo = repos[0];
     this.selectedRepo = selectedRepo;
     this.onDidSelectedRepoChangeEmitter.fire(selectedRepo);

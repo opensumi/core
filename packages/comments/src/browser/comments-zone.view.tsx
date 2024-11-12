@@ -1,10 +1,17 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { Autowired, INJECTOR_TOKEN, Injectable } from '@opensumi/di';
-import { AppConfig, ConfigProvider, Emitter, Event, localize, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  ConfigProvider,
+  Emitter,
+  Event,
+  localize,
+  useAutorun,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IEditor } from '@opensumi/ide-editor';
@@ -28,8 +35,11 @@ export interface ICommentProps {
   widget: ICommentsZoneWidget;
 }
 
-const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
-  const { comments, threadHeaderTitle, contextKeyService } = thread;
+const CommentsZone: React.FC<ICommentProps> = ({ thread, widget }) => {
+  const { contextKeyService } = thread;
+  const comments = useAutorun(thread.comments);
+  const threadHeaderTitle = useAutorun(thread.threadHeaderTitle);
+
   const injector = useInjectable(INJECTOR_TOKEN);
   const commentsZoneService: CommentsZoneService = injector.get(CommentsZoneService, [thread]);
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
@@ -154,7 +164,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
       </div>
     </div>
   );
-});
+};
 
 @Injectable({ multiple: true })
 export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZoneWidget {
@@ -182,7 +192,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
     });
     this._editor = editor;
     this._wrapper = document.createElement('div');
-    this._isShow = !thread.isCollapsed;
+    this._isShow = !thread.isCollapsed.get();
     this._container.appendChild(this._wrapper);
     this.observeContainer(this._wrapper);
     const customRender = this.commentsFeatureRegistry.getZoneWidgetRender();

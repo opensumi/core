@@ -30,6 +30,17 @@
     background: var(--notifications-background);
     color: var(--notifications-foreground);
   }
+  &-custom-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    .anticon {
+      height: 21px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
 
   &-success .@{iconfont-css-prefix} {
     color: @success-color;
