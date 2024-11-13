@@ -79,6 +79,12 @@ declare module "vscode" {
      */
     isDefault: boolean;
     /**
+     * Whether this profile supports continuous running of requests. If so,
+     * then {@link TestRunRequest.continuous} may be set to `true`. Defaults
+     * to false.
+     */
+    supportsContinuousRun: boolean;
+    /**
      * Associated tag for the profile. If this is set, only {@link TestItem}
      * instances with the same tag will be eligible to execute in this profile.
      */
@@ -95,6 +101,11 @@ declare module "vscode" {
      * {@link TestController.createTestRun} at least once, and all test runs
      * associated with the request should be created before the function returns
      * or the returned promise is resolved.
+     *
+     * If {@link supportsContinuousRun} is set, then {@link TestRunRequest.continuous}
+     * may be `true`. In this case, the profile should observe changes to
+     * source code and create new test runs by calling {@link TestController.createTestRun},
+     * until the cancellation is requested on the `token`.
      *
      * @param request Request information for the test run.
      * @param cancellationToken Token that signals the used asked to abort the
@@ -232,6 +243,23 @@ declare module "vscode" {
      */
     createTestItem(id: string, label: string, uri?: Uri): TestItem;
     /**
+     * Marks an item's results as being outdated. This is commonly called when
+     * code or configuration changes and previous results should no longer
+     * be considered relevant. The same logic used to mark results as outdated
+     * may be used to drive {@link TestRunRequest.continuous continuous test runs}.
+     *
+     * If an item is passed to this method, test results for the item and all of
+     * its children will be marked as outdated. If no item is passed, then all
+     * test owned by the TestController will be marked as outdated.
+     *
+     * Any test runs started before the moment this method is called, including
+     * runs which may still be ongoing, will be marked as outdated and deprioritized
+     * in the editor's UI.
+     *
+     * @param item Item to mark as outdated. If undefined, all the controller's items are marked outdated.
+     */
+    invalidateTestResults(items?: TestItem | readonly TestItem[]): void;
+    /**
      * Unregisters the test controller, disposing of its associated tests
      * and unpersisted results.
      */
@@ -272,6 +300,11 @@ declare module "vscode" {
      * programmatically create requests not associated with any profile.
      */
     readonly profile: TestRunProfile | undefined;
+    /**
+     * Whether the profile should run continuously as source code changes. Only
+     * relevant for profiles that set {@link TestRunProfile.supportsContinuousRun}.
+     */
+    readonly continuous?: boolean;
     /**
      * @param tests Array of specific tests to run, or undefined to run all tests
      * @param exclude An array of tests to exclude from the run.
@@ -535,6 +568,36 @@ declare module "vscode" {
      * Associated file location.
      */
     location?: Location;
+    /**
+     * Context value of the test item. This can be used to contribute message-
+     * specific actions to the test peek view. The value set here can be found
+     * in the `testMessage` property of the following `menus` contribution points:
+     *
+     * - `testing/message/context` - context menu for the message in the results tree
+     * - `testing/message/content` - a prominent button overlaying editor content where
+     *    the message is displayed.
+     *
+     * For example:
+     *
+     * ```json
+     * "contributes": {
+     *   "menus": {
+     *     "testing/message/content": [
+     *       {
+     *         "command": "extension.deleteCommentThread",
+     *         "when": "testMessage == canApplyRichDiff"
+     *       }
+     *     ]
+     *   }
+     * }
+     * ```
+     *
+     * The command will be called with an object containing:
+     * - `test`: the {@link TestItem} the message is associated with, *if* it
+     *    is still present in the {@link TestController.items} collection.
+     * - `message`: the {@link TestMessage} instance.
+     */
+    contextValue?: string;
     /**
      * Creates a new TestMessage that will present as a diff in the editor.
      * @param message Message to display to the user.
