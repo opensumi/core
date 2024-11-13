@@ -43,38 +43,26 @@ export class Keybindhandler implements ApplicationContribution {
     return this.libroService.active instanceof LibroView;
   }
 
-  registerCommand() {
+  private registerSingleCommand(command: { id: string }) {
     const sumiCommandRegistry: SumiCommandRegistry = this.injector.get(SumiCommandRegistry);
-    sumiCommandRegistry.registerCommand(NotebookCommands['EnterCommandMode'], {
+    sumiCommandRegistry.registerCommand(command, {
       execute: () => {
-        this.commandRegistry.executeCommand(NotebookCommands['EnterCommandMode'].id);
+        this.commandRegistry.executeCommand(command.id);
       },
     });
-    sumiCommandRegistry.registerCommand(NotebookCommands['RunCell'], {
-      execute: () => {
-        this.commandRegistry.executeCommand(NotebookCommands['RunCell'].id);
-      },
-    });
-    sumiCommandRegistry.registerCommand(NotebookCommands['RunCellAndSelectNext'], {
-      execute: () => {
-        this.commandRegistry.executeCommand(NotebookCommands['RunCellAndSelectNext'].id);
-      },
-    });
-    sumiCommandRegistry.registerCommand(NotebookCommands['RunCellAndInsertBelow'], {
-      execute: () => {
-        this.commandRegistry.executeCommand(NotebookCommands['RunCellAndInsertBelow'].id);
-      },
-    });
-    sumiCommandRegistry.registerCommand(NotebookCommands['SplitCellAntCursor'], {
-      execute: () => {
-        this.commandRegistry.executeCommand(NotebookCommands['SplitCellAntCursor'].id);
-      },
-    });
-    sumiCommandRegistry.registerCommand(LibroSearchToggleCommand.ShowLibroSearch, {
-      execute: () => {
-        this.commandRegistry.executeCommand(LibroSearchToggleCommand.ShowLibroSearch.id);
-      },
-    });
+  }
+
+  registerCommand() {
+    const commands = [
+      NotebookCommands['EnterCommandMode'],
+      NotebookCommands['RunCell'],
+      NotebookCommands['RunCellAndSelectNext'],
+      NotebookCommands['RunCellAndInsertBelow'],
+      NotebookCommands['SplitCellAntCursor'],
+      LibroSearchToggleCommand.ShowLibroSearch,
+    ];
+    
+    commands.forEach(command => this.registerSingleCommand(command));
   }
 
   registerKeybind() {
