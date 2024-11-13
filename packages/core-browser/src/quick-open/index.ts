@@ -361,10 +361,16 @@ export namespace QuickOpenOptions {
      * 内容更新后保持滚动区域不变
      */
     keepScrollPosition?: boolean;
+
     /**
      * 是否显示 progress
      */
     busy?: boolean;
+
+    /**
+     * 总是保持显示，除非主动调用 hide
+     */
+    alwaysOpen?: boolean;
   }
   export const defaultOptions: Resolved = Object.freeze({
     enabled: true,

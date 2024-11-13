@@ -195,6 +195,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
         value: (options as QuickPickOptions).value,
         busy: (options as QuickPickOptions).busy,
         enabled: (options as QuickPickOptions).enabled,
+        alwaysOpen: true, // 插件调用的 quick pick 不自动关闭，和 vscode 交互保持一致
       },
     );
 
