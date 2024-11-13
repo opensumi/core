@@ -1,5 +1,5 @@
 import { DocumentCommands, LibroView } from '@difizen/libro-jupyter/noeditor';
-import { CommandRegistry, Container, ViewRender } from '@difizen/mana-app';
+import { CommandRegistry, Container, Disposable, ViewRender } from '@difizen/mana-app';
 import * as React from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
@@ -18,9 +18,10 @@ export const OpensumiLibroView: ReactEditorComponent = (...params) => {
 
   React.useEffect(() => {
     let autoSaveHandle: undefined | number;
+    let modelChangeDisposer: undefined | Disposable;
     libroOpensumiService.getOrCreateLibroView(params[0].resource.uri).then((libro) => {
       setLibroView(libro);
-      libro.model.onChanged(() => {
+      modelChangeDisposer = libro.model.onChanged(() => {
         libroOpensumiService.updateDirtyStatus(params[0].resource.uri, true);
         if (autoSaveHandle) {
           window.clearTimeout(autoSaveHandle);
@@ -40,6 +41,7 @@ export const OpensumiLibroView: ReactEditorComponent = (...params) => {
       });
     });
     return () => {
+      modelChangeDisposer?.dispose();
       window.clearTimeout(autoSaveHandle);
     };
   }, []);

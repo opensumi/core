@@ -16,7 +16,7 @@ import { LIBRO_COMPONENTS_SCHEME_ID } from './libro.protocol';
 import { ManaContainer } from './mana';
 
 @Domain(ClientAppContribution)
-export class LibroKeybindContribition implements ClientAppContribution {
+export class LibroKeybindContribution implements ClientAppContribution {
   @Autowired(IContextKeyService) contextKeyService: IContextKeyService;
   @Autowired(KeybindingRegistry) keybindingRegistry: KeybindingRegistry;
   @Autowired(WorkbenchEditorService)

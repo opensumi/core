@@ -159,7 +159,7 @@ export class NotebookServiceOverride extends NotebookService {
           uri: this.getNotebookUri(event.libroView as LibroJupyterView),
           event: {
             rawEvents: events,
-            versionId: 1,
+            versionId: this.getNotebookVersion(event.libroView),
           },
           isDirty: getOrigin(event.libroView.model.dirty),
         });

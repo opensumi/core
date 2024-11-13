@@ -3,7 +3,7 @@ import { CellUri, EditorCellView, ExecutableNotebookModel } from '@difizen/libro
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IOpener, IPosition, IRange, URI } from '@opensumi/ide-core-browser';
-import { Schemes } from '@opensumi/ide-core-common';
+import { ILogger, Schemes } from '@opensumi/ide-core-common';
 
 import { LibroOpensumiService } from './libro.service';
 
@@ -33,6 +33,9 @@ export const toMonacoPosition = (position: IPosition | undefined): LibroPosition
 
 @Injectable()
 export class LibroOpener implements IOpener {
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   @Autowired(LibroOpensumiService)
   libroOpensumiService: LibroOpensumiService;
 
@@ -76,11 +79,18 @@ export class LibroOpener implements IOpener {
     libroView.selectCell(cell);
     let line = 0;
     if (range) {
-      cell.editor?.focus();
-      cell.editor?.revealSelection(toEditorRange(range));
-      cell.editor?.setCursorPosition(toEditorRange(range).start);
+      const editor = cell.editor;
+      if (!editor) {
+        this.logger.error('Editor not available for cell');
+        return;
+      }
+      editor.focus();
+      editor.revealSelection(toEditorRange(range));
+      editor.setCursorPosition(toEditorRange(range).start);
+
       line = toEditorRange(range).start.line;
     }
+    // TODO: 优化Libro的滚动API
     libroView.model.scrollToView(cell, (line ?? 0) * 20);
   }
 

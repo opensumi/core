@@ -3,6 +3,7 @@ import { Container } from '@difizen/mana-app';
 
 import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, Domain, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { MARKER_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 
 import { ManaContainer } from './mana';
 
@@ -43,7 +44,7 @@ export class LibroCommandContribution implements CommandContribution {
         return false;
       },
     });
-    commands.registerHandler('markers', {
+    commands.registerHandler(MARKER_CONTAINER_ID, {
       execute: () => {
         const libroService = this.manaContainer.get(LibroService);
         const libro = libroService.active;
