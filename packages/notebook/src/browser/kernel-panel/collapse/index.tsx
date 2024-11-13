@@ -59,9 +59,12 @@ export const LibroCollapse: React.FC<Props> = (props: Props) => {
     themeService.getCurrentTheme().then((theme) => {
       setThemeType(theme.type);
     });
-    themeService.onThemeChange((e) => {
+    const disposable = themeService.onThemeChange((e) => {
       setThemeType(e.type);
     });
+    return () => {
+      disposable.dispose();
+    };
   }, []);
   return (
     <ConfigProvider
