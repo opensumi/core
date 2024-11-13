@@ -25,6 +25,7 @@
     "@difizen/mana-app": "^0.1.27",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",
     "@opensumi/ide-explorer": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
