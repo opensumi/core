@@ -61,8 +61,8 @@ export class Keybindhandler implements ApplicationContribution {
       NotebookCommands['SplitCellAntCursor'],
       LibroSearchToggleCommand.ShowLibroSearch,
     ];
-    
-    commands.forEach(command => this.registerSingleCommand(command));
+
+    commands.forEach((command) => this.registerSingleCommand(command));
   }
 
   registerKeybind() {
