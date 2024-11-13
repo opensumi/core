@@ -127,8 +127,10 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
         {
           token: UntitledDocumentIdCounter,
           useValue: {
-            update: () => 1,
             id: 1,
+            update() {
+              return ++this.id;
+            },
           },
         },
         {

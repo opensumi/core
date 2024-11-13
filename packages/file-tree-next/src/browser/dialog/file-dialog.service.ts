@@ -117,6 +117,9 @@ export class FileTreeDialogService extends Tree {
   }
 
   initContextKey(dom: HTMLDivElement) {
+    if (!dom) {
+      return;
+    }
     this.fileDialogContextKey.initScopedContext(dom);
   }
 
