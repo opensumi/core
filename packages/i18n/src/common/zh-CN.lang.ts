@@ -1260,6 +1260,7 @@ export const localizationBundle = {
     'preference.ai.native.intelligentCompletions.debounceTime': '智能补全的延迟时间（毫秒）',
     'preference.ai.native.intelligentCompletions.cache.enabled': '是否启用智能补全的缓存',
     'preference.ai.native.intelligentCompletions.alwaysVisible': '是否总是展示智能补全',
+    'preference.ai.native.intelligentCompletions.highlight': '是否启用智能补全的语法高亮',
 
     'preference.ai.native.codeEdits.title': '智能改写',
     'preference.ai.native.codeEdits.lintErrors': '是否开启对 Lint Error 类型的智能改写',

@@ -24,6 +24,7 @@ import {
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
 import { empty } from '@opensumi/ide-utils/lib/strings';
+import { DisposableStore } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commandIds';
 import { GhostTextOrReplacement } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/ghostText';
@@ -111,14 +112,15 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   }
 
   private handlerAlwaysVisiblePreference(): void {
-    let observableDisposable = new Disposable();
+    let alwaysVisibleDisposable = new DisposableStore();
+    let highlightDisposable = new DisposableStore();
 
-    const register = () => {
+    const registerAlwaysVisible = () => {
       /**
        * by: https://github.com/microsoft/vscode/blob/release/1.87/src/vs/editor/contrib/inlineCompletions/browser/commands.ts#L136
        * 修改了原生的 inline completion 的 tab keybinding when 条件，使其不受 suggest 的影响
        */
-      observableDisposable.addDispose(
+      alwaysVisibleDisposable.add(
         this.keybindingRegistry.registerKeybinding(
           {
             command: inlineSuggestCommitId,
@@ -138,7 +140,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       const inlineCompletionsController = InlineCompletionsController.get(this.monacoEditor);
 
       if (inlineCompletionsController) {
-        observableDisposable.addDispose(
+        alwaysVisibleDisposable.add(
           autorun((reader) => {
             /**
              * https://github.com/microsoft/vscode/blob/1.88.1/src/vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider.ts#L23
@@ -161,40 +163,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
           }),
         );
 
-        mapObservableArrayCached(
-          inlineCompletionsController,
-          inlineCompletionsController['_stablizedGhostTexts'] as IObservable<
-            IObservable<GhostTextOrReplacement, unknown>[],
-            unknown
-          >,
-          (ghostText, store) =>
-            store.add(
-              (inlineCompletionsController['_instantiationService'] as IInstantiationService).createInstance(
-                GhostTextTokenization,
-                this.monacoEditor,
-                {
-                  ghostText,
-                  minReservedLineCount: constObservable(0),
-                  targetTextModel: inlineCompletionsController.model.map((v) => v?.textModel),
-                  targetCompletionModel: inlineCompletionsController.model,
-                } as IGhostTextWidgetModelEnhanced,
-              ),
-            ),
-        ).recomputeInitiallyAndOnChange(inlineCompletionsController['_store']);
-
-        observableDisposable.addDispose(
-          autorun((reader) => {
-            // 销毁原有的补全提示
-            const ghostTextWidget = (
-              inlineCompletionsController['_ghostTextWidgets'] as IObservable<readonly GhostTextTokenization[], unknown>
-            ).read(reader);
-            ghostTextWidget.forEach((widget) => {
-              widget.dispose();
-            });
-          }),
-        );
-
-        observableDisposable.addDispose(
+        alwaysVisibleDisposable.add(
           autorun((reader) => {
             const model = inlineCompletionsController.model.read(reader);
             const state = model?.state.read(reader);
@@ -210,10 +179,57 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       }
     };
 
-    const unregister = () => {
-      if (observableDisposable) {
-        observableDisposable.dispose();
-        observableDisposable = new Disposable();
+    const registerHighlight = () => {
+      const inlineCompletionsController = InlineCompletionsController.get(this.monacoEditor);
+      if (!inlineCompletionsController) {
+        return;
+      }
+
+      mapObservableArrayCached(
+        inlineCompletionsController,
+        inlineCompletionsController['_stablizedGhostTexts'] as IObservable<
+          IObservable<GhostTextOrReplacement, unknown>[],
+          unknown
+        >,
+        (ghostText, store) =>
+          store.add(
+            (inlineCompletionsController['_instantiationService'] as IInstantiationService).createInstance(
+              GhostTextTokenization,
+              this.monacoEditor,
+              {
+                ghostText,
+                minReservedLineCount: constObservable(0),
+                targetTextModel: inlineCompletionsController.model.map((v) => v?.textModel),
+                targetCompletionModel: inlineCompletionsController.model,
+              } as IGhostTextWidgetModelEnhanced,
+            ),
+          ),
+      ).recomputeInitiallyAndOnChange(highlightDisposable);
+
+      highlightDisposable.add(
+        autorun((reader) => {
+          // 销毁原有的补全提示
+          const ghostTextWidget = (
+            inlineCompletionsController['_ghostTextWidgets'] as IObservable<readonly GhostTextTokenization[], unknown>
+          ).read(reader);
+          ghostTextWidget.forEach((widget) => {
+            widget.dispose();
+          });
+        }),
+      );
+    };
+
+    const unregisterAlwaysVisible = () => {
+      if (alwaysVisibleDisposable) {
+        alwaysVisibleDisposable.dispose();
+        alwaysVisibleDisposable = new DisposableStore();
+      }
+    };
+
+    const unregisterHighlight = () => {
+      if (highlightDisposable) {
+        highlightDisposable.dispose();
+        highlightDisposable = new DisposableStore();
       }
     };
 
@@ -222,8 +238,17 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       true,
     );
 
+    const isHighlight = this.preferenceService.getValid(
+      AINativeSettingSectionsId.IntelligentCompletionsHighlight,
+      false,
+    );
+
     if (isAlwaysVisible) {
-      register();
+      registerAlwaysVisible();
+    }
+
+    if (isHighlight) {
+      registerHighlight();
     }
 
     this.featureDisposable.addDispose(
@@ -231,9 +256,22 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
         AINativeSettingSectionsId.IntelligentCompletionsAlwaysVisible,
         ({ newValue }) => {
           if (newValue) {
-            register();
+            registerAlwaysVisible();
           } else {
-            unregister();
+            unregisterAlwaysVisible();
+          }
+        },
+      ),
+    );
+
+    this.featureDisposable.addDispose(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.IntelligentCompletionsHighlight,
+        ({ newValue }) => {
+          if (newValue) {
+            registerHighlight();
+          } else {
+            unregisterHighlight();
           }
         },
       ),

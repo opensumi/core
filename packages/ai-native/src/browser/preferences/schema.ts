@@ -50,6 +50,10 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [AINativeSettingSectionsId.IntelligentCompletionsHighlight]: {
+      type: 'boolean',
+      default: false,
+    },
     [AINativeSettingSectionsId.CodeEditsLintErrors]: {
       type: 'boolean',
       default: false,

@@ -16,6 +16,7 @@ export enum AINativeSettingSectionsId {
   IntelligentCompletionsDebounceTime = 'ai.native.intelligentCompletions.debounceTime',
   IntelligentCompletionsCacheEnabled = 'ai.native.intelligentCompletions.cache.enabled',
   IntelligentCompletionsAlwaysVisible = 'ai.native.intelligentCompletions.alwaysVisible',
+  IntelligentCompletionsHighlight = 'ai.native.intelligentCompletions.highlight',
 
   /**
    * Code edits settings

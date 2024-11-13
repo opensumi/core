@@ -1,7 +1,9 @@
 import { DisposableStore, Event, isDefined } from '@opensumi/ide-core-common';
 import { EditorOption, ICodeEditor, IModelDeltaDecoration, ITextModel, Range } from '@opensumi/ide-monaco';
+import { IIdentifiedSingleEditOperation } from '@opensumi/ide-monaco/lib/common';
 import {
   IObservable,
+  IReader,
   autorun,
   autorunOpts,
   derived,
@@ -17,6 +19,8 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LineDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/viewLayout/lineDecorations';
 import { InlineDecorationType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/viewModel';
 import { GhostTextReplacement } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/ghostText';
+import { InlineCompletionWithUpdatedRange } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionsSource';
+import { SingleTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/singleTextEdit';
 import { ColumnRange } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/utils';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
@@ -72,21 +76,54 @@ export class GhostTextTokenization extends Disposable {
     }
 
     const controllerModel = this.model.targetCompletionModel.read(reader);
-    const inlineCompletion = controllerModel!.selectedInlineCompletion.read(reader);
 
-    if (!inlineCompletion) {
+    let replacement: IIdentifiedSingleEditOperation | undefined;
+
+    /**
+     * 这里会有两种情况，一种是下拉补全的代码提示，另一种是内联补全的代码提示，需要分别处理
+     */
+    const suggestItem = controllerModel!.selectedSuggestItem.read(reader);
+    if (suggestItem) {
+      const suggestCompletionEdit = suggestItem.toSingleTextEdit().removeCommonPrefix(textModel);
+      const computeAugmentation = controllerModel!['_computeAugmentation'] as (
+        suggestCompletion: SingleTextEdit,
+        reader: IReader | undefined,
+      ) =>
+        | {
+            completion: InlineCompletionWithUpdatedRange;
+            edit: SingleTextEdit;
+          }
+        | undefined;
+
+      const augmentation = computeAugmentation?.call(controllerModel, suggestCompletionEdit, reader);
+      const isSuggestionPreviewEnabled = (controllerModel!['_suggestPreviewEnabled'] as IObservable<boolean>).read(
+        reader,
+      );
+      if (!isSuggestionPreviewEnabled && !augmentation) {
+        return undefined;
+      }
+
+      replacement = augmentation?.edit ?? suggestCompletionEdit;
+    } else {
+      const inlineCompletion = controllerModel!.selectedInlineCompletion.read(reader);
+      if (!inlineCompletion) {
+        return undefined;
+      }
+      replacement = inlineCompletion.toSingleTextEdit(reader);
+    }
+
+    if (!replacement) {
       return undefined;
     }
 
     const modelService = StandaloneServices.get(IModelService);
     const languageSelection: ILanguageSelection = { languageId: textModel.getLanguageId(), onDidChange: Event.None };
 
-    const replacement = inlineCompletion.toSingleTextEdit(reader);
     const virtualModel = modelService.createModel('', languageSelection);
     virtualModel.setValue(textModel.getValue());
 
     /**
-     * 将补全的所有内容填写在虚拟 model 中，然后强制更新 tokenization，此时就能从虚拟 model 中拿到对应的 tokenization 信息
+     * 将补全的所有内容填写在虚拟 model 中
      */
     virtualModel.pushEditOperations(null, [replacement], () => null);
     return virtualModel;
@@ -213,9 +250,12 @@ export class GhostTextTokenization extends Disposable {
       return decorations;
     }
 
+    /**
+     * 强制更新对应行的 tokenization，此时就能从虚拟 model 中拿到对应的高亮样式类
+     */
     virtualModel.tokenization.forceTokenization(lineNumber);
-
     const token = virtualModel.tokenization.getLineTokens(lineNumber);
+
     const dom = document.createElement('div');
     renderLines(
       dom,

@@ -1495,6 +1495,8 @@ export const localizationBundle = {
     'preference.ai.native.intelligentCompletions.debounceTime': 'Debounce time for intelligent completions',
     'preference.ai.native.intelligentCompletions.cache.enabled': 'Whether to enable cache for intelligent completions',
     'preference.ai.native.intelligentCompletions.alwaysVisible': 'Whether to always show intelligent completions',
+    'preference.ai.native.intelligentCompletions.highlight':
+      'Whether to enable syntax highlighting for intelligent completions',
 
     'preference.ai.native.codeEdits.title': 'Code Edits',
     'preference.ai.native.codeEdits.lintErrors': 'Whether to enable intelligent rewriting of Lint Errors',

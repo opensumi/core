@@ -352,6 +352,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.IntelligentCompletionsAlwaysVisible,
             localized: 'preference.ai.native.intelligentCompletions.alwaysVisible',
           },
+          {
+            id: AINativeSettingSectionsId.IntelligentCompletionsHighlight,
+            localized: 'preference.ai.native.intelligentCompletions.highlight',
+          },
         ],
       });
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
