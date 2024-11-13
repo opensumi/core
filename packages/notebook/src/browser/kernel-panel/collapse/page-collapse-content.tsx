@@ -12,18 +12,14 @@ export const OpenedTab: React.FC<{ item: URI; refresh: () => void }> = ({ item, 
 
   useEffect(() => {
     resourceService.getResource(item).then((resource) => {
-      if (resource !== null) {setResource(resource);}
+      if (resource !== null) {
+        setResource(resource);
+      }
     });
   }, []);
 
   return (
-    <div
-      title={item.displayName}
-      className='libro-panel-collapse-item'
-      // onClick={() => {
-      //   tabs.onChange(item.id);
-      // }}
-    >
+    <div title={item.displayName} className='libro-panel-collapse-item'>
       {resource?.icon && <span className={`libro-panel-collapse-item-icon ${resource.icon}`}></span>}
       <div className='libro-panel-collapse-item-label'>{item.displayName}</div>
       <div
@@ -47,7 +43,9 @@ export const OpenedTabs: React.FC<{ refresh: () => void }> = ({ refresh }) => {
 
   return (
     <div>
-      {openedUris.map((item) => <OpenedTab item={item} refresh={refresh} key={item.toString()}></OpenedTab>)}
+      {openedUris.map((item) => (
+        <OpenedTab item={item} refresh={refresh} key={item.toString()}></OpenedTab>
+      ))}
     </div>
   );
 };
