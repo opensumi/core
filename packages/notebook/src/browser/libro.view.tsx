@@ -2,12 +2,15 @@ import { DocumentCommands, LibroView } from '@difizen/libro-jupyter/noeditor';
 import { CommandRegistry, Container, Disposable, ViewRender } from '@difizen/mana-app';
 import * as React from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { message } from '@opensumi/ide-components';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/types';
 
 import styles from './libro.module.less';
 import { ILibroOpensumiService } from './libro.service';
 import { ManaContainer } from './mana';
+
+const AUTO_SAVE_DELAY = 1000; // ms
 
 export const OpensumiLibroView: ReactEditorComponent = (...params) => {
   const libroOpensumiService = useInjectable<ILibroOpensumiService>(ILibroOpensumiService);
@@ -33,8 +36,11 @@ export const OpensumiLibroView: ReactEditorComponent = (...params) => {
               if (libro) {
                 libro.model.dirty = false;
               }
+            })
+            .catch((error) => {
+              message.error(localize('doc.saveError.failed'), error);
             });
-        }, 1000);
+        }, AUTO_SAVE_DELAY);
       });
       libro.onSave(() => {
         libroOpensumiService.updateDirtyStatus(params[0].resource.uri, false);

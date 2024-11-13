@@ -35,7 +35,8 @@ export class LibroE2EditorContribution implements CodeEditorContribution {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   canHandle(mime: string): number {
+    const LIBRO_MONACO_WEIGHT = 51;
     // 代码编辑都使用opensumi编辑器
-    return 50 + 2;
+    return LIBRO_MONACO_WEIGHT + 1;
   }
 }

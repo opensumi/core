@@ -113,7 +113,7 @@ export class LibroKeybindContribution implements ClientAppContribution {
         {
           keybinding: 'esc',
           command: NotebookCommands['EnterCommandMode'].id,
-          when: 'libroNotebookFocused && !editorHasSelection && !editorHasSelection && !editorHasMultipleSelections',
+          when: 'libroNotebookFocused && !editorHasSelection && !editorHasMultipleSelections',
         },
         {
           keybinding: 'ctrlcmd+enter',
