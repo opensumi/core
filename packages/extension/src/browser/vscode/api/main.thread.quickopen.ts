@@ -137,6 +137,10 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
     }
   }
 
+  $updateQuickPick(options: QuickPickOptions): void {
+    this.quickPickService.updateOptions(options);
+  }
+
   $hideInputBox(id: number) {
     if (this.createdInputBox.has(id)) {
       const box = this.createdInputBox.get(id);

@@ -129,11 +129,15 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   }
 
   updateOptions(options: Partial<QuickOpenInputOptions>) {
-    Object.keys(options).forEach((key) => {
-      const privateKey = `_${key}`;
-      if (Object.hasOwn(this, privateKey)) {
-        this[privateKey] = options[key];
-      }
+    transaction((tx) => {
+      if ('placeholder' in options) {this.inputPlaceholder.set(options.placeholder, tx);}
+      if ('password' in options) {this.isPassword.set(!!options.password, tx);}
+      if ('inputEnable' in options) {this.inputEnable.set(!!options.inputEnable, tx);}
+      if ('valueSelection' in options) {this.valueSelection.set(options.valueSelection, tx);}
+      if ('canSelectMany' in options) {this.canSelectMany.set(!!options.canSelectMany, tx);}
+      if ('keepScrollPosition' in options) {this.keepScrollPosition.set(!!options.keepScrollPosition, tx);}
+      if ('busy' in options) {this.busy.set(!!options.busy, tx);}
+      if ('enabled' in options) {this.inputEnable.set(!!options.enabled, tx);}
     });
   }
 
