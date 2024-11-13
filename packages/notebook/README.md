@@ -13,10 +13,10 @@ c.ServerApp.allow_origin = "*"
 c.ServerApp.allow_remote_access = True
 c.ServerApp.allow_root = True
 c.ServerApp.ip = '0.0.0.0'
-c.IdentityProvider.token = ''
+c.IdentityProvider.token = '<YOUR_TOKEN>'
 ```
 
-运行 `jupyter server` 启动服务，将服务地址配置到 `notebookServerHost` 字段即可：
+运行 `jupyter server` 启动服务，将服务地址配置到 `notebookServerHost` 字段、token 信息填到 `notebookServerToken` 字段即可（token 设置为空字符串时可不填）：
 
 ```typescript
 renderApp(
@@ -25,6 +25,7 @@ renderApp(
     opts: {
       // ...
       notebookServerHost: 'localhost:8888',
+      notebookServerToken: '<YOUR_TOKEN>',
     },
   }),
 );
