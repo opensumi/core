@@ -3870,6 +3870,7 @@ __metadata:
     "@difizen/libro-lsp": "npm:0.2.45"
     "@difizen/libro-toc": "npm:0.2.45"
     "@difizen/mana-app": "npm:^0.1.27"
+    "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-editor": "workspace:*"
