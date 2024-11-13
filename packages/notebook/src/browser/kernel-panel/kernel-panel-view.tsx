@@ -3,7 +3,7 @@ import { Container } from '@difizen/mana-app';
 import { useEffect, useState } from 'react';
 import React from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { IThemeService } from '@opensumi/ide-theme/lib/common';
 
 import { ManaContainer } from '../mana';
@@ -78,7 +78,7 @@ export const KernelPanel: React.FC = () => {
   return (
     <div className='kernel-and-panel' key={refresh}>
       <div className='kernel-and-panel-header'>
-        <div className='kernel-and-panel-title'>运行的终端和内核</div>
+        <div className='kernel-and-panel-title'>{localize('notebook.kernel.panel.title')}</div>
         <img
           width={16}
           height={16}

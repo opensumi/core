@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { ComponentContribution, ComponentRegistry, Domain } from '@opensumi/ide-core-browser';
+import { ComponentContribution, ComponentRegistry, Domain, localize } from '@opensumi/ide-core-browser';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IconType } from '@opensumi/ide-theme/lib/common';
 
@@ -23,7 +23,7 @@ export class KernelPanelContribution implements ComponentContribution {
     registry.register('@opensumi/ide-notebook', [], {
       containerId: KERNEL_PANEL_ID,
       iconClass,
-      title: '运行的终端和内核',
+      title: localize('notebook.kernel.panel.title'),
       component: KernelPanel,
       priority: 0,
       activateKeyBinding: 'ctrlcmd+shift+k',

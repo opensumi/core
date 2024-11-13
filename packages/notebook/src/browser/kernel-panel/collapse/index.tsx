@@ -2,7 +2,7 @@ import { CaretDownOutlined, CaretRightOutlined } from '@ant-design/icons';
 import { ConfigProvider, Empty, Popconfirm, message, theme } from 'antd';
 import React, { useEffect, useState } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { IThemeService } from '@opensumi/ide-theme/lib/common';
 
 import {
@@ -23,7 +23,11 @@ const getCollapseContentView = (
 ) => {
   if (!items) {
     return (
-      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description='暂无内容' className='kernel-and-terminal-panel-empty' />
+      <Empty
+        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        description={localize('notebook.kernel.panel.empty')}
+        className='kernel-and-terminal-panel-empty'
+      />
     );
   }
 
@@ -41,9 +45,9 @@ const getCollapseContentView = (
 const getCollapseHeaderLabel = (type: LibroPanelCollapseItemType) => {
   switch (type) {
     case LibroPanelCollapseItemType.PAGE:
-      return '已开启的标签页';
+      return localize('notebook.kernel.panel.opened.pages');
     case LibroPanelCollapseItemType.KERNEL:
-      return '运行的内核';
+      return localize('notebook.kernel.panel.running.kernels');
   }
 };
 
@@ -80,9 +84,9 @@ export const LibroCollapse: React.FC<Props> = (props: Props) => {
           </div>
           <div className='libro-panel-collapse-header-close-all'>
             <Popconfirm
-              title='你确定要关闭全部吗？'
-              okText='确定'
-              cancelText='取消'
+              title={localize('notebook.kernel.close.all.confirmation')}
+              okText={localize('ButtonOK')}
+              cancelText={localize('ButtonCancel')}
               onConfirm={() => {
                 if (props.shutdownAll) {
                   props
@@ -96,7 +100,7 @@ export const LibroCollapse: React.FC<Props> = (props: Props) => {
                 }
               }}
             >
-              关闭全部
+              {localize('editor.closeAllInGroup')}
             </Popconfirm>
           </div>
         </div>
