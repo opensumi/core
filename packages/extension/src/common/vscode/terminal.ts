@@ -99,6 +99,6 @@ export interface IExtHostTerminal {
   $createContributedProfileTerminal(id: string, options: ICreateContributedTerminalProfileOptions): Promise<void>;
 
   // #region
-  getEnviromentVariableCollection(extension: IExtensionProps): vscode.EnvironmentVariableCollection;
+  getEnvironmentVariableCollection(extension: IExtensionProps): vscode.EnvironmentVariableCollection;
   // #endregion
 }

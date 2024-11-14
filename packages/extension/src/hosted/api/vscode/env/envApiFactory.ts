@@ -82,7 +82,7 @@ export function createEnvApiFactory(
       return envHost.logLevelChangeEmitter.event;
     },
     get environmentVariableCollection(): vscode.EnvironmentVariableCollection {
-      return exthostTerminal.getEnviromentVariableCollection(extension);
+      return exthostTerminal.getEnvironmentVariableCollection(extension);
     },
     createTelemetryLogger(
       sender: vscode.TelemetrySender,

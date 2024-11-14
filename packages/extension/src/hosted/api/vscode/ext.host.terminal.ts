@@ -524,7 +524,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     }
   }
 
-  getEnviromentVariableCollection(extension: IExtension) {
+  getEnvironmentVariableCollection(extension: IExtension) {
     let collection = this.environmentVariableCollections.get(extension.id);
     if (!collection) {
       collection = new EnvironmentVariableCollection();
