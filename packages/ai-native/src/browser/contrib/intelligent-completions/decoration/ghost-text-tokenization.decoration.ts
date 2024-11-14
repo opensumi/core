@@ -228,7 +228,7 @@ export class GhostTextTokenization extends Disposable {
       return [];
     }
 
-    const { replacedRange, hiddenRange, inlineTexts, lineNumber } = uiState;
+    const { replacedRange, hiddenRange, inlineTexts, lineNumber, targetTextModel } = uiState;
 
     const decorations: IModelDeltaDecoration[] = [];
 
@@ -251,39 +251,45 @@ export class GhostTextTokenization extends Disposable {
     }
 
     /**
-     * 强制更新对应行的 tokenization，此时就能从虚拟 model 中拿到对应的高亮样式类
+     * 强制更新对应行的 tokenization，以获取最新的 token 信息
      */
     virtualModel.tokenization.forceTokenization(lineNumber);
     const token = virtualModel.tokenization.getLineTokens(lineNumber);
-
-    const dom = document.createElement('div');
-    renderLines(
-      dom,
-      this.editor.getOption(EditorOption.tabIndex),
-      [
-        {
-          content: inlineTexts[0].text,
-          decorations: [],
-          lineTokens: token,
-        },
-      ],
-      this.editor.getOptions(),
-    );
-
     /**
-     * 这里主要是为了从虚拟 model 中拿到对应行的 className，然后转成 decorations 的 className
+     * 获取原始行内容，用于截取 token，通常需要偏移 start offset
+     *
+     * 这一步的目的是为了不重复渲染字符串，例如：
+     * 编辑器里的代码是:
+     *
+     * console
+     *
+     * 此时从 virtualModel 中拿到的当前行内容是 console.log('Hello OpenSumi')
+     *
+     * 如果直接渲染成 decorations，那么就会出现这种情况
+     *
+     * consoleconsole.log('Hello OpenSumi')
+     *
+     * 为了能保证 token 信息的正确性，不能先截取文本再计算 token，而是应该从完整的 token 当中截取，才能保证高亮样式不出错
      */
-    const findViewLineDOMs = Array.from(dom.querySelectorAll('.view-line > span > span'));
+    const originalLineContent = targetTextModel.getLineContent(lineNumber);
+    const startOffset = originalLineContent.length;
+    const slicedTokens = token.sliceAndInflate(startOffset, token.getLineContent().length, 0);
 
-    findViewLineDOMs.forEach((dom, idx) => {
-      const className = dom.className;
-      const text = dom.textContent || '';
+    const newCount = slicedTokens.getCount();
+
+    Array.from({ length: newCount }).forEach((_, idx) => {
+      const className = slicedTokens.getClassName(idx);
+      const fullContent = slicedTokens.getLineContent();
+      const endOffset = slicedTokens.getEndOffset(idx);
+      const startOffset = idx === 0 ? 0 : slicedTokens.getEndOffset(idx - 1);
+      const content = fullContent.substring(startOffset, endOffset);
+
       decorations.push({
         range: Range.fromPositions({ lineNumber, column: inlineTexts[0].column }),
         options: {
           description: GHOST_TEXT_DESCRIPTION,
           after: {
-            content: text,
+            content,
             inlineClassName: styles.inline_completion_ghost_text_decoration + ' ' + className,
             cursorStops: InjectedTextCursorStops.Left,
           },
