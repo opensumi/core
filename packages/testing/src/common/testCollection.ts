@@ -93,6 +93,7 @@ export interface ITestRunProfile {
   isDefault: boolean;
   tag: string | null;
   hasConfigurationHandler: boolean;
+  supportsContinuousRun: boolean;
 }
 
 /**
@@ -156,6 +157,7 @@ export interface ITestErrorMessage {
   type: TestMessageType.Error;
   expected: string | undefined;
   actual: string | undefined;
+  contextValue: string | undefined;
   location: IRichLocation | undefined;
 }
 

@@ -1625,6 +1625,7 @@ export namespace TestMessage {
       type: TestMessageType.Error,
       expected: message.expectedOutput,
       actual: message.actualOutput,
+      contextValue: message.contextValue,
       location: message.location ? (location.from(message.location) as any) : undefined,
     };
   }
@@ -1635,6 +1636,7 @@ export namespace TestMessage {
     );
     message.actualOutput = item.actual;
     message.expectedOutput = item.expected;
+    message.contextValue = item.contextValue;
     message.location = item.location ? location.to(item.location) : undefined;
     return message;
   }

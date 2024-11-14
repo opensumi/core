@@ -210,6 +210,10 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     this.withTestResult(runId, (r) => r.markComplete());
   }
 
+  $markTestRetired(testIds: string[] | undefined): void {
+    this.logger.warn('Method not implemented.');
+  }
+
   private withTestResult<T>(runId: string, fn: (run: ITestResult) => T): T | undefined {
     const r = this.resultService.getResult(runId);
     return r && r instanceof TestResultImpl ? fn(r) : undefined;
