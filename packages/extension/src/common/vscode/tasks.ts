@@ -87,6 +87,7 @@ export interface TaskPresentationOptionsDTO {
   panel?: number;
   showReuseMessage?: boolean;
   clear?: boolean;
+  close?: boolean;
   group?: string;
 }
 
