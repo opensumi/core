@@ -258,34 +258,33 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       const currentPrev = prevElement.current!.clientWidth;
       const currentNext = nextElement.current!.clientWidth;
 
-      const nextTotolWidth = +nextElement.current!.style.width!.replace('%', '');
-      const prevTotalWidth = +prevElement.current!.style.width!.replace('%', '');
-      fastdom.mutate(() => {
-        const totalSize = currentPrev + currentNext;
-        if (props.flexMode) {
-          const prevWidth = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
-          const nextWidth = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
-          flexModeSetSize(prevWidth, nextWidth, true);
-        } else {
-          const currentTotalWidth = nextTotolWidth + prevTotalWidth;
+      const totalSize = currentPrev + currentNext;
+      if (props.flexMode) {
+        const prevWidth = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
+        const nextWidth = props.flexMode === ResizeFlexMode.Next ? size : totalSize - size;
+        flexModeSetSize(prevWidth, nextWidth, true);
+      } else {
+        const nextTotolWidth = +nextElement.current!.style.width!.replace('%', '');
+        const prevTotalWidth = +prevElement.current!.style.width!.replace('%', '');
 
-          if (isLatter) {
-            nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
-            prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
-          } else {
-            prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
-            nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
-          }
-        }
+        const currentTotalWidth = nextTotolWidth + prevTotalWidth;
+
         if (isLatter) {
-          handleZeroSize(totalSize - size, size);
+          nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+          prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
         } else {
-          handleZeroSize(size, totalSize - size);
+          prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+          nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
         }
-        if (props.onResize) {
-          props.onResize(prevElement.current!, nextElement.current!);
-        }
-      });
+      }
+      if (isLatter) {
+        handleZeroSize(totalSize - size, size);
+      } else {
+        handleZeroSize(size, totalSize - size);
+      }
+      if (props.onResize) {
+        props.onResize(prevElement.current!, nextElement.current!);
+      }
     });
   };
 
