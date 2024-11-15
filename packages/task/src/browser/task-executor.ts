@@ -20,7 +20,7 @@ import {
 } from '@opensumi/ide-terminal-next/lib/common';
 
 import { ITaskExecutor } from '../common';
-import { Task } from '../common/task';
+import { ContributedTask, CustomTask, PresentationOptions, Task } from '../common/task';
 
 import { ProblemCollector } from './problem-collector';
 
@@ -102,6 +102,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   public taskStatus: TaskStatus = TaskStatus.PROCESS_INIT;
 
+  private presentation?: PresentationOptions;
+
   constructor(
     private task: Task,
     private shellLaunchConfig: IShellLaunchConfig,
@@ -109,6 +111,10 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     public executorId: number,
   ) {
     super();
+
+    if (task instanceof CustomTask || task instanceof ContributedTask) {
+      this.presentation = task.command.presentation;
+    }
 
     this.addDispose(
       this.terminalView.onWidgetDisposed((e) => {
@@ -147,16 +153,28 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     }
     const { id, term } = this.terminalClient;
     term.options.disableStdin = true;
+
     term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
-    term.writeln(`\r\n\x1b[1m${formatLocalize('terminal.reuseTerminal')}\x1b[0m\r\n`);
+
+    if (this.presentation?.showReuseMessage) {
+      term.writeln(`\r\n\x1b[1m${formatLocalize('terminal.reuseTerminal')}\x1b[0m\r\n`);
+    }
     this._onDidTaskProcessExit.fire(code);
 
-    // 按任意键退出
-    this.eventToDispose.push(
-      Event.once(term.onKey)(() => {
-        id && this.terminalView.removeWidget(id);
-      }),
-    );
+    if (this.presentation?.close) {
+      this.removeTerminal(id);
+    } else {
+      // 按任意键退出
+      this.eventToDispose.push(
+        Event.once(term.onKey)(() => {
+          id && this.removeTerminal(id);
+        }),
+      );
+    }
+  }
+
+  private removeTerminal(id: string) {
+    this.terminalView.removeWidget(id);
   }
 
   /**
