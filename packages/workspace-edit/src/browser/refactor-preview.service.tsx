@@ -47,7 +47,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
 
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
-
+  p;
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 

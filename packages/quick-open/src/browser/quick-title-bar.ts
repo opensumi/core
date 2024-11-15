@@ -27,11 +27,15 @@ export class QuickTitleBar {
   readonly step = observableValue<number | undefined>(this, undefined);
   readonly totalSteps = observableValue<number | undefined>(this, undefined);
   readonly buttons = observableValue<QuickTitleButton[]>(this, []);
-  readonly leftButtons = derived<ReadonlyArray<QuickTitleButton>>(this, (reader) => this.buttons.read(reader).filter((btn) => btn.side === QuickTitleButtonSide.LEFT));
+  readonly leftButtons = derived<ReadonlyArray<QuickTitleButton>>(this, (reader) =>
+    this.buttons.read(reader).filter((btn) => btn.side === QuickTitleButtonSide.LEFT),
+  );
 
-  readonly rightButtons = derived<ReadonlyArray<QuickTitleButton>>(this, (reader) => this.buttons
-    .read(reader)
-    .filter((btn) => btn.side === QuickTitleButtonSide.RIGHT || typeof btn.side === 'undefined'));
+  readonly rightButtons = derived<ReadonlyArray<QuickTitleButton>>(this, (reader) =>
+    this.buttons
+      .read(reader)
+      .filter((btn) => btn.side === QuickTitleButtonSide.RIGHT || typeof btn.side === 'undefined'),
+  );
 
   get onDidTriggerButton(): Event<QuickTitleButton> {
     return this.onDidTriggerButtonEmitter.event;

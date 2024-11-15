@@ -328,7 +328,7 @@ const getIconClass = (
 };
 
 export function cssEscape(str: string): string {
-  return str.replace(/[\11\12\14\15\40]/g, '/'); // HTML class names can not contain certain whitespace characters, use / instead, which doesn't exist in file names.
+  return str.replace(/[\x09\x0a\x0c\x0d\x20]/g, '/'); // HTML class names can not contain certain whitespace characters, use / instead, which doesn't exist in file names.
 }
 
 export function basenameOrAuthority(resource: URI) {

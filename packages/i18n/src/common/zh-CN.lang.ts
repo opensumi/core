@@ -1268,6 +1268,14 @@ export const localizationBundle = {
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',
 
+    // #region notebook
+    'notebook.kernel.panel.empty': '暂无内容',
+    'notebook.kernel.panel.title': '运行的终端和内核',
+    'notebook.kernel.panel.opened.pages': '已开启的标签页',
+    'notebook.kernel.panel.running.kernels': '运行的内核',
+    'notebook.kernel.close.all.confirmation': '你确定要关闭全部吗？',
+    // #endregion notebook
+
     ...browserViews,
     ...editorLocalizations,
     ...mergeConflicts,

@@ -179,7 +179,7 @@ export function enumValueToArray<T extends object>(enumeration: T): NonFunctiona
   return Object.keys(enumeration)
     .filter((key) => isNaN(Number(key)))
     .map((key) => enumeration[key])
-    .filter((val) => typeof val === 'number' || typeof val === 'string');
+    .filter((val: NonFunctional<T[keyof T]>) => typeof val === 'number' || typeof val === 'string');
 }
 
 /**

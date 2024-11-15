@@ -1,0 +1,95 @@
+.libro-panel-collapse-container {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.libro-panel-collapse-header {
+  user-select: none; // 双击不选中文本
+  color: var(--kernel-panel-collapse-header-label);
+  font-size: 12px;
+
+  .libro-panel-collapse-header-left {
+    display: inline-block;
+    cursor: pointer;
+
+    .libro-panel-collapse-header-icon {
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    .libro-panel-collapse-header-label {
+      display: inline-block;
+    }
+  }
+
+  .libro-panel-collapse-header-close-all {
+    // display: inline-block;
+    cursor: pointer;
+    color: var(--kernel-panel-collapse-header-close-all);
+    float: right;
+  }
+}
+
+.libro-panel-collapse-kernel-item-container {
+  margin-left: 15px;
+}
+
+.libro-panel-collapse-content,
+.libro-panel-collapse-kernel-item-container {
+  .libro-panel-collapse-item,
+  .libro-panel-collapse-kernel-item {
+    height: 20px;
+    cursor: pointer;
+    user-select: none; // 双击不选中文本
+    color: var(--kernel-panel-collapse-item);
+    font-size: 12px;
+    margin: 2px 0;
+    padding: 0 10px;
+    display: flex;
+
+    .libro-panel-collapse-item-toggle {
+      display: inline-block;
+      margin: auto 5px auto 0;
+    }
+
+    .libro-panel-collapse-item-icon,
+    .libro-panel-collapse-kernel-item-icon {
+      display: inline-block;
+      margin: auto 5px auto 0;
+
+      & > :first-child {
+        vertical-align: middle;
+      }
+    }
+
+    .libro-panel-collapse-item-label,
+    .libro-panel-collapse-kernel-item-name {
+      display: inline-block;
+      min-width: 50px;
+      white-space: nowrap; /* 避免文本换行 */
+      overflow: hidden; /* 隐藏超出div的内容 */
+      text-overflow: ellipsis; /* 在文本超出宽度时显示省略号 */
+      margin: auto 0;
+    }
+
+    .libro-panel-collapse-item-close {
+      // display: inline-block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: auto 0 auto auto;
+      width: 16px;
+      height: 16px;
+    }
+
+    .libro-panel-collapse-item-close:hover {
+      background: var(--kernel-panel-collapse-header-close-hover);
+      border-radius: 4px;
+    }
+  }
+
+  .libro-panel-collapse-item:hover {
+    background: var(--kernel-panel-collapse-item-hover);
+    border-radius: 4px;
+  }
+}

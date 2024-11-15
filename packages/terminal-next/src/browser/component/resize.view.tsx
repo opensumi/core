@@ -103,14 +103,14 @@ export default (props: IResizeViewProps) => {
       <div style={{ pointerEvents: !event ? 'all' : 'none' }} className={styles.resizePanel}>
         {widgets &&
           widgets.map((widget) => (
-              <ResizePanelItem
-                widget={widget}
-                dynamic={shadow ? widget.dynamic : widget.shadowDynamic}
-                draw={props.draw}
-                handleRemoveWidget={handleRemoveWidget}
-                widgetsLength={widgets.length}
-              />
-            ))}
+            <ResizePanelItem
+              widget={widget}
+              dynamic={shadow ? widget.dynamic : widget.shadowDynamic}
+              draw={props.draw}
+              handleRemoveWidget={handleRemoveWidget}
+              widgetsLength={widgets.length}
+            />
+          ))}
       </div>
     </div>
   );

@@ -138,7 +138,8 @@ export abstract class AbstractLineMatcher {
         if (trim) {
           value = value.trim();
         }
-        (data[property] as string) = value;
+        // TODO: ts will regrard data[property] as undefined
+        (data[property] as any) = value;
       }
     }
   }
@@ -276,7 +277,8 @@ export abstract class AbstractLineMatcher {
         result = this.matcher.severity || Severity.Error;
       }
     }
-    return Severity.toDiagnosticSeverity(result as Severity);
+    // FIXME: 这里转换的类型和插件需要的类型是不对齐的
+    return Severity.toDiagnosticSeverity(result as Severity) as any;
   }
 
   private getResource(filename: string, matcher: ProblemMatcher): URI {
