@@ -596,16 +596,28 @@ export class EnvironmentVariableCollection implements vscode.EnvironmentVariable
     }
   }
 
-  replace(variable: string, value: string): void {
-    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Replace });
+  replace(variable: string, value: string, options?: vscode.EnvironmentVariableMutatorOptions): void {
+    this._setIfDiffers(variable, {
+      value,
+      type: EnvironmentVariableMutatorType.Replace,
+      options: options ?? { applyAtProcessCreation: true },
+    });
   }
 
-  append(variable: string, value: string): void {
-    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Append });
+  append(variable: string, value: string, options?: vscode.EnvironmentVariableMutatorOptions): void {
+    this._setIfDiffers(variable, {
+      value,
+      type: EnvironmentVariableMutatorType.Append,
+      options: options ?? { applyAtProcessCreation: true },
+    });
   }
 
-  prepend(variable: string, value: string): void {
-    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Prepend });
+  prepend(variable: string, value: string, options?: vscode.EnvironmentVariableMutatorOptions): void {
+    this._setIfDiffers(variable, {
+      value,
+      type: EnvironmentVariableMutatorType.Prepend,
+      options: options ?? { applyAtProcessCreation: true },
+    });
   }
 
   get(variable: string): vscode.EnvironmentVariableMutator | undefined {

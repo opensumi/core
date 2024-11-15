@@ -42,6 +42,7 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
           extensionIdentifier,
           value: mutator.value,
           type: mutator.type,
+          options: mutator.options,
         });
 
         next = it.next();
@@ -63,17 +64,19 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
       const actualVariable =
         os === OperatingSystem.Windows ? lowerToActualVariableNames![variable.toLowerCase()] || variable : variable;
       mutators.forEach(async (mutator) => {
-        const value = variableResolver ? await variableResolver(mutator.value) : mutator.value;
-        switch (mutator.type) {
-          case EnvironmentVariableMutatorType.Append:
-            env[actualVariable] = (env[actualVariable] || '') + value;
-            break;
-          case EnvironmentVariableMutatorType.Prepend:
-            env[actualVariable] = value + (env[actualVariable] || '');
-            break;
-          case EnvironmentVariableMutatorType.Replace:
-            env[actualVariable] = value;
-            break;
+        if (mutator.options?.applyAtProcessCreation ?? true) {
+          const value = variableResolver ? await variableResolver(mutator.value) : mutator.value;
+          switch (mutator.type) {
+            case EnvironmentVariableMutatorType.Append:
+              env[actualVariable] = (env[actualVariable] || '') + value;
+              break;
+            case EnvironmentVariableMutatorType.Prepend:
+              env[actualVariable] = value + (env[actualVariable] || '');
+              break;
+            case EnvironmentVariableMutatorType.Replace:
+              env[actualVariable] = value;
+              break;
+          }
         }
       });
     });

@@ -257,7 +257,16 @@ describe('ext host terminal test', () => {
 
   it('EnvironmentVariableCollection#append', () => {
     collection.append('FOO', 'BAR');
-    const serialized = [['FOO', { value: 'BAR', type: 2 /** EnvironmentVariableMutatorType.Append */ }]];
+    const serialized = [
+      [
+        'FOO',
+        {
+          value: 'BAR',
+          type: 2 /** EnvironmentVariableMutatorType.Append */,
+          options: { applyAtProcessCreation: true },
+        },
+      ],
+    ];
 
     expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalled();
     expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalledWith(mockExtension.id, collection);
@@ -266,7 +275,16 @@ describe('ext host terminal test', () => {
 
   it('EnvironmentVariableCollection#replace', () => {
     collection.replace('FOO', 'BAR2');
-    const serialized = [['FOO', { value: 'BAR2', type: 1 /** EnvironmentVariableMutatorType.Replace */ }]];
+    const serialized = [
+      [
+        'FOO',
+        {
+          value: 'BAR2',
+          type: 1 /** EnvironmentVariableMutatorType.Replace */,
+          options: { applyAtProcessCreation: true },
+        },
+      ],
+    ];
 
     expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalled();
     expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalledWith(mockExtension.id, collection);
@@ -275,7 +293,16 @@ describe('ext host terminal test', () => {
 
   it('EnvironmentVariableCollection#prepend', () => {
     collection.prepend('FOO', 'BAR3');
-    const serialized = [['FOO', { value: 'BAR3', type: 3 /** EnvironmentVariableMutatorType.Prepend */ }]];
+    const serialized = [
+      [
+        'FOO',
+        {
+          value: 'BAR3',
+          type: 3 /** EnvironmentVariableMutatorType.Prepend */,
+          options: { applyAtProcessCreation: true },
+        },
+      ],
+    ];
 
     expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalled();
     expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalledWith(mockExtension.id, collection);
@@ -284,7 +311,7 @@ describe('ext host terminal test', () => {
 
   it('EnvironmentVariableCollection#get', () => {
     const value = collection.get('FOO');
-    expect(value).toEqual({ value: 'BAR3', type: 3 });
+    expect(value).toEqual({ value: 'BAR3', type: 3, options: { applyAtProcessCreation: true } });
   });
 
   it('EnvironmentVariableCollection#forEach', async () => {
