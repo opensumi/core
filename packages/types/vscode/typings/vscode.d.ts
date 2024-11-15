@@ -1538,12 +1538,20 @@ declare module 'vscode' {
     has(uri: Uri): boolean;
 
     /**
-     * Set (and replace) text edits for a resource.
-     *
-     * @param uri A resource identifier.
-     * @param edits An array of text edits.
-     */
-    set(uri: Uri, edits: TextEdit[]): void;
+		 * Set (and replace) text edits or snippet edits for a resource.
+		 *
+		 * @param uri A resource identifier.
+		 * @param edits An array of edits.
+		 */
+		set(uri: Uri, edits: ReadonlyArray<TextEdit | SnippetTextEdit>): void;
+
+		/**
+		 * Set (and replace) text edits or snippet edits with metadata for a resource.
+		 *
+		 * @param uri A resource identifier.
+		 * @param edits An array of edits.
+		 */
+		set(uri: Uri, edits: ReadonlyArray<[TextEdit | SnippetTextEdit, WorkspaceEditEntryMetadata | undefined]>): void;
 
     /**
      * Get the text edits for a resource.

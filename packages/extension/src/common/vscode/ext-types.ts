@@ -6,6 +6,7 @@ import {
   arrays,
   es5ClassCompat,
   isNumber,
+  isObject,
   isString,
   isStringArray,
   isTextStreamMime,
@@ -1285,12 +1286,48 @@ export interface FileTextEdit {
   metadata?: vscode.WorkspaceEditEntryMetadata;
 }
 
-type WorkspaceEditEntry = FileOperation | FileTextEdit;
+export interface FileSnippetTextEdit {
+  readonly _type: WorkspaceEditType.Snippet;
+  readonly uri: Uri;
+  readonly range: Range;
+  readonly edit: SnippetTextEdit;
+  readonly metadata?: vscode.WorkspaceEditEntryMetadata;
+}
 
-export const enum WorkspaceEditType {
+type WorkspaceEditEntry = FileOperation | FileTextEdit | FileSnippetTextEdit;
+
+export enum WorkspaceEditType {
   File = 1,
   Text = 2,
   // Cell = 3, // not supported yet
+  Snippet = 6,
+}
+
+export class SnippetTextEdit implements vscode.SnippetTextEdit {
+  range: Range;
+  snippet: SnippetString;
+
+  static isSnippetTextEdit(thing: unknown): thing is SnippetTextEdit {
+    return (
+      thing instanceof SnippetTextEdit ||
+      (isObject(thing) &&
+        Range.isRange((thing as SnippetTextEdit).range) &&
+        SnippetString.isSnippetString((thing as SnippetTextEdit).snippet))
+    );
+  }
+
+  static replace(range: Range, snippet: SnippetString): SnippetTextEdit {
+    return new SnippetTextEdit(range, snippet);
+  }
+
+  static insert(position: Position, snippet: SnippetString): SnippetTextEdit {
+    return SnippetTextEdit.replace(new Range(position, position), snippet);
+  }
+
+  constructor(range: Range, snippet: SnippetString) {
+    this.range = range;
+    this.snippet = snippet;
+  }
 }
 
 @es5ClassCompat
@@ -1343,18 +1380,42 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
     return false;
   }
 
-  set(uri: Uri, edits: TextEdit[]): void {
+  set(uri: Uri, edits: ReadonlyArray<TextEdit | SnippetTextEdit>): void;
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  set(uri: Uri, edits: ReadonlyArray<[TextEdit | SnippetTextEdit, vscode.WorkspaceEditEntryMetadata]>): void;
+  set(
+    uri: Uri,
+    edits: ReadonlyArray<TextEdit | SnippetTextEdit | [TextEdit | SnippetTextEdit, vscode.WorkspaceEditEntryMetadata]>,
+  ): void {
     if (!edits) {
       // remove all text edits for `uri`
       this._edits = this._edits.filter(
         (element) =>
-          !(element && element._type === WorkspaceEditType.Text && element.uri.toString() === uri.toString()),
+          !(
+            element &&
+            (element._type === WorkspaceEditType.Text || element._type === WorkspaceEditType.Snippet) &&
+            element.uri.toString() === uri.toString()
+          ),
       );
     } else {
       // append edit to the end
-      for (const edit of edits) {
-        if (edit) {
-          this._edits.push({ _type: WorkspaceEditType.Text, uri, edit });
+      for (const editOrTuple of edits) {
+        if (editOrTuple) {
+          let edit: TextEdit | SnippetTextEdit;
+          let metadata: vscode.WorkspaceEditEntryMetadata | undefined;
+
+          if (Array.isArray(editOrTuple)) {
+            edit = editOrTuple[0];
+            metadata = editOrTuple[1];
+          } else {
+            edit = editOrTuple;
+          }
+
+          if (SnippetTextEdit.isSnippetTextEdit(edit)) {
+            this._edits.push({ _type: WorkspaceEditType.Snippet, uri, range: edit.range, edit, metadata });
+          } else {
+            this._edits.push({ _type: WorkspaceEditType.Text, uri, edit });
+          }
         }
       }
     }
@@ -1385,7 +1446,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
     return [...textEdits.values()];
   }
 
-  allEntries(): ReadonlyArray<FileOperation | FileTextEdit> {
+  allEntries(): ReadonlyArray<WorkspaceEditEntry> {
     return this._edits;
   }
 
