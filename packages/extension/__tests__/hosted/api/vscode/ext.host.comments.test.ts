@@ -4,6 +4,8 @@ import { CommentsFeatureRegistry } from '@opensumi/ide-comments/lib/browser/comm
 import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Deferred, Disposable, IEventBus, URI, Uri, sleep } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { MainThreadComments } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.comments';
@@ -20,10 +22,9 @@ import {
 } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.comments';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MockContextKeyService } from '../../../../../monaco/__mocks__/monaco.context-key.service';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 
 import type vscode from 'vscode';
@@ -51,6 +52,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
       {
         token: IMainLayoutService,
         useClass: LayoutService,
+      },
+      {
+        token: IWorkspaceService,
+        useValue: mockService({}),
       },
       {
         token: IContextKeyService,
