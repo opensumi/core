@@ -4,143 +4,139 @@
     "vscode": [
       {
         "name": "typescript-language-features",
-        "version": "1.60.0"
+        "version": "1.88.1"
       },
       {
         "name": "configuration-editing",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "css",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "css-language-features",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "emmet",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "git",
-        "version": "1.62.3"
+        "version": "1.88.1"
       },
       {
         "name": "git-ui",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "git-base",
-        "version": "1.64.0-next.68976705968"
+        "version": "1.88.1"
       },
       {
         "name": "html",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "html-language-features",
-        "version": "1.55.2"
-      },
-      {
-        "name": "java",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "javascript",
-        "version": "1.60.0"
+        "version": "1.88.1"
       },
       {
         "name": "json",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "json-language-features",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "less",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "log",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "merge-conflict",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "python",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "rust",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "scss",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "search-result",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "typescript",
-        "version": "1.60.0"
+        "version": "1.88.1"
       },
       {
         "name": "xml",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "yaml",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-abyss",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-defaults",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-kimbie-dark",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-monokai",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-monokai-dimmed",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-quietlight",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-red",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-solarized-dark",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-solarized-light",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "theme-tomorrow-night-blue",
-        "version": "1.55.2"
+        "version": "1.88.1"
       },
       {
         "name": "vscode-theme-seti",
-        "version": "1.55.2"
+        "version": "1.88.1"
       }
     ],
     "ms-python": [
