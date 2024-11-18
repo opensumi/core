@@ -10,4 +10,4 @@ export namespace DEFAULT_ALIPAY_CLOUD_REGISTRY {
   export const MASTER_KEY = 'i6rkupqyvC6Bc6CiO0yVLNqq';
 }
 
-export const DEFAULT_VSCODE_ENGINE_VERSION = '1.68.0';
+export const DEFAULT_VSCODE_ENGINE_VERSION = '1.88.1';
