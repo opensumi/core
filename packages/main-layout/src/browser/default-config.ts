@@ -15,6 +15,7 @@ export const defaultConfig: LayoutConfig = {
       '@opensumi/ide-scm',
       '@opensumi/ide-extension-manager',
       '@opensumi/ide-debug',
+      '@opensumi/ide-notebook',
     ],
   },
   [SlotLocation.right]: {

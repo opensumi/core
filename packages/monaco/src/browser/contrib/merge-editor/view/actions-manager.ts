@@ -247,7 +247,7 @@ export class ActionsManager extends Disposable {
 
       const { value } = flagDirection === 0 ? iterableLeftRange.next() : iterableRightRange.next();
 
-      text += model.getValueInRange(value.toRange()) + eol;
+      text += model.getValueInRange(value!.toRange()) + eol;
 
       // 换方向
       flagDirection ^= 1;

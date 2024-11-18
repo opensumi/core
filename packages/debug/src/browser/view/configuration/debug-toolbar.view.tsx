@@ -40,10 +40,10 @@ class FloatController {
   private origin: number = 0;
 
   state = derived(this, (reader) => ({
-      enable: this._enable.read(reader),
-      x: this._x.read(reader),
-      line: this._line.read(reader),
-    }));
+    enable: this._enable.read(reader),
+    x: this._x.read(reader),
+    line: this._line.read(reader),
+  }));
 
   setEnable(value: boolean) {
     transaction((tx) => {

@@ -28,6 +28,7 @@ import {
   ILocationDto,
   ISerializedTestResults,
   ITestItem,
+  ITestRunProfile,
   IncrementalChangeCollector,
   IncrementalTestCollectionItem,
   InternalTestItem,
@@ -64,15 +65,19 @@ interface ControllerInfo {
   controller: TestController;
   profiles: Map<number, TestRunProfile>;
   collection: SingleUseTestCollection;
+  activeProfiles: Set<number>;
 }
 
-export class ExtHostTestsImpl implements IExtHostTests {
+type DefaultProfileChangeEvent = Map</* controllerId */ string, Map</* profileId */ number, boolean>>;
+
+export class ExtHostTestsImpl extends Disposable implements IExtHostTests {
   private readonly resultsChangedEmitter = new Emitter<void>();
   private controllers = new Map<string, ControllerInfo>();
   private readonly proxy: IMainThreadTesting;
 
   private readonly runTracker: TestRunCoordinator;
   private readonly observer: TestObservers;
+  private readonly defaultProfilesChangedEmitter = this.registerDispose(new Emitter<DefaultProfileChangeEvent>());
 
   private readonly debug = getDebugLogger();
 
@@ -80,6 +85,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
   public results: ReadonlyArray<TestRunResult> = [];
 
   constructor(protected rpcProtocol: IRPCProtocol) {
+    super();
     this.proxy = this.rpcProtocol.getProxy<IMainThreadTesting>(MainThreadAPIIdentifier.MainThreadTests);
     this.runTracker = new TestRunCoordinator(this.proxy);
   }
@@ -209,6 +215,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
     collection.root.label = label;
 
     const profiles = new Map<number, TestRunProfile>();
+    const activeProfiles = new Set<number>();
     const proxy = this.proxy;
 
     const controller: TestController = {
@@ -231,7 +238,14 @@ export class ExtHostTestsImpl implements IExtHostTests {
       get id() {
         return controllerId;
       },
-      createRunProfile: (label, group, runHandler, isDefault, tag?: TestTag | undefined) => {
+      createRunProfile: (
+        label,
+        group,
+        runHandler,
+        isDefault,
+        tag?: TestTag | undefined,
+        supportsContinuousRun?: boolean,
+      ) => {
         // Derive the profile ID from a hash so that the same profile will tend
         // to have the same hashes, allowing re-run requests to work across reloads.
         let profileId = hash(label);
@@ -241,6 +255,9 @@ export class ExtHostTestsImpl implements IExtHostTests {
 
         const profile = new TestRunProfileImpl(
           this.proxy,
+          profiles,
+          activeProfiles,
+          this.defaultProfilesChangedEmitter.event,
           controllerId,
           profileId,
           label,
@@ -248,6 +265,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
           runHandler,
           isDefault,
           tag,
+          supportsContinuousRun,
         );
         profiles.set(profileId, profile);
         return profile;
@@ -263,6 +281,14 @@ export class ExtHostTestsImpl implements IExtHostTests {
       get resolveHandler() {
         return collection.resolveHandler;
       },
+      invalidateTestResults: (items) => {
+        if (items === undefined) {
+          this.proxy.$markTestRetired(undefined);
+        } else {
+          const itemsArr = items instanceof Array ? items : [items];
+          this.proxy.$markTestRetired(itemsArr.map((i) => TestId.fromExtHostTestItem(i!, controllerId).toString()));
+        }
+      },
       dispose: () => {
         disposable.dispose();
       },
@@ -274,7 +300,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
     proxy.$registerTestController(controllerId, label, !!refreshHandler);
     disposable.add(toDisposable(() => proxy.$unregisterTestController(controllerId)));
 
-    const info: ControllerInfo = { controller, collection, profiles };
+    const info: ControllerInfo = { controller, collection, profiles, activeProfiles };
     this.controllers.set(controllerId, info);
     disposable.add(toDisposable(() => this.controllers.delete(controllerId)));
 
@@ -836,7 +862,7 @@ export class MirroredTestCollection extends AbstractIncrementalTestCollection<Mi
    * Gets a list of root test items.
    */
   public get rootTests() {
-    return super.roots;
+    return this.roots;
   }
 
   /**
@@ -926,8 +952,25 @@ class TestObservers {
   }
 }
 
+const updateProfile = (
+  impl: TestRunProfileImpl,
+  proxy: IMainThreadTesting,
+  initial: ITestRunProfile | undefined,
+  update: Partial<ITestRunProfile>,
+) => {
+  if (initial) {
+    Object.assign(initial, update);
+  } else {
+    proxy.$updateTestRunConfig(impl.controllerId, impl.profileId, update);
+  }
+};
+
 export class TestRunProfileImpl implements TestRunProfile {
   readonly #proxy: IMainThreadTesting;
+  readonly #activeProfiles: Set<number>;
+  readonly #onDidChangeDefaultProfiles: Event<DefaultProfileChangeEvent>;
+  #initialPublish?: ITestRunProfile;
+  #profiles?: Map<number, TestRunProfile>;
   private _configureHandler?: () => void;
 
   public get label() {
@@ -937,18 +980,36 @@ export class TestRunProfileImpl implements TestRunProfile {
   public set label(label: string) {
     if (label !== this._label) {
       this._label = label;
-      this.#proxy.$updateTestRunConfig(this.controllerId, this.profileId, { label });
+      updateProfile(this, this.#proxy, this.#initialPublish, { label });
+    }
+  }
+
+  public get supportsContinuousRun() {
+    return this._supportsContinuousRun;
+  }
+
+  public set supportsContinuousRun(supports: boolean) {
+    if (supports !== this._supportsContinuousRun) {
+      this._supportsContinuousRun = supports;
+      updateProfile(this, this.#proxy, this.#initialPublish, { supportsContinuousRun: supports });
     }
   }
 
   public get isDefault() {
-    return this._isDefault;
+    return this.#activeProfiles.has(this.profileId);
   }
 
   public set isDefault(isDefault: boolean) {
-    if (isDefault !== this._isDefault) {
-      this._isDefault = isDefault;
-      this.#proxy.$updateTestRunConfig(this.controllerId, this.profileId, { isDefault });
+    if (isDefault !== this.isDefault) {
+      // #activeProfiles is synced from the main thread, so we can make
+      // provisional changes here that will get confirmed momentarily
+      if (isDefault) {
+        this.#activeProfiles.add(this.profileId);
+      } else {
+        this.#activeProfiles.delete(this.profileId);
+      }
+
+      updateProfile(this, this.#proxy, this.#initialPublish, { isDefault });
     }
   }
 
@@ -959,7 +1020,7 @@ export class TestRunProfileImpl implements TestRunProfile {
   public set tag(tag: TestTag | undefined) {
     if (tag?.id !== this._tag?.id) {
       this._tag = tag;
-      this.#proxy.$updateTestRunConfig(this.controllerId, this.profileId, {
+      updateProfile(this, this.#proxy, this.#initialPublish, {
         tag: tag ? Convert.TestTag.namespace(this.controllerId, tag.id) : null,
       });
     }
@@ -972,28 +1033,46 @@ export class TestRunProfileImpl implements TestRunProfile {
   public set configureHandler(handler: undefined | (() => void)) {
     if (handler !== this._configureHandler) {
       this._configureHandler = handler;
-      this.#proxy.$updateTestRunConfig(this.controllerId, this.profileId, { hasConfigurationHandler: !!handler });
+      updateProfile(this, this.#proxy, this.#initialPublish, { hasConfigurationHandler: !!handler });
     }
+  }
+
+  public get onDidChangeDefault() {
+    return Event.chain(this.#onDidChangeDefaultProfiles, ($) =>
+      $.map((ev) => ev.get(this.controllerId)?.get(this.profileId)).filter(isDefined),
+    );
   }
 
   constructor(
     proxy: IMainThreadTesting,
+    profiles: Map<number, TestRunProfile>,
+    activeProfiles: Set<number>,
+    onDidChangeActiveProfiles: Event<DefaultProfileChangeEvent>,
     public readonly controllerId: string,
     public readonly profileId: number,
     private _label: string,
     public readonly kind: TestRunProfileKind,
     public runHandler: (request: TestRunRequest, token: CancellationToken) => Thenable<void> | void,
-    private _isDefault = false,
-    public _tag: TestTag | undefined,
+    _isDefault = false,
+    public _tag: TestTag | undefined = undefined,
+    private _supportsContinuousRun = false,
   ) {
     this.#proxy = proxy;
+    this.#profiles = profiles;
+    this.#activeProfiles = activeProfiles;
+    this.#onDidChangeDefaultProfiles = onDidChangeActiveProfiles;
+    profiles.set(profileId, this);
 
     const groupBitset = profileGroupToBitset[kind];
     if (typeof groupBitset !== 'number') {
       throw new Error(`Unknown TestRunProfile.group ${kind}`);
     }
 
-    this.#proxy.$publishTestRunProfile({
+    if (_isDefault) {
+      activeProfiles.add(profileId);
+    }
+
+    this.#initialPublish = {
       profileId,
       controllerId,
       tag: _tag ? Convert.TestTag.namespace(this.controllerId, _tag.id) : null,
@@ -1001,11 +1080,25 @@ export class TestRunProfileImpl implements TestRunProfile {
       group: groupBitset,
       isDefault: _isDefault,
       hasConfigurationHandler: false,
+      supportsContinuousRun: _supportsContinuousRun, // Main thread not implemented
+    };
+
+    // we send the initial profile publish out on the next microtask so that
+    // initially setting the isDefault value doesn't overwrite a user-configured value
+    queueMicrotask(() => {
+      if (this.#initialPublish) {
+        this.#proxy.$publishTestRunProfile(this.#initialPublish);
+        this.#initialPublish = undefined;
+      }
     });
   }
 
   dispose(): void {
-    this.#proxy.$removeTestProfile(this.controllerId, this.profileId);
+    if (this.#profiles?.delete(this.profileId)) {
+      this.#profiles = undefined;
+      this.#proxy.$removeTestProfile(this.controllerId, this.profileId);
+    }
+    this.#initialPublish = undefined;
   }
 }
 

@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "rootDir": "../../../packages/notebook/src",
+    "outDir": "../../../packages/notebook/lib"
+  },
+  "include": ["../../../packages/notebook/src"]
+}

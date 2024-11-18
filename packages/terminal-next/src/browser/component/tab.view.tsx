@@ -45,19 +45,19 @@ export default () => {
         <Scrollbars forwardedRef={(el) => (el ? (tabContainer.current = el.ref) : null)}>
           <div className={styles_tab_contents}>
             {groups.filter(Boolean).map((group, index) => (
-                <TabItem
-                  key={group.id}
-                  group={group}
-                  selected={currentGroup && currentGroup.id === group.id}
-                  onInputBlur={() => group.unedit()}
-                  onInputEnter={(_: string, name: string) => group.rename(name)}
-                  onClick={() => view.selectGroup(index)}
-                  onClose={() => view.removeGroup(index)}
-                  onContextMenu={(event) => menuService.onTabContextMenu(event, index)}
-                  provider={provider}
-                  theme={theme}
-                ></TabItem>
-              ))}
+              <TabItem
+                key={group.id}
+                group={group}
+                selected={currentGroup && currentGroup.id === group.id}
+                onInputBlur={() => group.unedit()}
+                onInputEnter={(_: string, name: string) => group.rename(name)}
+                onClick={() => view.selectGroup(index)}
+                onClose={() => view.removeGroup(index)}
+                onContextMenu={(event) => menuService.onTabContextMenu(event, index)}
+                provider={provider}
+                theme={theme}
+              ></TabItem>
+            ))}
             <div className={styles.button}>
               <TabItem
                 type={ItemType.add}

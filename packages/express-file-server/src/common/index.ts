@@ -4,6 +4,7 @@ export const EXPRESS_SERVER_PATH = process.env.STATIC_SERVER_PATH || `http://127
 export const ALLOW_MIME = {
   gif: 'image/gif',
   jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
   png: 'image/png',
   webp: 'image/webp',
   svg: 'image/svg+xml',

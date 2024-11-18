@@ -1538,12 +1538,20 @@ declare module 'vscode' {
     has(uri: Uri): boolean;
 
     /**
-     * Set (and replace) text edits for a resource.
-     *
-     * @param uri A resource identifier.
-     * @param edits An array of text edits.
-     */
-    set(uri: Uri, edits: TextEdit[]): void;
+		 * Set (and replace) text edits or snippet edits for a resource.
+		 *
+		 * @param uri A resource identifier.
+		 * @param edits An array of edits.
+		 */
+		set(uri: Uri, edits: ReadonlyArray<TextEdit | SnippetTextEdit>): void;
+
+		/**
+		 * Set (and replace) text edits or snippet edits with metadata for a resource.
+		 *
+		 * @param uri A resource identifier.
+		 * @param edits An array of edits.
+		 */
+		set(uri: Uri, edits: ReadonlyArray<[TextEdit | SnippetTextEdit, WorkspaceEditEntryMetadata | undefined]>): void;
 
     /**
      * Get the text edits for a resource.
@@ -3055,6 +3063,24 @@ declare module 'vscode' {
   }
 
   /**
+   * Options applied to the mutator.
+   */
+  export interface EnvironmentVariableMutatorOptions {
+    /**
+     * Apply to the environment just before the process is created. Defaults to true
+     */
+    applyAtProcessCreation?: boolean;
+
+    /**
+     * Apply to the environment in the shell integration script. Note that this _will not_ apply
+     * the mutator if shell integration is disabled or not working for some reason. Defaults to
+     * false.
+     * @stubbed
+     */
+    applyAtShellIntegration?: boolean;
+  }
+
+  /**
    * A type of mutation and its value to be applied to an environment variable.
    */
   export interface EnvironmentVariableMutator {
@@ -3067,6 +3093,10 @@ declare module 'vscode' {
      * The value to use for the variable.
      */
     readonly value: string;
+    /**
+     * Options applied to the mutator.
+     */
+    readonly options: EnvironmentVariableMutatorOptions;
   }
 
   /**
@@ -3083,37 +3113,43 @@ declare module 'vscode' {
     persistent: boolean;
 
     /**
-     * Replace an environment variable with a value.
-     *
-     * Note that an extension can only make a single change to any one variable, so this will
-     * overwrite any previous calls to replace, append or prepend.
-     *
-     * @param variable The variable to replace.
-     * @param value The value to replace the variable with.
-     */
-    replace(variable: string, value: string): void;
+		 * Replace an environment variable with a value.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to replace.
+		 * @param value The value to replace the variable with.
+		 * @param options Options applied to the mutator, when no options are provided this will
+		 * default to `{ applyAtProcessCreation: true }`.
+		 */
+		replace(variable: string, value: string, options?: EnvironmentVariableMutatorOptions): void;
 
-    /**
-     * Append a value to an environment variable.
-     *
-     * Note that an extension can only make a single change to any one variable, so this will
-     * overwrite any previous calls to replace, append or prepend.
-     *
-     * @param variable The variable to append to.
-     * @param value The value to append to the variable.
-     */
-    append(variable: string, value: string): void;
+		/**
+		 * Append a value to an environment variable.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to append to.
+		 * @param value The value to append to the variable.
+		 * @param options Options applied to the mutator, when no options are provided this will
+		 * default to `{ applyAtProcessCreation: true }`.
+		 */
+		append(variable: string, value: string, options?: EnvironmentVariableMutatorOptions): void;
 
-    /**
-     * Prepend a value to an environment variable.
-     *
-     * Note that an extension can only make a single change to any one variable, so this will
-     * overwrite any previous calls to replace, append or prepend.
-     *
-     * @param variable The variable to prepend.
-     * @param value The value to prepend to the variable.
-     */
-    prepend(variable: string, value: string): void;
+		/**
+		 * Prepend a value to an environment variable.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to prepend.
+		 * @param value The value to prepend to the variable.
+		 * @param options Options applied to the mutator, when no options are provided this will
+		 * default to `{ applyAtProcessCreation: true }`.
+		 */
+		prepend(variable: string, value: string, options?: EnvironmentVariableMutatorOptions): void;
 
     /**
      * Gets the mutator that this collection applies to a variable, if any.

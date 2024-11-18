@@ -161,10 +161,16 @@ class Menu extends Disposable implements IMenu {
         // menu.enabledWhen 的优先级高于 Command.isEnabled
         // 若设置了 menu.enabledWhen 则忽略 Command.isEnabled
         const commandEnablement = command ? this.commandRegistry.isEnabled(menuCommand.id, ...args) : true;
-        const disabled =
-          item.enabledWhen !== undefined
-            ? !this.contextKeyService.match(item.enabledWhen, options.contextDom)
-            : !commandEnablement;
+        let disabled = true;
+
+        if (item.enabledWhen !== undefined) {
+          disabled = !this.contextKeyService.match(item.enabledWhen, options.contextDom);
+        } else if (command?.enablement) {
+          // 若 command 设置了 enablement 则匹配 enablement
+          disabled = !this.contextKeyService.match(command.enablement, options.contextDom);
+        } else {
+          disabled = !commandEnablement;
+        }
 
         // menu.toggledWhen 的优先级高于 Command.isToggled
         // 若设置了 menu.toggledWhen 则忽略 Command.isToggled

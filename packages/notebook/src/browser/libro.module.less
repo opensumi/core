@@ -1,0 +1,43 @@
+.libroView {
+  height: 100%;
+
+  :global {
+    .libro-view {
+      background-color: var(--libro-background);
+
+      .cm-editor,
+      .cm-gutters {
+        background-color: var(--libro-input-background);
+      }
+    }
+
+    .libro-cell-right-toolbar {
+      background-color: var(--libro-side-toolbar-background);
+    }
+
+    .libro-cell-output-container {
+      background-color: var(--libro-output-background);
+    }
+
+    .libro-cell-container,
+    .libro-input-hidden {
+      background-color: var(--libro-input-background);
+    }
+
+    .libro-e2-editor-container {
+      background-color: var(--libro-input-background) !important;
+    }
+
+    .libro-e2-editor {
+      background: var(--mana-libro-input-background) !important;
+
+      .monaco-editor-background,
+      .margin {
+        background: var(--libro-input-background) !important;
+      }
+    }
+    .libro-view-top {
+      padding: 0 12px;
+    }
+  }
+}

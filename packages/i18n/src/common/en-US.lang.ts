@@ -1507,6 +1507,14 @@ export const localizationBundle = {
 
     'webview.webviewTagUnavailable': 'webview is unsupported on non-electron env, please use iframe instead',
 
+    // #region notebook
+    'notebook.kernel.panel.empty': 'No content found.',
+    'notebook.kernel.panel.title': 'Running Terminals and Kernels',
+    'notebook.kernel.panel.opened.pages': 'Opened Pages',
+    'notebook.kernel.panel.running.kernels': 'Running Kernels',
+    'notebook.kernel.close.all.confirmation': 'Are you sure you want to close all?',
+    // #endregion notebook
+
     ...browserViews,
     ...editorLocalizations,
     ...mergeConflicts,

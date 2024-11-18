@@ -1,0 +1,40 @@
+{
+  "name": "@opensumi/ide-notebook",
+  "version": "3.4.3",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "src",
+    "worker"
+  ],
+  "scripts": {
+    "build": "tsc --build ../../configs/ts/references/tsconfig.notebook.json",
+    "prepublishOnly": "yarn run build"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^4.6.4",
+    "@difizen/libro-code-editor": "0.2.45",
+    "@difizen/libro-common": "0.2.45",
+    "@difizen/libro-core": "0.2.45",
+    "@difizen/libro-jupyter": "0.2.45",
+    "@difizen/libro-kernel": "0.2.45",
+    "@difizen/libro-lsp": "0.2.45",
+    "@difizen/libro-toc": "0.2.45",
+    "@difizen/mana-app": "^0.1.27",
+    "@opensumi/ide-components": "workspace:*",
+    "@opensumi/ide-core-browser": "workspace:*",
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-editor": "workspace:*",
+    "@opensumi/ide-explorer": "workspace:*",
+    "@opensumi/ide-file-service": "workspace:*",
+    "@opensumi/ide-main-layout": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*",
+    "@opensumi/ide-outline": "workspace:*",
+    "@opensumi/ide-overlay": "workspace:*",
+    "@opensumi/ide-theme": "workspace:*",
+    "@opensumi/monaco-editor-core": "0.47.0-patch.15",
+    "antd": "^5.21.4"
+  }
+}

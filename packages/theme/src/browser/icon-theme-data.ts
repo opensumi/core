@@ -288,6 +288,6 @@ function processIconThemeDocument(
 }
 
 function escapeCSS(str: string) {
-  str = str.replace(/[\11\12\14\15\40]/g, '/'); // HTML class names can not contain certain whitespace characters, use / instead, which doesn't exist in file names.
+  str = str.replace(/[\x09\x0a\x0c\x0d\x20]/g, '/'); // HTML class names can not contain certain whitespace characters, use / instead, which doesn't exist in file names.
   return window.CSS.escape(str);
 }

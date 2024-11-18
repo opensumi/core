@@ -416,6 +416,16 @@ export namespace TextEdit {
   }
 }
 
+export namespace SnippetTextEdit {
+  export function from(edit: vscode.SnippetTextEdit): model.TextEdit & { insertAsSnippet?: boolean } {
+    return {
+      text: edit.snippet.value,
+      range: fromRange(edit.range),
+      insertAsSnippet: true,
+    };
+  }
+}
+
 export function fromTextEdit(edit: vscode.TextEdit): model.SingleEditOperation {
   return {
     text: edit.newText,
@@ -838,6 +848,16 @@ export namespace WorkspaceEdit {
           _type: types.WorkspaceEditType.Text,
           resource: entry.uri,
           textEdit: TextEdit.from(entry.edit),
+          versionId: doc?.version,
+          metadata: entry.metadata,
+        } as model.ResourceTextEditDto);
+      } else if (entry._type === types.WorkspaceEditType.Snippet) {
+        // snippet edits
+        const doc = documents?.getDocument(entry.uri);
+        result.edits.push({
+          _type: types.WorkspaceEditType.Text,
+          resource: entry.uri,
+          textEdit: SnippetTextEdit.from(entry.edit),
           versionId: doc?.version,
           metadata: entry.metadata,
         } as model.ResourceTextEditDto);
@@ -1625,6 +1645,7 @@ export namespace TestMessage {
       type: TestMessageType.Error,
       expected: message.expectedOutput,
       actual: message.actualOutput,
+      contextValue: message.contextValue,
       location: message.location ? (location.from(message.location) as any) : undefined,
     };
   }
@@ -1635,6 +1656,7 @@ export namespace TestMessage {
     );
     message.actualOutput = item.actual;
     message.expectedOutput = item.expected;
+    message.contextValue = item.contextValue;
     message.location = item.location ? location.to(item.location) : undefined;
     return message;
   }

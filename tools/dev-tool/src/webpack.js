@@ -12,6 +12,7 @@ const { merge } = require('webpack-merge');
 const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react'));
 const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/react-dom'));
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
+const esmodulePath = path.join(__dirname, '../../../packages/notebook');
 const HOST = process.env.HOST || '0.0.0.0';
 const IDE_FRONT_PORT = process.env.IDE_FRONT_PORT || 8080;
 
@@ -67,6 +68,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           child_process: false,
           url: false,
           fs: false,
+          stream: false,
         },
       },
       bail: true,
@@ -78,6 +80,26 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         rules: [
           {
             test: /\.tsx?$/,
+            include: esmodulePath,
+            use: [
+              {
+                loader: 'ts-loader',
+                options: {
+                  happyPackMode: true,
+                  transpileOnly: true,
+                  configFile: tsConfigPath,
+                  compilerOptions: {
+                    module: 'esnext',
+                    moduleResolution: 'bundler',
+                    target: 'es2015',
+                  },
+                },
+              },
+            ],
+          },
+          {
+            test: /\.tsx?$/,
+            exclude: esmodulePath,
             use: [
               {
                 loader: 'ts-loader',
@@ -155,7 +177,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
             type: 'asset/resource',
             generator: {
-              filename: 'fonts/[name][ext][query]',
+              filename: 'fonts/[name][hash:8][ext][query]',
             },
           },
         ],
