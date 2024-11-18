@@ -70,7 +70,7 @@ export const DialogContent: React.FC<IDialogProps> = ({
           />
         )}
         <div className={'kt-dialog-content_area'}>
-          <p className={'kt-dialog-content_title'}>{title}</p>
+          <div className={'kt-dialog-content_title'}>{title}</div>
           {message && <span className={'kt-dialog-message'}>{message}</span>}
         </div>
         {closable && type !== 'basic' && (

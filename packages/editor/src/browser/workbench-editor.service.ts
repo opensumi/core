@@ -169,7 +169,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(IEditorDocumentModelService)
   protected documentModelManager: IEditorDocumentModelService;
 
-  @Autowired()
+  @Autowired(UntitledDocumentIdCounter)
   private untitledIndex: UntitledDocumentIdCounter;
 
   private untitledCloseIndex: number[] = [];
@@ -180,6 +180,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   constructor() {
     super();
+    this.untitledIndex.update();
     this.initialize();
   }
 
@@ -602,7 +603,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private createUntitledURI() {
     // 优先从已删除的 index 中获取
     const index = this.untitledCloseIndex.shift() || this.untitledIndex.id;
-    return new URI().withScheme(Schemes.untitled).withQuery(`name=Untitled-${index}&index=${index}`);
+    return new URI()
+      .withScheme(Schemes.untitled)
+      .withQuery(`name=${UntitledDocumentIdCounter.UNTITLED_FILE_NAME_PREFIX}${index}&index=${index}`);
   }
 
   createUntitledResource(
