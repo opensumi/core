@@ -13,7 +13,7 @@ import { ContentLoaderType, OpensumiInjector } from '../mana';
 export class LibroOpensumiContentContribution implements ContentContribution {
   @inject(OpensumiInjector) injector: Injector;
 
-  canHandle = (options) => options.loadType === ContentLoaderType ? 100 : 1;
+  canHandle = (options) => (options.loadType === ContentLoaderType ? 100 : 1);
   async loadContent(options: NotebookOption, model: LibroJupyterModel) {
     const fileServiceClient: IFileServiceClient = this.injector.get(IFileServiceClient);
     const messageService = this.injector.get(IMessageService);
@@ -33,7 +33,8 @@ export class LibroOpensumiContentContribution implements ContentContribution {
       }
       const uri = new URI(options.resource.toString());
       const currentFileContents: IContentsModel = {
-        name: uri.path.name,
+        name: uri.path.base,
+        // TODO: should be relative path to notebook root, notebook root may not be same as ide root, and jupyter provide no api to get root dir
         path: uri.path.toString(),
         last_modified: stat?.lastModification.toString() || new Date().toJSON(),
         created: stat?.createTime?.toString() || new Date().toJSON(),
