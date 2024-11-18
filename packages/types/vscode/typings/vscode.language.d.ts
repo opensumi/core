@@ -2447,6 +2447,7 @@ declare module 'vscode' {
 		 * @param token A cancellation token.
 		 * @returns A set of text edits or a thenable that resolves to such. The lack of a result can be
 		 * signaled by returning `undefined`, `null`, or an empty array.
+     * @monaco-todo the current monaco version does not yet use this API
 		 */
 		provideDocumentRangesFormattingEdits?(document: TextDocument, ranges: Range[], options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
   }

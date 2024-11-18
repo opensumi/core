@@ -43,6 +43,7 @@
 /// <reference path='./vscode/typings/vscode.proposed.chatAgents2Additions.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.chatVariables.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.interactive.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.multiDocumentHighlightProvider.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.inlineCompletionsAdditions.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.codeActionAI.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.codeActionRanges.d.ts' />
