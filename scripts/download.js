@@ -15,7 +15,7 @@ const MARKETPLACE_TYPE = {
   OPENVSX: 'openvsx',
   ALIPAY_CLOUD: 'alipay-cloud',
 };
-const marketplaceType = process.env.MARKETPLACE ?? MARKETPLACE_TYPE.ALIPAY_CLOUD;
+const marketplaceType = process.env.MARKETPLACE ?? MARKETPLACE_TYPE.OPENVSX;
 
 // 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
