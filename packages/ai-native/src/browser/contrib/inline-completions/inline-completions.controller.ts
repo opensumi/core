@@ -15,7 +15,7 @@ import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { ICodeEditor, InlineCompletions, Position, Range } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { empty } from '@opensumi/ide-utils/lib/strings';
-import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
+import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/inlineCompletionContextKeys';
 
 import { IAIInlineCompletionsProvider } from '../../../common';
 import { AINativeContextKey } from '../../ai-core.contextkeys';

@@ -94,6 +94,7 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
   };
 
   public clearHistory = (): void => {
+    // @ts-ignore
     this.history && this.history.clear();
   };
 

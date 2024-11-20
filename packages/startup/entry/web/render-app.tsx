@@ -7,13 +7,14 @@ import '@opensumi/ide-core-browser/lib/style/index.less';
 import '../styles.less';
 
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
-import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
+// import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
+
 
 const defaultLanguage = LOCALE_TYPES.EN_US;
 
 // 请注意，集成方在这里需要自己传一个正确的 locale 进去
 // 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
-setLocale(defaultLanguage);
+// localize2(defaultLanguage);
 
 import '@opensumi/ide-i18n';
 

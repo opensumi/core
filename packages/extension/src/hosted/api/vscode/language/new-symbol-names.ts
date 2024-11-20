@@ -15,6 +15,7 @@ export class NewSymbolNamesAdapter {
   async provideNewSymbolNames(
     resource: URI,
     range: model.Range,
+    triggerKind: vscode.NewSymbolNameTriggerKind,
     token: vscode.CancellationToken,
   ): Promise<vscode.NewSymbolName[] | undefined> {
     const document = this.documents.getDocumentData(resource);
@@ -25,7 +26,7 @@ export class NewSymbolNamesAdapter {
     const doc = document.document;
     const rng = Converter.Range.to(range);
 
-    const result = await this.provider.provideNewSymbolNames(doc, rng, token);
+    const result = await this.provider.provideNewSymbolNames(doc, rng, triggerKind, token);
     if (result) {
       return result;
     }

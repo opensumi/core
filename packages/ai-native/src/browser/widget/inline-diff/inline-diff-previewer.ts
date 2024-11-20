@@ -9,7 +9,7 @@ import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/
 import {
   generateIndent,
   getSpaceCnt,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/indentation/browser/indentUtils';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/indentation/common/indentUtils';
 
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
