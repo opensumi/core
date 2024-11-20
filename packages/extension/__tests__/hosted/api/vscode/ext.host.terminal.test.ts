@@ -245,7 +245,7 @@ describe('ext host terminal test', () => {
   const mockExtension = {
     id: 'test-terminal-env',
   };
-  const collection = extHost.getEnviromentVariableCollection(mockExtension as unknown as IExtension);
+  const collection = extHost.getEnvironmentVariableCollection(mockExtension as unknown as IExtension);
   // @ts-ignore
   const mocksyncEnvironmentVariableCollection = jest.spyOn(extHost, 'syncEnvironmentVariableCollection');
 
