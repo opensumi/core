@@ -16,3 +16,5 @@ export type {
   IEncodedLineTokens,
   ILineTokens,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneLanguages';
+
+export { NewSymbolNameTriggerKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';

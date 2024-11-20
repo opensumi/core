@@ -84,6 +84,7 @@ import type {
   Command,
   CompletionItemLabel,
   SignatureHelpContext,
+  NewSymbolNameTriggerKind
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export interface IMainThreadLanguages {
@@ -437,6 +438,7 @@ export interface IExtHostLanguages {
     handle: number,
     resource: Uri,
     range: Range,
+    triggerKind: NewSymbolNameTriggerKind,
     token: CancellationToken,
   ): Promise<NewSymbolName[] | undefined>;
 
@@ -603,11 +605,11 @@ export namespace RangeSuggestDataDto {
   export function from(range: ISuggestRangeDto | { insert: IRange; replace: IRange }) {
     return Array.isArray(range) && range.length === 4
       ? MonacoRange.lift({
-          startLineNumber: range[0],
-          startColumn: range[1],
-          endLineNumber: range[2],
-          endColumn: range[3],
-        })
+        startLineNumber: range[0],
+        startColumn: range[1],
+        endLineNumber: range[2],
+        endColumn: range[3],
+      })
       : range;
   }
 }
@@ -734,8 +736,9 @@ export interface InlineCompletionContext {
    * How the completion was triggered.
    */
   readonly triggerKind: InlineCompletionTriggerKind;
-
   readonly selectedSuggestionInfo: SelectedSuggestionInfo | undefined;
+  readonly includeInlineEdits: boolean;
+  readonly includeInlineCompletions: boolean;
 }
 
 export interface SelectedSuggestionInfo {

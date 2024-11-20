@@ -13,22 +13,21 @@ import {
 import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import {
   ISettableObservable,
-  ObservableValue,
   autorun,
   autorunWithStoreHandleChanges,
   derived,
   observableValue,
-  transaction,
+  transaction
 } from '@opensumi/ide-monaco/lib/common/observable';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commandIds';
-import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
-import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController';
+import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/commandIds';
+import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/inlineCompletionContextKeys';
+import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/inlineCompletionsController';
 import {
   SuggestItemInfo,
   SuggestWidgetAdaptor,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/model/suggestWidgetAdaptor';
 import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestController';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
@@ -141,31 +140,29 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
              * 所以可以利用这点，把 selectedItem 重新置为空即可
              */
             const suggestWidgetAdaptor = inlineCompletionsController['_suggestWidgetAdaptor'] as SuggestWidgetAdaptor;
-            const selectedItemObservable = suggestWidgetAdaptor.selectedItem as ObservableValue<
-              SuggestItemInfo | undefined
-            >;
-            const selectedItem = selectedItemObservable.read(reader);
+            const selectedItem = suggestWidgetAdaptor.selectedItem as SuggestItemInfo | undefined
 
-            if (selectedItem) {
-              transaction((tx) => {
-                selectedItemObservable.set(undefined, tx);
-              });
-            }
+            // TODO: @Ricbet
+            // if (selectedItem) {
+            //   transaction((tx) => {
+            //     suggestWidgetAdaptor.selectedItem = undefined;
+            //   });
+            // }
           }),
         );
 
-        observableDisposable.addDispose(
-          autorun((reader) => {
-            const state = inlineCompletionsController.model.read(reader)?.state.read(reader);
-            const suggestController = SuggestController.get(this.monacoEditor);
-            // 当阴影字符超出一行的时候，强制让 suggest 面板向上展示，避免遮挡补全内容
-            if (state && state.primaryGhostText?.lineCount >= 2) {
-              suggestController?.forceRenderingAbove();
-            } else {
-              suggestController?.stopForceRenderingAbove();
-            }
-          }),
-        );
+        // observableDisposable.addDispose(
+        //   autorun((reader) => {
+        //     const state = inlineCompletionsController.model.read(reader)?.state.read(reader);
+        //     const suggestController = SuggestController.get(this.monacoEditor);
+        //     // 当阴影字符超出一行的时候，强制让 suggest 面板向上展示，避免遮挡补全内容
+        //     if (state && state.primaryGhostText?.lineCount >= 2) {
+        //       suggestController?.forceRenderingAbove();
+        //     } else {
+        //       suggestController?.stopForceRenderingAbove();
+        //     }
+        //   }),
+        // );
       }
     };
 

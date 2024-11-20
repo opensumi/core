@@ -100,11 +100,11 @@ export class RenameSingleHandler extends BaseAIMonacoContribHandler {
         }
       }),
     );
-    disposable.addDispose(
-      monacoApi.languages.registerNewSymbolNameProvider('*', {
-        provideNewSymbolNames: provider,
-      }),
-    );
+    // disposable.addDispose(
+    //   monacoApi.languages.registerNewSymbolNameProvider('*', {
+    //     provideNewSymbolNames: provider,
+    //   }),
+    // );
 
     return disposable;
   }

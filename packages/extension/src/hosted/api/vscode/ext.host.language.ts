@@ -161,6 +161,7 @@ import { getDurationTimer, score, targetsNotebooks } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 
 import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import type { NewSymbolNameTriggerKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export function createLanguagesApiFactory(
   extHostLanguages: ExtHostLanguages,
@@ -1377,12 +1378,13 @@ export class ExtHostLanguages implements IExtHostLanguages {
     handle: number,
     resource: Uri,
     range: Range,
+    triggerKind: NewSymbolNameTriggerKind,
     token: CancellationToken,
   ): Promise<NewSymbolName[] | undefined> {
     return this.withAdapter(
       handle,
       NewSymbolNamesAdapter,
-      (adapter) => adapter.provideNewSymbolNames(resource, range, token),
+      (adapter) => adapter.provideNewSymbolNames(resource, range, triggerKind, token),
       false,
       undefined,
     );

@@ -49,10 +49,9 @@ import {
   ISuggestResultDtoField,
   IdentifiableInlineCompletion,
   IdentifiableInlineCompletions,
-  InlineCompletionContext,
   MonacoModelIdentifier,
   RangeSuggestDataDto,
-  testGlob,
+  testGlob
 } from '../../../common/vscode';
 import { IDocumentFilterDto, fromLanguageSelector } from '../../../common/vscode/converter';
 import { CancellationError, UriComponents } from '../../../common/vscode/ext-types';
@@ -83,6 +82,7 @@ import {
 } from './semantic-tokens/semantic-token-provider';
 
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type { NewSymbolNameTriggerKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 const { extname } = path;
 
@@ -1283,7 +1283,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     selector: LanguageSelector | undefined,
   ): monaco.languages.NewSymbolNamesProvider {
     return {
-      provideNewSymbolNames: (model, range, token) => {
+      provideNewSymbolNames: (model, range, triggerKind: NewSymbolNameTriggerKind, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined;
         }
@@ -1291,7 +1291,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_NEW_SYMBOL_NAMES);
-        return this.proxy.$provideNewSymbolNames(handle, model.uri, range, token).then((v) => {
+        return this.proxy.$provideNewSymbolNames(handle, model.uri, range, triggerKind, token).then((v) => {
           if (v) {
             timer.timeEnd(extname(model.uri.fsPath));
           }

@@ -21,7 +21,7 @@
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
-    "@opensumi/monaco-editor-core": "0.47.0-patch.15"
+    "@opensumi/monaco-editor-core": "file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",

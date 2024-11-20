@@ -12,10 +12,11 @@ export class RenameSuggestionsService {
   async provideRenameSuggestions(model: ITextModel, range: IRange, token: CancellationToken) {
     const providers = this.renameCandidatesProviderRegistry.getRenameSuggestionsProviders();
 
-    const promises = providers.map((provider) => provider(model, range, token));
+    // const promises = providers.map((provider) => provider(model, range, token));
 
-    const result = (await Promise.all(promises)).filter(Boolean) as NewSymbolName[][];
+    // const result = (await Promise.all(promises)).filter(Boolean) as NewSymbolName[][];
 
-    return result.flat();
+    // return result.flat();
+    return [];
   }
 }

@@ -5,7 +5,6 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor, IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { Disposable, IRange, ISelection, URI } from '@opensumi/ide-core-common';
-import { Selection } from '@opensumi/monaco-editor-core';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IDimension } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/dimension';
 import {
@@ -23,6 +22,7 @@ import { IPosition, Position } from '../../monaco-api/types';
 import { MergeEditorService } from './merge-editor.service';
 import { EditorViewType, IMergeEditorViewState } from './types';
 import { Grid } from './view/grid';
+import { Selection } from '@opensumi/monaco-editor-core';
 
 export interface IMergeEditorModel {
   ours: ITextModel;
@@ -83,6 +83,12 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
         }
       }),
     );
+  }
+  getSelection(): Selection | null {
+    return null;
+  }
+  getSelections(): Selection[] | null {
+    return null;
   }
 
   async open(args: IOpenMergeEditorArgs): Promise<void> {
@@ -225,14 +231,6 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   revealPositionInCenterIfOutsideViewport(position: IPosition, scrollType?: ScrollType): void {}
 
   revealPositionNearTop(position: IPosition, scrollType?: ScrollType): void {}
-
-  getSelection(): Selection | null {
-    return null;
-  }
-
-  getSelections(): Selection[] | null {
-    return null;
-  }
 
   setSelection(selection: IRange | Range | ISelection | Selection, source?: string): void;
   setSelection(selection: any, source?: any): void {}

@@ -11,7 +11,7 @@ import {
   ProblemFixRegistryToken,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, Range } from '@opensumi/ide-monaco';
-import { HoverController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/hover/browser/hover';
+import { ContentHoverController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/hover/browser/contentHoverController';
 import {
   HoverParticipantRegistry,
   IEditorHoverRenderContext,
@@ -82,7 +82,7 @@ export class ProblemFixController extends BaseAIMonacoEditorController {
 
     this.featureDisposable.addDispose(
       this.problemFixService.onHoverFixTrigger((part) => {
-        const hoverController = this.monacoEditor?.getContribution<HoverController>(HoverController.ID);
+        const hoverController = this.monacoEditor?.getContribution<ContentHoverController>(ContentHoverController.ID);
         if (hoverController) {
           hoverController.hideContentHover();
         }
