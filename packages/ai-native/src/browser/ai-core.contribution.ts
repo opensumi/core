@@ -61,7 +61,9 @@ import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
-import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commands';
+import {
+  HideInlineCompletion
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/commands';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import {
@@ -107,7 +109,7 @@ import { InlineHintController } from './widget/inline-hint/inline-hint.controlle
 import { InlineInputController } from './widget/inline-input/inline-input.controller';
 import { InlineInputChatService } from './widget/inline-input/inline-input.service';
 import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
-import { SumiLightBulbWidget } from './widget/light-bulb';
+// import { SumiLightBulbWidget } from './widget/light-bulb';
 
 @Domain(
   ClientAppContribution,
@@ -121,15 +123,14 @@ import { SumiLightBulbWidget } from './widget/light-bulb';
 )
 export class AINativeBrowserContribution
   implements
-    ClientAppContribution,
-    BrowserEditorContribution,
-    CommandContribution,
-    SettingContribution,
-    KeybindingContribution,
-    ComponentContribution,
-    SlotRendererContribution,
-    MonacoContribution
-{
+  ClientAppContribution,
+  BrowserEditorContribution,
+  CommandContribution,
+  SettingContribution,
+  KeybindingContribution,
+  ComponentContribution,
+  SlotRendererContribution,
+  MonacoContribution {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -230,7 +231,7 @@ export class AINativeBrowserContribution
     );
 
     if (supportsInlineChat) {
-      register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+      // register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
       register(
         InlineChatEditorController.ID,
         new SyncDescriptor(InlineChatEditorController, [this.injector]),
