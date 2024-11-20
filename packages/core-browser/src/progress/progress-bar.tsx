@@ -20,6 +20,7 @@ export const ProgressBar: React.FC<{ progressModel: IProgressModel; className?: 
     <div className={cls(className, styles.progressBar, { [styles.hide]: !show }, { [styles.fade]: fade })}>
       <div
         className={cls(styles.progress, { [styles.infinite]: !total })}
+        // @ts-ignore
         style={total ? { width: (worked / total || 0.02) * 100 + '%' } : { width: '2%' }}
       ></div>
     </div>
