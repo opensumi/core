@@ -54,7 +54,11 @@ export interface ITabbarViewProps {
   canHideTabbar?: boolean;
   renderOtherVisibleContainers?: React.FC<{
     props: ITabbarViewProps;
-    renderContainers: (component: ComponentRegistryInfo, currentContainerId: string) => JSX.Element | null;
+    renderContainers: (
+      component: ComponentRegistryInfo,
+      tabbarService: TabbarService,
+      currentContainerId: string,
+    ) => JSX.Element | null;
   }>;
 }
 
@@ -109,7 +113,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
   });
 
   const renderContainers = React.useCallback(
-    (component: ComponentRegistryInfo, currentContainerId?: string) => {
+    (component: ComponentRegistryInfo, tabbarService: TabbarService, currentContainerId?: string) => {
       const containerId = component.options?.containerId;
       if (!containerId) {
         return null;
@@ -164,13 +168,13 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
         </li>
       );
     },
-    [tabbarService],
+    [],
   );
 
   return (
     <div className={cls([styles_tab_bar, className])}>
       <div className={styles_bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
-        {visibleContainers.map((component) => renderContainers(component, currentContainerId))}
+        {visibleContainers.map((component) => renderContainers(component, tabbarService, currentContainerId))}
         {renderOtherVisibleContainers({ props, renderContainers })}
         {hideContainers.length ? (
           <li
@@ -308,7 +312,11 @@ export const RightTabbarRenderer: React.FC<{ barSize?: number; style?: React.CSS
 export const LeftTabbarRenderer: React.FC<{
   renderOtherVisibleContainers?: React.FC<{
     props: ITabbarViewProps;
-    renderContainers: (component: ComponentRegistryInfo, currentContainerId: string) => JSX.Element | null;
+    renderContainers: (
+      component: ComponentRegistryInfo,
+      tabbarService: TabbarService,
+      currentContainerId: string,
+    ) => JSX.Element | null;
   }>;
   isRenderExtraTopMenus?: boolean;
   renderExtraMenus?: React.ReactNode;
