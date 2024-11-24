@@ -12,6 +12,8 @@ import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
+import { LocalizationsContributionPoint } from './localization';
+
 export interface ConfigurationSnippets {
   body: {
     title: string;
@@ -35,7 +37,11 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
   @Autowired(AbstractExtInstanceManagementService)
   protected readonly extensionManageService: AbstractExtInstanceManagementService;
 
-  contribute() {
+  @Autowired(LocalizationsContributionPoint)
+  protected readonly localizationsContributionPoint: LocalizationsContributionPoint;
+
+  async contribute() {
+    await this.localizationsContributionPoint.whenContributed;
     for (const contrib of this.contributesMap) {
       const { extensionId, contributes } = contrib;
       const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);

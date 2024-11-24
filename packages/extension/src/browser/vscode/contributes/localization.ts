@@ -9,7 +9,7 @@ import {
   path,
   registerLocalizationBundle,
 } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-common';
+import { Deferred, LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
@@ -62,6 +62,12 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
 
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionManageService: AbstractExtInstanceManagementService;
+
+  private _whenContributed = new Deferred<void>();
+
+  get whenContributed(): Promise<void> {
+    return this._whenContributed.promise;
+  }
 
   private storagePath: string;
 
@@ -119,6 +125,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     }
 
     await Promise.all(promises);
+    this._whenContributed.resolve();
   }
 
   async registerLanguage(translate: TranslationFormat, extensionPath: string) {
