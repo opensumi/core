@@ -41,7 +41,11 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
   protected readonly localizationsContributionPoint: LocalizationsContributionPoint;
 
   async contribute() {
-    await this.localizationsContributionPoint.whenContributed;
+    //  当语言包插件被使用的时候，需要等待LocalizationsContributionPoint执行完成。否则配置项的多语言初始化的还是默认语言（英文）。
+    if (this.localizationsContributionPoint.hasUncontributedPoint()) {
+      await this.localizationsContributionPoint.whenContributed;
+    }
+
     for (const contrib of this.contributesMap) {
       const { extensionId, contributes } = contrib;
       const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
