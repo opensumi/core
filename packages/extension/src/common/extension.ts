@@ -275,6 +275,8 @@ export interface IExtension extends IExtensionProps {
   toJSON(): IExtensionProps;
 }
 
+export const NO_ROOT_URI = '<none>';
+
 const VAR_REGEXP = /^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i;
 
 export interface ContributesMap<T> {
