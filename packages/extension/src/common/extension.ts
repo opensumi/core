@@ -128,7 +128,7 @@ export interface IExtensionNodeClientService {
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
   setupNLSConfig(languageId: string, storagePath: string): Promise<void>;
   getOpenVSXRegistry(): Promise<string>;
-  getLanguagePack(languageId: string): IExtensionLanguagePack | undefined;
+  getLanguagePack(languageId: string): Promise<IExtensionLanguagePack | undefined>;
   pid(): Promise<number | null>;
 }
 

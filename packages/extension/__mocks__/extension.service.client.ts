@@ -49,6 +49,6 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
     return Promise.resolve();
   }
   getLanguagePack(languageId: string) {
-    return undefined;
+    return Promise.resolve(undefined);
   }
 }
