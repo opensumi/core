@@ -17,6 +17,8 @@ import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-ba
 import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';
 import { IIconService } from '@opensumi/ide-theme';
 
+import { BadgeWidget } from '../../../../core-browser/src/layout';
+
 import { AccordionService } from './accordion.service';
 import styles from './styles.module.less';
 
@@ -59,7 +61,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // Panel Accordion Service
   accordionService: AccordionService;
   // Panel Badge
-  badge?: string;
+  badge?: BadgeWidget | undefined;
   // Panel Expanded
   expanded?: boolean;
   // Panel Title Menu Context
@@ -186,7 +188,7 @@ export const AccordionSection = ({
                 {transformLabelWithCodicon(metadata.description, {}, iconService.fromString.bind(iconService))}
               </div>
             )}
-            {metadata.badge && <div className={styles_section_badge}>{metadata.badge}</div>}
+            {metadata.badge && <div className={styles_section_badge}>{metadata.badge.badge}</div>}
           </div>
           {expanded && titleMenu && (
             <div className={styles_actions_wrap}>

@@ -43,6 +43,7 @@ import {
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
 
+import { BadgeWidget } from '../../../../core-browser/src/layout';
 import { IMainLayoutService, ViewCollapseChangedEvent } from '../../common';
 
 export interface SectionState {
@@ -57,7 +58,7 @@ interface AccordionViewChangeEvent {
   title?: string;
   description?: string;
   message?: string;
-  badge?: string;
+  badge?: BadgeWidget | undefined;
 }
 
 @Injectable({ multiple: true })
@@ -216,7 +217,7 @@ export class AccordionService extends WithEventBus {
     }
   }
 
-  updateViewBadge(viewId: string, badge: string) {
+  updateViewBadge(viewId: string, badge: BadgeWidget | undefined) {
     const view = this.views.find((view) => view.id === viewId);
     if (view) {
       view.badge = badge;

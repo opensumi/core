@@ -42,6 +42,7 @@ import {
   IconUrl,
   TreeViewBaseOptions,
   TreeViewItem,
+  ViewBadge,
 } from '../../../common/vscode';
 import { DataTransfer } from '../../../common/vscode/converter';
 import { VSDataTransfer, createStringDataTransferItem } from '../../../common/vscode/data-transfer';
@@ -264,6 +265,13 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
     const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
     if (handler) {
       handler.updateViewDescription(treeViewId, description);
+    }
+  }
+
+  async $setBadge(treeViewId: string, badge: ViewBadge | undefined) {
+    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+    if (handler) {
+      handler.setBadge(badge ? { badge: badge.value, badgeTooltip: badge.tooltip } : undefined);
     }
   }
 

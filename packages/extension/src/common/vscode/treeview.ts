@@ -21,6 +21,7 @@ export interface IMainThreadTreeView {
   $reveal(treeViewId: string, treeItemId?: string, options?: ITreeViewRevealOptions): Promise<any>;
   $setTitle(treeViewId: string, message: string): Promise<void>;
   $setDescription(treeViewId: string, message: string): Promise<void>;
+  $setBadge(treeViewId: string, badge: ViewBadge | undefined): void;
   $setMessage(treeViewId: string, message: string): Promise<void>;
   $resolveDropFileData(treeViewId: string, requestId: number, dataItemId: string): Promise<BinaryBuffer>;
 }
@@ -141,6 +142,11 @@ export interface TreeView<T> extends vscode.TreeView<T> {
    */
   description?: string;
   /**
+   * TreeView 要显示的徽标
+   * 要删除徽标，请设置为undefined
+   */
+  badge?: ViewBadge | undefined;
+  /**
    * 展示节点，默认情况下展示的节点为选中状态
    *
    * 当希望显示的节点不带选中状态时，可以设置options内的select属性为false
@@ -150,6 +156,21 @@ export interface TreeView<T> extends vscode.TreeView<T> {
   reveal(element: T, options?: { select?: boolean; focus?: boolean; expand?: boolean | number }): PromiseLike<void>;
 
   dispose(): void;
+}
+
+/**
+ * 展示视图数值的徽标
+ */
+export interface ViewBadge {
+  /**
+   * 在徽标工具提示中显示的标签
+   */
+  readonly tooltip: string;
+
+  /**
+   * 徽标中显示的值
+   */
+  readonly value: number;
 }
 
 export interface TreeViewBaseOptions {

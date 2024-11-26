@@ -471,8 +471,9 @@ export class OpenedEditorModelService {
     const accordionService = this.layoutService.getAccordionService(EXPLORER_CONTAINER_ID);
     if (handler) {
       const dirtyMsg = dirtyCount > 0 ? formatLocalize('opened.editors.unsaved', dirtyCount.toString()) : '';
-      handler.setBadge(dirtyCount > 0 ? dirtyCount.toString() : '');
-      accordionService.updateViewBadge(ExplorerOpenedEditorViewId, dirtyMsg);
+      const badge = dirtyCount > 0 ? { badge: dirtyCount, badgeTooltip: dirtyMsg } : undefined;
+      handler.setBadge(badge);
+      accordionService.updateViewBadge(ExplorerOpenedEditorViewId, badge);
     }
   }
 }

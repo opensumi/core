@@ -6,6 +6,7 @@ import {
   CommandRegistry,
   CommandService,
   DisposableStore,
+  Event,
   FILE_COMMANDS,
   IApplicationService,
   IClipboardService,
@@ -57,6 +58,7 @@ import { Directory } from '../common/file-tree-node.define';
 
 import { FileTree } from './file-tree';
 import { FileTreeService } from './file-tree.service';
+import { FileTreeEventService } from './services/file-tree-event.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 
@@ -127,6 +129,9 @@ export class FileTreeContribution
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
+  @Autowired(FileTreeEventService)
+  private readonly fileTreeEventService: FileTreeEventService;
+
   private isRendered = false;
 
   private deleteThrottler: Throttler = new Throttler();
@@ -165,6 +170,15 @@ export class FileTreeContribution
         if (handler) {
           handler.updateViewTitle(RESOURCE_VIEW_ID, this.getWorkspaceTitle());
         }
+      }),
+    );
+    // 监听文件变化更新badge
+    this._disposables.add(
+      Event.any<any>(this.fileTreeEventService.onDidChange)(() => {
+        const dirtyCount = this.fileTreeService.calcNodeCount();
+        const accordionService = this.mainLayoutService.getAccordionService(EXPLORER_CONTAINER_ID);
+        const badge = dirtyCount > 0 ? { badge: dirtyCount, badgeTooltip: dirtyCount + '' } : undefined;
+        accordionService.updateViewBadge('file-explorer', badge);
       }),
     );
   }
@@ -1264,4 +1278,6 @@ export class FileTreeContribution
   dispose() {
     this._disposables.dispose();
   }
+
+  private setExplorerTabBarBadge() {}
 }

@@ -1873,6 +1873,12 @@ declare module 'vscode' {
     description?: string;
 
     /**
+		 * The badge to display for this TreeView.
+		 * To remove the badge, set to undefined.
+		 */
+		badge?: ViewBadge | undefined;
+
+    /**
      * Reveals the given element in the tree view.
      * If the tree view is not visible then the tree view is shown and element is revealed.
      *
@@ -1886,6 +1892,24 @@ declare module 'vscode' {
      */
     reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): Thenable<void>;
   }
+
+
+	/**
+	 * A badge presenting a value for a view
+	 */
+	export interface ViewBadge {
+
+		/**
+		 * A label to present in tooltip for the badge.
+		 */
+		readonly tooltip: string;
+
+		/**
+		 * The value to present in the badge.
+		 */
+		readonly value: number;
+	}
+
 
   /**
    * Label describing the [Tree item](#TreeItem)

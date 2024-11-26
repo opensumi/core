@@ -870,6 +870,12 @@ declare module 'vscode' {
     readonly visible: boolean;
 
     /**
+		 * The badge to display for this TreeView.
+		 * To remove the badge, set to undefined.
+		 */
+		badge?: ViewBadge | undefined;
+
+    /**
      * Event fired when the visibility of the view changes.
      *
      * Actions that trigger a visibility change:

@@ -850,4 +850,31 @@ export class FileTreeService extends Tree implements IFileTreeService {
   public locationToCurrentFile = () => {
     this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
   };
+
+  public calcNodeCount = () => {
+    if (this._root) {
+      return this.recursionCalcNodeCount(this._root);
+    }
+    return 0;
+  };
+
+  private recursionCalcNodeCount = (root) => {
+    if (root) {
+      if (root.tooltip.includes('.sumi')) {
+        return 0;
+      }
+      let count = 0;
+      if (!root.filestat.isDirectory) {
+        ++count;
+      } else {
+        if (root.children) {
+          for (const node of root.children) {
+            count += this.recursionCalcNodeCount(node);
+          }
+        }
+      }
+      return count;
+    }
+    return 0;
+  };
 }

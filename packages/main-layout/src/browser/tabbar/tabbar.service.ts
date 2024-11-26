@@ -43,6 +43,7 @@ import {
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { autorunDelta, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
+import { BadgeWidget } from '../../../../core-browser/src/layout';
 import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent } from '../../common';
 import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
 
@@ -193,7 +194,7 @@ export class TabbarService extends WithEventBus {
     });
   }
 
-  updateBadge(containerId: string, value: string) {
+  updateBadge(containerId: string, value: BadgeWidget | undefined) {
     const component = this.getContainer(containerId);
     if (component && component.options) {
       component.options.badge = value;
