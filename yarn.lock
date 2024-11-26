@@ -5711,11 +5711,11 @@ __metadata:
   linkType: hard
 
 "@types/react-mentions@npm:^4.1.13":
-  version: 4.1.13
-  resolution: "@types/react-mentions@npm:4.1.13"
+  version: 4.4.0
+  resolution: "@types/react-mentions@npm:4.4.0"
   dependencies:
     "@types/react": "npm:*"
-  checksum: 10/9ceefbfdbc2f008455d0fdfbd05221147506816042b91d5449b7d41b8856489ed201185127bcc1188889c1217a2d38fb691e5f0b7c6c84209f35ba7de0f76de7
+  checksum: 10/27a8b63458e73a1338042fbd050f0d97351d37c639f801c8e699ec99058047d3c839217929cea3b029be87f34e95db9c8ad97a00f72e72b0690a9b15e8f96d50
   languageName: node
   linkType: hard
 
