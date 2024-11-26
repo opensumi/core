@@ -1,0 +1,102 @@
+.libro-variable-content {
+  height: calc(100% - 40px);
+
+  .libro-variable-list {
+    height: 100%;
+    overflow-y: auto;
+
+    .ant-list-item {
+      padding: 4px 12px 0;
+      border-bottom: none;
+
+      &:hover {
+        border-radius: 6px;
+        background-color: var(--mana-libro-variable-background-hover-color);
+      }
+
+      .ant-list-item-meta {
+        border-bottom: 1px solid var(--mana-libro-variable-border-color);
+      }
+
+      .ant-list-item-meta-title {
+        color: var(--mana-libro-variable-title-color);
+
+        .libro-variable-title {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          .libro-variable-type-tag {
+            font-size: 10px;
+            margin-left: 8px;
+            color: var(--mana-libro-variable-tag-text-color);
+            background-color: var(--mana-libro-variable-tag-background-color);
+            border-radius: 4px;
+          }
+
+          .libro-variable-extra {
+            color: var(--mana-libro-variable-icon-color);
+            transform: rotate(90deg);
+
+            :hover {
+              color: #1890ff;
+              cursor: pointer;
+            }
+          }
+        }
+
+        .libro-variable-name {
+          color: var(--mana-libro-variable-name-color);
+        }
+      }
+
+      .ant-list-item-meta-description {
+        overflow: hidden;
+        color: var(--mana-libro-variable-description-color);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .libro-variable-search {
+    display: flex;
+    align-items: center;
+    padding: 4px 12px 8px;
+
+    &-input {
+      background: var(--mana-libro-variable-search-background-color);
+      border: none;
+      border-radius: 6px;
+      height: 28px;
+
+      input {
+        color: var(--mana-libro-variable-title-color);
+        background: transparent;
+      }
+
+      .ant-input-prefix {
+        color: var(--mana-libro-variable-icon-color);
+      }
+    }
+
+    &-extra {
+      margin-left: 8px;
+      color: var(--mana-libro-variable-icon-color);
+
+      :hover {
+        color: #1890ff;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.libro-variable-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: unset !important;
+}

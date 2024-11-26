@@ -15,6 +15,8 @@ import {
   ClientAppContribution,
   CommandContribution,
   type CommandRegistry,
+  ComponentContribution,
+  ComponentRegistry,
   Disposable,
   Domain,
   IClientApp,
@@ -22,6 +24,7 @@ import {
   OpenerContribution,
   Schemes,
   URI,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { message } from '@opensumi/ide-core-browser/lib/components';
 import {
@@ -36,7 +39,7 @@ import { IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/br
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IThemeService, IconType } from '@opensumi/ide-theme/lib/common';
 
-import { initKernelPanelColorToken } from './kernel-panel';
+import { KERNEL_PANEL_ID, KernelPanel, initKernelPanelColorToken } from './kernel-panel';
 import { LibroOpensumiModule } from './libro';
 import { LibroOpener } from './libro-opener';
 import { initLibroColorToken } from './libro.color.tokens';
@@ -46,6 +49,9 @@ import { ManaContainer, initLibroOpensumi, manaContainer } from './mana/index';
 import { NotebookDocumentContentProvider } from './notebook-document-content-provider';
 import { NotebookServiceOverride } from './notebook.service';
 import { initTocPanelColorToken } from './toc';
+import { LibroVariableModule } from './variables/libro-variable-module';
+import { VariablePanel } from './variables/variable-panel';
+import { VARIABLE_ID } from './variables/variable-protocol';
 
 const LIBRO_COMPONENTS_VIEW_COMMAND = {
   id: 'opensumi-libro',
@@ -56,7 +62,7 @@ const LayoutWrapper: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <ManaComponents.Application
       context={{ container: manaContainer }}
-      modules={[ManaAppPreset, LibroJupyterNoEditorModule, LibroTOCModule, LibroOpensumiModule]}
+      modules={[ManaAppPreset, LibroJupyterNoEditorModule, LibroTOCModule, LibroOpensumiModule, LibroVariableModule]}
       renderChildren
       onReady={() => setIsReady(true)}
     >
@@ -65,12 +71,15 @@ const LayoutWrapper: React.FC<React.PropsWithChildren> = ({ children }) => {
   );
 };
 
+export const NOTE_BOOK_PANNEL_ID = 'notebook-pannel';
+
 @Domain(
   ClientAppContribution,
   BrowserEditorContribution,
   ClientAppContextContribution,
   CommandContribution,
   OpenerContribution,
+  ComponentContribution,
 )
 export class LibroContribution
   extends Disposable
@@ -79,7 +88,8 @@ export class LibroContribution
     BrowserEditorContribution,
     ClientAppContextContribution,
     CommandContribution,
-    OpenerContribution
+    OpenerContribution,
+    ComponentContribution
 {
   @Autowired(ManaContainer)
   private readonly manaContainer: Container;
@@ -113,6 +123,40 @@ export class LibroContribution
 
   initialize(app: IClientApp) {
     initLibroOpensumi(app.injector, manaContainer);
+  }
+
+  registerComponent(registry: ComponentRegistry) {
+    const iconClass = this.iconService.fromIcon(
+      '',
+      {
+        dark: 'https://mdn.alipayobjects.com/huamei_rm3rgy/afts/img/A*tFyaRbqux_4AAAAAAAAAAAAADr2GAQ/original',
+        light: 'https://mdn.alipayobjects.com/huamei_rm3rgy/afts/img/A*ebL7T4dWefUAAAAAAAAAAAAADr2GAQ/original',
+      },
+      IconType.Background,
+    );
+    registry.register(
+      '@opensumi/ide-notebook',
+      [
+        {
+          id: KERNEL_PANEL_ID,
+          name: localize('notebook.kernel.panel.title'),
+          component: KernelPanel,
+          priority: 0,
+        },
+        {
+          id: VARIABLE_ID,
+          name: localize('notebook.variable.panel.title'),
+          weight: 2,
+          priority: 1,
+          component: VariablePanel,
+        },
+      ],
+      {
+        activateKeyBinding: 'ctrlcmd+shift+k',
+        containerId: NOTE_BOOK_PANNEL_ID,
+        iconClass,
+      },
+    );
   }
 
   registerClientAppContext(Layout: React.FC, injector: Injector): React.FC {
