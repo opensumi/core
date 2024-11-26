@@ -246,6 +246,6 @@ export class ExtensionServiceClientImpl
 
   public getLanguagePack(languageId: string) {
     const languagePacks = this.languagePackCache?.[languageId];
-    return languagePacks;
+    return Promise.resolve(languagePacks);
   }
 }

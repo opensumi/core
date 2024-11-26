@@ -31,7 +31,7 @@ export class MainThreadLocalization implements IMainThreadLocalization {
   async $fetchBuiltInBundleUri(id: string, language: string): Promise<Uri | undefined> {
     try {
       // 当插件为内置插件时，从 Language Packs 中获取
-      const languagePack = this.extensionNodeClient.getLanguagePack(language || this.currentLanguage);
+      const languagePack = await this.extensionNodeClient.getLanguagePack(language || this.currentLanguage);
       if (languagePack && languagePack.translations[id]) {
         return Uri.file(languagePack.translations[id]);
       }
