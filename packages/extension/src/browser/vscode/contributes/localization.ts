@@ -93,6 +93,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
         if (localization.translations) {
           const languageId = normalizeLanguageId(localization.languageId);
           if (languageId !== getLanguageId()) {
+            this._whenContributed.resolve();
             return;
           }
           promises.push(
