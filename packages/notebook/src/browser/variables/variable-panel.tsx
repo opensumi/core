@@ -7,13 +7,11 @@ import { URI, ViewState, localize, useInjectable } from '@opensumi/ide-core-brow
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-
 import { LIBRO_COMPONENTS_SCHEME_ID } from '../libro.protocol';
 import { ILibroOpensumiService } from '../libro.service';
 import { ManaContainer } from '../mana';
 
 import { LibroVariablePanelView } from './variable-view';
-
 
 export const VariablePanel = memo(({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
   const collapsePanelContainerStyle = {
@@ -43,7 +41,7 @@ export const VariablePanel = memo(({ viewState }: PropsWithChildren<{ viewState:
           });
       });
     }
-    editorService.onActiveResourceChange((e) => {
+    const toDispose = editorService.onActiveResourceChange((e) => {
       if (e?.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
         libroOpensumiService.getOrCreateLibroView(e.uri).then((libro) => {
           const viewManager = manaContainer.get(ViewManager);
@@ -63,7 +61,10 @@ export const VariablePanel = memo(({ viewState }: PropsWithChildren<{ viewState:
         setLibroVariablePanelView(undefined);
       }
     });
-  });
+    return () => {
+      toDispose.dispose();
+    };
+  }, []);
   if (libroVariablePanelView) {
     return (
       <>

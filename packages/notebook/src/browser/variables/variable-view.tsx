@@ -23,7 +23,7 @@ import { Languages } from './inspector-script';
 import type { LanguageModel } from './inspector-script';
 import type { KernelMessage } from '@difizen/libro-kernel';
 
-const LibroVariableComponent = forwardRef<HTMLDivElement, {}>((props, ref) => {
+const LibroVariableComponent = forwardRef<HTMLDivElement>((props, ref) => {
   const instance = useInject<LibroVariablePanelView>(ViewInstance);
   const themeService = useInject(ThemeService);
   const libroContextKey = useInject(LibroContextKey);

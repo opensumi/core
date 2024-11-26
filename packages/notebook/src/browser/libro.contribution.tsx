@@ -71,7 +71,7 @@ const LayoutWrapper: React.FC<React.PropsWithChildren> = ({ children }) => {
   );
 };
 
-export const NOTE_BOOK_PANNEL_ID = 'notebook-pannel';
+export const NOTE_BOOK_PANEL_ID = 'notebook-panel';
 
 @Domain(
   ClientAppContribution,
@@ -153,7 +153,7 @@ export class LibroContribution
       ],
       {
         activateKeyBinding: 'ctrlcmd+shift+k',
-        containerId: NOTE_BOOK_PANNEL_ID,
+        containerId: NOTE_BOOK_PANEL_ID,
         iconClass,
       },
     );
