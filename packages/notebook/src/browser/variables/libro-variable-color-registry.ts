@@ -1,5 +1,4 @@
-import { Color, ColorContribution } from '@difizen/mana-app';
-import { singleton } from '@difizen/mana-syringe';
+import { Color, ColorContribution, singleton } from '@difizen/mana-app';
 
 import type { ColorRegistry } from '@difizen/mana-app';
 

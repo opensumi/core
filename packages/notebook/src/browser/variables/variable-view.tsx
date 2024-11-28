@@ -11,12 +11,11 @@ import {
   useInject,
   view,
 } from '@difizen/mana-app';
-import { DisposableCollection } from '@difizen/mana-common';
 import { Input, List, Tag, Tooltip, message } from 'antd';
 import React, { forwardRef } from 'react';
 import './index.less';
 
-import { localize } from '@opensumi/ide-core-common';
+import { DisposableCollection, localize } from '@opensumi/ide-core-common';
 
 import { Languages } from './inspector-script';
 
