@@ -19,7 +19,12 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { ITerminalClient, ITerminalExternalLinkProvider, ITerminalHoverManagerService } from '../../common';
+import {
+  ITerminalClient,
+  ITerminalExternalLinkProvider,
+  ITerminalHoverManagerService,
+  ITerminalService,
+} from '../../common';
 import { XTermCore } from '../../common/xterm-private';
 import { TerminalClient } from '../terminal.client';
 
@@ -84,6 +89,9 @@ export class TerminalLinkManager extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  @Autowired(ITerminalService)
+  private readonly terminalService: ITerminalService;
+
   @Autowired()
   private readonly _editorService: WorkbenchEditorService;
 
@@ -133,6 +141,12 @@ export class TerminalLinkManager extends Disposable {
 
   public set processCwd(processCwd: string) {
     this._processCwd = processCwd;
+  }
+
+  // user may change the terminal cwd, so we need to get it from the service
+  async getTerminalCwd() {
+    const cwd = await this.terminalService.getCwd(this._client.id);
+    return cwd || this._processCwd;
   }
 
   private _registerStandardLinkProviders(): void {
@@ -328,25 +342,26 @@ export class TerminalLinkManager extends Disposable {
       }
       link = this.osPath.join(userHome, link.substring(1));
     } else if (link.charAt(0) !== '/' && link.charAt(0) !== '~') {
+      const cwd = await this.getTerminalCwd();
       // Resolve workspace path . | .. | <relative_path> -> <path>/. | <path>/.. | <path>/<relative_path>
       if (this._client.os === OperatingSystem.Windows) {
         if (!link.match('^' + winDrivePrefix) && !link.startsWith('\\\\?\\')) {
-          if (!this._processCwd) {
+          if (!cwd) {
             // Abort if no workspace is open
             return null;
           }
-          link = this.osPath.join(this._processCwd, link);
+          link = this.osPath.join(cwd, link);
         } else {
           // Remove \\?\ from paths so that they share the same underlying
           // uri and don't open multiple tabs for the same file
           link = link.replace(/^\\\\\?\\/, '');
         }
       } else {
-        if (!this._processCwd) {
+        if (!cwd) {
           // Abort if no workspace is open
           return null;
         }
-        link = this.osPath.join(this._processCwd, link);
+        link = this.osPath.join(cwd, link);
       }
     }
     link = this.osPath.normalize(link);
