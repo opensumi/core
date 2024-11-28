@@ -7,10 +7,12 @@ import {
   PreferenceSchemaProvider,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-common';
+import { ILogger, LifeCyclePhase } from '@opensumi/ide-core-common';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
+
+import { LocalizationsContributionPoint } from './localization';
 
 export interface ConfigurationSnippets {
   body: {
@@ -35,7 +37,22 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
   @Autowired(AbstractExtInstanceManagementService)
   protected readonly extensionManageService: AbstractExtInstanceManagementService;
 
-  contribute() {
+  @Autowired(LocalizationsContributionPoint)
+  protected readonly localizationsContributionPoint: LocalizationsContributionPoint;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
+  async contribute() {
+    //  当语言包插件被使用的时候，需要等待LocalizationsContributionPoint执行完成。否则配置项的多语言初始化的还是默认语言（英文）。
+    if (this.localizationsContributionPoint.hasUncontributedPoint()) {
+      try {
+        await this.localizationsContributionPoint.whenContributed;
+      } catch (error) {
+        this.logger.error('Failed to wait contribute localizations.', error);
+      }
+    }
+
     for (const contrib of this.contributesMap) {
       const { extensionId, contributes } = contrib;
       const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
