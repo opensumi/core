@@ -1,7 +1,6 @@
 import { Container, ViewManager, ViewRender } from '@difizen/mana-app';
 import { Empty } from 'antd';
-import { PropsWithChildren, memo, useEffect, useState } from 'react';
-import React from 'react';
+import React, { PropsWithChildren, memo, useEffect, useState } from 'react';
 
 import { URI, ViewState, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -26,10 +25,9 @@ export const VariablePanel = memo(({ viewState }: PropsWithChildren<{ viewState:
 
   const createVariablePanelView = async (uri: URI, libro: any) => {
     const viewManager = manaContainer.get(ViewManager);
-    const view = await viewManager.getOrCreateView<LibroVariablePanelView>(
-      LibroVariablePanelView,
-      { id: uri.toString() }
-    );
+    const view = await viewManager.getOrCreateView<LibroVariablePanelView>(LibroVariablePanelView, {
+      id: uri.toString(),
+    });
     view?.pause();
     view.parent = libro;
     view.update();
@@ -45,14 +43,12 @@ export const VariablePanel = memo(({ viewState }: PropsWithChildren<{ viewState:
 
     const toDispose = editorService.onActiveResourceChange((e) => {
       if (e?.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
-        libroOpensumiService
-          .getOrCreateLibroView(e.uri)
-          .then((libro) => createVariablePanelView(e.uri, libro));
+        libroOpensumiService.getOrCreateLibroView(e.uri).then((libro) => createVariablePanelView(e.uri, libro));
       } else {
         setLibroVariablePanelView(undefined);
       }
     });
-    
+
     return () => {
       toDispose.dispose();
     };
