@@ -24,43 +24,35 @@ export const VariablePanel = memo(({ viewState }: PropsWithChildren<{ viewState:
 
   const [libroVariablePanelView, setLibroVariablePanelView] = useState<LibroVariablePanelView | undefined>(undefined);
 
+  const createVariablePanelView = async (uri: URI, libro: any) => {
+    const viewManager = manaContainer.get(ViewManager);
+    const view = await viewManager.getOrCreateView<LibroVariablePanelView>(
+      LibroVariablePanelView,
+      { id: uri.toString() }
+    );
+    view?.pause();
+    view.parent = libro;
+    view.update();
+    setLibroVariablePanelView(view);
+  };
+
   useEffect(() => {
     if (editorService.currentResource?.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
-      libroOpensumiService.getOrCreateLibroView(editorService.currentResource.uri).then((libro) => {
-        const viewManager = manaContainer.get(ViewManager);
-        viewManager
-          .getOrCreateView<LibroVariablePanelView>(LibroVariablePanelView, {
-            id: (editorService.currentResource?.uri as URI).toString(),
-          })
-          .then((libroVariablePanelView) => {
-            libroVariablePanelView?.pause();
-            libroVariablePanelView.parent = libro;
-            libroVariablePanelView.update();
-            setLibroVariablePanelView(libroVariablePanelView);
-            return;
-          });
-      });
+      libroOpensumiService
+        .getOrCreateLibroView(editorService.currentResource.uri)
+        .then((libro) => createVariablePanelView(editorService.currentResource!.uri, libro));
     }
+
     const toDispose = editorService.onActiveResourceChange((e) => {
       if (e?.uri.path.ext === `.${LIBRO_COMPONENTS_SCHEME_ID}`) {
-        libroOpensumiService.getOrCreateLibroView(e.uri).then((libro) => {
-          const viewManager = manaContainer.get(ViewManager);
-          viewManager
-            .getOrCreateView<LibroVariablePanelView>(LibroVariablePanelView, {
-              id: e.uri.toString(),
-            })
-            .then((libroVariablePanelView) => {
-              libroVariablePanelView?.pause();
-              libroVariablePanelView.parent = libro;
-              libroVariablePanelView.update();
-              setLibroVariablePanelView(libroVariablePanelView);
-              return;
-            });
-        });
+        libroOpensumiService
+          .getOrCreateLibroView(e.uri)
+          .then((libro) => createVariablePanelView(e.uri, libro));
       } else {
         setLibroVariablePanelView(undefined);
       }
     });
+    
     return () => {
       toDispose.dispose();
     };
