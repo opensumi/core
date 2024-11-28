@@ -1274,6 +1274,12 @@ export const localizationBundle = {
     'notebook.kernel.panel.opened.pages': '已开启的标签页',
     'notebook.kernel.panel.running.kernels': '运行的内核',
     'notebook.kernel.close.all.confirmation': '你确定要关闭全部吗？',
+    'notebook.variable.panel.title': '变量检查器',
+    'notebook.variable.panel.unsupported': '该文件格式暂不支持变量检查',
+    'notebook.variable.panel.refresh.success': '变量刷新成功',
+    'notebook.variable.panel.refresh.error': '变量刷新失败',
+    'notebook.variable.panel.search.placeholder': '请输入变量名称搜索',
+    'notebook.variable.panel.show.detail': '查看详情',
     // #endregion notebook
 
     ...browserViews,
