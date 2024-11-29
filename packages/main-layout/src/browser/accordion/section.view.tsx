@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import React from 'react';
-import { ViewBadge } from 'vscode';
+
 
 import {
   ErrorBoundary,
@@ -20,6 +20,8 @@ import { IIconService } from '@opensumi/ide-theme';
 
 import { AccordionService } from './accordion.service';
 import styles from './styles.module.less';
+
+import type { ViewBadge } from 'vscode';
 
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // Header Title
@@ -60,7 +62,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // Panel Accordion Service
   accordionService: AccordionService;
   // Panel Badge
-  badge?: ViewBadge | undefined;
+  badge?: string | ViewBadge;
   // Panel Expanded
   expanded?: boolean;
   // Panel Title Menu Context
@@ -187,7 +189,11 @@ export const AccordionSection = ({
                 {transformLabelWithCodicon(metadata.description, {}, iconService.fromString.bind(iconService))}
               </div>
             )}
-            {metadata.badge && <div className={styles_section_badge}>{metadata.badge.value}</div>}
+            {metadata.badge && (
+              <div className={styles_section_badge}>
+                {typeof metadata.badge == 'string' ? metadata.badge : metadata.badge.value}
+              </div>
+            )}
           </div>
           {expanded && titleMenu && (
             <div className={styles_actions_wrap}>

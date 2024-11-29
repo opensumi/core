@@ -1,4 +1,3 @@
-import { ViewBadge } from 'vscode';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -9,6 +8,8 @@ import { IIconService, IconShape, IconType } from '@opensumi/ide-theme';
 
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import { IExtHostLayout, IMainThreadLayout } from '../../common/sumi/layout';
+
+import type { ViewBadge } from 'vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadLayout extends Disposable implements IMainThreadLayout {
@@ -54,7 +55,7 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
     this.getHandler(id)?.deactivate();
   }
 
-  $setBadge(id: string, badge: ViewBadge | undefined): void {
+  $setBadge(id: string, badge?: ViewBadge): void {
     this.getHandler(id)?.setBadge(badge);
   }
 

@@ -1,5 +1,3 @@
-import { ViewBadge } from 'vscode';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Event, IDisposable, combinedDisposable, dispose, path, strings } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser/lib/services';
@@ -55,14 +53,14 @@ export class SCMBadgeController {
     }, 0);
 
     if (count > 0) {
-      this.setSCMTarbarBadge({ value: count, tooltip: `${count}` });
+      this.setSCMTarbarBadge(`${count}`);
     } else {
       // clear
-      this.setSCMTarbarBadge(undefined);
+      this.setSCMTarbarBadge('');
     }
   }
 
-  private setSCMTarbarBadge(badge: ViewBadge | undefined) {
+  private setSCMTarbarBadge(badge: string) {
     const scmHandler = this.layoutService.getTabbarHandler(scmContainerId);
     if (scmHandler) {
       scmHandler.setBadge(badge);

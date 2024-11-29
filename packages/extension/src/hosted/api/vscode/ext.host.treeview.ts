@@ -505,7 +505,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   }
   set badge(badge: ViewBadge | undefined) {
     this._badge = badge;
-    this.proxy.$setBadge(this.treeViewId, badge ? { value: badge.value, tooltip: badge.tooltip } : undefined);
+    this.proxy.$setBadge(this.treeViewId, badge);
   }
 
   get selectedElements(): T[] {

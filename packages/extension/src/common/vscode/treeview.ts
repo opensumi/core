@@ -21,7 +21,7 @@ export interface IMainThreadTreeView {
   $reveal(treeViewId: string, treeItemId?: string, options?: ITreeViewRevealOptions): Promise<any>;
   $setTitle(treeViewId: string, message: string): Promise<void>;
   $setDescription(treeViewId: string, message: string): Promise<void>;
-  $setBadge(treeViewId: string, badge: ViewBadge | undefined): void;
+  $setBadge(treeViewId: string, badge?: ViewBadge): void;
   $setMessage(treeViewId: string, message: string): Promise<void>;
   $resolveDropFileData(treeViewId: string, requestId: number, dataItemId: string): Promise<BinaryBuffer>;
 }

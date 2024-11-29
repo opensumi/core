@@ -1,4 +1,3 @@
-import { ViewBadge } from 'vscode';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter, Event } from '@opensumi/ide-core-common';
@@ -6,6 +5,8 @@ import { Emitter, Event } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '../common';
 
 import { TabbarService } from './tabbar/tabbar.service';
+
+import type { ViewBadge } from 'vscode';
 
 @Injectable({ multiple: true })
 export class TabBarHandler {
@@ -110,7 +111,7 @@ export class TabBarHandler {
   /**
    * 设置视图tab的徽标
    */
-  setBadge(badge: ViewBadge | undefined) {
+  setBadge(badge?: ViewBadge | string) {
     this.tabbarService.updateBadge(this.containerId, badge);
   }
   /**

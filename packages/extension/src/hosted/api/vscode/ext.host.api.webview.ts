@@ -431,7 +431,7 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
   #isVisible: boolean;
   #title: string | undefined;
   #description: string | undefined;
-  #badge: ViewBadge | undefined;
+  #badge?: ViewBadge;
 
   constructor(
     handle: WebviewHandle,

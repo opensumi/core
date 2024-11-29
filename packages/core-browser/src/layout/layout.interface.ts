@@ -1,4 +1,3 @@
-
 import { BasicEvent, Event, MaybeNull } from '@opensumi/ide-core-common';
 
 import { Layout } from '../components/layout/index';
@@ -38,7 +37,7 @@ export interface View {
   weight?: number;
   priority?: number;
   collapsed?: boolean;
-  badge?: ViewBadge | undefined;
+  badge?: string | ViewBadge;
   hidden?: boolean;
   component?: React.ComponentType<any>;
   // 使用该参数时, view 的 toolbar 默认不渲染
@@ -62,7 +61,7 @@ export interface ExtViewContainerOptions {
   size?: number;
   activateKeyBinding?: string;
   hidden?: boolean;
-  badge?: ViewBadge | undefined | string;
+  badge?: string | ViewBadge;
   // 直接使用自定义的React组件，会失去一些对面板的控制能力
   component?: React.ComponentType<any>;
   // 使用自定义组件时可以传入，否则请作为View的一部分传入

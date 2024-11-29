@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { ViewBadge } from 'vscode';
+
 
 import { Autowired, Injectable, Injector } from '@opensumi/di';
 import {
@@ -46,6 +46,8 @@ import { autorunDelta, observableValue, transaction } from '@opensumi/ide-monaco
 
 import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent } from '../../common';
 import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
+
+import type { ViewBadge } from 'vscode';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export const TabbarServiceFactoryFn = (injector: Injector) => (location: string) => {
@@ -194,7 +196,7 @@ export class TabbarService extends WithEventBus {
     });
   }
 
-  updateBadge(containerId: string, value: ViewBadge | undefined) {
+  updateBadge(containerId: string, value?: ViewBadge | string) {
     const component = this.getContainer(containerId);
     if (component && component.options) {
       component.options.badge = value;

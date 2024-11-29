@@ -1078,7 +1078,7 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   get panelBadge() {
     const length = this.commentsThreads.length;
-    return length ? { value: length, tooltip: `${length}` } : undefined;
+    return length ? length + '' : '';
   }
 
   registerCommentRangeProvider(id: string, provider: ICommentRangeProvider): IDisposable {

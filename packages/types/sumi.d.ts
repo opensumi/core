@@ -476,7 +476,7 @@ declare module 'sumi' {
      *  tabbar.setBadge({value:20,tooltip:'20'});
      * ```
      */
-    setBadge(badge: ViewBadge | undefined): void;
+    setBadge(badge?: ViewBadge): void;
 
     activate(): void;
 

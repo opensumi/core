@@ -45,7 +45,7 @@ import {
   IWebviewOptions,
   IWebviewPanelOptions,
   IWebviewPanelViewState,
-  ViewBadge,
+  type ViewBadge,
   WebviewPanelShowOptions,
   WebviewViewOptions,
   WebviewViewResolverRegistrationEvent,
@@ -619,7 +619,7 @@ class WebviewPanel extends Disposable {
 
 class WebviewView extends Disposable {
   public title: string;
-  public badge: ViewBadge | undefined;
+  public badge?: ViewBadge;
   public viewColumn: number;
 
   constructor(
@@ -780,7 +780,7 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     };
   }
 
-  $setBadge(handle: string, badge: ViewBadge | undefined): void {
+  $setBadge(handle: string, badge?: ViewBadge): void {
     const webviewView = this._webviewViews.get(handle);
     if (webviewView) {
       webviewView.badge = badge;
