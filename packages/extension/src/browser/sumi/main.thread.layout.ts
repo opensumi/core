@@ -1,3 +1,5 @@
+import { ViewBadge } from 'vscode';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, IEventBus, ILogger } from '@opensumi/ide-core-browser';
@@ -52,7 +54,7 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
     this.getHandler(id)?.deactivate();
   }
 
-  $setBadge(id: string, badge: string): void {
+  $setBadge(id: string, badge: ViewBadge | undefined): void {
     this.getHandler(id)?.setBadge(badge);
   }
 

@@ -870,9 +870,9 @@ declare module 'vscode' {
     readonly visible: boolean;
 
     /**
-		 * The badge to display for this TreeView.
-		 * To remove the badge, set to undefined.
-		 */
+     * The badge to display for this webview view.
+     * To remove the badge, set to undefined.
+     */
 		badge?: ViewBadge | undefined;
 
     /**

@@ -1,3 +1,5 @@
+import { ViewBadge } from 'vscode';
+
 import { Event } from '@opensumi/ide-core-common';
 
 export interface ITabbarHandler {
@@ -7,7 +9,7 @@ export interface ITabbarHandler {
 
   setIcon(iconPath: string): void;
 
-  setBadge(badge: string): void;
+  setBadge(badge: ViewBadge | undefined): void;
 
   activate(): void;
 
@@ -23,7 +25,7 @@ export interface IMainThreadLayout {
   $setSize(id: string, size: number): void;
   $setTitle(id: string, title: string): void;
   $setIcon(id: string, iconPath: string): void;
-  $setBadge(id: string, badge: string): void;
+  $setBadge(id: string, badge: ViewBadge | undefined): void;
   $activate(id: string): void;
   $deactivate(id: string): void;
   $setVisible(id: string, visible: boolean): Promise<void>;

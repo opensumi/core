@@ -1,3 +1,5 @@
+import { ViewBadge } from 'vscode';
+
 import { BasicEvent, Event, MaybeNull } from '@opensumi/ide-core-common';
 
 import { Layout } from '../components/layout/index';
@@ -28,13 +30,6 @@ export interface SideStateManager {
   [side: string]: MaybeNull<SideState>;
 }
 
-export interface BadgeWidget {
-  badge?: number;
-  badgeTooltip?: string;
-  onDidChangeBadge?: Event<void>;
-  onDidChangeBadgeTooltip?: Event<void>;
-}
-
 export interface View {
   id: string;
   name?: string;
@@ -43,7 +38,7 @@ export interface View {
   weight?: number;
   priority?: number;
   collapsed?: boolean;
-  badge?: BadgeWidget | undefined;
+  badge?: ViewBadge | undefined;
   hidden?: boolean;
   component?: React.ComponentType<any>;
   // 使用该参数时, view 的 toolbar 默认不渲染
@@ -67,7 +62,7 @@ export interface ExtViewContainerOptions {
   size?: number;
   activateKeyBinding?: string;
   hidden?: boolean;
-  badge?: BadgeWidget | undefined;
+  badge?: ViewBadge | undefined;
   // 直接使用自定义的React组件，会失去一些对面板的控制能力
   component?: React.ComponentType<any>;
   // 使用自定义组件时可以传入，否则请作为View的一部分传入

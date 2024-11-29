@@ -18,6 +18,7 @@ import {
   IWebviewPanelOptions,
   IWebviewPanelViewState,
   MainThreadAPIIdentifier,
+  ViewBadge,
   ViewColumn,
   Webview,
   WebviewHandle,
@@ -430,6 +431,7 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
   #isVisible: boolean;
   #title: string | undefined;
   #description: string | undefined;
+  #badge: ViewBadge | undefined;
 
   constructor(
     handle: WebviewHandle,
@@ -496,6 +498,17 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
     if (this.#description !== value) {
       this.#description = value;
       this.#proxy.$setWebviewViewDescription(this.#handle, value);
+    }
+  }
+  public get badge(): ViewBadge | undefined {
+    return this.#badge;
+  }
+
+  public set badge(badge: ViewBadge | undefined) {
+    this.assertNotDisposed();
+    if (this.#badge !== badge) {
+      this.#badge = badge;
+      this.#proxy.$setBadge(this.#handle, badge);
     }
   }
 

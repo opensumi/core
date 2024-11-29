@@ -1,5 +1,6 @@
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
+import { ViewBadge } from 'vscode';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
@@ -43,7 +44,6 @@ import {
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
 
-import { BadgeWidget } from '../../../../core-browser/src/layout';
 import { IMainLayoutService, ViewCollapseChangedEvent } from '../../common';
 
 export interface SectionState {
@@ -58,7 +58,7 @@ interface AccordionViewChangeEvent {
   title?: string;
   description?: string;
   message?: string;
-  badge?: BadgeWidget | undefined;
+  badge?: ViewBadge | undefined;
 }
 
 @Injectable({ multiple: true })
@@ -217,7 +217,7 @@ export class AccordionService extends WithEventBus {
     }
   }
 
-  updateViewBadge(viewId: string, badge: BadgeWidget | undefined) {
+  updateViewBadge(viewId: string, badge: ViewBadge | undefined) {
     const view = this.views.find((view) => view.id === viewId);
     if (view) {
       view.badge = badge;

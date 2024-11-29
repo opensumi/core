@@ -3,7 +3,7 @@ import { Emitter } from '@opensumi/ide-core-common';
 
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IExtHostLayout, IMainThreadLayout, ITabbarHandler } from '../../../common/sumi/layout';
-import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
+import { IExtHostCommands, IExtensionDescription, ViewBadge } from '../../../common/vscode';
 
 export class TabbarHandler implements ITabbarHandler {
   public readonly onActivateEmitter = new Emitter<void>();
@@ -38,7 +38,7 @@ export class TabbarHandler implements ITabbarHandler {
     this.proxy.$setVisible(this.id, visible);
   }
 
-  setBadge(badge: string) {
+  setBadge(badge: ViewBadge | undefined) {
     this.proxy.$setBadge(this.id, badge);
   }
 
