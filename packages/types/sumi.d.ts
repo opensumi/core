@@ -474,9 +474,11 @@ declare module 'sumi' {
      * ```ts
      *  const tabbar = kaitian.layout.getTabbarHandler('TabbarIconTest');
      *  tabbar.setBadge({value:20,tooltip:'20'});
+     *  or
+     *  tabbar.setBadge('20');
      * ```
      */
-    setBadge(badge?: ViewBadge): void;
+    setBadge(badge?: string | ViewBadge): void;
 
     activate(): void;
 

@@ -231,7 +231,9 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = (
         component.options?.badge && (
           <Badge className={styles.tab_badge}>
             {typeof component.options.badge == 'string'
-              ? component.options.badge
+              ? parseInt(component.options.badge, 10) > 99
+                ? '99+'
+                : component.options.badge
               : component.options.badge.value
               ? component.options.badge.value
               : ''}
@@ -258,7 +260,9 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = (
       {component.options?.badge && (
         <Badge className={styles.tab_badge}>
           {typeof component.options.badge == 'string'
-            ? component.options.badge
+            ? parseInt(component.options.badge, 10) > 99
+              ? '99+'
+              : component.options.badge
             : component.options.badge.value
             ? component.options.badge.value
             : ''}
