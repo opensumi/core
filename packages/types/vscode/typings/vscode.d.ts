@@ -1873,10 +1873,10 @@ declare module 'vscode' {
     description?: string;
 
     /**
-		 * The badge to display for this TreeView.
-		 * To remove the badge, set to undefined.
-		 */
-		badge?: ViewBadge | undefined;
+     * The badge to display for this TreeView.
+     * To remove the badge, set to undefined.
+     */
+    badge?: ViewBadge | undefined;
 
     /**
      * Reveals the given element in the tree view.
@@ -1894,21 +1894,21 @@ declare module 'vscode' {
   }
 
 
-	/**
-	 * A badge presenting a value for a view
-	 */
-	export interface ViewBadge {
+  /**
+   * A badge presenting a value for a view
+   */
+  export interface ViewBadge {
 
-		/**
-		 * A label to present in tooltip for the badge.
-		 */
-		readonly tooltip: string;
+    /**
+     * A label to present in tooltip for the badge.
+     */
+    readonly tooltip: string;
 
-		/**
-		 * The value to present in the badge.
-		 */
-		readonly value: number;
-	}
+    /**
+     * The value to present in the badge.
+     */
+    readonly value: number;
+  }
 
 
   /**

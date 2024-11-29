@@ -1,4 +1,3 @@
-import { ViewBadge } from 'vscode';
 
 import { BasicEvent, Event, MaybeNull } from '@opensumi/ide-core-common';
 
@@ -7,6 +6,7 @@ import { Layout } from '../components/layout/index';
 import type { IContextMenu, IMenu } from '../menu/next';
 import type { SlotLocation } from '../react-providers';
 import type React from 'react';
+import type { ViewBadge } from 'vscode';
 
 export type Side = 'left' | 'right' | 'bottom';
 
@@ -62,7 +62,7 @@ export interface ExtViewContainerOptions {
   size?: number;
   activateKeyBinding?: string;
   hidden?: boolean;
-  badge?: ViewBadge | undefined;
+  badge?: ViewBadge | undefined | string;
   // 直接使用自定义的React组件，会失去一些对面板的控制能力
   component?: React.ComponentType<any>;
   // 使用自定义组件时可以传入，否则请作为View的一部分传入

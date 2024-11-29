@@ -873,7 +873,7 @@ declare module 'vscode' {
      * The badge to display for this webview view.
      * To remove the badge, set to undefined.
      */
-		badge?: ViewBadge | undefined;
+    badge?: ViewBadge | undefined;
 
     /**
      * Event fired when the visibility of the view changes.
