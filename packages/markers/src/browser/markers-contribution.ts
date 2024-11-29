@@ -56,7 +56,7 @@ export class MarkersContribution
       this.addDispose(
         this.markerService.getManager().onMarkerChanged(() => {
           const badge = this.markerService.getBadge();
-          handler.setBadge(badge || '');
+          handler.setBadge(badge);
         }),
       );
 

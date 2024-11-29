@@ -1,3 +1,5 @@
+import { ViewBadge } from 'vscode';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Deferred, Emitter, Event, IBaseMarkerManager, MarkerManager, OnEvent } from '@opensumi/ide-core-common';
@@ -107,16 +109,16 @@ export class MarkerService extends Themable implements IMarkerService {
     return this.markerManager;
   }
 
-  public getBadge(): string | undefined {
+  public getBadge(): ViewBadge | undefined {
     const stats = this.markerManager.getStats();
     if (stats) {
       const total = stats.errors + stats.infos + stats.warnings;
       if (total > MAX_DIAGNOSTICS_BADGE) {
-        return '1K+';
+        return { value: total, tooltip: '1K+' };
       } else if (total === MAX_DIAGNOSTICS_BADGE) {
-        return '1K';
+        return { value: total, tooltip: '1K+' };
       } else if (total > 0) {
-        return String(total);
+        return { value: total, tooltip: String(total) };
       }
     }
     return undefined;

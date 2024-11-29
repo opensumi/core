@@ -27,6 +27,7 @@ declare module 'sumi' {
     TextEditor,
     TextEditorEdit,
     ExtensionContext as VSCodeExtensionContext,
+    ViewBadge,
     // eslint-disable-next-line import/no-unresolved
   } from 'vscode';
 
@@ -472,10 +473,10 @@ declare module 'sumi' {
      * @example
      * ```ts
      *  const tabbar = kaitian.layout.getTabbarHandler('TabbarIconTest');
-     *  tabbar.setBadge('12');
+     *  tabbar.setBadge({value:20,tooltip:'20'});
      * ```
      */
-    setBadge(badge: string): void;
+    setBadge(badge: ViewBadge | undefined): void;
 
     activate(): void;
 
