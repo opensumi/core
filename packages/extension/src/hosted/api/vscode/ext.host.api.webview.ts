@@ -500,7 +500,9 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
       this.#proxy.$setWebviewViewDescription(this.#handle, value);
     }
   }
+
   public get badge(): ViewBadge | undefined {
+    this.assertNotDisposed();
     return this.#badge;
   }
 
