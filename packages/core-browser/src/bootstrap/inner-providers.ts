@@ -80,6 +80,7 @@ import { VariableContribution, VariableRegistry, VariableRegistryImpl } from '..
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
 
+import { ClientAppContextContribution } from './context-contribution';
 import { AppLifeCycleService } from './lifecycle.service';
 
 export function injectInnerProviders(injector: Injector) {
@@ -96,6 +97,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, TabBarToolbarContribution);
   createContributionProvider(injector, ToolBarActionContribution);
   createContributionProvider(injector, StaticResourceContribution);
+  createContributionProvider(injector, ClientAppContextContribution);
 
   // 一些内置抽象实现
   const providers: Provider[] = [

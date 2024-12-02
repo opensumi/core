@@ -19,6 +19,7 @@ export interface SubMenuProps extends RCSubMenuProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void;
   popupOffset?: [number, number];
   popupClassName?: string;
+  ref?: React.Ref<HTMLLIElement> | undefined;
 }
 
 class SubMenu extends React.Component<SubMenuProps, any> {

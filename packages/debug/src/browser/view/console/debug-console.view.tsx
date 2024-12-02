@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import {
@@ -35,7 +34,7 @@ import { IDebugConsoleModel } from './debug-console-tree.model.service';
 import styles from './debug-console.module.less';
 import { DebugConsoleService } from './debug-console.service';
 
-export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState }) => {
+export const DebugConsoleView = ({ viewState }: { viewState: ViewState }) => {
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
@@ -225,7 +224,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       </div>
     </div>
   );
-});
+};
 
 export interface IDebugConsoleNodeProps {
   item: any;

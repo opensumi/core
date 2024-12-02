@@ -1,5 +1,3 @@
-import { action, makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, WithEventBus } from '@opensumi/ide-core-common';
@@ -10,6 +8,7 @@ import {
   getSimpleEditorOptions,
 } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
+import { derived, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { OutputChannel } from './output.channel';
 
@@ -28,21 +27,13 @@ export class OutputService extends WithEventBus {
   private readonly preferenceService: PreferenceService;
 
   private outputEditor?: ICodeEditor;
-
-  @observable.shallow
-  readonly channels = observable.map<string, OutputChannel>();
+  private onDidSelectedChannelChangeEmitter = new Emitter<OutputChannel>();
+  private monacoDispose: monaco.IDisposable;
+  private autoReveal = true;
+  private enableSmartScroll = true;
+  private readonly channels = observableValue<Map<string, OutputChannel>>(this, new Map());
 
   public selectedChannel: OutputChannel;
-  private onDidSelectedChannelChangeEmitter = new Emitter<OutputChannel>();
-
-  @observable
-  public keys: string = '' + Math.random();
-
-  private monacoDispose: monaco.IDisposable;
-
-  private autoReveal = true;
-
-  private enableSmartScroll = true;
 
   get onDidSelectedChannelChange() {
     return this.onDidSelectedChannelChangeEmitter.event;
@@ -50,7 +41,6 @@ export class OutputService extends WithEventBus {
 
   constructor() {
     super();
-    makeObservable(this);
     this.enableSmartScroll = Boolean(this.preferenceService.get<boolean>('output.enableSmartScroll'));
     this.addDispose(
       this.preferenceService.onPreferenceChanged((e) => {
@@ -83,7 +73,6 @@ export class OutputService extends WithEventBus {
     });
   }
 
-  @observable
   private _viewHeight: string;
 
   set viewHeight(value: string) {
@@ -94,28 +83,36 @@ export class OutputService extends WithEventBus {
     return this._viewHeight;
   }
 
-  @action
   getChannel(name: string): OutputChannel {
-    const existing = this.channels.get(name);
+    const channels = this.channels.get();
+    const existing = channels.get(name);
     if (existing) {
       return existing;
     }
+
     const channel = this.config.injector.get(OutputChannel, [name]);
-    this.channels.set(name, channel);
-    if (this.channels.size === 1) {
+    channels.set(name, channel);
+    if (channels.size === 1) {
       this.updateSelectedChannel(channel);
     }
+    transaction((tx) => {
+      this.channels.set(new Map(channels), tx);
+    });
     return channel;
   }
 
-  @action
   deleteChannel(name: string): void {
-    this.channels.delete(name);
+    transaction((tx) => {
+      const channels = this.channels.get();
+      channels.delete(name);
+      this.channels.set(new Map(channels), tx);
+    });
   }
 
-  getChannels(): OutputChannel[] {
-    return Array.from(this.channels.values());
-  }
+  readonly getChannels = derived<OutputChannel[]>(this, (reader) => {
+    const channels = this.channels.read(reader);
+    return Array.from(channels.values());
+  });
 
   public async initOutputMonacoInstance(container: HTMLDivElement) {
     if (this.outputEditor) {

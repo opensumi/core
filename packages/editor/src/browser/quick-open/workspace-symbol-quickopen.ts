@@ -221,7 +221,7 @@ export class SymbolInformationQuickOpenItem extends QuickOpenItem {
   }
 
   getIconClass() {
-    return getSymbolIcon(this.symbol.kind);
+    return getSymbolIcon(this.symbol.kind as SymbolKindEnum);
   }
 
   getDescription() {

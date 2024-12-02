@@ -21,8 +21,6 @@ const ghostDepsWhiteLists = [
   'react-dom',
   'fs-extra',
   'lodash',
-  'mobx',
-  'mobx-react-lite',
   '@opensumi/monaco-editor-core',
   '@opensumi/vscode-debugprotocol',
   'vscode',

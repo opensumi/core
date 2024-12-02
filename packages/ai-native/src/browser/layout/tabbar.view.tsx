@@ -1,7 +1,13 @@
 import cls from 'classnames';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
-import { ComponentRegistryInfo, SlotLocation, useContextMenus, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  ComponentRegistryInfo,
+  SlotLocation,
+  useAutorun,
+  useContextMenus,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { EDirection } from '@opensumi/ide-core-browser/lib/components';
 import {
   EnhanceIcon,
@@ -102,25 +108,26 @@ export const AILeftTabRenderer = ({
 }) => <DesignLeftTabRenderer className={className} components={components} tabbarView={AILeftTabbarRenderer} />;
 
 const AILeftTabbarRenderer: React.FC = () => {
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
+  const currentContainerId = useAutorun(tabbarService.currentContainerId);
 
   const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
   const [navMenu] = useContextMenus(extraMenus);
 
   const renderOtherVisibleContainers = useCallback(
     ({ renderContainers }) => {
-      const { currentContainerId, handleTabClick } = tabbarService;
       const visibleContainers = tabbarService.visibleContainers.filter((container) => !container.options?.hideTab);
 
       return (
         <>
           {visibleContainers.length > 0 && <HorizontalVertical margin={'8px auto 0px'} width={'60%'} />}
-          {visibleContainers.map((component) => renderContainers(component, handleTabClick, currentContainerId))}
+          {visibleContainers.map((component) => renderContainers(component, tabbarService, currentContainerId))}
         </>
       );
     },
-    [tabbarService],
+    [currentContainerId, tabbarService],
   );
 
   return (

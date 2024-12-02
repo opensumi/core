@@ -73,7 +73,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const tabWrapperRef = useRef<HTMLDivElement | null>();
   const contentRef = useRef<HTMLDivElement | null>();
   const editorActionUpdateTimer = useRef<any>(null);
-  const editorActionRef = useRef<typeof EditorActions>(null);
+  const editorActionRef = useRef<HTMLDivElement>(null);
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
   const configContext = useContext(ConfigContext);
@@ -210,7 +210,7 @@ export const Tabs = ({ group }: ITabsProps) => {
     }
     editorActionUpdateTimer.current = setTimeout(() => {
       fastdom.measure(() => {
-        const _marginReight = editorActionRef.current?.offsetWidth;
+        const _marginReight = (editorActionRef.current as HTMLDivElement)?.offsetWidth;
         if (_marginReight !== lastMarginRight) {
           setLastMarginRight(_marginReight);
         }
@@ -318,7 +318,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
     disposableCollection.push(
-      group.onDidEditorFocusChange((event) => {
+      group.onDidEditorFocusChange(() => {
         updateTabMarginRight();
       }),
     );
@@ -547,7 +547,7 @@ export interface IEditorActionsBaseProps {
 export type IEditorActionsProps = IEditorActionsBaseProps & HTMLAttributes<HTMLDivElement>;
 
 export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
-  (props: IEditorActionsProps, ref: Ref<typeof EditorActions>) => {
+  (props: IEditorActionsProps, ref: React.LegacyRef<HTMLDivElement>) => {
     const styles_editor_actions = useDesignStyles(styles.editor_actions, 'editor_actions');
     const { group, className } = props;
 

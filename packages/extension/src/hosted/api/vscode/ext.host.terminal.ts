@@ -9,6 +9,7 @@ import {
   Emitter,
   Event,
   IDisposable,
+  MultiKeyMap,
   isUndefined,
   uuid,
 } from '@opensumi/ide-core-common';
@@ -30,7 +31,7 @@ import {
   ISerializableEnvironmentVariableCollection,
 } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
-import { IExtension } from '../../../common';
+import { IExtension, NO_ROOT_URI } from '../../../common';
 import {
   IExtHostTerminal,
   IExtensionDescription,
@@ -63,7 +64,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private _defaultProfile: ITerminalProfile | undefined;
   private _defaultAutomationProfile: ITerminalProfile | undefined;
 
-  private environmentVariableCollections: Map<string, EnvironmentVariableCollection> = new Map();
+  private environmentVariableCollections: MultiKeyMap<string, EnvironmentVariableCollection> = new MultiKeyMap(2);
 
   private disposables: DisposableStore = new DisposableStore();
 
@@ -524,11 +525,18 @@ export class ExtHostTerminal implements IExtHostTerminal {
     }
   }
 
-  getEnviromentVariableCollection(extension: IExtension) {
-    let collection = this.environmentVariableCollections.get(extension.id);
+  getEnvironmentVariableCollection(extension: IExtension, rootUri: string = NO_ROOT_URI) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
+    let collection = this.environmentVariableCollections.get([extension.id, rootUri]);
     if (!collection) {
-      collection = new EnvironmentVariableCollection();
-      this._setEnvironmentVariableCollection(extension.id, collection);
+      collection = new (class extends EnvironmentVariableCollection {
+        override getScoped(scope: vscode.EnvironmentVariableScope): vscode.EnvironmentVariableCollection {
+          return that.getEnvironmentVariableCollection(extension, scope.workspaceFolder?.uri.toString());
+        }
+      })();
+
+      this._setEnvironmentVariableCollection(extension.id, rootUri, collection);
     }
     return collection;
   }
@@ -547,9 +555,10 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   private _setEnvironmentVariableCollection(
     extensionIdentifier: string,
+    rootUri: string,
     collection: EnvironmentVariableCollection,
   ): void {
-    this.environmentVariableCollections.set(extensionIdentifier, collection);
+    this.environmentVariableCollections.set([extensionIdentifier, rootUri], collection);
     collection.onDidChangeCollection(() => {
       // When any collection value changes send this immediately, this is done to ensure
       // following calls to createTerminal will be created with the new environment. It will
@@ -565,7 +574,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
  * Some code copied and modified from
  * https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/api/common/extHostTerminalService.ts#L696
  */
-export class EnvironmentVariableCollection implements vscode.EnvironmentVariableCollection {
+export class EnvironmentVariableCollection implements vscode.GlobalEnvironmentVariableCollection {
   readonly map: Map<string, vscode.EnvironmentVariableMutator> = new Map();
 
   protected readonly _onDidChangeCollection: Emitter<void> = new Emitter<void>();
@@ -588,6 +597,11 @@ export class EnvironmentVariableCollection implements vscode.EnvironmentVariable
     this._onDidChangeCollection.fire();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getScoped(_scope: vscode.EnvironmentVariableScope): vscode.EnvironmentVariableCollection {
+    throw new Error('Cannot get scoped from a regular env var collection');
+  }
+
   private _setIfDiffers(variable: string, mutator: vscode.EnvironmentVariableMutator): void {
     const current = this.map.get(variable);
     if (!current || current.value !== mutator.value || current.type !== mutator.type) {
@@ -596,16 +610,28 @@ export class EnvironmentVariableCollection implements vscode.EnvironmentVariable
     }
   }
 
-  replace(variable: string, value: string): void {
-    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Replace });
+  replace(variable: string, value: string, options?: vscode.EnvironmentVariableMutatorOptions): void {
+    this._setIfDiffers(variable, {
+      value,
+      type: EnvironmentVariableMutatorType.Replace,
+      options: options ?? { applyAtProcessCreation: true },
+    });
   }
 
-  append(variable: string, value: string): void {
-    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Append });
+  append(variable: string, value: string, options?: vscode.EnvironmentVariableMutatorOptions): void {
+    this._setIfDiffers(variable, {
+      value,
+      type: EnvironmentVariableMutatorType.Append,
+      options: options ?? { applyAtProcessCreation: true },
+    });
   }
 
-  prepend(variable: string, value: string): void {
-    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Prepend });
+  prepend(variable: string, value: string, options?: vscode.EnvironmentVariableMutatorOptions): void {
+    this._setIfDiffers(variable, {
+      value,
+      type: EnvironmentVariableMutatorType.Prepend,
+      options: options ?? { applyAtProcessCreation: true },
+    });
   }
 
   get(variable: string): vscode.EnvironmentVariableMutator | undefined {

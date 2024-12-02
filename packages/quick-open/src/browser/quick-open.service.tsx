@@ -139,7 +139,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   refresh(): void {
-    this.onType(this.widget.inputValue);
+    this.onType(this.widget.inputValue.get());
   }
 
   public get widget(): QuickOpenWidget {
@@ -230,11 +230,11 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   showDecoration(type: VALIDATE_TYPE): void {
-    this.widget.validateType = type;
+    this.widget.validateType.set(type, undefined);
   }
 
   hideDecoration(): void {
-    this.widget.validateType = undefined;
+    this.widget.validateType.set(undefined, undefined);
   }
 }
 
@@ -326,7 +326,7 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
   }
 
   updateOptions(options?: QuickOpenOptions) {
-    this.options = QuickOpenOptions.resolve(options);
+    this.options = QuickOpenOptions.resolve(options, this.options);
   }
 
   /**

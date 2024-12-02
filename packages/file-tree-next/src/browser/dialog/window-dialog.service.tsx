@@ -41,6 +41,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
 
   private _whenReady: Promise<void>;
   private _defaultUri: URI;
+  private idx = 1;
 
   constructor() {
     this._whenReady = this.init();
@@ -72,6 +73,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
 
   // https://code.visualstudio.com/api/references/vscode-api#OpenDialogOptions
   async showOpenDialog(options: IOpenDialogOptions = {}): Promise<URI[] | undefined> {
+    this.dialogService.reset();
     await this.whenReady;
     const defaultOptions: IOpenDialogOptions = {
       canSelectFiles: true,
@@ -131,7 +133,15 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       await fileTreeDialogService.whenReady;
       const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
       const res = await this.dialogService.open<string[]>({
-        message: <FileDialog model={model} options={{ ...defaultOptions, ...options }} isOpenDialog={true} />,
+        message: (
+          <FileDialog
+            key={this.idx++}
+            fileService={fileTreeDialogService}
+            model={model}
+            options={{ ...defaultOptions, ...options }}
+            isOpenDialog={true}
+          />
+        ),
         type: MessageType.Empty,
         buttons: [],
         closable: true,
@@ -180,7 +190,15 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       await fileTreeDialogService.whenReady;
       const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
       const res = await this.dialogService.open<string[]>({
-        message: <FileDialog model={model} options={options} isOpenDialog={false} />,
+        message: (
+          <FileDialog
+            key={this.idx++}
+            fileService={fileTreeDialogService}
+            model={model}
+            options={options}
+            isOpenDialog={false}
+          />
+        ),
         type: MessageType.Empty,
         buttons: [],
         closable: true,

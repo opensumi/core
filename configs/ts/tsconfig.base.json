@@ -1,8 +1,8 @@
 {
   "baseUrl": "./",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2017",
+    "module": "nodenext",
+    "target": "es2018",
     "moduleResolution": "nodenext",
     "strict": true,
     "strictPropertyInitialization": false,

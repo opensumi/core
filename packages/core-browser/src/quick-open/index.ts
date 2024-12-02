@@ -1,5 +1,6 @@
-import { makeObservable, observable } from 'mobx';
 import React from 'react';
+
+import { observableValue, transaction } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 
 import type { Keybinding } from '../keybinding';
 import type { VALIDATE_TYPE } from '@opensumi/ide-components';
@@ -161,12 +162,12 @@ export class QuickOpenItem {
 
   private detailHighlights?: Highlight[];
 
-  @observable
-  public checked = false;
+  public readonly checked = observableValue<boolean>(this, false);
 
   constructor(protected options: QuickOpenItemOptions) {
-    makeObservable(this);
-    this.checked = options.checked || false;
+    transaction((tx) => {
+      this.checked.set(options.checked || false, tx);
+    });
   }
 
   getTooltip(): string | undefined {
@@ -360,10 +361,16 @@ export namespace QuickOpenOptions {
      * 内容更新后保持滚动区域不变
      */
     keepScrollPosition?: boolean;
+
     /**
      * 是否显示 progress
      */
     busy?: boolean;
+
+    /**
+     * 总是保持显示，除非主动调用 hide
+     */
+    alwaysOpen?: boolean;
   }
   export const defaultOptions: Resolved = Object.freeze({
     enabled: true,
@@ -463,6 +470,7 @@ export interface QuickPickService {
   show(elements: string[], options?: QuickPickOptions): Promise<string | undefined>;
   show<T>(elements: QuickPickItem<T>[], options?: QuickPickOptions): Promise<T | undefined>;
   show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | string | undefined>;
+  updateOptions(options: QuickPickOptions): void;
   hide(reason?: HideReason): void;
   readonly onDidAccept: Event<void>;
   readonly onDidChangeActiveItems: Event<QuickOpenItem[]>;

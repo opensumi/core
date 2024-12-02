@@ -351,8 +351,92 @@ export namespace Event {
     }
   }
 
-  export function chain<T>(event: Event<T>): IChainableEvent<T> {
-    return new ChainableEvent(event);
+  export function chain<T, R>(
+    event: Event<T>,
+    sythensize: ($: IChainableSythensis<T>) => IChainableSythensis<R>,
+  ): Event<R> {
+    const fn: Event<R> = (listener, thisArgs, disposables) => {
+      const cs = sythensize(new ChainableSynthesis()) as ChainableSynthesis;
+      return event(
+        function (value) {
+          const result = cs.evaluate(value);
+          if (result !== HaltChainable) {
+            listener.call(thisArgs, result);
+          }
+        },
+        undefined,
+        disposables,
+      );
+    };
+
+    return fn;
+  }
+
+  const HaltChainable = Symbol('HaltChainable');
+
+  class ChainableSynthesis implements IChainableSythensis<any> {
+    private readonly steps: ((input: any) => any)[] = [];
+
+    map<O>(fn: (i: any) => O): this {
+      this.steps.push(fn);
+      return this;
+    }
+
+    forEach(fn: (i: any) => void): this {
+      this.steps.push((v) => {
+        fn(v);
+        return v;
+      });
+      return this;
+    }
+
+    filter(fn: (e: any) => boolean): this {
+      this.steps.push((v) => (fn(v) ? v : HaltChainable));
+      return this;
+    }
+
+    reduce<R>(merge: (last: R | undefined, event: any) => R, initial?: R | undefined): this {
+      let last = initial;
+      this.steps.push((v) => {
+        last = merge(last, v);
+        return last;
+      });
+      return this;
+    }
+
+    latch(equals: (a: any, b: any) => boolean = (a, b) => a === b): ChainableSynthesis {
+      let firstCall = true;
+      let cache: any;
+      this.steps.push((value) => {
+        const shouldEmit = firstCall || !equals(value, cache);
+        firstCall = false;
+        cache = value;
+        return shouldEmit ? value : HaltChainable;
+      });
+
+      return this;
+    }
+
+    public evaluate(value: any) {
+      for (const step of this.steps) {
+        value = step(value);
+        if (value === HaltChainable) {
+          break;
+        }
+      }
+
+      return value;
+    }
+  }
+
+  export interface IChainableSythensis<T> {
+    map<O>(fn: (i: T) => O): IChainableSythensis<O>;
+    forEach(fn: (i: T) => void): IChainableSythensis<T>;
+    filter<R extends T>(fn: (e: T) => e is R): IChainableSythensis<R>;
+    filter(fn: (e: T) => boolean): IChainableSythensis<T>;
+    reduce<R>(merge: (last: R, event: T) => R, initial: R): IChainableSythensis<R>;
+    reduce<R>(merge: (last: R | undefined, event: T) => R): IChainableSythensis<R>;
+    latch(equals?: (a: T, b: T) => boolean): IChainableSythensis<T>;
   }
 
   export interface NodeEventEmitter {

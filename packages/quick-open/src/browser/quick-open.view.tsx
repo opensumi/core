@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import {
@@ -10,7 +9,15 @@ import {
   VALIDATE_TYPE,
   ValidateInput,
 } from '@opensumi/ide-components';
-import { Key, KeyCode, isUndefined, localize, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  Key,
+  KeyCode,
+  isUndefined,
+  localize,
+  useAutorun,
+  useDesignStyles,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -23,6 +30,7 @@ import {
   QuickTitleButton,
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@opensumi/ide-monaco/lib/browser/monaco.keycode-map';
+import { transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 
 import { HighlightLabel } from './components/highlight-label';
@@ -43,33 +51,40 @@ const QuickOpenButton: React.FC<
   {
     button: QuickTitleButton;
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
-> = observer(({ button, ...props }) => (
+> = ({ button, ...props }) => (
   <Button {...props} key={button.tooltip} type='icon' iconClass={button.iconClass} title={button.tooltip} />
-));
+);
 
-export const QuickOpenHeader = observer(() => {
+export const QuickOpenHeader = () => {
   const quickTitleBar = useInjectable<QuickTitleBar>(QuickTitleBar);
+  const title = useAutorun(quickTitleBar.title);
+  const isAttached = useAutorun(quickTitleBar.isAttached);
+  const step = useAutorun(quickTitleBar.step);
+  const totalSteps = useAutorun(quickTitleBar.totalSteps);
+  const leftButtons = useAutorun(quickTitleBar.leftButtons);
+  const rightButtons = useAutorun(quickTitleBar.rightButtons);
+
   const titleText = React.useMemo(() => {
     const getSteps = () => {
-      if (quickTitleBar.step && quickTitleBar.totalSteps) {
-        return `${quickTitleBar.step}/${quickTitleBar.totalSteps}`;
+      if (step && totalSteps) {
+        return `${step}/${totalSteps}`;
       }
-      if (quickTitleBar.step) {
-        return String(quickTitleBar.step);
+      if (step) {
+        return String(step);
       }
       return '';
     };
-    if (quickTitleBar.title && quickTitleBar.step) {
-      return `${quickTitleBar.title} (${getSteps()})`;
+    if (title && step) {
+      return `${title} (${getSteps()})`;
     }
-    if (quickTitleBar.title) {
-      return quickTitleBar.title;
+    if (title) {
+      return title;
     }
-    if (quickTitleBar.step) {
+    if (step) {
       return getSteps();
     }
     return '';
-  }, [quickTitleBar.title, quickTitleBar.step, quickTitleBar.totalSteps]);
+  }, [title, step, totalSteps]);
 
   const onSelectButton = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, button: QuickTitleButton) => {
@@ -79,25 +94,42 @@ export const QuickOpenHeader = observer(() => {
     [quickTitleBar.fireDidTriggerButton],
   );
 
-  return quickTitleBar.isAttached ? (
-    <div className={styles.title_bar}>
-      <div className={styles.title_bar_button}>
-        {quickTitleBar.leftButtons.map((button) => (
-          <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
-        ))}
-      </div>
-      <div>{titleText}</div>
-      <div className={styles.title_bar_button}>
-        {quickTitleBar.rightButtons.map((button) => (
-          <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
-        ))}
-      </div>
-    </div>
-  ) : null;
-});
+  const headerComponent = React.useMemo(() => {
+    if (leftButtons.length > 0 || titleText || rightButtons.length > 0) {
+      return (
+        <div className={styles.title_bar}>
+          <div className={styles.title_bar_button}>
+            {leftButtons.map((button) => (
+              <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
+            ))}
+          </div>
+          <div>{titleText}</div>
+          <div className={styles.title_bar_button}>
+            {rightButtons.map((button) => (
+              <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }, [leftButtons, titleText, rightButtons]);
 
-export const QuickOpenInput = observer(() => {
+  return isAttached ? headerComponent : null;
+};
+
+export const QuickOpenInput = () => {
   const { widget } = React.useContext(QuickOpenContext);
+  const valueSelection = useAutorun(widget.valueSelection);
+  const items = useAutorun(widget.items);
+  const selectAll = useAutorun(widget.selectAll);
+  const validateType = useAutorun(widget.validateType);
+  const inputPlaceholder = useAutorun(widget.inputPlaceholder);
+  const inputEnable = useAutorun(widget.inputEnable);
+  const inputValue = useAutorun(widget.inputValue);
+  const isPassword = useAutorun(widget.isPassword);
+  const canSelectMany = useAutorun(widget.canSelectMany);
+
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const onChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,82 +140,86 @@ export const QuickOpenInput = observer(() => {
     [widget],
   );
 
-  const type = React.useMemo(() => (widget.isPassword ? 'password' : 'text'), [widget.isPassword]);
+  const type = React.useMemo(() => (isPassword ? 'password' : 'text'), [isPassword]);
 
   React.useEffect(() => {
     // 当切换 item 时重新获取焦点
     setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
-  }, [widget.items]);
+  }, [items]);
 
   React.useEffect(() => {
-    if (widget.inputValue && widget.valueSelection) {
-      const [start, end] = widget.valueSelection;
+    if (inputValue && valueSelection) {
+      const [start, end] = valueSelection;
       inputRef.current?.setSelectionRange(start, end);
     }
-  }, [widget.valueSelection]);
+  }, [valueSelection]);
 
   const validateMessage = React.useMemo(() => {
-    if (!isUndefined(widget.validateType)) {
+    if (!isUndefined(validateType)) {
       return {
-        type: widget.validateType,
+        type: validateType,
         message: '',
       };
     }
-  }, [widget.validateType]);
+  }, [validateType]);
 
-  const handleSelectAll = React.useCallback((event) => {
-    const selected = event.target.checked;
-    for (const item of widget.items) {
-      item.checked = selected;
-    }
-  }, []);
+  const handleSelectAll = React.useCallback(
+    (event) => {
+      const selected = event.target.checked;
+      for (const item of items) {
+        transaction((tx) => {
+          item.checked.set(selected, tx);
+        });
+      }
+    },
+    [items],
+  );
 
   const handleConfirm = React.useCallback(() => {
-    widget.callbacks.onConfirm(widget.items.filter((item) => item.checked));
+    widget.callbacks.onConfirm(items.filter((item) => item.checked.get()));
     widget.hide(HideReason.ELEMENT_SELECTED);
-  }, []);
+  }, [items]);
 
   return (
     <div tabIndex={0} className={styles.input}>
-      {widget.canSelectMany && <CheckBox checked={widget.selectAll} wrapTabIndex={0} onChange={handleSelectAll} />}
+      {canSelectMany && <CheckBox checked={selectAll} wrapTabIndex={0} onChange={handleSelectAll} />}
       <ValidateInput
         validateMessage={validateMessage}
         ref={inputRef}
         type={type}
-        aria-label={widget.inputPlaceholder}
-        placeholder={widget.inputPlaceholder}
-        value={widget.inputValue}
-        readOnly={!widget.inputEnable}
+        aria-label={inputPlaceholder}
+        placeholder={inputPlaceholder}
+        value={inputValue}
+        readOnly={!inputEnable}
         onChange={onChange}
         id={VIEW_CONTAINERS.QUICKPICK_INPUT}
       />
-      {widget.canSelectMany && (
+      {canSelectMany && (
         <Button className={styles.input_button} onClick={handleConfirm}>
           {localize('ButtonOK')}
         </Button>
       )}
     </div>
   );
-});
+};
 
-const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index }) => {
+const QuickOpenItemView: React.FC<IQuickOpenItemProps> = ({ data, index }) => {
   const { widget } = React.useContext(QuickOpenContext);
+  const actionProvider = useAutorun(widget.actionProvider);
+  const selectIndex = useAutorun(widget.selectIndex);
+  const canSelectMany = useAutorun(widget.canSelectMany);
+  const checked = useAutorun(data.checked);
+
   const quickOpenItemService = useInjectable<QuickOpenItemService>(QuickOpenItemService);
 
   const label = React.useMemo(() => data.getLabel(), [data]);
-
   const description = React.useMemo(() => data.getDescription(), [data]);
-
   const detail = React.useMemo(() => data.getDetail(), [data]);
-
   const iconClass = React.useMemo(() => data.getIconClass(), [data]);
-
   const keybinding = React.useMemo(() => data.getKeybinding(), [data]);
-
   const groupLabel = React.useMemo(() => data.getGroupLabel(), [data]);
-
   const showBorder = React.useMemo(() => data.showBorder(), [data]);
 
   const iconPath = React.useMemo(() => data.getIconPath(), [data]);
@@ -198,23 +234,22 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
   );
 
   const buttons = React.useMemo(() => quickOpenItemService.getButtons(data.getButtons()), [data]);
-
   const [labelHighlights, descriptionHighlights, detailHighlights] = React.useMemo(() => data.getHighlights(), [data]);
-
   const [mouseOver, setMouseOver] = React.useState(false);
 
   const actions = React.useMemo(() => {
-    const provider = widget.actionProvider;
-    if (provider && provider.hasActions(data)) {
-      return provider.getActions(data);
+    if (actionProvider && actionProvider.hasActions(data)) {
+      return actionProvider.getActions(data);
     }
-  }, [data]);
+  }, [actionProvider, data]);
 
   const runQuickOpenItem = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       // 如果为多选，则点击 item 为切换选中状态
-      if (widget.canSelectMany) {
-        data.checked = !data.checked;
+      if (canSelectMany) {
+        transaction((tx) => {
+          data.checked.set(!checked, tx);
+        });
         event.stopPropagation();
       } else {
         // 如果为鼠标中键，则为 BACKGROUND 类型
@@ -224,7 +259,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
         }
       }
     },
-    [data],
+    [data, canSelectMany],
   );
 
   const runQuickOpenItemAction = React.useCallback(
@@ -249,7 +284,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
       tabIndex={0}
       className={cls(
         {
-          [styles.item_selected]: widget.selectIndex === index,
+          [styles.item_selected]: selectIndex === index,
           [styles.item_border]: showBorder,
         },
         styles.item,
@@ -258,11 +293,15 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
       onMouseLeave={() => setMouseOver(false)}
       aria-label={label}
     >
-      {widget.canSelectMany && (
+      {canSelectMany && (
         <CheckBox
           wrapTabIndex={0}
-          checked={data.checked}
-          onChange={(event) => (data.checked = (event.target as HTMLInputElement).checked)}
+          checked={checked}
+          onChange={(event) => {
+            transaction((tx) => {
+              data.checked.set((event.target as HTMLInputElement).checked, tx);
+            });
+          }}
         />
       )}
       {/* tabIndex is needed here, pls see https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null */}
@@ -314,64 +353,75 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           className={cls(styles.item_action, action.class)}
         ></span>
       ))}
-      {(mouseOver || widget.selectIndex === index) &&
+      {(mouseOver || selectIndex === index) &&
         buttons?.map((button) => (
           <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
         ))}
     </div>
   );
-});
+};
 
 export const QuickOpenList: React.FC<{
   onReady: (api: IRecycleListHandler) => void;
   onScroll: (props: ListOnScrollProps) => void;
-}> = observer(({ onReady, onScroll }) => {
+}> = ({ onReady, onScroll }) => {
   const { widget } = React.useContext(QuickOpenContext);
+  const items = useAutorun(widget.items);
+  const validateType = useAutorun(widget.validateType);
+
   const styles_quickopen_list = useDesignStyles(styles.quickopen_list, 'quickopen_list');
 
   const getSize = React.useCallback(
-    (index) => {
-      const item = widget.items[index];
+    (index: number) => {
+      const item = items[index];
       return item?.getDetail() ? 44 : 22;
     },
-    [widget.items],
+    [items],
   );
 
-  return widget.items.length > 0 ? (
+  return items.length > 0 ? (
     <RecycleList
       onReady={onReady}
       onScroll={onScroll}
       className={cls(styles_quickopen_list, {
-        [styles.validate_error]: widget.validateType === VALIDATE_TYPE.ERROR,
-        [styles.validate_warning]: widget.validateType === VALIDATE_TYPE.WARNING,
+        [styles.validate_error]: validateType === VALIDATE_TYPE.ERROR,
+        [styles.validate_warning]: validateType === VALIDATE_TYPE.WARNING,
       })}
-      data={widget.items}
+      data={items}
       template={QuickOpenItemView}
       getSize={getSize}
-      maxHeight={widget.items.length ? widget.MAX_HEIGHT : 0}
+      maxHeight={items.length ? widget.MAX_HEIGHT : 0}
       hiddenHorizontalScrollbar
     />
   ) : null;
-});
+};
 
-export const QuickOpenProgress = observer(() => {
+export const QuickOpenProgress = () => {
   const { widget } = React.useContext(QuickOpenContext);
+  const busy = useAutorun(widget.busy);
+
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(VIEW_CONTAINERS.QUICKPICK_PROGRESS);
 
   React.useEffect(() => {
-    widget.updateProgressStatus(!!widget.busy);
-  }, [widget.busy]);
+    widget.updateProgressStatus(!!busy);
+  }, [busy]);
 
   return (
     <div id={VIEW_CONTAINERS.QUICKPICK_PROGRESS} className={styles.progress_bar}>
       <ProgressBar progressModel={indicator!.progressModel} />
     </div>
   );
-});
+};
 
-export const QuickOpenView = observer(() => {
+export const QuickOpenView = () => {
   const { widget } = React.useContext(QuickOpenContext);
+  const items = useAutorun(widget.items);
+  const autoFocus = useAutorun(widget.autoFocus);
+  const selectIndex = useAutorun(widget.selectIndex);
+  const keepScrollPosition = useAutorun(widget.keepScrollPosition);
+  const isShow = useAutorun(widget.isShow);
+
   const listApi = React.useRef<IRecycleListHandler>();
 
   const scrollOffsetBefore = React.useRef(0);
@@ -430,8 +480,6 @@ export const QuickOpenView = observer(() => {
 
   // 执行 autoFocus
   React.useEffect(() => {
-    const { items, autoFocus } = widget;
-
     if (!autoFocus) {
       return;
     }
@@ -478,84 +526,87 @@ export const QuickOpenView = observer(() => {
         widget.setSelectIndex(items.length - 1);
       }
     }
-  }, [widget.items, widget.autoFocus]);
+  }, [items, autoFocus]);
 
   React.useEffect(() => {
-    if (widget.keepScrollPosition) {
+    if (keepScrollPosition) {
       listApi.current?.scrollTo(scrollOffsetBefore.current);
     } else {
       // smart 效果可以还原 vscode quickopen 上下切换的效果
-      listApi.current?.scrollToIndex(widget.selectIndex, 'smart');
+      listApi.current?.scrollToIndex(selectIndex, 'smart');
     }
 
-    if (widget.items.length === 0) {
+    if (items.length === 0) {
       return;
     }
     // 执行 run in background
-    const item = widget.items[widget.selectIndex];
+    const item = items[selectIndex];
     if (!item) {
       return;
     }
     item.run(QuickOpenMode.PREVIEW);
-    widget.callbacks.onSelect(item, widget.selectIndex);
-  }, [widget.items, widget.selectIndex, widget.keepScrollPosition]);
+    widget.callbacks.onSelect(item, selectIndex);
+  }, [items, selectIndex, keepScrollPosition]);
 
-  const onKeydown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
-    // 处于 composition 的输入，不做处理，否则在按 enter 后会直接打开选择的第一个文件，并且快捷键完全失效
-    if (KEY_CODE_MAP[event.nativeEvent.keyCode] === KeyCodeEnum.KEY_IN_COMPOSITION) {
-      return;
-    }
-    const { key } = KeyCode.createKeyCode(event.nativeEvent);
-    if (!key) {
-      return;
-    }
-    const length = widget.items.length;
-    switch (key.keyCode) {
-      case Key.ARROW_UP.keyCode: {
-        event.preventDefault();
-        event.stopPropagation();
-        const selectIndex = widget.selectIndex - 1;
-        widget.setSelectIndex((length + (selectIndex % length)) % length);
-        break;
+  const onKeydown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      // 处于 composition 的输入，不做处理，否则在按 enter 后会直接打开选择的第一个文件，并且快捷键完全失效
+      if (KEY_CODE_MAP[event.nativeEvent.keyCode] === KeyCodeEnum.KEY_IN_COMPOSITION) {
+        return;
       }
-      case Key.ARROW_DOWN.keyCode: {
-        event.preventDefault();
-        event.stopPropagation();
-        const selectIndex = widget.selectIndex + 1;
-        widget.setSelectIndex(selectIndex % length);
-        break;
+      const { key } = KeyCode.createKeyCode(event.nativeEvent);
+      if (!key) {
+        return;
       }
-      case Key.ESCAPE.keyCode: {
-        event.preventDefault();
-        event.stopPropagation();
-        widget.hide(HideReason.CANCELED);
-        break;
-      }
-      case Key.ENTER.keyCode: {
-        event.preventDefault();
-        event.stopPropagation();
-        const item = widget.items[widget.selectIndex];
-        if (!item) {
-          return;
-        }
-        const hide = item.run(QuickOpenMode.OPEN);
-        if (hide) {
-          widget.hide(HideReason.ELEMENT_SELECTED);
-        }
-        break;
-      }
-      case Key.TAB.keyCode: {
-        if (widget.toggleTab) {
+      const length = items.length;
+      switch (key.keyCode) {
+        case Key.ARROW_UP.keyCode: {
           event.preventDefault();
           event.stopPropagation();
-          widget.toggleTab();
+          const preSelectIndex = selectIndex - 1;
+          widget.setSelectIndex((length + (preSelectIndex % length)) % length);
+          break;
         }
-        break;
+        case Key.ARROW_DOWN.keyCode: {
+          event.preventDefault();
+          event.stopPropagation();
+          const nextSelectIndex = selectIndex + 1;
+          widget.setSelectIndex(nextSelectIndex % length);
+          break;
+        }
+        case Key.ESCAPE.keyCode: {
+          event.preventDefault();
+          event.stopPropagation();
+          widget.hide(HideReason.CANCELED);
+          break;
+        }
+        case Key.ENTER.keyCode: {
+          event.preventDefault();
+          event.stopPropagation();
+          const item = items[selectIndex];
+          if (!item) {
+            return;
+          }
+          const hide = item.run(QuickOpenMode.OPEN);
+          if (hide) {
+            widget.hide(HideReason.ELEMENT_SELECTED);
+          }
+          break;
+        }
+        case Key.TAB.keyCode: {
+          if (widget.toggleTab) {
+            event.preventDefault();
+            event.stopPropagation();
+            widget.toggleTab();
+          }
+          break;
+        }
       }
-    }
-  }, []);
+    },
+    [items, widget, selectIndex],
+  );
 
-  return widget.isShow ? (
+  return isShow ? (
     <div id={VIEW_CONTAINERS.QUICKPICK} tabIndex={0} className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
@@ -564,4 +615,4 @@ export const QuickOpenView = observer(() => {
       <QuickOpenList onReady={onListReady} onScroll={onListScroll} />
     </div>
   ) : null;
-});
+};

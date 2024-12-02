@@ -68,6 +68,7 @@ import {
   ILanguageStatusService,
   INotebookService,
 } from './types';
+import { UntitledDocumentIdCounter } from './untitled-resource';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 export * from './doc-cache';
 export * from './doc-model/types';
@@ -82,6 +83,10 @@ export class EditorModule extends BrowserModule {
     {
       token: EditorCollectionService,
       useClass: EditorCollectionServiceImpl,
+    },
+    {
+      token: UntitledDocumentIdCounter,
+      useClass: UntitledDocumentIdCounter,
     },
     {
       token: WorkbenchEditorService,

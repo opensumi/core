@@ -250,11 +250,10 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             } else if ((menuId as MenuId) === MenuId.EditorTitle) {
               argsTransformer = (uri: URI, _group: IEditorGroup, editorUri?: URI) => {
                 if (uri.scheme === EditorOpenType.diff) {
-                  // 对于 DiffEditor 情况时，这里的 `editorUri` 会是上次聚焦的编辑器 Uri
-                  // 需要额外处理 DiffEditor 的来源文件 Uri
-                  const original = this.getDataFromQuery(decodeURIComponent(uri.query), 'original');
-                  if (original) {
-                    return [new URI(original).codeUri];
+                  // 对于 DiffEditor 情况时，尝试通过 query 获取 modified URI 作为首个参数
+                  const modified = this.getDataFromQuery(decodeURIComponent(uri.query), 'modified');
+                  if (modified) {
+                    return [new URI(modified).codeUri];
                   }
                 }
                 return [editorUri?.codeUri || uri.codeUri];

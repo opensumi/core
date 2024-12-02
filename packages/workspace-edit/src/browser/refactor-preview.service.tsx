@@ -1,9 +1,9 @@
-import { action, makeObservable, observable } from 'mobx';
 import React from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Deferred, MessageType, localize } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IObservable, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
@@ -17,12 +17,11 @@ import type {
 export const PreviewViewId = 'RefactorPreview';
 
 export interface IRefactorPreviewService {
-  edits: Array<IWorkspaceTextEdit | IWorkspaceFileEdit>;
-  selectedFileOrTextEdits: Set<IWorkspaceTextEdit | IWorkspaceFileEdit>;
+  edits: IObservable<Array<WorkspaceEditModel>>;
 
   previewEdits(edit: ResourceEdit[]): Promise<ResourceEdit[]>;
 
-  filterEdit(edit: IWorkspaceTextEdit | IWorkspaceFileEdit, checked: boolean): void;
+  filterEdit(edit: WorkspaceEditModel, checked: boolean): void;
 
   applyEdits(): void;
 
@@ -31,33 +30,38 @@ export interface IRefactorPreviewService {
 
 export const IRefactorPreviewService = Symbol('IRefactorPreviewService');
 
+export class WorkspaceEditModel {
+  constructor(private raw: ResourceEdit) {}
+
+  get edit() {
+    return this.raw;
+  }
+
+  readonly isChecked = observableValue<boolean>(this, true);
+}
+
 @Injectable()
 export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
-  @observable.shallow
-  public edits: Array<IWorkspaceTextEdit | IWorkspaceFileEdit> = [];
-
-  public selectedFileOrTextEdits = observable.set<IWorkspaceTextEdit | IWorkspaceFileEdit>([], { deep: false });
-
   @Autowired(IMainLayoutService)
   protected readonly mainLayout: IMainLayoutService;
 
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
-
+  p;
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
   private previewDeferred: Deferred<Array<IWorkspaceTextEdit | IWorkspaceFileEdit>> | null;
 
-  constructor() {
-    makeObservable(this);
-  }
+  public readonly edits = observableValue<Array<WorkspaceEditModel>>(this, []);
 
   private clear() {
     this.togglePreviewView(false);
-    this.edits = [];
     this.previewDeferred = null;
-    this.selectedFileOrTextEdits.clear();
+
+    transaction((tx) => {
+      this.edits.set([], tx);
+    });
   }
 
   private registerRefactorPreviewView() {
@@ -115,10 +119,11 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
 
     this.togglePreviewView(true);
 
-    this.edits = edits;
-    // 默认全选
-    edits.forEach((edit) => {
-      this.selectedFileOrTextEdits.add(edit);
+    transaction((tx) => {
+      this.edits.set(
+        edits.map((edit) => new WorkspaceEditModel(edit)),
+        tx,
+      );
     });
 
     this.previewDeferred = new Deferred();
@@ -126,13 +131,10 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     return this.previewDeferred.promise;
   }
 
-  @action
-  filterEdit(edit: IWorkspaceTextEdit | IWorkspaceFileEdit, checked: boolean) {
-    if (checked) {
-      this.selectedFileOrTextEdits.add(edit);
-    } else {
-      this.selectedFileOrTextEdits.delete(edit);
-    }
+  filterEdit(edit: WorkspaceEditModel, checked: boolean) {
+    transaction((tx) => {
+      edit.isChecked.set(checked, tx);
+    });
   }
 
   applyEdits(): void {
@@ -141,9 +143,9 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
       return;
     }
 
-    const candidate = this.edits.filter((edit: IWorkspaceTextEdit) => this.selectedFileOrTextEdits.has(edit));
+    const candidate = this.edits.get().filter((edit) => edit.isChecked.get());
 
-    this.previewDeferred.resolve(candidate);
+    this.previewDeferred.resolve(candidate.map((edit) => edit.edit));
     this.clear();
   }
 

@@ -1507,6 +1507,20 @@ export const localizationBundle = {
 
     'webview.webviewTagUnavailable': 'webview is unsupported on non-electron env, please use iframe instead',
 
+    // #region notebook
+    'notebook.kernel.panel.empty': 'No content found.',
+    'notebook.kernel.panel.title': 'Running Terminals and Kernels',
+    'notebook.kernel.panel.opened.pages': 'Opened Pages',
+    'notebook.kernel.panel.running.kernels': 'Running Kernels',
+    'notebook.kernel.close.all.confirmation': 'Are you sure you want to close all?',
+    'notebook.variable.panel.title': 'Variable Inspector',
+    'notebook.variable.panel.unsupported': 'The file format is not supported for variable inspection',
+    'notebook.variable.panel.refresh.success': 'Variable refresh successful',
+    'notebook.variable.panel.refresh.error': 'Variable refresh failed',
+    'notebook.variable.panel.search.placeholder': 'Please enter the variable name to search',
+    'notebook.variable.panel.show.detail': 'View details',
+    // #endregion notebook
+
     ...browserViews,
     ...editorLocalizations,
     ...mergeConflicts,

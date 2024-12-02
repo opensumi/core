@@ -1,5 +1,3 @@
-import { observable } from 'mobx';
-
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
@@ -171,7 +169,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(IEditorDocumentModelService)
   protected documentModelManager: IEditorDocumentModelService;
 
-  @Autowired()
+  @Autowired(UntitledDocumentIdCounter)
   private untitledIndex: UntitledDocumentIdCounter;
 
   private untitledCloseIndex: number[] = [];
@@ -182,6 +180,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   constructor() {
     super();
+    this.untitledIndex.update();
     this.initialize();
   }
 
@@ -604,7 +603,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private createUntitledURI() {
     // 优先从已删除的 index 中获取
     const index = this.untitledCloseIndex.shift() || this.untitledIndex.id;
-    return new URI().withScheme(Schemes.untitled).withQuery(`name=Untitled-${index}&index=${index}`);
+    return new URI()
+      .withScheme(Schemes.untitled)
+      .withQuery(`name=${UntitledDocumentIdCounter.UNTITLED_FILE_NAME_PREFIX}${index}&index=${index}`);
   }
 
   createUntitledResource(
@@ -729,7 +730,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private cachedResourcesOpenTypes = new Map<string, IEditorOpenType[]>();
 
-  @observable.shallow
   availableOpenTypes: IEditorOpenType[] = [];
 
   activeComponents = new Map<IEditorComponent, IResource[]>();

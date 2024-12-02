@@ -1,6 +1,4 @@
 import cls from 'classnames';
-import { action, makeObservable, observable } from 'mobx';
-import { observer } from 'mobx-react-lite';
 import React, { memo, useCallback, useEffect, useRef } from 'react';
 
 import { Injectable } from '@opensumi/di';
@@ -10,10 +8,12 @@ import {
   DomListener,
   fastdom,
   getIcon,
+  useAutorun,
   useDesignStyles,
   useInjectable,
   useUpdateOnEvent,
 } from '@opensumi/ide-core-browser';
+import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { BreadCrumbsMenuService } from './menu/breadcrumbs.menus';
 import styles from './navigation.module.less';
@@ -108,7 +108,7 @@ export const NavigationItem = memo(({ part, editorGroup }: { part: IBreadCrumbPa
   );
 });
 
-export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel }) => {
+export const NavigationMenu = ({ model }: { model: NavigationMenuModel }) => {
   let maxHeight = window.innerHeight - model.y - 20;
   let top = model.y;
   const height = model.parts.length * 22;
@@ -121,6 +121,8 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
   const styles_navigation_menu = useDesignStyles(styles.navigation_menu, 'navigation_menu');
   const styles_navigation_menu_item = useDesignStyles(styles.navigation_menu_item, 'navigation_menu_item');
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
+
+  const subMenu = useAutorun(model.subMenu);
 
   const scrollToCurrent = useCallback(() => {
     fastdom.measure(() => {
@@ -209,14 +211,15 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
           );
         })}
       </Scrollbars>
-      {model.subMenu && <NavigationMenu model={model.subMenu} />}
+      {subMenu && <NavigationMenu model={subMenu} />}
     </div>
   );
-});
+};
 
-export const NavigationMenuContainer = observer(() => {
-  const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
+export const NavigationMenuContainer = () => {
   const menuRef = useRef<HTMLDivElement>();
+  const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
+  const current = useAutorun(viewService.current);
 
   useEffect(() => {
     if (menuRef.current) {
@@ -235,43 +238,39 @@ export const NavigationMenuContainer = observer(() => {
     }
   });
 
-  if (!viewService.current) {
+  if (!current) {
     return null;
   } else {
     return (
       <div tabIndex={1} ref={menuRef as any}>
-        <NavigationMenu model={viewService.current} />
+        <NavigationMenu model={current} />
       </div>
     );
   }
-});
+};
 
 @Injectable()
 export class NavigationBarViewService {
-  @observable.ref current: NavigationMenuModel | null = null;
-  @observable.ref editorGroup: EditorGroup | null = null;
+  readonly current = observableValue<NavigationMenuModel | null>(this, null);
 
-  constructor() {
-    makeObservable(this);
-  }
-
-  @action
   showMenu(parts: IBreadCrumbPart[], x, y, currentIndex, uri, editorGroup) {
-    this.current = new NavigationMenuModel(parts, x, y, currentIndex, uri);
-    this.editorGroup = editorGroup;
+    transaction((tx) => {
+      this.current.set(new NavigationMenuModel(parts, x, y, currentIndex, uri), tx);
+    });
   }
 
-  @action
   dispose() {
-    if (this.current) {
-      this.current.dispose();
-    }
-    this.current = null;
+    transaction((tx) => {
+      const current = this.current.get();
+      current?.dispose();
+
+      this.current.set(null, tx);
+    });
   }
 }
 
 export class NavigationMenuModel {
-  @observable.ref subMenu: NavigationMenuModel | null = null;
+  readonly subMenu = observableValue<NavigationMenuModel | null>(this, null);
 
   constructor(
     public readonly parts: IBreadCrumbPart[],
@@ -279,20 +278,20 @@ export class NavigationMenuModel {
     public readonly y,
     public readonly initialIndex: number = -1,
     public readonly uri,
-  ) {
-    makeObservable(this);
-  }
+  ) {}
 
-  @action
   showSubMenu(parts: IBreadCrumbPart[], x, y, uri) {
-    this.subMenu = new NavigationMenuModel(parts, x, y, -1, uri);
+    transaction((tx) => {
+      this.subMenu.set(new NavigationMenuModel(parts, x, y, -1, uri), tx);
+    });
   }
 
-  @action
   dispose() {
-    if (this.subMenu) {
-      this.subMenu.dispose();
-    }
-    this.subMenu = null;
+    transaction((tx) => {
+      const subMenu = this.subMenu.get();
+      subMenu?.dispose();
+
+      this.subMenu.set(null, tx);
+    });
   }
 }

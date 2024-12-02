@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { INodeRendererWrapProps, IRecycleTreeHandle, RecycleTree, TreeNodeEvent } from '@opensumi/ide-components';
@@ -18,10 +17,10 @@ import { DebugHoverModel } from './debug-hover-model';
 import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
 import styles from './debug-hover.module.less';
 
-export const DebugHoverView = observer(() => {
+export const DebugHoverView = () => {
   const debugHoverTreeModelService: DebugHoverTreeModelService = useInjectable(DebugHoverTreeModelService);
-  const DEFAULT_LAYOUT_HEIGHT = 250;
 
+  const DEFAULT_LAYOUT_HEIGHT = 250;
   const [model, setModel] = React.useState<{ treeModel?: DebugHoverModel; variable?: DebugVariable }>({});
   const [treeLayoutHeight, setTreeLayoutHeight] = React.useState<number>(DEFAULT_LAYOUT_HEIGHT);
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
@@ -144,4 +143,4 @@ export const DebugHoverView = observer(() => {
       {renderVariableTree()}
     </div>
   );
-});
+};

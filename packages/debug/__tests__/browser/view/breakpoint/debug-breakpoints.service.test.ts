@@ -150,9 +150,9 @@ describe('Debug Breakpoints Service', () => {
   });
 
   it('toggleBreakpoints method should be work', () => {
-    expect(debugBreakpointsService.enable).toBeFalsy();
+    expect(debugBreakpointsService.enable.get()).toBeFalsy();
     debugBreakpointsService.toggleBreakpoints();
-    expect(debugBreakpointsService.enable).toBeTruthy();
+    expect(debugBreakpointsService.enable.get()).toBeTruthy();
   });
 
   it('onRenameFile should be work', async () => {

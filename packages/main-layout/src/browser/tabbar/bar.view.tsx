@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 
 import { Badge, Icon } from '@opensumi/ide-components';
@@ -8,8 +7,8 @@ import {
   ComponentRegistryProvider,
   KeybindingRegistry,
   addClassName,
-  createClassNameTokens,
   getIcon,
+  useAutorun,
   useDesignStyles,
   useInjectable,
   usePreference,
@@ -57,13 +56,13 @@ export interface ITabbarViewProps {
     props: ITabbarViewProps;
     renderContainers: (
       component: ComponentRegistryInfo,
-      handleTabClick,
+      tabbarService: TabbarService,
       currentContainerId: string,
     ) => JSX.Element | null;
   }>;
 }
 
-export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
+export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
   const {
     TabView,
     MoreTabView,
@@ -87,7 +86,8 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
     // 内部只关注总的宽度
     tabbarService.updateBarSize(barSize + panelBorderSize);
   }, []);
-  const { currentContainerId, handleTabClick } = tabbarService;
+
+  const currentContainerId = useAutorun(tabbarService.currentContainerId);
 
   const hideTabBarWhenHidePanel = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
 
@@ -113,11 +113,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
   });
 
   const renderContainers = React.useCallback(
-    (
-      component: ComponentRegistryInfo,
-      handleTabClick: (e: React.MouseEvent<Element, MouseEvent>, forbidCollapse?: boolean | undefined) => void,
-      currentContainerId?: string,
-    ) => {
+    (component: ComponentRegistryInfo, tabbarService: TabbarService, currentContainerId?: string) => {
       const containerId = component.options?.containerId;
       if (!containerId) {
         return null;
@@ -164,7 +160,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
           id={containerId}
           onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
           // 如果设置了可隐藏 Tabbar，那么就不允许点击 tab 时隐藏整个 panel 了 通过设置 forbidCollapse 来阻止这个动作
-          onClick={(e) => handleTabClick(e, willHideTabbar || forbidCollapse)}
+          onClick={(e) => tabbarService.handleTabClick(e, willHideTabbar || forbidCollapse)}
           ref={(el) => (ref = el)}
           className={cls({ active: currentContainerId === containerId }, tabClassName)}
         >
@@ -178,7 +174,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
   return (
     <div className={cls([styles_tab_bar, className])}>
       <div className={styles_bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
-        {visibleContainers.map((component) => renderContainers(component, handleTabClick, currentContainerId))}
+        {visibleContainers.map((component) => renderContainers(component, tabbarService, currentContainerId))}
         {renderOtherVisibleContainers({ props, renderContainers })}
         {hideContainers.length ? (
           <li
@@ -198,76 +194,75 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
       </div>
     </div>
   );
-});
+};
 
-export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = observer(
-  ({ component: defaultComponent }) => {
-    const progressService: IProgressService = useInjectable(IProgressService);
-    const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
-    const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
-    const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
-    const inProgress = progressService.getIndicator(component.options?.containerId || '')?.progressModel.show;
-    const title = React.useMemo(() => {
-      const options = component.options;
-      if (options?.activateKeyBinding) {
-        return `${options?.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
-      }
-      return options?.title;
-    }, [component]);
+export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = ({ component: defaultComponent }) => {
+  const progressService: IProgressService = useInjectable(IProgressService);
+  const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
+  const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
+  const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
+  const indicator = progressService.getIndicator(component.options?.containerId || '');
 
-    useEffect(() => {
-      const dispose = component.onChange((newComponent) => {
-        setComponent(newComponent);
-      });
-      return () => {
-        dispose.dispose();
-      };
-    }, []);
+  const inProgress = useAutorun(indicator!.progressModel.show);
 
-    return (
-      <div className={styles_icon_tab}>
-        <div className={cls(component.options?.iconClass, 'activity-icon')} title={title}></div>
-        {inProgress ? (
-          <Badge className={styles.tab_badge}>
-            <span className={styles.icon_wrapper}>
-              <Icon icon='time-circle' />
-            </span>
-          </Badge>
-        ) : (
-          component.options?.badge && (
-            <Badge className={styles.tab_badge}>
-              {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
-            </Badge>
-          )
-        )}
-      </div>
-    );
-  },
-);
+  const title = React.useMemo(() => {
+    const options = component.options;
+    if (options?.activateKeyBinding) {
+      return `${options?.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
+    }
+    return options?.title;
+  }, [component]);
 
-export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = observer(
-  ({ component: defaultComponent }) => {
-    const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
-    useEffect(() => {
-      const dispose = component.onChange((newComponent) => {
-        setComponent(newComponent);
-      });
-      return () => {
-        dispose.dispose();
-      };
-    }, []);
-    return (
-      <div className={styles.text_tab}>
-        <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
-        {component.options?.badge && (
+  useEffect(() => {
+    const dispose = component.onChange((newComponent) => {
+      setComponent(newComponent);
+    });
+    return () => {
+      dispose.dispose();
+    };
+  }, []);
+
+  return (
+    <div className={styles_icon_tab}>
+      <div className={cls(component.options?.iconClass, 'activity-icon')} title={title}></div>
+      {inProgress ? (
+        <Badge className={styles.tab_badge}>
+          <span className={styles.icon_wrapper}>
+            <Icon icon='time-circle' />
+          </span>
+        </Badge>
+      ) : (
+        component.options?.badge && (
           <Badge className={styles.tab_badge}>
             {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
           </Badge>
-        )}
-      </div>
-    );
-  },
-);
+        )
+      )}
+    </div>
+  );
+};
+
+export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = ({ component: defaultComponent }) => {
+  const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
+  useEffect(() => {
+    const dispose = component.onChange((newComponent) => {
+      setComponent(newComponent);
+    });
+    return () => {
+      dispose.dispose();
+    };
+  }, []);
+  return (
+    <div className={styles.text_tab}>
+      <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
+      {component.options?.badge && (
+        <Badge className={styles.tab_badge}>
+          {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
+        </Badge>
+      )}
+    </div>
+  );
+};
 
 export const IconElipses: React.FC = () => {
   const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
@@ -319,7 +314,7 @@ export const LeftTabbarRenderer: React.FC<{
     props: ITabbarViewProps;
     renderContainers: (
       component: ComponentRegistryInfo,
-      handleTabClick,
+      tabbarService: TabbarService,
       currentContainerId: string,
     ) => JSX.Element | null;
   }>;

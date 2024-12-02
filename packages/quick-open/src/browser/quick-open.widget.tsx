@@ -1,5 +1,3 @@
-import { action, computed, makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   DisposableCollection,
@@ -9,10 +7,12 @@ import {
   QuickOpenActionProvider,
   QuickOpenItem,
   addDisposableListener,
+  isNumber,
 } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { derived, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 import {
   IAutoFocus,
@@ -24,163 +24,80 @@ import {
 
 @Injectable({ multiple: true })
 export class QuickOpenWidget implements IQuickOpenWidget {
-  public MAX_HEIGHT = 440;
-
-  @observable
-  public inputValue = '';
-
-  @observable
-  private _isShow = false;
-
-  @observable
-  public validateType?: VALIDATE_TYPE;
-
-  @observable.shallow
-  private _items: QuickOpenItem[] = observable.array([]);
-
-  @computed
-  public get isShow() {
-    return this._isShow;
-  }
-
-  @observable.ref
-  private _actionProvider: QuickOpenActionProvider | null = null;
-
-  @observable.ref
-  private _autoFocus: IAutoFocus | null = null;
-
-  @observable
-  private _isPassword = false;
-
-  @observable
-  private _keepScrollPosition = false;
-
-  @observable
-  private _busy = false;
-
-  @computed
-  get isPassword() {
-    return this._isPassword;
-  }
-
-  @computed
-  get selectAll() {
-    return this.items.every((item) => item.checked);
-  }
-
-  @observable
-  private _valueSelection?: [number, number];
-
-  get valueSelection() {
-    return this._valueSelection;
-  }
-
-  @observable
-  private _canSelectMany?: boolean;
-
-  @computed
-  get canSelectMany() {
-    return this._canSelectMany;
-  }
-
-  @observable
-  public selectIndex = 0;
-
-  @computed
-  public get items(): QuickOpenItem[] {
-    return this._items || [];
-  }
-
-  @observable
-  private _inputPlaceholder?: string;
-
-  @computed
-  get inputPlaceholder() {
-    return this._inputPlaceholder;
-  }
-
-  @observable
-  private _inputEnable?: boolean;
-
-  @computed
-  get inputEnable() {
-    return this._inputEnable;
-  }
-
-  @computed
-  get actionProvider() {
-    return this._actionProvider;
-  }
-
-  @computed
-  get autoFocus() {
-    return this._autoFocus;
-  }
-
-  @computed
-  get keepScrollPosition() {
-    return this._keepScrollPosition;
-  }
-
-  @computed
-  get busy() {
-    return this._busy;
-  }
-
   @Autowired(IProgressService)
   protected readonly progressService: IProgressService;
 
-  private progressResolve?: (value: void | PromiseLike<void>) => void;
+  readonly MAX_HEIGHT = 440;
+  readonly inputValue = observableValue<string>(this, '');
+  readonly validateType = observableValue<VALIDATE_TYPE | undefined>(this, undefined);
+  readonly isShow = observableValue<boolean>(this, false);
+  readonly items = observableValue<QuickOpenItem[]>(this, []);
+  readonly actionProvider = observableValue<QuickOpenActionProvider | null>(this, null);
+  readonly autoFocus = observableValue<IAutoFocus | null>(this, null);
+  readonly selectAll = derived(this, (reader) => this.items.read(reader).every((item) => item.checked.read(reader)));
+  readonly isPassword = observableValue<boolean>(this, false);
+  readonly selectIndex = observableValue<number>(this, 0);
+  readonly keepScrollPosition = observableValue<boolean>(this, false);
+  readonly busy = observableValue<boolean>(this, false);
+  readonly valueSelection = observableValue<[number, number] | undefined>(this, undefined);
+  readonly canSelectMany = observableValue<boolean | undefined>(this, false);
+  readonly inputPlaceholder = observableValue<string | undefined>(this, '');
+  readonly inputEnable = observableValue<boolean | undefined>(this, false);
 
+  private progressResolve?: (value: void | PromiseLike<void>) => void;
   private modifierListeners: DisposableCollection = new DisposableCollection();
 
   public renderTab?: () => React.ReactNode;
   public toggleTab?: () => void;
 
-  constructor(public callbacks: IQuickOpenCallbacks) {
-    makeObservable(this);
-  }
+  constructor(readonly callbacks: IQuickOpenCallbacks) {}
 
-  @action
   setSelectIndex(index: number) {
-    this.selectIndex = index;
+    transaction((tx) => {
+      const safeIndex = isNumber(index) ? index : 0;
+      this.selectIndex.set(safeIndex, tx);
+    });
   }
 
-  @action
   setInputValue(value: string) {
-    this.inputValue = value;
+    transaction((tx) => {
+      this.inputValue.set(value, tx);
+    });
   }
 
-  @action
   show(prefix: string, options: QuickOpenInputOptions): void {
-    this._isShow = true;
-    this.inputValue = prefix;
-    this._inputPlaceholder = options.placeholder;
-    this._isPassword = !!options.password;
-    this._inputEnable = options.inputEnable;
-    this._valueSelection = options.valueSelection;
-    this._canSelectMany = options.canSelectMany;
-    this._keepScrollPosition = !!options.keepScrollPosition;
-    this._busy = !!options.busy;
-    this.renderTab = options.renderTab;
-    this.toggleTab = options.toggleTab;
-    // 获取第一次要展示的内容
-    this.callbacks.onType(prefix);
-    this.registerKeyModsListeners();
+    transaction((tx) => {
+      this.isShow.set(true, tx);
+      this.inputValue.set(prefix, tx);
+      this.inputPlaceholder.set(options.placeholder, tx);
+      this.isPassword.set(!!options.password, tx);
+      this.inputEnable.set(options.inputEnable, tx);
+      this.valueSelection.set(options.valueSelection, tx);
+      this.canSelectMany.set(options.canSelectMany, tx);
+      this.keepScrollPosition.set(!!options.keepScrollPosition, tx);
+      this.busy.set(!!options.busy, tx);
+
+      this.renderTab = options.renderTab;
+      this.toggleTab = options.toggleTab;
+      // 获取第一次要展示的内容
+      this.callbacks.onType(prefix);
+      this.registerKeyModsListeners();
+    });
   }
 
-  @action
   hide(reason?: HideReason): void {
     if (!this.modifierListeners.disposed) {
       this.modifierListeners.dispose();
     }
 
-    if (!this._isShow) {
+    if (!this.isShow.get()) {
       return;
     }
 
-    this._isShow = false;
-    this._items = [];
+    transaction((tx) => {
+      this.isShow.set(false, tx);
+      this.items.set([], tx);
+    });
 
     // Callbacks
     if (reason === HideReason.ELEMENT_SELECTED) {
@@ -192,9 +109,8 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this.callbacks.onHide(reason);
   }
 
-  @action
   blur() {
-    if (!this._isShow) {
+    if (!this.isShow.get()) {
       return;
     }
     // 判断移出焦点后是否需要关闭组件
@@ -204,24 +120,27 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     }
   }
 
-  @action
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void {
-    this._items = model.items;
-    this._actionProvider = model.actionProvider || null;
-    this._autoFocus = autoFocus;
-  }
-
-  @action
-  updateOptions(options: Partial<QuickOpenInputOptions>) {
-    Object.keys(options).forEach((key) => {
-      const privateKey = `_${key}`;
-      if (Object.hasOwn(this, privateKey)) {
-        this[privateKey] = options[key];
-      }
+    transaction((tx) => {
+      this.items.set(model.items, tx);
+      this.actionProvider.set(model.actionProvider || null, tx);
+      this.autoFocus.set(autoFocus, tx);
     });
   }
 
-  @action
+  updateOptions(options: Partial<QuickOpenInputOptions>) {
+    transaction((tx) => {
+      if ('placeholder' in options) {this.inputPlaceholder.set(options.placeholder, tx);}
+      if ('password' in options) {this.isPassword.set(!!options.password, tx);}
+      if ('inputEnable' in options) {this.inputEnable.set(!!options.inputEnable, tx);}
+      if ('valueSelection' in options) {this.valueSelection.set(options.valueSelection, tx);}
+      if ('canSelectMany' in options) {this.canSelectMany.set(!!options.canSelectMany, tx);}
+      if ('keepScrollPosition' in options) {this.keepScrollPosition.set(!!options.keepScrollPosition, tx);}
+      if ('busy' in options) {this.busy.set(!!options.busy, tx);}
+      if ('enabled' in options) {this.inputEnable.set(!!options.enabled, tx);}
+    });
+  }
+
   updateProgressStatus(visible: boolean) {
     if (visible === true) {
       this.progressService.withProgress(
