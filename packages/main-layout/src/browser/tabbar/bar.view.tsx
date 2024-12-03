@@ -20,9 +20,12 @@ import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
 import { IMainLayoutService } from '../../common';
 
+
 import { TabbarConfig } from './renderer.view';
 import styles from './styles.module.less';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
+
+import type { ViewBadge } from 'vscode';
 
 function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: number) {
   if (visibleCount >= containers.length) {
@@ -32,6 +35,24 @@ function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: num
     return [[], containers];
   }
   return [containers.slice(0, visibleCount - 1), containers.slice(visibleCount - 1)];
+}
+
+function showBadge(badge?: string | ViewBadge) {
+  if (typeof badge === 'string') {
+    if (parseInt(badge, 10) > 99) {
+      return '99+';
+    } else {
+      return badge;
+    }
+  } else if (typeof badge === 'object' && badge.value) {
+    if (badge.value > 99) {
+      return '99+';
+    } else {
+      return badge.value;
+    }
+  } else {
+    return '';
+  }
 }
 
 export interface ITabbarViewProps {
@@ -228,17 +249,7 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = (
           </span>
         </Badge>
       ) : (
-        component.options?.badge && (
-          <Badge className={styles.tab_badge}>
-            {typeof component.options.badge == 'string'
-              ? parseInt(component.options.badge, 10) > 99
-                ? '99+'
-                : component.options.badge
-              : component.options.badge.value
-              ? component.options.badge.value
-              : ''}
-          </Badge>
-        )
+        component.options?.badge && <Badge className={styles.tab_badge}>{showBadge(component.options.badge)}</Badge>
       )}
     </div>
   );
@@ -257,17 +268,7 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = (
   return (
     <div className={styles.text_tab}>
       <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
-      {component.options?.badge && (
-        <Badge className={styles.tab_badge}>
-          {typeof component.options.badge == 'string'
-            ? parseInt(component.options.badge, 10) > 99
-              ? '99+'
-              : component.options.badge
-            : component.options.badge.value
-            ? component.options.badge.value
-            : ''}
-        </Badge>
-      )}
+      {component.options?.badge && <Badge className={styles.tab_badge}>{showBadge(component.options.badge)}</Badge>}
     </div>
   );
 };
