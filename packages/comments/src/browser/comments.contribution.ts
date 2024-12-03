@@ -75,7 +75,7 @@ export class CommentsBrowserContribution
 
   get panelBadge() {
     const length = this.commentsService.commentsThreads.length;
-    return length ? { value: length, tooltip: `${length}` } : undefined;
+    return length ? length + '' : '';
   }
 
   registerCommands(registry: CommandRegistry) {
