@@ -38,6 +38,7 @@ import {
   IMainThreadTerminal,
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
+import { TerminalExitReason } from '../../../common/vscode/ext-types';
 
 import type vscode from 'vscode';
 
@@ -136,7 +137,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
       return;
     }
 
-    terminal.setExitCode(e.code);
+    // 目前 OpenSumi 不是很好打通完整的 Terminal 关闭原因，先用 Unknown 打通接口
+    terminal.setExitStatus(e.code, TerminalExitReason.Unknown);
     this.closeTerminalEvent.fire(terminal);
 
     this.terminalsMap.delete(terminalId);
@@ -213,7 +215,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
     this.disposables.add(
       p.onProcessExit((e: number | undefined) => {
-        terminal.setExitCode(e);
+        terminal.setExitStatus(e, TerminalExitReason.Process);
       }),
     );
 
@@ -750,8 +752,8 @@ export class Terminal implements vscode.Terminal {
     this.created(id);
   }
 
-  public setExitCode(code: number | undefined) {
-    this._exitStatus = Object.freeze({ code });
+  public setExitStatus(code: number | undefined, reason: vscode.TerminalExitReason) {
+    this._exitStatus = Object.freeze({ code, reason });
   }
 
   public setName(name: string) {
