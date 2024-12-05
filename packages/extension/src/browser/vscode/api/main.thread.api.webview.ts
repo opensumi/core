@@ -786,8 +786,8 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
       webviewView.badge = badge;
       const handler = this.mainLayout.getTabbarHandler(webviewView.viewType);
       if (handler) {
-        handler.setBadge(badge);
-        handler.accordionService.updateViewBadge(webviewView.viewType, badge);
+        handler.setBadge(badge ? badge : '');
+        handler.accordionService.updateViewBadge(webviewView.viewType, badge ? badge : '');
       }
     }
   }

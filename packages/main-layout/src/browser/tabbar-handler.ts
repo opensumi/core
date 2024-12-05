@@ -1,4 +1,3 @@
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 

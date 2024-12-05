@@ -1,4 +1,3 @@
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, IEventBus, ILogger } from '@opensumi/ide-core-browser';

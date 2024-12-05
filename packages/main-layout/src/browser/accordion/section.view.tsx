@@ -1,7 +1,6 @@
 import cls from 'classnames';
 import React from 'react';
 
-
 import {
   ErrorBoundary,
   getIcon,

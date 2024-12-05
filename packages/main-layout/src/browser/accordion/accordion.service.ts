@@ -1,7 +1,6 @@
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 
-
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandRegistry,

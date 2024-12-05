@@ -1,4 +1,3 @@
-
 import { Event, IBaseMarkerManager, IMarker, IMatch } from '@opensumi/ide-core-common';
 import { ThemeType } from '@opensumi/ide-theme';
 

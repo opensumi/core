@@ -1,4 +1,3 @@
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Deferred, Emitter, Event, IBaseMarkerManager, MarkerManager, OnEvent } from '@opensumi/ide-core-common';

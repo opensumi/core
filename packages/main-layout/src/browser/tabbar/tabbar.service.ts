@@ -1,6 +1,5 @@
 import debounce from 'lodash/debounce';
 
-
 import { Autowired, Injectable, Injector } from '@opensumi/di';
 import {
   CommandRegistry,

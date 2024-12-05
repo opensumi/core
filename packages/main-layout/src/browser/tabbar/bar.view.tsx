@@ -20,7 +20,6 @@ import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
 import { IMainLayoutService } from '../../common';
 
-
 import { TabbarConfig } from './renderer.view';
 import styles from './styles.module.less';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
@@ -37,22 +36,14 @@ function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: num
   return [containers.slice(0, visibleCount - 1), containers.slice(visibleCount - 1)];
 }
 
-function showBadge(badge?: string | ViewBadge) {
+function getBadgeValue(badge?: string | ViewBadge) {
   if (typeof badge === 'string') {
-    if (parseInt(badge, 10) > 99) {
-      return '99+';
-    } else {
-      return badge;
-    }
-  } else if (typeof badge === 'object' && badge.value) {
-    if (badge.value > 99) {
-      return '99+';
-    } else {
-      return badge.value;
-    }
-  } else {
-    return '';
+    return parseInt(badge, 10) > 99 ? '99+' : badge;
   }
+  if (typeof badge === 'object' && badge.value) {
+    return badge.value > 99 ? '99+' : badge.value;
+  }
+  return '';
 }
 
 export interface ITabbarViewProps {
@@ -249,7 +240,7 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = (
           </span>
         </Badge>
       ) : (
-        component.options?.badge && <Badge className={styles.tab_badge}>{showBadge(component.options.badge)}</Badge>
+        component.options?.badge && <Badge className={styles.tab_badge}>{getBadgeValue(component.options.badge)}</Badge>
       )}
     </div>
   );
@@ -268,7 +259,7 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = (
   return (
     <div className={styles.text_tab}>
       <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
-      {component.options?.badge && <Badge className={styles.tab_badge}>{showBadge(component.options.badge)}</Badge>}
+      {component.options?.badge && <Badge className={styles.tab_badge}>{getBadgeValue(component.options.badge)}</Badge>}
     </div>
   );
 };

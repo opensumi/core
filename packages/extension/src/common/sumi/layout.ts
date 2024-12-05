@@ -2,7 +2,6 @@ import { Event } from '@opensumi/ide-core-common';
 
 import type { ViewBadge } from 'vscode';
 
-
 export interface ITabbarHandler {
   setSize(size: number): void;
 

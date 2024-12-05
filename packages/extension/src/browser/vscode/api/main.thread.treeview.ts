@@ -271,8 +271,8 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
   async $setBadge(treeViewId: string, badge?: ViewBadge) {
     const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
     if (handler) {
-      handler.setBadge(badge);
-      handler.accordionService.updateViewBadge(treeViewId, badge);
+      handler.setBadge(badge ? badge : '');
+      handler.accordionService.updateViewBadge(treeViewId, badge ? badge : '');
     }
   }
 
