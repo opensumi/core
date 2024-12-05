@@ -2869,6 +2869,14 @@ export enum TaskRevealKind {
   Never = 3,
 }
 
+export enum TerminalExitReason {
+  Unknown = 0,
+  Shutdown = 1,
+  Process = 2,
+  User = 3,
+  Extension = 4,
+}
+
 export enum UIKind {
   Desktop = 1,
   Web = 2,
