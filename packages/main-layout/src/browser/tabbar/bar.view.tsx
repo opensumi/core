@@ -36,7 +36,7 @@ function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: num
   return [containers.slice(0, visibleCount - 1), containers.slice(visibleCount - 1)];
 }
 
-function getBadgeValue(badge?: string | ViewBadge) {
+function getBadgeValue(badge: string | ViewBadge) {
   if (typeof badge === 'string') {
     return parseInt(badge, 10) > 99 ? '99+' : badge;
   }
