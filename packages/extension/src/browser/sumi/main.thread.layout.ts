@@ -54,7 +54,7 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
     this.getHandler(id)?.deactivate();
   }
 
-  $setBadge(id: string, badge?: ViewBadge): void {
+  $setBadge(id: string, badge?: string | ViewBadge): void {
     this.getHandler(id)?.setBadge(badge);
   }
 

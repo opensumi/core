@@ -65,10 +65,10 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.layout.test.ts',
   it('setBadge', (done) => {
     mainLayout.$setBadge = jest.fn((id, badge) => {
       expect(id).toBe(`${extension.id}:${viewId}`);
-      expect(badge).toBe({ value: 20, tooltip: '20' });
+      expect(badge).toBe('10');
       done();
     });
     const tabbar = layoutApi.getTabbarHandler(viewId);
-    tabbar.setBadge({ value: 20, tooltip: '20' });
+    tabbar.setBadge('10');
   });
 });

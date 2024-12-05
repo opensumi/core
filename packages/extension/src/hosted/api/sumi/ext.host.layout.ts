@@ -38,7 +38,7 @@ export class TabbarHandler implements ITabbarHandler {
     this.proxy.$setVisible(this.id, visible);
   }
 
-  setBadge(badge?: ViewBadge) {
+  setBadge(badge?: string | ViewBadge) {
     this.proxy.$setBadge(this.id, badge);
   }
 
