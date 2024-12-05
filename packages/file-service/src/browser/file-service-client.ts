@@ -339,6 +339,9 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
+    const unRecursiveDirectories = this.appConfig.unRecursiveDirectories || [];
+    const isUnRecursive = unRecursiveDirectories.some((dir) => uri.toString().startsWith(dir));
+
     const _uri = this.convertUri(uri.toString());
     const originWatcher = this.uriWatcherMap.get(_uri.toString());
     if (originWatcher) {
@@ -356,6 +359,7 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
     const watcherId = await provider.watch(_uri.codeUri, {
       excludes,
+      recursive: !isUnRecursive,
     });
 
     this.watcherDisposerMap.set(id, {

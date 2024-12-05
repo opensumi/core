@@ -312,6 +312,11 @@ export interface AppConfig {
    * The authentication token for requests.  Use an empty string to disable.
    */
   notebookServerToken?: string;
+
+  /**
+   * Unrecursive directories
+   */
+  unRecursiveDirectories?: string[];
 }
 
 export interface ICollaborationClientOpts {
