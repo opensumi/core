@@ -2,6 +2,7 @@ import { Event, IBaseMarkerManager, IMarker, IMatch } from '@opensumi/ide-core-c
 import { ThemeType } from '@opensumi/ide-theme';
 
 import type { ITree } from '@opensumi/ide-components';
+import type { ViewBadge } from 'vscode';
 
 export { MARKER_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 
@@ -15,7 +16,7 @@ export interface IMarkerService extends ITree {
   /**
    * 获取问题数量
    */
-  getBadge(): string | undefined;
+  getBadge(): string | ViewBadge | undefined;
 
   /**
    * filter 内容变化时触发事件

@@ -25,6 +25,7 @@ import {
   TreeViewItem,
   TreeViewSelection,
   TreeviewsService,
+  ViewBadge,
 } from '../../../common/vscode';
 import { DataTransfer } from '../../../common/vscode/converter';
 import * as types from '../../../common/vscode/ext-types';
@@ -121,6 +122,12 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       },
       set description(description: string) {
         treeView.description = description;
+      },
+      get badge(): ViewBadge | undefined {
+        return treeView.badge;
+      },
+      set badge(badge: ViewBadge | undefined) {
+        treeView.badge = badge;
       },
       reveal: (element: T, options: ITreeViewRevealOptions): Thenable<void> => treeView.reveal(element, options),
       dispose: () => {
@@ -316,6 +323,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private _title: string;
   private _description: string;
   private _message: string;
+  private _badge?: ViewBadge = undefined;
 
   private roots: TreeViewItem[] | undefined = undefined;
   private nodes: Map<T, TreeViewItem[] | undefined> = new Map();
@@ -490,6 +498,14 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
 
   get visible(): boolean {
     return this._visible;
+  }
+
+  get badge(): ViewBadge | undefined {
+    return this._badge;
+  }
+  set badge(badge: ViewBadge | undefined) {
+    this._badge = badge;
+    this.proxy.$setBadge(this.treeViewId, badge);
   }
 
   get selectedElements(): T[] {

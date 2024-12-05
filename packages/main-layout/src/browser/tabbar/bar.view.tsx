@@ -24,6 +24,8 @@ import { TabbarConfig } from './renderer.view';
 import styles from './styles.module.less';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 
+import type { ViewBadge } from 'vscode';
+
 function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: number) {
   if (visibleCount >= containers.length) {
     return [containers, []];
@@ -32,6 +34,16 @@ function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: num
     return [[], containers];
   }
   return [containers.slice(0, visibleCount - 1), containers.slice(visibleCount - 1)];
+}
+
+function getBadgeValue(badge: string | ViewBadge) {
+  if (typeof badge === 'string') {
+    return parseInt(badge, 10) > 99 ? '99+' : badge;
+  }
+  if (typeof badge === 'object' && badge.value) {
+    return badge.value > 99 ? '99+' : badge.value;
+  }
+  return '';
 }
 
 export interface ITabbarViewProps {
@@ -232,11 +244,7 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = (
           </span>
         </Badge>
       ) : (
-        component.options?.badge && (
-          <Badge className={styles.tab_badge}>
-            {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
-          </Badge>
-        )
+        component.options?.badge && <Badge className={styles.tab_badge}>{getBadgeValue(component.options.badge)}</Badge>
       )}
     </div>
   );
@@ -255,11 +263,7 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = (
   return (
     <div className={styles.text_tab}>
       <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
-      {component.options?.badge && (
-        <Badge className={styles.tab_badge}>
-          {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
-        </Badge>
-      )}
+      {component.options?.badge && <Badge className={styles.tab_badge}>{getBadgeValue(component.options.badge)}</Badge>}
     </div>
   );
 };
