@@ -5,6 +5,8 @@ import { IMainLayoutService } from '../common';
 
 import { TabbarService } from './tabbar/tabbar.service';
 
+import type { ViewBadge } from 'vscode';
+
 @Injectable({ multiple: true })
 export class TabBarHandler {
   @Autowired(IMainLayoutService)
@@ -108,7 +110,7 @@ export class TabBarHandler {
   /**
    * 设置视图tab的徽标
    */
-  setBadge(badge: string) {
+  setBadge(badge?: ViewBadge | string) {
     this.tabbarService.updateBadge(this.containerId, badge);
   }
   /**

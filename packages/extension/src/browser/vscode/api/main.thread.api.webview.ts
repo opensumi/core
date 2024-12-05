@@ -45,6 +45,7 @@ import {
   IWebviewOptions,
   IWebviewPanelOptions,
   IWebviewPanelViewState,
+  type ViewBadge,
   WebviewPanelShowOptions,
   WebviewViewOptions,
   WebviewViewResolverRegistrationEvent,
@@ -618,7 +619,7 @@ class WebviewPanel extends Disposable {
 
 class WebviewView extends Disposable {
   public title: string;
-
+  public badge?: ViewBadge;
   public viewColumn: number;
 
   constructor(
@@ -777,6 +778,18 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
     return {
       dispose: () => webviewView.dispose(),
     };
+  }
+
+  $setBadge(handle: string, badge?: ViewBadge): void {
+    const webviewView = this._webviewViews.get(handle);
+    if (webviewView) {
+      webviewView.badge = badge;
+      const handler = this.mainLayout.getTabbarHandler(webviewView.viewType);
+      if (handler) {
+        handler.setBadge(badge ? badge : '');
+        handler.accordionService.updateViewBadge(webviewView.viewType, badge ? badge : '');
+      }
+    }
   }
 
   $show(handle: string, preserveFocus: boolean): void {

@@ -8,6 +8,8 @@ import { IIconService, IconShape, IconType } from '@opensumi/ide-theme';
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import { IExtHostLayout, IMainThreadLayout } from '../../common/sumi/layout';
 
+import type { ViewBadge } from 'vscode';
+
 @Injectable({ multiple: true })
 export class MainThreadLayout extends Disposable implements IMainThreadLayout {
   @Autowired(IMainLayoutService)
@@ -52,7 +54,7 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
     this.getHandler(id)?.deactivate();
   }
 
-  $setBadge(id: string, badge: string): void {
+  $setBadge(id: string, badge?: string | ViewBadge): void {
     this.getHandler(id)?.setBadge(badge);
   }
 
