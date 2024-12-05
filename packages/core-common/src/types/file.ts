@@ -157,7 +157,7 @@ export interface FileSystemProvider {
    * @param options Configures the watch.
    * @returns A disposable that tells the provider to stop watching the `uri`.
    */
-  watch(uri: Uri, options: { excludes?: string[] }): number | Promise<number>;
+  watch(uri: Uri, options: { excludes?: string[]; recursive?: boolean }): number | Promise<number>;
 
   unwatch?(watcherId: number): void | Promise<void>;
 
