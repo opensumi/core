@@ -102,6 +102,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.recursive = recursive;
+    this.initWatcherServer();
   }
 
   get whenReady() {
@@ -141,7 +142,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     await this.whenReady;
     const _uri = Uri.revive(uri);
 
-    const watcherServer = this.getOrCreateWatcherServer(options?.excludes, options?.recursive);
+    const watcherServer = this.getWatcherServer(options?.recursive);
 
     if (!watcherServer) {
       return -1;
@@ -380,7 +381,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     // 每次调用之后都需要重新初始化 WatcherServer，保证最新的规则生效
     this.logger.log('Set watcher exclude:', watchExcludes);
     this.watchFileExcludes = watchExcludes;
-    this.getOrCreateWatcherServer(this.watchFileExcludes);
+
+    // 重新实例化 WatcherServer
+    this.initWatcherServer(watchExcludes, true);
   }
 
   getWatchFileExcludes() {
@@ -391,28 +394,15 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     return Array.from(new Set(this.watchFileExcludes.concat(excludes || [])));
   }
 
-  protected getOrCreateWatcherServer(excludes?: string[], recursive?: boolean) {
-    if (!this.injector) {
-      return undefined;
+  private initWatcherServer(excludes?: string[], force = false) {
+    if (!this.injector || (this.recursiveFileSystemWatcher && this.unrecursiveFileSystemWatcher && !force)) {
+      return;
     }
 
-    if (this.watcherServerDisposeCollection) {
-      this.watcherServerDisposeCollection.dispose();
-    }
+    this.recursiveFileSystemWatcher = this.injector.get(FileSystemWatcherServer, [excludes]);
+    this.unrecursiveFileSystemWatcher = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
 
-    this.watcherServerDisposeCollection = new DisposableCollection();
-    const useRecursiveServer = recursive ?? this.recursive;
-    let watcherServer: FileSystemWatcherServer | UnRecursiveFileSystemWatcher;
-
-    if (useRecursiveServer) {
-      watcherServer = this.recursiveFileSystemWatcher || this.injector.get(FileSystemWatcherServer, [excludes]);
-      this.recursiveFileSystemWatcher = watcherServer;
-    } else {
-      watcherServer = this.unrecursiveFileSystemWatcher || this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
-      this.unrecursiveFileSystemWatcher = watcherServer;
-    }
-
-    watcherServer.setClient({
+    const watcherClient = {
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         this.logger.log(events.changes, 'events.change');
         if (events.changes.length > 0) {
@@ -427,14 +417,22 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
           }
         }
       },
-    });
-    this.watcherServerDisposeCollection.push({
-      dispose: () => {
-        watcherServer.dispose();
-      },
-    });
+    };
 
-    this._whenReadyDeferred.resolve();
+    this.recursiveFileSystemWatcher.setClient(watcherClient);
+    this.unrecursiveFileSystemWatcher.setClient(watcherClient);
+  }
+
+  private getWatcherServer(recursive?: boolean) {
+    const useRecursiveServer = recursive ?? this.recursive;
+    let watcherServer: FileSystemWatcherServer | UnRecursiveFileSystemWatcher;
+    this.initWatcherServer();
+
+    if (useRecursiveServer) {
+      watcherServer = this.recursiveFileSystemWatcher!;
+    } else {
+      watcherServer = this.unrecursiveFileSystemWatcher!;
+    }
 
     return watcherServer;
   }
