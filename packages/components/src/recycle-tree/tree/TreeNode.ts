@@ -25,6 +25,7 @@ import {
   MetadataChangeType,
   TreeNodeEvent,
   TreeNodeType,
+  TreeViewItemCheckboxInfo,
   WatchEvent,
 } from '../types';
 
@@ -241,6 +242,14 @@ export class TreeNode implements ITreeNode {
       }
     }
     return this._path;
+  }
+
+  get checkboxInfo(): TreeViewItemCheckboxInfo {
+    return {
+      checked: false,
+      tooltip: '',
+      accessibilityInformation: this.accessibilityInformation,
+    };
   }
 
   get accessibilityInformation(): IAccessibilityInformation {
