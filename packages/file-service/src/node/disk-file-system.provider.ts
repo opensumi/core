@@ -399,6 +399,11 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       return;
     }
 
+    if (force) {
+      this.recursiveFileSystemWatcher?.dispose();
+      this.unrecursiveFileSystemWatcher?.dispose();
+    }
+
     this.recursiveFileSystemWatcher = this.injector.get(FileSystemWatcherServer, [excludes]);
     this.unrecursiveFileSystemWatcher = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
 
