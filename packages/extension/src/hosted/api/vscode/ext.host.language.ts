@@ -361,6 +361,16 @@ export function createLanguagesApiFactory(
     ): vscode.Disposable {
       return extHostLanguages.registerDocumentPasteEditProvider(extension, selector, provider, metadata);
     },
+    /**
+     * @monaco-todo: wait until API is available in Monaco (1.85.0+)
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    registerMultiDocumentHighlightProvider(
+      selector: vscode.DocumentSelector,
+      provider: vscode.MultiDocumentHighlightProvider,
+    ): vscode.Disposable {
+      return toDisposable(() => {});
+    },
   };
 }
 

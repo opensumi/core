@@ -318,7 +318,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
     disposableCollection.push(
-      group.onDidEditorFocusChange((event) => {
+      group.onDidEditorFocusChange(() => {
         updateTabMarginRight();
       }),
     );

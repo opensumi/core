@@ -12,6 +12,8 @@ import { FilterOptions } from './markers-filter.model';
 import { MarkerViewModel } from './markers.model';
 import { MarkerGroupNode, MarkerNode, MarkerRoot } from './tree/tree-node.defined';
 
+import type { ViewBadge } from 'vscode';
+
 const MAX_DIAGNOSTICS_BADGE = 1000;
 
 @Injectable()
@@ -107,7 +109,7 @@ export class MarkerService extends Themable implements IMarkerService {
     return this.markerManager;
   }
 
-  public getBadge(): string | undefined {
+  public getBadge(): string | ViewBadge | undefined {
     const stats = this.markerManager.getStats();
     if (stats) {
       const total = stats.errors + stats.infos + stats.warnings;

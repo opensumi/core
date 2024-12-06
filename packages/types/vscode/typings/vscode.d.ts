@@ -1618,9 +1618,47 @@ declare module 'vscode' {
     canSelectMany?: boolean;
 
     /**
-		* An optional interface to implement drag and drop in the tree view.
-		*/
-		dragAndDropController?: TreeDragAndDropController<T>;
+    * An optional interface to implement drag and drop in the tree view.
+    */
+    dragAndDropController?: TreeDragAndDropController<T>;
+
+    /**
+     * By default, when the children of a tree item have already been fetched, child checkboxes are automatically managed based on the checked state of the parent tree item.
+     * If the tree item is collapsed by default (meaning that the children haven't yet been fetched) then child checkboxes will not be updated.
+     * To override this behavior and manage child and parent checkbox state in the extension, set this to `true`.
+     *
+     * Examples where {@link TreeViewOptions.manageCheckboxStateManually} is false, the default behavior:
+     *
+     * 1. A tree item is checked, then its children are fetched. The children will be checked.
+     *
+     * 2. A tree item's parent is checked. The tree item and all of it's siblings will be checked.
+     *   - [ ] Parent
+     *     - [ ] Child 1
+     *     - [ ] Child 2
+     *   When the user checks Parent, the tree will look like this:
+     *   - [x] Parent
+     *     - [x] Child 1
+     *     - [x] Child 2
+     *
+     * 3. A tree item and all of it's siblings are checked. The parent will be checked.
+     *   - [ ] Parent
+     *     - [ ] Child 1
+     *     - [ ] Child 2
+     *   When the user checks Child 1 and Child 2, the tree will look like this:
+     *   - [x] Parent
+     *     - [x] Child 1
+     *     - [x] Child 2
+     *
+     * 4. A tree item is unchecked. The parent will be unchecked.
+     *   - [x] Parent
+     *     - [x] Child 1
+     *     - [x] Child 2
+     *   When the user unchecks Child 1, the tree will look like this:
+     *   - [ ] Parent
+     *     - [ ] Child 1
+     *     - [x] Child 2
+     */
+    manageCheckboxStateManually?: boolean;
   }
 
   /**
@@ -1855,6 +1893,11 @@ declare module 'vscode' {
     readonly onDidChangeVisibility: Event<TreeViewVisibilityChangeEvent>;
 
     /**
+     * An event to signal that an element or root has either been checked or unchecked.
+     */
+    readonly onDidChangeCheckboxState: Event<TreeCheckboxChangeEvent<T>>;
+
+    /**
      * An optional human-readable message that will be rendered in the view.
      * Setting the message to null, undefined, or empty string will remove the message from the view.
      */
@@ -1873,6 +1916,12 @@ declare module 'vscode' {
     description?: string;
 
     /**
+     * The badge to display for this TreeView.
+     * To remove the badge, set to undefined.
+     */
+    badge?: ViewBadge | undefined;
+
+    /**
      * Reveals the given element in the tree view.
      * If the tree view is not visible then the tree view is shown and element is revealed.
      *
@@ -1886,6 +1935,24 @@ declare module 'vscode' {
      */
     reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): Thenable<void>;
   }
+
+
+  /**
+   * A badge presenting a value for a view
+   */
+  export interface ViewBadge {
+
+    /**
+     * A label to present in tooltip for the badge.
+     */
+    readonly tooltip: string;
+
+    /**
+     * The value to present in the badge.
+     */
+    readonly value: number;
+  }
+
 
   /**
    * Label describing the [Tree item](#TreeItem)
@@ -1903,6 +1970,30 @@ declare module 'vscode' {
      */
     highlights?: [number, number][];
 
+  }
+
+  /**
+   * Checkbox state of the tree item
+   */
+  export enum TreeItemCheckboxState {
+    /**
+     * Determines an item is unchecked
+     */
+    Unchecked = 0,
+    /**
+     * Determines an item is checked
+     */
+    Checked = 1
+  }
+
+  /**
+   * An event describing the change in a tree item's checkbox state.
+   */
+  export interface TreeCheckboxChangeEvent<T> {
+    /**
+     * The items that were checked or unchecked.
+     */
+    readonly items: ReadonlyArray<[T, TreeItemCheckboxState]>;
   }
 
   /**
@@ -2060,6 +2151,25 @@ declare module 'vscode' {
      * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
      */
     accessibilityInformation?: AccessibilityInformation;
+
+    /**
+     * {@link TreeItemCheckboxState TreeItemCheckboxState} of the tree item.
+     * {@link TreeDataProvider.onDidChangeTreeData onDidChangeTreeData} should be fired when {@link TreeItem.checkboxState checkboxState} changes.
+     */
+    checkboxState?: TreeItemCheckboxState | {
+      /**
+       * The {@link TreeItemCheckboxState} of the tree item
+       */
+      readonly state: TreeItemCheckboxState;
+      /**
+       * A tooltip for the checkbox
+       */
+      readonly tooltip?: string;
+      /**
+       * Accessibility information used when screen readers interact with this checkbox
+       */
+      readonly accessibilityInformation?: AccessibilityInformation;
+    };
 
     /**
      * @param label A human-readable string describing this item
@@ -2952,7 +3062,42 @@ declare module 'vscode' {
      *   without providing an exit code.
      */
     readonly code: number | undefined;
+
+    /**
+		 * The reason that triggered the exit of a terminal.
+		 */
+		readonly reason: TerminalExitReason;
   }
+
+	/**
+	 * Terminal exit reason kind.
+	 */
+	export enum TerminalExitReason {
+		/**
+		 * Unknown reason.
+		 */
+		Unknown = 0,
+
+		/**
+		 * The window closed/reloaded.
+		 */
+		Shutdown = 1,
+
+		/**
+		 * The shell process exited.
+		 */
+		Process = 2,
+
+		/**
+		 * The user closed the terminal.
+		 */
+		User = 3,
+
+		/**
+		 * An extension disposed the terminal.
+		 */
+		Extension = 4,
+	}
 
   export interface Terminal {
 
@@ -3063,6 +3208,24 @@ declare module 'vscode' {
   }
 
   /**
+   * Options applied to the mutator.
+   */
+  export interface EnvironmentVariableMutatorOptions {
+    /**
+     * Apply to the environment just before the process is created. Defaults to true
+     */
+    applyAtProcessCreation?: boolean;
+
+    /**
+     * Apply to the environment in the shell integration script. Note that this _will not_ apply
+     * the mutator if shell integration is disabled or not working for some reason. Defaults to
+     * false.
+     * @stubbed
+     */
+    applyAtShellIntegration?: boolean;
+  }
+
+  /**
    * A type of mutation and its value to be applied to an environment variable.
    */
   export interface EnvironmentVariableMutator {
@@ -3075,6 +3238,10 @@ declare module 'vscode' {
      * The value to use for the variable.
      */
     readonly value: string;
+    /**
+     * Options applied to the mutator.
+     */
+    readonly options: EnvironmentVariableMutatorOptions;
   }
 
   /**
@@ -3091,37 +3258,43 @@ declare module 'vscode' {
     persistent: boolean;
 
     /**
-     * Replace an environment variable with a value.
-     *
-     * Note that an extension can only make a single change to any one variable, so this will
-     * overwrite any previous calls to replace, append or prepend.
-     *
-     * @param variable The variable to replace.
-     * @param value The value to replace the variable with.
-     */
-    replace(variable: string, value: string): void;
+		 * Replace an environment variable with a value.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to replace.
+		 * @param value The value to replace the variable with.
+		 * @param options Options applied to the mutator, when no options are provided this will
+		 * default to `{ applyAtProcessCreation: true }`.
+		 */
+		replace(variable: string, value: string, options?: EnvironmentVariableMutatorOptions): void;
 
-    /**
-     * Append a value to an environment variable.
-     *
-     * Note that an extension can only make a single change to any one variable, so this will
-     * overwrite any previous calls to replace, append or prepend.
-     *
-     * @param variable The variable to append to.
-     * @param value The value to append to the variable.
-     */
-    append(variable: string, value: string): void;
+		/**
+		 * Append a value to an environment variable.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to append to.
+		 * @param value The value to append to the variable.
+		 * @param options Options applied to the mutator, when no options are provided this will
+		 * default to `{ applyAtProcessCreation: true }`.
+		 */
+		append(variable: string, value: string, options?: EnvironmentVariableMutatorOptions): void;
 
-    /**
-     * Prepend a value to an environment variable.
-     *
-     * Note that an extension can only make a single change to any one variable, so this will
-     * overwrite any previous calls to replace, append or prepend.
-     *
-     * @param variable The variable to prepend.
-     * @param value The value to prepend to the variable.
-     */
-    prepend(variable: string, value: string): void;
+		/**
+		 * Prepend a value to an environment variable.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to prepend.
+		 * @param value The value to prepend to the variable.
+		 * @param options Options applied to the mutator, when no options are provided this will
+		 * default to `{ applyAtProcessCreation: true }`.
+		 */
+		prepend(variable: string, value: string, options?: EnvironmentVariableMutatorOptions): void;
 
     /**
      * Gets the mutator that this collection applies to a variable, if any.
@@ -3150,6 +3323,39 @@ declare module 'vscode' {
      */
     clear(): void;
   }
+
+  /**
+	 * A collection of mutations that an extension can apply to a process environment. Applies to all scopes.
+	 */
+	export interface GlobalEnvironmentVariableCollection extends EnvironmentVariableCollection {
+		/**
+		 * Gets scope-specific environment variable collection for the extension. This enables alterations to
+		 * terminal environment variables solely within the designated scope, and is applied in addition to (and
+		 * after) the global collection.
+		 *
+		 * Each object obtained through this method is isolated and does not impact objects for other scopes,
+		 * including the global collection.
+		 *
+		 * @param scope The scope to which the environment variable collection applies to.
+		 *
+		 * If a scope parameter is omitted, collection applicable to all relevant scopes for that parameter is
+		 * returned. For instance, if the 'workspaceFolder' parameter is not specified, the collection that applies
+		 * across all workspace folders will be returned.
+		 *
+		 * @returns Environment variable collection for the passed in scope.
+		 */
+		getScoped(scope: EnvironmentVariableScope): EnvironmentVariableCollection;
+	}
+
+	/**
+	 * The scope object to which the environment variable collection applies.
+	 */
+	export interface EnvironmentVariableScope {
+		/**
+		 * Any specific workspace folder to get collection for.
+		 */
+		workspaceFolder?: WorkspaceFolder;
+	}
 
   //#endregion
 

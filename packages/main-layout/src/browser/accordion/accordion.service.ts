@@ -45,6 +45,8 @@ import {
 
 import { IMainLayoutService, ViewCollapseChangedEvent } from '../../common';
 
+import type { ViewBadge } from 'vscode';
+
 export interface SectionState {
   collapsed: boolean;
   hidden: boolean;
@@ -57,7 +59,7 @@ interface AccordionViewChangeEvent {
   title?: string;
   description?: string;
   message?: string;
-  badge?: string;
+  badge?: string | ViewBadge | undefined;
 }
 
 @Injectable({ multiple: true })
@@ -216,7 +218,7 @@ export class AccordionService extends WithEventBus {
     }
   }
 
-  updateViewBadge(viewId: string, badge: string) {
+  updateViewBadge(viewId: string, badge?: string | ViewBadge) {
     const view = this.views.find((view) => view.id === viewId);
     if (view) {
       view.badge = badge;

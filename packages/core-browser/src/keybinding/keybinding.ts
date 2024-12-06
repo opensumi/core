@@ -821,7 +821,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     this.keyboardLayoutService.validateKeyCode(keyCode);
     this.keySequence.push(keyCode);
     const bindings = this.getKeybindingsForKeySequence(this.keySequence, event);
-
     if (this.tryKeybindingExecution(bindings.full, event)) {
       this.keySequence = [];
       this.statusBar.removeElement('keybinding-status');

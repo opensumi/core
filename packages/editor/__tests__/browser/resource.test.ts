@@ -1,13 +1,14 @@
 import { AppConfig, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Deferred, IEventBus, Schemes, URI } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ICompareService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { DefaultDiffEditorContribution, DiffResourceProvider } from '@opensumi/ide-editor/lib/browser/diff';
 import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
 import { UntitledSchemeDocumentProvider } from '@opensumi/ide-editor/lib/browser/untitled-resource';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import {
   IResourceProvider,
   ResourceDecorationChangeEvent,
@@ -25,6 +26,11 @@ describe('resource service tests', () => {
   injector.addProviders({
     token: ResourceService,
     useClass: ResourceServiceImpl,
+  });
+
+  injector.addProviders({
+    token: IWorkspaceService,
+    useValue: {},
   });
 
   let data = 0;

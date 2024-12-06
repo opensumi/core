@@ -26,8 +26,10 @@ export class DialogContribution implements CommandContribution, KeybindingContri
       {
         execute: () => {
           const buttons = this.dialogService.getButtons();
-          // 默认使用最后一个选项作为返回值
-          this.dialogService.hide(buttons?.[buttons.length - 1]);
+          if (buttons && buttons.length > 0) {
+            // 默认使用最后一个选项作为返回值
+            this.dialogService.hide(buttons?.[buttons.length - 1]);
+          }
         },
       },
     );

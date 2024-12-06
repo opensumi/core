@@ -76,6 +76,7 @@ export interface IMainThreadWebviewView {
 
   $setWebviewViewTitle(handle: WebviewHandle, value: string | undefined): void;
   $setWebviewViewDescription(handle: WebviewHandle, value: string | undefined): void;
+  $setBadge(handle: WebviewHandle, badge: vscode.ViewBadge | undefined): void;
 
   $show(handle: WebviewHandle, preserveFocus: boolean): void;
 }
@@ -312,6 +313,12 @@ export interface WebviewView {
    * Views are visible when they are on the screen and expanded.
    */
   readonly visible: boolean;
+
+  /**
+   * The badge to display for this webview view.
+   * To remove the badge, set to undefined.
+   */
+  badge?: vscode.ViewBadge | undefined;
 
   /**
    * Event fired when the visibility of the view changes.

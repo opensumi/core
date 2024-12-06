@@ -128,7 +128,7 @@ export interface IExtensionNodeClientService {
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
   setupNLSConfig(languageId: string, storagePath: string): Promise<void>;
   getOpenVSXRegistry(): Promise<string>;
-  getLanguagePack(languageId: string): IExtensionLanguagePack | undefined;
+  getLanguagePack(languageId: string): Promise<IExtensionLanguagePack | undefined>;
   pid(): Promise<number | null>;
 }
 
@@ -274,6 +274,8 @@ export interface IExtension extends IExtensionProps {
   reset(): void;
   toJSON(): IExtensionProps;
 }
+
+export const NO_ROOT_URI = '<none>';
 
 const VAR_REGEXP = /^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i;
 

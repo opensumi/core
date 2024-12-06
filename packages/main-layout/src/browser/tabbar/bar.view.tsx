@@ -24,6 +24,8 @@ import { TabbarConfig } from './renderer.view';
 import styles from './styles.module.less';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 
+import type { ViewBadge } from 'vscode';
+
 function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: number) {
   if (visibleCount >= containers.length) {
     return [containers, []];
@@ -32,6 +34,16 @@ function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: num
     return [[], containers];
   }
   return [containers.slice(0, visibleCount - 1), containers.slice(visibleCount - 1)];
+}
+
+function getBadgeValue(badge: string | ViewBadge) {
+  if (typeof badge === 'string') {
+    return parseInt(badge, 10) > 99 ? '99+' : badge;
+  }
+  if (typeof badge === 'object' && badge.value) {
+    return badge.value > 99 ? '99+' : badge.value;
+  }
+  return '';
 }
 
 export interface ITabbarViewProps {
@@ -54,7 +66,11 @@ export interface ITabbarViewProps {
   canHideTabbar?: boolean;
   renderOtherVisibleContainers?: React.FC<{
     props: ITabbarViewProps;
-    renderContainers: (component: ComponentRegistryInfo, currentContainerId: string) => JSX.Element | null;
+    renderContainers: (
+      component: ComponentRegistryInfo,
+      tabbarService: TabbarService,
+      currentContainerId: string,
+    ) => JSX.Element | null;
   }>;
 }
 
@@ -109,7 +125,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
   });
 
   const renderContainers = React.useCallback(
-    (component: ComponentRegistryInfo, currentContainerId?: string) => {
+    (component: ComponentRegistryInfo, tabbarService: TabbarService, currentContainerId?: string) => {
       const containerId = component.options?.containerId;
       if (!containerId) {
         return null;
@@ -164,13 +180,13 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
         </li>
       );
     },
-    [tabbarService],
+    [],
   );
 
   return (
     <div className={cls([styles_tab_bar, className])}>
       <div className={styles_bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
-        {visibleContainers.map((component) => renderContainers(component, currentContainerId))}
+        {visibleContainers.map((component) => renderContainers(component, tabbarService, currentContainerId))}
         {renderOtherVisibleContainers({ props, renderContainers })}
         {hideContainers.length ? (
           <li
@@ -228,11 +244,7 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = (
           </span>
         </Badge>
       ) : (
-        component.options?.badge && (
-          <Badge className={styles.tab_badge}>
-            {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
-          </Badge>
-        )
+        component.options?.badge && <Badge className={styles.tab_badge}>{getBadgeValue(component.options.badge)}</Badge>
       )}
     </div>
   );
@@ -251,11 +263,7 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = (
   return (
     <div className={styles.text_tab}>
       <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
-      {component.options?.badge && (
-        <Badge className={styles.tab_badge}>
-          {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
-        </Badge>
-      )}
+      {component.options?.badge && <Badge className={styles.tab_badge}>{getBadgeValue(component.options.badge)}</Badge>}
     </div>
   );
 };
@@ -308,7 +316,11 @@ export const RightTabbarRenderer: React.FC<{ barSize?: number; style?: React.CSS
 export const LeftTabbarRenderer: React.FC<{
   renderOtherVisibleContainers?: React.FC<{
     props: ITabbarViewProps;
-    renderContainers: (component: ComponentRegistryInfo, currentContainerId: string) => JSX.Element | null;
+    renderContainers: (
+      component: ComponentRegistryInfo,
+      tabbarService: TabbarService,
+      currentContainerId: string,
+    ) => JSX.Element | null;
   }>;
   isRenderExtraTopMenus?: boolean;
   renderExtraMenus?: React.ReactNode;

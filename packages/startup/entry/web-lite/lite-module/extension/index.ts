@@ -30,7 +30,7 @@ export class ExtensionClientService implements IExtensionNodeClientService {
   getOpenVSXRegistry(): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  getLanguagePack(languageId: string): IExtensionLanguagePack | undefined {
+  getLanguagePack(languageId: string): Promise<IExtensionLanguagePack | undefined> {
     throw new Error('Method not implemented.');
   }
   restartExtProcessByClient(): void {

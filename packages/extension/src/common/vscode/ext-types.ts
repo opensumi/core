@@ -1460,6 +1460,29 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 }
 
 @es5ClassCompat
+export class MultiDocumentHighlight {
+  /**
+   * The URI of the document containing the highlights.
+   */
+  uri: Uri;
+
+  /**
+   * The highlights for the document.
+   */
+  highlights: DocumentHighlight[];
+
+  /**
+   * Creates a new instance of MultiDocumentHighlight.
+   * @param uri The URI of the document containing the highlights.
+   * @param highlights The highlights for the document.
+   */
+  constructor(uri: Uri, highlights: DocumentHighlight[]) {
+    this.uri = uri;
+    this.highlights = highlights;
+  }
+}
+
+@es5ClassCompat
 export class DocumentLink {
   range: Range;
   target?: Uri;
@@ -2844,6 +2867,14 @@ export enum TaskRevealKind {
    * The terminal never comes to front when the task is executed.
    */
   Never = 3,
+}
+
+export enum TerminalExitReason {
+  Unknown = 0,
+  Shutdown = 1,
+  Process = 2,
+  User = 3,
+  Extension = 4,
 }
 
 export enum UIKind {

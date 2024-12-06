@@ -46,6 +46,8 @@ import { autorunDelta, observableValue, transaction } from '@opensumi/ide-monaco
 import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent } from '../../common';
 import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
 
+import type { ViewBadge } from 'vscode';
+
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export const TabbarServiceFactoryFn = (injector: Injector) => (location: string) => {
   const manager: IMainLayoutService = injector.get(IMainLayoutService);
@@ -193,7 +195,7 @@ export class TabbarService extends WithEventBus {
     });
   }
 
-  updateBadge(containerId: string, value: string) {
+  updateBadge(containerId: string, value?: ViewBadge | string) {
     const component = this.getContainer(containerId);
     if (component && component.options) {
       component.options.badge = value;

@@ -35,3 +35,4 @@ export * from './application.lifecycle';
 export * from './extension.schema';
 export * from './ai-native';
 export * from './remote-service';
+export * from './collections';

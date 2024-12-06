@@ -58,7 +58,7 @@ jobs:
 
       - if: ${{ matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CORE_CODECOV_TOKEN }}
           flags: ${{ matrix.ci-project }}

@@ -5711,11 +5711,11 @@ __metadata:
   linkType: hard
 
 "@types/react-mentions@npm:^4.1.13":
-  version: 4.1.13
-  resolution: "@types/react-mentions@npm:4.1.13"
+  version: 4.4.0
+  resolution: "@types/react-mentions@npm:4.4.0"
   dependencies:
     "@types/react": "npm:*"
-  checksum: 10/9ceefbfdbc2f008455d0fdfbd05221147506816042b91d5449b7d41b8856489ed201185127bcc1188889c1217a2d38fb691e5f0b7c6c84209f35ba7de0f76de7
+  checksum: 10/27a8b63458e73a1338042fbd050f0d97351d37c639f801c8e699ec99058047d3c839217929cea3b029be87f34e95db9c8ad97a00f72e72b0690a9b15e8f96d50
   languageName: node
   linkType: hard
 
@@ -24507,8 +24507,8 @@ __metadata:
   linkType: hard
 
 "webpack-bundle-analyzer@npm:^4.10.1":
-  version: 4.10.1
-  resolution: "webpack-bundle-analyzer@npm:4.10.1"
+  version: 4.10.2
+  resolution: "webpack-bundle-analyzer@npm:4.10.2"
   dependencies:
     "@discoveryjs/json-ext": "npm:0.5.7"
     acorn: "npm:^8.0.4"
@@ -24518,14 +24518,13 @@ __metadata:
     escape-string-regexp: "npm:^4.0.0"
     gzip-size: "npm:^6.0.0"
     html-escaper: "npm:^2.0.2"
-    is-plain-object: "npm:^5.0.0"
     opener: "npm:^1.5.2"
     picocolors: "npm:^1.0.0"
     sirv: "npm:^2.0.3"
     ws: "npm:^7.3.1"
   bin:
     webpack-bundle-analyzer: lib/bin/analyzer.js
-  checksum: 10/bc7bc2c014ba36dfb3f28ef75e3bb4be17ebff092ae713a30392a1d578a73b5d83ed0940b9d12eca6b06e514218d8a1e7cb0610f0b4d74b53425be3f0cc3aea8
+  checksum: 10/cb7ff9d01dc04ef23634f439ab9fe739e022cce5595cb340e01d106ed474605ce4ef50b11b47e444507d341b16650dcb3610e88944020ca6c1c38e88072d43ba
   languageName: node
   linkType: hard
 

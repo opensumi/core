@@ -249,7 +249,7 @@ describe('main layout test', () => {
       title: 'test title',
       expanded: false,
       size: 300,
-      badge: '9',
+      badge: { value: 9, tooltip: '9' },
       initialProps: { hello: 'world' },
       activateKeyBinding: 'ctrlcmd+1',
       hidden: false,
@@ -306,7 +306,7 @@ describe('main layout test', () => {
     expect(mockCb).toHaveBeenCalledTimes(4);
     let newTitle = 'new title';
     act(() => {
-      handler.setBadge('20');
+      handler.setBadge({ value: 20, tooltip: '20' });
       handler.updateTitle(newTitle);
     });
     expect(tabbarService.getContainer(testContainerId2)!.options!.title).toEqual(newTitle);

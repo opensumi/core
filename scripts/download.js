@@ -1,6 +1,5 @@
 const os = require('os');
 const path = require('path');
-const querystring = require('querystring');
 const pipeline = require('stream').pipeline;
 
 const retry = require('async-retry');
@@ -66,10 +65,9 @@ const parallelRunPromise = (lazyPromises, n) => {
   return new Promise(addWorking);
 };
 
-async function downloadExtension(url, namespace, extensionName) {
+async function downloadExtension(url, namespace, extensionName, version) {
   const tmpPath = path.join(os.tmpdir(), 'extension');
-  const [tempFileName, queryStr] = path.basename(url).split('?');
-  const { version = '' } = querystring.parse(queryStr);
+  const [tempFileName] = path.basename(url).split('?');
   const tmpZipFile = path.join(tmpPath, `${tempFileName}-${version}`);
   await fs.mkdirp(tmpPath);
 
@@ -160,7 +158,7 @@ const installExtension = async (namespace, name, version) => {
     // 下载解压插件容易出错，因此这里加一个重试逻辑
     await retry(
       async () => {
-        const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name);
+        const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name, version);
         await unzipFile(targetDir, targetDirName, tmpZipFile);
         rimraf.sync(tmpZipFile);
       },

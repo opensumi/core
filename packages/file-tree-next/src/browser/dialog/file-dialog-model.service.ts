@@ -24,7 +24,7 @@ export interface IParseStore {
 }
 
 export interface IFileTreeHandle extends IRecycleTreeHandle {
-  hasDirectFocus: () => boolean;
+  hasDirectFocus?: () => boolean;
 }
 
 export interface FileTreeValidateMessage extends PromptValidateMessage {

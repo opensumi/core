@@ -518,6 +518,33 @@ declare module 'vscode' {
      * If compact is true, debug sessions with a single child are hidden in the CALL STACK view to make the tree more compact.
      */
     compact?: boolean;
+
+    /**
+     * When true, a save will not be triggered for open editors when starting a debug session,
+     * regardless of the value of the `debug.saveBeforeStart` setting.
+     */
+    suppressSaveBeforeStart?: boolean;
+
+    /**
+     * When true, the debug toolbar will not be shown for this session.
+     */
+    suppressDebugToolbar?: boolean;
+
+    /**
+     * When true, the window statusbar color will not be changed for this session.
+     */
+    suppressDebugStatusbar?: boolean;
+
+    /**
+     * When true, the debug viewlet will not be automatically revealed for this session.
+     */
+    suppressDebugView?: boolean;
+    /**
+     * Signals to the editor that the debug session was started from a test run
+     * request. This is used to link the lifecycle of the debug session and
+     * test run in UI actions.
+     */
+    testRun?: TestRun;
   }
 
   /**

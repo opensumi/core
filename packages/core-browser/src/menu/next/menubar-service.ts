@@ -59,9 +59,23 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     // 监听 menubar 刷新事件
     this.addDispose(Event.debounce(this.menuRegistry.onDidChangeMenubar, () => {}, 50)(this._build, this));
 
+    const menuIds = new Set<string>();
     // 监听内部的 onMenuChange 刷新单个 menubarItem 下的所有节点
     this.addDispose(
-      Event.debounce(this.onMenuChange, (l, menuId: string) => menuId, 50)(this._rebuildSingleRootMenus, this),
+      Event.debounce(
+        this.onMenuChange,
+        (l, menuId: string) => {
+          menuIds.add(menuId);
+          return menuId;
+        },
+        50,
+      )(() => {
+        const changedMenuIds = [...menuIds.values()];
+        menuIds.clear();
+        changedMenuIds.forEach((menuId) => {
+          this._rebuildSingleRootMenus(menuId);
+        });
+      }, this),
     );
 
     this.addDispose(this._onDidMenuBarChange);

@@ -113,9 +113,14 @@ export enum EnvironmentVariableMutatorType {
   Prepend = 3,
 }
 
+export interface EnvironmentVariableMutatorOptions {
+  applyAtProcessCreation?: boolean;
+}
+
 export interface EnvironmentVariableMutator {
   readonly value: string;
   readonly type: EnvironmentVariableMutatorType;
+  readonly options: EnvironmentVariableMutatorOptions;
 }
 
 export interface ExtensionOwnedEnvironmentVariableMutator extends EnvironmentVariableMutator {
@@ -145,6 +150,7 @@ export type SerializableEnvironmentVariableCollection = [string, EnvironmentVari
 export interface IEnvironmentVariableMutator {
   readonly value: string;
   readonly type: EnvironmentVariableMutatorType;
+  readonly options: EnvironmentVariableMutatorOptions;
 }
 
 /** [variable, mutator] */

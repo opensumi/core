@@ -293,6 +293,8 @@ export interface PresentationOptions {
    * Controls whether the task is executed in a specific terminal group using split panes.
    */
   group?: string;
+
+  close?: boolean;
 }
 
 export namespace PresentationOptions {

@@ -4,6 +4,7 @@ import {
   CommandService,
   Emitter,
   Event,
+  FileStat,
   IApplicationService,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
@@ -22,6 +23,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IDialogService } from '@opensumi/ide-overlay';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { AskSaveResult, IResource, IResourceProvider, WorkbenchEditorService } from '../common';
 
@@ -29,7 +31,35 @@ import { IEditorDocumentModelContentProvider, IEditorDocumentModelService } from
 
 @Injectable()
 export class UntitledDocumentIdCounter {
+  static readonly UNTITLED_FILE_NAME_PREFIX = 'Untitled-';
+
+  @Autowired(IWorkspaceService)
+  protected readonly workspaceService: IWorkspaceService;
+
   private _id = 1;
+
+  async update() {
+    this._id = await this.getLatestUnitiedIndex();
+  }
+
+  async getLatestUnitiedIndex(children?: FileStat[]): Promise<number> {
+    await this.workspaceService.whenReady;
+    const files = children || this.workspaceService.workspace?.children || [];
+    const unitiedFiles = files.filter((file) =>
+      URI.file(file.uri).displayName.startsWith(UntitledDocumentIdCounter.UNTITLED_FILE_NAME_PREFIX),
+    );
+    // 提取文件名中的数字部分并找到最大值
+    const indices = unitiedFiles
+      .map((file) => {
+        const match = URI.file(file.uri).displayName.match(
+          new RegExp(`^${UntitledDocumentIdCounter.UNTITLED_FILE_NAME_PREFIX}(\\d+)`, 'i'),
+        );
+        return match ? parseInt(match[1], 10) : -1; // 如果没有匹配，返回 -1
+      })
+      .filter((index) => index !== -1); // 过滤掉无效的索引
+    // 返回最新的起始下标
+    return indices.length > 0 ? Math.max(...indices) + 1 : 1; // 如果没有文件，返回 1
+  }
 
   get id() {
     return this._id++;
@@ -52,6 +82,9 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
 
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
+
+  @Autowired(UntitledDocumentIdCounter)
+  private untitledIndex: UntitledDocumentIdCounter;
 
   private _onDidChangeContent: Emitter<URI> = new Emitter();
 
