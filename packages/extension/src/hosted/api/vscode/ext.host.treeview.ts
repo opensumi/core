@@ -21,6 +21,7 @@ import {
   ITreeViewRevealOptions,
   ITreeViewsService,
   MainThreadAPIIdentifier,
+  TreeItemCheckboxState,
   TreeView,
   TreeViewItem,
   TreeViewSelection,
@@ -217,6 +218,20 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     treeView.setVisible(isVisible);
   }
 
+  /**
+   * 设置节点的选择状态
+   * @param treeViewId
+   * @param itemIds
+   * @returns
+   */
+  $checkStateChanged(treeViewId: string, itemIds: { id: string; checked: boolean }[]): Promise<void> {
+    const treeView = this.treeViews.get(treeViewId);
+    if (!treeView) {
+      throw new Error('No tree view with id ' + treeViewId);
+    }
+    return treeView.checkStateChanged(itemIds);
+  }
+
   async $handleDrop(
     destinationViewId: string,
     requestId: number,
@@ -308,6 +323,9 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private readonly onDidChangeVisibilityEmitter = new Emitter<vscode.TreeViewVisibilityChangeEvent>();
   readonly onDidChangeVisibility = this.onDidChangeVisibilityEmitter.event;
 
+  private readonly onDidChangeCheckboxStateEmitter = new Emitter<vscode.TreeCheckboxChangeEvent<T>>();
+  readonly onDidChangeCheckboxState = this.onDidChangeCheckboxStateEmitter.event;
+
   private _visible = false;
 
   private selectedItemIds = new Set<string>();
@@ -320,9 +338,6 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
 
   private readonly dataProvider: vscode.TreeDataProvider<T>;
   private readonly dndController: vscode.TreeDragAndDropController<T> | undefined;
-
-  private readonly onDidChangeCheckboxStateEmitter = new Emitter<vscode.TreeCheckboxChangeEvent<T>>();
-  readonly onDidChangeCheckboxState = this.onDidChangeCheckboxStateEmitter.event;
 
   private _onDidChangeData: Emitter<TreeData<T>> = new Emitter<TreeData<T>>();
 
@@ -353,6 +368,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     this.disposable.add(this._onDidChangeData);
     // 将 options 直接取值，避免循环引用导致序列化异常
     proxy.$registerTreeDataProvider(treeViewId, {
+      manageCheckboxStateManually: options.manageCheckboxStateManually,
       showCollapseAll: !!options.showCollapseAll,
       canSelectMany: !!options.canSelectMany,
       dropMimeTypes,
@@ -637,6 +653,23 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     );
   }
 
+  async checkStateChanged(items: readonly { id: string; checked: boolean }[]): Promise<void> {
+    const transformed: [T, TreeItemCheckboxState][] = [];
+    items.forEach((item) => {
+      const node = this.getTreeItem(item.id);
+      if (node) {
+        transformed.push([node, item.checked ? TreeItemCheckboxState.Checked : TreeItemCheckboxState.Unchecked]);
+        const treeViewItem = this.element2TreeViewItem.get(node);
+        if (treeViewItem) {
+          treeViewItem.checkboxInfo!.checked = item.checked;
+        }
+      }
+    });
+    this.onDidChangeCheckboxStateEmitter.fire({
+      items: transformed,
+    });
+  }
+
   /**
    * 在节点被点击或者打开时，获取原有的 command 为 undefined 时被调用
    * 在节点被 Hover 时，获取原有的 tooltip 为 undefined 时被调用
@@ -765,6 +798,21 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
         };
       }
     }
+    let checkboxInfo;
+    if (treeItem.checkboxState === undefined) {
+      checkboxInfo = undefined;
+    } else if (typeof treeItem.checkboxState === 'object') {
+      checkboxInfo = {
+        checked: treeItem.checkboxState.state === TreeItemCheckboxState.Checked,
+        tooltip: treeItem.checkboxState.tooltip,
+        accessibilityInformation: treeItem.accessibilityInformation,
+      };
+    } else {
+      checkboxInfo = {
+        checked: treeItem.checkboxState === TreeItemCheckboxState.Checked,
+      };
+    }
+
     const treeViewItem = {
       id,
       label,
@@ -776,6 +824,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
       tooltip: treeItem.tooltip,
       collapsibleState: treeItem.collapsibleState,
       contextValue: treeItem.contextValue,
+      checkboxInfo,
       accessibilityInformation: treeItem.accessibilityInformation,
       command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, this.disposable) : undefined,
       ...props,

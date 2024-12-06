@@ -3,6 +3,12 @@ export interface IAccessibilityInformation {
   role?: string;
 }
 
+export interface TreeViewItemCheckboxInfo {
+  checked: boolean | undefined;
+  tooltip?: string;
+  accessibilityInformation?: IAccessibilityInformation;
+}
+
 export interface ITreeNode {
   /**
    * 唯一标识id
@@ -41,6 +47,10 @@ export interface ITreeNode {
    * 父节点，但为undefined时，表示该节点为根节点
    */
   readonly parent: ICompositeTreeNode | undefined;
+  /**
+   * 节点的选择信息
+   */
+  readonly checkboxInfo?: TreeViewItemCheckboxInfo;
   /**
    * 节点无障碍信息
    */

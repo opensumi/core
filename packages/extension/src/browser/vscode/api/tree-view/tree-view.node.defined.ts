@@ -2,7 +2,7 @@ import { CompositeTreeNode, ITree, TreeNode } from '@opensumi/ide-components';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IAccessibilityInformation, Uri, UriComponents, isObject, isString } from '@opensumi/ide-core-common';
 
-import { ITreeItemLabel } from '../../../../common/vscode';
+import { ITreeItemLabel, TreeViewItemCheckboxInfo } from '../../../../common/vscode';
 import { ICommand } from '../../../../common/vscode/models';
 import { TreeViewDataProvider } from '../main.thread.treeview';
 
@@ -58,6 +58,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     public contextValue: string = '',
     public treeItemId: string = '',
     public actions: MenuNode[],
+    private _checkboxInfo?: TreeViewItemCheckboxInfo,
     private _accessibilityInformation?: IAccessibilityInformation,
     expanded?: boolean,
     sourceUri?: UriComponents,
@@ -90,6 +91,14 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
 
   get displayName() {
     return this._displayName;
+  }
+
+  get checkboxInfo() {
+    return {
+      checked: this._checkboxInfo?.checked,
+      tooltip: this._checkboxInfo?.tooltip,
+      accessibilityInformation: this._checkboxInfo?.accessibilityInformation,
+    };
   }
 
   get accessibilityInformation() {
@@ -147,6 +156,7 @@ export class ExtensionTreeNode extends TreeNode {
     public contextValue: string = '',
     public treeItemId: string = '',
     public actions: MenuNode[],
+    private _checkboxInfo?: TreeViewItemCheckboxInfo,
     private _accessibilityInformation?: IAccessibilityInformation,
     private sourceUri?: UriComponents,
   ) {
@@ -178,6 +188,14 @@ export class ExtensionTreeNode extends TreeNode {
 
   get displayName() {
     return this._displayName;
+  }
+
+  get checkboxInfo() {
+    return {
+      checked: this._checkboxInfo?.checked,
+      tooltip: this._checkboxInfo?.tooltip,
+      accessibilityInformation: this._checkboxInfo?.accessibilityInformation,
+    };
   }
 
   get accessibilityInformation() {
