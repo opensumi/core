@@ -21,7 +21,7 @@ import {
   injectGDataStores,
   isWindows,
 } from '@opensumi/ide-core-common';
-import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { suppressNodeJSEpipeError } from '@opensumi/ide-core-common/lib/node';
 
 import { RPCServiceCenter, createNetServerConnection, createServerConnection2 } from '../connection';
@@ -63,7 +63,7 @@ export class ServerApp implements IServerApp {
       injector: this.injector,
       marketplace: Object.assign(
         {
-          endpoint: DEFAULT_ALIPAY_CLOUD_REGISTRY.ENDPOINT,
+          endpoint: DEFAULT_OPENVSX_REGISTRY,
           extensionDir: path.join(
             os.homedir(),
             ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),
@@ -71,8 +71,6 @@ export class ServerApp implements IServerApp {
             StoragePaths.MARKETPLACE_DIR,
           ),
           showBuiltinExtensions: false,
-          accountId: DEFAULT_ALIPAY_CLOUD_REGISTRY.ACCOUNT_ID,
-          masterKey: DEFAULT_ALIPAY_CLOUD_REGISTRY.MASTER_KEY,
           ignoreId: [],
         },
         opts.marketplace,
