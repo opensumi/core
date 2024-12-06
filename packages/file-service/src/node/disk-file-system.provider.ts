@@ -170,7 +170,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   async stat(uri: UriComponents, options?: IFileStatOptions): Promise<FileStat> {
     const _uri = Uri.revive(uri);
     try {
-      const stat = await this.doGetStat(_uri, 0, options);
+      const stat = await this.doGetStat(_uri, 1, options);
       if (stat) {
         return stat;
       }
