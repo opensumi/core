@@ -426,6 +426,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
     this.recursiveFileSystemWatcher.setClient(watcherClient);
     this.unrecursiveFileSystemWatcher.setClient(watcherClient);
+    this._whenReadyDeferred.resolve();
   }
 
   private getWatcherServer(recursive?: boolean) {
