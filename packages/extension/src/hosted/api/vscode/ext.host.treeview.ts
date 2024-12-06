@@ -105,6 +105,9 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       get onDidChangeVisibility() {
         return treeView.onDidChangeVisibility;
       },
+      get onDidChangeCheckboxState() {
+        return treeView.onDidChangeCheckboxState;
+      },
       get message(): string {
         return treeView.message;
       },
@@ -317,6 +320,9 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
 
   private readonly dataProvider: vscode.TreeDataProvider<T>;
   private readonly dndController: vscode.TreeDragAndDropController<T> | undefined;
+
+  private readonly onDidChangeCheckboxStateEmitter = new Emitter<vscode.TreeCheckboxChangeEvent<T>>();
+  readonly onDidChangeCheckboxState = this.onDidChangeCheckboxStateEmitter.event;
 
   private _onDidChangeData: Emitter<TreeData<T>> = new Emitter<TreeData<T>>();
 
