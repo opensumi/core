@@ -414,6 +414,7 @@ export class TreeViewDataProvider extends Tree {
       item.contextValue || '',
       item.id,
       actions,
+      item.checkboxInfo,
       item.accessibilityInformation,
       expanded,
       item.resourceUri,
@@ -437,6 +438,7 @@ export class TreeViewDataProvider extends Tree {
       item.contextValue || '',
       item.id,
       actions,
+      item.checkboxInfo,
       item.accessibilityInformation,
       item.resourceUri,
     );

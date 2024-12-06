@@ -230,6 +230,7 @@ export class ExtensionTreeViewModel {
     treeItemId: string;
     expanded: boolean;
   }> = new Emitter();
+  private readonly onDidUpdateEmitter = new Emitter<TreeNode[]>();
 
   private _isMultiSelected = false;
   private revealDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REVEAL_DELAY);
@@ -263,6 +264,10 @@ export class ExtensionTreeViewModel {
 
   get onDidSelectedNodeChange() {
     return this.onDidSelectedNodeChangeEmitter.event;
+  }
+
+  get onDidUpdate() {
+    return this.onDidUpdateEmitter.event;
   }
 
   get extensionTreeHandle() {
@@ -940,6 +945,11 @@ export class ExtensionTreeViewModel {
         this.clickTimes = 0;
       }, 200);
     }
+  };
+
+  handleItemCheck = async (item: ExtensionCompositeTreeNode | ExtensionTreeNode, type: TreeNodeType) => {
+    item.checkboxInfo.checked = !item.checkboxInfo.checked;
+    this.onDidUpdateEmitter.fire([item]);
   };
 
   handleContextMenu = (ev: MouseEvent, item?: ExtensionCompositeTreeNode | ExtensionTreeNode) => {

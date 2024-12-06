@@ -1,7 +1,14 @@
 import cls from 'classnames';
 import React, { CSSProperties, DragEvent, FC, MouseEvent, ReactNode, useCallback, useEffect, useState } from 'react';
 
-import { ClasslistComposite, INodeRendererProps, Loading, PromptHandle, TreeNodeType } from '@opensumi/ide-components';
+import {
+  CheckBox,
+  ClasslistComposite,
+  INodeRendererProps,
+  Loading,
+  PromptHandle,
+  TreeNodeType,
+} from '@opensumi/ide-components';
 import { getIcon, useDesignStyles } from '@opensumi/ide-core-browser';
 import { TitleActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -21,6 +28,7 @@ export interface ITreeViewNodeProps {
   decorations?: ClasslistComposite;
   onTwistierClick?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onCheck: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   onContextMenu?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   onDragStart?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
   onDragEnter?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
@@ -36,6 +44,7 @@ export type TreeViewNodeRenderedProps = ITreeViewNodeProps & INodeRendererProps;
 export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   item,
   onClick,
+  onCheck,
   onContextMenu,
   itemType,
   leftPadding = 8,
@@ -138,6 +147,13 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     [item, onDrop],
   );
 
+  const hadnleCheck = useCallback(
+    (event: MouseEvent) => {
+      onCheck(event, item, itemType);
+    },
+    [item, itemType, onCheck],
+  );
+
   const isDirectory = itemType === TreeNodeType.CompositeTreeNode;
   const paddingLeft = isDirectory
     ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px`
@@ -166,6 +182,8 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   const renderIcon = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => (
     <div className={cls(styles.file_icon, node.icon)} style={{ maxHeight: TREE_VIEW_NODE_HEIGHT }}></div>
   );
+
+  const renderCheckbox = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => <div></div>;
 
   const renderDisplayName = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
     const displayName = () => {
@@ -277,6 +295,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     >
       <div className={cls(styles.tree_view_node_content)}>
         {renderTwice(item)}
+        {renderCheckbox(item)}
         {renderIcon(item)}
         <div className={styles.tree_view_node_overflow_wrap}>
           {renderDisplayName(item)}
