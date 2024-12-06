@@ -1618,9 +1618,9 @@ declare module 'vscode' {
     canSelectMany?: boolean;
 
     /**
-		* An optional interface to implement drag and drop in the tree view.
-		*/
-		dragAndDropController?: TreeDragAndDropController<T>;
+    * An optional interface to implement drag and drop in the tree view.
+    */
+    dragAndDropController?: TreeDragAndDropController<T>;
 
     /**
      * By default, when the children of a tree item have already been fetched, child checkboxes are automatically managed based on the checked state of the parent tree item.
@@ -2171,7 +2171,6 @@ declare module 'vscode' {
        */
       readonly accessibilityInformation?: AccessibilityInformation;
     };
-
 
     /**
      * @param label A human-readable string describing this item
