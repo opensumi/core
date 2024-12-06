@@ -295,7 +295,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.disposed) {
+    if (this.client && this.disposed) {
       return;
     }
     this.client = client;

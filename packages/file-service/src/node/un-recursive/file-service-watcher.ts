@@ -136,14 +136,14 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
         } else {
           setTimeout(async () => {
-            if (changeFileName === signalDoc) {
-              if (fs.pathExistsSync(basePath)) {
-                this.pushUpdated(basePath);
-              } else {
-                this.pushDeleted(basePath);
-                signalDoc = '';
-              }
+            // if (changeFileName === signalDoc) {
+            if (fs.pathExistsSync(basePath)) {
+              this.pushUpdated(basePath);
+            } else {
+              this.pushDeleted(basePath);
+              signalDoc = '';
             }
+            // }
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
         }
       });
@@ -244,7 +244,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.toDispose.disposed) {
+    if (this.client && this.toDispose.disposed) {
       return;
     }
     this.client = client;

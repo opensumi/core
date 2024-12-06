@@ -85,7 +85,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   protected watchFileExcludes: string[] = [];
 
   private _whenReadyDeferred: Deferred<void> = new Deferred();
-  private isInitialized = false;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -397,11 +396,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       return undefined;
     }
 
-    if (this.isInitialized) {
-      // 当服务已经初始化一次后，重新初始化时需要重新绑定原有的监听服务
-      this.rewatch();
-    }
-
     if (this.watcherServerDisposeCollection) {
       this.watcherServerDisposeCollection.dispose();
     }
@@ -441,29 +435,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     });
 
     this._whenReadyDeferred.resolve();
-    this.isInitialized = true;
 
     return watcherServer;
-  }
-
-  private async rewatch() {
-    let tasks: {
-      id: number;
-      uri: string;
-      options?: { excludes?: string[] };
-    }[] = [];
-    for (const [uri, { id, options }] of this.watcherCollection) {
-      tasks.push({
-        id,
-        uri,
-        options,
-      });
-    }
-    // 需要针对缓存根据路径深度排序，防止过度监听
-    tasks = tasks.sort((a, b) => Path.pathDepth(a.uri) - Path.pathDepth(b.uri));
-    for (const { uri, options } of tasks) {
-      await this.watch(Uri.parse(uri), { excludes: this.getWatchExcludes(options?.excludes) });
-    }
   }
 
   protected async createFile(uri: UriComponents, options: { content: Buffer }): Promise<FileStat> {
