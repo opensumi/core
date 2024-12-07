@@ -129,7 +129,7 @@
     "node-gyp": "^10.0.1",
     "node-polyfill-webpack-plugin": "^3.0.0",
     "offline-iconfont": "^1.2.0",
-    "prettier": "^2.5.1",
+    "prettier": "^3.4.1",
     "rimraf": "^3.0.2",
     "semver": "^7.5.2",
     "simple-git": "^3.3.0",
