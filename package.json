@@ -134,7 +134,7 @@
     "semver": "^7.5.2",
     "simple-git": "^3.3.0",
     "temp": "^0.9.4",
-    "tinybench": "^2.6.0",
+    "tinybench": "^3.0.7",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.1",
