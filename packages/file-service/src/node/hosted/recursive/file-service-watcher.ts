@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 
-import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
@@ -20,8 +20,8 @@ import {
   parseGlob,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
-import { FileChangeCollection } from '../file-change-collection';
+import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../../common';
+import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
 export interface WatcherOptions {
@@ -31,7 +31,7 @@ export interface WatcherOptions {
 
 const watcherPlaceHolder = {
   disposable: {
-    dispose: () => {},
+    dispose: () => { },
   },
   handlers: [],
 };
@@ -45,7 +45,6 @@ export interface NsfwFileSystemWatcherOption {
   error?: (message: string, ...args: any[]) => void;
 }
 
-@Injectable({ multiple: true })
 export class FileSystemWatcherServer extends Disposable implements IFileSystemWatcherServer {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
@@ -60,15 +59,20 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
   protected changes = new FileChangeCollection();
 
-  @Autowired(ILogServiceManager)
-  private readonly loggerManager: ILogServiceManager;
+  private logger = {
+    log(...args: any[]) {
+      console.log(...args);
+    },
+    error(...args: any[]) {
+      console.error(...args);
+    },
+    warn(...args: any[]) {
+      console.warn(...args);
+    },
+  };
 
-  private logger: ILogService;
-
-  constructor(@Optional() private readonly excludes: string[] = []) {
+  constructor(private excludes: string[] = []) {
     super();
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
-
     this.addDispose(
       Disposable.create(() => {
         this.WATCHER_HANDLERS.clear();

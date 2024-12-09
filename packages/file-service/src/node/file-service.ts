@@ -45,7 +45,7 @@ import {
 } from '../common';
 
 import { FileSystemManage } from './file-system-manage';
-import { getFileType } from './shared/file-type';
+import { getFileType } from './hosted/shared/file-type';
 
 export abstract class FileSystemNodeOptions {
   public static DEFAULT: FileSystemNodeOptions = {

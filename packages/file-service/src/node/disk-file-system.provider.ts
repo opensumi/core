@@ -43,9 +43,9 @@ import {
   notEmpty,
 } from '../common/';
 
-import { FileSystemWatcherServer } from './recursive/file-service-watcher';
-import { getFileType } from './shared/file-type';
-import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
+import { FileSystemWatcherServer } from './hosted/recursive/file-service-watcher';
+import { getFileType } from './hosted/shared/file-type';
+import { UnRecursiveFileSystemWatcher } from './hosted/un-recursive/file-service-watcher';
 import { WatcherProcessManager, WatcherProcessManagerToken } from './watcher-process-manager';
 
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -104,13 +104,10 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.recursive = recursive;
-    this.initWatcherServer();
   }
 
   async initialize(clientId: string) {
-    // create watcher process
     await this.watcherProcssManager.createProcess(clientId);
-    this._whenReadyDeferred.resolve();
   }
 
   private async disposeWatcherProcess() {
@@ -118,7 +115,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   get whenReady() {
-    return this._whenReadyDeferred.promise;
+    return this.watcherProcssManager.whenReady;
   }
 
   onDidChangeCapabilities: Event<void> = Event.None;
@@ -154,21 +151,10 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     await this.whenReady;
     const _uri = Uri.revive(uri);
 
-    const watcherServer = this.getWatcherServer(options?.recursive);
-
-    if (!watcherServer) {
-      return -1;
-    }
-
-    const id = await watcherServer.watchFileChanges(_uri.toString(), {
+    const id = await this.watcherProcssManager.watch(_uri, {
       excludes: options?.excludes ?? [],
     });
-    const disposable = {
-      dispose: () => {
-        watcherServer?.unwatchFileChanges(id);
-      },
-    };
-    this.watcherCollection.set(_uri.toString(), { id, options, disposable });
+
     return id;
   }
 
@@ -395,7 +381,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     this.watchFileExcludes = watchExcludes;
 
     // 重新实例化 WatcherServer
-    this.initWatcherServer(watchExcludes, true);
+    // this.initWatcherServer(watchExcludes, true);
   }
 
   getWatchFileExcludes() {
@@ -437,20 +423,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
     this.recursiveFileSystemWatcher.setClient(watcherClient);
     this.unrecursiveFileSystemWatcher.setClient(watcherClient);
-  }
-
-  private getWatcherServer(recursive?: boolean) {
-    const useRecursiveServer = recursive ?? this.recursive;
-    let watcherServer: FileSystemWatcherServer | UnRecursiveFileSystemWatcher;
-    this.initWatcherServer();
-
-    if (useRecursiveServer) {
-      watcherServer = this.recursiveFileSystemWatcher!;
-    } else {
-      watcherServer = this.unrecursiveFileSystemWatcher!;
-    }
-
-    return watcherServer;
+    // this._whenReadyDeferred.resolve();
   }
 
   protected async createFile(uri: UriComponents, options: { content: Buffer }): Promise<FileStat> {

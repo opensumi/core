@@ -1,4 +1,5 @@
-import { Event, FileChange, IRelativePattern, URI } from '@opensumi/ide-core-common';
+import { ProxyIdentifier } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
+import { Event, FileChange, IRelativePattern, URI, UriComponents } from '@opensumi/ide-core-common';
 
 import { IFileServiceClient } from './file-service-client';
 
@@ -56,3 +57,16 @@ export namespace INsfw {
 
 export const KT_WATCHER_PROCESS_SOCK_KEY = 'kt-watcher-process-sock';
 export const WATCHER_INIT_DATA_KEY = 'kt-watcher-init-data';
+
+export interface IWatcherHostService {
+  $watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number>;
+  $unwatch(watchId: number): Promise<void>;
+  $setWatcherFileExcludes(excludes: string[]): Promise<void>;
+  $dispose(): Promise<void>;
+
+  initWatcherServer(): void;
+}
+
+export const WatcherServiceProxy = new ProxyIdentifier('WatcherHostServiceImpl');
+
+export const WatcherProcessManagerProxy = new ProxyIdentifier('WatcherProcessManagerProxy');

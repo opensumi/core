@@ -14,11 +14,12 @@ import {
   path,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
-import { FileChangeCollection } from '../file-change-collection';
+import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../../common/index';
+import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 const { join, basename, normalize } = path;
-@Injectable({ multiple: true })
+
+// @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private WATCHER_HANDLERS = new Map<
     number,
@@ -33,9 +34,9 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
-  @Autowired(ILogServiceManager)
-  // 一个 symbol 关键字，内容是 ILogServiceManager
-  private readonly loggerManager: ILogServiceManager;
+  // @Autowired(ILogServiceManager)
+  // // 一个 symbol 关键字，内容是 ILogServiceManager
+  // private readonly loggerManager: ILogServiceManager;
 
   // 收集发生改变的文件
   protected changes = new FileChangeCollection();
@@ -44,10 +45,20 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   protected client: FileSystemWatcherClient | undefined;
 
-  private logger: ILogService;
+  private logger = {
+    log(...args: any[]) {
+      console.log(...args);
+    },
+    error(...args: any[]) {
+      console.error(...args);
+    },
+    warn(...args: any[]) {
+      console.warn(...args);
+    },
+  };
 
-  constructor(@Optional() private readonly excludes: string[] = []) {
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
+  constructor(private readonly excludes: string[] = []) {
+    // this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
   }
 
   dispose(): void {

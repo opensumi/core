@@ -66,7 +66,7 @@ function _wrapConsoleMethod(method: 'log' | 'info' | 'warn' | 'error') {
   const original = console[method].bind(console);
 
   Object.defineProperty(console, method, {
-    set: () => {},
+    set: () => { },
     get: () =>
       function (...args) {
         original(...args);
