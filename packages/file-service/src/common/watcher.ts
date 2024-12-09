@@ -53,3 +53,6 @@ export namespace INsfw {
     RENAMED,
   }
 }
+
+export const KT_WATCHER_PROCESS_SOCK_KEY = 'kt-watcher-process-sock';
+export const WATCHER_INIT_DATA_KEY = 'kt-watcher-init-data';

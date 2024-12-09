@@ -110,6 +110,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   async initialize(clientId: string) {
     // create watcher process
     await this.watcherProcssManager.createProcess(clientId);
+    this._whenReadyDeferred.resolve();
   }
 
   private async disposeWatcherProcess() {
@@ -436,7 +437,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
     this.recursiveFileSystemWatcher.setClient(watcherClient);
     this.unrecursiveFileSystemWatcher.setClient(watcherClient);
-    this._whenReadyDeferred.resolve();
   }
 
   private getWatcherServer(recursive?: boolean) {
