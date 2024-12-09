@@ -244,7 +244,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
-    if (this.client && this.toDispose.disposed) {
+    if (this.toDispose.disposed) {
       return;
     }
     this.client = client;
