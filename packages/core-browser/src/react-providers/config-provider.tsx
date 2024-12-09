@@ -302,6 +302,16 @@ export interface AppConfig {
    * 启用 Diff 编辑器状态恢复逻辑
    */
   enableRestoreDiffEditorState?: boolean;
+  notebookServerHost?: string;
+  /**
+   * The authentication token for requests.  Use an empty string to disable.
+   */
+  notebookServerToken?: string;
+
+  /**
+   * Unrecursive directories
+   */
+  unRecursiveDirectories?: string[];
 }
 
 export interface ICollaborationClientOpts {
