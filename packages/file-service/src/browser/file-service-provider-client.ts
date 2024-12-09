@@ -106,6 +106,14 @@ export class DiskFsProviderClient extends CoreFileServiceProviderClient implemen
     return this._capabilities;
   }
 
+  async initialize(clientId: string) {
+    if (this.fileServiceProvider?.initialize) {
+      try {
+        await this.fileServiceProvider?.initialize(clientId);
+      } catch (err) {}
+    }
+  }
+
   @debounce(100)
   setWatchFileExcludes(excludes: string[]) {
     return this.fileServiceProvider.setWatchFileExcludes(excludes);

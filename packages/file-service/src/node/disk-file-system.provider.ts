@@ -25,7 +25,6 @@ import {
   UriComponents,
   isLinux,
   isUndefined,
-  path,
   uuid,
 } from '@opensumi/ide-core-node';
 
@@ -47,8 +46,8 @@ import {
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
 import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
+import { WatcherProcessManager, WatcherProcessManagerToken } from './watcher-process-manager';
 
-const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
 const DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**';
 
@@ -92,6 +91,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
 
+  @Autowired(WatcherProcessManagerToken)
+  private readonly watcherProcssManager: WatcherProcessManager;
+
   private logger: ILogService;
 
   private ignoreNextChangesEvent: Set<string> = new Set();
@@ -103,6 +105,15 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.recursive = recursive;
     this.initWatcherServer();
+  }
+
+  async initialize(clientId: string) {
+    // create watcher process
+    await this.watcherProcssManager.createProcess(clientId);
+  }
+
+  private async disposeWatcherProcess() {
+    await this.watcherProcssManager.disposeAllProcess();
   }
 
   get whenReady() {

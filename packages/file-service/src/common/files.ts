@@ -420,6 +420,7 @@ export function containsExtraFileMethod<X extends {}, Y extends keyof ExtendedFi
 }
 
 export interface IDiskFileProvider extends FileSystemProvider {
+  initialize?: (clientid: string) => Promise<void>;
   copy: FileCopyFn;
   access: FileAccessFn;
   getCurrentUserHome: FileGetCurrentUserHomeFn;
@@ -476,4 +477,10 @@ export interface IFileSystemProviderCapabilitiesChangeEvent {
 
 export interface IFileSystemProviderActivationEvent {
   readonly scheme: string;
+}
+
+export interface IWatcherProcessManager {
+  createWatcherProcess(clientId: string): Promise<number>;
+
+  disposeAllProcess(): Promise<void>;
 }
