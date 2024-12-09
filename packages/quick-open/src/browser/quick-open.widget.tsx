@@ -69,9 +69,14 @@ export class QuickOpenWidget implements IQuickOpenWidget {
 
   show(prefix: string, options: QuickOpenInputOptions): void {
     transaction((tx) => {
-      // 获取第一次要展示的内容
-      if (this.isShow.get() && !this.isAlreadyOpen) {
-        this.isAlreadyOpen = true;
+      if (this.isShow.get()) {
+        if (!this.isAlreadyOpen) {
+          // 弹框已经显示后 show 方法第一次被调用时调用
+          this.isAlreadyOpen = true;
+          this.callbacks.onType(prefix);
+        }
+      } else {
+        // 弹框第一次显示时调用
         this.callbacks.onType(prefix);
       }
 
