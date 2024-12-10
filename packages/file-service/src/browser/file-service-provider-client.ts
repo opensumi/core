@@ -110,7 +110,9 @@ export class DiskFsProviderClient extends CoreFileServiceProviderClient implemen
     if (this.fileServiceProvider?.initialize) {
       try {
         await this.fileServiceProvider?.initialize(clientId);
-      } catch (err) {}
+      } catch (err) {
+        getDebugLogger('fileService.fsProvider').error('initialize error', err);
+      }
     }
   }
 
