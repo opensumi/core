@@ -441,6 +441,7 @@ class TestRunTracker extends Disposable {
   private readonly sharedTestIds = new Set<string>();
   private readonly cts: CancellationTokenSource;
   private readonly endEmitter = this.registerDispose(new Emitter<void>());
+  private readonly onDidDispose: Event<void>;
 
   /**
    * Fires when a test ends, and no more tests are left running.
@@ -473,6 +474,15 @@ class TestRunTracker extends Disposable {
         for (const { run } of this.tasks.values()) {
           run.end();
         }
+      }),
+    );
+
+    const didDisposeEmitter = new Emitter<void>();
+    this.onDidDispose = didDisposeEmitter.event;
+    this.registerDispose(
+      toDisposable(() => {
+        didDisposeEmitter.fire();
+        didDisposeEmitter.dispose();
       }),
     );
   }
@@ -528,6 +538,7 @@ class TestRunTracker extends Disposable {
       isPersisted: this.dto.isPersisted,
       token: this.cts.token,
       name,
+      onDidDispose: this.onDidDispose,
       get coverageProvider() {
         return coverage.coverageProvider;
       },
@@ -622,6 +633,9 @@ class TestRunTracker extends Disposable {
           this.dispose();
         }
       },
+      /** @stubbed */
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      addCoverage(fileCoverage: FileCoverage): void {},
     };
 
     this.tasks.set(taskId, { run, coverage });

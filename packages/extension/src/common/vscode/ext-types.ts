@@ -3436,6 +3436,75 @@ export class TestMessage implements vscode.TestMessage {
 }
 
 @es5ClassCompat
+export class TestCoverageCount {
+  constructor(public covered: number, public total: number) {}
+}
+
+@es5ClassCompat
+export class FileCoverage {
+  detailedCoverage?: vscode.FileCoverageDetail[];
+
+  static fromDetails(uri: vscode.Uri, details: vscode.FileCoverageDetail[]): FileCoverage {
+    const statements = new TestCoverageCount(0, 0);
+    const branches = new TestCoverageCount(0, 0);
+    const decl = new TestCoverageCount(0, 0);
+
+    for (const detail of details) {
+      if (detail instanceof StatementCoverage) {
+        statements.total += 1;
+        statements.covered += detail.executed ? 1 : 0;
+
+        for (const branch of detail.branches) {
+          branches.total += 1;
+          branches.covered += branch.executed ? 1 : 0;
+        }
+      } else {
+        decl.total += 1;
+        decl.covered += detail.executed ? 1 : 0;
+      }
+    }
+
+    const coverage = new FileCoverage(
+      uri,
+      statements,
+      branches.total > 0 ? branches : undefined,
+      decl.total > 0 ? decl : undefined,
+    );
+
+    coverage.detailedCoverage = details;
+
+    return coverage;
+  }
+
+  constructor(
+    public uri: vscode.Uri,
+    public statementCoverage: TestCoverageCount,
+    public branchCoverage?: TestCoverageCount,
+    public declarationCoverage?: TestCoverageCount,
+  ) {}
+}
+
+@es5ClassCompat
+export class StatementCoverage implements vscode.StatementCoverage {
+  constructor(
+    public executed: number | boolean,
+    public location: Position | Range,
+    public branches: BranchCoverage[] = [],
+  ) {}
+}
+
+export class BranchCoverage implements vscode.BranchCoverage {
+  constructor(public executed: number | boolean, public location?: Position | Range, public label?: string) {}
+}
+
+@es5ClassCompat
+export class DeclarationCoverage implements vscode.DeclarationCoverage {
+  constructor(public name: string, public executed: number | boolean, public location: Position | Range) {}
+}
+
+export type FileCoverageDetail = StatementCoverage | DeclarationCoverage;
+
+@es5ClassCompat
 export class TestTag implements vscode.TestTag {
   constructor(public readonly id: string) {}
 }
