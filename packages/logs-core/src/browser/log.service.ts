@@ -126,6 +126,6 @@ export class LogServiceClient implements ILogServiceClient {
     if (!this.logServiceForClient) {
       return;
     }
-    await this.logServiceForClient.dispose(this.namespace);
+    await this.logServiceForClient.disposeLogger(this.namespace);
   }
 }
