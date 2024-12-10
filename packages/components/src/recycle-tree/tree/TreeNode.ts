@@ -244,7 +244,7 @@ export class TreeNode implements ITreeNode {
     return this._path;
   }
 
-  get checkboxInfo(): TreeViewItemCheckboxInfo {
+  get checkboxInfo(): TreeViewItemCheckboxInfo | undefined {
     return {
       checked: false,
       tooltip: '',

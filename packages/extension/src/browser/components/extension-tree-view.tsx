@@ -117,8 +117,13 @@ export const ExtensionTabBarTreeView = ({
     [canSelectMany, model],
   );
 
-  const handleItemChecked = useCallback(
-    (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {},
+  const handleCheckBoxChanged = useCallback(
+    (item: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+      const { handleCheckBoxChange } = model;
+      if (item) {
+        handleCheckBoxChange(item);
+      }
+    },
     [canSelectMany, model],
   );
 
@@ -206,7 +211,7 @@ export const ExtensionTabBarTreeView = ({
         isVisible={isVisible}
         handleTreeReady={handleTreeReady}
         handleItemClicked={handleItemClicked}
-        handleItemChecked={handleItemChecked}
+        handleCheckBoxChanged={handleCheckBoxChanged}
         handleTwistierClick={handleTwistierClick}
         handleContextMenu={handleContextMenu}
         handleDragStart={handleDragStart}
@@ -232,7 +237,7 @@ interface TreeViewProps {
   model: ExtensionTreeViewModel;
   handleTreeReady(handle: IRecycleTreeHandle): void;
   handleItemClicked(ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType): void;
-  handleItemChecked(ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType): void;
+  handleCheckBoxChanged(item: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
   handleTwistierClick(ev: MouseEvent, item: ExtensionCompositeTreeNode): void;
   handleContextMenu(ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
   handleDragStart(ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
@@ -262,7 +267,7 @@ const TreeView = memo(
     dataProvider,
     handleTreeReady,
     handleItemClicked,
-    handleItemChecked,
+    handleCheckBoxChanged,
     handleTwistierClick,
     handleContextMenu,
     handleDragStart,
@@ -309,7 +314,7 @@ const TreeView = memo(
           itemType={props.itemType}
           decorations={model.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
-          onCheck={handleItemChecked}
+          onChange={handleCheckBoxChanged}
           onTwistierClick={handleTwistierClick}
           onContextMenu={handleContextMenu}
           onDragStart={handleDragStart}

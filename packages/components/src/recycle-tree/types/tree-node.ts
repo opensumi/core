@@ -4,7 +4,7 @@ export interface IAccessibilityInformation {
 }
 
 export interface TreeViewItemCheckboxInfo {
-  checked: boolean | undefined;
+  checked: boolean;
   tooltip?: string;
   accessibilityInformation?: IAccessibilityInformation;
 }

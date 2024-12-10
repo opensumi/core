@@ -94,11 +94,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
   }
 
   get checkboxInfo() {
-    return {
-      checked: this._checkboxInfo?.checked,
-      tooltip: this._checkboxInfo?.tooltip,
-      accessibilityInformation: this._checkboxInfo?.accessibilityInformation,
-    };
+    return this._checkboxInfo;
   }
 
   get accessibilityInformation() {
@@ -191,11 +187,7 @@ export class ExtensionTreeNode extends TreeNode {
   }
 
   get checkboxInfo() {
-    return {
-      checked: this._checkboxInfo?.checked,
-      tooltip: this._checkboxInfo?.tooltip,
-      accessibilityInformation: this._checkboxInfo?.accessibilityInformation,
-    };
+    return this._checkboxInfo;
   }
 
   get accessibilityInformation() {

@@ -224,7 +224,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
    * @param itemIds
    * @returns
    */
-  $checkStateChanged(treeViewId: string, itemIds: { id: string; checked: boolean }[]): Promise<void> {
+  $checkStateChanged(treeViewId: string, itemIds: { treeItemId: string; checked: boolean }[]): Promise<void> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
       throw new Error('No tree view with id ' + treeViewId);
@@ -653,10 +653,10 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     );
   }
 
-  async checkStateChanged(items: readonly { id: string; checked: boolean }[]): Promise<void> {
+  async checkStateChanged(items: readonly { treeItemId: string; checked: boolean }[]): Promise<void> {
     const transformed: [T, TreeItemCheckboxState][] = [];
     items.forEach((item) => {
-      const node = this.getTreeItem(item.id);
+      const node = this.getTreeItem(item.treeItemId);
       if (node) {
         transformed.push([node, item.checked ? TreeItemCheckboxState.Checked : TreeItemCheckboxState.Unchecked]);
         const treeViewItem = this.element2TreeViewItem.get(node);
@@ -798,6 +798,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
         };
       }
     }
+
     let checkboxInfo;
     if (treeItem.checkboxState === undefined) {
       checkboxInfo = undefined;
