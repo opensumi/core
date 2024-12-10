@@ -103,10 +103,10 @@ export class CommentsBrowserContribution
           const { thread, widget } = threadTitle;
           if (!thread.comments.get().length) {
             thread.dispose();
-          }
-
-          if (widget.isShow) {
-            widget.toggle();
+          } else {
+            if (widget.isShow) {
+              widget.toggle();
+            }
           }
         },
       },

@@ -204,6 +204,12 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
         {customRender ? customRender(thread, this) : <CommentsZone thread={thread} widget={this} />}
       </ConfigProvider>,
     );
+
+    this.addDispose({
+      dispose: () => {
+        this.wrapperRoot.unmount();
+      },
+    });
   }
 
   get coreEditor() {
@@ -240,9 +246,5 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
   protected applyStyle(): void {
     // noop
-  }
-
-  dispose(): void {
-    this.wrapperRoot?.unmount();
   }
 }
