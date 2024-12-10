@@ -143,30 +143,22 @@ export class QuickOpenWidget implements IQuickOpenWidget {
 
   updateOptions(options: Partial<QuickOpenInputOptions>) {
     transaction((tx) => {
-      if ('placeholder' in options) {
-        this.inputPlaceholder.set(options.placeholder, tx);
-      }
-      if ('password' in options) {
-        this.isPassword.set(!!options.password, tx);
-      }
-      if ('inputEnable' in options) {
-        this.inputEnable.set(!!options.inputEnable, tx);
-      }
-      if ('valueSelection' in options) {
-        this.valueSelection.set(options.valueSelection, tx);
-      }
-      if ('canSelectMany' in options) {
-        this.canSelectMany.set(!!options.canSelectMany, tx);
-      }
-      if ('keepScrollPosition' in options) {
-        this.keepScrollPosition.set(!!options.keepScrollPosition, tx);
-      }
-      if ('busy' in options) {
-        this.busy.set(!!options.busy, tx);
-      }
-      if ('enabled' in options) {
-        this.inputEnable.set(!!options.enabled, tx);
-      }
+      const optionsMap = {
+        placeholder: (value?: string) => this.inputPlaceholder.set(value, tx),
+        password: (value?: boolean) => this.isPassword.set(!!value, tx),
+        inputEnable: (value?: boolean) => this.inputEnable.set(!!value, tx),
+        valueSelection: (value?: [number, number]) => this.valueSelection.set(value, tx),
+        canSelectMany: (value?: boolean) => this.canSelectMany.set(!!value, tx),
+        keepScrollPosition: (value?: boolean) => this.keepScrollPosition.set(!!value, tx),
+        busy: (value?: boolean) => this.busy.set(!!value, tx),
+        enabled: (value?: boolean) => this.inputEnable.set(!!value, tx),
+      };
+
+      Object.entries(options).forEach(([key, value]) => {
+        if (key in optionsMap) {
+          optionsMap[key](value);
+        }
+      });
     });
   }
 
