@@ -3,16 +3,10 @@ import { Server, Socket, createServer } from 'net';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/base';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/socket';
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
-import { WSChannel } from '@opensumi/ide-connection/lib/common/ws-channel';
 import { ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-common/lib/log';
-import {
-  DidFilesChangedParams,
-  FileChange,
-  FileSystemWatcherClient,
-} from '@opensumi/ide-core-common/lib/types/file-watch';
+import { DidFilesChangedParams, FileSystemWatcherClient } from '@opensumi/ide-core-common/lib/types/file-watch';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { AppConfig, Deferred, ILogService, UriComponents } from '@opensumi/ide-core-node';
 

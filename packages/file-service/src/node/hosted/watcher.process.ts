@@ -4,6 +4,7 @@ import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 import { suppressNodeJSEpipeError } from '@opensumi/ide-core-common/lib/node/utils';
+import { defaultFilesWatcherExcludes, flattenExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { DidFilesChangedParams } from '@opensumi/ide-core-common/lib/types';
 import { Uri, UriComponents, isPromiseCanceledError } from '@opensumi/ide-utils';
 
@@ -32,11 +33,11 @@ class WatcherHostServiceImpl implements IWatcherHostService {
   private unrecursiveFileSystemWatcher?: UnRecursiveFileSystemWatcher;
 
   protected readonly watcherCollection = new Map<string, IWatcher>();
-  protected watchFileExcludes: string[] = [];
 
   constructor(private rpcProtocol: SumiConnectionMultiplexer, private logger: WatcherProcessLogger) {
     this.rpcProtocol.set(WatcherServiceProxy, this);
-    this.initWatcherServer();
+    const defaultExcludes = flattenExcludes(defaultFilesWatcherExcludes);
+    this.initWatcherServer(defaultExcludes);
   }
 
   initWatcherServer(excludes?: string[], force = false) {
