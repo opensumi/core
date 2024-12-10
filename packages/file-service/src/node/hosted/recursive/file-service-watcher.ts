@@ -5,22 +5,25 @@ import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 
-import { Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
   FileUri,
   IDisposable,
   ILogService,
-  ILogServiceManager,
   ParsedPattern,
-  SupportLogNamespace,
   isLinux,
   isWindows,
   parseGlob,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../../common';
+import {
+  FileChangeType,
+  FileSystemWatcherClient,
+  IFileSystemWatcherServer,
+  INsfw,
+  WatchOptions,
+} from '../../../common';
 import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
@@ -31,7 +34,7 @@ export interface WatcherOptions {
 
 const watcherPlaceHolder = {
   disposable: {
-    dispose: () => { },
+    dispose: () => {},
   },
   handlers: [],
 };
@@ -59,19 +62,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
   protected changes = new FileChangeCollection();
 
-  private logger = {
-    log(...args: any[]) {
-      console.log(...args);
-    },
-    error(...args: any[]) {
-      console.error(...args);
-    },
-    warn(...args: any[]) {
-      console.warn(...args);
-    },
-  };
-
-  constructor(private excludes: string[] = []) {
+  constructor(private excludes: string[] = [], private readonly logger: ILogService) {
     super();
     this.addDispose(
       Disposable.create(() => {

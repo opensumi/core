@@ -1,18 +1,8 @@
 import fs, { watch } from 'fs-extra';
 import debounce from 'lodash/debounce';
 
-import { Autowired, Injectable, Optional } from '@opensumi/di';
-import {
-  Disposable,
-  DisposableCollection,
-  FileUri,
-  IDisposable,
-  ILogService,
-  ILogServiceManager,
-  SupportLogNamespace,
-  isMacintosh,
-  path,
-} from '@opensumi/ide-core-node';
+import { ILogService } from '@opensumi/ide-core-common/lib/log';
+import { Disposable, DisposableCollection, FileUri, IDisposable, isMacintosh, path } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../../common/index';
 import { FileChangeCollection } from '../../file-change-collection';
@@ -34,10 +24,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
-  // @Autowired(ILogServiceManager)
-  // // 一个 symbol 关键字，内容是 ILogServiceManager
-  // private readonly loggerManager: ILogServiceManager;
-
   // 收集发生改变的文件
   protected changes = new FileChangeCollection();
 
@@ -45,21 +31,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   protected client: FileSystemWatcherClient | undefined;
 
-  private logger = {
-    log(...args: any[]) {
-      console.log(...args);
-    },
-    error(...args: any[]) {
-      console.error(...args);
-    },
-    warn(...args: any[]) {
-      console.warn(...args);
-    },
-  };
-
-  constructor(private readonly excludes: string[] = []) {
-    // this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
-  }
+  constructor(private readonly logger: ILogService) {}
 
   dispose(): void {
     this.toDispose.dispose();

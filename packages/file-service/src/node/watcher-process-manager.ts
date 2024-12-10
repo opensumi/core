@@ -117,13 +117,10 @@ export class WatcherProcessManager {
 
     this.logger.log('Watcher process fork success, pid: ', this.watcherProcess.pid);
 
-    this.watcherProcess.on('exit', (code, signal) => {
-      this.logger.log('watcher process exit: ', code, signal);
+    this.watcherProcess.on('exit', async (code, signal) => {
+      this.logger.warn('watcher process exit: ', code, signal);
     });
 
-    this.watcherProcess.on('message', (msg) => {
-      //
-    });
     return this.watcherProcess.pid;
   }
 
@@ -148,8 +145,9 @@ export class WatcherProcessManager {
     try {
       await this._whenReadyDeferred.promise;
       await this.getProxy().$dispose();
+    } catch {
     } finally {
-      this.watcherProcess?.kill('SIGTERM');
+      this.watcherProcess?.kill();
     }
   }
 
