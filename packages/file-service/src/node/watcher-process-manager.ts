@@ -21,7 +21,7 @@ import {
 
 export const WatcherProcessManagerToken = Symbol('WatcherProcessManager');
 
-@Injectable()
+@Injectable({ multiple: true })
 export class WatcherProcessManagerImpl implements IWatcherProcessManager {
   private protocol: IRPCProtocol;
 
@@ -153,7 +153,9 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
   }
 
   async watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number> {
+    this.logger.log('Wait for watcher process ready...');
     await this._whenReadyDeferred.promise;
+    this.logger.log('start watch: ', uri);
     return this.getProxy().$watch(uri, options);
   }
 

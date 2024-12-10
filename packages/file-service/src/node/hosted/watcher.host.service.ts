@@ -23,10 +23,12 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
   protected readonly watcherCollection = new Map<string, IWatcher>();
 
+  private defaultExcludes: string[] = [];
+
   constructor(private rpcProtocol: SumiConnectionMultiplexer, private logger: WatcherProcessLogger) {
     this.rpcProtocol.set(WatcherServiceProxy, this);
-    const defaultExcludes = flattenExcludes(defaultFilesWatcherExcludes);
-    this.initWatcherServer(defaultExcludes);
+    this.defaultExcludes = flattenExcludes(defaultFilesWatcherExcludes);
+    this.initWatcherServer(this.defaultExcludes);
     this.logger.log('init watcher host service');
   }
 
@@ -82,8 +84,9 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
     this.logger.log('watch file changes: ', _uri.toString(), ' recursive: ', options?.recursive);
 
+    const mergedExcludes = new Set([...(options?.excludes ?? []), ...this.defaultExcludes]);
     const id = await watcherServer.watchFileChanges(_uri.toString(), {
-      excludes: options?.excludes ?? [],
+      excludes: Array.from(mergedExcludes),
     });
     const disposable = {
       dispose: () => {
