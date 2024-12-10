@@ -175,7 +175,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   @Autowired(ICommentsFeatureRegistry)
   private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
 
-  private _wrapper: HTMLDivElement;
+  private wrapperRoot: ReactDOM.Root;
 
   private _editor: IEditor;
 
@@ -191,12 +191,15 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
       showInHiddenAreas: true,
     });
     this._editor = editor;
-    this._wrapper = document.createElement('div');
+
+    const _wrapper = document.createElement('div');
     this._isShow = !thread.isCollapsed.get();
-    this._container.appendChild(this._wrapper);
-    this.observeContainer(this._wrapper);
+    this._container.appendChild(_wrapper);
+    this.observeContainer(_wrapper);
     const customRender = this.commentsFeatureRegistry.getZoneWidgetRender();
-    ReactDOM.createRoot(this._wrapper).render(
+
+    this.wrapperRoot = ReactDOM.createRoot(_wrapper);
+    this.wrapperRoot.render(
       <ConfigProvider value={this.appConfig}>
         {customRender ? customRender(thread, this) : <CommentsZone thread={thread} widget={this} />}
       </ConfigProvider>,
@@ -237,5 +240,9 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
   protected applyStyle(): void {
     // noop
+  }
+
+  dispose(): void {
+    this.wrapperRoot?.unmount();
   }
 }
