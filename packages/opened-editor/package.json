@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-opened-editor",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "files": [
     "lib",
     "src"
