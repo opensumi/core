@@ -421,6 +421,25 @@ declare module 'vscode' {
     export const onDidChangeTerminalState: Event<Terminal>;
 
     /**
+     * Fires when shell integration activates or one of its properties changes in a terminal.
+     */
+    export const onDidChangeTerminalShellIntegration: Event<TerminalShellIntegrationChangeEvent>;
+
+    /**
+     * This will be fired when a terminal command is started. This event will fire only when
+     * [shell integration](https://code.visualstudio.com/docs/terminal/shell-integration) is
+     * activated for the terminal.
+     */
+    export const onDidStartTerminalShellExecution: Event<TerminalShellExecutionStartEvent>;
+
+    /**
+     * This will be fired when a terminal command is ended. This event will fire only when
+     * [shell integration](https://code.visualstudio.com/docs/terminal/shell-integration) is
+     * activated for the terminal.
+     */
+    export const onDidEndTerminalShellExecution: Event<TerminalShellExecutionEndEvent>;
+
+    /**
      * Represents the current window's state.
      */
     export const state: WindowState;
