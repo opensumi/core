@@ -68,7 +68,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
-  protected readonly watcherCollection = new Map<string, IWatcher>();
   protected watchFileExcludes: string[] = [];
 
   @Autowired(ILogServiceManager)
@@ -156,11 +155,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   unwatch(watcherId: number) {
-    for (const [_uri, { id, disposable }] of this.watcherCollection) {
-      if (watcherId === id) {
-        disposable.dispose();
-      }
-    }
+    this.watcherProcssManager.unWatch(watcherId);
   }
 
   async stat(uri: UriComponents, options?: IFileStatOptions): Promise<FileStat> {
@@ -377,7 +372,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     this.logger.log('Set watcher exclude:', watchExcludes);
     this.watchFileExcludes = watchExcludes;
 
-    // 重新实例化 WatcherServer
     this.watcherProcssManager.setWatcherFileExcludes(watchExcludes);
   }
 
