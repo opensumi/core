@@ -1790,48 +1790,6 @@ export namespace TestResults {
     };
   }
 }
-
-export namespace TestCoverage {
-  function fromCoveredCount(count: vscode.CoveredCount): ICoveredCount {
-    return { covered: count.covered, total: count.covered };
-  }
-
-  function fromLocation(location: vscode.Range | vscode.Position) {
-    return 'line' in location ? Position.from(location) : Range.from(location);
-  }
-
-  export function fromDetailed(coverage: vscode.DetailedCoverage): CoverageDetails {
-    if ('branches' in coverage) {
-      return {
-        count: coverage.executionCount,
-        location: fromLocation(coverage.location),
-        type: DetailType.Statement,
-        branches: coverage.branches.length
-          ? coverage.branches.map((b) => ({
-              count: b.executionCount,
-              location: b.location && fromLocation(b.location),
-            }))
-          : undefined,
-      };
-    } else {
-      return {
-        type: DetailType.Function,
-        count: coverage.executionCount,
-        location: fromLocation(coverage.location),
-      };
-    }
-  }
-
-  export function fromFile(coverage: vscode.FileCoverage): IFileCoverage {
-    return {
-      uri: coverage.uri,
-      statement: fromCoveredCount(coverage.statementCoverage),
-      branch: coverage.branchCoverage && fromCoveredCount(coverage.branchCoverage),
-      function: coverage.functionCoverage && fromCoveredCount(coverage.functionCoverage),
-      details: coverage.detailedCoverage?.map(fromDetailed),
-    };
-  }
-}
 // #endregion
 
 export interface IURITransformer {

@@ -130,6 +130,29 @@ declare module "vscode" {
     loadDetailedCoverage?: (testRun: TestRun, fileCoverage: FileCoverage, token: CancellationToken) => Thenable<FileCoverageDetail[]>;
 
     /**
+     * An extension-provided function that provides detailed statement and
+     * function-level coverage for a single test in a file. This is the per-test
+     * sibling of {@link TestRunProfile.loadDetailedCoverage}, called only if
+     * a test item is provided in {@link FileCoverage.includesTests} and only
+     * for files where such data is reported.
+     *
+     * Often {@link TestRunProfile.loadDetailedCoverage} will be called first
+     * when a user opens a file, and then this method will be called if they
+     * drill down into specific per-test coverage information. This method
+     * should then return coverage data only for statements and declarations
+     * executed by the specific test during the run.
+     *
+     * The {@link FileCoverage} object passed to this function is the same
+     * instance emitted on {@link TestRun.addCoverage} calls associated with this profile.
+     *
+     * @param testRun The test run that generated the coverage data.
+     * @param fileCoverage The file coverage object to load detailed coverage for.
+     * @param fromTestItem The test item to request coverage information for.
+     * @param token A cancellation token that indicates the operation should be cancelled.
+     */
+    loadDetailedCoverageForTest?: (testRun: TestRun, fileCoverage: FileCoverage, fromTestItem: TestItem, token: CancellationToken) => Thenable<FileCoverageDetail[]>;
+
+    /**
      * Deletes the run profile.
      */
     dispose(): void;
@@ -812,43 +835,6 @@ declare module "vscode" {
     Errored = 6
   }
   //#endregion
-
-  //#region Test Coverage
-
-  export interface TestRun {
-    /**
-     * Test coverage provider for this result. An extension can defer setting
-     * this until after a run is complete and coverage is available.
-     */
-    coverageProvider?: TestCoverageProvider
-    // ...
-  }
-
-  /**
-   * Provides information about test coverage for a test result.
-   * Methods on the provider will not be called until the test run is complete
-   */
-  export interface TestCoverageProvider<T extends FileCoverage = FileCoverage> {
-    /**
-     * Returns coverage information for all files involved in the test run.
-     * @param token A cancellation token.
-     * @return Coverage metadata for all files involved in the test.
-     */
-    provideFileCoverage(token: CancellationToken): ProviderResult<T[]>;
-
-    /**
-     * Give a FileCoverage to fill in more data, namely {@link FileCoverage.detailedCoverage}.
-     * The editor will only resolve a FileCoverage once, and onyl if detailedCoverage
-     * is undefined.
-     *
-     * @param coverage A coverage object obtained from {@link provideFileCoverage}
-     * @param token A cancellation token.
-     * @return The resolved file coverage, or a thenable that resolves to one. It
-     * is OK to return the given `coverage`. When no result is returned, the
-     * given `coverage` will be used.
-     */
-    resolveFileCoverage?(coverage: T, token: CancellationToken): ProviderResult<T>;
-  }
 
   /**
    * A class that contains information about a covered resource. A count can
