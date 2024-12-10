@@ -39,7 +39,7 @@ export interface IExtHostTreeView {
   $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any>;
   $setSelection(treeViewId: string, treeItemHandles: string[]): void;
   $setVisible(treeViewId: string, visible: boolean): void;
-  $checkStateChanged(treeViewId: string, itemIds: { treeItemId: string; checked: boolean }[]): Promise<void>;
+  $checkStateChanged(treeViewId: string, items: { treeItemId: string; checked: boolean }[]): Promise<void>;
   $resolveTreeItem(treeViewId: string, treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined>;
   $handleDrop(
     destinationViewId: string,
