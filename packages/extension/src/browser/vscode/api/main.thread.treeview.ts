@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
-import { ITreeNodeOrCompositeTreeNode, Tree } from '@opensumi/ide-components';
+import { CompositeTreeNode, ITreeNodeOrCompositeTreeNode, Tree } from '@opensumi/ide-components';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   BinaryBuffer,
@@ -587,6 +587,43 @@ export class TreeViewDataProvider extends Tree {
   dispose() {
     super.dispose();
     this.treeItemId2TreeNode.clear();
+  }
+
+  markAsChecked(
+    node: ExtensionTreeNode | ExtensionCompositeTreeNode,
+    checked: boolean,
+    manageCheckboxStateManually?: boolean,
+  ): void {
+    function findParentsToChange(child: ITreeNodeOrCompositeTreeNode, nodes: ITreeNodeOrCompositeTreeNode[]): void {
+      if (
+        child.parent?.checkboxInfo !== undefined &&
+        child.parent.checkboxInfo.checked !== checked &&
+        (!checked ||
+          !child.parent.children?.some((candidate) => candidate !== child && candidate.checkboxInfo?.checked === false))
+      ) {
+        nodes.push(child.parent);
+        findParentsToChange(child.parent, nodes);
+      }
+    }
+
+    function findChildrenToChange(parent: ITreeNodeOrCompositeTreeNode, nodes: ITreeNodeOrCompositeTreeNode[]): void {
+      if (CompositeTreeNode.is(parent)) {
+        parent.children?.forEach((child) => {
+          if (child.checkboxInfo !== undefined && child.checkboxInfo.checked !== checked) {
+            nodes.push(child);
+          }
+          findChildrenToChange(child, nodes);
+        });
+      }
+    }
+
+    const nodesToChange = [node];
+    if (!manageCheckboxStateManually) {
+      findParentsToChange(node, nodesToChange);
+      findChildrenToChange(node, nodesToChange);
+    }
+    nodesToChange.forEach((n) => (n.checkboxInfo!.checked = checked));
+    this.proxy?.$checkStateChanged(this.treeViewId, [{ treeItemId: node.treeItemId, checked }]);
   }
 }
 

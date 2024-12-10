@@ -39,7 +39,7 @@ export interface IExtHostTreeView {
   $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any>;
   $setSelection(treeViewId: string, treeItemHandles: string[]): void;
   $setVisible(treeViewId: string, visible: boolean): void;
-  $checkStateChanged(treeViewId: string, itemIds: { id: string; checked: boolean }[]): Promise<void>;
+  $checkStateChanged(treeViewId: string, itemIds: { treeItemId: string; checked: boolean }[]): Promise<void>;
   $resolveTreeItem(treeViewId: string, treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined>;
   $handleDrop(
     destinationViewId: string,
@@ -79,7 +79,7 @@ export interface ITreeItemLabel {
 }
 
 export interface TreeViewItemCheckboxInfo {
-  checked: boolean | undefined;
+  checked: boolean;
   tooltip?: string;
   accessibilityInformation?: IAccessibilityInformation;
 }
@@ -195,7 +195,7 @@ export interface ViewBadge {
 
 export interface TreeViewBaseOptions {
   /**
-   * 管理复选框状态
+   * 手动管理复选框状态
    */
   manageCheckboxStateManually?: boolean;
 

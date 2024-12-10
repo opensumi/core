@@ -1,5 +1,15 @@
 import cls from 'classnames';
-import React, { CSSProperties, DragEvent, FC, MouseEvent, ReactNode, useCallback, useEffect, useState } from 'react';
+import React, {
+  CSSProperties,
+  DragEvent,
+  FC,
+  FormEvent,
+  MouseEvent,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 
 import {
   CheckBox,
@@ -28,7 +38,7 @@ export interface ITreeViewNodeProps {
   decorations?: ClasslistComposite;
   onTwistierClick?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
-  onCheck: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onChange: (item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
   onContextMenu?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   onDragStart?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
   onDragEnter?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
@@ -44,7 +54,7 @@ export type TreeViewNodeRenderedProps = ITreeViewNodeProps & INodeRendererProps;
 export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   item,
   onClick,
-  onCheck,
+  onChange,
   onContextMenu,
   itemType,
   leftPadding = 8,
@@ -147,11 +157,12 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     [item, onDrop],
   );
 
-  const hadnleCheck = useCallback(
-    (event: MouseEvent) => {
-      onCheck(event, item, itemType);
+  const handleCheckBoxChange = useCallback(
+    (event: FormEvent<HTMLInputElement>) => {
+      onChange(item);
+      event.stopPropagation();
     },
-    [item, itemType, onCheck],
+    [item, onChange],
   );
 
   const isDirectory = itemType === TreeNodeType.CompositeTreeNode;
@@ -183,7 +194,23 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     <div className={cls(styles.file_icon, node.icon)} style={{ maxHeight: TREE_VIEW_NODE_HEIGHT }}></div>
   );
 
-  const renderCheckbox = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => <div></div>;
+  const renderCheckbox = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
+    if (node.checkboxInfo === undefined) {
+      return null;
+    }
+
+    return (
+      <CheckBox
+        data-node-id={node.treeItemId}
+        readOnly
+        onChange={(event) => handleCheckBoxChange(event)}
+        checked={!!node.checkboxInfo.checked}
+        id={node.treeItemId}
+        role={node.checkboxInfo.accessibilityInformation?.role}
+        title={node.checkboxInfo.tooltip}
+      />
+    );
+  };
 
   const renderDisplayName = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
     const displayName = () => {
