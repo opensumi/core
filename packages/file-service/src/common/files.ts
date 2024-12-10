@@ -478,9 +478,3 @@ export interface IFileSystemProviderCapabilitiesChangeEvent {
 export interface IFileSystemProviderActivationEvent {
   readonly scheme: string;
 }
-
-export interface IWatcherProcessManager {
-  createWatcherProcess(clientId: string): Promise<number>;
-
-  disposeAllProcess(): Promise<void>;
-}

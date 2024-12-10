@@ -6,10 +6,9 @@ import * as fse from 'fs-extra';
 import trash from 'trash';
 import writeFileAtomic from 'write-file-atomic';
 
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import {
-  Deferred,
   DisposableCollection,
   Emitter,
   Event,
@@ -38,13 +37,14 @@ import {
   FileSystemProviderCapabilities,
   FileType,
   IDiskFileProvider,
+  IWatcherProcessManager,
   handleError,
   isErrnoException,
   notEmpty,
 } from '../common/';
 
 import { getFileType } from './hosted/shared/file-type';
-import { WatcherProcessManager, WatcherProcessManagerToken } from './watcher-process-manager';
+import { WatcherProcessManagerToken } from './watcher-process-manager';
 
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
 const DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**';
@@ -75,7 +75,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private readonly loggerManager: ILogServiceManager;
 
   @Autowired(WatcherProcessManagerToken)
-  private readonly watcherProcssManager: WatcherProcessManager;
+  private readonly watcherProcssManager: IWatcherProcessManager;
 
   private logger: ILogService;
 
@@ -133,7 +133,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     return this._capabilities;
   }
 
-  dispose(): void {
+  async dispose() {
     this.watcherServerDisposeCollection?.dispose();
     this.watcherProcssManager.dispose();
   }

@@ -14,7 +14,7 @@ import { DiskFileServiceProtocol } from '../common/protocols/disk-file-service';
 
 import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { getSafeFileservice } from './file-service';
-import { WatcherProcessManager, WatcherProcessManagerToken } from './watcher-process-manager';
+import { WatcherProcessManagerImpl, WatcherProcessManagerToken } from './watcher-process-manager';
 
 export * from './file-service';
 
@@ -33,7 +33,7 @@ export class FileServiceModule extends NodeModule {
   providers = [
     { token: IFileService, useFactory: (injector: Injector) => getSafeFileservice(injector) },
     { token: IDiskFileProvider, useFactory: (injector: Injector) => getFileservice(injector, DiskFileSystemProvider) },
-    { token: WatcherProcessManagerToken, useClass: WatcherProcessManager },
+    { token: WatcherProcessManagerToken, useClass: WatcherProcessManagerImpl },
   ];
 
   backServices = [

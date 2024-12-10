@@ -12,6 +12,7 @@ import { AppConfig, Deferred, ILogService, UriComponents } from '@opensumi/ide-c
 
 import {
   IWatcherHostService,
+  IWatcherProcessManager,
   KT_WATCHER_PROCESS_SOCK_KEY,
   WATCHER_INIT_DATA_KEY,
   WatcherProcessManagerProxy,
@@ -21,7 +22,7 @@ import {
 export const WatcherProcessManagerToken = Symbol('WatcherProcessManager');
 
 @Injectable()
-export class WatcherProcessManager {
+export class WatcherProcessManagerImpl implements IWatcherProcessManager {
   private protocol: IRPCProtocol;
 
   private watcherProcess?: ChildProcess;
