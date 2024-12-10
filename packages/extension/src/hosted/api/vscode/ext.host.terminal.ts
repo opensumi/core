@@ -707,6 +707,8 @@ export class Terminal implements vscode.Terminal {
     return this._creationOptions;
   }
 
+  shellIntegration: vscode.TerminalShellIntegration | undefined = undefined;
+
   sendText(text: string, addNewLine?: boolean): void {
     this.when.then(() => {
       this.proxy.$sendText(this.id, text, addNewLine);
