@@ -117,6 +117,18 @@ declare module "vscode" {
       request: TestRunRequest,
       token: CancellationToken
     ) => Thenable<void> | void;
+
+    /**
+     * An extension-provided function that provides detailed statement and
+     * function-level coverage for a file. The editor will call this when more
+     * detail is needed for a file, such as when it's opened in an editor or
+     * expanded in the **Test Coverage** view.
+     *
+     * The {@link FileCoverage} object passed to this function is the same instance
+     * emitted on {@link TestRun.addCoverage} calls associated with this profile.
+     */
+    loadDetailedCoverage?: (testRun: TestRun, fileCoverage: FileCoverage, token: CancellationToken) => Thenable<FileCoverageDetail[]>;
+
     /**
      * Deletes the run profile.
      */
@@ -411,11 +423,21 @@ declare module "vscode" {
      */
     appendOutput(output: string, location?: Location, test?: TestItem): void;
     /**
+     * Adds coverage for a file in the run.
+     */
+    addCoverage(fileCoverage: FileCoverage): void;
+    /**
      * Signals that the end of the test run. Any tests included in the run whose
      * states have not been updated will have their state reset.
      */
     end(): void;
+    /**
+     * An event fired when the editor is no longer interested in data
+     * associated with the test run.
+     */
+    onDidDispose: Event<void>;
   }
+
   /**
    * Collection of test items, found in {@link TestItem.children} and
    * {@link TestController.items}.
