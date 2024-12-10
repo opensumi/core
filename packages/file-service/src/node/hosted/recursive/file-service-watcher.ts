@@ -180,8 +180,8 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     return events;
   }
 
-  private getDefaultWatchExclude() {
-    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**/*', '**/.hg/store/**'];
+  async updateWatcherFileExcludes(excludes: string[]): Promise<void> {
+    this.excludes = excludes;
   }
 
   protected async start(
@@ -216,7 +216,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
             },
             {
               backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
-              ignore: this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
+              ignore: this.excludes.concat(rawOptions?.excludes ?? []),
             },
           );
         } catch (e) {
@@ -256,7 +256,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
         }),
       );
 
-      const excludes = this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude());
+      const excludes = this.excludes.concat(rawOptions?.excludes || []);
 
       this.watcherOptions.set(watcherId, {
         excludesPattern: excludes.map((pattern) => parseGlob(pattern)),
