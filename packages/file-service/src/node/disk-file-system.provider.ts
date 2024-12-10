@@ -43,9 +43,7 @@ import {
   notEmpty,
 } from '../common/';
 
-import { FileSystemWatcherServer } from './hosted/recursive/file-service-watcher';
 import { getFileType } from './hosted/shared/file-type';
-import { UnRecursiveFileSystemWatcher } from './hosted/un-recursive/file-service-watcher';
 import { WatcherProcessManager, WatcherProcessManagerToken } from './watcher-process-manager';
 
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -67,26 +65,11 @@ export interface IWatcher {
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
 
-  /**
-   * recursive file system watcher
-   */
-  private recursiveFileSystemWatcher?: FileSystemWatcherServer;
-
-  /**
-   * unrecursive file system watcher
-   */
-  private unrecursiveFileSystemWatcher?: UnRecursiveFileSystemWatcher;
-
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
   protected readonly watcherCollection = new Map<string, IWatcher>();
   protected watchFileExcludes: string[] = [];
-
-  private _whenReadyDeferred: Deferred<void> = new Deferred();
-
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
 
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
@@ -126,10 +109,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     await this.watcherProcssManager.createProcess(clientId);
   }
 
-  private async disposeWatcherProcess() {
-    await this.watcherProcssManager.disposeAllProcess();
-  }
-
   get whenReady() {
     return this.watcherProcssManager.whenReady;
   }
@@ -156,6 +135,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   dispose(): void {
     this.watcherServerDisposeCollection?.dispose();
+    this.watcherProcssManager.dispose();
   }
 
   /**
@@ -169,6 +149,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
     const id = await this.watcherProcssManager.watch(_uri, {
       excludes: options?.excludes ?? [],
+      recursive: options?.recursive ?? this.recursive,
     });
 
     return id;
@@ -397,7 +378,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     this.watchFileExcludes = watchExcludes;
 
     // 重新实例化 WatcherServer
-    // this.initWatcherServer(watchExcludes, true);
+    this.watcherProcssManager.setWatcherFileExcludes(watchExcludes);
   }
 
   getWatchFileExcludes() {
@@ -406,40 +387,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   getWatchExcludes(excludes?: string[]): string[] {
     return Array.from(new Set(this.watchFileExcludes.concat(excludes || [])));
-  }
-
-  private initWatcherServer(excludes?: string[], force = false) {
-    if (!this.injector || (this.recursiveFileSystemWatcher && this.unrecursiveFileSystemWatcher && !force)) {
-      return;
-    }
-
-    if (force) {
-      this.recursiveFileSystemWatcher?.dispose();
-      this.unrecursiveFileSystemWatcher?.dispose();
-    }
-
-    this.recursiveFileSystemWatcher = this.injector.get(FileSystemWatcherServer, [excludes]);
-    this.unrecursiveFileSystemWatcher = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
-
-    const watcherClient = {
-      onDidFilesChanged: (events: DidFilesChangedParams) => {
-        if (events.changes.length > 0) {
-          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
-          this.fileChangeEmitter.fire(changes);
-          if (Array.isArray(this.rpcClient)) {
-            this.rpcClient.forEach((client) => {
-              client.onDidFilesChanged({
-                changes,
-              });
-            });
-          }
-        }
-      },
-    };
-
-    this.recursiveFileSystemWatcher.setClient(watcherClient);
-    this.unrecursiveFileSystemWatcher.setClient(watcherClient);
-    // this._whenReadyDeferred.resolve();
   }
 
   protected async createFile(uri: UriComponents, options: { content: Buffer }): Promise<FileStat> {

@@ -7,7 +7,13 @@ import { suppressNodeJSEpipeError } from '@opensumi/ide-core-common/lib/node/uti
 import { DidFilesChangedParams } from '@opensumi/ide-core-common/lib/types';
 import { Uri, UriComponents, isPromiseCanceledError } from '@opensumi/ide-utils';
 
-import { IWatcherHostService, KT_WATCHER_PROCESS_SOCK_KEY, WATCHER_INIT_DATA_KEY, WatcherProcessManagerProxy, WatcherServiceProxy } from '../../common/watcher';
+import {
+  IWatcherHostService,
+  KT_WATCHER_PROCESS_SOCK_KEY,
+  WATCHER_INIT_DATA_KEY,
+  WatcherProcessManagerProxy,
+  WatcherServiceProxy,
+} from '../../common/watcher';
 import { IWatcher } from '../disk-file-system.provider';
 
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
@@ -16,8 +22,8 @@ import { WatcherProcessLogger } from './watch-process-log';
 
 class WatcherHostServiceImpl implements IWatcherHostService {
   /**
- * recursive file system watcher
- */
+   * recursive file system watcher
+   */
   private recursiveFileSystemWatcher?: FileSystemWatcherServer;
 
   /**
@@ -25,14 +31,10 @@ class WatcherHostServiceImpl implements IWatcherHostService {
    */
   private unrecursiveFileSystemWatcher?: UnRecursiveFileSystemWatcher;
 
-  private ignoreNextChangesEvent: Set<string> = new Set();
-
   protected readonly watcherCollection = new Map<string, IWatcher>();
   protected watchFileExcludes: string[] = [];
 
-  constructor(
-    private rpcProtocol: SumiConnectionMultiplexer, private logger: WatcherProcessLogger,
-  ) {
+  constructor(private rpcProtocol: SumiConnectionMultiplexer, private logger: WatcherProcessLogger) {
     this.rpcProtocol.set(WatcherServiceProxy, this);
     this.initWatcherServer();
   }
@@ -52,10 +54,8 @@ class WatcherHostServiceImpl implements IWatcherHostService {
 
     const watcherClient = {
       onDidFilesChanged: (events: DidFilesChangedParams) => {
-        if (events.changes.length > 0) {
-          const proxy = this.rpcProtocol.getProxy(WatcherProcessManagerProxy);
-          proxy.$onDidFilesChanged(events);
-        }
+        const proxy = this.rpcProtocol.getProxy(WatcherProcessManagerProxy);
+        proxy.$onDidFilesChanged(events);
       },
     };
 
@@ -76,7 +76,6 @@ class WatcherHostServiceImpl implements IWatcherHostService {
 
     return watcherServer;
   }
-
 
   async $watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number> {
     const _uri = Uri.revive(uri);
@@ -107,29 +106,25 @@ class WatcherHostServiceImpl implements IWatcherHostService {
     }
   }
 
-  $setWatcherFileExcludes(excludes: string[]): Promise<void> {
-    throw new Error('Method not implemented.');
+  async $setWatcherFileExcludes(excludes: string[]): Promise<void> {
+    this.initWatcherServer(excludes, true);
   }
 
-  $dispose(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async $dispose(): Promise<void> {
+    this.unrecursiveFileSystemWatcher?.dispose();
+    this.recursiveFileSystemWatcher?.dispose();
   }
-
 }
 
 async function initWatcherProcess() {
   const initData = JSON.parse(argv[WATCHER_INIT_DATA_KEY]);
   const connection = JSON.parse(argv[KT_WATCHER_PROCESS_SOCK_KEY]);
 
-
   const socket = createConnection(connection);
 
-  const watcherProtocol = new SumiConnectionMultiplexer(
-    new NetSocketConnection(socket),
-    {
-      timeout: 1000,
-    },
-  );
+  const watcherProtocol = new SumiConnectionMultiplexer(new NetSocketConnection(socket), {
+    timeout: 1000,
+  });
 
   const logger = new WatcherProcessLogger(initData.logDir, initData.logLevel);
   const watcherHostService = new WatcherHostServiceImpl(watcherProtocol, logger);
@@ -140,9 +135,9 @@ async function initWatcherProcess() {
   await initWatcherProcess();
 })();
 
-
 function unexpectedErrorHandler(e) {
   setTimeout(() => {
+    // eslint-disable-next-line no-console
     console.log('[Watcehr-Host]', e.message, e.stack && '\n\n' + e.stack);
   }, 0);
 }
@@ -163,8 +158,7 @@ function onUnexpectedError(e: any) {
   unexpectedErrorHandler(err);
 }
 
-suppressNodeJSEpipeError(process, (msg) => {
-});
+suppressNodeJSEpipeError(process, (msg) => {});
 
 process.on('uncaughtException', (err) => {
   onUnexpectedError(err);

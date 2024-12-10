@@ -1,4 +1,4 @@
-import { fork } from 'child_process';
+import { ChildProcess, fork } from 'child_process';
 import { Server, Socket, createServer } from 'net';
 
 import { Autowired, Injectable } from '@opensumi/di';
@@ -8,20 +8,29 @@ import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connect
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { WSChannel } from '@opensumi/ide-connection/lib/common/ws-channel';
 import { ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-common/lib/log';
-import { DidFilesChangedParams, FileChange, FileSystemWatcherClient } from '@opensumi/ide-core-common/lib/types/file-watch';
+import {
+  DidFilesChangedParams,
+  FileChange,
+  FileSystemWatcherClient,
+} from '@opensumi/ide-core-common/lib/types/file-watch';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { AppConfig, Deferred, ILogService, UriComponents } from '@opensumi/ide-core-node';
 
-import { IWatcherHostService, KT_WATCHER_PROCESS_SOCK_KEY, WATCHER_INIT_DATA_KEY, WatcherProcessManagerProxy, WatcherServiceProxy } from '../common/watcher';
+import {
+  IWatcherHostService,
+  KT_WATCHER_PROCESS_SOCK_KEY,
+  WATCHER_INIT_DATA_KEY,
+  WatcherProcessManagerProxy,
+  WatcherServiceProxy,
+} from '../common/watcher';
 
 export const WatcherProcessManagerToken = Symbol('WatcherProcessManager');
 
 @Injectable()
 export class WatcherProcessManager {
+  private protocol: IRPCProtocol;
 
-  connection: BaseConnection<Uint8Array>;
-  channel: WSChannel;
-  protocol: IRPCProtocol;
+  private watcherProcess?: ChildProcess;
 
   private logger: ILogService;
 
@@ -93,7 +102,6 @@ export class WatcherProcessManager {
     server.listen(listenOptions, () => {
       this.logger.log(`watcher process listen on ${JSON.stringify(listenOptions)}`);
     });
-
   }
 
   private async createWatcherProcess(clientId: string, ipcHandlerPath: string) {
@@ -109,20 +117,20 @@ export class WatcherProcessManager {
     ];
 
     this.logger.log('Watcher process path: ', this.appConfig.watcherHost);
-    const watcherProcess = fork(this.appConfig.watcherHost!, forkArgs, {
+    this.watcherProcess = fork(this.appConfig.watcherHost!, forkArgs, {
       silent: true,
     });
 
-    this.logger.log('Watcher process fork success, pid: ', watcherProcess.pid);
+    this.logger.log('Watcher process fork success, pid: ', this.watcherProcess.pid);
 
-    watcherProcess.on('exit', (code, signal) => {
+    this.watcherProcess.on('exit', (code, signal) => {
       this.logger.log('watcher process exit: ', code, signal);
     });
 
-    watcherProcess.on('message', (msg) => {
+    this.watcherProcess.on('message', (msg) => {
       //
     });
-    return watcherProcess.pid;
+    return this.watcherProcess.pid;
   }
 
   async createProcess(clientId: string) {
@@ -142,11 +150,16 @@ export class WatcherProcessManager {
     return pid;
   }
 
-  async disposeAllProcess() { }
+  async dispose() {
+    try {
+      await this._whenReadyDeferred.promise;
+      await this.getProxy().$dispose();
+    } finally {
+      this.watcherProcess?.kill('SIGTERM');
+    }
+  }
 
-  async watch(
-    uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean },
-  ): Promise<number> {
+  async watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number> {
     await this._whenReadyDeferred.promise;
     return this.getProxy().$watch(uri, options);
   }
