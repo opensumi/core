@@ -61,7 +61,7 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
 
   private setProxyConnection(socket: Socket) {
     const protocol = new SumiConnectionMultiplexer(new NetSocketConnection(socket), {
-      timeout: 1000,
+      timeout: -1,
     });
     protocol.set(WatcherProcessManagerProxy, this);
 

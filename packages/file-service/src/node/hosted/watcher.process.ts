@@ -33,7 +33,7 @@ async function initWatcherProcess() {
   const socket = createConnection(connection);
 
   const watcherProtocol = new SumiConnectionMultiplexer(new NetSocketConnection(socket), {
-    timeout: 1000,
+    timeout: -1,
   });
 
   const logger = new WatcherProcessLogger(watcherInjector, initData.logDir, initData.logLevel);
