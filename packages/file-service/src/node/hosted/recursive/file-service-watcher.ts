@@ -5,17 +5,17 @@ import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 
+import { ILogService } from '@opensumi/ide-core-common/lib/log';
 import {
   Disposable,
   DisposableCollection,
   FileUri,
   IDisposable,
-  ILogService,
   ParsedPattern,
   isLinux,
   isWindows,
   parseGlob,
-} from '@opensumi/ide-core-node';
+} from '@opensumi/ide-core-common/lib/utils';
 
 import {
   FileChangeType,
