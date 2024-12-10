@@ -117,7 +117,7 @@ export const ExtensionTabBarTreeView = ({
     [canSelectMany, model],
   );
 
-  const handleCheckBoxChanged = useCallback(
+  const handleCheckBoxChange = useCallback(
     (item: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
       const { handleCheckBoxChange } = model;
       if (item) {
@@ -211,7 +211,7 @@ export const ExtensionTabBarTreeView = ({
         isVisible={isVisible}
         handleTreeReady={handleTreeReady}
         handleItemClicked={handleItemClicked}
-        handleCheckBoxChanged={handleCheckBoxChanged}
+        handleCheckBoxChange={handleCheckBoxChange}
         handleTwistierClick={handleTwistierClick}
         handleContextMenu={handleContextMenu}
         handleDragStart={handleDragStart}
@@ -237,7 +237,7 @@ interface TreeViewProps {
   model: ExtensionTreeViewModel;
   handleTreeReady(handle: IRecycleTreeHandle): void;
   handleItemClicked(ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType): void;
-  handleCheckBoxChanged(item: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
+  handleCheckBoxChange(item: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
   handleTwistierClick(ev: MouseEvent, item: ExtensionCompositeTreeNode): void;
   handleContextMenu(ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
   handleDragStart(ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
@@ -267,7 +267,7 @@ const TreeView = memo(
     dataProvider,
     handleTreeReady,
     handleItemClicked,
-    handleCheckBoxChanged,
+    handleCheckBoxChange,
     handleTwistierClick,
     handleContextMenu,
     handleDragStart,
@@ -314,7 +314,7 @@ const TreeView = memo(
           itemType={props.itemType}
           decorations={model.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
-          onChange={handleCheckBoxChanged}
+          onChange={handleCheckBoxChange}
           onTwistierClick={handleTwistierClick}
           onContextMenu={handleContextMenu}
           onDragStart={handleDragStart}

@@ -1085,10 +1085,12 @@ export class ExtensionTreeViewModel {
   }
 
   handleCheckBoxChange = async (item: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
-    this.treeViewDataProvider.markAsChecked(
-      item,
-      !item.checkboxInfo!.checked,
-      this.treeViewOptions.manageCheckboxStateManually,
-    );
+    if (item) {
+      this.treeViewDataProvider.markAsChecked(
+        item,
+        !item.checkboxInfo!.checked,
+        this.treeViewOptions.manageCheckboxStateManually,
+      );
+    }
   };
 }

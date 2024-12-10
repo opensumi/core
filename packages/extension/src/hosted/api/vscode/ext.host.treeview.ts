@@ -221,15 +221,15 @@ export class ExtHostTreeViews implements IExtHostTreeView {
   /**
    * 设置节点的选择状态
    * @param treeViewId
-   * @param itemIds
+   * @param items
    * @returns
    */
-  $checkStateChanged(treeViewId: string, itemIds: { treeItemId: string; checked: boolean }[]): Promise<void> {
+  $checkStateChanged(treeViewId: string, items: { treeItemId: string; checked: boolean }[]): Promise<void> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
       throw new Error('No tree view with id ' + treeViewId);
     }
-    return treeView.checkStateChanged(itemIds);
+    return treeView.checkStateChanged(items);
   }
 
   async $handleDrop(
@@ -660,8 +660,8 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
       if (node) {
         transformed.push([node, item.checked ? TreeItemCheckboxState.Checked : TreeItemCheckboxState.Unchecked]);
         const treeViewItem = this.element2TreeViewItem.get(node);
-        if (treeViewItem) {
-          treeViewItem.checkboxInfo!.checked = item.checked;
+        if (treeViewItem && treeViewItem.checkboxInfo) {
+          treeViewItem.checkboxInfo.checked = item.checked;
         }
       }
     });
@@ -806,7 +806,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
       checkboxInfo = {
         checked: treeItem.checkboxState.state === TreeItemCheckboxState.Checked,
         tooltip: treeItem.checkboxState.tooltip,
-        accessibilityInformation: treeItem.accessibilityInformation,
+        accessibilityInformation: treeItem.checkboxState.accessibilityInformation,
       };
     } else {
       checkboxInfo = {
