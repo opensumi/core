@@ -104,6 +104,22 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.recursive = recursive;
+
+    this.watcherProcssManager.setClient({
+      onDidFilesChanged: (events: DidFilesChangedParams) => {
+        if (events.changes.length > 0) {
+          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
+          this.fileChangeEmitter.fire(changes);
+          if (Array.isArray(this.rpcClient)) {
+            this.rpcClient.forEach((client) => {
+              client.onDidFilesChanged({
+                changes,
+              });
+            });
+          }
+        }
+      },
+    });
   }
 
   async initialize(clientId: string) {

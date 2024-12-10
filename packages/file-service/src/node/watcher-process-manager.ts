@@ -8,7 +8,7 @@ import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connect
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { WSChannel } from '@opensumi/ide-connection/lib/common/ws-channel';
 import { ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-common/lib/log';
-import { FileChange } from '@opensumi/ide-core-common/lib/types/file-watch';
+import { DidFilesChangedParams, FileChange, FileSystemWatcherClient } from '@opensumi/ide-core-common/lib/types/file-watch';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { AppConfig, Deferred, ILogService, UriComponents } from '@opensumi/ide-core-node';
 
@@ -33,12 +33,20 @@ export class WatcherProcessManager {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
+  private watcherClient: FileSystemWatcherClient;
+
   constructor() {
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
   }
 
-  $onDidFilesChanged(changes: FileChange[]) {
-    console.log('notify watcher process: ', changes);
+  setClient(client: FileSystemWatcherClient) {
+    if (!this.watcherClient) {
+      this.watcherClient = client;
+    }
+  }
+
+  $onDidFilesChanged(changes: DidFilesChangedParams) {
+    this.watcherClient.onDidFilesChanged(changes);
   }
 
   get whenReady() {

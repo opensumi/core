@@ -53,9 +53,8 @@ class WatcherHostServiceImpl implements IWatcherHostService {
     const watcherClient = {
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         if (events.changes.length > 0) {
-          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
           const proxy = this.rpcProtocol.getProxy(WatcherProcessManagerProxy);
-          proxy.$onDidFilesChanged(changes);
+          proxy.$onDidFilesChanged(events);
         }
       },
     };
