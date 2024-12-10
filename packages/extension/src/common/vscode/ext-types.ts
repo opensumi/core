@@ -2877,6 +2877,12 @@ export enum TerminalExitReason {
   Extension = 4,
 }
 
+export enum TerminalShellExecutionCommandLineConfidence {
+  Low = 0,
+  Medium = 1,
+  High = 2,
+}
+
 export enum UIKind {
   Desktop = 1,
   Web = 2,
