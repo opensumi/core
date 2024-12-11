@@ -124,7 +124,7 @@ export const ExtensionTabBarTreeView = ({
         handleCheckBoxChange(item);
       }
     },
-    [canSelectMany, model],
+    [model],
   );
 
   const handleContextMenu = useCallback(
