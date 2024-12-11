@@ -2156,7 +2156,7 @@ declare module 'vscode' {
      * {@link TreeItemCheckboxState TreeItemCheckboxState} of the tree item.
      * {@link TreeDataProvider.onDidChangeTreeData onDidChangeTreeData} should be fired when {@link TreeItem.checkboxState checkboxState} changes.
      */
-    checkboxState?: {
+    checkboxState?: TreeItemCheckboxState | {
       /**
        * The {@link TreeItemCheckboxState} of the tree item
        */

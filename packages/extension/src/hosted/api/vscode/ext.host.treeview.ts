@@ -8,7 +8,7 @@ import {
   IDisposable,
   Uri,
   asPromise,
-  isObject,
+  isNumber,
   isString,
   isUndefined,
   randomString,
@@ -804,7 +804,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     let checkboxInfo;
     if (isUndefined(treeItem.checkboxState)) {
       checkboxInfo = undefined;
-    } else if (isObject(treeItem.checkboxState)) {
+    } else if (!isNumber(treeItem.checkboxState)) {
       checkboxInfo = {
         checked: treeItem.checkboxState.state === TreeItemCheckboxState.Checked,
         tooltip: treeItem.checkboxState.tooltip,
