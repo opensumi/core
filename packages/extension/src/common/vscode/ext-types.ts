@@ -1637,6 +1637,7 @@ export interface OutputChannel {
 }
 
 export interface WindowState {
+  active: boolean;
   focused: boolean;
 }
 

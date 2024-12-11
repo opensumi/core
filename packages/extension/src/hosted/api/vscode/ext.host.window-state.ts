@@ -3,7 +3,6 @@ import { Emitter, Event } from '@opensumi/ide-core-common';
 
 import { IExtHostWindowState } from '../../../common/vscode';
 import * as types from '../../../common/vscode/ext-types';
-
 export class ExtHostWindowState implements IExtHostWindowState {
   public readonly state: types.WindowState = new WindowStateImpl();
 
@@ -12,9 +11,16 @@ export class ExtHostWindowState implements IExtHostWindowState {
 
   public readonly onDidChangeWindowState: Event<types.WindowState> = this._onDidChangeWindowState.event;
 
-  public $setWindowState(focused: boolean) {
+  public $onDidChangeWindowFocus(focused: boolean) {
     if (focused !== this.state.focused) {
       this.state.focused = focused;
+      this._onDidChangeWindowState.fire(this.state);
+    }
+  }
+
+  public $onDidChangeWindowActive(active: boolean): void {
+    if (active !== this.state.active) {
+      this.state.active = active;
       this._onDidChangeWindowState.fire(this.state);
     }
   }
@@ -22,9 +28,11 @@ export class ExtHostWindowState implements IExtHostWindowState {
 
 export class WindowStateImpl implements types.WindowState {
   public focused: boolean;
+  public active: boolean;
 
   constructor() {
     // 当插件进程重启时，这里如果默认是 false，会与实际状态不一致，导致依赖该状态的插件处理有问题
     this.focused = true;
+    this.active = true;
   }
 }
