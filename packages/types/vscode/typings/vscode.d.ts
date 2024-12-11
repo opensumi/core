@@ -4581,26 +4581,46 @@ declare module 'vscode' {
   }
 
   /**
-	 * Provider which handles dropping of resources into a text editor.
-	 *
-	 * This allows users to drag and drop resources (including resources from external apps) into the editor. While dragging
-	 * and dropping files, users can hold down `shift` to drop the file into the editor instead of opening it.
-	 * Requires `editor.dropIntoEditor.enabled` to be on.
-	 */
-	export interface DocumentDropEditProvider {
-		/**
-		 * Provide edits which inserts the content being dragged and dropped into the document.
-		 *
-		 * @param document The document in which the drop occurred.
-		 * @param position The position in the document where the drop occurred.
-		 * @param dataTransfer A {@link DataTransfer} object that holds data about what is being dragged and dropped.
-		 * @param token A cancellation token.
-		 *
-		 * @returns A {@link DocumentDropEdit} or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined` or `null`.
-		 */
-		provideDocumentDropEdits(document: TextDocument, position: Position, dataTransfer: DataTransfer, token: CancellationToken): ProviderResult<DocumentDropEdit>;
-	}
+   * An edit operation applied {@link DocumentDropEditProvider on drop}.
+   */
+  export class DocumentDropEdit {
+    /**
+     * The text or snippet to insert at the drop location.
+     */
+    insertText: string | SnippetString;
+
+    /**
+     * An optional additional edit to apply on drop.
+     */
+    additionalEdit?: WorkspaceEdit;
+
+    /**
+     * @param insertText The text or snippet to insert at the drop location.
+     */
+    constructor(insertText: string | SnippetString);
+  }
+
+  /**
+   * Provider which handles dropping of resources into a text editor.
+   *
+   * This allows users to drag and drop resources (including resources from external apps) into the editor. While dragging
+   * and dropping files, users can hold down `shift` to drop the file into the editor instead of opening it.
+   * Requires `editor.dropIntoEditor.enabled` to be on.
+   */
+  export interface DocumentDropEditProvider {
+    /**
+     * Provide edits which inserts the content being dragged and dropped into the document.
+     *
+     * @param document The document in which the drop occurred.
+     * @param position The position in the document where the drop occurred.
+     * @param dataTransfer A {@link DataTransfer} object that holds data about what is being dragged and dropped.
+     * @param token A cancellation token.
+     *
+     * @returns A {@link DocumentDropEdit} or a thenable that resolves to such. The lack of a result can be
+     * signaled by returning `undefined` or `null`.
+     */
+    provideDocumentDropEdits(document: TextDocument, position: Position, dataTransfer: DataTransfer, token: CancellationToken): ProviderResult<DocumentDropEdit>;
+  }
 
   //#endregion Semantic Tokens
 

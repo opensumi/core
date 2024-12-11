@@ -30,13 +30,6 @@ declare module 'vscode' {
 		kind: DocumentPasteEditKind;
 
 		/**
-		 * The mime type from the {@link DataTransfer} that this edit applies.
-		 *
-		 * TODO: Should this be taken from `dropMimeTypes` instead?
-		 */
-		handledMimeType?: string;
-
-		/**
 		 * Controls the ordering or multiple paste edits. If this provider yield to edits, it will be shown lower in the list.
 		 */
 		yieldTo?: ReadonlyArray<DocumentPasteEditKind>;
