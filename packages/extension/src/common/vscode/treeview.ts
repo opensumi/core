@@ -39,6 +39,7 @@ export interface IExtHostTreeView {
   $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any>;
   $setSelection(treeViewId: string, treeItemHandles: string[]): void;
   $setVisible(treeViewId: string, visible: boolean): void;
+  $checkStateChanged(treeViewId: string, items: { treeItemId: string; checked: boolean }[]): Promise<void>;
   $resolveTreeItem(treeViewId: string, treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined>;
   $handleDrop(
     destinationViewId: string,
@@ -77,6 +78,17 @@ export interface ITreeItemLabel {
   strikethrough?: boolean;
 }
 
+export interface TreeViewItemCheckboxInfo {
+  checked: boolean;
+  tooltip?: string;
+  accessibilityInformation?: IAccessibilityInformation;
+}
+
+export enum TreeItemCheckboxState {
+  Unchecked = 0,
+  Checked = 1,
+}
+
 export class TreeViewItem {
   id: string;
 
@@ -98,6 +110,8 @@ export class TreeViewItem {
 
   contextValue?: string;
 
+  checkboxInfo?: TreeViewItemCheckboxInfo;
+
   command?: ICommand;
 
   accessibilityInformation?: IAccessibilityInformation;
@@ -116,6 +130,12 @@ export interface TreeView<T> extends vscode.TreeView<T> {
    * 当节点可见性变化时触发的事件
    */
   readonly onDidChangeVisibility: Event<vscode.TreeViewVisibilityChangeEvent>;
+
+  /**
+   * 表示元素已被选中或未选中的事件。
+   */
+  readonly onDidChangeCheckboxState: Event<vscode.TreeCheckboxChangeEvent<T>>;
+
   /**
    * 当节点选中时触发的事件
    */
@@ -174,6 +194,11 @@ export interface ViewBadge {
 }
 
 export interface TreeViewBaseOptions {
+  /**
+   * 手动管理复选框状态
+   */
+  manageCheckboxStateManually?: boolean;
+
   /**
    * 是否展示折叠所有功能（panel上功能）
    */
