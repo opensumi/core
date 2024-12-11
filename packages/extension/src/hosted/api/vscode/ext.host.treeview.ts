@@ -323,9 +323,6 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private readonly onDidChangeVisibilityEmitter = new Emitter<vscode.TreeViewVisibilityChangeEvent>();
   readonly onDidChangeVisibility = this.onDidChangeVisibilityEmitter.event;
 
-  private readonly onDidChangeCheckboxStateEmitter = new Emitter<vscode.TreeCheckboxChangeEvent<T>>();
-  readonly onDidChangeCheckboxState = this.onDidChangeCheckboxStateEmitter.event;
-
   private _visible = false;
 
   private selectedItemIds = new Set<string>();
@@ -340,6 +337,9 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private readonly dndController: vscode.TreeDragAndDropController<T> | undefined;
 
   private _onDidChangeData: Emitter<TreeData<T>> = new Emitter<TreeData<T>>();
+
+  private readonly onDidChangeCheckboxStateEmitter = new Emitter<vscode.TreeCheckboxChangeEvent<T>>();
+  readonly onDidChangeCheckboxState = this.onDidChangeCheckboxStateEmitter.event;
 
   private _title: string;
   private _description: string;
