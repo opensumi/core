@@ -3,6 +3,7 @@ import { Emitter, Event } from '@opensumi/ide-core-common';
 
 import { IExtHostWindowState } from '../../../common/vscode';
 import * as types from '../../../common/vscode/ext-types';
+
 export class ExtHostWindowState implements IExtHostWindowState {
   public readonly state: types.WindowState = new WindowStateImpl();
 
