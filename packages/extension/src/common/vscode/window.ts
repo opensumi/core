@@ -204,7 +204,8 @@ export interface IExtHostOutput {
 }
 
 export interface IExtHostWindowState {
-  $setWindowState(focused: boolean);
+  $onDidChangeWindowFocus(focused: boolean);
+  $onDidChangeWindowActive(active: boolean);
 
   readonly state: types.WindowState;
 
