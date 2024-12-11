@@ -131,7 +131,7 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
       return;
     }
 
-    this.logger.log('create watcher prcess for client: ', clientId);
+    this.logger.log('create watcher process for client: ', clientId);
     this.logger.log('appconfig watcherHost: ', this.appConfig.watcherHost);
 
     const ipcHandlerPath = await this.getIPCHandlerPath('watcher_process');

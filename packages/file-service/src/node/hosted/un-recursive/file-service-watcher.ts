@@ -9,7 +9,6 @@ import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 const { join, basename, normalize } = path;
 
-// @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private WATCHER_HANDLERS = new Map<
     number,

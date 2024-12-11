@@ -75,7 +75,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private readonly loggerManager: ILogServiceManager;
 
   @Autowired(WatcherProcessManagerToken)
-  private readonly watcherProcssManager: IWatcherProcessManager;
+  private readonly watcherProcessManager: IWatcherProcessManager;
 
   private logger: ILogService;
 
@@ -88,7 +88,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.recursive = recursive;
 
-    this.watcherProcssManager.setClient({
+    this.watcherProcessManager.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         if (events.changes.length > 0) {
           const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
@@ -106,11 +106,11 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   async initialize(clientId: string) {
-    await this.watcherProcssManager.createProcess(clientId);
+    await this.watcherProcessManager.createProcess(clientId);
   }
 
   get whenReady() {
-    return this.watcherProcssManager.whenReady;
+    return this.watcherProcessManager.whenReady;
   }
 
   onDidChangeCapabilities: Event<void> = Event.None;
@@ -135,7 +135,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   async dispose() {
     this.watcherServerDisposeCollection?.dispose();
-    this.watcherProcssManager.dispose();
+    this.watcherProcessManager.dispose();
   }
 
   /**
@@ -147,7 +147,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     await this.whenReady;
     const _uri = Uri.revive(uri);
 
-    const id = await this.watcherProcssManager.watch(_uri, {
+    const id = await this.watcherProcessManager.watch(_uri, {
       excludes: options?.excludes ?? [],
       recursive: options?.recursive ?? this.recursive,
     });
@@ -156,7 +156,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   unwatch(watcherId: number) {
-    this.watcherProcssManager.unWatch(watcherId);
+    this.watcherProcessManager.unWatch(watcherId);
   }
 
   async stat(uri: UriComponents, options?: IFileStatOptions): Promise<FileStat> {
@@ -373,7 +373,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     this.logger.log('Set watcher exclude:', watchExcludes);
     this.watchFileExcludes = watchExcludes;
 
-    this.watcherProcssManager.setWatcherFileExcludes(watchExcludes);
+    this.watcherProcessManager.setWatcherFileExcludes(watchExcludes);
   }
 
   getWatchFileExcludes() {

@@ -120,6 +120,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       if (watcherId === id) {
         this.watchedDirs.delete(_uri);
         disposable.dispose();
+        this.watcherCollection.delete(_uri);
       }
     }
   }
