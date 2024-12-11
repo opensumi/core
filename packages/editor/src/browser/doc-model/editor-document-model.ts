@@ -335,6 +335,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (this.monacoModel.isDisposed()) {
       return false;
     }
+    /**
+     * https://github.com/microsoft/vscode/blob/1.95.3/src/vscode-dts/vscode.d.ts#L14007
+     * 如果文档是只读状态，说明并不能进行保存, 自然不需要 dirty 状态
+     */
+    if (this.readonly) {
+      return false;
+    }
     return this._persistVersionId !== this.monacoModel.getAlternativeVersionId();
   }
 
