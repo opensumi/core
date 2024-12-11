@@ -79,6 +79,11 @@ declare module "vscode" {
      */
     isDefault: boolean;
     /**
+     * Fired when a user has changed whether this is a default profile. The
+     * event contains the new value of {@link isDefault}
+     */
+    onDidChangeDefault: Event<boolean>;
+    /**
      * Whether this profile supports continuous running of requests. If so,
      * then {@link TestRunRequest.continuous} may be set to `true`. Defaults
      * to false.
