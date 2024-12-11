@@ -986,6 +986,7 @@ export enum TextEditorLineNumbersStyle {
    * Render the line numbers with values relative to the primary cursor location.
    */
   Relative = 2,
+  Interval = 3,
 }
 
 @es5ClassCompat
