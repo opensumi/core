@@ -8,7 +8,9 @@ import {
   IDisposable,
   Uri,
   asPromise,
+  isObject,
   isString,
+  isUndefined,
   randomString,
   toDisposable,
 } from '@opensumi/ide-core-common';
@@ -800,9 +802,9 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     }
 
     let checkboxInfo;
-    if (treeItem.checkboxState === undefined) {
+    if (isUndefined(treeItem.checkboxState)) {
       checkboxInfo = undefined;
-    } else if (typeof treeItem.checkboxState === 'object') {
+    } else if (isObject(treeItem.checkboxState)) {
       checkboxInfo = {
         checked: treeItem.checkboxState.state === TreeItemCheckboxState.Checked,
         tooltip: treeItem.checkboxState.tooltip,
