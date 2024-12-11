@@ -57,6 +57,7 @@ export interface IWatcher {
   id: number;
   options?: {
     excludes?: string[];
+    recursive?: boolean;
   };
   disposable: IDisposable;
 }

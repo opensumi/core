@@ -49,6 +49,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       // rewatch
       for (const [_uri, { options, disposable }] of this.watcherCollection) {
         this.doWatch(Uri.parse(_uri), options);
+        this.logger.log('rewatch file changes: ', _uri, ' recursive: ', options?.recursive);
         disposable.dispose();
       }
     }
