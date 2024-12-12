@@ -2,7 +2,9 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, ILogger, QuickPickService, formatLocalize, localize } from '@opensumi/ide-core-browser';
 import {
+  AuthenticationProviderSessionOptions,
   AuthenticationSession,
+  AuthenticationSessionAccountInformation,
   AuthenticationSessionsChangeEvent,
   IAuthenticationProvider,
   IAuthenticationService,
@@ -94,8 +96,11 @@ export class MainThreadAuthenticationProvider extends Disposable implements IAut
     }
   }
 
-  async getSessions(): Promise<ReadonlyArray<AuthenticationSession>> {
-    return this._proxy.$getSessions(this.id);
+  async getSessions(
+    scopes?: string[],
+    account?: AuthenticationSessionAccountInformation,
+  ): Promise<ReadonlyArray<AuthenticationSession>> {
+    return this._proxy.$getSessions(this.id, scopes, { account });
   }
 
   public hasSessions(): boolean {
@@ -145,8 +150,8 @@ export class MainThreadAuthenticationProvider extends Disposable implements IAut
     }
   }
 
-  login(scopes: string[]): Promise<AuthenticationSession> {
-    return this._proxy.$login(this.id, scopes);
+  login(scopes: string[], options: AuthenticationProviderSessionOptions): Promise<AuthenticationSession> {
+    return this._proxy.$login(this.id, scopes, options);
   }
 
   async logout(sessionId: string): Promise<void> {
@@ -236,12 +241,22 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     return this.authenticationService.getSessions(id);
   }
 
-  $login(providerId: string, scopes: string[]): Promise<AuthenticationSession> {
-    return this.authenticationService.login(providerId, scopes);
+  $login(
+    providerId: string,
+    scopes: string[],
+    options: AuthenticationProviderSessionOptions,
+  ): Promise<AuthenticationSession> {
+    return this.authenticationService.login(providerId, scopes, options);
   }
 
   $logout(providerId: string, sessionId: string): Promise<void> {
     return this.authenticationService.logout(providerId, sessionId);
+  }
+
+  $getAccounts(providerId: string): Promise<AuthenticationSessionAccountInformation[]> {
+    return this.authenticationService
+      .getSessions(providerId)
+      .then((sessions) => sessions.map((session) => session.account));
   }
 
   private async doGetSession(
@@ -311,9 +326,10 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
               extensionName,
               sessions,
               scopes,
+              options,
               !!options.clearSessionPreference,
             )
-          : await this.authenticationService.login(providerId, scopes);
+          : await this.authenticationService.login(providerId, scopes, options);
       await this.authenticationService.updatedAllowedExtension(
         providerId,
         session.account.label,
@@ -331,7 +347,7 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     );
 
     if (!options.silent && !validSession) {
-      await this.authenticationService.requestNewSession(providerId, scopes, extensionId, extensionName);
+      await this.authenticationService.requestNewSession(providerId, scopes, options, extensionId, extensionName);
     }
     return validSession;
   }
@@ -359,6 +375,7 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     extensionName: string,
     potentialSessions: readonly AuthenticationSession[],
     scopes: string[],
+    options: AuthenticationProviderSessionOptions,
     clearSessionPreference: boolean,
   ): Promise<AuthenticationSession> {
     if (!potentialSessions.length) {
@@ -403,7 +420,7 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
       ignoreFocusOut: true,
     });
 
-    const session = selectedSession ?? (await this.authenticationService.login(providerId, scopes));
+    const session = selectedSession ?? (await this.authenticationService.login(providerId, scopes, options));
     const accountName = session.account.label;
 
     const allowList = await this.authenticationService.getAllowedExtensions(providerId, accountName);

@@ -6,7 +6,9 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   AuthenticationProviderInformation,
+  AuthenticationProviderSessionOptions,
   AuthenticationSession,
+  AuthenticationSessionAccountInformation,
   AuthenticationSessionsChangeEvent,
   Disposable,
   Emitter,
@@ -57,6 +59,9 @@ export function createAuthenticationApiFactory(
     },
     logout(providerId: string, sessionId: string): Thenable<void> {
       return extHostAuthentication.logout(providerId, sessionId);
+    },
+    getAccounts(providerId: string): Thenable<AuthenticationSessionAccountInformation[]> {
+      return extHostAuthentication.getAccounts(providerId);
     },
   };
   return authentication;
@@ -155,6 +160,10 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
     return this._proxy.$logout(providerId, sessionId);
   }
 
+  async getAccounts(providerId: string): Promise<AuthenticationSessionAccountInformation[]> {
+    return this._proxy.$getAccounts(providerId);
+  }
+
   registerAuthenticationProvider(
     id: string,
     label: string,
@@ -202,10 +211,14 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
     });
   }
 
-  $login(providerId: string, scopes: string[]): Promise<AuthenticationSession> {
+  $login(
+    providerId: string,
+    scopes: string[],
+    options: AuthenticationProviderSessionOptions,
+  ): Promise<AuthenticationSession> {
     const providerData = this._authenticationProviders.get(providerId);
     if (providerData) {
-      return Promise.resolve(providerData.provider.createSession(scopes));
+      return Promise.resolve(providerData.provider.createSession(scopes, options));
     }
 
     throw new Error(`Unable to find authentication provider with handle: ${providerId}`);
@@ -220,10 +233,14 @@ export class ExtHostAuthentication implements IExtHostAuthentication {
     throw new Error(`Unable to find authentication provider with handle: ${providerId}`);
   }
 
-  $getSessions(providerId: string): Promise<ReadonlyArray<AuthenticationSession>> {
+  $getSessions(
+    providerId: string,
+    scopes: string[],
+    options: AuthenticationProviderSessionOptions,
+  ): Promise<ReadonlyArray<AuthenticationSession>> {
     const providerData = this._authenticationProviders.get(providerId);
     if (providerData) {
-      return Promise.resolve(providerData.provider.getSessions());
+      return Promise.resolve(providerData.provider.getSessions(scopes, options));
     }
 
     throw new Error(`Unable to find authentication provider with handle: ${providerId}`);
