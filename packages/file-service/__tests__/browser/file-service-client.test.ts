@@ -8,7 +8,7 @@ import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk
 
 import { FileServicePath, IDiskFileProvider, IFileServiceClient } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
-import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
+import { FileSystemWatcherServer } from '../../src/node/hosted/recursive/file-service-watcher';
 
 describe('FileServiceClient should be work', () => {
   jest.setTimeout(10000);

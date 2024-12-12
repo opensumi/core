@@ -10,7 +10,7 @@ import {
   detectEncodingFromBuffer,
 } from '@opensumi/ide-core-common';
 
-import { EditorFileType, getFileTypeByExt, isErrnoException } from '../../common';
+import { EditorFileType, getFileTypeByExt, isErrnoException } from '../../../common';
 
 const NO_ENCODING_GUESS_MIN_BYTES = 512; // when not auto guessing the encoding, small number of bytes are enough
 

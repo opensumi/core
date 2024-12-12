@@ -420,6 +420,7 @@ export function containsExtraFileMethod<X extends {}, Y extends keyof ExtendedFi
 }
 
 export interface IDiskFileProvider extends FileSystemProvider {
+  initialize?: (clientid: string) => Promise<void>;
   copy: FileCopyFn;
   access: FileAccessFn;
   getCurrentUserHome: FileGetCurrentUserHomeFn;

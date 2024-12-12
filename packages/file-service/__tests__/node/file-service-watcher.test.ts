@@ -6,7 +6,7 @@ import { FileUri } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
-import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
+import { FileSystemWatcherServer } from '../../src/node/hosted/recursive/file-service-watcher';
 
 const sleepTime = 1000;
 
