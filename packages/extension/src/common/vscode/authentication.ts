@@ -1,5 +1,6 @@
 import {
   AuthenticationProviderInformation,
+  AuthenticationProviderSessionOptions,
   AuthenticationSession,
   AuthenticationSessionsChangeEvent,
 } from '@opensumi/ide-core-common';
@@ -24,6 +25,7 @@ export interface IMainThreadAuthentication {
     extensionName: string,
     potentialSessions: AuthenticationSession[],
     scopes: string[],
+    options: AuthenticationProviderSessionOptions,
     clearSessionPreference: boolean,
   ): Promise<AuthenticationSession>;
   $getSessionsPrompt(
@@ -48,14 +50,23 @@ export interface IMainThreadAuthentication {
   ): Promise<void>;
 
   $getSessions(providerId: string): Promise<ReadonlyArray<AuthenticationSession>>;
-  $login(providerId: string, scopes: string[]): Promise<AuthenticationSession>;
+  $login(
+    providerId: string,
+    scopes: string[],
+    options: AuthenticationProviderSessionOptions,
+  ): Promise<AuthenticationSession>;
   $logout(providerId: string, sessionId: string): Promise<void>;
+  $getAccounts(providerId: string): Promise<any>;
 }
 
 export interface IExtHostAuthentication {
-  $getSessions(id: string): Promise<ReadonlyArray<AuthenticationSession>>;
+  $getSessions(
+    id: string,
+    scopes?: string[],
+    options?: AuthenticationProviderSessionOptions,
+  ): Promise<ReadonlyArray<AuthenticationSession>>;
   $getSessionAccessToken(id: string, sessionId: string): Promise<string>;
-  $login(id: string, scopes: string[]): Promise<AuthenticationSession>;
+  $login(id: string, scopes: string[], options: AuthenticationProviderSessionOptions): Promise<AuthenticationSession>;
   $logout(id: string, sessionId: string): Promise<void>;
   $onDidChangeAuthenticationSessions(
     id: string,
