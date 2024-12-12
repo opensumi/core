@@ -109,7 +109,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
         commentsLengthContext.set(length);
         commentThreadIsEmptyContext.set(!length);
-
+      }),
+    );
+    this.addDispose(
+      autorun((reader) => {
         const isCollapsed = this.isCollapsed.read(reader);
         if (isCollapsed) {
           this.hideAll();

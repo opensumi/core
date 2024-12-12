@@ -186,6 +186,7 @@ export interface ITestRunTask {
   id: string;
   name: string | undefined;
   running: boolean;
+  ctrlId: string;
 }
 
 export interface ITestTag {

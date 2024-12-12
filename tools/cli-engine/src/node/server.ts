@@ -12,7 +12,7 @@ import mount from 'koa-mount';
 
 import { IClientAppOpts } from '@opensumi/ide-core-browser';
 import { Deferred, LogLevel } from '@opensumi/ide-core-common';
-import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { IServerAppOpts, ServerApp } from '@opensumi/ide-core-node';
 
 import * as env from './env';
@@ -88,10 +88,8 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
     webSocketHandler: [],
     use: app.use.bind(app),
     marketplace: {
-      endpoint: DEFAULT_ALIPAY_CLOUD_REGISTRY.ENDPOINT,
+      endpoint: DEFAULT_OPENVSX_REGISTRY,
       showBuiltinExtensions: true,
-      accountId: DEFAULT_ALIPAY_CLOUD_REGISTRY.ACCOUNT_ID,
-      masterKey: DEFAULT_ALIPAY_CLOUD_REGISTRY.MASTER_KEY,
       extensionDir: path.join(CLI_DEVELOPMENT_PATH, 'extensions'),
     },
     extHost: extHostPath || path.join(__dirname, '../hosted/ext.process.js'),

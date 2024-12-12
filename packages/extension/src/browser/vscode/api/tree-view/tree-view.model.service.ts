@@ -1083,4 +1083,14 @@ export class ExtensionTreeViewModel {
       }
     });
   }
+
+  handleCheckBoxChange = async (item: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
+    if (item) {
+      this.treeViewDataProvider.markAsChecked(
+        item,
+        !item.checkboxInfo!.checked,
+        this.treeViewOptions.manageCheckboxStateManually,
+      );
+    }
+  };
 }

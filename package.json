@@ -32,7 +32,7 @@
     "clean": "rimraf \"./packages/*/lib\" && lerna run clean",
     "compile": "cross-env NODE_ENV=production tsx ./scripts/build",
     "create": "tsx ./scripts/create",
-    "download-extension": "cross-env DEBUG=InstallExtension MARKETPLACE=ALI node scripts/download.js",
+    "download-extension": "cross-env DEBUG=InstallExtension node scripts/download.js",
     "format": "yarn run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,html,css,less}\" --write",
     "init": "yarn run clean && yarn run build:all",
     "preinstall": "node scripts/preinstall.js && husky install",

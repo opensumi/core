@@ -9,11 +9,9 @@ import nodeFetch, { RequestInit } from 'node-fetch';
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { sleep, uuid } from '@opensumi/ide-core-common';
-import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { AppConfig, RemoteService } from '@opensumi/ide-core-node';
 
 import {
-  IAlipayCloudMarketplaceService,
   IExtensionInstallParam,
   IMarketplaceService,
   IOpenvsxMarketplaceService,
@@ -41,13 +39,7 @@ export class VSXExtensionRemoteService implements IVSXExtensionBackService {
       return this.marketplace;
     }
 
-    const { marketplace: marketplaceConfig } = this.appConfig;
-    const { endpoint } = marketplaceConfig;
-
-    this.marketplace =
-      endpoint === DEFAULT_ALIPAY_CLOUD_REGISTRY.ENDPOINT
-        ? this.injector.get(IAlipayCloudMarketplaceService)
-        : this.injector.get(IOpenvsxMarketplaceService);
+    this.marketplace = this.injector.get(IOpenvsxMarketplaceService);
 
     return this.marketplace;
   }
