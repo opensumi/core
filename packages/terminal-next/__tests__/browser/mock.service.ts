@@ -417,6 +417,9 @@ export class MockProfileService implements ITerminalProfileService {
   onDidChangeAvailableProfiles() {
     return new Disposable();
   }
+  onDidChangeDefaultShell() {
+    return new Disposable();
+  }
   getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined {
     return;
   }
