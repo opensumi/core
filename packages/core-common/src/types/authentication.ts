@@ -88,7 +88,7 @@ export interface IAuthenticationService {
   login(
     providerId: string,
     scopes: string[],
-    options?: AuthenticationProviderSessionOptions,
+    options: AuthenticationProviderSessionOptions,
   ): Promise<AuthenticationSession>;
   logout(providerId: string, sessionId: string): Promise<void>;
 

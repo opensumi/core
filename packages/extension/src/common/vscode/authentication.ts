@@ -2,6 +2,7 @@ import {
   AuthenticationProviderInformation,
   AuthenticationProviderSessionOptions,
   AuthenticationSession,
+  AuthenticationSessionAccountInformation,
   AuthenticationSessionsChangeEvent,
 } from '@opensumi/ide-core-common';
 
@@ -56,7 +57,7 @@ export interface IMainThreadAuthentication {
     options: AuthenticationProviderSessionOptions,
   ): Promise<AuthenticationSession>;
   $logout(providerId: string, sessionId: string): Promise<void>;
-  $getAccounts(providerId: string): Promise<any>;
+  $getAccounts(providerId: string): Promise<AuthenticationSessionAccountInformation[]>;
 }
 
 export interface IExtHostAuthentication {
