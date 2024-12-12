@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { PreferenceChange, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AutoOpenBarrier,
   Disposable,
@@ -8,6 +8,7 @@ import {
   IDisposable,
   ILogger,
   PreferenceScope,
+  TerminalSettingsId,
   URI,
   WithEventBus,
   arrays,
@@ -46,12 +47,17 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   private readonly _profilesReadyBarrier: AutoOpenBarrier;
 
   private onTerminalProfileResolvedEmitter: Emitter<string> = new Emitter();
+  private onDidChangeDefaultShellEmitter: Emitter<string> = new Emitter();
 
   /**
    * 当用户创建了一个 Profile 时发出的事件
    */
   get onTerminalProfileResolved() {
     return this.onTerminalProfileResolvedEmitter.event;
+  }
+
+  get onDidChangeDefaultShell() {
+    return this.onDidChangeDefaultShellEmitter.event;
   }
 
   get profilesReady(): Promise<void> {
@@ -69,6 +75,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     // this long.
     this._profilesReadyBarrier = new AutoOpenBarrier(5000);
     this.refreshAvailableProfiles();
+    this.setupPreferenceListener();
   }
 
   private readonly _profileProviders: Map</* ext id*/ string, Map</* provider id*/ string, ITerminalProfileProvider>> =
@@ -82,6 +89,18 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   private _contributedProfiles: IExtensionTerminalProfile[] = [];
   get contributedProfiles(): IExtensionTerminalProfile[] {
     return this._contributedProfiles || [];
+  }
+
+  private setupPreferenceListener() {
+    this.preferenceService.onPreferenceChanged((event: PreferenceChange) => {
+      if (event.preferenceName === TerminalSettingsId.Type) {
+        /**
+         * @todo 因 profile 相关能力未完全实现，因此这里先手动派发一个 change shell 的事件
+         * 实现完成后，这里应该调用 this.refreshAvailableProfiles();
+         */
+        this.onDidChangeDefaultShellEmitter.fire(event.newValue);
+      }
+    });
   }
 
   getDefaultProfileName(): string | undefined {
