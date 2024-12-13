@@ -24,6 +24,8 @@ import {
   DebugConsoleMode,
   Disposable,
   Uri,
+  DebugStackFrame,
+  DebugThread,
 } from '../../../../common/vscode/ext-types';
 import { Breakpoint } from '../../../../common/vscode/models';
 
@@ -67,6 +69,14 @@ export function createDebugApiFactory(extHostDebugService: IExtHostDebugService)
     },
     onDidChangeBreakpoints(listener, thisArgs?, disposables?) {
       return extHostDebugService.onDidChangeBreakpoints(listener, thisArgs, disposables);
+    },
+    /** @stubbed */
+    get activeStackItem() {
+      return undefined;
+    },
+    /** @stubbed */
+    get onDidChangeActiveStackItem() {
+      return Event.None;
     },
     registerDebugConfigurationProvider(
       debugType: string,
@@ -216,6 +226,16 @@ export class ExtHostDebug implements IExtHostDebugService {
 
   get onDidStartDebugSession(): Event<vscode.DebugSession> {
     return this.onDidStartDebugSessionEmitter.event;
+  }
+
+  /** @stubbed */
+  get activeStackItem(): DebugThread | DebugStackFrame | undefined {
+    return undefined;
+  }
+  
+  /** @stubbed */
+  get onDidChangeActiveStackItem(): Event<DebugThread | DebugStackFrame | undefined> {
+    return Event.None;
   }
 
   /**

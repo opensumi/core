@@ -14,6 +14,7 @@ import {
   strings,
   uuid,
 } from '@opensumi/ide-core-common';
+import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';
 
 import { FileOperationOptions } from './model.api';
 import { escapeCodicons } from './models/html-content';
@@ -2073,6 +2074,14 @@ export class FunctionBreakpoint extends Breakpoint {
     super(enabled, condition, hitCondition, logMessage);
     this.functionName = functionName;
   }
+}
+
+export class DebugThread {
+  private constructor(readonly session: DebugSession, readonly threadId: number) { }
+}
+
+export class DebugStackFrame {
+    private constructor(readonly session: DebugSession, readonly threadId: number, readonly frameId: number) { }
 }
 
 export interface QuickInputButton {
