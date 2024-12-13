@@ -190,10 +190,6 @@ export class MainThreadTestsImpl extends Disposable implements IMainThreadTestin
     this.withTestResult(runId, (r) => r.appendOutput(output, taskId, location, testId));
   }
 
-  $signalCoverageAvailable(runId: string, taskId: string): void {
-    this.logger.warn('$signalCoverageAvailable', runId, taskId);
-  }
-
   $startedTestRunTask(runId: string, task: ITestRunTask): void {
     this.withTestResult(runId, (r) => r.addTask(task));
   }

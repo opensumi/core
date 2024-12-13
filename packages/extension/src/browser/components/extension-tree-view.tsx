@@ -117,6 +117,16 @@ export const ExtensionTabBarTreeView = ({
     [canSelectMany, model],
   );
 
+  const handleCheckBoxChange = useCallback(
+    (item: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+      const { handleCheckBoxChange } = model;
+      if (item) {
+        handleCheckBoxChange(item);
+      }
+    },
+    [model],
+  );
+
   const handleContextMenu = useCallback(
     (ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
       const { handleContextMenu } = model;
@@ -201,6 +211,7 @@ export const ExtensionTabBarTreeView = ({
         isVisible={isVisible}
         handleTreeReady={handleTreeReady}
         handleItemClicked={handleItemClicked}
+        handleCheckBoxChange={handleCheckBoxChange}
         handleTwistierClick={handleTwistierClick}
         handleContextMenu={handleContextMenu}
         handleDragStart={handleDragStart}
@@ -226,6 +237,7 @@ interface TreeViewProps {
   model: ExtensionTreeViewModel;
   handleTreeReady(handle: IRecycleTreeHandle): void;
   handleItemClicked(ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType): void;
+  handleCheckBoxChange(item: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
   handleTwistierClick(ev: MouseEvent, item: ExtensionCompositeTreeNode): void;
   handleContextMenu(ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
   handleDragStart(ev: MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
@@ -255,6 +267,7 @@ const TreeView = memo(
     dataProvider,
     handleTreeReady,
     handleItemClicked,
+    handleCheckBoxChange,
     handleTwistierClick,
     handleContextMenu,
     handleDragStart,
@@ -301,6 +314,7 @@ const TreeView = memo(
           itemType={props.itemType}
           decorations={model.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
+          onChange={handleCheckBoxChange}
           onTwistierClick={handleTwistierClick}
           onContextMenu={handleContextMenu}
           onDragStart={handleDragStart}

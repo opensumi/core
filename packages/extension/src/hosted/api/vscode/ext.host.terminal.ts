@@ -50,11 +50,13 @@ interface ICachedLinkEntry {
 }
 
 export class ExtHostTerminal implements IExtHostTerminal {
+  private shell: string;
   private proxy: IMainThreadTerminal;
   private changeActiveTerminalEvent: Emitter<Terminal | undefined> = new Emitter();
   private closeTerminalEvent: Emitter<Terminal> = new Emitter();
   private openTerminalEvent: Emitter<Terminal> = new Emitter();
   private terminalStateChangeEvent: Emitter<Terminal> = new Emitter();
+  private onDidChangeShellEvent: Emitter<string> = new Emitter();
   private terminalsMap: Map<string, Terminal> = new Map();
   private _terminalDeferreds: Map<string, Deferred<Terminal | undefined>> = new Map();
   private readonly _linkProviders: Set<vscode.TerminalLinkProvider> = new Set();
@@ -172,12 +174,23 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return this.openTerminalEvent.event;
   }
 
+  get onDidChangeShell(): Event<string> {
+    return this.onDidChangeShellEvent.event;
+  }
+
   get shellPath() {
     return this._defaultProfile?.path || process.env.SHELL || userInfo().shell!;
   }
 
   get onDidChangeTerminalState(): Event<Terminal> {
     return this.terminalStateChangeEvent.event;
+  }
+
+  $setShell(shell: string) {
+    if (this.shell !== shell) {
+      this.shell = shell;
+      this.onDidChangeShellEvent.fire(shell);
+    }
   }
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
@@ -367,9 +380,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   public $acceptDefaultProfile(profile: ITerminalProfile, automationProfile?: ITerminalProfile): void {
+    const oldProfile = this._defaultProfile;
     this._defaultProfile = profile;
     // 还不知道这个 automation 有啥用
     this._defaultAutomationProfile = automationProfile;
+
+    if (oldProfile?.path !== profile.path) {
+      this.onDidChangeShellEvent.fire(profile.path);
+    }
   }
 
   public async $createContributedProfileTerminal(
@@ -706,6 +724,8 @@ export class Terminal implements vscode.Terminal {
   public get creationOptions(): Readonly<vscode.TerminalOptions | vscode.ExtensionTerminalOptions> {
     return this._creationOptions;
   }
+
+  shellIntegration: vscode.TerminalShellIntegration | undefined = undefined;
 
   sendText(text: string, addNewLine?: boolean): void {
     this.when.then(() => {

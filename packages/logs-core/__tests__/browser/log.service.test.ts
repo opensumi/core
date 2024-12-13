@@ -13,13 +13,13 @@ import {
 
 @Injectable()
 class MockLogServiceForClient implements ILogServiceForClient {
-  dispose(namespace: SupportLogNamespace): void {}
+  async disposeLogger(namespace: SupportLogNamespace): Promise<void> {}
   async setGlobalLogLevel(level: LogLevel): Promise<void> {}
   getGlobalLogLevel(): Promise<LogLevel> {
     return Promise.resolve(LogLevel.Verbose);
   }
   async disposeAll(): Promise<void> {
-    this.dispose(this.namespace);
+    this.disposeLogger(this.namespace);
   }
   async getLogFolder(): Promise<string> {
     return '';

@@ -1618,9 +1618,47 @@ declare module 'vscode' {
     canSelectMany?: boolean;
 
     /**
-		* An optional interface to implement drag and drop in the tree view.
-		*/
-		dragAndDropController?: TreeDragAndDropController<T>;
+    * An optional interface to implement drag and drop in the tree view.
+    */
+    dragAndDropController?: TreeDragAndDropController<T>;
+
+    /**
+     * By default, when the children of a tree item have already been fetched, child checkboxes are automatically managed based on the checked state of the parent tree item.
+     * If the tree item is collapsed by default (meaning that the children haven't yet been fetched) then child checkboxes will not be updated.
+     * To override this behavior and manage child and parent checkbox state in the extension, set this to `true`.
+     *
+     * Examples where {@link TreeViewOptions.manageCheckboxStateManually} is false, the default behavior:
+     *
+     * 1. A tree item is checked, then its children are fetched. The children will be checked.
+     *
+     * 2. A tree item's parent is checked. The tree item and all of it's siblings will be checked.
+     *   - [ ] Parent
+     *     - [ ] Child 1
+     *     - [ ] Child 2
+     *   When the user checks Parent, the tree will look like this:
+     *   - [x] Parent
+     *     - [x] Child 1
+     *     - [x] Child 2
+     *
+     * 3. A tree item and all of it's siblings are checked. The parent will be checked.
+     *   - [ ] Parent
+     *     - [ ] Child 1
+     *     - [ ] Child 2
+     *   When the user checks Child 1 and Child 2, the tree will look like this:
+     *   - [x] Parent
+     *     - [x] Child 1
+     *     - [x] Child 2
+     *
+     * 4. A tree item is unchecked. The parent will be unchecked.
+     *   - [x] Parent
+     *     - [x] Child 1
+     *     - [x] Child 2
+     *   When the user unchecks Child 1, the tree will look like this:
+     *   - [ ] Parent
+     *     - [ ] Child 1
+     *     - [x] Child 2
+     */
+    manageCheckboxStateManually?: boolean;
   }
 
   /**
@@ -1855,6 +1893,11 @@ declare module 'vscode' {
     readonly onDidChangeVisibility: Event<TreeViewVisibilityChangeEvent>;
 
     /**
+     * An event to signal that an element or root has either been checked or unchecked.
+     */
+    readonly onDidChangeCheckboxState: Event<TreeCheckboxChangeEvent<T>>;
+
+    /**
      * An optional human-readable message that will be rendered in the view.
      * Setting the message to null, undefined, or empty string will remove the message from the view.
      */
@@ -1927,6 +1970,30 @@ declare module 'vscode' {
      */
     highlights?: [number, number][];
 
+  }
+
+  /**
+   * Checkbox state of the tree item
+   */
+  export enum TreeItemCheckboxState {
+    /**
+     * Determines an item is unchecked
+     */
+    Unchecked = 0,
+    /**
+     * Determines an item is checked
+     */
+    Checked = 1
+  }
+
+  /**
+   * An event describing the change in a tree item's checkbox state.
+   */
+  export interface TreeCheckboxChangeEvent<T> {
+    /**
+     * The items that were checked or unchecked.
+     */
+    readonly items: ReadonlyArray<[T, TreeItemCheckboxState]>;
   }
 
   /**
@@ -2084,6 +2151,25 @@ declare module 'vscode' {
      * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
      */
     accessibilityInformation?: AccessibilityInformation;
+
+    /**
+     * {@link TreeItemCheckboxState TreeItemCheckboxState} of the tree item.
+     * {@link TreeDataProvider.onDidChangeTreeData onDidChangeTreeData} should be fired when {@link TreeItem.checkboxState checkboxState} changes.
+     */
+    checkboxState?: TreeItemCheckboxState | {
+      /**
+       * The {@link TreeItemCheckboxState} of the tree item
+       */
+      readonly state: TreeItemCheckboxState;
+      /**
+       * A tooltip for the checkbox
+       */
+      readonly tooltip?: string;
+      /**
+       * Accessibility information used when screen readers interact with this checkbox
+       */
+      readonly accessibilityInformation?: AccessibilityInformation;
+    };
 
     /**
      * @param label A human-readable string describing this item
@@ -3031,6 +3117,18 @@ declare module 'vscode' {
     readonly state: TerminalState;
 
     /**
+     * An object that contains [shell integration](https://code.visualstudio.com/docs/terminal/shell-integration)-powered
+     * features for the terminal. This will always be `undefined` immediately after the terminal
+     * is created. Listen to {@link window.onDidChangeTerminalShellIntegration} to be notified
+     * when shell integration is activated for a terminal.
+     *
+     * Note that this object may remain undefined if shell integration never activates. For
+     * example Command Prompt does not support shell integration and a user's shell setup could
+     * conflict with the automatic shell integration activation.
+     */
+    readonly shellIntegration: TerminalShellIntegration | undefined;
+
+    /**
      * The object used to initialize the terminal, this is useful for example to detecting the
      * shell type of when the terminal was not launched by this extension or for detecting what
      * folder the shell was launched in.
@@ -3099,6 +3197,316 @@ declare module 'vscode' {
      * https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
      */
     readonly isInteractedWith: boolean;
+  }
+
+  /**
+   * [Shell integration](https://code.visualstudio.com/docs/terminal/shell-integration)-powered capabilities owned by a terminal.
+   */
+  export interface TerminalShellIntegration {
+    /**
+     * The current working directory of the terminal. This {@link Uri} may represent a file on
+     * another machine (eg. ssh into another machine). This requires the shell integration to
+     * support working directory reporting.
+     */
+    readonly cwd: Uri | undefined;
+
+    /**
+     * Execute a command, sending ^C as necessary to interrupt any running command if needed.
+     *
+     * @param commandLine The command line to execute, this is the exact text that will be sent
+     * to the terminal.
+     *
+     * @example
+     * // Execute a command in a terminal immediately after being created
+     * const myTerm = window.createTerminal();
+     * window.onDidChangeTerminalShellIntegration(async ({ terminal, shellIntegration }) => {
+     *   if (terminal === myTerm) {
+     *     const execution = shellIntegration.executeCommand('echo "Hello world"');
+     *     window.onDidEndTerminalShellExecution(event => {
+     *       if (event.execution === execution) {
+     *         console.log(`Command exited with code ${event.exitCode}`);
+     *       }
+     *     });
+     *   }
+     * }));
+     * // Fallback to sendText if there is no shell integration within 3 seconds of launching
+     * setTimeout(() => {
+     *   if (!myTerm.shellIntegration) {
+     *     myTerm.sendText('echo "Hello world"');
+     *     // Without shell integration, we can't know when the command has finished or what the
+     *     // exit code was.
+     *   }
+     * }, 3000);
+     *
+     * @example
+     * // Send command to terminal that has been alive for a while
+     * const commandLine = 'echo "Hello world"';
+     * if (term.shellIntegration) {
+     *   const execution = shellIntegration.executeCommand({ commandLine });
+     *   window.onDidEndTerminalShellExecution(event => {
+     *     if (event.execution === execution) {
+     *       console.log(`Command exited with code ${event.exitCode}`);
+     *     }
+     *   });
+     * } else {
+     *   term.sendText(commandLine);
+     *   // Without shell integration, we can't know when the command has finished or what the
+     *   // exit code was.
+     * }
+     */
+    executeCommand(commandLine: string): TerminalShellExecution;
+
+    /**
+     * Execute a command, sending ^C as necessary to interrupt any running command if needed.
+     *
+     * *Note* This is not guaranteed to work as [shell integration](https://code.visualstudio.com/docs/terminal/shell-integration)
+     * must be activated. Check whether {@link TerminalShellExecution.exitCode} is rejected to
+     * verify whether it was successful.
+     *
+     * @param executable A command to run.
+     * @param args Arguments to launch the executable with. The arguments will be escaped such
+     * that they are interpreted as single arguments when the argument both contains whitespace
+     * and does not include any single quote, double quote or backtick characters.
+     *
+     * Note that this escaping is not intended to be a security measure, be careful when passing
+     * untrusted data to this API as strings like `$(...)` can often be used in shells to
+     * execute code within a string.
+     *
+     * @example
+     * // Execute a command in a terminal immediately after being created
+     * const myTerm = window.createTerminal();
+     * window.onDidChangeTerminalShellIntegration(async ({ terminal, shellIntegration }) => {
+     *   if (terminal === myTerm) {
+     *     const command = shellIntegration.executeCommand({
+     *       command: 'echo',
+     *       args: ['Hello world']
+     *     });
+     *     const code = await command.exitCode;
+     *     console.log(`Command exited with code ${code}`);
+     *   }
+     * }));
+     * // Fallback to sendText if there is no shell integration within 3 seconds of launching
+     * setTimeout(() => {
+     *   if (!myTerm.shellIntegration) {
+     *     myTerm.sendText('echo "Hello world"');
+     *     // Without shell integration, we can't know when the command has finished or what the
+     *     // exit code was.
+     *   }
+     * }, 3000);
+     *
+     * @example
+     * // Send command to terminal that has been alive for a while
+     * const commandLine = 'echo "Hello world"';
+     * if (term.shellIntegration) {
+     *   const command = term.shellIntegration.executeCommand({
+     *     command: 'echo',
+     *     args: ['Hello world']
+     *   });
+     *   const code = await command.exitCode;
+     *   console.log(`Command exited with code ${code}`);
+     * } else {
+     *   term.sendText(commandLine);
+     *   // Without shell integration, we can't know when the command has finished or what the
+     *   // exit code was.
+     * }
+     */
+    executeCommand(executable: string, args: string[]): TerminalShellExecution;
+  }
+
+  /**
+   * A command that was executed in a terminal.
+   */
+  export interface TerminalShellExecution {
+    /**
+     * The command line that was executed. The {@link TerminalShellExecutionCommandLineConfidence confidence}
+     * of this value depends on the specific shell's shell integration implementation. This
+     * value may become more accurate after {@link window.onDidEndTerminalShellExecution} is
+     * fired.
+     *
+     * @example
+     * // Log the details of the command line on start and end
+     * window.onDidStartTerminalShellExecution(event => {
+     *   const commandLine = event.execution.commandLine;
+     *   console.log(`Command started\n${summarizeCommandLine(commandLine)}`);
+     * });
+     * window.onDidEndTerminalShellExecution(event => {
+     *   const commandLine = event.execution.commandLine;
+     *   console.log(`Command ended\n${summarizeCommandLine(commandLine)}`);
+     * });
+     * function summarizeCommandLine(commandLine: TerminalShellExecutionCommandLine) {
+     *   return [
+     *     `  Command line: ${command.commandLine.value}`,
+     *     `  Confidence: ${command.commandLine.confidence}`,
+     *     `  Trusted: ${command.commandLine.isTrusted}
+     *   ].join('\n');
+     * }
+     */
+    readonly commandLine: TerminalShellExecutionCommandLine;
+
+    /**
+     * The working directory that was reported by the shell when this command executed. This
+     * {@link Uri} may represent a file on another machine (eg. ssh into another machine). This
+     * requires the shell integration to support working directory reporting.
+     */
+    readonly cwd: Uri | undefined;
+
+    /**
+     * Creates a stream of raw data (including escape sequences) that is written to the
+     * terminal. This will only include data that was written after `read` was called for
+     * the first time, ie. you must call `read` immediately after the command is executed via
+     * {@link TerminalShellIntegration.executeCommand} or
+     * {@link window.onDidStartTerminalShellExecution} to not miss any data.
+     *
+     * @example
+     * // Log all data written to the terminal for a command
+     * const command = term.shellIntegration.executeCommand({ commandLine: 'echo "Hello world"' });
+     * const stream = command.read();
+     * for await (const data of stream) {
+     *   console.log(data);
+     * }
+     */
+    read(): AsyncIterable<string>;
+  }
+
+  /**
+   * A command line that was executed in a terminal.
+   */
+  export interface TerminalShellExecutionCommandLine {
+    /**
+     * The full command line that was executed, including both the command and its arguments.
+     */
+    readonly value: string;
+
+    /**
+     * Whether the command line value came from a trusted source and is therefore safe to
+     * execute without user additional confirmation, such as a notification that asks "Do you
+     * want to execute (command)?". This verification is likely only needed if you are going to
+     * execute the command again.
+     *
+     * This is `true` only when the command line was reported explicitly by the shell
+     * integration script (ie. {@link TerminalShellExecutionCommandLineConfidence.High high confidence})
+     * and it used a nonce for verification.
+     */
+    readonly isTrusted: boolean;
+
+    /**
+     * The confidence of the command line value which is determined by how the value was
+     * obtained. This depends upon the implementation of the shell integration script.
+     */
+    readonly confidence: TerminalShellExecutionCommandLineConfidence;
+  }
+
+  /**
+   * The confidence of a {@link TerminalShellExecutionCommandLine} value.
+   */
+  enum TerminalShellExecutionCommandLineConfidence {
+    /**
+     * The command line value confidence is low. This means that the value was read from the
+     * terminal buffer using markers reported by the shell integration script. Additionally one
+     * of the following conditions will be met:
+     *
+     * - The command started on the very left-most column which is unusual, or
+     * - The command is multi-line which is more difficult to accurately detect due to line
+     *   continuation characters and right prompts.
+     * - Command line markers were not reported by the shell integration script.
+     */
+    Low = 0,
+
+    /**
+     * The command line value confidence is medium. This means that the value was read from the
+     * terminal buffer using markers reported by the shell integration script. The command is
+     * single-line and does not start on the very left-most column (which is unusual).
+     */
+    Medium = 1,
+
+    /**
+     * The command line value confidence is high. This means that the value was explicitly sent
+     * from the shell integration script or the command was executed via the
+     * {@link TerminalShellIntegration.executeCommand} API.
+     */
+    High = 2
+  }
+
+  /**
+   * An event signalling that a terminal's shell integration has changed.
+   */
+  export interface TerminalShellIntegrationChangeEvent {
+    /**
+     * The terminal that shell integration has been activated in.
+     */
+    readonly terminal: Terminal;
+
+    /**
+     * The shell integration object.
+     */
+    readonly shellIntegration: TerminalShellIntegration;
+  }
+
+  /**
+   * An event signalling that an execution has started in a terminal.
+   */
+  export interface TerminalShellExecutionStartEvent {
+    /**
+     * The terminal that shell integration has been activated in.
+     */
+    readonly terminal: Terminal;
+
+    /**
+     * The shell integration object.
+     */
+    readonly shellIntegration: TerminalShellIntegration;
+
+    /**
+     * The terminal shell execution that has ended.
+     */
+    readonly execution: TerminalShellExecution;
+  }
+
+  /**
+   * An event signalling that an execution has ended in a terminal.
+   */
+  export interface TerminalShellExecutionEndEvent {
+    /**
+     * The terminal that shell integration has been activated in.
+     */
+    readonly terminal: Terminal;
+
+    /**
+     * The shell integration object.
+     */
+    readonly shellIntegration: TerminalShellIntegration;
+
+    /**
+     * The terminal shell execution that has ended.
+     */
+    readonly execution: TerminalShellExecution;
+
+    /**
+     * The exit code reported by the shell.
+     *
+     * Note that `undefined` means the shell either did not report an exit  code (ie. the shell
+     * integration script is misbehaving) or the shell reported a command started before the command
+     * finished (eg. a sub-shell was opened). Generally this should not happen, depending on the use
+     * case, it may be best to treat this as a failure.
+     *
+     * @example
+     * const execution = shellIntegration.executeCommand({
+     *   command: 'echo',
+     *   args: ['Hello world']
+     * });
+     * window.onDidEndTerminalShellExecution(event => {
+     *   if (event.execution === execution) {
+     *     if (event.exitCode === undefined) {
+     * 	     console.log('Command finished but exit code is unknown');
+     *     } else if (event.exitCode === 0) {
+     * 	     console.log('Command succeeded');
+     *     } else {
+     * 	     console.log('Command failed');
+     *     }
+     *   }
+     * });
+     */
+    readonly exitCode: number | undefined;
   }
 
   //#region EnvironmentVariable
@@ -4173,26 +4581,46 @@ declare module 'vscode' {
   }
 
   /**
-	 * Provider which handles dropping of resources into a text editor.
-	 *
-	 * This allows users to drag and drop resources (including resources from external apps) into the editor. While dragging
-	 * and dropping files, users can hold down `shift` to drop the file into the editor instead of opening it.
-	 * Requires `editor.dropIntoEditor.enabled` to be on.
-	 */
-	export interface DocumentDropEditProvider {
-		/**
-		 * Provide edits which inserts the content being dragged and dropped into the document.
-		 *
-		 * @param document The document in which the drop occurred.
-		 * @param position The position in the document where the drop occurred.
-		 * @param dataTransfer A {@link DataTransfer} object that holds data about what is being dragged and dropped.
-		 * @param token A cancellation token.
-		 *
-		 * @returns A {@link DocumentDropEdit} or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined` or `null`.
-		 */
-		provideDocumentDropEdits(document: TextDocument, position: Position, dataTransfer: DataTransfer, token: CancellationToken): ProviderResult<DocumentDropEdit>;
-	}
+   * An edit operation applied {@link DocumentDropEditProvider on drop}.
+   */
+  export class DocumentDropEdit {
+    /**
+     * The text or snippet to insert at the drop location.
+     */
+    insertText: string | SnippetString;
+
+    /**
+     * An optional additional edit to apply on drop.
+     */
+    additionalEdit?: WorkspaceEdit;
+
+    /**
+     * @param insertText The text or snippet to insert at the drop location.
+     */
+    constructor(insertText: string | SnippetString);
+  }
+
+  /**
+   * Provider which handles dropping of resources into a text editor.
+   *
+   * This allows users to drag and drop resources (including resources from external apps) into the editor. While dragging
+   * and dropping files, users can hold down `shift` to drop the file into the editor instead of opening it.
+   * Requires `editor.dropIntoEditor.enabled` to be on.
+   */
+  export interface DocumentDropEditProvider {
+    /**
+     * Provide edits which inserts the content being dragged and dropped into the document.
+     *
+     * @param document The document in which the drop occurred.
+     * @param position The position in the document where the drop occurred.
+     * @param dataTransfer A {@link DataTransfer} object that holds data about what is being dragged and dropped.
+     * @param token A cancellation token.
+     *
+     * @returns A {@link DocumentDropEdit} or a thenable that resolves to such. The lack of a result can be
+     * signaled by returning `undefined` or `null`.
+     */
+    provideDocumentDropEdits(document: TextDocument, position: Position, dataTransfer: DataTransfer, token: CancellationToken): ProviderResult<DocumentDropEdit>;
+  }
 
   //#endregion Semantic Tokens
 
