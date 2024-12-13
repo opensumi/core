@@ -96,7 +96,9 @@ export class TelemetryLogger {
     if (this.sender?.flush) {
       let tempSender: TelemetrySender | undefined = this.sender;
       this.sender = undefined;
-      Promise.resolve(tempSender.flush!()).then((tempSender = undefined));
+      Promise.resolve(tempSender.flush!()).then(() => {
+        tempSender = undefined;
+      });
     } else {
       this.sender = undefined;
     }
