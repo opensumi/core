@@ -14,3 +14,4 @@ export * from './statusbar';
 export * from './markdown';
 export * from './editor';
 export * from './ai-native';
+export * from './telemetry';
