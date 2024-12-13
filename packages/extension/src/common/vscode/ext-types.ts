@@ -19,7 +19,6 @@ import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';
 import { FileOperationOptions } from './model.api';
 import { escapeCodicons } from './models/html-content';
 import { illegalArgument } from './utils';
-
 import type vscode from 'vscode';
 
 export { TextEditorRevealType } from './editor';
@@ -987,7 +986,6 @@ export enum TextEditorLineNumbersStyle {
    * Render the line numbers with values relative to the primary cursor location.
    */
   Relative = 2,
-  Interval = 3,
 }
 
 @es5ClassCompat
@@ -1639,6 +1637,7 @@ export interface OutputChannel {
 }
 
 export interface WindowState {
+  active: boolean;
   focused: boolean;
 }
 
@@ -2887,12 +2886,6 @@ export enum TerminalExitReason {
   Extension = 4,
 }
 
-export enum TerminalShellExecutionCommandLineConfidence {
-  Low = 0,
-  Medium = 1,
-  High = 2,
-}
-
 export enum UIKind {
   Desktop = 1,
   Web = 2,
@@ -3450,112 +3443,6 @@ export class TestMessage implements vscode.TestMessage {
 
   constructor(public message: string | vscode.MarkdownString) {}
 }
-
-export class TestCoverageCount implements vscode.TestCoverageCount {
-  constructor(public covered: number, public total: number) {
-    validateTestCoverageCount(this);
-  }
-}
-
-export function validateTestCoverageCount(cc?: vscode.TestCoverageCount) {
-  if (!cc) {
-    return;
-  }
-
-  if (cc.covered > cc.total) {
-    throw new Error(`The total number of covered items (${cc.covered}) cannot be greater than the total (${cc.total})`);
-  }
-
-  if (cc.total < 0) {
-    throw new Error(`The number of covered items (${cc.total}) cannot be negative`);
-  }
-}
-
-export class FileCoverage implements vscode.FileCoverage {
-  public static fromDetails(uri: vscode.Uri, details: vscode.FileCoverageDetail[]): vscode.FileCoverage {
-    const statements = new TestCoverageCount(0, 0);
-    const branches = new TestCoverageCount(0, 0);
-    const decl = new TestCoverageCount(0, 0);
-
-    for (const detail of details) {
-      if ('branches' in detail) {
-        statements.total += 1;
-        statements.covered += detail.executed ? 1 : 0;
-
-        for (const branch of detail.branches) {
-          branches.total += 1;
-          branches.covered += branch.executed ? 1 : 0;
-        }
-      } else {
-        decl.total += 1;
-        decl.covered += detail.executed ? 1 : 0;
-      }
-    }
-
-    const coverage = new FileCoverage(
-      uri,
-      statements,
-      branches.total > 0 ? branches : undefined,
-      decl.total > 0 ? decl : undefined,
-    );
-
-    coverage.detailedCoverage = details;
-
-    return coverage;
-  }
-
-  detailedCoverage?: vscode.FileCoverageDetail[];
-
-  constructor(
-    public readonly uri: vscode.Uri,
-    public statementCoverage: vscode.TestCoverageCount,
-    public branchCoverage?: vscode.TestCoverageCount,
-    public declarationCoverage?: vscode.TestCoverageCount,
-    public includesTests: vscode.TestItem[] = [],
-  ) {}
-}
-
-export class StatementCoverage implements vscode.StatementCoverage {
-  // back compat until finalization:
-  get executionCount() {
-    return +this.executed;
-  }
-  set executionCount(n: number) {
-    this.executed = n;
-  }
-
-  constructor(
-    public executed: number | boolean,
-    public location: Position | Range,
-    public branches: vscode.BranchCoverage[] = [],
-  ) {}
-}
-
-export class BranchCoverage implements vscode.BranchCoverage {
-  // back compat until finalization:
-  get executionCount() {
-    return +this.executed;
-  }
-  set executionCount(n: number) {
-    this.executed = n;
-  }
-
-  constructor(public executed: number | boolean, public location: Position | Range, public label?: string) {}
-}
-
-export class DeclarationCoverage implements vscode.DeclarationCoverage {
-  // back compat until finalization:
-  get executionCount() {
-    return +this.executed;
-  }
-  set executionCount(n: number) {
-    this.executed = n;
-  }
-
-  constructor(public readonly name: string, public executed: number | boolean, public location: Position | Range) {}
-}
-
-export type FileCoverageDetail = StatementCoverage | DeclarationCoverage;
 
 @es5ClassCompat
 export class TestTag implements vscode.TestTag {
