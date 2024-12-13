@@ -1,4 +1,4 @@
-import { Emitter, Event, TelemetryTrustedValue, getDebugLogger, mixin } from '@opensumi/ide-core-common';
+import { Emitter, Event, TelemetryTrustedValue, mixin } from '@opensumi/ide-core-common';
 import { cloneAndChange } from '@opensumi/ide-utils/lib/objects';
 
 import type { TelemetryLoggerOptions, TelemetrySender } from 'vscode';
@@ -33,7 +33,6 @@ export class TelemetryLogger {
   readonly options: TelemetryLoggerOptions | undefined;
   readonly commonProperties: Record<string, any>;
   telemetryEnabled: boolean;
-  private readonly logger = getDebugLogger();
 
   private readonly onDidChangeEnableStatesEmitter: Emitter<TelemetryLogger> = new Emitter();
   readonly onDidChangeEnableStates: Event<TelemetryLogger> = this.onDidChangeEnableStatesEmitter.event;
@@ -96,9 +95,13 @@ export class TelemetryLogger {
     if (this.sender?.flush) {
       let tempSender: TelemetrySender | undefined = this.sender;
       this.sender = undefined;
-      Promise.resolve(tempSender.flush!()).then(() => {
-        tempSender = undefined;
-      });
+      Promise.resolve(tempSender.flush!())
+        .then(() => {
+          tempSender = undefined;
+        })
+        .catch((error) => {
+          tempSender = undefined;
+        });
     } else {
       this.sender = undefined;
     }
