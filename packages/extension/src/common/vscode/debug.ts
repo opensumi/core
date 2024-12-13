@@ -2,7 +2,6 @@ import { Event, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-commo
 import { DebugConfiguration, DebuggerDescription, IDebugSessionDTO, IDebuggerContribution } from '@opensumi/ide-debug';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
-import { DebugStackFrame, DebugThread } from './ext-types';
 import { Breakpoint, WorkspaceFolder } from './models';
 
 import type vscode from 'vscode';
