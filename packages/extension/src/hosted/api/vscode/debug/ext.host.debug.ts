@@ -22,8 +22,6 @@ import {
   DebugAdapterServer,
   DebugConfigurationProviderTriggerKind,
   DebugConsoleMode,
-  DebugStackFrame,
-  DebugThread,
   Disposable,
   Uri,
 } from '../../../../common/vscode/ext-types';
