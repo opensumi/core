@@ -3,6 +3,7 @@ import { DebugConfiguration, DebuggerDescription, IDebugSessionDTO, IDebuggerCon
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { Breakpoint, WorkspaceFolder } from './models';
+import { DebugThread, DebugStackFrame } from './ext-types';
 
 import type vscode from 'vscode';
 
@@ -77,6 +78,8 @@ export interface IExtHostDebugService extends IExtHostDebug {
   onDidReceiveDebugSessionCustomEvent: Event<vscode.DebugSessionCustomEvent>;
   onDidChangeBreakpoints: Event<vscode.BreakpointsChangeEvent>;
   breakpoints: vscode.Breakpoint[];
+  activeStackItem: DebugThread | DebugStackFrame | undefined;
+  onDidChangeActiveStackItem: Event<DebugThread | DebugStackFrame | undefined>;
 
   addBreakpoints(breakpoints0: vscode.Breakpoint[]): Promise<void>;
   removeBreakpoints(breakpoints0: vscode.Breakpoint[]): Promise<void>;
