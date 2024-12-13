@@ -2075,14 +2075,6 @@ export class FunctionBreakpoint extends Breakpoint {
   }
 }
 
-export class DebugThread {
-  private constructor(readonly session: vscode.DebugSession, readonly threadId: number) {}
-}
-
-export class DebugStackFrame {
-  private constructor(readonly session: vscode.DebugSession, readonly threadId: number, readonly frameId: number) {}
-}
-
 export interface QuickInputButton {
   readonly iconPath: Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon;
   readonly tooltip?: string | undefined;
