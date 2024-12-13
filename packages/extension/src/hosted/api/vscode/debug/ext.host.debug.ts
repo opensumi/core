@@ -22,12 +22,11 @@ import {
   DebugAdapterServer,
   DebugConfigurationProviderTriggerKind,
   DebugConsoleMode,
-  Disposable,
-  Uri,
   DebugStackFrame,
   DebugThread,
+  Disposable,
+  Uri,
 } from '../../../../common/vscode/ext-types';
-
 import { Breakpoint } from '../../../../common/vscode/models';
 
 import { IDebugConfigurationProvider } from './common';
@@ -227,16 +226,6 @@ export class ExtHostDebug implements IExtHostDebugService {
 
   get onDidStartDebugSession(): Event<vscode.DebugSession> {
     return this.onDidStartDebugSessionEmitter.event;
-  }
-
-  /** @stubbed */
-  get activeStackItem(): DebugThread | DebugStackFrame | undefined {
-    return undefined;
-  }
-  
-  /** @stubbed */
-  get onDidChangeActiveStackItem(): Event<DebugThread | DebugStackFrame | undefined> {
-    return Event.None;
   }
 
   /**

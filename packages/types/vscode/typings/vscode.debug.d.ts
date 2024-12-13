@@ -562,7 +562,6 @@ declare module 'vscode' {
      * `DebugConfigurationProvider.provideDebugConfigurations` is called to provide dynamically generated debug configurations when the user asks for them through the UI (e.g. via the "Select and Start Debugging" command).
      */
     Dynamic = 2
-
   }
 
   /**
@@ -589,24 +588,24 @@ declare module 'vscode' {
    * Represents a stack frame in a debug session.
    */
   export class DebugStackFrame {
-      /**
-       * Debug session for thread.
-       */
-      readonly session: DebugSession;
+    /**
+     * Debug session for thread.
+     */
+    readonly session: DebugSession;
 
-      /**
-       * ID of the associated thread in the debug protocol.
-       */
-      readonly threadId: number;
-      /**
-       * ID of the stack frame in the debug protocol.
-       */
-      readonly frameId: number;
+    /**
+     * ID of the associated thread in the debug protocol.
+     */
+    readonly threadId: number;
+    /**
+     * ID of the stack frame in the debug protocol.
+     */
+    readonly frameId: number;
 
-      /**
-       * @hidden
-       */
-      private constructor(session: DebugSession, threadId: number, frameId: number);
+    /**
+     * @hidden
+     */
+    private constructor(session: DebugSession, threadId: number, frameId: number);
   }
 
   /**
