@@ -37,7 +37,7 @@ export class DesignMenuBarContribution extends Disposable implements ComponentCo
                 submenu: item.id,
                 iconClass: item.iconClass,
                 group: item.group || '1_navigation',
-                order: item.order || 100,
+                order: item.order ?? 100,
               } as ISubmenuItem),
           ),
         );
