@@ -1,0 +1,93 @@
+import type { ICell, INotebookContent } from '@alipay/libro-common';
+import { concatMultilineString } from '@alipay/libro-common';
+import type { View } from '@alipay/mana-app';
+
+export const libroDiffViewFactoryId = 'libro-diff-view-factory';
+
+export const getLibroCellType = (cell: ICell) => {
+  const cellType = (cell.metadata?.libroCellType as string) ?? cell.cell_type;
+  if (cellType === 'sql') return 'SQL';
+  return cellType.charAt(0).toUpperCase() + cellType.slice(1);
+};
+
+export const getSource = (cell: ICell) => {
+  let codeValue = concatMultilineString(cell.source);
+  if (getLibroCellType(cell) === 'SQL' && codeValue.includes(',tmp_table:')) {
+    codeValue = decodeURIComponent(escape(atob(codeValue.split(',tmp_table:')[0].substring(6))));
+  }
+  if (getLibroCellType(cell) === 'SQL' && codeValue.includes(',variable:')) {
+    codeValue = decodeURIComponent(escape(atob(codeValue.split(',variable:')[0].substring(6))));
+  }
+  return codeValue;
+};
+
+export type DiffCellItemResult = DiffCellItem | DiffCellUnchangedItems;
+export interface DiffView extends View {
+  diffCellsResult: DiffCellItemResult[];
+  originContent: IDiffNotebookContent;
+  targetContent: IDiffNotebookContent;
+  diffUnchangedCellsRenderStatus: 'all' | 'part' | 'none';
+  options?: Record<string, any>;
+}
+export interface IDiffNotebookContent {
+  content: INotebookContent;
+  diffTag: string;
+}
+export interface DiffCellItem {
+  diffType: 'added' | 'removed' | 'changed' | 'unchanged';
+  origin: ICell;
+  target: ICell;
+}
+
+export const DiffCellItem = {
+  is: (arg: Record<any, any>): arg is DiffCellItem => {
+    return (
+      !!arg &&
+      'diffType' in arg &&
+      typeof (arg as any).diffType === 'string' &&
+      'origin' in arg &&
+      typeof (arg as any).origin === 'object' &&
+      'target' in arg &&
+      typeof (arg as any).target === 'object'
+    );
+  },
+};
+
+export interface DiffCellUnchangedItems {
+  isShown: boolean;
+  unchangedResultItems: DiffCellItem[];
+}
+
+export const DiffCellUnchangedItems = {
+  is: (arg: Record<any, any>): arg is DiffCellUnchangedItems => {
+    return (
+      !!arg &&
+      'isShown' in arg &&
+      typeof (arg as any).isShown === 'boolean' &&
+      'unchangedResultItems' in arg &&
+      typeof (arg as any).unchangedResultItems === 'object'
+    );
+  },
+};
+
+export interface DiffArrayItem {
+  count: number;
+  added?: undefined | string;
+  removed?: undefined | string;
+  value: ICell[];
+}
+
+export interface DiffEditorProps {
+  diffCellResultItem: DiffCellItem;
+}
+
+export const DiffOption = Symbol('DiffOption');
+/**
+ * LibroDiff 创建参数
+ * 默认可 json 序列化
+ */
+export interface DiffOption {
+  loadType: string;
+  id?: string;
+  [key: string]: any;
+}

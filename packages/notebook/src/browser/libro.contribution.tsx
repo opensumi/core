@@ -43,7 +43,7 @@ import { KERNEL_PANEL_ID, KernelPanel, initKernelPanelColorToken } from './kerne
 import { LibroOpensumiModule } from './libro';
 import { LibroOpener } from './libro-opener';
 import { initLibroColorToken } from './libro.color.tokens';
-import { LIBRO_COMPONENTS_ID, LIBRO_COMPONENTS_SCHEME_ID } from './libro.protocol';
+import { LIBRO_COMPONENT_ID, LIBRO_COMPONENTS_SCHEME_ID, LIBRO_PREVIEW_COMPONENT_ID } from './libro.protocol';
 import { OpensumiLibroView } from './libro.view';
 import { ManaContainer, initLibroOpensumi, manaContainer } from './mana/index';
 import { NotebookDocumentContentProvider } from './notebook-document-content-provider';
@@ -52,6 +52,7 @@ import { initTocPanelColorToken } from './toc';
 import { LibroVariableModule } from './variables/libro-variable-module';
 import { VariablePanel } from './variables/variable-panel';
 import { VARIABLE_ID } from './variables/variable-protocol';
+import { LibroVersionPreview } from './libro-preview.view';
 
 const LIBRO_COMPONENTS_VIEW_COMMAND = {
   id: 'opensumi-libro',
@@ -182,9 +183,15 @@ export class LibroContribution
 
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorComponent({
-      uid: LIBRO_COMPONENTS_ID,
+      uid: LIBRO_COMPONENT_ID,
       scheme: LIBRO_COMPONENTS_SCHEME_ID,
       component: OpensumiLibroView,
+    });
+
+    registry.registerEditorComponent({
+      uid: LIBRO_PREVIEW_COMPONENT_ID,
+      scheme: LIBRO_COMPONENTS_SCHEME_ID,
+      component: LibroVersionPreview,
     });
 
     registry.registerEditorComponentResolver(Schemes.file, (resource, results) => {
@@ -197,7 +204,26 @@ export class LibroContribution
         }
         results.push({
           type: 'component',
-          componentId: LIBRO_COMPONENTS_ID,
+          componentId: LIBRO_COMPONENT_ID,
+        });
+      }
+    });
+
+    // git schema 的 notebook 资源，在 ide 中打开
+    registry.registerEditorComponentResolver('git', (resource, results) => {
+      if (resource.uri.path.ext === '.ipynb') {
+        results.push({
+          type: 'component',
+          componentId: LIBRO_PREVIEW_COMPONENT_ID,
+        });
+      }
+    });
+    // FIXME: diff 和 preview 用的一个组件，但是 prop 有不同，diff 的 origin 和 target 怎么传进去也要再看下
+    registry.registerEditorComponentResolver('diff', (resource, results) => {
+      if (resource.uri.path.ext === '.ipynb') {
+        results.push({
+          type: 'component',
+          componentId: LIBRO_PREVIEW_COMPONENT_ID,
         });
       }
     });
