@@ -5,6 +5,7 @@ import { ExtensionDocumentDataManager, ICodeActionDto, ICodeActionListDto } from
 import * as Converter from '../../../../common/vscode/converter';
 import { CodeActionKind } from '../../../../common/vscode/ext-types';
 import { ChainedCacheId, IWorkspaceEditDto, Range, Selection } from '../../../../common/vscode/model.api';
+import { CodeActionTriggerType } from '../../../../common/vscode/models';
 import { CommandsConverter } from '../ext.host.command';
 
 import { Diagnostics } from './diagnostics';
@@ -55,7 +56,7 @@ export class CodeActionAdapter {
     const codeActionContext: vscode.CodeActionContext = {
       diagnostics: allDiagnostics,
       only: context.only ? new CodeActionKind(context.only) : undefined,
-      triggerKind: Converter.CodeActionTriggerKind.to(context.trigger),
+      triggerKind: Converter.CodeActionTriggerKind.to(context.trigger as unknown as CodeActionTriggerType),
     };
     let cacheId: number | undefined;
 

@@ -1,8 +1,8 @@
 {
   "baseUrl": "./",
   "compilerOptions": {
-    "module": "nodenext",
-    "target": "es2018",
+    "module": "NodeNext",
+    "target": "ES2018",
     "moduleResolution": "nodenext",
     "strict": true,
     "strictPropertyInitialization": false,

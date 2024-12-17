@@ -10,7 +10,7 @@ import {
   Schemes,
   iconvEncode,
 } from '@opensumi/ide-core-common';
-import { UriComponents } from '@opensumi/ide-editor';
+
 
 import {
   CustomEditorType,
@@ -32,6 +32,8 @@ import {
 import { Uri } from '../../../common/vscode/ext-types';
 
 import { ExtHostWebviewService } from './ext.host.api.webview';
+
+import type { UriComponents } from '@opensumi/ide-editor';
 
 export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
   private proxy: IMainThreadCustomEditor;

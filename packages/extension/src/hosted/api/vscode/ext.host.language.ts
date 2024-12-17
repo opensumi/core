@@ -64,7 +64,7 @@ import {
   toDisposable,
 } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
-import { IPosition } from '@opensumi/ide-monaco/lib/common';
+
 
 import {
   ExtensionDocumentDataManager,
@@ -160,6 +160,7 @@ import { TypeHierarchyAdapter } from './language/type-hierarchy';
 import { getDurationTimer, score, targetsNotebooks } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 
+import type { IPosition } from '@opensumi/ide-monaco/lib/common';
 import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import type { NewSymbolNameTriggerKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 

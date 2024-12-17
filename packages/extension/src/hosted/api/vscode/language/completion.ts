@@ -163,7 +163,7 @@ export class CompletionAdapter {
       range = item.range;
     }
 
-    let toRange;
+    let toRange: RangeSuggestDataDto.ISuggestRangeDto | undefined;
 
     if (Range.isRange(range)) {
       toRange = RangeSuggestDataDto.to(Converter.Range.from(range));
