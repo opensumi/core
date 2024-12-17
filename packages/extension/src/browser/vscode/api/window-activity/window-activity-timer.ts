@@ -1,94 +1,117 @@
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
 
-const CHECK_INACTIVITY_LIMIT = 30;
-const CHECK_INACTIVITY_INTERVAL = 1000;
-
-const eventListenerOptions: AddEventListenerOptions = {
-  passive: true,
-  capture: true,
-};
 export class WindowActivityTimer extends Disposable {
-  private activityCounter = 0; // number of times inactivity was checked since last reset
-  private readonly limitedTime = CHECK_INACTIVITY_LIMIT; // number of inactivity checks done before sending inactive signal
-  private readonly checkInactivityInterval = CHECK_INACTIVITY_INTERVAL; // check interval in milliseconds
-  private timer: NodeJS.Timeout | undefined;
-  protected readonly onDidChangeActiveStateEmitter = new Emitter<boolean>();
-  private _activeState: boolean = true;
-  private keepRunning: boolean = true;
+  private activityCount = 0;
+  private readonly maxInactivityCount: number;
+  private readonly inactivityCheckInterval: number;
+  private inactivityCheckTimer?: NodeJS.Timeout;
+  private isActive = true;
+  private isTimerRunning = false;
 
-  constructor(readonly win: Window) {
+  // Event emitter for active state changes
+  private readonly activeStateChangedEmitter = new Emitter<boolean>();
+
+  // Window instance where the timer is active
+  constructor(private readonly window: Window, inactivityLimit: number = 30, checkInterval: number = 1000) {
     super();
-    this.setupListeners(this.win);
+    this.maxInactivityCount = inactivityLimit;
+    this.inactivityCheckInterval = checkInterval;
+
+    // Set up event listeners for user activity
+    this.setupActivityListeners();
   }
 
+  // Getter for event listener
   get onDidChangeActiveState(): Event<boolean> {
-    return this.onDidChangeActiveStateEmitter.event;
+    return this.activeStateChangedEmitter.event;
   }
 
-  private set activeState(newState: boolean) {
-    if (this._activeState !== newState) {
-      this._activeState = newState;
-      this.onDidChangeActiveStateEmitter.fire(this._activeState);
+  // Set the current activity state
+  private setActiveState(newState: boolean): void {
+    if (this.isActive !== newState) {
+      this.isActive = newState;
+      this.activeStateChangedEmitter.fire(newState);
     }
   }
 
-  private setupListeners(win: Window): void {
-    win.addEventListener('mousedown', this.resetActivity, eventListenerOptions);
-    win.addEventListener('keydown', this.resetActivity, eventListenerOptions);
-    win.addEventListener('touchstart', this.resetActivity, eventListenerOptions);
+  // Set up event listeners for detecting user activity
+  private setupActivityListeners(): void {
+    this.window.addEventListener('mousedown', this.resetInactivityTimer, {
+      passive: true,
+      capture: true,
+    } as AddEventListenerOptions);
+    this.window.addEventListener('keydown', this.resetInactivityTimer, {
+      passive: true,
+      capture: true,
+    } as AddEventListenerOptions);
+    this.window.addEventListener('touchstart', this.resetInactivityTimer, {
+      passive: true,
+      capture: true,
+    } as AddEventListenerOptions);
   }
 
-  // Reset inactivity time
-  private resetActivity = (): void => {
-    this.keepRunning = true;
-    this.activityCounter = 0;
-    if (!this.timer) {
-      // it was not active. Set as active and restart tracking inactivity
-      this.activeState = true;
-      this.startTimer();
+  // Reset the inactivity timer when activity is detected
+  private resetInactivityTimer = (): void => {
+    this.isTimerRunning = true;
+    this.activityCount = 0;
+    if (!this.inactivityCheckTimer) {
+      this.setActiveState(true);
+      this.startInactivityCheck();
     }
   };
 
-  // Check inactivity status
+  // Check if the user is inactive and update the state
   private checkInactivity = (): void => {
-    this.activityCounter++;
-    if (this.activityCounter >= this.limitedTime) {
-      this.activeState = false;
-      this.stopTimer();
+    this.activityCount++;
+    if (this.activityCount >= this.maxInactivityCount) {
+      this.setActiveState(false);
+      this.stopInactivityCheck();
     }
   };
 
-  public repeatTask(task, delay): void {
-    if (!this.keepRunning) {
-      this.timer = undefined;
+  // Recurring task to check inactivity at a given interval
+  private repeatTask(task: Function, delay: number): void {
+    if (!this.isTimerRunning) {
+      this.inactivityCheckTimer = undefined;
       return;
     }
+
     task();
 
-    this.timer = setTimeout(() => {
+    this.inactivityCheckTimer = setTimeout(() => {
       this.repeatTask(task, delay);
     }, delay);
   }
 
-  // start timer
-  public startTimer(): void {
-    this.stopTimer();
-    this.repeatTask(this.checkInactivity, this.checkInactivityInterval);
+  // Start the inactivity timer
+  private startInactivityCheck(): void {
+    this.stopInactivityCheck();
+    this.repeatTask(this.checkInactivity, this.inactivityCheckInterval);
   }
 
-  // stop timer
-  public stopTimer(): void {
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = undefined;
-      this.keepRunning = false;
+  // Stop the inactivity timer
+  private stopInactivityCheck(): void {
+    if (this.inactivityCheckTimer) {
+      clearTimeout(this.inactivityCheckTimer);
+      this.inactivityCheckTimer = undefined;
+      this.isTimerRunning = false;
     }
   }
 
+  // Clean up event listeners and stop the timer when disposed
   dispose(): void {
-    this.stopTimer();
-    this.win.removeEventListener('mousedown', this.resetActivity, eventListenerOptions);
-    this.win.removeEventListener('keydown', this.resetActivity, eventListenerOptions);
-    this.win.removeEventListener('touchstart', this.resetActivity, eventListenerOptions);
+    this.stopInactivityCheck();
+    this.window.removeEventListener('mousedown', this.resetInactivityTimer, {
+      passive: true,
+      capture: true,
+    } as AddEventListenerOptions);
+    this.window.removeEventListener('keydown', this.resetInactivityTimer, {
+      passive: true,
+      capture: true,
+    } as AddEventListenerOptions);
+    this.window.removeEventListener('touchstart', this.resetInactivityTimer, {
+      passive: true,
+      capture: true,
+    } as AddEventListenerOptions);
   }
 }
