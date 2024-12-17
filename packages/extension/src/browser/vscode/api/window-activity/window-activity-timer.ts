@@ -2,11 +2,10 @@ import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
 
 export class WindowActivityTimer extends Disposable {
   private activityCount = 0;
-  private readonly maxInactivityCount: number;
-  private readonly inactivityCheckInterval: number;
+  private readonly maxInactivityCount: number = 30;
+  private readonly inactivityCheckInterval: number = 1000;
   private inactivityCheckTimer: ReturnType<typeof setTimeout> | undefined;
   private isActive = true;
-  private isTimerRunning = false;
 
   // Event emitter for active state changes
   private readonly activeStateChangedEmitter = new Emitter<boolean>();
@@ -52,10 +51,9 @@ export class WindowActivityTimer extends Disposable {
 
   // Reset the inactivity timer when activity is detected
   private resetInactivityTimer = (): void => {
-    this.isTimerRunning = true;
     this.activityCount = 0;
+    this.setActiveState(true);
     if (!this.inactivityCheckTimer) {
-      this.setActiveState(true);
       this.startInactivityCheck();
     }
   };
@@ -63,44 +61,34 @@ export class WindowActivityTimer extends Disposable {
   // Check if the user is inactive and update the state
   private checkInactivity = (): void => {
     this.activityCount++;
+
     if (this.activityCount >= this.maxInactivityCount) {
       this.setActiveState(false);
       this.stopInactivityCheck();
     }
   };
 
-  // Recurring task to check inactivity at a given interval
-  private repeatTask(task: Function, delay: number): void {
-    if (!this.isTimerRunning) {
-      this.inactivityCheckTimer = undefined;
-      return;
-    }
-
-    task();
-
-    this.inactivityCheckTimer = setTimeout(() => {
-      this.repeatTask(task, delay);
-    }, delay);
-  }
-
   // Start the inactivity timer
   private startInactivityCheck(): void {
     this.stopInactivityCheck();
-    this.repeatTask(this.checkInactivity, this.inactivityCheckInterval);
+    this.inactivityCheckTimer = setInterval(() => {
+      this.checkInactivity();
+    }, this.inactivityCheckInterval);
   }
 
   // Stop the inactivity timer
   private stopInactivityCheck(): void {
     if (this.inactivityCheckTimer) {
-      clearTimeout(this.inactivityCheckTimer);
+      clearInterval(this.inactivityCheckTimer);
       this.inactivityCheckTimer = undefined;
-      this.isTimerRunning = false;
     }
   }
 
   // Clean up event listeners and stop the timer when disposed
   dispose(): void {
     this.stopInactivityCheck();
+    this.activeStateChangedEmitter.dispose();
+    super.dispose();
     this.window.removeEventListener('mousedown', this.resetInactivityTimer, {
       passive: true,
       capture: true,
