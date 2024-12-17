@@ -1,5 +1,4 @@
 import { MaybePromise, URI } from '@opensumi/ide-core-common';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import type { IModelContentChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
@@ -104,15 +103,4 @@ export function parseCacheValueFrom(change: IModelContentChange): IDocCacheValue
   const endColumn = change.range.endColumn;
 
   return [text, startLineNumber, startColumn, endLineNumber, endColumn];
-}
-
-export function parseRangeFrom(cacheValue: IDocCacheValue): Range {
-  const [_text, startLineNumber, startColumn, endLineNumber, endColumn] = cacheValue;
-
-  return Range.lift({
-    startLineNumber,
-    startColumn,
-    endLineNumber,
-    endColumn,
-  });
 }

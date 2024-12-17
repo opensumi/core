@@ -7,3 +7,7 @@ export * from './uri';
 export * from './debug';
 export * from './workspace';
 export * from './comments';
+export * from './editor-options';
+export * from './code-action';
+export * from './editor';
+export * from './model';

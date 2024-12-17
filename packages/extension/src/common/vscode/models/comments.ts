@@ -1,85 +1,99 @@
-import { Event, IRange } from '@opensumi/ide-core-common';
-import {
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/editor/common/languages.ts
+
+import { IMarkdownString, IRange } from '@opensumi/ide-core-common';
+
+import type { UriComponents } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
+import type {
   Comment,
   CommentInput,
-  CommentMode,
+  CommentOptions,
   CommentReaction,
   CommentThread,
   CommentThreadChangedEvent,
-  CommentThreadCollapsibleState,
   CommentingRanges,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
-import { ICommand } from './command';
-
-interface CommentOptions {
+/**
+ * @internal
+ */
+enum CommentThreadCollapsibleState {
   /**
-   * An optional string to show on the comment input box when it's collapsed.
+   * Determines an item is collapsed
    */
-  prompt?: string;
-
+  Collapsed = 0,
   /**
-   * An optional string to show as placeholder in the comment input box when it's focused.
+   * Determines an item is expanded
    */
-  placeHolder?: string;
+  Expanded = 1,
 }
 
 /**
  * @internal
  */
-export {
-  CommentThread,
-  CommentReaction,
-  CommentingRanges,
-  Comment,
-  CommentThreadChangedEvent,
-  CommentInput,
-  CommentMode,
-  CommentThreadCollapsibleState,
-  CommentOptions,
-};
+enum CommentThreadState {
+  Unresolved = 0,
+  Resolved = 1,
+}
+
+enum CommentThreadApplicability {
+  Current = 0,
+  Outdated = 1,
+}
 
 /**
  * @internal
  */
-export interface CommentThreadTemplate {
-  controllerHandle: number;
+enum CommentMode {
+  Editing = 0,
+  Preview = 1,
+}
+
+/**
+ * @internal
+ */
+enum CommentState {
+  Published = 0,
+  Draft = 1,
+}
+
+export interface CommentChanges {
+  readonly uniqueIdInThread: number;
+  readonly body: string | IMarkdownString;
+  readonly userName: string;
+  readonly userIconPath?: UriComponents;
+  readonly contextValue?: string;
+  readonly commentReactions?: CommentReaction[];
+  readonly label?: string;
+  readonly mode?: CommentMode;
+  readonly state?: CommentState;
+  readonly timestamp?: string;
+}
+
+export type CommentThreadChanges<T = IRange> = Partial<{
+  range: T | undefined;
   label: string;
-  acceptInputCommand?: ICommand;
-  additionalCommands?: ICommand[];
-  deleteCommand?: ICommand;
-}
-
-/* --------------- start 以下类型在 monaco 中没有，在 vscode 源码中有 ----------------- */
-/**
- * @internal
- */
-export interface CommentInfo {
-  extensionId?: string;
-  threads: CommentThread[];
-  commentingRanges: CommentingRanges;
-}
-
-/**
- * @internal
- */
-export interface CommentWidget {
-  commentThread: CommentThread;
-  comment?: Comment;
-  input: string;
-  onDidChangeInput: Event<string>;
-}
-
-/**
- * @internal
- */
-export type CommentThreadChanges = Partial<{
-  range: IRange;
-  label: string;
-  contextValue: string;
-  comments: Comment[];
+  contextValue: string | undefined;
+  comments: CommentChanges[];
   collapseState: CommentThreadCollapsibleState;
   canReply: boolean;
+  state: CommentThreadState;
+  applicability: CommentThreadApplicability;
+  isTemplate: boolean;
 }>;
 
-/* --------------- end 以下类型在 monaco 中没有，在 vscode 源码中有 ----------------- */
+export {
+  Comment,
+  CommentInput,
+  CommentMode,
+  CommentOptions,
+  CommentReaction,
+  CommentThread,
+  CommentThreadChangedEvent,
+  CommentThreadCollapsibleState,
+  CommentingRanges,
+};

@@ -21,3 +21,7 @@
 ├── vscode  // (folder) vscode 的 node 层 API 和贡献点
     ├── builtin-commands.ts // 插件进程内置命令的 namespace
 ```
+
+## 注意
+
+在最新版的 monaco 中，已经将所有源码文件编译成标准的 esm 模块，而插件进程依旧使用的是 commonjs。 **所以我们规定不允许在 hosted、node 以及 common 文件夹里直接导入 monaco-editor-core 文件，除非使用 import type 的方式等**

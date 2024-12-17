@@ -33,6 +33,7 @@ import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-mon
 import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
+import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { ILanguageService as IMonacoLanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
@@ -51,7 +52,7 @@ import {
   IdentifiableInlineCompletions,
   MonacoModelIdentifier,
   RangeSuggestDataDto,
-  testGlob
+  testGlob,
 } from '../../../common/vscode';
 import { IDocumentFilterDto, fromLanguageSelector } from '../../../common/vscode/converter';
 import { CancellationError, UriComponents } from '../../../common/vscode/ext-types';
@@ -81,8 +82,8 @@ import {
   DocumentSemanticTokensProvider,
 } from './semantic-tokens/semantic-token-provider';
 
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import type { NewSymbolNameTriggerKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 const { extname } = path;
 
@@ -267,6 +268,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
     const label = this.inflateLabel(data[ISuggestDataDtoField.label] as unknown as string);
 
+    const dtoRange = data[ISuggestDataDtoField.range];
+
     return {
       label,
       kind: data[ISuggestDataDtoField.kind] ?? modes.CompletionItemKind.Property,
@@ -277,8 +280,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       filterText: data[ISuggestDataDtoField.filterText],
       preselect: data[ISuggestDataDtoField.preselect],
       insertText: data[ISuggestDataDtoField.insertText] ?? (typeof label === 'string' ? label : label.label),
-      // @ts-ignore
-      range: RangeSuggestDataDto.from(data[ISuggestDataDtoField.range]) ?? defaultRange,
+      range:
+        Array.isArray(dtoRange) && dtoRange.length === 4
+          ? MonacoRange.lift({
+              startLineNumber: dtoRange[0],
+              startColumn: dtoRange[1],
+              endLineNumber: dtoRange[2],
+              endColumn: dtoRange[3],
+            })
+          : defaultRange,
       insertTextRules: data[ISuggestDataDtoField.insertTextRules],
       commitCharacters: data[ISuggestDataDtoField.commitCharacters],
       additionalTextEdits: data[ISuggestDataDtoField.additionalTextEdits],
