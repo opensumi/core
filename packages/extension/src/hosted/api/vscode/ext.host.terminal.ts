@@ -78,6 +78,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
     [id: number]: { initialDimensions: ITerminalDimensionsDto | undefined } | undefined;
   } = {};
 
+  private _terminalStartDeferreds: Map<string, Deferred<undefined>> = new Map();
+
   activeTerminal: Terminal | undefined;
   get terminals(): Terminal[] {
     return Array.from(this.terminalsMap.values());
@@ -223,6 +225,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     const p = new ExtHostPseudoterminal(options.pty);
     terminal.createExtensionTerminal(shortId);
     this.terminalsMap.set(shortId, terminal);
+    this._terminalStartDeferreds.set(shortId, new Deferred());
     const disposable = this._setupExtHostProcessListeners(shortId, p);
     this._terminalProcessDisposables[shortId] = disposable;
 
@@ -445,27 +448,28 @@ export class ExtHostTerminal implements IExtHostTerminal {
     }
 
     // TerminalController::_createClient 会立即触发 onDidOpenTerminal，所以无需等待
-    const terminalProcess = this._terminalProcesses.get(id);
+    const terminalProcess = this._terminalProcesses.get(this.getTerminalShortId(id));
     if (terminalProcess) {
       (terminalProcess as ExtHostPseudoterminal).startSendingEvents(initialDimensions);
     } else {
       // Defer startSendingEvents call to when _setupExtHostProcessListeners is called
-      this._extensionTerminalAwaitingStart[id] = { initialDimensions };
+      this._extensionTerminalAwaitingStart[this.getTerminalShortId(id)] = { initialDimensions };
     }
 
+    this._terminalStartDeferreds.get(this.getTerminalShortId(id))?.resolve(undefined);
     return undefined;
   }
 
-  protected _setupExtHostProcessListeners(id: string, p: ITerminalChildProcess): IDisposable {
+  protected _setupExtHostProcessListeners(shortId: string, p: ITerminalChildProcess): IDisposable {
     const disposables = new DisposableStore();
 
     disposables.add(
-      p.onProcessReady((e: { pid: number; cwd: string }) => this.proxy.$sendProcessReady(id, e.pid, e.cwd)),
+      p.onProcessReady((e: { pid: number; cwd: string }) => this.proxy.$sendProcessReady(shortId, e.pid, e.cwd)),
     );
     disposables.add(
       p.onProcessTitleChanged((title) => {
-        this.proxy.$sendProcessTitle(id, title);
-        this._getTerminalByIdEventually(id).then((terminal) => {
+        this.proxy.$sendProcessTitle(shortId, title);
+        this._getTerminalByIdEventually(shortId).then((terminal) => {
           if (terminal) {
             terminal.setName(title);
           }
@@ -474,19 +478,21 @@ export class ExtHostTerminal implements IExtHostTerminal {
     );
 
     // Buffer data events to reduce the amount of messages going to the renderer
-    this._bufferer.startBuffering(id, p.onProcessData);
-    disposables.add(p.onProcessExit((exitCode) => this._onProcessExit(id, exitCode)));
+    this._bufferer.startBuffering(shortId, p.onProcessData);
+    disposables.add(p.onProcessExit((exitCode) => this._onProcessExit(shortId, exitCode)));
 
     if (p.onProcessOverrideDimensions) {
-      disposables.add(p.onProcessOverrideDimensions((e) => this.proxy.$sendOverrideDimensions(id, e)));
+      disposables.add(p.onProcessOverrideDimensions((e) => this.proxy.$sendOverrideDimensions(shortId, e)));
     }
-    this._terminalProcesses.set(id, p);
+    this._terminalProcesses.set(shortId, p);
 
-    const awaitingStart = this._extensionTerminalAwaitingStart[id];
-    if (awaitingStart && p instanceof ExtHostPseudoterminal) {
-      p.startSendingEvents(awaitingStart.initialDimensions);
-      delete this._extensionTerminalAwaitingStart[id];
-    }
+    this._terminalStartDeferreds.get(shortId)?.promise.then(() => {
+      const awaitingStart = this._extensionTerminalAwaitingStart[shortId];
+      if (awaitingStart && p instanceof ExtHostPseudoterminal) {
+        p.startSendingEvents(awaitingStart.initialDimensions);
+        delete this._extensionTerminalAwaitingStart[shortId];
+      }
+    });
 
     return disposables;
   }
@@ -510,11 +516,11 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   public $acceptProcessInput(id: string, data: string): void {
-    this._terminalProcesses.get(id)?.input(data);
+    this._terminalProcesses.get(this.getTerminalShortId(id))?.input(data);
   }
 
   public $acceptProcessShutdown(id: string, immediate: boolean): void {
-    this._terminalProcesses.get(id)?.shutdown(immediate);
+    this._terminalProcesses.get(this.getTerminalShortId(id))?.shutdown(immediate);
   }
 
   public $acceptProcessRequestInitialCwd(id: string): void {
@@ -841,7 +847,9 @@ export class ExtHostPseudoterminal implements ITerminalChildProcess {
 
   startSendingEvents(initialDimensions: ITerminalDimensionsDto | undefined): void {
     // Attach the listeners
-    this._pty.onDidWrite((e) => this._onProcessData.fire(e));
+    this._pty.onDidWrite((e) => {
+      this._onProcessData.fire(e);
+    });
     if (this._pty.onDidClose) {
       this._pty.onDidClose((e: number | void = undefined) => {
         this._onProcessExit.fire(e === void 0 ? undefined : e);
