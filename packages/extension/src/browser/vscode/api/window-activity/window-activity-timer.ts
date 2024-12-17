@@ -4,7 +4,7 @@ export class WindowActivityTimer extends Disposable {
   private activityCount = 0;
   private readonly maxInactivityCount: number;
   private readonly inactivityCheckInterval: number;
-  private inactivityCheckTimer?: NodeJS.Timeout;
+  private inactivityCheckTimer: ReturnType<typeof setTimeout> | undefined;
   private isActive = true;
   private isTimerRunning = false;
 
