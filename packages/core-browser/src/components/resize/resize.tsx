@@ -568,8 +568,11 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
 
   // keep = true 左右侧面板使用，保证相邻节点的总宽度不变
   const setAbsoluteSize = (size: number, isLatter?: boolean, keep?: boolean) => {
-    const currentPrev = prevElement.current!.clientHeight;
-    const currentNext = nextElement.current!.clientHeight;
+    if (!prevElement.current || !nextElement.current) {
+      return;
+    }
+    const currentPrev = prevElement.current.clientHeight;
+    const currentNext = nextElement.current.clientHeight;
     const totalSize = currentPrev + currentNext;
     if (props.flexMode) {
       const prevHeight = props.flexMode === ResizeFlexMode.Prev ? size : totalSize - size;
