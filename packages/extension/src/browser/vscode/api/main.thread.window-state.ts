@@ -4,7 +4,7 @@ import { DisposableCollection } from '@opensumi/ide-core-browser';
 
 import { ExtHostAPIIdentifier, IExtHostWindowState } from '../../../common/vscode';
 
-import { WindowActivityTracker } from './window-activity/window-activity-tracker';
+import { WindowActivityTimer } from './window-activity/window-activity-timer';
 
 @Injectable({ multiple: true })
 export class MainThreadWindowState {
@@ -27,7 +27,7 @@ export class MainThreadWindowState {
 
     window.addEventListener('focus', this.focusHandler);
 
-    const tracker = new WindowActivityTracker(window);
+    const tracker = new WindowActivityTimer(window);
     this.toDispose.push(tracker.onDidChangeActiveState((isActive) => this.onActiveStateChanged(isActive)));
     this.toDispose.push(tracker);
   }
