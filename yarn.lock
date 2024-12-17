@@ -4321,8 +4321,8 @@ __metadata:
 
 "@opensumi/monaco-editor-core@file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core::locator=%40opensumi%2Fide-monaco%40workspace%3Apackages%2Fmonaco":
   version: 0.0.0
-  resolution: "@opensumi/monaco-editor-core@file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core#/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core::hash=aae366&locator=%40opensumi%2Fide-monaco%40workspace%3Apackages%2Fmonaco"
-  checksum: 10/b1a9e7c855dcbd0252913a6eff3baaaa93df79900ddf7ac14763475eedc0a67632dd162642cf60b54c9324ebc1bc1fb4b4225868f1b28bd1506a352b6de293f3
+  resolution: "@opensumi/monaco-editor-core@file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core#/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core::hash=299962&locator=%40opensumi%2Fide-monaco%40workspace%3Apackages%2Fmonaco"
+  checksum: 10/698c44454c81dfe2528d047bde10efded17368e672b7dd29c436eaf19e472ed401abec15814439be2c3ee6627f6079380a5162024433a14455d7d5412c418b75
   languageName: node
   linkType: hard
 

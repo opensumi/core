@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationTokenSource, DefaultReporter, Emitter, Event } from '@opensumi/ide-core-common';
 import { DEFAULT_VSCODE_ENGINE_VERSION } from '@opensumi/ide-core-common/lib/const';
-import { OverviewRulerLane } from '@opensumi/ide-editor';
+
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import {
@@ -12,6 +12,7 @@ import {
   TextEditorSelectionChangeKind,
   ViewColumn,
 } from '../../../common/vscode';
+import { OverviewRulerLane } from '../../../common/vscode/models';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../vscode/doc';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
