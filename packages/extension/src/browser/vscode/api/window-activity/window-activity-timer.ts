@@ -1,9 +1,12 @@
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
 
+const MAX_INACTIVITY_COUNT = 30;
+const INACTIVITY_CHECK_INTERVAL = 1000;
+
 export class WindowActivityTimer extends Disposable {
   private activityCount = 0;
-  private readonly maxInactivityCount: number = 30;
-  private readonly inactivityCheckInterval: number = 1000;
+  private readonly maxInactivityCount: number = MAX_INACTIVITY_COUNT;
+  private readonly inactivityCheckInterval: number = INACTIVITY_CHECK_INTERVAL;
   private inactivityCheckTimer: ReturnType<typeof setTimeout> | undefined;
   private isActive = true;
 
