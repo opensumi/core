@@ -56,8 +56,8 @@ export namespace INsfw {
   }
 }
 
-export const KT_WATCHER_PROCESS_SOCK_KEY = 'kt-watcher-process-sock';
-export const WATCHER_INIT_DATA_KEY = 'kt-watcher-init-data';
+export const SUMI_WATCHER_PROCESS_SOCK_KEY = 'sumi-watcher-process-sock';
+export const WATCHER_INIT_DATA_KEY = 'sumi-watcher-init-data';
 
 export interface IWatcherHostService {
   $watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number>;

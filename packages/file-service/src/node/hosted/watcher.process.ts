@@ -8,7 +8,7 @@ import { suppressNodeJSEpipeError } from '@opensumi/ide-core-common/lib/node/uti
 import { CommonProcessReporter, IReporter, ReporterProcessMessage } from '@opensumi/ide-core-common/lib/types';
 import { Emitter, isPromiseCanceledError } from '@opensumi/ide-utils';
 
-import { KT_WATCHER_PROCESS_SOCK_KEY, WATCHER_INIT_DATA_KEY } from '../../common/watcher';
+import { SUMI_WATCHER_PROCESS_SOCK_KEY, WATCHER_INIT_DATA_KEY } from '../../common/watcher';
 
 import { WatcherProcessLogger } from './watch-process-log';
 import { WatcherHostServiceImpl } from './watcher.host.service';
@@ -28,7 +28,7 @@ async function initWatcherProcess() {
   });
 
   const initData = JSON.parse(argv[WATCHER_INIT_DATA_KEY]);
-  const connection = JSON.parse(argv[KT_WATCHER_PROCESS_SOCK_KEY]);
+  const connection = JSON.parse(argv[SUMI_WATCHER_PROCESS_SOCK_KEY]);
 
   const socket = createConnection(connection);
 

@@ -13,7 +13,7 @@ import { AppConfig, Deferred, ILogService, UriComponents } from '@opensumi/ide-c
 import {
   IWatcherHostService,
   IWatcherProcessManager,
-  KT_WATCHER_PROCESS_SOCK_KEY,
+  SUMI_WATCHER_PROCESS_SOCK_KEY,
   WATCHER_INIT_DATA_KEY,
   WatcherProcessManagerProxy,
   WatcherServiceProxy,
@@ -101,7 +101,7 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
 
   private async createWatcherProcess(clientId: string, ipcHandlerPath: string) {
     const forkArgs = [
-      `--${KT_WATCHER_PROCESS_SOCK_KEY}=${JSON.stringify({
+      `--${SUMI_WATCHER_PROCESS_SOCK_KEY}=${JSON.stringify({
         path: ipcHandlerPath,
       })}`,
       `--${WATCHER_INIT_DATA_KEY}=${JSON.stringify({
