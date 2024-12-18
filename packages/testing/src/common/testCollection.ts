@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/tree/main/src/vs/workbench/contrib/testing/common
 
-import { Emitter, IMarkdownString, IPosition, IRange, Uri as URI, map } from '@opensumi/ide-core-common';
+import { Emitter, IMarkdownString, IPosition, IRange, Position, Uri as URI, map } from '@opensumi/ide-core-common';
 
 export type TestsDiffOp =
   | [op: TestDiffOpType.Add, item: InternalTestItem]
@@ -152,6 +152,12 @@ export interface ILocationDto {
   range: IRange;
 }
 
+export interface ITestMessageStackFrame {
+  label: string;
+  uri: URI | undefined;
+  position: Position | undefined;
+}
+
 export interface ITestErrorMessage {
   message: string | IMarkdownString;
   type: TestMessageType.Error;
@@ -159,6 +165,7 @@ export interface ITestErrorMessage {
   actual: string | undefined;
   contextValue: string | undefined;
   location: IRichLocation | undefined;
+  stackTrace: undefined | ITestMessageStackFrame[];
 }
 
 export type SerializedTestErrorMessage = Omit<ITestErrorMessage, 'location'> & { location?: ILocationDto };

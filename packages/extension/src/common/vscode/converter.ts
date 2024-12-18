@@ -1651,6 +1651,7 @@ export namespace TestMessage {
       actual: message.actualOutput,
       contextValue: message.contextValue,
       location: message.location ? (location.from(message.location) as any) : undefined,
+      stackTrace: message.stackTrace && message.stackTrace.map((frame) => TestMessageStackFrame.from(frame)),
     };
   }
 
@@ -1663,6 +1664,17 @@ export namespace TestMessage {
     message.contextValue = item.contextValue;
     message.location = item.location ? location.to(item.location) : undefined;
     return message;
+  }
+}
+
+export namespace TestMessageStackFrame {
+  // TestMessageStackFrameDTO
+  export function from(stackTrace: vscode.TestMessageStackFrame): any {
+    return {
+      label: stackTrace.label,
+      position: stackTrace.position,
+      uri: stackTrace?.uri?.toString(),
+    };
   }
 }
 
