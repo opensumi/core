@@ -1,10 +1,12 @@
 import fs from 'fs-extra';
 import temp from 'temp';
 
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { DisposableCollection, FileUri, UTF8 } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { WatcherProcessManagerToken } from '@opensumi/ide-file-service/lib/node/watcher-process-manager';
 
 import { FileServicePath, IDiskFileProvider, IFileServiceClient } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
@@ -27,6 +29,22 @@ describe('FileServiceClient should be work', () => {
     {
       token: IDiskFileProvider,
       useClass: DiskFileSystemProvider,
+    },
+    {
+      token: WSChannelHandler,
+      useValue: {
+        clientId: 'test_client_id',
+      },
+    },
+    {
+      token: WatcherProcessManagerToken,
+      useValue: {
+        setClient: () => void 0,
+        watch: (() => 1) as any,
+        unWatch: () => void 0,
+        createProcess: () => void 0,
+        setWatcherFileExcludes: () => void 0,
+      },
     },
   );
 
