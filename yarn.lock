@@ -3497,6 +3497,7 @@ __metadata:
     css-loader: "npm:^6.9.1"
     fork-ts-checker-webpack-plugin: "npm:^9.0.2"
     html-webpack-plugin: "npm:^5.6.0"
+    ignore-loader: "npm:^0.1.2"
     koa: "npm:^2.15.0"
     koa-bodyparser: "npm:^4.3.0"
     koa-router: "npm:^12.0.1"
@@ -4321,8 +4322,8 @@ __metadata:
 
 "@opensumi/monaco-editor-core@file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core::locator=%40opensumi%2Fide-monaco%40workspace%3Apackages%2Fmonaco":
   version: 0.0.0
-  resolution: "@opensumi/monaco-editor-core@file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core#/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core::hash=299962&locator=%40opensumi%2Fide-monaco%40workspace%3Apackages%2Fmonaco"
-  checksum: 10/698c44454c81dfe2528d047bde10efded17368e672b7dd29c436eaf19e472ed401abec15814439be2c3ee6627f6079380a5162024433a14455d7d5412c418b75
+  resolution: "@opensumi/monaco-editor-core@file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core#/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core::hash=e7db9f&locator=%40opensumi%2Fide-monaco%40workspace%3Apackages%2Fmonaco"
+  checksum: 10/8ac654a0d4cf912babb8dc1f280f3850b9ec2a0efa541c24ac700b0b6840528339028515564850cd3a12f0a3c8caeb4ecc6f321195764de2fcc05d7b8f52ac09
   languageName: node
   linkType: hard
 
@@ -13517,6 +13518,13 @@ __metadata:
   version: 1.0.1
   resolution: "ignore-by-default@npm:1.0.1"
   checksum: 10/441509147b3615e0365e407a3c18e189f78c07af08564176c680be1fabc94b6c789cad1342ad887175d4ecd5225de86f73d376cec8e06b42fd9b429505ffcf8a
+  languageName: node
+  linkType: hard
+
+"ignore-loader@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "ignore-loader@npm:0.1.2"
+  checksum: 10/26b5f81b24e59c575d5314e1416c4ae21fb88e65b3c60c90581288ef925fcaa2b39e7f8f96cd449e488c217337d5240fba5a916f9aec073ec04495d7a5716ac4
   languageName: node
   linkType: hard
 
