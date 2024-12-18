@@ -226,11 +226,9 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = (
   }, [component]);
 
   useEffect(() => {
-    // Immediately update with current component to handle initial badge value
-    setComponent({ ...component });
-
     const dispose = component.onChange((newComponent) => {
-      setComponent(newComponent);
+      // Immediately update with current component to handle initial badge value
+      setComponent({ ...newComponent });
     });
     return () => {
       dispose.dispose();
