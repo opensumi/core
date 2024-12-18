@@ -1,6 +1,7 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
+import { ILogServiceManager } from '@opensumi/ide-core-common/lib/log';
 import { FileUri, sleep } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
@@ -14,7 +15,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('unRecursive-test')));
-    const watcherServer = injector.get(UnRecursiveFileSystemWatcher);
+    const watcherServer = new UnRecursiveFileSystemWatcher(injector.get(ILogServiceManager).getLogger());
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     await watcherServer.watchFileChanges(root.toString());
@@ -234,7 +235,7 @@ describe('Delete and update monitored files', () => {
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('unRecursive-test')));
-    const watcherServer = injector.get(UnRecursiveFileSystemWatcher);
+    const watcherServer = new UnRecursiveFileSystemWatcher(injector.get(ILogServiceManager).getLogger());
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     await watcherServer.watchFileChanges(root.toString() + '/for_rename');
     return { root, watcherServer };
