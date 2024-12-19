@@ -3327,7 +3327,7 @@ __metadata:
     raf: "npm:^3.4.1"
     rc-dialog: "npm:~7.6.0"
     rc-dropdown: "npm:~2.4.1"
-    rc-input-number: "npm:^7.4.2"
+    rc-input-number: "npm:^9.3.0"
     rc-menu: "npm:^9.3.2"
     rc-notification: "npm:~3.3.1"
     rc-tooltip: "npm:^6.2.0"
@@ -20074,18 +20074,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-input-number@npm:^7.4.2":
-  version: 7.4.2
-  resolution: "rc-input-number@npm:7.4.2"
+"rc-input-number@npm:^9.3.0":
+  version: 9.3.0
+  resolution: "rc-input-number@npm:9.3.0"
   dependencies:
     "@babel/runtime": "npm:^7.10.1"
     "@rc-component/mini-decimal": "npm:^1.0.1"
     classnames: "npm:^2.2.5"
-    rc-util: "npm:^5.28.0"
+    rc-input: "npm:~1.6.0"
+    rc-util: "npm:^5.40.1"
   peerDependencies:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
-  checksum: 10/af826860efeada4818e7c08c41a3f8811eafba35ea14af38bebf27aa0a912267f9fa01a88f62ca06c6ade88c8e5b38d6feb2f24eb27fe86f753d10c41c99f556
+  checksum: 10/c73e3a604fd16bf6d8daa2022a8f661ef8c78812b9151d0d292e0796ecdcf372732c50a862c5962cb4fbf047c4f0e1a3c4a515eecc49f9dada5958a7a9a48ef4
   languageName: node
   linkType: hard
 
@@ -20635,7 +20636,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.28.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0, rc-util@npm:^5.9.4":
+"rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0, rc-util@npm:^5.9.4":
   version: 5.39.1
   resolution: "rc-util@npm:5.39.1"
   dependencies:
