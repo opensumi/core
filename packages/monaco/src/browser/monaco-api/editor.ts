@@ -39,7 +39,7 @@ import {
   create,
   createDiffEditor,
   createModel,
-  // createWebWorker,
+  createWebWorker,
   defineTheme,
   getModel,
   getModelMarkers,
@@ -79,7 +79,7 @@ export function createMonacoEditorApi() {
     onDidCreateModel,
     onWillDisposeModel,
     onDidChangeModelLanguage,
-    // createWebWorker,
+    createWebWorker,
 
     colorizeElement,
     colorize,
