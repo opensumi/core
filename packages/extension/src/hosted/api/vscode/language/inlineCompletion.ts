@@ -3,8 +3,6 @@ import { CancellationToken } from 'vscode';
 
 import { DisposableStore, Uri as URI } from '@opensumi/ide-core-common';
 
-// import { languages } from '@opensumi/ide-monaco/lib/common';
-
 import * as typeConvert from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode/doc';
 import { InlineCompletionTriggerKind } from '../../../../common/vscode/ext-types';
