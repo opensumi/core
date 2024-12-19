@@ -1,3 +1,4 @@
+import * as languageProtocol from 'vscode-languageserver-protocol';
 import { Position as P, Range as R, SymbolKind as S, SymbolInformation } from 'vscode-languageserver-types';
 
 import { IChatFollowup, IChatReplyFollowup, IChatResponseCommandFollowup } from '@opensumi/ide-ai-native/lib/common';
@@ -1665,6 +1666,12 @@ export namespace TestMessage {
     message.location = item.location ? location.to(item.location) : undefined;
     return message;
   }
+}
+
+export interface TestMessageStackFrameDTO {
+  uri?: languageProtocol.DocumentUri;
+  position?: languageProtocol.Position;
+  label: string;
 }
 
 export namespace TestMessageStackFrame {
