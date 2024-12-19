@@ -88,6 +88,8 @@ export async function startServer(
      */
     extHost:
       process.env.EXTENSION_HOST_ENTRY || path.join(__dirname, '../../../packages/extension/lib/hosted/ext.process.js'),
+    watcherHost:
+      process.env.WATCHER_HOST_ENTRY || path.join(__dirname, '../../../packages/file-service/lib/node/hosted/watcher.process.js'),
     onDidCreateExtensionHostProcess: (extHostProcess) => {
       console.log(`Extension host process ${extHostProcess.pid} created`);
     },

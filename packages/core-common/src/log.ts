@@ -22,6 +22,8 @@ export enum SupportLogNamespace {
   Browser = 'browser',
   // 插件进程
   ExtensionHost = 'extHost',
+  // Watcher 进程
+  WatcherHost = 'watcherHost',
   // 应用层
   App = 'app',
   // 其他未分类
@@ -169,6 +171,7 @@ export interface ILogServiceClient extends ICoreLogger {
 }
 
 export type IExtensionLogger = ICoreLogger;
+export type IWatcherProcessLogger = ICoreLogger;
 
 export const ILoggerManagerClient = Symbol('ILoggerManagerClient');
 export interface ILoggerManagerClient {
@@ -293,7 +296,7 @@ export class DebugLog implements IDebugLog {
     return console.info(this.getPre('log', 'green'), ...args);
   };
 
-  destroy() {}
+  destroy() { }
 }
 
 /**
@@ -335,6 +338,6 @@ export function getDebugLogger(namespace?: string): IDebugLog {
       showWarn();
       return debugLog.warn;
     },
-    destroy() {},
+    destroy() { },
   };
 }

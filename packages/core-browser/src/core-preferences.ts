@@ -8,6 +8,7 @@ import {
   localize,
 } from '@opensumi/ide-core-common';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 
 import { PreferenceProxy, PreferenceService, createPreferenceProxy } from './preferences';
 
@@ -17,12 +18,7 @@ const EXPLORER_DEFAULTS = {
 };
 
 export const FILES_DEFAULTS = {
-  filesWatcherExclude: {
-    '**/.git/objects/**': true,
-    '**/.git/subtree-cache/**': true,
-    '**/node_modules/**/*': true,
-    '**/.hg/store/**': true,
-  },
+  filesWatcherExclude: defaultFilesWatcherExcludes,
   filesExclude: {
     '**/.git': true,
     '**/.svn': true,

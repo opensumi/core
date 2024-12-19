@@ -1,3 +1,5 @@
+import { Emitter } from '@opensumi/ide-utils/lib/event';
+
 export enum REPORT_NAME {
   ACTIVE_EXTENSION = 'activateExtension',
   RUNTIME_ERROR_EXTENSION = 'runtimeErrorExtension',
@@ -102,4 +104,24 @@ export interface ReporterProcessMessage {
   reportType: REPORT_TYPE;
   name: string;
   data: PerformanceData | PointData;
+}
+
+export class CommonProcessReporter implements IReporter {
+  constructor(private emitter: Emitter<ReporterProcessMessage>) {}
+
+  performance(name: string, data: PerformanceData): void {
+    this.emitter.fire({
+      reportType: REPORT_TYPE.PERFORMANCE,
+      name,
+      data,
+    });
+  }
+
+  point(name: string, data: PointData): void {
+    this.emitter.fire({
+      reportType: REPORT_TYPE.POINT,
+      name,
+      data,
+    });
+  }
 }

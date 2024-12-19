@@ -91,6 +91,10 @@ interface Config {
    */
   onDidCreateExtensionHostProcess?: (cp: cp.ChildProcess) => void;
   /**
+   * Watcher Node 进程入口文件
+   */
+  watcherHost?: string;
+  /**
    * 插件 Node 进程入口文件
    */
   extHost?: string;

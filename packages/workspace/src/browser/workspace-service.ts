@@ -26,6 +26,7 @@ import {
   formatLocalize,
   localize,
 } from '@opensumi/ide-core-common';
+import { flattenExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { FileStat } from '@opensumi/ide-file-service';
 import { FileChangeEvent, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
@@ -176,14 +177,10 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected getFlattenExcludes(name: string): string[] {
-    const excludes: string[] = [];
+    let excludes: string[] = [];
     const fileExcludes = this.preferenceService.get<any>(name);
     if (fileExcludes) {
-      for (const key of Object.keys(fileExcludes)) {
-        if (fileExcludes[key]) {
-          excludes.push(key);
-        }
-      }
+      excludes = flattenExcludes(fileExcludes);
     }
     return excludes;
   }

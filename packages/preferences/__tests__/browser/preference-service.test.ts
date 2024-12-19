@@ -4,6 +4,7 @@ import path from 'path';
 import * as fs from 'fs-extra';
 
 import { Injectable, Provider } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   BrowserModule,
   Domain,
@@ -26,16 +27,16 @@ import {
   isObject,
   isString,
 } from '@opensumi/ide-core-browser';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { WatcherProcessManagerToken } from '@opensumi/ide-file-service/lib/node/watcher-process-manager';
 import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
 import { UserStorageContribution } from '@opensumi/ide-preferences/lib/browser/userstorage';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 @Injectable()
 export class AddonModule extends BrowserModule {
@@ -199,6 +200,21 @@ describe('PreferenceService should be work', () => {
       {
         token: PreferenceService,
         useClass: PreferenceServiceImpl,
+      },
+      {
+        token: WSChannelHandler,
+        useValue: {
+          clientId: 'test_client_id',
+        },
+      },
+      {
+        token: WatcherProcessManagerToken,
+        useValue: {
+          setClient: () => void 0,
+          watch: (() => 1) as any,
+          unWatch: () => void 0,
+          createProcess: () => void 0,
+        },
       },
     );
 

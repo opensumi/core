@@ -17,6 +17,12 @@ export interface IFileSystemWatcherServer {
    * @memberof FileSystemWatcherServer
    */
   unwatchFileChanges(watcher: number): Promise<void>;
+
+  /**
+   * Update watcher file excludes
+   * @param excludes
+   */
+  updateWatcherFileExcludes?: (excludes: string[]) => Promise<void>;
 }
 
 export interface FileSystemWatcherClient {

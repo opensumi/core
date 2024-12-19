@@ -84,6 +84,7 @@ import {
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { WatcherProcessManagerToken } from '@opensumi/ide-file-service/lib/node/watcher-process-manager';
 import { MonacoService } from '@opensumi/ide-monaco';
 import MonacoServiceImpl from '@opensumi/ide-monaco/lib/browser/monaco.service';
 import { IWebviewService } from '@opensumi/ide-webview';
@@ -239,6 +240,14 @@ describe('MainThreadWorkspace API Test Suite', () => {
       useValue: {
         getBackendOS: () => Promise.resolve(OS.type()),
         clientId: 'CODE_WINDOW_CLIENT_ID:1',
+      },
+    },
+    {
+      token: WatcherProcessManagerToken,
+      useValue: {
+        setClient: () => void 0,
+        watch: (() => 1) as any,
+        unWatch: () => void 0,
       },
     },
   );

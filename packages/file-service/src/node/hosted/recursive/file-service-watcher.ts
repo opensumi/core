@@ -5,23 +5,26 @@ import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 
-import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { ILogService } from '@opensumi/ide-core-common/lib/log';
 import {
   Disposable,
   DisposableCollection,
   FileUri,
   IDisposable,
-  ILogService,
-  ILogServiceManager,
   ParsedPattern,
-  SupportLogNamespace,
   isLinux,
   isWindows,
   parseGlob,
-} from '@opensumi/ide-core-node';
+} from '@opensumi/ide-core-common/lib/utils';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
-import { FileChangeCollection } from '../file-change-collection';
+import {
+  FileChangeType,
+  FileSystemWatcherClient,
+  IFileSystemWatcherServer,
+  INsfw,
+  WatchOptions,
+} from '../../../common';
+import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
 export interface WatcherOptions {
@@ -45,7 +48,6 @@ export interface NsfwFileSystemWatcherOption {
   error?: (message: string, ...args: any[]) => void;
 }
 
-@Injectable({ multiple: true })
 export class FileSystemWatcherServer extends Disposable implements IFileSystemWatcherServer {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
@@ -60,15 +62,8 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
   protected changes = new FileChangeCollection();
 
-  @Autowired(ILogServiceManager)
-  private readonly loggerManager: ILogServiceManager;
-
-  private logger: ILogService;
-
-  constructor(@Optional() private readonly excludes: string[] = []) {
+  constructor(private excludes: string[] = [], private readonly logger: ILogService) {
     super();
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
-
     this.addDispose(
       Disposable.create(() => {
         this.WATCHER_HANDLERS.clear();
@@ -185,8 +180,8 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     return events;
   }
 
-  private getDefaultWatchExclude() {
-    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**/*', '**/.hg/store/**'];
+  async updateWatcherFileExcludes(excludes: string[]): Promise<void> {
+    this.excludes = excludes;
   }
 
   protected async start(
@@ -221,7 +216,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
             },
             {
               backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
-              ignore: this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
+              ignore: this.excludes.concat(rawOptions?.excludes ?? []),
             },
           );
         } catch (e) {
@@ -261,7 +256,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
         }),
       );
 
-      const excludes = this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude());
+      const excludes = this.excludes.concat(rawOptions?.excludes || []);
 
       this.watcherOptions.set(watcherId, {
         excludesPattern: excludes.map((pattern) => parseGlob(pattern)),
@@ -295,7 +290,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.disposed) {
+    if (this.client && this.disposed) {
       return;
     }
     this.client = client;
