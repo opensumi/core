@@ -6,6 +6,8 @@
 
 import { Emitter, IMarkdownString, IPosition, IRange, Position, Uri as URI, map } from '@opensumi/ide-core-common';
 
+import type vscode from 'vscode';
+
 export type TestsDiffOp =
   | [op: TestDiffOpType.Add, item: InternalTestItem]
   | [op: TestDiffOpType.Update, item: ITestItemUpdate]
@@ -155,7 +157,7 @@ export interface ILocationDto {
 export interface ITestMessageStackFrame {
   label: string;
   uri: URI | undefined;
-  position: Position | undefined;
+  position: vscode.Position | undefined;
 }
 
 export interface ITestErrorMessage {
