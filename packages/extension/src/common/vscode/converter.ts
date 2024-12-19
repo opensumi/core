@@ -1675,7 +1675,6 @@ export interface TestMessageStackFrameDTO {
 }
 
 export namespace TestMessageStackFrame {
-  // TestMessageStackFrameDTO
   export function from(stackTrace: vscode.TestMessageStackFrame): any {
     return {
       label: stackTrace.label,
