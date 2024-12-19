@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, ResourceMap, Uri, UriComponents } from '@opensumi/ide-core-common';
-import { NotebookCellsChangedEventDto } from '@opensumi/ide-editor';
+
 
 import {
   ExtensionDocumentDataManager,
@@ -15,6 +15,7 @@ import {
 
 import { ExtHostCell, ExtHostNotebookDocument } from './ext.host.notebookdocument';
 
+import type { NotebookCellsChangedEventDto } from '@opensumi/ide-editor';
 import type vscode from 'vscode';
 
 export class ExtensionNotebookDocumentManagerImpl implements ExtensionNotebookDocumentManager {

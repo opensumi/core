@@ -39,11 +39,11 @@ import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/com
 
 import {
   IDocCache,
+  IDocCacheValue,
   IDocPersistentCacheProvider,
   IEditorDocumentModelContentChange,
   SaveReason,
   isDocContentCache,
-  parseRangeFrom,
 } from '../../common';
 import { AUTO_SAVE_MODE, IEditorDocumentModel } from '../../common/editor';
 import { EditorPreferences } from '../preference/schema';
@@ -264,6 +264,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.logger.error(EditorDocumentError.APPLY_CACHE_TO_DIFFERENT_DOCUMENT);
       return;
     }
+
+    const parseRangeFrom = (cacheValue: IDocCacheValue): Range => {
+      const [_text, startLineNumber, startColumn, endLineNumber, endColumn] = cacheValue;
+
+      return Range.lift({
+        startLineNumber,
+        startColumn,
+        endLineNumber,
+        endColumn,
+      });
+    };
 
     if (isDocContentCache(cache)) {
       this.monacoModel.setValue(cache.content);

@@ -657,6 +657,10 @@ export class AccordionService extends WithEventBus {
     const fullHeight = this.splitPanelService.rootNode?.clientHeight;
     const panel = this.splitPanelService.panels[index];
 
+    if (!panel) {
+      return 0;
+    }
+
     if (!noAnimation) {
       panel.classList.add('resize-ease');
     }

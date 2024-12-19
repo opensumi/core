@@ -16,6 +16,11 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import * as monaco from '@opensumi/ide-monaco';
+import {
+  CodeActionItem,
+  CodeActionKind,
+  CodeActionTriggerSource,
+} from '@opensumi/ide-monaco/lib/browser/contrib/codeAction';
 import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -27,11 +32,6 @@ import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/ra
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { CodeActionProvider } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { getCodeActions } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/codeAction';
-import {
-  CodeActionItem,
-  CodeActionKind,
-  CodeActionTriggerSource,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/common/types';
 
 import { MonacoCodeService } from '../editor.override';
 import { SaveReason } from '../types';

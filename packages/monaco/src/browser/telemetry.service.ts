@@ -7,6 +7,9 @@ import {
 
 @Injectable()
 export class MonacoTelemetryService implements ITelemetryService {
+  devDeviceId: string;
+  msftInternal?: boolean | undefined;
+
   declare readonly _serviceBrand: undefined;
   readonly telemetryLevel = TelemetryLevel.NONE;
   readonly machineId = 'placeholder';
@@ -26,9 +29,9 @@ export class MonacoTelemetryService implements ITelemetryService {
     return this._sessionId;
   }
 
-  setEnabled(): void {}
-  setExperimentProperty(): void {}
-  publicLog() {}
+  setEnabled(): void { }
+  setExperimentProperty(): void { }
+  publicLog() { }
   publicLog2(type: string, event: any) {
     switch (type) {
       case 'renameInvokedEvent':
@@ -38,6 +41,6 @@ export class MonacoTelemetryService implements ITelemetryService {
       // ignore
     }
   }
-  publicLogError() {}
-  publicLogError2() {}
+  publicLogError() { }
+  publicLogError2() { }
 }

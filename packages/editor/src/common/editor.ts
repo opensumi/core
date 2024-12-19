@@ -15,7 +15,6 @@ import {
   MaybeNull,
   URI,
 } from '@opensumi/ide-core-common';
-import { IDimension } from '@opensumi/ide-monaco';
 
 import { IResource } from './resource';
 import { IDocModelUpdateOptions } from './types';
@@ -24,6 +23,7 @@ import type {
   EOL,
   ICodeEditorViewState,
   IDiffEditorViewState,
+  IDimension,
   IEditorOptions,
   ICodeEditor as IMonacoCodeEditor,
   ITextModel,
