@@ -24,7 +24,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
-    "lib": ["dom", "esnext", "webworker"],
+    "lib": ["dom", "esnext", "webworker", "WebWorker.ImportScripts"],
     "typeRoots": ["../../node_modules/@types", "../../typings"]
   }
 }
