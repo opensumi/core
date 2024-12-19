@@ -3432,6 +3432,7 @@ export class TestMessage implements vscode.TestMessage {
   public location?: vscode.Location;
   /** proposed: */
   public contextValue?: string;
+  public stackTrace?: vscode.TestMessageStackFrame[] | undefined;
 
   public static diff(message: string | vscode.MarkdownString, expected: string, actual: string) {
     const msg = new TestMessage(message);
@@ -3441,6 +3442,10 @@ export class TestMessage implements vscode.TestMessage {
   }
 
   constructor(public message: string | vscode.MarkdownString) {}
+}
+
+export class TestMessageStackFrame implements vscode.TestMessageStackFrame {
+  constructor(public label: string, public uri?: vscode.Uri, public position?: Position) {}
 }
 
 export class TestCoverageCount implements vscode.TestCoverageCount {
