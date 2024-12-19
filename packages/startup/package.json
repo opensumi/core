@@ -13,7 +13,7 @@
     "start:lite": "webpack-dev-server --config ./webpack.lite.config.js",
     "start": "run-p start:client:open start:server",
     "start:e2e": "run-p start:client:e2e start:server",
-    "start:client": "webpack-dev-server --no-cache --config ./webpack.config.js",
+    "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "cross-env IS_DEV=1 NODE_ENV=development EXT_MODE=js KTLOG_SHOW_DEBUG=1 nodemon --inspect=9999 ./entry/web/server.ts",
     "start:no-inspect:client": "yarn start:client",
     "start:no-inspect:server": "cross-env EXT_MODE=js KTLOG_SHOW_DEBUG=1 nodemon ./entry/web/server.ts",

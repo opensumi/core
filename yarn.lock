@@ -3854,7 +3854,7 @@ __metadata:
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
-    "@opensumi/monaco-editor-core": "file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core"
+    "@opensumi/monaco-editor-core": "npm:0.53.0-patch.1"
   languageName: unknown
   linkType: soft
 
@@ -4320,10 +4320,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/monaco-editor-core@file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core::locator=%40opensumi%2Fide-monaco%40workspace%3Apackages%2Fmonaco":
-  version: 0.0.0
-  resolution: "@opensumi/monaco-editor-core@file:/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core#/Users/qingyi/Documents/work/github/monaco-editor-core/out-monaco-editor-core::hash=e7db9f&locator=%40opensumi%2Fide-monaco%40workspace%3Apackages%2Fmonaco"
-  checksum: 10/8ac654a0d4cf912babb8dc1f280f3850b9ec2a0efa541c24ac700b0b6840528339028515564850cd3a12f0a3c8caeb4ecc6f321195764de2fcc05d7b8f52ac09
+"@opensumi/monaco-editor-core@npm:0.53.0-patch.1":
+  version: 0.53.0-patch.1
+  resolution: "@opensumi/monaco-editor-core@npm:0.53.0-patch.1"
+  checksum: 10/560da2c02fba76d87de2267cf2539c1dd0c1ad398ca483ebe9e9aa8cea3b346251d75e2604ca298142a613181b859a9b6c5d0b18ce2e145b3b60e7dc960dee87
   languageName: node
   linkType: hard
 
