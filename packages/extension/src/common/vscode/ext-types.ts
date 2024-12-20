@@ -3422,6 +3422,8 @@ export class TestRunRequest implements vscode.TestRunRequest {
     public readonly include: vscode.TestItem[] | undefined,
     public readonly exclude: vscode.TestItem[] | undefined,
     public readonly profile: vscode.TestRunProfile | undefined,
+    public readonly continuous?: boolean,
+    public readonly preserveFocus?: boolean,
   ) {}
 }
 

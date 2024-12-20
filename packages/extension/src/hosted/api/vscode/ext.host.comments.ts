@@ -454,6 +454,19 @@ export class ExtHostCommentThread implements vscode.CommentThread {
     this._onDidUpdateCommentThread.fire();
   }
 
+  private _state: vscode.CommentThreadState | undefined;
+
+  get state(): vscode.CommentThreadState | undefined {
+    return this._state;
+  }
+
+  set state(newState: vscode.CommentThreadState | undefined) {
+    if (this._state !== newState) {
+      this._state = newState;
+      this._onDidUpdateCommentThread.fire();
+    }
+  }
+
   private _contextValue: string | undefined;
 
   get contextValue(): string | undefined {
