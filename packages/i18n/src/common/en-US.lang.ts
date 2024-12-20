@@ -1457,8 +1457,9 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
     'aiNative.inline.chat.input.placeholder.default': 'Ask Copilot（shift + enter newline）',
     'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
-
     'aiNative.inline.problem.fix.title': 'Fix with AI',
+    'aiNative.inline.diff.accept': 'Accept',
+    'aiNative.inline.diff.reject': 'Reject',
 
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':
