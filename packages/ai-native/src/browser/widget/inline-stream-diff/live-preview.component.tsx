@@ -5,7 +5,7 @@ import ReactDOMClient from 'react-dom/client';
 import { Autowired, Injectable } from '@opensumi/di';
 import { KeybindingRegistry, useDisposable } from '@opensumi/ide-core-browser';
 import { AI_INLINE_DIFF_PARTIAL_EDIT } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { Emitter, Event, IPosition, isDefined, isUndefined, uuid } from '@opensumi/ide-core-common';
+import { Emitter, Event, IPosition, isDefined, isUndefined, localize, uuid } from '@opensumi/ide-core-common';
 import {
   ICodeEditor,
   IEditorDecorationsCollection,
@@ -114,10 +114,12 @@ const PartialEditComponent = (props: {
     >
       <div className={styles.content}>
         <span className={cls(styles.accept_btn, styles.btn)} onClick={handleAccept}>
-          {keyStrings.acceptSequence}
+          {localize('aiNative.inline.diff.accept')}
+          <span>{keyStrings.acceptSequence}</span>
         </span>
         <span className={cls(styles.discard_btn, styles.btn)} onClick={handleDiscard}>
-          {keyStrings.discardSequence}
+          {localize('aiNative.inline.diff.reject')}
+          <span>{keyStrings.discardSequence}</span>
         </span>
       </div>
     </div>

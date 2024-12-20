@@ -42,21 +42,30 @@
   .content {
     float: right;
     display: flex;
-    border-radius: 4px;
+    flex-direction: row;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
     overflow: hidden;
     margin-right: 12px;
     max-height: @line-height;
     height: @line-height;
     align-items: center;
+    opacity: 0.8;
   }
 
   .btn {
+    display: flex;
     pointer-events: auto;
     border: none;
-    font-size: 12px;
+    font-size: 10px;
     cursor: pointer;
     padding: 2px 6px;
-    height: @line-height;
+    align-items: center;
+    gap: 4px;
+
+    > span {
+      opacity: 1;
+    }
 
     &.accept_btn {
       background-color: var(--aiNative-inlineDiffAcceptPartialEdit);

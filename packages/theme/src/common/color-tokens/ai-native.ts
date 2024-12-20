@@ -18,21 +18,21 @@ export const designInlineDiffRemovedRange = registerColor(
 
 export const designInlineDiffAcceptPartialEdit = registerColor(
   'aiNative.inlineDiffAcceptPartialEdit',
-  { dark: transparent(defaultInsertColor, 3), light: transparent(defaultInsertColor, 3), hcDark: null, hcLight: null },
+  { dark: '#89d185', light: '#89d185', hcDark: null, hcLight: null },
   '',
   true,
 );
 
 export const designInlineDiffAcceptPartialEditForeground = registerColor(
   'aiNative.inlineDiffAcceptPartialEdit.foreground',
-  { dark: '#fff', light: '#fff', hcDark: null, hcLight: null },
+  { dark: '#1f1f1f', light: '#1f1f1f', hcDark: null, hcLight: null },
   '',
   true,
 );
 
 export const designInlineDiffDiscardPartialEdit = registerColor(
   'aiNative.inlineDiffDiscardPartialEdit',
-  { dark: transparent(defaultRemoveColor, 3), light: transparent(defaultRemoveColor, 3), hcDark: null, hcLight: null },
+  { dark: '#f14c4c', light: '#f14c4c', hcDark: null, hcLight: null },
   '',
   true,
 );
