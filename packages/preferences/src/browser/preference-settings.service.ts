@@ -731,6 +731,8 @@ export const defaultSettingSections: {
         },
         { id: 'workbench.editorAssociations' },
         { id: 'editor.unicodeHighlight.ambiguousCharacters' },
+        { id: 'editor.unicodeHighlight.allowedCharacters' },
+        { id: 'editor.unicodeHighlight.allowedLocales' },
       ],
     },
     {
