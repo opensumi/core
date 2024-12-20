@@ -12,8 +12,6 @@ import {
   isString,
 } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
-// eslint-disable-next-line import/no-restricted-paths
-import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languageFeatureRegistry';
 
 import { IndentAction, SymbolKind } from './ext-types';
 
@@ -830,5 +828,3 @@ export interface FoldingRangeProvider {
     token: CancellationToken,
   ): vscode.ProviderResult<FoldingRange[]>;
 }
-
-export const FoldingRangeProviderRegistry = new LanguageFeatureRegistry<FoldingRangeProvider>();

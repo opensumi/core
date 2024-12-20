@@ -1,8 +1,7 @@
 import LSTypes from 'vscode-languageserver-types';
 
-import { CancellationToken, IDisposable, IRelativePattern, MarkerSeverity } from '@opensumi/ide-core-common';
+import { CancellationToken, IDisposable, IRelativePattern, MarkerSeverity, Uri } from '@opensumi/ide-core-common';
 import { editor } from '@opensumi/ide-monaco';
-import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 
 import type { IRelatedInformation } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 

@@ -33,7 +33,12 @@ export class RenameSingleHandler extends BaseAIMonacoContribHandler {
   doContribute() {
     const disposable = new Disposable();
 
-    const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
+    const provider = async (
+      model: monaco.ITextModel,
+      range: monaco.IRange,
+      triggerKind: monaco.NewSymbolNameTriggerKind,
+      token: CancellationToken,
+    ) => {
       if (!this.shouldHandle(model.uri)) {
         return;
       }
@@ -68,7 +73,7 @@ export class RenameSingleHandler extends BaseAIMonacoContribHandler {
       });
 
       try {
-        const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
+        const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, triggerKind, token);
         toDispose.dispose();
         this.lastModelRequestRenameEndTime = +new Date();
         return result;
@@ -102,6 +107,7 @@ export class RenameSingleHandler extends BaseAIMonacoContribHandler {
     );
     disposable.addDispose(
       monacoApi.languages.registerNewSymbolNameProvider('*', {
+        supportsAutomaticNewSymbolNamesTriggerKind: Promise.resolve(true),
         provideNewSymbolNames: provider,
       }),
     );

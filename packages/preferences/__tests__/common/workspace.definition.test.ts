@@ -1,4 +1,5 @@
-import { FileStat, URI } from '@opensumi/ide-core-browser';
+import { FileStat } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-utils';
 import { DEFAULT_WORKSPACE_SUFFIX_NAME } from '@opensumi/ide-workspace';
 import { WorkspaceData } from '@opensumi/ide-workspace/lib/browser/workspace-data';
 

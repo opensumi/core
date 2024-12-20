@@ -84,6 +84,12 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
       }),
     );
   }
+  getSelection(): Selection | null {
+    return null;
+  }
+  getSelections(): Selection[] | null {
+    return null;
+  }
 
   async open(args: IOpenMergeEditorArgs): Promise<void> {
     const { ancestor, input1, input2, output } = args;
@@ -225,14 +231,6 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   revealPositionInCenterIfOutsideViewport(position: IPosition, scrollType?: ScrollType): void {}
 
   revealPositionNearTop(position: IPosition, scrollType?: ScrollType): void {}
-
-  getSelection(): Selection | null {
-    return null;
-  }
-
-  getSelections(): Selection[] | null {
-    return null;
-  }
 
   setSelection(selection: IRange | Range | ISelection | Selection, source?: string): void;
   setSelection(selection: any, source?: any): void {}
