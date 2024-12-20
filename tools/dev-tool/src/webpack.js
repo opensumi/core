@@ -99,7 +99,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           },
           {
             test: /\.tsx?$/,
-            exclude: [notebookModulePath, /\.d\.ts$|\.js\.map$/],
+            exclude: [notebookModulePath],
             use: [
               {
                 loader: 'ts-loader',
@@ -179,17 +179,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             generator: {
               filename: 'fonts/[name][hash:8][ext][query]',
             },
-          },
-          {
-            /**
-             * monaco 从 0.53 版本开始已经全面编译成 esm 模块，其中有使用动态 import 的导入
-             * 而我们将其进行编译时会把动态 import 的所有文件连同不同的后缀名（例如 .d.ts 和 .js.map）等都进行了 require 导入，从而导包错误
-             * 具体可以搜索 bundle.js 文件里带有 webpackAsyncContext 的部分
-             *
-             * 目前还不知道怎么剔除这些 .d.ts 和 .js.map 的生成，只能在这个地方先进行 ignore
-             */
-            test: /\.d\.ts$|\.js\.map$/,
-            use: 'ignore-loader',
           },
         ],
       },
