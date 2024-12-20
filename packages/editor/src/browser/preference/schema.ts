@@ -198,7 +198,9 @@ export const EDITOR_DEFAULTS = {
     hover: {
       enabled: true,
       delay: 300,
+      hidingDelay: 300,
       sticky: true,
+      above: true,
     },
     links: true,
     contextmenu: true,
@@ -623,20 +625,6 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     minimum: 1,
     markdownDescription: '%editor.configuration.tabSize%',
   },
-  // 'editor.indentSize': {
-  // 	'anyOf': [
-  // 		{
-  // 			'type': 'string',
-  // 			'enum': ['tabSize']
-  // 		},
-  // 		{
-  // 			'type': 'number',
-  // 			'minimum': 1
-  // 		}
-  // 	],
-  // 	'default': 'tabSize',
-  // 	'markdownDescription': localize('indentSize', "The number of spaces used for indentation or 'tabSize' to use the value from `#editor.tabSize#`. This setting is overridden based on the file contents when `#editor.detectIndentation#` is on.")
-  // },
   'editor.insertSpaces': {
     type: 'boolean',
     default: EDITOR_MODEL_DEFAULTS.insertSpaces,
@@ -694,6 +682,7 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_DEFAULTS.viewInfo.minimap.maxColumn,
     description: '%editor.configuration.minimap.maxColumn%',
   },
+  // hover start
   'editor.hover.enabled': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.hover.enabled,
@@ -702,13 +691,24 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.hover.delay': {
     type: 'number',
     default: EDITOR_DEFAULTS.contribInfo.hover.delay,
-    description: localize('hover.delay', 'Controls the delay in milliseconds after which the hover is shown.'),
+    description: '%editor.configuration.hover.delay%',
   },
   'editor.hover.sticky': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.hover.sticky,
     description: '%editor.configuration.hover.sticky%',
   },
+  'editor.hover.hidingDelay': {
+    type: 'number',
+    default: EDITOR_DEFAULTS.contribInfo.hover.hidingDelay,
+    description: '%editor.configuration.hover.hidingDelay%',
+  },
+  'editor.hover.above': {
+    type: 'boolean',
+    default: EDITOR_DEFAULTS.contribInfo.hover.above,
+    description: '%editor.configuration.hover.above%',
+  },
+  // hover end
   'editor.find.seedSearchStringFromSelection': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.find.seedSearchStringFromSelection,

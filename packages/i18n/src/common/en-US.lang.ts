@@ -681,6 +681,15 @@ export const localizationBundle = {
       'Show the inline suggestion toolbar when hovering over an inline suggestion.',
     'editor.configuration.inlineSuggest.showToolbar.never': 'Never show the inline suggestion toolbar.',
     // inlineSuggest end
+    // hover start
+    'editor.configuration.hover.enabled': 'Controls whether the hover is shown.',
+    'editor.configuration.hover.delay': 'Controls the delay in milliseconds after which the hover is shown.',
+    'editor.configuration.hover.sticky':
+      'Controls whether the hover should remain visible when mouse is moved over it.',
+    'editor.configuration.hover.hidingDelay':
+      'Controls the delay in milliseconds after which the hover is hidden. Requires `editor.hover.sticky` to be.',
+    'editor.configuration.hover.above': "Prefer showing hovers above the line, if there's space.",
+    // hover end
     'editor.configuration.experimental.stickyScroll':
       'Shows the nested current scopes during the scroll at the top of the editor.',
     'editor.configuration.customCodeActionMenu.showHeaders':
@@ -715,9 +724,6 @@ export const localizationBundle = {
       'Render the actual characters on a line as opposed to color blocks.',
     'editor.configuration.minimap.maxColumn':
       'Limit the width of the minimap to render at most a certain number of columns.',
-    'editor.configuration.hover.enabled': 'Controls whether the hover is shown.',
-    'editor.configuration.hover.sticky':
-      'Controls whether the hover should remain visible when mouse is moved over it.',
     'editor.configuration.find.seedSearchStringFromSelection':
       'Controls whether the search string in the Find Widget is seeded from the editor selection.',
     'editor.configuration.find.autoFindInSelection':
