@@ -1112,6 +1112,14 @@ export const localizationBundle = {
     'editor.configuration.inlineSuggest.showToolbar.onHover': '将鼠标悬停在内联建议上时显示内联建议工具栏。',
     'editor.configuration.inlineSuggest.showToolbar.never': '永不显示内联建议工具栏。',
     // inlineSuggest end
+    // hover start
+    'editor.configuration.hover.enabled': '控制是否在编辑器中启用代码提示。',
+    'editor.configuration.hover.delay': '控制代码提示显示的延迟时间（毫秒）。',
+    'editor.configuration.hover.sticky': '控制代码提示是否在鼠标悬停时保持可见。',
+    'editor.configuration.hover.hidingDelay':
+      '控制代码提示隐藏的延迟时间（毫秒）。需要 `editor.hover.sticky` 设置为 true 时生效。',
+    'editor.configuration.hover.above': '优先显示代码提示在行上方，如果行有空间。',
+    // hover end
     'editor.configuration.autoSave': '控制如何自动保存文件。',
     'editor.configuration.formatOnSave': '在保存时格式化文件',
     'editor.configuration.formatOnType': '控制编辑器是在键入后自动格式化该行。',
