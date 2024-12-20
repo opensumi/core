@@ -33,13 +33,5 @@ module.exports = {
       maxChunks: 1,
     }),
   ],
-  module: {
-    rules: [
-      {
-        test: /\.d\.ts$|\.js\.map$/,
-        use: 'ignore-loader',
-      },
-    ],
-  },
   stats: process.env.CI ? 'errors-only' : 'normal',
 };
