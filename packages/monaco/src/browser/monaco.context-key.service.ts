@@ -61,6 +61,8 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
     this.preferenceService.onPreferencesChanged(this.triggerPreferencesChanged, this, this.disposables);
     const monacoConfigService = StandaloneServices.get(IConfigurationService);
     monacoConfigService.getValue = this.getValue.bind(this);
+    monacoConfigService.updateValue = this.updateValue.bind(this);
+    monacoConfigService.inspect = this.inspect.bind(this);
   }
 
   public keys() {

@@ -1446,6 +1446,16 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: true,
     description: '%editor.configuration.unicodeHighlight.ambiguousCharacters%',
   },
+  'editor.unicodeHighlight.allowedCharacters': {
+    type: 'object',
+    default: {},
+    description: '%editor.configuration.unicodeHighlight.allowedCharacters%',
+  },
+  'editor.unicodeHighlight.allowedLocales': {
+    type: 'object',
+    default: {},
+    description: '%editor.configuration.unicodeHighlight.allowedLocales%',
+  },
   'diffEditor.renderIndicators': {
     type: 'boolean',
     default: DIFF_EDITOR_DEFAULTS.renderIndicators,
