@@ -1,24 +1,14 @@
 import fs, { watch } from 'fs-extra';
 import debounce from 'lodash/debounce';
 
-import { Autowired, Injectable, Optional } from '@opensumi/di';
-import {
-  Disposable,
-  DisposableCollection,
-  FileUri,
-  IDisposable,
-  ILogService,
-  ILogServiceManager,
-  SupportLogNamespace,
-  isMacintosh,
-  path,
-} from '@opensumi/ide-core-node';
+import { ILogService } from '@opensumi/ide-core-common/lib/log';
+import { Disposable, DisposableCollection, FileUri, IDisposable, isMacintosh, path } from '@opensumi/ide-utils/lib';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
-import { FileChangeCollection } from '../file-change-collection';
+import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../../common/index';
+import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 const { join, basename, normalize } = path;
-@Injectable({ multiple: true })
+
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private WATCHER_HANDLERS = new Map<
     number,
@@ -33,10 +23,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
-  @Autowired(ILogServiceManager)
-  // 一个 symbol 关键字，内容是 ILogServiceManager
-  private readonly loggerManager: ILogServiceManager;
-
   // 收集发生改变的文件
   protected changes = new FileChangeCollection();
 
@@ -44,11 +30,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   protected client: FileSystemWatcherClient | undefined;
 
-  private logger: ILogService;
-
-  constructor(@Optional() private readonly excludes: string[] = []) {
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
-  }
+  constructor(private readonly logger: ILogService) {}
 
   dispose(): void {
     this.toDispose.dispose();
@@ -244,7 +226,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
-    if (client && this.toDispose.disposed) {
+    if (this.client && this.toDispose.disposed) {
       return;
     }
     this.client = client;

@@ -45,7 +45,7 @@ import {
 } from '../common';
 
 import { FileSystemManage } from './file-system-manage';
-import { getFileType } from './shared/file-type';
+import { getFileType } from './hosted/shared/file-type';
 
 export abstract class FileSystemNodeOptions {
   public static DEFAULT: FileSystemNodeOptions = {
@@ -95,7 +95,7 @@ export class FileService implements IFileService {
     return this.toDisposable;
   }
 
-  async watchFileChanges(uri: string, options?: { excludes: string[] }): Promise<number> {
+  async watchFileChanges(uri: string, options?: { excludes: string[]; recursive?: boolean }): Promise<number> {
     const id = this.watcherId++;
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
@@ -103,6 +103,7 @@ export class FileService implements IFileService {
 
     const watcherId = await provider.watch(_uri.codeUri, {
       excludes: (options && options.excludes) || [],
+      recursive: options && options.recursive !== undefined ? options.recursive : this.options.recursive,
     });
     this.watcherDisposerMap.set(id, {
       dispose: () => provider.unwatch!(watcherId),

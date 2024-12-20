@@ -6,6 +6,7 @@ import * as fs from 'fs-extra';
 import { Injector } from '@opensumi/di';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage/lib/common';
+import { WatcherProcessManagerToken } from '@opensumi/ide-file-service/lib/node/watcher-process-manager';
 
 import { IExtensionNodeClientService } from '../../src/common';
 
@@ -64,6 +65,12 @@ describe('Extension Client Serivce', () => {
       const publisher = 'vscode-extensions';
       const version = '1.37.1';
       const lpPath = path.join(os.homedir(), '.sumi', 'workspace-storage', 'languagepacks.json');
+      injector.addProviders({
+        token: WatcherProcessManagerToken,
+        useValue: {
+          setClient: () => void 0,
+        },
+      });
       // make sure the workspace-storage path is exist
       const extensionStorageServer = injector.get(IExtensionStoragePathServer);
       const hashCalculateService = injector.get(IHashCalculateService);
