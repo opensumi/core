@@ -3189,7 +3189,7 @@ __metadata:
     semver: "npm:^7.5.2"
     simple-git: "npm:^3.3.0"
     temp: "npm:^0.9.4"
-    tinybench: "npm:^2.6.0"
+    tinybench: "npm:^3.1.0"
     ts-jest: "npm:^29.1.0"
     ts-loader: "npm:^9.5.1"
     ts-node: "npm:^10.9.1"
@@ -23223,10 +23223,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinybench@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "tinybench@npm:2.6.0"
-  checksum: 10/6d35f0540bbf6208e8f47fa88cad733bc4b35b3bea75ec995004a9a44f70b8947eff3d271a3b4a4f7e787a82211df0dec9370fa566ccf50441067c559382b3ed
+"tinybench@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "tinybench@npm:3.1.0"
+  checksum: 10/aaaa47d5a20661ba6d3f4b9548ea1bacf223a226d228f96528d28b34e66be5e971812786cb34b80f6626b9f822993ce9ae22bb304bdeb6d2f6028f73b9dfd218
   languageName: node
   linkType: hard
 
