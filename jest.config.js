@@ -85,7 +85,7 @@ module.exports = {
         '**/packages/{core-common,core-electron-main,core-node,utils,i18n}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
         // exclude 的要放最后
         '!**/packages/{components,core-browser}/__tests__/**',
-        '!**/packages/extension/__tests__/hosted/**',
+        '!**/packages/extension/__tests__/{hosted,common}/**',
       ],
     },
     {
@@ -109,7 +109,7 @@ module.exports = {
         '**/packages/*/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/*/__test?(s)__/common/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/tools/*/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
-        '**/packages/extension/__tests__/hosted/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/extension/__tests__/{hosted,common}/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/{components,core-browser,core-common,electron-basic}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
       ],
     },
