@@ -437,7 +437,6 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.splitToRight',
     category: CATEGORY,
     label: '%editor.splitToRight%',
-    iconClass: getIcon('embed'),
   };
 
   export const SPLIT_TO_TOP: Command = {
