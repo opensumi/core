@@ -360,7 +360,9 @@ declare module "vscode" {
     constructor(
       include?: readonly TestItem[],
       exclude?: readonly TestItem[],
-      profile?: TestRunProfile
+      profile?: TestRunProfile,
+      continuous?: boolean,
+      preserveFocus?: boolean
     );
   }
   /**

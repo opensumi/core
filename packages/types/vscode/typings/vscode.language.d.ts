@@ -1788,6 +1788,18 @@ declare module 'vscode' {
      */
     readonly supportThemeIcons?: boolean;
 
+		/**
+		 * Indicates that this markdown string can contain raw html tags. Defaults to `false`.
+		 *
+		 * When `supportHtml` is false, the markdown renderer will strip out any raw html tags
+		 * that appear in the markdown text. This means you can only use markdown syntax for rendering.
+		 *
+		 * When `supportHtml` is true, the markdown render will also allow a safe subset of html tags
+		 * and attributes to be rendered. See https://github.com/microsoft/vscode/blob/6d2920473c6f13759c978dd89104c4270a83422d/src/vs/base/browser/markdownRenderer.ts#L296
+		 * for a list of all supported tags and attributes.
+		 */
+		supportHtml?: boolean;
+
     /**
      * Uri that relative paths are resolved relative to.
      *
@@ -2077,6 +2089,13 @@ declare module 'vscode' {
   export class RelativePattern {
 
     /**
+		 * A base file path to which this pattern will be matched against relatively. The
+		 * file path must be absolute, should not have any trailing path separators and
+		 * not include any relative segments (`.` or `..`).
+		 */
+		baseUri?: Uri;
+
+    /**
      * A base file path to which this pattern will be matched against relatively.
      */
     base: string;
@@ -2292,7 +2311,7 @@ declare module 'vscode' {
      * @param value A value to append 'as given'. The string will be escaped.
      * @return This snippet string.
      */
-    appendText(value: string): SnippetString;
+    appendText(string: string): SnippetString;
 
     /**
      * Builder-function that appends a tabstop (`$1`, `$2` etc) to
@@ -2302,7 +2321,7 @@ declare module 'vscode' {
      * value starting at 1.
      * @return This snippet string.
      */
-    appendTabstop(num?: number): SnippetString;
+    appendTabstop(number?: number): SnippetString;
 
     /**
      * Builder-function that appends a placeholder (`${1:value}`) to
@@ -2314,7 +2333,7 @@ declare module 'vscode' {
      * value starting at 1.
      * @return This snippet string.
      */
-    appendPlaceholder(value: string | ((snippet: SnippetString) => any), num?: number): SnippetString;
+    appendPlaceholder(value: string | ((snippet: SnippetString) => any), number?: number): SnippetString;
 
     /**
      * Builder-function that appends a choice (`${1|a,b,c}`) to
