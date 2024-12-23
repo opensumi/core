@@ -112,6 +112,22 @@ module.exports = {
         '**/packages/extension/__tests__/{hosted,common}/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/{components,core-browser,core-common,electron-basic}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
       ],
+      transformIgnorePatterns: ['/node_modules/(?!(@opensumi/monaco-editor-core)/)'],
+      transform: {
+        '^.+\\.(js)$': [
+          'ts-jest',
+          {
+            isolatedModules: true,
+            tsconfig: {
+              allowJs: true,
+              module: 'NodeNext',
+              moduleResolution: 'node',
+              esModuleInterop: true,
+              skipLibCheck: true,
+            },
+          },
+        ],
+      },
     },
   ],
 };
