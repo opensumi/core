@@ -2311,7 +2311,7 @@ declare module 'vscode' {
      * @param value A value to append 'as given'. The string will be escaped.
      * @return This snippet string.
      */
-		appendText(string: string): SnippetString;
+    appendText(string: string): SnippetString;
 
     /**
      * Builder-function that appends a tabstop (`$1`, `$2` etc) to
@@ -2321,7 +2321,7 @@ declare module 'vscode' {
      * value starting at 1.
      * @return This snippet string.
      */
-		appendTabstop(number?: number): SnippetString;
+    appendTabstop(number?: number): SnippetString;
 
     /**
      * Builder-function that appends a placeholder (`${1:value}`) to
