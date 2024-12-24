@@ -655,6 +655,12 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const TOGGLE_COLUMN_SELECTION: Command = {
+    id: 'editor.action.toggleColumnSelection',
+    label: '%editor.action.toggleColumnSelection%',
+    category: CATEGORY,
+  };
+
   export const FORMAT_DOCUMENT: Command = {
     id: 'editor.action.formatDocument',
     category: CATEGORY,

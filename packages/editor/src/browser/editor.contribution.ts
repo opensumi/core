@@ -1197,6 +1197,13 @@ export class EditorContribution
       execute: () => this.prefixQuickOpenService.open(':'),
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.TOGGLE_COLUMN_SELECTION, {
+      execute: () => {
+        const isColumnSelection = this.preferenceService.get<boolean>('editor.columnSelection');
+        this.preferenceService.set('editor.columnSelection', !isColumnSelection, PreferenceScope.User);
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.TOGGLE_WORD_WRAP, {
       execute: () => {
         const wordWrap = this.preferenceService.get<string>('editor.wordWrap');

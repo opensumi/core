@@ -195,6 +195,12 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey, NoConverter | IM
   ['editor.fontLigatures', { monaco: 'fontLigatures' }],
 
   /**
+   * Enable that the selection with the mouse and keys is doing column selection.
+   * Defaults to false.
+   */
+  ['editor.columnSelection', { monaco: 'columnSelection' }],
+
+  /**
    * Disable the use of `will-change` for the editor margin and lines layers.
    * The usage of `will-change` acts as a hint for browsers to create an extra layer.
    * Defaults to false.
