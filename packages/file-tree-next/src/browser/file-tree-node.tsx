@@ -338,7 +338,6 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         };
 
         const dropHandler = (event: React.DragEvent) => {
-          event.stopPropagation();
           const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
           dndService.handleDrop(event, item as File, activeUri!);
         };
