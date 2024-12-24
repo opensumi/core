@@ -1,24 +1,34 @@
 import { IDisposable } from '@opensumi/ide-core-common';
 
+import { chunkSize } from '../../constants';
+
 import { BaseConnection } from './base';
+import { LengthFieldBasedFrameDecoder } from './frame-decoder';
 
 import type WebSocket from 'ws';
 
 export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
+  protected decoder = new LengthFieldBasedFrameDecoder();
+
   constructor(public socket: WebSocket) {
     super();
+    this.socket.on('message', (data: Buffer) => {
+      this.decoder.push(data);
+    });
   }
+
   send(data: Uint8Array): void {
-    this.socket.send(data);
+    const handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
+    const packet = handle.get();
+    for (let i = 0; i < packet.byteLength; i += chunkSize) {
+      this.socket.send(packet.subarray(i, i + chunkSize));
+    }
+
+    handle.dispose();
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {
-    this.socket.on('message', cb);
-    return {
-      dispose: () => {
-        this.socket.off('message', cb);
-      },
-    };
+    return this.decoder.onData(cb);
   }
   onceClose(cb: () => void): IDisposable {
     this.socket.once('close', cb);
