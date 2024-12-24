@@ -163,12 +163,13 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
   private now(): string {
     const toTwoDigits = (v: number) => (v < 10 ? `0${v}` : v);
     const toThreeDigits = (v: number) => (v < 10 ? `00${v}` : v < 100 ? `0${v}` : v);
-    const currentTime = new Date();
-    return `${currentTime.getFullYear()}-${toTwoDigits(currentTime.getMonth() + 1)}-${toTwoDigits(
-      currentTime.getDate(),
-    )} ${toTwoDigits(currentTime.getHours())}:${toTwoDigits(currentTime.getMinutes())}:${toTwoDigits(
-      currentTime.getSeconds(),
-    )}.${toThreeDigits(currentTime.getMilliseconds())}`;
+
+    const now = new Date();
+    const date = `${now.getFullYear()}-${toTwoDigits(now.getMonth() + 1)}-${toTwoDigits(now.getDate())}`;
+    const time = `${toTwoDigits(now.getHours())}:${toTwoDigits(now.getMinutes())}:${toTwoDigits(
+      now.getSeconds(),
+    )}.${toThreeDigits(now.getMilliseconds())}`;
+    return `${date} ${time}`;
   }
 
   private label(level: types.OutputChannelLogLevel) {
