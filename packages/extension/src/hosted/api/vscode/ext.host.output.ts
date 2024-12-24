@@ -161,14 +161,14 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
   }
 
   private now(): string {
-    const toTwoDigits = (v: number) => (v < 10 ? `0${v}` : v);
-    const toThreeDigits = (v: number) => (v < 10 ? `00${v}` : v < 100 ? `0${v}` : v);
+    const twoDigits = (v: number) => (v < 10 ? `0${v}` : v);
+    const threeDigits = (v: number) => (v < 10 ? `00${v}` : v < 100 ? `0${v}` : v);
 
     const now = new Date();
-    const date = `${now.getFullYear()}-${toTwoDigits(now.getMonth() + 1)}-${toTwoDigits(now.getDate())}`;
-    const time = `${toTwoDigits(now.getHours())}:${toTwoDigits(now.getMinutes())}:${toTwoDigits(
+    const date = `${now.getFullYear()}-${twoDigits(now.getMonth() + 1)}-${twoDigits(now.getDate())}`;
+    const time = `${twoDigits(now.getHours())}:${twoDigits(now.getMinutes())}:${twoDigits(
       now.getSeconds(),
-    )}.${toThreeDigits(now.getMilliseconds())}`;
+    )}.${threeDigits(now.getMilliseconds())}`;
     return `${date} ${time}`;
   }
 
