@@ -110,6 +110,7 @@ export const EDITOR_DEFAULTS = {
   lineNumbersMinChars: 3,
   lineDecorationsWidth: 10,
   readOnly: false,
+  columnSelection: false,
   mouseStyle: 'text',
   disableLayerHinting: false,
   automaticLayout: true,
@@ -1178,6 +1179,11 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.selectionHighlight,
     description: '%editor.configuration.selectionHighlight%',
+  },
+  'editor.columnSelection': {
+    type: 'boolean',
+    default: EDITOR_DEFAULTS.columnSelection,
+    description: '%editor.configuration.columnSelection%',
   },
   'editor.occurrencesHighlight': {
     type: 'boolean',
