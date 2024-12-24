@@ -182,6 +182,7 @@ export interface IExtHostStatusBar {
 
 export interface IMainThreadOutput {
   $append(channelName: string, value: string): PromiseLike<void>;
+  $appendLine(channelName: string, value: string): PromiseLike<void>;
   $replace(channelName: string, value: string): PromiseLike<void>;
   $clear(channelName: string): PromiseLike<void>;
   $dispose(channelName: string): PromiseLike<void>;
