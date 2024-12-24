@@ -3,7 +3,7 @@ import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IAccessibilityInformation, Uri, UriComponents, isObject, isString } from '@opensumi/ide-core-common';
 
 import { ITreeItemLabel, TreeViewItemCheckboxInfo } from '../../../../common/vscode';
-import { ICommand } from '../../../../common/vscode/models';
+import { Command } from '../../../../common/vscode/models';
 import { TreeViewDataProvider } from '../main.thread.treeview';
 
 export class ExtensionTreeRoot extends CompositeTreeNode {
@@ -42,7 +42,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
   private _displayName: string;
   private _hightlights?: [number, number][];
   private _strikethrough?: boolean;
-  private _command?: ICommand;
+  private _command?: Command;
   private _tooltip?: string;
   private _resolved = false;
   private sourceUri?: UriComponents;
@@ -54,7 +54,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     public description: string = '',
     public icon: string = '',
     tooltip = '',
-    command: ICommand | undefined,
+    command: Command | undefined,
     public contextValue: string = '',
     public treeItemId: string = '',
     public actions: MenuNode[],
@@ -148,7 +148,7 @@ export class ExtensionTreeNode extends TreeNode {
     public description: string = '',
     public icon: string = '',
     private _tooltip: string | undefined,
-    private _command: ICommand | undefined,
+    private _command: Command | undefined,
     public contextValue: string = '',
     public treeItemId: string = '',
     public actions: MenuNode[],

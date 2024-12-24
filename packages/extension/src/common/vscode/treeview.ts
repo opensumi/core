@@ -2,7 +2,7 @@ import { BinaryBuffer, Event, IAccessibilityInformation, IDisposable } from '@op
 import { ThemeType } from '@opensumi/ide-theme';
 
 import { MarkdownString, ThemeIcon, TreeItemCollapsibleState } from './ext-types';
-import { ICommand, UriComponents } from './models';
+import { Command, UriComponents } from './models';
 
 import type { CancellationToken } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
@@ -112,7 +112,7 @@ export class TreeViewItem {
 
   checkboxInfo?: TreeViewItemCheckboxInfo;
 
-  command?: ICommand;
+  command?: Command;
 
   accessibilityInformation?: IAccessibilityInformation;
 }

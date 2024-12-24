@@ -61,7 +61,7 @@ import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
-import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commands';
+import { HideInlineCompletion } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/commands';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import {

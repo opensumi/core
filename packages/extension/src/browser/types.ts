@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { BasicEvent, Event, IDisposable, IExtensionProps } from '@opensumi/ide-core-browser';
+import { BasicEvent, Event, IDisposable, IExtensionProps } from '@opensumi/ide-core-common';
 
 import { IExtension, IExtensionMetaData } from '../common';
 
@@ -103,7 +103,7 @@ export class ExtensionWillActivateEvent extends BasicEvent<IExtension> {}
 
 export class ExtensionWillContributeEvent extends BasicEvent<IExtensionMetaData> {}
 
-// 将激活的插件作为 payload 📢 出去
+// 将激活的插件作为 payload 广播出去
 export class ExtensionDidActivatedEvent extends BasicEvent<IExtensionProps> {}
 
 /**

@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable, Emitter, Event, IRange, ISelection, getDebugLogger } from '@opensumi/ide-core-common';
-import { IDecorationApplyOptions, IResourceOpenOptions, ISingleEditOperation } from '@opensumi/ide-editor';
+
 
 import {
   ExtensionDocumentDataManager,
@@ -24,6 +24,7 @@ import { Position, Range, Selection, TextEditorLineNumbersStyle, Uri } from '../
 
 import { TextEditorEdit } from './edit.builder';
 
+import type { IDecorationApplyOptions, IResourceOpenOptions, ISingleEditOperation } from '@opensumi/ide-editor';
 import type vscode from 'vscode';
 
 export class ExtensionHostEditorService implements IExtensionHostEditorService {

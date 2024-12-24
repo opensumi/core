@@ -1,7 +1,7 @@
 import { AddonsModule } from '@opensumi/ide-addons/lib/node';
 import { AINativeModule } from '@opensumi/ide-ai-native/lib/node';
 import { ConstructorOf, NodeModule, ServerCommonModule } from '@opensumi/ide-core-node';
-import { ExtensionModule } from '@opensumi/ide-extension/lib/node';
+import { ExtensionModule } from '@opensumi/ide-extension/lib/node/index';
 import { OpenVsxExtensionManagerModule } from '@opensumi/ide-extension-manager/lib/node';
 import { FileSchemeNodeModule } from '@opensumi/ide-file-scheme/lib/node';
 import { FileSearchModule } from '@opensumi/ide-file-search/lib/node';

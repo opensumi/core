@@ -10,10 +10,10 @@ import {
   IntelligentCompletionsRegistryToken,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
+import { Emitter, ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import {
+  IObservable,
   ISettableObservable,
-  ObservableValue,
   autorun,
   autorunWithStoreHandleChanges,
   derived,
@@ -22,14 +22,13 @@ import {
 } from '@opensumi/ide-monaco/lib/common/observable';
 import { empty } from '@opensumi/ide-utils/lib/strings';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/commandIds';
-import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
-import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController';
+import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/commandIds';
+import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/inlineCompletionContextKeys';
+import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/inlineCompletionsController';
 import {
   SuggestItemInfo,
   SuggestWidgetAdaptor,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider';
-import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestController';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/model/suggestWidgetAdaptor';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { AINativeContextKey } from '../../ai-core.contextkeys';
@@ -140,29 +139,18 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
              * 当 selectedItem 有值的时候（也就是选中下拉补全列表项时），会把原来的 inline completions 本身的阴影字符给屏蔽掉
              * 所以可以利用这点，把 selectedItem 重新置为空即可
              */
-            const suggestWidgetAdaptor = inlineCompletionsController['_suggestWidgetAdaptor'] as SuggestWidgetAdaptor;
-            const selectedItemObservable = suggestWidgetAdaptor.selectedItem as ObservableValue<
-              SuggestItemInfo | undefined
+            const model = inlineCompletionsController.model.read(reader);
+            model?.inlineCompletionState.read(reader);
+
+            const suggestWidgetSelectedItem = inlineCompletionsController['_suggestWidgetSelectedItem'] as IObservable<
+              SuggestItemInfo | undefined,
+              unknown
             >;
-            const selectedItem = selectedItemObservable.read(reader);
-
+            const selectedItem = suggestWidgetSelectedItem.get();
             if (selectedItem) {
-              transaction((tx) => {
-                selectedItemObservable.set(undefined, tx);
-              });
-            }
-          }),
-        );
-
-        observableDisposable.addDispose(
-          autorun((reader) => {
-            const state = inlineCompletionsController.model.read(reader)?.state.read(reader);
-            const suggestController = SuggestController.get(this.monacoEditor);
-            // 当阴影字符超出一行的时候，强制让 suggest 面板向上展示，避免遮挡补全内容
-            if (state && state.primaryGhostText?.lineCount >= 2) {
-              suggestController?.forceRenderingAbove();
-            } else {
-              suggestController?.stopForceRenderingAbove();
+              const suggestWidgetAdaptor = inlineCompletionsController['_suggestWidgetAdaptor'] as SuggestWidgetAdaptor;
+              suggestWidgetAdaptor['_currentSuggestItemInfo'] = undefined;
+              (suggestWidgetAdaptor['_onDidSelectedItemChange'] as Emitter<void>).fire();
             }
           }),
         );
