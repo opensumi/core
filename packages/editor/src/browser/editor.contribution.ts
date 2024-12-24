@@ -35,6 +35,7 @@ import {
   ServiceNames,
   URI,
   formatLocalize,
+  getIcon,
   getLanguageIdFromMonaco,
   localize,
 } from '@opensumi/ide-core-browser';
@@ -61,7 +62,6 @@ import {
   IDocPersistentCacheProvider,
   IEditor,
   ILanguageService,
-  IResource,
   IResourceOpenOptions,
   ResourceService,
   SaveReason,
@@ -1321,6 +1321,7 @@ export class EditorContribution
 
     menus.registerMenuItem(MenuId.EditorTitle, {
       command: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+      iconClass: getIcon('embed'),
       group: 'navigation',
       when: 'resource',
       order: 5,
