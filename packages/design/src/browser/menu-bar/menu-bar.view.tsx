@@ -9,6 +9,7 @@ import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { ToolBar } from '@opensumi/ide-toolbar/lib/browser/toolbar.view';
 
 import { DESIGN_MENU_BAR_LEFT, DESIGN_MENU_BAR_RIGHT } from '../../common';
 
@@ -144,6 +145,7 @@ export const DesignMenuBarView = () => {
           <SlotRenderer id='design-menubar-left' slot={DESIGN_MENU_BAR_LEFT} flex={1} />
         </div>
         <div className={styles.right}>
+          <ToolBar />
           <SlotRenderer id='design-menubar-right' slot={DESIGN_MENU_BAR_RIGHT} flex={1} />
         </div>
       </div>
