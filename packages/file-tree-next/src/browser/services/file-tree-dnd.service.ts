@@ -14,6 +14,7 @@ import {
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IFileTreeAPI, IFileTreeService } from '../../common';
 import { Directory, File } from '../../common/file-tree-node.define';
@@ -41,6 +42,9 @@ export class DragAndDropService extends WithEventBus {
 
   @Autowired(IFileServiceClient)
   protected readonly filesystem: IFileServiceClient;
+
+  @Autowired(IWorkspaceService)
+  protected readonly workspaceService: IWorkspaceService;
 
   private toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
 
@@ -220,7 +224,9 @@ export class DragAndDropService extends WithEventBus {
           ? activeUri.codeUri.path
           : node && node instanceof File
           ? (node.parent as Directory)?.uri.codeUri.path
-          : node?.uri.codeUri.path,
+          : node
+          ? node.uri.codeUri.path
+          : new URI(this.workspaceService.workspace?.uri).codeUri.path,
       }),
     );
     try {
