@@ -128,7 +128,7 @@ export const DebugToolbarView = (props: DebugToolbarViewProps) => {
         return (
           <DebugAction
             run={doStop}
-            enabled={autorunState !== DebugState.Inactive}
+            enabled={state !== DebugState.Inactive}
             icon={'disconnect'}
             label={localize('debug.action.disattach')}
           />
@@ -137,7 +137,7 @@ export const DebugToolbarView = (props: DebugToolbarViewProps) => {
       return (
         <DebugAction
           run={doStop}
-          enabled={autorunState !== DebugState.Inactive}
+          enabled={state !== DebugState.Inactive}
           icon={'stop'}
           label={localize('debug.action.stop')}
         />
