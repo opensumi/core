@@ -301,7 +301,17 @@ export class MonacoClientContribution
     };
 
     const getWorker = (moduleId, label) => {
-      const url = getWorkerUrl(moduleId, label);
+      let url: string;
+
+      /**
+       * 开发模式下，直接使用本地文件
+       */
+      if (process.env.NODE_ENV === 'development') {
+        url = 'assets/monaco/worker/editor.worker.bundle.js';
+      } else {
+        url = getWorkerUrl(moduleId, label);
+      }
+
       /**
        * monaco 0.53 版本开始，创建 worker 线程时都指定了 type 为 module，而我们模块格式不兼容
        * 所以需要覆写 getWorker 函数，手动创建 worker 线程
