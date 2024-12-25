@@ -1231,8 +1231,9 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
     'aiNative.inline.chat.input.placeholder.default': '可以问我任何问题，支持 shift + 回车换行',
     'aiNative.inline.hint.widget.placeholder': '按 {0} 唤起 Inline Chat',
-
     'aiNative.inline.problem.fix.title': 'AI 修复',
+    'aiNative.inline.diff.accept': '采纳',
+    'aiNative.inline.diff.reject': '拒绝',
 
     'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
     'aiNative.resolve.conflict.dialog.detection':
