@@ -6,6 +6,7 @@ import { IEditorDocumentModelRef, IEditorDocumentModelService } from '@opensumi/
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 
 import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
 
@@ -117,21 +118,11 @@ export class OutputChannel extends Disposable {
     this.monacoModel.setValue(value);
   }
 
-  private pushEditOperations(value: string): void {
-    const lineCount = this.monacoModel.getLineCount();
-    const character = value.length;
-    // 用 pushEditOperations 插入文本，直接替换 content 会触发重新计算高亮
-    this.monacoModel.pushEditOperations(
-      [],
-      [
-        {
-          range: new monaco.Range(lineCount, 0, lineCount + 1, character),
-          text: value,
-          forceMoveMarkers: true,
-        },
-      ],
-      () => [],
-    );
+  private applyEdits(value: string): void {
+    const lastLine = this.monacoModel.getLineCount();
+    const lastLineMaxColumn = this.monacoModel.getLineMaxColumn(lastLine);
+    const edits = [EditOperation.insert(new monaco.Position(lastLine, lastLineMaxColumn), value)];
+    this.monacoModel.applyEdits(edits);
   }
 
   private isEmptyChannel(): boolean {
@@ -149,7 +140,7 @@ export class OutputChannel extends Disposable {
       if (this.isEmptyChannel() || needSlice) {
         this.doReplace(this.outputLines.join('') + value);
       } else {
-        this.pushEditOperations(value);
+        this.applyEdits(value);
       }
       this.outputLines.push(value);
     });
