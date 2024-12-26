@@ -267,7 +267,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   async saveAs(uri: URI): Promise<URI | undefined> {
-    if (this._currentEditorGroup) {
+    if (this._currentEditorGroup && uri) {
       const defaultPath = uri.path.toString() !== '/' ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
       const result = await this.windowDialogService.showSaveDialog({
         saveLabel: 'SaveAs File:',
