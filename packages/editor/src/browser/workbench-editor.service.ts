@@ -748,6 +748,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private _editorLangIDContextKey: IContextKey<string>;
 
+  private _activeEditorIsDirtyContextKey: IContextKey<boolean>;
+
   private _isInDiffEditorContextKey: IContextKey<boolean>;
 
   private _diffResourceContextKey: ResourceContextKey;
@@ -905,6 +907,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       );
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
       this._isInDiffEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffEditor', false);
+      this._activeEditorIsDirtyContextKey = this.contextKeyService.createKey<boolean>('activeEditorIsDirty', false);
       this._isInDiffRightEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffRightEditor', false);
       this._isInEditorComponentContextKey = this.contextKeyService.createKey<boolean>('inEditorComponent', false);
     }
@@ -926,6 +929,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this._editorLangIDContextKey.reset();
     }
+    this._activeEditorIsDirtyContextKey.set(this.activeEditorIsDirty());
     this._isInDiffEditorContextKey.set(this.isDiffEditorMode());
     // 没有 focus 的时候默认添加在 RightDiffEditor
     this._isInDiffRightEditorContextKey.set(this.isDiffEditorMode());
@@ -1174,6 +1178,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         groupName: this.name,
         type: EditorOpenType.code,
         editorId: this.codeEditor.getId(),
+      }),
+    );
+
+    this.toDispose.push(
+      this.codeEditor.monacoEditor.onDidChangeModelContent(() => {
+        this._activeEditorIsDirtyContextKey.set(this.activeEditorIsDirty());
       }),
     );
     this.codeEditorReady.ready();
@@ -2237,6 +2247,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   isDiffEditorMode() {
     return !!this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff;
+  }
+
+  activeEditorIsDirty() {
+    return this.hasDirty() && this.workbenchEditorService.currentEditorGroup === this;
   }
 
   isComponentMode() {
