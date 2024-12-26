@@ -549,14 +549,8 @@ export abstract class WorkbenchEditorService {
    */
   abstract openUris(uri: URI[]): Promise<void>;
 
-  /**
-   * 保存
-   */
   abstract save(): Promise<void>;
 
-  /**
-   * 保存
-   */
   abstract saveAs(uri: URI): Promise<URI | undefined>;
 
   /**

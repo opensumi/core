@@ -137,12 +137,11 @@ export class FileTreeDialogService extends Tree {
   get contextKey() {
     return this.fileDialogContextKey;
   }
+
   async saveAs(options: { oldFilePath: string; newFilePath: string }) {
-    await this.createFile({
-      ...options,
-    });
-    // TODO: 不依赖 workspaceEditor，先关闭再打开，等 fileSystemProvider 迁移到前端再做改造
-    await this.workbenchEditorService.open(URI.file(options.newFilePath), {
+    await this.createFile(options);
+    const openUri: URI = URI.file(options.newFilePath);
+    await this.workbenchEditorService.open(openUri, {
       preview: false,
       focus: true,
       replace: true,
@@ -151,13 +150,20 @@ export class FileTreeDialogService extends Tree {
   }
 
   async createFile(options: { oldFilePath: string; newFilePath: string }) {
-    const { oldFilePath, newFilePath } = options;
-    const { content } = await this.fileServiceClient.readFile(oldFilePath);
-    await this.fileServiceClient.createFile(newFilePath, {
-      content: content.toString(),
-      encoding: 'utf8',
-      overwrite: true,
-    });
+    try {
+      const { oldFilePath, newFilePath } = options;
+      let fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
+      if (fileStat) {
+        const { content } = await this.fileServiceClient.readFile(oldFilePath);
+        await this.fileServiceClient.createFile(newFilePath, {
+          content: content.toString(),
+          encoding: 'utf8',
+          overwrite: true,
+        });
+      }
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   dispose() {
