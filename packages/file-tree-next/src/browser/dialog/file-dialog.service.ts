@@ -139,30 +139,43 @@ export class FileTreeDialogService extends Tree {
   }
 
   async saveAs(options: { oldFilePath: string; newFilePath: string }) {
+    const { oldFilePath, newFilePath } = options;
+    if (!oldFilePath || !newFilePath) {
+      throw new Error('oldFilePath and newFilePath are required');
+    }
     await this.createFile(options);
-    const openUri: URI = URI.file(options.newFilePath);
-    await this.workbenchEditorService.open(openUri, {
-      preview: false,
-      focus: true,
-      replace: true,
-      forceClose: true,
-    });
+    try {
+      const openUri: URI = URI.file(options.newFilePath);
+      const EDITOR_OPTIONS = {
+        preview: false,
+        focus: true,
+        replace: true,
+        forceClose: true,
+      };
+      await this.workbenchEditorService.open(openUri, EDITOR_OPTIONS);
+    } catch (error) {
+      throw new Error(`Failed to open saveAs file: ${error.message}`);
+    }
   }
 
   async createFile(options: { oldFilePath: string; newFilePath: string }) {
     try {
       const { oldFilePath, newFilePath } = options;
       let fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
-      if (fileStat) {
-        const { content } = await this.fileServiceClient.readFile(oldFilePath);
-        await this.fileServiceClient.createFile(newFilePath, {
-          content: content.toString(),
-          encoding: 'utf8',
-          overwrite: true,
-        });
+
+      if (!fileStat) {
+        throw new Error(`Source file not found: ${oldFilePath}`);
       }
+
+      const { content } = await this.fileServiceClient.readFile(oldFilePath);
+
+      await this.fileServiceClient.createFile(newFilePath, {
+        content: content.toString(),
+        encoding: 'utf8',
+        overwrite: true,
+      });
     } catch (e) {
-      throw new Error(e);
+      throw new Error(`Failed to create file: ${e.message}`);
     }
   }
 

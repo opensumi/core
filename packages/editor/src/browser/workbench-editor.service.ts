@@ -266,17 +266,28 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     }
   }
 
+  private getDefaultSavePath(uri: URI): string {
+    const defaultPath = uri.path.toString() !== '/' ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
+    return isWindows ? defaultPath.replace(/\\/g, '/') : defaultPath;
+  }
+
   async saveAs(uri: URI): Promise<URI | undefined> {
-    if (this._currentEditorGroup && uri) {
-      const defaultPath = uri.path.toString() !== '/' ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
+    if (!this._currentEditorGroup || !uri) {
+      return undefined;
+    }
+
+    try {
+      const defaultPath = this.getDefaultSavePath(uri);
       const result = await this.windowDialogService.showSaveDialog({
         saveLabel: 'SaveAs File:',
         showNameInput: true,
         defaultFileName: this._currentEditorGroup.currentResource?.name,
-        defaultUri: URI.file(isWindows ? defaultPath.replaceAll('\\', '/') : defaultPath),
+        defaultUri: URI.file(defaultPath),
         saveAs: true,
       });
       return result;
+    } catch (error) {
+      throw new Error(`SaveAs Failed: ${error.message}`);
     }
   }
 
