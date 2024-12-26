@@ -2,7 +2,9 @@ import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { ITreeNodeOrCompositeTreeNode, Tree, TreeNodeType } from '@opensumi/ide-components';
 import { Schemes, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { FileStat } from '@opensumi/ide-file-service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
+import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IFileTreeAPI } from '../../common';
@@ -23,6 +25,15 @@ export class FileTreeDialogService extends Tree {
 
   @Autowired(FileDialogContextKey)
   private fileDialogContextKey: FileDialogContextKey;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
+
+  @Autowired(WorkbenchEditorService)
+  workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(IDialogService)
+  protected dialogService: IDialogService;
 
   private workspaceRoot: FileStat;
 
@@ -125,6 +136,28 @@ export class FileTreeDialogService extends Tree {
 
   get contextKey() {
     return this.fileDialogContextKey;
+  }
+  async saveAs(options: { oldFilePath: string; newFilePath: string }) {
+    await this.createFile({
+      ...options,
+    });
+    // TODO: 不依赖 workspaceEditor，先关闭再打开，等 fileSystemProvider 迁移到前端再做改造
+    await this.workbenchEditorService.open(URI.file(options.newFilePath), {
+      preview: false,
+      focus: true,
+      replace: true,
+      forceClose: true,
+    });
+  }
+
+  async createFile(options: { oldFilePath: string; newFilePath: string }) {
+    const { oldFilePath, newFilePath } = options;
+    const { content } = await this.fileServiceClient.readFile(oldFilePath);
+    await this.fileServiceClient.createFile(newFilePath, {
+      content: content.toString(),
+      encoding: 'utf8',
+      overwrite: true,
+    });
   }
 
   dispose() {

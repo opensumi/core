@@ -1,5 +1,14 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationToken, Emitter, Event, MessageType, Schemes, path, toDisposable } from '@opensumi/ide-core-common';
+import {
+  CancellationToken,
+  Emitter,
+  Event,
+  MessageType,
+  Schemes,
+  URI,
+  path,
+  toDisposable,
+} from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 import {
@@ -118,6 +127,8 @@ export function createWorkspaceApiFactory(
       disposables?: vscode.Disposable[],
     ) => extHostFileSystemEvent.getOnWillRenameFileEvent(extension)(listener, thisArg, disposables),
     onDidRenameFile: extHostWorkspace.onDidRenameFile,
+    save: (uri) => extHostWorkspace.save(uri),
+    saveAs: (uri) => extHostWorkspace.saveAs(uri),
     saveAll: () => extHostWorkspace.saveAll(),
     findFiles: (include, exclude, maxResults?, token?) =>
       extHostWorkspace.findFiles(
@@ -408,6 +419,14 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
   applyEdit(edit: WorkspaceEdit, metadata?: vscode.WorkspaceEditMetadata): Promise<boolean> {
     const dto = TypeConverts.WorkspaceEdit.from(edit, this.extHostDoc);
     return this.proxy.$tryApplyWorkspaceEdit(dto, metadata);
+  }
+
+  save(uri: URI): Promise<URI | undefined> {
+    return this.proxy.$save(uri);
+  }
+
+  saveAs(uri: URI): Promise<URI | undefined> {
+    return this.proxy.$saveAs(uri);
   }
 
   saveAll(): Promise<boolean> {
