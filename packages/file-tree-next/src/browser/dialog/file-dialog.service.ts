@@ -4,11 +4,15 @@ import { Schemes, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
+import { EditorFile } from '@opensumi/ide-opened-editor/lib/browser/opened-editor-node.define';
+import { OpenedEditorModelService } from '@opensumi/ide-opened-editor/lib/browser/services/opened-editor-model.service';
+import { OpenedEditorService } from '@opensumi/ide-opened-editor/lib/browser/services/opened-editor-tree.service';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { IFileTreeAPI } from '../../common';
+import { IFileTreeAPI, IFileTreeService } from '../../common';
 import { Directory } from '../../common/file-tree-node.define';
+import { FileTreeService } from '../file-tree.service';
 import { FileTreeModelService } from '../services/file-tree-model.service';
 
 import { FileDialogContextKey } from './file-dialog.contextkey';
@@ -38,6 +42,12 @@ export class FileTreeDialogService extends Tree {
 
   @Autowired(FileTreeModelService)
   protected fileTreeModelService: FileTreeModelService;
+
+  @Autowired(OpenedEditorModelService)
+  private readonly openedEditorModelService: OpenedEditorModelService;
+
+  @Autowired(OpenedEditorService)
+  private readonly openedEditorService: OpenedEditorService;
 
   private workspaceRoot: FileStat;
 
@@ -155,9 +165,12 @@ export class FileTreeDialogService extends Tree {
         focus: true,
         replace: true,
         forceClose: true,
+        disableNavigate: false,
       };
       await this.workbenchEditorService.open(openUri, EDITOR_OPTIONS);
-      this.fileTreeModelService.handleTreeFocus();
+      let node = this.openedEditorService.getEditorNodeByUri(openUri, this.workbenchEditorService.currentEditorGroup);
+      await this.fileTreeModelService.clearFileSelectedDecoration();
+      await this.openedEditorModelService.activeFileActivedDecoration(node as EditorFile);
     } catch (error) {
       throw new Error(`Failed to open saveAs file: ${error.message}`);
     }
