@@ -260,9 +260,16 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return documents;
   }
 
-  async save() {
-    if (this._currentEditorGroup) {
-      await this._currentEditorGroup.saveCurrent();
+  async save(uri: URI) {
+    for (const editorGroup of this.editorGroups) {
+      const res = editorGroup.resources.find((resource) => {
+        if (resource.uri.isEqual(uri)) {
+          return resource;
+        }
+      });
+      if (res) {
+        editorGroup.saveResource(res);
+      }
     }
   }
 
