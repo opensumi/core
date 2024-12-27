@@ -261,22 +261,22 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   async save(uri: URI): Promise<URI | undefined> {
-    if (!this.editorGroups.length || !uri) {
+    if (!this.editorGroups.length) {
       return undefined;
     }
 
-    for (const editorGroup of this.editorGroups) {
-      const res = editorGroup.resources.find((resource) => {
-        if (resource.uri.isEqual(uri)) {
-          return resource;
+    try {
+      for (const editorGroup of this.editorGroups) {
+        const res = editorGroup.resources.find((resource) => resource.uri.isEqual(uri));
+        if (res) {
+          await editorGroup.saveResource(res);
         }
-      });
-      if (res) {
-        editorGroup.saveResource(res);
       }
-    }
 
-    return uri;
+      return uri;
+    } catch (error) {
+      throw new Error(`Save Failed: ${error.message}`);
+    }
   }
 
   private getDefaultSavePath(uri: URI): string {
@@ -285,7 +285,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   async saveAs(uri: URI): Promise<URI | undefined> {
-    if (!this._currentEditorGroup || !uri) {
+    if (!this._currentEditorGroup) {
       return undefined;
     }
 

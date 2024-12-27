@@ -128,20 +128,28 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   }
 
   async $save(uri: URI): Promise<URI | undefined> {
+    if (!uri) {
+      return undefined;
+    }
+
     try {
       const saveUri = URI.file(uri.path.toString());
       return await this.editorService.save(saveUri);
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error(`Save Failed: ${error.message}`);
       return undefined;
     }
   }
 
   async $saveAs(uri: URI): Promise<URI | undefined> {
+    if (!uri) {
+      return undefined;
+    }
+
     try {
       return await this.editorService.saveAs(uri);
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error(`SaveAs Failed: ${error.message}`);
       return undefined;
     }
   }
