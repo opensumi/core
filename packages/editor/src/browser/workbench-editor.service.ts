@@ -285,7 +285,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   async saveAs(uri: URI): Promise<URI | undefined> {
-    if (!this._currentEditorGroup) {
+    if (!this._currentEditorGroup || this._currentEditorGroup.currentResource?.deleted) {
       return undefined;
     }
 
