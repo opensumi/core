@@ -352,9 +352,9 @@ export const computeMultiLineDiffChanges = (
   }
 
   const mergeRewriteLine = mergeMultiLineDiffChanges(rewriteDiffResult, eol);
-  const isOnlyAddingToEachWord = !mergeRewriteLine.some(
-    (item) => item.added !== true && item.removed && item.value !== eol,
-  );
+  const isOnlyAddingToEachWord =
+    originalLines === modifiedLines &&
+    !mergeRewriteLine.some((item) => item.added !== true && item.removed && item.value !== eol);
 
   const mergeMultiLine = mergeMultiLineDiffChanges(multiLineDiffResult, eol);
 
