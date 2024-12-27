@@ -260,7 +260,11 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return documents;
   }
 
-  async save(uri: URI) {
+  async save(uri: URI): Promise<URI | undefined> {
+    if (!this.editorGroups.length || !uri) {
+      return undefined;
+    }
+
     for (const editorGroup of this.editorGroups) {
       const res = editorGroup.resources.find((resource) => {
         if (resource.uri.isEqual(uri)) {
@@ -271,6 +275,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         editorGroup.saveResource(res);
       }
     }
+
+    return uri;
   }
 
   private getDefaultSavePath(uri: URI): string {

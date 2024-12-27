@@ -549,7 +549,7 @@ export abstract class WorkbenchEditorService {
    */
   abstract openUris(uri: URI[]): Promise<void>;
 
-  abstract save(uri: URI): Promise<void>;
+  abstract save(uri: URI): Promise<URI | undefined>;
 
   abstract saveAs(uri: URI): Promise<URI | undefined>;
 

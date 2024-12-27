@@ -130,8 +130,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   async $save(uri: URI): Promise<URI | undefined> {
     try {
       const saveUri = URI.file(uri.path.toString());
-      await this.editorService.save(saveUri);
-      return uri;
+      return await this.editorService.save(saveUri);
     } catch (error) {
       this.logger.error(error);
       return undefined;
