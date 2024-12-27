@@ -332,7 +332,7 @@ class MockWorkbenchEditorService implements WorkbenchEditorService {
   openUris(uri: URI[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  save(): Promise<void> {
+  save(uri: URI): Promise<URI | undefined> {
     throw new Error('Method not implemented.');
   }
   saveAs(uri: URI): Promise<URI | undefined> {

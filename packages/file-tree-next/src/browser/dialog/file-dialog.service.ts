@@ -9,6 +9,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IFileTreeAPI } from '../../common';
 import { Directory } from '../../common/file-tree-node.define';
+import { FileTreeModelService } from '../services/file-tree-model.service';
 
 import { FileDialogContextKey } from './file-dialog.contextkey';
 
@@ -34,6 +35,9 @@ export class FileTreeDialogService extends Tree {
 
   @Autowired(IDialogService)
   protected dialogService: IDialogService;
+
+  @Autowired(FileTreeModelService)
+  protected fileTreeModelService: FileTreeModelService;
 
   private workspaceRoot: FileStat;
 
@@ -153,6 +157,7 @@ export class FileTreeDialogService extends Tree {
         forceClose: true,
       };
       await this.workbenchEditorService.open(openUri, EDITOR_OPTIONS);
+      this.fileTreeModelService.handleTreeFocus();
     } catch (error) {
       throw new Error(`Failed to open saveAs file: ${error.message}`);
     }
