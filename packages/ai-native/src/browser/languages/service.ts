@@ -6,7 +6,7 @@ import { SupportedTreeSitterLanguages, parserNameMap } from './tree-sitter/langu
 @Injectable()
 export class LanguageParserService {
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  private injector: Injector;
 
   private pool = new Map<SupportedTreeSitterLanguages, LanguageParser>();
 

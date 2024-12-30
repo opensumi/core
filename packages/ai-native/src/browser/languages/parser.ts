@@ -4,6 +4,8 @@ import { Autowired, Injectable } from '@opensumi/di';
 import * as monaco from '@opensumi/ide-monaco/lib/common';
 import { Deferred, IDisposable, LRUCache } from '@opensumi/ide-utils';
 
+import { INearestCodeBlock } from '../../common/types';
+
 import { toMonacoRange } from './tree-sitter/common';
 import { SupportedTreeSitterLanguages, TreeSitterLanguageFacts } from './tree-sitter/language-facts';
 import { ICodeBlockInfo, IOtherBlockInfo } from './tree-sitter/language-facts/base';
@@ -111,7 +113,7 @@ export class LanguageParser implements IDisposable {
   /**
    * 从给定的位置开始，找到最近的没有语法错误的代码块
    */
-  async findCodeBlockWithSyntaxError(sourceCode: string, range: monaco.IRange): Promise<IOtherBlockInfo | null> {
+  async findCodeBlockWithoutSyntaxError(sourceCode: string, range: monaco.IRange): Promise<IOtherBlockInfo | null> {
     await this.parserLoaded.promise;
     const tree = this.parser.parse(sourceCode);
     if (tree) {
@@ -320,24 +322,53 @@ export class LanguageParser implements IDisposable {
     return rootNode.text;
   }
 
+  private findTypeIdentifier(node: Parser.SyntaxNode) {
+    let next: Parser.SyntaxNode = node;
+    while (next) {
+      if (next.type === 'type_identifier') {
+        return next.text;
+      }
+      const nextNode = next.child(1);
+      if (!nextNode) {
+        break;
+      }
+      next = nextNode;
+    }
+    return '';
+  }
+
   async extractImportPaths(code: string) {
     const paths: string[] = [];
-    if (this.language === 'typescript') {
-      await this.parserLoaded.promise;
-      const tree = this.parser?.parse(code);
-      const rootNode = tree?.rootNode;
-      if (rootNode) {
-        for (let i = 0; i < rootNode?.childCount; i++) {
-          const sourceChild = rootNode.child(i);
-          if (sourceChild?.type === 'import_statement') {
-            let importPath = sourceChild.child(3)?.text;
-            if (importPath?.includes("'") || importPath?.includes('"')) {
-              importPath = importPath.slice(1, -1);
-            }
-            if (importPath) {
-              paths.push(importPath);
-            }
+    const tree = await this.parser.parse(code);
+    const rootNode = tree?.rootNode;
+    const importLines: Parser.SyntaxNode[] = [];
+    const types: string[] = [];
+    if (rootNode) {
+      for (let i = 0; i < rootNode?.childCount; i++) {
+        const sourceChild = rootNode.child(i);
+        if (sourceChild?.type === 'import_statement') {
+          importLines.push(sourceChild);
+        } else if (sourceChild?.type === 'type_annotation') {
+          const node = sourceChild.child(1);
+          if (node) {
+            types.push(node.text);
           }
+        } else if (sourceChild?.type === 'lexical_declaration') {
+          const type = this.findTypeIdentifier(sourceChild);
+          if (type) {
+            types.push(type);
+          }
+        }
+      }
+    }
+    for (const line of importLines) {
+      if (types.some((type) => line.text.includes(type))) {
+        let importPath = line.child(3)?.text;
+        if (importPath?.includes("'") || importPath?.includes('"')) {
+          importPath = importPath.slice(1, -1);
+        }
+        if (importPath) {
+          paths.push(importPath);
         }
       }
     }
@@ -365,6 +396,62 @@ export class LanguageParser implements IDisposable {
       }
     }
     return snippets;
+  }
+
+  async findSyntaxErrorCount(code: string): Promise<number> {
+    await this.parserLoaded.promise;
+    const tree = this.parser?.parse(code);
+    const rootNode = tree?.rootNode;
+
+    if (!rootNode) {
+      return 0;
+    }
+
+    let errorCount = 0;
+    const cursor = rootNode.walk();
+
+    do {
+      const node = cursor.currentNode;
+      if (node.hasError || node.isMissing || node.type === 'ERROR') {
+        errorCount++;
+      }
+    } while (cursor.gotoNextSibling());
+
+    return errorCount;
+  }
+
+  async findNearestCodeBlockWithPosition(code: string, cursor: number): Promise<INearestCodeBlock | null> {
+    const tree = await this.parser.parse(code);
+    if (tree) {
+      const { rootNode } = tree;
+      const cursorNode = rootNode.namedDescendantForIndex(cursor);
+      const selectedNode = this.findContainingCodeBlockWithPosition(cursorNode, cursor);
+      if (!selectedNode) {
+        return null;
+      }
+
+      const lines = code.split('\n');
+      let offset = lines.slice(0, selectedNode.startPosition.row).reduce((acc, cur) => acc + cur.length, 0);
+      offset += selectedNode.startPosition.row;
+      offset += selectedNode.startPosition.column;
+
+      return {
+        codeBlock: selectedNode.text,
+        range: {
+          start: {
+            line: selectedNode.startPosition.row,
+            character: 0,
+          },
+          end: {
+            line: selectedNode.endPosition.row,
+            character: Infinity,
+          },
+        },
+        offset,
+        type: selectedNode.type,
+      };
+    }
+    return null;
   }
 
   dispose() {
