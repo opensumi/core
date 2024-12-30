@@ -33,7 +33,26 @@ if (typeof process === 'undefined') {
   }
 }
 
+function detectExtFileType(): 'js' | 'ts' {
+  if (typeof module === 'object' && module.filename) {
+    if (module.filename.endsWith('.ts')) {
+      return 'ts';
+    }
+    return 'js';
+  }
+
+  if (typeof __filename === 'string') {
+    if (__filename.endsWith('.ts')) {
+      return 'ts';
+    }
+    return 'js';
+  }
+
+  return 'js';
+}
+
 export const cwd = safeProcess.cwd;
 export const env = safeProcess.env;
 export const platform = safeProcess.platform;
 export const nextTick = safeProcess.nextTick;
+export const extFileType = detectExtFileType();
