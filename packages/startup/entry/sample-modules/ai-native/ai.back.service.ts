@@ -1,4 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '@opensumi/ide-ai-native/lib/common/tool-invocation-registry';
+import { AnthropicModel } from '@opensumi/ide-ai-native/lib/node/anthropic/anthropic-language-model';
+import { OpenAIModel } from '@opensumi/ide-ai-native/lib/node/openai/openai-language-model';
 import { IAICompletionOption } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
@@ -47,6 +50,9 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
+  private anthropicModel: AnthropicModel = new AnthropicModel();
+  private openaiModel: OpenAIModel = new OpenAIModel();
+
   async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
 
@@ -68,6 +74,7 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<ChatReadableStream> {
+    const { tools } = options;
     const length = streamData.length;
     const chatReadableStream = new ChatReadableStream();
 
@@ -75,16 +82,31 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
       chatReadableStream.abort();
     });
 
-    // 模拟数据事件
-    streamData.forEach((chunk, index) => {
-      setTimeout(() => {
-        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
+    if (!tools) {
+      return chatReadableStream;
+    }
 
-        if (length - 1 === index || cancelToken?.isCancellationRequested) {
-          chatReadableStream.end();
-        }
-      }, index * 100);
-    });
+    const response = await this.anthropicModel.request(input, tools);
+    // const response = await this.openaiModel.request(input, tools, cancelToken);
+    console.log("🚀 ~ AIBackService ~ stream:", response)
+
+    for await (const chunk of response.stream) {
+      console.log('🚀 ~ AIBackService ~ forawait ~ chunk:', chunk);
+      chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
+    }
+
+    chatReadableStream.end();
+
+    // 模拟数据事件
+    // streamData.forEach((chunk, index) => {
+    //   setTimeout(() => {
+    //     chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
+
+    //     if (length - 1 === index || cancelToken?.isCancellationRequested) {
+    //       chatReadableStream.end();
+    //     }
+    //   }, index * 100);
+    // });
 
     return chatReadableStream;
   }

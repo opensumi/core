@@ -25,6 +25,7 @@ import {
 
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../../common/tool-invocation-registry';
 
 /**
  * @internal
@@ -51,6 +52,9 @@ export class ChatProxyService extends Disposable {
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
+
+  @Autowired(ToolInvocationRegistry)
+  private readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
 
   private chatDeferred: Deferred<void> = new Deferred<void>();
 
@@ -79,12 +83,16 @@ export class ChatProxyService extends Disposable {
             }
           }
 
+          const tools = this.toolInvocationRegistry.getAllFunctions();
+          console.log('🚀 ~ ChatProxyService ~ tools:', tools);
+
           const stream = await this.aiBackService.requestStream(
             prompt,
             {
               requestId: request.requestId,
               sessionId: request.sessionId,
               history: this.aiChatService.getHistoryMessages(),
+              tools
             },
             token,
           );

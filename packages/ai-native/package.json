@@ -19,6 +19,8 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@modelcontextprotocol/sdk": "^1.0.4",
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
@@ -40,6 +42,7 @@
     "@xterm/xterm": "5.5.0",
     "ansi-regex": "^2.0.0",
     "dom-align": "^1.7.0",
+    "openai": "^4.55.7",
     "react-chat-elements": "^12.0.10",
     "react-highlight": "^0.15.0",
     "tiktoken": "1.0.12",

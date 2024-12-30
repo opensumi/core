@@ -122,6 +122,7 @@ export interface IAIBackServiceOption {
   requestId?: string;
   sessionId?: string;
   history?: IHistoryChatMessage[];
+  tools?: any[];
 }
 
 /**

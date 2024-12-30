@@ -108,6 +108,8 @@ import { InlineInputController } from './widget/inline-input/inline-input.contro
 import { InlineInputChatService } from './widget/inline-input/inline-input.service';
 import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
+import { MCPServerDescription, MCPServerManager, MCPServerManagerPath, MCPTool } from '../common/mcp-server-manager';
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../common/tool-invocation-registry';
 
 @Domain(
   ClientAppContribution,
@@ -121,15 +123,14 @@ import { SumiLightBulbWidget } from './widget/light-bulb';
 )
 export class AINativeBrowserContribution
   implements
-    ClientAppContribution,
-    BrowserEditorContribution,
-    CommandContribution,
-    SettingContribution,
-    KeybindingContribution,
-    ComponentContribution,
-    SlotRendererContribution,
-    MonacoContribution
-{
+  ClientAppContribution,
+  BrowserEditorContribution,
+  CommandContribution,
+  SettingContribution,
+  KeybindingContribution,
+  ComponentContribution,
+  SlotRendererContribution,
+  MonacoContribution {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -204,6 +205,12 @@ export class AINativeBrowserContribution
 
   @Autowired(CodeActionSingleHandler)
   private readonly codeActionSingleHandler: CodeActionSingleHandler;
+
+  @Autowired(MCPServerManagerPath)
+  private readonly mcpServerManager: MCPServerManager;
+
+  @Autowired(ToolInvocationRegistry)
+  private readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
 
   constructor() {
     this.registerFeature();
@@ -406,7 +413,57 @@ export class AINativeBrowserContribution
     });
   }
 
+  private convertToToolRequest(tool: MCPTool, serverName: string): ToolRequest {
+    const id = `mcp_${serverName}_${tool.name}`;
+
+    return {
+      id: id,
+      name: id,
+      providerName: `mcp_${serverName}`,
+      parameters: ToolRequest.isToolRequestParameters(tool.inputSchema) ? {
+        type: tool.inputSchema.type,
+        properties: tool.inputSchema.properties,
+      } : undefined,
+      description: tool.description,
+      handler: async (arg_string: string) => {
+        try {
+          return await this.mcpServerManager.callTool(serverName, tool.name, arg_string);
+        } catch (error) {
+          console.error(`Error in tool handler for ${tool.name} on MCP server ${serverName}:`, error);
+          throw error;
+        }
+      },
+    };
+  }
+
   registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand({ id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' }, {
+      execute: async () => {
+        const description: MCPServerDescription = {
+          name: 'filesystem',
+          command: 'npx',
+          args: [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "/Users/qingyi/Documents/work/github/opensumi/tools/workspace"
+          ],
+          env: {}
+        };
+
+        this.mcpServerManager.addOrUpdateServer(description);
+
+        await this.mcpServerManager.startServer(description.name);
+        const { tools } = await this.mcpServerManager.getTools(description.name);
+
+        const toolRequests: ToolRequest[] = tools.map(tool => this.convertToToolRequest(tool, description.name));
+
+        for (const toolRequest of toolRequests) {
+          this.toolInvocationRegistry.registerTool(toolRequest);
+        }
+        console.log("🚀 ~ execute: ~ this.toolInvocationRegistry:", this.toolInvocationRegistry)
+      },
+    });
+
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
         this.aiInlineChatService._onInlineChatVisible.fire(value);
