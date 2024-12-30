@@ -1,5 +1,6 @@
 import { ChildProcess, fork } from 'child_process';
 import { Server, Socket, createServer } from 'net';
+import path from 'path';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -9,6 +10,7 @@ import { ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-comm
 import { DidFilesChangedParams, FileSystemWatcherClient } from '@opensumi/ide-core-common/lib/types/file-watch';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { AppConfig, Deferred, ILogService, UriComponents } from '@opensumi/ide-core-node';
+import { process as processUtil } from '@opensumi/ide-utils';
 
 import {
   IWatcherHostService,
@@ -99,6 +101,15 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
     });
   }
 
+  get watcherHost() {
+    return (
+      this.appConfig.watcherHost ||
+      (process.env.EXT_MODE === 'js'
+        ? path.join(__dirname, '../../lib/node/hosted/watcher.process.js')
+        : path.join(__dirname, 'hosted', 'watcher.process.' + processUtil.extFileType))
+    );
+  }
+
   private async createWatcherProcess(clientId: string, ipcHandlerPath: string) {
     const forkArgs = [
       `--${SUMI_WATCHER_PROCESS_SOCK_KEY}=${JSON.stringify({
@@ -111,8 +122,8 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
       })}`,
     ];
 
-    this.logger.log('Watcher process path: ', this.appConfig.watcherHost);
-    this.watcherProcess = fork(this.appConfig.watcherHost!, forkArgs, {
+    this.logger.log('Watcher process path: ', this.watcherHost);
+    this.watcherProcess = fork(this.watcherHost, forkArgs, {
       silent: true,
     });
 
@@ -126,13 +137,8 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
   }
 
   async createProcess(clientId: string) {
-    if (!this.appConfig.watcherHost) {
-      this.logger.error('watcherHost is not set');
-      return;
-    }
-
     this.logger.log('create watcher process for client: ', clientId);
-    this.logger.log('appconfig watcherHost: ', this.appConfig.watcherHost);
+    this.logger.log('appconfig watcherHost: ', this.watcherHost);
 
     const ipcHandlerPath = await this.getIPCHandlerPath('watcher_process');
     await this.createWatcherServer(clientId, ipcHandlerPath);
