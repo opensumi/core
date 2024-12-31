@@ -107,10 +107,6 @@ export class QuickCommandHandler implements QuickOpenHandler {
     };
   }
 
-  onClose() {
-    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
-  }
-
   private getItems() {
     const items: QuickOpenItem[] = [];
     const { recent, other } = this.getCommands();

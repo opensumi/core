@@ -55,7 +55,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   protected _widget: QuickOpenWidget | undefined;
   protected opts: KaitianQuickOpenControllerOpts;
   protected container: HTMLElement;
-  protected previousActiveElement: Element | undefined;
+  protected previousActiveElement: Element | undefined | null;
 
   @Autowired(KeybindingRegistry)
   protected keybindingRegistry: KeybindingRegistry;
@@ -103,6 +103,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   open(model: IKaitianQuickOpenModel, options?: Partial<QuickOpenOptions.Resolved> | undefined): void {
+    this.previousActiveElement = document.activeElement;
     const opts = new KaitianQuickOpenControllerOpts(model, this.keybindingRegistry, options);
     this.progressDispose = this.progressService.registerProgressIndicator(VIEW_CONTAINERS.QUICKPICK_PROGRESS);
     this.hideDecoration();

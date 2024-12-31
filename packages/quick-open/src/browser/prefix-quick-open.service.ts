@@ -19,7 +19,7 @@
 import React from 'react';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { QuickOpenActionProvider, localize } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS, QuickOpenActionProvider, localize } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   IQuickOpenHandlerRegistry,
@@ -31,7 +31,7 @@ import {
   QuickOpenTab,
   QuickOpenTabConfig,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { Disposable, DisposableCollection, IDisposable, ILogger } from '@opensumi/ide-core-common';
+import { CommandService, Disposable, DisposableCollection, IDisposable, ILogger } from '@opensumi/ide-core-common';
 
 import { QuickOpenTabs } from './components/quick-open-tabs';
 import { QuickTitleBar } from './quick-title-bar';
@@ -155,7 +155,10 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   protected readonly quickTitleBar: QuickTitleBar;
 
   @Autowired(CorePreferences)
-  private readonly corePreferences: CorePreferences;
+  protected readonly corePreferences: CorePreferences;
+
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
 
   private activePrefix = '';
 
@@ -251,6 +254,7 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
         if (handler.onClose) {
           handler.onClose(canceled);
         }
+        this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
       },
       renderTab: () =>
         React.createElement(QuickOpenTabs, {
