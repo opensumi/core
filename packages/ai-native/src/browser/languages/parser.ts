@@ -408,14 +408,28 @@ export class LanguageParser implements IDisposable {
     }
 
     let errorCount = 0;
-    const cursor = rootNode.walk();
 
-    do {
-      const node = cursor.currentNode;
-      if (node.hasError || node.isMissing || node.type === 'ERROR') {
+    const countErrors = (node: Parser.SyntaxNode) => {
+      // 仅检查特定类型的节点，例如函数声明
+      const isLargeSyntaxBlock =
+        node.type === 'function_declaration' ||
+        node.type === 'class_declaration' ||
+        node.type === 'variable_declarator' ||
+        node.type === 'statement_block' ||
+        node.type === 'expression_statement';
+      if (isLargeSyntaxBlock && (node.hasError || node.isMissing || node.type === 'ERROR')) {
         errorCount++;
       }
-    } while (cursor.gotoNextSibling());
+      // 递归检查子节点
+      for (let i = 0; i < node.childCount; i++) {
+        const child = node.child(i);
+        if (child) {
+          countErrors(child);
+        }
+      }
+    };
+
+    countErrors(rootNode); // 从根节点开始检查错误
 
     return errorCount;
   }
