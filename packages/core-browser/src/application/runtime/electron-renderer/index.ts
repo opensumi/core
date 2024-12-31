@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@opensumi/di';
 
 import { BrowserModule } from '../../../browser-module';
-import { AppConfig } from '../../../react-providers';
+import { AppConfig, getTreeSitterWasmCDNUri } from '../../../react-providers';
 import { electronEnv } from '../../../utils/electron';
 import { ESupportRuntime, onigWasmCDNUri } from '../constants';
 import { EKnownResources, RendererRuntime } from '../types';
