@@ -1,25 +1,30 @@
+import { Injectable, Autowired } from '@opensumi/di';
 import { CancellationToken } from '@opensumi/ide-utils';
 import OpenAI from 'openai';
 import { ChatCompletionStream } from 'openai/lib/ChatCompletionStream';
 import { RunnableToolFunctionWithoutParse } from 'openai/lib/RunnableFunction';
-import { ToolRequest } from '../../common/tool-invocation-registry';
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../../common/tool-invocation-registry';
+import { ChatReadableStream } from '@opensumi/ide-core-node';
 
 export const OpenAiModelIdentifier = Symbol('OpenAiModelIdentifier');
 
 const apiKey = '';
 
+@Injectable()
 export class OpenAIModel {
+  @Autowired(ToolInvocationRegistry)
+  private readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
+
   protected initializeOpenAi(): OpenAI {
     if (!apiKey) {
       throw new Error('Please provide ANTHROPIC_API_KEY in preferences or via environment variable');
     }
 
-    return new OpenAI({ apiKey: apiKey ?? 'no-key', baseURL: 'https://api.openai.com' });
+    return new OpenAI({ apiKey: apiKey ?? 'no-key', baseURL: 'https://api.deepseek.com' });
   }
 
-  async request(request: string, tools: ToolRequest[], cancellationToken?: CancellationToken): Promise<any> {
-    return this.handleStreamingRequest(request, tools, cancellationToken);
-    // return this.handleNonStreamingRequest(anthropic, request, tools);
+  async request(request: string, cancellationToken?: CancellationToken): Promise<any> {
+    return this.handleStreamingRequest(request, cancellationToken);
   }
 
   private createTool(tools: ToolRequest[]): RunnableToolFunctionWithoutParse[] {
@@ -43,16 +48,19 @@ export class OpenAIModel {
 
   protected async handleStreamingRequest(
     request: string,
-    rawTools: ToolRequest[],
     cancellationToken?: CancellationToken
   ): Promise<any> {
 
+    const chatReadableStream = new ChatReadableStream();
+
     const openai = this.initializeOpenAi();
 
-    const tools = this.createTool(rawTools);
+    const allFunctions = this.toolInvocationRegistry.getAllFunctions();
+
+    const tools = this.createTool(allFunctions);
 
     const params = {
-      model: 'gpt-4o',
+      model: 'deepseek-chat',
       messages: [{ role: 'user', content: request }],
       stream: true,
       tools: tools,
@@ -68,47 +76,77 @@ export class OpenAIModel {
 
     let runnerEnd = false;
 
-    let resolve: (part: any) => void;
-    runner.on('error', error => {
-      console.error('Error in OpenAI chat completion stream:', error);
-      runnerEnd = true;
-      resolve({ content: error.message });
-    });
-    // we need to also listen for the emitted errors, as otherwise any error actually thrown by the API will not be caught
-    runner.emitted('error').then(error => {
-      console.error('Error in OpenAI chat completion stream:', error);
-      runnerEnd = true;
-      resolve({ content: error.message });
-    });
-    runner.emitted('abort').then(() => {
-      // do nothing, as the abort event is only emitted when the runner is aborted by us
-    });
-    runner.on('message', message => {
-      if (message.role === 'tool') {
-        resolve({ tool_calls: [{ id: message.tool_call_id, finished: true, result: this.getCompletionContent(message) }] });
-      }
-      console.debug('Received Open AI message', JSON.stringify(message));
-    });
+    // runner.on('error', error => {
+    //   console.error('Error in OpenAI chat completion stream:', error);
+    //   runnerEnd = true;
+    //   resolve({ content: error.message });
+    // });
+    // // we need to also listen for the emitted errors, as otherwise any error actually thrown by the API will not be caught
+    // runner.emitted('error').then(error => {
+    //   console.error('Error in OpenAI chat completion stream:', error);
+    //   runnerEnd = true;
+    //   resolve({ content: error.message });
+    // });
+    // runner.emitted('abort').then(() => {
+    //   // do nothing, as the abort event is only emitted when the runner is aborted by us
+    // });
+    // runner.on('message', message => {
+    //   if (message.tool_calls) {
+    //     resolve({
+    //       tool_calls: message.tool_calls.map((tool) => (
+    //         {
+    //           id: tool.id,
+    //           type: tool.type,
+    //           function: tool.function
+    //         }
+    //       ))
+    //     });
+    //   }
+    // });
     runner.once('end', () => {
-      runnerEnd = true;
+      // runnerEnd = true;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      resolve(runner.finalChatCompletion as any);
+      // resolve(runner.finalChatCompletion as any);
+      chatReadableStream.end();
     });
-    const asyncIterator = {
-      async *[Symbol.asyncIterator](): AsyncIterator<any> {
-        runner.on('chunk', chunk => {
-          if (chunk.choices[0]?.delta) {
-            resolve({ ...chunk.choices[0]?.delta });
-          }
-        });
-        while (!runnerEnd) {
-          const promise = new Promise<any>((res, rej) => {
-            resolve = res;
-          });
-          yield promise;
+
+    runner.on('chunk', chunk => {
+      if (chunk.choices[0]?.delta) {
+        const chunkData = { ...chunk.choices[0]?.delta };
+        // resolve(chunkData);
+
+        console.log("🚀 ~ OpenAIModel ~ chunkData:", chunkData)
+        if (chunkData.tool_calls) {
+          chatReadableStream.emitData({ kind: 'toolCall', content: chunkData.tool_calls[0] });
+        } else if (chunkData.content) {
+          chatReadableStream.emitData({ kind: 'content', content: chunkData.content });
         }
       }
-    };
-    return { stream: asyncIterator };
+    });
+
+    // const asyncIterator = {
+    //   async *[Symbol.asyncIterator](): AsyncIterator<any> {
+    //     runner.on('chunk', chunk => {
+    //       if (chunk.choices[0]?.delta) {
+    //         const chunkData = { ...chunk.choices[0]?.delta };
+    //         resolve(chunkData);
+
+    //         if (chunkData.tool_calls) {
+    //           chatReadableStream.emitData({ kind: 'toolCall', content: chunkData.tool_calls[0] });
+    //         } else if (chunkData.content) {
+    //           chatReadableStream.emitData({ kind: 'content', content: chunkData.content });
+    //         }
+    //       }
+    //     });
+    //     while (!runnerEnd) {
+    //       const promise = new Promise<any>((res, rej) => {
+    //         resolve = res;
+    //       });
+    //       yield promise;
+    //     }
+    //   }
+    // };
+    // return { stream: asyncIterator };
+    return chatReadableStream;
   }
 }

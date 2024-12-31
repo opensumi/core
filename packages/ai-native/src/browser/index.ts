@@ -21,6 +21,7 @@ import {
 
 import { ChatProxyServiceToken, IAIInlineCompletionsProvider, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
 
+import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
@@ -47,8 +48,6 @@ import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 import { InlineDiffService } from './widget/inline-diff';
-import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
-import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../common/tool-invocation-registry';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
@@ -141,10 +140,6 @@ export class AINativeModule extends BrowserModule {
       token: InlineDiffService,
       useClass: InlineDiffService,
     },
-    {
-      token: ToolInvocationRegistry,
-      useClass: ToolInvocationRegistryImpl,
-    }
   ];
 
   backServices = [

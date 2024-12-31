@@ -1,9 +1,13 @@
-import { Injectable } from '@opensumi/di';
-import { MCPServerDescription, MCPServerManager } from '../common/mcp-server-manager';
+import { Injectable, Autowired } from '@opensumi/di';
+import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { MCPServer } from './mcp-server';
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../common/tool-invocation-registry';
 
 @Injectable()
 export class MCPServerManagerImpl implements MCPServerManager {
+
+    @Autowired(ToolInvocationRegistry)
+    private readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
 
     protected servers: Map<string, MCPServer> = new Map();
 
@@ -43,6 +47,43 @@ export class MCPServerManagerImpl implements MCPServerManager {
     }
     async getServerNames(): Promise<string[]> {
         return Array.from(this.servers.keys());
+    }
+
+    private convertToToolRequest(tool: MCPTool, serverName: string): ToolRequest {
+        const id = `mcp_${serverName}_${tool.name}`;
+
+        return {
+            id: id,
+            name: id,
+            providerName: `mcp_${serverName}`,
+            parameters: ToolRequest.isToolRequestParameters(tool.inputSchema) ? {
+                type: tool.inputSchema.type,
+                properties: tool.inputSchema.properties,
+            } : undefined,
+            description: tool.description,
+            handler: async (arg_string: string) => {
+                try {
+                    return await this.callTool(serverName, tool.name, arg_string);
+                } catch (error) {
+                    console.error(`Error in tool handler for ${tool.name} on MCP server ${serverName}:`, error);
+                    throw error;
+                }
+            },
+        };
+    }
+
+    public async collectTools(serverName: string): Promise<void> {
+        const server = this.servers.get(serverName);
+        if (!server) {
+            throw new Error(`MCP server "${serverName}" not found.`);
+        }
+
+        const { tools } = await server.getTools();
+        const toolRequests: ToolRequest[] = tools.map(tool => this.convertToToolRequest(tool, serverName));
+
+        for (const toolRequest of toolRequests) {
+            this.toolInvocationRegistry.registerTool(toolRequest);
+        }
     }
 
     public async getTools(serverName: string): ReturnType<MCPServer['getTools']> {

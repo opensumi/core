@@ -15,6 +15,7 @@ export interface MCPServerManager {
     startServer(serverName: string): Promise<void>;
     stopServer(serverName: string): Promise<void>;
     getStartedServers(): Promise<string[]>;
+    collectTools(serverName: string): Promise<void>;
 }
 
 export type MCPTool = Awaited<ReturnType<MCPServerManager['getTools']>>['tools'][number];

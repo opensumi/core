@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '@opensumi/ide-ai-native/lib/common/tool-invocation-registry';
 import { AnthropicModel } from '@opensumi/ide-ai-native/lib/node/anthropic/anthropic-language-model';
+import { CodeFuseAIModel } from '@opensumi/ide-ai-native/lib/node/codefuse/codefuse-language-model';
 import { OpenAIModel } from '@opensumi/ide-ai-native/lib/node/openai/openai-language-model';
 import { IAICompletionOption } from '@opensumi/ide-core-common';
 import {
@@ -51,7 +52,12 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
   protected readonly logger: INodeLogger;
 
   private anthropicModel: AnthropicModel = new AnthropicModel();
-  private openaiModel: OpenAIModel = new OpenAIModel();
+
+  @Autowired(OpenAIModel)
+  protected readonly openaiModel: OpenAIModel;
+
+  @Autowired(CodeFuseAIModel)
+  protected readonly codeFuseModel: CodeFuseAIModel;
 
   async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
@@ -74,7 +80,6 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<ChatReadableStream> {
-    const { tools } = options;
     const length = streamData.length;
     const chatReadableStream = new ChatReadableStream();
 
@@ -82,20 +87,11 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
       chatReadableStream.abort();
     });
 
-    if (!tools) {
-      return chatReadableStream;
-    }
-
-    const response = await this.anthropicModel.request(input, tools);
-    // const response = await this.openaiModel.request(input, tools, cancelToken);
-    console.log("🚀 ~ AIBackService ~ stream:", response)
-
-    for await (const chunk of response.stream) {
-      console.log('🚀 ~ AIBackService ~ forawait ~ chunk:', chunk);
-      chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
-    }
-
-    chatReadableStream.end();
+    // const response = await this.anthropicModel.request(input, tools);
+    const response = await this.openaiModel.request(input, cancelToken);
+    // // const response = await this.codeFuseModel.request(input, cancelToken);
+    return response
+    // chatReadableStream.end();
 
     // 模拟数据事件
     // streamData.forEach((chunk, index) => {

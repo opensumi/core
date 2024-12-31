@@ -25,7 +25,9 @@ import {
 
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
-import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../../common/tool-invocation-registry';
+import { ChatAgentViewServiceToken } from '@opensumi/ide-core-common';
+import { IChatAgentViewService } from '../types';
+import { ChatToolRender } from '../components/ChatToolRender';
 
 /**
  * @internal
@@ -53,12 +55,18 @@ export class ChatProxyService extends Disposable {
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
 
-  @Autowired(ToolInvocationRegistry)
-  private readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
+  @Autowired(ChatAgentViewServiceToken)
+  private readonly chatAgentViewService: IChatAgentViewService;
 
   private chatDeferred: Deferred<void> = new Deferred<void>();
 
   public registerDefaultAgent() {
+    this.chatAgentViewService.registerChatComponent({
+      id: 'toolCall',
+      component: ChatToolRender,
+      initialProps: {},
+    });
+
     this.addDispose(
       this.chatAgentService.registerAgent({
         id: ChatProxyService.AGENT_ID,
@@ -83,16 +91,12 @@ export class ChatProxyService extends Disposable {
             }
           }
 
-          const tools = this.toolInvocationRegistry.getAllFunctions();
-          console.log('🚀 ~ ChatProxyService ~ tools:', tools);
-
           const stream = await this.aiBackService.requestStream(
             prompt,
             {
               requestId: request.requestId,
               sessionId: request.sessionId,
               history: this.aiChatService.getHistoryMessages(),
-              tools
             },
             token,
           );
