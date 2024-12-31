@@ -24,7 +24,7 @@ import {
   ServiceNames,
   StaticResourceContribution,
   StaticResourceService,
-  getCdnHref,
+  getCDNHref,
   getWorkerBootstrapUrl,
 } from '@opensumi/ide-core-browser';
 import {
@@ -643,7 +643,7 @@ export class MonacoClientContribution
               const { moduleId } = JSON.parse(query);
               if (moduleId === 'workerMain.js') {
                 return URI.parse(
-                  getCdnHref(
+                  getCDNHref(
                     packageName,
                     'worker/editor.worker.bundle.js',
                     packageVersion,
