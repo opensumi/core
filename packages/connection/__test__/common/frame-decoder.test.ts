@@ -35,7 +35,9 @@ console.timeEnd('createPayload');
 // 1m
 const pressure = 1024 * 1024;
 
-const purePackets = [p1k, p64k, p128k, p5m, p10m].map((v) => [LengthFieldBasedFrameDecoder.construct(v), v] as const);
+const purePackets = [p1k, p64k, p128k, p5m, p10m].map(
+  (v) => [LengthFieldBasedFrameDecoder.construct(v).dump(), v] as const,
+);
 
 const size = purePackets.reduce((acc, v) => acc + v[0].byteLength, 0);
 
@@ -48,7 +50,7 @@ purePackets.forEach((v) => {
 });
 
 const mixedPackets = [p1m, p5m].map((v) => {
-  const sumiPacket = LengthFieldBasedFrameDecoder.construct(v);
+  const sumiPacket = LengthFieldBasedFrameDecoder.construct(v).dump();
   const newPacket = createPayload(1024 + sumiPacket.byteLength);
   newPacket.set(sumiPacket, 1024);
   return [newPacket, v] as const;
@@ -59,7 +61,7 @@ const packets = [...purePackets, ...mixedPackets];
 describe('frame decoder', () => {
   it('can create frame', () => {
     const content = new Uint8Array([1, 2, 3]);
-    const packet = LengthFieldBasedFrameDecoder.construct(content);
+    const packet = LengthFieldBasedFrameDecoder.construct(content).dump();
     const reader = BinaryReader({});
 
     reader.reset(packet);
@@ -116,7 +118,7 @@ describe('frame decoder', () => {
 
   it('can decode a stream it has no valid length info', (done) => {
     const v = createPayload(1024);
-    const sumiPacket = LengthFieldBasedFrameDecoder.construct(v);
+    const sumiPacket = LengthFieldBasedFrameDecoder.construct(v).dump();
 
     const decoder = new LengthFieldBasedFrameDecoder();
     decoder.onData((data) => {
