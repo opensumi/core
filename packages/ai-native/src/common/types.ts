@@ -1,3 +1,8 @@
+export enum NearestCodeBlockType {
+  Block = 'block',
+  Line = 'line',
+}
+
 export interface INearestCodeBlock {
   range: {
     start: {
@@ -11,5 +16,5 @@ export interface INearestCodeBlock {
   };
   codeBlock: string;
   offset: number;
-  type?: string;
+  type?: NearestCodeBlockType;
 }

@@ -1,10 +1,10 @@
 import { Injectable } from '@opensumi/di';
-import { IDisposable } from '@opensumi/ide-core-common';
 import {
   CancelResponse,
   Disposable,
   Event,
   FRAME_THREE,
+  IDisposable,
   InlineChatFeatureRegistryToken,
   ReplyResponse,
   RunOnceScheduler,
@@ -17,6 +17,7 @@ import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/edit
 
 import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { BaseAIMonacoEditorController } from '../../contrib/base';
+import { LanguageParserService } from '../../languages/service';
 import { ERunStrategy } from '../../types';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { InlineChatFeatureRegistry } from '../inline-chat/inline-chat.feature.registry';
@@ -41,6 +42,10 @@ export class InlineInputController extends BaseAIMonacoEditorController {
 
   private get inlineChatFeatureRegistry(): InlineChatFeatureRegistry {
     return this.injector.get(InlineChatFeatureRegistryToken);
+  }
+
+  private get languageParserService(): LanguageParserService {
+    return this.injector.get(LanguageParserService);
   }
 
   mount(): IDisposable {
@@ -89,7 +94,6 @@ export class InlineInputController extends BaseAIMonacoEditorController {
         const schedulerEdit: RunOnceScheduler = this.registerDispose(
           new RunOnceScheduler(() => {
             const range = decoration.getRange(0);
-
             if (range && latestContent) {
               model.pushEditOperations(null, [EditOperation.replace(range, latestContent)], () => null);
             }
@@ -136,14 +140,17 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     this.featureDisposable.addDispose(
       this.inlineInputChatService.onInteractiveInputVisibleInPosition((position) => {
         hideInput();
-
         if (position) {
           showInput(position, monacoEditor);
+        } else {
+          setTimeout(() => {
+            monacoEditor.focus();
+          }, 0);
         }
       }),
     );
 
-    const showInput = (position: monaco.Position, monacoEditor: ICodeEditor) => {
+    const showInput = async (position: monaco.Position, monacoEditor: ICodeEditor) => {
       this.featureDisposable.addDispose(
         monacoEditor.onWillChangeModel(() => {
           hideInput();
@@ -164,10 +171,40 @@ export class InlineInputController extends BaseAIMonacoEditorController {
         return;
       }
 
+      const selection = monacoEditor.getSelection();
+      if (selection && selection.startLineNumber !== selection.endLineNumber) {
+        return;
+      }
+
       const inlineInputChatWidget = this.injector.get(InlineInputChatWidget, [monacoEditor]);
 
       const collection = monacoEditor.createDecorationsCollection();
+      const isEmptyLine = !monacoEditor.getModel()?.getLineContent(position.lineNumber);
+      // 根据光标位置自动检测并选中临近的代码块
+      const cursorPosition = monacoEditor.getPosition();
+      const editorModel = monacoEditor.getModel();
+      const cursor = editorModel?.getOffsetAt(cursorPosition!);
+      const language = editorModel?.getLanguageId();
+      const parser = this.languageParserService.createParser(language!);
+      const codeBlock = await parser?.findNearestCodeBlockWithPosition(editorModel?.getValue() || '', cursor!);
 
+      if (codeBlock) {
+        const selection = new monaco.Selection(
+          codeBlock.range.start.line + 1,
+          codeBlock.range.start.character,
+          codeBlock.range.end.line + 1,
+          codeBlock.range.end.character,
+        );
+        monacoEditor.setSelection(selection);
+      } else {
+        // 选中当前行
+        monacoEditor.setSelection(new monaco.Selection(position.lineNumber, 1, position.lineNumber, Infinity));
+      }
+      if (!isEmptyLine) {
+        return;
+      }
+
+      // 仅在空行情况下增加装饰逻辑
       collection.append([
         {
           range: monaco.Range.fromPositions(position),
@@ -180,11 +217,12 @@ export class InlineInputController extends BaseAIMonacoEditorController {
         },
       ]);
 
-      const decorationRange = collection.getRange(0)!;
-      let preLineRange: LineRange = LineRange.fromRange(decorationRange);
-
-      inlineInputChatWidget.show({ position: decorationRange.getStartPosition() });
-
+      const decorationRange = collection.getRange(0);
+      let preLineRange: LineRange;
+      if (decorationRange) {
+        preLineRange = LineRange.fromRange(decorationRange);
+        inlineInputChatWidget.show({ position: decorationRange.getStartPosition() });
+      }
       aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
 
       inputDisposable.addDispose(

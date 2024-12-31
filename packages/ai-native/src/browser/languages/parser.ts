@@ -4,7 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import * as monaco from '@opensumi/ide-monaco/lib/common';
 import { Deferred, IDisposable, LRUCache } from '@opensumi/ide-utils';
 
-import { INearestCodeBlock } from '../../common/types';
+import { INearestCodeBlock, NearestCodeBlockType } from '../../common/types';
 
 import { toMonacoRange } from './tree-sitter/common';
 import { SupportedTreeSitterLanguages, TreeSitterLanguageFacts } from './tree-sitter/language-facts';
@@ -462,7 +462,10 @@ export class LanguageParser implements IDisposable {
           },
         },
         offset,
-        type: selectedNode.type,
+        type:
+          selectedNode.startPosition.row === selectedNode.endPosition.row
+            ? NearestCodeBlockType.Line
+            : NearestCodeBlockType.Block,
       };
     }
     return null;

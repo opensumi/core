@@ -1,8 +1,6 @@
-import { IDisposable } from '@opensumi/ide-core-common';
-import { Disposable } from '@opensumi/ide-core-common';
+import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/ide-monaco';
-import { empty } from '@opensumi/ide-utils/lib/strings';
 
 import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { BaseAIMonacoEditorController } from '../../contrib/base';
@@ -49,18 +47,17 @@ export class InlineHintController extends BaseAIMonacoEditorController {
         return;
       }
 
-      const content = model.getLineContent(position.lineNumber);
       const decorations = model.getLineDecorations(position.lineNumber);
-
-      const isEmpty = content?.trim() === empty;
-      const isEmptySelection = monacoEditor.getSelection()?.isEmpty();
       const hasPreviewDecoration = decorations.some(
         (dec) => dec.options.description === InlineInputPreviewDecorationID,
       );
 
-      if (isEmpty && isEmptySelection && !hasPreviewDecoration) {
+      if (!hasPreviewDecoration) {
         const inlineHintLineDecoration = this.injector.get(InlineHintLineDecoration, [monacoEditor]);
-        inlineHintLineDecoration.show(position);
+        const lineContent = monacoEditor.getModel()?.getLineContent(position.lineNumber);
+        if (!lineContent?.trim()) {
+          inlineHintLineDecoration.show(position);
+        }
         this.inlineInputChatService.setCurrentVisiblePosition(position);
 
         aiNativeContextKey.inlineHintWidgetIsVisible.set(true);
