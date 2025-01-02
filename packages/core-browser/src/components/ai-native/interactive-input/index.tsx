@@ -172,15 +172,15 @@ export const InteractiveInput = React.forwardRef(
             const value = history.current?.[history.current.length - 1 - historyIndex.current];
             if (value) {
               setInternalValue(value);
+              historyIndex.current = Math.min(historyIndex.current + 1, history.current?.length || 0);
             }
-            historyIndex.current = Math.min(historyIndex.current + 1, history.current?.length || 0);
           } else if (event.key === Key.ARROW_DOWN.code) {
             event.preventDefault();
             const value = history.current?.[history.current.length - 1 - historyIndex.current];
             if (value) {
               setInternalValue(value);
+              historyIndex.current = Math.max(historyIndex.current - 1, 0);
             }
-            historyIndex.current = Math.max(historyIndex.current - 1, 0);
           }
         }
         onKeyDown?.(event);
