@@ -26,6 +26,7 @@ export interface IInteractiveInputProps extends IInputBaseProps<HTMLTextAreaElem
 }
 
 const GLOBAL_AI_NATIVE_CHAT_INPUT_HISTORY_KEY = 'ai-native-chat-input-history';
+const MAX_HISOTRY_SIZE = 10;
 
 export const InteractiveInput = React.forwardRef(
   (props: IInteractiveInputProps, ref: MutableRefObject<HTMLTextAreaElement>) => {
@@ -146,7 +147,7 @@ export const InteractiveInput = React.forwardRef(
       history.current = history.current || [];
       history.current.push(internalValue);
       historyIndex.current = 0;
-      globalStroageService.setData(GLOBAL_AI_NATIVE_CHAT_INPUT_HISTORY_KEY, history.current);
+      globalStroageService.setData(GLOBAL_AI_NATIVE_CHAT_INPUT_HISTORY_KEY, history.current.slice(-MAX_HISOTRY_SIZE));
       isDirtyInput.current = false;
 
       onSend?.(internalValue);
