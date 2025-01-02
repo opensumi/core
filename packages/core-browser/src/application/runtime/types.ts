@@ -1,8 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
 
-import { AppConfig } from '../../react-providers/config-provider';
+import { AppConfig, getTreeSitterWasmCDNUri } from '../../react-providers/config-provider';
 
-import { type ESupportRuntime, onigWasmCDNUri, treeSitterWasmCDNUri } from './constants';
+import { type ESupportRuntime, onigWasmCDNUri } from './constants';
 
 import type { BrowserModule } from '../../browser-module';
 import type { Injector } from '@opensumi/di';
@@ -31,7 +31,7 @@ export abstract class RendererRuntime {
       case EKnownResources.OnigWasm:
         return this.appConfig.onigWasmUri || onigWasmCDNUri;
       case EKnownResources.TreeSitterWasmDirectory:
-        return this.appConfig.treeSitterWasmDirectoryUri || treeSitterWasmCDNUri;
+        return this.appConfig.treeSitterWasmDirectoryUri || getTreeSitterWasmCDNUri(this.appConfig.componentCDNType);
       default:
         throw new Error(`Unknown resource: ${resource}`);
     }

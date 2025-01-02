@@ -372,7 +372,7 @@ const CDN_TYPE_MAP: IComponentCDNTypeMap = {
   jsdelivr: 'https://cdn.jsdelivr.net/npm',
 };
 
-export function getCdnHref(
+export function getCDNHref(
   packageName: string,
   filePath: string,
   version: string,
@@ -385,4 +385,8 @@ export function getCdnHref(
   } else {
     return `${CDN_TYPE_MAP[cdnType]}/${packageName}@${version}/${filePath}`;
   }
+}
+
+export function getTreeSitterWasmCDNUri(CDNType: string = 'alipay') {
+  return getCDNHref('@opensumi/tree-sitter-wasm', '', '0.0.2', CDNType as TComponentCDNType);
 }
