@@ -493,6 +493,7 @@ export class AINativeBrowserContribution
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+      // 通过 CMD + i 唤起 Inline Chat （浮动组件）
       keybindings.registerKeybinding(
         {
           command: AI_INLINE_CHAT_VISIBLE.id,
@@ -503,6 +504,7 @@ export class AINativeBrowserContribution
         },
         KeybindingScope.USER,
       );
+      // 当 Inline Chat （浮动组件）展示时，通过 ESC 退出
       keybindings.registerKeybinding({
         command: AI_INLINE_CHAT_VISIBLE.id,
         keybinding: 'esc',
@@ -511,17 +513,18 @@ export class AINativeBrowserContribution
       });
 
       if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+        // 当 Inline Chat （浮动组件）展示时，通过 CMD K 唤起 Inline Input
         keybindings.registerKeybinding(
           {
             command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
             keybinding: 'ctrlcmd+k',
             args: true,
             priority: 0,
-            when: `editorFocus && ${InlineChatIsVisible.raw}`,
+            when: `editorFocus && (${InlineChatIsVisible.raw} || inlineSuggestionVisible)`,
           },
           KeybindingScope.USER,
         );
-
+        // 当 Inline Input 展示时，通过 ESC 退出
         keybindings.registerKeybinding({
           command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
           keybinding: 'esc',
@@ -529,7 +532,7 @@ export class AINativeBrowserContribution
           priority: 0,
           when: `editorFocus && ${InlineInputWidgetIsVisible.raw}`,
         });
-
+        // 当出现 CMD K 展示信息时，通过快捷键快速唤起 Inline Input
         keybindings.registerKeybinding(
           {
             command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,

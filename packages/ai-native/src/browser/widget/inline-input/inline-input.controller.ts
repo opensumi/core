@@ -179,28 +179,29 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       const inlineInputChatWidget = this.injector.get(InlineInputChatWidget, [monacoEditor]);
 
       const collection = monacoEditor.createDecorationsCollection();
-      const isEmptyLine = !monacoEditor.getModel()?.getLineContent(position.lineNumber);
-      // 根据光标位置自动检测并选中临近的代码块
-      const cursorPosition = monacoEditor.getPosition();
-      const editorModel = monacoEditor.getModel();
-      const cursor = editorModel?.getOffsetAt(cursorPosition!);
-      const language = editorModel?.getLanguageId();
-      const parser = this.languageParserService.createParser(language!);
-      const codeBlock = await parser?.findNearestCodeBlockWithPosition(editorModel?.getValue() || '', cursor!);
+      const isEmptyLine = !monacoEditor.getModel()?.getLineContent(position.lineNumber).trim();
 
-      if (codeBlock) {
-        const selection = new monaco.Selection(
-          codeBlock.range.start.line + 1,
-          codeBlock.range.start.character,
-          codeBlock.range.end.line + 1,
-          codeBlock.range.end.character,
-        );
-        monacoEditor.setSelection(selection);
-      } else {
-        // 选中当前行
-        monacoEditor.setSelection(new monaco.Selection(position.lineNumber, 1, position.lineNumber, Infinity));
-      }
       if (!isEmptyLine) {
+        // 根据光标位置自动检测并选中临近的代码块
+        const cursorPosition = monacoEditor.getPosition();
+        const editorModel = monacoEditor.getModel();
+        const cursor = editorModel?.getOffsetAt(cursorPosition!);
+        const language = editorModel?.getLanguageId();
+        const parser = this.languageParserService.createParser(language!);
+        const codeBlock = await parser?.findNearestCodeBlockWithPosition(editorModel?.getValue() || '', cursor!);
+
+        if (codeBlock) {
+          const selection = new monaco.Selection(
+            codeBlock.range.start.line + 1,
+            codeBlock.range.start.character,
+            codeBlock.range.end.line + 1,
+            codeBlock.range.end.character,
+          );
+          monacoEditor.setSelection(selection);
+        } else {
+          // 选中当前行
+          monacoEditor.setSelection(new monaco.Selection(position.lineNumber, 1, position.lineNumber, Infinity));
+        }
         return;
       }
 

@@ -1,3 +1,5 @@
+import throttle from 'lodash/throttle';
+
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/ide-monaco';
@@ -51,7 +53,6 @@ export class InlineHintController extends BaseAIMonacoEditorController {
       const hasPreviewDecoration = decorations.some(
         (dec) => dec.options.description === InlineInputPreviewDecorationID,
       );
-
       if (!hasPreviewDecoration) {
         const inlineHintLineDecoration = this.injector.get(InlineHintLineDecoration, [monacoEditor]);
         const lineContent = monacoEditor.getModel()?.getLineContent(position.lineNumber);
@@ -64,7 +65,8 @@ export class InlineHintController extends BaseAIMonacoEditorController {
 
         hintDisposable.addDispose(
           inlineHintLineDecoration.onDispose(() => {
-            this.inlineInputChatService.setCurrentVisiblePosition(undefined);
+            // 这里的装饰器逻辑可能会被代码补全顶替
+            // 为了保证能正常触发快捷键，移除更新位置逻辑
             aiNativeContextKey.inlineHintWidgetIsVisible.set(false);
           }),
         );
@@ -73,10 +75,20 @@ export class InlineHintController extends BaseAIMonacoEditorController {
       }
     };
 
+    const handleHintChange = throttle(async (position: monaco.Position) => {
+      hideHint();
+      showHint(position);
+    }, 100);
+
     this.featureDisposable.addDispose(
       monacoEditor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
-        hideHint();
-        showHint(e.position);
+        handleHintChange(e.position);
+      }),
+    );
+
+    this.featureDisposable.addDispose(
+      monacoEditor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
+        handleHintChange(new monaco.Position(e.changes[0]?.range.endLineNumber, e.changes[0]?.range.endColumn));
       }),
     );
 
