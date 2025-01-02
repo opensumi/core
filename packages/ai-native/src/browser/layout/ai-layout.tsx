@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
-import { SlotRenderer } from '@opensumi/ide-core-browser';
+import { SlotRenderer, useInjectable } from '@opensumi/ide-core-browser';
 import { BoxPanel, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
+import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
 
 export const AILayout = () => {
   const { layout } = getStorageValue();
+  const designLayoutConfig = useInjectable(DesignLayoutConfig);
+
+  const defaultRightSize = useMemo(() => designLayoutConfig.useMergeRightWithLeftPanel ? 0 : 49, [designLayoutConfig.useMergeRightWithLeftPanel]);
 
   return (
     <BoxPanel direction='top-to-bottom'>
@@ -44,9 +48,9 @@ export const AILayout = () => {
           <SlotRenderer
             slot='right'
             isTabbar={true}
-            defaultSize={layout.right?.currentId ? layout.right?.size || 360 : 49}
+            defaultSize={layout.right?.currentId ? layout.right?.size || 360 : defaultRightSize}
             minResize={280}
-            minSize={49}
+            minSize={defaultRightSize}
           />
         </SplitPanel>
         <SlotRenderer
