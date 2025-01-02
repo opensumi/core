@@ -44,12 +44,15 @@ import {
   getDebugLogger,
   isDefined,
   isUndefinedOrNull,
+  isWindows,
   localize,
   makeRandomHexString,
   match,
+  path,
 } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import * as monaco from '@opensumi/ide-monaco';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IDialogService, IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
 
 import {
   CursorStatus,
@@ -125,6 +128,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(ResourceService)
   private resourceService: ResourceService;
 
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
+
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -171,6 +177,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   @Autowired(UntitledDocumentIdCounter)
   private untitledIndex: UntitledDocumentIdCounter;
+
+  @Autowired(IWindowDialogService)
+  private readonly windowDialogService: IWindowDialogService;
 
   private untitledCloseIndex: number[] = [];
 
@@ -249,6 +258,50 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       }
     }
     return documents;
+  }
+
+  async save(uri: URI): Promise<URI | undefined> {
+    if (!this.editorGroups.length) {
+      return undefined;
+    }
+
+    try {
+      for (const editorGroup of this.editorGroups) {
+        const res = editorGroup.resources.find((resource) => resource.uri.isEqual(uri));
+        if (res) {
+          await editorGroup.saveResource(res);
+        }
+      }
+
+      return uri;
+    } catch (error) {
+      throw new Error(`Save Failed: ${error.message}`);
+    }
+  }
+
+  private getDefaultSavePath(uri: URI): string {
+    const defaultPath = uri.path.toString() !== '/' ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
+    return isWindows ? defaultPath.replace(/\\/g, '/') : defaultPath;
+  }
+
+  async saveAs(uri: URI): Promise<URI | undefined> {
+    if (!this._currentEditorGroup || this._currentEditorGroup.currentResource?.deleted) {
+      return undefined;
+    }
+
+    try {
+      const defaultPath = this.getDefaultSavePath(uri);
+      const result = await this.windowDialogService.showSaveDialog({
+        saveLabel: 'SaveAs File:',
+        showNameInput: true,
+        defaultFileName: this._currentEditorGroup.currentResource?.name,
+        defaultUri: URI.file(defaultPath),
+        saveAs: true,
+      });
+      return result;
+    } catch (error) {
+      throw new Error(`SaveAs Failed: ${error.message}`);
+    }
   }
 
   async saveAll(includeUntitled?: boolean, reason?: SaveReason) {
