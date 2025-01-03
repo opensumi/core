@@ -52,3 +52,5 @@
 /// <reference path='./vscode/typings/vscode.proposed.terminalDataWriteEvent.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.documentPaste.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.dropMetadata.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.documentFiltersExclusive.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.workspaceTrust.d.ts' />
