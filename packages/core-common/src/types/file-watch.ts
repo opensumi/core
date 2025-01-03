@@ -104,3 +104,8 @@ export enum VSCFileChangeType {
    */
   Deleted = 3,
 }
+
+export enum RecursiveWatcherBackend {
+  NSFW = 'nsfw',
+  PARCEL = 'parcel',
+}

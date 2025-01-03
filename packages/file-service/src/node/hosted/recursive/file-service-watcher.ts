@@ -5,6 +5,14 @@ import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 
+import {
+  FileChangeType,
+  FileSystemWatcherClient,
+  IFileSystemWatcherServer,
+  INsfw,
+  RecursiveWatcherBackend,
+  WatchOptions,
+} from '@opensumi/ide-core-common';
 import { ILogService } from '@opensumi/ide-core-common/lib/log';
 import {
   Disposable,
@@ -17,13 +25,6 @@ import {
   parseGlob,
 } from '@opensumi/ide-core-common/lib/utils';
 
-import {
-  FileChangeType,
-  FileSystemWatcherClient,
-  IFileSystemWatcherServer,
-  INsfw,
-  WatchOptions,
-} from '../../../common';
 import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
@@ -62,7 +63,11 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
   protected changes = new FileChangeCollection();
 
-  constructor(private excludes: string[] = [], private readonly logger: ILogService) {
+  constructor(
+    private excludes: string[] = [],
+    private readonly logger: ILogService,
+    private backend: RecursiveWatcherBackend = RecursiveWatcherBackend.NSFW,
+  ) {
     super();
     this.addDispose(
       Disposable.create(() => {
@@ -301,7 +306,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
    * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
    */
   private isEnableNSFW(): boolean {
-    return isLinux;
+    return this.backend === RecursiveWatcherBackend.NSFW || isLinux;
   }
 
   private async handleNSFWEvents(events: INsfw.ChangeEvent[], watcherId: number): Promise<void> {
