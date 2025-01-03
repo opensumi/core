@@ -144,13 +144,17 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
    * @param {{ excludes: string[] }}
    * @memberof DiskFileSystemProvider
    */
-  async watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number> {
+  async watch(
+    uri: UriComponents,
+    options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
+  ): Promise<number> {
     await this.whenReady;
     const _uri = Uri.revive(uri);
 
     const id = await this.watcherProcessManager.watch(_uri, {
       excludes: options?.excludes ?? [],
       recursive: options?.recursive ?? this.recursive,
+      pollingWatch: options?.pollingWatch,
     });
 
     return id;
