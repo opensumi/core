@@ -74,6 +74,27 @@ export const renderInfoItem = (props: ItemProps) => {
 
   return (
     <div
+      draggable={props.draggable}
+      onDragStart={(e) => {
+        props?.onDragStart?.(e);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        if (ref.current) {
+          ref.current.classList.add('on-drag-over');
+        }
+      }}
+      onDragLeave={() => {
+        if (ref.current) {
+          ref.current.classList.remove('on-drag-over');
+        }
+      }}
+      onDrop={(e) => {
+        if (ref.current) {
+          ref.current.classList.remove('on-drag-over');
+        }
+        props?.onDrop?.(e);
+      }}
       ref={ref}
       className={cls({
         [styles_item_container]: true,
