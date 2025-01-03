@@ -38,6 +38,7 @@ import {
   FileType,
   IDiskFileProvider,
   IWatcherProcessManager,
+  RecursiveWatcherBackend,
   handleError,
   isErrnoException,
   notEmpty,
@@ -105,8 +106,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     });
   }
 
-  async initialize(clientId: string) {
-    await this.watcherProcessManager.createProcess(clientId);
+  async initialize(clientId: string, backend?: RecursiveWatcherBackend) {
+    await this.watcherProcessManager.createProcess(clientId, backend);
   }
 
   get whenReady() {

@@ -1,5 +1,5 @@
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
-import { DidFilesChangedParams } from '@opensumi/ide-core-common';
+import { DidFilesChangedParams, RecursiveWatcherBackend } from '@opensumi/ide-core-common';
 import { defaultFilesWatcherExcludes, flattenExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { URI, Uri, UriComponents } from '@opensumi/ide-utils/lib/uri';
 
@@ -27,7 +27,11 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
   private watchedDirs: Set<string> = new Set();
 
-  constructor(private rpcProtocol: SumiConnectionMultiplexer, private logger: WatcherProcessLogger) {
+  constructor(
+    private rpcProtocol: SumiConnectionMultiplexer,
+    private logger: WatcherProcessLogger,
+    private backend: RecursiveWatcherBackend,
+  ) {
     this.rpcProtocol.set(WatcherServiceProxy, this);
     this.defaultExcludes = flattenExcludes(defaultFilesWatcherExcludes);
     this.initWatcherServer(this.defaultExcludes);
@@ -54,7 +58,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       }
     }
 
-    this.recursiveFileSystemWatcher = new FileSystemWatcherServer(excludes, this.logger);
+    this.recursiveFileSystemWatcher = new FileSystemWatcherServer(excludes, this.logger, this.backend);
     this.unrecursiveFileSystemWatcher = new UnRecursiveFileSystemWatcher(this.logger);
 
     const watcherClient = {
