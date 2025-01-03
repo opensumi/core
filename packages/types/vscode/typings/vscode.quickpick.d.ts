@@ -34,7 +34,7 @@ declare module 'vscode' {
     /**
      * The icon path or {@link ThemeIcon} for the QuickPickItem.
      */
-    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    iconPath?: IconPath;
 
     /**
      * A human readable string which is rendered less prominent.

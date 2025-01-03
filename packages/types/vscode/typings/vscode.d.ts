@@ -238,6 +238,21 @@ declare module 'vscode' {
   }
 
   /**
+   * Represents an icon in the UI. This is either an uri, separate uris for the light- and dark-themes,
+   * or a {@link ThemeIcon theme icon}.
+   */
+  export type IconPath = Uri | {
+    /**
+     * The icon path for the light theme.
+     */
+    light: Uri;
+    /**
+     * The icon path for the dark theme.
+     */
+    dark: Uri;
+  } | ThemeIcon;
+
+  /**
 	 * The location of the terminal.
 	 */
 	export enum TerminalLocation {
@@ -346,7 +361,7 @@ declare module 'vscode' {
     /**
      * The icon path or {@link ThemeIcon} for the terminal.
      */
-    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    iconPath?: IconPath;
 
     /**
      * The icon {@link ThemeColor} for the terminal.
@@ -569,7 +584,7 @@ declare module 'vscode' {
     /**
      * The icon path or {@link ThemeIcon} for the terminal.
      */
-    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    iconPath?: IconPath;
 
     /**
      * The icon {@link ThemeColor} for the terminal.
@@ -1483,7 +1498,7 @@ declare module 'vscode' {
     /**
      * The icon path or [ThemeIcon](#ThemeIcon) for the edit.
      */
-    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    iconPath?: IconPath;
   }
 
   /**
