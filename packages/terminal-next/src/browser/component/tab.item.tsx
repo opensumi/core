@@ -72,8 +72,46 @@ export const renderInfoItem = (props: ItemProps) => {
     }
   }
 
+  const handleDragStart = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      props.onDragStart?.(e);
+    },
+    [props.onDragStart],
+  );
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      if (ref.current) {
+        ref.current.classList.add('on-drag-over');
+      }
+    },
+    [ref],
+  );
+
+  const handleDragLeave = useCallback(() => {
+    if (ref.current) {
+      ref.current.classList.remove('on-drag-over');
+    }
+  }, [ref]);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (ref.current) {
+        ref.current.classList.remove('on-drag-over');
+      }
+      props.onDrop?.(e);
+    },
+    [ref, props.onDrop],
+  );
+
   return (
     <div
+      draggable={props.draggable}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       ref={ref}
       className={cls({
         [styles_item_container]: true,

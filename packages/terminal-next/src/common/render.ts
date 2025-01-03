@@ -18,8 +18,11 @@ export interface ItemProps {
   onDropdown?: (event: React.MouseEvent<HTMLElement>) => void;
   onContextMenu?: (event: React.MouseEvent<HTMLElement>) => void;
   getKeybinding?: (command: string) => string;
+  onDrop?: (event: React.DragEvent) => void;
+  onDragStart?: (event: React.DragEvent) => void;
   provider: ITerminalRenderProvider;
   theme: ThemeType;
+  draggable?: boolean;
 }
 
 export const ITerminalRenderProvider = Symbol('TerminalRenderProvider');
