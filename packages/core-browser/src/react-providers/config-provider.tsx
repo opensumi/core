@@ -11,6 +11,7 @@ import type {
   ExtensionCandidate,
   ExtensionConnectOption,
   IDesignLayoutConfig,
+  RecursiveWatcherBackend,
   UrlProvider,
 } from '@opensumi/ide-core-common';
 
@@ -317,6 +318,13 @@ export interface AppConfig {
    * Unrecursive directories
    */
   unRecursiveDirectories?: string[];
+
+  /**
+   * Recursive watcher backend type
+   *
+   * Default value is `nsfw`
+   */
+  recursiveWatcherBackend?: RecursiveWatcherBackend;
 }
 
 export interface ICollaborationClientOpts {

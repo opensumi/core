@@ -143,7 +143,7 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
   async initialize() {
     const provider = await this.getProvider(Schemes.file);
     if (provider.initialize) {
-      await provider.initialize(this.clientId);
+      await provider.initialize(this.clientId, this.appConfig.recursiveWatcherBackend);
     }
   }
 
