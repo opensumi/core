@@ -52,11 +52,9 @@ export default () => {
                 }}
                 onDrop={(e: React.DragEvent) => {
                   if (e.dataTransfer.getData('groupIndex')) {
-                    {
-                      const i = e.dataTransfer.getData('groupIndex');
-                      view.swapGroup(Number(i), index);
-                      view.selectGroup(index);
-                    }
+                    const i = e.dataTransfer.getData('groupIndex');
+                    view.swapGroup(Number(i), index);
+                    view.selectGroup(index);
                   }
                 }}
                 key={group.id}
