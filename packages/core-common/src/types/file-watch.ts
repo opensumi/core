@@ -34,6 +34,7 @@ export interface FileSystemWatcherClient {
 
 export interface WatchOptions {
   excludes: string[];
+  pollingWatch?: boolean;
 }
 
 export interface DidFilesChangedParams {
