@@ -30,6 +30,7 @@ import { SampleModule } from '../sample-modules';
 import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
 import { AI_CHAT_LOGO_AVATAR_ID } from '@opensumi/ide-ai-native';
+import { RecursiveWatcherBackend } from '@opensumi/ide-core-common/lib/types/file-watch';
 
 const CLIENT_ID = 'W_' + uuid();
 

@@ -34,6 +34,7 @@ export interface FileSystemWatcherClient {
 
 export interface WatchOptions {
   excludes: string[];
+  pollingWatch?: boolean;
 }
 
 export interface DidFilesChangedParams {
@@ -103,4 +104,9 @@ export enum VSCFileChangeType {
    * A file has been deleted.
    */
   Deleted = 3,
+}
+
+export enum RecursiveWatcherBackend {
+  NSFW = 'nsfw',
+  PARCEL = 'parcel',
 }

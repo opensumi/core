@@ -143,7 +143,7 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
   async initialize() {
     const provider = await this.getProvider(Schemes.file);
     if (provider.initialize) {
-      await provider.initialize(this.clientId);
+      await provider.initialize(this.clientId, this.appConfig.recursiveWatcherBackend);
     }
   }
 
@@ -354,8 +354,8 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
-    const unRecursiveDirectories = this.appConfig.unRecursiveDirectories || [];
-    const isUnRecursive = unRecursiveDirectories.some((dir) => uri.path.toString().startsWith(dir));
+    const pollingWatcherDirectories = this.appConfig.pollingWatcherDirectories || [];
+    const pollingWatch = pollingWatcherDirectories.some((dir) => uri.path.toString().startsWith(dir));
 
     const _uri = this.convertUri(uri.toString());
     const originWatcher = this.uriWatcherMap.get(_uri.toString());
@@ -374,7 +374,7 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
     const watcherId = await provider.watch(_uri.codeUri, {
       excludes,
-      recursive: !isUnRecursive,
+      pollingWatch,
     });
 
     this.watcherDisposerMap.set(id, {
