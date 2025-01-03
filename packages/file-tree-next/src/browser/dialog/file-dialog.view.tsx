@@ -72,6 +72,13 @@ export const FileDialog = ({
     // 如果有文件名的，说明肯定是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
       const filePath = value?.length === 1 ? value[0] : options.defaultUri!.path.toString();
+      if ((options as ISaveDialogOptions & { saveAs?: boolean | undefined })?.saveAs) {
+        fileService.saveAs({
+          oldFilePath: path.join(filePath!, (options as ISaveDialogOptions)?.defaultFileName || ''),
+          newFilePath: path.join(filePath!, fileName),
+        });
+      }
+
       dialogService.hide([path.join(filePath!, fileName)]);
     } else {
       if (value.length > 0) {

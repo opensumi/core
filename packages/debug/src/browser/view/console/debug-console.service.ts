@@ -153,6 +153,14 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
 
     this.debugContextKey = this.injector.get(DebugContextKey, [this.inputEditor.monacoEditor.contextKeyService]);
 
+    const inDebugMode = this.contextKeyService.match(CONTEXT_IN_DEBUG_MODE_KEY);
+
+    if (inDebugMode) {
+      this.debugContextKey.contextInDebugMode.set(true);
+    } else {
+      this.debugContextKey.contextInDebugMode.set(false);
+    }
+
     this.contextKeyService.onDidChangeContext((e) => {
       if (e.payload.affectsSome(DebugConsoleService.keySet)) {
         const inDebugMode = this.contextKeyService.match(CONTEXT_IN_DEBUG_MODE_KEY);

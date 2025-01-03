@@ -4,6 +4,9 @@ import React, { MutableRefObject, useCallback, useEffect, useImperativeHandle, u
 import { IInputBaseProps, Popover, PopoverPosition, TextArea, getIcon } from '@opensumi/ide-components';
 import { isUndefined, localize, uuid } from '@opensumi/ide-core-common';
 
+import { Key } from '../../../keyboard';
+import { useInjectable } from '../../../react-hooks';
+import { GlobalBrowserStorageService } from '../../../services/storage-service';
 import { EnhanceIcon } from '../index';
 
 import styles from './index.module.less';
@@ -21,6 +24,9 @@ export interface IInteractiveInputProps extends IInputBaseProps<HTMLTextAreaElem
   sendBtnClassName?: string;
   popoverPosition?: PopoverPosition;
 }
+
+const GLOBAL_AI_NATIVE_CHAT_INPUT_HISTORY_KEY = 'ai-native-chat-input-history';
+const MAX_HISOTRY_SIZE = 10;
 
 export const InteractiveInput = React.forwardRef(
   (props: IInteractiveInputProps, ref: MutableRefObject<HTMLTextAreaElement>) => {
@@ -42,12 +48,22 @@ export const InteractiveInput = React.forwardRef(
     } = props;
 
     const internalRef = useRef<HTMLTextAreaElement>(null);
-
+    const globalStroageService = useInjectable<GlobalBrowserStorageService>(GlobalBrowserStorageService);
+    const history = useRef<string[]>();
+    const historyIndex = useRef<number>(0);
     const [internalValue, setInternalValue] = useState(props.value || '');
     const [wrapperHeight, setWrapperHeight] = useState(height || DEFAULT_HEIGHT);
     const [focus, setFocus] = useState(false);
+    const isDirtyInput = React.useRef<boolean>(false);
 
     useImperativeHandle(ref, () => internalRef.current as HTMLTextAreaElement);
+
+    useEffect(() => {
+      const historyStore = globalStroageService.getData<string[]>(GLOBAL_AI_NATIVE_CHAT_INPUT_HISTORY_KEY);
+      if (historyStore) {
+        history.current = historyStore;
+      }
+    }, []);
 
     useEffect(() => {
       if (internalRef && internalRef.current && autoFocus) {
@@ -97,6 +113,7 @@ export const InteractiveInput = React.forwardRef(
 
     const handleInputChange = useCallback(
       (value: string) => {
+        isDirtyInput.current = true;
         setInternalValue(value);
         onValueChange?.(value);
       },
@@ -127,13 +144,18 @@ export const InteractiveInput = React.forwardRef(
       if (!internalValue.trim()) {
         return;
       }
+      history.current = history.current || [];
+      history.current.push(internalValue);
+      historyIndex.current = 0;
+      globalStroageService.setData(GLOBAL_AI_NATIVE_CHAT_INPUT_HISTORY_KEY, history.current.slice(-MAX_HISOTRY_SIZE));
+      isDirtyInput.current = false;
 
       onSend?.(internalValue);
     }, [onSend, internalValue, disabled]);
 
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+        if (event.key === Key.ENTER.code && !event.nativeEvent.isComposing) {
           if (event.shiftKey) {
             return;
           }
@@ -141,11 +163,29 @@ export const InteractiveInput = React.forwardRef(
           event.preventDefault();
           handleSend();
           return;
+        } else if (
+          (event.key === Key.ARROW_UP.code || event.key === Key.ARROW_DOWN.code) &&
+          (!internalValue || !isDirtyInput.current)
+        ) {
+          event.preventDefault();
+          if (event.key === Key.ARROW_UP.code) {
+            const value = history.current?.[history.current.length - 1 - historyIndex.current];
+            if (value) {
+              setInternalValue(value);
+              historyIndex.current = Math.min(historyIndex.current + 1, history.current?.length || 0);
+            }
+          } else if (event.key === Key.ARROW_DOWN.code) {
+            event.preventDefault();
+            const value = history.current?.[history.current.length - 1 - historyIndex.current];
+            if (value) {
+              setInternalValue(value);
+              historyIndex.current = Math.max(historyIndex.current - 1, 0);
+            }
+          }
         }
-
         onKeyDown?.(event);
       },
-      [onKeyDown, handleSend],
+      [onKeyDown, handleSend, internalValue],
     );
 
     const renderAddonAfter = useMemo(

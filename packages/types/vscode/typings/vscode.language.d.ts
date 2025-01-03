@@ -2344,7 +2344,7 @@ declare module 'vscode' {
      * value starting at 1.
      * @return This snippet string.
      */
-    appendChoice(values: string[], num?: number): SnippetString;
+    appendChoice(values: string[], number?: number): SnippetString;
 
     /**
      * Builder-function that appends a variable (`${VAR}`) to

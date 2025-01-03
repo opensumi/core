@@ -44,9 +44,7 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
-  const [inputValue, setInputValue] = useState<string>('');
   const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
-
   useEffect(() => {
     const dis = new Disposable();
     dis.addDispose(onChatStatus((s) => setStatus(s)));
@@ -107,10 +105,6 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     [inlineChatFeatureRegistry],
   );
 
-  const handleValueChange = useCallback((value) => {
-    setInputValue(value);
-  }, []);
-
   const customOperationRender = useMemo(() => {
     if (!interactiveInputVisible) {
       return null;
@@ -124,12 +118,10 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
         width={320}
         disabled={isLoading}
-        value={inputValue}
-        onValueChange={handleValueChange}
         onSend={handleInteractiveInputSend}
       />
     );
-  }, [isLoading, interactiveInputVisible, inputValue]);
+  }, [isLoading, interactiveInputVisible]);
 
   const renderContent = useCallback(() => {
     if (operationList.length === 0 && moreOperation.length === 0) {
@@ -403,8 +395,8 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
    * 3. 显示的区域方向在右侧，左侧不考虑
    */
   protected computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition {
-    let startPosition = selection.getStartPosition();
-    let endPosition = selection.getEndPosition();
+    const startPosition = selection.getStartPosition();
+    const endPosition = selection.getEndPosition();
     let cursorPosition = selection.getPosition();
 
     const model = this.editor.getModel()!;
