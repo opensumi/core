@@ -1,4 +1,5 @@
-import paths from 'path';
+import { tmpdir } from 'os';
+import paths, { join } from 'path';
 
 import ParcelWatcher from '@parcel/watcher';
 import fs from 'fs-extra';
@@ -9,7 +10,6 @@ import {
   FileChangeType,
   FileSystemWatcherClient,
   IFileSystemWatcherServer,
-  INsfw,
   RecursiveWatcherBackend,
   WatchOptions,
 } from '@opensumi/ide-core-common';
@@ -20,11 +20,13 @@ import {
   FileUri,
   IDisposable,
   ParsedPattern,
+  RunOnceScheduler,
   isLinux,
   isWindows,
   parseGlob,
 } from '@opensumi/ide-core-common/lib/utils';
 
+import { INsfw } from '../../../common/watcher';
 import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 
@@ -51,6 +53,8 @@ export interface NsfwFileSystemWatcherOption {
 
 export class FileSystemWatcherServer extends Disposable implements IFileSystemWatcherServer {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
+
+  private static DEFAULT_POLLING_INTERVAL = 100;
 
   private WATCHER_HANDLERS = new Map<
     number,
@@ -194,11 +198,62 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     basePath: string,
     rawOptions: WatchOptions | undefined,
   ): Promise<DisposableCollection> {
-    const disposables = new DisposableCollection();
+    this.logger.log('Start watching:', basePath, rawOptions);
     if (!(await fs.pathExists(basePath))) {
-      return disposables;
+      return new DisposableCollection();
     }
+
     const realPath = await fs.realpath(basePath);
+
+    if (this.isEnableNSFW()) {
+      return this.watchWithNsfw(realPath, watcherId, rawOptions);
+    } else {
+      // polling
+      if (rawOptions?.pollingWatch) {
+        this.logger.log('Start polling watch:', realPath);
+        return this.pollingWatch(realPath, watcherId, rawOptions);
+      }
+
+      return this.watchWithParcel(realPath, watcherId, rawOptions);
+    }
+  }
+
+  private async watchWithNsfw(realPath: string, watcherId: number, rawOptions?: WatchOptions | undefined) {
+    const disposables = new DisposableCollection();
+
+    const nsfw = await this.withNSFWModule();
+    const watcher: INsfw.NSFW = await nsfw(
+      realPath,
+      (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
+      {
+        errorCallback: (err) => {
+          this.logger.error('NSFW watcher encountered an error and will stop watching.', err);
+          // see https://github.com/atom/github/issues/342
+          this.unwatchFileChanges(watcherId);
+        },
+      },
+    );
+
+    await watcher.start();
+
+    disposables.push(
+      Disposable.create(async () => {
+        this.watcherOptions.delete(watcherId);
+        await watcher.stop();
+      }),
+    );
+
+    const excludes = this.excludes.concat(rawOptions?.excludes || []);
+
+    this.watcherOptions.set(watcherId, {
+      excludesPattern: excludes.map((pattern) => parseGlob(pattern)),
+      excludes,
+    });
+    return disposables;
+  }
+
+  private async watchWithParcel(realPath: string, watcherId: number, rawOptions?: WatchOptions | undefined) {
+    const disposables = new DisposableCollection();
     const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
       for (let times = 0; times < maxRetries; times++) {
         try {
@@ -213,8 +268,15 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
               const handlers = this.WATCHER_HANDLERS.get(watcherId)?.handlers;
 
               if (!handlers) {
+                this.logger.log('No handler found for watcher', watcherId);
                 return;
               }
+
+              this.logger.log('Received events:', events);
+              if (events.length === 0) {
+                return;
+              }
+
               for (const handler of handlers) {
                 (handler as ParcelWatcher.SubscribeCallback)(err, events);
               }
@@ -238,49 +300,59 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
       return undefined; // watch 失败则返回 undefined
     };
 
-    if (this.isEnableNSFW()) {
-      const nsfw = await this.withNSFWModule();
-      const watcher: INsfw.NSFW = await nsfw(
-        realPath,
-        (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
-        {
-          errorCallback: (err) => {
-            this.logger.error('NSFW watcher encountered an error and will stop watching.', err);
-            // see https://github.com/atom/github/issues/342
-            this.unwatchFileChanges(watcherId);
-          },
-        },
-      );
+    const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
 
-      await watcher.start();
-
+    if (hanlder) {
+      // watch 成功才加入 disposables，否则也就无需 dispose
       disposables.push(
         Disposable.create(async () => {
-          this.watcherOptions.delete(watcherId);
-          await watcher.stop();
+          if (hanlder) {
+            await hanlder.unsubscribe();
+          }
         }),
       );
-
-      const excludes = this.excludes.concat(rawOptions?.excludes || []);
-
-      this.watcherOptions.set(watcherId, {
-        excludesPattern: excludes.map((pattern) => parseGlob(pattern)),
-        excludes,
-      });
-    } else {
-      const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
-
-      if (hanlder) {
-        // watch 成功才加入 disposables，否则也就无需 dispose
-        disposables.push(
-          Disposable.create(async () => {
-            if (hanlder) {
-              await hanlder.unsubscribe();
-            }
-          }),
-        );
-      }
     }
+
+    return disposables;
+  }
+
+  private async pollingWatch(realPath: string, watcherId: number, rawOptions?: WatchOptions | undefined) {
+    const disposables = new DisposableCollection();
+    const snapshotFile = join(tmpdir(), `watcher-snapshot-${watcherId}`);
+    let counter = 0;
+
+    const pollingWatcher = new RunOnceScheduler(async () => {
+      counter++;
+      if (counter > 1) {
+        const parcelEvents = await ParcelWatcher.getEventsSince(realPath, snapshotFile, {
+          ignore: rawOptions?.excludes,
+          backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
+        });
+
+        const handlers = this.WATCHER_HANDLERS.get(watcherId)?.handlers;
+
+        if (!handlers) {
+          this.logger.log('No handler found for watcher', watcherId);
+          return;
+        }
+
+        this.logger.log('Received events:', parcelEvents);
+        for (const handler of handlers) {
+          (handler as ParcelWatcher.SubscribeCallback)(null, parcelEvents);
+        }
+      }
+
+      await ParcelWatcher.writeSnapshot(realPath, snapshotFile, {
+        ignore: rawOptions?.excludes,
+        backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
+      });
+
+      pollingWatcher.schedule();
+    }, FileSystemWatcherServer.DEFAULT_POLLING_INTERVAL);
+
+    pollingWatcher.schedule(0);
+
+    disposables.push(pollingWatcher);
 
     return disposables;
   }

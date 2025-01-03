@@ -87,7 +87,10 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     return watcherServer;
   }
 
-  private async doWatch(uri: Uri, options?: { excludes?: string[]; recursive?: boolean }): Promise<number> {
+  private async doWatch(
+    uri: Uri,
+    options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
+  ): Promise<number> {
     const watcherServer = this.getWatcherServer(options?.recursive);
     if (!watcherServer) {
       return -1;
@@ -98,6 +101,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     const mergedExcludes = new Set([...(options?.excludes ?? []), ...this.defaultExcludes]);
     const id = await watcherServer.watchFileChanges(uri.toString(), {
       excludes: Array.from(mergedExcludes),
+      pollingWatch: options?.pollingWatch,
     });
 
     this.watchedDirs.add(uri.toString());
@@ -113,7 +117,10 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     return id;
   }
 
-  async $watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number> {
+  async $watch(
+    uri: UriComponents,
+    options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
+  ): Promise<number> {
     const _uri = URI.revive(uri);
     return this.doWatch(_uri, options);
   }

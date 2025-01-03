@@ -83,7 +83,10 @@ export interface IWatcherProcessManager {
   setClient(client: FileSystemWatcherClient): void;
   dispose(): Promise<void>;
 
-  watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number>;
+  watch(
+    uri: UriComponents,
+    options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
+  ): Promise<number>;
   unWatch(watcherId: number): Promise<void>;
   setWatcherFileExcludes(excludes: string[]): Promise<void>;
 

@@ -316,8 +316,14 @@ export interface AppConfig {
 
   /**
    * Unrecursive directories
+   * @deprecated Use `pollingWatcherDirectories` instead
    */
   unRecursiveDirectories?: string[];
+
+  /**
+   * Polling watcher directories
+   */
+  pollingWatcherDirectories?: string[];
 
   /**
    * Recursive watcher backend type
