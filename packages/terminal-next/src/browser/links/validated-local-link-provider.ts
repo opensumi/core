@@ -184,7 +184,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
         stringIndex += 2;
       }
 
-      const validatedLinks = await this.detectedLocalLinks(link, lines, startLine, stringIndex);
+      const validatedLinks = await this.detectLocalLink(link, lines, startLine, stringIndex);
 
       if (validatedLinks.length > 0) {
         result.push(...validatedLinks);
@@ -192,7 +192,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     }
 
     if (result.length === 0) {
-      const validatedLinks = await this.detectedLocalLinks(text, lines, startLine, stringIndex);
+      const validatedLinks = await this.detectLocalLink(text, lines, startLine, stringIndex);
       if (validatedLinks.length > 0) {
         result.push(...validatedLinks);
       }
@@ -201,7 +201,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     return result;
   }
 
-  private async detectedLocalLinks(text: string, bufferLines: IBufferLine[], startLine: number, stringIndex: number) {
+  private async detectLocalLink(text: string, bufferLines: IBufferLine[], startLine: number, stringIndex: number) {
     const result: TerminalLink[] = [];
     const validatedLink = await new Promise<TerminalLink | undefined>((r) => {
       this._validationCallback(text, async (result) => {
