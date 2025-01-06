@@ -38,6 +38,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
+      - name: Install libsecret-1
+        run: sudo apt-get update && sudo apt-get install -y libsecret-1-dev
+
       - name: Install
         run: |
           yarn install --immutable
