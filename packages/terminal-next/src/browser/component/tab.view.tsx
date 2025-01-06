@@ -51,6 +51,7 @@ export default () => {
                   e.dataTransfer.setData('groupIndex', String(index));
                 }}
                 onDrop={(e: React.DragEvent) => {
+                  e.preventDefault();
                   if (e.dataTransfer.getData('groupIndex')) {
                     const i = e.dataTransfer.getData('groupIndex');
                     view.swapGroup(Number(i), index);
