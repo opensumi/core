@@ -46,6 +46,18 @@ export default () => {
           <div className={styles_tab_contents}>
             {groups.filter(Boolean).map((group, index) => (
               <TabItem
+                draggable={true}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('groupIndex', String(index));
+                }}
+                onDrop={(e: React.DragEvent) => {
+                  e.preventDefault();
+                  if (e.dataTransfer.getData('groupIndex')) {
+                    const i = e.dataTransfer.getData('groupIndex');
+                    view.swapGroup(Number(i), index);
+                    view.selectGroup(index);
+                  }
+                }}
                 key={group.id}
                 group={group}
                 selected={currentGroup && currentGroup.id === group.id}

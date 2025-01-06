@@ -694,7 +694,7 @@ declare module 'vscode' {
     /**
      * An icon for the view when it's show in inline actions.
      */
-    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    iconPath?: IconPath;
 
     /**
      * Visualization to use for the variable. This may be either:
