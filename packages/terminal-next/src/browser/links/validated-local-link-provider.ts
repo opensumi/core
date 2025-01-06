@@ -18,51 +18,37 @@ import { XtermLinkMatcherHandler } from './link-manager';
 import type { TerminalClient } from '../terminal.client';
 import type { IBufferLine, IViewportRange, Terminal } from '@xterm/xterm';
 
-enum RegexPathConstants {
-  PathPrefix = '(?:\\.\\.?|\\~|file://)',
-  PathSeparatorClause = '\\/',
-  // '":; are allowed in paths but they are often separators so ignore them
-  // Also disallow \\ to prevent a catastropic backtracking case #24795
-  ExcludedPathCharactersClause = '[^\\0<>\\?\\s!`&*()\'":;\\\\]',
-  ExcludedStartPathCharactersClause = '[^\\0<>\\?\\s!`&*()\\[\\]\'":;\\\\]',
-
-  WinOtherPathPrefix = '\\.\\.?|\\~',
-  WinPathSeparatorClause = '(?:\\\\|\\/)',
-  WinExcludedPathCharactersClause = '[^\\0<>\\?\\|\\/\\s!`&*()\'":;]',
-  WinExcludedStartPathCharactersClause = '[^\\0<>\\?\\|\\/\\s!`&*()\\[\\]\'":;]',
-}
-/**
- * A regex that matches non-Windows paths, such as `/foo`, `~/foo`, `./foo`, `../foo` and
- * `foo/bar`.
- */
+const pathPrefix = '(\\.\\.?|\\~)';
+const pathSeparatorClause = '\\/';
+// '":; are allowed in paths but they are often separators so ignore them
+// Also disallow \\ to prevent a catastropic backtracking case #24795
+const excludedPathCharactersClause = '[^\\0\\s!`&*()\\[\\]\'":;\\\\]';
+/** A regex that matches paths in the form /foo, ~/foo, ./foo, ../foo, foo/bar */
 export const unixLocalLinkClause =
-  '(?:(?:' +
-  RegexPathConstants.PathPrefix +
-  '|(?:' +
-  RegexPathConstants.ExcludedStartPathCharactersClause +
-  RegexPathConstants.ExcludedPathCharactersClause +
-  '*))?(?:' +
-  RegexPathConstants.PathSeparatorClause +
-  '(?:' +
-  RegexPathConstants.ExcludedPathCharactersClause +
+  '((' +
+  pathPrefix +
+  '|(' +
+  excludedPathCharactersClause +
+  ')+)?(' +
+  pathSeparatorClause +
+  '(' +
+  excludedPathCharactersClause +
   ')+)+)';
 
-export const winDrivePrefix = '(?:\\\\\\\\\\?\\\\|file:\\/\\/\\/)?[a-zA-Z]:';
-
-/**
- * A regex that matches Windows paths, such as `\\?\c:\foo`, `c:\foo`, `~\foo`, `.\foo`, `..\foo`
- * and `foo\bar`.
- */
+export const winDrivePrefix = '(?:\\\\\\\\\\?\\\\)?[a-zA-Z]:';
+const winPathPrefix = '(' + winDrivePrefix + '|\\.\\.?|\\~)';
+const winPathSeparatorClause = '(\\\\|\\/)';
+const winExcludedPathCharactersClause = '[^\\0<>\\?\\|\\/\\s!`&*()\\[\\]\'":;]';
+/** A regex that matches paths in the form \\?\c:\foo c:\foo, ~\foo, .\foo, ..\foo, foo\bar */
 export const winLocalLinkClause =
-  '(?:(?:' +
-  `(?:${winDrivePrefix}|${RegexPathConstants.WinOtherPathPrefix})` +
-  '|(?:' +
-  RegexPathConstants.WinExcludedStartPathCharactersClause +
-  RegexPathConstants.WinExcludedPathCharactersClause +
-  '*))?(?:' +
-  RegexPathConstants.WinPathSeparatorClause +
-  '(?:' +
-  RegexPathConstants.WinExcludedPathCharactersClause +
+  '((' +
+  winPathPrefix +
+  '|(' +
+  winExcludedPathCharactersClause +
+  ')+)?(' +
+  winPathSeparatorClause +
+  '(' +
+  winExcludedPathCharactersClause +
   ')+)+)';
 
 /** As xterm reads from DOM, space in that case is nonbreaking char ASCII code - 160,
@@ -152,7 +138,6 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     let match;
     let stringIndex = -1;
     while ((match = rex.exec(text)) !== null) {
-      // const link = match[typeof matcher.matchIndex !== 'number' ? 0 : matcher.matchIndex];
       let link = match[0];
       if (!link) {
         // something matched but does not comply with the given matchIndex
@@ -183,8 +168,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
         link = link.substring(2);
         stringIndex += 2;
       }
-
-      const validatedLinks = await this.detectLocalLink(link, lines, startLine, stringIndex);
+      const validatedLinks = await this.detectLocalLink(link, lines, startLine, stringIndex, 1);
 
       if (validatedLinks.length > 0) {
         result.push(...validatedLinks);
@@ -192,7 +176,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     }
 
     if (result.length === 0) {
-      const validatedLinks = await this.detectLocalLink(text, lines, startLine, stringIndex);
+      const validatedLinks = await this.detectLocalLink(text, lines, startLine, stringIndex, 2);
       if (validatedLinks.length > 0) {
         result.push(...validatedLinks);
       }
@@ -201,7 +185,13 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     return result;
   }
 
-  private async detectLocalLink(text: string, bufferLines: IBufferLine[], startLine: number, stringIndex: number) {
+  private async detectLocalLink(
+    text: string,
+    bufferLines: IBufferLine[],
+    startLine: number,
+    stringIndex: number,
+    offset,
+  ) {
     const result: TerminalLink[] = [];
     const validatedLink = await new Promise<TerminalLink | undefined>((r) => {
       this._validationCallback(text, async (result) => {
@@ -225,7 +215,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
             {
               startColumn: stringIndex + 1,
               startLineNumber: 1,
-              endColumn: stringIndex + text.length + 2,
+              endColumn: stringIndex + text.length + offset,
               endLineNumber: 1,
             },
             startLine,
@@ -256,7 +246,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
   protected get _localLinkRegex(): RegExp {
     const baseLocalLinkClause = this._client.os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause;
     // Append line and column number regex
-    return new RegExp(baseLocalLinkClause);
+    return new RegExp(`${baseLocalLinkClause}(${lineAndColumnClause})`);
   }
 
   private async _handleLocalFolderLink(uri: URI): Promise<void> {
