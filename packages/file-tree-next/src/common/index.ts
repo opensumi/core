@@ -1,5 +1,5 @@
 import { ITree, ITreeNode } from '@opensumi/ide-components';
-import { BasicEvent, IDisposable, URI } from '@opensumi/ide-core-common';
+import { BasicEvent, Event, IDisposable, URI } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 import { Directory, File } from './file-tree-node.define';
@@ -19,6 +19,8 @@ export interface IMoveFileMetadata {
 }
 
 export interface IFileTreeAPI {
+  onDidResolveChildren: Event<string>;
+
   copyFile(from: URI, to: URI): Promise<FileStat | string | void>;
   createFile(newUri: URI, content?: string): Promise<string | void>;
   createDirectory(newUri: URI): Promise<string | void>;
