@@ -8,7 +8,9 @@ export { EInlineChatStatus, EResultKind } from '../../../common';
 export class AIInlineChatService implements IAIInlineChatService {
   private _interactiveInputVisible: boolean = false;
   public get interactiveInputVisible(): boolean {
-    return this._interactiveInputVisible;
+    const visible = this._interactiveInputVisible;
+    this._interactiveInputVisible = false;
+    return visible;
   }
 
   public readonly _onInteractiveInputVisible = new Emitter<boolean>();

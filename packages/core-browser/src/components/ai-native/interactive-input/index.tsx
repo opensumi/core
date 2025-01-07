@@ -237,7 +237,9 @@ export const InteractiveInput = React.forwardRef(
         ref={internalRef}
         placeholder={placeholder}
         wrapperStyle={{ height: wrapperHeight + 'px', width: wrapperWidth }}
-        style={{ height: wrapperHeight - 10 + 'px' }}
+        style={{
+          height: wrapperHeight - 10 + 'px',
+        }}
         value={internalValue}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
