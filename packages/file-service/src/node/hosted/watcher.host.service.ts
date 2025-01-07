@@ -100,7 +100,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
   checkIsAlreadyWatched(watcherPath: string): number | undefined {
     for (const [watcherId, watcher] of this.WATCHER_HANDLERS) {
-      if (watcherPath.indexOf(watcher.path) === 0) {
+      if (watcherPath === watcher.path) {
         return watcherId;
       }
     }
