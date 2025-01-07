@@ -203,7 +203,7 @@ export class SumiConnection implements IDisposable {
         const requestId = message.requestId;
 
         if (opType === OperationType.Error) {
-          this.logger.error(
+          this.logger.warn(
             `[${message.requestId}] Error received from server method ${message.method}: ${message.error}`,
           );
         }
