@@ -25,6 +25,30 @@ export interface IFileSystemWatcherServer {
   updateWatcherFileExcludes?: (excludes: string[]) => Promise<void>;
 }
 
+export interface IWatcher {
+  /**
+   * 根据给定参数启动文件监听
+   * @param {string} uri
+   * @param {WatchOptions} [options]
+   * @memberof IFileSystemWatcherServer
+   */
+  watchFileChanges(uri: string, options?: WatchOptions): Promise<void>;
+
+  /**
+   * 根据给定 uri 注销对应的文件监听
+   * @param {string} uri
+   * @returns {Promise<void>}
+   * @memberof FileSystemWatcherServer
+   */
+  unwatchFileChanges(uri: string): Promise<void>;
+
+  /**
+   * Update watcher file excludes
+   * @param excludes
+   */
+  updateWatcherFileExcludes?: (excludes: string[]) => Promise<void>;
+}
+
 export interface FileSystemWatcherClient {
   /**
    * 文件监听下的文件修改时触发事件

@@ -9,7 +9,7 @@ import uniqBy from 'lodash/uniqBy';
 import {
   FileChangeType,
   FileSystemWatcherClient,
-  IFileSystemWatcherServer,
+  IWatcher,
   RecursiveWatcherBackend,
   WatchOptions,
 } from '@opensumi/ide-core-common';
@@ -51,17 +51,17 @@ export interface NsfwFileSystemWatcherOption {
   error?: (message: string, ...args: any[]) => void;
 }
 
-export class FileSystemWatcherServer extends Disposable implements IFileSystemWatcherServer {
+export class FileSystemWatcherServer extends Disposable implements IWatcher {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private static DEFAULT_POLLING_INTERVAL = 100;
 
   private WATCHER_HANDLERS = new Map<
-    number,
+    string,
     { path: string; handlers: ParcelWatcher.SubscribeCallback[]; disposable: IDisposable }
   >();
-  private static WATCHER_SEQUENCE = 1;
-  protected watcherOptions = new Map<number, WatcherOptions>();
+
+  protected watcherOptions = new Map<string, WatcherOptions>();
 
   protected client: FileSystemWatcherClient | undefined;
 
@@ -81,36 +81,14 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
   }
 
   /**
-   * 查找某个路径是否已被监听
-   * @param watcherPath
-   */
-  checkIsAlreadyWatched(watcherPath: string): number | undefined {
-    for (const [watcherId, watcher] of this.WATCHER_HANDLERS) {
-      if (watcherPath.indexOf(watcher.path) === 0) {
-        return watcherId;
-      }
-    }
-  }
-
-  /**
    * 如果监听路径不存在，则会监听父目录
    * @param uri 要监听的路径
    * @param options
    * @returns
    */
-  async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
+  async watchFileChanges(uri: string, options?: WatchOptions) {
     const basePath = FileUri.fsPath(uri);
-
-    let watcherId = this.checkIsAlreadyWatched(basePath);
-    if (watcherId) {
-      return watcherId;
-    }
-
-    watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
-    this.WATCHER_HANDLERS.set(watcherId, {
-      ...watcherPlaceHolder,
-      path: basePath,
-    });
+    this.logger.log('watch file changes: ', uri);
 
     const toDisposeWatcher = new DisposableCollection();
     let watchPath: string;
@@ -126,7 +104,9 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     } else {
       watchPath = await this.lookup(basePath);
     }
+
     this.logger.log('Starting watching:', watchPath, options);
+
     const handler = (err, events: ParcelWatcher.Event[]) => {
       if (err) {
         this.logger.error(`Watching ${watchPath} error: `, err);
@@ -148,15 +128,15 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
       }
     };
 
-    this.WATCHER_HANDLERS.set(watcherId, {
+    this.WATCHER_HANDLERS.set(uri, {
       path: watchPath,
       disposable: toDisposeWatcher,
       handlers: [handler],
     });
-    toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watcherId as number)));
-    toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
+
+    toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(uri)));
+    toDisposeWatcher.push(await this.start(watchPath, options));
     this.addDispose(toDisposeWatcher);
-    return watcherId;
   }
 
   /**
@@ -193,11 +173,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     this.excludes = excludes;
   }
 
-  protected async start(
-    watcherId: number,
-    basePath: string,
-    rawOptions: WatchOptions | undefined,
-  ): Promise<DisposableCollection> {
+  protected async start(basePath: string, rawOptions: WatchOptions | undefined): Promise<DisposableCollection> {
     this.logger.log('Start watching:', basePath, rawOptions);
     if (!(await fs.pathExists(basePath))) {
       return new DisposableCollection();
@@ -206,30 +182,30 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     const realPath = await fs.realpath(basePath);
 
     if (this.isEnableNSFW()) {
-      return this.watchWithNsfw(realPath, watcherId, rawOptions);
+      return this.watchWithNsfw(realPath, rawOptions);
     } else {
       // polling
       if (rawOptions?.pollingWatch) {
         this.logger.log('Start polling watch:', realPath);
-        return this.pollingWatch(realPath, watcherId, rawOptions);
+        return this.pollingWatch(realPath, rawOptions);
       }
 
-      return this.watchWithParcel(realPath, watcherId, rawOptions);
+      return this.watchWithParcel(realPath, rawOptions);
     }
   }
 
-  private async watchWithNsfw(realPath: string, watcherId: number, rawOptions?: WatchOptions | undefined) {
+  private async watchWithNsfw(realPath: string, rawOptions?: WatchOptions | undefined) {
     const disposables = new DisposableCollection();
 
     const nsfw = await this.withNSFWModule();
     const watcher: INsfw.NSFW = await nsfw(
       realPath,
-      (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
+      (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, realPath),
       {
         errorCallback: (err) => {
           this.logger.error('NSFW watcher encountered an error and will stop watching.', err);
           // see https://github.com/atom/github/issues/342
-          this.unwatchFileChanges(watcherId);
+          this.unwatchFileChanges(realPath);
         },
       },
     );
@@ -238,21 +214,21 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
     disposables.push(
       Disposable.create(async () => {
-        this.watcherOptions.delete(watcherId);
+        this.watcherOptions.delete(realPath);
         await watcher.stop();
       }),
     );
 
     const excludes = this.excludes.concat(rawOptions?.excludes || []);
 
-    this.watcherOptions.set(watcherId, {
+    this.watcherOptions.set(realPath, {
       excludesPattern: excludes.map((pattern) => parseGlob(pattern)),
       excludes,
     });
     return disposables;
   }
 
-  private async watchWithParcel(realPath: string, watcherId: number, rawOptions?: WatchOptions | undefined) {
+  private async watchWithParcel(realPath: string, rawOptions?: WatchOptions | undefined) {
     const disposables = new DisposableCollection();
     const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
       for (let times = 0; times < maxRetries; times++) {
@@ -265,10 +241,10 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
                 // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
                 return;
               }
-              const handlers = this.WATCHER_HANDLERS.get(watcherId)?.handlers;
+              const handlers = this.WATCHER_HANDLERS.get(realPath)?.handlers;
 
               if (!handlers) {
-                this.logger.log('No handler found for watcher', watcherId);
+                this.logger.log('No handler found for watcher', realPath);
                 return;
               }
 
@@ -316,9 +292,9 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     return disposables;
   }
 
-  private async pollingWatch(realPath: string, watcherId: number, rawOptions?: WatchOptions | undefined) {
+  private async pollingWatch(realPath: string, rawOptions?: WatchOptions | undefined) {
     const disposables = new DisposableCollection();
-    const snapshotFile = join(tmpdir(), `watcher-snapshot-${watcherId}`);
+    const snapshotFile = join(tmpdir(), `watcher-snapshot-${realPath}`);
     let counter = 0;
 
     const pollingWatcher = new RunOnceScheduler(async () => {
@@ -329,10 +305,10 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
           backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
         });
 
-        const handlers = this.WATCHER_HANDLERS.get(watcherId)?.handlers;
+        const handlers = this.WATCHER_HANDLERS.get(realPath)?.handlers;
 
         if (!handlers) {
-          this.logger.log('No handler found for watcher', watcherId);
+          this.logger.log('No handler found for watcher', realPath);
           return;
         }
 
@@ -357,10 +333,11 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     return disposables;
   }
 
-  unwatchFileChanges(watcherId: number): Promise<void> {
-    const watcher = this.WATCHER_HANDLERS.get(watcherId);
+  unwatchFileChanges(uri: string): Promise<void> {
+    this.logger.log('Un watch: ', uri);
+    const watcher = this.WATCHER_HANDLERS.get(uri);
     if (watcher) {
-      this.WATCHER_HANDLERS.delete(watcherId);
+      this.WATCHER_HANDLERS.delete(uri);
       watcher.disposable.dispose();
     }
     return Promise.resolve();
@@ -381,13 +358,13 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
     return this.backend === RecursiveWatcherBackend.NSFW || isLinux;
   }
 
-  private async handleNSFWEvents(events: INsfw.ChangeEvent[], watcherId: number): Promise<void> {
+  private async handleNSFWEvents(events: INsfw.ChangeEvent[], realPath: string): Promise<void> {
     if (events.length > 5000) {
       return;
     }
 
-    const isIgnored = (watcherId: number, path: string): boolean => {
-      const options = this.watcherOptions.get(watcherId);
+    const isIgnored = (realPath: string, path: string): boolean => {
+      const options = this.watcherOptions.get(realPath);
       if (!options || !options.excludes || options.excludes.length < 1) {
         return false;
       }
@@ -419,7 +396,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
           case INsfw.actions.RENAMED:
             {
               const deletedPath = await this.resolvePath(event.directory, event.oldFile!);
-              if (isIgnored(watcherId, deletedPath)) {
+              if (isIgnored(realPath, deletedPath)) {
                 return;
               }
 
@@ -427,14 +404,14 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
 
               if (event.newDirectory) {
                 const path = await this.resolvePath(event.newDirectory, event.newFile!);
-                if (isIgnored(watcherId, path)) {
+                if (isIgnored(realPath, path)) {
                   return;
                 }
 
                 this.pushAdded(path);
               } else {
                 const path = await this.resolvePath(event.directory, event.newFile!);
-                if (isIgnored(watcherId, path)) {
+                if (isIgnored(realPath, path)) {
                   return;
                 }
 
@@ -445,7 +422,7 @@ export class FileSystemWatcherServer extends Disposable implements IFileSystemWa
           default:
             {
               const path = await this.resolvePath(event.directory, event.file!);
-              if (isIgnored(watcherId, path)) {
+              if (isIgnored(realPath, path)) {
                 return;
               }
 

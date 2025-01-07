@@ -1,5 +1,5 @@
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
-import { DidFilesChangedParams, RecursiveWatcherBackend } from '@opensumi/ide-core-common';
+import { DidFilesChangedParams, FileUri, IDisposable, RecursiveWatcherBackend } from '@opensumi/ide-core-common';
 import { defaultFilesWatcherExcludes, flattenExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { URI, Uri, UriComponents } from '@opensumi/ide-utils/lib/uri';
 
@@ -10,7 +10,25 @@ import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
 import { WatcherProcessLogger } from './watch-process-log';
 
+const watcherPlaceHolder = {
+  disposable: {
+    dispose: () => {},
+  },
+  handlers: [],
+};
+
 export class WatcherHostServiceImpl implements IWatcherHostService {
+  private static WATCHER_SEQUENCE = 1;
+
+  private WATCHER_HANDLERS = new Map<
+    number,
+    {
+      path: string;
+      handlers: any;
+      disposable: IDisposable;
+    }
+  >();
+
   /**
    * recursive file system watcher
    */
@@ -87,34 +105,68 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     return watcherServer;
   }
 
+  checkIsAlreadyWatched(watcherPath: string): number | undefined {
+    for (const [watcherId, watcher] of this.WATCHER_HANDLERS) {
+      if (watcherPath.indexOf(watcher.path) === 0) {
+        return watcherId;
+      }
+    }
+  }
+
   private async doWatch(
     uri: Uri,
     options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
   ): Promise<number> {
-    const watcherServer = this.getWatcherServer(options?.recursive);
-    if (!watcherServer) {
-      return -1;
+    this.initWatcherServer();
+    const basePath = FileUri.fsPath(uri.toString());
+    let watcherId = this.checkIsAlreadyWatched(basePath);
+
+    if (watcherId) {
+      this.logger.log(uri.toString(), 'is already watched');
+      return watcherId;
     }
+
+    watcherId = WatcherHostServiceImpl.WATCHER_SEQUENCE++;
+
+    this.WATCHER_HANDLERS.set(watcherId, {
+      ...watcherPlaceHolder,
+      path: basePath,
+    });
 
     this.logger.log('watch file changes: ', uri.toString(), ' recursive: ', options?.recursive);
 
     const mergedExcludes = new Set([...(options?.excludes ?? []), ...this.defaultExcludes]);
-    const id = await watcherServer.watchFileChanges(uri.toString(), {
-      excludes: Array.from(mergedExcludes),
-      pollingWatch: options?.pollingWatch,
-    });
 
-    this.watchedDirs.add(uri.toString());
+    if (options?.recursive) {
+      await this.recursiveFileSystemWatcher!.watchFileChanges(uri.toString(), {
+        excludes: Array.from(mergedExcludes),
+        pollingWatch: options?.pollingWatch,
+      });
+
+      const disposable = {
+        dispose: () => {
+          this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
+          this.watchedDirs.delete(uri.toString());
+        },
+      };
+
+      this.watcherCollection.set(uri.toString(), { id: watcherId, options, disposable });
+    }
+
+    await this.unrecursiveFileSystemWatcher!.watchFileChanges(uri.toString());
 
     const disposable = {
       dispose: () => {
-        watcherServer.unwatchFileChanges(id);
+        this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
         this.watchedDirs.delete(uri.toString());
       },
     };
 
-    this.watcherCollection.set(uri.toString(), { id, options, disposable });
-    return id;
+    this.watcherCollection.set(uri.toString(), { id: watcherId, options, disposable });
+
+    this.watchedDirs.add(uri.toString());
+
+    return watcherId;
   }
 
   async $watch(
