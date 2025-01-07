@@ -43,20 +43,8 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
       this.logger.log('[Un-Recursive] start watching', basePath);
       const isDirectory = fs.lstatSync(basePath).isDirectory();
 
-      const docChildren = new Set<string>();
       let signalDoc = '';
-      if (isDirectory) {
-        try {
-          for (const child of fs.readdirSync(basePath)) {
-            const base = join(basePath, String(child));
-            if (!fs.lstatSync(base).isDirectory()) {
-              docChildren.add(child);
-            }
-          }
-        } catch (error) {
-          this.logger.error(error);
-        }
-      } else {
+      if (!isDirectory) {
         signalDoc = basename(basePath);
       }
 
@@ -89,20 +77,16 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
         if (isDirectory) {
           setTimeout(async () => {
             // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
-            if (docChildren.has(changeFileName)) {
-              if ((type === 'rename' || type === 'change') && changeFileName === filename) {
-                const fileExists = fs.existsSync(changePath);
-                if (fileExists) {
-                  this.pushUpdated(changePath);
-                } else {
-                  docChildren.delete(changeFileName);
-                  this.pushDeleted(changePath);
-                }
+            if ((type === 'rename' || type === 'change') && changeFileName === filename) {
+              const fileExists = fs.existsSync(changePath);
+              if (fileExists) {
+                this.pushUpdated(changePath);
+              } else {
+                this.pushDeleted(changePath);
               }
             } else if (fs.pathExistsSync(changePath)) {
               if (!fs.lstatSync(changePath).isDirectory()) {
                 this.pushAdded(changePath);
-                docChildren.add(changeFileName);
               }
             }
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
