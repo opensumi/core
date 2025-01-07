@@ -76,12 +76,8 @@ export default (props: IResizeViewProps) => {
     view.removeWidget(widgetId);
   }, []);
 
-  const generateUniqueKey = (() => {
-    let counter = 0;
-    return () => `code-block-${counter++}`;
-  })();
   return (
-    <div className={styles.resizeWrapper} ref={whole} key={generateUniqueKey()}>
+    <div className={styles.resizeWrapper} ref={whole}>
       <div style={{ pointerEvents: event ? 'all' : 'none' }} className={styles.resizeDelegate}>
         {widgets &&
           widgets.map((widget, index) => {
