@@ -187,7 +187,6 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       const isEmptyLine = !monacoEditor.getModel()?.getLineContent(position.lineNumber).trim();
 
       if (!isEmptyLine) {
-        //
         // 根据光标位置自动检测并选中临近的代码块
         const cursorPosition = monacoEditor.getPosition();
         const editorModel = monacoEditor.getModel();
