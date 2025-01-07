@@ -127,9 +127,6 @@ export class FileTreeContribution
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
-  @Autowired(IWindowDialogService)
-  private readonly dialog: IWindowDialogService;
-
   private isRendered = false;
 
   private deleteThrottler: Throttler = new Throttler();
@@ -149,9 +146,6 @@ export class FileTreeContribution
       content: formatLocalize('welcome-view.noFolderHelp', FILE_COMMANDS.OPEN_FOLDER.id),
       group: ViewContentGroups.Open,
       order: 1,
-    });
-    this.dialog.showOpenDialog({
-      canSelectFolders: true,
     });
     this.mainLayoutService.collectViewComponent(
       {
