@@ -138,7 +138,6 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     let match;
     let stringIndex = -1;
     while ((match = rex.exec(text)) !== null) {
-      // const link = match[typeof matcher.matchIndex !== 'number' ? 0 : matcher.matchIndex];
       let link = match[0];
       if (!link) {
         // something matched but does not comply with the given matchIndex
@@ -169,57 +168,78 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
         link = link.substring(2);
         stringIndex += 2;
       }
+      const validatedLinks = await this.detectLocalLink(link, lines, startLine, stringIndex, 1);
 
-      // Convert the link text's string index into a wrapped buffer range
-      const bufferRange = convertLinkRangeToBuffer(
-        lines,
-        this._xterm.cols,
-        {
-          startColumn: stringIndex + 1,
-          startLineNumber: 1,
-          endColumn: stringIndex + link.length + 1,
-          endLineNumber: 1,
-        },
-        startLine,
-      );
-
-      const validatedLink = await new Promise<TerminalLink | undefined>((r) => {
-        this._validationCallback(link, async (result) => {
-          if (result) {
-            const label = result.isDirectory
-              ? (await this._isDirectoryInsideWorkspace(result.uri))
-                ? FOLDER_IN_WORKSPACE_LABEL
-                : FOLDER_NOT_IN_WORKSPACE_LABEL
-              : OPEN_FILE_LABEL;
-            const activateCallback = this._wrapLinkHandler((event: MouseEvent | undefined, text: string) => {
-              if (result.isDirectory) {
-                this._handleLocalFolderLink(result.uri);
-              } else {
-                this._activateFileCallback(event, text);
-              }
-            });
-            r(
-              this.injector.get(TerminalLink, [
-                this._xterm,
-                bufferRange,
-                link,
-                this._xterm.buffer.active.viewportY,
-                activateCallback,
-                this._tooltipCallback,
-                true,
-                label,
-              ]),
-            );
-          } else {
-            r(undefined);
-          }
-        });
-      });
-      if (validatedLink) {
-        result.push(validatedLink);
+      if (validatedLinks.length > 0) {
+        result.push(...validatedLinks);
       }
     }
 
+    if (result.length === 0) {
+      const validatedLinks = await this.detectLocalLink(text, lines, startLine, stringIndex, 2);
+      if (validatedLinks.length > 0) {
+        result.push(...validatedLinks);
+      }
+    }
+
+    return result;
+  }
+
+  private async detectLocalLink(
+    text: string,
+    bufferLines: IBufferLine[],
+    startLine: number,
+    stringIndex: number,
+    offset,
+  ) {
+    const result: TerminalLink[] = [];
+    const validatedLink = await new Promise<TerminalLink | undefined>((r) => {
+      this._validationCallback(text, async (result) => {
+        if (result) {
+          const label = result.isDirectory
+            ? (await this._isDirectoryInsideWorkspace(result.uri))
+              ? FOLDER_IN_WORKSPACE_LABEL
+              : FOLDER_NOT_IN_WORKSPACE_LABEL
+            : OPEN_FILE_LABEL;
+          const activateCallback = this._wrapLinkHandler((event: MouseEvent | undefined, text: string) => {
+            if (result.isDirectory) {
+              this._handleLocalFolderLink(result.uri);
+            } else {
+              this._activateFileCallback(event, text);
+            }
+          });
+          // Convert the link text's string index into a wrapped buffer range
+          const bufferRange = convertLinkRangeToBuffer(
+            bufferLines,
+            this._xterm.cols,
+            {
+              startColumn: stringIndex + 1,
+              startLineNumber: 1,
+              endColumn: stringIndex + text.length + offset,
+              endLineNumber: 1,
+            },
+            startLine,
+          );
+          r(
+            this.injector.get(TerminalLink, [
+              this._xterm,
+              bufferRange,
+              text,
+              this._xterm.buffer.active.viewportY,
+              activateCallback,
+              this._tooltipCallback,
+              true,
+              label,
+            ]),
+          );
+        } else {
+          r(undefined);
+        }
+      });
+    });
+    if (validatedLink) {
+      result.push(validatedLink);
+    }
     return result;
   }
 
