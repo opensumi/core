@@ -13,7 +13,7 @@ import { URI, Uri, UriComponents } from '@opensumi/ide-utils/lib/uri';
 import { IWatcherHostService, WatcherProcessManagerProxy, WatcherServiceProxy } from '../../common/watcher';
 import { IWatcher } from '../disk-file-system.provider';
 
-import { FileSystemWatcherServer } from './recursive/file-service-watcher';
+import { RecursiveFileSystemWatcher } from './recursive/file-service-watcher';
 import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
 import { WatcherProcessLogger } from './watch-process-log';
 
@@ -39,7 +39,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
   /**
    * recursive file system watcher
    */
-  private recursiveFileSystemWatcher?: FileSystemWatcherServer;
+  private recursiveFileSystemWatcher?: RecursiveFileSystemWatcher;
 
   /**
    * unrecursive file system watcher
@@ -83,7 +83,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       }
     }
 
-    this.recursiveFileSystemWatcher = new FileSystemWatcherServer(excludes, this.logger, this.backend);
+    this.recursiveFileSystemWatcher = new RecursiveFileSystemWatcher(excludes, this.logger, this.backend);
     this.unrecursiveFileSystemWatcher = new UnRecursiveFileSystemWatcher(this.logger);
 
     const watcherClient = {
@@ -132,21 +132,6 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
     const disposables = new DisposableCollection();
 
-    if (options?.recursive) {
-      this.logger.log('use recursive watcher for: ', uri.toString());
-      await this.recursiveFileSystemWatcher!.watchFileChanges(uri.toString(), {
-        excludes: Array.from(mergedExcludes),
-        pollingWatch: options?.pollingWatch,
-      });
-
-      disposables.push(
-        Disposable.create(() => {
-          this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
-          this.watchedDirs.delete(uri.toString());
-        }),
-      );
-    }
-
     await this.unrecursiveFileSystemWatcher!.watchFileChanges(uri.toString());
 
     disposables.push(
@@ -155,6 +140,25 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
         this.watchedDirs.delete(uri.toString());
       }),
     );
+
+    if (options?.recursive) {
+      this.logger.log('use recursive watcher for: ', uri.toString());
+      try {
+        await this.recursiveFileSystemWatcher!.watchFileChanges(uri.toString(), {
+          excludes: Array.from(mergedExcludes),
+          pollingWatch: options?.pollingWatch,
+        });
+
+        disposables.push(
+          Disposable.create(() => {
+            this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
+            this.watchedDirs.delete(uri.toString());
+          }),
+        );
+      } catch (error) {
+        // watch error or timeout
+      }
+    }
 
     this.watcherCollection.set(uri.toString(), { id: watcherId, options, disposable: disposables });
 
