@@ -157,6 +157,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
         );
       } catch (error) {
         // watch error or timeout
+        this.logger.error('watch error: ', error);
       }
     }
 
