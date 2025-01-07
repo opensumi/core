@@ -40,7 +40,7 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
   private async doWatch(basePath: string) {
     try {
       const watcher = watch(basePath);
-      this.logger.log('start watching', basePath);
+      this.logger.log('[Un-Recursive] start watching', basePath);
       const isDirectory = fs.lstatSync(basePath).isDirectory();
 
       const docChildren = new Set<string>();
@@ -62,7 +62,9 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
 
       // 开始走监听流程
       watcher.on('error', (code: number, signal: string) => {
-        this.logger.error(`Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`);
+        this.logger.error(
+          `[Un-Recursive] Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`,
+        );
         watcher.close();
       });
 
@@ -118,7 +120,7 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
         }
       });
     } catch (error) {
-      this.logger.error(`Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
+      this.logger.error(`[Un-Recursive] Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
     }
   }
 
@@ -136,7 +138,7 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
         watchPath = basePath;
       }
     } else {
-      this.logger.warn('This path does not exist. Please try again');
+      this.logger.warn('[Un-Recursive] This path does not exist. Please try again');
     }
     disposables.push(await this.start(watchPath));
     this.toDispose.push(disposables);
