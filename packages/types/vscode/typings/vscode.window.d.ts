@@ -79,7 +79,7 @@ declare module 'vscode' {
      * *Note*: when a background color is set, the statusbar may override
      * the `color` choice to ensure the entry is readable in all themes.
      */
-    backgroundColor: ThemeColor | undefined;
+    backgroundColor: string | ThemeColor | undefined;
 
     /**
      * The identifier of a command to run on click. The command must be
