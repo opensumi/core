@@ -1,5 +1,12 @@
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
-import { DidFilesChangedParams, FileUri, IDisposable, RecursiveWatcherBackend } from '@opensumi/ide-core-common';
+import {
+  DidFilesChangedParams,
+  Disposable,
+  DisposableCollection,
+  FileUri,
+  IDisposable,
+  RecursiveWatcherBackend,
+} from '@opensumi/ide-core-common';
 import { defaultFilesWatcherExcludes, flattenExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { URI, Uri, UriComponents } from '@opensumi/ide-utils/lib/uri';
 
@@ -81,7 +88,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
     const watcherClient = {
       onDidFilesChanged: (events: DidFilesChangedParams) => {
-        this.logger.log('watcher server onDidFilesChanged: ', events);
+        this.logger.log('onDidFilesChanged: ', events);
         const proxy = this.rpcProtocol.getProxy(WatcherProcessManagerProxy);
         proxy.$onDidFilesChanged(events);
       },
@@ -89,20 +96,6 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
     this.recursiveFileSystemWatcher.setClient(watcherClient);
     this.unrecursiveFileSystemWatcher.setClient(watcherClient);
-  }
-
-  private getWatcherServer(recursive?: boolean) {
-    const useRecursiveServer = recursive;
-    let watcherServer: FileSystemWatcherServer | UnRecursiveFileSystemWatcher;
-    this.initWatcherServer();
-
-    if (useRecursiveServer) {
-      watcherServer = this.recursiveFileSystemWatcher!;
-    } else {
-      watcherServer = this.unrecursiveFileSystemWatcher!;
-    }
-
-    return watcherServer;
   }
 
   checkIsAlreadyWatched(watcherPath: string): number | undefined {
@@ -137,32 +130,33 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
     const mergedExcludes = new Set([...(options?.excludes ?? []), ...this.defaultExcludes]);
 
+    const disposables = new DisposableCollection();
+
     if (options?.recursive) {
+      this.logger.log('use recursive watcher for: ', uri.toString());
       await this.recursiveFileSystemWatcher!.watchFileChanges(uri.toString(), {
         excludes: Array.from(mergedExcludes),
         pollingWatch: options?.pollingWatch,
       });
 
-      const disposable = {
-        dispose: () => {
+      disposables.push(
+        Disposable.create(() => {
           this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
           this.watchedDirs.delete(uri.toString());
-        },
-      };
-
-      this.watcherCollection.set(uri.toString(), { id: watcherId, options, disposable });
+        }),
+      );
     }
 
     await this.unrecursiveFileSystemWatcher!.watchFileChanges(uri.toString());
 
-    const disposable = {
-      dispose: () => {
+    disposables.push(
+      Disposable.create(() => {
         this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
         this.watchedDirs.delete(uri.toString());
-      },
-    };
+      }),
+    );
 
-    this.watcherCollection.set(uri.toString(), { id: watcherId, options, disposable });
+    this.watcherCollection.set(uri.toString(), { id: watcherId, options, disposable: disposables });
 
     this.watchedDirs.add(uri.toString());
 
