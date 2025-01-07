@@ -1,4 +1,5 @@
 import fs, { watch } from 'fs-extra';
+import { upperFirst } from 'lodash';
 import debounce from 'lodash/debounce';
 
 import { ILogService } from '@opensumi/ide-core-common/lib/log';
@@ -10,16 +11,7 @@ import { shouldIgnorePath } from '../shared';
 const { join, basename, normalize } = path;
 
 export class UnRecursiveFileSystemWatcher implements IWatcher {
-  private WATCHER_HANDLERS = new Map<
-    string,
-    {
-      path: string;
-      handlers: any;
-      disposable: IDisposable;
-    }
-  >();
-
-  private static WATCHER_SEQUENCE = 1;
+  private watcherCollections: Map<string, fs.FSWatcher> = new Map();
 
   private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
@@ -34,12 +26,13 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
 
   dispose(): void {
     this.toDispose.dispose();
-    this.WATCHER_HANDLERS.clear();
   }
 
   private async doWatch(basePath: string) {
     try {
       const watcher = watch(basePath);
+      this.watcherCollections.set(basePath, watcher);
+
       this.logger.log('[Un-Recursive] start watching', basePath);
       const isDirectory = fs.lstatSync(basePath).isDirectory();
 
@@ -135,6 +128,10 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
     }
 
     const realPath = await fs.realpath(basePath);
+    if (this.watcherCollections.has(realPath)) {
+      return disposables;
+    }
+
     const tryWatchDir = async (retryDelay = 1000) => {
       try {
         this.doWatch(realPath);
@@ -149,13 +146,13 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
     return disposables;
   }
 
-  unwatchFileChanges(uri: string): Promise<void> {
-    const watcher = this.WATCHER_HANDLERS.get(uri);
-    if (watcher) {
-      this.WATCHER_HANDLERS.delete(uri);
-      watcher.disposable.dispose();
+  async unwatchFileChanges(uri: string): Promise<void> {
+    const basePath = FileUri.fsPath(uri);
+    if (this.watcherCollections.has(basePath)) {
+      const watcher = this.watcherCollections.get(basePath);
+      watcher?.close();
+      this.watcherCollections.delete(basePath);
     }
-    return Promise.resolve();
   }
 
   protected pushAdded(path: string): void {

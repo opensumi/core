@@ -103,6 +103,10 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
   }
 
   private async doWatchFileChange(uri: string, options?: WatchOptions) {
+    if (this.WATCHER_HANDLERS.has(uri)) {
+      return;
+    }
+
     const basePath = FileUri.fsPath(uri);
     this.logger.log('[Recursive] watch file changes: ', uri);
 
