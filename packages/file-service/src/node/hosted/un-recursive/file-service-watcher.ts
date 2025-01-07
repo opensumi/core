@@ -4,14 +4,14 @@ import debounce from 'lodash/debounce';
 import { ILogService } from '@opensumi/ide-core-common/lib/log';
 import { Disposable, DisposableCollection, FileUri, IDisposable, isMacintosh, path } from '@opensumi/ide-utils/lib';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../../common/index';
+import { FileChangeType, FileSystemWatcherClient, IWatcher } from '../../../common/index';
 import { FileChangeCollection } from '../../file-change-collection';
 import { shouldIgnorePath } from '../shared';
 const { join, basename, normalize } = path;
 
-export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
+export class UnRecursiveFileSystemWatcher implements IWatcher {
   private WATCHER_HANDLERS = new Map<
-    number,
+    string,
     {
       path: string;
       handlers: any;
@@ -35,18 +35,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   dispose(): void {
     this.toDispose.dispose();
     this.WATCHER_HANDLERS.clear();
-  }
-
-  /**
-   * 查找某个路径是否已被监听
-   * @param watcherPath
-   */
-  checkIsAlreadyWatched(watcherPath: string): number | undefined {
-    for (const [watcherId, watcher] of this.WATCHER_HANDLERS) {
-      if (watcherPath.indexOf(watcher.path) === 0) {
-        return watcherId;
-      }
-    }
   }
 
   private async doWatch(basePath: string) {
@@ -138,20 +126,12 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     const basePath = FileUri.fsPath(uri);
     const exist = await fs.pathExists(basePath);
 
-    let watcherId = this.checkIsAlreadyWatched(basePath);
-
-    if (watcherId) {
-      return watcherId;
-    }
-
-    watcherId = UnRecursiveFileSystemWatcher.WATCHER_SEQUENCE++;
-
     const disposables = new DisposableCollection(); // 管理可释放的资源
 
     let watchPath = '';
 
     if (exist) {
-      const stat = await fs.lstatSync(basePath);
+      const stat = await fs.lstat(basePath);
       if (stat) {
         watchPath = basePath;
       }
@@ -160,7 +140,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     }
     disposables.push(await this.start(watchPath));
     this.toDispose.push(disposables);
-    return watcherId;
   }
 
   protected async start(basePath: string): Promise<DisposableCollection> {
@@ -183,10 +162,11 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     await tryWatchDir();
     return disposables;
   }
-  unwatchFileChanges(watcherId: number): Promise<void> {
-    const watcher = this.WATCHER_HANDLERS.get(watcherId);
+
+  unwatchFileChanges(uri: string): Promise<void> {
+    const watcher = this.WATCHER_HANDLERS.get(uri);
     if (watcher) {
-      this.WATCHER_HANDLERS.delete(watcherId);
+      this.WATCHER_HANDLERS.delete(uri);
       watcher.disposable.dispose();
     }
     return Promise.resolve();
