@@ -7,20 +7,20 @@ import { FileUri } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
-import { FileSystemWatcherServer } from '../../src/node/hosted/recursive/file-service-watcher';
+import { RecursiveFileSystemWatcher } from '../../src/node/hosted/recursive/file-service-watcher';
 
 const sleepTime = 1000;
 
 (isMacintosh ? describe.skip : describe)('ParceWatcher Test', () => {
   const track = temp.track();
-  const watcherServerList: FileSystemWatcherServer[] = [];
+  const watcherServerList: RecursiveFileSystemWatcher[] = [];
   let seed = 1;
 
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir(`parce-watcher-test-${seed++}`)));
     // @ts-ignore
-    const watcherServer = new FileSystemWatcherServer([], injector.get(ILogServiceManager).getLogger());
+    const watcherServer = new RecursiveFileSystemWatcher([], injector.get(ILogServiceManager).getLogger());
     watcherServer['isEnableNSFW'] = () => false;
 
     const watcherId = await watcherServer.watchFileChanges(root.toString());
@@ -163,7 +163,7 @@ const sleepTime = 1000;
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('nfsw-test')));
-    const watcherServer = new FileSystemWatcherServer([], injector.get(ILogServiceManager).getLogger());
+    const watcherServer = new RecursiveFileSystemWatcher([], injector.get(ILogServiceManager).getLogger());
     watcherServer['isEnableNSFW'] = () => false;
 
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
@@ -173,7 +173,7 @@ const sleepTime = 1000;
 
     return { root, watcherServer };
   }
-  const watcherServerList: FileSystemWatcherServer[] = [];
+  const watcherServerList: RecursiveFileSystemWatcher[] = [];
 
   afterAll(async () => {
     track.cleanupSync();

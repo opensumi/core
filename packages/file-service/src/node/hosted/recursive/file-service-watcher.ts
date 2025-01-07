@@ -51,7 +51,7 @@ export interface NsfwFileSystemWatcherOption {
   error?: (message: string, ...args: any[]) => void;
 }
 
-export class FileSystemWatcherServer extends Disposable implements IWatcher {
+export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private static DEFAULT_POLLING_INTERVAL = 100;
@@ -87,6 +87,22 @@ export class FileSystemWatcherServer extends Disposable implements IWatcher {
    * @returns
    */
   async watchFileChanges(uri: string, options?: WatchOptions) {
+    return new Promise<void>((resolve, rej) => {
+      const timer = setTimeout(() => {
+        rej(`Watch ${uri} Timeout`);
+        // FIXME：暂时写死3秒
+      }, 3000);
+
+      this.doWatchFileChange(uri, options).then(() => {
+        resolve(void 0);
+        if (timer) {
+          clearTimeout(timer);
+        }
+      });
+    });
+  }
+
+  private async doWatchFileChange(uri: string, options?: WatchOptions) {
     const basePath = FileUri.fsPath(uri);
     this.logger.log('[Recursive] watch file changes: ', uri);
 
@@ -256,7 +272,7 @@ export class FileSystemWatcherServer extends Disposable implements IWatcher {
               }
             },
             {
-              backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
+              backend: RecursiveFileSystemWatcher.PARCEL_WATCHER_BACKEND,
               ignore: this.excludes.concat(rawOptions?.excludes ?? []),
             },
           );
@@ -300,7 +316,7 @@ export class FileSystemWatcherServer extends Disposable implements IWatcher {
       if (counter > 1) {
         const parcelEvents = await ParcelWatcher.getEventsSince(realPath, snapshotFile, {
           ignore: rawOptions?.excludes,
-          backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
+          backend: RecursiveFileSystemWatcher.PARCEL_WATCHER_BACKEND,
         });
 
         const handlers = this.WATCHER_HANDLERS.get(realPath)?.handlers;
@@ -318,11 +334,11 @@ export class FileSystemWatcherServer extends Disposable implements IWatcher {
 
       await ParcelWatcher.writeSnapshot(realPath, snapshotFile, {
         ignore: rawOptions?.excludes,
-        backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
+        backend: RecursiveFileSystemWatcher.PARCEL_WATCHER_BACKEND,
       });
 
       pollingWatcher.schedule();
-    }, FileSystemWatcherServer.DEFAULT_POLLING_INTERVAL);
+    }, RecursiveFileSystemWatcher.DEFAULT_POLLING_INTERVAL);
 
     pollingWatcher.schedule(0);
 
