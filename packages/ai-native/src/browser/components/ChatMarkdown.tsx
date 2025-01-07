@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { MarkdownReactParser, MarkdownReactRenderer } from '@opensumi/ide-components/lib/markdown-react';
 import { IMarkedOptions, marked } from '@opensumi/ide-components/lib/utils';
