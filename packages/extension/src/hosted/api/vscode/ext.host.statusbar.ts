@@ -79,7 +79,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   private _tooltip?: string | vscode.MarkdownString;
   private _name?: string;
   private _color: string | ThemeColor | undefined;
-  private _backgroundColor: ThemeColor | undefined;
+  private _backgroundColor: string | ThemeColor | undefined;
   private _command: string | vscode.Command | undefined;
 
   private _isVisible: boolean;
@@ -148,11 +148,11 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
     this.update();
   }
 
-  public get backgroundColor(): ThemeColor | undefined {
+  public get backgroundColor(): string | ThemeColor | undefined {
     return this._backgroundColor;
   }
 
-  public set backgroundColor(color: ThemeColor | undefined) {
+  public set backgroundColor(color: string | ThemeColor | undefined) {
     if (!color) {
       color = undefined;
     } else if (isString(color)) {
