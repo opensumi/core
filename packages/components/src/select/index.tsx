@@ -228,10 +228,12 @@ function defaultFilterOption<T>(input: string, option: IDataOption<T>) {
   return false;
 }
 
-const SelectedContent = React.memo<{
-  selected: IDataOption<any>;
-  selectedRenderer?: React.FC<{ data: IDataOption<any> } | React.ComponentClass<{ data: IDataOption<any> }>>;
-}>(({ selected, selectedRenderer: CustomSC }) => {
+interface ISelectedContentProps<T = any> {
+  selected: IDataOption<T>;
+  selectedRenderer?: React.FC<{ data: IDataOption<T> }> | React.ComponentClass<{ data: IDataOption<T> }>;
+}
+
+const SelectedContent = React.memo(<T,>({ selected, selectedRenderer: CustomSC }: ISelectedContentProps<T>) => {
   if (CustomSC) {
     return <CustomSC data={selected} />;
   }
