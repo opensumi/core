@@ -54,7 +54,7 @@ export interface ITerminalProfile {
   args?: string | string[] | undefined;
   env?: ITerminalEnvironment;
   overrideName?: boolean;
-  color?: string | vscode.ThemeColor;
+  color?: string;
   icon?: TerminalIcon;
 }
 
