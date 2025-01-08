@@ -92,7 +92,7 @@ export abstract class AbstractMessageService implements IMessageService {
 
 export interface IWindowDialogService {
   showOpenDialog(options?: IOpenDialogOptions): Promise<URI[] | undefined>;
-  showSaveDialog(options?: ISaveDialogOptions): Promise<URI | undefined>;
+  showSaveDialog(options?: ISaveDialogOptions & { saveAs?: boolean }): Promise<URI | undefined>;
 }
 
 export const IWindowDialogService = Symbol('IWindowDialogService');

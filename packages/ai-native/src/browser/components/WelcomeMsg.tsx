@@ -14,7 +14,7 @@ import {
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import 'react-chat-elements/dist/main.css';
-import { IChatAgentService, IChatReplyFollowup, ISampleQuestions } from '../../common';
+import { IChatAgentService, ISampleQuestions } from '../../common';
 import { ChatService } from '../chat/chat.api.service';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';

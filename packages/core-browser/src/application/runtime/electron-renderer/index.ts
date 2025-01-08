@@ -1,9 +1,9 @@
 import { Injectable, Injector } from '@opensumi/di';
 
 import { BrowserModule } from '../../../browser-module';
-import { AppConfig } from '../../../react-providers';
+import { AppConfig, getTreeSitterWasmCDNUri } from '../../../react-providers';
 import { electronEnv } from '../../../utils/electron';
-import { ESupportRuntime, onigWasmCDNUri, treeSitterWasmCDNUri } from '../constants';
+import { ESupportRuntime, onigWasmCDNUri } from '../constants';
 import { EKnownResources, RendererRuntime } from '../types';
 
 import { injectElectronInnerProviders } from './inner-providers-electron';
@@ -29,7 +29,9 @@ export class ElectronRendererRuntime extends RendererRuntime {
         return electronEnv.onigWasmUri || this.appConfig.onigWasmUri || onigWasmCDNUri;
       case EKnownResources.TreeSitterWasmDirectory:
         return (
-          electronEnv.treeSitterWasmDirectoryUri || this.appConfig.treeSitterWasmDirectoryUri || treeSitterWasmCDNUri
+          electronEnv.treeSitterWasmDirectoryUri ||
+          this.appConfig.treeSitterWasmDirectoryUri ||
+          getTreeSitterWasmCDNUri(this.appConfig.componentCDNType)
         );
       default:
         throw new Error(`Unknown resource: ${resource}`);

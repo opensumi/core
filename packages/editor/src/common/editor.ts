@@ -549,6 +549,10 @@ export abstract class WorkbenchEditorService {
    */
   abstract openUris(uri: URI[]): Promise<void>;
 
+  abstract save(uri: URI): Promise<URI | undefined>;
+
+  abstract saveAs(uri: URI): Promise<URI | undefined>;
+
   /**
    * 保存全部
    * @param includeUntitled 是否对新文件进行保存询问, 默认false

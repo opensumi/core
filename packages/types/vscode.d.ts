@@ -23,8 +23,8 @@
 /// <reference path='./vscode/typings/vscode.tests.d.ts' />
 /// <reference path='./vscode/typings/vscode.l10n.d.ts' />
 
-/// <reference path='./vscode/typings-pending/vscode.d.ts' />
-/// <reference path='./vscode/typings-pending/vscode.proposed.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.documentFiltersExclusive.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.workspaceTrust.d.ts' />
 
 /// <reference path='./vscode/typings/vscode.proposed.authSession.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.diffCommand.d.ts' />

@@ -11,6 +11,8 @@ import type { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-
 import type vscode from 'vscode';
 
 export interface IMainThreadWorkspace extends IDisposable {
+  $save(uri: URI): Promise<URI | undefined>;
+  $saveAs(uri: URI): Promise<URI | undefined>;
   $saveAll(): Promise<boolean>;
   $tryApplyWorkspaceEdit(dto: model.WorkspaceEditDto, metadata?: model.WorkspaceEditMetadataDto): Promise<boolean>;
   $updateWorkspaceFolders(

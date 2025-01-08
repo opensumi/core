@@ -4,7 +4,7 @@ export function warning(valid: boolean, message: string) {
   // Support uglify
   if (process.env.NODE_ENV !== 'production' && !valid && console !== undefined) {
     // eslint-disable-next-line no-console
-    console.error(`Warning: ${message}`);
+    console.warn(`Warning: ${message}`);
   }
 }
 

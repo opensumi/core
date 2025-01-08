@@ -26,7 +26,6 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
-  private cacheFileStat: Map<string, FileStat> = new Map();
 
   private userhomePath: URI;
 
