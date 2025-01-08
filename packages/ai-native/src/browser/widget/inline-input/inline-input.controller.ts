@@ -1,4 +1,5 @@
 import { Injectable } from '@opensumi/di';
+import { IAIInlineChatService } from '@opensumi/ide-core-browser';
 import {
   CancelResponse,
   Disposable,
@@ -21,7 +22,7 @@ import { LanguageParserService } from '../../languages/service';
 import { ERunStrategy } from '../../types';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { InlineChatFeatureRegistry } from '../inline-chat/inline-chat.feature.registry';
-import { EInlineChatStatus, EResultKind } from '../inline-chat/inline-chat.service';
+import { AIInlineChatService, EInlineChatStatus, EResultKind } from '../inline-chat/inline-chat.service';
 import { InlineInputPreviewDecorationID } from '../internal.type';
 
 import { InlineInputChatWidget } from './inline-input-widget';
@@ -46,6 +47,10 @@ export class InlineInputController extends BaseAIMonacoEditorController {
 
   private get languageParserService(): LanguageParserService {
     return this.injector.get(LanguageParserService);
+  }
+
+  private get inlineChatService(): AIInlineChatService {
+    return this.injector.get(IAIInlineChatService);
   }
 
   mount(): IDisposable {
@@ -202,6 +207,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
           // 选中当前行
           monacoEditor.setSelection(new monaco.Selection(position.lineNumber, 1, position.lineNumber, Infinity));
         }
+        this.inlineChatService.launchInputVisible(true);
         return;
       }
 
