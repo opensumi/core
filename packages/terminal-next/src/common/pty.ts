@@ -539,7 +539,7 @@ export interface IShellLaunchConfig {
   /**
    * The color ID to use for this terminal. If not specified it will use the default fallback
    */
-  color?: string | vscode.ThemeColor;
+  color?: string | undefined | vscode.ThemeColor;
 
   /**
    * When a parent terminal is provided via API, the group needs
