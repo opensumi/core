@@ -86,6 +86,10 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
         // FIXME：暂时写死3秒
       }, 3000);
 
+      if (options?.excludes) {
+        this.updateWatcherFileExcludes(options.excludes);
+      }
+
       this.doWatchFileChange(uri, options).then(() => {
         resolve(void 0);
         if (timer) {
@@ -379,7 +383,9 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       if (!options || !options.excludes || options.excludes.length < 1) {
         return false;
       }
-      return options.excludesPattern.some((match) => match(path));
+
+      const excludesPattern = [...this.excludes.map((pattern) => parseGlob(pattern)), ...options.excludesPattern];
+      return excludesPattern.some((match) => match(path));
     };
 
     const filterEvents = events.filter((event) => {
