@@ -201,6 +201,16 @@ export const FileDialog = ({
     [model, isReady, selectPath],
   );
 
+  const onSearchChangeHandler = useCallback(
+    async (value: string) => {
+      setIsReady(false);
+      setSelectPath(value);
+      await model.updateTreeModel(value);
+      setIsReady(true);
+    },
+    [model, isReady, selectPath, directoryList],
+  );
+
   const renderDialogTreeNode = useCallback(
     (props: INodeRendererProps) => (
       <FileTreeDialogNode
@@ -237,7 +247,15 @@ export const FileDialog = ({
   const renderDirectorySelection = useCallback(() => {
     if (directoryList.length > 0) {
       return (
-        <Select onChange={onRootChangeHandler} className={styles.select_control} size={'small'} value={selectPath}>
+        <Select
+          onChange={onRootChangeHandler}
+          onSearchChange={onSearchChangeHandler}
+          className={styles.select_control}
+          size='large'
+          searchPlaceholder={selectPath}
+          value={selectPath}
+          showSearch={true}
+        >
           {directoryList.map((item, idx) => (
             <Option value={item} key={`${idx} - ${item}`}>
               {item}

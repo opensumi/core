@@ -1,8 +1,9 @@
 import cls from 'classnames';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import './style.less';
 import { Icon, getIcon } from '../icon';
+import { Input } from '../input';
+import './style.less';
 
 export interface IDataOption<T> {
   iconClass?: string;
@@ -25,6 +26,7 @@ export interface ISelectProps<T = string> {
   value?: T;
   disabled?: boolean;
   onChange?: (value: T) => void;
+  onSearchChange?: (value: string) => void;
   /**
    * 当鼠标划过时触发回调
    * @param value 鼠标划过的是第几个 option
@@ -226,6 +228,39 @@ function defaultFilterOption<T>(input: string, option: IDataOption<T>) {
   return false;
 }
 
+interface ISelectedContentProps<T = any> {
+  selected: IDataOption<T>;
+  selectedRenderer?: React.FC<{ data: IDataOption<T> }> | React.ComponentClass<{ data: IDataOption<T> }>;
+}
+
+const SelectedContent = React.memo(<T,>({ selected, selectedRenderer: CustomSC }: ISelectedContentProps<T>) => {
+  if (CustomSC) {
+    return <CustomSC data={selected} />;
+  }
+  return (
+    <>
+      {selected.iconClass && <div className={cls(selected.iconClass, 'kt-select-option-icon')} />}
+      <span className='kt-select-option'>{selected.label}</span>
+    </>
+  );
+});
+
+const SearchInput = React.memo<{
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  size?: 'large' | 'default' | 'small';
+}>(({ value, onChange, placeholder, size = 'default' }) => (
+  <Input
+    className='kt-select-search'
+    value={value}
+    size={size}
+    onChange={(e) => onChange(e.target.value)}
+    autoFocus
+    placeholder={placeholder || ''}
+  />
+));
+
 export function Select<T = string>({
   disabled,
   options,
@@ -254,6 +289,7 @@ export function Select<T = string>({
   dropdownRenderType = 'fixed',
   description,
   notMatchWarning,
+  onSearchChange,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
@@ -261,19 +297,17 @@ export function Select<T = string>({
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
 
-  const toggleOpen = useCallback(
-    (e) => {
+  const handleToggleOpen = useCallback(
+    (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      const target = !open;
-      if (target) {
-        if (onBeforeShowOptions && onBeforeShowOptions()) {
-          return;
-        }
+
+      if (!open && onBeforeShowOptions?.()) {
+        return;
       }
-      setOpen(target);
+      setOpen(!open);
     },
-    [open, onBeforeShowOptions, onBeforeShowOptions],
+    [open, onBeforeShowOptions],
   );
 
   const getSelectedValue = useCallback(() => {
@@ -388,99 +422,115 @@ export function Select<T = string>({
   }, []);
 
   useEffect(() => {
-    if (selectRef.current && overlayRef.current) {
-      const boxRect = selectRef.current.getBoundingClientRect();
-      if (allowOptionsOverflow) {
-        overlayRef.current.style.minWidth = `${boxRect.width}px`;
-        // 防止戳出屏幕
-        overlayRef.current.style.maxWidth = `${window.innerWidth - boxRect.left - 4}px`;
-      } else {
-        overlayRef.current.style.width = `${boxRect.width}px`;
-      }
-      // 防止戳出下方屏幕
-      const toBottom = window.innerHeight - boxRect.bottom - 50;
-      if (toBottom < overlayRef.current.clientHeight) {
-        // 下方距离小于浮层高度，设置向上弹出选择框
-        overlayRef.current.style.bottom = selectRef.current.clientHeight + 4 + 'px';
-      } else {
-        // 下方距离大于浮层高度，设置最大高度为下方距离
-        overlayRef.current.style.maxHeight = `${toBottom}px`;
-      }
-      overlayRef.current.style.position = dropdownRenderType === 'fixed' ? 'fixed' : 'absolute';
+    if (!open) {
+      return;
     }
-    if (open) {
-      const listener = () => {
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
         setOpen(false);
-      };
-      document.addEventListener('click', listener);
-      return () => {
-        document.removeEventListener('click', listener);
-      };
-    }
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, [open]);
 
-  // 根据搜索输入过滤 options
-  if (searchInput) {
-    if (options && isDataOptions(options)) {
-      options = options.filter((o) => filterOption(searchInput, o));
-    } else if (options && isDataOptionGroups(options)) {
-      const result: Array<IDataOptionGroup<T>> = [];
-      for (const group of options) {
-        const filteredGroup: IDataOptionGroup<T> = {
-          iconClass: group.iconClass,
-          groupName: group.groupName,
-          options: group.options.filter((o) => filterOption(searchInput, o, group)),
-        };
-        if (filteredGroup.options.length > 0) {
-          // 不显示空的group
-          result.push(filteredGroup);
-        }
-      }
-      options = result;
+  const updateOverlayPosition = useCallback(() => {
+    if (!selectRef.current || !overlayRef.current) {
+      return;
     }
-  }
 
-  const renderSelected = () => {
-    const CustomSC = selectedRenderer;
-    return (
-      <React.Fragment>
-        {CustomSC ? (
-          <CustomSC data={selected} />
-        ) : (
-          <React.Fragment>
-            {selected.iconClass ? <div className={cls(selected.iconClass, 'kt-select-option-icon')}></div> : undefined}
-            <span className={'kt-select-option'}>{selected.label}</span>
-          </React.Fragment>
-        )}
-        <Icon iconClass={cls(getIcon('down'), 'kt-select-value-default-icon')} />
-      </React.Fragment>
-    );
-  };
+    const selectRect = selectRef.current.getBoundingClientRect();
+    const overlayEl = overlayRef.current;
+
+    // 设置宽度
+    if (allowOptionsOverflow) {
+      overlayEl.style.minWidth = `${selectRect.width}px`;
+      overlayEl.style.maxWidth = `${window.innerWidth - selectRect.left - 4}px`;
+    } else {
+      overlayEl.style.width = `${selectRect.width}px`;
+    }
+
+    // 计算位置
+    const spaceBelow = window.innerHeight - selectRect.bottom - 50;
+    const overlayHeight = overlayEl.clientHeight;
+
+    if (spaceBelow < overlayHeight) {
+      overlayEl.style.bottom = `${selectRect.height + 4}px`;
+    } else {
+      overlayEl.style.maxHeight = `${spaceBelow}px`;
+      overlayEl.style.bottom = 'auto';
+    }
+
+    overlayEl.style.position = dropdownRenderType;
+  }, [allowOptionsOverflow, dropdownRenderType]);
+
+  useEffect(() => {
+    if (open) {
+      updateOverlayPosition();
+      window.addEventListener('resize', updateOverlayPosition);
+      return () => window.removeEventListener('resize', updateOverlayPosition);
+    }
+  }, [open, updateOverlayPosition]);
+
+  const filteredOptions = useMemo(() => {
+    if (!searchInput) {
+      return options;
+    }
+
+    if (isDataOptions(options)) {
+      return options.filter((o) => filterOption(searchInput, o));
+    }
+
+    if (isDataOptionGroups(options)) {
+      return options.reduce<IDataOptionGroup<T>[]>((groups, group) => {
+        const filteredOpts = group.options.filter((o) => filterOption(searchInput, o, group));
+        if (filteredOpts.length) {
+          groups.push({
+            ...group,
+            options: filteredOpts,
+          });
+        }
+        return groups;
+      }, []);
+    }
+
+    return options;
+  }, [options, searchInput, filterOption]);
+
+  const renderSelected = () => (
+    <>
+      <SelectedContent selected={selected} selectedRenderer={selectedRenderer} />
+      <Icon iconClass={cls(getIcon('down'), 'kt-select-value-default-icon')} />
+    </>
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchInput(value);
+      onSearchChange?.(value);
+    },
+    [searchInput, onSearchChange],
+  );
 
   const renderSearch = () => (
-    <input
-      className={cls('kt-select-search')}
-      onChange={(e) => {
-        setSearchInput(e.target.value);
-      }}
-      value={searchInput}
-      autoFocus
-      placeholder={searchPlaceholder || ''}
-    />
+    <SearchInput value={searchInput} onChange={handleSearchChange} placeholder={searchPlaceholder} />
   );
 
   return (
     <div className={cls('kt-select-container', className)} ref={selectRef}>
-      <div className={selectClasses} onClick={toggleOpen} style={style}>
+      <div className={selectClasses} onClick={handleToggleOpen} style={style}>
         {showSearch && open ? renderSearch() : renderSelected()}
       </div>
       {showWarning && <div className='kt-select-warning-text'>{notMatchWarning}</div>}
 
       {open &&
-        (isDataOptions(options) || isDataOptionGroups(options) ? (
+        !searchInput &&
+        (isDataOptions(filteredOptions) || isDataOptionGroups(filteredOptions) ? (
           <SelectOptionsList
             optionRenderer={optionRenderer}
-            options={options}
+            options={filteredOptions}
             equals={equals}
             optionStyle={optionStyle}
             currentValue={value}
@@ -506,7 +556,7 @@ export function Select<T = string>({
             {options && (options as React.ReactNode[]).map((v, i) => Wrapper(v, i))}
             {children && flatChildren(children, Wrapper)}
             {description && <Description text={description} />}
-            <div className='kt-select-overlay' onClick={toggleOpen}></div>
+            <div className='kt-select-overlay' onClick={handleToggleOpen}></div>
           </div>
         ))}
     </div>
