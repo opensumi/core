@@ -1,9 +1,8 @@
 import fs, { watch } from 'fs-extra';
-import { upperFirst } from 'lodash';
 import debounce from 'lodash/debounce';
 
 import { ILogService } from '@opensumi/ide-core-common/lib/log';
-import { Disposable, DisposableCollection, FileUri, IDisposable, isMacintosh, path } from '@opensumi/ide-utils/lib';
+import { Disposable, DisposableCollection, FileUri, isMacintosh, path } from '@opensumi/ide-utils/lib';
 
 import { FileChangeType, FileSystemWatcherClient, IWatcher } from '../../../common/index';
 import { FileChangeCollection } from '../../file-change-collection';
@@ -34,15 +33,17 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
       this.watcherCollections.set(basePath, watcher);
 
       this.logger.log('[Un-Recursive] start watching', basePath);
-      const isDirectory = fs.lstatSync(basePath).isDirectory();
+      const isDirectory = (await fs.lstat(basePath)).isDirectory();
 
       const docChildren = new Set<string>();
       let signalDoc = '';
       if (isDirectory) {
         try {
-          for (const child of fs.readdirSync(basePath)) {
+          const children = await fs.readdir(basePath);
+          for (const child of children) {
             const base = join(basePath, String(child));
-            if (!fs.lstatSync(base).isDirectory()) {
+            const childStat = await fs.lstat(base);
+            if (!childStat.isDirectory()) {
               docChildren.add(child);
             }
           }
@@ -61,7 +62,7 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
         watcher.close();
       });
 
-      watcher.on('change', (type: string, filename: string | Buffer) => {
+      watcher.on('change', async (type: string, filename: string | Buffer) => {
         if (shouldIgnorePath(filename as string)) {
           return;
         }
@@ -79,21 +80,22 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
         }
 
         const changePath = join(basePath, changeFileName);
+        const pathExist = await fs.pathExists(changePath);
         if (isDirectory) {
           setTimeout(async () => {
             // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
             if (docChildren.has(changeFileName)) {
               if ((type === 'rename' || type === 'change') && changeFileName === filename) {
-                const fileExists = fs.existsSync(changePath);
-                if (fileExists) {
+                if (pathExist) {
                   this.pushUpdated(changePath);
                 } else {
                   docChildren.delete(changeFileName);
                   this.pushDeleted(changePath);
                 }
               }
-            } else if (fs.pathExistsSync(changePath)) {
-              if (!fs.lstatSync(changePath).isDirectory()) {
+            } else if (pathExist) {
+              const fileStat = await fs.lstat(changePath);
+              if (!fileStat.isDirectory()) {
                 this.pushAdded(changePath);
                 docChildren.add(changeFileName);
               }
@@ -102,7 +104,7 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
         } else {
           setTimeout(async () => {
             if (changeFileName === signalDoc) {
-              if (fs.pathExistsSync(basePath)) {
+              if (pathExist) {
                 this.pushUpdated(basePath);
               } else {
                 this.pushDeleted(basePath);
