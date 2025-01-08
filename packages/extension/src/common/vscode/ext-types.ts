@@ -991,7 +991,7 @@ export enum TextEditorLineNumbersStyle {
 
 @es5ClassCompat
 export class ThemeColor {
-  readonly id: string;
+  id: string;
   constructor(id: string) {
     this.id = id;
   }
