@@ -233,7 +233,7 @@ export default class Modal extends React.Component<PropsWithChildren<ModalProps>
         animation={this.props.animation}
         getContainer={getContainer}
         prefixCls={prefixCls}
-        className={cls({ [`${prefixCls}-centered`]: !!centered }, wrapClassName)}
+        wrapClassName={cls({ [`${prefixCls}-centered`]: !!centered }, wrapClassName)}
         footer={footer === undefined ? defaultFooter : footer}
         visible={visible}
         mousePosition={mousePosition}
