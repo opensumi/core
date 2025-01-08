@@ -7,25 +7,23 @@ import { FileUri } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
-import { FileSystemWatcherServer } from '../../src/node/hosted/recursive/file-service-watcher';
+import { RecursiveFileSystemWatcher } from '../../src/node/hosted/recursive/file-service-watcher';
 
 const sleepTime = 1000;
 
 (isMacintosh ? describe.skip : describe)('ParceWatcher Test', () => {
   const track = temp.track();
-  const watcherServerList: FileSystemWatcherServer[] = [];
+  const watcherServerList: RecursiveFileSystemWatcher[] = [];
   let seed = 1;
 
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir(`parce-watcher-test-${seed++}`)));
-    // @ts-ignore
-    const watcherServer = new FileSystemWatcherServer([], injector.get(ILogServiceManager).getLogger());
-    watcherServer['isEnableNSFW'] = () => false;
+    const watcherServer = new RecursiveFileSystemWatcher([], injector.get(ILogServiceManager).getLogger());
 
-    const watcherId = await watcherServer.watchFileChanges(root.toString());
+    await watcherServer.watchFileChanges(root.toString());
 
-    return { root, watcherServer, watcherId };
+    return { root, watcherServer };
   }
 
   afterAll(async () => {
@@ -77,11 +75,11 @@ const sleepTime = 1000;
         event.changes.forEach((c) => actualUris.add(c.uri.toString()));
       },
     };
-    const { root, watcherServer, watcherId } = await generateWatcher();
+    const { root, watcherServer } = await generateWatcher();
     watcherServer.setClient(watcherClient);
 
     /* Unwatch root */
-    await watcherServer.unwatchFileChanges(watcherId);
+    await watcherServer.unwatchFileChanges(root.toString());
 
     fse.mkdirSync(FileUri.fsPath(root.resolve('foo')), { recursive: true });
     expect(fse.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
@@ -102,22 +100,19 @@ const sleepTime = 1000;
   });
 
   it('Merge common events on one watcher', async () => {
-    const { root, watcherServer, watcherId } = await generateWatcher();
+    const { root, watcherServer } = await generateWatcher();
     const folderName = `folder_${seed}`;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
-    expect(watcherId).toBeDefined();
     fse.mkdirSync(newFolder, { recursive: true });
-    const newWatcherId = await watcherServer.watchFileChanges(newFolder);
-    expect(newWatcherId === watcherId).toBeTruthy();
+    await watcherServer.watchFileChanges(newFolder);
     watcherServerList.push(watcherServer);
   });
 
   it('Can receive events while watch file is not existed', async () => {
-    const { root, watcherServer, watcherId } = await generateWatcher();
+    const { root, watcherServer } = await generateWatcher();
 
     const folderName = `folder_${seed}`;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
-    expect(watcherId).toBeDefined();
     fse.mkdirSync(newFolder, { recursive: true });
     const parentId = await watcherServer.watchFileChanges(newFolder);
     const childFile = FileUri.fsPath(root.resolve(folderName).resolve('index.js'));
@@ -146,13 +141,13 @@ const sleepTime = 1000;
     await fse.ensureFile(fileA);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toHaveBeenCalledTimes(1);
-    await watcherServer.unwatchFileChanges(id);
+    await watcherServer.unwatchFileChanges(newFolder.toString());
 
     id = await watcherServer.watchFileChanges(newFolder, { excludes: ['**/b/**'] });
     await fse.ensureFile(fileB);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toHaveBeenCalledTimes(1);
-    await watcherServer.unwatchFileChanges(id);
+    await watcherServer.unwatchFileChanges(newFolder.toString());
     watcherServerList.push(watcherServer);
   });
 });
@@ -163,7 +158,7 @@ const sleepTime = 1000;
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('nfsw-test')));
-    const watcherServer = new FileSystemWatcherServer([], injector.get(ILogServiceManager).getLogger());
+    const watcherServer = new RecursiveFileSystemWatcher([], injector.get(ILogServiceManager).getLogger());
     watcherServer['isEnableNSFW'] = () => false;
 
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
@@ -173,7 +168,7 @@ const sleepTime = 1000;
 
     return { root, watcherServer };
   }
-  const watcherServerList: FileSystemWatcherServer[] = [];
+  const watcherServerList: RecursiveFileSystemWatcher[] = [];
 
   afterAll(async () => {
     track.cleanupSync();

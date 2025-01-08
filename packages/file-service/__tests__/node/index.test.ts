@@ -9,8 +9,7 @@ import { expectThrowsAsync } from '@opensumi/ide-core-node/__tests__/helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { FileSystemWatcherServer } from '../../lib/node/hosted/recursive/file-service-watcher';
-import { WatcherProcessManagerToken } from '../../lib/node/watcher-process-manager';
+import { RecursiveFileSystemWatcher } from '../../lib/node/hosted/recursive/file-service-watcher';
 import { FileChangeType, IDiskFileProvider, IFileService } from '../../src/common';
 import { FileService, FileServiceModule } from '../../src/node';
 
@@ -28,7 +27,7 @@ describe('FileService', () => {
 
     injector = createNodeInjector([FileServiceModule]);
     // @ts-ignore
-    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
+    injector.mock(RecursiveFileSystemWatcher, 'isEnableNSFW', () => false);
     fileService = injector.get(IFileService);
   });
 
