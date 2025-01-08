@@ -268,7 +268,7 @@ export interface TerminalOptions {
    * The `terminal.ansi*` theme keys are
    * recommended for the best contrast and consistency across themes.
    */
-  color?: vscode.ThemeColor;
+  color?: string | vscode.ThemeColor;
 
   /**
    * @deprecated Use `ICreateClientWithWidgetOptions.closeWhenExited` instead. Will removed in 2.17.0
@@ -539,7 +539,7 @@ export interface IShellLaunchConfig {
   /**
    * The color ID to use for this terminal. If not specified it will use the default fallback
    */
-  color?: string | vscode.ThemeColor;
+  color?: string | undefined | vscode.ThemeColor;
 
   /**
    * When a parent terminal is provided via API, the group needs
