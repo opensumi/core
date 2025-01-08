@@ -44,7 +44,9 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
-  const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
+  const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(
+    aiInlineChatService.interactiveInputVisible,
+  );
   useEffect(() => {
     const dis = new Disposable();
     dis.addDispose(onChatStatus((s) => setStatus(s)));

@@ -387,6 +387,6 @@ export function getCDNHref(
   }
 }
 
-export function getTreeSitterWasmCDNUri(CDNType: string = 'alipay') {
+export function getTreeSitterWasmCDNUri(CDNType: string = 'npmmirror') {
   return getCDNHref('@opensumi/tree-sitter-wasm', '', '0.0.2', CDNType as TComponentCDNType);
 }

@@ -1,5 +1,5 @@
 import { marked } from 'marked';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
 import { HeadingLevels, MarkdownReactRenderer } from './render';
 
@@ -16,93 +16,115 @@ export class MarkdownReactParser extends marked.Renderer {
   }
 
   parse(tokens: marked.Token[]): ReactNode[] {
-    return tokens.map((token) => {
-      switch (token.type) {
-        case 'html': {
-          return this.renderer.html(token.text);
-        }
+    return tokens.map((token, index) => {
+      const element = (() => {
+        switch (token.type) {
+          case 'html': {
+            return this.renderer.html(token.text);
+          }
 
-        case 'space': {
-          return null;
-        }
+          case 'space': {
+            return null;
+          }
 
-        case 'heading': {
-          const level = token.depth as HeadingLevels;
-          return this.renderer.heading(this.parseInline(token.tokens), level);
-        }
+          case 'heading': {
+            const level = token.depth as HeadingLevels;
+            return this.renderer.heading(this.parseInline(token.tokens), level);
+          }
 
-        case 'paragraph': {
-          return this.renderer.paragraph(this.parseInline(token.tokens));
-        }
+          case 'paragraph': {
+            return this.renderer.paragraph(this.parseInline(token.tokens));
+          }
 
-        case 'text': {
-          const textToken = token as marked.Tokens.Text;
-          return textToken.tokens ? this.parseInline(textToken.tokens) : token.text;
-        }
+          case 'text': {
+            const textToken = token as marked.Tokens.Text;
+            return textToken.tokens ? this.parseInline(textToken.tokens) : token.text;
+          }
 
-        case 'blockquote': {
-          const blockquoteToken = token as marked.Tokens.Blockquote;
-          const quote = this.parse(blockquoteToken.tokens);
-          return this.renderer.blockquote(quote);
-        }
+          case 'blockquote': {
+            const blockquoteToken = token as marked.Tokens.Blockquote;
+            const quote = this.parse(blockquoteToken.tokens);
+            return this.renderer.blockquote(quote);
+          }
 
-        case 'list': {
-          const listToken = token as marked.Tokens.List;
+          case 'list': {
+            const listToken = token as marked.Tokens.List;
 
-          const children = listToken.items.map((item) => {
-            const listItemChildren: ReactNode[] = [];
+            const children = listToken.items.map((item, itemIndex) => {
+              const listItemChildren: ReactNode[] = [];
 
-            if (item.task) {
-              listItemChildren.push(this.renderer.checkbox(item.checked ?? false));
-            }
+              if (item.task) {
+                listItemChildren.push(this.renderer.checkbox(item.checked ?? false));
+              }
 
-            listItemChildren.push(this.parse(item.tokens));
+              listItemChildren.push(this.parse(item.tokens));
 
-            return this.renderer.listItem(listItemChildren);
-          });
+              return React.cloneElement(this.renderer.listItem(listItemChildren) as React.ReactElement, {
+                key: `list-item-${itemIndex}`,
+              });
+            });
 
-          return this.renderer.list(children, token.ordered);
-        }
+            return this.renderer.list(children, token.ordered);
+          }
 
-        case 'code': {
-          return this.renderer.code(token.text, token.lang);
-        }
+          case 'code': {
+            return this.renderer.code(token.text, token.lang);
+          }
 
-        case 'table': {
-          const tableToken = token as marked.Tokens.Table;
-          const headerCells = tableToken.header.map((cell, index) =>
-            this.renderer.tableCell(this.parseInline(cell.tokens), { header: true, align: token.align[index] }),
-          );
-
-          const headerRow = this.renderer.tableRow(headerCells);
-          const header = this.renderer.tableHeader(headerRow);
-
-          const bodyChilren = tableToken.rows.map((row) => {
-            const rowChildren = row.map((cell, index) =>
-              this.renderer.tableCell(this.parseInline(cell.tokens), {
-                header: false,
-                align: token.align[index],
-              }),
+          case 'table': {
+            const tableToken = token as marked.Tokens.Table;
+            const headerCells = tableToken.header.map((cell, cellIndex) =>
+              React.cloneElement(
+                this.renderer.tableCell(this.parseInline(cell.tokens), {
+                  header: true,
+                  align: token.align[cellIndex],
+                }) as React.ReactElement,
+                { key: `header-cell-${cellIndex}` },
+              ),
             );
 
-            return this.renderer.tableRow(rowChildren);
-          });
+            const headerRow = React.cloneElement(this.renderer.tableRow(headerCells) as React.ReactElement, {
+              key: 'header-row',
+            });
+            const header = this.renderer.tableHeader(headerRow);
 
-          const body = this.renderer.tableBody(bodyChilren);
+            const bodyChilren = tableToken.rows.map((row, rowIndex) => {
+              const rowChildren = row.map((cell, cellIndex) =>
+                React.cloneElement(
+                  this.renderer.tableCell(this.parseInline(cell.tokens), {
+                    header: false,
+                    align: token.align[cellIndex],
+                  }) as React.ReactElement,
+                  { key: `body-cell-${rowIndex}-${cellIndex}` },
+                ),
+              );
 
-          return this.renderer.table([header, body]);
+              return React.cloneElement(this.renderer.tableRow(rowChildren) as React.ReactElement, {
+                key: `body-row-${rowIndex}`,
+              });
+            });
+
+            const body = this.renderer.tableBody(bodyChilren);
+
+            return this.renderer.table([header, body]);
+          }
+
+          case 'hr': {
+            return this.renderer.hr();
+          }
+
+          default: {
+            // eslint-disable-next-line no-console
+            console.warn(`Token with "${token.type}" type was not found`);
+            return null;
+          }
         }
+      })();
 
-        case 'hr': {
-          return this.renderer.hr();
-        }
-
-        default: {
-          // eslint-disable-next-line no-console
-          console.warn(`Token with "${token.type}" type was not found`);
-          return null;
-        }
+      if (React.isValidElement(element)) {
+        return React.cloneElement(element, { key: `token-${index}` });
       }
+      return element;
     });
   }
 
