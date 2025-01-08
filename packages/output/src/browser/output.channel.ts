@@ -157,9 +157,18 @@ export class OutputChannel extends Disposable {
 
   appendLine(line: string): void {
     let value = line;
-    if (!line.endsWith('\r\n')) {
-      value = line + '\r\n';
+    if (typeof line !== 'string') {
+      try {
+        value = JSON.stringify(line);
+      } catch (e) {
+        value = `[${typeof line}]`;
+      }
     }
+
+    if (!value.endsWith('\r\n')) {
+      value = value + '\r\n';
+    }
+
     this.eventBus.fire(
       new ContentChangeEvent(
         new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, value, this.outputLines),
@@ -169,7 +178,7 @@ export class OutputChannel extends Disposable {
     if (this.shouldLogToBrowser) {
       // eslint-disable-next-line no-console
       console.log(
-        `%c[${this.name}]` + `%c ${line}}`,
+        `%c[${this.name}]` + `%c ${value}}`,
         'background:rgb(50, 150, 250); color: #fff',
         'background: none; color: inherit',
       );
