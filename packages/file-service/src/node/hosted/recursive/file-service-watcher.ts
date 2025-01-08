@@ -35,13 +35,6 @@ export interface WatcherOptions {
   excludes: string[];
 }
 
-const watcherPlaceHolder = {
-  disposable: {
-    dispose: () => {},
-  },
-  handlers: [],
-};
-
 /**
  * @deprecated
  */
