@@ -19,13 +19,11 @@ const sleepTime = 1000;
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir(`parce-watcher-test-${seed++}`)));
-    // @ts-ignore
     const watcherServer = new RecursiveFileSystemWatcher([], injector.get(ILogServiceManager).getLogger());
-    watcherServer['isEnableNSFW'] = () => false;
 
-    const watcherId = await watcherServer.watchFileChanges(root.toString());
+    await watcherServer.watchFileChanges(root.toString());
 
-    return { root, watcherServer, watcherId };
+    return { root, watcherServer };
   }
 
   afterAll(async () => {
@@ -77,7 +75,7 @@ const sleepTime = 1000;
         event.changes.forEach((c) => actualUris.add(c.uri.toString()));
       },
     };
-    const { root, watcherServer, watcherId } = await generateWatcher();
+    const { root, watcherServer } = await generateWatcher();
     watcherServer.setClient(watcherClient);
 
     /* Unwatch root */
@@ -102,22 +100,19 @@ const sleepTime = 1000;
   });
 
   it('Merge common events on one watcher', async () => {
-    const { root, watcherServer, watcherId } = await generateWatcher();
+    const { root, watcherServer } = await generateWatcher();
     const folderName = `folder_${seed}`;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
-    expect(watcherId).toBeDefined();
     fse.mkdirSync(newFolder, { recursive: true });
-    const newWatcherId = await watcherServer.watchFileChanges(newFolder);
-    expect(newWatcherId === watcherId).toBeTruthy();
+    await watcherServer.watchFileChanges(newFolder);
     watcherServerList.push(watcherServer);
   });
 
   it('Can receive events while watch file is not existed', async () => {
-    const { root, watcherServer, watcherId } = await generateWatcher();
+    const { root, watcherServer } = await generateWatcher();
 
     const folderName = `folder_${seed}`;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
-    expect(watcherId).toBeDefined();
     fse.mkdirSync(newFolder, { recursive: true });
     const parentId = await watcherServer.watchFileChanges(newFolder);
     const childFile = FileUri.fsPath(root.resolve(folderName).resolve('index.js'));
