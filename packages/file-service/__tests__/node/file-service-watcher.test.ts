@@ -81,7 +81,7 @@ const sleepTime = 1000;
     watcherServer.setClient(watcherClient);
 
     /* Unwatch root */
-    await watcherServer.unwatchFileChanges(watcherId);
+    await watcherServer.unwatchFileChanges(root.toString());
 
     fse.mkdirSync(FileUri.fsPath(root.resolve('foo')), { recursive: true });
     expect(fse.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
@@ -146,13 +146,13 @@ const sleepTime = 1000;
     await fse.ensureFile(fileA);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toHaveBeenCalledTimes(1);
-    await watcherServer.unwatchFileChanges(id);
+    await watcherServer.unwatchFileChanges(newFolder.toString());
 
     id = await watcherServer.watchFileChanges(newFolder, { excludes: ['**/b/**'] });
     await fse.ensureFile(fileB);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toHaveBeenCalledTimes(1);
-    await watcherServer.unwatchFileChanges(id);
+    await watcherServer.unwatchFileChanges(newFolder.toString());
     watcherServerList.push(watcherServer);
   });
 });
