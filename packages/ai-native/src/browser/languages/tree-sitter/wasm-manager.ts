@@ -2,7 +2,7 @@ import Parser from 'web-tree-sitter';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { EKnownResources, RendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
-import { Deferred, path } from '@opensumi/ide-utils';
+import { Deferred, URI, path } from '@opensumi/ide-utils';
 
 /**
  * Managing and caching the wasm module
@@ -29,7 +29,10 @@ export class WasmModuleManager {
 
   async initParser() {
     const baseUrl = await this.resolvedResourceUriDeferred.promise;
-    const wasmPath = path.join(baseUrl, 'tree-sitter.wasm');
+    const url = new URI(baseUrl);
+    const protocal = url.scheme;
+    const wasmPath = new URI(path.join(url.path.toString(), 'tree-sitter.wasm')).withScheme(protocal);
+
     if (!this.parserInitialized) {
       await Parser.init({
         locateFile: () => wasmPath,
