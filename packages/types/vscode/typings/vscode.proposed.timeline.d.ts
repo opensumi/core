@@ -21,7 +21,7 @@ declare module 'vscode' {
     /**
      * The icon path or {@link ThemeIcon} for the timeline item.
      */
-    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    iconPath?: IconPath;
 
     /**
      * A human readable string describing less prominent details of the timeline item.

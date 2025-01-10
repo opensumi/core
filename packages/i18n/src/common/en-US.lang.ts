@@ -555,7 +555,7 @@ export const localizationBundle = {
     'preference.overwritten': '(Overwritten by next scope)',
     'preference.overwrittenInUser': '(Modified in User Settings)',
     'preference.overwrittenInWorkspace': '(Modified in Workspace Settings)',
-    'preference.searchPlaceholder': 'Search settings...',
+    'preference.searchPlaceholder': 'Search Settings...',
     'preference.editor.formatOnSave': 'Enable format on manual save.',
     'preference.editor.formatOnSaveTimeout':
       'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
@@ -1079,7 +1079,7 @@ export const localizationBundle = {
     'terminal.ai.escClose': 'Press ESC to close the dialog',
     'terminal.ai.headerHint': 'Use AI to get terminal input suggestions',
     'terminal.ai.inputHint': 'Eg. show current process pid',
-    'terminal.ai.inputSharpToGetHint': 'Type # for AI command suggestions',
+    'terminal.ai.inputSharpToGetHint': 'Type # for AI Suggestions',
     'terminal.ai.cannotGetTerminalConnection':
       'Cannot establish terminal connection, please provide feedback in the user group',
 
