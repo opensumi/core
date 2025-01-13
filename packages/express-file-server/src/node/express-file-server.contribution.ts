@@ -30,18 +30,6 @@ export class ExpressFileServerContribution implements ServerAppContribution {
           return;
         }
 
-        if (process.env.NODE_ENV === 'development' && uriPath.startsWith('/monaco/worker')) {
-          const filePath = path.resolve(__dirname, `../../../${uriPath}`);
-          const contentType = ALLOW_MIME[path.extname(filePath).slice(1)];
-          if (!contentType) {
-            ctx.status = 404;
-            return;
-          }
-          ctx.set('Content-Type', contentType);
-          ctx.body = fs.createReadStream(filePath);
-          return;
-        }
-
         const filePath = URI.parse(`file://${uriPath}`).codeUri.fsPath;
         const whitelist = this.getWhiteList();
         const contentType = ALLOW_MIME[path.extname(filePath).slice(1)];
