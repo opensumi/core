@@ -28,7 +28,6 @@ export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
     return this;
   }
 
-  private lastEditTime: number | null = null;
   protected doTrigger(position: Position) {
     const isLineChangeEnabled = this.preferenceService.getValid(AINativeSettingSectionsId.CodeEditsLineChange, false);
 
@@ -36,13 +35,6 @@ export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
       return;
     }
 
-    // 如果在 60 秒内再次编辑代码，则不触发
-    const currentTime = Date.now();
-    if (this.lastEditTime && currentTime - this.lastEditTime < 60 * 1000) {
-      return;
-    }
-
-    this.lastEditTime = currentTime;
     this.setBean({
       typing: ECodeEditsSourceTyping.LineChange,
       position,

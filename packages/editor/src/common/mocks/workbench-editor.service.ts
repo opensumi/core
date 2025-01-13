@@ -31,6 +31,14 @@ export class MockWorkbenchEditorService extends WorkbenchEditorService {
     throw new Error('Method not implemented.');
   }
 
+  save(uri: URI): Promise<URI | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
+  saveAs(uri: URI): Promise<URI | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
   saveAll(includeUntitled?: boolean): Promise<void> {
     throw new Error('Method not implemented.');
   }

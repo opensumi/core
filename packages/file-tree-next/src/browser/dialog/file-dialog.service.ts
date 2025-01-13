@@ -2,11 +2,15 @@ import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { ITreeNodeOrCompositeTreeNode, Tree, TreeNodeType } from '@opensumi/ide-components';
 import { Schemes, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { FileStat } from '@opensumi/ide-file-service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
+import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { IFileTreeAPI } from '../../common';
+import { IFileTreeAPI, IFileTreeService } from '../../common';
 import { Directory } from '../../common/file-tree-node.define';
+import { FileTreeService } from '../file-tree.service';
+import { FileTreeModelService } from '../services/file-tree-model.service';
 
 import { FileDialogContextKey } from './file-dialog.contextkey';
 
@@ -23,6 +27,21 @@ export class FileTreeDialogService extends Tree {
 
   @Autowired(FileDialogContextKey)
   private fileDialogContextKey: FileDialogContextKey;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
+
+  @Autowired(WorkbenchEditorService)
+  workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(IDialogService)
+  protected dialogService: IDialogService;
+
+  @Autowired(FileTreeModelService)
+  protected fileTreeModelService: FileTreeModelService;
+
+  @Autowired(IFileTreeService)
+  private readonly fileTreeService: FileTreeService;
 
   private workspaceRoot: FileStat;
 
@@ -125,6 +144,53 @@ export class FileTreeDialogService extends Tree {
 
   get contextKey() {
     return this.fileDialogContextKey;
+  }
+
+  async saveAs(options: { oldFilePath: string; newFilePath: string }) {
+    const { oldFilePath, newFilePath } = options;
+    if (!oldFilePath || !newFilePath) {
+      throw new Error('oldFilePath and newFilePath are required');
+    }
+    await this.createFile(options);
+    try {
+      const openUri: URI = URI.file(options.newFilePath);
+      const EDITOR_OPTIONS = {
+        preview: false,
+        focus: true,
+        replace: true,
+        forceClose: true,
+        disableNavigate: false,
+      };
+      await this.workbenchEditorService.open(openUri, EDITOR_OPTIONS);
+      await this.fileTreeModelService.clearFileSelectedDecoration();
+      const file = this.fileTreeService.getNodeByPathOrUri(openUri);
+      if (file) {
+        await this.fileTreeModelService.activeFileDecoration(file);
+      }
+    } catch (error) {
+      throw new Error(`Failed to open saveAs file: ${error.message}`);
+    }
+  }
+
+  async createFile(options: { oldFilePath: string; newFilePath: string }) {
+    try {
+      const { oldFilePath, newFilePath } = options;
+      let fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
+
+      if (!fileStat) {
+        throw new Error(`Source file not found: ${oldFilePath}`);
+      }
+
+      const { content } = await this.fileServiceClient.readFile(oldFilePath);
+
+      await this.fileServiceClient.createFile(newFilePath, {
+        content: content.toString(),
+        encoding: 'utf8',
+        overwrite: true,
+      });
+    } catch (e) {
+      throw new Error(`Failed to create file: ${e.message}`);
+    }
   }
 
   dispose() {

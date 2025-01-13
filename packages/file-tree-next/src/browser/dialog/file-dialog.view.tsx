@@ -72,6 +72,13 @@ export const FileDialog = ({
     // 如果有文件名的，说明肯定是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
       const filePath = value?.length === 1 ? value[0] : options.defaultUri!.path.toString();
+      if ((options as ISaveDialogOptions & { saveAs?: boolean | undefined })?.saveAs) {
+        fileService.saveAs({
+          oldFilePath: path.join(filePath!, (options as ISaveDialogOptions)?.defaultFileName || ''),
+          newFilePath: path.join(filePath!, fileName),
+        });
+      }
+
       dialogService.hide([path.join(filePath!, fileName)]);
     } else {
       if (value.length > 0) {
@@ -194,6 +201,16 @@ export const FileDialog = ({
     [model, isReady, selectPath],
   );
 
+  const onSearchChangeHandler = useCallback(
+    async (value: string) => {
+      setIsReady(false);
+      setSelectPath(value);
+      await model.updateTreeModel(value);
+      setIsReady(true);
+    },
+    [model, isReady, selectPath, directoryList],
+  );
+
   const renderDialogTreeNode = useCallback(
     (props: INodeRendererProps) => (
       <FileTreeDialogNode
@@ -230,7 +247,15 @@ export const FileDialog = ({
   const renderDirectorySelection = useCallback(() => {
     if (directoryList.length > 0) {
       return (
-        <Select onChange={onRootChangeHandler} className={styles.select_control} size={'small'} value={selectPath}>
+        <Select
+          onChange={onRootChangeHandler}
+          onSearchChange={onSearchChangeHandler}
+          className={styles.select_control}
+          size='large'
+          searchPlaceholder={selectPath}
+          value={selectPath}
+          showSearch={true}
+        >
           {directoryList.map((item, idx) => (
             <Option value={item} key={`${idx} - ${item}`}>
               {item}
