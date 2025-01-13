@@ -22,6 +22,7 @@ export enum AINativeSettingSectionsId {
    */
   CodeEditsLintErrors = 'ai.native.codeEdits.lintErrors',
   CodeEditsLineChange = 'ai.native.codeEdits.lineChange',
+  CodeEditsTyping = 'ai.native.codeEdits.typing',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';
