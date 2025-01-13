@@ -215,6 +215,7 @@ export class DebugSession implements IDebugSession {
         }
 
         this.onStateChange();
+        this.sessionManager.currentSession = this;
         this._onDidStop.fire(event);
       }),
       this.on('thread', (event: DebugProtocol.ThreadEvent) => {

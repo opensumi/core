@@ -7,7 +7,6 @@ import {
   IReporterService,
   PreferenceService,
   addClassName,
-  createClassNameTokens,
 } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,

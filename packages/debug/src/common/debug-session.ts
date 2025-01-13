@@ -32,6 +32,7 @@ export const IDebugSession = Symbol('DebugSession');
 
 export const IDebugSessionManager = Symbol('DebugSessionManager');
 export interface IDebugSessionManager {
+  currentSession: IDebugSession | undefined;
   fireWillStartDebugSession(): Promise<void>;
   resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<IDebugSessionDTO | undefined>;
   resolveDebugConfiguration(
