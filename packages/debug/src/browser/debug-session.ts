@@ -215,7 +215,7 @@ export class DebugSession implements IDebugSession {
         }
 
         this.onStateChange();
-        this.sessionManager.currentSession = this;
+        this.sessionManager.currentSession = this as IDebugSession;
         this._onDidStop.fire(event);
       }),
       this.on('thread', (event: DebugProtocol.ThreadEvent) => {
@@ -289,7 +289,7 @@ export class DebugSession implements IDebugSession {
   }
 
   getMemory(memoryReference: string): IMemoryRegion {
-    return new MemoryRegion(memoryReference, this);
+    return new MemoryRegion(memoryReference, this as IDebugSession);
   }
 
   get configuration(): DebugConfiguration {

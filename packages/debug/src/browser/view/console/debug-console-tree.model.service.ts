@@ -21,7 +21,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { IDebugConsoleModelService, IDebugSessionManager } from '../../../common';
+import { IDebugConsoleModelService, IDebugSession, IDebugSessionManager } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
 import { DebugSession } from '../../debug-session';
 import { DidChangeActiveDebugSession } from '../../debug-session-manager';
@@ -248,7 +248,7 @@ export class DebugConsoleModelService implements IDebugConsoleModelService {
     );
   }
 
-  async initTreeModel(session?: DebugSession, force?: boolean) {
+  async initTreeModel(session?: IDebugSession, force?: boolean) {
     if (!session) {
       this._activeDebugSessionModel = undefined;
       this.onDidUpdateTreeModelEmitter.fire(this._activeDebugSessionModel);
@@ -535,7 +535,7 @@ export class DebugConsoleModelService implements IDebugConsoleModelService {
     const textNode = new AnsiConsoleNode(value, parent, this.linkDetector);
     this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: textNode, id: parent.id });
     const expressionNode = new DebugConsoleNode(
-      { session: this.manager.currentSession },
+      { session: this.manager.currentSession as DebugSession },
       value,
       parent as ExpressionContainer,
     );
