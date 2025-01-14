@@ -5,7 +5,7 @@ import { DisposableCollection, Emitter, Event, ILogger, MessageType, localize } 
 import { IThemeService } from '@opensumi/ide-theme';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
-import { IDebugConsoleSession } from '../../../common';
+import { IDebugConsoleSession, IDebugSession } from '../../../common';
 import { handleANSIOutput } from '../../debug-ansi-handle';
 import { LinkDetector } from '../../debug-link-detector';
 import { DebugSession } from '../../debug-session';
@@ -59,8 +59,8 @@ export class DebugConsoleSession implements IDebugConsoleSession {
     this.toDispose.push(this.session.on('output', (event) => this.logOutput(this.session, event)));
   }
 
-  addChildSession(child: DebugSession): void {
-    this.toDispose.push(child.on('output', (event) => this.logOutput(child, event)));
+  addChildSession(child: IDebugSession): void {
+    this.toDispose.push(child.on('output', (event) => this.logOutput(child as DebugSession, event)));
   }
 
   get onDidChange(): Event<void> {

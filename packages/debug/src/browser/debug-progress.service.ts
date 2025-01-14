@@ -9,9 +9,7 @@ import { DisposableCollection, IProgress, IProgressStep, ProgressLocation } from
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { IDebugProgress } from '../common/debug-progress';
-import { DebugState, IDebugSessionManager } from '../common/debug-session';
-
-import { DebugSession } from './debug-session';
+import { DebugState, IDebugSession, IDebugSessionManager } from '../common/debug-session';
 
 @Injectable()
 export class DebugProgressService implements IDebugProgress {
@@ -42,7 +40,7 @@ export class DebugProgressService implements IDebugProgress {
 
   public run(sessionsManager: IDebugSessionManager): void {
     let progressListener: DisposableCollection | undefined;
-    const listenOnProgress = (session: DebugSession | undefined) => {
+    const listenOnProgress = (session: IDebugSession | undefined) => {
       progressListener = new DisposableCollection();
 
       if (session) {
