@@ -1504,8 +1504,10 @@ export const localizationBundle = {
     'preference.ai.native.intelligentCompletions.alwaysVisible': 'Whether to always show intelligent completions',
 
     'preference.ai.native.codeEdits.title': 'Code Edits',
-    'preference.ai.native.codeEdits.lintErrors': 'Whether to enable intelligent rewriting of Lint Errors',
-    'preference.ai.native.codeEdits.lineChange': 'Whether to enable intelligent rewriting of Line Change',
+    'preference.ai.native.codeEdits.lintErrors': 'Whether to trigger intelligent rewriting when Lint Error occurs',
+    'preference.ai.native.codeEdits.lineChange':
+      'Whether to trigger intelligent rewriting when the cursor line number changes',
+    'preference.ai.native.codeEdits.typing': 'Whether to trigger intelligent rewriting when the content changes',
     // #endregion AI Native
 
     // #endregion merge editor

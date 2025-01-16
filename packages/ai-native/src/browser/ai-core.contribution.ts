@@ -365,6 +365,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.CodeEditsLineChange,
             localized: 'preference.ai.native.codeEdits.lineChange',
           },
+          {
+            id: AINativeSettingSectionsId.CodeEditsTyping,
+            localized: 'preference.ai.native.codeEdits.typing',
+          },
         ],
       });
     }

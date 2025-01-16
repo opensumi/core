@@ -1271,8 +1271,9 @@ export const localizationBundle = {
     'preference.ai.native.intelligentCompletions.alwaysVisible': '是否总是展示智能补全',
 
     'preference.ai.native.codeEdits.title': '智能改写',
-    'preference.ai.native.codeEdits.lintErrors': '是否开启对 Lint Error 类型的智能改写',
-    'preference.ai.native.codeEdits.lineChange': '是否开启对 Line Change 类型的智能改写',
+    'preference.ai.native.codeEdits.lintErrors': '是否在发生 Lint Error 时触发智能改写',
+    'preference.ai.native.codeEdits.lineChange': '是否在光标行号发生变化时触发智能改写',
+    'preference.ai.native.codeEdits.typing': '是否在内容发生变化时触发智能改写',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',
