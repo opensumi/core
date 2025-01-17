@@ -53,6 +53,7 @@ import { LibroVariableModule } from './variables/libro-variable-module';
 import { VariablePanel } from './variables/variable-panel';
 import { VARIABLE_ID } from './variables/variable-protocol';
 import { LibroVersionPreview } from './libro-preview.view';
+import { LibroDiffModule } from './libro/diff-view';
 
 const LIBRO_COMPONENTS_VIEW_COMMAND = {
   id: 'opensumi-libro',
@@ -63,7 +64,14 @@ const LayoutWrapper: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <ManaComponents.Application
       context={{ container: manaContainer }}
-      modules={[ManaAppPreset, LibroJupyterNoEditorModule, LibroTOCModule, LibroOpensumiModule, LibroVariableModule]}
+      modules={[
+        ManaAppPreset,
+        LibroJupyterNoEditorModule,
+        LibroDiffModule,
+        LibroTOCModule,
+        LibroOpensumiModule,
+        LibroVariableModule,
+      ]}
       renderChildren
       onReady={() => setIsReady(true)}
     >
@@ -220,7 +228,9 @@ export class LibroContribution
     });
     // FIXME: diff 和 preview 用的一个组件，但是 prop 有不同，diff 的 origin 和 target 怎么传进去也要再看下
     registry.registerEditorComponentResolver('diff', (resource, results) => {
-      if (resource.uri.path.ext === '.ipynb') {
+      const { original, modified, name } = resource.uri.getParsedQuery();
+      const modifiedUri = new URI(modified);
+      if (modifiedUri.path.ext === '.ipynb') {
         results.push({
           type: 'component',
           componentId: LIBRO_PREVIEW_COMPONENT_ID,

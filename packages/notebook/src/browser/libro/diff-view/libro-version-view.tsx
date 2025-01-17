@@ -1,7 +1,8 @@
 import { LibroView } from '@difizen/libro-core';
 import { BaseView, ViewInstance, ViewOption, ViewRender, inject, prop, transient, useInject, view } from '@difizen/mana-app';
 import React, { forwardRef } from 'react';
-
+import { Switch } from 'antd';
+import type { LibroDiffView } from './';
 const LibroVersionRender = forwardRef<HTMLDivElement>((props, ref) => {
     const aistudioLibroVersionView = useInject<AIStudioLibroVersionView>(ViewInstance);
     // const headerLeftArgs = useMemo(() => {
@@ -11,14 +12,14 @@ const LibroVersionRender = forwardRef<HTMLDivElement>((props, ref) => {
     return (
       <div className="libro-version-container" ref={ref}>
         {/* TODO: header 功能？ */}
-        {/* <div className="libro-version-header">
-          <ToolbarRender data={headerLeftArgs} />
+        <div className="libro-version-header">
+          <Switch onChange={() => aistudioLibroVersionView.isDiff = !aistudioLibroVersionView.isDiff} defaultChecked={false} title='切换Diff视图' />
         </div>
         <div className="libro-version-diff-header">
-          {aistudioLibroVersionView.isDiff && aistudioLibroVersionView.libroDiffView && (
+          {/* {aistudioLibroVersionView.isDiff && aistudioLibroVersionView.libroDiffView && (
             <LibroDiffHeader />
-          )}
-        </div> */}
+          )} */}
+        </div>
         <div className="libro-version-content">
           {aistudioLibroVersionView.isDiff
             ? aistudioLibroVersionView.libroDiffView && (
@@ -34,7 +35,7 @@ const LibroVersionRender = forwardRef<HTMLDivElement>((props, ref) => {
   @view('libro-version-view')
   export class AIStudioLibroVersionView extends BaseView {
     view = LibroVersionRender;
-    @inject(ViewOption) options: LibroVersionViewOption;
+    @inject(ViewOption) options: any; // Placeholder until LibroVersionViewOption is defined
     @prop()
     isDiff: boolean = false;
     // for git preview
@@ -43,9 +44,5 @@ const LibroVersionRender = forwardRef<HTMLDivElement>((props, ref) => {
     // for git diff
     @prop()
     libroDiffView: LibroDiffView;
-    @prop()
-    aIStudioLibroVersionPanelView: AIStudioLibroVersionPanelView;
-    @prop()
-    selectedDiffItem: FileManagementVO;
     onViewMount() {}
   }

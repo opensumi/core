@@ -1,38 +1,27 @@
-import { Container, URI, ViewRender } from '@difizen/mana-app';
+import { Container, URI, ViewManager, ViewRender } from '@difizen/mana-app';
 import React, { useEffect, useState } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/types';
+import { ContentLoaderType, ManaContainer } from './mana';
+import { LibroVersionManager } from './libro/diff-view/libro-version-manager';
+import { AIStudioLibroVersionView } from './libro/diff-view/libro-version-view';
 
-import { ManaContainer } from './mana';
-import { LibroVersionManager } from './libro/libro-version-manager';
-import { AIStudioLibroVersionView } from './libro/libro-version.view';
-
-export const LibroVersionPreview: React.FC = (...params) => {
-  const uri = (params[0] as Record<string, any>).resource.uri as URI;
-  const previewType = uri.getParsedQuery().previewType;
-  const loadType = uri.getParsedQuery().loadType;
-  const gmtCreate = uri.getParsedQuery().gmtCreate;
-  const originFilePath = uri.getParsedQuery().originFilePath;
-  const originUri = new URI(originFilePath);
-  const id = Number(uri.getParsedQuery().id);
+export const LibroVersionPreview: ReactEditorComponent = ({ resource }) => {
+  const uri = resource.uri;
+  const originalUri = new URI(uri.getParsedQuery().original);
+  const targetUri = new URI(uri.getParsedQuery().modified);
   const manaContainer = useInjectable<Container>(ManaContainer);
-  // FIXME: 使用 git 版本服务
-  const libroVersionService =
-    useInjectable<LibroVersionService>(ILibroVersionService);
   const libroVersionManager = manaContainer.get(LibroVersionManager);
   const [versionView, setVersionView] = useState<AIStudioLibroVersionView>();
 
   useEffect(() => {
-    const curVersion = libroVersionService.versionMap.get(id);
     libroVersionManager
       .getOrCreateView({
-        originFileName: originUri.path.name,
-        originFilePath: originUri.path.toString(),
-        gmtCreate,
-        currentVersion: curVersion,
-        loadType,
-        previewType,
-        versionId: id,
+        resource: targetUri.toString(),
+        loadType: ContentLoaderType,
+        originalUri,
+        targetUri
       })
       .then((view) => {
         setVersionView(view);

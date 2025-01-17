@@ -1,6 +1,6 @@
-import type { ICell, INotebookContent } from '@alipay/libro-common';
-import { concatMultilineString } from '@alipay/libro-common';
-import type { View } from '@alipay/mana-app';
+import type { ICell, INotebookContent } from '@difizen/libro-common';
+import { concatMultilineString } from '@difizen/libro-common';
+import type { View } from '@difizen/mana-app';
 
 export const libroDiffViewFactoryId = 'libro-diff-view-factory';
 

@@ -1,6 +1,7 @@
-import type { ICell, MultilineString } from '@alipay/libro-common';
-import { LibroContentService } from '@alipay/libro-jupyter';
-import type { ViewComponent } from '@alipay/mana-app';
+import React from 'react';
+import type { ICell, MultilineString } from '@difizen/libro-common';
+import { LibroContentService } from '@difizen/libro-core';
+import type { ViewComponent } from '@difizen/mana-app';
 import {
   BaseView,
   getOrigin,
@@ -11,15 +12,16 @@ import {
   view,
   ViewInstance,
   ViewOption,
-} from '@alipay/mana-app';
+} from '@difizen/mana-app';
 import { ColumnHeightOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
 import { forwardRef, useEffect } from 'react';
-import { LibroDiffAddedCellComponent } from './components/libro-diff-added-cell-components';
 import { ContentSameIcon } from './components/libro-diff-all-cells-same-components';
-import { LibroDiffChangedCellComponent } from './components/libro-diff-changed-cell-components';
-import { LibroDiffRemovedCellComponent } from './components/libro-diff-removed-cell-components';
-import { LibroDiffUnchangedCellComponent } from './components/libro-diff-unchanged-cell-components';
+const LibroDiffAddedCellComponent = () => <div>Mock Added Cell Component</div>;
+const LibroDiffChangedCellComponent = () => <div>Mock Changed Cell Component</div>;
+const LibroDiffRemovedCellComponent = () => <div>Mock Removed Cell Component</div>;
+const LibroDiffUnchangedCellComponent = () => <div>Mock Unchanged Cell Component</div>;
+
 import './index.less';
 import type {
   DiffArrayItem,
@@ -33,6 +35,7 @@ import {
   DiffOption,
   libroDiffViewFactoryId,
 } from './libro-diff-protocol';
+import { ContentLoaderType } from '../../mana';
 
 function comparator(compareLeft: ICell, compareRight: ICell) {
   return compareLeft.id === compareRight.id;
@@ -168,7 +171,7 @@ export class LibroDiffView extends BaseView implements DiffView {
 
   loadDiffContent = async (options: DiffOption) => {
     const originContent = await this.libroContentService.loadLibroContent(
-      { originLoadType: options.originLoadType, origin: options.origin },
+      { loadType: ContentLoaderType, resource: options.origin },
       this,
     );
     this.originContent = {
@@ -176,7 +179,7 @@ export class LibroDiffView extends BaseView implements DiffView {
       content: originContent,
     };
     const targetContent = await this.libroContentService.loadLibroContent(
-      { targetLoadType: options.targetLoadType, target: options.target },
+      { loadType: ContentLoaderType, resource: options.target },
       this,
     );
     this.targetContent = {
