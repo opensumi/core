@@ -15,15 +15,6 @@ export class LibroOpensumiContentContribution implements ContentContribution {
 
   canHandle = (options) => (options.loadType === ContentLoaderType ? 100 : 1);
   async loadContent(options: NotebookOption, model: LibroJupyterModel): Promise<INotebookContent> {
-    if (options.resource.scheme === 'git') {
-      console.log('git notebook file', options);
-      return {
-        cells: [],
-        metadata: {},
-        nbformat: 4,
-        nbformat_minor: 5,
-      };
-    }
     const fileServiceClient: IFileServiceClient = this.injector.get(IFileServiceClient);
     const messageService = this.injector.get(IMessageService);
     let notebookContent: INotebookContent;

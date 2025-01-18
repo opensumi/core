@@ -13,8 +13,6 @@ import {
 } from '@difizen/mana-app';
 import { Spin } from 'antd';
 import React, { forwardRef, useEffect } from 'react';
-
-const LibroDiffChangedCellComponent = () => <div>Mock Changed Cell Component</div>;
 const LibroDiffRemovedCellComponent = () => <div>Mock Removed Cell Component</div>;
 const LibroDiffUnchangedCellComponent = () => <div>Mock Unchanged Cell Component</div>;
 
@@ -23,6 +21,7 @@ import { ContentLoaderType } from '../../mana';
 
 import { LibroDiffAddedCellComponent } from './components/libro-diff-added-cell-components';
 import { ContentSameIcon } from './components/libro-diff-all-cells-same-components';
+import { LibroDiffChangedCellComponent } from './components/libro-diff-changed-cell-components';
 import { DiffCellItem, DiffCellUnchangedItems, DiffOption, libroDiffViewFactoryId } from './libro-diff-protocol';
 
 import type { DiffArrayItem, DiffCellItemResult, DiffView, IDiffNotebookContent } from './libro-diff-protocol';

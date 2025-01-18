@@ -41,9 +41,11 @@ import { IThemeService, IconType } from '@opensumi/ide-theme/lib/common';
 
 import { KERNEL_PANEL_ID, KernelPanel, initKernelPanelColorToken } from './kernel-panel';
 import { LibroOpensumiModule } from './libro';
+import { LibroDiffModule } from './libro/diff-view';
 import { LibroOpener } from './libro-opener';
+import { LibroVersionPreview } from './libro-preview.view';
 import { initLibroColorToken } from './libro.color.tokens';
-import { LIBRO_COMPONENT_ID, LIBRO_COMPONENTS_SCHEME_ID, LIBRO_PREVIEW_COMPONENT_ID } from './libro.protocol';
+import { LIBRO_COMPONENTS_SCHEME_ID, LIBRO_COMPONENT_ID, LIBRO_PREVIEW_COMPONENT_ID } from './libro.protocol';
 import { OpensumiLibroView } from './libro.view';
 import { ManaContainer, initLibroOpensumi, manaContainer } from './mana/index';
 import { NotebookDocumentContentProvider } from './notebook-document-content-provider';
@@ -52,8 +54,6 @@ import { initTocPanelColorToken } from './toc';
 import { LibroVariableModule } from './variables/libro-variable-module';
 import { VariablePanel } from './variables/variable-panel';
 import { VARIABLE_ID } from './variables/variable-protocol';
-import { LibroVersionPreview } from './libro-preview.view';
-import { LibroDiffModule } from './libro/diff-view';
 
 const LIBRO_COMPONENTS_VIEW_COMMAND = {
   id: 'opensumi-libro',
@@ -229,8 +229,11 @@ export class LibroContribution
     // FIXME: diff 和 preview 用的一个组件，但是 prop 有不同，diff 的 origin 和 target 怎么传进去也要再看下
     registry.registerEditorComponentResolver('diff', (resource, results) => {
       const { original, modified, name } = resource.uri.getParsedQuery();
-      const modifiedUri = new URI(modified);
-      if (modifiedUri.path.ext === '.ipynb') {
+      if (
+        new URI(decodeURIComponent(modified)).path.ext === '.ipynb' ||
+        new URI(decodeURIComponent(original)).path.ext === '.ipynb'
+      ) {
+        // TODO: 需要等 git 插件 ready，否则 git uri 无法解析
         results.push({
           type: 'component',
           componentId: LIBRO_PREVIEW_COMPONENT_ID,

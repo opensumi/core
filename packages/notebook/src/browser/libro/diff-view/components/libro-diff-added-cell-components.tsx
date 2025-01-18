@@ -1,16 +1,14 @@
 import { Container } from '@difizen/mana-app';
-import React, { memo, useCallback, useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
-import { Schemes } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-editor';
-import { URI } from '@opensumi/ide-utils';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 
 import { ManaContainer } from '../../../mana';
 import { getLibroCellType } from '../libro-diff-protocol';
 import { LibroVersionManager } from '../libro-version-manager';
 
-import { useSize } from './hooks';
+import { useEditorLayout } from './hooks';
 
 import type { DiffEditorProps } from '../libro-diff-protocol';
 
@@ -35,53 +33,21 @@ export const LibroDiffAddedCellComponent: React.FC<DiffEditorProps> = memo(({ di
     ? getEditorLanguage(diffCellResultItem.origin.metadata.libroCellType.toString())
     : getEditorLanguage(diffCellResultItem.origin.cell_type);
 
-  const editorInstance = useRef<ICodeEditor>();
+  const [editor, setEditor] = useState<ICodeEditor | undefined>();
 
   const createEditor = async () => {
     // 这里其实已经拿到content了，但是 opensumi editor 需要uri，理论上有优化空间
-    const uri = URI.parse(
-      `${Schemes.notebookCell}:${diffCellResultItem.targetFilePath!}?cellId=${diffCellResultItem.target.id}`,
-    );
-    const editor = await libroVersionManager.createPreviewEditor(
-      uri,
+    const content = diffCellResultItem.target.source;
+    const previewedEditor = libroVersionManager.createPreviewEditor(
+      content.toString(),
       language,
       editorTargetRef.current!,
       diffCellResultItem.diffType,
     );
-    editorInstance.current = editor;
-    setEditorHeight(editor);
+    setEditor(previewedEditor);
   };
 
-  const setEditorHeight = useCallback(
-    (editor: ICodeEditor) => {
-      const curLenght = editor.monacoEditor?.getModel()?.getLineCount() || 1;
-      if (!editorTargetRef.current || !editorContainerRef.current) {
-        return;
-      }
-      const diffItemHeight = `${curLenght * 20 + 16 + 12 + 22}px`;
-      const _height = `${curLenght * 20}px`;
-      if (editorTargetRef.current.style.height !== _height) {
-        editorTargetRef.current.style.height = _height;
-        editorContainerRef.current.style.height = diffItemHeight;
-        editor.layout();
-      }
-    },
-    [editorTargetRef.current, editorContainerRef.current],
-  );
-  const editorLaylout = () => {
-    if (editorInstance.current) {
-      editorInstance.current.layout();
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('resize', editorLaylout);
-    return () => {
-      window.removeEventListener('resize', editorLaylout);
-    };
-  }, [editorInstance]);
-
-  useSize(editorLaylout, editorContainerRef);
+  useEditorLayout(editor, editorTargetRef, editorContainerRef);
 
   useEffect(() => {
     if (!editorTargetRef.current) {
