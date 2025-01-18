@@ -13,15 +13,13 @@ import {
 } from '@difizen/mana-app';
 import { Spin } from 'antd';
 import React, { forwardRef, useEffect } from 'react';
-const LibroDiffRemovedCellComponent = () => <div>Mock Removed Cell Component</div>;
-const LibroDiffUnchangedCellComponent = () => <div>Mock Unchanged Cell Component</div>;
 
 import './index.less';
 import { ContentLoaderType } from '../../mana';
 
-import { LibroDiffAddedCellComponent } from './components/libro-diff-added-cell-components';
 import { ContentSameIcon } from './components/libro-diff-all-cells-same-components';
 import { LibroDiffChangedCellComponent } from './components/libro-diff-changed-cell-components';
+import { LibroDiffSideCellComponent } from './components/libro-diff-side-cell-components';
 import { DiffCellItem, DiffCellUnchangedItems, DiffOption, libroDiffViewFactoryId } from './libro-diff-protocol';
 
 import type { DiffArrayItem, DiffCellItemResult, DiffView, IDiffNotebookContent } from './libro-diff-protocol';
@@ -73,14 +71,14 @@ export const LibroDiffRender = forwardRef(() => {
         libroDiffView.diffCellsResult.map((item) => {
           if (DiffCellItem.is(item) && item.diffType === 'added') {
             return (
-              <LibroDiffAddedCellComponent
+              <LibroDiffSideCellComponent
                 diffCellResultItem={item}
                 key={libroDiffView.id + item.origin.id?.toString()}
               />
             );
           } else if (DiffCellItem.is(item) && item.diffType === 'removed') {
             return (
-              <LibroDiffRemovedCellComponent
+              <LibroDiffSideCellComponent
                 diffCellResultItem={item}
                 key={libroDiffView.id + item.origin.id?.toString()}
               />
@@ -98,7 +96,7 @@ export const LibroDiffRender = forwardRef(() => {
             }
             if (item.isShown) {
               return item.unchangedResultItems.map((unchangedItem) => (
-                <LibroDiffUnchangedCellComponent
+                <LibroDiffChangedCellComponent
                   diffCellResultItem={unchangedItem}
                   key={libroDiffView.id + unchangedItem.origin.id?.toString()}
                 />

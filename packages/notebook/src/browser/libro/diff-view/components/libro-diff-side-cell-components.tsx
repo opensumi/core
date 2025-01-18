@@ -24,7 +24,7 @@ const getEditorLanguage = (libroCellType: string) => {
   }
 };
 
-export const LibroDiffAddedCellComponent: React.FC<DiffEditorProps> = memo(({ diffCellResultItem }) => {
+export const LibroDiffSideCellComponent: React.FC<DiffEditorProps> = memo(({ diffCellResultItem }) => {
   const manaContainer = useInjectable<Container>(ManaContainer);
   const libroVersionManager = manaContainer.get(LibroVersionManager);
   const editorTargetRef = useRef<HTMLDivElement>(null);
@@ -37,7 +37,8 @@ export const LibroDiffAddedCellComponent: React.FC<DiffEditorProps> = memo(({ di
 
   const createEditor = async () => {
     // 这里其实已经拿到content了，但是 opensumi editor 需要uri，理论上有优化空间
-    const content = diffCellResultItem.target.source;
+    const content =
+      diffCellResultItem.diffType === 'removed' ? diffCellResultItem.origin.source : diffCellResultItem.target.source;
     const previewedEditor = libroVersionManager.createPreviewEditor(
       content.toString(),
       language,
@@ -55,13 +56,14 @@ export const LibroDiffAddedCellComponent: React.FC<DiffEditorProps> = memo(({ di
     }
     createEditor();
   }, [editorTargetRef]);
+  const type = diffCellResultItem.diffType === 'removed' ? 'origin' : 'target';
   return (
     <div className='libro-diff-cell-container' ref={editorContainerRef}>
-      <div className={'libro-diff-cell-target-container'}>
-        <div className={`libro-diff-cell-target-header ${diffCellResultItem.diffType}`}>
+      <div className={`libro-diff-cell-${type}-container`}>
+        <div className={`libro-diff-cell-${type}-header`}>
           <span className='libro-diff-cell-header-text'>{getLibroCellType(diffCellResultItem.origin)}</span>
           <span
-            className='libro-diff-cell-header-target-execute-count'
+            className={`libro-diff-cell-header-${type}-execute-count`}
             style={{
               display: diffCellResultItem.target.cell_type !== 'markdown' ? 'block' : 'none',
             }}
@@ -71,7 +73,7 @@ export const LibroDiffAddedCellComponent: React.FC<DiffEditorProps> = memo(({ di
               : '[ ]'}
           </span>
         </div>
-        <div className='libro-diff-cell-target-content' ref={editorTargetRef} />
+        <div className={`libro-diff-cell-${type}-content`} ref={editorTargetRef} />
       </div>
     </div>
   );

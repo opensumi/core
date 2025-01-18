@@ -45,10 +45,12 @@ export const LibroDiffChangedCellComponent: React.FC<DiffEditorProps> = memo(({ 
 
   useEditorLayout(diffEditor, editorDiffRef, editorContainerRef);
 
+  const type = diffCellResultItem.diffType === 'changed' ? 'changed' : 'unchanged';
+
   return (
     <div className='libro-diff-cell-container' ref={editorContainerRef}>
-      <div className='libro-diff-cell-changed-container'>
-        <div className={`libro-diff-cell-changed-origin-header ${diffCellResultItem.diffType}`}>
+      <div className={`libro-diff-cell-${type}-container`}>
+        <div className={`libro-diff-cell-${type}-origin-header ${diffCellResultItem.diffType}`}>
           <span className='libro-diff-cell-header-text'>{getLibroCellType(diffCellResultItem.origin)}</span>
           <span
             className='libro-diff-cell-header-origin-execute-count'
@@ -61,7 +63,7 @@ export const LibroDiffChangedCellComponent: React.FC<DiffEditorProps> = memo(({ 
               : '[ ]'}
           </span>
         </div>
-        <div className={`libro-diff-cell-changed-target-header ${diffCellResultItem.diffType}`}>
+        <div className={`libro-diff-cell-${type}-target-header ${diffCellResultItem.diffType}`}>
           <span className='libro-diff-cell-header-text'>{getLibroCellType(diffCellResultItem.target)}</span>
           <span
             className='libro-diff-cell-header-target-execute-count'
@@ -74,9 +76,9 @@ export const LibroDiffChangedCellComponent: React.FC<DiffEditorProps> = memo(({ 
               : '[ ]'}
           </span>
         </div>
-        <div className='libro-diff-cell-changed-content' ref={editorDiffRef} />
-        <div className='libro-diff-cell-changed-origin-border' />
-        <div className='libro-diff-cell-changed-target-border' />
+        <div className={`libro-diff-cell-${type}-content`} ref={editorDiffRef} />
+        <div className={`libro-diff-cell-${type}-origin-border`} />
+        <div className={`libro-diff-cell-${type}-target-border`} />
       </div>
     </div>
   );
