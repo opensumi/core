@@ -1,8 +1,19 @@
+import { Container } from '@difizen/mana-app';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
 
-import { memo, useCallback, useEffect, useRef } from 'react';
-import type { DiffEditorProps } from '../libro-diff-protocol';
-import { getLibroCellType, getSource } from '../libro-diff-protocol';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { Schemes } from '@opensumi/ide-core-common';
+import { ICodeEditor } from '@opensumi/ide-editor';
+import { URI } from '@opensumi/ide-utils';
+
+import { ManaContainer } from '../../../mana';
+import { getLibroCellType } from '../libro-diff-protocol';
+import { LibroVersionManager } from '../libro-version-manager';
+
 import { useSize } from './hooks';
+
+import type { DiffEditorProps } from '../libro-diff-protocol';
+
 import './index.less';
 
 const getEditorLanguage = (libroCellType: string) => {
@@ -15,99 +26,87 @@ const getEditorLanguage = (libroCellType: string) => {
   }
 };
 
-export const LibroDiffAddedCellComponent: React.FC<DiffEditorProps> = memo(
-  ({ diffCellResultItem }) => {
-    const editorTargetRef = useRef<HTMLDivElement>(null);
-    const editorContainerRef = useRef<HTMLDivElement>(null);
-    const language = diffCellResultItem.origin.metadata.libroCellType
-      ? getEditorLanguage(diffCellResultItem.origin.metadata.libroCellType.toString())
-      : getEditorLanguage(diffCellResultItem.origin.cell_type);
+export const LibroDiffAddedCellComponent: React.FC<DiffEditorProps> = memo(({ diffCellResultItem }) => {
+  const manaContainer = useInjectable<Container>(ManaContainer);
+  const libroVersionManager = manaContainer.get(LibroVersionManager);
+  const editorTargetRef = useRef<HTMLDivElement>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const language = diffCellResultItem.origin.metadata.libroCellType
+    ? getEditorLanguage(diffCellResultItem.origin.metadata.libroCellType.toString())
+    : getEditorLanguage(diffCellResultItem.origin.cell_type);
 
-    const innerEditorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
-    const editorInstance = innerEditorRef;
+  const editorInstance = useRef<ICodeEditor>();
 
-    const setEditorHeight = useCallback(() => {
-      const curLenght = editorInstance.current?.getModel()?.getLineCount() || 1;
-      if (!editorTargetRef.current || !editorContainerRef.current) return;
+  const createEditor = async () => {
+    // 这里其实已经拿到content了，但是 opensumi editor 需要uri，理论上有优化空间
+    const uri = URI.parse(
+      `${Schemes.notebookCell}:${diffCellResultItem.targetFilePath!}?cellId=${diffCellResultItem.target.id}`,
+    );
+    const editor = await libroVersionManager.createPreviewEditor(
+      uri,
+      language,
+      editorTargetRef.current!,
+      diffCellResultItem.diffType,
+    );
+    editorInstance.current = editor;
+    setEditorHeight(editor);
+  };
+
+  const setEditorHeight = useCallback(
+    (editor: ICodeEditor) => {
+      const curLenght = editor.monacoEditor?.getModel()?.getLineCount() || 1;
+      if (!editorTargetRef.current || !editorContainerRef.current) {
+        return;
+      }
       const diffItemHeight = `${curLenght * 20 + 16 + 12 + 22}px`;
       const _height = `${curLenght * 20}px`;
       if (editorTargetRef.current.style.height !== _height) {
         editorTargetRef.current.style.height = _height;
         editorContainerRef.current.style.height = diffItemHeight;
-        editorInstance.current?.layout();
+        editor.layout();
       }
-    }, [editorInstance]);
-    const editorLaylout = () => {
-      if (editorInstance.current) {
-        editorInstance.current.layout();
-      }
+    },
+    [editorTargetRef.current, editorContainerRef.current],
+  );
+  const editorLaylout = () => {
+    if (editorInstance.current) {
+      editorInstance.current.layout();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('resize', editorLaylout);
+    return () => {
+      window.removeEventListener('resize', editorLaylout);
     };
+  }, [editorInstance]);
 
-    useEffect(() => {
-      window.addEventListener('resize', editorLaylout);
-      return () => {
-        window.removeEventListener('resize', editorLaylout);
-      };
-    }, [editorInstance]);
+  useSize(editorLaylout, editorContainerRef);
 
-    useSize(editorLaylout, editorContainerRef);
-    // FIXME: 实现有点问题，需要看下，Libro 和 OpenSumi 的 editor 的关系
-    MonacoEnvironment.init().then(async () => {
-      const editorPorvider = MonacoEnvironment.container.get<EditorProvider>(EditorProvider);
-
-      if (!editorTargetRef || !editorTargetRef.current) return;
-      const codeValue = getSource(diffCellResultItem.target);
-      const editorDom = editorTargetRef.current;
-      editorInstance.current = editorPorvider.create(editorDom, {
-        language: language,
-        minimap: {
-          enabled: false,
-        },
-        automaticLayout: false,
-        value: codeValue,
-        fontSize: 13,
-        folding: true,
-        wordWrap: 'off',
-        lineDecorationsWidth: 0,
-        lineNumbersMinChars: 3,
-        scrollbar: {
-          vertical: 'hidden',
-          alwaysConsumeMouseWheel: false,
-          verticalScrollbarSize: 0,
-          horizontal: 'visible',
-          horizontalScrollbarSize: 0,
-        },
-        glyphMargin: true,
-        scrollBeyondLastLine: false,
-        renderFinalNewline: false,
-        renderLineHighlight: 'none',
-        readOnly: true,
-        // scrollBeyondLastColumn: 2,
-        extraEditorClassName: `libro-diff-editor-${diffCellResultItem.diffType}`,
-      }).codeEditor;
-      setEditorHeight();
-    });
-    return (
-      <div className="libro-diff-cell-container" ref={editorContainerRef}>
-        <div className={`libro-diff-cell-target-container`}>
-          <div className={`libro-diff-cell-target-header ${diffCellResultItem.diffType}`}>
-            <span className="libro-diff-cell-header-text">
-              {getLibroCellType(diffCellResultItem.origin)}
-            </span>
-            <span
-              className="libro-diff-cell-header-target-execute-count"
-              style={{
-                display: diffCellResultItem.target.cell_type !== 'markdown' ? 'block' : 'none',
-              }}
-            >
-              {diffCellResultItem.target.execution_count
-                ? '[' + diffCellResultItem.target.execution_count?.toString() + ']'
-                : '[ ]'}
-            </span>
-          </div>
-          <div className="libro-diff-cell-target-content" ref={editorTargetRef} />
+  useEffect(() => {
+    if (!editorTargetRef.current) {
+      return;
+    }
+    createEditor();
+  }, [editorTargetRef]);
+  return (
+    <div className='libro-diff-cell-container' ref={editorContainerRef}>
+      <div className={'libro-diff-cell-target-container'}>
+        <div className={`libro-diff-cell-target-header ${diffCellResultItem.diffType}`}>
+          <span className='libro-diff-cell-header-text'>{getLibroCellType(diffCellResultItem.origin)}</span>
+          <span
+            className='libro-diff-cell-header-target-execute-count'
+            style={{
+              display: diffCellResultItem.target.cell_type !== 'markdown' ? 'block' : 'none',
+            }}
+          >
+            {diffCellResultItem.target.execution_count
+              ? '[' + diffCellResultItem.target.execution_count?.toString() + ']'
+              : '[ ]'}
+          </span>
         </div>
+        <div className='libro-diff-cell-target-content' ref={editorTargetRef} />
       </div>
-    );
-  },
-);
+    </div>
+  );
+});

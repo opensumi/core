@@ -1,9 +1,20 @@
 import { useLayoutEffect } from 'react';
+import { useRef } from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import { useLatest } from 'ahooks';
 
-export type Size = { width?: number; height?: number };
+export interface Size {
+  width?: number;
+  height?: number;
+}
 
+function useLatest<T>(value: T) {
+  const ref = useRef(value);
+  ref.current = value;
+
+  return ref;
+}
+
+export default useLatest;
 export function useSize(fn: () => void, ref: React.ForwardedRef<HTMLDivElement>): void {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const callback = useLatest((size: Size) => {
@@ -17,8 +28,8 @@ export function useSize(fn: () => void, ref: React.ForwardedRef<HTMLDivElement>)
     if (!el || !fn) {
       return () => {};
     }
-    const resizeObserver = new ResizeObserver(entries => {
-      entries.forEach(entry => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
         callback.current({
           width: entry.target.clientWidth,
           height: entry.target.clientHeight,

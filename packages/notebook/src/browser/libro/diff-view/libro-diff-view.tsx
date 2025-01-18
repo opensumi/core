@@ -1,41 +1,33 @@
-import React from 'react';
-import type { ICell, MultilineString } from '@difizen/libro-common';
+import { ColumnHeightOutlined } from '@ant-design/icons';
 import { LibroContentService } from '@difizen/libro-core';
-import type { ViewComponent } from '@difizen/mana-app';
 import {
   BaseView,
+  ViewInstance,
+  ViewOption,
   getOrigin,
   inject,
   prop,
   transient,
   useInject,
   view,
-  ViewInstance,
-  ViewOption,
 } from '@difizen/mana-app';
-import { ColumnHeightOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
-import { forwardRef, useEffect } from 'react';
-import { ContentSameIcon } from './components/libro-diff-all-cells-same-components';
-const LibroDiffAddedCellComponent = () => <div>Mock Added Cell Component</div>;
+import React, { forwardRef, useEffect } from 'react';
+
 const LibroDiffChangedCellComponent = () => <div>Mock Changed Cell Component</div>;
 const LibroDiffRemovedCellComponent = () => <div>Mock Removed Cell Component</div>;
 const LibroDiffUnchangedCellComponent = () => <div>Mock Unchanged Cell Component</div>;
 
 import './index.less';
-import type {
-  DiffArrayItem,
-  DiffCellItemResult,
-  DiffView,
-  IDiffNotebookContent,
-} from './libro-diff-protocol';
-import {
-  DiffCellItem,
-  DiffCellUnchangedItems,
-  DiffOption,
-  libroDiffViewFactoryId,
-} from './libro-diff-protocol';
 import { ContentLoaderType } from '../../mana';
+
+import { LibroDiffAddedCellComponent } from './components/libro-diff-added-cell-components';
+import { ContentSameIcon } from './components/libro-diff-all-cells-same-components';
+import { DiffCellItem, DiffCellUnchangedItems, DiffOption, libroDiffViewFactoryId } from './libro-diff-protocol';
+
+import type { DiffArrayItem, DiffCellItemResult, DiffView, IDiffNotebookContent } from './libro-diff-protocol';
+import type { ICell, MultilineString } from '@difizen/libro-common';
+import type { ViewComponent } from '@difizen/mana-app';
 
 function comparator(compareLeft: ICell, compareRight: ICell) {
   return compareLeft.id === compareRight.id;
@@ -59,26 +51,27 @@ export const LibroDiffRender = forwardRef(() => {
     libroDiffView.diffCellsResult,
     libroDiffView.isDiffSame,
   ]);
-  if (!libroDiffView.diffCellsResult)
+  if (!libroDiffView.diffCellsResult) {
     return (
-      <div className="libro-diff-content-loading-container">
-        <Spin size="large" />
+      <div className='libro-diff-content-loading-container'>
+        <Spin size='large' />
       </div>
     );
+  }
 
   if (libroDiffView.isDiffSame) {
     return (
-      <div className="libro-diff-content-same-container">
+      <div className='libro-diff-content-same-container'>
         <ContentSameIcon />
-        <span className="libro-diff-content-same-text">内容一致</span>
+        <span className='libro-diff-content-same-text'>内容一致</span>
       </div>
     );
   }
 
   return (
-    <div className="libro-diff-content-container">
+    <div className='libro-diff-content-container'>
       {libroDiffView.diffCellsResult &&
-        libroDiffView.diffCellsResult.map(item => {
+        libroDiffView.diffCellsResult.map((item) => {
           if (DiffCellItem.is(item) && item.diffType === 'added') {
             return (
               <LibroDiffAddedCellComponent
@@ -101,10 +94,11 @@ export const LibroDiffRender = forwardRef(() => {
               />
             );
           } else {
-            if (!DiffCellUnchangedItems.is(item) || item.unchangedResultItems.length === 0)
+            if (!DiffCellUnchangedItems.is(item) || item.unchangedResultItems.length === 0) {
               return null;
+            }
             if (item.isShown) {
-              return item.unchangedResultItems.map(unchangedItem => (
+              return item.unchangedResultItems.map((unchangedItem) => (
                 <LibroDiffUnchangedCellComponent
                   diffCellResultItem={unchangedItem}
                   key={libroDiffView.id + unchangedItem.origin.id?.toString()}
@@ -113,21 +107,18 @@ export const LibroDiffRender = forwardRef(() => {
             } else {
               return (
                 <div
-                  className="libro-diff-fold-container"
+                  className='libro-diff-fold-container'
                   key={libroDiffView.id + item.unchangedResultItems[0].origin.id}
                 >
                   <div
-                    className="libro-diff-fold"
+                    className='libro-diff-fold'
                     onClick={() => {
                       item.isShown = true;
-                      libroDiffView.diffUnchangedCellsRenderStatus =
-                        libroDiffView.getUnchangedDiffCellsRenderStatus();
+                      libroDiffView.diffUnchangedCellsRenderStatus = libroDiffView.getUnchangedDiffCellsRenderStatus();
                     }}
                   >
                     <ColumnHeightOutlined />
-                    <span className="libro-diff-fold-text">
-                      展开{item.unchangedResultItems.length}个未更改的 Cell
-                    </span>
+                    <span className='libro-diff-fold-text'>展开{item.unchangedResultItems.length}个未更改的 Cell</span>
                   </div>
                 </div>
               );
@@ -154,6 +145,8 @@ export class LibroDiffView extends BaseView implements DiffView {
   options: Record<string, any>;
   originContent: IDiffNotebookContent;
   targetContent: IDiffNotebookContent;
+  targetFilePath: string;
+  originFilePath: string;
   constructor(
     @inject(ViewOption) options: DiffOption,
     @inject(LibroContentService) libroContentService: LibroContentService,
@@ -161,6 +154,8 @@ export class LibroDiffView extends BaseView implements DiffView {
     super();
     this.libroContentService = libroContentService;
     this.options = options;
+    this.targetFilePath = options.target.path.toString();
+    this.originFilePath = options.origin.path.toString();
     this.loadDiffContent(options).then(() => {
       this.diffCellsResult = this.getDiffCellsResult(
         this.originContent.content.cells,
@@ -175,7 +170,8 @@ export class LibroDiffView extends BaseView implements DiffView {
       this,
     );
     this.originContent = {
-      diffTag: options.originFilePath,
+      // FIXME: 干啥的？
+      diffTag: options.origin.toString(),
       content: originContent,
     };
     const targetContent = await this.libroContentService.loadLibroContent(
@@ -183,13 +179,13 @@ export class LibroDiffView extends BaseView implements DiffView {
       this,
     );
     this.targetContent = {
-      diffTag: options.targetFilePath,
+      diffTag: options.target.toString(),
       content: targetContent,
     };
   };
 
   foldAllUnchangedDiffCells = () => {
-    this.diffCellsResult.map(item => {
+    this.diffCellsResult.map((item) => {
       if (DiffCellUnchangedItems.is(item)) {
         item.isShown = false;
       }
@@ -197,7 +193,7 @@ export class LibroDiffView extends BaseView implements DiffView {
   };
 
   expandAllUnchangedDiffCells = () => {
-    this.diffCellsResult.map(item => {
+    this.diffCellsResult.map((item) => {
       if (DiffCellUnchangedItems.is(item)) {
         item.isShown = true;
       }
@@ -233,7 +229,10 @@ export class LibroDiffView extends BaseView implements DiffView {
       origin: originDiffCellItem,
       target: valueItem,
     };
-    return addedCellResult;
+    return Object.assign(addedCellResult, {
+      originFilePath: this.originFilePath,
+      targetFilePath: this.targetFilePath,
+    });
   };
 
   getRemovedCellResult = (valueItem: ICell) => {
@@ -244,7 +243,10 @@ export class LibroDiffView extends BaseView implements DiffView {
       origin: valueItem,
       target: targetDiffCellItem,
     };
-    return removedCellResult;
+    return Object.assign(removedCellResult, {
+      originFilePath: this.originFilePath,
+      targetFilePath: this.targetFilePath,
+    });
   };
 
   getUnchangedCellResult = (originItem: ICell, targetItem: ICell) => {
@@ -253,7 +255,10 @@ export class LibroDiffView extends BaseView implements DiffView {
       origin: originItem,
       target: targetItem,
     };
-    return unchangedCellResult;
+    return Object.assign(unchangedCellResult, {
+      originFilePath: this.originFilePath,
+      targetFilePath: this.targetFilePath,
+    });
   };
 
   getChangedCellResult = (originItem: ICell, targetItem: ICell) => {
@@ -262,21 +267,26 @@ export class LibroDiffView extends BaseView implements DiffView {
       origin: originItem,
       target: targetItem,
     };
-    return changedCellResult;
+    return Object.assign(changedCellResult, {
+      originFilePath: this.originFilePath,
+      targetFilePath: this.targetFilePath,
+    });
   };
 
   getDiffCellsResult = (origin: ICell[], target: ICell[]) => {
-    const diffCellsResult: DiffCellItemResult[] = [];
-    let diffCellUnchangedItems: DiffCellItem[] = [];
+    const diffCellsResult: (DiffCellItemResult & { originFilePath?: string; targetFilePath?: string })[] = [];
+    let diffCellUnchangedItems: (DiffCellItem & { originFilePath: string; targetFilePath: string })[] = [];
     let lastDiffItemTypeIsUnchanged: boolean = false;
 
     const Diff = require('diff');
     const diffArray = Diff.diffArrays(getOrigin(origin), getOrigin(target), {
-      comparator: comparator,
+      comparator,
     }) as DiffArrayItem[];
     diffArray.map((item, index) => {
       if (item.added) {
-        if (this.isDiffSame) this.isDiffSame = false;
+        if (this.isDiffSame) {
+          this.isDiffSame = false;
+        }
         if (lastDiffItemTypeIsUnchanged === true) {
           lastDiffItemTypeIsUnchanged = false;
           diffCellsResult.push({
@@ -285,11 +295,13 @@ export class LibroDiffView extends BaseView implements DiffView {
           });
           diffCellUnchangedItems = [];
         }
-        item.value.map(valueItem => {
+        item.value.map((valueItem) => {
           diffCellsResult.push(this.getAddedCellResult(valueItem));
         });
       } else if (item.removed) {
-        if (this.isDiffSame) this.isDiffSame = false;
+        if (this.isDiffSame) {
+          this.isDiffSame = false;
+        }
         if (lastDiffItemTypeIsUnchanged === true) {
           lastDiffItemTypeIsUnchanged = false;
           diffCellsResult.push({
@@ -298,24 +310,26 @@ export class LibroDiffView extends BaseView implements DiffView {
           });
           diffCellUnchangedItems = [];
         }
-        item.value.map(valueItem => {
+        item.value.map((valueItem) => {
           diffCellsResult.push(this.getRemovedCellResult(valueItem));
         });
       } else {
-        item.value.map(valueItem => {
-          const originCell = this.originContent.content.cells.find(
-            cell => cell.id === valueItem.id,
-          );
-          const targetCell = this.targetContent.content.cells.find(
-            cell => cell.id === valueItem.id,
-          );
-          if (!originCell || !targetCell) return;
+        item.value.map((valueItem) => {
+          const originCell = this.originContent.content.cells.find((cell) => cell.id === valueItem.id);
+          const targetCell = this.targetContent.content.cells.find((cell) => cell.id === valueItem.id);
+          if (!originCell || !targetCell) {
+            return;
+          }
           if (multilineStringEqual(originCell.source, targetCell.source)) {
-            if (this.hasUnchangedCells === false) this.hasUnchangedCells = true;
+            if (this.hasUnchangedCells === false) {
+              this.hasUnchangedCells = true;
+            }
             lastDiffItemTypeIsUnchanged = true;
             diffCellUnchangedItems.push(this.getUnchangedCellResult(originCell, targetCell));
           } else {
-            if (this.isDiffSame) this.isDiffSame = false;
+            if (this.isDiffSame) {
+              this.isDiffSame = false;
+            }
             if (lastDiffItemTypeIsUnchanged === true) {
               lastDiffItemTypeIsUnchanged = false;
               diffCellsResult.push({

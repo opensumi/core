@@ -3,20 +3,25 @@
   padding: 8px 0;
 }
 
-.libro-diff-cell-origin-header,.libro-diff-cell-target-header {
+.libro-diff-cell-origin-header,
+.libro-diff-cell-target-header {
   height: 22px;
   width: 100%;
   border-top-right-radius: 4px;
   border-top-left-radius: 4px;
 }
 
-.libro-diff-cell-unchanged-origin-header, .libro-diff-cell-unchanged-target-header, .libro-diff-cell-changed-origin-header, .libro-diff-cell-changed-target-header {
+.libro-diff-cell-unchanged-origin-header,
+.libro-diff-cell-unchanged-target-header,
+.libro-diff-cell-changed-origin-header,
+.libro-diff-cell-changed-target-header {
   background: var(--mana-libro-diff-unchanged-cell-header-color);
 }
 
 .libro-diff-cell-target-header {
   position: relative;
-  &.changed, &.unchanged {
+  &.changed,
+  &.unchanged {
     float: right;
   }
 }
@@ -30,14 +35,15 @@
 
 .libro-diff-cell-header-text {
   margin-left: 16px;
-  font-family:  PingFangSC;
+  font-family: PingFangSC;
   font-weight: 400;
   font-size: 12px;
   color: var(--mana-libro-diff-cell-header-text-color);
   line-height: 20px;
 }
-.libro-diff-cell-header-target-execute-count,.libro-diff-cell-header-origin-execute-count {
-  font-family:  Menlo-Regular;
+.libro-diff-cell-header-target-execute-count,
+.libro-diff-cell-header-origin-execute-count {
+  font-family: Menlo-Regular;
   font-weight: 400;
   font-size: 12px;
   color: var(--mana-libro-diff-cell-header-execution-color);
@@ -50,15 +56,17 @@
 
 .libro-diff-editor-removed {
   background: var(--mana-libro-diff-editor-removed-color) !important;
-  .monaco-editor-background, .margin {
+  .monaco-editor-background,
+  .margin {
     background: var(--mana-libro-diff-editor-removed-color) !important;
   }
 }
 
-.libro-diff-cell-origin-container, .libro-diff-cell-target-container{
+.libro-diff-cell-origin-container,
+.libro-diff-cell-target-container {
   position: absolute;
   width: calc(50% - 8px);
-  &.unchanged { 
+  &.unchanged {
     border: 1px solid var(--mana-libro-diff-cell-border-color) !important;
     border-radius: 4px;
   }
@@ -69,7 +77,8 @@
 
 .libro-diff-editor-added {
   background: var(--mana-libro-diff-editor-added-color) !important;
-  .monaco-editor-background, .margin {
+  .monaco-editor-background,
+  .margin {
     background: var(--mana-libro-diff-editor-added-color) !important;
   }
 }
@@ -84,7 +93,8 @@
   border-radius: 4px;
 }
 
-.libro-diff-editor-added, .libro-diff-editor-removed {
+.libro-diff-editor-added,
+.libro-diff-editor-removed {
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
   .overflow-guard {
@@ -92,45 +102,60 @@
   }
 }
 
-.libro-diff-editor-changed, .libro-diff-editor-unchanged {
+.libro-diff-editor-changed,
+.libro-diff-editor-unchanged {
   .monaco-editor-background {
     border-radius: 4px;
   }
 }
 
-.libro-diff-cell-changed-origin-header, .libro-diff-cell-changed-target-header,.libro-diff-cell-unchanged-origin-header, .libro-diff-cell-unchanged-target-header {
+.libro-diff-cell-changed-origin-header,
+.libro-diff-cell-changed-target-header,
+.libro-diff-cell-unchanged-origin-header,
+.libro-diff-cell-unchanged-target-header {
   display: inline-block;
   width: calc(50% - 8px);
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
 }
-.libro-diff-cell-changed-target-header,.libro-diff-cell-unchanged-target-header {
+.libro-diff-cell-changed-target-header,
+.libro-diff-cell-unchanged-target-header {
   margin-left: 16px;
 }
 
-.libro-diff-cell-changed-content, .libro-diff-cell-unchanged-content {
-  .monaco-editor, .margin {
+.libro-diff-cell-changed-content,
+.libro-diff-cell-unchanged-content {
+  .monaco-editor,
+  .margin {
     background-color: var(--mana-libro-diff-input-background-color) !important;
   }
   .monaco-editor-background {
     background-color: var(--mana-libro-diff-editor-background-color) !important;
   }
 }
-.libro-diff-cell-target-content, .libro-diff-cell-origin-content {
+.libro-diff-cell-target-content,
+.libro-diff-cell-origin-content {
   margin-top: 12px;
 }
 
-.libro-diff-cell-target-content, .libro-diff-cell-origin-content, .libro-diff-cell-changed-content,.libro-diff-cell-unchanged-content {
-  .core-guide-indent, .core-guide-indent-active {
+.libro-diff-cell-target-content,
+.libro-diff-cell-origin-content,
+.libro-diff-cell-changed-content,
+.libro-diff-cell-unchanged-content {
+  .core-guide-indent,
+  .core-guide-indent-active {
     box-shadow: 0.6px 0 0 0 var(--mana-libro-diff-editor-intent-color) inset !important;
   }
 }
 
-.libro-diff-cell-changed-content,.libro-diff-cell-unchanged-content {
-  .original, .modified {
+.libro-diff-cell-changed-content,
+.libro-diff-cell-unchanged-content {
+  .original,
+  .modified {
     width: calc(50% - 8px) !important;
     .margin-view-overlays {
-      >div:has(.line-delete), >div:has(.line-insert){
+      > div:has(.line-delete),
+      > div:has(.line-insert) {
         background-color: var(--mana-libro-diff-editor-background-color) !important;
       }
       .line-delete {
@@ -144,21 +169,22 @@
     }
 
     .view-overlays {
-      div:has(.char-delete):has(.char-insert):has(.line-delete):has(.line-insert){
+      div:has(.char-delete):has(.char-insert):has(.line-delete):has(.line-insert) {
         background-color: var(--mana-libro-diff-editor-background-color);
       }
-      div:not(:has(.char-delete)):not(:has(.char-insert)):not(:has(.line-delete)):not(:has(.line-insert)){
+      div:not(:has(.char-delete)):not(:has(.char-insert)):not(:has(.line-delete)):not(:has(.line-insert)) {
         background-color: var(--mana-libro-diff-input-background-color);
       }
     }
     .selectionHighlight {
-      background-color:rgba(173, 214, 255, 0.15) !important;
+      background-color: rgba(173, 214, 255, 0.15) !important;
     }
   }
   .modified {
     margin-left: 8px;
     box-shadow: unset !important;
-    .line-insert, .gutter-insert {
+    .line-insert,
+    .gutter-insert {
       background-color: var(--mana-libro-diff-editor-line-insert-color) !important;
     }
     .char-insert {
@@ -166,14 +192,16 @@
     }
   }
   .original {
-    .line-delete, .gutter-delete {
+    .line-delete,
+    .gutter-delete {
       background-color: var(--mana-libro-diff-editor-line-delete-color) !important;
     }
     .char-delete {
       background-color: var(--mana-libro-diff-editor-char-delete-color) !important;
     }
   }
-  .monaco-editor, .overflow-guard {
+  .monaco-editor,
+  .overflow-guard {
     width: 100% !important;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
@@ -186,7 +214,8 @@
   }
 }
 
-.libro-diff-cell-changed-container,.libro-diff-cell-unchanged-container {
+.libro-diff-cell-changed-container,
+.libro-diff-cell-unchanged-container {
   position: relative;
   .monaco-diff-editor {
     background-color: var(--mana-libro-diff-container-color);
@@ -197,13 +226,14 @@
   .editor-scrollable {
     left: 56px !important;
   }
-  .margin, .current-line-margin {
+  .margin,
+  .current-line-margin {
     width: 56px !important;
   }
   .line-numbers {
     color: var(--mana-libro-diff-editor-gutter-number-color) !important;
-    font-family:  Menlo-Regular, consolas, 'DejaVu Sans Mono', monospace !important;
-    left:0px !important;
+    font-family: Menlo-Regular, consolas, 'DejaVu Sans Mono', monospace !important;
+    left: 0px !important;
     font-weight: 400;
     font-size: 13px;
     text-align: right !important;
@@ -225,7 +255,35 @@
   }
   .focused {
     .selected-text {
-      background-color:var(--mana-libro-diff-select-background-color) !important;
+      background-color: var(--mana-libro-diff-select-background-color) !important;
+    }
+  }
+
+  .libro-diff-editor-added {
+    &.monaco-editor {
+      background-color: var(--mana-version-opensumi-diff-added-color) !important;
+
+      .margin {
+        background: var(--mana-version-opensumi-diff-added-color) !important;
+      }
+    }
+
+    .monaco-editor-background {
+      background: var(--mana-version-opensumi-diff-added-color) !important;
+    }
+  }
+
+  .libro-diff-editor-removed {
+    &.monaco-editor {
+      background-color: var(--mana-version-opensumi-diff-removed-color) !important;
+
+      .margin {
+        background: var(--mana-version-opensumi-diff-removed-color) !important;
+      }
+    }
+
+    .monaco-editor-background {
+      background: var(--mana-version-opensumi-diff-removed-color) !important;
     }
   }
 }
@@ -233,7 +291,10 @@
   padding-top: 12px;
 }
 
-.libro-diff-cell-unchanged-origin-border, .libro-diff-cell-unchanged-target-border,.libro-diff-cell-changed-origin-border, .libro-diff-cell-changed-target-border {
+.libro-diff-cell-unchanged-origin-border,
+.libro-diff-cell-unchanged-target-border,
+.libro-diff-cell-changed-origin-border,
+.libro-diff-cell-changed-target-border {
   height: 100%;
   top: 0;
   border: 1px solid var(--mana-libro-diff-cell-border-color);
@@ -241,10 +302,9 @@
   position: absolute;
   border-radius: 4px;
   pointer-events: none;
-
 }
 
-.libro-diff-cell-unchanged-target-border,.libro-diff-cell-changed-target-border {
+.libro-diff-cell-unchanged-target-border,
+.libro-diff-cell-changed-target-border {
   right: 0;
 }
-

@@ -1,12 +1,15 @@
-import type { ICell, INotebookContent } from '@difizen/libro-common';
 import { concatMultilineString } from '@difizen/libro-common';
-import type { View } from '@difizen/mana-app';
+
+import type { ICell, INotebookContent } from '@difizen/libro-common';
+import type { URI, View } from '@difizen/mana-app';
 
 export const libroDiffViewFactoryId = 'libro-diff-view-factory';
 
 export const getLibroCellType = (cell: ICell) => {
   const cellType = (cell.metadata?.libroCellType as string) ?? cell.cell_type;
-  if (cellType === 'sql') return 'SQL';
+  if (cellType === 'sql') {
+    return 'SQL';
+  }
   return cellType.charAt(0).toUpperCase() + cellType.slice(1);
 };
 
@@ -33,24 +36,23 @@ export interface IDiffNotebookContent {
   content: INotebookContent;
   diffTag: string;
 }
+
+export type DiffType = 'added' | 'removed' | 'changed' | 'unchanged';
 export interface DiffCellItem {
-  diffType: 'added' | 'removed' | 'changed' | 'unchanged';
+  diffType: DiffType;
   origin: ICell;
   target: ICell;
 }
 
 export const DiffCellItem = {
-  is: (arg: Record<any, any>): arg is DiffCellItem => {
-    return (
-      !!arg &&
-      'diffType' in arg &&
-      typeof (arg as any).diffType === 'string' &&
-      'origin' in arg &&
-      typeof (arg as any).origin === 'object' &&
-      'target' in arg &&
-      typeof (arg as any).target === 'object'
-    );
-  },
+  is: (arg: Record<any, any>): arg is DiffCellItem =>
+    !!arg &&
+    'diffType' in arg &&
+    typeof (arg as any).diffType === 'string' &&
+    'origin' in arg &&
+    typeof (arg as any).origin === 'object' &&
+    'target' in arg &&
+    typeof (arg as any).target === 'object',
 };
 
 export interface DiffCellUnchangedItems {
@@ -59,15 +61,12 @@ export interface DiffCellUnchangedItems {
 }
 
 export const DiffCellUnchangedItems = {
-  is: (arg: Record<any, any>): arg is DiffCellUnchangedItems => {
-    return (
-      !!arg &&
-      'isShown' in arg &&
-      typeof (arg as any).isShown === 'boolean' &&
-      'unchangedResultItems' in arg &&
-      typeof (arg as any).unchangedResultItems === 'object'
-    );
-  },
+  is: (arg: Record<any, any>): arg is DiffCellUnchangedItems =>
+    !!arg &&
+    'isShown' in arg &&
+    typeof (arg as any).isShown === 'boolean' &&
+    'unchangedResultItems' in arg &&
+    typeof (arg as any).unchangedResultItems === 'object',
 };
 
 export interface DiffArrayItem {
@@ -78,7 +77,7 @@ export interface DiffArrayItem {
 }
 
 export interface DiffEditorProps {
-  diffCellResultItem: DiffCellItem;
+  diffCellResultItem: DiffCellItem & { originFilePath?: string; targetFilePath?: string };
 }
 
 export const DiffOption = Symbol('DiffOption');
@@ -89,5 +88,7 @@ export const DiffOption = Symbol('DiffOption');
 export interface DiffOption {
   loadType: string;
   id?: string;
+  origin: URI;
+  target: URI;
   [key: string]: any;
 }
