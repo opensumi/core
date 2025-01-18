@@ -35,6 +35,7 @@ import {
   ServiceNames,
   URI,
   formatLocalize,
+  getIcon,
   getLanguageIdFromMonaco,
   localize,
 } from '@opensumi/ide-core-browser';
@@ -61,7 +62,6 @@ import {
   IDocPersistentCacheProvider,
   IEditor,
   ILanguageService,
-  IResource,
   IResourceOpenOptions,
   ResourceService,
   SaveReason,
@@ -1197,6 +1197,13 @@ export class EditorContribution
       execute: () => this.prefixQuickOpenService.open(':'),
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.TOGGLE_COLUMN_SELECTION, {
+      execute: () => {
+        const isColumnSelection = this.preferenceService.get<boolean>('editor.columnSelection');
+        this.preferenceService.set('editor.columnSelection', !isColumnSelection, PreferenceScope.User);
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.TOGGLE_WORD_WRAP, {
       execute: () => {
         const wordWrap = this.preferenceService.get<string>('editor.wordWrap');
@@ -1321,6 +1328,7 @@ export class EditorContribution
 
     menus.registerMenuItem(MenuId.EditorTitle, {
       command: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+      iconClass: getIcon('embed'),
       group: 'navigation',
       when: 'resource',
       order: 5,

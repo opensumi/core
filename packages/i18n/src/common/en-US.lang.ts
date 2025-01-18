@@ -555,7 +555,7 @@ export const localizationBundle = {
     'preference.overwritten': '(Overwritten by next scope)',
     'preference.overwrittenInUser': '(Modified in User Settings)',
     'preference.overwrittenInWorkspace': '(Modified in Workspace Settings)',
-    'preference.searchPlaceholder': 'Search settings...',
+    'preference.searchPlaceholder': 'Search Settings...',
     'preference.editor.formatOnSave': 'Enable format on manual save.',
     'preference.editor.formatOnSaveTimeout':
       'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
@@ -681,6 +681,15 @@ export const localizationBundle = {
       'Show the inline suggestion toolbar when hovering over an inline suggestion.',
     'editor.configuration.inlineSuggest.showToolbar.never': 'Never show the inline suggestion toolbar.',
     // inlineSuggest end
+    // hover start
+    'editor.configuration.hover.enabled': 'Controls whether the hover is shown.',
+    'editor.configuration.hover.delay': 'Controls the delay in milliseconds after which the hover is shown.',
+    'editor.configuration.hover.sticky':
+      'Controls whether the hover should remain visible when mouse is moved over it.',
+    'editor.configuration.hover.hidingDelay':
+      'Controls the delay in milliseconds after which the hover is hidden. Requires `editor.hover.sticky` to be.',
+    'editor.configuration.hover.above': "Prefer showing hovers above the line, if there's space.",
+    // hover end
     'editor.configuration.experimental.stickyScroll':
       'Shows the nested current scopes during the scroll at the top of the editor.',
     'editor.configuration.customCodeActionMenu.showHeaders':
@@ -715,9 +724,6 @@ export const localizationBundle = {
       'Render the actual characters on a line as opposed to color blocks.',
     'editor.configuration.minimap.maxColumn':
       'Limit the width of the minimap to render at most a certain number of columns.',
-    'editor.configuration.hover.enabled': 'Controls whether the hover is shown.',
-    'editor.configuration.hover.sticky':
-      'Controls whether the hover should remain visible when mouse is moved over it.',
     'editor.configuration.find.seedSearchStringFromSelection':
       'Controls whether the search string in the Find Widget is seeded from the editor selection.',
     'editor.configuration.find.autoFindInSelection':
@@ -1073,7 +1079,7 @@ export const localizationBundle = {
     'terminal.ai.escClose': 'Press ESC to close the dialog',
     'terminal.ai.headerHint': 'Use AI to get terminal input suggestions',
     'terminal.ai.inputHint': 'Eg. show current process pid',
-    'terminal.ai.inputSharpToGetHint': 'Type # for AI command suggestions',
+    'terminal.ai.inputSharpToGetHint': 'Type # for AI Suggestions',
     'terminal.ai.cannotGetTerminalConnection':
       'Cannot establish terminal connection, please provide feedback in the user group',
 
@@ -1455,10 +1461,11 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
-    'aiNative.inline.chat.input.placeholder.default': 'Ask Copilot（shift + enter newline）',
+    'aiNative.inline.chat.input.placeholder.default': 'New code instructions...(↑↓ for history)',
     'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
-
     'aiNative.inline.problem.fix.title': 'Fix with AI',
+    'aiNative.inline.diff.accept': 'Accept',
+    'aiNative.inline.diff.reject': 'Reject',
 
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':
@@ -1497,8 +1504,10 @@ export const localizationBundle = {
     'preference.ai.native.intelligentCompletions.alwaysVisible': 'Whether to always show intelligent completions',
 
     'preference.ai.native.codeEdits.title': 'Code Edits',
-    'preference.ai.native.codeEdits.lintErrors': 'Whether to enable intelligent rewriting of Lint Errors',
-    'preference.ai.native.codeEdits.lineChange': 'Whether to enable intelligent rewriting of Line Change',
+    'preference.ai.native.codeEdits.lintErrors': 'Whether to trigger intelligent rewriting when Lint Error occurs',
+    'preference.ai.native.codeEdits.lineChange':
+      'Whether to trigger intelligent rewriting when the cursor line number changes',
+    'preference.ai.native.codeEdits.typing': 'Whether to trigger intelligent rewriting when the content changes',
     // #endregion AI Native
 
     // #endregion merge editor

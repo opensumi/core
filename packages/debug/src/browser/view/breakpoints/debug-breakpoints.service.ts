@@ -143,7 +143,7 @@ export class DebugBreakpointsService extends WithEventBus {
     this.roots = roots.map((file) => new URI(file.uri));
   }
 
-  toggleBreakpointEnable(data: IDebugBreakpoint | DebugExceptionBreakpoint) {
+  toggleBreakpointEnable = (data: IDebugBreakpoint | DebugExceptionBreakpoint) => {
     if (isDebugBreakpoint(data)) {
       const real = this.breakpoints.getBreakpoint(URI.parse(data.uri), {
         lineNumber: data.raw.line,
@@ -157,7 +157,7 @@ export class DebugBreakpointsService extends WithEventBus {
     if (isDebugExceptionBreakpoint(data)) {
       this.breakpoints.updateExceptionBreakpoints(data.filter, !data.default);
     }
-  }
+  };
 
   extractNodes(item: DebugExceptionBreakpoint | IDebugBreakpoint): BreakpointItem | undefined {
     if (isDebugBreakpoint(item)) {

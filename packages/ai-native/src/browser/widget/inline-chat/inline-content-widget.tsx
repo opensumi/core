@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IAIInlineChatService, StackingLevelStr, useInjectable } from '@opensumi/ide-core-browser';
+import { IAIInlineChatService, StackingLevel, useInjectable } from '@opensumi/ide-core-browser';
 import { AIAction } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
@@ -44,9 +44,9 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
-  const [inputValue, setInputValue] = useState<string>('');
-  const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(false);
-
+  const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(
+    aiInlineChatService.interactiveInputVisible,
+  );
   useEffect(() => {
     const dis = new Disposable();
     dis.addDispose(onChatStatus((s) => setStatus(s)));
@@ -107,10 +107,6 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     [inlineChatFeatureRegistry],
   );
 
-  const handleValueChange = useCallback((value) => {
-    setInputValue(value);
-  }, []);
-
   const customOperationRender = useMemo(() => {
     if (!interactiveInputVisible) {
       return null;
@@ -124,12 +120,10 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
         width={320}
         disabled={isLoading}
-        value={inputValue}
-        onValueChange={handleValueChange}
         onSend={handleInteractiveInputSend}
       />
     );
-  }, [isLoading, interactiveInputVisible, inputValue]);
+  }, [isLoading, interactiveInputVisible]);
 
   const renderContent = useCallback(() => {
     if (operationList.length === 0 && moreOperation.length === 0) {
@@ -261,7 +255,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
     requestAnimationFrame(() => {
-      domNode.style.zIndex = StackingLevelStr.OverlayTop;
+      domNode.style.zIndex = (StackingLevel.FindWidget - 1).toString();
     });
     return domNode;
   }
@@ -403,8 +397,8 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
    * 3. 显示的区域方向在右侧，左侧不考虑
    */
   protected computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition {
-    let startPosition = selection.getStartPosition();
-    let endPosition = selection.getEndPosition();
+    const startPosition = selection.getStartPosition();
+    const endPosition = selection.getEndPosition();
     let cursorPosition = selection.getPosition();
 
     const model = this.editor.getModel()!;

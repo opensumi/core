@@ -275,6 +275,23 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     return this.groups.get()[index];
   }
 
+  swapGroup(i: number, j: number) {
+    const groups = this.groups.get();
+
+    if (i === -1 || j === -1) {
+      return;
+    }
+
+    const newGroups = [...groups];
+    const temp = newGroups[i];
+    newGroups[i] = newGroups[j];
+    newGroups[j] = temp;
+
+    transaction((tx) => {
+      this.groups.set(newGroups, tx);
+    });
+  }
+
   private _doSelectGroup(index: number) {
     const group = this.getGroup(index);
     transaction((tx) => {

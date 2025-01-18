@@ -63,6 +63,10 @@ export interface IExtHostTerminal {
 
   onDidChangeTerminalState: Event<vscode.Terminal>;
 
+  onDidChangeShell: Event<string>;
+
+  $setShell(shell: string);
+
   $setTerminals(idList: ITerminalInfo[]);
 
   $onDidChangeActiveTerminal(id: string);

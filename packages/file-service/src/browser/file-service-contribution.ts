@@ -47,6 +47,10 @@ export class FileServiceContribution implements ClientAppContribution, IDisposab
         contrib.onFileServiceReady && (await contrib.onFileServiceReady());
       }),
     );
+
+    if (this.fileSystem.initialize) {
+      await this.fileSystem.initialize();
+    }
   }
 
   dispose() {

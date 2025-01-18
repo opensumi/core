@@ -44,6 +44,8 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   readonly inputPlaceholder = observableValue<string | undefined>(this, '');
   readonly inputEnable = observableValue<boolean | undefined>(this, false);
 
+  // Indicates whether the quick-open has been opened
+  private isAlreadyOpen: boolean = false;
   private progressResolve?: (value: void | PromiseLike<void>) => void;
   private modifierListeners: DisposableCollection = new DisposableCollection();
 
@@ -67,6 +69,17 @@ export class QuickOpenWidget implements IQuickOpenWidget {
 
   show(prefix: string, options: QuickOpenInputOptions): void {
     transaction((tx) => {
+      if (this.isShow.get()) {
+        if (!this.isAlreadyOpen) {
+          // 弹框已经显示后 show 方法第一次被调用时调用
+          this.isAlreadyOpen = true;
+          this.callbacks.onType(prefix);
+        }
+      } else {
+        // 弹框第一次显示时调用
+        this.callbacks.onType(prefix);
+      }
+
       this.isShow.set(true, tx);
       this.inputValue.set(prefix, tx);
       this.inputPlaceholder.set(options.placeholder, tx);
@@ -79,13 +92,13 @@ export class QuickOpenWidget implements IQuickOpenWidget {
 
       this.renderTab = options.renderTab;
       this.toggleTab = options.toggleTab;
-      // 获取第一次要展示的内容
-      this.callbacks.onType(prefix);
       this.registerKeyModsListeners();
     });
   }
 
   hide(reason?: HideReason): void {
+    this.isAlreadyOpen = false;
+
     if (!this.modifierListeners.disposed) {
       this.modifierListeners.dispose();
     }
@@ -130,14 +143,22 @@ export class QuickOpenWidget implements IQuickOpenWidget {
 
   updateOptions(options: Partial<QuickOpenInputOptions>) {
     transaction((tx) => {
-      if ('placeholder' in options) {this.inputPlaceholder.set(options.placeholder, tx);}
-      if ('password' in options) {this.isPassword.set(!!options.password, tx);}
-      if ('inputEnable' in options) {this.inputEnable.set(!!options.inputEnable, tx);}
-      if ('valueSelection' in options) {this.valueSelection.set(options.valueSelection, tx);}
-      if ('canSelectMany' in options) {this.canSelectMany.set(!!options.canSelectMany, tx);}
-      if ('keepScrollPosition' in options) {this.keepScrollPosition.set(!!options.keepScrollPosition, tx);}
-      if ('busy' in options) {this.busy.set(!!options.busy, tx);}
-      if ('enabled' in options) {this.inputEnable.set(!!options.enabled, tx);}
+      const optionsMap = {
+        placeholder: (value?: string) => this.inputPlaceholder.set(value, tx),
+        password: (value?: boolean) => this.isPassword.set(!!value, tx),
+        inputEnable: (value?: boolean) => this.inputEnable.set(!!value, tx),
+        valueSelection: (value?: [number, number]) => this.valueSelection.set(value, tx),
+        canSelectMany: (value?: boolean) => this.canSelectMany.set(!!value, tx),
+        keepScrollPosition: (value?: boolean) => this.keepScrollPosition.set(!!value, tx),
+        busy: (value?: boolean) => this.busy.set(!!value, tx),
+        enabled: (value?: boolean) => this.inputEnable.set(!!value, tx),
+      };
+
+      Object.entries(options).forEach(([key, value]) => {
+        if (key in optionsMap) {
+          optionsMap[key](value);
+        }
+      });
     });
   }
 

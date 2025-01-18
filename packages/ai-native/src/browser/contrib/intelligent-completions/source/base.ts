@@ -13,13 +13,12 @@ import {
 import { CancellationTokenSource, ICodeEditor } from '@opensumi/ide-monaco';
 import {
   autorunDelta,
-  debouncedObservable,
+  debouncedObservable2,
   derived,
   disposableObservableValue,
   observableValue,
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
-import { DisposableStore } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 
 import { ICodeEditsContextBean } from '../index';
 
@@ -147,8 +146,6 @@ export class CodeEditsSourceCollection extends Disposable {
 
     sources.forEach((source) => this.addDispose(source.mount()));
 
-    const store = this.registerDispose(new DisposableStore());
-
     // 观察所有 source 的 codeEditsContextBean
     const observerCodeEditsContextBean = derived((reader) => ({
       codeEditsContextBean: new Map(sources.map((source) => [source, source.codeEditsContextBean.read(reader)])),
@@ -157,7 +154,7 @@ export class CodeEditsSourceCollection extends Disposable {
     this.addDispose(
       autorunDelta(
         // 这里需要做 debounce 0 处理，将多次连续的事务通知合并为一次
-        debouncedObservable(observerCodeEditsContextBean, 0, store),
+        debouncedObservable2(observerCodeEditsContextBean, 0),
         ({ lastValue, newValue }) => {
           // 只拿最新的订阅值，如果 uid 相同，表示该值没有变化，就不用往下通知了
           const lastSources = sources.filter((source) => {

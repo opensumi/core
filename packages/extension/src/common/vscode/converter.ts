@@ -26,26 +26,11 @@ import {
 import { ChatMessageRole as ChatMessageRoleEnum, IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
-import {
-  CellKind,
-  EditorGroupColumn,
-  ICellRange,
-  IContentDecorationRenderOptions,
-  IDecorationRenderOptions,
-  IThemeDecorationRenderOptions,
-  LanguageFilter,
-  LanguageSelector,
-  NotebookCellInternalMetadata,
-  TrackedRangeStickiness,
-} from '@opensumi/ide-editor/lib/common';
+import { TrackedRangeStickiness } from '@opensumi/ide-editor/lib/common/editor';
+import { CellKind } from '@opensumi/ide-editor/lib/common/notebook';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
-import { CodeActionTriggerType, EndOfLineSequence } from '@opensumi/ide-monaco/lib/common/types';
 import { TestId } from '@opensumi/ide-testing/lib/common';
 import {
-  CoverageDetails,
-  DetailType,
-  ICoveredCount,
-  IFileCoverage,
   ISerializedTestResults,
   ITestErrorMessage,
   ITestItem,
@@ -55,8 +40,7 @@ import {
   SerializedTestResultItem,
   TestMessageType,
 } from '@opensumi/ide-testing/lib/common/testCollection';
-import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+
 
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 
@@ -66,10 +50,28 @@ import { ViewColumn as ViewColumnEnums } from './enums';
 import * as types from './ext-types';
 import { IInlineValueContextDto } from './languages';
 import * as model from './model.api';
-import { isMarkdownString, parseHrefAndDimensions } from './models';
+import {
+  CodeActionTriggerType,
+  Command,
+  EndOfLineSequence,
+  RenderLineNumbersType,
+  isMarkdownString,
+  parseHrefAndDimensions,
+} from './models';
 import { TestItemImpl, getPrivateApiFor } from './testing/testApi';
 import { DataTransferDTO } from './treeview';
 
+import type {
+  EditorGroupColumn,
+  ICellRange,
+  IContentDecorationRenderOptions,
+  IDecorationRenderOptions,
+  IThemeDecorationRenderOptions,
+  LanguageFilter,
+  LanguageSelector,
+  NotebookCellInternalMetadata,
+} from '@opensumi/ide-editor/lib/common';
+import type * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import type vscode from 'vscode';
 
 const { parse } = path;
@@ -717,6 +719,8 @@ export namespace TextEditorLineNumbersStyle {
         return RenderLineNumbersType.Off;
       case types.TextEditorLineNumbersStyle.Relative:
         return RenderLineNumbersType.Relative;
+      case types.TextEditorLineNumbersStyle.Interval:
+        return RenderLineNumbersType.Interval;
       case types.TextEditorLineNumbersStyle.On:
       default:
         return RenderLineNumbersType.On;
@@ -728,6 +732,8 @@ export namespace TextEditorLineNumbersStyle {
         return types.TextEditorLineNumbersStyle.Off;
       case RenderLineNumbersType.Relative:
         return types.TextEditorLineNumbersStyle.Relative;
+      case RenderLineNumbersType.Interval:
+        return types.TextEditorLineNumbersStyle.Interval;
       case RenderLineNumbersType.On:
       default:
         return types.TextEditorLineNumbersStyle.On;
@@ -1605,7 +1611,7 @@ export namespace InlayHintLabelPart {
   export function to(converter: CommandsConverter, part: languages.InlayHintLabelPart): types.InlayHintLabelPart {
     const result = new types.InlayHintLabelPart(part.label);
     result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : (part.tooltip as string);
-    if (languages.Command.is(part.command)) {
+    if (Command.is(part.command)) {
       result.command = converter.fromInternal(part.command);
     }
     if (part.location) {
@@ -1647,6 +1653,7 @@ export namespace TestMessage {
       actual: message.actualOutput,
       contextValue: message.contextValue,
       location: message.location ? (location.from(message.location) as any) : undefined,
+      stackTrace: message.stackTrace && message.stackTrace.map((frame) => TestMessageStackFrame.from(frame)),
     };
   }
 
@@ -1659,6 +1666,22 @@ export namespace TestMessage {
     message.contextValue = item.contextValue;
     message.location = item.location ? location.to(item.location) : undefined;
     return message;
+  }
+}
+
+export interface TestMessageStackFrameDTO {
+  uri: Uri | undefined;
+  position: vscode.Position | undefined;
+  label: string;
+}
+
+export namespace TestMessageStackFrame {
+  export function from(stackTrace: vscode.TestMessageStackFrame): TestMessageStackFrameDTO {
+    return {
+      label: stackTrace.label,
+      position: stackTrace.position,
+      uri: stackTrace?.uri,
+    };
   }
 }
 
@@ -1787,48 +1810,6 @@ export namespace TestResults {
     return {
       completedAt: serialized.completedAt,
       results: roots.map((r) => convertTestResultItem(r, byInternalId)),
-    };
-  }
-}
-
-export namespace TestCoverage {
-  function fromCoveredCount(count: vscode.CoveredCount): ICoveredCount {
-    return { covered: count.covered, total: count.covered };
-  }
-
-  function fromLocation(location: vscode.Range | vscode.Position) {
-    return 'line' in location ? Position.from(location) : Range.from(location);
-  }
-
-  export function fromDetailed(coverage: vscode.DetailedCoverage): CoverageDetails {
-    if ('branches' in coverage) {
-      return {
-        count: coverage.executionCount,
-        location: fromLocation(coverage.location),
-        type: DetailType.Statement,
-        branches: coverage.branches.length
-          ? coverage.branches.map((b) => ({
-              count: b.executionCount,
-              location: b.location && fromLocation(b.location),
-            }))
-          : undefined,
-      };
-    } else {
-      return {
-        type: DetailType.Function,
-        count: coverage.executionCount,
-        location: fromLocation(coverage.location),
-      };
-    }
-  }
-
-  export function fromFile(coverage: vscode.FileCoverage): IFileCoverage {
-    return {
-      uri: coverage.uri,
-      statement: fromCoveredCount(coverage.statementCoverage),
-      branch: coverage.branchCoverage && fromCoveredCount(coverage.branchCoverage),
-      function: coverage.functionCoverage && fromCoveredCount(coverage.functionCoverage),
-      details: coverage.detailedCoverage?.map(fromDetailed),
     };
   }
 }

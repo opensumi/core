@@ -126,6 +126,11 @@ export class MainThreadTerminal implements IMainThreadTerminal {
         await this.activationEventService.fireEvent(`onTerminalProfile:${id}`);
       }),
     );
+    this.disposable.addDispose(
+      this.profileService.onDidChangeDefaultShell((shell: string) => {
+        this.proxy.$setShell(shell);
+      }),
+    );
   }
 
   private initData() {

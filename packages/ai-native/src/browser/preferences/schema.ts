@@ -58,5 +58,9 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [AINativeSettingSectionsId.CodeEditsTyping]: {
+      type: 'boolean',
+      default: false,
+    },
   },
 };

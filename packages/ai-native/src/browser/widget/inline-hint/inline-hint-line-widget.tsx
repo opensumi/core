@@ -35,17 +35,17 @@ export class InlineHintLineDecoration extends Disposable {
     );
   }
 
-  private getSequenceKeyString() {
+  private getSequenceKeyString(separator = '+') {
     const keybindings = this.keybindingRegistry.getKeybindingsForCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id);
     const resolved = keybindings[0]?.resolved;
     if (!resolved) {
       return '';
     }
-    return this.keybindingRegistry.acceleratorForSequence(resolved, '+');
+    return this.keybindingRegistry.acceleratorForSequence(resolved, separator);
   }
 
   public async show(position: IPosition) {
-    const content = formatLocalize('aiNative.inline.hint.widget.placeholder', this.getSequenceKeyString());
+    const content = formatLocalize('aiNative.inline.hint.widget.placeholder', this.getSequenceKeyString(''));
 
     const theme = await this.themeService.getCurrentTheme();
     const color = this.colorRegister.resolveDefaultColor(inputPlaceholderForeground, theme);
@@ -60,6 +60,7 @@ export class InlineHintLineDecoration extends Disposable {
             color: color?.toString() ?? '',
             padding: '0 0 0 12px',
             width: 'max-content',
+            fontFamily: '-apple-system,BlinkMacSystemFont,PingFang SC,Hiragino Sans GB,sans-serif',
           },
         },
       },

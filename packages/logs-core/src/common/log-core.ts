@@ -13,7 +13,7 @@ export interface ILogServiceForClient {
   error(namespace: SupportLogNamespace, message: string, pid?: number): void;
   critical(namespace: SupportLogNamespace, message: string, pid?: number): void;
 
-  dispose(namespace: SupportLogNamespace): void;
+  disposeLogger(namespace: SupportLogNamespace): Promise<void>;
 
   setGlobalLogLevel(level: LogLevel): Promise<void>;
   getGlobalLogLevel(): Promise<LogLevel>;

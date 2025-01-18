@@ -691,6 +691,12 @@ export const defaultSettingSections: {
           id: 'editor.experimental.stickyScroll.enabled',
           localized: 'preference.editor.experimental.stickyScroll.enabled',
         },
+        // hover
+        { id: 'editor.hover.enabled' },
+        { id: 'editor.hover.delay' },
+        { id: 'editor.hover.sticky' },
+        { id: 'editor.hover.hidingDelay' },
+        { id: 'editor.hover.above' },
         // Guides
         { id: 'editor.guides.bracketPairs', localized: 'preference.editor.guides.bracketPairs' },
         { id: 'editor.guides.indentation', localized: 'preference.editor.guides.indentation' },
@@ -731,6 +737,8 @@ export const defaultSettingSections: {
         },
         { id: 'workbench.editorAssociations' },
         { id: 'editor.unicodeHighlight.ambiguousCharacters' },
+        { id: 'editor.unicodeHighlight.allowedCharacters' },
+        { id: 'editor.unicodeHighlight.allowedLocales' },
       ],
     },
     {

@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationToken, Emitter, IDisposable, IExtensionInfo, MessageType } from '@opensumi/ide-core-common';
+import { CancellationToken, Emitter, Event, IDisposable, IExtensionInfo, MessageType } from '@opensumi/ide-core-common';
 
 import {
   ICreateOutputChannelOptions,
@@ -298,6 +298,12 @@ export function createWindowApiFactory(
     get tabGroups() {
       return extHostEditorTabs.tabGroups;
     },
+    /** @stubbed Terminal Shell Ingration */
+    onDidChangeTerminalShellIntegration: Event.None,
+    /** @stubbed Terminal Shell Ingration */
+    onDidEndTerminalShellExecution: Event.None,
+    /** @stubbed Terminal Shell Ingration */
+    onDidStartTerminalShellExecution: Event.None,
   };
 }
 

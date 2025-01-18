@@ -38,6 +38,7 @@ import {
   IMainThreadTerminal,
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
+import { TerminalExitReason } from '../../../common/vscode/ext-types';
 
 import type vscode from 'vscode';
 
@@ -49,11 +50,13 @@ interface ICachedLinkEntry {
 }
 
 export class ExtHostTerminal implements IExtHostTerminal {
+  private shell: string;
   private proxy: IMainThreadTerminal;
   private changeActiveTerminalEvent: Emitter<Terminal | undefined> = new Emitter();
   private closeTerminalEvent: Emitter<Terminal> = new Emitter();
   private openTerminalEvent: Emitter<Terminal> = new Emitter();
   private terminalStateChangeEvent: Emitter<Terminal> = new Emitter();
+  private onDidChangeShellEvent: Emitter<string> = new Emitter();
   private terminalsMap: Map<string, Terminal> = new Map();
   private _terminalDeferreds: Map<string, Deferred<Terminal | undefined>> = new Map();
   private readonly _linkProviders: Set<vscode.TerminalLinkProvider> = new Set();
@@ -74,6 +77,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
   protected _extensionTerminalAwaitingStart: {
     [id: number]: { initialDimensions: ITerminalDimensionsDto | undefined } | undefined;
   } = {};
+
+  private _terminalStartDeferreds: Map<string, Deferred<undefined>> = new Map();
 
   activeTerminal: Terminal | undefined;
   get terminals(): Terminal[] {
@@ -136,7 +141,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
       return;
     }
 
-    terminal.setExitCode(e.code);
+    // 目前 OpenSumi 不是很好打通完整的 Terminal 关闭原因，先用 Unknown 打通接口
+    terminal.setExitStatus(e.code, TerminalExitReason.Unknown);
     this.closeTerminalEvent.fire(terminal);
 
     this.terminalsMap.delete(terminalId);
@@ -170,12 +176,23 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return this.openTerminalEvent.event;
   }
 
+  get onDidChangeShell(): Event<string> {
+    return this.onDidChangeShellEvent.event;
+  }
+
   get shellPath() {
     return this._defaultProfile?.path || process.env.SHELL || userInfo().shell!;
   }
 
   get onDidChangeTerminalState(): Event<Terminal> {
     return this.terminalStateChangeEvent.event;
+  }
+
+  $setShell(shell: string) {
+    if (this.shell !== shell) {
+      this.shell = shell;
+      this.onDidChangeShellEvent.fire(shell);
+    }
   }
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
@@ -208,12 +225,13 @@ export class ExtHostTerminal implements IExtHostTerminal {
     const p = new ExtHostPseudoterminal(options.pty);
     terminal.createExtensionTerminal(shortId);
     this.terminalsMap.set(shortId, terminal);
+    this._terminalStartDeferreds.set(shortId, new Deferred());
     const disposable = this._setupExtHostProcessListeners(shortId, p);
     this._terminalProcessDisposables[shortId] = disposable;
 
     this.disposables.add(
       p.onProcessExit((e: number | undefined) => {
-        terminal.setExitCode(e);
+        terminal.setExitStatus(e, TerminalExitReason.Process);
       }),
     );
 
@@ -365,9 +383,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   public $acceptDefaultProfile(profile: ITerminalProfile, automationProfile?: ITerminalProfile): void {
+    const oldProfile = this._defaultProfile;
     this._defaultProfile = profile;
     // 还不知道这个 automation 有啥用
     this._defaultAutomationProfile = automationProfile;
+
+    if (oldProfile?.path !== profile.path) {
+      this.onDidChangeShellEvent.fire(profile.path);
+    }
   }
 
   public async $createContributedProfileTerminal(
@@ -425,27 +448,28 @@ export class ExtHostTerminal implements IExtHostTerminal {
     }
 
     // TerminalController::_createClient 会立即触发 onDidOpenTerminal，所以无需等待
-    const terminalProcess = this._terminalProcesses.get(id);
+    const terminalProcess = this._terminalProcesses.get(this.getTerminalShortId(id));
     if (terminalProcess) {
       (terminalProcess as ExtHostPseudoterminal).startSendingEvents(initialDimensions);
     } else {
       // Defer startSendingEvents call to when _setupExtHostProcessListeners is called
-      this._extensionTerminalAwaitingStart[id] = { initialDimensions };
+      this._extensionTerminalAwaitingStart[this.getTerminalShortId(id)] = { initialDimensions };
     }
 
+    this._terminalStartDeferreds.get(this.getTerminalShortId(id))?.resolve(undefined);
     return undefined;
   }
 
-  protected _setupExtHostProcessListeners(id: string, p: ITerminalChildProcess): IDisposable {
+  protected _setupExtHostProcessListeners(shortId: string, p: ITerminalChildProcess): IDisposable {
     const disposables = new DisposableStore();
 
     disposables.add(
-      p.onProcessReady((e: { pid: number; cwd: string }) => this.proxy.$sendProcessReady(id, e.pid, e.cwd)),
+      p.onProcessReady((e: { pid: number; cwd: string }) => this.proxy.$sendProcessReady(shortId, e.pid, e.cwd)),
     );
     disposables.add(
       p.onProcessTitleChanged((title) => {
-        this.proxy.$sendProcessTitle(id, title);
-        this._getTerminalByIdEventually(id).then((terminal) => {
+        this.proxy.$sendProcessTitle(shortId, title);
+        this._getTerminalByIdEventually(shortId).then((terminal) => {
           if (terminal) {
             terminal.setName(title);
           }
@@ -454,19 +478,21 @@ export class ExtHostTerminal implements IExtHostTerminal {
     );
 
     // Buffer data events to reduce the amount of messages going to the renderer
-    this._bufferer.startBuffering(id, p.onProcessData);
-    disposables.add(p.onProcessExit((exitCode) => this._onProcessExit(id, exitCode)));
+    this._bufferer.startBuffering(shortId, p.onProcessData);
+    disposables.add(p.onProcessExit((exitCode) => this._onProcessExit(shortId, exitCode)));
 
     if (p.onProcessOverrideDimensions) {
-      disposables.add(p.onProcessOverrideDimensions((e) => this.proxy.$sendOverrideDimensions(id, e)));
+      disposables.add(p.onProcessOverrideDimensions((e) => this.proxy.$sendOverrideDimensions(shortId, e)));
     }
-    this._terminalProcesses.set(id, p);
+    this._terminalProcesses.set(shortId, p);
 
-    const awaitingStart = this._extensionTerminalAwaitingStart[id];
-    if (awaitingStart && p instanceof ExtHostPseudoterminal) {
-      p.startSendingEvents(awaitingStart.initialDimensions);
-      delete this._extensionTerminalAwaitingStart[id];
-    }
+    this._terminalStartDeferreds.get(shortId)?.promise.then(() => {
+      const awaitingStart = this._extensionTerminalAwaitingStart[shortId];
+      if (awaitingStart && p instanceof ExtHostPseudoterminal) {
+        p.startSendingEvents(awaitingStart.initialDimensions);
+        delete this._extensionTerminalAwaitingStart[shortId];
+      }
+    });
 
     return disposables;
   }
@@ -490,11 +516,11 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   public $acceptProcessInput(id: string, data: string): void {
-    this._terminalProcesses.get(id)?.input(data);
+    this._terminalProcesses.get(this.getTerminalShortId(id))?.input(data);
   }
 
   public $acceptProcessShutdown(id: string, immediate: boolean): void {
-    this._terminalProcesses.get(id)?.shutdown(immediate);
+    this._terminalProcesses.get(this.getTerminalShortId(id))?.shutdown(immediate);
   }
 
   public $acceptProcessRequestInitialCwd(id: string): void {
@@ -705,6 +731,8 @@ export class Terminal implements vscode.Terminal {
     return this._creationOptions;
   }
 
+  shellIntegration: vscode.TerminalShellIntegration | undefined = undefined;
+
   sendText(text: string, addNewLine?: boolean): void {
     this.when.then(() => {
       this.proxy.$sendText(this.id, text, addNewLine);
@@ -750,8 +778,8 @@ export class Terminal implements vscode.Terminal {
     this.created(id);
   }
 
-  public setExitCode(code: number | undefined) {
-    this._exitStatus = Object.freeze({ code });
+  public setExitStatus(code: number | undefined, reason: vscode.TerminalExitReason) {
+    this._exitStatus = Object.freeze({ code, reason });
   }
 
   public setName(name: string) {
@@ -819,7 +847,9 @@ export class ExtHostPseudoterminal implements ITerminalChildProcess {
 
   startSendingEvents(initialDimensions: ITerminalDimensionsDto | undefined): void {
     // Attach the listeners
-    this._pty.onDidWrite((e) => this._onProcessData.fire(e));
+    this._pty.onDidWrite((e) => {
+      this._onProcessData.fire(e);
+    });
     if (this._pty.onDidClose) {
       this._pty.onDidClose((e: number | void = undefined) => {
         this._onProcessExit.fire(e === void 0 ? undefined : e);

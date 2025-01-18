@@ -68,6 +68,14 @@ export function createDebugApiFactory(extHostDebugService: IExtHostDebugService)
     onDidChangeBreakpoints(listener, thisArgs?, disposables?) {
       return extHostDebugService.onDidChangeBreakpoints(listener, thisArgs, disposables);
     },
+    /** @stubbed */
+    get activeStackItem() {
+      return undefined;
+    },
+    /** @stubbed */
+    get onDidChangeActiveStackItem() {
+      return Event.None;
+    },
     registerDebugConfigurationProvider(
       debugType: string,
       provider: vscode.DebugConfigurationProvider,

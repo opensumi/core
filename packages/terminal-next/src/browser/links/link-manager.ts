@@ -375,13 +375,8 @@ export class TerminalLinkManager extends Disposable {
       return undefined;
     }
 
-    const linkUrl = this.extractLinkUrl(preprocessedLink);
-    if (!linkUrl) {
-      return undefined;
-    }
-
     try {
-      const uri = URI.file(linkUrl);
+      const uri = URI.file(preprocessedLink);
       const stat = await this._fileService.getFileStat(uri.toString());
       if (stat) {
         return { uri, isDirectory: stat.isDirectory };

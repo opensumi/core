@@ -70,6 +70,21 @@ declare module 'vscode' {
     export const onDidChangeTelemetryEnabled: Event<boolean>;
 
     /**
+     * An {@link Event} which fires when the default shell changes. This fires with the new
+     * shell path.
+     */
+    export const onDidChangeShell: Event<string>;
+
+    /**
+     * Creates a new {@link TelemetryLogger telemetry logger}.
+     *
+     * @param sender The telemetry sender that is used by the telemetry logger.
+     * @param options Options for the telemetry logger.
+     * @returns A new telemetry logger
+     */
+    export function createTelemetryLogger(sender: TelemetrySender, options?: TelemetryLoggerOptions): TelemetryLogger;
+
+    /**
      * The name of a remote. Defined by extensions, popular samples are `wsl` for the Windows
      * Subsystem for Linux or `ssh-remote` for remotes using a secure shell.
      *
@@ -89,7 +104,8 @@ declare module 'vscode' {
 
     /**
      * The detected default shell for the extension host, this is overridden by the
-     * `terminal.integrated.shell` setting for the extension host's platform.
+     * `terminal.integrated.defaultProfile` setting for the extension host's platform. Note that in
+     * environments that do not support a shell the value is the empty string.
      */
     export const shell: string;
 

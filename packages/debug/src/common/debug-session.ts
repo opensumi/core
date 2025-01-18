@@ -32,6 +32,7 @@ export const IDebugSession = Symbol('DebugSession');
 
 export const IDebugSessionManager = Symbol('DebugSessionManager');
 export interface IDebugSessionManager {
+  currentSession: IDebugSession | undefined;
   fireWillStartDebugSession(): Promise<void>;
   resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<IDebugSessionDTO | undefined>;
   resolveDebugConfiguration(
@@ -49,34 +50,85 @@ export interface IDebugSessionManager {
 }
 
 export interface IDebugSession extends IDisposable {
+  // 状态管理
+  /** 当前调试会话的状态 */
   state: DebugState;
+
+  /** 父调试会话（如果有） */
   parentSession: IDebugSession | undefined;
+
+  /** 唯一标识符 */
   id: string;
+
+  /** 调试适配器的能力 */
   capabilities: DebugProtocol.Capabilities;
+
+  /** 是否压缩输出 */
+  compact: boolean;
+
+  // 事件处理
+  /** 内存无效化事件 */
   onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent>;
+
+  /** 状态变化事件 */
+  onDidChangeState: Event<DebugState>;
+
+  /** 进度开始事件 */
+  onDidProgressStart: Event<DebugProtocol.ProgressStartEvent>;
+
+  /** 进度更新事件 */
+  onDidProgressUpdate: Event<DebugProtocol.ProgressUpdateEvent>;
+
+  /** 进度结束事件 */
+  onDidProgressEnd: Event<DebugProtocol.ProgressEndEvent>;
+
+  /** 调试适配器退出事件 */
+  onDidExitAdapter: Event<void>;
+
+  // 操作方法
+  /** 取消当前操作 */
+  cancel(reason?: string): Promise<DebugProtocol.CancelResponse | undefined>;
+
+  /** 发送请求到调试适配器 */
+  sendRequest<K extends keyof DebugRequestTypes>(
+    command: K,
+    args: DebugRequestTypes[K][0],
+    token?: CancellationToken | undefined,
+  ): Promise<DebugRequestTypes[K][1]>;
+
+  /** 获取调试协议中的断点 */
+  getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined;
+
+  /** 判断是否具有独立的 REPL */
+  hasSeparateRepl(): boolean;
+
+  /** 监听特定类型的事件 */
+  on<K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any): IDisposable;
+
+  /** 断开连接 */
+  disconnect(restart?: boolean | undefined): Promise<void>;
+
+  /** 终止调试会话 */
+  terminate(restart?: boolean | undefined): Promise<void>;
+
+  /** 重启调试会话 */
+  restart(args: DebugProtocol.RestartArguments): Promise<boolean>;
+
+  // 内存操作
+  /** 读取内存 */
   readMemory(
     memoryReference: string,
     offset: number,
     count: number,
   ): Promise<DebugProtocol.ReadMemoryResponse | undefined>;
+
+  /** 写入内存 */
   writeMemory(
     memoryReference: string,
     offset: number,
     data: string,
     allowPartial?: boolean | undefined,
   ): Promise<DebugProtocol.WriteMemoryResponse | undefined>;
-  hasSeparateRepl: () => boolean;
-  getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined;
-  compact: boolean;
-  on: <K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any) => IDisposable;
-  sendRequest<K extends keyof DebugRequestTypes>(
-    command: K,
-    args: DebugRequestTypes[K][0],
-    token?: CancellationToken | undefined,
-  ): Promise<DebugRequestTypes[K][1]>;
-  restart(args: DebugProtocol.RestartArguments): Promise<boolean>;
-  disconnect(restart?: boolean | undefined): Promise<void>;
-  terminate(restart?: boolean | undefined): Promise<void>;
 }
 
 /**

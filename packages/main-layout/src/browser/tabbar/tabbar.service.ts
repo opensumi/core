@@ -41,10 +41,18 @@ import {
   getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { autorunDelta, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
+import {
+  autorunDelta,
+  derivedOpts,
+  observableFromEventOpts,
+  observableValue,
+  transaction,
+} from '@opensumi/ide-monaco/lib/common/observable';
 
 import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent } from '../../common';
 import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
+
+import type { ViewBadge } from 'vscode';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export const TabbarServiceFactoryFn = (injector: Injector) => (location: string) => {
@@ -67,7 +75,25 @@ const NONE_CONTAINER_ID = undefined;
 
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
-  readonly currentContainerId = observableValue<string | undefined>(this, NONE_CONTAINER_ID);
+  private readonly doChangeViewEmitter = new Emitter<void>();
+  private readonly shouldChangeView = observableFromEventOpts<void>(
+    { owner: this, equalsFn: () => false },
+    this.doChangeViewEmitter.event,
+    () => void 0,
+  );
+  private readonly containerIdObs = observableValue<string | undefined>(this, NONE_CONTAINER_ID);
+
+  public readonly currentContainerId = derivedOpts(
+    {
+      owner: this,
+      // 每次有事件变化，都需要更新视图
+      equalsFn: () => false,
+    },
+    (reader) => {
+      this.shouldChangeView.read(reader);
+      return this.containerIdObs.read(reader);
+    },
+  );
 
   private nextContainerId = '';
   private useFirstContainerId = false;
@@ -189,11 +215,11 @@ export class TabbarService extends WithEventBus {
 
   updateCurrentContainerId(containerId: string) {
     transaction((tx) => {
-      this.currentContainerId.set(containerId, tx);
+      this.containerIdObs.set(containerId, tx);
     });
   }
 
-  updateBadge(containerId: string, value: string) {
+  updateBadge(containerId: string, value?: ViewBadge | string) {
     const component = this.getContainer(containerId);
     if (component && component.options) {
       component.options.badge = value;
@@ -685,6 +711,7 @@ export class TabbarService extends WithEventBus {
       }
     }
     this.getContainerState(containers[index].options!.containerId).priority = targetPriority;
+    this.doChangeViewEmitter.fire();
   }
 
   protected storeState() {

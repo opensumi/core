@@ -10,27 +10,12 @@ const fs = require('fs-extra');
 const nodeFetch = require('node-fetch');
 const rimraf = require('rimraf');
 
-const MARKETPLACE_TYPE = {
-  OPENVSX: 'openvsx',
-  ALIPAY_CLOUD: 'alipay-cloud',
-};
-const marketplaceType = process.env.MARKETPLACE ?? MARKETPLACE_TYPE.ALIPAY_CLOUD;
-
 // 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
 
-const extensionFileName =
-  marketplaceType === MARKETPLACE_TYPE.ALIPAY_CLOUD ? 'alipay-cloud-extensions.json' : 'vscode-extensions.json';
+const extensionFileName = 'vscode-extensions.json';
 const { extensions } = require(path.resolve(__dirname, `../configs/${extensionFileName}`));
 const headers = {};
-
-if (marketplaceType === MARKETPLACE_TYPE.ALIPAY_CLOUD) {
-  headers['x-account-id'] = 'WWPLOa7vWXCUTSHCfV5FK7Su';
-  headers['x-master-key'] = 'i6rkupqyvC6Bc6CiO0yVLNqq';
-  headers['x-download-mode'] = 'redirect';
-  headers['x-webgw-version'] = '2.0';
-  headers['X-Webgw-Appid'] = '180020010001254774';
-}
 
 // 限制并发数，运行promise
 const parallelRunPromise = (lazyPromises, n) => {
@@ -141,18 +126,11 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 }
 
 const installExtension = async (namespace, name, version) => {
-  let downloadUrl = '';
-
-  if (marketplaceType === MARKETPLACE_TYPE.ALIPAY_CLOUD) {
-    downloadUrl = `https://twebgwnet.alipay.com/atsmarketplace/openapi/ide/download/${namespace}.${name}?version=${version}`;
-  } else {
-    const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
-    const getDetailApi = `https://open-vsx.org/api/${path}`;
-    const res = await nodeFetch(getDetailApi, { timeout: 100000, headers });
-    const data = await res.json();
-
-    downloadUrl = data.files?.download;
-  }
+  const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
+  const getDetailApi = `https://open-vsx.org/api/${path}`;
+  const res = await nodeFetch(getDetailApi, { timeout: 100000, headers });
+  const data = await res.json();
+  const downloadUrl = data.files?.download;
 
   if (downloadUrl) {
     // 下载解压插件容易出错，因此这里加一个重试逻辑

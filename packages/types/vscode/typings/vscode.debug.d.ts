@@ -565,6 +565,50 @@ declare module 'vscode' {
   }
 
   /**
+   * Represents a thread in a debug session.
+   */
+  export class DebugThread {
+    /**
+     * Debug session for thread.
+     */
+    readonly session: DebugSession;
+
+    /**
+     * ID of the associated thread in the debug protocol.
+     */
+    readonly threadId: number;
+
+    /**
+     * @hidden
+     */
+    private constructor(session: DebugSession, threadId: number);
+  }
+
+  /**
+   * Represents a stack frame in a debug session.
+   */
+  export class DebugStackFrame {
+    /**
+     * Debug session for thread.
+     */
+    readonly session: DebugSession;
+
+    /**
+     * ID of the associated thread in the debug protocol.
+     */
+    readonly threadId: number;
+    /**
+     * ID of the stack frame in the debug protocol.
+     */
+    readonly frameId: number;
+
+    /**
+     * @hidden
+     */
+    private constructor(session: DebugSession, threadId: number, frameId: number);
+  }
+
+  /**
    * A DebugProtocolSource is an opaque stand-in type for the [Source](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Source) type defined in the Debug Adapter Protocol.
    */
   export interface DebugProtocolSource {
@@ -650,7 +694,7 @@ declare module 'vscode' {
     /**
      * An icon for the view when it's show in inline actions.
      */
-    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    iconPath?: IconPath;
 
     /**
      * Visualization to use for the variable. This may be either:
@@ -766,6 +810,21 @@ declare module 'vscode' {
      * An [event](#Event) that is emitted when the set of breakpoints is added, removed, or changed.
      */
     export const onDidChangeBreakpoints: Event<BreakpointsChangeEvent>;
+
+    /**
+     * The currently focused thread or stack frame, or `undefined` if no
+     * thread or stack is focused. A thread can be focused any time there is
+     * an active debug session, while a stack frame can only be focused when
+     * a session is paused and the call stack has been retrieved.
+     * @stubbed
+     */
+    export const activeStackItem: DebugThread | DebugStackFrame | undefined;
+
+    /**
+     * An event which fires when the {@link debug.activeStackItem} has changed.
+     * @stubbed
+     */
+    export const onDidChangeActiveStackItem: Event<DebugThread | DebugStackFrame | undefined>;
 
     /**
      * Register a [debug configuration provider](#DebugConfigurationProvider) for a specific debug type.

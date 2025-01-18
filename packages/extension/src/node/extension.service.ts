@@ -35,6 +35,7 @@ import {
   isElectronNode,
   isWindows,
 } from '@opensumi/ide-core-node';
+import { process as processUtil } from '@opensumi/ide-utils';
 
 import {
   CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD,
@@ -53,24 +54,6 @@ import {
 import { ExtensionScanner } from './extension.scanner';
 
 import type cp from 'child_process';
-
-function detectExtFileType(): 'js' | 'ts' {
-  if (typeof module === 'object' && module.filename) {
-    if (module.filename.endsWith('.ts')) {
-      return 'ts';
-    }
-    return 'js';
-  }
-
-  if (typeof __filename === 'string') {
-    if (__filename.endsWith('.ts')) {
-      return 'ts';
-    }
-    return 'js';
-  }
-
-  return 'js';
-}
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {
@@ -338,16 +321,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     forkArgs.push(`--${KT_PROCESS_SOCK_OPTION_KEY}=${JSON.stringify(extServerListenOption)}`);
 
-    const extFileType = detectExtFileType();
-
     if (isElectronNode()) {
       extProcessPath = this.appConfig.extHost || (process.env.EXTENSION_HOST_ENTRY as string);
     } else {
       preloadPath =
         process.env.EXT_MODE === 'js'
           ? path.join(__dirname, '../../lib/hosted/ext.host.js')
-          : path.join(__dirname, '../hosted/ext.host.' + extFileType);
-      if (process.env.EXT_MODE !== 'js' && extFileType === 'ts') {
+          : path.join(__dirname, '../hosted/ext.host.' + processUtil.extFileType);
+      if (process.env.EXT_MODE !== 'js' && processUtil.extFileType === 'ts') {
         forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
       }
 
@@ -358,7 +339,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         extProcessPath =
           process.env.EXT_MODE === 'js'
             ? path.join(__dirname, '../../hosted/ext.process.js')
-            : path.join(__dirname, '../hosted/ext.process.' + extFileType);
+            : path.join(__dirname, '../hosted/ext.process.' + processUtil.extFileType);
       }
     }
     this.logger.log(`Extension host process path ${extProcessPath}`);

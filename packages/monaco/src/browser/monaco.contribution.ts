@@ -24,7 +24,7 @@ import {
   ServiceNames,
   StaticResourceContribution,
   StaticResourceService,
-  getCdnHref,
+  getCDNHref,
   getWorkerBootstrapUrl,
 } from '@opensumi/ide-core-browser';
 import {
@@ -300,10 +300,19 @@ export class MonacoClientContribution
       return getWorkerBootstrapUrl(result.toString(), `${moduleId}:${label}`);
     };
 
+    const getWorker = (moduleId, label) => {
+      const url = getWorkerUrl(moduleId, label);
+      /**
+       * monaco 0.53 版本开始，创建 worker 线程时都指定了 type 为 module，而我们模块格式不兼容
+       * 所以需要覆写 getWorker 函数，手动创建 worker 线程
+       */
+      return new Worker(url, { type: 'classic', name: label });
+    };
+
     // If `MonacoEnvironment` is already set, do not override it
     if (!(window as Window).MonacoEnvironment) {
       (window as Window).MonacoEnvironment = {
-        getWorkerUrl,
+        getWorker,
       };
     }
   }
@@ -634,7 +643,7 @@ export class MonacoClientContribution
               const { moduleId } = JSON.parse(query);
               if (moduleId === 'workerMain.js') {
                 return URI.parse(
-                  getCdnHref(
+                  getCDNHref(
                     packageName,
                     'worker/editor.worker.bundle.js',
                     packageVersion,

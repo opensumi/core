@@ -57,7 +57,7 @@ class IconManager {
     const iconValue = this._iconMap[this._ktIconPrefixes[lastIndex]][iconKey];
 
     if (!iconValue) {
-      warning(false, '图标库缺失图标:' + iconKey);
+      warning(false, 'No icon found for ' + iconKey);
       return [];
     }
     return [`${this._ktIconPrefixes[lastIndex]}${iconValue}`];

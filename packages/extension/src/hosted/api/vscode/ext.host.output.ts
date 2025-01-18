@@ -95,7 +95,7 @@ export class OutputChannelImpl implements types.OutputChannel {
 
   appendLine(value: string): void {
     this.validate();
-    this.append(value + '\n');
+    this.#proxy.$appendLine(this.name, value);
   }
 
   clear(): void {
@@ -161,22 +161,15 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
   }
 
   private now(): string {
+    const twoDigits = (v: number) => (v < 10 ? `0${v}` : v);
+    const threeDigits = (v: number) => (v < 10 ? `00${v}` : v < 100 ? `0${v}` : v);
+
     const now = new Date();
-    return (
-      padLeft(now.getFullYear() + '', 4, '0') +
-      '-' +
-      padLeft(now.getMonth() + 1 + '', 2, '0') +
-      '-' +
-      padLeft(now.getDate() + '', 2, '0') +
-      ' ' +
-      padLeft(now.getUTCHours() + '', 2, '0') +
-      ':' +
-      padLeft(now.getMinutes() + '', 2, '0') +
-      ':' +
-      padLeft(now.getUTCSeconds() + '', 2, '0') +
-      '.' +
-      now.getMilliseconds()
-    );
+    const date = `${now.getFullYear()}-${twoDigits(now.getMonth() + 1)}-${twoDigits(now.getDate())}`;
+    const time = `${twoDigits(now.getHours())}:${twoDigits(now.getMinutes())}:${twoDigits(
+      now.getSeconds(),
+    )}.${threeDigits(now.getMilliseconds())}`;
+    return `${date} ${time}`;
   }
 
   private label(level: types.OutputChannelLogLevel) {
@@ -197,7 +190,7 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
   }
 
   private logWithLevel(level: types.OutputChannelLogLevel, message: string, data?: any): void {
-    this.append(`${this.now()} [${this.label(level)}] ${message}`);
+    this.appendLine(`${this.now()} [${this.label(level)}] ${message}`);
     if (data) {
       this.append(this.data2String(data));
     }
@@ -222,8 +215,4 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
   error(error: string | Error, ...args: any[]): void {
     this.logWithLevel(types.OutputChannelLogLevel.Error, error.toString(), args);
   }
-}
-
-function padLeft(s: string, n: number, pad = ' ') {
-  return pad.repeat(Math.max(0, n - s.length)) + s;
 }

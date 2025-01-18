@@ -2,7 +2,7 @@ import { BinaryBuffer, Event, IAccessibilityInformation, IDisposable } from '@op
 import { ThemeType } from '@opensumi/ide-theme';
 
 import { MarkdownString, ThemeIcon, TreeItemCollapsibleState } from './ext-types';
-import { ICommand, UriComponents } from './models';
+import { Command, UriComponents } from './models';
 
 import type { CancellationToken } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
@@ -21,6 +21,7 @@ export interface IMainThreadTreeView {
   $reveal(treeViewId: string, treeItemId?: string, options?: ITreeViewRevealOptions): Promise<any>;
   $setTitle(treeViewId: string, message: string): Promise<void>;
   $setDescription(treeViewId: string, message: string): Promise<void>;
+  $setBadge(treeViewId: string, badge?: ViewBadge): void;
   $setMessage(treeViewId: string, message: string): Promise<void>;
   $resolveDropFileData(treeViewId: string, requestId: number, dataItemId: string): Promise<BinaryBuffer>;
 }
@@ -38,6 +39,7 @@ export interface IExtHostTreeView {
   $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any>;
   $setSelection(treeViewId: string, treeItemHandles: string[]): void;
   $setVisible(treeViewId: string, visible: boolean): void;
+  $checkStateChanged(treeViewId: string, items: { treeItemId: string; checked: boolean }[]): Promise<void>;
   $resolveTreeItem(treeViewId: string, treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined>;
   $handleDrop(
     destinationViewId: string,
@@ -76,6 +78,17 @@ export interface ITreeItemLabel {
   strikethrough?: boolean;
 }
 
+export interface TreeViewItemCheckboxInfo {
+  checked: boolean;
+  tooltip?: string;
+  accessibilityInformation?: IAccessibilityInformation;
+}
+
+export enum TreeItemCheckboxState {
+  Unchecked = 0,
+  Checked = 1,
+}
+
 export class TreeViewItem {
   id: string;
 
@@ -97,7 +110,9 @@ export class TreeViewItem {
 
   contextValue?: string;
 
-  command?: ICommand;
+  checkboxInfo?: TreeViewItemCheckboxInfo;
+
+  command?: Command;
 
   accessibilityInformation?: IAccessibilityInformation;
 }
@@ -115,6 +130,12 @@ export interface TreeView<T> extends vscode.TreeView<T> {
    * 当节点可见性变化时触发的事件
    */
   readonly onDidChangeVisibility: Event<vscode.TreeViewVisibilityChangeEvent>;
+
+  /**
+   * 表示元素已被选中或未选中的事件。
+   */
+  readonly onDidChangeCheckboxState: Event<vscode.TreeCheckboxChangeEvent<T>>;
+
   /**
    * 当节点选中时触发的事件
    */
@@ -141,6 +162,11 @@ export interface TreeView<T> extends vscode.TreeView<T> {
    */
   description?: string;
   /**
+   * TreeView 要显示的徽标
+   * 要删除徽标，请设置为undefined
+   */
+  badge?: ViewBadge | undefined;
+  /**
    * 展示节点，默认情况下展示的节点为选中状态
    *
    * 当希望显示的节点不带选中状态时，可以设置options内的select属性为false
@@ -152,7 +178,27 @@ export interface TreeView<T> extends vscode.TreeView<T> {
   dispose(): void;
 }
 
+/**
+ * 展示视图数值的徽标
+ */
+export interface ViewBadge {
+  /**
+   * 在徽标工具提示中显示的标签
+   */
+  readonly tooltip: string;
+
+  /**
+   * 徽标中显示的值
+   */
+  readonly value: number;
+}
+
 export interface TreeViewBaseOptions {
+  /**
+   * 手动管理复选框状态
+   */
+  manageCheckboxStateManually?: boolean;
+
   /**
    * 是否展示折叠所有功能（panel上功能）
    */

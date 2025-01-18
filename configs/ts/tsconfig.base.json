@@ -1,8 +1,8 @@
 {
   "baseUrl": "./",
   "compilerOptions": {
-    "module": "nodenext",
-    "target": "es2018",
+    "module": "NodeNext",
+    "target": "ES2018",
     "moduleResolution": "nodenext",
     "strict": true,
     "strictPropertyInitialization": false,
@@ -24,7 +24,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
-    "lib": ["dom", "esnext", "webworker"],
+    "lib": ["dom", "esnext", "webworker", "WebWorker.ImportScripts"],
     "typeRoots": ["../../node_modules/@types", "../../typings"]
   }
 }

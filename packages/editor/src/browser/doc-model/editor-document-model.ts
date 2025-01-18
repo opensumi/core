@@ -39,11 +39,11 @@ import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/com
 
 import {
   IDocCache,
+  IDocCacheValue,
   IDocPersistentCacheProvider,
   IEditorDocumentModelContentChange,
   SaveReason,
   isDocContentCache,
-  parseRangeFrom,
 } from '../../common';
 import { AUTO_SAVE_MODE, IEditorDocumentModel } from '../../common/editor';
 import { EditorPreferences } from '../preference/schema';
@@ -265,6 +265,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       return;
     }
 
+    const parseRangeFrom = (cacheValue: IDocCacheValue): Range => {
+      const [_text, startLineNumber, startColumn, endLineNumber, endColumn] = cacheValue;
+
+      return Range.lift({
+        startLineNumber,
+        startColumn,
+        endLineNumber,
+        endColumn,
+      });
+    };
+
     if (isDocContentCache(cache)) {
       this.monacoModel.setValue(cache.content);
     } else {
@@ -333,6 +344,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       return false;
     }
     if (this.monacoModel.isDisposed()) {
+      return false;
+    }
+    /**
+     * https://github.com/microsoft/vscode/blob/1.95.3/src/vscode-dts/vscode.d.ts#L14007
+     * 如果文档是只读状态，说明并不能进行保存, 自然不需要 dirty 状态
+     */
+    if (this.readonly) {
       return false;
     }
     return this._persistVersionId !== this.monacoModel.getAlternativeVersionId();

@@ -1112,6 +1112,14 @@ export const localizationBundle = {
     'editor.configuration.inlineSuggest.showToolbar.onHover': '将鼠标悬停在内联建议上时显示内联建议工具栏。',
     'editor.configuration.inlineSuggest.showToolbar.never': '永不显示内联建议工具栏。',
     // inlineSuggest end
+    // hover start
+    'editor.configuration.hover.enabled': '控制是否在编辑器中启用代码提示。',
+    'editor.configuration.hover.delay': '控制代码提示显示的延迟时间（毫秒）。',
+    'editor.configuration.hover.sticky': '控制代码提示是否在鼠标悬停时保持可见。',
+    'editor.configuration.hover.hidingDelay':
+      '控制代码提示隐藏的延迟时间（毫秒）。需要 `editor.hover.sticky` 设置为 true 时生效。',
+    'editor.configuration.hover.above': '优先显示代码提示在行上方，如果行有空间。',
+    // hover end
     'editor.configuration.autoSave': '控制如何自动保存文件。',
     'editor.configuration.formatOnSave': '在保存时格式化文件',
     'editor.configuration.formatOnType': '控制编辑器是在键入后自动格式化该行。',
@@ -1221,10 +1229,11 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.thumbsup.title': '赞',
     'aiNative.inline.chat.operate.thumbsdown.title': '踩',
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
-    'aiNative.inline.chat.input.placeholder.default': '可以问我任何问题，支持 shift + 回车换行',
+    'aiNative.inline.chat.input.placeholder.default': '请输入你的意图...(↑↓ 切换历史)',
     'aiNative.inline.hint.widget.placeholder': '按 {0} 唤起 Inline Chat',
-
     'aiNative.inline.problem.fix.title': 'AI 修复',
+    'aiNative.inline.diff.accept': '采纳',
+    'aiNative.inline.diff.reject': '拒绝',
 
     'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
     'aiNative.resolve.conflict.dialog.detection':
@@ -1262,8 +1271,9 @@ export const localizationBundle = {
     'preference.ai.native.intelligentCompletions.alwaysVisible': '是否总是展示智能补全',
 
     'preference.ai.native.codeEdits.title': '智能改写',
-    'preference.ai.native.codeEdits.lintErrors': '是否开启对 Lint Error 类型的智能改写',
-    'preference.ai.native.codeEdits.lineChange': '是否开启对 Line Change 类型的智能改写',
+    'preference.ai.native.codeEdits.lintErrors': '是否在发生 Lint Error 时触发智能改写',
+    'preference.ai.native.codeEdits.lineChange': '是否在光标行号发生变化时触发智能改写',
+    'preference.ai.native.codeEdits.typing': '是否在内容发生变化时触发智能改写',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

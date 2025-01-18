@@ -8,7 +8,9 @@ import {
   IDisposable,
   Uri,
   asPromise,
+  isNumber,
   isString,
+  isUndefined,
   randomString,
   toDisposable,
 } from '@opensumi/ide-core-common';
@@ -21,10 +23,12 @@ import {
   ITreeViewRevealOptions,
   ITreeViewsService,
   MainThreadAPIIdentifier,
+  TreeItemCheckboxState,
   TreeView,
   TreeViewItem,
   TreeViewSelection,
   TreeviewsService,
+  ViewBadge,
 } from '../../../common/vscode';
 import { DataTransfer } from '../../../common/vscode/converter';
 import * as types from '../../../common/vscode/ext-types';
@@ -104,6 +108,9 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       get onDidChangeVisibility() {
         return treeView.onDidChangeVisibility;
       },
+      get onDidChangeCheckboxState() {
+        return treeView.onDidChangeCheckboxState;
+      },
       get message(): string {
         return treeView.message;
       },
@@ -121,6 +128,12 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       },
       set description(description: string) {
         treeView.description = description;
+      },
+      get badge(): ViewBadge | undefined {
+        return treeView.badge;
+      },
+      set badge(badge: ViewBadge | undefined) {
+        treeView.badge = badge;
       },
       reveal: (element: T, options: ITreeViewRevealOptions): Thenable<void> => treeView.reveal(element, options),
       dispose: () => {
@@ -205,6 +218,20 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       throw new Error('No tree view with id ' + treeViewId);
     }
     treeView.setVisible(isVisible);
+  }
+
+  /**
+   * 设置节点的选择状态
+   * @param treeViewId
+   * @param items
+   * @returns
+   */
+  $checkStateChanged(treeViewId: string, items: { treeItemId: string; checked: boolean }[]): Promise<void> {
+    const treeView = this.treeViews.get(treeViewId);
+    if (!treeView) {
+      throw new Error('No tree view with id ' + treeViewId);
+    }
+    return treeView.checkStateChanged(items);
   }
 
   async $handleDrop(
@@ -298,6 +325,9 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private readonly onDidChangeVisibilityEmitter = new Emitter<vscode.TreeViewVisibilityChangeEvent>();
   readonly onDidChangeVisibility = this.onDidChangeVisibilityEmitter.event;
 
+  private readonly onDidChangeCheckboxStateEmitter = new Emitter<vscode.TreeCheckboxChangeEvent<T>>();
+  readonly onDidChangeCheckboxState = this.onDidChangeCheckboxStateEmitter.event;
+
   private _visible = false;
 
   private selectedItemIds = new Set<string>();
@@ -316,6 +346,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private _title: string;
   private _description: string;
   private _message: string;
+  private _badge?: ViewBadge = undefined;
 
   private roots: TreeViewItem[] | undefined = undefined;
   private nodes: Map<T, TreeViewItem[] | undefined> = new Map();
@@ -339,6 +370,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     this.disposable.add(this._onDidChangeData);
     // 将 options 直接取值，避免循环引用导致序列化异常
     proxy.$registerTreeDataProvider(treeViewId, {
+      manageCheckboxStateManually: options.manageCheckboxStateManually,
       showCollapseAll: !!options.showCollapseAll,
       canSelectMany: !!options.canSelectMany,
       dropMimeTypes,
@@ -492,6 +524,14 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     return this._visible;
   }
 
+  get badge(): ViewBadge | undefined {
+    return this._badge;
+  }
+  set badge(badge: ViewBadge | undefined) {
+    this._badge = badge;
+    this.proxy.$setBadge(this.treeViewId, badge);
+  }
+
   get selectedElements(): T[] {
     const items: T[] = [];
     for (const id of this.selectedItemIds) {
@@ -613,6 +653,23 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     return asPromise(() =>
       this.dndController?.handleDrop ? this.dndController.handleDrop(target, treeDataTransfer, token) : undefined,
     );
+  }
+
+  async checkStateChanged(items: readonly { treeItemId: string; checked: boolean }[]): Promise<void> {
+    const transformed: [T, TreeItemCheckboxState][] = [];
+    items.forEach((item) => {
+      const node = this.getTreeItem(item.treeItemId);
+      if (node) {
+        transformed.push([node, item.checked ? TreeItemCheckboxState.Checked : TreeItemCheckboxState.Unchecked]);
+        const treeViewItem = this.element2TreeViewItem.get(node);
+        if (treeViewItem && treeViewItem.checkboxInfo) {
+          treeViewItem.checkboxInfo.checked = item.checked;
+        }
+      }
+    });
+    this.onDidChangeCheckboxStateEmitter.fire({
+      items: transformed,
+    });
   }
 
   /**
@@ -743,6 +800,22 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
         };
       }
     }
+
+    let checkboxInfo;
+    if (isUndefined(treeItem.checkboxState)) {
+      checkboxInfo = undefined;
+    } else if (!isNumber(treeItem.checkboxState)) {
+      checkboxInfo = {
+        checked: treeItem.checkboxState.state === TreeItemCheckboxState.Checked,
+        tooltip: treeItem.checkboxState.tooltip,
+        accessibilityInformation: treeItem.checkboxState.accessibilityInformation,
+      };
+    } else {
+      checkboxInfo = {
+        checked: treeItem.checkboxState === TreeItemCheckboxState.Checked,
+      };
+    }
+
     const treeViewItem = {
       id,
       label,
@@ -754,6 +827,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
       tooltip: treeItem.tooltip,
       collapsibleState: treeItem.collapsibleState,
       contextValue: treeItem.contextValue,
+      checkboxInfo,
       accessibilityInformation: treeItem.accessibilityInformation,
       command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, this.disposable) : undefined,
       ...props,

@@ -44,12 +44,15 @@ import {
   getDebugLogger,
   isDefined,
   isUndefinedOrNull,
+  isWindows,
   localize,
   makeRandomHexString,
   match,
+  path,
 } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import * as monaco from '@opensumi/ide-monaco';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IDialogService, IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
 
 import {
   CursorStatus,
@@ -125,6 +128,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(ResourceService)
   private resourceService: ResourceService;
 
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
+
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -171,6 +177,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   @Autowired(UntitledDocumentIdCounter)
   private untitledIndex: UntitledDocumentIdCounter;
+
+  @Autowired(IWindowDialogService)
+  private readonly windowDialogService: IWindowDialogService;
 
   private untitledCloseIndex: number[] = [];
 
@@ -249,6 +258,50 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       }
     }
     return documents;
+  }
+
+  async save(uri: URI): Promise<URI | undefined> {
+    if (!this.editorGroups.length) {
+      return undefined;
+    }
+
+    try {
+      for (const editorGroup of this.editorGroups) {
+        const res = editorGroup.resources.find((resource) => resource.uri.isEqual(uri));
+        if (res) {
+          await editorGroup.saveResource(res);
+        }
+      }
+
+      return uri;
+    } catch (error) {
+      throw new Error(`Save Failed: ${error.message}`);
+    }
+  }
+
+  private getDefaultSavePath(uri: URI): string {
+    const defaultPath = uri.path.toString() !== '/' ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
+    return isWindows ? defaultPath.replace(/\\/g, '/') : defaultPath;
+  }
+
+  async saveAs(uri: URI): Promise<URI | undefined> {
+    if (!this._currentEditorGroup || this._currentEditorGroup.currentResource?.deleted) {
+      return undefined;
+    }
+
+    try {
+      const defaultPath = this.getDefaultSavePath(uri);
+      const result = await this.windowDialogService.showSaveDialog({
+        saveLabel: 'SaveAs File:',
+        showNameInput: true,
+        defaultFileName: this._currentEditorGroup.currentResource?.name,
+        defaultUri: URI.file(defaultPath),
+        saveAs: true,
+      });
+      return result;
+    } catch (error) {
+      throw new Error(`SaveAs Failed: ${error.message}`);
+    }
   }
 
   async saveAll(includeUntitled?: boolean, reason?: SaveReason) {
@@ -748,6 +801,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private _editorLangIDContextKey: IContextKey<string>;
 
+  private _activeEditorIsDirtyContextKey: IContextKey<boolean>;
+
   private _isInDiffEditorContextKey: IContextKey<boolean>;
 
   private _diffResourceContextKey: ResourceContextKey;
@@ -905,6 +960,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       );
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
       this._isInDiffEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffEditor', false);
+      this._activeEditorIsDirtyContextKey = this.contextKeyService.createKey<boolean>('activeEditorIsDirty', false);
       this._isInDiffRightEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffRightEditor', false);
       this._isInEditorComponentContextKey = this.contextKeyService.createKey<boolean>('inEditorComponent', false);
     }
@@ -926,6 +982,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this._editorLangIDContextKey.reset();
     }
+    this._activeEditorIsDirtyContextKey.set(this.activeEditorIsDirty());
     this._isInDiffEditorContextKey.set(this.isDiffEditorMode());
     // 没有 focus 的时候默认添加在 RightDiffEditor
     this._isInDiffRightEditorContextKey.set(this.isDiffEditorMode());
@@ -1174,6 +1231,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         groupName: this.name,
         type: EditorOpenType.code,
         editorId: this.codeEditor.getId(),
+      }),
+    );
+
+    this.toDispose.push(
+      this.codeEditor.monacoEditor.onDidChangeModelContent(() => {
+        this._activeEditorIsDirtyContextKey.set(this.activeEditorIsDirty());
       }),
     );
     this.codeEditorReady.ready();
@@ -2237,6 +2300,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   isDiffEditorMode() {
     return !!this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff;
+  }
+
+  activeEditorIsDirty() {
+    return this.hasDirty() && this.workbenchEditorService.currentEditorGroup === this;
   }
 
   isComponentMode() {

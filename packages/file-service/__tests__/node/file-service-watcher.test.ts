@@ -2,11 +2,12 @@ import * as fse from 'fs-extra';
 import temp from 'temp';
 
 import { isMacintosh, sleep } from '@opensumi/ide-core-common';
+import { ILogServiceManager } from '@opensumi/ide-core-common/lib/log';
 import { FileUri } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
-import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
+import { FileSystemWatcherServer } from '../../src/node/hosted/recursive/file-service-watcher';
 
 const sleepTime = 1000;
 
@@ -19,8 +20,9 @@ const sleepTime = 1000;
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir(`parce-watcher-test-${seed++}`)));
     // @ts-ignore
-    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
-    const watcherServer = injector.get(FileSystemWatcherServer);
+    const watcherServer = new FileSystemWatcherServer([], injector.get(ILogServiceManager).getLogger());
+    watcherServer['isEnableNSFW'] = () => false;
+
     const watcherId = await watcherServer.watchFileChanges(root.toString());
 
     return { root, watcherServer, watcherId };
@@ -161,9 +163,8 @@ const sleepTime = 1000;
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('nfsw-test')));
-    // @ts-ignore
-    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
-    const watcherServer = injector.get(FileSystemWatcherServer);
+    const watcherServer = new FileSystemWatcherServer([], injector.get(ILogServiceManager).getLogger());
+    watcherServer['isEnableNSFW'] = () => false;
 
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
