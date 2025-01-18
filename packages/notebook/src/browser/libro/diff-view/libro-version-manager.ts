@@ -31,21 +31,12 @@ export class LibroVersionManager {
   }
 
   async getOrCreateView(options: NotebookOption): Promise<AIStudioLibroVersionView> {
-    const libroView = await this.libroService.getOrCreateView({
-      ...(options || {}),
-    });
-    // 版本预览视图只读
-    libroView.model.inputEditable = false;
-    libroView.model.cellsEditable = false;
-    libroView.headerRender = () => null;
-    const aistudioLibroVersionViewPromise = this.viewManager.getOrCreateView<AIStudioLibroVersionView>(
+    const aistudioLibroVersionView = await this.viewManager.getOrCreateView<AIStudioLibroVersionView>(
       AIStudioLibroVersionView,
       {
         ...(options || {}),
       },
     );
-    const aistudioLibroVersionView = await aistudioLibroVersionViewPromise;
-    aistudioLibroVersionView.libro = libroView;
     // 如果存在原始和目标uri，则创建diff视图，默认为预览视图（git uri）
     if (options.originalUri && options.targetUri) {
       this.viewManager
@@ -58,8 +49,17 @@ export class LibroVersionManager {
           aistudioLibroVersionView.libroDiffView = diffView;
           aistudioLibroVersionView.isDiff = true;
         });
+      return aistudioLibroVersionView;
     }
-    return aistudioLibroVersionViewPromise;
+    const libroView = await this.libroService.getOrCreateView({
+      ...(options || {}),
+    });
+    // 版本预览视图只读
+    libroView.model.inputEditable = false;
+    libroView.model.cellsEditable = false;
+    libroView.headerRender = () => null;
+    aistudioLibroVersionView.libro = libroView;
+    return aistudioLibroVersionView;
   }
 
   createPreviewEditor(content: string, language: string, dom: HTMLElement, diffType: DiffType) {

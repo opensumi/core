@@ -10,8 +10,8 @@ import { ContentLoaderType, ManaContainer } from './mana';
 
 export const LibroVersionPreview: ReactEditorComponent = ({ resource }) => {
   const uri = resource.uri;
-  const originalUri = new URI(decodeURIComponent(uri.getParsedQuery().original));
-  const targetUri = new URI(decodeURIComponent(uri.getParsedQuery().modified));
+  const originalUri = uri.scheme === 'diff' ? new URI(decodeURIComponent(uri.getParsedQuery().original)) : undefined;
+  const targetUri = uri.scheme === 'diff' ? new URI(decodeURIComponent(uri.getParsedQuery().modified)) : undefined;
   const manaContainer = useInjectable<Container>(ManaContainer);
   const libroVersionManager = manaContainer.get(LibroVersionManager);
   const [versionView, setVersionView] = useState<AIStudioLibroVersionView>();
@@ -19,7 +19,7 @@ export const LibroVersionPreview: ReactEditorComponent = ({ resource }) => {
   useEffect(() => {
     libroVersionManager
       .getOrCreateView({
-        resource: targetUri.toString(),
+        resource: uri.toString(),
         loadType: ContentLoaderType,
         originalUri,
         targetUri,
