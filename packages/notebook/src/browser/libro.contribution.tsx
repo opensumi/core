@@ -226,9 +226,9 @@ export class LibroContribution
         });
       }
     });
-    // FIXME: diff 和 preview 用的一个组件，但是 prop 有不同，diff 的 origin 和 target 怎么传进去也要再看下
+
     registry.registerEditorComponentResolver('diff', (resource, results) => {
-      const { original, modified, name } = resource.uri.getParsedQuery();
+      const { original, modified } = resource.uri.getParsedQuery();
       if (
         new URI(decodeURIComponent(modified)).path.ext === '.ipynb' ||
         new URI(decodeURIComponent(original)).path.ext === '.ipynb'

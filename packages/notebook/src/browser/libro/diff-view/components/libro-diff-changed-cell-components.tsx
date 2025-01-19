@@ -41,6 +41,9 @@ export const LibroDiffChangedCellComponent: React.FC<DiffEditorProps> = memo(({ 
       editorDiffRef.current,
     );
     setDiffEditor(diffEditor);
+    return () => {
+      diffEditor?.dispose();
+    };
   }, [editorDiffRef]);
 
   useEditorLayout(diffEditor, editorDiffRef, editorContainerRef);

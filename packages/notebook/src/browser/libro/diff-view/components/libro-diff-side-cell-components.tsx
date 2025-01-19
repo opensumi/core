@@ -35,7 +35,7 @@ export const LibroDiffSideCellComponent: React.FC<DiffEditorProps> = memo(({ dif
 
   const [editor, setEditor] = useState<ICodeEditor | undefined>();
 
-  const createEditor = async () => {
+  const createEditor = () => {
     // 这里其实已经拿到content了，但是 opensumi editor 需要uri，理论上有优化空间
     const content =
       diffCellResultItem.diffType === 'removed' ? diffCellResultItem.origin.source : diffCellResultItem.target.source;
@@ -46,6 +46,7 @@ export const LibroDiffSideCellComponent: React.FC<DiffEditorProps> = memo(({ dif
       diffCellResultItem.diffType,
     );
     setEditor(previewedEditor);
+    return previewedEditor;
   };
 
   useEditorLayout(editor, editorTargetRef, editorContainerRef);
@@ -54,7 +55,10 @@ export const LibroDiffSideCellComponent: React.FC<DiffEditorProps> = memo(({ dif
     if (!editorTargetRef.current) {
       return;
     }
-    createEditor();
+    const previewedEditor = createEditor();
+    return () => {
+      previewedEditor?.dispose();
+    };
   }, [editorTargetRef]);
   const type = diffCellResultItem.diffType === 'removed' ? 'origin' : 'target';
   return (

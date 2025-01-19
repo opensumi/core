@@ -27,7 +27,7 @@ export const LibroVersionPreview: ReactEditorComponent = ({ resource }) => {
       .then((view) => {
         setVersionView(view);
       });
-  }, []);
+  }, [uri]);
 
   return <div className='libro-version'>{versionView && <ViewRender view={versionView}></ViewRender>}</div>;
 };
