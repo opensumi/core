@@ -59,7 +59,7 @@ export const LibroDiffSideCellComponent: React.FC<DiffEditorProps> = memo(({ dif
     return () => {
       previewedEditor?.dispose();
     };
-  }, [editorTargetRef]);
+  }, [editorTargetRef.current]);
   const type = diffCellResultItem.diffType === 'removed' ? 'origin' : 'target';
   return (
     <div className='libro-diff-cell-container' ref={editorContainerRef}>
