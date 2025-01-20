@@ -56,7 +56,7 @@ export class ExpressFileServerContribution implements ServerAppContribution {
             ctx.set('Access-Control-Allow-Origin', this.appConfig.staticAllowOrigin);
           }
 
-          const stats = fs.statSync(filePath);
+          const stats = await fs.promises.stat(filePath);
           const total = stats.size;
 
           if (!range) {
