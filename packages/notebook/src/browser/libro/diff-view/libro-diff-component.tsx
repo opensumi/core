@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useInject,  ViewManager, ViewRender } from '@difizen/mana-app';
-import type { DiffOption } from './libro-diff-protocol';
+import { ViewManager, ViewRender, useInject } from '@difizen/mana-app';
+import React, { useEffect, useState } from 'react';
+
 import { libroDiffViewFactoryId } from './libro-diff-protocol';
+
+import type { DiffOption } from './libro-diff-protocol';
 import type { LibroDiffView } from './libro-diff-view';
-import React from 'react';
 
 export function LibroDiffComponent(props: { options: DiffOption }) {
   const [libroDiffView, setLibroDiffView] = useState<LibroDiffView | undefined>(undefined);
@@ -13,10 +14,12 @@ export function LibroDiffComponent(props: { options: DiffOption }) {
       .getOrCreateView<LibroDiffView>(libroDiffViewFactoryId, {
         ...(props.options || {}),
       })
-      .then(view => {
+      .then((view) => {
         setLibroDiffView(view);
       });
   }, []);
-  if (!libroDiffView || !libroDiffView.view) return null;
+  if (!libroDiffView || !libroDiffView.view) {
+    return null;
+  }
   return <ViewRender view={libroDiffView} />;
 }
