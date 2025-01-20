@@ -1,0 +1,47 @@
+.libro-diff-content-container, .libro-diff-content-loading-container, .libro-diff-content-same-container {
+  background-color: var(--mana-libro-diff-container-color);
+}
+.libro-diff-content-container {
+  height: 100%;
+  padding: 24px 36px;
+}
+.libro-diff-content-loading-container {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.libro-diff-fold-container {
+  padding: 8px 0;
+}
+.libro-diff-fold {
+  display: flex;
+  padding: 6px 0;
+  border-radius: 6px;
+  justify-content: center;
+  align-items: center;
+  height: 32px;
+  background: var(--mana-libro-diff-fold-background-color);
+  color: var(--mana-libro-diff-fold-text-color);
+  &:hover {
+    cursor: pointer;
+    background: var(--mana-libro-diff-fold-hover-background-color);
+  }
+  .libro-diff-fold-text {
+    padding-left: 6px;
+  }
+}
+.libro-diff-content-same-container {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.libro-diff-content-same-text {
+  margin-top: 15px;
+  font-size: 16px;
+  color: var(--mana-libro-diff-content-same-text-color);
+}
+
+
