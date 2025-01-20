@@ -197,6 +197,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     copy?: boolean;
     ignoreIfExists?: boolean | undefined;
     content?: string;
+    completelyDelete?: boolean | undefined;
   } = {};
 
   constructor(edit: IResourceFileEdit) {
@@ -297,7 +298,10 @@ export class ResourceFileEdit implements IResourceFileEdit {
       try {
         // Electron Windows 下 moveToTrash 大量文件会导致IDE卡死，如果检测到这个情况就不使用 moveToTrash
         await workspaceFS.delete([this.oldResource], {
-          useTrash: !(isWindows && this.oldResource.path.name === 'node_modules'),
+          useTrash:
+            options.completelyDelete !== undefined
+              ? !options.completelyDelete // 如果 completelyDelete 被定义，使用其相反值
+              : !(isWindows && this.oldResource.path.name === 'node_modules'), // 否则使用原有逻辑,
         });
         // 默认recursive
         await editorService.close(this.oldResource, true);

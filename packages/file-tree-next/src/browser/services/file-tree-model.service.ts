@@ -977,7 +977,24 @@ export class FileTreeModelService {
     if (uris.length === 0) {
       return;
     }
-    if (this.corePreferences['explorer.confirmDelete']) {
+
+    // 完全删除文件
+    if (this.corePreferences['explorer.confirmCompletelyDelete']) {
+      const ok = localize('file.confirm.completelyDelete.ok');
+      const cancel = localize('file.confirm.completelyDelete.cancel');
+      const deleteFilesMessage = `[ ${uris
+        .slice(0, 5)
+        .map((uri) => uri.displayName)
+        .join(',')}${uris.length > 5 ? ' ...' : ''} ]`;
+
+      const confirm = await this.dialogService.warning(
+        formatLocalize('file.confirm.completelyDelete', deleteFilesMessage),
+        [cancel, ok],
+      );
+      if (confirm !== ok) {
+        return;
+      }
+    } else if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');
       const deleteFilesMessage = `[ ${uris
@@ -1025,7 +1042,7 @@ export class FileTreeModelService {
     roots.forEach((root) => {
       this.loadingDecoration.addTarget(root.node);
       toPromise.push(
-        this.deleteFile(root.node, root.path).then((v) => {
+        this.deleteFile(root.node, root.path, !!this.corePreferences['explorer.confirmCompletelyDelete']).then((v) => {
           this.loadingDecoration.removeTarget(root.node);
           return v;
         }),
@@ -1039,10 +1056,10 @@ export class FileTreeModelService {
     }
   }
 
-  async deleteFile(node: File | Directory, path: URI | string): Promise<boolean> {
+  async deleteFile(node: File | Directory, path: URI | string, completelyDelete?: boolean): Promise<boolean> {
     const uri = typeof path === 'string' ? new URI(path) : (path as URI);
 
-    const error = await this.fileTreeAPI.delete(uri);
+    const error = await this.fileTreeAPI.delete(uri, completelyDelete);
     if (error) {
       this.messageService.error(error);
       return false;

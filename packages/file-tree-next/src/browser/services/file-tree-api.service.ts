@@ -201,13 +201,15 @@ export class FileTreeAPI implements IFileTreeAPI {
     return;
   }
 
-  async delete(uri: URI) {
+  async delete(uri: URI, completelyDelete?: boolean) {
     try {
       await this.workspaceEditService.apply({
         edits: [
           {
             oldResource: uri,
-            options: {},
+            options: {
+              completelyDelete,
+            },
           },
         ],
       });
