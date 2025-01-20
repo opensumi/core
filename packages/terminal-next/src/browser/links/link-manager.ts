@@ -41,6 +41,7 @@ import {
   winLineAndColumnMatchIndex,
   winLocalLinkClause,
 } from './validated-local-link-provider';
+import { TerminalWordLinkProvider } from './word-link-provider';
 
 const { posix, win32 } = path;
 
@@ -135,6 +136,13 @@ export class TerminalLinkManager extends Disposable {
       async (link, cb) => cb(await this._resolvePath(link)),
     ]);
     this._standardLinkProviders.push(validatedProvider);
+
+    const wordLinkProvider = this.injector.get(TerminalWordLinkProvider, [
+      this._xterm,
+      async (link, cb) => cb(await this._resolvePath(link)),
+      wrappedTextLinkActivateCallback,
+    ]);
+    this._standardLinkProviders.push(wordLinkProvider);
 
     this._registerStandardLinkProviders();
   }
