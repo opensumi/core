@@ -35,8 +35,8 @@
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
-    "resize-observer-polyfill": "1.5.1",
+    "antd": "^5.21.4",
     "diff": "^4.0.1",
-    "antd": "^5.21.4"
+    "resize-observer-polyfill": "1.5.1"
   }
 }
