@@ -12,6 +12,7 @@ import {
   view,
 } from '@difizen/mana-app';
 import { Spin } from 'antd';
+import { Diff } from 'diff';
 import React, { forwardRef, useEffect } from 'react';
 
 import './index.less';
@@ -275,7 +276,6 @@ export class LibroDiffView extends BaseView implements DiffView {
     let diffCellUnchangedItems: (DiffCellItem & { originFilePath: string; targetFilePath: string })[] = [];
     let lastDiffItemTypeIsUnchanged: boolean = false;
 
-    const Diff = require('diff');
     const diffArray = Diff.diffArrays(getOrigin(origin), getOrigin(target), {
       comparator,
     }) as DiffArrayItem[];
