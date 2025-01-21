@@ -71,9 +71,9 @@ import {
   AI_MENU_BAR_DEBUG_TOOLBAR,
   ChatProxyServiceToken,
 } from '../common';
-
 import { MCPServerDescription, MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
 import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../common/tool-invocation-registry';
+
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -96,10 +96,13 @@ import {
   IChatFeatureRegistry,
   IChatRenderRegistry,
   IIntelligentCompletionsRegistry,
+  IMCPServerRegistry,
   IProblemFixProviderRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
+  MCPServerContribution,
+  TokenMCPServerRegistry,
 } from './types';
 import { InlineChatEditorController } from './widget/inline-chat/inline-chat-editor.controller';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -123,14 +126,15 @@ import { SumiLightBulbWidget } from './widget/light-bulb';
 )
 export class AINativeBrowserContribution
   implements
-  ClientAppContribution,
-  BrowserEditorContribution,
-  CommandContribution,
-  SettingContribution,
-  KeybindingContribution,
-  ComponentContribution,
-  SlotRendererContribution,
-  MonacoContribution {
+    ClientAppContribution,
+    BrowserEditorContribution,
+    CommandContribution,
+    SettingContribution,
+    KeybindingContribution,
+    ComponentContribution,
+    SlotRendererContribution,
+    MonacoContribution
+{
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -142,6 +146,12 @@ export class AINativeBrowserContribution
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
+
+  @Autowired(MCPServerContribution)
+  private readonly mcpServerContributions: ContributionProvider<MCPServerContribution>;
+
+  @Autowired(TokenMCPServerRegistry)
+  private readonly mcpServerRegistry: IMCPServerRegistry;
 
   @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
@@ -307,6 +317,11 @@ export class AINativeBrowserContribution
       contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
       contribution.registerProblemFixFeature?.(this.problemFixProviderRegistry);
     });
+
+    // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
+    this.mcpServerContributions.getContributions().forEach((contribution) => {
+      contribution.registerMCPServer(this.mcpServerRegistry);
+    });
   }
 
   registerSetting(registry: ISettingRegistry) {
@@ -411,25 +426,24 @@ export class AINativeBrowserContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand({ id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' }, {
-      execute: async () => {
-        const description: MCPServerDescription = {
-          name: 'filesystem',
-          command: 'npx',
-          args: [
-            "-y",
-            "@modelcontextprotocol/server-filesystem",
-            "/Users/retrox/AlipayProjects/core"
-          ],
-          env: {}
-        };
+    commands.registerCommand(
+      { id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' },
+      {
+        execute: async () => {
+          const description: MCPServerDescription = {
+            name: 'filesystem',
+            command: 'npx',
+            args: ['-y', '@modelcontextprotocol/server-filesystem', '/Users/retrox/AlipayProjects/core'],
+            env: {},
+          };
 
-        this.mcpServerManager.addOrUpdateServer(description);
+          this.mcpServerManager.addOrUpdateServer(description);
 
-        await this.mcpServerManager.startServer(description.name);
-        await this.mcpServerManager.collectTools(description.name);
+          await this.mcpServerManager.startServer(description.name);
+          await this.mcpServerManager.collectTools(description.name);
+        },
       },
-    });
+    );
 
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {

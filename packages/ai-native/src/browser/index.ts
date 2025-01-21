@@ -19,9 +19,17 @@ import {
   TerminalRegistryToken,
 } from '@opensumi/ide-core-common';
 
-import { ChatProxyServiceToken, IAIInlineCompletionsProvider, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
-
+import {
+  ChatProxyServiceToken,
+  IAIInlineCompletionsProvider,
+  IChatAgentService,
+  IChatInternalService,
+  IChatManagerService,
+  SumiMCPServerProxyServicePath,
+  TokenMCPServerProxyService,
+} from '../common';
 import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
+
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
@@ -43,8 +51,18 @@ import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.featur
 import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
 import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
+import { MCPServerProxyService } from './mcp/mcp-server-proxy.service';
+import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
+import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
+import { FindFilesByNameSubstringTool } from './mcp/tools/findFilesByNameSubstring';
+import { GetCurrentFilePathTool } from './mcp/tools/getCurrentFilePath';
+import { GetDiagnosticsByPathTool } from './mcp/tools/getDiagnosticsByPath';
+import { GetFileTextByPathTool } from './mcp/tools/getFileTextByPath';
+import { GetOpenEditorFileDiagnosticsTool } from './mcp/tools/getOpenEditorFileDiagnostics';
+import { GetOpenEditorFileTextTool } from './mcp/tools/getOpenEditorFileText';
+import { GetSelectedTextTool } from './mcp/tools/getSelectedText';
 import { AINativePreferencesContribution } from './preferences';
-import { AINativeCoreContribution } from './types';
+import { AINativeCoreContribution, MCPServerContribution, TokenMCPServerRegistry } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 import { InlineDiffService } from './widget/inline-diff';
@@ -59,7 +77,7 @@ export class AINativeModule extends BrowserModule {
     this.aiNativeConfig.setAINativeModuleLoaded(true);
   }
 
-  contributionProvider = AINativeCoreContribution;
+  contributionProvider = [AINativeCoreContribution, MCPServerContribution];
   providers: Provider[] = [
     AINativeBrowserContribution,
     InterfaceNavigationContribution,
@@ -68,6 +86,26 @@ export class AINativeModule extends BrowserModule {
     AICodeActionContribution,
     AINativePreferencesContribution,
     IntelligentCompletionsContribution,
+
+    // MCP Server Contributions START
+    CreateNewFileWithTextTool,
+    GetSelectedTextTool,
+    GetOpenEditorFileDiagnosticsTool,
+    GetOpenEditorFileTextTool,
+    GetFileTextByPathTool,
+    GetCurrentFilePathTool,
+    FindFilesByNameSubstringTool,
+    GetDiagnosticsByPathTool,
+    // MCP Server Contributions END
+
+    {
+      token: TokenMCPServerRegistry,
+      useClass: MCPServerRegistry,
+    },
+    {
+      token: TokenMCPServerProxyService,
+      useClass: MCPServerProxyService,
+    },
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
@@ -151,6 +189,10 @@ export class AINativeModule extends BrowserModule {
     {
       servicePath: MCPServerManagerPath,
       token: MCPServerManager,
+    },
+    {
+      clientToken: TokenMCPServerProxyService,
+      servicePath: SumiMCPServerProxyServicePath,
     },
   ];
 }
