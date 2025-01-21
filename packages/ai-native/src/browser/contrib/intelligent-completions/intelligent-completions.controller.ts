@@ -47,6 +47,7 @@ import { IntelligentCompletionsRegistry } from './intelligent-completions.featur
 import { CodeEditsSourceCollection } from './source/base';
 import { LineChangeCodeEditsSource } from './source/line-change.source';
 import { LintErrorCodeEditsSource } from './source/lint-error.source';
+import { TypingCodeEditsSource } from './source/typing.source';
 
 import { CodeEditsResultValue } from './index';
 
@@ -95,7 +96,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(this.monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
     this.codeEditsSourceCollection = this.injector.get(CodeEditsSourceCollection, [
-      [LintErrorCodeEditsSource, LineChangeCodeEditsSource],
+      [LintErrorCodeEditsSource, LineChangeCodeEditsSource, TypingCodeEditsSource],
       this.monacoEditor,
     ]);
 

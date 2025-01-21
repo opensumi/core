@@ -1,5 +1,5 @@
 import { Disposable, ECodeEditsSourceTyping } from '@opensumi/ide-core-common';
-import { IPosition, IRange, InlineCompletion } from '@opensumi/ide-monaco';
+import { IModelContentChangedEvent, IPosition, IRange, InlineCompletion } from '@opensumi/ide-monaco';
 
 import type { ILineChangeData } from './source/line-change.source';
 import type { ILinterErrorData } from './source/lint-error.source';
@@ -14,7 +14,8 @@ export interface IIntelligentCompletionsResult<T = any> {
 
 export type ICodeEditsContextBean =
   | { typing: ECodeEditsSourceTyping.LinterErrors; position: IPosition; data: ILinterErrorData }
-  | { typing: ECodeEditsSourceTyping.LineChange; position: IPosition; data: ILineChangeData };
+  | { typing: ECodeEditsSourceTyping.LineChange; position: IPosition; data: ILineChangeData }
+  | { typing: ECodeEditsSourceTyping.Typing; position: IPosition; data: IModelContentChangedEvent };
 
 export interface ICodeEdit {
   /**
