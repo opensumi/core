@@ -72,6 +72,8 @@ import {
   ChatProxyServiceToken,
 } from '../common';
 
+import { MCPServerDescription, MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../common/tool-invocation-registry';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -121,15 +123,14 @@ import { SumiLightBulbWidget } from './widget/light-bulb';
 )
 export class AINativeBrowserContribution
   implements
-    ClientAppContribution,
-    BrowserEditorContribution,
-    CommandContribution,
-    SettingContribution,
-    KeybindingContribution,
-    ComponentContribution,
-    SlotRendererContribution,
-    MonacoContribution
-{
+  ClientAppContribution,
+  BrowserEditorContribution,
+  CommandContribution,
+  SettingContribution,
+  KeybindingContribution,
+  ComponentContribution,
+  SlotRendererContribution,
+  MonacoContribution {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -204,6 +205,9 @@ export class AINativeBrowserContribution
 
   @Autowired(CodeActionSingleHandler)
   private readonly codeActionSingleHandler: CodeActionSingleHandler;
+
+  @Autowired(MCPServerManagerPath)
+  private readonly mcpServerManager: MCPServerManager;
 
   constructor() {
     this.registerFeature();
@@ -407,6 +411,26 @@ export class AINativeBrowserContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand({ id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' }, {
+      execute: async () => {
+        const description: MCPServerDescription = {
+          name: 'filesystem',
+          command: 'npx',
+          args: [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "/Users/retrox/AlipayProjects/core"
+          ],
+          env: {}
+        };
+
+        this.mcpServerManager.addOrUpdateServer(description);
+
+        await this.mcpServerManager.startServer(description.name);
+        await this.mcpServerManager.collectTools(description.name);
+      },
+    });
+
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
         this.aiInlineChatService._onInlineChatVisible.fire(value);

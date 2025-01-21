@@ -19,9 +19,9 @@ import {
   TerminalRegistryToken,
 } from '@opensumi/ide-core-common';
 
-import { ChatProxyServiceToken, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
-import { IAIInlineCompletionsProvider } from '../common';
+import { ChatProxyServiceToken, IAIInlineCompletionsProvider, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
 
+import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
@@ -147,6 +147,10 @@ export class AINativeModule extends BrowserModule {
       servicePath: AIBackSerivcePath,
       token: AIBackSerivceToken,
       clientToken: ChatProxyServiceToken,
+    },
+    {
+      servicePath: MCPServerManagerPath,
+      token: MCPServerManager,
     },
   ];
 }
