@@ -178,37 +178,37 @@ const sleepTime = 1000;
     });
   });
 
-  // it('Rename file', async () => {
-  //   const addUris = new Set<string>();
-  //   const deleteUris = new Set<string>();
+  it('Rename file', async () => {
+    const addUris = new Set<string>();
+    const deleteUris = new Set<string>();
 
-  //   const watcherClient = {
-  //     onDidFilesChanged(event: DidFilesChangedParams) {
-  //       event.changes.forEach((c) => {
-  //         if (c.type === FileChangeType.ADDED) {
-  //           addUris.add(c.uri);
-  //         }
-  //         if (c.type === FileChangeType.DELETED) {
-  //           deleteUris.add(c.uri);
-  //         }
-  //       });
-  //     },
-  //   };
-  //   const { root, watcherServer } = await generateWatcher();
-  //   watcherServer.setClient(watcherClient);
+    const watcherClient = {
+      onDidFilesChanged(event: DidFilesChangedParams) {
+        event.changes.forEach((c) => {
+          if (c.type === FileChangeType.ADDED) {
+            addUris.add(c.uri);
+          }
+          if (c.type === FileChangeType.DELETED) {
+            deleteUris.add(c.uri);
+          }
+        });
+      },
+    };
+    const { root, watcherServer } = await generateWatcher();
+    watcherServer.setClient(watcherClient);
 
-  //   const expectedAddUris = [root.resolve('for_rename_renamed').toString()];
+    const expectedAddUris = [root.resolve('for_rename_renamed').toString()];
 
-  //   const expectedDeleteUris = [root.resolve('for_rename').toString()];
+    const expectedDeleteUris = [root.resolve('for_rename').toString()];
 
-  //   fse.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
-  //   await sleep(sleepTime);
+    fse.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
+    await sleep(sleepTime);
 
-  //   expect([...addUris]).toEqual(expectedAddUris);
-  //   expect([...deleteUris]).toEqual(expectedDeleteUris);
-  //   watcherServerList.push(watcherServer);
-  //   watcherServer.unwatchFileChanges(root.path.toString());
-  // });
+    expect([...addUris]).toEqual(expectedAddUris);
+    expect([...deleteUris]).toEqual(expectedDeleteUris);
+    watcherServerList.push(watcherServer);
+    watcherServer.unwatchFileChanges(root.path.toString());
+  });
 
   it('Move file', async () => {
     const addUris = new Set<string>();
