@@ -165,7 +165,7 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
 
   async watch(
     uri: UriComponents,
-    options?: { excludes?: string[]; recursive?: boolean; pollingWatch: boolean },
+    options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
   ): Promise<number> {
     this.logger.log('Wait for watcher process ready...');
     await this._whenReadyDeferred.promise;
