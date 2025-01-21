@@ -86,6 +86,7 @@ export interface IMainLayoutService {
   getExtraTopMenu(): IContextMenu;
   getExtraMenu(): IContextMenu;
   getAllAccordionService(): Map<string, AccordionService>;
+  moveContainerTo(containerId: string, from: string, to: string): void;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

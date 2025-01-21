@@ -691,6 +691,19 @@ export class TabbarService extends WithEventBus {
     });
   }
 
+  removeContainer(containerId: string) {
+    const disposable = this.disposableMap.get(containerId);
+    disposable?.dispose();
+    this.updateCurrentContainerId('');
+    this.doChangeViewEmitter.fire();
+  }
+
+  dynamicAddContainer(containerId: string, options: ComponentRegistryInfo) {
+    this.registerContainer(containerId, options);
+    this.updateCurrentContainerId(containerId);
+    this.doChangeViewEmitter.fire();
+  }
+
   protected doInsertTab(containers: ComponentRegistryInfo[], sourceIndex: number, targetIndex: number) {
     const targetPriority = this.getContainerState(containers[targetIndex].options!.containerId).priority;
     const changePriority = (sourceIndex: number, targetIndex: number) => {
