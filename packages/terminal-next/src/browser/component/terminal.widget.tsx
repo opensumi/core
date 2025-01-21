@@ -68,8 +68,13 @@ export default ({ widget, error, show }: IProps) => {
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
 
   React.useEffect(() => {
-    if (content.current) {
-      widget.element = content.current;
+    if (content.current && widget.element) {
+      content.current.appendChild(widget.element);
+    } else if (content.current && !widget.element) {
+      const ele = document.createElement('div');
+      content.current.appendChild(ele);
+      ele.className = styles.terminalContent;
+      widget.element = ele;
     }
   }, []);
 
@@ -91,7 +96,7 @@ export default ({ widget, error, show }: IProps) => {
       <div
         data-term-id={widget.id}
         style={{ display: error ? 'none' : 'block' }}
-        className={styles.terminalContent}
+        className={styles.terminalContentWrapper}
         onFocus={onFocus}
         ref={content}
       ></div>

@@ -224,6 +224,20 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
   };
 
+  moveContainerTo(containerId: string, from: string, to: string): void {
+    const fromTabbar = this.getTabbarService(from);
+    const toTabbar = this.getTabbarService(to);
+    const container = fromTabbar.getContainer(containerId);
+    if (!container) {
+      throw new Error(`container: ${containerId} does not exist on tabbar: ${from}`);
+    }
+    fromTabbar.removeContainer(containerId);
+    if (!fromTabbar.visibleContainers.length || fromTabbar.currentContainerId.get() === containerId) {
+      this.toggleSlot(from, false);
+    }
+    toTabbar.dynamicAddContainer(containerId, container);
+  }
+
   isVisible(location: string) {
     const tabbarService = this.getTabbarService(location);
     return !!tabbarService.currentContainerId.get();
