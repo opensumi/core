@@ -4,12 +4,12 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 
+import { TokenMCPServerProxyService } from '../../common';
 import { IMCPServerProxyService } from '../../common/types';
 import { IMCPServer } from '../mcp-server';
-import { TokenMCPServerProxyService } from '../../common';
 
 @Injectable()
 export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
@@ -111,7 +111,7 @@ export class BuiltinMCPServer implements IMCPServer {
       console.error(
         `Failed to parse arguments for calling tool "${toolName}" in Builtin MCP server.
         Invalid JSON: ${arg_string}`,
-        error
+        error,
       );
       throw error;
     }

@@ -6,8 +6,8 @@ export interface IMCPServer {
     isStarted(): boolean;
     start(): Promise<void>;
     getServerName(): string;
-    callTool(toolName: string, arg_string: string): Promise<ReturnType<Client['callTool']>>;
-    getTools(): Promise<ReturnType<Client['listTools']>>;
+    callTool(toolName: string, arg_string: string): ReturnType<Client['callTool']>;
+    getTools(): ReturnType<Client['listTools']>;
     update(command: string, args?: string[], env?: { [key: string]: string }): void;
     stop(): void;
 }
@@ -98,7 +98,7 @@ export class MCPServerImpl implements IMCPServer {
   }
 
   async getTools() {
-    return this.client.listTools();
+    return await this.client.listTools();
   }
 
   update(command: string, args?: string[], env?: { [key: string]: string }): void {

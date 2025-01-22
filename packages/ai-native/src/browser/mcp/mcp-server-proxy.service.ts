@@ -1,11 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { RPCService } from '@opensumi/ide-connection';
 
-import { IMCPServerProxyService } from '../../common/types';
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
 @Injectable()
-export class MCPServerProxyService extends RPCService<IMCPServerProxyService> {
+export class MCPServerProxyService {
   @Autowired(TokenMCPServerRegistry)
   private readonly mcpServerRegistry: IMCPServerRegistry;
 

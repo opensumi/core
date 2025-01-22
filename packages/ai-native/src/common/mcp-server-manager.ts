@@ -1,13 +1,13 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
 export interface MCPServerManager {
-    callTool(serverName: string, toolName: string, arg_string: string): Promise<ReturnType<Client['callTool']>>;
+    callTool(serverName: string, toolName: string, arg_string: string): ReturnType<Client['callTool']>;
     removeServer(name: string): void;
     addOrUpdateServer(description: MCPServerDescription): void;
     // invoke in node.js only
     addOrUpdateServerDirectly(server: any): void;
     initBuiltinServer(): void;
-    getTools(serverName: string): Promise<ReturnType<Client['listTools']>>;
+    getTools(serverName: string): ReturnType<Client['listTools']>;
     getServerNames(): Promise<string[]>;
     startServer(serverName: string): Promise<void>;
     stopServer(serverName: string): Promise<void>;

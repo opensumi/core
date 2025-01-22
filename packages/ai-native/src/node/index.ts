@@ -34,7 +34,7 @@ export class AINativeModule extends NodeModule {
     {
       token: TokenBuiltinMCPServer,
       useClass: BuiltinMCPServer,
-    }
+    },
   ];
 
   backServices = [
