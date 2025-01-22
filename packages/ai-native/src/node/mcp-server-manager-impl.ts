@@ -1,10 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
 
 import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
-import { IMCPServer, MCPServerImpl } from './mcp-server';
 import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../common/tool-invocation-registry';
-import { TokenBuiltinMCPServer } from './mcp/sumi-mcp-server';
-import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
+
+import { BuiltinMCPServer, TokenBuiltinMCPServer } from './mcp/sumi-mcp-server';
+import { IMCPServer, MCPServerImpl } from './mcp-server';
 
 @Injectable()
 export class MCPServerManagerImpl implements MCPServerManager {
