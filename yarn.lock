@@ -2744,14 +2744,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@modelcontextprotocol/sdk@npm:1.1.1"
+"@modelcontextprotocol/sdk@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "@modelcontextprotocol/sdk@npm:1.3.1"
   dependencies:
     content-type: "npm:^1.0.5"
     raw-body: "npm:^3.0.0"
     zod: "npm:^3.23.8"
-  checksum: 10/c9a057ddda06fd62ed174df28a851f283edaca8535e03826916c2533d0c6df864a22c77bc765541614c352cc1d42a6b1547c5912c5b930963a158108874bb163
+    zod-to-json-schema: "npm:^3.24.1"
+  checksum: 10/d931c7aba1489704a52d1fb6ac341ea6fbb4ef8a2059c83008da959d27a06c02fd5c326efb6286da332eeb691e44b9797cb58dbbf69dd5be2df2562c9e889968
   languageName: node
   linkType: hard
 
@@ -3343,7 +3344,7 @@ __metadata:
   dependencies:
     "@ai-sdk/anthropic": "npm:^1.0.9"
     "@anthropic-ai/sdk": "npm:^0.32.1"
-    "@modelcontextprotocol/sdk": "npm:^1.1.1"
+    "@modelcontextprotocol/sdk": "npm:^1.3.1"
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"

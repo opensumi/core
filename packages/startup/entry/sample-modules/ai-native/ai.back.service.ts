@@ -1,7 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '@opensumi/ide-ai-native/lib/common/tool-invocation-registry';
+import {
+  ToolInvocationRegistry,
+  ToolInvocationRegistryImpl,
+} from '@opensumi/ide-ai-native/lib/common/tool-invocation-registry';
 import { AnthropicModel } from '@opensumi/ide-ai-native/lib/node/anthropic/anthropic-language-model';
-import { CodeFuseAIModel } from '@opensumi/ide-ai-native/lib/node/codefuse/codefuse-language-model';
 import { OpenAIModel } from '@opensumi/ide-ai-native/lib/node/openai/openai-language-model';
 import { IAICompletionOption } from '@opensumi/ide-core-common';
 import {
@@ -56,9 +58,6 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
 
   @Autowired(OpenAIModel)
   protected readonly openaiModel: OpenAIModel;
-
-  @Autowired(CodeFuseAIModel)
-  protected readonly codeFuseModel: CodeFuseAIModel;
 
   async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);

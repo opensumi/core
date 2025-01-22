@@ -1,10 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { CancellationToken } from '@opensumi/ide-utils';
 import OpenAI from 'openai';
-import { ChatCompletionStream } from 'openai/lib/ChatCompletionStream';
 import { RunnableToolFunctionWithoutParse } from 'openai/lib/RunnableFunction';
-import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../../common/tool-invocation-registry';
+
+import { Autowired, Injectable } from '@opensumi/di';
 import { ChatReadableStream } from '@opensumi/ide-core-node';
+import { CancellationToken } from '@opensumi/ide-utils';
+
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../../common/tool-invocation-registry';
 
 export const OpenAiModelIdentifier = Symbol('OpenAiModelIdentifier');
 
@@ -28,15 +29,18 @@ export class OpenAIModel {
   }
 
   private createTool(tools: ToolRequest[]): RunnableToolFunctionWithoutParse[] {
-    return tools?.map(tool => ({
-      type: 'function',
-      function: {
-        name: tool.name,
-        description: tool.description,
-        parameters: tool.parameters,
-        function: (args_string: string) => tool.handler(args_string)
-      }
-    } as RunnableToolFunctionWithoutParse));
+    return tools?.map(
+      (tool) =>
+        ({
+          type: 'function',
+          function: {
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.parameters,
+            function: (args_string: string) => tool.handler(args_string),
+          },
+        } as RunnableToolFunctionWithoutParse),
+    );
   }
 
   private getCompletionContent(message: OpenAI.Chat.Completions.ChatCompletionToolMessageParam): string {
@@ -46,11 +50,7 @@ export class OpenAIModel {
     return message.content;
   }
 
-  protected async handleStreamingRequest(
-    request: string,
-    cancellationToken?: CancellationToken
-  ): Promise<any> {
-
+  protected async handleStreamingRequest(request: string, cancellationToken?: CancellationToken): Promise<any> {
     const chatReadableStream = new ChatReadableStream();
 
     const openai = this.initializeOpenAi();
@@ -63,10 +63,10 @@ export class OpenAIModel {
       model: 'deepseek-chat',
       messages: [{ role: 'user', content: request }],
       stream: true,
-      tools: tools,
+      tools,
       tool_choice: 'auto',
     } as any;
-    console.log("🚀 ~ OpenAIModel ~ params:", JSON.stringify(params, null, 2));
+    console.log('🚀 ~ OpenAIModel ~ params:', JSON.stringify(params, null, 2));
 
     const runner = openai.beta.chat.completions.runTools(params) as any;
 
@@ -74,7 +74,7 @@ export class OpenAIModel {
       runner.abort();
     });
 
-    let runnerEnd = false;
+    const runnerEnd = false;
 
     // runner.on('error', error => {
     //   console.error('Error in OpenAI chat completion stream:', error);
@@ -110,12 +110,12 @@ export class OpenAIModel {
       chatReadableStream.end();
     });
 
-    runner.on('chunk', chunk => {
+    runner.on('chunk', (chunk) => {
       if (chunk.choices[0]?.delta) {
         const chunkData = { ...chunk.choices[0]?.delta };
         // resolve(chunkData);
 
-        console.log("🚀 ~ OpenAIModel ~ chunkData:", chunkData)
+        console.log('🚀 ~ OpenAIModel ~ chunkData:', chunkData);
         if (chunkData.tool_calls) {
           chatReadableStream.emitData({ kind: 'toolCall', content: chunkData.tool_calls[0] });
         } else if (chunkData.content) {
