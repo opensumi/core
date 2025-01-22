@@ -224,18 +224,56 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
   };
 
-  moveContainerTo(containerId: string, from: string, to: string): void {
-    const fromTabbar = this.getTabbarService(from);
-    const toTabbar = this.getTabbarService(to);
+  findTabbarServiceByContainerId(containerId: string): TabbarService | undefined {
+    let tabbarService: undefined | TabbarService;
+    for (const [key, value] of this.tabbarServices.entries()) {
+      if (value.containersMap.has(containerId)) {
+        tabbarService = value;
+        break;
+      }
+    }
+
+    return tabbarService;
+  }
+
+  moveContainerTo(containerId: string, to: string): void {
+    const fromTabbar = this.findTabbarServiceByContainerId(containerId);
+
+    if (!fromTabbar) {
+      this.logger.error(`cannot find container: ${containerId}`);
+      return;
+    }
     const container = fromTabbar.getContainer(containerId);
     if (!container) {
-      throw new Error(`container: ${containerId} does not exist on tabbar: ${from}`);
+      this.logger.error(`cannot find container: ${containerId}`);
+      return;
     }
+
+    const toTabbar = this.getTabbarService(to);
+
     fromTabbar.removeContainer(containerId);
     if (!fromTabbar.visibleContainers.length || fromTabbar.currentContainerId.get() === containerId) {
-      this.toggleSlot(from, false);
+      this.toggleSlot(fromTabbar.location, false);
     }
     toTabbar.dynamicAddContainer(containerId, container);
+  }
+
+  handleDragContainerStart(containerId: string): void {
+    const tabbarService = this.findTabbarServiceByContainerId(containerId);
+    const bottomService = this.tabbarServices.get('bottom');
+    const rightService = this.tabbarServices.get('right');
+    if (!tabbarService) {
+      this.logger.error(`cannot find container: ${containerId}`);
+      return;
+    }
+    if (tabbarService?.location === 'right') {
+      bottomService?.updateCurrentContainerId('drop-bottom');
+      this.toggleSlot('bottom', true);
+    }
+    if (tabbarService?.location === 'bottom') {
+      rightService?.updateCurrentContainerId('drop-right');
+      this.toggleSlot('right', true);
+    }
   }
 
   isVisible(location: string) {

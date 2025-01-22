@@ -43,6 +43,7 @@ import { Command, CommandContribution, CommandRegistry, CommandService } from '@
 
 import { IMainLayoutService } from '../common';
 
+import { BottomDropArea, RightDropArea } from './drop-area/drop-area';
 import { ViewQuickOpenHandler } from './quick-open-view';
 import { BottomTabRenderer, LeftTabRenderer, RightTabRenderer } from './tabbar/renderer.view';
 
@@ -117,7 +118,14 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   iconClass: getIcon('shrink'),
 };
 
-@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution, QuickOpenContribution)
+@Domain(
+  CommandContribution,
+  ClientAppContribution,
+  SlotRendererContribution,
+  MenuContribution,
+  QuickOpenContribution,
+  ComponentContribution,
+)
 export class MainLayoutModuleContribution
   extends WithEventBus
   implements
@@ -125,6 +133,7 @@ export class MainLayoutModuleContribution
     ClientAppContribution,
     SlotRendererContribution,
     MenuContribution,
+    ComponentContribution,
     QuickOpenContribution
 {
   @Autowired(IMainLayoutService)
@@ -184,6 +193,17 @@ export class MainLayoutModuleContribution
         contribution.registerToolbarItems(this.toolBarRegistry);
       }
     }
+  }
+
+  registerComponent(registry: ComponentRegistry): void {
+    registry.register('drop-right', [], {
+      component: RightDropArea,
+      containerId: 'drop-right',
+    });
+    registry.register('drop-bottom', [], {
+      component: BottomDropArea,
+      containerId: 'drop-bottom',
+    });
   }
 
   async onStart() {
