@@ -19,7 +19,7 @@ export const defaultConfig: LayoutConfig = {
     ],
   },
   [SlotLocation.right]: {
-    modules: [],
+    modules: ['drop-right'],
   },
   [SlotLocation.main]: {
     modules: ['@opensumi/ide-editor'],

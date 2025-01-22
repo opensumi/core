@@ -82,6 +82,7 @@ import { IntelligentCompletionsController } from './contrib/intelligent-completi
 import { ProblemFixController } from './contrib/problem-fix/problem-fix.controller';
 import { RenameSingleHandler } from './contrib/rename/rename.handler';
 import { AIRunToolbar } from './contrib/run-toolbar/run-toolbar';
+import { DropRight } from './DropRight';
 import {
   AIChatTabRenderer,
   AIChatTabRendererWithTab,
@@ -488,6 +489,10 @@ export class AINativeBrowserContribution
     registry.register(AI_CHAT_LOGO_AVATAR_ID, {
       id: AI_CHAT_LOGO_AVATAR_ID,
       component: AIChatLogoAvatar,
+    });
+    registry.register('drop-right', [], {
+      component: DropRight,
+      containerId: 'drop-right',
     });
   }
 
