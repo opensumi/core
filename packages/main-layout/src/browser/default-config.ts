@@ -25,7 +25,13 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@opensumi/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-output', 'debug-console', '@opensumi/ide-markers'],
+    modules: [
+      'drop-bottom',
+      '@opensumi/ide-terminal-next',
+      '@opensumi/ide-output',
+      'debug-console',
+      '@opensumi/ide-markers',
+    ],
   },
   [SlotLocation.statusBar]: {
     modules: ['@opensumi/ide-status-bar'],
