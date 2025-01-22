@@ -1,16 +1,20 @@
 import { Autowired, Injectable } from '@opensumi/di';
 
 import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
+import { IMCPServer, MCPServerImpl } from './mcp-server';
 import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../common/tool-invocation-registry';
-
-import { MCPServer } from './mcp-server';
+import { TokenBuiltinMCPServer } from './mcp/sumi-mcp-server';
+import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
 
 @Injectable()
 export class MCPServerManagerImpl implements MCPServerManager {
   @Autowired(ToolInvocationRegistry)
   private readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
 
-  protected servers: Map<string, MCPServer> = new Map();
+    @Autowired(TokenBuiltinMCPServer)
+    private readonly builtinMCPServer: BuiltinMCPServer;
+
+    protected servers: Map<string, IMCPServer> = new Map();
 
   async stopServer(serverName: string): Promise<void> {
     const server = this.servers.get(serverName);
@@ -31,13 +35,13 @@ export class MCPServerManagerImpl implements MCPServerManager {
     return startedServers;
   }
 
-  callTool(serverName: string, toolName: string, arg_string: string) {
-    const server = this.servers.get(serverName);
-    if (!server) {
-      throw new Error(`MCP server "${toolName}" not found.`);
+    callTool(serverName: string, toolName: string, arg_string: string): ReturnType<IMCPServer['callTool']> {
+        const server = this.servers.get(serverName);
+        if (!server) {
+            throw new Error(`MCP server "${toolName}" not found.`);
+        }
+        return server.callTool(toolName, arg_string);
     }
-    return server.callTool(toolName, arg_string);
-  }
 
   async startServer(serverName: string): Promise<void> {
     const server = this.servers.get(serverName);
@@ -88,25 +92,35 @@ export class MCPServerManagerImpl implements MCPServerManager {
     }
   }
 
-  public async getTools(serverName: string) {
-    const server = this.servers.get(serverName);
-    if (!server) {
-      throw new Error(`MCP server "${serverName}" not found.`);
+    public async getTools(serverName: string): ReturnType<IMCPServer['getTools']> {
+        const server = this.servers.get(serverName);
+        if (!server) {
+            throw new Error(`MCP server "${serverName}" not found.`);
+        }
+        return server.getTools();
+
     }
-    return server.getTools();
-  }
 
   addOrUpdateServer(description: MCPServerDescription): void {
     const { name, command, args, env } = description;
     const existingServer = this.servers.get(name);
 
-    if (existingServer) {
-      existingServer.update(command, args, env);
-    } else {
-      const newServer = new MCPServer(name, command, args, env);
-      this.servers.set(name, newServer);
+        if (existingServer) {
+            existingServer.update(command, args, env);
+        } else {
+            const newServer = new MCPServerImpl(name, command, args, env);
+            this.servers.set(name, newServer);
+        }
     }
-  }
+
+    addOrUpdateServerDirectly(server: IMCPServer): void {
+        this.servers.set(server.getServerName(), server);
+    }
+
+    initBuiltinServer(): void {
+        this.addOrUpdateServerDirectly(this.builtinMCPServer);
+        this.collectTools(this.builtinMCPServer.getServerName());
+    }
 
   removeServer(name: string): void {
     const server = this.servers.get(name);

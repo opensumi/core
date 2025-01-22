@@ -1,18 +1,25 @@
 import { MCPServerManagerImpl } from '../../src/node/mcp-server-manager-impl';
 import { MCPServerDescription } from '../../src/common/mcp-server-manager';
-import { MCPServer } from '../../src/node/mcp-server';
+import { IMCPServer, MCPServerImpl } from '../../src/node/mcp-server';
 
 jest.mock('../../src/node/mcp-server');
 
 describe('MCPServerManagerImpl', () => {
   let manager: MCPServerManagerImpl;
-  let mockServer: jest.Mocked<MCPServer>;
+  let mockServer: jest.Mocked<IMCPServer>;
 
   beforeEach(() => {
     jest.clearAllMocks();
     manager = new MCPServerManagerImpl();
-    mockServer = new MCPServer('test-server', 'test-command', [], {}) as jest.Mocked<MCPServer>;
-    (MCPServer as jest.MockedClass<typeof MCPServer>).mockImplementation(() => mockServer);
+    mockServer = {
+      isStarted: jest.fn(),
+      start: jest.fn(),
+      callTool: jest.fn(),
+      getTools: jest.fn(),
+      update: jest.fn(),
+      stop: jest.fn(),
+    };
+    jest.mocked(MCPServerImpl).mockImplementation(() => mockServer as unknown as MCPServerImpl);
   });
 
   describe('addOrUpdateServer', () => {
@@ -25,7 +32,7 @@ describe('MCPServerManagerImpl', () => {
 
     it('should add a new server', () => {
       manager.addOrUpdateServer(serverDescription);
-      expect(MCPServer).toHaveBeenCalledWith(
+      expect(MCPServerImpl).toHaveBeenCalledWith(
         serverDescription.name,
         serverDescription.command,
         serverDescription.args,

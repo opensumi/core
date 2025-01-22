@@ -2,13 +2,23 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-export class MCPServer {
-  private name: string;
-  private command: string;
-  private args?: string[];
-  private client: Client;
-  private env?: { [key: string]: string };
-  private started: boolean = false;
+export interface IMCPServer {
+    isStarted(): boolean;
+    start(): Promise<void>;
+    getServerName(): string;
+    callTool(toolName: string, arg_string: string): Promise<ReturnType<Client['callTool']>>;
+    getTools(): Promise<ReturnType<Client['listTools']>>;
+    update(command: string, args?: string[], env?: { [key: string]: string }): void;
+    stop(): void;
+}
+
+export class MCPServerImpl implements IMCPServer {
+    private name: string;
+    private command: string;
+    private args?: string[];
+    private client: Client;
+    private env?: { [key: string]: string };
+    private started: boolean = false;
 
   constructor(name: string, command: string, args?: string[], env?: Record<string, string>) {
     this.name = name;
@@ -17,9 +27,13 @@ export class MCPServer {
     this.env = env;
   }
 
-  isStarted(): boolean {
-    return this.started;
-  }
+    isStarted(): boolean {
+        return this.started;
+    }
+
+    getServerName(): string {
+        return this.name;
+    }
 
   async start(): Promise<void> {
     if (this.started) {

@@ -430,6 +430,8 @@ export class AINativeBrowserContribution
       { id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' },
       {
         execute: async () => {
+          this.mcpServerManager.initBuiltinServer();
+
           const description: MCPServerDescription = {
             name: 'filesystem',
             command: 'npx',

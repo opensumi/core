@@ -4,12 +4,12 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
-import { Injectable } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 
 import { IMCPServerProxyService } from '../../common/types';
-// @ts-ignore
-// @ts-ignore
+import { IMCPServer } from '../mcp-server';
+import { TokenMCPServerProxyService } from '../../common';
 
 @Injectable()
 export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
@@ -71,3 +71,70 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
     return this.server;
   }
 }
+
+
+export const TokenBuiltinMCPServer = Symbol('TokenBuiltinMCPServer');
+
+@Injectable()
+export class BuiltinMCPServer implements IMCPServer {
+
+  @Autowired(TokenMCPServerProxyService)
+  private readonly sumiMCPServer: SumiMCPServerBackend;
+
+  private started: boolean = true;
+
+  isStarted(): boolean {
+    return this.started;
+  }
+
+  getServerName(): string {
+    return 'opensumi-builtin-mcp-server';
+  }
+
+  async start(): Promise<void> {
+    if (this.started) {
+      return;
+    }
+    // TODO 考虑 MCP Server 的对外暴露
+    // await this.sumiMCPServer.initMCPServer();
+    this.started = true;
+  }
+
+  async callTool(toolName: string, arg_string: string): Promise<any> {
+    if (!this.started) {
+      throw new Error('MCP Server not started');
+    }
+    let args;
+    try {
+      args = JSON.parse(arg_string);
+    } catch (error) {
+      console.error(
+        `Failed to parse arguments for calling tool "${toolName}" in Builtin MCP server.
+        Invalid JSON: ${arg_string}`,
+        error
+      );
+      throw error;
+    }
+    return this.sumiMCPServer.callMCPTool(toolName, args);
+  }
+
+  async getTools(): Promise<any> {
+    if (!this.started) {
+      throw new Error('MCP Server not started');
+    }
+    return this.sumiMCPServer.getMCPTools();
+  }
+
+  update(_command: string, _args?: string[], _env?: { [key: string]: string }): void {
+    // No-op for builtin server as it doesn't need command/args/env updates
+  }
+
+  stop(): void {
+    if (!this.started) {
+      return;
+    }
+    // No explicit cleanup needed for in-memory server
+    this.started = false;
+  }
+}
+

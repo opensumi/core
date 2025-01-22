@@ -8,7 +8,7 @@ import { TokenMCPServerProxyService } from '../common';
 import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
 import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../common/tool-invocation-registry';
 
-import { SumiMCPServerBackend } from './mcp/sumi-mcp-server';
+import { BuiltinMCPServer, SumiMCPServerBackend, TokenBuiltinMCPServer } from './mcp/sumi-mcp-server';
 import { MCPServerManagerImpl } from './mcp-server-manager-impl';
 
 
@@ -31,6 +31,10 @@ export class AINativeModule extends NodeModule {
       token: TokenMCPServerProxyService,
       useClass: SumiMCPServerBackend,
     },
+    {
+      token: TokenBuiltinMCPServer,
+      useClass: BuiltinMCPServer,
+    }
   ];
 
   backServices = [

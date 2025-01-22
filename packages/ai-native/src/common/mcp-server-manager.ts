@@ -1,20 +1,18 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
-export interface MCPServer {
-  callTool(toolName: string, arg_string: string): ReturnType<Client['callTool']>;
-  getTools(): ReturnType<Client['listTools']>;
-}
-
 export interface MCPServerManager {
-  callTool(serverName: string, toolName: string, arg_string: string): ReturnType<MCPServer['callTool']>;
-  removeServer(name: string): void;
-  addOrUpdateServer(description: MCPServerDescription): void;
-  getTools(serverName: string): ReturnType<MCPServer['getTools']>;
-  getServerNames(): Promise<string[]>;
-  startServer(serverName: string): Promise<void>;
-  stopServer(serverName: string): Promise<void>;
-  getStartedServers(): Promise<string[]>;
-  collectTools(serverName: string): Promise<void>;
+    callTool(serverName: string, toolName: string, arg_string: string): Promise<ReturnType<Client['callTool']>>;
+    removeServer(name: string): void;
+    addOrUpdateServer(description: MCPServerDescription): void;
+    // invoke in node.js only
+    addOrUpdateServerDirectly(server: any): void;
+    initBuiltinServer(): void;
+    getTools(serverName: string): Promise<ReturnType<Client['listTools']>>;
+    getServerNames(): Promise<string[]>;
+    startServer(serverName: string): Promise<void>;
+    stopServer(serverName: string): Promise<void>;
+    getStartedServers(): Promise<string[]>;
+    collectTools(serverName: string): Promise<void>;
 }
 
 export type MCPTool = Awaited<ReturnType<MCPServerManager['getTools']>>['tools'][number];
