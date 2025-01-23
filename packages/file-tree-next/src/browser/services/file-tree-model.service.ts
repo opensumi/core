@@ -991,11 +991,12 @@ export class FileTreeModelService {
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = isLinux ? localize('file.confirm.delete.ok') : localize('file.confirm.moveToTrash.ok');
       const cancel = localize('file.confirm.delete.cancel');
+      const MAX_FILES = 10;
       let deleteFilesMessage = uris
-        .slice(0, 10)
+        .slice(0, MAX_FILES)
         .map((uri) => uri.displayName)
         .join('  \n');
-      if (uris.length > 10) {
+      if (uris.length > MAX_FILES) {
         deleteFilesMessage += '  \n...';
       }
       if (!isLinux) {
@@ -1005,7 +1006,7 @@ export class FileTreeModelService {
         message: toMarkdown(formatLocalize('file.confirm.delete', uris.length, deleteFilesMessage)),
         type: MessageType.Warning,
         props: {
-          width: 540,
+          width: 580,
         },
         buttons: [cancel, ok],
       });
