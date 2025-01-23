@@ -176,7 +176,7 @@ export const AIRightTabRenderer = ({
         {...props}
         renderContainerWrap={({ children }) => (
           <div className={styles.right_slot_container_wrap}>
-            {!options?.titleComponent && (
+            {!options?.title && (
               <div className={styles.header}>
                 <span className={styles.title}>{options && options.title}</span>
                 <div className={styles.side}>
