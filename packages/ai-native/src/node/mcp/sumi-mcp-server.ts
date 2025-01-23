@@ -1,18 +1,31 @@
 // 想要通过 MCP 的方式暴露 Opensumi 的 IDE 能力，就需要 Node.js 层打通 MCP 的通信
 // 因为大部分 MCP 功能的实现在前端，因此需要再这里做前后端通信
 
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 
-import { TokenMCPServerProxyService } from '../../common';
+import { MCPServerManager } from '../../common/mcp-server-manager';
 import { IMCPServerProxyService } from '../../common/types';
 import { IMCPServer } from '../mcp-server';
+import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
 
-@Injectable()
+// 每个 BrowserTab 都对应了一个 SumiMCPServerBackend 实例
+// SumiMCPServerBackend 需要做的事情：
+// 维护 Browser 端工具的注册和调用
+// 处理第三方 MCP Server 的注册和调用
+
+@Injectable({ multiple: true })
 export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
+
+  // 这里需要考虑不同的 BrowserTab 的区分问题，目前的 POC 所有的 Tab 都会注册到 tools 中
+  // 后续需要区分不同的 Tab 对应的实例
+  @Autowired(MCPServerManager)
+  private readonly mcpServerManager: MCPServerManagerImpl;
+
   private server: Server | undefined;
 
   async getMCPTools() {
@@ -20,7 +33,9 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
       throw new Error('SUMI MCP RPC Client not initialized');
     }
     // 获取 MCP 工具
-    return await this.client.$getMCPTools();
+    const tools =  await this.client.$getMCPTools();
+    console.log('[Node backend] SUMI MCP tools', tools);
+    return tools;
   }
 
   async callMCPTool(name: string, args: any) {
@@ -34,7 +49,12 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
     return this.server;
   }
 
-  async initMCPServer() {
+  initBuiltinMCPServer() {
+    const builtinMCPServer = new BuiltinMCPServer(this);
+    this.mcpServerManager.initBuiltinServer(builtinMCPServer);
+  }
+
+  async initExposedMCPServer() {
     // 初始化 MCP Server
     this.server = new Server(
       {
@@ -75,11 +95,11 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
 
 export const TokenBuiltinMCPServer = Symbol('TokenBuiltinMCPServer');
 
-@Injectable()
 export class BuiltinMCPServer implements IMCPServer {
 
-  @Autowired(TokenMCPServerProxyService)
-  private readonly sumiMCPServer: SumiMCPServerBackend;
+  constructor(
+    private readonly sumiMCPServer: SumiMCPServerBackend,
+  ) {}
 
   private started: boolean = true;
 
@@ -88,7 +108,7 @@ export class BuiltinMCPServer implements IMCPServer {
   }
 
   getServerName(): string {
-    return 'opensumi-builtin-mcp-server';
+    return 'sumi-builtin';
   }
 
   async start(): Promise<void> {
@@ -118,11 +138,12 @@ export class BuiltinMCPServer implements IMCPServer {
     return this.sumiMCPServer.callMCPTool(toolName, args);
   }
 
-  async getTools(): Promise<any> {
+  async getTools(): ReturnType<Client['listTools']> {
     if (!this.started) {
       throw new Error('MCP Server not started');
     }
-    return this.sumiMCPServer.getMCPTools();
+    const tools = await this.sumiMCPServer.getMCPTools();
+    return { tools };
   }
 
   update(_command: string, _args?: string[], _env?: { [key: string]: string }): void {

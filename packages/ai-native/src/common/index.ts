@@ -119,6 +119,10 @@ export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 // 暴露给 Node.js 层，使其可以感知 Opensumi 注册的 MCP 能力
 export const TokenMCPServerProxyService = Symbol('TokenMCPServerProxyService');
 
+export interface ISumiMCPServerBackend {
+  initBuiltinMCPServer(): void;
+}
+
 export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';
 
 export interface IChatAgentService {

@@ -3,12 +3,11 @@ import { AIBackSerivcePath, AIBackSerivceToken } from '@opensumi/ide-core-common
 import { NodeModule } from '@opensumi/ide-core-node';
 import { BaseAIBackService } from '@opensumi/ide-core-node/lib/ai-native/base-back.service';
 
-import { SumiMCPServerProxyServicePath } from '../common';
-import { TokenMCPServerProxyService } from '../common';
-import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
+import { SumiMCPServerProxyServicePath , TokenMCPServerProxyService } from '../common';
+import { MCPServerManager } from '../common/mcp-server-manager';
 import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../common/tool-invocation-registry';
 
-import { BuiltinMCPServer, SumiMCPServerBackend, TokenBuiltinMCPServer } from './mcp/sumi-mcp-server';
+import { SumiMCPServerBackend } from './mcp/sumi-mcp-server';
 import { MCPServerManagerImpl } from './mcp-server-manager-impl';
 
 
@@ -31,20 +30,12 @@ export class AINativeModule extends NodeModule {
       token: TokenMCPServerProxyService,
       useClass: SumiMCPServerBackend,
     },
-    {
-      token: TokenBuiltinMCPServer,
-      useClass: BuiltinMCPServer,
-    },
   ];
 
   backServices = [
     {
       servicePath: AIBackSerivcePath,
       token: AIBackSerivceToken,
-    },
-    {
-      servicePath: MCPServerManagerPath,
-      token: MCPServerManager,
     },
     {
       servicePath: SumiMCPServerProxyServicePath,

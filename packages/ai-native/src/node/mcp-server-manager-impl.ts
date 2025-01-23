@@ -3,16 +3,13 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../common/tool-invocation-registry';
 
-import { BuiltinMCPServer, TokenBuiltinMCPServer } from './mcp/sumi-mcp-server';
+import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
 import { IMCPServer, MCPServerImpl } from './mcp-server';
 
 @Injectable()
 export class MCPServerManagerImpl implements MCPServerManager {
   @Autowired(ToolInvocationRegistry)
   private readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
-
-  @Autowired(TokenBuiltinMCPServer)
-  private readonly builtinMCPServer: BuiltinMCPServer;
 
   protected servers: Map<string, IMCPServer> = new Map();
 
@@ -116,9 +113,9 @@ export class MCPServerManagerImpl implements MCPServerManager {
     this.servers.set(server.getServerName(), server);
   }
 
-  initBuiltinServer(): void {
-    this.addOrUpdateServerDirectly(this.builtinMCPServer);
-    this.collectTools(this.builtinMCPServer.getServerName());
+  initBuiltinServer(builtinMCPServer: BuiltinMCPServer): void {
+    this.addOrUpdateServerDirectly(builtinMCPServer);
+    this.collectTools(builtinMCPServer.getServerName());
   }
 
   removeServer(name: string): void {

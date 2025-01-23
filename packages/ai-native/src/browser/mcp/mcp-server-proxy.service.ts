@@ -1,4 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { ILogger } from '@opensumi/ide-core-browser';
 
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
@@ -7,12 +8,15 @@ export class MCPServerProxyService {
   @Autowired(TokenMCPServerRegistry)
   private readonly mcpServerRegistry: IMCPServerRegistry;
 
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   $callMCPTool(name: string, args: any) {
     return this.mcpServerRegistry.callMCPTool(name, args);
   }
 
   async $getMCPTools() {
-    return this.mcpServerRegistry.getMCPTools().map((tool) =>
+    const tools = await this.mcpServerRegistry.getMCPTools().map((tool) =>
       // 不要传递 handler
        ({
         name: tool.name,
@@ -20,5 +24,9 @@ export class MCPServerProxyService {
         inputSchema: tool.inputSchema,
       }),
     );
+
+    this.logger.log('SUMI MCP tools', tools);
+
+    return tools;
   }
 }

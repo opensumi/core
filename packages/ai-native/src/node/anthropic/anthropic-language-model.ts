@@ -1,12 +1,12 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Anthropic } from '@anthropic-ai/sdk';
-import { MessageParam, Model, ToolChoiceAuto, MessageStream, Message } from '@anthropic-ai/sdk/resources/messages';
-import { CancellationToken } from '@opensumi/ide-utils';
-import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../../common/tool-invocation-registry';
+import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
+import { jsonSchema, streamText, tool } from 'ai';
+
+import { Autowired, Injectable } from '@opensumi/di';
 import { ChatReadableStream } from '@opensumi/ide-core-node';
-import { z } from 'zod';
-import { generateText, tool, streamText, jsonSchema } from 'ai';
-import { anthropic, AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
+import { CancellationToken } from '@opensumi/ide-utils';
+
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../../common/tool-invocation-registry';
+
 
 export const AnthropicModelIdentifier = Symbol('AnthropicModelIdentifier');
 
@@ -35,13 +35,10 @@ export class AnthropicModel {
 
   private convertToolRequestToAITool(toolRequest: ToolRequest) {
     return tool({
-      // name: toolRequest.name,
       description: toolRequest.description || '',
       // TODO 这里应该是 z.object 而不是 JSON Schema
       parameters: jsonSchema(toolRequest.parameters),
-      execute: async (args: any) => {
-        return await toolRequest.handler(JSON.stringify(args));
-      }
+      execute: async (args: any) => await toolRequest.handler(JSON.stringify(args)),
     });
   }
 
@@ -50,12 +47,12 @@ export class AnthropicModel {
     request: string,
     tools: ToolRequest[],
     chatReadableStream: ChatReadableStream,
-    cancellationToken?: CancellationToken
+    cancellationToken?: CancellationToken,
   ): Promise<any> {
-    
+
     try {
       const aiTools = Object.fromEntries(
-        tools.map(tool => [tool.name, this.convertToolRequestToAITool(tool)])
+        tools.map((tool) => [tool.name, this.convertToolRequestToAITool(tool)]),
       );
 
       const abortController = new AbortController();
@@ -79,10 +76,10 @@ export class AnthropicModel {
         if (chunk.type === 'text-delta') {
           chatReadableStream.emitData({ kind: 'content', content: chunk.textDelta });
         } else if (chunk.type === 'tool-call') {
-          chatReadableStream.emitData({ kind: 'toolCall', content: { 
+          chatReadableStream.emitData({ kind: 'toolCall', content: {
             id: chunk.toolCallId || Date.now().toString(),
             type: 'function',
-            function: { name: chunk.toolName, arguments: JSON.stringify(chunk.args) }
+            function: { name: chunk.toolName, arguments: JSON.stringify(chunk.args) },
           }});
         }
       }

@@ -70,6 +70,8 @@ import {
   AI_CHAT_VIEW_ID,
   AI_MENU_BAR_DEBUG_TOOLBAR,
   ChatProxyServiceToken,
+  ISumiMCPServerBackend,
+  SumiMCPServerProxyServicePath,
 } from '../common';
 import { MCPServerDescription, MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
 import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../common/tool-invocation-registry';
@@ -216,8 +218,11 @@ export class AINativeBrowserContribution
   @Autowired(CodeActionSingleHandler)
   private readonly codeActionSingleHandler: CodeActionSingleHandler;
 
-  @Autowired(MCPServerManagerPath)
-  private readonly mcpServerManager: MCPServerManager;
+  // @Autowired(MCPServerManagerPath)
+  // private readonly mcpServerManager: MCPServerManager;
+
+  @Autowired(SumiMCPServerProxyServicePath)
+  private readonly sumiMCPServerBackendProxy: ISumiMCPServerBackend;
 
   constructor() {
     this.registerFeature();
@@ -430,7 +435,9 @@ export class AINativeBrowserContribution
       { id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' },
       {
         execute: async () => {
-          this.mcpServerManager.initBuiltinServer();
+          // this.mcpServerManager.initBuiltinServer();
+
+          this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
 
           const description: MCPServerDescription = {
             name: 'filesystem',
@@ -439,10 +446,10 @@ export class AINativeBrowserContribution
             env: {},
           };
 
-          this.mcpServerManager.addOrUpdateServer(description);
+          // this.mcpServerManager.addOrUpdateServer(description);
 
-          await this.mcpServerManager.startServer(description.name);
-          await this.mcpServerManager.collectTools(description.name);
+          // await this.mcpServerManager.startServer(description.name);
+          // await this.mcpServerManager.collectTools(description.name);
         },
       },
     );
