@@ -19,7 +19,7 @@ import { WatcherProcessLogger } from './watch-process-log';
 
 const watcherPlaceHolder = {
   disposable: {
-    dispose: () => { },
+    dispose: () => {},
   },
   handlers: [],
 };
@@ -138,6 +138,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       Disposable.create(() => {
         this.unrecursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
         this.watchedDirs.delete(uri.toString());
+        this.WATCHER_HANDLERS.delete(watcherId);
       }),
     );
 
@@ -153,6 +154,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
           Disposable.create(() => {
             this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
             this.watchedDirs.delete(uri.toString());
+            this.WATCHER_HANDLERS.delete(watcherId);
           }),
         );
       } catch (error) {
