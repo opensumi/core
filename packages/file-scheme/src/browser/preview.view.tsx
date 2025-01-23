@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 import { Disposable, useInjectable } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
@@ -16,15 +16,14 @@ const useResource = (resource: IResource) => {
   };
 };
 
-export const VideoPreview: ReactEditorComponent<null> = (props) => {
+export const VideoPreview: ReactEditorComponent<null> = memo((props) => {
   const { src } = useResource(props.resource);
-
   return (
     <div className={styles.kt_video_preview}>
-      <video autoPlay controls className={styles.kt_video} src={src}></video>
+      <video playsInline controls className={styles.kt_video} src={src} />
     </div>
   );
-};
+});
 
 export const ImagePreview: ReactEditorComponent<null> = (props) => {
   const imgRef = React.useRef<HTMLImageElement>();
