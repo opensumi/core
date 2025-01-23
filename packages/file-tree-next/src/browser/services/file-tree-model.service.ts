@@ -23,6 +23,7 @@ import {
   IClipboardService,
   IContextKey,
   IStorage,
+  MessageType,
   STORAGE_NAMESPACE,
   StorageProvider,
   ThrottledDelayer,
@@ -30,9 +31,11 @@ import {
   URI,
   arrays,
   formatLocalize,
+  isLinux,
   localize,
   path,
   strings,
+  toMarkdown,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -986,17 +989,26 @@ export class FileTreeModelService {
     }
     // 默认过滤掉根目录的选择
     if (this.corePreferences['explorer.confirmDelete']) {
-      const ok = localize('file.confirm.delete.ok');
+      const ok = isLinux ? localize('file.confirm.delete.ok') : localize('file.confirm.moveToTrash.ok');
       const cancel = localize('file.confirm.delete.cancel');
-      const deleteFilesMessage = `[ ${uris
-        .slice(0, 5)
+      let deleteFilesMessage = uris
+        .slice(0, 10)
         .map((uri) => uri.displayName)
-        .join(',')}${uris.length > 5 ? ' ...' : ''} ]`;
-
-      const confirm = await this.dialogService.warning(formatLocalize('file.confirm.delete', deleteFilesMessage), [
-        cancel,
-        ok,
-      ]);
+        .join('  \n');
+      if (uris.length > 10) {
+        deleteFilesMessage += '  \n...';
+      }
+      if (!isLinux) {
+        deleteFilesMessage += `\n\n<small>${localize('file.confirm.deleteTips')}</small>`;
+      }
+      const confirm = await this.dialogService.open({
+        message: toMarkdown(formatLocalize('file.confirm.delete', uris.length, deleteFilesMessage)),
+        type: MessageType.Warning,
+        props: {
+          width: 540,
+        },
+        buttons: [cancel, ok],
+      });
       if (confirm !== ok) {
         return;
       }
@@ -1717,7 +1729,8 @@ export class FileTreeModelService {
       this._nextLocationTarget = undefined;
     }
   };
-  selectChildNode(uris: URI[]) {
+
+  public selectChildNode(uris: URI[]) {
     for (const uri of uris) {
       const file = this.fileTreeService.getNodeByPathOrUri(uri);
 
@@ -1729,7 +1742,7 @@ export class FileTreeModelService {
           const last = children[children.length - 1];
           const firstIndex = this.treeModel.root.getIndexAtTreeNode(first);
           const lastIndex = this.treeModel.root.getIndexAtTreeNode(last);
-
+          this._isMultiSelected = true;
           this.activeFileDecorationByRange(firstIndex, lastIndex);
         }
       }
