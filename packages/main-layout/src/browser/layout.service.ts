@@ -226,7 +226,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   findTabbarServiceByContainerId(containerId: string): TabbarService | undefined {
     let tabbarService: undefined | TabbarService;
-    for (const [key, value] of this.tabbarServices.entries()) {
+    for (const value of this.tabbarServices.values()) {
       if (value.containersMap.has(containerId)) {
         tabbarService = value;
         break;
@@ -252,10 +252,13 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     const toTabbar = this.getTabbarService(to);
 
     fromTabbar.removeContainer(containerId);
+
     if (!fromTabbar.visibleContainers.length || fromTabbar.currentContainerId.get() === containerId) {
       this.toggleSlot(fromTabbar.location, false);
     }
     toTabbar.dynamicAddContainer(containerId, container);
+    const newHandler = this.injector.get(TabBarHandler, [containerId, this.getTabbarService(toTabbar.location)]);
+    this.handleMap.set(containerId, newHandler!);
   }
 
   showDropAreaForContainer(containerId: string): void {

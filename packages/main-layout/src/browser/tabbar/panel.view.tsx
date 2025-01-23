@@ -100,8 +100,9 @@ export const ContainerView: React.FC<{
   renderContainerWrap?: React.FC<{
     children: React.ReactNode;
   }>;
+  customTitleBar?: React.ReactNode;
   className?: string;
-}> = ({ component, titleMenu, side, renderContainerWrap, className }) => {
+}> = ({ component, titleMenu, side, renderContainerWrap, className, customTitleBar }) => {
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
@@ -140,6 +141,7 @@ export const ContainerView: React.FC<{
 
   return (
     <div ref={containerRef} className={cls(styles.view_container, className)}>
+      {!!customTitleBar && customTitleBar}
       {!CustomComponent && (
         <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
           {!title ? null : (
