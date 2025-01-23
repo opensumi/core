@@ -258,7 +258,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     toTabbar.dynamicAddContainer(containerId, container);
   }
 
-  handleDragContainerStart(containerId: string): void {
+  showDropAreaForContainer(containerId: string): void {
     const tabbarService = this.findTabbarServiceByContainerId(containerId);
     const bottomService = this.tabbarServices.get('bottom');
     const rightService = this.tabbarServices.get('right');
@@ -273,6 +273,17 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (tabbarService?.location === 'bottom') {
       rightService?.updateCurrentContainerId('drop-right');
       this.toggleSlot('right', true);
+    }
+  }
+
+  hideDropArea(): void {
+    const bottomService = this.tabbarServices.get('bottom');
+    const rightService = this.tabbarServices.get('right');
+    if (bottomService?.currentContainerId.get() === 'drop-bottom') {
+      bottomService.updateCurrentContainerId(bottomService.previousContainerId || '');
+    }
+    if (rightService?.currentContainerId.get() === 'drop-right') {
+      rightService.updateCurrentContainerId(rightService.previousContainerId || '');
     }
   }
 

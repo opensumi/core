@@ -664,6 +664,7 @@ export class TabbarService extends WithEventBus {
   // drag & drop
   handleDragStart(e: React.DragEvent, containerId: string) {
     e.dataTransfer.setData('containerId', containerId);
+    this.layoutService.showDropAreaForContainer(containerId);
   }
 
   handleDrop(e: React.DragEvent, target: string) {
@@ -675,6 +676,10 @@ export class TabbarService extends WithEventBus {
       this.doInsertTab(containers, sourceIndex, targetIndex);
       this.storeState();
     }
+  }
+
+  handleDragEnd(e: React.DragEvent) {
+    this.layoutService.hideDropArea();
   }
 
   restoreState() {

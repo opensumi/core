@@ -87,7 +87,8 @@ export interface IMainLayoutService {
   getExtraMenu(): IContextMenu;
   getAllAccordionService(): Map<string, AccordionService>;
   moveContainerTo(containerId: string, to: string): void;
-  handleDragContainerStart(containerId: string): void;
+  showDropAreaForContainer(containerId: string): void;
+  hideDropArea(): void;
   findTabbarServiceByContainerId(containerId: string): TabbarService | undefined;
 }
 

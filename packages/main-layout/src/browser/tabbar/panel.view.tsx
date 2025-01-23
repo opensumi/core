@@ -105,7 +105,7 @@ export const ContainerView: React.FC<{
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
-  const { title, titleComponent, component: CustomComponent, containerId } = component.options || {};
+  const { title, titleComponent, component: CustomComponent, containerId, draggable } = component.options || {};
   const injector: Injector = useInjectable(INJECTOR_TOKEN);
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
@@ -144,7 +144,10 @@ export const ContainerView: React.FC<{
         <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
           {!title ? null : (
             <TitleBar
+              containerId={containerId}
+              side={side}
               title={title}
+              draggable={draggable}
               height={layoutViewSize.panelTitleBarHeight}
               menubar={<InlineActionBar menus={titleMenu} />}
             />
