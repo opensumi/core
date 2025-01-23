@@ -725,6 +725,10 @@ export class FileTreeModelService {
   };
 
   handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
+    // 由于文件树存在选择根目录的逻辑，使用 Shift+Click 时需要清理根目录选中态
+    if (this.selectedFiles.length === 1 && Directory.isRoot(this.selectedFiles[0])) {
+      this.clearFileSelectedDecoration();
+    }
     if (!this.focusedFile) {
       this.handleItemClick(item, type);
     } else if (this.focusedFile && this.focusedFile !== item) {
@@ -744,7 +748,10 @@ export class FileTreeModelService {
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;
     }
-
+    // 由于文件树存在选择根目录的逻辑，使用 Cmd/Ctrl+Click 时需要清理根目录选中态
+    if (this.selectedFiles.length === 1 && Directory.isRoot(this.selectedFiles[0])) {
+      this.clearFileSelectedDecoration();
+    }
     // 根据节点的选中态进行复选操作
     this.toggleFileSelectedDecoration(item);
   };
@@ -977,6 +984,7 @@ export class FileTreeModelService {
     if (uris.length === 0) {
       return;
     }
+    // 默认过滤掉根目录的选择
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');
