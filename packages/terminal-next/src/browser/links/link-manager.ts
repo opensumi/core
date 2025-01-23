@@ -41,6 +41,7 @@ import {
   winLineAndColumnMatchIndex,
   winLocalLinkClause,
 } from './validated-local-link-provider';
+import { TerminalWordLinkProvider } from './word-link-provider';
 
 const { posix, win32 } = path;
 
@@ -136,6 +137,13 @@ export class TerminalLinkManager extends Disposable {
     ]);
     this._standardLinkProviders.push(validatedProvider);
 
+    const wordLinkProvider = this.injector.get(TerminalWordLinkProvider, [
+      this._xterm,
+      async (link, cb) => cb(await this._resolvePath(link)),
+      wrappedTextLinkActivateCallback,
+    ]);
+    this._standardLinkProviders.push(wordLinkProvider);
+
     this._registerStandardLinkProviders();
   }
 
@@ -165,8 +173,8 @@ export class TerminalLinkManager extends Disposable {
   ) {
     const core = (this._xterm as any)._core as XTermCore;
     const cellDimensions = {
-      width: core._renderService.dimensions.actualCellWidth,
-      height: core._renderService.dimensions.actualCellHeight,
+      width: core._renderService.dimensions.css.cell.width,
+      height: core._renderService.dimensions.css.cell.height,
     };
     const terminalDimensions = {
       width: this._xterm.cols,
