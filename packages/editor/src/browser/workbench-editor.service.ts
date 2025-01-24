@@ -547,6 +547,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         this._onDidEditorGroupsChanged.fire();
       }),
     );
+
     const editorRestorePromises = [];
     const promise = this.topGrid
       .deserialize(state, () => this.createEditorGroup(), editorRestorePromises)
@@ -2313,16 +2314,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async restoreState(state: IEditorGroupState) {
     this._restoringState = true;
     this.previewURI = state.uris[state.previewIndex] ? new URI(state.uris[state.previewIndex]) : null;
-    await Promise.all(
-      state.uris.map(async (uri) => {
-        await this.doOpen(new URI(uri), {
-          disableNavigate: true,
-          backend: true,
-          preview: false,
-          deletedPolicy: 'skip',
-        });
-      }),
-    );
+    for (const uri of state.uris) {
+      await this.doOpen(new URI(uri), { disableNavigate: true, backend: true, preview: false, deletedPolicy: 'skip' });
+    }
 
     let targetUri: URI | undefined;
     if (state.current) {
