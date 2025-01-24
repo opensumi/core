@@ -21,7 +21,7 @@ export class FileSearchService implements IFileSearchService {
   logger: INodeLogger;
 
   private isAbsolutePathPattern(pattern: string): boolean {
-    return path.isAbsolute(pattern) || pattern.startsWith('/');
+    return path.isAbsolute(pattern) || pattern.startsWith('/') || pattern.startsWith('\\');
   }
 
   // 这里应该返回文件的 `fsPath` 而非 `file://` 协议文件路径
