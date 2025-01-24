@@ -1,6 +1,10 @@
 import { ProxyIdentifier } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { Event, FileChange, IRelativePattern, URI, UriComponents } from '@opensumi/ide-core-common';
-import { DidFilesChangedParams, FileSystemWatcherClient } from '@opensumi/ide-core-common/lib/types/file-watch';
+import {
+  DidFilesChangedParams,
+  FileSystemWatcherClient,
+  RecursiveWatcherBackend,
+} from '@opensumi/ide-core-common/lib/types/file-watch';
 
 import { IFileServiceClient } from './file-service-client';
 
@@ -75,11 +79,14 @@ export const WatcherProcessManagerProxy = new ProxyIdentifier('WatcherProcessMan
 export interface IWatcherProcessManager {
   whenReady: Promise<void>;
 
-  createProcess(clientId: string): Promise<number | undefined>;
+  createProcess(clientId: string, backend?: RecursiveWatcherBackend): Promise<number | undefined>;
   setClient(client: FileSystemWatcherClient): void;
   dispose(): Promise<void>;
 
-  watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number>;
+  watch(
+    uri: UriComponents,
+    options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
+  ): Promise<number>;
   unWatch(watcherId: number): Promise<void>;
   setWatcherFileExcludes(excludes: string[]): Promise<void>;
 
