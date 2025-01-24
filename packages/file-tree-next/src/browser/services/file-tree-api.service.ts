@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { ITree } from '@opensumi/ide-components';
 import { CorePreferences, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { CommandService, URI, formatLocalize, localize, path } from '@opensumi/ide-core-common';
+import { CommandService, Emitter, Event, URI, formatLocalize, localize, path } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
@@ -12,6 +12,9 @@ import { Directory, File } from '../../common/file-tree-node.define';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {
+  private readonly onDidResolveChildrenEmitter: Emitter<string> = new Emitter();
+  onDidResolveChildren: Event<string> = this.onDidResolveChildrenEmitter.event;
+
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
 
@@ -44,6 +47,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     }
 
     if (file) {
+      this.onDidResolveChildrenEmitter.fire(file.uri.toString());
       if (file.children?.length === 1 && file.children[0].isDirectory && compact) {
         return await this.resolveChildren(tree, file.children[0].uri, parent, compact);
       } else {

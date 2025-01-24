@@ -10,7 +10,7 @@ import { WatcherProcessManagerToken } from '@opensumi/ide-file-service/lib/node/
 
 import { FileServicePath, IDiskFileProvider, IFileServiceClient } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
-import { FileSystemWatcherServer } from '../../src/node/hosted/recursive/file-service-watcher';
+import { RecursiveFileSystemWatcher } from '../../src/node/hosted/recursive/file-service-watcher';
 
 describe('FileServiceClient should be work', () => {
   jest.setTimeout(10000);
@@ -50,7 +50,7 @@ describe('FileServiceClient should be work', () => {
 
   beforeAll(() => {
     // @ts-ignore
-    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
+    injector.mock(RecursiveFileSystemWatcher, 'isEnableNSFW', () => false);
     fileServiceClient = injector.get(IFileServiceClient);
     toDispose.push(fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider)));
   });
