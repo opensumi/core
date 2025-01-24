@@ -28,11 +28,11 @@ export interface IMCPServerProxyService {
     content: { type: string; text: string }[];
     isError?: boolean;
   }>;
-  $getMCPTools(): Promise<
-    {
-      name: string;
-      description: string;
-      inputSchema: any;
-    }[]
-  >;
+  $getMCPTools(): Promise<MCPTool[]>;
+}
+
+export interface MCPTool {
+  name: string;
+  description: string;
+  inputSchema: any;
 }

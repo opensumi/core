@@ -1,17 +1,19 @@
-import { IChatToolContent, uuid } from "@opensumi/ide-core-common";
-import React from "react";
-import { CodeEditorWithHighlight } from "./ChatEditor";
+import React from 'react';
+
+import { IChatToolContent, uuid } from '@opensumi/ide-core-common';
+
+import { CodeEditorWithHighlight } from './ChatEditor';
 
 export const ChatToolRender = (props: { value: IChatToolContent['content'] }) => {
     const { value } = props;
-    console.log("🚀 ~ ChatToolRender ~ toolCall:", value)
+    console.log('🚀 ~ ChatToolRender ~ toolCall:', value);
 
     if (!value || !value.function || !value.id) {
         return null;
     }
 
     return <div>
-        <span>当前调用的工具: </span>
+        <span>Using Tool: </span>
         <span>{value?.function?.name}</span>
         <br />
         <span></span>
@@ -23,5 +25,5 @@ export const ChatToolRender = (props: { value: IChatToolContent['content'] }) =>
                 relationId={uuid(4)}
             />)
         }
-    </div>
+    </div>;
 };

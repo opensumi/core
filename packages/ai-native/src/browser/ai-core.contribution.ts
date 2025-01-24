@@ -308,6 +308,8 @@ export class AINativeBrowserContribution
       if (supportsInlineChat) {
         this.codeActionSingleHandler.load();
       }
+
+      this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
     });
   }
 
@@ -435,10 +437,8 @@ export class AINativeBrowserContribution
       { id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' },
       {
         execute: async () => {
-          // this.mcpServerManager.initBuiltinServer();
 
-          this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
-
+          // TODO 支持第三方 MCP Server
           const description: MCPServerDescription = {
             name: 'filesystem',
             command: 'npx',

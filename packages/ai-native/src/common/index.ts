@@ -16,6 +16,8 @@ import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
+import { MCPTool } from './types';
+
 export const IAINativeService = Symbol('IAINativeService');
 
 /**
@@ -121,6 +123,7 @@ export const TokenMCPServerProxyService = Symbol('TokenMCPServerProxyService');
 
 export interface ISumiMCPServerBackend {
   initBuiltinMCPServer(): void;
+  getAllMCPTools(): Promise<MCPTool[]>;
 }
 
 export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';

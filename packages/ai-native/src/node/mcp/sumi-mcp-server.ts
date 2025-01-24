@@ -8,8 +8,9 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 
+import { ISumiMCPServerBackend } from '../../common';
 import { MCPServerManager } from '../../common/mcp-server-manager';
-import { IMCPServerProxyService } from '../../common/types';
+import { IMCPServerProxyService, MCPTool } from '../../common/types';
 import { IMCPServer } from '../mcp-server';
 import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
 
@@ -19,7 +20,7 @@ import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
 // 处理第三方 MCP Server 的注册和调用
 
 @Injectable({ multiple: true })
-export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
+export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> implements ISumiMCPServerBackend {
 
   // 这里需要考虑不同的 BrowserTab 的区分问题，目前的 POC 所有的 Tab 都会注册到 tools 中
   // 后续需要区分不同的 Tab 对应的实例
@@ -47,6 +48,11 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> {
 
   getServer() {
     return this.server;
+  }
+
+  // TODO 这里涉及到 Chat Stream Call 中带上 ClientID，具体方案需要进一步讨论
+  async getAllMCPTools(): Promise<MCPTool[]> {
+    return [];
   }
 
   initBuiltinMCPServer() {
