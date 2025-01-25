@@ -42,8 +42,7 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
       ...this.options.wsServerOptions,
     });
     this.wsServer.on('connection', (connection: WebSocket) => {
-      const wsConnection = new WSWebSocketConnection(connection);
-      this.receiveConnection(wsConnection);
+      this.receiveConnection(new WSWebSocketConnection(connection));
     });
   }
 

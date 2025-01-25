@@ -1,21 +1,37 @@
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-import { Emitter, readUInt32LE } from '@opensumi/ide-core-common';
+import { MaybeNull, readUInt32LE } from '@opensumi/ide-core-common';
 
 import { Buffers } from '../../buffers/buffers';
 
 /**
  * You can use `Buffer.from('\r\n\r\n')` to get this indicator.
  */
-export const indicator = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]);
+export const indicator = new Uint8Array([0x0d, 0x0a, 0x0a, 0x0d]);
+
+/**
+ * The number of bytes in the length field.
+ *
+ * How many bytes are used to represent data length.
+ *
+ * For example, if the length field is 4 bytes, then the maximum length of the data is 2^32 = 4GB
+ */
+const lengthFieldLength = 4;
 
 /**
  * sticky packet unpacking problems are generally problems at the transport layer.
  * we use a length field to represent the length of the data, and then read the data according to the length
  */
 export class LengthFieldBasedFrameDecoder {
-  protected dataEmitter = new Emitter<Uint8Array>();
-  onData = this.dataEmitter.event;
+  private _onDataListener: MaybeNull<(data: Uint8Array) => void>;
+  onData(listener: (data: Uint8Array) => void) {
+    this._onDataListener = listener;
+    return {
+      dispose: () => {
+        this._onDataListener = null;
+      },
+    };
+  }
 
   protected buffers = new Buffers();
   protected cursor = this.buffers.cursor();
@@ -23,15 +39,6 @@ export class LengthFieldBasedFrameDecoder {
   protected contentLength = -1;
 
   protected state = 0;
-
-  /**
-   * The number of bytes in the length field.
-   *
-   * How many bytes are used to represent data length.
-   *
-   * For example, if the length field is 4 bytes, then the maximum length of the data is 2^32 = 4GB
-   */
-  lengthFieldLength = 4;
 
   reset() {
     this.contentLength = -1;
@@ -57,7 +64,9 @@ export class LengthFieldBasedFrameDecoder {
 
       const binary = this.buffers.slice(start, end);
 
-      this.dataEmitter.fire(binary);
+      if (this._onDataListener) {
+        this._onDataListener(binary);
+      }
 
       if (this.buffers.byteLength > end) {
         this.contentLength = -1;
@@ -93,13 +102,13 @@ export class LengthFieldBasedFrameDecoder {
     }
 
     if (this.contentLength === -1) {
-      if (this.cursor.offset + this.lengthFieldLength > bufferLength) {
+      if (this.cursor.offset + lengthFieldLength > bufferLength) {
         // Not enough data yet, wait for more data
         return false;
       }
 
       // read the content length
-      const buf = this.cursor.read(this.lengthFieldLength);
+      const buf = this.cursor.read4();
       // fury writer use little endian
       this.contentLength = readUInt32LE(buf, 0);
     }
@@ -123,8 +132,8 @@ export class LengthFieldBasedFrameDecoder {
             case 0:
               this.state = 1;
               break;
-            case 2:
-              this.state = 3;
+            case 3:
+              this.state = 4;
               break;
             default:
               this.state = 0;
@@ -136,8 +145,8 @@ export class LengthFieldBasedFrameDecoder {
             case 1:
               this.state = 2;
               break;
-            case 3:
-              this.state = 4;
+            case 2:
+              this.state = 3;
               iter.return();
               break;
             default:
@@ -154,7 +163,7 @@ export class LengthFieldBasedFrameDecoder {
   }
 
   dispose() {
-    this.dataEmitter.dispose();
+    this._onDataListener = undefined;
     this.buffers.dispose();
   }
 
@@ -165,6 +174,6 @@ export class LengthFieldBasedFrameDecoder {
     LengthFieldBasedFrameDecoder.writer.buffer(indicator);
     LengthFieldBasedFrameDecoder.writer.uint32(content.byteLength);
     LengthFieldBasedFrameDecoder.writer.buffer(content);
-    return LengthFieldBasedFrameDecoder.writer.dump();
+    return LengthFieldBasedFrameDecoder.writer;
   }
 }
