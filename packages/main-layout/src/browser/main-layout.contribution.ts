@@ -41,7 +41,7 @@ import {
 import { ContributionProvider, Domain, IEventBus, WithEventBus, localize } from '@opensumi/ide-core-common';
 import { Command, CommandContribution, CommandRegistry, CommandService } from '@opensumi/ide-core-common/lib/command';
 
-import { IMainLayoutService } from '../common';
+import { DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER, IMainLayoutService } from '../common';
 
 import { BottomDropArea, RightDropArea } from './drop-area/drop-area';
 import { ViewQuickOpenHandler } from './quick-open-view';
@@ -196,13 +196,15 @@ export class MainLayoutModuleContribution
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register('drop-right', [], {
+    registry.register(DROP_RIGHT_CONTAINER, [], {
       component: RightDropArea,
-      containerId: 'drop-right',
+      hideTab: true,
+      containerId: DROP_RIGHT_CONTAINER,
     });
-    registry.register('drop-bottom', [], {
+    registry.register(DROP_BOTTOM_CONTAINER, [], {
       component: BottomDropArea,
-      containerId: 'drop-bottom',
+      hideTab: true,
+      containerId: DROP_BOTTOM_CONTAINER,
     });
   }
 

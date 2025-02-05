@@ -32,6 +32,8 @@ import { Deferred, getDebugLogger, isUndefined } from '@opensumi/ide-core-common
 import { ThemeChangedEvent } from '@opensumi/ide-theme';
 
 import {
+  DROP_BOTTOM_CONTAINER,
+  DROP_RIGHT_CONTAINER,
   IMainLayoutService,
   MainLayoutContribution,
   SUPPORT_ACCORDION_LOCATION,
@@ -271,21 +273,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
     if (tabbarService?.location === 'right') {
       bottomService?.updateCurrentContainerId('drop-bottom');
-      this.toggleSlot('bottom', true);
     }
     if (tabbarService?.location === 'bottom') {
       rightService?.updateCurrentContainerId('drop-right');
-      this.toggleSlot('right', true);
     }
   }
 
   hideDropArea(): void {
     const bottomService = this.tabbarServices.get('bottom');
     const rightService = this.tabbarServices.get('right');
-    if (bottomService?.currentContainerId.get() === 'drop-bottom') {
+    if (bottomService?.currentContainerId.get() === DROP_BOTTOM_CONTAINER) {
       bottomService.updateCurrentContainerId(bottomService.previousContainerId || '');
     }
-    if (rightService?.currentContainerId.get() === 'drop-right') {
+    if (rightService?.currentContainerId.get() === DROP_RIGHT_CONTAINER) {
       rightService.updateCurrentContainerId(rightService.previousContainerId || '');
     }
   }
@@ -311,23 +311,39 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       return;
     }
     if (show === true) {
-      tabbarService.updateCurrentContainerId(
-        tabbarService.currentContainerId.get() ||
-          tabbarService.previousContainerId ||
-          tabbarService.containersMap.keys().next().value!,
-      );
+      // 不允许通过该api展示drop面板
+      tabbarService.updateCurrentContainerId(this.findNonDropContainerId(tabbarService));
     } else if (show === false) {
       tabbarService.updateCurrentContainerId('');
     } else {
       tabbarService.updateCurrentContainerId(
-        tabbarService.currentContainerId.get()
-          ? ''
-          : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value!,
+        tabbarService.currentContainerId.get() ? '' : this.findNonDropContainerId(tabbarService),
       );
     }
     if (tabbarService.currentContainerId.get() && size) {
       tabbarService.resizeHandle?.setSize(size);
     }
+  }
+
+  private findNonDropContainerId(tabbarService: TabbarService): string {
+    const currentContainerId = tabbarService.currentContainerId.get();
+    if (currentContainerId && ![DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(currentContainerId as string)) {
+      return currentContainerId;
+    }
+    if (
+      tabbarService.previousContainerId &&
+      ![DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(tabbarService.previousContainerId as string)
+    ) {
+      return tabbarService.previousContainerId;
+    }
+
+    for (const key of tabbarService.containersMap.keys()) {
+      if (![DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(key as string)) {
+        return key;
+      }
+    }
+
+    return '';
   }
 
   getTabbarService(location: string) {
