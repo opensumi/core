@@ -56,8 +56,9 @@ import {
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
-import { IEditor } from '@opensumi/ide-editor';
+import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
@@ -101,11 +102,11 @@ import {
 } from './types';
 import { InlineChatEditorController } from './widget/inline-chat/inline-chat-editor.controller';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
-import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
+import { InlineChatService } from './widget/inline-chat/inline-chat.service';
 import { InlineDiffController } from './widget/inline-diff/inline-diff.controller';
 import { InlineHintController } from './widget/inline-hint/inline-hint.controller';
 import { InlineInputController } from './widget/inline-input/inline-input.controller';
-import { InlineInputChatService } from './widget/inline-input/inline-input.service';
+import { InlineInputService } from './widget/inline-input/inline-input.service';
 import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
 
@@ -191,10 +192,10 @@ export class AINativeBrowserContribution
   private readonly chatProxyService: ChatProxyService;
 
   @Autowired(IAIInlineChatService)
-  private readonly aiInlineChatService: AIInlineChatService;
+  private readonly aiInlineChatService: InlineChatService;
 
-  @Autowired(InlineInputChatService)
-  private readonly inlineInputChatService: InlineInputChatService;
+  @Autowired(InlineInputService)
+  private readonly inlineInputChatService: InlineInputService;
 
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
@@ -204,6 +205,9 @@ export class AINativeBrowserContribution
 
   @Autowired(CodeActionSingleHandler)
   private readonly codeActionSingleHandler: CodeActionSingleHandler;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
   constructor() {
     this.registerFeature();
@@ -237,7 +241,7 @@ export class AINativeBrowserContribution
         EditorContributionInstantiation.BeforeFirstInteraction,
       );
 
-      if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+      if (this.inlineInputChatService.getInteractiveInputHandler()) {
         register(
           InlineHintController.ID,
           new SyncDescriptor(InlineHintController, [this.injector]),
@@ -418,14 +422,42 @@ export class AINativeBrowserContribution
     });
 
     commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE, {
-      execute: (isVisible: boolean) => {
-        if (isVisible) {
-          this.inlineInputChatService.visible();
-        } else {
+      execute: async (isVisible: boolean) => {
+        if (!isVisible) {
           this.inlineInputChatService.hide();
+          return;
         }
 
-        this.aiInlineChatService._onInteractiveInputVisible.fire(isVisible);
+        const editor = this.workbenchEditorService.currentCodeEditor;
+        if (!editor) {
+          return;
+        }
+
+        const position = editor.monacoEditor.getPosition();
+        if (!position) {
+          return;
+        }
+
+        const selection = editor.monacoEditor.getSelection();
+        const isEmptyLine = position ? editor.monacoEditor.getModel()?.getLineLength(position.lineNumber) === 0 : false;
+        const codeBlock = await this.inlineInputChatService.findNearestCodeBlockWithPosition(
+          position,
+          editor.monacoEditor,
+        );
+
+        if (isEmptyLine) {
+          this.inlineInputChatService.visibleByPosition(position);
+          return;
+        }
+
+        if (!isEmptyLine && codeBlock) {
+          this.inlineInputChatService.visibleBySelection(codeBlock);
+          return;
+        }
+
+        if (selection) {
+          this.inlineInputChatService.visibleBySelection(selection);
+        }
       },
     });
 
@@ -516,12 +548,12 @@ export class AINativeBrowserContribution
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
       });
 
-      if (this.inlineChatFeatureRegistry.getInteractiveInputHandler()) {
+      if (this.inlineInputChatService.getInteractiveInputHandler()) {
         // 当 Inline Chat （浮动组件）展示时，通过 CMD K 唤起 Inline Input
         keybindings.registerKeybinding(
           {
             command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
-            keybinding: 'ctrlcmd+k',
+            keybinding: this.aiNativeConfigService.inlineChat.inputKeybinding,
             args: true,
             priority: 0,
             when: `editorFocus && (${InlineChatIsVisible.raw} || inlineSuggestionVisible)`,
@@ -540,7 +572,7 @@ export class AINativeBrowserContribution
         keybindings.registerKeybinding(
           {
             command: AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE.id,
-            keybinding: 'ctrlcmd+k',
+            keybinding: this.aiNativeConfigService.inlineChat.inputKeybinding,
             args: true,
             priority: 0,
             when: `editorFocus && ${InlineHintWidgetIsVisible.raw} && ${InlineChatIsVisible.not}`,

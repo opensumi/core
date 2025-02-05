@@ -25,12 +25,11 @@ import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/b
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
-import { CommonBrowserModules } from '../../src/browser/common-modules';
-import { SampleModule } from '../sample-modules';
+import { AI_CHAT_LOGO_AVATAR_ID } from '@opensumi/ide-ai-native';
 import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
-import { AI_CHAT_LOGO_AVATAR_ID } from '@opensumi/ide-ai-native';
-import { RecursiveWatcherBackend } from '@opensumi/ide-core-common/lib/types/file-watch';
+import { CommonBrowserModules } from '../../src/browser/common-modules';
+import { SampleModule } from '../sample-modules';
 
 const CLIENT_ID = 'W_' + uuid();
 
@@ -122,6 +121,12 @@ export const getDefaultClientAppOpts = ({
     useVSCodeWorkspaceConfiguration: true,
     // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
     devtools: true,
+    AINativeConfig: {
+      inlineChat: {
+        inputWidth: 480,
+        inputKeybinding: 'ctrlcmd+i',
+      },
+    },
     designLayout: {
       useMenubarView: true,
       useMergeRightWithLeftPanel: true,
