@@ -83,6 +83,8 @@ export const FileDialog = ({
     } else {
       if (value.length > 0) {
         dialogService.hide(value);
+      } else if (selectPath) {
+        dialogService.hide([selectPath]);
       } else if (options.defaultUri) {
         dialogService.hide([options.defaultUri!.path.toString()]);
       } else if (model.treeModel && model.treeModel.root) {
@@ -93,7 +95,7 @@ export const FileDialog = ({
     }
     setIsReady(false);
     fileService.contextKey.fileDialogViewVisibleContext.set(false);
-  }, [isReady, dialogService, model, fileName, options]);
+  }, [isReady, dialogService, model, fileName, options, selectPath]);
 
   const close = useCallback(() => {
     setIsReady(false);
@@ -301,7 +303,7 @@ export const FileDialog = ({
   const DialogButtons = useMemo(
     () => (
       <div className={styles.file_dialog_buttons}>
-        <Button onClick={close} type='secondary' className={styles.button}>
+        <Button onClick={close} type='ghost' className={styles.button}>
           {localize('dialog.file.close')}
         </Button>
         <Button
