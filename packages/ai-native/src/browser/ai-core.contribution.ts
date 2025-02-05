@@ -428,6 +428,9 @@ export class AINativeBrowserContribution
           return;
         }
 
+        // 每次在展示 inline input 的时候，先隐藏 inline chat
+        this.commandService.executeCommand(AI_INLINE_CHAT_VISIBLE.id, false);
+
         const editor = this.workbenchEditorService.currentCodeEditor;
         if (!editor) {
           return;
@@ -440,23 +443,24 @@ export class AINativeBrowserContribution
 
         const selection = editor.monacoEditor.getSelection();
         const isEmptyLine = position ? editor.monacoEditor.getModel()?.getLineLength(position.lineNumber) === 0 : false;
-        const codeBlock = await this.inlineInputChatService.findNearestCodeBlockWithPosition(
-          position,
-          editor.monacoEditor,
-        );
 
         if (isEmptyLine) {
           this.inlineInputChatService.visibleByPosition(position);
           return;
         }
 
-        if (!isEmptyLine && codeBlock) {
-          this.inlineInputChatService.visibleBySelection(codeBlock);
+        if (selection) {
+          this.inlineInputChatService.visibleBySelection(selection);
           return;
         }
 
-        if (selection) {
-          this.inlineInputChatService.visibleBySelection(selection);
+        const codeBlock = await this.inlineInputChatService.findNearestCodeBlockWithPosition(
+          position,
+          editor.monacoEditor,
+        );
+
+        if (!isEmptyLine && codeBlock) {
+          this.inlineInputChatService.visibleBySelection(codeBlock);
         }
       },
     });

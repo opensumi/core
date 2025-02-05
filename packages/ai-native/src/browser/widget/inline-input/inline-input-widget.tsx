@@ -12,7 +12,10 @@ import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 
 import styles from './inline-input.module.less';
 
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco';
+
 interface IInlineInputWidgetRenderProps {
+  defaultValue?: string;
   onLayoutChange: (height: number) => void;
   onClose?: () => void;
   onInteractiveInputSend?: (value: string) => void;
@@ -21,7 +24,7 @@ interface IInlineInputWidgetRenderProps {
 }
 
 const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
-  const { onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick } = props;
+  const { defaultValue, onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick } = props;
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
@@ -65,6 +68,7 @@ const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
       customOperationRender={
         <InteractiveInput
           autoFocus
+          defaultValue={defaultValue}
           onHeightChange={(height) => onLayoutChange(height)}
           size='small'
           placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
@@ -85,9 +89,8 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
   protected readonly _onInteractiveInputValue = new Emitter<string>();
   public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
 
-  protected _interactiveInputValue: string;
-  public get interactiveInputValue(): string {
-    return this._interactiveInputValue;
+  constructor(protected readonly editor: IMonacoCodeEditor, protected readonly defaultValue?: string) {
+    super(editor);
   }
 
   override dispose(): void {
@@ -103,6 +106,7 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
     return (
       <div className={styles.input_wrapper}>
         <InlineInputWidgetRender
+          defaultValue={this.defaultValue}
           onClose={() => this.dispose()}
           onChatStatus={this.onStatusChange.bind(this)}
           onLayoutChange={() => {
@@ -110,7 +114,6 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
           }}
           onInteractiveInputSend={(value) => {
             this.launchChatStatus(EInlineChatStatus.THINKING);
-            this._interactiveInputValue = value;
             this._onInteractiveInputValue.fire(value);
           }}
           onResultClick={(k: EResultKind) => {
