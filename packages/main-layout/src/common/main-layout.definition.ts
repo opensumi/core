@@ -86,6 +86,10 @@ export interface IMainLayoutService {
   getExtraTopMenu(): IContextMenu;
   getExtraMenu(): IContextMenu;
   getAllAccordionService(): Map<string, AccordionService>;
+  moveContainerTo(containerId: string, to: string): void;
+  showDropAreaForContainer(containerId: string): void;
+  hideDropArea(): void;
+  findTabbarServiceByContainerId(containerId: string): TabbarService | undefined;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');
@@ -128,3 +132,6 @@ export class ViewCollapseChangedEvent extends BasicEvent<{
 }> {}
 
 export const SUPPORT_ACCORDION_LOCATION = new Set([SlotLocation.left, SlotLocation.right]);
+
+export const DROP_BOTTOM_CONTAINER = 'drop-bottom';
+export const DROP_RIGHT_CONTAINER = 'drop-right';

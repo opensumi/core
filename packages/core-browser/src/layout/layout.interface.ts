@@ -79,6 +79,7 @@ export interface ExtViewContainerOptions {
   // viewContainer 最小高度，默认 120
   miniSize?: number;
   alignment?: Layout.alignment;
+  draggable?: boolean;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 

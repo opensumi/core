@@ -23,7 +23,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@opensumi/ide-theme';
 
 import {
@@ -62,7 +61,6 @@ import { TerminalGroupViewService } from './terminal.view';
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
   protected _focus: boolean;
-  protected _tabBarHandler: TabBarHandler | undefined;
   protected _clients: Map<string, ITerminalClient>;
   protected _onDidOpenTerminal = new Emitter<ITerminalInfo>();
   protected _onDidCloseTerminal = new Emitter<ITerminalExitEvent>();
@@ -197,6 +195,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
     this._clientId = this.applicationService.clientId;
     return this._clientId;
+  }
+
+  get _tabBarHandler() {
+    return this.layoutService.getTabbarHandler(TERMINAL_CONTAINER_ID);
   }
 
   private async _createClientOrIgnore(widget: IWidget) {
@@ -418,7 +420,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }),
     ]);
 
-    this._tabBarHandler = this.layoutService.getTabbarHandler(TERMINAL_CONTAINER_ID);
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
 
     this.addDispose(

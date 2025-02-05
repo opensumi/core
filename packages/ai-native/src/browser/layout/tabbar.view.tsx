@@ -174,16 +174,18 @@ export const AIRightTabRenderer = ({
     return (
       <ContainerView
         {...props}
+        customTitleBar={
+          <div className={styles.header}>
+            <span className={styles.title}>{options && options.title}</span>
+            <div className={styles.side}>
+              <EnhancePopover id={'ai_right_panel_header_close'} title={localize('editor.title.context.close')}>
+                <EnhanceIcon icon='close' onClick={handleClose} />
+              </EnhancePopover>
+            </div>
+          </div>
+        }
         renderContainerWrap={({ children }) => (
           <div className={styles.right_slot_container_wrap}>
-            <div className={styles.header}>
-              <span className={styles.title}>{options && options.title}</span>
-              <div className={styles.side}>
-                <EnhancePopover id={'ai_right_panel_header_close'} title={localize('editor.title.context.close')}>
-                  <EnhanceIcon icon='close' onClick={handleClose} />
-                </EnhancePopover>
-              </div>
-            </div>
             <div className={styles.container}>{children}</div>
           </div>
         )}

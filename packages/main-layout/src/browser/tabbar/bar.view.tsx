@@ -168,6 +168,9 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
             }
             tabbarService.handleDrop(e, containerId);
           }}
+          onDragEnd={(e) => {
+            tabbarService.handleDragEnd(e);
+          }}
           key={containerId}
           id={containerId}
           onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
