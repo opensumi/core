@@ -195,7 +195,7 @@ export class AINativeBrowserContribution
   private readonly aiInlineChatService: InlineChatService;
 
   @Autowired(InlineInputService)
-  private readonly inlineInputChatService: InlineInputService;
+  private readonly inlineInputService: InlineInputService;
 
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
@@ -241,7 +241,7 @@ export class AINativeBrowserContribution
         EditorContributionInstantiation.BeforeFirstInteraction,
       );
 
-      if (this.inlineInputChatService.getInteractiveInputHandler()) {
+      if (this.inlineInputService.getInteractiveInputHandler()) {
         register(
           InlineHintController.ID,
           new SyncDescriptor(InlineHintController, [this.injector]),
@@ -424,7 +424,7 @@ export class AINativeBrowserContribution
     commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE, {
       execute: async (isVisible: boolean) => {
         if (!isVisible) {
-          this.inlineInputChatService.hide();
+          this.inlineInputService.hide();
           return;
         }
 
@@ -445,23 +445,16 @@ export class AINativeBrowserContribution
         const isEmptyLine = position ? editor.monacoEditor.getModel()?.getLineLength(position.lineNumber) === 0 : false;
 
         if (isEmptyLine) {
-          this.inlineInputChatService.visibleByPosition(position);
+          this.inlineInputService.visibleByPosition(position);
           return;
         }
 
-        if (selection) {
-          this.inlineInputChatService.visibleBySelection(selection);
+        if (selection && !selection.isEmpty()) {
+          this.inlineInputService.visibleBySelection(selection);
           return;
         }
 
-        const codeBlock = await this.inlineInputChatService.findNearestCodeBlockWithPosition(
-          position,
-          editor.monacoEditor,
-        );
-
-        if (!isEmptyLine && codeBlock) {
-          this.inlineInputChatService.visibleBySelection(codeBlock);
-        }
+        this.inlineInputService.visibleByNearestCodeBlock(position, editor.monacoEditor);
       },
     });
 
@@ -552,7 +545,7 @@ export class AINativeBrowserContribution
         when: `editorFocus && ${InlineChatIsVisible.raw}`,
       });
 
-      if (this.inlineInputChatService.getInteractiveInputHandler()) {
+      if (this.inlineInputService.getInteractiveInputHandler()) {
         // 当 Inline Chat （浮动组件）展示时，通过 CMD K 唤起 Inline Input
         keybindings.registerKeybinding(
           {

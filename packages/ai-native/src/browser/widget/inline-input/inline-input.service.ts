@@ -38,6 +38,13 @@ export class InlineInputService extends Disposable {
     this._onInteractiveInputVisibleInSelection.fire(selection);
   }
 
+  public async visibleByNearestCodeBlock(position: Position, monacoEditor: ICodeEditor): Promise<void> {
+    const codeBlock = await this.findNearestCodeBlockWithPosition(position, monacoEditor);
+    if (codeBlock) {
+      this.visibleBySelection(codeBlock);
+    }
+  }
+
   public hide(): void {
     this._onHidden.fire();
   }
@@ -51,7 +58,7 @@ export class InlineInputService extends Disposable {
   }
 
   // 根据光标位置自动检测并选中临近的代码块
-  public async findNearestCodeBlockWithPosition(
+  private async findNearestCodeBlockWithPosition(
     position: Position,
     monacoEditor: ICodeEditor,
   ): Promise<Selection | undefined> {

@@ -125,7 +125,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   private readonly injector: Injector;
 
   @Autowired(InlineInputService)
-  protected readonly inlineInputChatService: InlineInputService;
+  protected readonly inlineInputService: InlineInputService;
 
   private readonly aiNativeContextKey: AINativeContextKey;
 
@@ -177,7 +177,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
       // 隐藏当前的 inline chat widget
       this.hide();
       // 显示 inline input widget
-      this.inlineInputChatService.visibleBySelection(this.options.selection);
+      this.inlineInputService.visibleBySelection(this.options.selection);
       return;
     }
 
