@@ -24,7 +24,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   private readonly codeActionService: CodeActionService;
 
   @Autowired(InlineInputService)
-  private readonly inlineInputChatService: InlineInputService;
+  private readonly inlineInputService: InlineInputService;
 
   @Autowired(KeybindingRegistry)
   private readonly keybindingRegistry: KeybindingRegistry;
@@ -112,7 +112,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     handler: IInteractiveInputHandler,
   ): IDisposable {
     const doCollect = () => {
-      const keybindingStr = String(this.inlineInputChatService.getSequenceKeyString());
+      const keybindingStr = String(this.inlineInputService.getSequenceKeyString());
       if (!keybindingStr) {
         return;
       }
@@ -139,7 +139,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
     doCollect();
 
-    return this.inlineInputChatService.registerInlineInput(runStrategy, handler);
+    return this.inlineInputService.registerInlineInput(runStrategy, handler);
   }
 
   public getEditorActionButtons(): AIActionItem[] {

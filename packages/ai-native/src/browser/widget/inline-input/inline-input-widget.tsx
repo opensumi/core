@@ -95,7 +95,7 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
 
   override dispose(): void {
     super.dispose();
-    this.inlineInputChatService.hide();
+    this.inlineInputService.hide();
   }
 
   override id(): string {
