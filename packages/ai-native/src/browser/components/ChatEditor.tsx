@@ -130,11 +130,12 @@ export const CodeEditorWithHighlight = (props: Props) => {
   );
 };
 
-const CodeBlock = ({
+export const CodeBlock = ({
   content = '',
   relationId,
   renderText,
   agentId = '',
+  language = '',
   command = '',
 }: {
   content?: string;
@@ -142,14 +143,15 @@ const CodeBlock = ({
   renderText?: (t: string) => React.ReactNode;
   agentId?: string;
   command?: string;
+  language?: string;
 }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
   const rgBlockCodeBefore = /```([^]+)?/g;
 
   const renderCodeEditor = (content: string) => {
-    const language = content.split('\n')[0].trim().toLowerCase();
-    const heighLightLang = highLightLanguageSupport.find((lang) => lang === language) || 'plaintext';
+    const _language = content.split('\n')[0].trim().toLowerCase();
+    const heighLightLang = highLightLanguageSupport.find((lang) => lang === _language) || 'plaintext';
 
     content = content.replace(/.*?\n/, '');
     content = content.trim();
@@ -158,7 +160,7 @@ const CodeBlock = ({
         <div className={styles.code_language}>{capitalize(heighLightLang)}</div>
         <CodeEditorWithHighlight
           input={content}
-          language={language}
+          language={_language || language}
           relationId={relationId}
           agentId={agentId}
           command={command}

@@ -1,4 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import {
+  ToolInvocationRegistry,
+  ToolInvocationRegistryImpl,
+} from '@opensumi/ide-ai-native/lib/common/tool-invocation-registry';
+import { AnthropicModel } from '@opensumi/ide-ai-native/lib/node/anthropic/anthropic-language-model';
+import { OpenAIModel } from '@opensumi/ide-ai-native/lib/node/openai/openai-language-model';
 import { IAICompletionOption } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
@@ -47,6 +53,12 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
+  @Autowired(AnthropicModel)
+  protected readonly anthropicModel: AnthropicModel;
+
+  @Autowired(OpenAIModel)
+  protected readonly openaiModel: OpenAIModel;
+
   async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
 
@@ -75,17 +87,7 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
       chatReadableStream.abort();
     });
 
-    // 模拟数据事件
-    streamData.forEach((chunk, index) => {
-      setTimeout(() => {
-        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
-
-        if (length - 1 === index || cancelToken?.isCancellationRequested) {
-          chatReadableStream.end();
-        }
-      }, index * 100);
-    });
-
+    this.anthropicModel.request(input, chatReadableStream, cancelToken);
     return chatReadableStream;
   }
 }

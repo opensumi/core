@@ -122,6 +122,7 @@ export interface IAIBackServiceOption {
   requestId?: string;
   sessionId?: string;
   history?: IHistoryChatMessage[];
+  tools?: any[];
 }
 
 /**
@@ -286,6 +287,19 @@ export interface IChatContent {
   kind: 'content';
 }
 
+export interface IChatToolContent {
+  content: {
+    id: string;
+    type: string;
+    function: {
+      name: string;
+      arguments: string;
+    };
+    index?: number;
+  };
+  kind: 'toolCall';
+}
+
 export interface IChatMarkdownContent {
   content: IMarkdownString;
   kind: 'markdownContent';
@@ -320,7 +334,7 @@ export interface IChatComponent {
   kind: 'component';
 }
 
-export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
+export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent | IChatToolContent;
 
 export interface IChatMessage {
   readonly role: ChatMessageRole;

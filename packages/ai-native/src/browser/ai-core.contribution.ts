@@ -70,7 +70,11 @@ import {
   AI_CHAT_VIEW_ID,
   AI_MENU_BAR_DEBUG_TOOLBAR,
   ChatProxyServiceToken,
+  ISumiMCPServerBackend,
+  SumiMCPServerProxyServicePath,
 } from '../common';
+import { MCPServerDescription, MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
+import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../common/tool-invocation-registry';
 
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
@@ -94,10 +98,13 @@ import {
   IChatFeatureRegistry,
   IChatRenderRegistry,
   IIntelligentCompletionsRegistry,
+  IMCPServerRegistry,
   IProblemFixProviderRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
+  MCPServerContribution,
+  TokenMCPServerRegistry,
 } from './types';
 import { InlineChatEditorController } from './widget/inline-chat/inline-chat-editor.controller';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -141,6 +148,12 @@ export class AINativeBrowserContribution
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
+
+  @Autowired(MCPServerContribution)
+  private readonly mcpServerContributions: ContributionProvider<MCPServerContribution>;
+
+  @Autowired(TokenMCPServerRegistry)
+  private readonly mcpServerRegistry: IMCPServerRegistry;
 
   @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
@@ -204,6 +217,12 @@ export class AINativeBrowserContribution
 
   @Autowired(CodeActionSingleHandler)
   private readonly codeActionSingleHandler: CodeActionSingleHandler;
+
+  // @Autowired(MCPServerManagerPath)
+  // private readonly mcpServerManager: MCPServerManager;
+
+  @Autowired(SumiMCPServerProxyServicePath)
+  private readonly sumiMCPServerBackendProxy: ISumiMCPServerBackend;
 
   constructor() {
     this.registerFeature();
@@ -289,6 +308,8 @@ export class AINativeBrowserContribution
       if (supportsInlineChat) {
         this.codeActionSingleHandler.load();
       }
+
+      this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
     });
   }
 
@@ -302,6 +323,11 @@ export class AINativeBrowserContribution
       contribution.registerTerminalProvider?.(this.terminalProviderRegistry);
       contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
       contribution.registerProblemFixFeature?.(this.problemFixProviderRegistry);
+    });
+
+    // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
+    this.mcpServerContributions.getContributions().forEach((contribution) => {
+      contribution.registerMCPServer(this.mcpServerRegistry);
     });
   }
 
@@ -411,6 +437,27 @@ export class AINativeBrowserContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand(
+      { id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' },
+      {
+        execute: async () => {
+
+          // TODO 支持第三方 MCP Server
+          const description: MCPServerDescription = {
+            name: 'filesystem',
+            command: 'npx',
+            args: ['-y', '@modelcontextprotocol/server-filesystem', '/Users/retrox/AlipayProjects/core'],
+            env: {},
+          };
+
+          // this.mcpServerManager.addOrUpdateServer(description);
+
+          // await this.mcpServerManager.startServer(description.name);
+          // await this.mcpServerManager.collectTools(description.name);
+        },
+      },
+    );
+
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
         this.aiInlineChatService._onInlineChatVisible.fire(value);
