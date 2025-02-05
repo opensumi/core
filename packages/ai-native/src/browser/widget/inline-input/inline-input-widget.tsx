@@ -1,8 +1,9 @@
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
+import { AINativeConfigService, useInjectable } from '@opensumi/ide-core-browser';
 import { AIAction, InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
-import { AIInlineInputChatContentWidgetId, Disposable, Event, localize } from '@opensumi/ide-core-common';
+import { AIInlineInputChatContentWidgetId, Disposable, Emitter, Event, localize } from '@opensumi/ide-core-common';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 
 import { InlineResultAction } from '../inline-actions/result-items/index';
@@ -10,7 +11,6 @@ import { EInlineChatStatus, EResultKind } from '../inline-chat/inline-chat.servi
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
 
 import styles from './inline-input.module.less';
-import { InlineInputChatService } from './inline-input.service';
 
 interface IInlineInputWidgetRenderProps {
   onLayoutChange: (height: number) => void;
@@ -23,6 +23,7 @@ interface IInlineInputWidgetRenderProps {
 const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
   const { onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick } = props;
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
   useEffect(() => {
     const dis = new Disposable();
@@ -67,7 +68,7 @@ const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
           onHeightChange={(height) => onLayoutChange(height)}
           size='small'
           placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
-          width={320}
+          width={aiNativeConfigService.inlineChat.inputWidth}
           disabled={isLoading}
           onSend={handleInteractiveInputSend}
         />
@@ -78,11 +79,16 @@ const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
 
 @Injectable({ multiple: true })
 export class InlineInputChatWidget extends AIInlineContentWidget {
-  @Autowired(InlineInputChatService)
-  private inlineInputChatService: InlineInputChatService;
-
   allowEditorOverflow = true;
   positionPreference = [ContentWidgetPositionPreference.ABOVE];
+
+  protected readonly _onInteractiveInputValue = new Emitter<string>();
+  public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
+
+  protected _interactiveInputValue: string;
+  public get interactiveInputValue(): string {
+    return this._interactiveInputValue;
+  }
 
   override dispose(): void {
     super.dispose();
@@ -104,6 +110,7 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
           }}
           onInteractiveInputSend={(value) => {
             this.launchChatStatus(EInlineChatStatus.THINKING);
+            this._interactiveInputValue = value;
             this._onInteractiveInputValue.fire(value);
           }}
           onResultClick={(k: EResultKind) => {
