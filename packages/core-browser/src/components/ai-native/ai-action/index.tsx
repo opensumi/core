@@ -1,9 +1,9 @@
 import cls from 'classnames';
 import React, { useCallback, useMemo } from 'react';
 
-import { AINativeConfigService } from '@opensumi/ide-core-browser/lib/ai-native';
 import { AIInlineChatContentWidgetId, localize } from '@opensumi/ide-core-common';
 
+import { AINativeConfigService } from '../../../ai-native/ai-config.service';
 import { MenuNode } from '../../../menu/next/base';
 import { createLayoutEventType } from '../../../monaco';
 import { useChange, useHover, useInjectable } from '../../../react-hooks';
