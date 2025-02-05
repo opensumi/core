@@ -23,7 +23,7 @@ export const DebugHoverView = () => {
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
   const DEFAULT_LAYOUT_HEIGHT = 250;
-  const DEFAULT_MAX_HEIGHT = 500;
+  const DEFAULT_MAX_HEIGHT = 420;
   const DEFAULT_HOVER_WEIGET_MARGIN_BOTTOM = 4;
   const [model, setModel] = React.useState<{ treeModel?: DebugHoverModel; variable?: DebugVariable }>({});
   const [treeLayoutHeight, setTreeLayoutHeight] = React.useState<number>(DEFAULT_LAYOUT_HEIGHT);
@@ -55,7 +55,7 @@ export const DebugHoverView = () => {
           const top = rect.top;
           const maxHeight =
             window.innerHeight - top - layoutViewSize.statusBarHeight - DEFAULT_HOVER_WEIGET_MARGIN_BOTTOM;
-          setTreeLayoutHeight(Math.min(maxHeight, treeHeight));
+          setTreeLayoutHeight(Math.min(maxHeight, treeHeight, DEFAULT_MAX_HEIGHT));
         } else {
           setTreeLayoutHeight(Math.min(DEFAULT_MAX_HEIGHT, treeHeight));
         }
