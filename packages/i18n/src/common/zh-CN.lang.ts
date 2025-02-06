@@ -1225,11 +1225,14 @@ export const localizationBundle = {
     'aiNative.chat.expand.fullescreen': '展开全屏',
     'aiNative.chat.enter.send': 'Enter 发送',
 
+    'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': '采纳',
     'aiNative.inline.chat.operate.thumbsup.title': '赞',
     'aiNative.inline.chat.operate.thumbsdown.title': '踩',
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
     'aiNative.inline.chat.input.placeholder.default': '请输入你的意图...(↑↓ 切换历史)',
+    'aiNative.inline.chat.generating.canceled': 'Inline Chat 已停止生成',
+
     'aiNative.inline.hint.widget.placeholder': '按 {0} 唤起 Inline Chat',
     'aiNative.inline.problem.fix.title': 'AI 修复',
     'aiNative.inline.diff.accept': '采纳',

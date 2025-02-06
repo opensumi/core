@@ -45,17 +45,21 @@
       height: @default_height;
       line-height: @default_height;
     }
+
+    .logo_container {
+      width: 16px;
+      height: 16px;
+
+      .ai_action_icon {
+        width: inherit;
+        object-fit: cover;
+      }
+    }
   }
 
   .close_container {
     display: none;
     align-items: center;
-  }
-
-  .ai_action_icon {
-    &:hover {
-      background: var(--design-block-hoverBackground);
-    }
   }
 
   span {
@@ -72,6 +76,7 @@
       padding: 3px 4px;
       border-radius: 4px;
     }
+
     .operate_item {
       height: 24px;
       line-height: 24px;
@@ -89,6 +94,7 @@
   .custom_operation_wrapper {
     padding: 4px 0px;
     box-sizing: content-box;
+
     :global {
       .kt-input {
         border-radius: 3px;
