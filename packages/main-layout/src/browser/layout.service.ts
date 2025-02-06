@@ -203,7 +203,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     /**
      * ContainerId 存在三种值类型，对应的处理模式如下：
      * 1. undefined: 采用首个注册的容器作为当前 containerId
-     * 2. string: 直接使用该 containerId 作为当前 containerId
+     * 2. string: 非drop container 直接使用该 containerId 作为当前 containerId
      * 3. '': 直接清空当前 containerId，不展开相应的 viewContainer
      */
     if (isUndefined(currentId)) {
@@ -213,15 +213,21 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       } else {
         service.updateCurrentContainerId(defaultContainer);
       }
-    } else if (currentId) {
+    } else if (currentId && !this.isDropContainer(currentId)) {
       if (service.containersMap.has(currentId)) {
         service.updateCurrentContainerId(currentId);
       } else {
-        service.updateCurrentContainerId(defaultContainer);
-        // 等待后续新容器注册时，更新当前的 containerId
-        service.updateNextContainerId(currentId);
+        // 如果在别的 tabbar 中存在该 containerId，则将其移动到当前 tabbar
+        if (this.findTabbarServiceByContainerId(currentId)) {
+          this.moveContainerTo(currentId, service.location);
+          service.updateCurrentContainerId(currentId);
+        } else {
+          service.updateCurrentContainerId(defaultContainer);
+          // 等待后续新容器注册时，更新当前的 containerId
+          service.updateNextContainerId(currentId);
+        }
       }
-    } else if (currentId === '') {
+    } else if (currentId === '' || this.isDropContainer(currentId)) {
       service.updateCurrentContainerId('');
     }
   };
@@ -272,10 +278,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       return;
     }
     if (tabbarService?.location === 'right') {
-      bottomService?.updateCurrentContainerId('drop-bottom');
+      bottomService?.updateCurrentContainerId(DROP_BOTTOM_CONTAINER);
     }
     if (tabbarService?.location === 'bottom') {
-      rightService?.updateCurrentContainerId('drop-right');
+      rightService?.updateCurrentContainerId(DROP_RIGHT_CONTAINER);
     }
   }
 
@@ -325,20 +331,21 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
   }
 
+  private isDropContainer(containerId: string): boolean {
+    return [DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(containerId);
+  }
+
   private findNonDropContainerId(tabbarService: TabbarService): string {
     const currentContainerId = tabbarService.currentContainerId.get();
-    if (currentContainerId && ![DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(currentContainerId as string)) {
+    if (currentContainerId && !this.isDropContainer(currentContainerId)) {
       return currentContainerId;
     }
-    if (
-      tabbarService.previousContainerId &&
-      ![DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(tabbarService.previousContainerId as string)
-    ) {
+    if (tabbarService.previousContainerId && !this.isDropContainer(tabbarService.previousContainerId)) {
       return tabbarService.previousContainerId;
     }
 
     for (const key of tabbarService.containersMap.keys()) {
-      if (![DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(key as string)) {
+      if (!this.isDropContainer(key)) {
         return key;
       }
     }

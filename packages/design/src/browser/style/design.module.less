@@ -601,6 +601,7 @@
 
     &::-webkit-scrollbar {
       width: 4px;
+
       &:hover {
         width: 10px;
       }
@@ -715,6 +716,25 @@
 
   .design-extension_item {
     border-radius: 8px;
+  }
+
+  .design-tab_item_wrapper {
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      padding: 0;
+      border-radius: 4px;
+      font-size: 16px;
+
+      &:hover {
+        color: var(--design-text-hoverForeground);
+        background-color: var(--kt-icon-hoverBackground);
+      }
+    }
   }
 }
 

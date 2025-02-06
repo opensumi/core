@@ -17,20 +17,25 @@ export const TitleBar: React.FC<{
   const styles_titlebar = useDesignStyles(styles.titlebar, 'titlebar');
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(props.side);
 
+  const handleDragStart = React.useCallback(
+    (e: React.DragEvent) => {
+      tabbarService.handleDragStart(e, props.containerId);
+    },
+    [tabbarService],
+  );
+
+  const handleDragEnd = React.useCallback(
+    (e: React.DragEvent) => {
+      tabbarService.handleDragEnd(e);
+    },
+    [tabbarService],
+  );
+
   return (
     <div className={styles_titlebar} style={{ height: props.height }}>
       {!props.draggable && <h1>{props.title}</h1>}
       {!!props.draggable && (
-        <h1
-          draggable
-          style={{ cursor: 'pointer' }}
-          onDragStart={(e) => {
-            tabbarService.handleDragStart(e, props.containerId);
-          }}
-          onDragEnd={(e) => {
-            tabbarService.handleDragEnd(e);
-          }}
-        >
+        <h1 draggable style={{ cursor: 'pointer' }} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           {props.title}
         </h1>
       )}
