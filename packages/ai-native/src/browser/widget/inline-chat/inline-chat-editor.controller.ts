@@ -233,6 +233,11 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
       return;
     }
 
+    const isInlineStreaming = this.aiNativeContextKey.inlineInputWidgetIsStreaming.get();
+    if (isInlineStreaming) {
+      return;
+    }
+
     if (!this.aiNativeConfigService.capabilities.supportsInlineChat) {
       return;
     }
