@@ -28,7 +28,6 @@ import { EInlineChatStatus, EResultKind } from '../inline-chat/inline-chat.servi
 import { InlineDiffController } from '../inline-diff';
 import { InlineInputPreviewDecorationID } from '../internal.type';
 
-
 import { InlineInputChatWidget } from './inline-input-widget';
 import styles from './inline-input.module.less';
 import { InlineInputService } from './inline-input.service';
@@ -344,7 +343,23 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       this.inputDisposable = new Disposable();
     }
 
-    monacoEditor.setSelection(selection);
+    const decorationsCollection = monacoEditor.createDecorationsCollection();
+    decorationsCollection.set([
+      {
+        range: monaco.Range.fromPositions(
+          { lineNumber: selection.startLineNumber, column: 1 },
+          {
+            lineNumber: selection.endLineNumber,
+            column: monacoEditor.getModel()!.getLineMaxColumn(selection.endLineNumber),
+          },
+        ),
+        options: ModelDecorationOptions.register({
+          description: InlineInputPreviewDecorationID,
+          isWholeLine: true,
+          className: styles.input_decoration_pending_container,
+        }),
+      },
+    ]);
 
     const inlineInputChatWidget = this.injector.get(InlineInputChatWidget, [monacoEditor, defaultValue]);
     inlineInputChatWidget.show({ selection });
@@ -356,6 +371,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     this.inputDisposable.addDispose(
       inlineInputChatWidget.onDispose(() => {
         this.cancelToken();
+        decorationsCollection.clear();
         this.aiNativeContextKey.inlineInputWidgetIsVisible.set(false);
       }),
     );
@@ -375,6 +391,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       inlineInputChatWidget.onInteractiveInputValue(async (value) => {
         inputValue = value;
         monacoEditor.focus();
+        decorationsCollection.clear();
 
         const handler = this.inlineInputService.getInteractiveInputHandler();
 
