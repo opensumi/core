@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { chunkSize } from '../../constants';
@@ -16,7 +17,6 @@ interface SendQueueItem {
 export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();
   private static readonly MAX_QUEUE_SIZE = 100; // 限制队列长度
-  private static readonly MAX_PENDING_SIZE = 50 * 1024 * 1024; // 50MB 总待发送数据限制
 
   private sendQueue: SendQueueItem[] = [];
   private pendingSize = 0;
