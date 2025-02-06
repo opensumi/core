@@ -7,11 +7,15 @@ import {
   FRAME_THREE,
   IAIReporter,
   IDisposable,
+  IEventBus,
   ReplyResponse,
   RunOnceScheduler,
+  localize,
 } from '@opensumi/ide-core-common';
+import { EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
+import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
@@ -23,6 +27,7 @@ import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { EInlineChatStatus, EResultKind } from '../inline-chat/inline-chat.service';
 import { InlineDiffController } from '../inline-diff';
 import { InlineInputPreviewDecorationID } from '../internal.type';
+
 
 import { InlineInputChatWidget } from './inline-input-widget';
 import styles from './inline-input.module.less';
@@ -44,6 +49,14 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     return this.injector.get(IAIReporter);
   }
 
+  private get eventBus(): IEventBus {
+    return this.injector.get(IEventBus);
+  }
+
+  private get messageService(): MessageService {
+    return this.injector.get(MessageService);
+  }
+
   private inlineDiffController: InlineDiffController;
   private inputDisposable: Disposable;
   private aiNativeContextKey: AINativeContextKey;
@@ -52,6 +65,31 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     this.inputDisposable = new Disposable();
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
     this.inlineDiffController = InlineDiffController.get(this.monacoEditor)!;
+
+    this.featureDisposable.addDispose(
+      /**
+       * 如果在流式过程中，直接关闭了当前文件，则需要销毁 diff previewer 并隐藏 input，恢复原始代码
+       */
+      this.eventBus.on(EditorGroupCloseEvent, (e: EditorGroupCloseEvent) => {
+        const isStreaming = this.aiNativeContextKey.inlineInputWidgetIsStreaming.get();
+        if (!isStreaming) {
+          return;
+        }
+
+        const resource = e.payload.resource.uri.toString();
+        const currentUri = this.monacoEditor.getModel()?.uri.toString();
+
+        if (currentUri === resource) {
+          this.inlineDiffController.destroyPreviewer(currentUri);
+          this.hideInput();
+
+          const message = localize('aiNative.inline.chat.generating.canceled');
+          if (message) {
+            this.messageService.info(message);
+          }
+        }
+      }),
+    );
 
     this.featureDisposable.addDispose(
       Event.any<any>(
@@ -100,6 +138,11 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     const model = monacoEditor.getModel();
 
     if (!model) {
+      return;
+    }
+
+    const selection = monacoEditor.getSelection();
+    if (selection && !selection.isEmpty()) {
       return;
     }
 

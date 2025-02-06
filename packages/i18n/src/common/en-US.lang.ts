@@ -1463,6 +1463,8 @@ export const localizationBundle = {
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
     'aiNative.inline.chat.input.placeholder.default': 'New code instructions...(↑↓ for history)',
+    'aiNative.inline.chat.generating.canceled': 'Inline Chat Generating Canceled.',
+
     'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
     'aiNative.inline.problem.fix.title': 'Fix with AI',
     'aiNative.inline.diff.accept': 'Accept',

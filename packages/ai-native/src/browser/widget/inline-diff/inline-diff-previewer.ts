@@ -406,7 +406,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       diffModel.activeLine = 0;
       diffModel.pendingRange = new LineRange(0, 0);
 
-      this.node?.pushRateFinallyDiffStack(diffModel);
+      this.node?.finallyRender(diffModel);
     }
   }
 
