@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { IDisposable } from '@opensumi/ide-core-common';
 import ReconnectingWebSocket, {
   Options as ReconnectingWebSocketOptions,
@@ -13,6 +14,8 @@ import type { ErrorEvent } from '@opensumi/reconnecting-websocket';
 
 export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();
+  private sendQueue: Array<{ data: Uint8Array; resolve: () => void }> = [];
+  private sending = false;
 
   protected constructor(private socket: ReconnectingWebSocket) {
     super();
@@ -24,14 +27,40 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
     }
   }
 
-  send(data: Uint8Array): void {
-    const handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
-    const packet = handle.get();
-    for (let i = 0; i < packet.byteLength; i += chunkSize) {
-      this.socket.send(packet.subarray(i, i + chunkSize));
+  private async processSendQueue() {
+    if (this.sending) { return; }
+    this.sending = true;
+
+    while (this.sendQueue.length > 0) {
+      const { data, resolve } = this.sendQueue[0];
+      try {
+        const handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
+        const packet = handle.get();
+
+        for (let i = 0; i < packet.byteLength; i += chunkSize) {
+          await new Promise<void>((resolve) => {
+            const chunk = packet.subarray(i, Math.min(i + chunkSize, packet.byteLength));
+            this.socket.send(chunk);
+            resolve();
+          });
+        }
+
+        handle.dispose();
+        resolve();
+      } catch (error) {
+        console.error('[ReconnectingWebSocket] Error sending data:', error);
+      }
+      this.sendQueue.shift();
     }
 
-    handle.dispose();
+    this.sending = false;
+  }
+
+  send(data: Uint8Array): Promise<void> {
+    return new Promise((resolve) => {
+      this.sendQueue.push({ data, resolve });
+      this.processSendQueue();
+    });
   }
 
   isOpen(): boolean {
@@ -94,6 +123,8 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
 
   dispose(): void {
     this.socket.removeEventListener('message', this.arrayBufferHandler);
+    this.sendQueue = [];
+    this.sending = false;
   }
 
   static forURL(url: UrlProvider, protocols?: string | string[], options?: ReconnectingWebSocketOptions) {
