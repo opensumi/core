@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
 import { MaybeNull, readUInt32LE } from '@opensumi/ide-core-common';
@@ -7,7 +8,7 @@ import { Buffers } from '../../buffers/buffers';
 /**
  * You can use `Buffer.from('\r\n\r\n')` to get this indicator.
  */
-export const indicator = new Uint8Array([0x0d, 0x0a, 0x0a, 0x0d]);
+export const indicator = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]);
 
 /**
  * The number of bytes in the length field.
@@ -23,6 +24,9 @@ const lengthFieldLength = 4;
  * we use a length field to represent the length of the data, and then read the data according to the length
  */
 export class LengthFieldBasedFrameDecoder {
+  private static readonly MAX_FRAME_SIZE = 1 * 1024 * 1024;  // 1MB
+  private static readonly MAX_ITERATIONS = 50;
+
   private _onDataListener: MaybeNull<(data: Uint8Array) => void>;
   onData(listener: (data: Uint8Array) => void) {
     this._onDataListener = listener;
@@ -35,6 +39,7 @@ export class LengthFieldBasedFrameDecoder {
 
   protected buffers = new Buffers();
   protected cursor = this.buffers.cursor();
+  private processingPromise: Promise<void> | null = null;
 
   protected contentLength = -1;
 
@@ -47,41 +52,77 @@ export class LengthFieldBasedFrameDecoder {
   }
 
   push(chunk: Uint8Array): void {
-    this.buffers.push(chunk);
-    let done = false;
+    // 如果新数据太大，只接收部分
+    if (chunk.byteLength > LengthFieldBasedFrameDecoder.MAX_FRAME_SIZE) {
+      console.warn('[Frame Decoder] Chunk too large, truncating');
+      chunk = chunk.slice(0, LengthFieldBasedFrameDecoder.MAX_FRAME_SIZE);
+    }
 
-    while (!done) {
-      done = this.readFrame();
+    this.buffers.push(chunk);
+
+    // 确保同一时间只有一个处理过程
+    if (!this.processingPromise) {
+      this.processingPromise = this.processBuffers().finally(() => {
+        this.processingPromise = null;
+      });
     }
   }
 
-  protected readFrame(): boolean {
-    const found = this.readLengthField();
+  private async processBuffers(): Promise<void> {
+    let iterations = 0;
 
-    if (found) {
+    while (iterations < LengthFieldBasedFrameDecoder.MAX_ITERATIONS) {
+      if (this.buffers.byteLength === 0) {
+        break;
+      }
+
+      const result = await this.readFrame();
+      if (result === true) {
+        break;
+      }
+
+      iterations++;
+      // 每处理几个包就让出执行权
+      if (iterations % 10 === 0) {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+  }
+
+  protected async readFrame(): Promise<boolean> {
+    try {
+      const found = this.readLengthField();
+      if (!found) {
+        return true;
+      }
+
       const start = this.cursor.offset;
       const end = start + this.contentLength;
 
+      if (end > this.buffers.byteLength) {
+        return true;
+      }
+
       const binary = this.buffers.slice(start, end);
 
-      if (this._onDataListener) {
-        this._onDataListener(binary);
-      }
-
-      if (this.buffers.byteLength > end) {
-        this.contentLength = -1;
-        this.state = 0;
-        this.cursor.moveTo(end);
-        // has more data, continue to parse
-        return false;
-      }
-
-      // delete used buffers
+      // 立即清理已处理的数据
       this.buffers.splice(0, end);
       this.reset();
-    }
 
-    return true;
+      if (this._onDataListener) {
+        try {
+          await Promise.resolve().then(() => this._onDataListener?.(binary));
+        } catch (error) {
+          console.error('[Frame Decoder] Error in data listener:', error);
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error('[Frame Decoder] Error processing frame:', error);
+      this.reset();
+      return true;
+    }
   }
 
   protected readLengthField() {
@@ -127,26 +168,26 @@ export class LengthFieldBasedFrameDecoder {
     let result = iter.next();
     while (!result.done) {
       switch (result.value) {
-        case 0x0d:
+        case 0x0d:  // \r
           switch (this.state) {
             case 0:
               this.state = 1;
               break;
-            case 3:
-              this.state = 4;
+            case 2:  // 第二个 \r
+              this.state = 3;
               break;
             default:
               this.state = 0;
               break;
           }
           break;
-        case 0x0a:
+        case 0x0a:  // \n
           switch (this.state) {
             case 1:
               this.state = 2;
               break;
-            case 2:
-              this.state = 3;
+            case 3:  // 第二个 \n
+              this.state = 4;
               iter.return();
               break;
             default:
@@ -163,14 +204,23 @@ export class LengthFieldBasedFrameDecoder {
   }
 
   dispose() {
-    this._onDataListener = undefined;
+    this._onDataListener = null;
     this.buffers.dispose();
+    this.reset();
   }
 
   static writer = BinaryWriter({});
 
   static construct(content: Uint8Array) {
-    LengthFieldBasedFrameDecoder.writer.reset();
+
+    // 确保 writer 没有被持有
+    try {
+      LengthFieldBasedFrameDecoder.writer.reset();
+    } catch (error) {
+      console.warn('[Frame Decoder] Writer reset failed, creating new writer');
+      LengthFieldBasedFrameDecoder.writer = BinaryWriter({});
+    }
+
     LengthFieldBasedFrameDecoder.writer.buffer(indicator);
     LengthFieldBasedFrameDecoder.writer.uint32(content.byteLength);
     LengthFieldBasedFrameDecoder.writer.buffer(content);
