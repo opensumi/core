@@ -45,13 +45,14 @@ export const InteractiveInput = React.forwardRef(
       sendBtnClassName,
       popoverPosition,
       autoFocus,
+      defaultValue,
     } = props;
 
     const internalRef = useRef<HTMLTextAreaElement>(null);
     const globalStroageService = useInjectable<GlobalBrowserStorageService>(GlobalBrowserStorageService);
     const history = useRef<string[]>();
     const historyIndex = useRef<number>(0);
-    const [internalValue, setInternalValue] = useState(props.value || '');
+    const [internalValue, setInternalValue] = useState(defaultValue || props.value || '');
     const [wrapperHeight, setWrapperHeight] = useState(height || DEFAULT_HEIGHT);
     const [focus, setFocus] = useState(false);
     const isDirtyInput = React.useRef<boolean>(false);

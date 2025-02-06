@@ -1,13 +1,12 @@
 import throttle from 'lodash/throttle';
 
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/ide-monaco';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 
 import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { AICompletionsService } from '../../contrib/inline-completions/service/ai-completions.service';
-import { InlineInputChatService } from '../inline-input/inline-input.service';
 import { InlineInputPreviewDecorationID } from '../internal.type';
 
 import { InlineHintLineDecoration } from './inline-hint-line-widget';
@@ -21,10 +20,6 @@ export class InlineHintController extends BaseAIMonacoEditorController {
 
   private get inlineCompletionsService(): AICompletionsService {
     return this.injector.get(AICompletionsService);
-  }
-
-  private get inlineInputChatService(): InlineInputChatService {
-    return this.injector.get(InlineInputChatService);
   }
 
   mount(): IDisposable {
@@ -59,7 +54,6 @@ export class InlineHintController extends BaseAIMonacoEditorController {
         if (!lineContent?.trim()) {
           inlineHintLineDecoration.show(position);
         }
-        this.inlineInputChatService.setCurrentVisiblePosition(position);
 
         aiNativeContextKey.inlineHintWidgetIsVisible.set(true);
 

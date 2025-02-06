@@ -8,8 +8,6 @@ import { MayCancelablePromise, MessageType, localize, uuid } from '@opensumi/ide
 
 import { AbstractMessageService, IMessageService, MAX_MESSAGE_LENGTH, OpenMessageOptions } from '../common';
 
-import type vscode from 'vscode';
-
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
   @Autowired(IOpenerService)
