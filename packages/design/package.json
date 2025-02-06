@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-design",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "files": [
     "lib",
     "src"
@@ -26,7 +26,8 @@
     "@opensumi/ide-main-layout": "workspace:*",
     "@opensumi/ide-menu-bar": "workspace:*",
     "@opensumi/ide-overlay": "workspace:*",
-    "@opensumi/ide-theme": "workspace:*"
+    "@opensumi/ide-theme": "workspace:*",
+    "@opensumi/ide-toolbar": "workspace:*"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",

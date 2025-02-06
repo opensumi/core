@@ -227,12 +227,13 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = (
 
   useEffect(() => {
     const dispose = component.onChange((newComponent) => {
-      setComponent(newComponent);
+      // Immediately update with current component to handle initial badge value
+      setComponent({ ...newComponent });
     });
     return () => {
       dispose.dispose();
     };
-  }, []);
+  }, [component]); // Add component as dependency to re-run effect when it changes
 
   return (
     <div className={styles_icon_tab}>
@@ -254,12 +255,13 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = (
   const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
   useEffect(() => {
     const dispose = component.onChange((newComponent) => {
-      setComponent(newComponent);
+      // Immediately update with current component to handle initial badge value
+      setComponent({ ...newComponent });
     });
     return () => {
       dispose.dispose();
     };
-  }, []);
+  }, [component]); // Add component as dependency to re-run effect when it changes
   return (
     <div className={styles.text_tab}>
       <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>

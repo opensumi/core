@@ -6,10 +6,9 @@ import * as fse from 'fs-extra';
 import trash from 'trash';
 import writeFileAtomic from 'write-file-atomic';
 
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import {
-  Deferred,
   DisposableCollection,
   Emitter,
   Event,
@@ -25,7 +24,6 @@ import {
   UriComponents,
   isLinux,
   isUndefined,
-  path,
   uuid,
 } from '@opensumi/ide-core-node';
 
@@ -39,16 +37,16 @@ import {
   FileSystemProviderCapabilities,
   FileType,
   IDiskFileProvider,
+  IWatcherProcessManager,
+  RecursiveWatcherBackend,
   handleError,
   isErrnoException,
   notEmpty,
 } from '../common/';
 
-import { FileSystemWatcherServer } from './recursive/file-service-watcher';
-import { getFileType } from './shared/file-type';
-import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
+import { getFileType } from './hosted/shared/file-type';
+import { WatcherProcessManagerToken } from './watcher-process-manager';
 
-const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
 const DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**';
 
@@ -60,6 +58,7 @@ export interface IWatcher {
   id: number;
   options?: {
     excludes?: string[];
+    recursive?: boolean;
   };
   disposable: IDisposable;
 }
@@ -68,22 +67,16 @@ export interface IWatcher {
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
 
-  private watcherServer: UnRecursiveFileSystemWatcher | FileSystemWatcherServer;
-
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
-  protected readonly watcherCollection = new Map<string, IWatcher>();
   protected watchFileExcludes: string[] = [];
-
-  private _whenReadyDeferred: Deferred<void> = new Deferred();
-  private isInitialized = false;
-
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
 
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
+
+  @Autowired(WatcherProcessManagerToken)
+  private readonly watcherProcessManager: IWatcherProcessManager;
 
   private logger: ILogService;
 
@@ -95,11 +88,30 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.recursive = recursive;
-    this.initWatchServer();
+
+    this.watcherProcessManager.setClient({
+      onDidFilesChanged: (events: DidFilesChangedParams) => {
+        if (events.changes.length > 0) {
+          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
+          this.fileChangeEmitter.fire(changes);
+          if (Array.isArray(this.rpcClient)) {
+            this.rpcClient.forEach((client) => {
+              client.onDidFilesChanged({
+                changes,
+              });
+            });
+          }
+        }
+      },
+    });
+  }
+
+  async initialize(clientId: string, backend?: RecursiveWatcherBackend) {
+    await this.watcherProcessManager.createProcess(clientId, backend);
   }
 
   get whenReady() {
-    return this._whenReadyDeferred.promise;
+    return this.watcherProcessManager.whenReady;
   }
 
   onDidChangeCapabilities: Event<void> = Event.None;
@@ -122,8 +134,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     return this._capabilities;
   }
 
-  dispose(): void {
+  async dispose() {
     this.watcherServerDisposeCollection?.dispose();
+    this.watcherProcessManager.dispose();
   }
 
   /**
@@ -131,27 +144,24 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
    * @param {{ excludes: string[] }}
    * @memberof DiskFileSystemProvider
    */
-  async watch(uri: UriComponents, options?: { excludes?: string[] }): Promise<number> {
+  async watch(
+    uri: UriComponents,
+    options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
+  ): Promise<number> {
     await this.whenReady;
     const _uri = Uri.revive(uri);
-    const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
+
+    const id = await this.watcherProcessManager.watch(_uri, {
       excludes: options?.excludes ?? [],
+      recursive: options?.recursive ?? this.recursive,
+      pollingWatch: options?.pollingWatch,
     });
-    const disposable = {
-      dispose: () => {
-        this.watcherServer.unwatchFileChanges(id);
-      },
-    };
-    this.watcherCollection.set(_uri.toString(), { id, options, disposable });
+
     return id;
   }
 
   unwatch(watcherId: number) {
-    for (const [_uri, { id, disposable }] of this.watcherCollection) {
-      if (watcherId === id) {
-        disposable.dispose();
-      }
-    }
+    this.watcherProcessManager.unWatch(watcherId);
   }
 
   async stat(uri: UriComponents, options?: IFileStatOptions): Promise<FileStat> {
@@ -367,7 +377,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     // 每次调用之后都需要重新初始化 WatcherServer，保证最新的规则生效
     this.logger.log('Set watcher exclude:', watchExcludes);
     this.watchFileExcludes = watchExcludes;
-    this.initWatchServer(this.watchFileExcludes);
+
+    this.watcherProcessManager.setWatcherFileExcludes(watchExcludes);
   }
 
   getWatchFileExcludes() {
@@ -376,68 +387,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   getWatchExcludes(excludes?: string[]): string[] {
     return Array.from(new Set(this.watchFileExcludes.concat(excludes || [])));
-  }
-
-  protected initWatchServer(excludes?: string[]) {
-    if (!this.injector) {
-      return;
-    }
-    if (this.watcherServerDisposeCollection) {
-      this.watcherServerDisposeCollection.dispose();
-    }
-    this.watcherServerDisposeCollection = new DisposableCollection();
-    if (this.recursive) {
-      this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
-    } else {
-      this.watcherServer = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
-    }
-    this.watcherServer.setClient({
-      onDidFilesChanged: (events: DidFilesChangedParams) => {
-        if (events.changes.length > 0) {
-          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
-          this.fileChangeEmitter.fire(changes);
-          if (Array.isArray(this.rpcClient)) {
-            this.rpcClient.forEach((client) => {
-              client.onDidFilesChanged({
-                changes,
-              });
-            });
-          }
-        }
-      },
-    });
-    this.watcherServerDisposeCollection.push({
-      dispose: () => {
-        this.watcherServer.dispose();
-      },
-    });
-    if (this.isInitialized) {
-      // 当服务已经初始化一次后，重新初始化时需要重新绑定原有的监听服务
-      this.rewatch();
-    } else {
-      this._whenReadyDeferred.resolve();
-    }
-    this.isInitialized = true;
-  }
-
-  private async rewatch() {
-    let tasks: {
-      id: number;
-      uri: string;
-      options?: { excludes?: string[] };
-    }[] = [];
-    for (const [uri, { id, options }] of this.watcherCollection) {
-      tasks.push({
-        id,
-        uri,
-        options,
-      });
-    }
-    // 需要针对缓存根据路径深度排序，防止过度监听
-    tasks = tasks.sort((a, b) => Path.pathDepth(a.uri) - Path.pathDepth(b.uri));
-    for (const { uri, options } of tasks) {
-      await this.watch(Uri.parse(uri), { excludes: this.getWatchExcludes(options?.excludes) });
-    }
   }
 
   protected async createFile(uri: UriComponents, options: { content: Buffer }): Promise<FileStat> {

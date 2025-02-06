@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-monaco",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "files": [
     "lib",
     "src",
@@ -21,7 +21,7 @@
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
-    "@opensumi/monaco-editor-core": "0.47.0-patch.15"
+    "@opensumi/monaco-editor-core": "0.53.0-patch.2"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",

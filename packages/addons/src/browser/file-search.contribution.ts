@@ -250,7 +250,6 @@ export class FileSearchQuickCommandHandler {
       this.prevEditorState = {};
     }
     this.prevSelected = undefined;
-    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
     this.cancelIndicator.cancel();
   }
 

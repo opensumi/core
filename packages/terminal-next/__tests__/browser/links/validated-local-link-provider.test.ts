@@ -286,4 +286,16 @@ describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
       },
     ]);
   });
+
+  test('should support single file path', async () => {
+    await assertLink('foo', false, [
+      {
+        range: [
+          [0, 1],
+          [3, 1],
+        ],
+        text: 'foo',
+      },
+    ]);
+  });
 });

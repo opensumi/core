@@ -1,40 +1,27 @@
 import { asClassNameArrayWrapper } from '@opensumi/ide-core-browser';
-import { Codicon, Sumicon } from '@opensumi/ide-core-common/lib/codicons';
-import { ThemeIcon } from '@opensumi/monaco-editor-core/esm/vs/base/common/themables';
-import {
-  LightBulbState,
-  LightBulbWidget,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/lightBulbWidget';
+import { ThemeIcon } from '@opensumi/ide-core-common';
+import { Sumicon } from '@opensumi/ide-core-common/lib/codicons';
+import { LightBulbWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/lightBulbWidget';
 
+// @ts-ignore
 export class SumiLightBulbWidget extends LightBulbWidget {
   protected override _updateLightBulbTitleAndIcon(): void {
-    this._domNode.classList.remove(...this._iconClasses);
-    this._iconClasses = [];
-    if (this.state.type !== LightBulbState.Type.Showing) {
+    super['_updateLightBulbTitleAndIcon']();
+
+    const state = super['state'];
+    if (state.type !== 1 /* LightBulbState.Type.Showing */) {
       return;
     }
-    let icon: ThemeIcon;
-    let autoRun = false;
-    if (this.state.actions.allAIFixes) {
+
+    let icon: ThemeIcon | undefined = super['icon'];
+
+    if (state.actions.allAIFixes || (state.actions.hasAutoFix && state.actions.hasAIFix) || state.actions.hasAIFix) {
       icon = Sumicon.magicWand;
-      if (this.state.actions.validActions.length === 1) {
-        autoRun = true;
-      }
-    } else if (this.state.actions.hasAutoFix) {
-      if (this.state.actions.hasAIFix) {
-        // icon = Codicon.lightbulbSparkleAutofix;
-        icon = Sumicon.magicWand;
-      } else {
-        icon = Codicon.lightbulbAutofix;
-      }
-    } else if (this.state.actions.hasAIFix) {
-      // icon = Codicon.lightbulbSparkle;
-      icon = Sumicon.magicWand;
-    } else {
-      icon = Codicon.lightBulb;
     }
-    this._updateLightbulbTitle(this.state.actions.hasAutoFix, autoRun);
-    this._iconClasses = asClassNameArrayWrapper(icon);
-    this._domNode.classList.add(...this._iconClasses);
+
+    if (icon) {
+      this.getDomNode().classList.remove(...this['_iconClasses']);
+      this.getDomNode().classList.add(...asClassNameArrayWrapper(icon));
+    }
   }
 }

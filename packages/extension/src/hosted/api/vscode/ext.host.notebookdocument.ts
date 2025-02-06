@@ -1,16 +1,5 @@
 import { Schemes } from '@opensumi/ide-core-common';
-import {
-  CellKind,
-  NotebookCellDto,
-  NotebookCellInternalMetadata,
-  NotebookCellMetadata,
-  NotebookCellTextModelSplice,
-  NotebookCellsChangeType,
-  NotebookCellsChangedEventDto,
-  NotebookDocumentMetadata,
-  NotebookOutputDto,
-  NotebookOutputItemDto,
-} from '@opensumi/ide-editor';
+import { NotebookCellsChangeType } from '@opensumi/ide-editor/lib/common/notebook';
 
 import { ExtensionDocumentDataManager, IExtensionDocumentModelOpenedEvent } from '../../../common/vscode';
 import * as extHostTypeConverters from '../../../common/vscode/converter';
@@ -21,6 +10,17 @@ import {
   INotebookModelAddedData,
 } from '../../../common/vscode/notebook';
 
+import type {
+  CellKind,
+  NotebookCellDto,
+  NotebookCellInternalMetadata,
+  NotebookCellMetadata,
+  NotebookCellTextModelSplice,
+  NotebookCellsChangedEventDto,
+  NotebookDocumentMetadata,
+  NotebookOutputDto,
+  NotebookOutputItemDto,
+} from '@opensumi/ide-editor';
 import type vscode from 'vscode';
 
 class RawContentChangeEvent {

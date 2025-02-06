@@ -362,30 +362,32 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerRenameProvider(registry: IRenameCandidatesProviderRegistry): void {
-    registry.registerRenameSuggestionsProvider(async (model, range, token): Promise<NewSymbolName[] | undefined> => {
-      const prompt = this.renamePromptManager.requestPrompt(model.getValueInRange(range));
+    registry.registerRenameSuggestionsProvider(
+      async (model, range, triggerKind, token): Promise<NewSymbolName[] | undefined> => {
+        const prompt = this.renamePromptManager.requestPrompt(model.getValueInRange(range));
 
-      this.logger.info('rename prompt', prompt);
+        this.logger.info('rename prompt', prompt);
 
-      const result = await this.aiBackService.request(
-        prompt,
-        {
-          type: 'rename',
-        },
-        token,
-      );
+        const result = await this.aiBackService.request(
+          prompt,
+          {
+            type: 'rename',
+          },
+          token,
+        );
 
-      this.logger.info('rename result', result);
+        this.logger.info('rename result', result);
 
-      if (result.data) {
-        const names = this.renamePromptManager.extractResponse(result.data);
+        if (result.data) {
+          const names = this.renamePromptManager.extractResponse(result.data);
 
-        return names.map((name) => ({
-          newSymbolName: name,
-          tags: [NewSymbolNameTag.AIGenerated],
-        }));
-      }
-    });
+          return names.map((name) => ({
+            newSymbolName: name,
+            tags: [NewSymbolNameTag.AIGenerated],
+          }));
+        }
+      },
+    );
   }
 
   registerProblemFixFeature(registry: IProblemFixProviderRegistry): void {

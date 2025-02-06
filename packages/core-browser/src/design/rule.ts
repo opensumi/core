@@ -35,6 +35,11 @@ export const StackingLevel = Object.freeze({
 
   EditorFloatingContainer: 20,
 
+  /**
+   * Find 控件的 zIndex 是 25
+   */
+  FindWidget: 25,
+
   // #region 中级弹窗区域
   Popup: 100,
   // #endregion

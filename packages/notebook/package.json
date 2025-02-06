@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-notebook",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -34,7 +34,9 @@
     "@opensumi/ide-outline": "workspace:*",
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
-    "@opensumi/monaco-editor-core": "0.47.0-patch.15",
-    "antd": "^5.21.4"
+    "@opensumi/ide-utils": "workspace:*",
+    "antd": "^5.21.4",
+    "diff": "^4.0.1",
+    "resize-observer-polyfill": "1.5.1"
   }
 }

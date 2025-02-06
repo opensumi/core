@@ -408,10 +408,10 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    */
   protected newActionHandler(id: string): MonacoEditorCommandHandler {
     return {
-      execute: (editor) => {
+      execute: (editor, ...args) => {
         const action = editor.getAction(id);
         if (action && action.isSupported()) {
-          return this.runAction(id, editor);
+          return this.runAction(id, editor, ...args);
         }
       },
     };
@@ -422,11 +422,11 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    * @param id 要执行的 action
    * @param editor 执行 action 的 editor，默认为当前 editor
    */
-  protected runAction(id: string, editor: ICodeEditor): Promise<void> {
+  protected runAction(id: string, editor: ICodeEditor, ...args: any[]): Promise<void> {
     if (editor) {
       const action = editor.getAction(id);
       if (action) {
-        return action.run();
+        return action.run(...args);
       }
     }
 

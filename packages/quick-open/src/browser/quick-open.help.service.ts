@@ -52,10 +52,6 @@ export class HelpQuickOpenHandler implements QuickOpenHandler {
     return {};
   }
 
-  onClose() {
-    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
-  }
-
   protected comparePrefix(a: string, b: string): number {
     return a.toLowerCase().localeCompare(b.toLowerCase());
   }

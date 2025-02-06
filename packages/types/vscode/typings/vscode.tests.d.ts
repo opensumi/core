@@ -79,6 +79,11 @@ declare module "vscode" {
      */
     isDefault: boolean;
     /**
+     * Fired when a user has changed whether this is a default profile. The
+     * event contains the new value of {@link isDefault}
+     */
+    onDidChangeDefault: Event<boolean>;
+    /**
      * Whether this profile supports continuous running of requests. If so,
      * then {@link TestRunRequest.continuous} may be set to `true`. Defaults
      * to false.
@@ -117,6 +122,41 @@ declare module "vscode" {
       request: TestRunRequest,
       token: CancellationToken
     ) => Thenable<void> | void;
+
+    /**
+     * An extension-provided function that provides detailed statement and
+     * function-level coverage for a file. The editor will call this when more
+     * detail is needed for a file, such as when it's opened in an editor or
+     * expanded in the **Test Coverage** view.
+     *
+     * The {@link FileCoverage} object passed to this function is the same instance
+     * emitted on {@link TestRun.addCoverage} calls associated with this profile.
+     */
+    loadDetailedCoverage?: (testRun: TestRun, fileCoverage: FileCoverage, token: CancellationToken) => Thenable<FileCoverageDetail[]>;
+
+    /**
+     * An extension-provided function that provides detailed statement and
+     * function-level coverage for a single test in a file. This is the per-test
+     * sibling of {@link TestRunProfile.loadDetailedCoverage}, called only if
+     * a test item is provided in {@link FileCoverage.includesTests} and only
+     * for files where such data is reported.
+     *
+     * Often {@link TestRunProfile.loadDetailedCoverage} will be called first
+     * when a user opens a file, and then this method will be called if they
+     * drill down into specific per-test coverage information. This method
+     * should then return coverage data only for statements and declarations
+     * executed by the specific test during the run.
+     *
+     * The {@link FileCoverage} object passed to this function is the same
+     * instance emitted on {@link TestRun.addCoverage} calls associated with this profile.
+     *
+     * @param testRun The test run that generated the coverage data.
+     * @param fileCoverage The file coverage object to load detailed coverage for.
+     * @param fromTestItem The test item to request coverage information for.
+     * @param token A cancellation token that indicates the operation should be cancelled.
+     */
+    loadDetailedCoverageForTest?: (testRun: TestRun, fileCoverage: FileCoverage, fromTestItem: TestItem, token: CancellationToken) => Thenable<FileCoverageDetail[]>;
+
     /**
      * Deletes the run profile.
      */
@@ -306,6 +346,13 @@ declare module "vscode" {
      */
     readonly continuous?: boolean;
     /**
+     * Controls how test Test Results view is focused.  If true, the editor
+     * will keep the maintain the user's focus. If false, the editor will
+     * prefer to move focus into the Test Results view, although
+     * this may be configured by users.
+    */
+    readonly preserveFocus?: boolean;
+    /**
      * @param tests Array of specific tests to run, or undefined to run all tests
      * @param exclude An array of tests to exclude from the run.
      * @param profile The run profile used for this request.
@@ -313,7 +360,9 @@ declare module "vscode" {
     constructor(
       include?: readonly TestItem[],
       exclude?: readonly TestItem[],
-      profile?: TestRunProfile
+      profile?: TestRunProfile,
+      continuous?: boolean,
+      preserveFocus?: boolean
     );
   }
   /**
@@ -411,11 +460,21 @@ declare module "vscode" {
      */
     appendOutput(output: string, location?: Location, test?: TestItem): void;
     /**
+     * Adds coverage for a file in the run.
+     */
+    addCoverage(fileCoverage: FileCoverage): void;
+    /**
      * Signals that the end of the test run. Any tests included in the run whose
      * states have not been updated will have their state reset.
      */
     end(): void;
+    /**
+     * An event fired when the editor is no longer interested in data
+     * associated with the test run.
+     */
+    onDidDispose: Event<void>;
   }
+
   /**
    * Collection of test items, found in {@link TestItem.children} and
    * {@link TestController.items}.
@@ -548,6 +607,33 @@ declare module "vscode" {
     invalidateResults(): void;
   }
   /**
+   * A stack frame found in the {@link TestMessage.stackTrace}.
+   */
+  export class TestMessageStackFrame {
+    /**
+     * The location of this stack frame. This should be provided as a URI if the
+     * location of the call frame can be accessed by the editor.
+     */
+    uri?: Uri;
+
+    /**
+     * Position of the stack frame within the file.
+     */
+    position?: Position;
+
+    /**
+     * The name of the stack frame, typically a method or function name.
+     */
+    label: string;
+
+    /**
+     * @param label The name of the stack frame
+     * @param file The file URI of the stack frame
+     * @param position The position of the stack frame within the file
+     */
+    constructor(label: string, uri?: Uri, position?: Position);
+  }
+  /**
    * Message associated with the test state. Can be linked to a specific
    * source range -- useful for assertion failures, for example.
    */
@@ -599,6 +685,10 @@ declare module "vscode" {
      */
     contextValue?: string;
     /**
+     * The stack trace associated with the message or failure.
+     */
+    stackTrace?: TestMessageStackFrame[];
+    /**
      * Creates a new TestMessage that will present as a diff in the editor.
      * @param message Message to display to the user.
      * @param expected Expected output.
@@ -614,6 +704,27 @@ declare module "vscode" {
      * @param message The message to show to the user.
      */
     constructor(message: string | MarkdownString);
+  }
+
+  /**
+   * A class that contains information about a covered resource. A count can
+   * be give for lines, branches, and declarations in a file.
+   */
+  export class TestCoverageCount {
+    /**
+     * Number of items covered in the file.
+     */
+    covered: number;
+    /**
+     * Total number of covered items in the file.
+     */
+    total: number;
+
+    /**
+     * @param covered Value for {@link TestCoverageCount.covered}
+     * @param total Value for {@link TestCoverageCount.total}
+     */
+    constructor(covered: number, total: number);
   }
 
   //#region Test Observer
@@ -770,43 +881,6 @@ declare module "vscode" {
   }
   //#endregion
 
-  //#region Test Coverage
-
-  export interface TestRun {
-    /**
-     * Test coverage provider for this result. An extension can defer setting
-     * this until after a run is complete and coverage is available.
-     */
-    coverageProvider?: TestCoverageProvider
-    // ...
-  }
-
-  /**
-   * Provides information about test coverage for a test result.
-   * Methods on the provider will not be called until the test run is complete
-   */
-  export interface TestCoverageProvider<T extends FileCoverage = FileCoverage> {
-    /**
-     * Returns coverage information for all files involved in the test run.
-     * @param token A cancellation token.
-     * @return Coverage metadata for all files involved in the test.
-     */
-    provideFileCoverage(token: CancellationToken): ProviderResult<T[]>;
-
-    /**
-     * Give a FileCoverage to fill in more data, namely {@link FileCoverage.detailedCoverage}.
-     * The editor will only resolve a FileCoverage once, and onyl if detailedCoverage
-     * is undefined.
-     *
-     * @param coverage A coverage object obtained from {@link provideFileCoverage}
-     * @param token A cancellation token.
-     * @return The resolved file coverage, or a thenable that resolves to one. It
-     * is OK to return the given `coverage`. When no result is returned, the
-     * given `coverage` will be used.
-     */
-    resolveFileCoverage?(coverage: T, token: CancellationToken): ProviderResult<T>;
-  }
-
   /**
    * A class that contains information about a covered resource. A count can
    * be give for lines, branches, and functions in a file.
@@ -841,23 +915,25 @@ declare module "vscode" {
      * Statement coverage information. If the reporter does not provide statement
      * coverage information, this can instead be used to represent line coverage.
      */
-    statementCoverage: CoveredCount;
+    statementCoverage: TestCoverageCount;
 
     /**
      * Branch coverage information.
      */
-    branchCoverage?: CoveredCount;
+    branchCoverage?: TestCoverageCount;
 
     /**
-     * Function coverage information.
+     * Declaration coverage information. Depending on the reporter and
+     * language, this may be types such as functions, methods, or namespaces.
      */
-    functionCoverage?: CoveredCount;
+    declarationCoverage?: TestCoverageCount;
 
     /**
-     * Detailed, per-statement coverage. If this is undefined, the editor will
-     * call {@link TestCoverageProvider.resolveFileCoverage} when necessary.
+     * A list of {@link TestItem test cases} that generated coverage in this
+     * file. If set, then {@link TestRunProfile.loadDetailedCoverageForTest}
+     * should also be defined in order to retrieve detailed coverage information.
      */
-    detailedCoverage?: DetailedCoverage[];
+    includesTests?: TestItem[];
 
     /**
      * Creates a {@link FileCoverage} instance with counts filled in from
@@ -865,7 +941,7 @@ declare module "vscode" {
      * @param uri Covered file URI
      * @param detailed Detailed coverage information
      */
-    static fromDetails(uri: Uri, details: readonly DetailedCoverage[]): FileCoverage;
+    static fromDetails(uri: Uri, details: readonly FileCoverageDetail[]): FileCoverage;
 
     /**
      * @param uri Covered file URI
@@ -873,13 +949,15 @@ declare module "vscode" {
      * does not provide statement coverage information, this can instead be
      * used to represent line coverage.
      * @param branchCoverage Branch coverage information
-     * @param functionCoverage Function coverage information
+     * @param declarationCoverage Declaration coverage information
+     * @param includesTests Test cases included in this coverage report, see {@link includesTests}
      */
     constructor(
       uri: Uri,
-      statementCoverage: CoveredCount,
-      branchCoverage?: CoveredCount,
-      functionCoverage?: CoveredCount,
+      statementCoverage: TestCoverageCount,
+      branchCoverage?: TestCoverageCount,
+      declarationCoverage?: TestCoverageCount,
+      includesTests?: TestItem[],
     );
   }
 
@@ -888,10 +966,11 @@ declare module "vscode" {
    */
   export class StatementCoverage {
     /**
-     * The number of times this statement was executed. If zero, the
-     * statement will be marked as un-covered.
+     * The number of times this statement was executed, or a boolean indicating
+     * whether it was executed if the exact count is unknown. If zero or false,
+     * the statement will be marked as un-covered.
      */
-    executionCount: number;
+    executed: number | boolean;
 
     /**
      * Statement location.
@@ -906,12 +985,13 @@ declare module "vscode" {
 
     /**
      * @param location The statement position.
-     * @param executionCount The number of times this statement was
-     * executed. If zero, the statement will be marked as un-covered.
+     * @param executed The number of times this statement was executed, or a
+     * boolean indicating  whether it was executed if the exact count is
+     * unknown. If zero or false, the statement will be marked as un-covered.
      * @param branches Coverage from branches of this line.  If it's not a
      * conditional, this should be omitted.
      */
-    constructor(executionCount: number, location: Position | Range, branches?: BranchCoverage[]);
+    constructor(executed: number | boolean, location: Position | Range, branches?: BranchCoverage[]);
   }
 
   /**
@@ -919,10 +999,11 @@ declare module "vscode" {
    */
   export class BranchCoverage {
     /**
-     * The number of times this branch was executed. If zero, the
-     * branch will be marked as un-covered.
+     * The number of times this branch was executed, or a boolean indicating
+     * whether it was executed if the exact count is unknown. If zero or false,
+     * the branch will be marked as un-covered.
      */
-    executionCount: number;
+    executed: number | boolean;
 
     /**
      * Branch location.
@@ -930,11 +1011,55 @@ declare module "vscode" {
     location?: Position | Range;
 
     /**
-     * @param executionCount The number of times this branch was executed.
+     * Label for the branch, used in the context of "the ${label} branch was
+     * not taken," for example.
+     */
+    label?: string;
+
+    /**
+     * @param executed The number of times this branch was executed, or a
+     * boolean indicating  whether it was executed if the exact count is
+     * unknown. If zero or false, the branch will be marked as un-covered.
      * @param location The branch position.
      */
-    constructor(executionCount: number, location?: Position | Range);
+    constructor(executed: number | boolean, location?: Position | Range, label?: string);
   }
+
+  /**
+   * Contains coverage information for a declaration. Depending on the reporter
+   * and language, this may be types such as functions, methods, or namespaces.
+   */
+  export class DeclarationCoverage {
+    /**
+     * Name of the declaration.
+     */
+    name: string;
+
+    /**
+     * The number of times this declaration was executed, or a boolean
+     * indicating whether it was executed if the exact count is unknown. If
+     * zero or false, the declaration will be marked as un-covered.
+     */
+    executed: number | boolean;
+
+    /**
+     * Declaration location.
+     */
+    location: Position | Range;
+
+    /**
+     * @param executed The number of times this declaration was executed, or a
+     * boolean indicating  whether it was executed if the exact count is
+     * unknown. If zero or false, the declaration will be marked as un-covered.
+     * @param location The declaration position.
+     */
+    constructor(name: string, executed: number | boolean, location: Position | Range);
+  }
+
+  /**
+   * Coverage details returned from {@link TestRunProfile.loadDetailedCoverage}.
+   */
+  export type FileCoverageDetail = StatementCoverage | DeclarationCoverage;
 
   /**
    * Contains coverage information for a function or method.

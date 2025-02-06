@@ -487,8 +487,8 @@ class ExtQuickPick<T extends vscode.QuickPickItem> extends BaseQuickInput implem
     const selectItem = (item: T | T[]) => {
       const selectedItems = Array.isArray(item) ? item : [item];
       this.selectedItems = this.activeItems = selectedItems;
-      this._onDidAcceptEmitter.fire(undefined);
       this._onDidChangeSelectionEmitter.fire(selectedItems);
+      this._onDidAcceptEmitter.fire(undefined);
     };
 
     this.quickOpen

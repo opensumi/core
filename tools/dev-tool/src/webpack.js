@@ -12,7 +12,7 @@ const { merge } = require('webpack-merge');
 const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react'));
 const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/react-dom'));
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
-const esmodulePath = path.join(__dirname, '../../../packages/notebook');
+const notebookModulePath = path.join(__dirname, '../../../packages/notebook');
 const HOST = process.env.HOST || '0.0.0.0';
 const IDE_FRONT_PORT = process.env.IDE_FRONT_PORT || 8080;
 
@@ -80,7 +80,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         rules: [
           {
             test: /\.tsx?$/,
-            include: esmodulePath,
+            include: notebookModulePath,
             use: [
               {
                 loader: 'ts-loader',
@@ -99,7 +99,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           },
           {
             test: /\.tsx?$/,
-            exclude: esmodulePath,
+            exclude: [notebookModulePath],
             use: [
               {
                 loader: 'ts-loader',

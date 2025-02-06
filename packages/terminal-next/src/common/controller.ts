@@ -140,6 +140,8 @@ export interface ITerminalGroupViewService {
   selectGroup(index: number): void;
   removeGroup(index: number): void;
 
+  swapGroup(i: number, j: number): void;
+
   createWidget(group: IWidgetGroup, id?: string, reuse?: boolean, isSimpleWidget?: boolean): IWidget;
   getWidget(id: string): IWidget;
   selectWidget(widgetId: string): void;

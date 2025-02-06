@@ -85,7 +85,7 @@ class MockLogServiceForClient {
   async log() {}
   async error() {}
   async critical() {}
-  async dispose() {}
+  async disposeLogger() {}
   async disposeAll() {
     this.hasDisposeAll = true;
   }

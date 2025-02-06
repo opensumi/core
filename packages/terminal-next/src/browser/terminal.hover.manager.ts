@@ -14,10 +14,12 @@ export class TerminalHoverManagerService implements ITerminalHoverManagerService
   private hoverWidget: HTMLElement | undefined;
 
   private appendTerminalHoverOverlay() {
-    const overlayContainer = document.querySelector('#ide-overlay');
+    let overlayContainer = document.querySelector('#terminal-link-hover-overlay');
 
     if (!overlayContainer) {
-      throw new Error('ide-overlay is requried');
+      overlayContainer = document.createElement('div');
+      overlayContainer.id = 'terminal-link-hover-overlay';
+      document.body.appendChild(overlayContainer);
     }
 
     const overlay = document.createElement('div');
@@ -72,13 +74,11 @@ export class TerminalHoverManagerService implements ITerminalHoverManagerService
         this.hoverWidget.style.top = `${
           (viewportRange.start.y - 1) * cellDimensions.height + boundingClientRect.y - TIPS_OFFSET_Y
         }px`;
-
         let tooltipsLeft = viewportRange.start.x * cellDimensions.width + boundingClientRect.x + TIPS_OFFSET_X;
         // if the tooltip is too close to the right edge of the terminal, move it to the left
         if (tooltipsLeft + this.hoverWidget.clientWidth > boundingClientRect.x + boundingClientRect.width) {
           tooltipsLeft = boundingClientRect.x + boundingClientRect.width - this.hoverWidget.clientWidth - TIPS_OFFSET_X;
         }
-
         this.hoverWidget.style.left = `${tooltipsLeft}px`;
       }
     });

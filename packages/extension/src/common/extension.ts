@@ -26,7 +26,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IIconService, IconType, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
-import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+
 
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -35,6 +35,8 @@ import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from 
 import { ISumiExtensionContributions } from './sumi/extension';
 import { IExtensionContributions, IExtensionLanguagePack, IMainThreadCommands } from './vscode';
 import { ThemeIcon } from './vscode/ext-types';
+
+import type { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export interface IExtensionMetaData {
   id: string;

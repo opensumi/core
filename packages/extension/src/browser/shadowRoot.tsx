@@ -7,7 +7,7 @@ import {
   DisposableCollection,
   LabelService,
   TComponentCDNType,
-  getCdnHref as getCdnHrefRaw,
+  getCDNHref as getCDNHrefRaw,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { ExtensionBrowserStyleSheet, URI, localize } from '@opensumi/ide-core-common';
@@ -72,8 +72,8 @@ function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
 
 const packageName = '@opensumi/ide-components';
 
-function getCdnHref(filePath: string, version: string, cdnType: TComponentCDNType = 'alipay') {
-  return getCdnHrefRaw(packageName, filePath, version, cdnType);
+function getCDNHref(filePath: string, version: string, cdnType: TComponentCDNType = 'alipay') {
+  return getCDNHrefRaw(packageName, filePath, version, cdnType);
 }
 
 function getStyleSheet(href: string) {
@@ -115,9 +115,9 @@ const ShadowRoot = ({
           proxiedHead.appendChild(getStyleSheet(styleSheet.componentUri));
           proxiedHead.appendChild(getStyleSheet(styleSheet.iconfontUri));
         } else {
-          proxiedHead.appendChild(getStyleSheet(getCdnHref('dist/index.css', pkgJson.version, cdnType)));
+          proxiedHead.appendChild(getStyleSheet(getCDNHref('dist/index.css', pkgJson.version, cdnType)));
           proxiedHead.appendChild(
-            getStyleSheet(getCdnHref('lib/icon/iconfont/iconfont.css', pkgJson.version, cdnType)),
+            getStyleSheet(getCDNHref('lib/icon/iconfont/iconfont.css', pkgJson.version, cdnType)),
           );
         }
 

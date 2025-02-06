@@ -35,8 +35,6 @@ import {
 } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
-import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
@@ -52,6 +50,7 @@ import {
   TextEditorRevealType,
 } from '../../../common/vscode';
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
+import { EndOfLineSequence, RenderLineNumbersType } from '../../../common/vscode/models';
 
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
 
@@ -516,13 +515,16 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
 
     if (typeof newConfiguration.lineNumbers !== 'undefined') {
-      let lineNumbers: 'on' | 'off' | 'relative';
+      let lineNumbers: 'on' | 'off' | 'relative' | 'interval';
       switch (newConfiguration.lineNumbers) {
         case RenderLineNumbersType.On:
           lineNumbers = 'on';
           break;
         case RenderLineNumbersType.Relative:
           lineNumbers = 'relative';
+          break;
+        case RenderLineNumbersType.Interval:
+          lineNumbers = 'interval';
           break;
         default:
           lineNumbers = 'off';
@@ -644,7 +646,8 @@ function getEditorOption(editor: IMonacoCodeEditor): IResolvedTextEditorConfigur
     insertSpaces: modelOptions.insertSpaces,
     cursorStyle: editor.getOption(monaco.editor.EditorOption.cursorStyle),
     // 这里之前取 lineNumbers 配置项的值，现在改成取 renderType，是为了跟之前保持返回值一致
-    lineNumbers: editor.getOption(monaco.editor.EditorOption.lineNumbers).renderType,
+    lineNumbers: editor.getOption(monaco.editor.EditorOption.lineNumbers)
+      .renderType as unknown as RenderLineNumbersType,
   };
 }
 

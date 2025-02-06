@@ -29,7 +29,12 @@ export class WasmModuleManager {
 
   async initParser() {
     const baseUrl = await this.resolvedResourceUriDeferred.promise;
-    const wasmPath = `${baseUrl}/tree-sitter.wasm`;
+    let wasmPath;
+    if (baseUrl.endsWith('/')) {
+      wasmPath = `${baseUrl}tree-sitter.wasm`;
+    } else {
+      wasmPath = `${baseUrl}/tree-sitter.wasm`;
+    }
     if (!this.parserInitialized) {
       await Parser.init({
         locateFile: () => wasmPath,
@@ -45,7 +50,12 @@ export class WasmModuleManager {
       const deferred = new Deferred<ArrayBuffer>();
       this.cachedRuntime.set(language, deferred);
       const baseUrl = await this.resolvedResourceUriDeferred.promise;
-      const wasmUrl = `${baseUrl}/tree-sitter-${language}.wasm`;
+      let wasmUrl;
+      if (baseUrl.endsWith('/')) {
+        wasmUrl = `${baseUrl}tree-sitter-${language}.wasm`;
+      } else {
+        wasmUrl = `${baseUrl}/tree-sitter-${language}.wasm`;
+      }
       fetch(wasmUrl)
         .then((res) => res.arrayBuffer())
         .then((buffer) => {

@@ -7,6 +7,7 @@ import {
   Deferred,
   Domain,
   EDITOR_COMMANDS,
+  PreferenceScope,
   PreferenceService,
   URI,
   getIcon,
@@ -109,7 +110,7 @@ export class CompareEditorContribution implements MenuContribution, CommandContr
     commands.registerCommand(DIFF_EDITOR_COMMANDS.TOGGLE_COLLAPSE_UNCHANGED_REGIONS, {
       execute: () => {
         const enabled = this.preferenceService.get('diffEditor.hideUnchangedRegions.enabled');
-        this.preferenceService.set('diffEditor.hideUnchangedRegions.enabled', !enabled);
+        this.preferenceService.set('diffEditor.hideUnchangedRegions.enabled', !enabled, PreferenceScope.User);
       },
     });
   }

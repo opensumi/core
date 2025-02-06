@@ -20,6 +20,7 @@ import {
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { FileSystemProviderCapabilities, IEventBus, Schemes, isUndefined } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { IApplicationService } from '@opensumi/ide-core-common/lib/types/application';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import {
@@ -112,6 +113,13 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
+
+  private get clientId() {
+    return this.applicationService.clientId;
+  }
+
   private userHomeDeferred: Deferred<FileStat | undefined> = new Deferred();
 
   public options = {
@@ -130,6 +138,13 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
         }
       }),
     );
+  }
+
+  async initialize() {
+    const provider = await this.getProvider(Schemes.file);
+    if (provider.initialize) {
+      await provider.initialize(this.clientId, this.appConfig.recursiveWatcherBackend);
+    }
   }
 
   private async doGetCurrentUserHome() {
@@ -339,6 +354,9 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
+    const pollingWatcherDirectories = this.appConfig.pollingWatcherDirectories || [];
+    const pollingWatch = pollingWatcherDirectories.some((dir) => uri.path.toString().startsWith(dir));
+
     const _uri = this.convertUri(uri.toString());
     const originWatcher = this.uriWatcherMap.get(_uri.toString());
     if (originWatcher) {
@@ -356,6 +374,7 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
     const watcherId = await provider.watch(_uri.codeUri, {
       excludes,
+      pollingWatch,
     });
 
     this.watcherDisposerMap.set(id, {

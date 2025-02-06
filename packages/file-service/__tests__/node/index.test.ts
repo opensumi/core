@@ -9,8 +9,8 @@ import { expectThrowsAsync } from '@opensumi/ide-core-node/__tests__/helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { FileSystemWatcherServer } from '../../lib/node/recursive/file-service-watcher';
-import { FileChangeType, IFileService } from '../../src/common';
+import { RecursiveFileSystemWatcher } from '../../lib/node/hosted/recursive/file-service-watcher';
+import { FileChangeType, IDiskFileProvider, IFileService } from '../../src/common';
 import { FileService, FileServiceModule } from '../../src/node';
 
 describe('FileService', () => {
@@ -27,7 +27,7 @@ describe('FileService', () => {
 
     injector = createNodeInjector([FileServiceModule]);
     // @ts-ignore
-    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
+    injector.mock(RecursiveFileSystemWatcher, 'isEnableNSFW', () => false);
     fileService = injector.get(IFileService);
   });
 
@@ -632,12 +632,24 @@ describe('FileService', () => {
 
   describe('watch', () => {
     it('Should return id and dispose', async () => {
+      const diskProvider = injector.get(IDiskFileProvider);
+      diskProvider['watcherProcessManager']['_whenReadyDeferred'].resolve();
+      diskProvider['watcherProcessManager'].watch = () => 1;
+      diskProvider['watcherProcessManager'].dispose = () => void 0;
+
+      diskProvider['watcherProcessManager'].unWatch = () => 1;
       const watchId = await fileService.watchFileChanges(root.toString());
       expect(typeof watchId).toEqual('number');
       await fileService.unwatchFileChanges(watchId);
     });
 
     it('Should set and get Excludes', () => {
+      const diskProvider = injector.get(IDiskFileProvider);
+      diskProvider['watcherProcessManager']['_whenReadyDeferred'].resolve();
+      diskProvider['watcherProcessManager'].watch = () => 2;
+      diskProvider['watcherProcessManager'].unWatch = () => 2;
+      diskProvider['watcherProcessManager'].setWatcherFileExcludes = () => void 0;
+
       fileService.setWatchFileExcludes(['test']);
       expect(fileService.getWatchFileExcludes()).toEqual(['test']);
 

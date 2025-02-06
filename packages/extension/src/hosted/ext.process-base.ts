@@ -5,6 +5,7 @@ import { Injector } from '@opensumi/di';
 import { SumiConnectionMultiplexer, createExtMessageIO } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
+  CommonProcessReporter,
   Emitter,
   IReporter,
   ReporterProcessMessage,
@@ -21,7 +22,6 @@ import { knownProtocols } from '../common/vscode/protocols';
 
 import { setPerformance } from './api/vscode/language/util';
 import { ExtensionLogger2 } from './extension-log2';
-import { ExtensionReporter } from './extension-reporter';
 
 import '@opensumi/ide-i18n';
 
@@ -93,7 +93,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
     },
     {
       token: IReporter,
-      useValue: new ExtensionReporter(reporterEmitter),
+      useValue: new CommonProcessReporter(reporterEmitter),
     },
   );
   if (locale) {

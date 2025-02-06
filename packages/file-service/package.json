@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-file-service",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "files": [
     "lib",
     "src"
@@ -10,7 +10,8 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.file-service.json"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.file-service.json",
+    "build:watcher-host": "tsc -p ../../configs/ts/references/tsconfig.file-service.json"
   },
   "repository": {
     "type": "git",

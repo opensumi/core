@@ -6,6 +6,7 @@ import { IEditorDocumentModelRef, IEditorDocumentModelService } from '@opensumi/
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 
 import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
 
@@ -117,21 +118,11 @@ export class OutputChannel extends Disposable {
     this.monacoModel.setValue(value);
   }
 
-  private pushEditOperations(value: string): void {
-    const lineCount = this.monacoModel.getLineCount();
-    const character = value.length;
-    // 用 pushEditOperations 插入文本，直接替换 content 会触发重新计算高亮
-    this.monacoModel.pushEditOperations(
-      [],
-      [
-        {
-          range: new monaco.Range(lineCount, 0, lineCount + 1, character),
-          text: value,
-          forceMoveMarkers: true,
-        },
-      ],
-      () => [],
-    );
+  private applyEdits(value: string): void {
+    const lastLine = this.monacoModel.getLineCount();
+    const lastLineMaxColumn = this.monacoModel.getLineMaxColumn(lastLine);
+    const edits = [EditOperation.insert(new monaco.Position(lastLine, lastLineMaxColumn), value)];
+    this.monacoModel.applyEdits(edits);
   }
 
   private isEmptyChannel(): boolean {
@@ -149,7 +140,7 @@ export class OutputChannel extends Disposable {
       if (this.isEmptyChannel() || needSlice) {
         this.doReplace(this.outputLines.join('') + value);
       } else {
-        this.pushEditOperations(value);
+        this.applyEdits(value);
       }
       this.outputLines.push(value);
     });
@@ -166,9 +157,18 @@ export class OutputChannel extends Disposable {
 
   appendLine(line: string): void {
     let value = line;
-    if (!line.endsWith('\r\n')) {
-      value = line + '\r\n';
+    if (typeof line !== 'string') {
+      try {
+        value = JSON.stringify(line);
+      } catch (e) {
+        value = `[${typeof line}]`;
+      }
     }
+
+    if (!value.endsWith('\r\n')) {
+      value = value + '\r\n';
+    }
+
     this.eventBus.fire(
       new ContentChangeEvent(
         new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, value, this.outputLines),
@@ -178,7 +178,7 @@ export class OutputChannel extends Disposable {
     if (this.shouldLogToBrowser) {
       // eslint-disable-next-line no-console
       console.log(
-        `%c[${this.name}]` + `%c ${line}}`,
+        `%c[${this.name}]` + `%c ${value}}`,
         'background:rgb(50, 150, 250); color: #fff',
         'background: none; color: inherit',
       );

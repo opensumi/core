@@ -2,7 +2,9 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   AllowedExtension,
   AuthenticationProviderInformation,
+  AuthenticationProviderSessionOptions,
   AuthenticationSession,
+  AuthenticationSessionAccountInformation,
   AuthenticationSessionsChangeEvent,
   CommandRegistry,
   Disposable,
@@ -278,11 +280,16 @@ export class AuthenticationService extends Disposable implements IAuthentication
     return Promise.race([didRegister, didTimeout]);
   }
 
-  async getSessions(providerId: string): Promise<ReadonlyArray<AuthenticationSession>> {
+  async getSessions(
+    providerId: string,
+    scopes?: string[],
+    activateImmediate?: boolean,
+    user?: AuthenticationSessionAccountInformation,
+  ): Promise<ReadonlyArray<AuthenticationSession>> {
     try {
       const authProvider =
         this._authenticationProviders.get(providerId) || (await this.tryActivateProvider(providerId));
-      return await authProvider.getSessions();
+      return await authProvider.getSessions(scopes, user);
     } catch (_) {
       throw new Error(`No authentication provider '${providerId}' is currently registered.`);
     }
@@ -327,7 +334,13 @@ export class AuthenticationService extends Disposable implements IAuthentication
     }
   }
 
-  async requestNewSession(providerId: string, scopes: string[], extensionId: string, extensionName: string) {
+  async requestNewSession(
+    providerId: string,
+    scopes: string[],
+    options: AuthenticationProviderSessionOptions,
+    extensionId: string,
+    extensionName: string,
+  ) {
     let provider = this._authenticationProviders.get(providerId);
     if (!provider) {
       // Activate has already been called for the authentication provider, but it cannot block on registering itself
@@ -362,7 +375,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
         },
         {
           execute: async () => {
-            const session = await this.login(providerId, scopes);
+            const session = await this.login(providerId, scopes, options);
             const accountName = session.account.label;
             // Add extension to allow list since user explicitly signed in on behalf of it
             const allowList = await this.getAllowedExtensions(providerId, accountName);
@@ -416,11 +429,15 @@ export class AuthenticationService extends Disposable implements IAuthentication
       throw new Error(`No authentication provider '${providerId}' is currently registered.`);
     }
   }
-  async login(providerId: string, scopes: string[]): Promise<AuthenticationSession> {
+  async login(
+    providerId: string,
+    scopes: string[],
+    options: AuthenticationProviderSessionOptions,
+  ): Promise<AuthenticationSession> {
     try {
       const authProvider =
         this._authenticationProviders.get(providerId) || (await this.tryActivateProvider(providerId));
-      return await authProvider.login(scopes);
+      return await authProvider.login(scopes, options);
     } catch (err) {
       throw new Error(
         `No authentication provider '${providerId}' is currently registered, error messge: ${err.message}`,

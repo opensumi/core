@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IRequireInterceptorService, RequireInterceptorService } from '../../src/common/require-interceptor';
 
 describe('require-interceptor test', () => {
-  const injector = createBrowserInjector([]);
+  const injector = new MockInjector();
   let requireInterceptorService: IRequireInterceptorService;
 
   beforeEach(() => {

@@ -437,7 +437,6 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.splitToRight',
     category: CATEGORY,
     label: '%editor.splitToRight%',
-    iconClass: getIcon('embed'),
   };
 
   export const SPLIT_TO_TOP: Command = {
@@ -653,6 +652,12 @@ export namespace EDITOR_COMMANDS {
   export const TOGGLE_WORD_WRAP: Command = {
     id: 'editor.toggleWordWrap',
     label: '%editor.toggleWordWrap%',
+    category: CATEGORY,
+  };
+
+  export const TOGGLE_COLUMN_SELECTION: Command = {
+    id: 'editor.action.toggleColumnSelection',
+    label: '%editor.action.toggleColumnSelection%',
     category: CATEGORY,
   };
 

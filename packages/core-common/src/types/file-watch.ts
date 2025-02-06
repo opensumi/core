@@ -17,6 +17,36 @@ export interface IFileSystemWatcherServer {
    * @memberof FileSystemWatcherServer
    */
   unwatchFileChanges(watcher: number): Promise<void>;
+
+  /**
+   * Update watcher file excludes
+   * @param excludes
+   */
+  updateWatcherFileExcludes?: (excludes: string[]) => Promise<void>;
+}
+
+export interface IWatcher {
+  /**
+   * 根据给定参数启动文件监听
+   * @param {string} uri
+   * @param {WatchOptions} [options]
+   * @memberof IFileSystemWatcherServer
+   */
+  watchFileChanges(uri: string, options?: WatchOptions): Promise<void>;
+
+  /**
+   * 根据给定 uri 注销对应的文件监听
+   * @param {string} uri
+   * @returns {Promise<void>}
+   * @memberof FileSystemWatcherServer
+   */
+  unwatchFileChanges(uri: string): Promise<void>;
+
+  /**
+   * Update watcher file excludes
+   * @param excludes
+   */
+  updateWatcherFileExcludes?: (excludes: string[]) => Promise<void>;
 }
 
 export interface FileSystemWatcherClient {
@@ -28,6 +58,7 @@ export interface FileSystemWatcherClient {
 
 export interface WatchOptions {
   excludes: string[];
+  pollingWatch?: boolean;
 }
 
 export interface DidFilesChangedParams {
@@ -97,4 +128,9 @@ export enum VSCFileChangeType {
    * A file has been deleted.
    */
   Deleted = 3,
+}
+
+export enum RecursiveWatcherBackend {
+  NSFW = 'nsfw',
+  PARCEL = 'parcel',
 }

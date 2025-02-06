@@ -431,6 +431,9 @@ export class DebugSessionManager implements IDebugSessionManager {
     const session = sessionFactory.get(sessionId, options);
     this._sessions.set(sessionId, session);
     this._extraMap.set(sessionId, extra);
+    if (!options.lifecycleManagedByParent) {
+      this.updateCurrentSession(session);
+    }
 
     this.debugTypeKey.set(session.configuration.type);
     this.onDidCreateDebugSessionEmitter.fire(session);
@@ -465,7 +468,6 @@ export class DebugSessionManager implements IDebugSessionManager {
       this.onDidReceiveDebugSessionCustomEventEmitter.fire({ event, body, session }),
     );
 
-    this.updateCurrentSession(session);
     return session;
   }
 

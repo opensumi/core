@@ -3,6 +3,7 @@ import {
   Emitter,
   Event,
   FileSystemProviderCapabilities,
+  RecursiveWatcherBackend,
   Uri,
   debounce,
   getDebugLogger,
@@ -104,6 +105,16 @@ export class DiskFsProviderClient extends CoreFileServiceProviderClient implemen
     }
 
     return this._capabilities;
+  }
+
+  async initialize(clientId: string, backend?: RecursiveWatcherBackend) {
+    if (this.fileServiceProvider?.initialize) {
+      try {
+        await this.fileServiceProvider?.initialize(clientId, backend);
+      } catch (err) {
+        getDebugLogger('fileService.fsProvider').error('initialize error', err);
+      }
+    }
   }
 
   @debounce(100)

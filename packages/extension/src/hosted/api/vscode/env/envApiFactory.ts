@@ -115,7 +115,7 @@ export function createEnvApiFactory(
     },
 
     get onDidChangeShell() {
-      return Event.None;
+      return exthostTerminal.onDidChangeShell;
     },
   };
 

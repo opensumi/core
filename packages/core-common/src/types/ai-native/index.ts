@@ -354,5 +354,6 @@ export interface IHistoryChatMessage extends IChatMessage {
 export enum ECodeEditsSourceTyping {
   LinterErrors = 'lint_errors',
   LineChange = 'line_change',
+  Typing = 'typing',
 }
 // ## Code Edits ends ##
