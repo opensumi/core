@@ -89,6 +89,9 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
   protected readonly _onInteractiveInputValue = new Emitter<string>();
   public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
 
+  protected readonly _onClose = new Emitter<void>();
+  public readonly onClose = this._onClose.event;
+
   constructor(protected readonly editor: IMonacoCodeEditor, protected readonly defaultValue?: string) {
     super(editor);
   }
@@ -107,7 +110,7 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
       <div className={styles.input_wrapper}>
         <InlineInputWidgetRender
           defaultValue={this.defaultValue}
-          onClose={() => this.dispose()}
+          onClose={() => this._onClose.fire()}
           onChatStatus={this.onStatusChange.bind(this)}
           onLayoutChange={() => {
             this.editor.layoutContentWidget(this);

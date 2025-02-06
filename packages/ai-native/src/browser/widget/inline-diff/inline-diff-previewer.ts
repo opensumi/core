@@ -3,6 +3,7 @@ import { Disposable, ErrorResponse, IDisposable, ReplyResponse } from '@opensumi
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { empty, getLeadingWhitespace } from '@opensumi/ide-utils/lib/strings';
+import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
@@ -199,30 +200,37 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     this.addDispose(widget);
     return widget;
   }
+
   mount(contentWidget: AIInlineContentWidget): void {
     super.mount(contentWidget);
     contentWidget.addDispose(this);
   }
+
   getPosition(): IPosition {
     return Position.lift({ lineNumber: this.selection.endLineNumber + 1, column: 1 });
   }
+
   layout(): void {
     this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
     super.layout();
   }
+
   onReady(exec: () => void): IDisposable {
     if (this.node) {
       return this.node!.onReady(exec.bind(this));
     }
     return Disposable.NULL;
   }
+
   show(line: number, heightInLines: number): void {
     this.node?.showByLine(line, heightInLines);
   }
+
   setValue(content: string): void {
     const modifiedModel = this.node?.getModifiedModel();
     modifiedModel?.setValue(this.formatIndentation(content));
   }
+
   getValue(): string {
     const model = this.node?.getModifiedModel();
     return model!.getValue();
@@ -240,10 +248,12 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
       this.model.pushStackElement();
     }
   }
+
   onLineCount(event: (count: number) => void): Disposable {
     this.node?.onMaxLineCount(event.bind(this));
     return this;
   }
+
   onData(data: ReplyResponse): void {
     const { message } = data;
 
@@ -258,12 +268,15 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     disposable.dispose();
     this.node?.layout();
   }
+
   onError(error: ErrorResponse): void {
     this.node?.layout();
   }
+
   onAbort(): void {
     this.node?.layout();
   }
+
   onEnd(): void {
     this.node?.layout();
   }
@@ -296,6 +309,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.listenNode(node);
     return node;
   }
+
   attachNode(node: InlineStreamDiffHandler): void {
     this.node?.dispose();
     this.node = node;
@@ -308,7 +322,8 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       }
     }
   }
-  public createNodeSnapshot(): InlineStreamDiffHandler | undefined {
+
+  createNodeSnapshot(): InlineStreamDiffHandler | undefined {
     if (!this.node) {
       return this.createNode();
     }
@@ -328,6 +343,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     }
     return Position.lift({ lineNumber: 1, column: 1 });
   }
+
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
@@ -343,9 +359,11 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
         break;
     }
   }
+
   onLineCount() {
     return Disposable.NULL;
   }
+
   layout(): void {
     this.inlineContentWidget?.setPositionPreference([
       ContentWidgetPositionPreference.ABOVE,
@@ -372,10 +390,26 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
       }
     }
   }
+
   onData(data: ReplyResponse): void {
     const { message } = data;
     this.node?.addLinesToDiff(this.formatIndentation(message));
   }
+
+  onAbort(): void {
+    const diffModel = this.node?.recompute(EComputerMode.default);
+    if (diffModel) {
+      /**
+       * abort 的时候，需要保留当前已经输出的内容
+       * 同时需要去掉流式过程中的 pending 区域和 activeLine
+       */
+      diffModel.activeLine = 0;
+      diffModel.pendingRange = new LineRange(0, 0);
+
+      this.node?.pushRateFinallyDiffStack(diffModel);
+    }
+  }
+
   onEnd(): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy);
     if (diffModel) {

@@ -27,6 +27,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import {
   AI_CHAT_VISIBLE,
+  AI_INLINE_CHAT_INTERACTIVE_INPUT_CANCEL,
   AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE,
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTER,
@@ -37,6 +38,7 @@ import {
   InlineChatIsVisible,
   InlineDiffPartialEditsIsVisible,
   InlineHintWidgetIsVisible,
+  InlineInputWidgetIsStreaming,
   InlineInputWidgetIsVisible,
 } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -458,6 +460,15 @@ export class AINativeBrowserContribution
       },
     });
 
+    commands.registerCommand(AI_INLINE_CHAT_INTERACTIVE_INPUT_CANCEL, {
+      execute: () => {
+        const editor = this.workbenchEditorService.currentCodeEditor;
+        if (editor) {
+          InlineInputController.get(editor.monacoEditor)?.cancelToken();
+        }
+      },
+    });
+
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTER, {
       execute: (relationId: string, sessionId: string, accept: boolean, code: string) => {
         this.aiCompletionsService.report({ sessionId, accept, relationId, code });
@@ -564,6 +575,13 @@ export class AINativeBrowserContribution
           args: false,
           priority: 0,
           when: `editorFocus && ${InlineInputWidgetIsVisible.raw}`,
+        });
+        // 当 Inline Input 流式编辑时，通过 ESC 退出
+        keybindings.registerKeybinding({
+          command: AI_INLINE_CHAT_INTERACTIVE_INPUT_CANCEL.id,
+          keybinding: 'esc',
+          priority: 1,
+          when: `editorFocus && ${InlineInputWidgetIsStreaming.raw}`,
         });
         // 当出现 CMD K 展示信息时，通过快捷键快速唤起 Inline Input
         keybindings.registerKeybinding(
