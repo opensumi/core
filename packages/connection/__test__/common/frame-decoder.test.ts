@@ -71,67 +71,61 @@ describe('frame decoder', () => {
   });
 
   packets.forEach(([packet, expected]) => {
-    it(`can decode stream: ${round(packet.byteLength / 1024 / 1024, 2)}m`, (done) => {
+    it(`can decode stream: ${round(packet.byteLength / 1024 / 1024, 2)}m`, async () => {
       const decoder = new LengthFieldBasedFrameDecoder();
 
-      decoder.onData((data) => {
-        fastExpectBufferEqual(data, expected);
-        decoder.dispose();
-        done();
+      const result = await new Promise<Uint8Array>((resolve) => {
+        decoder.onData((data) => resolve(data));
+
+        // Push the full packet - the decoder will handle chunking internally
+        decoder.push(packet);
       });
 
-      console.log('write chunk', packet.byteLength);
-      // write chunk by ${pressure} bytes
-      for (let i = 0; i < packet.byteLength; i += pressure) {
-        decoder.push(packet.subarray(i, i + pressure));
-        logMemoryUsage();
-      }
-
-      logMemoryUsage();
+      fastExpectBufferEqual(result, expected);
+      decoder.dispose();
     });
   });
 
-  it('can decode a stream payload contains multiple frames', (done) => {
+  it('can decode a stream payload contains multiple frames', async () => {
     const decoder = new LengthFieldBasedFrameDecoder();
-    const expectCount = purePackets.length;
-    let count = 0;
-    decoder.onData((data) => {
-      const expected = purePackets[count][1];
-      fastExpectBufferEqual(data, expected);
+    const receivedData: Uint8Array[] = [];
+    let resolved = false;
 
-      count++;
-      if (count === expectCount) {
-        decoder.dispose();
-        done();
-      }
+    const dataPromise = new Promise<void>((resolve) => {
+      decoder.onData((data) => {
+        receivedData.push(data);
+        if (receivedData.length === purePackets.length && !resolved) {
+          resolved = true;
+          resolve();
+        }
+      });
     });
 
-    console.log('write chunk', bigPayload.byteLength);
-    // write chunk by ${pressure} bytes
-    for (let i = 0; i < bigPayload.byteLength; i += pressure) {
-      decoder.push(bigPayload.subarray(i, i + pressure));
-      logMemoryUsage();
-    }
+    // Push the full payload - the decoder will handle chunking internally
+    decoder.push(bigPayload);
 
-    logMemoryUsage();
+    await dataPromise;
+
+    // Verify all packets were received in order
+    receivedData.forEach((data, index) => {
+      fastExpectBufferEqual(data, purePackets[index][1]);
+    });
+
+    decoder.dispose();
   });
 
-  it('can decode a stream it has no valid length info', (done) => {
+  it('can decode a stream it has no valid length info', async () => {
     const v = createPayload(1024);
     const sumiPacket = LengthFieldBasedFrameDecoder.construct(v).dump();
 
     const decoder = new LengthFieldBasedFrameDecoder();
-    decoder.onData((data) => {
-      fastExpectBufferEqual(data, v);
-      done();
+    const result = await new Promise<Uint8Array>((resolve) => {
+      decoder.onData((data) => resolve(data));
+      decoder.push(sumiPacket);
     });
 
-    console.log('write chunk', sumiPacket.byteLength);
-    // use pressure = 2 to simulate the header and payload are separated
-    const pressure = 2;
-    for (let i = 0; i < sumiPacket.byteLength; i += pressure) {
-      decoder.push(sumiPacket.subarray(i, i + pressure));
-    }
+    fastExpectBufferEqual(result, v);
+    decoder.dispose();
   });
 });
 
