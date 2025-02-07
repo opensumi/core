@@ -24,7 +24,7 @@ const lengthFieldLength = 4;
  * we use a length field to represent the length of the data, and then read the data according to the length
  */
 export class LengthFieldBasedFrameDecoder {
-  private static readonly MAX_FRAME_SIZE = 1 * 1024 * 1024;  // 1MB
+  private static readonly MAX_FRAME_SIZE = 1 * 1024 * 1024; // 1MB
   private static readonly MAX_ITERATIONS = 50;
 
   private _onDataListener: MaybeNull<(data: Uint8Array) => void>;
@@ -84,7 +84,7 @@ export class LengthFieldBasedFrameDecoder {
       iterations++;
       // 每处理几个包就让出执行权
       if (iterations % 10 === 0) {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
   }
@@ -168,12 +168,12 @@ export class LengthFieldBasedFrameDecoder {
     let result = iter.next();
     while (!result.done) {
       switch (result.value) {
-        case 0x0d:  // \r
+        case 0x0d: // \r
           switch (this.state) {
             case 0:
               this.state = 1;
               break;
-            case 2:  // 第二个 \r
+            case 2: // 第二个 \r
               this.state = 3;
               break;
             default:
@@ -181,12 +181,12 @@ export class LengthFieldBasedFrameDecoder {
               break;
           }
           break;
-        case 0x0a:  // \n
+        case 0x0a: // \n
           switch (this.state) {
             case 1:
               this.state = 2;
               break;
-            case 3:  // 第二个 \n
+            case 3: // 第二个 \n
               this.state = 4;
               iter.return();
               break;
