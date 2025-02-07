@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
@@ -22,10 +23,15 @@ export class StreamConnection extends BaseConnection<Uint8Array> {
 
   send(data: Uint8Array): void {
     const handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
-    this.writable.write(handle.get(), () => {
-      // TODO: logger error
-    });
-    handle.dispose();
+    try {
+      this.writable.write(handle.get(), (error) => {
+        if (error) {
+          console.error('Failed to write data:', error);
+        }
+      });
+    } finally {
+      handle.dispose();
+    }
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {

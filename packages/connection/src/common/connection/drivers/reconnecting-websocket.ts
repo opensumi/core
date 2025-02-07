@@ -14,7 +14,7 @@ import type { ErrorEvent } from '@opensumi/reconnecting-websocket';
 
 export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();
-  private sendQueue: Array<{ data: Uint8Array; resolve: () => void }> = [];
+  private sendQueue: Array<{ data: Uint8Array; resolve: () => void; reject: (error: Error) => void }> = [];
   private sending = false;
 
   protected constructor(private socket: ReconnectingWebSocket) {
@@ -32,7 +32,7 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
     this.sending = true;
 
     while (this.sendQueue.length > 0) {
-      const { data, resolve } = this.sendQueue[0];
+      const { data, resolve, reject } = this.sendQueue[0];
       try {
         const handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
         const packet = handle.get();
@@ -49,6 +49,7 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
         resolve();
       } catch (error) {
         console.error('[ReconnectingWebSocket] Error sending data:', error);
+        reject(error);
       }
       this.sendQueue.shift();
     }
@@ -57,8 +58,8 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
   }
 
   send(data: Uint8Array): Promise<void> {
-    return new Promise((resolve) => {
-      this.sendQueue.push({ data, resolve });
+    return new Promise((resolve, reject) => {
+      this.sendQueue.push({ data, resolve, reject });
       this.processSendQueue();
     });
   }
