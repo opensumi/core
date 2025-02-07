@@ -1374,63 +1374,82 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   public async hardReloadChildren(token?: CancellationToken) {
     let rawItems;
 
+    const oldPath = this.path;
+
     try {
+      // ! `this.path` maybe changed after `resolveChildren` in file tree compact mode
       rawItems = (await this._tree.resolveChildren(this)) || [];
     } catch (e) {
       rawItems = [];
-      return false;
     }
-
+    // 当获取到新的子节点时，如果当前节点正处于非展开状态时，忽略后续裁切逻辑
+    // 后续的 expandBranch 也不应该被响应
     if (!this.expanded || token?.isCancellationRequested) {
       return false;
     }
+    if (this.path !== oldPath) {
+      // do some clean up
+      TreeNode.setGlobalTreeState(oldPath, {
+        isExpanding: false,
+        isLoadingPath: false,
+        isRefreshing: false,
+      });
+    }
 
-    // 优化1: 提前分配好最终大小的数组，避免多次 slice
-    const totalLength = rawItems.length;
-    const tempChildren = new Array(totalLength);
-    const flatTree = new Array(totalLength);
-
-    // 优化2: 使用更大的批处理大小，但对大数据量采用动态批次
-    const batchSize = totalLength > 50000 ? 10000 : 5000;
-
-    // 优化3: 缓存频繁访问的属性和方法
-    const setIdByPath = TreeNode.setIdByPath;
-    const getIdByPath = TreeNode.getIdByPath;
-    const updateCache = this.updateTreeNodeCache.bind(this);
-
-    let i = 0;
-    while (i < totalLength) {
-      const end = Math.min(i + batchSize, totalLength);
-      const batch = rawItems.slice(i, end);
-
-      // 优化4: 使用 for 循环替代 for...of，减少迭代器开销
-      for (let j = 0; j < batch.length; j++) {
-        const child = batch[j];
-        const childPath = child.path;
-        child.id = getIdByPath(childPath) || child.id;
-        tempChildren[i] = child;
-        setIdByPath(childPath, child.id);
-        flatTree[i] = child.id;
-        updateCache(child);
-        i++;
+    const expandedChilds: CompositeTreeNode[] = [];
+    const flatTree = new Array(rawItems.length);
+    const tempChildren = new Array(rawItems.length);
+    for (let i = 0; i < rawItems.length; i++) {
+      const child = rawItems[i];
+      (child as TreeNode).id = TreeNode.getIdByPath(child.path) || (child as TreeNode).id;
+      tempChildren[i] = child;
+      TreeNode.setIdByPath(child.path, child.id);
+      if (CompositeTreeNode.is(child) && child.expanded) {
+        if (!(child as CompositeTreeNode).children) {
+          await (child as CompositeTreeNode).resolveChildrens(token);
+        }
+        if (token?.isCancellationRequested) {
+          return false;
+        }
+        expandedChilds.push(child as CompositeTreeNode);
       }
+    }
 
-      if (totalLength > 10000 && i < totalLength) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
+    tempChildren.sort(this._tree.sortComparator || CompositeTreeNode.defaultSortComparator);
+
+    for (let i = 0; i < rawItems.length; i++) {
+      flatTree[i] = tempChildren[i].id;
+    }
+
+    if (this.children) {
+      this.shrinkBranch(this);
+    }
+    if (this.children) {
+      for (let i = 0; i < this.children.length; i++) {
+        const child = this.children[i];
+        // The Child maybe `undefined`.
+        child?.dispose();
       }
+    }
+
+    for (let i = 0; i < tempChildren.length; i++) {
+      this.updateTreeNodeCache(tempChildren[i]);
     }
 
     this._children = tempChildren;
-    this._branchSize = totalLength;
+    this._branchSize = flatTree.length;
     this.setFlattenedBranch(flatTree);
 
-    // 优化5: 合并监听器更新
-    if (this.watchTerminator) {
-      this.watchTerminator(this.path);
-      this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
+    for (let i = 0; i < expandedChilds.length; i++) {
+      const child = expandedChilds[i];
+      (child as CompositeTreeNode).expandBranch(child, true);
     }
 
-    this.watcher.notifyDidUpdateBranch();
+    // 清理上一次监听函数
+    if (typeof this.watchTerminator === 'function') {
+      this.watchTerminator(this.path);
+    }
+    this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
     return true;
   }
 
