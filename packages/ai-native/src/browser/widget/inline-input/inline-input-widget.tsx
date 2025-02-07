@@ -21,10 +21,12 @@ interface IInlineInputWidgetRenderProps {
   onInteractiveInputSend?: (value: string) => void;
   onChatStatus: Event<EInlineChatStatus>;
   onResultClick: (k: EResultKind) => void;
+  onValueChange?: (value: string) => void;
 }
 
 const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
-  const { defaultValue, onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick } = props;
+  const { defaultValue, onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick, onValueChange } =
+    props;
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
@@ -69,6 +71,7 @@ const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
         <InteractiveInput
           autoFocus
           defaultValue={defaultValue}
+          onValueChange={onValueChange}
           onHeightChange={(height) => onLayoutChange(height)}
           size='small'
           placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
@@ -82,15 +85,18 @@ const InlineInputWidgetRender = (props: IInlineInputWidgetRenderProps) => {
 };
 
 @Injectable({ multiple: true })
-export class InlineInputChatWidget extends AIInlineContentWidget {
+export class InlineInputWidget extends AIInlineContentWidget {
   allowEditorOverflow = true;
   positionPreference = [ContentWidgetPositionPreference.ABOVE];
 
-  protected readonly _onInteractiveInputValue = new Emitter<string>();
-  public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
+  protected readonly _onSend = new Emitter<string>();
+  public readonly onSend = this._onSend.event;
 
   protected readonly _onClose = new Emitter<void>();
   public readonly onClose = this._onClose.event;
+
+  protected readonly _onValueChange = new Emitter<string>();
+  public readonly onValueChange = this._onValueChange.event;
 
   constructor(protected readonly editor: IMonacoCodeEditor, protected readonly defaultValue?: string) {
     super(editor);
@@ -115,9 +121,12 @@ export class InlineInputChatWidget extends AIInlineContentWidget {
           onLayoutChange={() => {
             this.editor.layoutContentWidget(this);
           }}
+          onValueChange={(value) => {
+            this._onValueChange.fire(value);
+          }}
           onInteractiveInputSend={(value) => {
             this.launchChatStatus(EInlineChatStatus.THINKING);
-            this._onInteractiveInputValue.fire(value);
+            this._onSend.fire(value);
           }}
           onResultClick={(k: EResultKind) => {
             this._onResultClick.fire(k);
