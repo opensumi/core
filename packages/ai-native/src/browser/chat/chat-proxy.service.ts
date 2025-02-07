@@ -1,16 +1,19 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,
+  ChatAgentViewServiceToken,
   ChatFeatureRegistryToken,
   ChatServiceToken,
   Deferred,
   Disposable,
   IAIBackService,
   IAIReporter,
+  IApplicationService,
   IChatProgress,
-  uuid,
-} from '@opensumi/ide-core-common';
+  uuid } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
@@ -22,12 +25,12 @@ import {
   IChatAgentService,
   IChatAgentWelcomeMessage,
 } from '../../common';
+import { ChatToolRender } from '../components/ChatToolRender';
+import { IChatAgentViewService } from '../types';
 
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
-import { ChatAgentViewServiceToken } from '@opensumi/ide-core-common';
-import { IChatAgentViewService } from '../types';
-import { ChatToolRender } from '../components/ChatToolRender';
+
 
 /**
  * @internal
@@ -57,6 +60,12 @@ export class ChatProxyService extends Disposable {
 
   @Autowired(ChatAgentViewServiceToken)
   private readonly chatAgentViewService: IChatAgentViewService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  @Autowired(IApplicationService)
+  private readonly applicationService: IApplicationService;
 
   private chatDeferred: Deferred<void> = new Deferred<void>();
 
@@ -91,12 +100,18 @@ export class ChatProxyService extends Disposable {
             }
           }
 
+          const model = 'claude-3-5-sonnet'; // TODO 从配置中获取
+          const apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey);
+
           const stream = await this.aiBackService.requestStream(
             prompt,
             {
               requestId: request.requestId,
               sessionId: request.sessionId,
               history: this.aiChatService.getHistoryMessages(),
+              clientId: this.applicationService.clientId,
+              apiKey,
+              model,
             },
             token,
           );

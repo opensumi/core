@@ -1,16 +1,12 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import {
-  ToolInvocationRegistry,
-  ToolInvocationRegistryImpl,
-} from '@opensumi/ide-ai-native/lib/common/tool-invocation-registry';
 import { AnthropicModel } from '@opensumi/ide-ai-native/lib/node/anthropic/anthropic-language-model';
+import { DeepSeekModel } from '@opensumi/ide-ai-native/lib/node/deepseek/deepseek-language-model';
 import { OpenAIModel } from '@opensumi/ide-ai-native/lib/node/openai/openai-language-model';
-import { IAICompletionOption } from '@opensumi/ide-core-common';
+import { IAIBackServiceOption } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
   ChatReadableStream,
   IAIBackService,
-  IAIBackServiceOption,
   IAIBackServiceResponse,
   INodeLogger,
   sleep,
@@ -59,6 +55,9 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
   @Autowired(OpenAIModel)
   protected readonly openaiModel: OpenAIModel;
 
+  @Autowired(DeepSeekModel)
+  protected readonly deepseekModel: DeepSeekModel;
+
   async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
 
@@ -87,7 +86,8 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
       chatReadableStream.abort();
     });
 
-    this.anthropicModel.request(input, chatReadableStream, cancelToken);
+    // this.deepseekModel.request(input, chatReadableStream, options, cancelToken);
+    this.anthropicModel.request(input, chatReadableStream, options, cancelToken);
     return chatReadableStream;
   }
 }

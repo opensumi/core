@@ -61,6 +61,7 @@ import { GetFileTextByPathTool } from './mcp/tools/getFileTextByPath';
 import { GetOpenEditorFileDiagnosticsTool } from './mcp/tools/getOpenEditorFileDiagnostics';
 import { GetOpenEditorFileTextTool } from './mcp/tools/getOpenEditorFileText';
 import { GetSelectedTextTool } from './mcp/tools/getSelectedText';
+import { ReplaceOpenEditorFileByDiffPreviewerTool } from './mcp/tools/replaceOpenEditorFileByDiffPreviewer';
 import { AINativePreferencesContribution } from './preferences';
 import { AINativeCoreContribution, MCPServerContribution, TokenMCPServerRegistry } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -96,6 +97,7 @@ export class AINativeModule extends BrowserModule {
     GetCurrentFilePathTool,
     FindFilesByNameSubstringTool,
     GetDiagnosticsByPathTool,
+    ReplaceOpenEditorFileByDiffPreviewerTool,
     // MCP Server Contributions END
 
     {

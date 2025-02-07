@@ -149,7 +149,7 @@ export class BuiltinMCPServer implements IMCPServer {
       throw new Error('MCP Server not started');
     }
     const tools = await this.sumiMCPServer.getMCPTools();
-    return { tools };
+    return { tools } as any;
   }
 
   update(_command: string, _args?: string[], _env?: { [key: string]: string }): void {

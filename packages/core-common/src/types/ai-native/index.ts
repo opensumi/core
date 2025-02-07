@@ -123,6 +123,9 @@ export interface IAIBackServiceOption {
   sessionId?: string;
   history?: IHistoryChatMessage[];
   tools?: any[];
+  clientId?: string;
+  apiKey?: string;
+  model?: string;
 }
 
 /**
@@ -293,9 +296,11 @@ export interface IChatToolContent {
     type: string;
     function: {
       name: string;
-      arguments: string;
+      arguments?: string;
     };
+    result?: string;
     index?: number;
+    state?: 'streaming-start' | 'streaming' | 'complete' | 'result';
   };
   kind: 'toolCall';
 }

@@ -1531,5 +1531,12 @@ export const localizationBundle = {
     ...browserViews,
     ...editorLocalizations,
     ...mergeConflicts,
+
+    // AI Native Settings
+    'preference.ai.native.apiKeys.title': 'API Keys',
+    'preference.ai.native.deepseek.apiKey': 'Deepseek API Key',
+    'preference.ai.native.deepseek.apiKey.description': 'API key for Deepseek language model',
+    'preference.ai.native.anthropic.apiKey': 'Anthropic API Key',
+    'preference.ai.native.anthropic.apiKey.description': 'API key for Anthropic language model',
   },
 };

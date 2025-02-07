@@ -393,6 +393,21 @@ export class AINativeBrowserContribution
           },
         ],
       });
+
+      // Register language model API key settings
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.apiKeys.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.DeepseekApiKey,
+            localized: 'preference.ai.native.deepseek.apiKey',
+          },
+          {
+            id: AINativeSettingSectionsId.AnthropicApiKey,
+            localized: 'preference.ai.native.anthropic.apiKey',
+          },
+        ],
+      });
     }
 
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {

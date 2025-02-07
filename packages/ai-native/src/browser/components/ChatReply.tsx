@@ -150,7 +150,6 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
 };
 
 const ToolCallRender = (props: { toolCall: IChatToolContent['content'] }) => {
-  console.log("🚀 ~ ToolCallRender ~ props:", props)
   const { toolCall } = props;
   const chatAgentViewService = useInjectable<IChatAgentViewService>(ChatAgentViewServiceToken);
   const [node, setNode] = useState<React.JSX.Element | null>(null);
@@ -172,7 +171,7 @@ const ToolCallRender = (props: { toolCall: IChatToolContent['content'] }) => {
     deferred.promise.then(({ component: Component, initialProps }) => {
       setNode(<Component {...initialProps} value={toolCall} />);
     });
-  }, [toolCall]);
+  }, [toolCall.state]);
 
   return node;
 };
@@ -231,7 +230,6 @@ export const ChatReply = (props: IChatReplyProps) => {
 
     disposableCollection.push(
       request.response.onDidChange(() => {
-        console.log("🚀 ~ request.response.onDidChange ~ onDidChange:", 'onDidChange')
         history.updateAssistantMessage(msgId, { content: request.response.responseText });
 
         if (request.response.isComplete) {

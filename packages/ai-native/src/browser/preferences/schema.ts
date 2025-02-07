@@ -58,5 +58,15 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [AINativeSettingSectionsId.DeepseekApiKey]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.deepseek.apiKey.description'),
+    },
+    [AINativeSettingSectionsId.AnthropicApiKey]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.anthropic.apiKey.description'),
+    },
   },
 };

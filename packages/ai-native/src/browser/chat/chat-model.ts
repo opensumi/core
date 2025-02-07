@@ -125,15 +125,14 @@ export class ChatResponseModel extends Disposable {
       this.#responseParts.push(progress);
       this.#updateResponseText(quiet);
     } else if (progress.kind === 'toolCall') {
-      // @ts-ignore
-      const find: IChatToolContent | undefined = this.#responseParts.find((item) => item.kind === 'toolCall' && (item.content.id === progress.content.id || item.content.index === progress.content.index));
+      const find = this.#responseParts.find((item) => item.kind === 'toolCall' && (item.content.id === progress.content.id));
       if (find) {
-        find.content.function.arguments = find.content.function.arguments + progress.content.function.arguments;
-        this.#responseParts[responsePartLength] = find;
+        // @ts-ignore
+        find.content = progress.content;
+        // this.#responseParts[responsePartLength] = find;
       } else {
         this.#responseParts.push(progress);
       }
-      console.log("🚀 ~ ChatResponseModel ~ updateContent ~ this.#responseParts:", this.#responseParts)
       this.#updateResponseText(quiet);
     }
   }
