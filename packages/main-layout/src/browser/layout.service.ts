@@ -256,6 +256,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       this.logger.error(`cannot find container: ${containerId}`);
       return;
     }
+    if (!container.options?.draggable) {
+      this.logger.warn(`container: ${containerId} is not draggable`);
+      return;
+    }
 
     const toTabbar = this.getTabbarService(to);
 

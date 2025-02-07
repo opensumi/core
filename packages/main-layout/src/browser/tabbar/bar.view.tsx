@@ -125,11 +125,15 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
   });
 
   const renderContainers = React.useCallback(
-    (component: ComponentRegistryInfo, tabbarService: TabbarService, currentContainerId?: string) => {
+    (component: ComponentRegistryInfo, tabbarService: TabbarService, currentContainerId?: string, side?: string) => {
       const containerId = component.options?.containerId;
       if (!containerId) {
         return null;
       }
+      if (side && component.options?.hideLocationTab?.includes(side)) {
+        return null;
+      }
+
       tabbarService.updateTabInMoreKey(containerId, false);
       let ref: HTMLLIElement | null;
       return (
@@ -189,7 +193,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
   return (
     <div className={cls([styles_tab_bar, className])}>
       <div className={styles_bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
-        {visibleContainers.map((component) => renderContainers(component, tabbarService, currentContainerId))}
+        {visibleContainers.map((component) => renderContainers(component, tabbarService, currentContainerId, side))}
         {renderOtherVisibleContainers({ props, renderContainers })}
         {hideContainers.length ? (
           <li

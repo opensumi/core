@@ -57,6 +57,7 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
         containerId: TerminalRenderContribution.viewId,
         titleComponent: TerminalTabs,
         draggable: true,
+        hideLocationTab: ['right'],
       },
     );
   }
