@@ -151,13 +151,6 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     super(editor);
 
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.editor.contextKeyService]);
-    this.addDispose(
-      this.editor.onDidLayoutChange(() => {
-        if (this.isOutOfArea()) {
-          this.dispose();
-        }
-      }),
-    );
   }
 
   public launchChatStatus(status: EInlineChatStatus) {

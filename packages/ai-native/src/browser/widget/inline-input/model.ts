@@ -1,6 +1,6 @@
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { MaybePromise, uuid } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-monaco';
+import { ICodeEditor, IPosition, Selection } from '@opensumi/ide-monaco';
 
 import { ERunStrategy, IInteractiveInputHandler } from '../../types';
 
@@ -30,5 +30,45 @@ export class InteractiveInputModel {
 
   public dispose(): void {
     this._handler = undefined;
+  }
+}
+
+export class InlineInputWidgetStoreInEmptyLine {
+  constructor(private position: IPosition, private value?: string) {}
+
+  public getPosition(): IPosition {
+    return this.position;
+  }
+
+  public setPosition(position: IPosition): void {
+    this.position = position;
+  }
+
+  public getValue(): string | undefined {
+    return this.value;
+  }
+
+  public setValue(value: string): void {
+    this.value = value;
+  }
+}
+
+export class InlineInputWidgetStoreInSelection {
+  constructor(private selection: Selection, private value?: string) {}
+
+  public getSelection(): Selection {
+    return this.selection;
+  }
+
+  public setSelection(selection: Selection): void {
+    this.selection = selection;
+  }
+
+  public getValue(): string | undefined {
+    return this.value;
+  }
+
+  public setValue(value: string): void {
+    this.value = value;
   }
 }
