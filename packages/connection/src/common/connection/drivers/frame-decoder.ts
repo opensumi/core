@@ -24,7 +24,6 @@ const lengthFieldLength = 4;
  * we use a length field to represent the length of the data, and then read the data according to the length
  */
 export class LengthFieldBasedFrameDecoder {
-  private static readonly MAX_FRAME_SIZE = 1 * 1024 * 1024; // 1MB
   private static readonly MAX_ITERATIONS = 50;
 
   private _onDataListener: MaybeNull<(data: Uint8Array) => void>;
@@ -52,12 +51,6 @@ export class LengthFieldBasedFrameDecoder {
   }
 
   push(chunk: Uint8Array): void {
-    // 如果新数据太大，只接收部分
-    if (chunk.byteLength > LengthFieldBasedFrameDecoder.MAX_FRAME_SIZE) {
-      console.warn('[Frame Decoder] Chunk too large, truncating');
-      chunk = chunk.slice(0, LengthFieldBasedFrameDecoder.MAX_FRAME_SIZE);
-    }
-
     this.buffers.push(chunk);
 
     // 确保同一时间只有一个处理过程
