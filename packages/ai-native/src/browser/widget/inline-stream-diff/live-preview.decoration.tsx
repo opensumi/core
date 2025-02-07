@@ -676,12 +676,13 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     this.recordPartialEditWidgetWithAddedDec();
   }
 
-  public touchRemovedWidget(states: IRemovedWidgetState[]) {
+  public touchRemovedWidget(states: IRemovedWidgetState[], cb?: () => void) {
     const run = () => {
       this.clearRemovedWidgets();
       states.forEach(({ textLines, position }) => {
         this.showRemovedWidgetByLineNumber(position.lineNumber, textLines, {});
       });
+      cb?.();
     };
 
     if (this.options.renderRemovedWidgetImmediately) {

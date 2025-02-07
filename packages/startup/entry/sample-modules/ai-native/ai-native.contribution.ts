@@ -40,7 +40,7 @@ import {
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, NewSymbolName, NewSymbolNameTag, Range } from '@opensumi/ide-monaco';
+import { ICodeEditor, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
@@ -102,8 +102,8 @@ export class AINativeContribution implements AINativeCoreContribution {
       },
       {
         execute: async (editor, value, token) => {},
-        providePreviewStrategy: async (editor, value, token) => {
-          const crossCode = this.getCrossCode(editor);
+        providePreviewStrategy: async (editor, selection, value, token) => {
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
           const controller = new InlineChatController({ enableCodeblockRender: true });
           const stream = await this.aiBackService.requestStream(prompt, {}, token);

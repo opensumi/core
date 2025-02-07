@@ -13,7 +13,7 @@ import {
   MaybePromise,
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, IRange, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ISelection, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
@@ -44,7 +44,7 @@ interface IBaseInlineChatHandler<T extends any[]> {
 
 export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
 export type IInteractiveInputHandler = IBaseInlineChatHandler<
-  [editor: ICodeEditor, value: string, token: CancellationToken]
+  [editor: ICodeEditor, selection: ISelection, value: string, token: CancellationToken]
 >;
 
 export enum ERunStrategy {
