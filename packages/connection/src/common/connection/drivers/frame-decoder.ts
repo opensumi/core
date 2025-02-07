@@ -209,21 +209,18 @@ export class LengthFieldBasedFrameDecoder {
     this.reset();
   }
 
-  static writer = BinaryWriter({});
-
   static construct(content: Uint8Array) {
+    // 每次都创建新的 writer，避免所有权问题
+    const writer = BinaryWriter({});
 
-    // 确保 writer 没有被持有
     try {
-      LengthFieldBasedFrameDecoder.writer.reset();
+      writer.buffer(indicator);
+      writer.uint32(content.byteLength);
+      writer.buffer(content);
+      return writer;
     } catch (error) {
-      console.warn('[Frame Decoder] Writer reset failed, creating new writer');
-      LengthFieldBasedFrameDecoder.writer = BinaryWriter({});
+      console.warn('[Frame Decoder] Error constructing frame:', error);
+      throw error;
     }
-
-    LengthFieldBasedFrameDecoder.writer.buffer(indicator);
-    LengthFieldBasedFrameDecoder.writer.uint32(content.byteLength);
-    LengthFieldBasedFrameDecoder.writer.buffer(content);
-    return LengthFieldBasedFrameDecoder.writer;
   }
 }
