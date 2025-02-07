@@ -1,7 +1,8 @@
 import React from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
+
+import { IMainLayoutService } from '../../common';
 
 import styles from './styles.module.less';
 
@@ -13,18 +14,23 @@ const DropArea: React.FC<IDropAreaProps> = (props) => {
   const { location } = props;
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
+  const handleDrop = React.useCallback(
+    (e: React.DragEvent) => {
+      const containerId = e.dataTransfer?.getData('containerId');
+      layoutService.moveContainerTo(containerId, location);
+    },
+    [layoutService, location],
+  );
+
   return (
     <div
       className={styles.drop_area}
-      onDrop={(e) => {
-        const containerId = e.dataTransfer?.getData('containerId');
-        layoutService.moveContainerTo(containerId, location);
-      }}
+      onDrop={handleDrop}
       onDragOver={(e) => {
         e.preventDefault();
       }}
     >
-      drop here
+      {localize('main-layout.drop-area.tip')}
     </div>
   );
 };

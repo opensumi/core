@@ -11,18 +11,17 @@ export const TitleBar: React.FC<{
   menubar?: React.ReactNode;
   height?: number;
   draggable?: boolean;
-  side: string;
-  containerId: string;
+  side?: string;
+  containerId?: string;
 }> = React.memo((props) => {
   const styles_titlebar = useDesignStyles(styles.titlebar, 'titlebar');
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(props.side);
 
-  const handleDragStart = React.useCallback(
-    (e: React.DragEvent) => {
+  const handleDragStart = (e: React.DragEvent) => {
+    if (props.containerId && props.side) {
       tabbarService.handleDragStart(e, props.containerId);
-    },
-    [tabbarService],
-  );
+    }
+  };
 
   const handleDragEnd = React.useCallback(
     (e: React.DragEvent) => {
