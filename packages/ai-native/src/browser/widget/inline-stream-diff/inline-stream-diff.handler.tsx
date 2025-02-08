@@ -328,7 +328,9 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
       preRemovedLen += removedLinesOriginalRange.length - addedRange.length;
     }
 
-    this.livePreviewDiffDecorationModel.touchRemovedWidget(states);
+    this.livePreviewDiffDecorationModel.touchRemovedWidget(states, () => {
+      this._onDidEditChange.fire();
+    });
   }
 
   /**
