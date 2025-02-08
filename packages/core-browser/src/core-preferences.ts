@@ -134,6 +134,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EXPLORER_DEFAULTS.confirmMove,
       description: '%preference.explorer.confirm.delete%',
     },
+    // 'explorer.confirmCompletelyDelete': {
+    //   type: 'boolean',
+    //   default: EXPLORER_DEFAULTS.confirmMove,
+    //   description: '%preference.explorer.confirm.delete%',
+    // },
     'explorer.fileTree.baseIndent': {
       type: 'number',
       default: FILE_TREE_DEFAULTS.baseIndent,
@@ -312,6 +317,7 @@ export interface CoreConfiguration {
   'workbench.refactoringChanges.showPreviewStrategy': string;
   'workbench.quickOpen.preserveInput': boolean;
   'explorer.confirmDelete': boolean;
+  // 'explorer.confirmCompletelyDelete': boolean;
   'explorer.fileTree.baseIndent': number;
   'explorer.fileTree.indent': number;
   'explorer.autoReveal': boolean;

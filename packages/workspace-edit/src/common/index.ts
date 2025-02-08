@@ -27,6 +27,7 @@ export interface IResourceFileEdit {
     isDirectory?: boolean;
     copy?: boolean;
     content?: string;
+    completelyDelete?: boolean | undefined;
   };
 }
 
