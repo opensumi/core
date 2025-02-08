@@ -517,14 +517,14 @@ export class InlineInputController extends BaseAIMonacoEditorController {
               }),
             ]);
 
-            chatResponse.listen();
-
             const diffPreviewer = this.inlineDiffController.showPreviewerByStream(monacoEditor, {
               crossSelection: decorationSelection,
               chatResponse,
             });
 
             diffPreviewer.mount(inlineInputWidget);
+
+            chatResponse.listen();
           }
         } else {
           decorationsCollection.clear();
