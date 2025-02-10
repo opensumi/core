@@ -29,10 +29,12 @@ export interface IMCPServerProxyService {
     isError?: boolean;
   }>;
   $getMCPTools(): Promise<MCPTool[]>;
+  $updateMCPServers(): Promise<void>;
 }
 
 export interface MCPTool {
   name: string;
   description: string;
   inputSchema: any;
+  providerName: string;
 }

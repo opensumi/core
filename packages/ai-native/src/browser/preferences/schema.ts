@@ -58,6 +58,12 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [AINativeSettingSectionsId.LLMModelSelection]: {
+      type: 'string',
+      default: 'deepseek',
+      enum: ['deepseek', 'anthropic'],
+      description: localize('preference.ai.native.llm.model.selection.description'),
+    },
     [AINativeSettingSectionsId.DeepseekApiKey]: {
       type: 'string',
       default: '',

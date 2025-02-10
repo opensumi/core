@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import { getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
+import { getIcon, useEventEffect, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -18,13 +18,15 @@ import {
   IAIReporter,
   IChatComponent,
   IChatContent,
+  MessageType,
   localize,
   uuid,
 } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IDialogService } from '@opensumi/ide-overlay';
 
 import 'react-chat-elements/dist/main.css';
-import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
+import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure, TokenMCPServerProxyService } from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -32,6 +34,8 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
+import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
+import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
 import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
@@ -41,7 +45,6 @@ import { ChatFeatureRegistry } from './chat.feature.registry';
 import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
-
 const SCROLL_CLASSNAME = 'chat_scroll';
 
 interface TDispatchAction {
@@ -57,9 +60,11 @@ export const AIChatView = () => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
   const msgHistoryManager = aiChatService.sessionModel.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
+  const dialogService = useInjectable<IDialogService>(IDialogService);
 
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
 
@@ -81,6 +86,7 @@ export const AIChatView = () => {
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
+  const [mcpToolsCount, setMcpToolsCount] = React.useState<number>(0);
 
   React.useEffect(() => {
     const featureSlashCommands = chatFeatureRegistry.getAllShortcutSlashCommand();
@@ -626,6 +632,21 @@ export const AIChatView = () => {
     };
   }, [aiChatService.sessionModel]);
 
+  useEventEffect(mcpServerProxyService.onChangeMCPServers, () => {
+    mcpServerProxyService.getAllMCPTools().then((tools) => {
+      setMcpToolsCount(tools.length);
+    });
+  }, [mcpServerProxyService]);
+
+  const handleShowMCPTools = React.useCallback(async () => {
+    const tools = await mcpServerProxyService.getAllMCPTools();
+    dialogService.open({
+      message: <MCPToolsDialog tools={tools} />,
+      type: MessageType.Empty,
+      buttons: ['关闭'],
+    });
+  }, [mcpServerProxyService, dialogService]);
+
   return (
     <div id={styles.ai_chat_view}>
       <div className={styles.header_container}>
@@ -657,7 +678,11 @@ export const AIChatView = () => {
                   </Popover>
                 ))}
               </div>
-              <div className={styles.header_operate_right}></div>
+              <div className={styles.header_operate_right}>
+                <div className={styles.tag} onClick={handleShowMCPTools}>
+                  {`MCP Tools: ${mcpToolsCount}`}
+                </div>
+              </div>
             </div>
             <ChatInputWrapperRender
               onSend={(value, agentId, command) =>

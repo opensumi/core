@@ -1,17 +1,25 @@
 import { Autowired, Injectable } from '@opensumi/di';
 
 import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
-import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../common/tool-invocation-registry';
+import { IToolInvocationRegistryManager, ToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
 import { IMCPServer, MCPServerImpl } from './mcp-server';
 
-@Injectable()
+// 这应该是 Browser Tab 维度的，每个 Tab 对应一个 MCPServerManagerImpl
+@Injectable({ multiple: true })
 export class MCPServerManagerImpl implements MCPServerManager {
-  @Autowired(ToolInvocationRegistry)
-  private readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
+  @Autowired(ToolInvocationRegistryManager)
+  private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
 
   protected servers: Map<string, IMCPServer> = new Map();
+
+  // 当前实例对应的 clientId
+  private clientId: string;
+
+  setClientId(clientId: string) {
+    this.clientId = clientId;
+  }
 
   async stopServer(serverName: string): Promise<void> {
     const server = this.servers.get(serverName);
@@ -58,7 +66,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
     return {
       id,
       name: id,
-      providerName: `mcp_${serverName}`,
+      providerName: serverName,
       parameters: tool.inputSchema,
       description: tool.description,
       handler: async (arg_string: string) => {
@@ -75,7 +83,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
     };
   }
 
-  public async collectTools(serverName: string): Promise<void> {
+  public async registerTools(serverName: string): Promise<void> {
     const server = this.servers.get(serverName);
     if (!server) {
       throw new Error(`MCP server "${serverName}" not found.`);
@@ -84,8 +92,9 @@ export class MCPServerManagerImpl implements MCPServerManager {
     const { tools } = await server.getTools();
     const toolRequests: ToolRequest[] = tools.map((tool) => this.convertToToolRequest(tool, serverName));
 
+    const registry = this.toolInvocationRegistryManager.getRegistry(this.clientId);
     for (const toolRequest of toolRequests) {
-      this.toolInvocationRegistry.registerTool(toolRequest);
+      registry.registerTool(toolRequest);
     }
   }
 
@@ -115,7 +124,13 @@ export class MCPServerManagerImpl implements MCPServerManager {
 
   initBuiltinServer(builtinMCPServer: BuiltinMCPServer): void {
     this.addOrUpdateServerDirectly(builtinMCPServer);
-    this.collectTools(builtinMCPServer.getServerName());
+    this.registerTools(builtinMCPServer.getServerName());
+  }
+
+  addExternalMCPServer(server: MCPServerDescription): void {
+    this.addOrUpdateServer(server);
+    this.startServer(server.name);
+    this.registerTools(server.name);
   }
 
   removeServer(name: string): void {

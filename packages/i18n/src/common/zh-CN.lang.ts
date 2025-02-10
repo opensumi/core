@@ -1296,7 +1296,7 @@ export const localizationBundle = {
     ...mergeConflicts,
 
     // AI Native Settings
-    'preference.ai.native.apiKeys.title': 'API 密钥',
+    'preference.ai.native.llm.apiSettings.title': '大模型 API 设置',
     'preference.ai.native.deepseek.apiKey': 'Deepseek API 密钥',
     'preference.ai.native.deepseek.apiKey.description': 'Deepseek 语言模型的 API 密钥',
     'preference.ai.native.anthropic.apiKey': 'Anthropic API 密钥',

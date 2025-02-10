@@ -1,5 +1,7 @@
-import { Injectable } from '@opensumi/di';
 import { z } from 'zod';
+
+import { Injectable } from '@opensumi/di';
+
 import { MCPToolParameter } from './mcp-server-manager';
 
 export const ToolParameterSchema = z.object({
@@ -31,45 +33,45 @@ export namespace ToolRequest {
 export const ToolInvocationRegistry = Symbol('ToolInvocationRegistry');
 
 /**
- * Registry for all the function calls available to Agents.
+ * 为 Agent 提供的所有可用函数调用的注册表
  */
 export interface ToolInvocationRegistry {
     /**
-     * Registers a tool into the registry.
+     * 在注册表中注册一个工具
      *
-     * @param tool - The `ToolRequest` object representing the tool to be registered.
+     * @param tool - 要注册的 `ToolRequest` 对象
      */
     registerTool(tool: ToolRequest): void;
 
     /**
-     * Retrieves a specific `ToolRequest` from the registry.
+     * 从注册表中获取特定的 `ToolRequest`
      *
-     * @param toolId - The unique identifier of the tool to retrieve.
-     * @returns The `ToolRequest` object corresponding to the provided tool ID,
-     *          or `undefined` if the tool is not found in the registry.
+     * @param toolId - 要获取的工具的唯一标识符
+     * @returns 对应提供的工具 ID 的 `ToolRequest` 对象，
+     *          如果在注册表中找不到该工具，则返回 `undefined`
      */
     getFunction(toolId: string): ToolRequest | undefined;
 
     /**
-     * Retrieves multiple `ToolRequest`s from the registry.
+     * 从注册表中获取多个 `ToolRequest`
      *
-     * @param toolIds - A list of tool IDs to retrieve.
-     * @returns An array of `ToolRequest` objects for the specified tool IDs.
-     *          If a tool ID is not found, it is skipped in the returned array.
+     * @param toolIds - 要获取的工具 ID 列表
+     * @returns 指定工具 ID 的 `ToolRequest` 对象数组
+     *          如果找不到某个工具 ID，将在返回的数组中跳过该工具
      */
     getFunctions(...toolIds: string[]): ToolRequest[];
 
     /**
-     * Retrieves all `ToolRequest`s currently registered in the registry.
+     * 获取当前注册表中的所有 `ToolRequest`
      *
-     * @returns An array of all `ToolRequest` objects in the registry.
+     * @returns 注册表中所有 `ToolRequest` 对象的数组
      */
     getAllFunctions(): ToolRequest[];
 
     /**
-     * Unregisters all tools provided by a specific tool provider.
+     * 注销特定工具提供者的所有工具
      *
-     * @param providerName - The name of the tool provider whose tools should be removed (as specificed in the `ToolRequest`).
+     * @param providerName - 要移除其工具的工具提供者名称（在 `ToolRequest` 中指定）
      */
     unregisterAllTools(providerName: string): void;
 }
@@ -79,9 +81,7 @@ export interface ToolProvider {
     getTool(): ToolRequest;
 }
 
-@Injectable()
 export class ToolInvocationRegistryImpl implements ToolInvocationRegistry {
-
     private tools: Map<string, ToolRequest> = new Map<string, ToolRequest>();
 
     unregisterAllTools(providerName: string): void {
@@ -91,15 +91,17 @@ export class ToolInvocationRegistryImpl implements ToolInvocationRegistry {
                 toolsToRemove.push(id);
             }
         }
-        toolsToRemove.forEach(id => this.tools.delete(id));
+        toolsToRemove.forEach((id) => this.tools.delete(id));
     }
+
     getAllFunctions(): ToolRequest[] {
         return Array.from(this.tools.values());
     }
 
     registerTool(tool: ToolRequest): void {
         if (this.tools.has(tool.id)) {
-            console.warn(`Function with id ${tool.id} is already registered.`);
+            // TODO: 使用适当的日志机制
+            this.tools.set(tool.id, tool);
         } else {
             this.tools.set(tool.id, tool);
         }
@@ -110,15 +112,59 @@ export class ToolInvocationRegistryImpl implements ToolInvocationRegistry {
     }
 
     getFunctions(...toolIds: string[]): ToolRequest[] {
-        const tools: ToolRequest[] = toolIds.map(toolId => {
+        const tools: ToolRequest[] = toolIds.map((toolId) => {
             const tool = this.tools.get(toolId);
             if (tool) {
                 return tool;
             } else {
-                throw new Error(`Function with id ${toolId} does not exist.`);
+                throw new Error(`找不到 ID 为 ${toolId} 的函数`);
             }
         });
         return tools;
+    }
+}
+
+/**
+ * 管理多个 ToolInvocationRegistry 实例的管理器，每个实例与一个 clientId 关联
+ */
+export interface IToolInvocationRegistryManager {
+    /**
+     * 获取或创建特定 clientId 的 ToolInvocationRegistry
+     */
+    getRegistry(clientId: string): ToolInvocationRegistry;
+
+    /**
+     * 移除特定 clientId 的 ToolInvocationRegistry
+     */
+    removeRegistry(clientId: string): void;
+
+    /**
+     * 检查特定 clientId 是否存在对应的注册表
+     */
+    hasRegistry(clientId: string): boolean;
+}
+
+export const ToolInvocationRegistryManager = Symbol('ToolInvocationRegistryManager');
+
+@Injectable()
+export class ToolInvocationRegistryManagerImpl implements IToolInvocationRegistryManager {
+    private registries: Map<string, ToolInvocationRegistry> = new Map();
+
+    getRegistry(clientId: string): ToolInvocationRegistry {
+        let registry = this.registries.get(clientId);
+        if (!registry) {
+            registry = new ToolInvocationRegistryImpl();
+            this.registries.set(clientId, registry);
+        }
+        return registry;
+    }
+
+    removeRegistry(clientId: string): void {
+        this.registries.delete(clientId);
+    }
+
+    hasRegistry(clientId: string): boolean {
+        return this.registries.has(clientId);
     }
 }
 

@@ -26,6 +26,7 @@ export enum AINativeSettingSectionsId {
   /**
    * Language model API keys
    */
+  LLMModelSelection = 'ai.native.llm.model.selection',
   DeepseekApiKey = 'ai.native.deepseek.apiKey',
   AnthropicApiKey = 'ai.native.anthropic.apiKey',
 }

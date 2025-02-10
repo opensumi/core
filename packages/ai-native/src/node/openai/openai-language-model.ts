@@ -11,6 +11,7 @@ export const OpenAiModelIdentifier = Symbol('OpenAiModelIdentifier');
 
 const apiKey = '';
 
+// 暂不需要，后面的大模型尽量通过 vercel ai sdk 来接入
 @Injectable()
 export class OpenAIModel {
   @Autowired(ToolInvocationRegistry)

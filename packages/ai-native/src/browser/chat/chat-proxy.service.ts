@@ -104,8 +104,13 @@ export class ChatProxyService extends Disposable {
             }
           }
 
-          const model = 'claude-3-5-sonnet'; // TODO 从配置中获取
-          const apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey);
+          const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
+          let apiKey: string = '';
+          if (model === 'deepseek') {
+            apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.DeepseekApiKey, '');
+          } else {
+            apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey, '');
+          }
 
           const stream = await this.aiBackService.requestStream(
             prompt,

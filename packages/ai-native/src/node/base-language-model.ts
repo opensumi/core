@@ -5,12 +5,12 @@ import { IAIBackServiceOption } from '@opensumi/ide-core-common';
 import { ChatReadableStream } from '@opensumi/ide-core-node';
 import { CancellationToken } from '@opensumi/ide-utils';
 
-import { ToolInvocationRegistry, ToolInvocationRegistryImpl, ToolRequest } from '../common/tool-invocation-registry';
+import { IToolInvocationRegistryManager, ToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
 
 @Injectable()
 export abstract class BaseLanguageModel {
-  @Autowired(ToolInvocationRegistry)
-  protected readonly toolInvocationRegistry: ToolInvocationRegistryImpl;
+  @Autowired(ToolInvocationRegistryManager)
+  protected readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
 
   protected abstract initializeProvider(options: IAIBackServiceOption): any;
 
@@ -21,7 +21,12 @@ export abstract class BaseLanguageModel {
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     const provider = this.initializeProvider(options);
-    const allFunctions = this.toolInvocationRegistry.getAllFunctions();
+    const clientId = options.clientId;
+    if (!clientId) {
+      throw new Error('clientId is required');
+    }
+    const registry = this.toolInvocationRegistryManager.getRegistry(clientId);
+    const allFunctions = registry.getAllFunctions();
     return this.handleStreamingRequest(provider, request, allFunctions, chatReadableStream, cancellationToken);
   }
 
@@ -64,6 +69,7 @@ export abstract class BaseLanguageModel {
       });
 
       for await (const chunk of stream.fullStream) {
+        console.log('LLM chunk: ', chunk);
         if (chunk.type === 'text-delta') {
           chatReadableStream.emitData({ kind: 'content', content: chunk.textDelta });
         } else if (chunk.type === 'tool-call') {

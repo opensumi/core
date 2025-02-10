@@ -9,7 +9,8 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 
 import { ISumiMCPServerBackend } from '../../common';
-import { MCPServerManager } from '../../common/mcp-server-manager';
+import { MCPServerDescription, MCPServerManager } from '../../common/mcp-server-manager';
+import { IToolInvocationRegistryManager , ToolInvocationRegistryManager } from '../../common/tool-invocation-registry';
 import { IMCPServerProxyService, MCPTool } from '../../common/types';
 import { IMCPServer } from '../mcp-server';
 import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
@@ -27,7 +28,18 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
   @Autowired(MCPServerManager)
   private readonly mcpServerManager: MCPServerManagerImpl;
 
+  @Autowired(ToolInvocationRegistryManager)
+  private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
+
   private server: Server | undefined;
+
+  // 对应 BrowserTab 的 clientId
+  private clientId: string = '';
+
+  public setConnectionClientId(clientId: string) {
+    this.clientId = clientId;
+    // 这里不能设置 mcpServerManager 的 clientId，否则会造成递归
+  }
 
   async getMCPTools() {
     if (!this.client) {
@@ -52,12 +64,26 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
 
   // TODO 这里涉及到 Chat Stream Call 中带上 ClientID，具体方案需要进一步讨论
   async getAllMCPTools(): Promise<MCPTool[]> {
-    return [];
+    const registry = this.toolInvocationRegistryManager.getRegistry(this.clientId);
+    return registry.getAllFunctions().map((tool) => ({
+      name: tool.name || 'no-name',
+      description: tool.description || 'no-description',
+      inputSchema: tool.parameters,
+      providerName: tool.providerName || 'no-provider-name',
+    }));
   }
 
-  initBuiltinMCPServer() {
+  public initBuiltinMCPServer() {
     const builtinMCPServer = new BuiltinMCPServer(this);
+    this.mcpServerManager.setClientId(this.clientId);
     this.mcpServerManager.initBuiltinServer(builtinMCPServer);
+    this.client?.$updateMCPServers();
+  }
+
+  public initExternalMCPServer(server: MCPServerDescription) {
+    this.mcpServerManager.setClientId(this.clientId);
+    this.mcpServerManager.addExternalMCPServer(server);
+    this.client?.$updateMCPServers();
   }
 
   async initExposedMCPServer() {

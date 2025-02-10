@@ -396,8 +396,12 @@ export class AINativeBrowserContribution
 
       // Register language model API key settings
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
-        title: localize('preference.ai.native.apiKeys.title'),
+        title: localize('preference.ai.native.llm.apiSettings.title'),
         preferences: [
+          {
+            id: AINativeSettingSectionsId.LLMModelSelection,
+            localized: 'preference.ai.native.llm.model.selection',
+          },
           {
             id: AINativeSettingSectionsId.DeepseekApiKey,
             localized: 'preference.ai.native.deepseek.apiKey',
