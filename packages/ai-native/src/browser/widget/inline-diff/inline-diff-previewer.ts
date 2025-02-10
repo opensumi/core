@@ -383,10 +383,14 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
           const firstRemovedWidgetLineNumber = firstRemovedWidget.getLastPosition()?.lineNumber;
           if (firstRemovedWidgetLineNumber <= lineNumber) {
             const lineHeight = this.inlineContentWidget.getLineHeight();
-            const len = firstRemovedWidget.height;
+            const len = firstRemovedWidget.height + 1;
             this.inlineContentWidget.setOffsetTop(-lineHeight * len - 4);
+          } else {
+            this.inlineContentWidget.setOffsetTop(0);
           }
         }
+      } else {
+        this.inlineContentWidget.setOffsetTop(0);
       }
     }
   }

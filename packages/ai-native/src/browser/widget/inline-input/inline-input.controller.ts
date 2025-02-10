@@ -15,6 +15,13 @@ import {
 import { EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
+import {
+  IObservable,
+  ISettableObservable,
+  autorun,
+  observableFromEvent,
+  observableValue,
+} from '@opensumi/ide-monaco/lib/common/observable';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
@@ -28,10 +35,10 @@ import { EInlineChatStatus, EResultKind } from '../inline-chat/inline-chat.servi
 import { InlineDiffController } from '../inline-diff';
 import { InlineInputPreviewDecorationID } from '../internal.type';
 
-import { InlineInputChatWidget } from './inline-input-widget';
+import { InlineInputWidget } from './inline-input-widget';
 import styles from './inline-input.module.less';
 import { InlineInputService } from './inline-input.service';
-
+import { InlineInputWidgetStoreInEmptyLine, InlineInputWidgetStoreInSelection } from './model';
 @Injectable()
 export class InlineInputController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.inline.input';
@@ -60,10 +67,25 @@ export class InlineInputController extends BaseAIMonacoEditorController {
   private inputDisposable: Disposable;
   private aiNativeContextKey: AINativeContextKey;
 
+  private inputValue: ISettableObservable<string>;
+  private modelChangeObs: IObservable<monaco.editor.ITextModel, unknown>;
+  private inlineInputWidgetStore: Map<
+    string,
+    InlineInputWidgetStoreInEmptyLine | InlineInputWidgetStoreInSelection | null
+  >;
+
   mount(): IDisposable {
     this.inputDisposable = new Disposable();
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
     this.inlineDiffController = InlineDiffController.get(this.monacoEditor)!;
+
+    this.inputValue = observableValue(this, '');
+    this.modelChangeObs = observableFromEvent<monaco.editor.ITextModel>(
+      this,
+      this.monacoEditor.onDidChangeModel,
+      () => this.monacoEditor.getModel()!,
+    );
+    this.inlineInputWidgetStore = new Map();
 
     this.featureDisposable.addDispose(
       /**
@@ -91,10 +113,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     );
 
     this.featureDisposable.addDispose(
-      Event.any<any>(
-        this.inlineInputService.onHidden,
-        this.monacoEditor.onWillChangeModel,
-      )(() => {
+      this.inlineInputService.onHidden(() => {
         this.hideInput();
       }),
     );
@@ -119,6 +138,27 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       }),
     );
 
+    this.featureDisposable.addDispose(
+      autorun((reader) => {
+        const model = this.modelChangeObs.read(reader);
+        if (!model) {
+          return;
+        }
+
+        const storeData = this.inlineInputWidgetStore.get(model.id);
+        if (!storeData) {
+          this.hideInput();
+          return;
+        }
+
+        if (storeData instanceof InlineInputWidgetStoreInEmptyLine) {
+          this.showInputInEmptyLine(storeData.getPosition(), this.monacoEditor, storeData.getValue());
+        } else if (storeData instanceof InlineInputWidgetStoreInSelection) {
+          this.showInputInSelection(storeData.getSelection(), this.monacoEditor, storeData.getValue());
+        }
+      }),
+    );
+
     this.featureDisposable.addDispose(this.inputDisposable);
 
     return this.featureDisposable;
@@ -130,6 +170,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
   }
 
   private hideInput() {
+    this.inlineInputWidgetStore.delete(this.monacoEditor.getModel()!.id);
     this.inputDisposable.dispose();
   }
 
@@ -145,15 +186,16 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       return;
     }
 
+    this.inputValue.set(defaultValue || '', undefined);
+    this.inlineInputWidgetStore.set(model.id, new InlineInputWidgetStoreInEmptyLine(position, defaultValue));
+
     if (this.inputDisposable) {
       this.inputDisposable.dispose();
       this.inputDisposable = new Disposable();
     }
 
     const collection = monacoEditor.createDecorationsCollection();
-    const inlineInputChatWidget = this.injector.get(InlineInputChatWidget, [monacoEditor, defaultValue]);
-
-    let inputValue = defaultValue;
+    const inlineInputWidget = this.injector.get(InlineInputWidget, [monacoEditor, this.inputValue.get()]);
 
     // 仅在空行情况下增加装饰逻辑
     collection.append([
@@ -172,12 +214,12 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     let preLineRange: LineRange;
     if (decorationRange) {
       preLineRange = LineRange.fromRange(decorationRange);
-      inlineInputChatWidget.show({ position: decorationRange.getStartPosition() });
+      inlineInputWidget.show({ position: decorationRange.getStartPosition() });
       this.aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
     }
 
     this.inputDisposable.addDispose(
-      inlineInputChatWidget.onDispose(() => {
+      inlineInputWidget.onDispose(() => {
         this.cancelToken();
         collection.clear();
         this.aiNativeContextKey.inlineInputWidgetIsVisible.set(false);
@@ -185,7 +227,18 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     );
 
     this.inputDisposable.addDispose(
-      inlineInputChatWidget.onResultClick(async (kind: EResultKind) => {
+      inlineInputWidget.onValueChange((value) => {
+        this.inputValue.set(value, undefined);
+
+        const storeData = this.inlineInputWidgetStore.get(model.id);
+        if (storeData instanceof InlineInputWidgetStoreInEmptyLine) {
+          storeData.setValue(value);
+        }
+      }),
+    );
+
+    this.inputDisposable.addDispose(
+      inlineInputWidget.onResultClick(async (kind: EResultKind) => {
         const clear = () => {
           const curPosi = collection.getRange(0)!;
 
@@ -210,7 +263,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
                */
               const curPosi = collection.getRange(0)!;
               const curPosition = curPosi.getStartPosition();
-              this.showInputInEmptyLine(curPosition, monacoEditor, inputValue);
+              this.showInputInEmptyLine(curPosition, monacoEditor, this.inputValue.get());
             });
             break;
 
@@ -233,18 +286,18 @@ export class InlineInputController extends BaseAIMonacoEditorController {
         const range = collection.getRange(0)!;
         const curLineRange = LineRange.fromRange(range);
         if (!preLineRange.equals(curLineRange)) {
-          inlineInputChatWidget.setOptions({
+          inlineInputWidget.setOptions({
             position: range.getStartPosition(),
           });
 
-          inlineInputChatWidget.layoutContentWidget();
+          inlineInputWidget.layoutContentWidget();
         }
         preLineRange = curLineRange;
       }),
     );
 
     this.inputDisposable.addDispose(
-      inlineInputChatWidget.onClose(() => {
+      inlineInputWidget.onClose(() => {
         const isStreaming = this.aiNativeContextKey.inlineInputWidgetIsStreaming.get();
         if (isStreaming) {
           this.cancelToken();
@@ -255,8 +308,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     );
 
     this.inputDisposable.addDispose(
-      inlineInputChatWidget.onInteractiveInputValue(async (value) => {
-        inputValue = value;
+      inlineInputWidget.onSend(async (value) => {
         monacoEditor.focus();
 
         const handler = this.inlineInputService.getInteractiveInputHandler();
@@ -266,22 +318,23 @@ export class InlineInputController extends BaseAIMonacoEditorController {
           return;
         }
 
-        inlineInputChatWidget.launchChatStatus(EInlineChatStatus.THINKING);
+        inlineInputWidget.launchChatStatus(EInlineChatStatus.THINKING);
 
         const strategy = await this.inlineInputService.getInteractiveInputStrategyHandler()(monacoEditor, value);
+        const selection = monaco.Selection.fromPositions(position);
 
         if (strategy === ERunStrategy.EXECUTE && handler.execute) {
-          handler.execute(monacoEditor, value, this.token);
-          inlineInputChatWidget.launchChatStatus(EInlineChatStatus.DONE);
+          handler.execute(monacoEditor, selection, value, this.token);
+          inlineInputWidget.launchChatStatus(EInlineChatStatus.DONE);
           this.hideInput();
           return;
         }
 
         if (strategy === ERunStrategy.PREVIEW && handler.providePreviewStrategy) {
-          const previewResponse = await handler.providePreviewStrategy(monacoEditor, value, this.token);
+          const previewResponse = await handler.providePreviewStrategy(monacoEditor, selection, value, this.token);
 
           if (CancelResponse.is(previewResponse)) {
-            inlineInputChatWidget.launchChatStatus(EInlineChatStatus.READY);
+            inlineInputWidget.launchChatStatus(EInlineChatStatus.READY);
             this.hideInput();
             return;
           }
@@ -314,17 +367,17 @@ export class InlineInputController extends BaseAIMonacoEditorController {
               }),
               controller.onError((error) => {
                 this.aiNativeContextKey.inlineInputWidgetIsStreaming.set(false);
-                inlineInputChatWidget.launchChatStatus(EInlineChatStatus.ERROR);
+                inlineInputWidget.launchChatStatus(EInlineChatStatus.READY);
               }),
               controller.onAbort(() => {
                 this.aiNativeContextKey.inlineInputWidgetIsStreaming.set(false);
                 model.pushStackElement();
-                inlineInputChatWidget.launchChatStatus(EInlineChatStatus.DONE);
+                inlineInputWidget.launchChatStatus(EInlineChatStatus.DONE);
               }),
               controller.onEnd(() => {
                 this.aiNativeContextKey.inlineInputWidgetIsStreaming.set(false);
                 model.pushStackElement();
-                inlineInputChatWidget.launchChatStatus(EInlineChatStatus.DONE);
+                inlineInputWidget.launchChatStatus(EInlineChatStatus.DONE);
               }),
             ]);
 
@@ -334,13 +387,18 @@ export class InlineInputController extends BaseAIMonacoEditorController {
       }),
     );
 
-    this.inputDisposable.addDispose(inlineInputChatWidget);
+    this.inputDisposable.addDispose(inlineInputWidget);
   }
 
   private async showInputInSelection(selection: monaco.Selection, monacoEditor: ICodeEditor, defaultValue?: string) {
     if (this.inputDisposable) {
       this.inputDisposable.dispose();
       this.inputDisposable = new Disposable();
+    }
+
+    const model = monacoEditor.getModel();
+    if (!model) {
+      return;
     }
 
     const decorationsCollection = monacoEditor.createDecorationsCollection();
@@ -360,16 +418,22 @@ export class InlineInputController extends BaseAIMonacoEditorController {
         }),
       },
     ]);
+    const decorationSelection = monaco.Selection.fromRange(
+      decorationsCollection.getRange(0)!,
+      selection.getDirection(),
+    );
 
-    const inlineInputChatWidget = this.injector.get(InlineInputChatWidget, [monacoEditor, defaultValue]);
-    inlineInputChatWidget.show({ selection });
+    this.inputValue.set(defaultValue || '', undefined);
+    this.inlineInputWidgetStore.set(model.id, new InlineInputWidgetStoreInSelection(decorationSelection, defaultValue));
+
+    const inlineInputWidget = this.injector.get(InlineInputWidget, [monacoEditor, this.inputValue.get()]);
+    inlineInputWidget.show({ selection: decorationSelection });
 
     this.aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
     this.inlineDiffController.destroyPreviewer(monacoEditor.getModel()?.uri.toString());
-    let inputValue = defaultValue;
 
     this.inputDisposable.addDispose(
-      inlineInputChatWidget.onDispose(() => {
+      inlineInputWidget.onDispose(() => {
         this.cancelToken();
         decorationsCollection.clear();
         this.aiNativeContextKey.inlineInputWidgetIsVisible.set(false);
@@ -377,7 +441,18 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     );
 
     this.inputDisposable.addDispose(
-      inlineInputChatWidget.onClose(() => {
+      inlineInputWidget.onValueChange((value) => {
+        this.inputValue.set(value, undefined);
+
+        const storeData = this.inlineInputWidgetStore.get(model.id);
+        if (storeData instanceof InlineInputWidgetStoreInSelection) {
+          storeData.setValue(value);
+        }
+      }),
+    );
+
+    this.inputDisposable.addDispose(
+      inlineInputWidget.onClose(() => {
         const isStreaming = this.aiNativeContextKey.inlineInputWidgetIsStreaming.get();
         if (isStreaming) {
           this.cancelToken();
@@ -388,10 +463,8 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     );
 
     this.inputDisposable.addDispose(
-      inlineInputChatWidget.onInteractiveInputValue(async (value) => {
-        inputValue = value;
+      inlineInputWidget.onSend(async (value) => {
         monacoEditor.focus();
-        decorationsCollection.clear();
 
         const handler = this.inlineInputService.getInteractiveInputHandler();
 
@@ -399,20 +472,22 @@ export class InlineInputController extends BaseAIMonacoEditorController {
           return;
         }
 
-        inlineInputChatWidget.launchChatStatus(EInlineChatStatus.THINKING);
+        inlineInputWidget.launchChatStatus(EInlineChatStatus.THINKING);
 
         const strategy = await this.inlineInputService.getInteractiveInputStrategyHandler()(monacoEditor, value);
 
-        const crossSelection = selection
-          .setStartPosition(selection.startLineNumber, 1)
-          .setEndPosition(selection.endLineNumber, monacoEditor.getModel()!.getLineMaxColumn(selection.endLineNumber));
-
         if (strategy === ERunStrategy.PREVIEW && handler.providePreviewStrategy) {
-          const previewResponse = await handler.providePreviewStrategy(monacoEditor, value, this.token);
+          const previewResponse = await handler.providePreviewStrategy(
+            monacoEditor,
+            decorationSelection,
+            value,
+            this.token,
+          );
 
           if (CancelResponse.is(previewResponse)) {
-            inlineInputChatWidget.launchChatStatus(EInlineChatStatus.READY);
-            this.hideInput();
+            decorationsCollection.clear();
+            this.aiNativeContextKey.inlineInputWidgetIsStreaming.set(false);
+            inlineInputWidget.launchChatStatus(EInlineChatStatus.DONE);
             return;
           }
 
@@ -421,52 +496,57 @@ export class InlineInputController extends BaseAIMonacoEditorController {
 
             this.inputDisposable.addDispose([
               chatResponse.onData((data) => {
+                decorationsCollection.clear();
                 if (ReplyResponse.is(data)) {
                   this.aiNativeContextKey.inlineInputWidgetIsStreaming.set(true);
                 }
               }),
               chatResponse.onError((error) => {
                 this.aiNativeContextKey.inlineInputWidgetIsStreaming.set(false);
-                inlineInputChatWidget.launchChatStatus(EInlineChatStatus.ERROR);
+                inlineInputWidget.launchChatStatus(EInlineChatStatus.READY);
               }),
               chatResponse.onAbort(() => {
+                decorationsCollection.clear();
                 this.aiNativeContextKey.inlineInputWidgetIsStreaming.set(false);
-                inlineInputChatWidget.launchChatStatus(EInlineChatStatus.DONE);
+                inlineInputWidget.launchChatStatus(EInlineChatStatus.DONE);
               }),
               chatResponse.onEnd(() => {
+                decorationsCollection.clear();
                 this.aiNativeContextKey.inlineInputWidgetIsStreaming.set(false);
-                inlineInputChatWidget.launchChatStatus(EInlineChatStatus.DONE);
+                inlineInputWidget.launchChatStatus(EInlineChatStatus.DONE);
               }),
             ]);
 
             chatResponse.listen();
 
             const diffPreviewer = this.inlineDiffController.showPreviewerByStream(monacoEditor, {
-              crossSelection,
+              crossSelection: decorationSelection,
               chatResponse,
             });
-            diffPreviewer.mount(inlineInputChatWidget);
+
+            diffPreviewer.mount(inlineInputWidget);
           }
         } else {
-          inlineInputChatWidget.launchChatStatus(EInlineChatStatus.READY);
+          decorationsCollection.clear();
+          inlineInputWidget.launchChatStatus(EInlineChatStatus.READY);
           this.hideInput();
         }
       }),
     );
 
     this.inputDisposable.addDispose(
-      inlineInputChatWidget.onResultClick((kind: EResultKind) => {
+      inlineInputWidget.onResultClick((kind: EResultKind) => {
         this.inlineDiffController.handleAction(kind);
         this.hideInput();
 
         if (kind === EResultKind.REGENERATE) {
           requestAnimationFrame(() => {
-            this.showInputInSelection(selection, monacoEditor, inputValue);
+            this.showInputInSelection(decorationSelection, monacoEditor, this.inputValue.get());
           });
         }
       }),
     );
 
-    this.inputDisposable.addDispose(inlineInputChatWidget);
+    this.inputDisposable.addDispose(inlineInputWidget);
   }
 }

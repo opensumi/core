@@ -2,7 +2,7 @@ import path from 'path';
 
 import { expect } from '@playwright/test';
 
-import { isWindows } from '@opensumi/ide-utils';
+import { isLinux, isWindows } from '@opensumi/ide-utils';
 
 import { OpenSumiApp } from '../app';
 import { OpenSumiExplorerView } from '../explorer-view';
@@ -307,7 +307,7 @@ console.log(a);`,
     const deleteMenu = await menu?.menuItemByName('Delete');
     await deleteMenu?.click();
     await app.page.waitForTimeout(200);
-    const confirmed = await app.getDialogButton('Move to trash');
+    const confirmed = await app.getDialogButton(!isLinux ? 'Move to Trash' : 'Delete');
     await confirmed?.click();
     await app.page.waitForTimeout(2000);
     const afterDeleteNode = await explorer.getFileStatTreeNodeByPath('test/a/d');

@@ -275,6 +275,12 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       }),
     );
 
+    this.disposer.addDispose(
+      this.debugSessionManager.onDidDestroyDebugSession(() => {
+        this.closeExceptionWidget();
+      }),
+    );
+
     this.disposer.addDispose(this.editorDisposer);
 
     this.toggleExceptionWidget();
