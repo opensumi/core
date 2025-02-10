@@ -94,7 +94,7 @@ export const AIAction = (props: AIActionProps) => {
   });
 
   const Logo = useMemo(() => {
-    const InlineChatLogo = aiNativeConfigService.inlineChat.logo;
+    const InlineChatLogo = aiNativeConfigService?.inlineChat.logo;
 
     if (typeof InlineChatLogo === 'string') {
       return <img src={InlineChatLogo} className={styles.ai_action_icon} />;
@@ -105,7 +105,7 @@ export const AIAction = (props: AIActionProps) => {
     }
 
     return null;
-  }, [aiNativeConfigService.inlineChat.logo]);
+  }, [aiNativeConfigService?.inlineChat.logo]);
 
   /**
    * loading 的遮罩
