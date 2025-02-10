@@ -2,7 +2,7 @@ import path from 'path';
 
 import { expect } from '@playwright/test';
 
-import { isMacintosh } from '@opensumi/ide-utils';
+import { isLinux } from '@opensumi/ide-utils';
 
 import { OpenSumiApp } from '..';
 import { OpenSumiDiffEditor } from '../diff-editor';
@@ -221,7 +221,7 @@ test.describe('OpenSumi Search Panel', () => {
     const deleteMenu = await menu?.menuItemByName('Delete');
     await deleteMenu?.click();
     await app.page.waitForTimeout(200);
-    const confirmed = await app.getDialogButton(isMacintosh ? 'Move to Trash' : 'Delete');
+    const confirmed = await app.getDialogButton(!isLinux ? 'Move to Trash' : 'Delete');
     await confirmed?.click();
     await app.page.waitForTimeout(2000);
 
