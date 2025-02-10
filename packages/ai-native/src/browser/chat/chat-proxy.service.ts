@@ -12,10 +12,12 @@ import {
   IAIReporter,
   IApplicationService,
   IChatProgress,
-  uuid } from '@opensumi/ide-core-common';
+  uuid,
+} from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import {
@@ -30,7 +32,6 @@ import { IChatAgentViewService } from '../types';
 
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
-
 
 /**
  * @internal
@@ -66,6 +67,9 @@ export class ChatProxyService extends Disposable {
 
   @Autowired(IApplicationService)
   private readonly applicationService: IApplicationService;
+
+  @Autowired(IMessageService)
+  private readonly messageService: IMessageService;
 
   private chatDeferred: Deferred<void> = new Deferred<void>();
 
@@ -124,6 +128,7 @@ export class ChatProxyService extends Disposable {
               this.chatDeferred.resolve();
             },
             onError: (error) => {
+              this.messageService.error(error.message);
               this.aiReporter.end(request.sessionId + '_' + request.requestId, {
                 message: error.message,
                 success: false,

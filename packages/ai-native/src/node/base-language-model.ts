@@ -14,7 +14,12 @@ export abstract class BaseLanguageModel {
 
   protected abstract initializeProvider(options: IAIBackServiceOption): any;
 
-  async request(request: string, chatReadableStream: ChatReadableStream, options: IAIBackServiceOption, cancellationToken?: CancellationToken): Promise<any> {
+  async request(
+    request: string,
+    chatReadableStream: ChatReadableStream,
+    options: IAIBackServiceOption,
+    cancellationToken?: CancellationToken,
+  ): Promise<any> {
     const provider = this.initializeProvider(options);
     const allFunctions = this.toolInvocationRegistry.getAllFunctions();
     return this.handleStreamingRequest(provider, request, allFunctions, chatReadableStream, cancellationToken);
@@ -39,9 +44,7 @@ export abstract class BaseLanguageModel {
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
-      const aiTools = Object.fromEntries(
-        tools.map((tool) => [tool.name, this.convertToolRequestToAITool(tool)]),
-      );
+      const aiTools = Object.fromEntries(tools.map((tool) => [tool.name, this.convertToolRequestToAITool(tool)]));
 
       const abortController = new AbortController();
       if (cancellationToken) {
@@ -104,6 +107,8 @@ export abstract class BaseLanguageModel {
               state: 'result',
             },
           });
+        } else if (chunk.type === 'error') {
+          chatReadableStream.emitError(new Error(chunk.error as string));
         }
       }
 
