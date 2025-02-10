@@ -63,23 +63,34 @@ export class LengthFieldBasedFrameDecoder {
 
   private async processBuffers(): Promise<void> {
     let iterations = 0;
+    let hasMoreData = false;
 
-    while (iterations < LengthFieldBasedFrameDecoder.MAX_ITERATIONS) {
-      if (this.buffers.byteLength === 0) {
-        break;
+    do {
+      hasMoreData = false;
+      while (iterations < LengthFieldBasedFrameDecoder.MAX_ITERATIONS) {
+        if (this.buffers.byteLength === 0) {
+          break;
+        }
+
+        const result = await this.readFrame();
+        if (result === true) {
+          break;
+        }
+
+        iterations++;
+        if (iterations % 10 === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
       }
 
-      const result = await this.readFrame();
-      if (result === true) {
-        break;
+      // 检查剩余数据
+      if (this.buffers.byteLength > 0) {
+        hasMoreData = true;
+        // 异步继续处理，避免阻塞
+        await new Promise((resolve) => setImmediate(resolve));
+        iterations = 0; // 重置迭代计数器
       }
-
-      iterations++;
-      // 每处理几个包就让出执行权
-      if (iterations % 10 === 0) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      }
-    }
+    } while (hasMoreData);
   }
 
   protected async readFrame(): Promise<boolean> {

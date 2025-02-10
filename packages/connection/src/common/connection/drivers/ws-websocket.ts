@@ -16,7 +16,7 @@ interface SendQueueItem {
 
 export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();
-  private static readonly MAX_QUEUE_SIZE = 100; // 限制队列长度
+  private static readonly MAX_QUEUE_SIZE = 1000; // 限制队列长度
 
   private sendQueue: SendQueueItem[] = [];
   private pendingSize = 0;
@@ -30,7 +30,9 @@ export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
   }
 
   private async processSendQueue() {
-    if (this.sending) { return; }
+    if (this.sending) {
+      return;
+    }
     this.sending = true;
 
     while (this.sendQueue.length > 0) {
