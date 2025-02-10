@@ -47,6 +47,8 @@ export class FileTreeDialogService extends Tree {
 
   public _whenReady: Promise<void>;
 
+  showFilePathSearch: boolean;
+
   constructor(@Optional() root: string) {
     super();
     this._whenReady = this.resolveWorkspaceRoot(root);
@@ -192,6 +194,12 @@ export class FileTreeDialogService extends Tree {
       throw new Error(`Failed to create file: ${e.message}`);
     }
   }
+
+  renderWarningMsg() {
+    return null;
+  }
+
+  getDefaultFilePath(defaultPath: string) { return defaultPath; }
 
   dispose() {
     super.dispose();
