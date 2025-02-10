@@ -79,6 +79,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       for (const [_uri, { options, disposable }] of this.watcherCollection) {
         this.logger.log('rewatch file changes: ', _uri, ' recursive: ', options?.recursive);
         disposable.dispose();
+        this.watcherCollection.delete(_uri);
         this.doWatch(Uri.parse(_uri), options);
       }
     }
@@ -135,8 +136,9 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     await this.unrecursiveFileSystemWatcher!.watchFileChanges(uri.toString());
 
     disposables.push(
-      Disposable.create(() => {
-        this.unrecursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
+      Disposable.create(async () => {
+        await this.unrecursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
+        this.logger.log('dispose unrecursive watcher: ', uri.toString());
         this.watchedDirs.delete(uri.toString());
         this.WATCHER_HANDLERS.delete(watcherId);
       }),
@@ -151,7 +153,8 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
         });
 
         disposables.push(
-          Disposable.create(() => {
+          Disposable.create(async () => {
+            this.logger.log('dispose recursive watcher: ', uri.toString());
             this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
             this.watchedDirs.delete(uri.toString());
             this.WATCHER_HANDLERS.delete(watcherId);
