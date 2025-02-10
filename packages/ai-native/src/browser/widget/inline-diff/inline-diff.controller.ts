@@ -6,12 +6,18 @@ import {
   Emitter,
   Event,
   IDisposable,
-  IEventBus,
   ReplyResponse,
 } from '@opensumi/ide-core-common';
-import { EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
+import {
+  IObservable,
+  ISettableObservable,
+  autorun,
+  observableFromEvent,
+  observableValue,
+  transaction,
+} from '@opensumi/ide-monaco/lib/common/observable';
 
 import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { EInlineDiffPreviewMode } from '../../preferences/schema';
@@ -27,6 +33,8 @@ import {
 } from './inline-diff-previewer';
 import { InlineDiffWidget } from './inline-diff-widget';
 
+type IInlineDiffPreviewer = BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
+
 export class InlineDiffController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.inline.diff';
 
@@ -38,106 +46,71 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     return this.injector.get(PreferenceService);
   }
 
-  private get eventBus(): IEventBus {
-    return this.injector.get(IEventBus);
-  }
-
   private readonly _onMaxLineCount = new Emitter<number>();
   public readonly onMaxLineCount: Event<number> = this._onMaxLineCount.event;
 
-  private previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined;
-  private _previewerNodeStore = new Map<string, InlineStreamDiffHandler | null>();
+  private previewerStore: Map<string, IInlineDiffPreviewer>;
+  private currentPreviewer: ISettableObservable<IInlineDiffPreviewer | undefined>;
+  private modelChangeObs: IObservable<monaco.editor.ITextModel, unknown>;
 
   mount(): IDisposable {
-    this.featureDisposable.addDispose(
-      this.eventBus.on(EditorGroupCloseEvent, (e: EditorGroupCloseEvent) => {
-        const uriString = e.payload.resource.uri.toString();
-        const node = this.getStoredState(uriString);
+    this.previewerStore = new Map();
+    this.currentPreviewer = observableValue(this, undefined);
+    this.modelChangeObs = observableFromEvent<monaco.editor.ITextModel>(
+      this,
+      this.monacoEditor.onDidChangeModel,
+      () => this.monacoEditor.getModel()!,
+    );
 
-        if (node && node.previewerOptions.disposeWhenEditorClosed) {
-          this.destroyPreviewer(uriString);
+    this.featureDisposable.addDispose(
+      autorun((reader) => {
+        const model = this.modelChangeObs.read(reader);
+        if (!model) {
+          return;
+        }
+
+        /**
+         * 切换到其他 model 且 previewer 未卸载时
+         * 保留 previewer 的实例，仅卸载 previewer 的渲染层
+         */
+        const id = model.id;
+        const previewer = this.currentPreviewer.read(reader);
+        if (previewer && previewer.id !== id && !previewer.disposed) {
+          previewer.hide();
+        }
+
+        const storedPreview = this.previewerStore.get(model.id);
+        if (storedPreview && storedPreview.id === id) {
+          transaction((tx) => {
+            this.currentPreviewer.set(storedPreview, tx);
+            storedPreview.resume();
+          });
+        } else {
+          transaction((tx) => {
+            this.currentPreviewer.set(undefined, tx);
+          });
         }
       }),
     );
-
-    this.registerInlineDiffFeature(this.monacoEditor);
 
     return this.featureDisposable;
   }
 
-  storeState(key: string) {
-    if (!this.previewer) {
+  getPreviewer(): IInlineDiffPreviewer | undefined {
+    return this.currentPreviewer.get();
+  }
+
+  private renderDiff(data: ReplyResponse) {
+    const previewer = this.getPreviewer();
+    if (!previewer) {
       return;
     }
 
-    // 存储的是快照
-    const node = this.previewer.createNodeSnapshot();
-    if (node) {
-      this._previewerNodeStore.set(key, node as InlineStreamDiffHandler);
-    }
-  }
+    previewer.onData(data);
 
-  tryRestoreState(monacoEditor: monaco.ICodeEditor, key: string) {
-    const node = this.getStoredState(key);
-    if (!node) {
-      return;
-    }
-
-    if (node.disposed) {
-      this.destroyPreviewer(key);
-      return;
-    }
-
-    return this.restoreState(monacoEditor, node);
-  }
-
-  restoreState(monacoEditor: monaco.ICodeEditor, node: InlineStreamDiffHandler) {
-    const uri = monacoEditor.getModel()?.uri;
-
-    if (uri) {
-      this.previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
-      this.previewer.attachNode(node);
-      this.listenPreviewer(this.previewer);
-
-      const dispose = this.previewer.onDispose(() => {
-        this.destroyPreviewer();
-        dispose.dispose();
-      });
-    }
-  }
-
-  registerInlineDiffFeature(monacoEditor: monaco.ICodeEditor): void {
-    const model = monacoEditor.getModel();
-
-    this.featureDisposable.addDispose(
-      monacoEditor.onWillChangeModel((e) => {
-        if (!e.oldModelUrl) {
-          return;
-        }
-
-        const urlString = e.oldModelUrl.toString();
-        this.storeState(urlString);
-
-        this.destroyPreviewer();
-      }),
-    );
-
-    this.featureDisposable.addDispose(
-      monacoEditor.onDidChangeModel((e) => {
-        if (!e.newModelUrl) {
-          return;
-        }
-        this.tryRestoreState(monacoEditor, e.newModelUrl.toString());
-      }),
-    );
-
-    if (model) {
-      this.featureDisposable.addDispose(
-        model.onWillDispose(() => {
-          const uriString = model.uri.toString();
-          this.destroyPreviewer(uriString);
-        }),
-      );
+    // 仅在当前 model 中进行流式渲染
+    if (this.modelChangeObs.get()?.id === previewer.id) {
+      previewer.render();
     }
   }
 
@@ -154,6 +127,10 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     const disposable = new Disposable();
 
     const previewer = this.createDiffPreviewer(monacoEditor, crossSelection, options.previewerOptions);
+    transaction((tx) => {
+      this.currentPreviewer.set(previewer, tx);
+      this.previewerStore.set(previewer.id, previewer);
+    });
 
     const onFinish = () => {
       previewer.layout();
@@ -168,7 +145,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
           disposable.addDispose([
             controller.onData((data) => {
               if (ReplyResponse.is(data)) {
-                previewer.onData(data);
+                this.renderDiff(data);
               }
             }),
             controller.onError((error) => {
@@ -203,59 +180,74 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
       EInlineDiffPreviewMode.inlineLive,
     );
 
-    this.destroyPreviewer();
+    let previewer: IInlineDiffPreviewer;
 
     if (inlineDiffMode === EInlineDiffPreviewMode.sideBySide) {
-      this.previewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor]);
+      previewer = this.injector.get(SideBySideInlineDiffWidget, [monacoEditor]);
     } else {
-      this.previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
+      previewer = this.injector.get(LiveInlineDiffPreviewer, [monacoEditor]);
     }
 
-    this.previewer.create(selection, options);
-    this.previewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
+    previewer.create(selection, options);
+    previewer.show(selection.startLineNumber - 1, selection.endLineNumber - selection.startLineNumber + 2);
 
-    this.listenPreviewer(this.previewer);
+    previewer.addDispose(previewer.onLineCount((lineCount) => this._onMaxLineCount.fire(lineCount)));
 
-    return this.previewer;
+    previewer.addDispose(
+      Disposable.create(() => {
+        this.previewerStore.delete(previewer.id);
+      }),
+    );
+
+    return previewer;
   }
 
-  private listenPreviewer(previewer: BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined) {
+  handleAction(action: EResultKind): void {
+    const previewer = this.getPreviewer();
     if (!previewer) {
       return;
     }
 
-    previewer.addDispose(previewer.onLineCount((lineCount) => this._onMaxLineCount.fire(lineCount)));
-  }
-
-  getPreviewer(): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> | undefined {
-    return this.previewer;
-  }
-
-  getStoredState(uri: string) {
-    return this._previewerNodeStore.get(uri);
-  }
-
-  handleAction(action: EResultKind): void {
-    this.previewer?.handleAction(action);
+    previewer.handleAction(action);
   }
 
   getModifyContent() {
-    return this.previewer?.getValue();
+    const previewer = this.getPreviewer();
+    if (!previewer) {
+      return;
+    }
+
+    return previewer.getValue();
   }
 
   getOriginContent() {
-    return this.previewer?.getOriginValue();
+    const previewer = this.getPreviewer();
+    if (!previewer) {
+      return;
+    }
+
+    return previewer.getOriginValue();
   }
 
-  destroyPreviewer(uriString?: string) {
-    this.previewer?.dispose();
-    this.previewer = undefined;
-    if (uriString) {
-      this._previewerNodeStore.delete(uriString);
+  destroyPreviewer() {
+    const previewer = this.getPreviewer();
+    if (!previewer) {
+      return;
     }
+
+    previewer.dispose();
+    transaction((tx) => {
+      this.currentPreviewer.set(undefined, tx);
+      this.previewerStore.delete(previewer.id);
+    });
   }
 
   revealFirstDiff() {
-    this.previewer?.revealFirstDiff();
+    const previewer = this.getPreviewer();
+    if (!previewer) {
+      return;
+    }
+
+    previewer.revealFirstDiff();
   }
 }

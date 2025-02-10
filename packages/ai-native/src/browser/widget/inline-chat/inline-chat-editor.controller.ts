@@ -446,7 +446,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
     }
 
     const diffPreviewer = this.inlineDiffController.showPreviewerByStream(monacoEditor, options);
-    diffPreviewer.mount(this.aiInlineContentWidget);
+    diffPreviewer.mountWidget(this.aiInlineContentWidget);
   }
 
   private ensureInlineChatVisible(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection) {
@@ -472,7 +472,6 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
     const { monacoEditor, strategy, crossSelection, relationId, isRetry, actionType, actionSource } = params;
     const model = monacoEditor.getModel();
 
-    this.inlineDiffController.destroyPreviewer(model!.uri.toString());
     this.aiInlineChatOperationDisposable.dispose();
 
     this.ensureInlineChatVisible(monacoEditor, crossSelection);

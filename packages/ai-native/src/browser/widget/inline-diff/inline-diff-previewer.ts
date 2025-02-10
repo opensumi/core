@@ -44,10 +44,13 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
   protected inlineContentWidget: AIInlineContentWidget | null = null;
   protected selection: Selection;
   protected model: ITextModel;
+  public id: string;
 
   constructor(protected readonly monacoEditor: ICodeEditor) {
     super();
     this.model = this.monacoEditor.getModel()!;
+    this.id = this.model.id;
+
     this.addDispose(
       Disposable.create(() => {
         if (this.inlineContentWidget) {
@@ -107,11 +110,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     return this.node;
   }
 
-  public createNodeSnapshot(): N | undefined {
-    return this.node;
-  }
-
-  public mount(contentWidget: AIInlineContentWidget): void {
+  public mountWidget(contentWidget: AIInlineContentWidget): void {
     this.inlineContentWidget = contentWidget;
   }
 
@@ -157,25 +156,54 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
   setValue(content: string): void {
     // do nothing
   }
+
   getValue(): string {
     // do nothing
     return '';
   }
+
   getOriginValue(): string {
     // do nothing
     return '';
   }
+
   onError(error: ErrorResponse): void {
     // do nothing
   }
+
   onAbort(): void {
     // do nothing
   }
+
   onEnd(): void {
     // do nothing
   }
 
   revealFirstDiff(): void {
+    // do nothing
+  }
+
+  /**
+   * 会新建一个渲染层的实例
+   * 或重新赋值渲染层的数据
+   * 适用于首次渲染
+   */
+  render(): void {
+    // do nothing
+  }
+
+  /**
+   * 仅隐藏渲染层，而不销毁实例
+   */
+  hide(): void {
+    // do nothing
+  }
+
+  /**
+   * 恢复渲染层
+   * 适用于非首次渲染
+   */
+  resume(): void {
     // do nothing
   }
 
@@ -201,8 +229,8 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     return widget;
   }
 
-  mount(contentWidget: AIInlineContentWidget): void {
-    super.mount(contentWidget);
+  mountWidget(contentWidget: AIInlineContentWidget): void {
+    super.mountWidget(contentWidget);
     contentWidget.addDispose(this);
   }
 
@@ -310,32 +338,6 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     return node;
   }
 
-  attachNode(node: InlineStreamDiffHandler): void {
-    this.node?.dispose();
-    this.node = node;
-
-    if (node) {
-      const snapshot = node.currentSnapshotStore;
-      if (snapshot) {
-        this.node.restoreDecorationSnapshot(snapshot.decorationSnapshotData);
-        this.listenNode(node);
-      }
-    }
-  }
-
-  createNodeSnapshot(): InlineStreamDiffHandler | undefined {
-    if (!this.node) {
-      return this.createNode();
-    }
-
-    // 拿前一个 node 的快照信息
-    const snapshot = this.node.createSnapshot();
-    // 创建新的实例
-    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
-    node.restoreSnapshot(snapshot);
-    return node;
-  }
-
   getPosition(): IPosition {
     const zone = this.node?.getZone();
     if (zone) {
@@ -393,6 +395,21 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
         this.inlineContentWidget.setOffsetTop(0);
       }
     }
+  }
+
+  render(): void {
+    this.inlineContentWidget?.show();
+    this.node?.rateRenderEditController();
+  }
+
+  hide(): void {
+    this.inlineContentWidget?.hide();
+    this.node?.hide();
+  }
+
+  resume(): void {
+    this.inlineContentWidget?.show();
+    this.node?.resume();
   }
 
   onData(data: ReplyResponse): void {
