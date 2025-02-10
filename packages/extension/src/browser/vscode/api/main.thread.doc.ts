@@ -124,6 +124,10 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     return this.docSyncEnabled.get(uriString) ?? false;
   }
 
+  public isDocIgnored(uri: URI): boolean {
+    return uri.codeUri.scheme === Schemes.walkThroughSnippet;
+  }
+
   constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
 
@@ -148,7 +152,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelContentChangedEvent)
   onEditorDocumentModelContentChangeEvent(e: EditorDocumentModelContentChangedEvent) {
-    if (!this.isDocSyncEnabled(e.payload.uri)) {
+    if (!this.isDocSyncEnabled(e.payload.uri) || this.isDocIgnored(e.payload.uri)) {
       return;
     }
 
@@ -165,7 +169,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelWillSaveEvent)
   async onEditorDocumentModelWillSaveEvent(e: EditorDocumentModelWillSaveEvent) {
-    if (!this.isDocSyncEnabled(e.payload.uri)) {
+    if (!this.isDocSyncEnabled(e.payload.uri) || this.isDocIgnored(e.payload.uri)) {
       return;
     }
     await this.proxy.$fireModelWillSaveEvent({
@@ -177,7 +181,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelOptionChangedEvent)
   onEditorDocumentModelOptionChangedEvent(e: EditorDocumentModelOptionChangedEvent) {
-    if (!this.isDocSyncEnabled(e.payload.uri)) {
+    if (!this.isDocSyncEnabled(e.payload.uri) || this.isDocIgnored(e.payload.uri)) {
       return;
     }
     this.proxy.$fireModelOptionsChangedEvent({
@@ -190,7 +194,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelCreationEvent)
   onEditorDocumentModelContentCreationEvent(e: EditorDocumentModelCreationEvent) {
-    if (!this.isDocSyncEnabled(e.payload.uri)) {
+    if (!this.isDocSyncEnabled(e.payload.uri) || this.isDocIgnored(e.payload.uri)) {
       return;
     }
     this.proxy.$fireModelOpenedEvent({
@@ -205,7 +209,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelRemovalEvent)
   onEditorDocumentModelRemovedEvent(e: EditorDocumentModelRemovalEvent) {
-    if (!this.isDocSyncEnabled(e.payload)) {
+    if (!this.isDocSyncEnabled(e.payload) || this.isDocIgnored(e.payload)) {
       return;
     }
     this.proxy.$fireModelRemovedEvent({
@@ -215,7 +219,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelSavedEvent)
   onEditorDocumentModelSavingEvent(e: EditorDocumentModelSavedEvent) {
-    if (!this.isDocSyncEnabled(e.payload)) {
+    if (!this.isDocSyncEnabled(e.payload) || this.isDocIgnored(e.payload)) {
       return;
     }
     this.proxy.$fireModelSavedEvent({

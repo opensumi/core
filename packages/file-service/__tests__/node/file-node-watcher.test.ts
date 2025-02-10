@@ -18,7 +18,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
     const watcherServer = new UnRecursiveFileSystemWatcher(injector.get(ILogServiceManager).getLogger());
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
-    await watcherServer.watchFileChanges(root.toString());
+    await watcherServer.watchFileChanges(root.path.toString());
     return { root, watcherServer };
   }
   const watcherServerList: UnRecursiveFileSystemWatcher[] = [];

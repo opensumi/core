@@ -37,7 +37,7 @@ async function initWatcherProcess() {
   });
 
   const logger = new WatcherProcessLogger(watcherInjector, initData.logDir, initData.logLevel);
-  const watcherHostService = new WatcherHostServiceImpl(watcherProtocol, logger);
+  const watcherHostService = new WatcherHostServiceImpl(watcherProtocol, logger, initData.backend);
   watcherHostService.initWatcherServer();
 }
 

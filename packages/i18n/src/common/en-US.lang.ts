@@ -1459,11 +1459,14 @@ export const localizationBundle = {
     'aiNative.chat.expand.fullescreen': 'fullescreen',
     'aiNative.chat.enter.send': 'Send (Enter)',
 
+    'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
     'aiNative.inline.chat.input.placeholder.default': 'New code instructions...(↑↓ for history)',
+    'aiNative.inline.chat.generating.canceled': 'Inline Chat Generating Canceled.',
+
     'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
     'aiNative.inline.problem.fix.title': 'Fix with AI',
     'aiNative.inline.diff.accept': 'Accept',

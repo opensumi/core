@@ -15,6 +15,7 @@ import {
   Disposable,
   ErrorResponse,
   Event,
+  FRAME_THREE,
   IAIReporter,
   IDisposable,
   ILogServiceClient,
@@ -30,14 +31,14 @@ import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
+import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { CodeActionService } from '../../contrib/code-action/code-action.service';
-import { ERunStrategy } from '../../types';
 import { InlineDiffController } from '../inline-diff/inline-diff.controller';
 
 import { InlineChatController } from './inline-chat-controller';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
-import { AIInlineChatService, EInlineChatStatus, EResultKind } from './inline-chat.service';
+import { EInlineChatStatus, EResultKind, InlineChatService } from './inline-chat.service';
 import { AIInlineContentWidget } from './inline-content-widget';
 
 export class InlineChatEditorController extends BaseAIMonacoEditorController {
@@ -51,7 +52,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
     return this.injector.get(AINativeConfigService);
   }
 
-  private get aiInlineChatService(): AIInlineChatService {
+  private get aiInlineChatService(): InlineChatService {
     return this.injector.get(IAIInlineChatService);
   }
 
@@ -86,11 +87,13 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
   private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposable: Disposable = new Disposable();
   private aiInlineChatOperationDisposable: Disposable = new Disposable();
+  private aiNativeContextKey: AINativeContextKey;
   private inlineChatInUsing = false;
 
   private inlineDiffController: InlineDiffController;
 
   mount(): IDisposable {
+    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
     this.inlineDiffController = InlineDiffController.get(this.monacoEditor)!;
 
     if (!this.monacoEditor) {
@@ -178,7 +181,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
       Event.debounce(
         Event.any<any>(this.monacoEditor.onDidChangeCursorSelection, this.monacoEditor.onMouseUp),
         (_, e) => e,
-        100,
+        FRAME_THREE,
       )(() => {
         if (!prefInlineChatAutoVisible || !needShowInlineChat) {
           return;
@@ -197,7 +200,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
     return this.featureDisposable;
   }
 
-  private disposeAllWidget() {
+  public disposeAllWidget() {
     [this.aiInlineContentWidget, this.aiInlineChatDisposable, this.aiInlineChatOperationDisposable].forEach(
       (widget) => {
         widget?.dispose();
@@ -224,9 +227,21 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
       return;
     }
 
+    // 如果 inline input 正在展示，则不展示 inline chat
+    const isInlineInputVisible = this.aiNativeContextKey.inlineInputWidgetIsVisible.get();
+    if (isInlineInputVisible) {
+      return;
+    }
+
+    const isInlineStreaming = this.aiNativeContextKey.inlineInputWidgetIsStreaming.get();
+    if (isInlineStreaming) {
+      return;
+    }
+
     if (!this.aiNativeConfigService.capabilities.supportsInlineChat) {
       return;
     }
+
     if (this.inlineChatInUsing) {
       return;
     }
@@ -242,12 +257,6 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
     }
 
     this.showInlineContentWidget(monacoEditor, selection);
-
-    this.aiInlineChatDisposable.addDispose(
-      this.inlineChatFeatureRegistry.onChatClick(() => {
-        this.aiInlineChatService.launchInputVisible(true);
-      }),
-    );
 
     this.aiInlineChatDisposable.addDispose(
       this.aiInlineContentWidget.onActionClick(({ actionId, source }) => {
@@ -293,49 +302,6 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
           extraData: {
             actionSource: source === 'codeAction' ? ActionSourceEnum.CodeAction : ActionSourceEnum.InlineChat,
             actionType: action.name,
-          },
-        });
-      }),
-    );
-
-    this.aiInlineChatDisposable.addDispose(
-      this.aiInlineContentWidget.onInteractiveInputValue(async (value) => {
-        const handler = this.inlineChatFeatureRegistry.getInteractiveInputHandler();
-
-        if (!handler) {
-          return;
-        }
-
-        const strategy = await this.inlineChatFeatureRegistry.getInteractiveInputStrategyHandler()(monacoEditor, value);
-
-        const crossSelection = this.getCrossSelection(monacoEditor);
-        if (!crossSelection) {
-          return;
-        }
-
-        this.runAction({
-          monacoEditor,
-          crossSelection,
-          reporterFn: () => {
-            const relationId = this.aiReporter.start(AIServiceType.InlineChatInput, {
-              message: value,
-              type: AIServiceType.InlineChatInput,
-              source: 'input',
-              actionSource: ActionSourceEnum.InlineChatInput,
-            });
-            return relationId;
-          },
-          execute:
-            handler.execute && strategy === ERunStrategy.EXECUTE
-              ? handler.execute!.bind(this, monacoEditor, value, this.token)
-              : undefined,
-          providerPreview:
-            handler.providePreviewStrategy && strategy === ERunStrategy.PREVIEW
-              ? handler.providePreviewStrategy.bind(this, monacoEditor, value, this.token)
-              : undefined,
-          extraData: {
-            actionSource: ActionSourceEnum.InlineChatInput,
-            actionType: strategy,
           },
         });
       }),

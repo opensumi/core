@@ -29,7 +29,7 @@ import {
   isFunction,
   isUndefinedOrNull,
 } from '@opensumi/ide-core-common';
-import { FileStat, FileSystemProvider } from '@opensumi/ide-core-common/lib/types/file';
+import { FileStat, FileSystemProvider, RecursiveWatcherBackend } from '@opensumi/ide-core-common/lib/types/file';
 
 import type { Range } from 'vscode-languageserver-types';
 export {
@@ -420,7 +420,7 @@ export function containsExtraFileMethod<X extends {}, Y extends keyof ExtendedFi
 }
 
 export interface IDiskFileProvider extends FileSystemProvider {
-  initialize?: (clientid: string) => Promise<void>;
+  initialize?: (clientid: string, backend?: RecursiveWatcherBackend) => Promise<void>;
   copy: FileCopyFn;
   access: FileAccessFn;
   getCurrentUserHome: FileGetCurrentUserHomeFn;
