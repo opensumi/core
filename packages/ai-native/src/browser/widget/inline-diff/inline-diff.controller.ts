@@ -80,16 +80,14 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
         }
 
         const storedPreview = this.previewerStore.get(model.id);
-        if (storedPreview && storedPreview.id === id) {
-          transaction((tx) => {
+        transaction((tx) => {
+          if (storedPreview && storedPreview.id === id) {
             this.currentPreviewer.set(storedPreview, tx);
             storedPreview.resume();
-          });
-        } else {
-          transaction((tx) => {
+          } else {
             this.currentPreviewer.set(undefined, tx);
-          });
-        }
+          }
+        });
       }),
     );
 
@@ -227,19 +225,6 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     }
 
     return previewer.getOriginValue();
-  }
-
-  destroyPreviewer() {
-    const previewer = this.getPreviewer();
-    if (!previewer) {
-      return;
-    }
-
-    previewer.dispose();
-    transaction((tx) => {
-      this.currentPreviewer.set(undefined, tx);
-      this.previewerStore.delete(previewer.id);
-    });
   }
 
   revealFirstDiff() {
