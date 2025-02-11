@@ -18,7 +18,6 @@ import { ICodeEditor } from '@opensumi/ide-monaco';
 import {
   IObservable,
   ISettableObservable,
-  autorun,
   observableFromEvent,
   observableValue,
 } from '@opensumi/ide-monaco/lib/common/observable';
@@ -101,7 +100,6 @@ export class InlineInputController extends BaseAIMonacoEditorController {
         const currentUri = this.monacoEditor.getModel()?.uri.toString();
 
         if (currentUri === resource) {
-          this.inlineDiffController.destroyPreviewer(currentUri);
           this.hideInput();
 
           const message = localize('aiNative.inline.chat.generating.canceled');
@@ -135,27 +133,6 @@ export class InlineInputController extends BaseAIMonacoEditorController {
         }
 
         this.showInputInSelection(selection, this.monacoEditor);
-      }),
-    );
-
-    this.featureDisposable.addDispose(
-      autorun((reader) => {
-        const model = this.modelChangeObs.read(reader);
-        if (!model) {
-          return;
-        }
-
-        const storeData = this.inlineInputWidgetStore.get(model.id);
-        if (!storeData) {
-          this.hideInput();
-          return;
-        }
-
-        if (storeData instanceof InlineInputWidgetStoreInEmptyLine) {
-          this.showInputInEmptyLine(storeData.getPosition(), this.monacoEditor, storeData.getValue());
-        } else if (storeData instanceof InlineInputWidgetStoreInSelection) {
-          this.showInputInSelection(storeData.getSelection(), this.monacoEditor, storeData.getValue());
-        }
       }),
     );
 
@@ -430,7 +407,6 @@ export class InlineInputController extends BaseAIMonacoEditorController {
     inlineInputWidget.show({ selection: decorationSelection });
 
     this.aiNativeContextKey.inlineInputWidgetIsVisible.set(true);
-    this.inlineDiffController.destroyPreviewer(monacoEditor.getModel()?.uri.toString());
 
     this.inputDisposable.addDispose(
       inlineInputWidget.onDispose(() => {
@@ -517,14 +493,14 @@ export class InlineInputController extends BaseAIMonacoEditorController {
               }),
             ]);
 
-            chatResponse.listen();
-
             const diffPreviewer = this.inlineDiffController.showPreviewerByStream(monacoEditor, {
               crossSelection: decorationSelection,
               chatResponse,
             });
 
-            diffPreviewer.mount(inlineInputWidget);
+            diffPreviewer.mountWidget(inlineInputWidget);
+
+            chatResponse.listen();
           }
         } else {
           decorationsCollection.clear();

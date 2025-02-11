@@ -21,6 +21,11 @@ import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/to
 import { IOptions, ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
+import {
+  DeltaDecorations,
+  EnhanceDecorationsCollection,
+  IDeltaDecorationsOptions,
+} from '../../model/enhanceDecorationsCollection';
 import { renderLines } from '../ghost-text-widget/index';
 
 import styles from './inline-stream-diff.module.less';
@@ -34,7 +39,7 @@ interface IPartialEditWidgetComponent {
   discardSequence: string;
 }
 
-export type IWidgetStatus = 'accept' | 'discard' | 'pending';
+type IWidgetStatus = 'accept' | 'discard' | 'pending';
 
 export interface IRemovedWidgetState {
   textLines: ITextLinesTokens[];
@@ -141,7 +146,7 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
   private readonly keybindingRegistry: KeybindingRegistry;
 
   private _id: string;
-  private _decorationId: string;
+  private _addedRangeId: string;
 
   private readonly _onAccept = this.registerDispose(new Emitter<void>());
   public readonly onAccept: Event<void> = this._onAccept.event;
@@ -209,12 +214,12 @@ export class AcceptPartialEditWidget extends ReactInlineContentWidget {
     return styles.accept_partial_edit_widget_id;
   }
 
-  public recordDecorationId(id: string): void {
-    this._decorationId = id;
+  public recordAddedRangeId(id: string): void {
+    this._addedRangeId = id;
   }
 
-  public getDecorationId(): string {
-    return this._decorationId;
+  public getAddedRangeId(): string {
+    return this._addedRangeId;
   }
 
   public resume(): void {
@@ -314,6 +319,8 @@ export class RemovedZoneWidget extends ZoneWidget {
     return this._group;
   }
 
+  public status: IWidgetStatus = 'pending';
+
   constructor(editor: ICodeEditor, public readonly textLines: ITextLinesTokens[], options: IRemovedZoneWidgetOptions) {
     super(editor, options);
 
@@ -362,12 +369,23 @@ export class RemovedZoneWidget extends ZoneWidget {
     return this.position || this._recordPosition;
   }
 
+  accept(): void {
+    this.status = 'accept';
+    this.hide();
+  }
+
+  discard(): void {
+    this.status = 'discard';
+    super.hide();
+  }
+
   hide(): void {
     this._hidden = true;
     super.hide();
   }
 
   resume(): void {
+    this.status = 'pending';
     const position = this.getLastPosition();
     if (position) {
       this.show(position, this.height);
@@ -376,6 +394,7 @@ export class RemovedZoneWidget extends ZoneWidget {
 
   override show(pos: IPosition, heightInLines: number): void {
     this._hidden = false;
+    this.status = 'pending';
     super.show(pos, heightInLines);
   }
 
@@ -405,5 +424,25 @@ export class RemovedZoneWidget extends ZoneWidget {
   dispose(): void {
     this.root.unmount();
     super.dispose();
+  }
+}
+
+class AddedRangeDeltaDecorations extends DeltaDecorations {
+  public status: IWidgetStatus = 'pending';
+
+  accept(): void {
+    this.status = 'accept';
+    super.hide();
+  }
+
+  discard(): void {
+    this.status = 'discard';
+    super.hide();
+  }
+}
+
+export class AddedRangeDecorationsCollection extends EnhanceDecorationsCollection<AddedRangeDeltaDecorations> {
+  protected override createDecorations(metaData: IDeltaDecorationsOptions) {
+    return new AddedRangeDeltaDecorations(metaData);
   }
 }
