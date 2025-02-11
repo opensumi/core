@@ -28,7 +28,7 @@ import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs
 import {
   SuggestItemInfo,
   SuggestWidgetAdaptor,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/model/suggestWidgetAdaptor';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/model/suggestWidgetAdapter';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { AINativeContextKey } from '../../ai-core.contextkeys';
@@ -144,8 +144,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
             model?.inlineCompletionState.read(reader);
 
             const suggestWidgetSelectedItem = inlineCompletionsController['_suggestWidgetSelectedItem'] as IObservable<
-              SuggestItemInfo | undefined,
-              unknown
+              SuggestItemInfo | undefined
             >;
             const selectedItem = suggestWidgetSelectedItem.get();
             if (selectedItem) {
