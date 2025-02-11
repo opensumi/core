@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AnthropicModel } from '@opensumi/ide-ai-native/lib/node/anthropic/anthropic-language-model';
 import { DeepSeekModel } from '@opensumi/ide-ai-native/lib/node/deepseek/deepseek-language-model';
+import { OpenAIModel } from '@opensumi/ide-ai-native/lib/node/openai/openai-language-model';
 import { IAIBackServiceOption } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
@@ -51,8 +52,8 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
   @Autowired(AnthropicModel)
   protected readonly anthropicModel: AnthropicModel;
 
-  // @Autowired(OpenAIModel)
-  // protected readonly openaiModel: OpenAIModel;
+  @Autowired(OpenAIModel)
+  protected readonly openaiModel: OpenAIModel;
 
   @Autowired(DeepSeekModel)
   protected readonly deepseekModel: DeepSeekModel;
@@ -78,7 +79,6 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<ChatReadableStream> {
-    const length = streamData.length;
     const chatReadableStream = new ChatReadableStream();
 
     cancelToken?.onCancellationRequested(() => {
@@ -87,7 +87,9 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
 
     const model = options.model;
 
-    if (model === 'deepseek') {
+    if (model === 'openai') {
+      this.openaiModel.request(input, chatReadableStream, options, cancelToken);
+    } else if (model === 'deepseek') {
       this.deepseekModel.request(input, chatReadableStream, options, cancelToken);
     } else {
       this.anthropicModel.request(input, chatReadableStream, options, cancelToken);

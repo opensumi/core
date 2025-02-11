@@ -1538,5 +1538,9 @@ export const localizationBundle = {
     'preference.ai.native.deepseek.apiKey.description': 'API key for Deepseek language model',
     'preference.ai.native.anthropic.apiKey': 'Anthropic API Key',
     'preference.ai.native.anthropic.apiKey.description': 'API key for Anthropic language model',
+    'preference.ai.native.openai.apiKey': 'OpenAI API Key',
+    'preference.ai.native.openai.apiKey.description': 'API key for OpenAI Compatible language model',
+    'preference.ai.native.openai.baseURL': 'OpenAI Base URL',
+    'preference.ai.native.openai.baseURL.description': 'Base URL for OpenAI Compatible language model',
   },
 };

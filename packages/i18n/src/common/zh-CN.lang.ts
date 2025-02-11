@@ -1301,5 +1301,9 @@ export const localizationBundle = {
     'preference.ai.native.deepseek.apiKey.description': 'Deepseek 语言模型的 API 密钥',
     'preference.ai.native.anthropic.apiKey': 'Anthropic API 密钥',
     'preference.ai.native.anthropic.apiKey.description': 'Anthropic 语言模型的 API 密钥',
+    'preference.ai.native.openai.apiKey': 'OpenAI API 密钥',
+    'preference.ai.native.openai.apiKey.description': 'OpenAI 兼容语言模型的 API 密钥',
+    'preference.ai.native.openai.baseURL': 'OpenAI Base URL',
+    'preference.ai.native.openai.baseURL.description': 'OpenAI 兼容语言模型的 Base URL',
   },
 };

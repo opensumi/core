@@ -5,7 +5,11 @@ import { IAIBackServiceOption } from '@opensumi/ide-core-common';
 import { ChatReadableStream } from '@opensumi/ide-core-node';
 import { CancellationToken } from '@opensumi/ide-utils';
 
-import { IToolInvocationRegistryManager, ToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
+import {
+  IToolInvocationRegistryManager,
+  ToolInvocationRegistryManager,
+  ToolRequest,
+} from '../common/tool-invocation-registry';
 
 @Injectable()
 export abstract class BaseLanguageModel {
@@ -69,7 +73,6 @@ export abstract class BaseLanguageModel {
       });
 
       for await (const chunk of stream.fullStream) {
-        console.log('LLM chunk: ', chunk);
         if (chunk.type === 'text-delta') {
           chatReadableStream.emitData({ kind: 'content', content: chunk.textDelta });
         } else if (chunk.type === 'tool-call') {

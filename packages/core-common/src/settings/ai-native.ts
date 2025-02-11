@@ -29,6 +29,8 @@ export enum AINativeSettingSectionsId {
   LLMModelSelection = 'ai.native.llm.model.selection',
   DeepseekApiKey = 'ai.native.deepseek.apiKey',
   AnthropicApiKey = 'ai.native.anthropic.apiKey',
+  OpenaiApiKey = 'ai.native.openai.apiKey',
+  OpenaiBaseURL = 'ai.native.openai.baseURL',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';

@@ -106,8 +106,12 @@ export class ChatProxyService extends Disposable {
 
           const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
           let apiKey: string = '';
+          let baseURL: string = '';
           if (model === 'deepseek') {
             apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.DeepseekApiKey, '');
+          } else if (model === 'openai') {
+            apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
+            baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
           } else {
             apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey, '');
           }
@@ -121,6 +125,7 @@ export class ChatProxyService extends Disposable {
               clientId: this.applicationService.clientId,
               apiKey,
               model,
+              baseURL,
             },
             token,
           );

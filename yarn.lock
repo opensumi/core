@@ -49,6 +49,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/openai@npm:^1.1.9":
+  version: 1.1.9
+  resolution: "@ai-sdk/openai@npm:1.1.9"
+  dependencies:
+    "@ai-sdk/provider": "npm:1.0.7"
+    "@ai-sdk/provider-utils": "npm:2.1.6"
+  peerDependencies:
+    zod: ^3.0.0
+  checksum: 10/f3c7baef143178bd34c5ffa62f9b236623228d7cb18e290dc167c0579c8ed4d669153574f8a8f0c35e0fc4d7c69ff4ec40788511e8f2c83c20c4c586460c3ff4
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/provider-utils@npm:2.1.6":
   version: 2.1.6
   resolution: "@ai-sdk/provider-utils@npm:2.1.6"
@@ -3369,6 +3381,7 @@ __metadata:
   dependencies:
     "@ai-sdk/anthropic": "npm:^1.1.6"
     "@ai-sdk/deepseek": "npm:^0.1.8"
+    "@ai-sdk/openai": "npm:^1.1.9"
     "@anthropic-ai/sdk": "npm:^0.36.3"
     "@modelcontextprotocol/sdk": "npm:^1.3.1"
     "@opensumi/ide-components": "workspace:*"
@@ -3394,7 +3407,6 @@ __metadata:
     ai: "npm:^4.1.21"
     ansi-regex: "npm:^2.0.0"
     dom-align: "npm:^1.7.0"
-    openai: "npm:^4.55.7"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
     tiktoken: "npm:1.0.12"
@@ -18336,28 +18348,6 @@ __metadata:
     is-docker: "npm:^2.1.1"
     is-wsl: "npm:^2.2.0"
   checksum: 10/acd81a1d19879c818acb3af2d2e8e9d81d17b5367561e623248133deb7dd3aefaed527531df2677d3e6aaf0199f84df57b6b2262babff8bf46ea0029aac536c9
-  languageName: node
-  linkType: hard
-
-"openai@npm:^4.55.7":
-  version: 4.77.0
-  resolution: "openai@npm:4.77.0"
-  dependencies:
-    "@types/node": "npm:^18.11.18"
-    "@types/node-fetch": "npm:^2.6.4"
-    abort-controller: "npm:^3.0.0"
-    agentkeepalive: "npm:^4.2.1"
-    form-data-encoder: "npm:1.7.2"
-    formdata-node: "npm:^4.3.2"
-    node-fetch: "npm:^2.6.7"
-  peerDependencies:
-    zod: ^3.23.8
-  peerDependenciesMeta:
-    zod:
-      optional: true
-  bin:
-    openai: bin/cli
-  checksum: 10/51ef7522d3c3589401b9bb0d49a3bd9df2a84648b996b3452dd4bae99c8e6b27d63a415c41847900954197051b5598de85a76f12c6b2deab33d8d70ceab5d7c3
   languageName: node
   linkType: hard
 

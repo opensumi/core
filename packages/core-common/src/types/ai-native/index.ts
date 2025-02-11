@@ -126,6 +126,7 @@ export interface IAIBackServiceOption {
   clientId?: string;
   apiKey?: string;
   model?: string;
+  baseURL?: string;
 }
 
 /**
@@ -339,7 +340,13 @@ export interface IChatComponent {
   kind: 'component';
 }
 
-export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent | IChatToolContent;
+export type IChatProgress =
+  | IChatContent
+  | IChatMarkdownContent
+  | IChatAsyncContent
+  | IChatTreeData
+  | IChatComponent
+  | IChatToolContent;
 
 export interface IChatMessage {
   readonly role: ChatMessageRole;

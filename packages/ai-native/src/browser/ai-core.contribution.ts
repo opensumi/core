@@ -410,6 +410,14 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.AnthropicApiKey,
             localized: 'preference.ai.native.anthropic.apiKey',
           },
+          {
+            id: AINativeSettingSectionsId.OpenaiApiKey,
+            localized: 'preference.ai.native.openai.apiKey',
+          },
+          {
+            id: AINativeSettingSectionsId.OpenaiBaseURL,
+            localized: 'preference.ai.native.openai.baseURL',
+          },
         ],
       });
     }
@@ -456,7 +464,6 @@ export class AINativeBrowserContribution
       { id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' },
       {
         execute: async () => {
-
           // TODO 支持第三方 MCP Server
           const description: MCPServerDescription = {
             name: 'filesystem',

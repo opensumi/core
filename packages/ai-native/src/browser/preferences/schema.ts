@@ -61,7 +61,7 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     [AINativeSettingSectionsId.LLMModelSelection]: {
       type: 'string',
       default: 'deepseek',
-      enum: ['deepseek', 'anthropic'],
+      enum: ['deepseek', 'anthropic', 'openai'],
       description: localize('preference.ai.native.llm.model.selection.description'),
     },
     [AINativeSettingSectionsId.DeepseekApiKey]: {
@@ -73,6 +73,16 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'string',
       default: '',
       description: localize('preference.ai.native.anthropic.apiKey.description'),
+    },
+    [AINativeSettingSectionsId.OpenaiApiKey]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.openai.apiKey.description'),
+    },
+    [AINativeSettingSectionsId.OpenaiBaseURL]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.openai.baseURL.description'),
     },
   },
 };
