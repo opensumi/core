@@ -13,6 +13,7 @@ export interface MCPServerManager {
     stopServer(serverName: string): Promise<void>;
     getStartedServers(): Promise<string[]>;
     registerTools(serverName: string): Promise<void>;
+    addExternalMCPServers(servers: MCPServerDescription[]): void;
 }
 
 export type MCPTool = Awaited<ReturnType<MCPServerManager['getTools']>>['tools'][number];

@@ -1542,5 +1542,14 @@ export const localizationBundle = {
     'preference.ai.native.openai.apiKey.description': 'API key for OpenAI Compatible language model',
     'preference.ai.native.openai.baseURL': 'OpenAI Base URL',
     'preference.ai.native.openai.baseURL.description': 'Base URL for OpenAI Compatible language model',
+
+    // MCP Server Settings
+    'preference.ai.native.mcp.settings.title': 'MCP Server Settings',
+    'preference.ai.native.mcp.servers': 'MCP Servers',
+    'preference.ai.native.mcp.servers.description': 'Configure MCP (Model Context Protocol) servers',
+    'preference.ai.native.mcp.servers.name.description': 'Name of the MCP server',
+    'preference.ai.native.mcp.servers.command.description': 'Command to start the MCP server',
+    'preference.ai.native.mcp.servers.args.description': 'Command line arguments for the MCP server',
+    'preference.ai.native.mcp.servers.env.description': 'Environment variables for the MCP server',
   },
 };

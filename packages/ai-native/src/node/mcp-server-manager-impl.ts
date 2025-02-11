@@ -1,21 +1,19 @@
-import { Autowired, Injectable } from '@opensumi/di';
-
 import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
-import { IToolInvocationRegistryManager, ToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
+import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
 import { IMCPServer, MCPServerImpl } from './mcp-server';
 
 // 这应该是 Browser Tab 维度的，每个 Tab 对应一个 MCPServerManagerImpl
-@Injectable({ multiple: true })
 export class MCPServerManagerImpl implements MCPServerManager {
-  @Autowired(ToolInvocationRegistryManager)
-  private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
-
   protected servers: Map<string, IMCPServer> = new Map();
 
   // 当前实例对应的 clientId
   private clientId: string;
+
+  constructor(
+    private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager,
+  ) {}
 
   setClientId(clientId: string) {
     this.clientId = clientId;
@@ -122,15 +120,17 @@ export class MCPServerManagerImpl implements MCPServerManager {
     this.servers.set(server.getServerName(), server);
   }
 
-  initBuiltinServer(builtinMCPServer: BuiltinMCPServer): void {
+  async initBuiltinServer(builtinMCPServer: BuiltinMCPServer): Promise<void> {
     this.addOrUpdateServerDirectly(builtinMCPServer);
-    this.registerTools(builtinMCPServer.getServerName());
+    await this.registerTools(builtinMCPServer.getServerName());
   }
 
-  addExternalMCPServer(server: MCPServerDescription): void {
-    this.addOrUpdateServer(server);
-    this.startServer(server.name);
-    this.registerTools(server.name);
+  async addExternalMCPServers(servers: MCPServerDescription[]): Promise<void> {
+    for (const server of servers) {
+      this.addOrUpdateServer(server);
+      await this.startServer(server.name);
+      await this.registerTools(server.name);
+    }
   }
 
   removeServer(name: string): void {

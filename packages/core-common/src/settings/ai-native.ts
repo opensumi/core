@@ -31,6 +31,11 @@ export enum AINativeSettingSectionsId {
   AnthropicApiKey = 'ai.native.anthropic.apiKey',
   OpenaiApiKey = 'ai.native.openai.apiKey',
   OpenaiBaseURL = 'ai.native.openai.baseURL',
+
+  /**
+   * MCP Server configurations
+   */
+  MCPServers = 'ai.native.mcp.servers',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';
