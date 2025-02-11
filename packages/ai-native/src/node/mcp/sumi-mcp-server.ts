@@ -25,7 +25,6 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
 
   // 这里需要考虑不同的 BrowserTab 的区分问题，目前的 POC 所有的 Tab 都会注册到 tools 中
   // 后续需要区分不同的 Tab 对应的实例
-  @Autowired(MCPServerManager)
   private readonly mcpServerManager: MCPServerManagerImpl;
 
   @Autowired(ToolInvocationRegistryManager)
@@ -36,9 +35,14 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
   // 对应 BrowserTab 的 clientId
   private clientId: string = '';
 
+  constructor() {
+    super();
+    this.mcpServerManager = new MCPServerManagerImpl(this.toolInvocationRegistryManager);
+  }
+
   public setConnectionClientId(clientId: string) {
     this.clientId = clientId;
-    // 这里不能设置 mcpServerManager 的 clientId，否则会造成递归
+    this.mcpServerManager.setClientId(clientId);
   }
 
   async getMCPTools() {
@@ -73,16 +77,16 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     }));
   }
 
-  public initBuiltinMCPServer() {
+  public async initBuiltinMCPServer() {
     const builtinMCPServer = new BuiltinMCPServer(this);
     this.mcpServerManager.setClientId(this.clientId);
-    this.mcpServerManager.initBuiltinServer(builtinMCPServer);
+    await this.mcpServerManager.initBuiltinServer(builtinMCPServer);
     this.client?.$updateMCPServers();
   }
 
-  public initExternalMCPServer(server: MCPServerDescription) {
+  public async initExternalMCPServers(servers: MCPServerDescription[]) {
     this.mcpServerManager.setClientId(this.clientId);
-    this.mcpServerManager.addExternalMCPServer(server);
+    await this.mcpServerManager.addExternalMCPServers(servers);
     this.client?.$updateMCPServers();
   }
 

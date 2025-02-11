@@ -309,7 +309,14 @@ export class AINativeBrowserContribution
         this.codeActionSingleHandler.load();
       }
 
+      // 初始化内置 MCP Server
       this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
+
+      // 从 preferences 获取并初始化外部 MCP Servers
+      const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers);
+      if (mcpServers && mcpServers.length > 0) {
+        this.sumiMCPServerBackendProxy.initExternalMCPServers(mcpServers);
+      }
     });
   }
 
@@ -420,6 +427,17 @@ export class AINativeBrowserContribution
           },
         ],
       });
+
+      // Register MCP server settings
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.mcp.settings.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.MCPServers,
+            localized: 'preference.ai.native.mcp.servers',
+          },
+        ],
+      });
     }
 
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
@@ -460,26 +478,6 @@ export class AINativeBrowserContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(
-      { id: 'ai.native.mcp.start', label: 'MCP: Start MCP Server' },
-      {
-        execute: async () => {
-          // TODO 支持第三方 MCP Server
-          const description: MCPServerDescription = {
-            name: 'filesystem',
-            command: 'npx',
-            args: ['-y', '@modelcontextprotocol/server-filesystem', '/Users/retrox/AlipayProjects/core'],
-            env: {},
-          };
-
-          // this.mcpServerManager.addOrUpdateServer(description);
-
-          // await this.mcpServerManager.startServer(description.name);
-          // await this.mcpServerManager.collectTools(description.name);
-        },
-      },
-    );
-
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
         this.aiInlineChatService._onInlineChatVisible.fire(value);

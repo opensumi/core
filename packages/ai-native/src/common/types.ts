@@ -28,7 +28,9 @@ export interface IMCPServerProxyService {
     content: { type: string; text: string }[];
     isError?: boolean;
   }>;
+  // 获取 browser 层注册的 MCP 工具列表 (Browser tab 维度)
   $getMCPTools(): Promise<MCPTool[]>;
+  // 通知前端 MCP 服务注册表发生了变化
   $updateMCPServers(): Promise<void>;
 }
 
