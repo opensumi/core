@@ -1,7 +1,7 @@
-import { jsonSchema, streamText, tool } from 'ai';
+import { CoreMessage, jsonSchema, streamText, tool } from 'ai';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAIBackServiceOption } from '@opensumi/ide-core-common';
+import { ChatMessageRole, IAIBackServiceOption, IChatMessage } from '@opensumi/ide-core-common';
 import { ChatReadableStream } from '@opensumi/ide-core-node';
 import { CancellationToken } from '@opensumi/ide-utils';
 
@@ -18,6 +18,21 @@ export abstract class BaseLanguageModel {
 
   protected abstract initializeProvider(options: IAIBackServiceOption): any;
 
+  private convertChatMessageRole(role: ChatMessageRole) {
+    switch (role) {
+      case ChatMessageRole.System:
+        return 'system';
+      case ChatMessageRole.User:
+        return 'user';
+      case ChatMessageRole.Assistant:
+        return 'assistant';
+      case ChatMessageRole.Function:
+        return 'tool';
+      default:
+        return 'user';
+    }
+  }
+
   async request(
     request: string,
     chatReadableStream: ChatReadableStream,
@@ -31,7 +46,14 @@ export abstract class BaseLanguageModel {
     }
     const registry = this.toolInvocationRegistryManager.getRegistry(clientId);
     const allFunctions = registry.getAllFunctions();
-    return this.handleStreamingRequest(provider, request, allFunctions, chatReadableStream, cancellationToken);
+    return this.handleStreamingRequest(
+      provider,
+      request,
+      allFunctions,
+      chatReadableStream,
+      options.history || [],
+      cancellationToken,
+    );
   }
 
   private convertToolRequestToAITool(toolRequest: ToolRequest) {
@@ -50,6 +72,7 @@ export abstract class BaseLanguageModel {
     request: string,
     tools: ToolRequest[],
     chatReadableStream: ChatReadableStream,
+    history: IChatMessage[] = [],
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -62,11 +85,19 @@ export abstract class BaseLanguageModel {
         });
       }
 
+      const messages: CoreMessage[] = [
+        ...history.map((msg) => ({
+          role: this.convertChatMessageRole(msg.role) as any, // 这个 SDK 包里的类型不太好完全对应，
+          content: msg.content,
+        })),
+        { role: 'user', content: request },
+      ];
+
       const stream = await streamText({
         model: this.getModelIdentifier(provider),
         maxTokens: 4096,
         tools: aiTools,
-        messages: [{ role: 'user', content: request }],
+        messages,
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
         maxSteps: 5,
