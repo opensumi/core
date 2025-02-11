@@ -278,7 +278,11 @@ describe('Buffers', () => {
       expect(buffer.slice(2, 3)).toEqual(new Uint8Array([2]));
     });
   });
-
+  it('should handle splice at exact chunk boundary', () => {
+    const buffer = createEnhanced([0, 1, 2, 3, 4, 5], [3, 3]);
+    buffer.splice(3, 2, new Uint8Array([99]));
+    expect(buffer.slice()).toEqual(new Uint8Array([0, 1, 2, 99, 5]));
+  });
   // 测试非法索引访问
   describe('Invalid Access Handling', () => {
     const buffer = create([1, 2, 3], [3]);
@@ -384,6 +388,21 @@ describe('Buffers', () => {
 
       expect(duration).toBeLessThan(50);
       expect(slice.byteLength).toBe(1024 * 1024);
+    });
+
+    it('should handle 1000 splices under 1s', () => {
+      const buf = createEnhanced(
+        new Array(10000).fill(0).map((_, i) => i),
+        [100, 900, 9000],
+      );
+
+      const start = performance.now();
+      for (let i = 0; i < 1000; i++) {
+        buf.splice(i % 100, 5, new Uint8Array([i]));
+      }
+      const duration = performance.now() - start;
+
+      expect(duration).toBeLessThan(1000);
     });
   });
 });
