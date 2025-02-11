@@ -127,6 +127,109 @@ describe('frame decoder', () => {
     fastExpectBufferEqual(result, v);
     decoder.dispose();
   });
+
+  // 测试分块传输场景
+  it('should handle chunked packets with split indicator', async () => {
+    const content = new Uint8Array([1, 2, 3]);
+    const fullPacket = LengthFieldBasedFrameDecoder.construct(content).dump();
+
+    // 将数据包拆分为三部分：指示符前半、指示符后半+长度、内容
+    const chunks = [
+      fullPacket.subarray(0, 2), // 0D 0A
+      fullPacket.subarray(2, 6), // 0D 0A + 长度字段前2字节
+      fullPacket.subarray(6), // 剩余数据
+    ];
+
+    const decoder = new LengthFieldBasedFrameDecoder();
+    const result = await new Promise<Uint8Array>((resolve) => {
+      decoder.onData(resolve);
+
+      // 分三次推送数据
+      chunks.forEach((chunk, i) => {
+        setTimeout(() => decoder.push(chunk), i * 10);
+      });
+    });
+
+    fastExpectBufferEqual(result, content);
+  });
+
+  // 测试高频小数据包压力
+  it('should handle 1000 sequential small packets', async () => {
+    const decoder = new LengthFieldBasedFrameDecoder();
+    const received: Uint8Array[] = [];
+
+    decoder.onData((data) => received.push(data));
+
+    // 生成1000个独立数据包
+    for (let i = 0; i < 1000; i++) {
+      const packet = LengthFieldBasedFrameDecoder.construct(new Uint8Array([i % 256])).dump();
+
+      decoder.push(packet);
+    }
+
+    // 等待处理完成
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(received.length).toBe(1000);
+    received.forEach((data, i) => {
+      expect(data[0]).toBe(i % 256);
+    });
+  });
+
+  // 测试内存稳定性
+  it('should not leak memory after processing', async () => {
+    const initialMemory = process.memoryUsage().heapUsed;
+
+    for (let i = 0; i < 100; i++) {
+      const decoder = new LengthFieldBasedFrameDecoder();
+      const packet = LengthFieldBasedFrameDecoder.construct(
+        createPayload(1024 * 1024), // 1MB payload
+      ).dump();
+
+      await new Promise<void>((resolve) => {
+        decoder.onData(() => resolve());
+        decoder.push(packet);
+      });
+
+      decoder.dispose();
+    }
+
+    const finalMemory = process.memoryUsage().heapUsed;
+    expect(finalMemory - initialMemory).toBeLessThan(5 * 1024 * 1024); // 允许5MB波动
+  });
+
+  // 测试空数据包处理
+  it('should handle zero-length payload', async () => {
+    const decoder = new LengthFieldBasedFrameDecoder();
+    const emptyPacket = LengthFieldBasedFrameDecoder.construct(new Uint8Array(0)).dump();
+
+    const result = await new Promise<Uint8Array>((resolve) => {
+      decoder.onData(resolve);
+      decoder.push(emptyPacket);
+    });
+
+    expect(result.byteLength).toBe(0);
+  });
+
+  // 测试并发推送
+  it('should handle concurrent pushes', async () => {
+    const decoder = new LengthFieldBasedFrameDecoder();
+    const content = new Uint8Array([1, 2, 3]);
+    const packet = LengthFieldBasedFrameDecoder.construct(content).dump();
+
+    const chunk1 = packet.subarray(0, 4);
+    const chunk2 = packet.subarray(4);
+
+    const resultPromise = new Promise<Uint8Array>((resolve) => {
+      decoder.onData(resolve);
+    });
+
+    // 同时推送两个chunk
+    await Promise.all([decoder.push(chunk1), decoder.push(chunk2)]);
+
+    const result = await resultPromise;
+    fastExpectBufferEqual(result, content);
+  });
 });
 
 function logMemoryUsage() {
