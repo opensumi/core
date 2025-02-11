@@ -4,7 +4,6 @@ import { Injectable } from '@opensumi/di';
 import { AINativeSettingSectionsId, IAIBackServiceOption } from '@opensumi/ide-core-common';
 
 import { BaseLanguageModel } from '../base-language-model';
-
 export const DeepSeekModelIdentifier = Symbol('DeepSeekModelIdentifier');
 
 @Injectable()

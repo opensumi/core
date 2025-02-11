@@ -39,6 +39,8 @@ import {
   IChatMessageStructure,
   TokenMCPServerProxyService,
 } from '../../common';
+import { LLMContextService, LLMContextServiceToken, formatUerPrompt } from '../../common/llm-context';
+import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -71,6 +73,8 @@ export const AIChatView = () => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const contextService = useInjectable<LLMContextService>(LLMContextServiceToken);
+
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
   const msgHistoryManager = aiChatService.sessionModel.history;
@@ -497,7 +501,10 @@ export const AIChatView = () => {
       const { message, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
-      const request = aiChatService.createRequest(message, agentId!, command);
+      const context = contextService.serialize();
+      const fullMessage = formatUerPrompt(context, message);
+
+      const request = aiChatService.createRequest(fullMessage, agentId!, command);
       if (!request) {
         return;
       }
@@ -681,6 +688,7 @@ export const AIChatView = () => {
             />
           </div>
           <div className={styles.chat_input_wrap}>
+            <ChatContext />
             <div className={styles.header_operate}>
               <div className={styles.header_operate_left}>
                 {shortcutCommands.map((command) => (

@@ -28,6 +28,7 @@ import {
   SumiMCPServerProxyServicePath,
   TokenMCPServerProxyService,
 } from '../common';
+import { LLMContextServiceToken } from '../common/llm-context';
 import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
@@ -39,6 +40,8 @@ import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
+import { LlmContextContribution } from './context/llm-context.contribution';
+import { LLMContextServiceImpl } from './context/llm-context.service';
 import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
 import { IntelligentCompletionsContribution } from './contrib/intelligent-completions/intelligent-completions.contribution';
@@ -103,6 +106,13 @@ export class AINativeModule extends BrowserModule {
     GetDiagnosticsByPathTool,
     ReplaceOpenEditorFileByDiffPreviewerTool,
     // MCP Server Contributions END
+
+    // Context Service
+    LlmContextContribution,
+    {
+      token: LLMContextServiceToken,
+      useClass: LLMContextServiceImpl,
+    },
 
     {
       token: TokenMCPServerRegistry,
