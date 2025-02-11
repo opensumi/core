@@ -32,7 +32,7 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
   public componentDidMount() {
     const { history, onReady } = this.props;
 
-    this.history = new HistoryNavigator(history, 100);
+    this.history = new HistoryNavigator(history || new Set([]), 100);
     this.inputProps = { ...this.props };
     delete this.inputProps.onReady;
 
