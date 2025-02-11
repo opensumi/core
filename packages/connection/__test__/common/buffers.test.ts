@@ -253,6 +253,139 @@ describe('Buffers', () => {
     expect(cursor.lineOffset).toEqual(1);
     expect(list.pos(cursor.offset)).toEqual({ buf: cursor.line, offset: cursor.lineOffset });
   });
+
+  // 测试空缓冲区行为
+  describe('Empty Buffer Handling', () => {
+    it('should handle empty buffer operations', () => {
+      const empty = new Buffers();
+
+      expect(empty.byteLength).toBe(0);
+      expect(empty.slice()).toEqual(new Uint8Array(0));
+      expect(() => empty.pos(0)).toThrow('out of range');
+      expect(empty.splice(0, 0)).toEqual(expect.any(Buffers));
+    });
+  });
+
+  // 测试边界slice操作
+  describe('Edge Case Slicing', () => {
+    const buffer = create([0, 1, 2, 3, 4, 5], [3, 3]);
+
+    it('should handle start at chunk boundary', () => {
+      expect(buffer.slice(3, 5)).toEqual(new Uint8Array([3, 4]));
+    });
+
+    it('should handle end at chunk boundary', () => {
+      expect(buffer.slice(2, 3)).toEqual(new Uint8Array([2]));
+    });
+  });
+
+  // 测试非法索引访问
+  describe('Invalid Access Handling', () => {
+    const buffer = create([1, 2, 3], [3]);
+
+    it('should throw on negative index', () => {
+      expect(() => buffer.pos(-1)).toThrow('out of range');
+    });
+
+    it('should throw on overflow index', () => {
+      expect(() => buffer.pos(4)).toThrow('out of range');
+    });
+  });
+
+  // 测试超大缓冲区
+  describe('Large Buffer Handling', () => {
+    const MB1 = new Uint8Array(1024 * 1024);
+    const buffer = new Buffers();
+
+    beforeAll(() => {
+      // 填充1MB数据
+      for (let i = 0; i < 1024; i++) {
+        buffer.push(MB1.subarray(0, 1024));
+      }
+    });
+
+    it('should handle 1GB data slicing', () => {
+      const slice = buffer.slice(1024 * 512, 1024 * 512 + 100);
+      expect(slice.byteLength).toBe(100);
+    });
+  });
+
+  // 测试跨chunk的splice操作
+  describe('Cross-Chunk Splicing', () => {
+    const buffer = create([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [3, 3, 4]);
+
+    it('should splice across multiple chunks', () => {
+      const removed = buffer.splice(2, 5, new Uint8Array([99]));
+
+      expect(buffer.slice()).toEqual(new Uint8Array([0, 1, 99, 7, 8, 9]));
+      expect(removed.slice()).toEqual(new Uint8Array([2, 3, 4, 5, 6]));
+    });
+  });
+
+  // 测试slice4特殊方法
+  describe('slice4 Special Cases', () => {
+    it('should handle partial slice4', () => {
+      const buffer = create([1, 2, 3], [3]);
+      expect(buffer.slice4(2)).toEqual(new Uint8Array([3, 0, 0, 0]));
+    });
+
+    it('should handle edge slice4', () => {
+      const buffer = create([1, 2, 3, 4, 5], [5]);
+      expect(buffer.slice4(1)).toEqual(new Uint8Array([2, 3, 4, 5]));
+    });
+  });
+
+  // 测试Cursor高级功能
+  describe('Cursor Advanced Operations', () => {
+    const buffer = create([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [3, 3, 4]);
+
+    it('should handle moveTo across chunks', () => {
+      const cursor = buffer.cursor();
+      cursor.moveTo(5);
+      expect(cursor.line).toBe(1);
+      expect(cursor.lineOffset).toBe(2);
+    });
+
+    it('should reset correctly', () => {
+      const cursor = buffer.cursor(5);
+      cursor.reset();
+      expect(cursor.offset).toBe(0);
+      expect(cursor.line).toBe(0);
+    });
+  });
+
+  // 测试Dispose行为
+  describe('Resource Management', () => {
+    it('should clear resources on dispose', () => {
+      const buffer = create([1, 2, 3], [3]);
+      buffer.dispose();
+
+      expect(buffer.buffers).toEqual([]);
+      expect(buffer.byteLength).toBe(0);
+    });
+  });
+
+  // 性能测试
+  describe('Performance Tests', () => {
+    let largeBuffer: Buffers;
+
+    beforeAll(() => {
+      largeBuffer = new Buffers();
+      // 创建包含1000个10KB chunk的缓冲区
+      for (let i = 0; i < 1000; i++) {
+        largeBuffer.push(new Uint8Array(10 * 1024));
+      }
+    });
+
+    it('should handle slicing 1MB data under 50ms', () => {
+      const start = performance.now();
+      const slice = largeBuffer.slice(0, 1024 * 1024);
+      const duration = performance.now() - start;
+
+      expect(duration).toBeLessThan(50);
+      expect(slice.byteLength).toBe(1024 * 1024);
+    });
+  });
 });
 
 function create(xs: number[], split: number[]) {
@@ -261,6 +394,19 @@ function create(xs: number[], split: number[]) {
   split.forEach(function (i) {
     bufs.push(new Uint8Array(xs.slice(offset, offset + i)));
     offset += i;
+  });
+  return bufs;
+}
+
+function createEnhanced(xs: number[], split: number[]): Buffers {
+  const bufs = new Buffers();
+  let offset = 0;
+  split.forEach((chunkSize) => {
+    if (chunkSize > 0) {
+      const chunk = new Uint8Array(xs.slice(offset, offset + chunkSize));
+      bufs.push(chunk);
+      offset += chunkSize;
+    }
   });
   return bufs;
 }
