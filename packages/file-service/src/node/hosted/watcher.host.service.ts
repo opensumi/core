@@ -137,7 +137,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
     disposables.push(
       Disposable.create(async () => {
-        await this.unrecursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
+        this.unrecursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
         this.logger.log('dispose unrecursive watcher: ', uri.toString());
         this.watchedDirs.delete(uri.toString());
         this.WATCHER_HANDLERS.delete(watcherId);
