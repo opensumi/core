@@ -145,13 +145,13 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       }
     };
 
-    this.WATCHER_HANDLERS.set(uri, {
+    this.WATCHER_HANDLERS.set(watchPath, {
       path: watchPath,
       disposable: toDisposeWatcher,
       handlers: [handler],
     });
 
-    toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(uri)));
+    toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watchPath)));
     toDisposeWatcher.push(await this.start(watchPath, options));
     this.addDispose(toDisposeWatcher);
   }
@@ -350,14 +350,23 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     return disposables;
   }
 
-  unwatchFileChanges(uri: string): Promise<void> {
-    this.logger.log('[Recursive] Un watch: ', uri);
-    const watcher = this.WATCHER_HANDLERS.get(uri);
+  private disposeWatcher(path: string) {
+    const watcher = this.WATCHER_HANDLERS.get(path);
     if (watcher) {
-      this.WATCHER_HANDLERS.delete(uri);
-      watcher.disposable.dispose();
+      try {
+        watcher.disposable.dispose();
+      } catch (err) {
+        this.logger.error(`Dispose watcher failed for ${path}`, err);
+      } finally {
+        this.WATCHER_HANDLERS.delete(path);
+      }
     }
-    return Promise.resolve();
+  }
+
+  unwatchFileChanges(uri: string): void {
+    this.logger.log('[Recursive] Un watch: ', uri);
+    const basePath = FileUri.fsPath(uri);
+    this.disposeWatcher(basePath);
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
