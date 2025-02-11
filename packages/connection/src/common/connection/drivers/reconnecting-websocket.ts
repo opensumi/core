@@ -28,13 +28,17 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
   }
 
   private async processSendQueue() {
-    if (this.sending) { return; }
+    if (this.sending) {
+      return;
+    }
     this.sending = true;
 
     while (this.sendQueue.length > 0) {
       const { data, resolve, reject } = this.sendQueue[0];
+      let handle: { get: () => Uint8Array; dispose: () => void } | null = null;
+
       try {
-        const handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
+        handle = LengthFieldBasedFrameDecoder.construct(data).dumpAndOwn();
         const packet = handle.get();
 
         for (let i = 0; i < packet.byteLength; i += chunkSize) {
@@ -45,11 +49,14 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
           });
         }
 
-        handle.dispose();
         resolve();
       } catch (error) {
         console.error('[ReconnectingWebSocket] Error sending data:', error);
         reject(error);
+      } finally {
+        if (handle) {
+          handle.dispose();
+        }
       }
       this.sendQueue.shift();
     }
