@@ -40,7 +40,7 @@ export interface IWatcher {
    * @returns {Promise<void>}
    * @memberof FileSystemWatcherServer
    */
-  unwatchFileChanges(uri: string): Promise<void>;
+  unwatchFileChanges(uri: string): void;
 
   /**
    * Update watcher file excludes
