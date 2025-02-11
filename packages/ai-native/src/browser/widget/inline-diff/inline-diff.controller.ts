@@ -75,13 +75,13 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
          */
         const id = model.id;
         const previewer = this.currentPreviewer.read(reader);
-        if (previewer && previewer.id !== id && !previewer.disposed) {
+        if (previewer && previewer.modelId !== id && !previewer.disposed) {
           previewer.hide();
         }
 
         const storedPreview = this.previewerStore.get(model.id);
         transaction((tx) => {
-          if (storedPreview && storedPreview.id === id) {
+          if (storedPreview && storedPreview.modelId === id) {
             this.currentPreviewer.set(storedPreview, tx);
             storedPreview.resume();
           } else {
@@ -98,8 +98,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     return this.currentPreviewer.get();
   }
 
-  private renderDiff(data: ReplyResponse) {
-    const previewer = this.getPreviewer();
+  private renderDiff(previewer: IInlineDiffPreviewer, data: ReplyResponse) {
     if (!previewer) {
       return;
     }
@@ -107,7 +106,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     previewer.onData(data);
 
     // 仅在当前 model 中进行流式渲染
-    if (this.modelChangeObs.get()?.id === previewer.id) {
+    if (this.modelChangeObs.get()?.id === previewer.modelId) {
       previewer.render();
     }
   }
@@ -127,7 +126,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     const previewer = this.createDiffPreviewer(monacoEditor, crossSelection, options.previewerOptions);
     transaction((tx) => {
       this.currentPreviewer.set(previewer, tx);
-      this.previewerStore.set(previewer.id, previewer);
+      this.previewerStore.set(previewer.modelId, previewer);
     });
 
     const onFinish = () => {
@@ -143,7 +142,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
           disposable.addDispose([
             controller.onData((data) => {
               if (ReplyResponse.is(data)) {
-                this.renderDiff(data);
+                this.renderDiff(previewer, data);
               }
             }),
             controller.onError((error) => {
@@ -193,7 +192,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
 
     previewer.addDispose(
       Disposable.create(() => {
-        this.previewerStore.delete(previewer.id);
+        this.previewerStore.delete(previewer.modelId);
       }),
     );
 

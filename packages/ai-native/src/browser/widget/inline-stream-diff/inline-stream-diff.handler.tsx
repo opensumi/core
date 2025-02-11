@@ -437,7 +437,13 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
         const virtualTextLines = this.virtualModel.getLinesContent();
         const currentText = virtualTextLines.slice(0, this.currentEditLine);
         const currentDiffModel = this.computeDiff(this.rawOriginalTextLines, currentText);
-        this.renderDiffEdits(currentDiffModel);
+        transaction((tx) => {
+          this.diffModel.set(currentDiffModel, tx);
+        });
+
+        if (this.originalModel.id === this.monacoEditor.getModel()?.id) {
+          this.renderDiffEdits(currentDiffModel);
+        }
 
         this.currentEditLine += 1;
 
@@ -474,7 +480,11 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     transaction((tx) => {
       this.diffModel.set(diffModel, tx);
     });
-    // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
+
+    if (this.originalModel.id !== this.monacoEditor.getModel()?.id) {
+      return;
+    }
+
     this.renderPartialEditWidgets(diffModel);
     this.renderDiffEdits(diffModel);
     this.pushStackElement();
@@ -486,6 +496,11 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   }
 
   public resume(): void {
+    const finallyDiffModel = this.finallyDiffModel.get();
+    if (!finallyDiffModel) {
+      this.rateRenderEditController();
+    }
+
     this.livePreviewDiffDecorationModel.resume();
   }
 

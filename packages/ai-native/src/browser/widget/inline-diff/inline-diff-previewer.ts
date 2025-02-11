@@ -44,12 +44,12 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
   protected inlineContentWidget: AIInlineContentWidget | null = null;
   protected selection: Selection;
   protected model: ITextModel;
-  public id: string;
+  public modelId: string;
 
   constructor(protected readonly monacoEditor: ICodeEditor) {
     super();
     this.model = this.monacoEditor.getModel()!;
-    this.id = this.model.id;
+    this.modelId = this.model.id;
 
     this.addDispose(
       Disposable.create(() => {
