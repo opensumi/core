@@ -64,7 +64,7 @@ export class ListDirHandler {
 
     // 解析相对路径
     const absolutePath = `${this.appConfig.workspaceDir}/${relativeWorkspacePath}`;
-    const fileStat = await this.fileSystemService.getFileStat(absolutePath);
+    const fileStat = await this.fileSystemService.getFileStat(absolutePath, true);
     // 验证路径有效性
     if (!fileStat || !fileStat.isDirectory) {
       throw new Error(`Could not find file ${relativeWorkspacePath} in the workspace.`);
@@ -86,7 +86,7 @@ export class ListDirHandler {
         ?.sort((a, b) => b.lastModification - a.lastModification)
         .map(async (file) => {
           const uri = new URI(file.uri);
-          const filePath = `${relativeWorkspacePath}/${uri.displayName}`;
+          const filePath = `${absolutePath}/${uri.displayName}`;
           let lineCount: number | undefined;
 
           // 如果文件需要分析，则计算行数
@@ -111,7 +111,7 @@ export class ListDirHandler {
   }
 
   async countFileLines(filePath: string) {
-    const file = await this.fileSystemService.readFile(filePath);
+    const file = await this.fileSystemService.readFile(URI.file(filePath).toString());
     return file.toString().split('\n').length;
   }
 }

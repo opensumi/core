@@ -31,7 +31,7 @@ export class FileHandler {
       .map((item) => item.getUri()?.codeUri.fsPath)
       .filter(Boolean) as string[];
   }
-
+  // TODO: 错误应该给模型？
   private createFileNotFoundError(filePath: string, similarFiles: string[]): Error {
     const errorMessage =
       similarFiles.length > 0

@@ -41,6 +41,8 @@ export class ListDirTool implements MCPServerContribution {
   }
 
   private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
+    // TODO: 应该添加统一的 validate 逻辑
+    args = inputSchema.parse(args);
     const result = await this.listDirHandler.handler(args);
     return {
       content: [
@@ -62,4 +64,3 @@ export class ListDirTool implements MCPServerContribution {
     };
   }
 }
-// Contents of directory:\n\n[file] listDir.ts (2.0KB, 58 lines) - Feb 11, 09:26 AM\n[file] readFile.ts (3.3KB, 81 lines)
