@@ -73,8 +73,7 @@ import {
   ISumiMCPServerBackend,
   SumiMCPServerProxyServicePath,
 } from '../common';
-import { MCPServerDescription, MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
-import { ToolInvocationRegistry, ToolInvocationRegistryImpl } from '../common/tool-invocation-registry';
+import { MCPServerDescription } from '../common/mcp-server-manager';
 
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
@@ -217,9 +216,6 @@ export class AINativeBrowserContribution
 
   @Autowired(CodeActionSingleHandler)
   private readonly codeActionSingleHandler: CodeActionSingleHandler;
-
-  // @Autowired(MCPServerManagerPath)
-  // private readonly mcpServerManager: MCPServerManager;
 
   @Autowired(SumiMCPServerProxyServicePath)
   private readonly sumiMCPServerBackendProxy: ISumiMCPServerBackend;

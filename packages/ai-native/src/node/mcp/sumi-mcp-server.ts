@@ -8,6 +8,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { ILogger } from '@opensumi/ide-core-common';
+import { INodeLogger } from '@opensumi/ide-core-node';
 
 import { ISumiMCPServerBackend } from '../../common';
 import { MCPServerDescription, MCPServerManager } from '../../common/mcp-server-manager';
@@ -30,7 +31,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
   @Autowired(ToolInvocationRegistryManager)
   private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
 
-  @Autowired(ILogger)
+  @Autowired(INodeLogger)
   private readonly logger: ILogger;
 
   private server: Server | undefined;
