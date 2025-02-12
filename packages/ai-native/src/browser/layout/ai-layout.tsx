@@ -10,11 +10,14 @@ export const AILayout = () => {
   const { layout } = getStorageValue();
   const designLayoutConfig = useInjectable(DesignLayoutConfig);
 
-  const defaultRightSize = useMemo(() => designLayoutConfig.useMergeRightWithLeftPanel ? 0 : 49, [designLayoutConfig.useMergeRightWithLeftPanel]);
+  const defaultRightSize = useMemo(
+    () => (designLayoutConfig.useMergeRightWithLeftPanel ? 0 : 49),
+    [designLayoutConfig.useMergeRightWithLeftPanel],
+  );
 
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 35 : 0} slot='top' />
+      <SlotRenderer id='top' defaultSize={layout.top?.currentId ? layout.top?.size || 32 : 32} slot='top' />
       <SplitPanel
         id='main-horizontal-ai'
         flex={1}
