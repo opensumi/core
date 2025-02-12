@@ -81,6 +81,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
     keybindings.registerKeybinding({
       command: AI_CODE_EDITS_TRIGGER.id,
       keybinding: codeEdits.triggerKeybinding,
+      when: 'editorFocus',
     });
   }
 }
