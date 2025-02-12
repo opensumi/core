@@ -2,44 +2,52 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
+import { ILogger } from '@opensumi/ide-core-common';
+
 export interface IMCPServer {
-    isStarted(): boolean;
-    start(): Promise<void>;
-    getServerName(): string;
-    callTool(toolName: string, arg_string: string): ReturnType<Client['callTool']>;
-    getTools(): ReturnType<Client['listTools']>;
-    update(command: string, args?: string[], env?: { [key: string]: string }): void;
-    stop(): void;
+  isStarted(): boolean;
+  start(): Promise<void>;
+  getServerName(): string;
+  callTool(toolName: string, arg_string: string): ReturnType<Client['callTool']>;
+  getTools(): ReturnType<Client['listTools']>;
+  update(command: string, args?: string[], env?: { [key: string]: string }): void;
+  stop(): void;
 }
 
 export class MCPServerImpl implements IMCPServer {
-    private name: string;
-    private command: string;
-    private args?: string[];
-    private client: Client;
-    private env?: { [key: string]: string };
-    private started: boolean = false;
+  private name: string;
+  private command: string;
+  private args?: string[];
+  private client: Client;
+  private env?: { [key: string]: string };
+  private started: boolean = false;
 
-  constructor(name: string, command: string, args?: string[], env?: Record<string, string>) {
+  constructor(
+    name: string,
+    command: string,
+    args?: string[],
+    env?: Record<string, string>,
+    private readonly logger?: ILogger,
+  ) {
     this.name = name;
     this.command = command;
     this.args = args;
     this.env = env;
   }
 
-    isStarted(): boolean {
-        return this.started;
-    }
+  isStarted(): boolean {
+    return this.started;
+  }
 
-    getServerName(): string {
-        return this.name;
-    }
+  getServerName(): string {
+    return this.name;
+  }
 
   async start(): Promise<void> {
     if (this.started) {
       return;
     }
-    console.log(
+    this.logger?.log(
       `Starting server "${this.name}" with command: ${this.command} and args: ${this.args?.join(
         ' ',
       )} and env: ${JSON.stringify(this.env)}`,
@@ -59,7 +67,7 @@ export class MCPServerImpl implements IMCPServer {
       env: mergedEnv,
     });
     transport.onerror = (error) => {
-      console.error('Error: ' + error);
+      this.logger?.error('Transport Error:', error);
     };
 
     this.client = new Client(
@@ -72,7 +80,7 @@ export class MCPServerImpl implements IMCPServer {
       },
     );
     this.client.onerror = (error) => {
-      console.error('Error in MCP client: ' + error);
+      this.logger?.error('Error in MCP client:', error);
     };
 
     await this.client.connect(transport);
@@ -84,7 +92,7 @@ export class MCPServerImpl implements IMCPServer {
     try {
       args = JSON.parse(arg_string);
     } catch (error) {
-      console.error(
+      this.logger?.error(
         `Failed to parse arguments for calling tool "${toolName}" in MCP server "${this.name}" with command "${this.command}".
                 Invalid JSON: ${arg_string}`,
         error,
@@ -111,7 +119,7 @@ export class MCPServerImpl implements IMCPServer {
     if (!this.started || !this.client) {
       return;
     }
-    console.log(`Stopping MCP server "${this.name}"`);
+    this.logger?.log(`Stopping MCP server "${this.name}"`);
     this.client.close();
     this.started = false;
   }

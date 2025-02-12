@@ -244,45 +244,44 @@
   }
 }
 
-.monaco_wrapper {
-  position: relative;
-  min-width: 130px;
-  > pre {
-    margin-bottom: 10px;
-  }
-  .editor {
-    border-radius: 8px;
-    font-size: 12px;
-    padding: 32px 8px 8px 8px;
-    line-height: 18px;
-    &::-webkit-scrollbar {
-      width: auto;
-      height: 4px;
-    }
-  }
-
-  .action_toolbar {
-    display: flex;
-    position: absolute;
-    right: 8px;
-    top: 6px;
-    z-index: 100;
-    height: 20px;
-    align-items: center;
-    overflow: hidden;
-
-    :global {
-      .kt-popover {
-        height: inherit;
-      }
-    }
-  }
-}
-
 .code_block {
   position: relative;
   min-width: 100px;
   margin-top: 4px;
+  .monaco_wrapper {
+    position: relative;
+    min-width: 130px;
+    > pre {
+      margin-bottom: 10px;
+    }
+    .editor {
+      border-radius: 8px;
+      font-size: 12px;
+      padding: 32px 8px 8px 8px;
+      line-height: 18px;
+      &::-webkit-scrollbar {
+        width: auto;
+        height: 4px;
+      }
+    }
+
+    .action_toolbar {
+      display: flex;
+      position: absolute;
+      right: 8px;
+      top: 6px;
+      z-index: 100;
+      height: 20px;
+      align-items: center;
+      overflow: hidden;
+
+      :global {
+        .kt-popover {
+          height: inherit;
+        }
+      }
+    }
+  }
 
   :global {
     .hljs {

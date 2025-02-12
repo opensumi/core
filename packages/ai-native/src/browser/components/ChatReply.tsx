@@ -247,10 +247,10 @@ export const ChatReply = (props: IChatReplyProps) => {
           });
         }
 
-        // startTransition(() => {
-        // });
-        onDidChange?.();
-        update();
+        startTransition(() => {
+          onDidChange?.();
+          update();
+        });
       }),
     );
 
@@ -302,9 +302,7 @@ export const ChatReply = (props: IChatReplyProps) => {
     <ComponentRender component={componentId} value={value} />
   );
 
-  const renderToolCall = (toolCall: IChatToolContent['content']) => {
-    return <ToolCallRender toolCall={toolCall} />;
-  };
+  const renderToolCall = (toolCall: IChatToolContent['content']) => <ToolCallRender toolCall={toolCall} />;
 
   const contentNode = React.useMemo(
     () =>

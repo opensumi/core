@@ -1,3 +1,5 @@
+import { ILogger } from '@opensumi/ide-core-common';
+
 import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
 
@@ -13,6 +15,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
 
   constructor(
     private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager,
+    private readonly logger: ILogger,
   ) {}
 
   setClientId(clientId: string) {
@@ -25,7 +28,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
       throw new Error(`MCP server "${serverName}" not found.`);
     }
     server.stop();
-    console.log(`MCP server "${serverName}" stopped.`);
+    this.logger.log(`MCP server "${serverName}" stopped.`);
   }
 
   async getStartedServers(): Promise<string[]> {
@@ -70,11 +73,11 @@ export class MCPServerManagerImpl implements MCPServerManager {
       handler: async (arg_string: string) => {
         try {
           const res = await this.callTool(serverName, tool.name, arg_string);
-          console.log(`[MCP: ${serverName}] ${tool.name} called with ${arg_string}`);
-          console.log(res);
+          this.logger.debug(`[MCP: ${serverName}] ${tool.name} called with ${arg_string}`);
+          this.logger.debug('Tool execution result:', res);
           return JSON.stringify(res);
         } catch (error) {
-          console.error(`Error in tool handler for ${tool.name} on MCP server ${serverName}:`, error);
+          this.logger.error(`Error in tool handler for ${tool.name} on MCP server ${serverName}:`, error);
           throw error;
         }
       },
@@ -111,7 +114,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
     if (existingServer) {
       existingServer.update(command, args, env);
     } else {
-      const newServer = new MCPServerImpl(name, command, args, env);
+      const newServer = new MCPServerImpl(name, command, args, env, this.logger);
       this.servers.set(name, newServer);
     }
   }
@@ -139,7 +142,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
       server.stop();
       this.servers.delete(name);
     } else {
-      console.warn(`MCP server "${name}" not found.`);
+      this.logger.warn(`MCP server "${name}" not found.`);
     }
   }
 }

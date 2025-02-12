@@ -27,7 +27,12 @@ import {
 import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
 
-export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent | IChatToolContent;
+export type IChatProgressResponseContent =
+  | IChatMarkdownContent
+  | IChatAsyncContent
+  | IChatTreeData
+  | IChatComponent
+  | IChatToolContent;
 
 @Injectable({ multiple: true })
 export class ChatResponseModel extends Disposable {
@@ -125,7 +130,9 @@ export class ChatResponseModel extends Disposable {
       this.#responseParts.push(progress);
       this.#updateResponseText(quiet);
     } else if (progress.kind === 'toolCall') {
-      const find = this.#responseParts.find((item) => item.kind === 'toolCall' && (item.content.id === progress.content.id));
+      const find = this.#responseParts.find(
+        (item) => item.kind === 'toolCall' && item.content.id === progress.content.id,
+      );
       if (find) {
         // @ts-ignore
         find.content = progress.content;
@@ -173,9 +180,9 @@ export class ChatResponseModel extends Disposable {
     }
     this.#responseContents = result;
 
-    // if (!quiet) {
+    if (!quiet) {
       this.#onDidChange.fire();
-    // }
+    }
   }
 
   complete(): void {
@@ -272,7 +279,7 @@ export class ChatModel extends Disposable implements IChatModel {
     const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component', 'toolCall'];
 
     if (basicKind.includes(kind)) {
-      request.response.updateContent(progress, false);
+      request.response.updateContent(progress, quiet);
     } else {
       this.logger.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
     }

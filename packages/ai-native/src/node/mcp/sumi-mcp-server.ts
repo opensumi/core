@@ -7,10 +7,11 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
+import { ILogger } from '@opensumi/ide-core-common';
 
 import { ISumiMCPServerBackend } from '../../common';
 import { MCPServerDescription, MCPServerManager } from '../../common/mcp-server-manager';
-import { IToolInvocationRegistryManager , ToolInvocationRegistryManager } from '../../common/tool-invocation-registry';
+import { IToolInvocationRegistryManager, ToolInvocationRegistryManager } from '../../common/tool-invocation-registry';
 import { IMCPServerProxyService, MCPTool } from '../../common/types';
 import { IMCPServer } from '../mcp-server';
 import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
@@ -22,13 +23,15 @@ import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
 
 @Injectable({ multiple: true })
 export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> implements ISumiMCPServerBackend {
-
   // 这里需要考虑不同的 BrowserTab 的区分问题，目前的 POC 所有的 Tab 都会注册到 tools 中
   // 后续需要区分不同的 Tab 对应的实例
   private readonly mcpServerManager: MCPServerManagerImpl;
 
   @Autowired(ToolInvocationRegistryManager)
   private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   private server: Server | undefined;
 
@@ -37,7 +40,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
 
   constructor() {
     super();
-    this.mcpServerManager = new MCPServerManagerImpl(this.toolInvocationRegistryManager);
+    this.mcpServerManager = new MCPServerManagerImpl(this.toolInvocationRegistryManager, this.logger);
   }
 
   public setConnectionClientId(clientId: string) {
@@ -50,8 +53,8 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
       throw new Error('SUMI MCP RPC Client not initialized');
     }
     // 获取 MCP 工具
-    const tools =  await this.client.$getMCPTools();
-    console.log('[Node backend] SUMI MCP tools', tools);
+    const tools = await this.client.$getMCPTools();
+    this.logger.log('[Node backend] SUMI MCP tools', tools);
     return tools;
   }
 
@@ -78,7 +81,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
   }
 
   public async initBuiltinMCPServer() {
-    const builtinMCPServer = new BuiltinMCPServer(this);
+    const builtinMCPServer = new BuiltinMCPServer(this, this.logger);
     this.mcpServerManager.setClientId(this.clientId);
     await this.mcpServerManager.initBuiltinServer(builtinMCPServer);
     this.client?.$updateMCPServers();
@@ -128,16 +131,12 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
   }
 }
 
-
 export const TokenBuiltinMCPServer = Symbol('TokenBuiltinMCPServer');
 
 export class BuiltinMCPServer implements IMCPServer {
-
-  constructor(
-    private readonly sumiMCPServer: SumiMCPServerBackend,
-  ) {}
-
   private started: boolean = true;
+
+  constructor(private readonly sumiMCPServer: SumiMCPServerBackend, private readonly logger: ILogger) {}
 
   isStarted(): boolean {
     return this.started;
@@ -164,7 +163,7 @@ export class BuiltinMCPServer implements IMCPServer {
     try {
       args = JSON.parse(arg_string);
     } catch (error) {
-      console.error(
+      this.logger.error(
         `Failed to parse arguments for calling tool "${toolName}" in Builtin MCP server.
         Invalid JSON: ${arg_string}`,
         error,
@@ -179,6 +178,7 @@ export class BuiltinMCPServer implements IMCPServer {
       throw new Error('MCP Server not started');
     }
     const tools = await this.sumiMCPServer.getMCPTools();
+    this.logger.debug('[BuiltinMCPServer] getTools', tools);
     return { tools } as any;
   }
 
@@ -194,4 +194,3 @@ export class BuiltinMCPServer implements IMCPServer {
     this.started = false;
   }
 }
-
