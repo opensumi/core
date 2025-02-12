@@ -1,5 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAINativeCapabilities, IAINativeConfig, IAINativeInlineChatConfig } from '@opensumi/ide-core-common';
+import {
+  IAINativeCapabilities,
+  IAINativeCodeEditsConfig,
+  IAINativeConfig,
+  IAINativeInlineChatConfig,
+} from '@opensumi/ide-core-common';
 
 import { AILogoAvatar } from '../components/ai-native';
 import { LayoutViewSizeConfig } from '../layout/constants';
@@ -28,6 +33,10 @@ const DEFAULT_INLINE_CHAT_CONFIG: Required<IAINativeInlineChatConfig> = {
   logo: AILogoAvatar,
 };
 
+const DEFAULT_CODE_EDITS_CONFIG: Required<IAINativeCodeEditsConfig> = {
+  triggerKeybinding: 'alt+\\',
+};
+
 @Injectable()
 export class AINativeConfigService implements IAINativeConfig {
   @Autowired(AppConfig)
@@ -40,6 +49,7 @@ export class AINativeConfigService implements IAINativeConfig {
 
   private internalCapabilities = DEFAULT_CAPABILITIES;
   private internalInlineChat = DEFAULT_INLINE_CHAT_CONFIG;
+  private internalCodeEdits = DEFAULT_CODE_EDITS_CONFIG;
 
   public get capabilities(): Required<IAINativeCapabilities> {
     if (!this.aiModuleLoaded) {
@@ -63,6 +73,16 @@ export class AINativeConfigService implements IAINativeConfig {
     }
 
     return this.internalInlineChat;
+  }
+
+  public get codeEdits(): Required<IAINativeCodeEditsConfig> {
+    const { AINativeConfig } = this.appConfig;
+
+    if (AINativeConfig?.codeEdits) {
+      return { ...this.internalCodeEdits, ...AINativeConfig.codeEdits };
+    }
+
+    return this.internalCodeEdits;
   }
 
   setAINativeModuleLoaded(value: boolean): void {

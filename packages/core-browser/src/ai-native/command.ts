@@ -30,10 +30,14 @@ export const AI_CODE_ACTION = {
   id: 'ai.code.action',
 };
 
-export const AI_MULTI_LINE_COMPLETION_DISCARD = {
-  id: 'ai.multiLine.completion.discard',
+export const AI_CODE_EDITS_DISCARD = {
+  id: 'ai.codeEdits.discard',
 };
 
-export const AI_MULTI_LINE_COMPLETION_ACCEPT = {
-  id: 'ai.multiLine.completion.accept',
+export const AI_CODE_EDITS_ACCEPT = {
+  id: 'ai.codeEdits.accept',
+};
+
+export const AI_CODE_EDITS_TRIGGER = {
+  id: 'ai.codeEdits.trigger',
 };
