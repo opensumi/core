@@ -30,14 +30,16 @@ export const AI_CODE_ACTION = {
   id: 'ai.code.action',
 };
 
-export const AI_CODE_EDITS_DISCARD = {
-  id: 'ai.codeEdits.discard',
-};
+export namespace AI_CODE_EDITS_COMMANDS {
+  export const DISCARD = {
+    id: 'ai.codeEdits.discard',
+  };
 
-export const AI_CODE_EDITS_ACCEPT = {
-  id: 'ai.codeEdits.accept',
-};
+  export const ACCEPT = {
+    id: 'ai.codeEdits.accept',
+  };
 
-export const AI_CODE_EDITS_TRIGGER = {
-  id: 'ai.codeEdits.trigger',
-};
+  export const TRIGGER = {
+    id: 'ai.codeEdits.trigger',
+  };
+}

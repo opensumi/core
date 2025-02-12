@@ -7,11 +7,7 @@ import {
   KeybindingRegistry,
   KeybindingScope,
 } from '@opensumi/ide-core-browser';
-import {
-  AI_CODE_EDITS_ACCEPT,
-  AI_CODE_EDITS_DISCARD,
-  AI_CODE_EDITS_TRIGGER,
-} from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { AI_CODE_EDITS_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { CommandContribution, CommandRegistry, Domain } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -29,7 +25,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
   private readonly aiNativeConfigService: AINativeConfigService;
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(AI_CODE_EDITS_DISCARD, {
+    commands.registerCommand(AI_CODE_EDITS_COMMANDS.DISCARD, {
       execute: () => {
         const editor = this.workbenchEditorService.currentCodeEditor;
         if (editor) {
@@ -38,7 +34,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
       },
     });
 
-    commands.registerCommand(AI_CODE_EDITS_ACCEPT, {
+    commands.registerCommand(AI_CODE_EDITS_COMMANDS.ACCEPT, {
       execute: () => {
         const editor = this.workbenchEditorService.currentCodeEditor;
         if (editor) {
@@ -47,7 +43,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
       },
     });
 
-    commands.registerCommand(AI_CODE_EDITS_TRIGGER, {
+    commands.registerCommand(AI_CODE_EDITS_COMMANDS.TRIGGER, {
       execute: () => {
         const editor = this.workbenchEditorService.currentCodeEditor;
         if (editor) {
@@ -63,7 +59,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
     const { codeEdits } = this.aiNativeConfigService;
 
     keybindings.registerKeybinding({
-      command: AI_CODE_EDITS_DISCARD.id,
+      command: AI_CODE_EDITS_COMMANDS.DISCARD.id,
       keybinding: Key.ESCAPE.code,
       when: MultiLineEditsIsVisible.raw,
       priority: 100,
@@ -71,7 +67,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
 
     keybindings.registerKeybinding(
       {
-        command: AI_CODE_EDITS_ACCEPT.id,
+        command: AI_CODE_EDITS_COMMANDS.ACCEPT.id,
         keybinding: Key.TAB.code,
         when: MultiLineEditsIsVisible.raw,
       },
@@ -79,7 +75,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
     );
 
     keybindings.registerKeybinding({
-      command: AI_CODE_EDITS_TRIGGER.id,
+      command: AI_CODE_EDITS_COMMANDS.TRIGGER.id,
       keybinding: codeEdits.triggerKeybinding,
       when: 'editorFocus',
     });
