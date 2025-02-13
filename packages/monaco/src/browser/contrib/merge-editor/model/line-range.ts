@@ -1,5 +1,4 @@
 import { Constants, uuid } from '@opensumi/ide-core-common';
-import { IRange } from '@opensumi/monaco-editor-core';
 import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
