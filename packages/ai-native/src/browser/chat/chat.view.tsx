@@ -1,7 +1,13 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import { getIcon, useEventEffect, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
+import {
+  AINativeConfigService,
+  getIcon,
+  useEventEffect,
+  useInjectable,
+  useUpdateOnEvent,
+} from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -26,7 +32,13 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IDialogService } from '@opensumi/ide-overlay';
 
 import 'react-chat-elements/dist/main.css';
-import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure, TokenMCPServerProxyService } from '../../common';
+import {
+  AI_CHAT_VIEW_ID,
+  IChatAgentService,
+  IChatInternalService,
+  IChatMessageStructure,
+  TokenMCPServerProxyService,
+} from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -65,6 +77,7 @@ export const AIChatView = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
   const dialogService = useInjectable<IDialogService>(IDialogService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
 
@@ -632,11 +645,15 @@ export const AIChatView = () => {
     };
   }, [aiChatService.sessionModel]);
 
-  useEventEffect(mcpServerProxyService.onChangeMCPServers, () => {
-    mcpServerProxyService.getAllMCPTools().then((tools) => {
-      setMcpToolsCount(tools.length);
-    });
-  }, [mcpServerProxyService]);
+  useEventEffect(
+    mcpServerProxyService.onChangeMCPServers,
+    () => {
+      mcpServerProxyService.getAllMCPTools().then((tools) => {
+        setMcpToolsCount(tools.length);
+      });
+    },
+    [mcpServerProxyService],
+  );
 
   const handleShowMCPTools = React.useCallback(async () => {
     const tools = await mcpServerProxyService.getAllMCPTools();
@@ -679,9 +696,11 @@ export const AIChatView = () => {
                 ))}
               </div>
               <div className={styles.header_operate_right}>
-                <div className={styles.tag} onClick={handleShowMCPTools}>
-                  {`MCP Tools: ${mcpToolsCount}`}
-                </div>
+                {aiNativeConfigService.capabilities.supportsMCP && (
+                  <div className={styles.tag} onClick={handleShowMCPTools}>
+                    {`MCP Tools: ${mcpToolsCount}`}
+                  </div>
+                )}
               </div>
             </div>
             <ChatInputWrapperRender

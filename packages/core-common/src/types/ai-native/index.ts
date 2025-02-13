@@ -41,9 +41,17 @@ export interface IAINativeCapabilities {
    */
   supportsTerminalDetection?: boolean;
   /**
-   * Use ai terminal command suggets capabilities
+   * Use ai terminal command suggests capabilities
    */
   supportsTerminalCommandSuggest?: boolean;
+  /**
+   * Use ai to provide custom LLM settings
+   */
+  supportsCustomLLMSettings?: boolean;
+  /**
+   * supports modelcontextprotocol
+   */
+  supportsMCP?: boolean;
 }
 
 export interface IDesignLayoutConfig {

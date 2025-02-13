@@ -288,7 +288,7 @@ export class AINativeBrowserContribution
 
   onDidStart() {
     runWhenIdle(() => {
-      const { supportsRenameSuggestions, supportsInlineChat } = this.aiNativeConfigService.capabilities;
+      const { supportsRenameSuggestions, supportsInlineChat, supportsMCP } = this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
@@ -305,13 +305,17 @@ export class AINativeBrowserContribution
         this.codeActionSingleHandler.load();
       }
 
-      // 初始化内置 MCP Server
-      this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
+      if (supportsMCP) {
+        // 初始化内置 MCP Server
+        this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
 
-      // 从 preferences 获取并初始化外部 MCP Servers
-      const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers);
-      if (mcpServers && mcpServers.length > 0) {
-        this.sumiMCPServerBackendProxy.initExternalMCPServers(mcpServers);
+        // 从 preferences 获取并初始化外部 MCP Servers
+        const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(
+          AINativeSettingSectionsId.MCPServers,
+        );
+        if (mcpServers && mcpServers.length > 0) {
+          this.sumiMCPServerBackendProxy.initExternalMCPServers(mcpServers);
+        }
       }
     });
   }
@@ -396,8 +400,10 @@ export class AINativeBrowserContribution
           },
         ],
       });
+    }
 
-      // Register language model API key settings
+    // Register language model API key settings
+    if (this.aiNativeConfigService.capabilities.supportsCustomLLMSettings) {
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
         title: localize('preference.ai.native.llm.apiSettings.title'),
         preferences: [
@@ -423,8 +429,10 @@ export class AINativeBrowserContribution
           },
         ],
       });
+    }
 
-      // Register MCP server settings
+    // Register MCP server settings
+    if (this.aiNativeConfigService.capabilities.supportsMCP) {
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
         title: localize('preference.ai.native.mcp.settings.title'),
         preferences: [
