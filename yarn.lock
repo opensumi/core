@@ -3384,6 +3384,7 @@ __metadata:
     "@ai-sdk/openai": "npm:^1.1.9"
     "@anthropic-ai/sdk": "npm:^0.36.3"
     "@modelcontextprotocol/sdk": "npm:^1.3.1"
+    "@opensumi/ide-addons": "workspace:*"
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"

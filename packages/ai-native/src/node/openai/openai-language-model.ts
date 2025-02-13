@@ -1,8 +1,9 @@
 import { OpenAIProvider, createOpenAI } from '@ai-sdk/openai';
 
 import { Injectable } from '@opensumi/di';
-import { BaseLanguageModel } from '@opensumi/ide-ai-native/lib/node/base-language-model';
 import { AINativeSettingSectionsId, IAIBackServiceOption } from '@opensumi/ide-core-common';
+
+import { BaseLanguageModel } from '../base-language-model';
 
 export const DeepSeekModelIdentifier = Symbol('DeepSeekModelIdentifier');
 
