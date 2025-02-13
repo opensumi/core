@@ -236,9 +236,9 @@ export class TreeNode implements ITreeNode {
   get path(): string {
     if (!this._path) {
       if (!this.parent) {
-        this._path = new Path(`${Path.separator}${this.name}`).toString();
+        this._path = `${Path.separator}${this.name}`;
       } else {
-        this._path = new Path(this.parent.path).join(this.name).toString();
+        this._path = `${this.parent.path}${Path.separator}${this.name}`;
       }
     }
     return this._path;
