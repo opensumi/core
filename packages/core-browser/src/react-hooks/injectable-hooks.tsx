@@ -16,7 +16,7 @@ function isDisposable(target: any): target is Disposable {
 export function useInjectable<T = any>(Constructor: Token, args?: any): T {
   const { injector } = useContext(ConfigContext);
 
-  const instance = useMemo(() => injector.get(Constructor, args), [injector, Constructor]);
+  const instance = useMemo(() => injector?.get(Constructor, args), [injector, Constructor]);
 
   useEffect(
     () => () => {

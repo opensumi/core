@@ -47,6 +47,8 @@ export class FileTreeDialogService extends Tree {
 
   public _whenReady: Promise<void>;
 
+  showFilePathSearch: boolean;
+
   constructor(@Optional() root: string) {
     super();
     this._whenReady = this.resolveWorkspaceRoot(root);
@@ -175,7 +177,7 @@ export class FileTreeDialogService extends Tree {
   async createFile(options: { oldFilePath: string; newFilePath: string }) {
     try {
       const { oldFilePath, newFilePath } = options;
-      let fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
+      const fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
 
       if (!fileStat) {
         throw new Error(`Source file not found: ${oldFilePath}`);
@@ -191,6 +193,14 @@ export class FileTreeDialogService extends Tree {
     } catch (e) {
       throw new Error(`Failed to create file: ${e.message}`);
     }
+  }
+
+  renderCustomMsg() {
+    return null;
+  }
+
+  getDefaultFilePath(defaultPath: string) {
+    return defaultPath;
   }
 
   dispose() {

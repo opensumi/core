@@ -2,6 +2,8 @@ import path from 'path';
 
 import { expect } from '@playwright/test';
 
+import { isLinux } from '@opensumi/ide-utils';
+
 import { OpenSumiApp } from '..';
 import { OpenSumiDiffEditor } from '../diff-editor';
 import { OpenSumiExplorerView } from '../explorer-view';
@@ -219,7 +221,7 @@ test.describe('OpenSumi Search Panel', () => {
     const deleteMenu = await menu?.menuItemByName('Delete');
     await deleteMenu?.click();
     await app.page.waitForTimeout(200);
-    const confirmed = await app.getDialogButton('Move to trash');
+    const confirmed = await app.getDialogButton(!isLinux ? 'Move to Trash' : 'Delete');
     await confirmed?.click();
     await app.page.waitForTimeout(2000);
 

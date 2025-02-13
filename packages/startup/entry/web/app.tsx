@@ -12,7 +12,7 @@ renderApp(
     modules: [...AIModules, NotebookModule],
     opts: {
       layoutViewSize: {
-        menubarHeight: 48,
+        menubarHeight: 32,
       },
       layoutConfig: {
         [DESIGN_MENU_BAR_RIGHT]: {

@@ -1,12 +1,13 @@
 import cls from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { AIInlineChatContentWidgetId, localize } from '@opensumi/ide-core-common';
 
+import { AINativeConfigService } from '../../../ai-native/ai-config.service';
 import { MenuNode } from '../../../menu/next/base';
 import { createLayoutEventType } from '../../../monaco';
-import { useChange, useHover } from '../../../react-hooks';
-import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
+import { useChange, useHover, useInjectable } from '../../../react-hooks';
+import { EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';
 import { Loading } from '../loading';
 import { EnhancePopover } from '../popover';
@@ -82,6 +83,7 @@ export const AIAction = (props: AIActionProps) => {
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [ref, isHovered] = useHover<HTMLDivElement>();
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
   const handleClose = useCallback(() => {
     onClose?.();
@@ -90,6 +92,20 @@ export const AIAction = (props: AIActionProps) => {
   useChange(isHovered, () => {
     containerRef.current?.dispatchEvent(layoutEvent);
   });
+
+  const Logo = useMemo(() => {
+    const InlineChatLogo = aiNativeConfigService?.inlineChat.logo;
+
+    if (typeof InlineChatLogo === 'string') {
+      return <img src={InlineChatLogo} className={styles.ai_action_icon} />;
+    } else if (React.isValidElement(InlineChatLogo)) {
+      return InlineChatLogo;
+    } else if (typeof InlineChatLogo === 'function') {
+      return <InlineChatLogo />;
+    }
+
+    return null;
+  }, [aiNativeConfigService?.inlineChat.logo]);
 
   /**
    * loading 的遮罩
@@ -139,7 +155,7 @@ export const AIAction = (props: AIActionProps) => {
     return (
       <div ref={ref} className={styles.operate_container}>
         {renderLoadingMask()}
-        <LineVertical height='100%' margin='0 8px' maxHeight={14} minHeight={14} />
+        {Logo && <LineVertical height='100%' margin='0 8px' maxHeight={14} minHeight={14} />}
         {customOperationRender ? (
           <div className={styles.custom_operation_wrapper}>{customOperationRender}</div>
         ) : (
@@ -147,7 +163,7 @@ export const AIAction = (props: AIActionProps) => {
         )}
       </div>
     );
-  }, [customOperationRender, operationList, moreOperation, loading, loadingShowOperation]);
+  }, [customOperationRender, operationList, moreOperation, loading, loadingShowOperation, Logo]);
 
   return (
     <div
@@ -164,9 +180,9 @@ export const AIAction = (props: AIActionProps) => {
             <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
               <Loading className={styles.loading_icon} />
             </EnhancePopover>
-          ) : (
-            <AILogoAvatar className={styles.ai_action_icon} />
-          )}
+          ) : Logo ? (
+            <div className={styles.logo_container}>{Logo}</div>
+          ) : null}
         </div>
         {renderOperation()}
         {showClose && (

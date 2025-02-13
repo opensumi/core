@@ -3,6 +3,7 @@ import { Disposable, ErrorResponse, IDisposable, ReplyResponse } from '@opensumi
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { empty, getLeadingWhitespace } from '@opensumi/ide-utils/lib/strings';
+import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { DefaultEndOfLine } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { ModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
@@ -43,10 +44,13 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
   protected inlineContentWidget: AIInlineContentWidget | null = null;
   protected selection: Selection;
   protected model: ITextModel;
+  public modelId: string;
 
   constructor(protected readonly monacoEditor: ICodeEditor) {
     super();
     this.model = this.monacoEditor.getModel()!;
+    this.modelId = this.model.id;
+
     this.addDispose(
       Disposable.create(() => {
         if (this.inlineContentWidget) {
@@ -106,11 +110,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     return this.node;
   }
 
-  public createNodeSnapshot(): N | undefined {
-    return this.node;
-  }
-
-  public mount(contentWidget: AIInlineContentWidget): void {
+  public mountWidget(contentWidget: AIInlineContentWidget): void {
     this.inlineContentWidget = contentWidget;
   }
 
@@ -156,25 +156,54 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
   setValue(content: string): void {
     // do nothing
   }
+
   getValue(): string {
     // do nothing
     return '';
   }
+
   getOriginValue(): string {
     // do nothing
     return '';
   }
+
   onError(error: ErrorResponse): void {
     // do nothing
   }
+
   onAbort(): void {
     // do nothing
   }
+
   onEnd(): void {
     // do nothing
   }
 
   revealFirstDiff(): void {
+    // do nothing
+  }
+
+  /**
+   * 会新建一个渲染层的实例
+   * 或重新赋值渲染层的数据
+   * 适用于首次渲染
+   */
+  render(): void {
+    // do nothing
+  }
+
+  /**
+   * 仅隐藏渲染层，而不销毁实例
+   */
+  hide(): void {
+    // do nothing
+  }
+
+  /**
+   * 恢复渲染层
+   * 适用于非首次渲染
+   */
+  resume(): void {
     // do nothing
   }
 
@@ -199,30 +228,37 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     this.addDispose(widget);
     return widget;
   }
-  mount(contentWidget: AIInlineContentWidget): void {
-    super.mount(contentWidget);
+
+  mountWidget(contentWidget: AIInlineContentWidget): void {
+    super.mountWidget(contentWidget);
     contentWidget.addDispose(this);
   }
+
   getPosition(): IPosition {
     return Position.lift({ lineNumber: this.selection.endLineNumber + 1, column: 1 });
   }
+
   layout(): void {
     this.inlineContentWidget?.setPositionPreference([ContentWidgetPositionPreference.BELOW]);
     super.layout();
   }
+
   onReady(exec: () => void): IDisposable {
     if (this.node) {
       return this.node!.onReady(exec.bind(this));
     }
     return Disposable.NULL;
   }
+
   show(line: number, heightInLines: number): void {
     this.node?.showByLine(line, heightInLines);
   }
+
   setValue(content: string): void {
     const modifiedModel = this.node?.getModifiedModel();
     modifiedModel?.setValue(this.formatIndentation(content));
   }
+
   getValue(): string {
     const model = this.node?.getModifiedModel();
     return model!.getValue();
@@ -240,10 +276,12 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
       this.model.pushStackElement();
     }
   }
+
   onLineCount(event: (count: number) => void): Disposable {
     this.node?.onMaxLineCount(event.bind(this));
     return this;
   }
+
   onData(data: ReplyResponse): void {
     const { message } = data;
 
@@ -258,12 +296,15 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
     disposable.dispose();
     this.node?.layout();
   }
+
   onError(error: ErrorResponse): void {
     this.node?.layout();
   }
+
   onAbort(): void {
     this.node?.layout();
   }
+
   onEnd(): void {
     this.node?.layout();
   }
@@ -296,30 +337,6 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.listenNode(node);
     return node;
   }
-  attachNode(node: InlineStreamDiffHandler): void {
-    this.node?.dispose();
-    this.node = node;
-
-    if (node) {
-      const snapshot = node.currentSnapshotStore;
-      if (snapshot) {
-        this.node.restoreDecorationSnapshot(snapshot.decorationSnapshotData);
-        this.listenNode(node);
-      }
-    }
-  }
-  public createNodeSnapshot(): InlineStreamDiffHandler | undefined {
-    if (!this.node) {
-      return this.createNode();
-    }
-
-    // 拿前一个 node 的快照信息
-    const snapshot = this.node.createSnapshot();
-    // 创建新的实例
-    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
-    node.restoreSnapshot(snapshot);
-    return node;
-  }
 
   getPosition(): IPosition {
     const zone = this.node?.getZone();
@@ -328,6 +345,7 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     }
     return Position.lift({ lineNumber: 1, column: 1 });
   }
+
   handleAction(action: EResultKind): void {
     switch (action) {
       case EResultKind.ACCEPT:
@@ -343,9 +361,11 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
         break;
     }
   }
+
   onLineCount() {
     return Disposable.NULL;
   }
+
   layout(): void {
     this.inlineContentWidget?.setPositionPreference([
       ContentWidgetPositionPreference.ABOVE,
@@ -365,17 +385,52 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
           const firstRemovedWidgetLineNumber = firstRemovedWidget.getLastPosition()?.lineNumber;
           if (firstRemovedWidgetLineNumber <= lineNumber) {
             const lineHeight = this.inlineContentWidget.getLineHeight();
-            const len = firstRemovedWidget.height;
+            const len = firstRemovedWidget.height + 1;
             this.inlineContentWidget.setOffsetTop(-lineHeight * len - 4);
+          } else {
+            this.inlineContentWidget.setOffsetTop(0);
           }
         }
+      } else {
+        this.inlineContentWidget.setOffsetTop(0);
       }
     }
   }
+
+  render(): void {
+    this.inlineContentWidget?.show();
+    this.node?.rateRenderEditController();
+  }
+
+  hide(): void {
+    this.inlineContentWidget?.hide();
+    this.node?.hide();
+  }
+
+  resume(): void {
+    this.inlineContentWidget?.show();
+    this.node?.resume();
+  }
+
   onData(data: ReplyResponse): void {
     const { message } = data;
     this.node?.addLinesToDiff(this.formatIndentation(message));
   }
+
+  onAbort(): void {
+    const diffModel = this.node?.recompute(EComputerMode.default);
+    if (diffModel) {
+      /**
+       * abort 的时候，需要保留当前已经输出的内容
+       * 同时需要去掉流式过程中的 pending 区域和 activeLine
+       */
+      diffModel.activeLine = 0;
+      diffModel.pendingRange = new LineRange(0, 0);
+
+      this.node?.finallyRender(diffModel);
+    }
+  }
+
   onEnd(): void {
     const diffModel = this.node?.recompute(EComputerMode.legacy);
     if (diffModel) {

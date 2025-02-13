@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService, StackingLevel, useInjectable } from '@opensumi/ide-core-browser';
 import { AIAction } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import {
   AIInlineChatContentWidgetId,
@@ -11,7 +10,6 @@ import {
   Emitter,
   Event,
   InlineChatFeatureRegistryToken,
-  localize,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
@@ -23,39 +21,31 @@ import {
 
 import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { InlineResultAction } from '../inline-actions/result-items/index';
+import { InlineInputService } from '../inline-input/inline-input.service';
+import { InteractiveInputModel } from '../inline-input/model';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import styles from './inline-chat.module.less';
-import { AIInlineChatService, EInlineChatStatus, EResultKind } from './inline-chat.service';
+import { EInlineChatStatus, EResultKind, InlineChatService } from './inline-chat.service';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 interface IAIInlineChatControllerProps {
   onClickActions: (id: string) => void;
-  onLayoutChange: (height: number) => void;
   onClose?: () => void;
-  onInteractiveInputSend?: (value: string) => void;
   onChatStatus: Event<EInlineChatStatus>;
   onResultClick: (k: EResultKind) => void;
 }
 
 const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
-  const { onClickActions, onClose, onInteractiveInputSend, onLayoutChange, onChatStatus, onResultClick } = props;
-  const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
+  const { onClickActions, onClose, onChatStatus, onResultClick } = props;
+  const aiInlineChatService: InlineChatService = useInjectable(IAIInlineChatService);
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
+
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
-  const [interactiveInputVisible, setInteractiveInputVisible] = useState<boolean>(
-    aiInlineChatService.interactiveInputVisible,
-  );
   useEffect(() => {
     const dis = new Disposable();
     dis.addDispose(onChatStatus((s) => setStatus(s)));
-
-    dis.addDispose(
-      aiInlineChatService.onInteractiveInputVisible((v) => {
-        setInteractiveInputVisible(v);
-      }),
-    );
 
     return () => {
       dis.dispose();
@@ -84,13 +74,6 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     onClose?.();
   }, [onClose]);
 
-  const handleInteractiveInputSend = useCallback(
-    (value: string) => {
-      onInteractiveInputSend?.(value);
-    },
-    [onInteractiveInputSend],
-  );
-
   const moreOperation = useMemo(
     () =>
       inlineChatFeatureRegistry.getEditorActionMenus().map(
@@ -106,24 +89,6 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       ),
     [inlineChatFeatureRegistry],
   );
-
-  const customOperationRender = useMemo(() => {
-    if (!interactiveInputVisible) {
-      return null;
-    }
-
-    return (
-      <InteractiveInput
-        autoFocus
-        onHeightChange={(height) => onLayoutChange(height)}
-        size='small'
-        placeholder={localize('aiNative.inline.chat.input.placeholder.default')}
-        width={320}
-        disabled={isLoading}
-        onSend={handleInteractiveInputSend}
-      />
-    );
-  }, [isLoading, interactiveInputVisible]);
 
   const renderContent = useCallback(() => {
     if (operationList.length === 0 && moreOperation.length === 0) {
@@ -145,11 +110,9 @@ const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
         onClickItem={handleClickActions}
         onClose={handleClose}
         loading={isLoading}
-        loadingShowOperation={interactiveInputVisible}
-        customOperationRender={customOperationRender}
       />
     );
-  }, [operationList, moreOperation, customOperationRender, onResultClick, status, interactiveInputVisible]);
+  }, [operationList, moreOperation, onResultClick, status]);
 
   return <div className={styles.inline_chat_controller_box}>{renderContent()}</div>;
 };
@@ -161,27 +124,19 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(InlineChatFeatureRegistryToken)
-  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
+  @Autowired(InlineInputService)
+  protected readonly inlineInputService: InlineInputService;
 
   private readonly aiNativeContextKey: AINativeContextKey;
 
   private readonly _onActionClickEmitter = new Emitter<{ actionId: string; source: string }>();
   public readonly onActionClick = this._onActionClickEmitter.event;
 
-  protected readonly _onInteractiveInputValue = new Emitter<string>();
-  public readonly onInteractiveInputValue = this._onInteractiveInputValue.event;
-
   protected readonly _onStatusChange = new Emitter<EInlineChatStatus>();
   public readonly onStatusChange: Event<EInlineChatStatus> = this._onStatusChange.event;
 
   protected readonly _onResultClick = new Emitter<EResultKind>();
   public readonly onResultClick: Event<EResultKind> = this._onResultClick.event;
-
-  protected _interactiveInputValue: string;
-  public get interactiveInputValue(): string {
-    return this._interactiveInputValue;
-  }
 
   protected _status: EInlineChatStatus = EInlineChatStatus.READY;
   public get status(): EInlineChatStatus {
@@ -196,13 +151,6 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     super(editor);
 
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.editor.contextKeyService]);
-    this.addDispose(
-      this.editor.onDidLayoutChange(() => {
-        if (this.isOutOfArea()) {
-          this.dispose();
-        }
-      }),
-    );
   }
 
   public launchChatStatus(status: EInlineChatStatus) {
@@ -218,8 +166,11 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   }
 
   public clickActionId(actionId: string, source: string): void {
-    if (actionId === this.inlineChatFeatureRegistry.getInteractiveInputId()) {
-      this.inlineChatFeatureRegistry._onChatClick.fire();
+    if (actionId === InteractiveInputModel.ID && this.options?.selection) {
+      // 隐藏当前的 inline chat widget
+      this.hide();
+      // 显示 inline input widget
+      this.inlineInputService.visibleBySelection(this.options.selection);
       return;
     }
 
@@ -232,14 +183,6 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
         onClickActions={(id) => this.clickActionId(id, 'widget')}
         onClose={() => this.dispose()}
         onChatStatus={this.onStatusChange.bind(this)}
-        onLayoutChange={() => {
-          this.editor.layoutContentWidget(this);
-        }}
-        onInteractiveInputSend={(value) => {
-          this.launchChatStatus(EInlineChatStatus.THINKING);
-          this._interactiveInputValue = value;
-          this._onInteractiveInputValue.fire(value);
-        }}
         onResultClick={(kind: EResultKind) => {
           this._onResultClick.fire(kind);
         }}

@@ -53,9 +53,11 @@
 我们提供了一些示例项目帮助你快速搭建你的 IDE 项目产品
 
 - [Cloud IDE](https://github.com/opensumi/ide-startup)
-- [Desktop IDE - based on the Electron](https://github.com/opensumi/ide-electron)
-- [Lite Web IDE - pure web IDE based on the Browser](https://github.com/opensumi/ide-startup-lite)
-- [The Mini-App liked IDE](https://github.com/opensumi/app-desktop)
+- [Desktop IDE - 桌面端 IDE](https://github.com/opensumi/ide-electron)
+- [CodeFuse IDE - 基于 OpenSumi 的 AI IDE](https://github.com/codefuse-ai/codefuse-ide)
+- [CodeBlitz - 无容器 IDE 框架](https://github.com/opensumi/codeblitz)
+- [Lite Web IDE - 无容器 IDE ](https://github.com/opensumi/ide-startup-lite)
+- [小程序 IDE ](https://github.com/opensumi/app-desktop)
 
 ## ⚡️ 如何开发
 

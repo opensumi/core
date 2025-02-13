@@ -52,8 +52,10 @@ export const localizationBundle = {
     'file.location': '在文件树中定位',
     'file.open.folder': '打开文件夹',
     'file.open.workspace': '从文件打开工作区',
-    'file.confirm.delete': '确定删除下面列的文件?\n{0}',
-    'file.confirm.delete.ok': '移入回收站',
+    'file.confirm.delete': '###确定从工作区删除下面的 {0} 个文件?  \n{1}',
+    'file.confirm.deleteTips': '你可以从回收站还原文件',
+    'file.confirm.moveToTrash.ok': '移入回收站',
+    'file.confirm.delete.ok': '删除',
     'file.confirm.delete.cancel': '取消',
     'file.confirm.move': '确定移动文件 {0} 到 {1} ?',
     'file.confirm.move.ok': '移动',
@@ -1225,11 +1227,14 @@ export const localizationBundle = {
     'aiNative.chat.expand.fullescreen': '展开全屏',
     'aiNative.chat.enter.send': 'Enter 发送',
 
+    'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': '采纳',
     'aiNative.inline.chat.operate.thumbsup.title': '赞',
     'aiNative.inline.chat.operate.thumbsdown.title': '踩',
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
     'aiNative.inline.chat.input.placeholder.default': '请输入你的意图...(↑↓ 切换历史)',
+    'aiNative.inline.chat.generating.canceled': 'Inline Chat 已停止生成',
+
     'aiNative.inline.hint.widget.placeholder': '按 {0} 唤起 Inline Chat',
     'aiNative.inline.problem.fix.title': 'AI 修复',
     'aiNative.inline.diff.accept': '采纳',
@@ -1271,8 +1276,9 @@ export const localizationBundle = {
     'preference.ai.native.intelligentCompletions.alwaysVisible': '是否总是展示智能补全',
 
     'preference.ai.native.codeEdits.title': '智能改写',
-    'preference.ai.native.codeEdits.lintErrors': '是否开启对 Lint Error 类型的智能改写',
-    'preference.ai.native.codeEdits.lineChange': '是否开启对 Line Change 类型的智能改写',
+    'preference.ai.native.codeEdits.lintErrors': '是否在发生 Lint Error 时触发智能改写',
+    'preference.ai.native.codeEdits.lineChange': '是否在光标行号发生变化时触发智能改写',
+    'preference.ai.native.codeEdits.typing': '是否在内容发生变化时触发智能改写',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

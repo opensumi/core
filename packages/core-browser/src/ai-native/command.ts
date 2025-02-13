@@ -6,6 +6,10 @@ export const AI_INLINE_CHAT_INTERACTIVE_INPUT_VISIBLE = {
   id: 'ai.inlineChat.interactiveInput.visible',
 };
 
+export const AI_INLINE_CHAT_INTERACTIVE_INPUT_CANCEL = {
+  id: 'ai.inlineChat.interactiveInput.cancel',
+};
+
 export const AI_INLINE_COMPLETION_VISIBLE = {
   id: 'ai.inline.completion.visible',
 };
@@ -26,10 +30,16 @@ export const AI_CODE_ACTION = {
   id: 'ai.code.action',
 };
 
-export const AI_MULTI_LINE_COMPLETION_DISCARD = {
-  id: 'ai.multiLine.completion.discard',
-};
+export namespace AI_CODE_EDITS_COMMANDS {
+  export const DISCARD = {
+    id: 'ai.codeEdits.discard',
+  };
 
-export const AI_MULTI_LINE_COMPLETION_ACCEPT = {
-  id: 'ai.multiLine.completion.accept',
-};
+  export const ACCEPT = {
+    id: 'ai.codeEdits.accept',
+  };
+
+  export const TRIGGER = {
+    id: 'ai.codeEdits.trigger',
+  };
+}

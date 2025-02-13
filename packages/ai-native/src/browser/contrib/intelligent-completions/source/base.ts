@@ -69,8 +69,6 @@ export abstract class BaseCodeEditsSource extends Disposable {
   private cancellationTokenSource = new CancellationTokenSource();
   private readonly relationID = observableValue<string | undefined>(this, undefined);
 
-  protected abstract doTrigger(...args: any[]): MaybePromise<void>;
-
   public readonly codeEditsContextBean = disposableObservableValue<CodeEditsContextBean | undefined>(this, undefined);
   public abstract priority: number;
   public abstract mount(): IDisposable;

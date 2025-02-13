@@ -51,8 +51,10 @@ export const localizationBundle = {
     'file.open.folder': 'Open Folder',
     'file.open.workspace': 'Open Workspace from File ...',
     'file.action.collapse': 'Collapse',
-    'file.confirm.delete': 'Are you sure you want to delete the following files?\n{0}',
-    'file.confirm.delete.ok': 'Move to trash',
+    'file.confirm.delete': '### Are you sure you want to delete the following {0} files?  \n{1}',
+    'file.confirm.deleteTips': 'You can restore files from the Trash',
+    'file.confirm.moveToTrash.ok': 'Move to trash',
+    'file.confirm.delete.ok': 'Delete',
     'file.confirm.delete.cancel': 'Cancel',
     'file.confirm.move': 'Are you sure you want to move file {0} to {1}?',
     'file.confirm.move.ok': 'Move',
@@ -1457,11 +1459,14 @@ export const localizationBundle = {
     'aiNative.chat.expand.fullescreen': 'fullescreen',
     'aiNative.chat.enter.send': 'Send (Enter)',
 
+    'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
     'aiNative.inline.chat.input.placeholder.default': 'New code instructions...(↑↓ for history)',
+    'aiNative.inline.chat.generating.canceled': 'Inline Chat Generating Canceled.',
+
     'aiNative.inline.hint.widget.placeholder': '{0} to inline chat',
     'aiNative.inline.problem.fix.title': 'Fix with AI',
     'aiNative.inline.diff.accept': 'Accept',
@@ -1504,8 +1509,10 @@ export const localizationBundle = {
     'preference.ai.native.intelligentCompletions.alwaysVisible': 'Whether to always show intelligent completions',
 
     'preference.ai.native.codeEdits.title': 'Code Edits',
-    'preference.ai.native.codeEdits.lintErrors': 'Whether to enable intelligent rewriting of Lint Errors',
-    'preference.ai.native.codeEdits.lineChange': 'Whether to enable intelligent rewriting of Line Change',
+    'preference.ai.native.codeEdits.lintErrors': 'Whether to trigger intelligent rewriting when Lint Error occurs',
+    'preference.ai.native.codeEdits.lineChange':
+      'Whether to trigger intelligent rewriting when the cursor line number changes',
+    'preference.ai.native.codeEdits.typing': 'Whether to trigger intelligent rewriting when the content changes',
     // #endregion AI Native
 
     // #endregion merge editor

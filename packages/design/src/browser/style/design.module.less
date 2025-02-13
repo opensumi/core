@@ -596,6 +596,12 @@
     margin: 0 5px;
   }
 
+  [role='treeitem'] {
+    [class*='mod_actived__'] {
+      outline: 1px solid var(--kt-tree-inactiveSelectionBackground);
+    }
+  }
+
   .design-kt_split_panel {
     padding-bottom: 8px;
 
@@ -715,6 +721,17 @@
 
   .design-extension_item {
     border-radius: 8px;
+  }
+}
+
+:global(.kt-dialog-content) {
+  .design-file_tree_node {
+    font-size: 13px;
+  }
+
+  .design-file_tree_node {
+    border-radius: 4px;
+    margin: 0 5px;
   }
 }
 

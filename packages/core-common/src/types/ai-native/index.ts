@@ -68,12 +68,48 @@ export interface IDesignLayoutConfig {
    * set menubar logo
    */
   menubarLogo?: string;
+  /**
+   * 是否支持插件注册 Chat 面板
+   */
   supportExternalChatPanel?: boolean;
+}
+
+export interface IAINativeInlineChatConfig {
+  /**
+   * inline chat 的 input 默认宽度
+   */
+  inputWidth?: number;
+  /**
+   * 唤起 input 的默认快捷键
+   */
+  inputKeybinding?: string;
+  /**
+   * inline chat 的 logo，支持图片和 react 组件
+   */
+  logo?: string | React.ReactNode | React.ComponentType<any>;
+}
+
+export interface IAINativeCodeEditsConfig {
+  /**
+   * 触发 code edits 的快捷键
+   */
+  triggerKeybinding?: string;
 }
 
 export interface IAINativeConfig {
   capabilities?: IAINativeCapabilities;
+  /**
+   * @deprecated use `designLayout` instead
+   */
   layout?: IDesignLayoutConfig;
+  /**
+   * inline chat 配置
+   */
+  inlineChat?: IAINativeInlineChatConfig;
+  /**
+   * code edits 配置
+   */
+  codeEdits?: IAINativeCodeEditsConfig;
 }
 
 export enum ECompletionType {
@@ -388,5 +424,6 @@ export interface IHistoryChatMessage extends IChatMessage {
 export enum ECodeEditsSourceTyping {
   LinterErrors = 'lint_errors',
   LineChange = 'line_change',
+  Typing = 'typing',
 }
 // ## Code Edits ends ##
