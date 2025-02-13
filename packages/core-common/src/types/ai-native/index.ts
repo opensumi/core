@@ -81,6 +81,13 @@ export interface IAINativeInlineChatConfig {
   logo?: string | React.ReactNode | React.ComponentType<any>;
 }
 
+export interface IAINativeCodeEditsConfig {
+  /**
+   * 触发 code edits 的快捷键
+   */
+  triggerKeybinding?: string;
+}
+
 export interface IAINativeConfig {
   capabilities?: IAINativeCapabilities;
   /**
@@ -91,6 +98,10 @@ export interface IAINativeConfig {
    * inline chat 配置
    */
   inlineChat?: IAINativeInlineChatConfig;
+  /**
+   * code edits 配置
+   */
+  codeEdits?: IAINativeCodeEditsConfig;
 }
 
 export enum ECompletionType {
