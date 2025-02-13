@@ -101,7 +101,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     watcher.onFilesChanged((e: FileChange[]) => {
       const effected = e.find((file) => file.uri.startsWith(uri.parent.toString()));
       if (effected) {
-        // return this.debouncedReadPreferences();
+        return this.debouncedReadPreferences();
       }
     });
     this.toDispose.push(Disposable.create(() => this.reset()));
