@@ -177,7 +177,7 @@ export class FileTreeDialogService extends Tree {
   async createFile(options: { oldFilePath: string; newFilePath: string }) {
     try {
       const { oldFilePath, newFilePath } = options;
-      let fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
+      const fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
 
       if (!fileStat) {
         throw new Error(`Source file not found: ${oldFilePath}`);
@@ -195,11 +195,13 @@ export class FileTreeDialogService extends Tree {
     }
   }
 
-  renderWarningMsg() {
+  renderCustomMsg() {
     return null;
   }
 
-  getDefaultFilePath(defaultPath: string) { return defaultPath; }
+  getDefaultFilePath(defaultPath: string) {
+    return defaultPath;
+  }
 
   dispose() {
     super.dispose();

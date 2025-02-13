@@ -223,13 +223,13 @@ export const FileDialog = ({
     [model, isReady, selectPath, directoryList],
   );
 
-  const renderWarningMsg = useCallback(() => {
-    if (fileService.renderWarningMsg) {
-      return fileService.renderWarningMsg();
+  const renderCustomMsg = useCallback(() => {
+    if (fileService.renderCustomMsg) {
+      return fileService.renderCustomMsg();
     } else {
       return null;
     }
-  }, [fileService.renderWarningMsg]);
+  }, [fileService.renderCustomMsg]);
 
   const renderDialogTreeNode = useCallback(
     (props: INodeRendererProps) => (
@@ -316,7 +316,7 @@ export const FileDialog = ({
   const DialogContent = useMemo(
     () => (
       <>
-        {renderWarningMsg()}
+        {renderCustomMsg()}
         <div className={styles.file_dialog_directory}>{renderDirectorySelection()}</div>
         <div className={styles.file_dialog_content}>{renderDialogTree()}</div>
       </>
