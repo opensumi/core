@@ -24,6 +24,7 @@
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-utils": "workspace:*",
     "@opensumi/ide-decoration": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",
