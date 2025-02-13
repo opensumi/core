@@ -21,7 +21,7 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
 
   protected client: FileSystemWatcherClient | undefined;
 
-  constructor(private readonly logger: ILogService) { }
+  constructor(private readonly logger: ILogService) {}
 
   dispose(): void {
     this.toDispose.dispose();
@@ -52,7 +52,9 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
 
       // 开始走监听流程
       watcher.on('error', (code: number, signal: string) => {
-        this.logger.error(`[Un-Recursive] Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`);
+        this.logger.error(
+          `[Un-Recursive] Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`,
+        );
         watcher.close();
       });
 
@@ -157,7 +159,7 @@ export class UnRecursiveFileSystemWatcher implements IWatcher {
     return disposables;
   }
 
-  async unwatchFileChanges(uri: string): Promise<void> {
+  unwatchFileChanges(uri: string): void {
     const basePath = FileUri.fsPath(uri);
     if (this.watcherCollections.has(basePath)) {
       const watcher = this.watcherCollections.get(basePath);

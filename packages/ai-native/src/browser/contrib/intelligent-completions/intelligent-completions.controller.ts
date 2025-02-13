@@ -13,10 +13,13 @@ import {
 import { Emitter, ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import {
   IObservable,
+  IObservableSignal,
   ISettableObservable,
+  ITransaction,
   autorun,
   autorunWithStoreHandleChanges,
   derived,
+  observableSignal,
   observableValue,
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
@@ -85,11 +88,13 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   private aiNativeContextKey: AINativeContextKey;
   private rewriteWidget: RewriteWidget | null;
   private whenMultiLineEditsVisibleDisposable: Disposable;
+  private codeEditsTriggerSignal: IObservableSignal<void>;
 
   public mount(): IDisposable {
     this.handlerAlwaysVisiblePreference();
 
     this.codeEditsResult = observableValue<CodeEditsResultValue | undefined>(this, undefined);
+    this.codeEditsTriggerSignal = observableSignal(this);
 
     this.whenMultiLineEditsVisibleDisposable = new Disposable();
     this.multiLineDecorationModel = new MultiLineDecorationModel(this.monacoEditor);
@@ -393,6 +398,10 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
     this.hide();
   });
 
+  public trigger(tx: ITransaction): void {
+    this.codeEditsTriggerSignal.trigger(tx);
+  }
+
   private registerFeature(monacoEditor: ICodeEditor): void {
     this.featureDisposable.addDispose(
       Event.any<any>(
@@ -432,16 +441,19 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       autorunWithStoreHandleChanges(
         {
           createEmptyChangeSummary: () => ({}),
-          handleChange: (context, changeSummary) => {
+          handleChange: (context) => {
             if (context.didChange(this.codeEditsSourceCollection.codeEditsContextBean)) {
               // 如果上一次补全结果还在，则不重复请求
               const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
               return !isVisible;
+            } else if (context.didChange(this.codeEditsTriggerSignal)) {
+              return true;
             }
             return false;
           },
         },
         async (reader, _, store) => {
+          this.codeEditsTriggerSignal.read(reader);
           const context = this.codeEditsSourceCollection.codeEditsContextBean.read(reader);
 
           const provider = this.intelligentCompletionsRegistry.getCodeEditsProvider();

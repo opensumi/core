@@ -3,6 +3,7 @@ import { Disposable, Emitter, Event, FRAME_THREE, Schemes, Uri, randomString, sl
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, ITextModel, Range, Selection } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
+import { ISettableObservable, observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { linesDiffComputers } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputers';
 import { DetailedLineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
@@ -15,7 +16,7 @@ import { IDiffPreviewerOptions, IInlineDiffPreviewerNode } from '../inline-diff/
 
 import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
 import { IRemovedWidgetState } from './live-preview.component';
-import { ILivePreviewDiffDecorationSnapshotData, LivePreviewDiffDecorationModel } from './live-preview.decoration';
+import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
 
 interface IRangeChangeData {
   removedTextLines: string[];
@@ -29,7 +30,7 @@ interface IRangeChangeData {
     | undefined;
 }
 
-interface IComputeDiffData {
+export interface IComputeDiffData {
   newFullRangeTextLines: string[];
   changes: IRangeChangeData[];
   activeLine: number;
@@ -39,14 +40,6 @@ interface IComputeDiffData {
 export enum EComputerMode {
   legacy = 'legacy',
   default = 'default',
-}
-
-export interface IInlineStreamDiffSnapshotData {
-  rawOriginalTextLines: string[];
-  rawOriginalTextLinesTokens: LineTokens[];
-  undoRedoGroup: UndoRedoGroup;
-  decorationSnapshotData: ILivePreviewDiffDecorationSnapshotData;
-  previewerOptions: IDiffPreviewerOptions;
 }
 
 const inlineStreamDiffComputer = new InlineStreamDiffComputer();
@@ -64,17 +57,20 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   private originalModel: ITextModel;
   private virtualModel: ITextModel;
 
-  // Parts that require snapshots
   private rawOriginalTextLines: string[];
   private rawOriginalTextLinesTokens: LineTokens[] = [];
-  private undoRedoGroup: UndoRedoGroup;
+  private undoRedoGroup: UndoRedoGroup = new UndoRedoGroup();
+
+  private readonly diffModel: ISettableObservable<IComputeDiffData | undefined> = observableValue(this, undefined);
+  private readonly finallyDiffModel: ISettableObservable<IComputeDiffData | undefined> = observableValue(
+    this,
+    undefined,
+  );
 
   public livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
 
   constructor(private readonly monacoEditor: ICodeEditor) {
     super();
-
-    this.undoRedoGroup = new UndoRedoGroup();
 
     const modelService = StandaloneServices.get(IModelService);
     this.virtualModel = modelService.createModel(
@@ -134,44 +130,6 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     );
 
     this.livePreviewDiffDecorationModel.initialize(zone);
-  }
-
-  private _snapshotStore: IInlineStreamDiffSnapshotData | undefined;
-  restoreSnapshot(snapshot: IInlineStreamDiffSnapshotData): void {
-    this._snapshotStore = snapshot;
-    const {
-      rawOriginalTextLines,
-      rawOriginalTextLinesTokens,
-      undoRedoGroup,
-      decorationSnapshotData,
-      previewerOptions,
-    } = snapshot;
-
-    this.setPreviewerOptions(previewerOptions);
-
-    this.rawOriginalTextLines = rawOriginalTextLines;
-    this.rawOriginalTextLinesTokens = rawOriginalTextLinesTokens;
-    this.undoRedoGroup = undoRedoGroup;
-
-    this.livePreviewDiffDecorationModel.initialize(decorationSnapshotData.zone);
-  }
-
-  get currentSnapshotStore(): IInlineStreamDiffSnapshotData | undefined {
-    return this._snapshotStore;
-  }
-
-  restoreDecorationSnapshot(decorationSnapshotData: ILivePreviewDiffDecorationSnapshotData): void {
-    this.livePreviewDiffDecorationModel.restoreSnapshot(decorationSnapshotData);
-  }
-
-  createSnapshot(): IInlineStreamDiffSnapshotData {
-    return {
-      rawOriginalTextLines: this.rawOriginalTextLines,
-      rawOriginalTextLinesTokens: this.rawOriginalTextLinesTokens,
-      undoRedoGroup: this.undoRedoGroup,
-      decorationSnapshotData: this.livePreviewDiffDecorationModel.createSnapshot(),
-      previewerOptions: this.previewerOptions,
-    };
   }
 
   getVirtualModelValue() {
@@ -345,7 +303,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     });
   }
 
-  private handleEdits(diffModel: IComputeDiffData): void {
+  private renderDiffEdits(diffModel: IComputeDiffData): void {
     const { activeLine, newFullRangeTextLines, pendingRange } = diffModel;
     const eol = this.originalModel.getEOL();
     const zone = this.getZone();
@@ -466,9 +424,8 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   }
 
   private currentEditLine = 0;
-  private finallyDiffModel: IComputeDiffData | null = null;
   private isEditing = false;
-  private async rateEditController(): Promise<void> {
+  public async rateRenderEditController(): Promise<void> {
     if (this.isEditing === false) {
       this.isEditing = true;
 
@@ -480,15 +437,22 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
         const virtualTextLines = this.virtualModel.getLinesContent();
         const currentText = virtualTextLines.slice(0, this.currentEditLine);
         const currentDiffModel = this.computeDiff(this.rawOriginalTextLines, currentText);
-        this.handleEdits(currentDiffModel);
+        transaction((tx) => {
+          this.diffModel.set(currentDiffModel, tx);
+        });
+
+        if (this.originalModel.id === this.monacoEditor.getModel()?.id) {
+          this.renderDiffEdits(currentDiffModel);
+        }
 
         this.currentEditLine += 1;
 
         await sleep(FRAME_THREE);
       }
 
-      if (this.finallyDiffModel) {
-        this.finallyRender(this.finallyDiffModel);
+      const finallyDiffModel = this.finallyDiffModel.get();
+      if (finallyDiffModel) {
+        this.finallyRender(finallyDiffModel);
       }
 
       this.isEditing = false;
@@ -496,25 +460,48 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   }
 
   public addLinesToDiff(newText: string, computerMode: EComputerMode = EComputerMode.default): void {
-    this.recompute(computerMode, newText);
-    this.rateEditController();
+    const diffModel = this.recompute(computerMode, newText);
+    transaction((tx) => {
+      this.diffModel.set(diffModel, tx);
+    });
   }
 
   public pushRateFinallyDiffStack(diffModel: IComputeDiffData): void {
-    this.finallyDiffModel = diffModel;
-
-    // 可能存在 rate editr controller 处理完之后接口层流式才结束
-    if (this.isEditing === false) {
-      this.finallyRender(this.finallyDiffModel);
-    }
+    transaction((tx) => {
+      this.finallyDiffModel.set(diffModel, tx);
+      // 可能存在 rate editor controller 处理完之后接口层流式才结束
+      if (this.isEditing === false) {
+        this.finallyRender(diffModel);
+      }
+    });
   }
 
   public finallyRender(diffModel: IComputeDiffData): void {
-    // 流式结束后才会确定所有的 added range，再渲染 partial edit widgets
+    transaction((tx) => {
+      this.diffModel.set(diffModel, tx);
+    });
+
+    if (this.originalModel.id !== this.monacoEditor.getModel()?.id) {
+      return;
+    }
+
     this.renderPartialEditWidgets(diffModel);
-    this.handleEdits(diffModel);
+    this.renderDiffEdits(diffModel);
     this.pushStackElement();
     this.monacoEditor.focus();
+  }
+
+  public hide(): void {
+    this.livePreviewDiffDecorationModel.hide();
+  }
+
+  public resume(): void {
+    const finallyDiffModel = this.finallyDiffModel.get();
+    if (!finallyDiffModel) {
+      this.rateRenderEditController();
+    }
+
+    this.livePreviewDiffDecorationModel.resume();
   }
 
   acceptAll(): void {

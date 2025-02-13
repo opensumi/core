@@ -42,6 +42,7 @@ export const FileDialog = ({
   const [isReady, setIsReady] = useState<boolean>(false);
   const [selectPath, setSelectPath] = useState<string>('');
   const [directoryList, setDirectoryList] = useState<string[]>([]);
+  const currentSaveFileName = useRef<string>((options as ISaveDialogOptions).defaultFileName || '');
 
   useEffect(() => {
     if (model) {
@@ -56,7 +57,8 @@ export const FileDialog = ({
 
   useEffect(() => {
     if ((options as ISaveDialogOptions).defaultFileName) {
-      setFileName((options as ISaveDialogOptions).defaultFileName!);
+      setFileName((options as ISaveDialogOptions).defaultFileName || '');
+      currentSaveFileName.current = (options as ISaveDialogOptions).defaultFileName || '';
     }
   }, [options]);
 
@@ -70,16 +72,20 @@ export const FileDialog = ({
   const ensure = useCallback(() => {
     const value: string[] = model.selectedFiles.map((file) => file.uri.path.toString());
     // 如果有文件名的，说明肯定是保存文件的情况
-    if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
+    if (
+      currentSaveFileName.current &&
+      (options as ISaveDialogOptions).showNameInput &&
+      (value?.length === 1 || options.defaultUri)
+    ) {
       const filePath = value?.length === 1 ? value[0] : options.defaultUri!.path.toString();
       if ((options as ISaveDialogOptions & { saveAs?: boolean | undefined })?.saveAs) {
         fileService.saveAs({
           oldFilePath: path.join(filePath!, (options as ISaveDialogOptions)?.defaultFileName || ''),
-          newFilePath: path.join(filePath!, fileName),
+          newFilePath: path.join(filePath!, currentSaveFileName.current),
         });
       }
 
-      dialogService.hide([path.join(filePath!, fileName)]);
+      dialogService.hide([path.join(filePath!, currentSaveFileName.current)]);
     } else {
       if (value.length > 0) {
         dialogService.hide(value);
@@ -95,7 +101,17 @@ export const FileDialog = ({
     }
     setIsReady(false);
     fileService.contextKey.fileDialogViewVisibleContext.set(false);
-  }, [isReady, dialogService, model, fileName, options, selectPath]);
+  }, [isReady, dialogService, model, options, selectPath]);
+
+  const getDefaultPath = (model) => {
+    let defaultPath = (model.treeModel.root as Directory).uri.codeUri.fsPath;
+
+    if (fileService.getDefaultFilePath) {
+      defaultPath = fileService.getDefaultFilePath(defaultPath);
+    }
+
+    return defaultPath;
+  };
 
   const close = useCallback(() => {
     setIsReady(false);
@@ -108,7 +124,9 @@ export const FileDialog = ({
     // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
     // 这里需要重新取一下treeModel的值确保为最新的TreeModel
     await model.treeModel.ensureReady;
-    setSelectPath((model.treeModel.root as Directory).uri.codeUri.fsPath);
+    const path = getDefaultPath(model);
+
+    setSelectPath(path);
     setIsReady(true);
   }, [model, selectPath, isReady]);
 
@@ -213,6 +231,14 @@ export const FileDialog = ({
     [model, isReady, selectPath, directoryList],
   );
 
+  const renderCustomMsg = useCallback(() => {
+    if (fileService.renderCustomMsg) {
+      return fileService.renderCustomMsg();
+    } else {
+      return null;
+    }
+  }, [fileService.renderCustomMsg]);
+
   const renderDialogTreeNode = useCallback(
     (props: INodeRendererProps) => (
       <FileTreeDialogNode
@@ -246,6 +272,11 @@ export const FileDialog = ({
     }
   }, [isReady, model]);
 
+  const showFilePathSearch = useMemo(
+    () => (fileService.showFilePathSearch === false ? false : true),
+    [fileService.showFilePathSearch],
+  );
+
   const renderDirectorySelection = useCallback(() => {
     if (directoryList.length > 0) {
       return (
@@ -256,7 +287,7 @@ export const FileDialog = ({
           size='large'
           searchPlaceholder={selectPath}
           value={selectPath}
-          showSearch={true}
+          showSearch={showFilePathSearch}
         >
           {directoryList.map((item, idx) => (
             <Option value={item} key={`${idx} - ${item}`}>
@@ -293,6 +324,7 @@ export const FileDialog = ({
   const DialogContent = useMemo(
     () => (
       <>
+        {renderCustomMsg()}
         <div className={styles.file_dialog_directory}>{renderDirectorySelection()}</div>
         <div className={styles.file_dialog_content}>{renderDialogTree()}</div>
       </>
@@ -321,6 +353,14 @@ export const FileDialog = ({
     [close, ensure, isSaveDialog, isOpenDialog, fileName, options],
   );
 
+  const handleSaveInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setFileName(event.target.value);
+      currentSaveFileName.current = event.target.value;
+    },
+    [fileName],
+  );
+
   return (
     <div className={styles.file_dialog_wrapper} ref={wrapperRef}>
       <div className={styles.file_dialog_directory_title}>
@@ -339,7 +379,7 @@ export const FileDialog = ({
             value={fileName}
             autoFocus={true}
             selection={{ start: 0, end: fileName.indexOf('.') || fileName.length }}
-            onChange={(event) => setFileName(event.target.value)}
+            onChange={handleSaveInputChange}
           />
         </div>
       )}
