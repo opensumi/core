@@ -17,11 +17,14 @@ export const TitleBar: React.FC<{
   const styles_titlebar = useDesignStyles(styles.titlebar, 'titlebar');
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(props.side);
 
-  const handleDragStart = (e: React.DragEvent) => {
-    if (props.containerId && props.side) {
-      tabbarService.handleDragStart(e, props.containerId);
-    }
-  };
+  const handleDragStart = React.useCallback(
+    (e: React.DragEvent) => {
+      if (props.containerId && props.side) {
+        tabbarService.handleDragStart(e, props.containerId);
+      }
+    },
+    [props.containerId, props.side, tabbarService],
+  );
 
   const handleDragEnd = React.useCallback(
     (e: React.DragEvent) => {
