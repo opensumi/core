@@ -12,10 +12,15 @@ export interface IIntelligentCompletionsResult<T = any> {
   extra?: T;
 }
 
-export type ICodeEditsContextBean =
-  | { typing: ECodeEditsSourceTyping.LinterErrors; position: IPosition; data: ILinterErrorData }
-  | { typing: ECodeEditsSourceTyping.LineChange; position: IPosition; data: ILineChangeData }
-  | { typing: ECodeEditsSourceTyping.Typing; position: IPosition; data: IModelContentChangedEvent };
+export interface ICodeEditsContextBean {
+  typing: ECodeEditsSourceTyping;
+  position: IPosition;
+  data: {
+    [ECodeEditsSourceTyping.LinterErrors]?: ILinterErrorData;
+    [ECodeEditsSourceTyping.LineChange]?: ILineChangeData;
+    [ECodeEditsSourceTyping.Typing]?: IModelContentChangedEvent;
+  };
+}
 
 export interface ICodeEdit {
   /**

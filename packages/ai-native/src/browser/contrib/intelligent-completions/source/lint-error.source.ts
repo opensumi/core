@@ -1,14 +1,8 @@
-import { Autowired, Injectable } from '@opensumi/di';
-import {
-  AINativeSettingSectionsId,
-  ECodeEditsSourceTyping,
-  Event,
-  FRAME_THREE,
-  IDisposable,
-} from '@opensumi/ide-core-common';
+import { Injectable } from '@opensumi/di';
+import { AINativeSettingSectionsId, ECodeEditsSourceTyping, IDisposable } from '@opensumi/ide-core-common';
 import { ICursorPositionChangedEvent, IPosition, Position } from '@opensumi/ide-monaco';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { autorunDelta, observableFromEvent } from '@opensumi/ide-monaco/lib/common/observable';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import {
   IMarker,
@@ -20,7 +14,6 @@ import {
 import { BaseCodeEditsSource } from './base';
 
 export interface ILinterErrorData {
-  relativeWorkspacePath: string;
   errors: Array<IMarkerErrorData>;
 }
 
@@ -58,22 +51,19 @@ namespace MarkerErrorData {
 
 @Injectable({ multiple: true })
 export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
-  public priority = 1;
-
-  @Autowired(IWorkspaceService)
-  private readonly workspaceService: IWorkspaceService;
+  public priority = 0;
 
   public mount(): IDisposable {
-    let prePosition = this.monacoEditor.getPosition();
+    const positionChangeObs = observableFromEvent<ICursorPositionChangedEvent>(
+      this,
+      this.monacoEditor.onDidChangeCursorPosition,
+      (event: ICursorPositionChangedEvent) => event,
+    );
 
     this.addDispose(
-      // 仅在光标的行号发生变化时，才触发
-      Event.debounce(
-        this.monacoEditor.onDidChangeCursorPosition,
-        (_, e) => e,
-        FRAME_THREE,
-      )(async (event: ICursorPositionChangedEvent) => {
-        const currentPosition = event.position;
+      autorunDelta(positionChangeObs, ({ lastValue, newValue }) => {
+        const prePosition = lastValue?.position;
+        const currentPosition = newValue?.position;
 
         // 如果是 selection 则不触发
         const selection = this.monacoEditor.getSelection();
@@ -81,16 +71,16 @@ export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
           return;
         }
 
-        if (prePosition && prePosition.lineNumber !== currentPosition.lineNumber) {
-          await this.doTrigger(currentPosition);
+        // 仅在光标的行号发生变化时，才触发
+        if (prePosition && prePosition.lineNumber !== currentPosition?.lineNumber) {
+          this.doTrigger(currentPosition);
         }
-        prePosition = currentPosition;
       }),
     );
     return this;
   }
 
-  protected async doTrigger(position: Position) {
+  protected doTrigger(position: Position) {
     const isLintErrorsEnabled = this.preferenceService.getValid(AINativeSettingSectionsId.CodeEditsLintErrors, false);
 
     if (!isLintErrorsEnabled || !this.model) {
@@ -104,14 +94,12 @@ export class LintErrorCodeEditsSource extends BaseCodeEditsSource {
     markers = markers.filter((marker) => Math.abs(marker.startLineNumber - position.lineNumber) <= 1);
 
     if (markers.length) {
-      const relativeWorkspacePath = await this.workspaceService.asRelativePath(resource.path);
-
       this.setBean({
         typing: ECodeEditsSourceTyping.LinterErrors,
-        position,
         data: {
-          relativeWorkspacePath: relativeWorkspacePath?.path ?? resource.path,
-          errors: markers.map((marker) => MarkerErrorData.toData(marker)),
+          [ECodeEditsSourceTyping.LinterErrors]: {
+            errors: markers.map((marker) => MarkerErrorData.toData(marker)),
+          },
         },
       });
     }
