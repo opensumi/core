@@ -28,7 +28,7 @@ export class ReplaceOpenEditorFileByDiffPreviewerTool implements MCPServerContri
       name: 'replace_open_in_editor_file_text',
       description:
         'Replaces the entire content of the currently active file in the IDE editor with specified new text using diff previewer. ' +
-        'Use this tool when you need to completely overwrite the current file\'s content with diff preview. ' +
+        "Use this tool when you need to completely overwrite the current file's content with diff preview. " +
         'Requires a text parameter containing the new content. ' +
         'Returns one of three possible responses: ' +
         '"ok" if the file content was successfully replaced, ' +

@@ -222,7 +222,7 @@ export class AINativeBrowserContribution
 
   @Autowired(SumiMCPServerProxyServicePath)
   private readonly sumiMCPServerBackendProxy: ISumiMCPServerBackend;
-  
+
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
