@@ -1,10 +1,12 @@
 import * as jsoncparser from 'jsonc-parser';
+import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   AppConfig,
   Disposable,
   FileChange,
+  IEventBus,
   ILogger,
   IResolvedPreferences,
   JSONUtils,
@@ -20,6 +22,7 @@ import {
   VSCODE_WORKSPACE_CONFIGURATION_DIR_NAME,
   isUndefined,
 } from '@opensumi/ide-core-browser';
+import { EditorDocumentModelSavedEvent } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { IPreferenceTask } from '../common';
@@ -52,6 +55,9 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   @Autowired(ILogger)
   private logger: ILogger;
 
+  @Autowired(IEventBus)
+  private readonly eventBus: IEventBus;
+
   private preferenceThrottler: Throttler = new Throttler();
   private preferenceTasks: IPreferenceTask[] = [];
 
@@ -83,10 +89,19 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     const watcher = await this.fileSystem.watchFileChanges(uri.parent);
     // 配置文件改变时，重新读取配置
     this.toDispose.push(watcher);
+
+    this.toDispose.push(
+      this.eventBus.on(EditorDocumentModelSavedEvent, (event) => {
+        if (event.payload.toString() === uri.toString()) {
+          this.debouncedReadPreferences();
+        }
+      }),
+    );
+
     watcher.onFilesChanged((e: FileChange[]) => {
       const effected = e.find((file) => file.uri.startsWith(uri.parent.toString()));
       if (effected) {
-        return this.readPreferences();
+        // return this.debouncedReadPreferences();
       }
     });
     this.toDispose.push(Disposable.create(() => this.reset()));
@@ -194,6 +209,9 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     return [preferenceName];
   }
 
+  private debouncedReadPreferences = debounce(() => {
+    this.readPreferences();
+  }, 100);
   protected loaded = false;
 
   protected async readPreferences(content?: string): Promise<void> {
