@@ -203,7 +203,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     /**
      * ContainerId 存在三种值类型，对应的处理模式如下：
      * 1. undefined: 采用首个注册的容器作为当前 containerId
-     * 2. string: 非drop container 直接使用该 containerId 作为当前 containerId
+     * 2. string: 非 drop container 直接使用该 containerId 作为当前 containerId
      * 3. '': 直接清空当前 containerId，不展开相应的 viewContainer
      */
     if (isUndefined(currentId)) {
