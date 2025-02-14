@@ -31,17 +31,24 @@ export class MCPServerRegistry implements IMCPServerRegistry {
     return this.tools;
   }
 
-  callMCPTool(
+  async callMCPTool(
     name: string,
     args: any,
   ): Promise<{
     content: { type: string; text: string }[];
     isError?: boolean;
   }> {
-    const tool = this.tools.find((tool) => tool.name === name);
-    if (!tool) {
-      throw new Error(`MCP tool ${name} not found`);
+    try {
+      const tool = this.tools.find((tool) => tool.name === name);
+      if (!tool) {
+        throw new Error(`MCP tool ${name} not found`);
+      }
+      return await tool.handler(args, this.logger);
+    } catch (error) {
+      return {
+        content: [{ type: 'text', text: `The tool ${name} failed to execute. Error: ${error}` }],
+        isError: true,
+      };
     }
-    return tool.handler(args, this.logger);
   }
 }
