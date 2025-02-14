@@ -12,6 +12,7 @@ import { Directory } from '../../common/file-tree-node.define';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModelService } from '../services/file-tree-model.service';
 
+import { FileTreeDialogModel } from './file-dialog-model.service';
 import { FileDialogContextKey } from './file-dialog.contextkey';
 
 @Injectable({ multiple: true })
@@ -199,7 +200,7 @@ export class FileTreeDialogService extends Tree {
     return null;
   }
 
-  getDefaultFilePath(defaultPath: string) {
+  async getDefaultFilePath(_model: FileTreeDialogModel, defaultPath: string) {
     return defaultPath;
   }
 
