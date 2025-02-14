@@ -5,7 +5,7 @@ import { IAIBackService, ILogger } from '@opensumi/ide-core-common';
 import { IMCPServerRegistry, MCPLogger, MCPToolDefinition } from '../types';
 
 class LoggerAdapter implements MCPLogger {
-  constructor(private readonly logger: ILogger) {}
+  constructor(private readonly logger: ILogger) { }
 
   appendLine(message: string): void {
     this.logger.log(message);
