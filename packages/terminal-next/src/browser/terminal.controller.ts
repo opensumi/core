@@ -399,11 +399,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   initContextKey(dom: HTMLDivElement) {
-    if (!this.terminalContextKey) {
-      this.terminalContextKey = this.injector.get(TerminalContextKey, [dom]);
-      this.terminalContextKey.isTerminalFocused.set(this._focus);
-      this.terminalContextKey.isTerminalViewInitialized.set(true);
-    }
+    this.terminalContextKey = this.injector.get(TerminalContextKey, [dom]);
+    this.terminalContextKey.isTerminalFocused.set(this._focus);
+    this.terminalContextKey.isTerminalViewInitialized.set(true);
   }
 
   async firstInitialize() {
