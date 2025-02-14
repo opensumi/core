@@ -95,11 +95,11 @@ export const FileDialog = ({
     fileService.contextKey.fileDialogViewVisibleContext.set(false);
   }, [isReady, dialogService, model, fileName, options]);
 
-  const getDefaultPath = (model) => {
+  const getDefaultPath = async (model) => {
     let defaultPath = (model.treeModel.root as Directory).uri.codeUri.fsPath;
 
     if (fileService.getDefaultFilePath) {
-      defaultPath = fileService.getDefaultFilePath(defaultPath);
+      defaultPath = await fileService.getDefaultFilePath(model, defaultPath);
     }
 
     return defaultPath;
@@ -116,7 +116,7 @@ export const FileDialog = ({
     // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
     // 这里需要重新取一下treeModel的值确保为最新的TreeModel
     await model.treeModel.ensureReady;
-    const path = getDefaultPath(model);
+    const path = await getDefaultPath(model);
 
     setSelectPath(path);
     setIsReady(true);
