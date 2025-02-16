@@ -17,6 +17,7 @@ import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platfo
 import { IContextKeyService } from '../context-key';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Key, KeyCode, KeySequence, SpecialCases } from '../keyboard/keys';
+import { AppConfig } from '../react-providers/config-provider';
 import { IStatusBarService, StatusBarAlignment } from '../services';
 
 export enum KeybindingScope {
@@ -229,6 +230,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
 
   @Autowired(IStatusBarService)
   protected readonly statusBar: IStatusBarService;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   public async initialize(): Promise<void> {
     await this.keyboardLayoutService.initialize();
@@ -883,6 +887,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       return false;
     }
     for (const binding of bindings) {
+      // 在web下electron绑定的浏览器基础快捷键无法使用，这里跳过，直接使用浏览器的快捷键
+      if (!this.appConfig.isElectronRenderer && binding.command.startsWith('electron.')) {
+        continue;
+      }
       if (this.isEnabled(binding, event)) {
         if (this.isPseudoCommand(binding.command)) {
           // 让事件冒泡
