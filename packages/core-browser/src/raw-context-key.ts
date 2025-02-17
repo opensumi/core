@@ -71,7 +71,7 @@ export class RawContextKey<T extends ContextKeyValue> implements IRawContextKey<
   }
 
   public getValue(target: IContextKeyService): T | undefined {
-    return target.getContextValue<T>(this.key);
+    return target.getContextKeyValue<T>(this.key);
   }
 
   /**

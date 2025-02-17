@@ -31,6 +31,7 @@ import vscode, {
   FoldingRangeProvider,
   HoverProvider,
   ImplementationProvider,
+  InlineEditContext,
   InlineValuesProvider,
   LanguageConfiguration,
   LinkedEditingRangeProvider,
@@ -65,7 +66,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 
-
 import {
   ExtensionDocumentDataManager,
   ExtensionIdentifier,
@@ -80,6 +80,7 @@ import {
   IMainThreadLanguages,
   ISuggestDataDto,
   IdentifiableInlineCompletions,
+  IdentifiableInlineEdit,
   InlineCompletionContext,
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
@@ -143,6 +144,7 @@ import { ImplementationAdapter } from './language/implementation';
 import { InlayHintsAdapter } from './language/inlay-hints';
 import { InlineValuesAdapter } from './language/inline-values';
 import { InlineCompletionAdapter, InlineCompletionAdapterBase } from './language/inlineCompletion';
+import { InlineEditAdapter } from './language/inlineEdit';
 import { CodeLensAdapter } from './language/lens';
 import { LinkProviderAdapter } from './language/link-provider';
 import { LinkedEditingRangeAdapter } from './language/linked-editing-range';
@@ -161,8 +163,10 @@ import { getDurationTimer, score, targetsNotebooks } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 
 import type { IPosition } from '@opensumi/ide-monaco/lib/common';
-import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import type { NewSymbolNameTriggerKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import type {
+  CodeActionContext,
+  NewSymbolNameTriggerKind,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export function createLanguagesApiFactory(
   extHostLanguages: ExtHostLanguages,
@@ -189,6 +193,12 @@ export function createLanguagesApiFactory(
       metadata?: vscode.InlineCompletionItemProviderMetadata,
     ): vscode.Disposable {
       return extHostLanguages.registerInlineCompletionsProvider(extension, selector, provider, metadata);
+    },
+    registerInlineEditProvider(
+      selector: vscode.DocumentSelector,
+      provider: vscode.InlineEditProvider,
+    ): vscode.Disposable {
+      return extHostLanguages.registerInlineEditProvider(extension, selector, provider);
     },
     registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
       return extHostLanguages.registerDefinitionProvider(selector, provider, extension);
@@ -411,6 +421,7 @@ export type Adapter =
   | LinkedEditingRangeAdapter
   | InlayHintsAdapter
   | InlineCompletionAdapter
+  | InlineEditAdapter
   | NewSymbolNamesAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
@@ -632,9 +643,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     );
     return this.createDisposable(callId);
   }
-  // ### Completion end
 
-  // ### Inline Completion begin
   registerInlineCompletionsProvider(
     extension: IExtensionDescription,
     selector: vscode.DocumentSelector,
@@ -651,6 +660,49 @@ export class ExtHostLanguages implements IExtHostLanguages {
       metadata?.yieldTo?.map((extId) => ExtensionIdentifier.toKey(extId)) || [],
     );
     return this.createDisposable(callId);
+  }
+
+  registerInlineEditProvider(
+    extension: IExtensionDescription,
+    selector: vscode.DocumentSelector,
+    provider: vscode.InlineEditProvider,
+  ): Disposable {
+    const adapter = new InlineEditAdapter(extension, this.documents, provider, this.commands.converter);
+    const callId = this.addNewAdapter(adapter, extension);
+    this.proxy.$registerInlineEditProvider(
+      callId,
+      this.transformDocumentSelector(selector),
+      extension.identifier,
+      provider.displayName || extension.name,
+    );
+    return this.createDisposable(callId);
+  }
+
+  $provideInlineEdit(
+    handle: number,
+    resource: UriComponents,
+    context: InlineEditContext,
+    token: CancellationToken,
+  ): Promise<IdentifiableInlineEdit | undefined> {
+    return this.withAdapter<InlineEditAdapter, IdentifiableInlineEdit | undefined>(
+      handle,
+      InlineEditAdapter,
+      (adapter) => adapter.provideInlineEdits(Uri.revive(resource), context, token),
+      undefined,
+      undefined,
+    );
+  }
+
+  $freeInlineEdit(handle: number, pid: number): void {
+    this.withAdapter(
+      handle,
+      InlineEditAdapter,
+      async (adapter) => {
+        adapter.disposeEdit(pid);
+      },
+      undefined,
+      undefined,
+    );
   }
 
   $provideInlineCompletions(

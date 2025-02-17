@@ -11,7 +11,7 @@ import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
 
 import { IDocumentFilterDto } from './converter';
 import { Disposable } from './ext-types';
-import { IExtensionDescription } from './extension';
+import { ExtensionIdentifier, IExtensionDescription } from './extension';
 import {
   CacheId,
   ChainedCacheId,
@@ -105,6 +105,12 @@ export interface IMainThreadLanguages {
     supportsHandleDidShowCompletionItem: boolean,
     extensionId: string,
     yieldsToExtensionIds: string[],
+  ): void;
+  $registerInlineEditProvider(
+    handle: number,
+    selector: IDocumentFilterDto[],
+    extensionId: ExtensionIdentifier,
+    displayName: string,
   ): void;
   $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
@@ -545,6 +551,13 @@ export interface IExtHostLanguages {
   ): Promise<IInlayHintsDto | undefined>;
   $resolveInlayHint(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IInlayHintDto | undefined>;
   $releaseInlayHints(handle: number, id: number): void;
+  $provideInlineEdit(
+    handle: number,
+    document: UriComponents,
+    context: languages.IInlineEditContext,
+    token: CancellationToken,
+  ): Promise<IdentifiableInlineEdit | undefined>;
+  $freeInlineEdit(handle: number, pid: number): void;
 }
 
 export interface ILinkedEditingRangesDto {
@@ -695,8 +708,11 @@ export interface ICodeActionProviderMetadataDto {
   readonly documentation?: ReadonlyArray<{ readonly kind: string; readonly command: Command }>;
 }
 
-// inline completion begin
 export interface IdentifiableInlineCompletions extends languages.InlineCompletions<IdentifiableInlineCompletion> {
+  pid: number;
+}
+
+export interface IdentifiableInlineEdit extends languages.IInlineEdit {
   pid: number;
 }
 

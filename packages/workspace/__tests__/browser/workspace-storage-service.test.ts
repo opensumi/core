@@ -1,10 +1,10 @@
 import { CommandService, IContextKeyService } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkspaceModule } from '../../src/browser';
 
 describe('WorkspaceContribution should be work', () => {
@@ -14,7 +14,7 @@ describe('WorkspaceContribution should be work', () => {
     getWorkspaceRootUri: jest.fn(),
   };
   const mockContextKeyService = {
-    getContextValue: jest.fn(),
+    getContextKeyValue: jest.fn(),
   };
   const mockCommandService = {
     executeCommand: jest.fn(),
@@ -40,7 +40,7 @@ describe('WorkspaceContribution should be work', () => {
   afterEach(async () => {
     await injector.disposeAll();
     mockWorkspaceService.getWorkspaceRootUri.mockReset();
-    mockContextKeyService.getContextValue.mockReset();
+    mockContextKeyService.getContextKeyValue.mockReset();
   });
 
   it('registerVariables contribution point should be work', async () => {

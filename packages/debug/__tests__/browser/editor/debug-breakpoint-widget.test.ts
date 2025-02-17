@@ -90,7 +90,7 @@ describe('Debug Breakpoint Widget', () => {
       token: IContextKeyService,
       useValue: {
         createKey: jest.fn(),
-        getContextValue: jest.fn(),
+        getContextKeyValue: jest.fn(),
         onDidChangeContext: new Emitter().event,
       },
     });

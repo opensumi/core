@@ -2,7 +2,10 @@ import { Disposable, DomListener, Emitter, Event, IDisposable, IRange, uuid } fr
 import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
 import * as monaco from '@opensumi/ide-monaco';
 import { Color, RGBA } from '@opensumi/ide-theme';
-import { createCSSRule, removeCSSRulesContainingSelector } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
+import {
+  createCSSRule,
+  removeCSSRulesContainingSelector,
+} from '@opensumi/monaco-editor-core/esm/vs/base/browser/domStylesheets';
 import {
   IHorizontalSashLayoutProvider,
   ISashEvent,

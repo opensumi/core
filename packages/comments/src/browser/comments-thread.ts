@@ -46,7 +46,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   get contextValue() {
-    return this._contextKeyService.getContextValue('thread');
+    return this._contextKeyService.getContextKeyValue('thread');
   }
 
   get onDidChangeCollapsibleState() {

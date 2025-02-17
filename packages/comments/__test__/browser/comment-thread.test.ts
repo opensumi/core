@@ -1,14 +1,14 @@
 import { Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { positionToRange } from '@opensumi/ide-monaco';
+import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
 import { CommentMode, ICommentsService } from '../../src/common';
 
@@ -134,10 +134,10 @@ describe('comment service test', () => {
     const thread = commentsService.createThread(uri, positionToRange(1), {
       contextValue,
     });
-    expect(thread.contextKeyService.getContextValue('thread')).toBe(contextValue);
-    expect(thread.contextKeyService.getContextValue('threadsLength')).toBe(1);
+    expect(thread.contextKeyService.getContextKeyValue('thread')).toBe(contextValue);
+    expect(thread.contextKeyService.getContextKeyValue('threadsLength')).toBe(1);
     commentsService.createThread(uri, positionToRange(2));
     // 同一个 uri 的 threadsLength 会变为 2
-    expect(thread.contextKeyService.getContextValue('threadsLength')).toBe(2);
+    expect(thread.contextKeyService.getContextKeyValue('threadsLength')).toBe(2);
   });
 });

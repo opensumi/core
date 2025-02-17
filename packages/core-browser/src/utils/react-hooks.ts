@@ -138,7 +138,7 @@ export const useLatest = <T>(value: T): { readonly current: T } => {
   return ref;
 };
 
-export const useAutorun = <T, TChange = unknown>(observable: IObservable<T, TChange>): T => {
+export const useAutorun = <T>(observable: IObservable<T>): T => {
   const [value, setValue] = useState<T>(observable.get());
 
   useDisposable(

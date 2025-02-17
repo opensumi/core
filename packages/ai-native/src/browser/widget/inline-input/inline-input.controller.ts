@@ -67,7 +67,7 @@ export class InlineInputController extends BaseAIMonacoEditorController {
   private aiNativeContextKey: AINativeContextKey;
 
   private inputValue: ISettableObservable<string>;
-  private modelChangeObs: IObservable<monaco.editor.ITextModel, unknown>;
+  private modelChangeObs: IObservable<monaco.editor.ITextModel>;
   private inlineInputWidgetStore: Map<
     string,
     InlineInputWidgetStoreInEmptyLine | InlineInputWidgetStoreInSelection | null

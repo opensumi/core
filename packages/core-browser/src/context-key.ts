@@ -24,7 +24,7 @@ export interface IContextKeyService {
   createKey<T extends ContextKeyValue = any>(key: string, defaultValue: T | undefined): IContextKey<T>;
   match(expression: string | ContextKeyExpr | undefined, context?: HTMLElement | null): boolean;
   getKeysInWhen(when: string | ContextKeyExpr | undefined): string[];
-  getContextValue<T>(key: string): T | undefined;
+  getContextKeyValue<T>(key: string): T | undefined;
   contextKeyService: IMonacoContextKeyService;
 
   createScoped(target?: IContextKeyServiceTarget | ContextKeyService): IScopedContextKeyService;
