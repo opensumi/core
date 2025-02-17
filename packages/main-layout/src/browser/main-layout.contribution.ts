@@ -41,8 +41,9 @@ import {
 import { ContributionProvider, Domain, IEventBus, WithEventBus, localize } from '@opensumi/ide-core-common';
 import { Command, CommandContribution, CommandRegistry, CommandService } from '@opensumi/ide-core-common/lib/command';
 
-import { IMainLayoutService } from '../common';
+import { DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER, IMainLayoutService } from '../common';
 
+import { BottomDropArea, RightDropArea } from './drop-area/drop-area';
 import { ViewQuickOpenHandler } from './quick-open-view';
 import { BottomTabRenderer, LeftTabRenderer, RightTabRenderer } from './tabbar/renderer.view';
 
@@ -117,7 +118,14 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   iconClass: getIcon('shrink'),
 };
 
-@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution, QuickOpenContribution)
+@Domain(
+  CommandContribution,
+  ClientAppContribution,
+  SlotRendererContribution,
+  MenuContribution,
+  QuickOpenContribution,
+  ComponentContribution,
+)
 export class MainLayoutModuleContribution
   extends WithEventBus
   implements
@@ -125,6 +133,7 @@ export class MainLayoutModuleContribution
     ClientAppContribution,
     SlotRendererContribution,
     MenuContribution,
+    ComponentContribution,
     QuickOpenContribution
 {
   @Autowired(IMainLayoutService)
@@ -184,6 +193,19 @@ export class MainLayoutModuleContribution
         contribution.registerToolbarItems(this.toolBarRegistry);
       }
     }
+  }
+
+  registerComponent(registry: ComponentRegistry): void {
+    registry.register(DROP_RIGHT_CONTAINER, [], {
+      component: RightDropArea,
+      hideTab: true,
+      containerId: DROP_RIGHT_CONTAINER,
+    });
+    registry.register(DROP_BOTTOM_CONTAINER, [], {
+      component: BottomDropArea,
+      hideTab: true,
+      containerId: DROP_BOTTOM_CONTAINER,
+    });
   }
 
   async onStart() {
