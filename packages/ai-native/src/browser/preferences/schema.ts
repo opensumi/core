@@ -58,6 +58,66 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [AINativeSettingSectionsId.LLMModelSelection]: {
+      type: 'string',
+      default: 'deepseek',
+      enum: ['deepseek', 'anthropic', 'openai'],
+      description: localize('preference.ai.native.llm.model.selection.description'),
+    },
+    [AINativeSettingSectionsId.DeepseekApiKey]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.deepseek.apiKey.description'),
+    },
+    [AINativeSettingSectionsId.AnthropicApiKey]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.anthropic.apiKey.description'),
+    },
+    [AINativeSettingSectionsId.OpenaiApiKey]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.openai.apiKey.description'),
+    },
+    [AINativeSettingSectionsId.OpenaiBaseURL]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.openai.baseURL.description'),
+    },
+    [AINativeSettingSectionsId.MCPServers]: {
+      type: 'array',
+      default: [],
+      description: localize('preference.ai.native.mcp.servers.description'),
+      items: {
+        type: 'object',
+        required: ['name', 'command', 'args'],
+        properties: {
+          name: {
+            type: 'string',
+            description: localize('preference.ai.native.mcp.servers.name.description'),
+          },
+          command: {
+            type: 'string',
+            description: localize('preference.ai.native.mcp.servers.command.description'),
+          },
+          args: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            description: localize('preference.ai.native.mcp.servers.args.description'),
+          },
+          env: {
+            type: 'object',
+            additionalProperties: {
+              type: 'string',
+            },
+            description: localize('preference.ai.native.mcp.servers.env.description'),
+            default: {},
+          },
+        },
+      },
+    },
     [AINativeSettingSectionsId.CodeEditsTyping]: {
       type: 'boolean',
       default: false,

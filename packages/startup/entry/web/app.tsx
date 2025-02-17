@@ -27,6 +27,12 @@ renderApp(
           minimumReportThresholdTime: 400,
         },
       },
+      AINativeConfig: {
+        capabilities: {
+          supportsMCP: true,
+          supportsCustomLLMSettings: true,
+        },
+      },
       notebookServerHost: 'localhost:8888',
     },
   }),

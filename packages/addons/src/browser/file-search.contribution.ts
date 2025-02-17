@@ -354,7 +354,7 @@ export class FileSearchQuickCommandHandler {
     return results;
   }
 
-  protected async getQueryFiles(fileQuery: string, alreadyCollected: Set<string>, token: CancellationToken) {
+  async getQueryFiles(fileQuery: string, alreadyCollected: Set<string>, token: CancellationToken) {
     const roots = await this.workspaceService.roots;
     const rootUris: string[] = roots.map((stat) => new URI(stat.uri).codeUri.fsPath);
     const files = await this.fileSearchService.find(

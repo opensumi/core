@@ -16,6 +16,9 @@ import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
+import { MCPServerDescription } from './mcp-server-manager';
+import { MCPTool } from './types';
+
 export const IAINativeService = Symbol('IAINativeService');
 
 /**
@@ -115,6 +118,17 @@ export const IChatManagerService = Symbol('IChatManagerService');
 export const IChatAgentService = Symbol('IChatAgentService');
 
 export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
+
+// 暴露给 Node.js 层，使其可以感知 Opensumi 注册的 MCP 能力
+export const TokenMCPServerProxyService = Symbol('TokenMCPServerProxyService');
+
+export interface ISumiMCPServerBackend {
+  initBuiltinMCPServer(): void;
+  initExternalMCPServers(servers: MCPServerDescription[]): void;
+  getAllMCPTools(): Promise<MCPTool[]>;
+}
+
+export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';
 
 export interface IChatAgentService {
   readonly onDidChangeAgents: Event<void>;

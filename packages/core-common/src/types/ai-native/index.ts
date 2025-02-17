@@ -41,9 +41,17 @@ export interface IAINativeCapabilities {
    */
   supportsTerminalDetection?: boolean;
   /**
-   * Use ai terminal command suggets capabilities
+   * Use ai terminal command suggests capabilities
    */
   supportsTerminalCommandSuggest?: boolean;
+  /**
+   * Use ai to provide custom LLM settings
+   */
+  supportsCustomLLMSettings?: boolean;
+  /**
+   * supports modelcontextprotocol
+   */
+  supportsMCP?: boolean;
 }
 
 export interface IDesignLayoutConfig {
@@ -158,6 +166,11 @@ export interface IAIBackServiceOption {
   requestId?: string;
   sessionId?: string;
   history?: IHistoryChatMessage[];
+  tools?: any[];
+  clientId?: string;
+  apiKey?: string;
+  model?: string;
+  baseURL?: string;
 }
 
 /**
@@ -322,6 +335,21 @@ export interface IChatContent {
   kind: 'content';
 }
 
+export interface IChatToolContent {
+  content: {
+    id: string;
+    type: string;
+    function: {
+      name: string;
+      arguments?: string;
+    };
+    result?: string;
+    index?: number;
+    state?: 'streaming-start' | 'streaming' | 'complete' | 'result';
+  };
+  kind: 'toolCall';
+}
+
 export interface IChatMarkdownContent {
   content: IMarkdownString;
   kind: 'markdownContent';
@@ -356,7 +384,13 @@ export interface IChatComponent {
   kind: 'component';
 }
 
-export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
+export type IChatProgress =
+  | IChatContent
+  | IChatMarkdownContent
+  | IChatAsyncContent
+  | IChatTreeData
+  | IChatComponent
+  | IChatToolContent;
 
 export interface IChatMessage {
   readonly role: ChatMessageRole;

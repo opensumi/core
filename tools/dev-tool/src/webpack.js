@@ -212,9 +212,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),
           'process.env.EXTENSION_WORKER_HOST': JSON.stringify(
             process.env.EXTENSION_WORKER_HOST ||
-              `http://${HOST}:8080/assets` +
-                withSlash +
-                path.resolve(__dirname, '../../../packages/extension/lib/worker-host.js'),
+            `http://${HOST}:8080/assets` +
+            withSlash +
+            path.resolve(__dirname, '../../../packages/extension/lib/worker-host.js'),
           ),
           'process.env.WS_PATH': JSON.stringify(process.env.WS_PATH || `ws://${HOST}:8000`),
           'process.env.WEBVIEW_HOST': JSON.stringify(process.env.WEBVIEW_HOST || HOST),
@@ -222,18 +222,18 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           'process.env.HOST': JSON.stringify(process.env.HOST),
         }),
         !process.env.SKIP_TS_CHECKER &&
-          new ForkTsCheckerWebpackPlugin({
-            typescript: {
-              diagnosticOptions: {
-                syntactic: true,
-              },
-              configFile: tsConfigPath,
+        new ForkTsCheckerWebpackPlugin({
+          typescript: {
+            diagnosticOptions: {
+              syntactic: true,
             },
-            issue: {
-              include: (issue) => issue.file.includes('src/packages/'),
-              exclude: (issue) => issue.file.includes('__test__'),
-            },
-          }),
+            configFile: tsConfigPath,
+          },
+          issue: {
+            include: (issue) => issue.file.includes('src/packages/'),
+            exclude: (issue) => issue.file.includes('__test__'),
+          },
+        }),
         new NodePolyfillPlugin({
           includeAliases: ['process', 'Buffer'],
         }),

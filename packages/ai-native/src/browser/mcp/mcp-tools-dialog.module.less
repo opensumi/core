@@ -1,0 +1,44 @@
+.mcp_tools_dialog {
+  .dialog_title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--foreground);
+    padding-bottom: 16px;
+    padding-top: 8px;
+    border-bottom: 1px solid var(--menu-separatorBackground);
+  }
+
+  .tools_list {
+    max-height: calc(60vh - 53px); // 减去标题高度
+    overflow: auto;
+    
+    .tool_item {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      border-radius: 6px;
+      
+      &:hover {
+        background-color: var(--list-hoverBackground);
+      }
+
+      .tool_name {
+        font-weight: 600;
+        color: var(--foreground);
+        margin-bottom: 8px;
+      }
+
+      .tool_description {
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--descriptionForeground);
+        margin-bottom: 4px;
+      }
+
+      .tool_provider {
+        font-size: 12px;
+        color: var(--descriptionForeground);
+        font-style: italic;
+      }
+    }
+  }
+} 

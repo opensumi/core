@@ -38,6 +38,7 @@ import {
   IChatComponent,
   IChatContent,
   IChatResponseProgressFileTreeData,
+  IChatToolContent,
   URI,
 } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
@@ -146,6 +147,33 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
       />
     </div>
   );
+};
+
+const ToolCallRender = (props: { toolCall: IChatToolContent['content'] }) => {
+  const { toolCall } = props;
+  const chatAgentViewService = useInjectable<IChatAgentViewService>(ChatAgentViewServiceToken);
+  const [node, setNode] = useState<React.JSX.Element | null>(null);
+
+  useEffect(() => {
+    const config = chatAgentViewService.getChatComponent('toolCall');
+    if (config) {
+      const { component: Component, initialProps } = config;
+      setNode(<Component {...initialProps} value={toolCall} />);
+      return;
+    }
+    setNode(
+      <div>
+        <Loading />
+        <span style={{ marginLeft: 4 }}>正在加载组件</span>
+      </div>,
+    );
+    const deferred = chatAgentViewService.getChatComponentDeferred('toolCall')!;
+    deferred.promise.then(({ component: Component, initialProps }) => {
+      setNode(<Component {...initialProps} value={toolCall} />);
+    });
+  }, [toolCall.state]);
+
+  return node;
 };
 
 const ComponentRender = (props: { component: string; value?: unknown }) => {
@@ -274,6 +302,8 @@ export const ChatReply = (props: IChatReplyProps) => {
     <ComponentRender component={componentId} value={value} />
   );
 
+  const renderToolCall = (toolCall: IChatToolContent['content']) => <ToolCallRender toolCall={toolCall} />;
+
   const contentNode = React.useMemo(
     () =>
       request.response.responseContents.map((item, index) => {
@@ -284,6 +314,8 @@ export const ChatReply = (props: IChatReplyProps) => {
           node = renderTreeData(item.treeData);
         } else if (item.kind === 'component') {
           node = renderComponent(item.component, item.value);
+        } else if (item.kind === 'toolCall') {
+          node = renderToolCall(item.content);
         } else {
           node = renderMarkdown(item.content);
         }

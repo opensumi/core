@@ -1301,5 +1301,25 @@ export const localizationBundle = {
     ...browserViews,
     ...editorLocalizations,
     ...mergeConflicts,
+
+    // AI Native Settings
+    'preference.ai.native.llm.apiSettings.title': '大模型 API 设置',
+    'preference.ai.native.deepseek.apiKey': 'Deepseek API 密钥',
+    'preference.ai.native.deepseek.apiKey.description': 'Deepseek 语言模型的 API 密钥',
+    'preference.ai.native.anthropic.apiKey': 'Anthropic API 密钥',
+    'preference.ai.native.anthropic.apiKey.description': 'Anthropic 语言模型的 API 密钥',
+    'preference.ai.native.openai.apiKey': 'OpenAI API 密钥',
+    'preference.ai.native.openai.apiKey.description': 'OpenAI 兼容语言模型的 API 密钥',
+    'preference.ai.native.openai.baseURL': 'OpenAI Base URL',
+    'preference.ai.native.openai.baseURL.description': 'OpenAI 兼容语言模型的 Base URL',
+
+    // MCP Server Settings
+    'preference.ai.native.mcp.settings.title': 'MCP 服务器设置',
+    'preference.ai.native.mcp.servers': 'MCP 服务器',
+    'preference.ai.native.mcp.servers.description': '配置 MCP (Model Context Protocol) 服务器',
+    'preference.ai.native.mcp.servers.name.description': 'MCP 服务器名称',
+    'preference.ai.native.mcp.servers.command.description': '启动 MCP 服务器的命令',
+    'preference.ai.native.mcp.servers.args.description': 'MCP 服务器的命令行参数',
+    'preference.ai.native.mcp.servers.env.description': 'MCP 服务器的环境变量',
   },
 };

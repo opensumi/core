@@ -1,10 +1,12 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAICompletionOption } from '@opensumi/ide-core-common';
+import { AnthropicModel } from '@opensumi/ide-ai-native/lib/node/anthropic/anthropic-language-model';
+import { DeepSeekModel } from '@opensumi/ide-ai-native/lib/node/deepseek/deepseek-language-model';
+import { OpenAIModel } from '@opensumi/ide-ai-native/lib/node/openai/openai-language-model';
+import { IAIBackServiceOption } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
   ChatReadableStream,
   IAIBackService,
-  IAIBackServiceOption,
   IAIBackServiceResponse,
   INodeLogger,
   sleep,
@@ -47,6 +49,15 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
   @Autowired(INodeLogger)
   protected readonly logger: INodeLogger;
 
+  @Autowired(AnthropicModel)
+  protected readonly anthropicModel: AnthropicModel;
+
+  @Autowired(OpenAIModel)
+  protected readonly openaiModel: OpenAIModel;
+
+  @Autowired(DeepSeekModel)
+  protected readonly deepseekModel: DeepSeekModel;
+
   async request(input: string, options: IAIBackServiceOption, cancelToken?: CancellationToken) {
     await sleep(1000);
 
@@ -68,23 +79,21 @@ export class AIBackService implements IAIBackService<ReqeustResponse, ChatReadab
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<ChatReadableStream> {
-    const length = streamData.length;
     const chatReadableStream = new ChatReadableStream();
 
     cancelToken?.onCancellationRequested(() => {
       chatReadableStream.abort();
     });
 
-    // 模拟数据事件
-    streamData.forEach((chunk, index) => {
-      setTimeout(() => {
-        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
+    const model = options.model;
 
-        if (length - 1 === index || cancelToken?.isCancellationRequested) {
-          chatReadableStream.end();
-        }
-      }, index * 100);
-    });
+    if (model === 'openai') {
+      this.openaiModel.request(input, chatReadableStream, options, cancelToken);
+    } else if (model === 'deepseek') {
+      this.deepseekModel.request(input, chatReadableStream, options, cancelToken);
+    } else {
+      this.anthropicModel.request(input, chatReadableStream, options, cancelToken);
+    }
 
     return chatReadableStream;
   }
