@@ -100,7 +100,7 @@ export abstract class BaseLanguageModel {
         messages,
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
-        maxSteps: 5,
+        maxSteps: 12,
       });
 
       for await (const chunk of stream.fullStream) {

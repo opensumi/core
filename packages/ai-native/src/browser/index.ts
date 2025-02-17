@@ -96,7 +96,7 @@ export class AINativeModule extends BrowserModule {
     CreateNewFileWithTextTool,
     GetSelectedTextTool,
     GetOpenEditorFileDiagnosticsTool,
-    // GetOpenEditorFileTextTool,
+    GetOpenEditorFileTextTool,
     GetFileTextByPathTool,
     GetCurrentFilePathTool,
     FindFilesByNameSubstringTool,

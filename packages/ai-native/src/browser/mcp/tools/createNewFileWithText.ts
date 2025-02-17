@@ -1,10 +1,8 @@
-import * as path from 'path';
-
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-import { Autowired, Injectable } from '@opensumi/di';
-import { Domain, URI, path as UriPath } from '@opensumi/ide-core-common';
+import { Autowired } from '@opensumi/di';
+import { Domain, URI, path } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -59,7 +57,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
 
       // 构建完整的文件路径
       const rootUri = URI.parse(workspaceRoots[0].uri);
-      const fullPath = UriPath.join(rootUri.codeUri.fsPath, args.pathInProject);
+      const fullPath = path.join(rootUri.codeUri.fsPath, args.pathInProject);
       const fileUri = URI.file(fullPath);
 
       // 创建父目录
