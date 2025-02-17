@@ -94,5 +94,6 @@ Object.defineProperty(window, 'crypto', {
   writable: true,
   value: {
     randomUUID: () => 'mocked-uuid',
+    getRandomValues: () => 'mocked-uuid',
   },
 });
