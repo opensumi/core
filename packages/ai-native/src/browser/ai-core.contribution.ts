@@ -260,7 +260,7 @@ export class AINativeBrowserContribution
       register(
         IntelligentCompletionsController.ID,
         new SyncDescriptor(IntelligentCompletionsController, [this.injector]),
-        EditorContributionInstantiation.AfterFirstRender,
+        EditorContributionInstantiation.Eager,
       );
       register(
         InlineCompletionsController.ID,
