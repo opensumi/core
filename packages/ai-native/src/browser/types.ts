@@ -42,7 +42,9 @@ interface IBaseInlineChatHandler<T extends any[]> {
   providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
 }
 
-export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
+export type IEditorInlineChatHandler = IBaseInlineChatHandler<
+  [editor: ICodeEditor, selection: ISelection, token: CancellationToken]
+>;
 export type IInteractiveInputHandler = IBaseInlineChatHandler<
   [editor: ICodeEditor, selection: ISelection, value: string, token: CancellationToken]
 >;

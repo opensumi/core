@@ -7,7 +7,6 @@ import {
   Disposable,
   IAIReporter,
   IDisposable,
-  MaybePromise,
   uuid,
 } from '@opensumi/ide-core-common';
 import { CancellationTokenSource, ICodeEditor } from '@opensumi/ide-monaco';
@@ -37,12 +36,24 @@ export class CodeEditsContextBean extends Disposable {
     return this.raw;
   }
 
+  public get typing() {
+    return this.raw.typing;
+  }
+
   public get position() {
     return this.raw.position;
   }
 
+  public get data() {
+    return this.raw.data;
+  }
+
   public get token() {
     return this.source.token;
+  }
+
+  public joinData(data: ICodeEditsContextBean['data']) {
+    this.raw.data = { ...this.data, ...data };
   }
 
   public reporterStart() {
@@ -98,9 +109,9 @@ export abstract class BaseCodeEditsSource extends Disposable {
     });
   }
 
-  protected setBean(bean: ICodeEditsContextBean) {
+  protected setBean(bean: Omit<ICodeEditsContextBean, 'position'>) {
     transaction((tx) => {
-      const context = new CodeEditsContextBean(bean, this);
+      const context = new CodeEditsContextBean({ ...bean, position: this.monacoEditor.getPosition()! }, this);
       this.codeEditsContextBean.set(context, tx);
     });
   }
@@ -110,7 +121,7 @@ export abstract class BaseCodeEditsSource extends Disposable {
     if (context) {
       const relationID = this.aiReporter.start(AIServiceType.CodeEdits, {
         type: AIServiceType.CodeEdits,
-        actionSource: context?.bean.typing,
+        actionSource: context?.typing,
       });
 
       transaction((tx) => {
@@ -166,11 +177,23 @@ export class CodeEditsSourceCollection extends Disposable {
 
           for (const source of lastSources) {
             const value = source.codeEditsContextBean.get();
+            if (!value) {
+              return;
+            }
 
-            if (value && value.priority >= highestPriority) {
-              highestPriority = value.priority;
+            if (!contextBean) {
               contextBean = value;
             }
+
+            if (value.priority >= highestPriority) {
+              highestPriority = value.priority;
+
+              value.joinData(contextBean.data);
+              contextBean = value;
+            }
+
+            // 将多个 source 的 data 合并到一起
+            contextBean.joinData(value.data);
           }
 
           transaction((tx) => {

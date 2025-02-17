@@ -103,6 +103,16 @@ export const FileDialog = ({
     fileService.contextKey.fileDialogViewVisibleContext.set(false);
   }, [isReady, dialogService, model, options, selectPath]);
 
+  const getDefaultPath = async (model) => {
+    let defaultPath = (model.treeModel.root as Directory).uri.codeUri.fsPath;
+
+    if (fileService.getDefaultFilePath) {
+      defaultPath = await fileService.getDefaultFilePath(model, defaultPath);
+    }
+
+    return defaultPath;
+  };
+
   const close = useCallback(() => {
     setIsReady(false);
     dialogService.hide();
@@ -114,7 +124,9 @@ export const FileDialog = ({
     // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
     // 这里需要重新取一下treeModel的值确保为最新的TreeModel
     await model.treeModel.ensureReady;
-    setSelectPath((model.treeModel.root as Directory).uri.codeUri.fsPath);
+    const path = await getDefaultPath(model);
+
+    setSelectPath(path);
     setIsReady(true);
   }, [model, selectPath, isReady]);
 
@@ -219,6 +231,14 @@ export const FileDialog = ({
     [model, isReady, selectPath, directoryList],
   );
 
+  const renderCustomMsg = useCallback(() => {
+    if (fileService.renderCustomMsg) {
+      return fileService.renderCustomMsg();
+    } else {
+      return null;
+    }
+  }, [fileService.renderCustomMsg]);
+
   const renderDialogTreeNode = useCallback(
     (props: INodeRendererProps) => (
       <FileTreeDialogNode
@@ -252,6 +272,11 @@ export const FileDialog = ({
     }
   }, [isReady, model]);
 
+  const showFilePathSearch = useMemo(
+    () => (fileService.showFilePathSearch === false ? false : true),
+    [fileService.showFilePathSearch],
+  );
+
   const renderDirectorySelection = useCallback(() => {
     if (directoryList.length > 0) {
       return (
@@ -262,7 +287,7 @@ export const FileDialog = ({
           size='large'
           searchPlaceholder={selectPath}
           value={selectPath}
-          showSearch={true}
+          showSearch={showFilePathSearch}
         >
           {directoryList.map((item, idx) => (
             <Option value={item} key={`${idx} - ${item}`}>
@@ -299,6 +324,7 @@ export const FileDialog = ({
   const DialogContent = useMemo(
     () => (
       <>
+        {renderCustomMsg()}
         <div className={styles.file_dialog_directory}>{renderDirectorySelection()}</div>
         <div className={styles.file_dialog_content}>{renderDialogTree()}</div>
       </>

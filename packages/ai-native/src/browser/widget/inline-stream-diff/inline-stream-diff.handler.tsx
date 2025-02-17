@@ -467,17 +467,15 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   }
 
   public pushRateFinallyDiffStack(diffModel: IComputeDiffData): void {
-    transaction((tx) => {
-      this.finallyDiffModel.set(diffModel, tx);
-      // 可能存在 rate editor controller 处理完之后接口层流式才结束
-      if (this.isEditing === false) {
-        this.finallyRender(diffModel);
-      }
-    });
+    // 可能存在 rate editor controller 处理完之后接口层流式才结束
+    if (this.isEditing === false) {
+      this.finallyRender(diffModel);
+    }
   }
 
   public finallyRender(diffModel: IComputeDiffData): void {
     transaction((tx) => {
+      this.finallyDiffModel.set(diffModel, tx);
       this.diffModel.set(diffModel, tx);
     });
 

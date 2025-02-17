@@ -12,6 +12,7 @@ import { Directory } from '../../common/file-tree-node.define';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModelService } from '../services/file-tree-model.service';
 
+import { FileTreeDialogModel } from './file-dialog-model.service';
 import { FileDialogContextKey } from './file-dialog.contextkey';
 
 @Injectable({ multiple: true })
@@ -46,6 +47,8 @@ export class FileTreeDialogService extends Tree {
   private workspaceRoot: FileStat;
 
   public _whenReady: Promise<void>;
+
+  showFilePathSearch: boolean;
 
   constructor(@Optional() root: string) {
     super();
@@ -175,7 +178,7 @@ export class FileTreeDialogService extends Tree {
   async createFile(options: { oldFilePath: string; newFilePath: string }) {
     try {
       const { oldFilePath, newFilePath } = options;
-      let fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
+      const fileStat = await this.fileServiceClient.getFileStat(oldFilePath);
 
       if (!fileStat) {
         throw new Error(`Source file not found: ${oldFilePath}`);
@@ -191,6 +194,14 @@ export class FileTreeDialogService extends Tree {
     } catch (e) {
       throw new Error(`Failed to create file: ${e.message}`);
     }
+  }
+
+  renderCustomMsg() {
+    return null;
+  }
+
+  async getDefaultFilePath(_model: FileTreeDialogModel, defaultPath: string) {
+    return defaultPath;
   }
 
   dispose() {
