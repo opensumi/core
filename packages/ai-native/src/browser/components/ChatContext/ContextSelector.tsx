@@ -6,11 +6,13 @@ import { AppConfig, LabelService } from '@opensumi/ide-core-browser';
 import { Icon, Input, Scrollbars } from '@opensumi/ide-core-browser/lib/components';
 import { RecentFilesManager } from '@opensumi/ide-core-browser/lib/quick-open/recent-files';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
-import { FileContext } from '../../../common/llm-context';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common/file-search';
 import { URI } from '@opensumi/ide-utils';
 
+import { FileContext } from '../../../common/llm-context';
+
 import styles from './style.module.less';
+import { ClickOutside } from '@opensumi/ide-components/lib/click-outside';
 
 interface CandidateFileProps {
   uri: URI;
@@ -146,28 +148,30 @@ export const ContextSelector = memo(({ addedFiles, onDidDeselect, onDidSelect, o
   );
 
   return (
-    <div className={styles.context_selector} onKeyDown={onDidKeyDown} tabIndex={-1}>
-      <div style={{ padding: '4px' }}>
-        <Input placeholder='Search files by name' autoFocus onInput={onDidInput} />
-      </div>
-      <Scrollbars forwardedRef={(el) => (el ? (container.current = el.ref) : null)}>
-        <div className={styles.context_list}>
-          {searching && <div className={styles.context_search_layer} />}
-          <span className={styles.list_desc}>
-            {searchResults.length > 0 ? 'Search Results' : 'Recent Opened Files'}
-          </span>
-          {(searchResults.length > 0 ? searchResults : candidateFiles).map((file) => (
-            <CandidateFile
-              key={file.toString()}
-              uri={file}
-              active={activeFile === file}
-              onDidSelect={onDidSelect}
-              onDidDeselect={onDidDeselect}
-              selected={!!addedFiles.find((val) => val.uri.isEqual(file))}
-            />
-          ))}
+    <ClickOutside mouseEvents={['click', 'contextmenu']} onOutsideClick={() => onDidClose()}>
+      <div className={styles.context_selector} onKeyDown={onDidKeyDown} tabIndex={-1}>
+        <div style={{ padding: '4px' }}>
+          <Input placeholder='Search files by name' autoFocus onInput={onDidInput} />
         </div>
-      </Scrollbars>
-    </div>
+        <Scrollbars forwardedRef={(el) => (el ? (container.current = el.ref) : null)}>
+          <div className={styles.context_list}>
+            {searching && <div className={styles.context_search_layer} />}
+            <span className={styles.list_desc}>
+              {searchResults.length > 0 ? 'Search Results' : 'Recent Opened Files'}
+            </span>
+            {(searchResults.length > 0 ? searchResults : candidateFiles).map((file) => (
+              <CandidateFile
+                key={file.toString()}
+                uri={file}
+                active={activeFile === file}
+                onDidSelect={onDidSelect}
+                onDidDeselect={onDidDeselect}
+                selected={!!addedFiles.find((val) => val.uri.isEqual(file))}
+              />
+            ))}
+          </div>
+        </Scrollbars>
+      </div>
+    </ClickOutside>
   );
 });
