@@ -194,14 +194,6 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
     this._isShow = !thread.isCollapsed.get();
 
-    this.renderDOM();
-  }
-
-  private renderDOM() {
-    if (this.wrapperRoot) {
-      this.wrapperRoot.unmount();
-    }
-
     const _wrapper = document.createElement('div');
     this._container.appendChild(_wrapper);
     this.observeContainer(_wrapper);
@@ -232,7 +224,6 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
   public show() {
     super.show();
-    this.renderDOM();
     this._isShow = true;
     this._onShow.fire();
   }
