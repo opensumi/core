@@ -36,7 +36,10 @@
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
     "antd": "^5.21.4",
-    "diff": "^4.0.1",
+    "diff": "^7.0.0",
     "resize-observer-polyfill": "1.5.1"
+  },
+  "devDependencies": {
+    "@types/diff": "^7.0.0"
   }
 }
