@@ -3,7 +3,6 @@ import React, { memo, useCallback, useEffect, useState } from 'react';
 
 import 'rc-collapse/assets/index.css';
 
-import { FileContext, LLMContextService, LLMContextServiceToken } from '@opensumi/ide-ai-native/lib/common/llm-context';
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
 import { Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
@@ -13,6 +12,8 @@ import { LabelService } from '@opensumi/ide-core-browser/lib/services/label-serv
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 import { Event, URI } from '@opensumi/ide-core-common/lib/utils';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser/types';
+
+import { FileContext, LLMContextService, LLMContextServiceToken } from '../../../common/llm-context';
 
 import { ContextSelector } from './ContextSelector';
 import styles from './style.module.less';
@@ -73,6 +74,7 @@ export const ChatContext = memo(() => {
   return (
     <div className={styles.chat_context}>
       <Collapse
+        // @ts-ignore
         expandIcon={({ isActive }) => (isActive ? <Icon icon='down' /> : <Icon icon='right' />)}
         defaultActiveKey={['context-panel']}
         onChange={() => {}}

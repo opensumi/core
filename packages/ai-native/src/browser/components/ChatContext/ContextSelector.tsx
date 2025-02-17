@@ -2,11 +2,11 @@ import cls from 'classnames';
 import { debounce } from 'lodash';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 
-import { FileContext } from '@opensumi/ide-ai-native/lib/common/llm-context';
 import { AppConfig, LabelService } from '@opensumi/ide-core-browser';
 import { Icon, Input, Scrollbars } from '@opensumi/ide-core-browser/lib/components';
 import { RecentFilesManager } from '@opensumi/ide-core-browser/lib/quick-open/recent-files';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
+import { FileContext } from '../../../common/llm-context';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common/file-search';
 import { URI } from '@opensumi/ide-utils';
 
