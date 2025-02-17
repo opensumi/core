@@ -148,7 +148,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     this._consoleInputElement = e;
     this.inputEditor = this.editorService.createCodeEditor(this._consoleInputElement!, {
       ...consoleInputMonacoOptions,
-      readOnly: !this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY),
+      readOnly: !this.contextKeyService.getContextKeyValue(CONTEXT_IN_DEBUG_MODE_KEY),
     });
 
     this.debugContextKey = this.injector.get(DebugContextKey, [this.inputEditor.monacoEditor.contextKeyService]);

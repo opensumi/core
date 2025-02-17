@@ -90,10 +90,19 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Mock window.crypto
 Object.defineProperty(window, 'crypto', {
   writable: true,
   value: {
     randomUUID: () => 'mocked-uuid',
     getRandomValues: () => 'mocked-uuid',
+  },
+});
+
+// Mock window.CSS
+Object.defineProperty(window, 'CSS', {
+  writable: true,
+  value: {
+    escape: jest.fn((str) => str),
   },
 });
