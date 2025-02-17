@@ -89,3 +89,10 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+Object.defineProperty(window, 'crypto', {
+  writable: true,
+  value: {
+    randomUUID: () => 'mocked-uuid',
+  },
+});
