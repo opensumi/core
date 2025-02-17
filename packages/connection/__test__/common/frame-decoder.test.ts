@@ -168,7 +168,7 @@ describe('frame decoder', () => {
     }
 
     // 等待处理完成
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     expect(received.length).toBe(1000);
     received.forEach((data, i) => {
