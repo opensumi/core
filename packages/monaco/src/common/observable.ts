@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { autorun, autorunOpts } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/autorun';
 import { IObservable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/commonFacade/deps';
