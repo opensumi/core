@@ -1028,7 +1028,7 @@ export class CommentsService extends Disposable implements ICommentsService {
               }
             } else {
               // 临时隐藏，当切回来时会恢复
-              thread.hideWidgetsByDispose();
+              thread.hide();
             }
             return thread;
           })
