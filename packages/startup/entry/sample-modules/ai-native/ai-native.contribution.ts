@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   BaseTerminalDetectionLineMatcher,
@@ -11,6 +11,7 @@ import {
 import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/contrib/terminal/utils/ansi-parser';
 import {
   AINativeCoreContribution,
+  ChatAgentPromptProvider,
   ERunStrategy,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
@@ -64,6 +65,9 @@ export class AINativeContribution implements AINativeCoreContribution {
 
   @Autowired(MergeConflictPromptManager)
   mergeConflictPromptManager: MergeConflictPromptManager;
+
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
 
   @Autowired(ChatServiceToken)
   private readonly aiChatService: ChatService;
@@ -510,6 +514,13 @@ export class AINativeContribution implements AINativeCoreContribution {
       } catch (error) {
         throw error;
       }
+    });
+  }
+
+  registerChatAgentPromptProvider(provider: ChatAgentPromptProvider): void {
+    this.injector.addProviders({
+      token: ChatAgentPromptProvider,
+      useValue: provider,
     });
   }
 }

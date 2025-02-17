@@ -39,7 +39,7 @@ import {
   IChatMessageStructure,
   TokenMCPServerProxyService,
 } from '../../common';
-import { LLMContextService, LLMContextServiceToken, formatUerPrompt } from '../../common/llm-context';
+import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
 import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
@@ -50,7 +50,7 @@ import { MessageData, createMessageByAI, createMessageByUser } from '../componen
 import { WelcomeMessage } from '../components/WelcomeMsg';
 import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
-import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
+import { ChatAgentPromptProvider, ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
@@ -74,6 +74,7 @@ export const AIChatView = () => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const contextService = useInjectable<LLMContextService>(LLMContextServiceToken);
+  const promptProvider = useInjectable<ChatAgentPromptProvider>(ChatAgentPromptProvider);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
@@ -502,7 +503,7 @@ export const AIChatView = () => {
       const { actionType, actionSource } = reportExtra || {};
 
       const context = contextService.serialize();
-      const fullMessage = formatUerPrompt(context, message);
+      const fullMessage = await promptProvider.provideContextPrompt(context, message);
 
       const request = aiChatService.createRequest(fullMessage, agentId!, command);
       if (!request) {
