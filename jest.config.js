@@ -19,6 +19,8 @@ const baseConfig = {
     '!packages/startup/**/*.ts',
     // Test 功能暂未完成
     '!packages/testing/**/*.ts',
+    // notebook 包暂未编写测试且有包规范问题
+    '!packages/notebook/**/*.ts',
     // CLI 不需要测试
     '!packages/remote-cli/**/*.ts',
     '!packages/core-electron-main/**/*.ts',
