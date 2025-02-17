@@ -94,8 +94,23 @@ Object.defineProperty(window, 'matchMedia', {
 Object.defineProperty(window, 'crypto', {
   writable: true,
   value: {
-    randomUUID: () => 'mocked-uuid',
-    getRandomValues: () => 'mocked-uuid',
+    randomUUID: () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    }),
+    getRandomValues: (array) => {
+      if (!(array instanceof Int8Array || array instanceof Uint8Array ||
+            array instanceof Int16Array || array instanceof Uint16Array ||
+            array instanceof Int32Array || array instanceof Uint32Array ||
+            array instanceof Uint8ClampedArray)) {
+        throw new TypeError('Expected a TypedArray');
+      }
+      for (let i = 0; i < array.length; i++) {
+        array[i] = Math.floor(Math.random() * 256);
+      }
+      return array;
+    },
   },
 });
 
