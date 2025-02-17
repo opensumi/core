@@ -83,7 +83,8 @@ export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
     }
 
     /**
-     * 自上次编辑代码以来 60 秒内再次编辑代码的限制
+     * 1. 未编辑过代码不触发
+     * 2. 编辑过代码后，60 内没有再次编辑也不触发
      */
     if (
       latestContentChangeTime === 0 ||
