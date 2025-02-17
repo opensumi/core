@@ -3410,6 +3410,7 @@ __metadata:
     ai: "npm:^4.1.21"
     ansi-regex: "npm:^2.0.0"
     dom-align: "npm:^1.7.0"
+    rc-collapse: "npm:^4.0.0"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
     tiktoken: "npm:1.0.12"
@@ -20224,6 +20225,21 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/95d48a1012339163e98bea6e158e5c650e45759550c50f1615f610a19ce31b0af384df899dfded147e1b16d2016e90f16a949792bb79f5b7f6709cf95a9eb1a5
+  languageName: node
+  linkType: hard
+
+"rc-collapse@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "rc-collapse@npm:4.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:2.x"
+    rc-motion: "npm:^2.3.4"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/2afdaf2e445bff0c6c4702ca8bb2f3a2be5e3c11806b8327cafba2ed72af7dc720b9b8f51e3b6ce55a4546628e87ad8c785c42362467d71ee772281c7f0fc1c8
   languageName: node
   linkType: hard
 

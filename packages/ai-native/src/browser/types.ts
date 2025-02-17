@@ -18,6 +18,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
+import { SerializedContext } from '../common/llm-context';
 
 import {
   ICodeEditsContextBean,
@@ -292,6 +293,12 @@ export interface AINativeCoreContribution {
    * proposed api
    */
   registerIntelligentCompletionFeature?(registry: IIntelligentCompletionsRegistry): void;
+
+  /**
+   * 注册 Agent 模式下的 chat prompt provider
+   * @param provider
+   */
+  registerChatAgentPromptProvider?(provider: ChatAgentPromptProvider): void;
 }
 
 // MCP Server 的 贡献点
@@ -364,4 +371,14 @@ export interface IAIMiddleware {
   language?: {
     provideInlineCompletions?: IProvideInlineCompletionsSignature;
   };
+}
+
+export const ChatAgentPromptProvider = Symbol('ChatAgentPromptProvider');
+
+export interface ChatAgentPromptProvider {
+  /**
+   * 提供上下文提示
+   * @param context 上下文
+   */
+  provideContextPrompt(context: SerializedContext, userMessage: string): MaybePromise<string>;
 }
