@@ -2,6 +2,7 @@ import cls from 'classnames';
 import { debounce } from 'lodash';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 
+import { ClickOutside } from '@opensumi/ide-components/lib/click-outside';
 import { AppConfig, LabelService } from '@opensumi/ide-core-browser';
 import { Icon, Input, Scrollbars } from '@opensumi/ide-core-browser/lib/components';
 import { RecentFilesManager } from '@opensumi/ide-core-browser/lib/quick-open/recent-files';
@@ -12,7 +13,6 @@ import { URI } from '@opensumi/ide-utils';
 import { FileContext } from '../../../common/llm-context';
 
 import styles from './style.module.less';
-import { ClickOutside } from '@opensumi/ide-components/lib/click-outside';
 
 interface CandidateFileProps {
   uri: URI;
