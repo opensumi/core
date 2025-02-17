@@ -101,6 +101,7 @@ export class LibroVersionManager {
       },
       automaticLayout: false,
       renderSideBySide: true,
+      useInlineViewWhenSpaceIsLimited: false,
       fontSize: 13,
       folding: true,
       wordWrap: 'off',
