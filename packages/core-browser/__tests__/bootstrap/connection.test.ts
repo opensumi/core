@@ -1,6 +1,6 @@
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
-import { BrowserConnectionErrorEvent, IEventBus } from '@opensumi/ide-core-common';
+import { BrowserConnectionErrorEvent, IEventBus, sleep } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { Server, WebSocket } from '@opensumi/mock-socket';
@@ -34,11 +34,8 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
     const channelHandler = new WSChannelHandler(ReconnectingWebSocketConnection.forURL(fakeWSURL), 'test-client-id');
     createConnectionService(injector, [], channelHandler);
     stateService.state = 'core_module_initialized';
-    new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 4000);
-    }).then(() => {
+
+    sleep(4000).then(() => {
       mockServer.simulate('error');
     });
   });
