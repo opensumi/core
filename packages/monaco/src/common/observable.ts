@@ -1,5 +1,9 @@
 import { autorun, autorunOpts } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/autorun';
-import { IObservable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
+import {
+  IObservable,
+  IObserver,
+  IReader,
+} from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/base';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/commonFacade/deps';
 import { observableFromEvent } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/utils';
 
@@ -13,14 +17,14 @@ export * from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInterna
 
 export function autorunDelta<T>(
   observable: IObservable<T>,
-  handler: (args: { lastValue: T | undefined; newValue: T }) => void,
+  handler: (args: { lastValue: T | undefined; newValue: T }, reader: IReader) => void,
 ): IDisposable {
   let _lastValue: T | undefined;
   return autorunOpts({ debugReferenceFn: handler }, (reader) => {
     const newValue = observable.read(reader);
     const lastValue = _lastValue;
     _lastValue = newValue;
-    handler({ lastValue, newValue });
+    handler({ lastValue, newValue }, reader);
   });
 }
 
@@ -64,4 +68,24 @@ export function debouncedObservable2<T>(observable: IObservable<T>, debounceMs: 
       }
     },
   );
+}
+
+export function onObservableChange<T>(observable: IObservable<unknown, T>, callback: (value: T) => void): IDisposable {
+  const o: IObserver = {
+    beginUpdate() {},
+    endUpdate() {},
+    handlePossibleChange(observable) {
+      observable.reportChanges();
+    },
+    handleChange<T2, TChange>(_observable: IObservable<T2, TChange>) {
+      callback(_observable.get() as unknown as T);
+    },
+  };
+
+  observable.addObserver(o);
+  return {
+    dispose() {
+      observable.removeObserver(o);
+    },
+  };
 }

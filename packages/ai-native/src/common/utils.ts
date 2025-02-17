@@ -32,10 +32,10 @@ export const extractCodeBlocks = (content: string): string => {
   let startLine = 0;
 
   lines.forEach((line, i) => {
-    if (!inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
+    if (!inBlock && line.trim().startsWith(BACK_QUOTE_3_SYMBOL)) {
       inBlock = true;
       startLine = i + 1;
-    } else if (inBlock && line.startsWith(BACK_QUOTE_3_SYMBOL)) {
+    } else if (inBlock && line.trim().startsWith(BACK_QUOTE_3_SYMBOL)) {
       inBlock = false;
       const endLine = i;
       newContents = lines.slice(startLine, endLine);

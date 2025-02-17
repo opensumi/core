@@ -74,11 +74,14 @@ export interface ExtViewContainerOptions {
   hideIfEmpty?: boolean;
   // 隐藏tab图标，仅挂载视图，视图切换交给其他逻辑控制
   hideTab?: boolean;
+  // 隐藏指定位置的图标
+  hideLocationTab?: SlotLocation[];
   noResize?: boolean;
   fromExtension?: boolean;
   // viewContainer 最小高度，默认 120
   miniSize?: number;
   alignment?: Layout.alignment;
+  draggable?: boolean;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 

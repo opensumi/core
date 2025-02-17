@@ -926,6 +926,7 @@ export const localizationBundle = {
     'main-layout.bottom-panel.toggle': '切换底部面板',
     'main-layout.bottom-panel.show': '显示底部面板',
     'main-layout.bottom-panel.hide': '隐藏底部面板',
+    'main-layout.drop-area.tip': '放置此处',
 
     'refactor-preview.title': '重构预览',
     'refactor-preview.title.clear': '放弃重构',

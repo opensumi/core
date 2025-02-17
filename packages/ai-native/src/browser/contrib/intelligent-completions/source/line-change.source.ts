@@ -3,78 +3,104 @@ import { AINativeSettingSectionsId, ECodeEditsSourceTyping, IDisposable } from '
 import { ICursorPositionChangedEvent, IModelContentChangedEvent } from '@opensumi/ide-monaco';
 import {
   autorunDelta,
+  derived,
   derivedHandleChanges,
   observableFromEvent,
-  recomputeInitiallyAndOnChange,
+  onObservableChange,
 } from '@opensumi/ide-monaco/lib/common/observable';
+
+import { IntelligentCompletionsController } from '../intelligent-completions.controller';
 
 import { BaseCodeEditsSource } from './base';
 
 export interface ILineChangeData {
   currentLineNumber: number;
   preLineNumber?: number;
-  change?: IModelContentChangedEvent;
 }
+
+const DEPRECATED_LIMIT = 5;
+const CONTENT_CHANGE_VALID_TIME = 60 * 1000;
 
 @Injectable({ multiple: true })
 export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
-  public priority = 2;
+  public priority = 1;
+
+  /**
+   * 在当前文件，计算弃用上次 edit 时的次数是否超过了阈值 {@link DEPRECATED_LIMIT} 次，超过则不会触发
+   * 1. 直接 esc 弃用
+   * 2. 用户再次移动光标位置致使补全消失也视为弃用
+   */
+  private readonly deprecatedStore = new Map<string, number>();
+
+  private readonly positionChangeObs = observableFromEvent<ICursorPositionChangedEvent>(
+    this,
+    this.monacoEditor.onDidChangeCursorPosition,
+    (event: ICursorPositionChangedEvent) => event,
+  );
+
+  private readonly contentChangeObs = observableFromEvent<IModelContentChangedEvent>(
+    this,
+    this.monacoEditor.onDidChangeModelContent,
+    (event: IModelContentChangedEvent) => event,
+  );
+
+  private readonly latestContentChangeTimeObs = derivedHandleChanges(
+    {
+      owner: this,
+      createEmptyChangeSummary: () => ({ latestContentChangeTime: 0 }),
+      handleChange: (context, changeSummary) => {
+        if (context.didChange(this.contentChangeObs)) {
+          changeSummary.latestContentChangeTime = Date.now();
+        }
+        return true;
+      },
+    },
+    (reader, changeSummary) => {
+      this.contentChangeObs.read(reader);
+      return changeSummary.latestContentChangeTime;
+    },
+  );
+
+  private readonly isAllowTriggerObs = derived((reader) => {
+    this.positionChangeObs.read(reader);
+    const latestContentChangeTime = this.latestContentChangeTimeObs.read(reader);
+
+    const isLineChangeEnabled = this.preferenceService.getValid(AINativeSettingSectionsId.CodeEditsLineChange, false);
+
+    /**
+     * 配置开关
+     */
+    if (!isLineChangeEnabled) {
+      return false;
+    }
+
+    /**
+     * 弃用次数规则的限制
+     */
+    const deprecatedCount = this.deprecatedStore.get(this.model?.id || '');
+    if (deprecatedCount && deprecatedCount >= DEPRECATED_LIMIT) {
+      return false;
+    }
+
+    /**
+     * 1. 未编辑过代码不触发
+     * 2. 编辑过代码后，60 内没有再次编辑也不触发
+     */
+    if (
+      latestContentChangeTime === 0 ||
+      (latestContentChangeTime && Date.now() - latestContentChangeTime > CONTENT_CHANGE_VALID_TIME)
+    ) {
+      return false;
+    }
+
+    return true;
+  });
 
   public mount(): IDisposable {
-    const modelContentChangeObs = observableFromEvent<IModelContentChangedEvent>(
-      this,
-      this.monacoEditor.onDidChangeModelContent,
-      (event: IModelContentChangedEvent) => event,
-    );
-    const positionChangeObs = observableFromEvent<ICursorPositionChangedEvent>(
-      this,
-      this.monacoEditor.onDidChangeCursorPosition,
-      (event: ICursorPositionChangedEvent) => event,
-    );
-
-    const latestModelContentChangeObs = derivedHandleChanges(
-      {
-        owner: this,
-        createEmptyChangeSummary: () => ({ change: undefined }),
-        handleChange: (ctx, changeSummary: { change: IModelContentChangedEvent | undefined }) => {
-          // 如果只是改了光标则设置 change 为空，避免获取到缓存的 change
-          if (ctx.didChange(positionChangeObs)) {
-            changeSummary.change = undefined;
-          } else {
-            changeSummary.change = modelContentChangeObs.get();
-          }
-          return true;
-        },
-      },
-      (reader, changeSummary) => {
-        positionChangeObs.read(reader);
-        modelContentChangeObs.read(reader);
-        return changeSummary.change;
-      },
-    );
-
-    this.addDispose(recomputeInitiallyAndOnChange(latestModelContentChangeObs));
-
-    let lastModelContent: IModelContentChangedEvent | undefined;
     this.addDispose(
-      /**
-       * 由于 monaco 的 changeModelContent 事件比 changeCursorPosition 事件先触发，所以这里需要拿上一次的值进行消费
-       * 否则永远返回 undefined
-       */
-      autorunDelta(latestModelContentChangeObs, ({ lastValue }) => {
-        lastModelContent = lastValue;
-      }),
-    );
-
-    this.addDispose(
-      autorunDelta(positionChangeObs, ({ lastValue, newValue }) => {
-        const contentChange = lastModelContent;
-
-        const isLineChangeEnabled = this.preferenceService.getValid(
-          AINativeSettingSectionsId.CodeEditsLineChange,
-          false,
-        );
-        if (!isLineChangeEnabled) {
+      autorunDelta(this.positionChangeObs, ({ lastValue, newValue }, reader) => {
+        const isAllowTriggerObs = this.isAllowTriggerObs.read(reader);
+        if (!isAllowTriggerObs) {
           return false;
         }
 
@@ -83,19 +109,45 @@ export class LineChangeCodeEditsSource extends BaseCodeEditsSource {
         if (prePosition && prePosition.lineNumber !== currentPosition?.lineNumber) {
           this.setBean({
             typing: ECodeEditsSourceTyping.LineChange,
-            position: currentPosition,
             data: {
-              preLineNumber: prePosition.lineNumber,
-              currentLineNumber: currentPosition.lineNumber,
-              change: contentChange,
+              [ECodeEditsSourceTyping.LineChange]: {
+                preLineNumber: prePosition.lineNumber,
+                currentLineNumber: currentPosition.lineNumber,
+              },
             },
           });
         }
-
-        // 消费完之后设置为 undefined，避免下次获取到缓存的值
-        lastModelContent = undefined;
       }),
     );
+
+    const discard = IntelligentCompletionsController.get(this.monacoEditor)?.discard;
+    const accept = IntelligentCompletionsController.get(this.monacoEditor)?.accept;
+    if (discard) {
+      this.addDispose(
+        onObservableChange(discard, (isValid: boolean) => {
+          const modelId = this.model?.id;
+          if (!modelId || !isValid) {
+            return;
+          }
+
+          const count = this.deprecatedStore.get(modelId) || 0;
+          this.deprecatedStore.set(modelId, count + 1);
+        }),
+      );
+    }
+
+    if (accept) {
+      this.addDispose(
+        onObservableChange(accept, () => {
+          const modelId = this.model?.id;
+          if (!modelId) {
+            return;
+          }
+
+          this.deprecatedStore.delete(modelId);
+        }),
+      );
+    }
 
     return this;
   }

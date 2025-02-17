@@ -664,6 +664,7 @@ export class TabbarService extends WithEventBus {
   // drag & drop
   handleDragStart(e: React.DragEvent, containerId: string) {
     e.dataTransfer.setData('containerId', containerId);
+    this.layoutService.showDropAreaForContainer(containerId);
   }
 
   handleDrop(e: React.DragEvent, target: string) {
@@ -675,6 +676,10 @@ export class TabbarService extends WithEventBus {
       this.doInsertTab(containers, sourceIndex, targetIndex);
       this.storeState();
     }
+  }
+
+  handleDragEnd(e: React.DragEvent) {
+    this.layoutService.hideDropArea();
   }
 
   restoreState() {
@@ -689,6 +694,19 @@ export class TabbarService extends WithEventBus {
         this.tryRestoreAccordionSize(container.options!.containerId);
       }
     });
+  }
+
+  removeContainer(containerId: string) {
+    const disposable = this.disposableMap.get(containerId);
+    disposable?.dispose();
+    this.updateCurrentContainerId('');
+    this.doChangeViewEmitter.fire();
+  }
+
+  dynamicAddContainer(containerId: string, options: ComponentRegistryInfo) {
+    this.registerContainer(containerId, options);
+    this.updateCurrentContainerId(containerId);
+    this.doChangeViewEmitter.fire();
   }
 
   protected doInsertTab(containers: ComponentRegistryInfo[], sourceIndex: number, targetIndex: number) {

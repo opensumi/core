@@ -1328,6 +1328,7 @@ export const localizationBundle = {
     'main-layout.bottom-panel.toggle': 'Toggle Bottom Side Bar',
     'main-layout.bottom-panel.show': 'Show Bottom Side Bar',
     'main-layout.bottom-panel.hide': 'Hide Bottom Side Bar',
+    'main-layout.drop-area.tip': 'drop here',
 
     'refactor-preview.title': 'REFACTOR PREVIEW',
     'refactor-preview.title.clear': 'Discard Refactoring',

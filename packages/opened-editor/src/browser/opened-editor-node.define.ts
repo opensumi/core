@@ -70,7 +70,7 @@ export class EditorFile extends TreeNode {
     public dirty: boolean = false,
     parent: EditorFileGroup | undefined,
   ) {
-    super(tree as ITree, parent, undefined, { name: `${resource.uri.toString()}` });
+    super(tree as ITree, parent, undefined, { name: `${resource.uri.codeUri.fsPath.toString()}` });
   }
 
   get displayName() {

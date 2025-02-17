@@ -40,7 +40,7 @@ import {
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
+import { ICodeEditor, ISelection, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
@@ -70,25 +70,6 @@ export class AINativeContribution implements AINativeCoreContribution {
 
   logger = getDebugLogger();
 
-  private getCrossCode(monacoEditor: ICodeEditor): string {
-    const model = monacoEditor.getModel();
-    if (!model) {
-      return '';
-    }
-
-    const selection = monacoEditor.getSelection();
-
-    if (!selection) {
-      return '';
-    }
-
-    const crossSelection = selection
-      .setStartPosition(selection.startLineNumber, 1)
-      .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
-    const crossCode = model.getValueInRange(crossSelection);
-    return crossCode;
-  }
-
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
     registry.registerInteractiveInput(
       {
@@ -101,7 +82,7 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        execute: async (editor, value, token) => {},
+        execute: async (editor, selection, value, token) => {},
         providePreviewStrategy: async (editor, selection, value, token) => {
           const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
@@ -126,8 +107,8 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providePreviewStrategy: async (editor: ICodeEditor, token) => {
-          const crossCode = this.getCrossCode(editor);
+        providePreviewStrategy: async (editor: ICodeEditor, selection: ISelection, token) => {
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
           const controller = new InlineChatController({ enableCodeblockRender: true });
@@ -150,8 +131,8 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providePreviewStrategy: async (editor: ICodeEditor, token) => {
-          const crossCode = this.getCrossCode(editor);
+        providePreviewStrategy: async (editor: ICodeEditor, selection: ISelection, token) => {
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
           const result = await this.aiBackService.request(prompt, {}, token);
@@ -181,13 +162,13 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        execute: async (editor: ICodeEditor, token) => {
+        execute: async (editor: ICodeEditor, selection: ISelection, token) => {
           const model = editor.getModel();
           if (!model) {
             return;
           }
 
-          const crossCode = this.getCrossCode(editor);
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           this.aiChatService.sendMessage({
             message: `Explain code: \`\`\`\n${crossCode}\n\`\`\``,
             prompt: `Help me, Explain code: \`\`\`\n${crossCode}\n\`\`\``,

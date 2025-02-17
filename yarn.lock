@@ -3880,6 +3880,7 @@ __metadata:
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-terminal-next": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
+    "@opensumi/ide-utils": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
   languageName: unknown
@@ -4032,8 +4033,9 @@ __metadata:
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
+    "@types/diff": "npm:^7.0.0"
     antd: "npm:^5.21.4"
-    diff: "npm:^4.0.1"
+    diff: "npm:^7.0.0"
     resize-observer-polyfill: "npm:1.5.1"
   languageName: unknown
   linkType: soft
@@ -5360,10 +5362,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/diff-match-patch@npm:^1.0.36":
-  version: 1.0.36
-  resolution: "@types/diff-match-patch@npm:1.0.36"
-  checksum: 10/7d7ce03422fcc3e79d0cda26e4748aeb176b75ca4b4e5f38459b112bf24660d628424bdb08d330faefa69039d19a5316e7a102a8ab68b8e294c8346790e55113
+"@types/diff@npm:^7.0.0":
+  version: 7.0.1
+  resolution: "@types/diff@npm:7.0.1"
+  checksum: 10/ef8c5fe0ea56737e8967c3db5e78518134f704e8e2971cb4ba6f2ed46ed5e13b4bbe41a6b2b78122b8f47c618ac25550f85a681633636a3a020369042523295d
   languageName: node
   linkType: hard
 
@@ -10270,6 +10272,13 @@ __metadata:
   version: 4.0.2
   resolution: "diff@npm:4.0.2"
   checksum: 10/ec09ec2101934ca5966355a229d77afcad5911c92e2a77413efda5455636c4cf2ce84057e2d7715227a2eeeda04255b849bd3ae3a4dd22eb22e86e76456df069
+  languageName: node
+  linkType: hard
+
+"diff@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "diff@npm:7.0.0"
+  checksum: 10/e9b8e48d054c9c0c093c65ce8e2637af94b35f2427001607b14e5e0589e534ea3413a7f91ebe6d7c5a1494ace49cb7c7c3972f442ddd96a4767ff091999a082e
   languageName: node
   linkType: hard
 
