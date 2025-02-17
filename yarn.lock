@@ -3731,6 +3731,7 @@ __metadata:
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-terminal-next": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
+    "@opensumi/ide-utils": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
   languageName: unknown

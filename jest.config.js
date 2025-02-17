@@ -17,9 +17,8 @@ const baseConfig = {
     // 部分contribution文件为-contribution结尾
     '!packages/**/*-contribution.ts',
     '!packages/startup/**/*.ts',
-    // Test 功能暂未完成
+    // Test, Notebook 模块暂不覆盖
     '!packages/testing/**/*.ts',
-    // notebook 包暂未编写测试且有包规范问题
     '!packages/notebook/**/*.ts',
     // CLI 不需要测试
     '!packages/remote-cli/**/*.ts',

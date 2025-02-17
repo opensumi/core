@@ -50,6 +50,7 @@ import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explor
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 import { IOpenDialogOptions, ISaveDialogOptions, IWindowDialogService } from '@opensumi/ide-overlay';
+import { Path } from '@opensumi/ide-utils/lib/path';
 import { IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
 
 import { IFileTreeService, PasteTypes, RESOURCE_VIEW_ID } from '../common';
@@ -778,8 +779,14 @@ export class FileTreeContribution
         }
         if (uri.scheme === DIFF_SCHEME) {
           const query = uri.getParsedQuery();
-          // 需要file scheme才能与工作区计算相对路径
           uri = new URI(query.modified).withScheme('file');
+        }
+        const node = this.fileTreeService.getNodeByPathOrUri(uri);
+        if (node) {
+          if (node.filestat.isInSymbolicDirectory) {
+            // 软链接文件需要通过直接通过文件树 Path 获取
+            return await this.clipboardService.writeText(node.path.split(Path.separator).slice(2).join(Path.separator));
+          }
         }
         let rootUri: URI;
         if (this.fileTreeService.isMultipleWorkspace) {

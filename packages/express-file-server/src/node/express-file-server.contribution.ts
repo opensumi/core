@@ -32,7 +32,7 @@ export class ExpressFileServerContribution implements ServerAppContribution {
 
         const filePath = URI.parse(`file://${uriPath}`).codeUri.fsPath;
         const whitelist = this.getWhiteList();
-        const contentType = ALLOW_MIME[path.extname(filePath).slice(1)];
+        const contentType = ALLOW_MIME[path.extname(filePath).slice(1).toLowerCase()];
         if (
           /**
            * 地址在白名单内
