@@ -71,7 +71,8 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         if (event.payload.uri.scheme !== 'file') {
           return;
         }
-        this.addFileToContext(event.payload.uri);
+        // TODO: 是否自动添加文件到上下文？
+        // this.addFileToContext(event.payload.uri);
       }),
     );
 
@@ -102,7 +103,8 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
             event.payload.selections[0].positionLineNumber,
           ].sort() as [number, number];
           if (selection[0] === selection[1]) {
-            this.addFileToContext(event.payload.editorUri, undefined);
+            // TODO: 是否自动添加文件到上下文？
+            // this.addFileToContext(event.payload.editorUri, undefined);
           } else {
             this.addFileToContext(
               event.payload.editorUri,
@@ -120,24 +122,31 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   serialize(): SerializedContext {
     const files = this.getAllContextFiles();
-    const recentlyViewFiles = files.filter((v) => !v.selection).map((file) =>
-      URI.file(this.appConfig.workspaceDir).relative(file.uri)!.toString(),
-    ).filter(Boolean);
-    const attachedFiles = files.filter((v) => v.selection).map((file) => {
-      const ref = this.docModelManager.getModelReference(file.uri);
-      const content = ref!.instance.getText();
-      const lineErrors = this.markerService.getManager().getMarkers({
-        resource: file.uri.toString(),
-        severities: MarkerSeverity.Error,
-      }).map((marker) => marker.message);
+    const recentlyViewFiles = files
+      .filter((v) => !v.selection)
+      .map((file) => URI.file(this.appConfig.workspaceDir).relative(file.uri)!.toString())
+      .filter(Boolean);
+    const attachedFiles = files
+      .filter((v) => v.selection)
+      .map((file) => {
+        const ref = this.docModelManager.getModelReference(file.uri);
+        const content = ref!.instance.getText();
+        const lineErrors = this.markerService
+          .getManager()
+          .getMarkers({
+            resource: file.uri.toString(),
+            severities: MarkerSeverity.Error,
+          })
+          .map((marker) => marker.message);
 
-      return {
-        content,
-        lineErrors,
-        path: URI.file(this.appConfig.workspaceDir).relative(file.uri)!.toString(),
-        language: ref?.instance.languageId!,
-      };
-    }).filter(Boolean);
+        return {
+          content,
+          lineErrors,
+          path: URI.file(this.appConfig.workspaceDir).relative(file.uri)!.toString(),
+          language: ref?.instance.languageId!,
+        };
+      })
+      .filter(Boolean);
 
     return {
       recentlyViewFiles,

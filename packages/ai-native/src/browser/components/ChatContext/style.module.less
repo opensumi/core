@@ -6,6 +6,31 @@
   border-radius: 4px;
   border: 1px solid var(--design-borderColor);
 
+  :global(.rc-collapse) {
+    background-color: transparent !important;
+    border-radius: none !important;
+    border: none !important;
+  }
+
+  :global(.rc-collapse-title) {
+    flex: 1 !important;
+    line-height: 22px;
+  }
+
+  :global(.rc-collapse-expand-icon) {
+    line-height: 1;
+  }
+
+  :global(.rc-collapse-header) {
+    padding: 0px !important;
+    line-height: 1 !important;
+  }
+
+  :global(.rc-collapse-content) {
+    padding: 0px !important;
+    background-color: transparent !important;
+  }
+
   .context_header {
     display: flex;
     align-items: center;
