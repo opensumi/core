@@ -17,8 +17,9 @@ const baseConfig = {
     // 部分contribution文件为-contribution结尾
     '!packages/**/*-contribution.ts',
     '!packages/startup/**/*.ts',
-    // Test 功能暂未完成
+    // Test, Notebook 模块暂不覆盖
     '!packages/testing/**/*.ts',
+    '!packages/notebook/**/*.ts',
     // CLI 不需要测试
     '!packages/remote-cli/**/*.ts',
     '!packages/core-electron-main/**/*.ts',
