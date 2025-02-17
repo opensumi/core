@@ -298,7 +298,7 @@ export interface AINativeCoreContribution {
    * 注册 Agent 模式下的 chat prompt provider
    * @param provider
    */
-  registerChatAgentPromptProvider?(provider: ChatAgentPromptProvider): void;
+  registerChatAgentPromptProvider?(): void;
 }
 
 // MCP Server 的 贡献点

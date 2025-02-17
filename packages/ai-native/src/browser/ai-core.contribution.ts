@@ -336,6 +336,7 @@ export class AINativeBrowserContribution
       contribution.registerTerminalProvider?.(this.terminalProviderRegistry);
       contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
       contribution.registerProblemFixFeature?.(this.problemFixProviderRegistry);
+      contribution.registerChatAgentPromptProvider?.();
     });
 
     // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
