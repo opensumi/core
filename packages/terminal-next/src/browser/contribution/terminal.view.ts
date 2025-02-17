@@ -56,6 +56,8 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
         activateKeyBinding: 'ctrl+`',
         containerId: TerminalRenderContribution.viewId,
         titleComponent: TerminalTabs,
+        draggable: true,
+        hideLocationTab: ['right'],
       },
     );
   }
