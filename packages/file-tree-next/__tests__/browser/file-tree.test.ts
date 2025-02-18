@@ -229,7 +229,7 @@ describe('FileTree should be work while on single workspace model', () => {
       useValue: rawFileTreeApi,
     });
 
-    injector.mock(IContextKeyService, 'getContextValue', mockGetContextValue);
+    injector.mock(IContextKeyService, 'getContextKeyValue', mockGetContextValue);
     const fileService = injector.get(FileService, [FileSystemNodeOptions.DEFAULT]);
     injector.overrideProviders({
       token: FileServicePath,

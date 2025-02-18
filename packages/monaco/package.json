@@ -21,7 +21,7 @@
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
-    "@opensumi/monaco-editor-core": "0.53.0-patch.2"
+    "@opensumi/monaco-editor-core": "0.54.0-patch.1"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",

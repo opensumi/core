@@ -334,7 +334,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     return expr ? expr.keys() : [];
   }
 
-  getContextValue<T>(key: string): T | undefined {
+  getContextKeyValue<T>(key: string): T | undefined {
     return this.contextKeyService.getContextKeyValue(key);
   }
 

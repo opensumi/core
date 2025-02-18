@@ -408,9 +408,9 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
-    registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
-      items: [{ insertText: 'Hello OpenSumi' }],
-    }));
+    // registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
+    //   items: [{ insertText: 'Hello OpenSumi' }],
+    // }));
 
     registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
       const model = editor.getModel();

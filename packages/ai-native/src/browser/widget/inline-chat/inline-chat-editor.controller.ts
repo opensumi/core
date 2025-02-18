@@ -222,7 +222,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
 
   protected async showInlineChat(monacoEditor: monaco.ICodeEditor): Promise<void> {
     // 调试状态下禁用 inline chat。影响调试体验
-    const inDebugMode = this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY);
+    const inDebugMode = this.contextKeyService.getContextKeyValue(CONTEXT_IN_DEBUG_MODE_KEY);
     if (inDebugMode) {
       return;
     }

@@ -1,12 +1,12 @@
 import React from 'react';
 
-import { HistoryNavigator } from '@opensumi/monaco-editor-core/esm/vs/base/common/history';
+import { HistoryNavigator, IHistory } from '@opensumi/monaco-editor-core/esm/vs/base/common/history';
 
 import { IInputBaseProps, Input } from './Input';
 
 export interface HistoryInputBoxProp extends IInputBaseProps {
   // 上层自己持久化历史记录
-  history?: string[];
+  history?: IHistory<string>;
   onReady?: (api: IHistoryInputBoxHandler) => void;
 }
 
@@ -32,7 +32,7 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
   public componentDidMount() {
     const { history, onReady } = this.props;
 
-    this.history = new HistoryNavigator(history || [], 100);
+    this.history = new HistoryNavigator(history || new Set([]), 100);
     this.inputProps = { ...this.props };
     delete this.inputProps.onReady;
 
