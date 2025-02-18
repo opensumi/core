@@ -82,7 +82,9 @@ export const ChatContext = memo(() => {
         <Panel
           header={
             <div className={styles.context_header}>
-              <h3 className={styles.chat_context_title}>Context</h3>
+              <h3 className={styles.chat_context_title}>
+                Context {addedFiles.length > 0 ? ` (${addedFiles.length} files)` : ''}
+              </h3>
               <Popover
                 overlayClassName={styles.popover_icon}
                 id={'ai-context-header-clear'}
