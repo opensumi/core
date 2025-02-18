@@ -11,8 +11,14 @@ import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition
 const inputSchema = z.object({
   command: z.string().describe('The terminal command to execute'),
   is_background: z.boolean().describe('Whether the command should be run in the background'),
-  explanation: z.string().describe('One sentence explanation as to why this command needs to be run and how it contributes to the goal.'),
-  require_user_approval: z.boolean().describe('Whether the user must approve the command before it is executed. Only set this to false if the command is safe and if it matches the user\'s requirements for commands that should be executed automatically.'),
+  explanation: z
+    .string()
+    .describe('One sentence explanation as to why this command needs to be run and how it contributes to the goal.'),
+  require_user_approval: z
+    .boolean()
+    .describe(
+      "Whether the user must approve the command before it is executed. Only set this to false if the command is safe and if it matches the user's requirements for commands that should be executed automatically.",
+    ),
 });
 
 @Domain(MCPServerContribution)
@@ -32,7 +38,8 @@ export class RunTerminalCommandTool implements MCPServerContribution {
   getToolDefinition(): MCPToolDefinition {
     return {
       name: 'run_terminal_cmd',
-      description: 'PROPOSE a command to run on behalf of the user.\nIf you have this tool, note that you DO have the ability to run commands directly on the USER\'s system.\n\nAdhere to these rules:\n1. Based on the contents of the conversation, you will be told if you are in the same shell as a previous step or a new shell.\n2. If in a new shell, you should `cd` to the right directory and do necessary setup in addition to running the command.\n3. If in the same shell, the state will persist, no need to do things like `cd` to the same directory.\n4. For ANY commands that would use a pager, you should append ` | cat` to the command (or whatever is appropriate). You MUST do this for: git, less, head, tail, more, etc.\n5. For commands that are long running/expected to run indefinitely until interruption, please run them in the background. To run jobs in the background, set `is_background` to true rather than changing the details of the command.\n6. Dont include any newlines in the command.',
+      description:
+        "PROPOSE a command to run on behalf of the user.\nIf you have this tool, note that you DO have the ability to run commands directly on the USER's system.\n\nAdhere to these rules:\n1. Based on the contents of the conversation, you will be told if you are in the same shell as a previous step or a new shell.\n2. If in a new shell, you should `cd` to the right directory and do necessary setup in addition to running the command.\n3. If in the same shell, the state will persist, no need to do things like `cd` to the same directory.\n4. For ANY commands that would use a pager, you should append ` | cat` to the command (or whatever is appropriate). You MUST do this for: git, less, head, tail, more, etc.\n5. For commands that are long running/expected to run indefinitely until interruption, please run them in the background. To run jobs in the background, set `is_background` to true rather than changing the details of the command.\n6. Dont include any newlines in the command.",
       inputSchema: zodToJsonSchema(inputSchema),
       handler: this.handler.bind(this),
     };
@@ -69,7 +76,7 @@ export class RunTerminalCommandTool implements MCPServerContribution {
     });
 
     terminalClient.onExit((e) => {
-      const isError = e.code === 0;
+      const isError = e.code !== 0;
       def.resolve({
         isError,
         content: result,
