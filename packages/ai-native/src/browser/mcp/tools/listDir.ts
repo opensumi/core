@@ -41,7 +41,7 @@ export class ListDirTool implements MCPServerContribution {
   }
 
   private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
-    // TODO: 应该添加统一的 validate 逻辑
+    // TODO: 应该添加统一的 validate 逻辑和错误返回逻辑，目前错误会直接抛出来
     args = inputSchema.parse(args);
     const result = await this.listDirHandler.handler(args);
     return {

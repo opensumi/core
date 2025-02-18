@@ -52,6 +52,7 @@ export abstract class BaseLanguageModel {
       allFunctions,
       chatReadableStream,
       options.history || [],
+      options.modelId,
       cancellationToken,
     );
   }
@@ -65,7 +66,7 @@ export abstract class BaseLanguageModel {
     });
   }
 
-  protected abstract getModelIdentifier(provider: any): any;
+  protected abstract getModelIdentifier(provider: any, modelId?: string): any;
 
   protected async handleStreamingRequest(
     provider: any,
@@ -73,6 +74,7 @@ export abstract class BaseLanguageModel {
     tools: ToolRequest[],
     chatReadableStream: ChatReadableStream,
     history: IChatMessage[] = [],
+    modelId?: string,
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -94,7 +96,7 @@ export abstract class BaseLanguageModel {
       ];
 
       const stream = await streamText({
-        model: this.getModelIdentifier(provider),
+        model: this.getModelIdentifier(provider, modelId),
         maxTokens: 4096,
         tools: aiTools,
         messages,

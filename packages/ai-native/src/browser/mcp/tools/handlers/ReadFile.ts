@@ -12,6 +12,11 @@ export class FileHandler {
   private static readonly MAX_CHARS = 1e5;
   private static readonly NEWLINE = '\n';
 
+  private fileResultMap: Map<
+    string,
+    { content: string; startLineOneIndexed: number; endLineOneIndexedInclusive: number }
+  > = new Map();
+
   @Autowired(IEditorDocumentModelService)
   protected modelService: IEditorDocumentModelService;
 
@@ -141,7 +146,14 @@ export class FileHandler {
           didShortenCharRange = true;
           selectedContent = this.trimContent(selectedContent, FileHandler.MAX_CHARS);
         }
-
+        // 文件的浏览窗口需要记录，应用的时候需要用
+        if (didShortenLineRange) {
+          this.fileResultMap.set(fileParams.relativeWorkspacePath, {
+            content: selectedContent,
+            startLineOneIndexed: adjustedStart,
+            endLineOneIndexedInclusive: adjustedEnd,
+          });
+        }
         return {
           contents: selectedContent,
           didDowngradeToLineRange: shouldForceLimitLines,
@@ -170,5 +182,11 @@ export class FileHandler {
     } finally {
       modelReference?.dispose();
     }
+  }
+
+  getFileReadResult(
+    relativeWorkspacePath: string,
+  ): { content: string; startLineOneIndexed: number; endLineOneIndexedInclusive: number } | undefined {
+    return this.fileResultMap.get(relativeWorkspacePath);
   }
 }
