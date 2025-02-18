@@ -1,4 +1,5 @@
-import { Terminal } from '@xterm/xterm';
+import { ISearchOptions } from '@xterm/addon-search';
+import { IEvent, Terminal } from '@xterm/xterm';
 
 import { Deferred, Disposable, Event, IDisposable } from '@opensumi/ide-core-common';
 
@@ -116,7 +117,11 @@ export interface ITerminalClient extends Disposable {
    *
    * @param text 用户输入的字符串
    */
-  findNext(text: string): void;
+  findNext(text: string, searchOptions?: ISearchOptions): void;
+
+  findPrevious(text: string, searchOptions?: ISearchOptions): void;
+
+  onSearchResultsChange: IEvent<{ resultIndex: number; resultCount: number }>;
 
   closeSearch(): void;
 
