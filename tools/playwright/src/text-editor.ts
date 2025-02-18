@@ -306,7 +306,7 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     await this.placeCursorInLine(existingLine);
     await this.page.keyboard.press('End');
     await this.page.keyboard.press('Enter');
-    await this.page.keyboard.type(newText);
+    await this.page.keyboard.type(newText, { delay: 100 });
   }
 
   async pasteContentAfterLineByLineNumber(lineNumber: number): Promise<void> {

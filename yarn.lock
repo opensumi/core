@@ -3410,10 +3410,13 @@ __metadata:
     ai: "npm:^4.1.21"
     ansi-regex: "npm:^2.0.0"
     dom-align: "npm:^1.7.0"
+    rc-collapse: "npm:^4.0.0"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
     tiktoken: "npm:1.0.12"
     web-tree-sitter: "npm:0.22.6"
+    zod: "npm:^3.23.8"
+    zod-to-json-schema: "npm:^3.24.1"
   languageName: unknown
   linkType: soft
 
@@ -3878,6 +3881,7 @@ __metadata:
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-terminal-next": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
+    "@opensumi/ide-utils": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
   languageName: unknown
@@ -4001,7 +4005,7 @@ __metadata:
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
-    "@opensumi/monaco-editor-core": "npm:0.53.0-patch.2"
+    "@opensumi/monaco-editor-core": "npm:0.54.0-patch.1"
   languageName: unknown
   linkType: soft
 
@@ -4030,8 +4034,9 @@ __metadata:
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
+    "@types/diff": "npm:^7.0.0"
     antd: "npm:^5.21.4"
-    diff: "npm:^4.0.1"
+    diff: "npm:^7.0.0"
     resize-observer-polyfill: "npm:1.5.1"
   languageName: unknown
   linkType: soft
@@ -4470,10 +4475,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/monaco-editor-core@npm:0.53.0-patch.2":
-  version: 0.53.0-patch.2
-  resolution: "@opensumi/monaco-editor-core@npm:0.53.0-patch.2"
-  checksum: 10/e5ebd5c3bb8fada9341cf9c023283ed5cd3e9b1bc01e1bf74a7d12e688947994572292e6ffcd352126be37a738a435650b289270dc71abcd42b0363176245d2f
+"@opensumi/monaco-editor-core@npm:0.54.0-patch.1":
+  version: 0.54.0-patch.1
+  resolution: "@opensumi/monaco-editor-core@npm:0.54.0-patch.1"
+  checksum: 10/36f7b3fad00136d42ac27d1063f95043b241ea0005315f1154e3cfa128653e85028e6d82e5119e4d776e82d481c1d1f3fb9d7a626d2763ef32abba1eb2904623
   languageName: node
   linkType: hard
 
@@ -5362,6 +5367,13 @@ __metadata:
   version: 1.0.36
   resolution: "@types/diff-match-patch@npm:1.0.36"
   checksum: 10/7d7ce03422fcc3e79d0cda26e4748aeb176b75ca4b4e5f38459b112bf24660d628424bdb08d330faefa69039d19a5316e7a102a8ab68b8e294c8346790e55113
+  languageName: node
+  linkType: hard
+
+"@types/diff@npm:^7.0.0":
+  version: 7.0.1
+  resolution: "@types/diff@npm:7.0.1"
+  checksum: 10/ef8c5fe0ea56737e8967c3db5e78518134f704e8e2971cb4ba6f2ed46ed5e13b4bbe41a6b2b78122b8f47c618ac25550f85a681633636a3a020369042523295d
   languageName: node
   linkType: hard
 
@@ -10268,6 +10280,13 @@ __metadata:
   version: 4.0.2
   resolution: "diff@npm:4.0.2"
   checksum: 10/ec09ec2101934ca5966355a229d77afcad5911c92e2a77413efda5455636c4cf2ce84057e2d7715227a2eeeda04255b849bd3ae3a4dd22eb22e86e76456df069
+  languageName: node
+  linkType: hard
+
+"diff@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "diff@npm:7.0.0"
+  checksum: 10/e9b8e48d054c9c0c093c65ce8e2637af94b35f2427001607b14e5e0589e534ea3413a7f91ebe6d7c5a1494ace49cb7c7c3972f442ddd96a4767ff091999a082e
   languageName: node
   linkType: hard
 
@@ -20206,6 +20225,21 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/95d48a1012339163e98bea6e158e5c650e45759550c50f1615f610a19ce31b0af384df899dfded147e1b16d2016e90f16a949792bb79f5b7f6709cf95a9eb1a5
+  languageName: node
+  linkType: hard
+
+"rc-collapse@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "rc-collapse@npm:4.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    classnames: "npm:2.x"
+    rc-motion: "npm:^2.3.4"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/2afdaf2e445bff0c6c4702ca8bb2f3a2be5e3c11806b8327cafba2ed72af7dc720b9b8f51e3b6ce55a4546628e87ad8c785c42362467d71ee772281c7f0fc1c8
   languageName: node
   linkType: hard
 

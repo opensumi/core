@@ -222,7 +222,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
 
   protected async showInlineChat(monacoEditor: monaco.ICodeEditor): Promise<void> {
     // 调试状态下禁用 inline chat。影响调试体验
-    const inDebugMode = this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY);
+    const inDebugMode = this.contextKeyService.getContextKeyValue(CONTEXT_IN_DEBUG_MODE_KEY);
     if (inDebugMode) {
       return;
     }
@@ -280,7 +280,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
             return undefined;
           }
 
-          return strategy.bind(this, monacoEditor, this.token);
+          return strategy.bind(this, monacoEditor, crossSelection, this.token);
         };
 
         this.runAction({
@@ -297,7 +297,7 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
             });
             return relationId;
           },
-          execute: handler.execute ? handler.execute!.bind(this, monacoEditor, this.token) : undefined,
+          execute: handler.execute ? handler.execute!.bind(this, monacoEditor, crossSelection, this.token) : undefined,
           providerPreview: previewer(),
           extraData: {
             actionSource: source === 'codeAction' ? ActionSourceEnum.CodeAction : ActionSourceEnum.InlineChat,
@@ -508,12 +508,6 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
       return;
     }
 
-    this.visibleDiffWidget({
-      monacoEditor,
-      options: { crossSelection, chatResponse: response },
-      reportInfo: { relationId, startTime, isRetry, actionType, actionSource },
-    });
-
     this.aiInlineChatOperationDisposable.addDispose([
       this.aiInlineContentWidget.onResultClick((kind: EResultKind) => {
         const modifyContent = this.inlineDiffController.getModifyContent();
@@ -579,6 +573,12 @@ export class InlineChatEditorController extends BaseAIMonacoEditorController {
         });
       }),
     ]);
+
+    this.visibleDiffWidget({
+      monacoEditor,
+      options: { crossSelection, chatResponse: response },
+      reportInfo: { relationId, startTime, isRetry, actionType, actionSource },
+    });
   }
 
   public async runAction(params: {

@@ -13,11 +13,20 @@ import {
   MaybePromise,
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, IRange, ISelection, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import {
+  ICodeEditor,
+  IRange,
+  ISelection,
+  ITextModel,
+  InlineEditProvider,
+  NewSymbolNamesProvider,
+  Position,
+} from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
+import { SerializedContext } from '../common/llm-context';
 
 import {
   ICodeEditsContextBean,
@@ -42,7 +51,9 @@ interface IBaseInlineChatHandler<T extends any[]> {
   providerDiffPreviewStrategy?: (...args: T) => MaybePromise<ChatResponse | InlineChatController>;
 }
 
-export type IEditorInlineChatHandler = IBaseInlineChatHandler<[editor: ICodeEditor, token: CancellationToken]>;
+export type IEditorInlineChatHandler = IBaseInlineChatHandler<
+  [editor: ICodeEditor, selection: ISelection, token: CancellationToken]
+>;
 export type IInteractiveInputHandler = IBaseInlineChatHandler<
   [editor: ICodeEditor, selection: ISelection, value: string, token: CancellationToken]
 >;
@@ -224,14 +235,39 @@ export type ICodeEditsProvider = (
   token: CancellationToken,
 ) => MaybePromise<ICodeEditsResult | undefined>;
 
+export type IIntelligentInlineEditProvider = (
+  editor: ICodeEditor,
+  position: IPosition,
+  contextBean: IAICompletionOption,
+  token: CancellationToken,
+) => MaybePromise<IIntelligentCompletionsResult>;
+
+/**
+ * Interface for registering intelligent completion providers and code edits providers.
+ */
 export interface IIntelligentCompletionsRegistry {
   /**
-   *  @deprecated use registerInlineCompletionProvider API
+   * Registers an intelligent completion provider.
+   * @deprecated Use the `registerInlineCompletionsProvider` method instead.
+   * @param provider - The intelligent completion provider to register.
    */
   registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
-  registerInlineCompletionsProvider(provider: IIntelligentCompletionProvider): void;
+
   /**
-   * 注册 code edits 功能
+   * Registers an inline completions provider.
+   * @param provider - The intelligent completion provider to register.
+   */
+  registerInlineCompletionsProvider(provider: IIntelligentCompletionProvider): void;
+
+  /**
+   * Registers an inline edit provider.
+   * @param provider The inline edit provider to register.
+   */
+  registerInlineEditProvider(provider: InlineEditProvider): void;
+
+  /**
+   * Registers a code edits provider.
+   * @param provider - The code edits provider to register.
    */
   registerCodeEditsProvider(provider: ICodeEditsProvider): void;
 }
@@ -290,6 +326,51 @@ export interface AINativeCoreContribution {
    * proposed api
    */
   registerIntelligentCompletionFeature?(registry: IIntelligentCompletionsRegistry): void;
+
+  /**
+   * 注册 Agent 模式下的 chat prompt provider
+   * @param provider
+   */
+  registerChatAgentPromptProvider?(): void;
+}
+
+// MCP Server 的 贡献点
+export const MCPServerContribution = Symbol('MCPServerContribution');
+
+export const TokenMCPServerRegistry = Symbol('TokenMCPServerRegistry');
+
+export interface MCPServerContribution {
+  registerMCPServer(registry: IMCPServerRegistry): void;
+}
+
+export interface MCPLogger {
+  appendLine(message: string): void;
+}
+
+export interface MCPToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: any; // JSON Schema
+  handler: (
+    args: any,
+    logger: MCPLogger,
+  ) => Promise<{
+    content: { type: string; text: string }[];
+    isError?: boolean;
+  }>;
+}
+
+export interface IMCPServerRegistry {
+  registerMCPTool(tool: MCPToolDefinition): void;
+  getMCPTools(): MCPToolDefinition[];
+  callMCPTool(
+    name: string,
+    args: any,
+  ): Promise<{
+    content: { type: string; text: string }[];
+    isError?: boolean;
+  }>;
+  // 后续支持其他 MCP 功能
 }
 
 // MCP Server 的 贡献点
@@ -362,4 +443,14 @@ export interface IAIMiddleware {
   language?: {
     provideInlineCompletions?: IProvideInlineCompletionsSignature;
   };
+}
+
+export const ChatAgentPromptProvider = Symbol('ChatAgentPromptProvider');
+
+export interface ChatAgentPromptProvider {
+  /**
+   * 提供上下文提示
+   * @param context 上下文
+   */
+  provideContextPrompt(context: SerializedContext, userMessage: string): MaybePromise<string>;
 }

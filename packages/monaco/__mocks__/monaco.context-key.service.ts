@@ -158,7 +158,7 @@ export class MockContextKeyService implements IScopedContextKeyService {
   }
 
   getValue<T>(key: string): T | undefined {
-    return this.getContextValue(key);
+    return this.getContextKeyValue(key);
   }
 
   match(expression: string | ContextKeyExpression | undefined, context?: HTMLElement | null | undefined): boolean {
@@ -171,7 +171,7 @@ export class MockContextKeyService implements IScopedContextKeyService {
 
   private getData() {
     return Array.from(this._keys.keys()).reduce((prev, key) => {
-      prev[key] = this.getContextValue(key);
+      prev[key] = this.getContextKeyValue(key);
       return prev;
     }, {});
   }
@@ -184,7 +184,7 @@ export class MockContextKeyService implements IScopedContextKeyService {
     return expr ? expr.keys() : [];
   }
 
-  getContextValue<T>(key: string): T | undefined {
+  getContextKeyValue<T>(key: string): T | undefined {
     const value = this._keys.get(key);
     if (value) {
       return value.get();

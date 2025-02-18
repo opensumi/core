@@ -275,7 +275,7 @@ export class AINativeBrowserContribution
       register(
         IntelligentCompletionsController.ID,
         new SyncDescriptor(IntelligentCompletionsController, [this.injector]),
-        EditorContributionInstantiation.AfterFirstRender,
+        EditorContributionInstantiation.Eager,
       );
       register(
         InlineCompletionsController.ID,
@@ -336,6 +336,12 @@ export class AINativeBrowserContribution
       contribution.registerTerminalProvider?.(this.terminalProviderRegistry);
       contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
       contribution.registerProblemFixFeature?.(this.problemFixProviderRegistry);
+      contribution.registerChatAgentPromptProvider?.();
+    });
+
+    // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
+    this.mcpServerContributions.getContributions().forEach((contribution) => {
+      contribution.registerMCPServer(this.mcpServerRegistry);
     });
 
     // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)

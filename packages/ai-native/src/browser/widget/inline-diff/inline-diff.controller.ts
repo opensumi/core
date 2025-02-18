@@ -51,7 +51,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
 
   private previewerStore: Map<string, IInlineDiffPreviewer>;
   private currentPreviewer: ISettableObservable<IInlineDiffPreviewer | undefined>;
-  private modelChangeObs: IObservable<monaco.editor.ITextModel, unknown>;
+  private modelChangeObs: IObservable<monaco.editor.ITextModel>;
 
   mount(): IDisposable {
     this.previewerStore = new Map();
@@ -74,7 +74,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
          * 保留 previewer 的实例，仅卸载 previewer 的渲染层
          */
         const id = model.id;
-        const previewer = this.currentPreviewer.read(reader);
+        const previewer = this.currentPreviewer.get();
         if (previewer && previewer.modelId !== id && !previewer.disposed) {
           previewer.hide();
         }

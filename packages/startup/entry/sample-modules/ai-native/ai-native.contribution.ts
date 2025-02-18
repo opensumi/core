@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   BaseTerminalDetectionLineMatcher,
@@ -11,6 +11,7 @@ import {
 import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/contrib/terminal/utils/ansi-parser';
 import {
   AINativeCoreContribution,
+  ChatAgentPromptProvider,
   ERunStrategy,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
@@ -24,6 +25,7 @@ import {
   TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
+import { SerializedContext } from '@opensumi/ide-ai-native/lib/common/llm-context';
 import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
 import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
@@ -40,7 +42,7 @@ import {
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
+import { ICodeEditor, ISelection, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { SlashCommand } from './SlashCommand';
@@ -65,29 +67,13 @@ export class AINativeContribution implements AINativeCoreContribution {
   @Autowired(MergeConflictPromptManager)
   mergeConflictPromptManager: MergeConflictPromptManager;
 
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
+
   @Autowired(ChatServiceToken)
   private readonly aiChatService: ChatService;
 
   logger = getDebugLogger();
-
-  private getCrossCode(monacoEditor: ICodeEditor): string {
-    const model = monacoEditor.getModel();
-    if (!model) {
-      return '';
-    }
-
-    const selection = monacoEditor.getSelection();
-
-    if (!selection) {
-      return '';
-    }
-
-    const crossSelection = selection
-      .setStartPosition(selection.startLineNumber, 1)
-      .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
-    const crossCode = model.getValueInRange(crossSelection);
-    return crossCode;
-  }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
     registry.registerInteractiveInput(
@@ -101,7 +87,7 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        execute: async (editor, value, token) => {},
+        execute: async (editor, selection, value, token) => {},
         providePreviewStrategy: async (editor, selection, value, token) => {
           const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
@@ -126,8 +112,8 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providePreviewStrategy: async (editor: ICodeEditor, token) => {
-          const crossCode = this.getCrossCode(editor);
+        providePreviewStrategy: async (editor: ICodeEditor, selection: ISelection, token) => {
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
           const controller = new InlineChatController({ enableCodeblockRender: true });
@@ -150,8 +136,8 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providePreviewStrategy: async (editor: ICodeEditor, token) => {
-          const crossCode = this.getCrossCode(editor);
+        providePreviewStrategy: async (editor: ICodeEditor, selection: ISelection, token) => {
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
           const result = await this.aiBackService.request(prompt, {}, token);
@@ -181,13 +167,13 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        execute: async (editor: ICodeEditor, token) => {
+        execute: async (editor: ICodeEditor, selection: ISelection, token) => {
           const model = editor.getModel();
           if (!model) {
             return;
           }
 
-          const crossCode = this.getCrossCode(editor);
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           this.aiChatService.sendMessage({
             message: `Explain code: \`\`\`\n${crossCode}\n\`\`\``,
             prompt: `Help me, Explain code: \`\`\`\n${crossCode}\n\`\`\``,
@@ -427,9 +413,9 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
-    registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
-      items: [{ insertText: 'Hello OpenSumi' }],
-    }));
+    // registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
+    //   items: [{ insertText: 'Hello OpenSumi' }],
+    // }));
 
     registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
       const model = editor.getModel();
@@ -510,6 +496,40 @@ export class AINativeContribution implements AINativeCoreContribution {
       } catch (error) {
         throw error;
       }
+    });
+  }
+
+  registerChatAgentPromptProvider(): void {
+    this.injector.addProviders({
+      token: ChatAgentPromptProvider,
+      useValue: {
+        provideContextPrompt: (context: SerializedContext, userMessage: string) => `
+          <additional_data>
+          Below are some potentially helpful/relevant pieces of information for figuring out to respond
+          <recently_viewed_files>
+          ${context.recentlyViewFiles.map((file, idx) => `${idx} + 1: ${file}`)}
+          </recently_viewed_files>
+          <attached_files>
+          ${context.attachedFiles.map(
+            (file) =>
+              `
+          <file_contents>
+          \`\`\`${file.language} ${file.path}
+          ${file.content}
+          \`\`\`
+          </file_contents>
+          <linter_errors>
+          ${file.lineErrors.join('`n')}
+          </linter_errors>
+          `,
+          )}
+          
+          </attached_files>
+          </additional_data>
+          <user_query>
+          ${userMessage}
+          </user_query>`,
+      },
     });
   }
 }
