@@ -174,6 +174,8 @@ export interface IAIBackServiceOption {
   /** 模型ID，如 gpt-4o-mini, claude-3-5-sonnet-20240620 */
   modelId?: string;
   baseURL?: string;
+  temperature?: number;
+  providerOptions?: any;
 }
 
 /**

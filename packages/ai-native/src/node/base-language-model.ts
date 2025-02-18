@@ -53,6 +53,8 @@ export abstract class BaseLanguageModel {
       chatReadableStream,
       options.history || [],
       options.modelId,
+      options.temperature,
+      options.providerOptions,
       cancellationToken,
     );
   }
@@ -75,6 +77,8 @@ export abstract class BaseLanguageModel {
     chatReadableStream: ChatReadableStream,
     history: IChatMessage[] = [],
     modelId?: string,
+    temperature?: number,
+    providerOptions?: any,
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -103,6 +107,8 @@ export abstract class BaseLanguageModel {
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
         maxSteps: 12,
+        temperature,
+        providerOptions,
       });
 
       for await (const chunk of stream.fullStream) {

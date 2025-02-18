@@ -57,6 +57,7 @@ import { LanguageParserService } from './languages/service';
 import { MCPServerProxyService } from './mcp/mcp-server-proxy.service';
 import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
 import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
+import { EditFileTool } from './mcp/tools/editFile';
 import { FindFilesByNameSubstringTool } from './mcp/tools/findFilesByNameSubstring';
 import { GetCurrentFilePathTool } from './mcp/tools/getCurrentFilePath';
 import { GetDiagnosticsByPathTool } from './mcp/tools/getDiagnosticsByPath';
@@ -97,6 +98,7 @@ export class AINativeModule extends BrowserModule {
     // MCP Server Contributions START
     ListDirTool,
     ReadFileTool,
+    EditFileTool,
     CreateNewFileWithTextTool,
     GetSelectedTextTool,
     GetOpenEditorFileDiagnosticsTool,

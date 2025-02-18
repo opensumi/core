@@ -1,9 +1,16 @@
 import { createPatch } from 'diff';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AIBackSerivcePath, AppConfig, ChatMessageRole, IAIBackService, URI } from '@opensumi/ide-core-browser';
+import {
+  AIBackSerivcePath,
+  AppConfig,
+  ChatMessageRole,
+  IAIBackService,
+  IApplicationService,
+  URI,
+} from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { Range } from '@opensumi/monaco-editor-core';
 import { Selection, SelectionDirection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/selection';
 
@@ -31,11 +38,14 @@ export class ApplyService {
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
 
-  @Autowired(IFileServiceClient)
-  protected fileSystemService: IFileServiceClient;
+  @Autowired(IEditorDocumentModelService)
+  private readonly modelService: IEditorDocumentModelService;
 
   @Autowired(InlineDiffService)
   private readonly inlineDiffService: InlineDiffService;
+
+  @Autowired(IApplicationService)
+  private readonly applicationService: IApplicationService;
 
   private codeBlockMap = new Map<string, CodeBlockData>();
 
@@ -68,7 +78,8 @@ export class ApplyService {
    * Apply changes of a code block
    */
   async apply(relativePath: string, newContent: string, instructions?: string): Promise<CodeBlockData> {
-    const blockData = this.getCodeBlock(relativePath);
+    const blockId = this.generateBlockId(relativePath);
+    const blockData = this.getCodeBlock(blockId);
     if (!blockData) {
       throw new Error('Code block not found');
     }
@@ -100,13 +111,14 @@ export class ApplyService {
 
   protected async doApply(relativePath: string, newContent: string, instructions?: string): Promise<string> {
     let fileReadResult = this.fileHandler.getFileReadResult(relativePath);
-    const file = await this.fileSystemService.readFile(relativePath);
-    const fullContent = file.content.toString();
+    const uri = new URI(`${this.appConfig.workspaceDir}/${relativePath}`);
+    const modelReference = await this.modelService.createModelReference(uri);
+    const fileContent = modelReference.instance.getMonacoModel().getValue();
     if (!fileReadResult) {
       fileReadResult = {
-        content: fullContent,
+        content: fileContent,
         startLineOneIndexed: 1,
-        endLineOneIndexedInclusive: fullContent.split('\n').length,
+        endLineOneIndexedInclusive: fileContent.split('\n').length,
       };
     }
     const stream = await this.aiBackService.requestStream(
@@ -119,11 +131,22 @@ ${instructions ? `- ${instructions}\n` : ''}
 
 <update>${newContent}</update>
 
-Provide the complete updated code.`,
+Provide the complete updated code.
+<updated-code>`,
       {
         model: 'openai',
         modelId: 'fast-apply-7b',
         baseURL: 'https://whale-wave.alibaba-inc.com/api/v2/services/aigc/text-generation/v1/chat/completions',
+        apiKey: '6RMIBMVXJC',
+        clientId: this.applicationService.clientId,
+        temperature: 0,
+        // TODO: 特殊参数如何透传
+        providerOptions: {
+          extend_fields: {
+            sp_edit: 1,
+            sp_advice_prompt: `<updated-code>${fileReadResult.content}</updated-code>`,
+          },
+        },
       },
     );
     const openResult = await this.editorService.open(URI.file(this.appConfig.workspaceDir + '/' + relativePath));
@@ -146,6 +169,7 @@ Provide the complete updated code.`,
           new Range(fileReadResult.startLineOneIndexed, 0, fileReadResult.endLineOneIndexedInclusive, 0),
           SelectionDirection.LTR,
         ),
+        // TODO: trim 掉首尾的 updated-code
         chatResponse: controller,
         previewerOptions: {
           disposeWhenEditorClosed: false,
@@ -157,7 +181,7 @@ Provide the complete updated code.`,
           blockData.status = 'success';
           const appliedResult = editor.getModel()!.getValue();
           //   TODO: 可以移除header
-          resolve(createPatch(relativePath, fullContent, appliedResult));
+          resolve(createPatch(relativePath, fileContent, appliedResult));
         }
       });
     });

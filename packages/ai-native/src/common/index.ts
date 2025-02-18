@@ -179,6 +179,7 @@ export interface IChatAgentMetadata {
   fullName?: string;
   icon?: Uri;
   iconDark?: Uri;
+  systemPrompt?: string;
 }
 
 export interface IChatAgentRequest {

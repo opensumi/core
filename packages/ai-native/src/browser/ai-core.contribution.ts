@@ -414,6 +414,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.CodeEditsTyping,
             localized: 'preference.ai.native.codeEdits.typing',
           },
+          {
+            id: AINativeSettingSectionsId.SystemPrompt,
+            localized: 'preference.ai.native.chat.system.prompt',
+          },
         ],
       });
     }
