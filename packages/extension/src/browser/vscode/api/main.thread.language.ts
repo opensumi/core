@@ -50,13 +50,13 @@ import {
   ISuggestResultDtoField,
   IdentifiableInlineCompletion,
   IdentifiableInlineCompletions,
+  IdentifiableInlineEdit,
   MonacoModelIdentifier,
-  RangeSuggestDataDto,
   testGlob,
 } from '../../../common/vscode';
 import { IDocumentFilterDto, fromLanguageSelector } from '../../../common/vscode/converter';
 import { CancellationError, UriComponents } from '../../../common/vscode/ext-types';
-import { IExtensionDescription } from '../../../common/vscode/extension';
+import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';
 import {
   CallHierarchyItem,
   FoldingRangeProvider,
@@ -401,6 +401,30 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(
       handle,
       monacoApi.languages.registerInlineCompletionsProvider(fromLanguageSelector(selector)!, provider),
+    );
+  }
+
+  $registerInlineEditProvider(
+    handle: number,
+    selector: IDocumentFilterDto[],
+    extensionId: ExtensionIdentifier,
+    displayName: string,
+  ): void {
+    const provider: monaco.languages.InlineEditProvider<IdentifiableInlineEdit> = {
+      displayName,
+      provideInlineEdit: async (
+        model: ITextModel,
+        context: monaco.languages.IInlineEditContext,
+        token: CancellationToken,
+      ): Promise<IdentifiableInlineEdit | undefined> =>
+        this.proxy.$provideInlineEdit(handle, model.uri, context, token),
+      freeInlineEdit: (edit: IdentifiableInlineEdit): void => {
+        this.proxy.$freeInlineEdit(handle, edit.pid);
+      },
+    };
+    this.disposables.set(
+      handle,
+      monacoApi.languages.registerInlineEditProvider(fromLanguageSelector(selector)!, provider),
     );
   }
 

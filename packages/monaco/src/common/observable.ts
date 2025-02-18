@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { autorun, autorunOpts } from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/autorun';
 import {
   IObservable,
@@ -12,7 +13,6 @@ export * from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInterna
 export * from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/debugName';
 export * from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/derived';
 export * from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/logging';
-export * from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/promise';
 export * from '@opensumi/monaco-editor-core/esm/vs/base/common/observableInternal/utils';
 
 export function autorunDelta<T>(

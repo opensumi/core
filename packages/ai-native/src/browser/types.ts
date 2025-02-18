@@ -13,7 +13,15 @@ import {
   MaybePromise,
   MergeConflictEditorMode,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, IRange, ISelection, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
+import {
+  ICodeEditor,
+  IRange,
+  ISelection,
+  ITextModel,
+  InlineEditProvider,
+  NewSymbolNamesProvider,
+  Position,
+} from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
@@ -227,14 +235,39 @@ export type ICodeEditsProvider = (
   token: CancellationToken,
 ) => MaybePromise<ICodeEditsResult | undefined>;
 
+export type IIntelligentInlineEditProvider = (
+  editor: ICodeEditor,
+  position: IPosition,
+  contextBean: IAICompletionOption,
+  token: CancellationToken,
+) => MaybePromise<IIntelligentCompletionsResult>;
+
+/**
+ * Interface for registering intelligent completion providers and code edits providers.
+ */
 export interface IIntelligentCompletionsRegistry {
   /**
-   *  @deprecated use registerInlineCompletionProvider API
+   * Registers an intelligent completion provider.
+   * @deprecated Use the `registerInlineCompletionsProvider` method instead.
+   * @param provider - The intelligent completion provider to register.
    */
   registerIntelligentCompletionProvider(provider: IIntelligentCompletionProvider): void;
-  registerInlineCompletionsProvider(provider: IIntelligentCompletionProvider): void;
+
   /**
-   * 注册 code edits 功能
+   * Registers an inline completions provider.
+   * @param provider - The intelligent completion provider to register.
+   */
+  registerInlineCompletionsProvider(provider: IIntelligentCompletionProvider): void;
+
+  /**
+   * Registers an inline edit provider.
+   * @param provider The inline edit provider to register.
+   */
+  registerInlineEditProvider(provider: InlineEditProvider): void;
+
+  /**
+   * Registers a code edits provider.
+   * @param provider - The code edits provider to register.
    */
   registerCodeEditsProvider(provider: ICodeEditsProvider): void;
 }

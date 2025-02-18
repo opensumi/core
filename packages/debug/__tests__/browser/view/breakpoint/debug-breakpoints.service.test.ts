@@ -49,7 +49,7 @@ describe('Debug Breakpoints Service', () => {
 
   const mockContextKeyService = {
     onDidChangeContext: jest.fn(),
-    getContextValue: () => true,
+    getContextKeyValue: () => true,
   };
 
   const mockDebugViewModel = {
