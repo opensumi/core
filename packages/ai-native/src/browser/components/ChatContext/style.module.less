@@ -5,6 +5,7 @@
   padding: 10px;
   border-radius: 4px;
   border: 1px solid var(--design-borderColor);
+  user-select: none;
 
   :global(.rc-collapse) {
     background-color: transparent !important;
@@ -19,6 +20,16 @@
 
   :global(.rc-collapse-expand-icon) {
     line-height: 1;
+
+    :global(.kt-icon) {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .collapse_hide {
+    display: none;
   }
 
   :global(.rc-collapse-header) {
@@ -63,6 +74,7 @@
     .context_list {
       font-size: 12px;
       overflow-y: auto;
+      user-select: none;
 
       .list_desc {
         margin: 0px 10px;
