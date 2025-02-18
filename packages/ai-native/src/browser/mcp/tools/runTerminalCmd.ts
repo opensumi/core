@@ -4,9 +4,14 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { Deferred, Domain } from '@opensumi/ide-core-common';
-import { ITerminalController } from '@opensumi/ide-terminal-next/lib/common/controller';
+import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next/lib/common/controller';
 
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
+
+const color = {
+  italic: '\x1b[3m',
+  reset: '\x1b[0m',
+};
 
 const inputSchema = z.object({
   command: z.string().describe('The terminal command to execute'),
@@ -28,6 +33,9 @@ export class RunTerminalCommandTool implements MCPServerContribution {
 
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
+
+  @Autowired(ITerminalGroupViewService)
+  protected readonly terminalView: ITerminalGroupViewService;
 
   private terminalId = 0;
 
@@ -81,6 +89,17 @@ export class RunTerminalCommandTool implements MCPServerContribution {
         isError,
         content: result,
       });
+
+      terminalClient.term.writeln(
+        `\n${color.italic}> Command ${args.command} executed successfully. Terminal will close in ${
+          3000 / 1000
+        } seconds.${color.reset}\n`,
+      );
+
+      setTimeout(() => {
+        terminalClient.dispose();
+        this.terminalView.removeWidget(terminalClient.id);
+      }, 3000);
     });
 
     return def.promise;
