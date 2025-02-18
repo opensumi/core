@@ -21,7 +21,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   @Autowired(IEditorDocumentModelService)
   protected readonly docModelManager: IEditorDocumentModelService;
-
+  z
   @Autowired(IMarkerService)
   protected readonly markerService: IMarkerService;
 
@@ -131,7 +131,13 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     const files = this.getAllContextFiles();
     const recentlyViewFiles = files
       .filter((v) => !v.selection)
-      .map((file) => URI.file(this.appConfig.workspaceDir).relative(file.uri)!.toString())
+      .map((file) => {
+        const relativePath = URI.file(this.appConfig.workspaceDir).relative(file.uri);
+        if (relativePath) {
+          return relativePath.toString();
+        }
+        return file.uri.parent.toString;
+      })
       .filter(Boolean);
 
     const attachedFiles = files
