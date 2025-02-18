@@ -1,3 +1,5 @@
+import { IEvent } from '@xterm/xterm';
+
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Deferred, Disposable, Event, IDisposable, Uri } from '@opensumi/ide-core-common';
 import { IObservable } from '@opensumi/ide-monaco/lib/common/observable';
@@ -113,10 +115,23 @@ export interface ITerminalController extends Disposable {
   registerLinkProvider(provider: ITerminalExternalLinkProvider): IDisposable;
 }
 
+export interface IUIState {
+  isMatchCase: boolean;
+  isWholeWord: boolean;
+  isUseRegexp: boolean;
+}
+
+export interface ISearchResult {
+  resultCount: number;
+  resultIndex: number;
+}
+
 export const ITerminalSearchService = Symbol('ITerminalSearchService');
 export interface ITerminalSearchService {
   isVisible: boolean;
   onVisibleChange: Event<boolean>;
+  UIState: IUIState;
+  onResultChange: IEvent<ISearchResult> | undefined;
 
   text: string;
 
@@ -124,6 +139,9 @@ export interface ITerminalSearchService {
   clear(): void;
   close(): void;
   search(): void;
+  searchNext(): void;
+  searchPrevious(): void;
+  updateUIState(state: Partial<IUIState>): void;
 }
 
 export const ITerminalGroupViewService = Symbol('ITerminalGroupViewService');

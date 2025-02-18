@@ -177,11 +177,24 @@ export class XTerm extends Disposable implements IXTerm {
     };
   }
 
-  findNext(text: string) {
+  findNext(text: string, searchOptions: ISearchOptions = {}) {
     const options: ISearchOptions = {
       decorations: this.getFindColors(),
+      ...searchOptions,
     };
     return this._searchAddon.findNext(text, options);
+  }
+
+  findPrevious(text: string, searchOptions: ISearchOptions = {}) {
+    const options: ISearchOptions = {
+      decorations: this.getFindColors(),
+      ...searchOptions,
+    };
+    return this._searchAddon.findPrevious(text, options);
+  }
+
+  get onSearchResultsChange() {
+    return this._searchAddon.onDidChangeResults;
   }
 
   closeSearch() {

@@ -1,8 +1,7 @@
-import cls from 'classnames';
 import debounce from 'lodash/debounce';
 import React from 'react';
 
-import { FRAME_THREE, getIcon, localize, useAutorun, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
+import { FRAME_THREE, useAutorun, useEventEffect, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
   ITerminalController,
@@ -15,6 +14,7 @@ import {
 } from '../../common';
 
 import ResizeView, { ResizeDirection } from './resize.view';
+import { TerminalSearch } from './search.view';
 import styles from './terminal.module.less';
 import TerminalWidget from './terminal.widget';
 
@@ -26,26 +26,12 @@ export default () => {
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const network = useInjectable<ITerminalNetwork>(ITerminalNetwork);
 
-  const inputRef = React.useRef<HTMLInputElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
 
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const currentGroupId = useAutorun(view.currentGroupId);
   const currentGroupIndex = useAutorun(view.currentGroupIndex);
   const groups = useAutorun(view.groups);
-
-  React.useEffect(() => {
-    const dispose = searchService.onVisibleChange((show) => {
-      if (show && inputRef.current) {
-        inputRef.current.focus();
-
-        if (inputRef.current.value.length > 0) {
-          inputRef.current.setSelectionRange(0, inputRef.current.value.length);
-        }
-      }
-    });
-    return () => dispose.dispose();
-  }, [searchService, inputRef.current]);
 
   const [themeBackground, setThemeBackground] = React.useState(controller.themeBackground);
 
@@ -78,31 +64,6 @@ export default () => {
     setIsVisible(visible);
   });
 
-  const [inputText, setInputText] = React.useState('');
-
-  const searchInput = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      searchService.text = event.target.value;
-      searchService.search();
-      setInputText(event.target.value);
-    },
-    [searchService],
-  );
-
-  const searchKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Enter') {
-        searchService.search();
-      }
-
-      if (event.key === 'Escape') {
-        searchService.close();
-        searchService.clear();
-      }
-    },
-    [searchService],
-  );
-
   React.useEffect(() => {
     if (wrapperRef.current) {
       controller.initContextKey(wrapperRef.current);
@@ -117,21 +78,7 @@ export default () => {
       style={{ backgroundColor: themeBackground }}
       data-group-current={currentGroupId}
     >
-      {isVisible && (
-        <div className={styles.terminalSearch}>
-          <div className='kt-input-box'>
-            <input
-              autoFocus
-              ref={inputRef}
-              placeholder={localize('common.find')}
-              value={inputText}
-              onChange={searchInput}
-              onKeyDown={searchKeyDown}
-            />
-          </div>
-          <div className={cls(styles.closeBtn, getIcon('close'))} onClick={() => searchService.close()}></div>
-        </div>
-      )}
+      {isVisible && <TerminalSearch />}
       {groups.map((group, index) => {
         if (!group.activated.get()) {
           return;
