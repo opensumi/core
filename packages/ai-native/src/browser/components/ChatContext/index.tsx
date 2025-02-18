@@ -18,6 +18,11 @@ import { FileContext, LLMContextService, LLMContextServiceToken } from '../../..
 import { ContextSelector } from './ContextSelector';
 import styles from './style.module.less';
 
+const getCollapsedHeight = () => ({ height: 0, opacity: 0 });
+const getRealHeight = (node) => ({ height: node.scrollHeight, opacity: 1 });
+const getCurrentHeight = (node) => ({ height: node.offsetHeight });
+const skipOpacityTransition = (_, event) => (event as TransitionEvent).propertyName === 'height';
+
 export const ChatContext = memo(() => {
   const [addedFiles, updateAddedFiles] = useState<FileContext[]>([]);
   const [contextOverlay, toggleContextOverlay] = useState(false);
@@ -76,8 +81,17 @@ export const ChatContext = memo(() => {
       <Collapse
         // @ts-ignore
         expandIcon={({ isActive }) => (isActive ? <Icon icon='down' /> : <Icon icon='right' />)}
-        defaultActiveKey={['context-panel']}
-        onChange={() => {}}
+        openMotion={{
+          motionName: 'rc-collapse-motion',
+          onEnterStart: getCollapsedHeight,
+          onEnterActive: getRealHeight,
+          onLeaveStart: getCurrentHeight,
+          onLeaveActive: getCollapsedHeight,
+          onEnterEnd: skipOpacityTransition,
+          onLeaveEnd: skipOpacityTransition,
+          motionDeadline: 100,
+          leavedClassName: styles.collapse_hide,
+        }}
       >
         <Panel
           header={
