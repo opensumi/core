@@ -19,8 +19,17 @@ import {
   TerminalRegistryToken,
 } from '@opensumi/ide-core-common';
 
-import { ChatProxyServiceToken, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
-import { IAIInlineCompletionsProvider } from '../common';
+import {
+  ChatProxyServiceToken,
+  IAIInlineCompletionsProvider,
+  IChatAgentService,
+  IChatInternalService,
+  IChatManagerService,
+  SumiMCPServerProxyServicePath,
+  TokenMCPServerProxyService,
+} from '../common';
+import { LLMContextServiceToken } from '../common/llm-context';
+import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { ChatAgentService } from './chat/chat-agent.service';
@@ -31,6 +40,8 @@ import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
+import { LlmContextContribution } from './context/llm-context.contribution';
+import { LLMContextServiceImpl } from './context/llm-context.service';
 import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
 import { IntelligentCompletionsContribution } from './contrib/intelligent-completions/intelligent-completions.contribution';
@@ -43,8 +54,22 @@ import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.featur
 import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
 import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
+import { MCPServerProxyService } from './mcp/mcp-server-proxy.service';
+import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
+import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
+import { FindFilesByNameSubstringTool } from './mcp/tools/findFilesByNameSubstring';
+import { GetCurrentFilePathTool } from './mcp/tools/getCurrentFilePath';
+import { GetDiagnosticsByPathTool } from './mcp/tools/getDiagnosticsByPath';
+import { GetFileTextByPathTool } from './mcp/tools/getFileTextByPath';
+import { GetOpenEditorFileDiagnosticsTool } from './mcp/tools/getOpenEditorFileDiagnostics';
+import { GetOpenEditorFileTextTool } from './mcp/tools/getOpenEditorFileText';
+import { GetSelectedTextTool } from './mcp/tools/getSelectedText';
+import { ListDirTool } from './mcp/tools/listDir';
+import { ReadFileTool } from './mcp/tools/readFile';
+import { ReplaceOpenEditorFileByDiffPreviewerTool } from './mcp/tools/replaceOpenEditorFileByDiffPreviewer';
+import { RunTerminalCommandTool } from './mcp/tools/runTerminalCmd';
 import { AINativePreferencesContribution } from './preferences';
-import { AINativeCoreContribution } from './types';
+import { AINativeCoreContribution, MCPServerContribution, TokenMCPServerRegistry } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatService } from './widget/inline-chat/inline-chat.service';
 import { InlineDiffService } from './widget/inline-diff';
@@ -59,7 +84,7 @@ export class AINativeModule extends BrowserModule {
     this.aiNativeConfig.setAINativeModuleLoaded(true);
   }
 
-  contributionProvider = AINativeCoreContribution;
+  contributionProvider = [AINativeCoreContribution, MCPServerContribution];
   providers: Provider[] = [
     AINativeBrowserContribution,
     InterfaceNavigationContribution,
@@ -68,6 +93,37 @@ export class AINativeModule extends BrowserModule {
     AICodeActionContribution,
     AINativePreferencesContribution,
     IntelligentCompletionsContribution,
+
+    // MCP Server Contributions START
+    ListDirTool,
+    ReadFileTool,
+    CreateNewFileWithTextTool,
+    GetSelectedTextTool,
+    GetOpenEditorFileDiagnosticsTool,
+    GetOpenEditorFileTextTool,
+    GetFileTextByPathTool,
+    GetCurrentFilePathTool,
+    FindFilesByNameSubstringTool,
+    GetDiagnosticsByPathTool,
+    RunTerminalCommandTool,
+    ReplaceOpenEditorFileByDiffPreviewerTool,
+    // MCP Server Contributions END
+
+    // Context Service
+    LlmContextContribution,
+    {
+      token: LLMContextServiceToken,
+      useClass: LLMContextServiceImpl,
+    },
+
+    {
+      token: TokenMCPServerRegistry,
+      useClass: MCPServerRegistry,
+    },
+    {
+      token: TokenMCPServerProxyService,
+      useClass: MCPServerProxyService,
+    },
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
@@ -147,6 +203,14 @@ export class AINativeModule extends BrowserModule {
       servicePath: AIBackSerivcePath,
       token: AIBackSerivceToken,
       clientToken: ChatProxyServiceToken,
+    },
+    {
+      servicePath: MCPServerManagerPath,
+      token: MCPServerManager,
+    },
+    {
+      clientToken: TokenMCPServerProxyService,
+      servicePath: SumiMCPServerProxyServicePath,
     },
   ];
 }

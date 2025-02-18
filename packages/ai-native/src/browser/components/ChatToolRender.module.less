@@ -1,0 +1,86 @@
+.chat-tool-render {
+  margin: 8px 0;
+  border: 1px solid var(--design-borderColor);
+  border-radius: 6px;
+  overflow: hidden;
+
+  .tool-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background-color: var(--design-block-background);
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background-color: var(--design-block-hoverBackground);
+    }
+  }
+
+  .tool-name {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    color: var(--design-text-foreground);
+  }
+
+  .expand-icon {
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.2s;
+    color: var(--design-text-placeholderForeground);
+
+    &.expanded {
+      transform: rotate(90deg);
+    }
+  }
+
+  .tool-state {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--design-text-placeholderForeground);
+  }
+
+  .state-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 6px;
+  }
+
+  .loading-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .state-label {
+    margin-left: 4px;
+  }
+
+  .tool-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background-color: var(--design-container-background);
+
+    &.expanded {
+      max-height: 1000px;
+    }
+  }
+
+  .tool-arguments,
+  .tool-result {
+    padding: 12px;
+  }
+
+  .section-label {
+    font-size: 12px;
+    color: var(--design-text-placeholderForeground);
+    margin-bottom: 8px;
+  }
+
+  .tool-result {
+    border-top: 1px solid var(--design-borderColor);
+  }
+}

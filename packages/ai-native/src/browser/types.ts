@@ -26,6 +26,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
+import { SerializedContext } from '../common/llm-context';
 
 import {
   ICodeEditsContextBean,
@@ -325,6 +326,51 @@ export interface AINativeCoreContribution {
    * proposed api
    */
   registerIntelligentCompletionFeature?(registry: IIntelligentCompletionsRegistry): void;
+
+  /**
+   * 注册 Agent 模式下的 chat prompt provider
+   * @param provider
+   */
+  registerChatAgentPromptProvider?(): void;
+}
+
+// MCP Server 的 贡献点
+export const MCPServerContribution = Symbol('MCPServerContribution');
+
+export const TokenMCPServerRegistry = Symbol('TokenMCPServerRegistry');
+
+export interface MCPServerContribution {
+  registerMCPServer(registry: IMCPServerRegistry): void;
+}
+
+export interface MCPLogger {
+  appendLine(message: string): void;
+}
+
+export interface MCPToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: any; // JSON Schema
+  handler: (
+    args: any,
+    logger: MCPLogger,
+  ) => Promise<{
+    content: { type: string; text: string }[];
+    isError?: boolean;
+  }>;
+}
+
+export interface IMCPServerRegistry {
+  registerMCPTool(tool: MCPToolDefinition): void;
+  getMCPTools(): MCPToolDefinition[];
+  callMCPTool(
+    name: string,
+    args: any,
+  ): Promise<{
+    content: { type: string; text: string }[];
+    isError?: boolean;
+  }>;
+  // 后续支持其他 MCP 功能
 }
 
 export interface IChatComponentConfig {
@@ -358,4 +404,14 @@ export interface IAIMiddleware {
   language?: {
     provideInlineCompletions?: IProvideInlineCompletionsSignature;
   };
+}
+
+export const ChatAgentPromptProvider = Symbol('ChatAgentPromptProvider');
+
+export interface ChatAgentPromptProvider {
+  /**
+   * 提供上下文提示
+   * @param context 上下文
+   */
+  provideContextPrompt(context: SerializedContext, userMessage: string): MaybePromise<string>;
 }

@@ -20,6 +20,8 @@ const DEFAULT_CAPABILITIES: Required<IAINativeCapabilities> = {
   supportsProblemFix: true,
   supportsTerminalDetection: true,
   supportsTerminalCommandSuggest: true,
+  supportsCustomLLMSettings: true,
+  supportsMCP: true,
 };
 
 const DISABLED_ALL_CAPABILITIES = {} as Required<IAINativeCapabilities>;
