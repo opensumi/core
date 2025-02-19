@@ -11,10 +11,9 @@ import { ILogger } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
 import { ISumiMCPServerBackend } from '../../common';
-import { MCPServerDescription, MCPServerManager } from '../../common/mcp-server-manager';
+import { IMCPServer, MCPServerDescription } from '../../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolInvocationRegistryManager } from '../../common/tool-invocation-registry';
 import { IMCPServerProxyService, MCPTool } from '../../common/types';
-import { IMCPServer } from '../mcp-server';
 import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
 
 // 每个 BrowserTab 都对应了一个 SumiMCPServerBackend 实例
@@ -129,6 +128,24 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     });
 
     return this.server;
+  }
+
+  async getServers() {
+    const servers = Array.from(this.mcpServerManager.getServers().entries());
+    return servers.map(([name, server]) => ({
+      name: server.getServerName(),
+      isStarted: server.isStarted(),
+    }));
+  }
+
+  async startServer(serverName: string) {
+    await this.mcpServerManager.startServer(serverName);
+    this.client?.$updateMCPServers();
+  }
+
+  async stopServer(serverName: string) {
+    await this.mcpServerManager.stopServer(serverName);
+    this.client?.$updateMCPServers();
   }
 }
 
