@@ -15,6 +15,7 @@ import {
   InlineDiffService,
   LiveInlineDiffPreviewer,
 } from '../widget/inline-diff';
+import { InlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
 
 import { FileHandler } from './tools/handlers/ReadFile';
 
@@ -49,7 +50,7 @@ export abstract class BaseApplyService {
 
   public readonly codeBlockMapObservable = observableValue<Map<string, CodeBlockData>>(this, new Map());
 
-  private activePreviewer: BaseInlineDiffPreviewer<any> | undefined;
+  private activePreviewer: BaseInlineDiffPreviewer<InlineStreamDiffHandler> | undefined;
 
   private pendingApplyParams:
     | {
@@ -157,6 +158,7 @@ export abstract class BaseApplyService {
         renderRemovedWidgetImmediately: true,
       },
     ) as LiveInlineDiffPreviewer;
+    this.activePreviewer = previewer;
 
     const fullOriginalContent = editor.getModel()!.getValue();
     const savedContent = editor.getModel()!.getValueInRange(range);
@@ -193,8 +195,9 @@ export abstract class BaseApplyService {
    */
   cancelApply(relativePath: string): void {
     const blockData = this.getCodeBlock(relativePath);
-    if (blockData && blockData.status === 'generating') {
+    if (blockData && (blockData.status === 'generating' || blockData.status === 'pending')) {
       if (this.activePreviewer) {
+        this.activePreviewer.getNode()?.livePreviewDiffDecorationModel.discardUnProcessed();
         this.activePreviewer.dispose();
       }
       blockData.status = 'cancelled';

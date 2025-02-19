@@ -5,11 +5,18 @@
   border-bottom: 1px solid var(--vscode-commandCenter-inactiveBorder);
   background-color: var(--design-block-background);
   font-size: 10px;
+  margin-bottom: -4px;
+  border-radius: 8px 8px 0 0;
   > span {
     margin-right: 4px;
   }
-  :global(.codicon-circle-large) {
+  :global(span.codicon) {
     font-size: 12px;
+  }
+  :global(.kt-popover-trigger) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 .edit-file-tool {
@@ -17,6 +24,12 @@
   border-radius: 4px;
   border-radius: 2px;
   margin: 8px 0;
+  :global(.langauge-badge) {
+    border-top-left-radius: 0;
+  }
+  pre > code {
+    border-radius: 0 0 8px 8px !important;
+  }
 }
 .edit-file-tool-iteration-count {
   color: var(--vscode-input-placeholderForeground);

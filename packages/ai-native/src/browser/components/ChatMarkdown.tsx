@@ -17,6 +17,7 @@ interface MarkdownProps {
   className?: string;
   fillInIncompleteTokens?: boolean; // 补齐不完整的 token，如代码块或表格
   markedOptions?: IMarkedOptions;
+  hideInsert?: boolean;
 }
 
 export const ChatMarkdown = (props: MarkdownProps) => {
@@ -42,13 +43,14 @@ export const ChatMarkdown = (props: MarkdownProps) => {
         <div className={styles.code}>
           <ConfigProvider value={appConfig}>
             <div className={styles.code_block}>
-              <div className={styles.code_language}>{language}</div>
+              <div className={cls(styles.code_language, 'langauge-badge')}>{language}</div>
               <CodeEditorWithHighlight
                 input={code as string}
                 language={language}
                 relationId={props.relationId || ''}
                 agentId={props.agentId}
                 command={props.command}
+                hideInsert={props.hideInsert}
               />
             </div>
           </ConfigProvider>

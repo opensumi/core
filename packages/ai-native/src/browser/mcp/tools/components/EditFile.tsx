@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { Icon, Tooltip } from '@opensumi/ide-components';
+import { Icon, Popover } from '@opensumi/ide-components';
 import {
   AppConfig,
   LabelService,
@@ -22,45 +22,44 @@ import { BaseApplyService, CodeBlockData } from '../../base-apply.service';
 
 import styles from './index.module.less';
 
-const renderStatus = (codeBlockData: CodeBlockData) => {
-  const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+const renderStatus = (codeBlockData: CodeBlockData, onRerender: () => void, onReveal: () => void) => {
   const status = codeBlockData.status;
   switch (status) {
     case 'generating':
       return <Loading />;
     case 'pending':
       return (
-        <Tooltip title={status}>
+        <Popover title={status} id={'edit-file-tool-status-pending'}>
           <Icon
             iconClass='codicon codicon-circle-large'
             onClick={() => {
-              applyService.reRenderPendingApply();
+              onRerender();
             }}
           />
-        </Tooltip>
+        </Popover>
       );
     case 'success':
       return (
-        <Tooltip title={status}>
+        <Popover title={status} id={'edit-file-tool-status-success'}>
           <Icon
             iconClass='codicon codicon-check-all'
             onClick={() => {
-              applyService.revealApplyPosition(codeBlockData.id);
+              onReveal();
             }}
           />
-        </Tooltip>
+        </Popover>
       );
     case 'failed':
       return (
-        <Tooltip title={status}>
-          <Icon iconClass='codicon codicon-error' />
-        </Tooltip>
+        <Popover title={status} id={'edit-file-tool-status-failed'}>
+          <Icon iconClass='codicon codicon-error' color='var(--vscode-input-errorForeground)' />
+        </Popover>
       );
     case 'cancelled':
       return (
-        <Tooltip title={status}>
-          <Icon iconClass='codicon codicon-close' />
-        </Tooltip>
+        <Popover title={status} id={'edit-file-tool-status-cancelled'}>
+          <Icon iconClass='codicon codicon-close' color='var(--vscode-input-placeholderForeground)' />
+        </Popover>
       );
     default:
       return null;
@@ -107,9 +106,11 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
         {codeBlockData.iterationCount > 1 && (
           <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
         )}
-        {renderStatus(codeBlockData)}
+        {renderStatus(codeBlockData, applyService.reRenderPendingApply.bind(applyService), () =>
+          applyService.revealApplyPosition(codeBlockData.id),
+        )}
       </div>
-      <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} />
+      <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} hideInsert={true} />
     </div>
   );
 };
