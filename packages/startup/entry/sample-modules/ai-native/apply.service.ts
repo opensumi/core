@@ -1,51 +1,33 @@
-import { createPatch } from 'diff';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { ChatResponseModel } from '@opensumi/ide-ai-native/lib/browser/chat/chat-model';
 import { ChatProxyService } from '@opensumi/ide-ai-native/lib/browser/chat/chat-proxy.service';
 import { BaseApplyService } from '@opensumi/ide-ai-native/lib/browser/mcp/base-apply.service';
 import {
-  InlineDiffController,
-  InlineDiffService,
-  LiveInlineDiffPreviewer,
-} from '@opensumi/ide-ai-native/lib/browser/widget/inline-diff';
-import {
   AIBackSerivcePath,
   AINativeSettingSectionsId,
-  AppConfig,
   ChatMessageRole,
   IAIBackService,
   IApplicationService,
   IChatProgress,
   PreferenceService,
   URI,
+  path,
   uuid,
 } from '@opensumi/ide-core-browser';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 import { Range } from '@opensumi/monaco-editor-core';
-import { Selection, SelectionDirection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/selection';
 
 @Injectable()
 export class ApplyService extends BaseApplyService {
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
-
   @Autowired(IEditorDocumentModelService)
   private readonly modelService: IEditorDocumentModelService;
-
-  @Autowired(InlineDiffService)
-  private readonly inlineDiffService: InlineDiffService;
 
   @Autowired(IApplicationService)
   private readonly applicationService: IApplicationService;
 
   @Autowired(AIBackSerivcePath)
   private readonly aiBackService: IAIBackService;
-
-  @Autowired(WorkbenchEditorService)
-  private readonly editorService: WorkbenchEditorService;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -56,7 +38,7 @@ export class ApplyService extends BaseApplyService {
     instructions?: string,
   ): Promise<string | undefined> {
     let fileReadResult = this.fileHandler.getFileReadResult(relativePath);
-    const uri = new URI(`${this.appConfig.workspaceDir}/${relativePath}`);
+    const uri = new URI(path.join(this.appConfig.workspaceDir, relativePath));
     const modelReference = await this.modelService.createModelReference(uri);
     const fileContent = modelReference.instance.getMonacoModel().getValue();
     if (!fileReadResult) {
@@ -130,52 +112,24 @@ export class ApplyService extends BaseApplyService {
     if (!openResult) {
       throw new Error('Failed to open editor');
     }
-    const editor = openResult.group.codeEditor.monacoEditor;
-    const inlineDiffHandler = InlineDiffController.get(editor)!;
-
-    const blockId = this.generateBlockId(relativePath);
-    const blockData = this.getCodeBlock(blockId)!;
 
     return await new Promise<string | undefined>((resolve, reject) => {
-      chatResponse.onDidChange(() => {
+      chatResponse.onDidChange(async () => {
         if (chatResponse.isComplete) {
           if (chatResponse.errorDetails) {
-            return reject(new Error(chatResponse.errorDetails.message));
+            reject(new Error(chatResponse.errorDetails.message));
           }
           // Set the new content
           const newContent = chatResponse.responseText.match(/<updated-code>([\s\S]*?)<\/updated-code>/)?.[1] || '';
           if (!newContent) {
-            return reject(new Error('No updated code found'));
+            reject(new Error('No updated code found'));
           }
-          blockData.status = 'pending';
-          // Create diff previewer
-          const previewer = inlineDiffHandler.createDiffPreviewer(
-            editor,
-            Selection.fromRange(
-              new Range(fileReadResult.startLineOneIndexed, 0, fileReadResult.endLineOneIndexedInclusive, 0),
-              SelectionDirection.LTR,
-            ),
-            {
-              disposeWhenEditorClosed: false,
-              renderRemovedWidgetImmediately: true,
-            },
-          ) as LiveInlineDiffPreviewer;
-
-          if (newContent === fileReadResult.content) {
-            blockData.status = 'success';
-            resolve(undefined);
-          } else {
-            previewer.setValue(newContent);
-            this.inlineDiffService.onPartialEdit((event) => {
-              // TODO 支持自动保存
-              if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
-                blockData.status = 'success';
-                const appliedResult = editor.getModel()!.getValue();
-                //   TODO: 可以移除header
-                resolve(createPatch(relativePath, fileContent, appliedResult));
-              }
-            });
-          }
+          const applyResult = await this.renderApplyResult(
+            relativePath,
+            newContent,
+            new Range(fileReadResult.startLineOneIndexed, 0, fileReadResult.endLineOneIndexedInclusive, 0),
+          );
+          resolve(applyResult);
         } else if (chatResponse.isCanceled) {
           reject(new Error('Apply cancelled: ' + chatResponse.errorDetails?.message));
         }

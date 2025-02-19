@@ -360,9 +360,17 @@ export interface MCPToolDefinition {
   }>;
 }
 
+export interface IMCPServerToolComponentProps {
+  state?: 'streaming-start' | 'streaming' | 'complete' | 'result';
+  args?: Record<string, any>;
+  result?: any;
+}
+
 export interface IMCPServerRegistry {
   registerMCPTool(tool: MCPToolDefinition): void;
   getMCPTools(): MCPToolDefinition[];
+  registerToolComponent(name: string, component: React.FC<IMCPServerToolComponentProps>): void;
+  getToolComponent(name: string): React.FC<IMCPServerToolComponentProps> | undefined;
   callMCPTool(
     name: string,
     args: any,

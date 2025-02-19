@@ -6,8 +6,8 @@ import { Domain } from '@opensumi/ide-core-common';
 
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
+import { EditFileToolComponent } from './components/EditFile';
 import { EditFileHandler } from './handlers/EditFile';
-
 const inputSchema = z
   .object({
     target_file: z
@@ -40,6 +40,7 @@ export class EditFileTool implements MCPServerContribution {
 
   registerMCPServer(registry: IMCPServerRegistry): void {
     registry.registerMCPTool(this.getToolDefinition());
+    registry.registerToolComponent('edit_file', EditFileToolComponent);
   }
 
   getToolDefinition(): MCPToolDefinition {

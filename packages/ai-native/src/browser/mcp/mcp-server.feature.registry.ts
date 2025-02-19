@@ -1,8 +1,9 @@
 // OpenSumi as MCP Server 前端的代理服务
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAIBackService, ILogger } from '@opensumi/ide-core-common';
+import { ILogger } from '@opensumi/ide-core-common';
 
-import { IMCPServerRegistry, MCPLogger, MCPToolDefinition } from '../types';
+import { getToolName } from '../../common/utils';
+import { IMCPServerRegistry, IMCPServerToolComponentProps, MCPLogger, MCPToolDefinition } from '../types';
 
 class LoggerAdapter implements MCPLogger {
   constructor(private readonly logger: ILogger) {}
@@ -15,6 +16,7 @@ class LoggerAdapter implements MCPLogger {
 @Injectable()
 export class MCPServerRegistry implements IMCPServerRegistry {
   private tools: MCPToolDefinition[] = [];
+  private toolComponents: Record<string, React.FC<IMCPServerToolComponentProps>> = {};
 
   @Autowired(ILogger)
   private readonly baseLogger: ILogger;
@@ -25,6 +27,18 @@ export class MCPServerRegistry implements IMCPServerRegistry {
 
   registerMCPTool(tool: MCPToolDefinition): void {
     this.tools.push(tool);
+  }
+
+  registerToolComponent(
+    name: string,
+    component: React.FC<IMCPServerToolComponentProps>,
+    serverName = 'sumi-builtin',
+  ): void {
+    this.toolComponents[getToolName(name, serverName)] = component;
+  }
+
+  getToolComponent(name: string): React.FC<IMCPServerToolComponentProps> | undefined {
+    return this.toolComponents[name];
   }
 
   getMCPTools(): MCPToolDefinition[] {

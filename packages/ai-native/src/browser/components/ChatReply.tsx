@@ -224,7 +224,6 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
 
