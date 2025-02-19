@@ -54,6 +54,8 @@ export abstract class BaseLanguageModel {
       options.history || [],
       options.modelId,
       options.temperature,
+      options.topP,
+      options.topK,
       options.providerOptions,
       cancellationToken,
     );
@@ -78,7 +80,9 @@ export abstract class BaseLanguageModel {
     history: IChatMessage[] = [],
     modelId?: string,
     temperature?: number,
-    providerOptions?: any,
+    topP?: number,
+    topK?: number,
+    providerOptions?: Record<string, any>,
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -98,8 +102,7 @@ export abstract class BaseLanguageModel {
         })),
         { role: 'user', content: request },
       ];
-
-      const stream = await streamText({
+      const stream = streamText({
         model: this.getModelIdentifier(provider, modelId),
         maxTokens: 4096,
         tools: aiTools,
@@ -108,6 +111,8 @@ export abstract class BaseLanguageModel {
         experimental_toolCallStreaming: true,
         maxSteps: 12,
         temperature,
+        topP: topP || 0.8,
+        topK: topK || 1,
         providerOptions,
       });
 

@@ -175,6 +175,8 @@ export interface IAIBackServiceOption {
   modelId?: string;
   baseURL?: string;
   temperature?: number;
+  topP?: number;
+  topK?: number;
   providerOptions?: any;
 }
 

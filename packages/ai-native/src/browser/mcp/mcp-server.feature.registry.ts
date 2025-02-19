@@ -45,6 +45,8 @@ export class MCPServerRegistry implements IMCPServerRegistry {
       }
       return await tool.handler(args, this.logger);
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('callMCPTool error:', error);
       return {
         content: [{ type: 'text', text: `The tool ${name} failed to execute. Error: ${error}` }],
         isError: true,
