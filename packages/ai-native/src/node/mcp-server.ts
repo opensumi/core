@@ -4,15 +4,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 import { ILogger } from '@opensumi/ide-core-common';
 
-export interface IMCPServer {
-  isStarted(): boolean;
-  start(): Promise<void>;
-  getServerName(): string;
-  callTool(toolName: string, arg_string: string): ReturnType<Client['callTool']>;
-  getTools(): ReturnType<Client['listTools']>;
-  update(command: string, args?: string[], env?: { [key: string]: string }): void;
-  stop(): void;
-}
+import { IMCPServer } from '../common/mcp-server-manager';
 
 export class MCPServerImpl implements IMCPServer {
   private name: string;

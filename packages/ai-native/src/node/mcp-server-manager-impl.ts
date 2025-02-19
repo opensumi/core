@@ -1,17 +1,20 @@
 import { ILogger } from '@opensumi/ide-core-common';
 
-import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
+import { IMCPServer, MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
-import { IMCPServer, MCPServerImpl } from './mcp-server';
-
+import { MCPServerImpl } from './mcp-server';
 // 这应该是 Browser Tab 维度的，每个 Tab 对应一个 MCPServerManagerImpl
 export class MCPServerManagerImpl implements MCPServerManager {
   protected servers: Map<string, IMCPServer> = new Map();
 
   // 当前实例对应的 clientId
   private clientId: string;
+
+  getServers(): Map<string, IMCPServer> {
+    return this.servers;
+  }
 
   constructor(
     private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager,
@@ -22,13 +25,20 @@ export class MCPServerManagerImpl implements MCPServerManager {
     this.clientId = clientId;
   }
 
+  private unregisterServerTools(serverName: string) {
+    const registry = this.toolInvocationRegistryManager.getRegistry(this.clientId);
+    registry.unregisterProviderTools(serverName);
+  }
+
   async stopServer(serverName: string): Promise<void> {
     const server = this.servers.get(serverName);
     if (!server) {
       throw new Error(`MCP server "${serverName}" not found.`);
     }
     server.stop();
-    this.logger.log(`MCP server "${serverName}" stopped.`);
+    // 停止服务器后，需要从注册表中移除该服务器的所有工具
+    this.unregisterServerTools(serverName);
+    this.logger.log(`MCP server "${serverName}" stopped and tools unregistered.`);
   }
 
   async getStartedServers(): Promise<string[]> {
@@ -140,7 +150,10 @@ export class MCPServerManagerImpl implements MCPServerManager {
     const server = this.servers.get(name);
     if (server) {
       server.stop();
+      // 移除服务器时，也需要从注册表中移除该服务器的所有工具
+      this.unregisterServerTools(name);
       this.servers.delete(name);
+      this.logger.log(`MCP server "${name}" removed and tools unregistered.`);
     } else {
       this.logger.warn(`MCP server "${name}" not found.`);
     }
