@@ -512,6 +512,14 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   /**
+   * 检查是否有任何改动被接受
+   * @returns boolean 是否有改动被接受
+   */
+  hasAcceptedChanges(): boolean {
+    return this.partialEditWidgetList.some((widget) => widget.isHidden && widget.status === 'accept');
+  }
+
+  /**
    * 记录 partial edit widget 与 added range 的映射关系(主要用于位置计算)
    */
   private recordPartialEditWidgetWithAddedDec(): void {

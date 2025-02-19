@@ -1,7 +1,16 @@
 import React, { useMemo } from 'react';
 
-import { Icon } from '@opensumi/ide-components';
-import { AppConfig, LabelService, URI, Uri, detectModeId, path, useInjectable } from '@opensumi/ide-core-browser';
+import { Icon, Tooltip } from '@opensumi/ide-components';
+import {
+  AppConfig,
+  LabelService,
+  URI,
+  Uri,
+  detectModeId,
+  path,
+  useAutorun,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
@@ -9,18 +18,65 @@ import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/s
 
 import { ChatMarkdown } from '../../../components/ChatMarkdown';
 import { IMCPServerToolComponentProps } from '../../../types';
-import { BaseApplyService } from '../../base-apply.service';
+import { BaseApplyService, CodeBlockData } from '../../base-apply.service';
 
 import styles from './index.module.less';
 
+const renderStatus = (codeBlockData: CodeBlockData) => {
+  const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+  const status = codeBlockData.status;
+  switch (status) {
+    case 'generating':
+      return <Loading />;
+    case 'pending':
+      return (
+        <Tooltip title={status}>
+          <Icon
+            iconClass='codicon codicon-circle-large'
+            onClick={() => {
+              applyService.reRenderPendingApply();
+            }}
+          />
+        </Tooltip>
+      );
+    case 'success':
+      return (
+        <Tooltip title={status}>
+          <Icon
+            iconClass='codicon codicon-check-all'
+            onClick={() => {
+              applyService.revealApplyPosition(codeBlockData.id);
+            }}
+          />
+        </Tooltip>
+      );
+    case 'failed':
+      return (
+        <Tooltip title={status}>
+          <Icon iconClass='codicon codicon-error' />
+        </Tooltip>
+      );
+    case 'cancelled':
+      return (
+        <Tooltip title={status}>
+          <Icon iconClass='codicon codicon-close' />
+        </Tooltip>
+      );
+    default:
+      return null;
+  }
+};
+
 export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
-  const { state, args, result } = props;
+  const { args } = props;
   const labelService = useInjectable(LabelService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
   const { target_file = '', code_edit } = args || {};
   const absolutePath = path.join(appConfig.workspaceDir, target_file);
   const codeBlockData = applyService.getCodeBlock(absolutePath);
+
+  useAutorun(applyService.codeBlockMapObservable);
 
   const icon = useMemo(() => {
     if (!target_file) {
@@ -38,10 +94,11 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
     const detectedModeId = detectModeId(modelService, languageService, Uri.file(absolutePath));
     return detectedModeId;
   }, [target_file, absolutePath]);
-  //   多次迭代时，仅在首处tool组件中展示
+  // 多次迭代时，仅在首处tool组件中展示
   if (!args || !codeBlockData || codeBlockData.iterationCount > 1) {
     return null;
   }
+
   return (
     <div className={styles['edit-file-tool']}>
       <div className={styles['edit-file-tool-header']}>
@@ -50,23 +107,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
         {codeBlockData.iterationCount > 1 && (
           <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
         )}
-        {state === 'streaming-start' || (state === 'streaming' && <Loading />)}
-        {state === 'complete' && (
-          <Icon
-            iconClass='codicon codicon-circle-large'
-            onClick={() => {
-              applyService.reRenderPendingApply();
-            }}
-          />
-        )}
-        {state === 'result' && (
-          <Icon
-            iconClass='codicon codicon-check-all'
-            onClick={() => {
-              applyService.revealApplyPosition(codeBlockData.id);
-            }}
-          />
-        )}
+        {renderStatus(codeBlockData)}
       </div>
       <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} />
     </div>

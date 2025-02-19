@@ -78,11 +78,13 @@ You should specify the following arguments before the others: [target_file]`,
         {
           type: 'text',
           // TODO: lint error
-          text: `The apply model made the following changes to the file:
+          text: result.applyResult
+            ? `The apply model made the following changes to the file:
 
 \`\`\`
 ${result.applyResult}
-\`\`\``,
+\`\`\``
+            : 'User cancelled the edit.',
         },
       ],
     };

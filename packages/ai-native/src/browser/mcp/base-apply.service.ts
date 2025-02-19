@@ -4,6 +4,7 @@ import { Autowired } from '@opensumi/di';
 import { AppConfig, ChatMessageRole } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
+import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { Deferred, URI, path } from '@opensumi/ide-utils';
 
 import { IChatInternalService } from '../../common';
@@ -46,7 +47,7 @@ export abstract class BaseApplyService {
     });
   }
 
-  private codeBlockMap = new Map<string, CodeBlockData>();
+  public readonly codeBlockMapObservable = observableValue<Map<string, CodeBlockData>>(this, new Map());
 
   private activePreviewer: BaseInlineDiffPreviewer<any> | undefined;
 
@@ -63,7 +64,15 @@ export abstract class BaseApplyService {
       return undefined;
     }
     const blockId = this.generateBlockId(relativeOrAbsolutePath);
-    return this.codeBlockMap.get(blockId);
+    return this.codeBlockMapObservable.get().get(blockId);
+  }
+
+  protected updateCodeBlock(codeBlock: CodeBlockData) {
+    const codeBlockMap = new Map(this.codeBlockMapObservable.get());
+    codeBlockMap.set(codeBlock.id, codeBlock);
+    transaction((tx) => {
+      this.codeBlockMapObservable.set(codeBlockMap, tx);
+    });
   }
 
   /**
@@ -72,8 +81,8 @@ export abstract class BaseApplyService {
   registerCodeBlock(relativePath: string, content: string): string {
     const blockId = this.generateBlockId(relativePath);
 
-    if (!this.codeBlockMap.has(blockId)) {
-      this.codeBlockMap.set(blockId, {
+    if (!this.codeBlockMapObservable.get().has(blockId)) {
+      this.codeBlockMapObservable.get().set(blockId, {
         id: blockId,
         content,
         relativePath,
@@ -102,6 +111,7 @@ export abstract class BaseApplyService {
       return blockData;
     } catch (err) {
       blockData.status = 'failed';
+      this.updateCodeBlock(blockData);
       throw err;
     }
   }
@@ -133,12 +143,13 @@ export abstract class BaseApplyService {
       throw new Error('Failed to open editor');
     }
     const editor = openResult.group.codeEditor.monacoEditor;
-    const inlineDiffHandler = InlineDiffController.get(editor)!;
+    const inlineDiffController = InlineDiffController.get(editor)!;
     blockData.status = 'pending';
+    this.updateCodeBlock(blockData);
 
     range = range || editor.getModel()?.getFullModelRange()!;
     // Create diff previewer
-    const previewer = inlineDiffHandler.createDiffPreviewer(
+    const previewer = inlineDiffController.createDiffPreviewer(
       editor,
       Selection.fromRange(range, SelectionDirection.LTR),
       {
@@ -152,20 +163,23 @@ export abstract class BaseApplyService {
     const deferred = new Deferred<string>();
     if (newContent === savedContent) {
       blockData.status = 'success';
+      this.updateCodeBlock(blockData);
       deferred.resolve();
     } else {
       previewer.setValue(newContent);
       this.inlineDiffService.onPartialEdit((event) => {
         // TODO 支持自动保存
         if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
-          if (event.totalAddedLinesCount + event.totalDeletedLinesCount > 0) {
+          if (previewer.getNode()?.livePreviewDiffDecorationModel.hasAcceptedChanges()) {
             blockData.status = 'success';
+            this.updateCodeBlock(blockData);
             const appliedResult = editor.getModel()!.getValue();
             // TODO: 可以移除header
             deferred.resolve(createPatch(relativePath, fullOriginalContent, appliedResult));
           } else {
             // 用户全部取消
             blockData.status = 'cancelled';
+            this.updateCodeBlock(blockData);
             deferred.resolve(undefined);
           }
         }
@@ -184,11 +198,12 @@ export abstract class BaseApplyService {
         this.activePreviewer.dispose();
       }
       blockData.status = 'cancelled';
+      this.updateCodeBlock(blockData);
     }
   }
 
   cancelAllApply(): void {
-    this.codeBlockMap.forEach((blockData) => {
+    this.codeBlockMapObservable.get().forEach((blockData) => {
       if (blockData.status === 'generating' || blockData.status === 'pending') {
         this.cancelApply(blockData.relativePath);
       }
@@ -196,25 +211,26 @@ export abstract class BaseApplyService {
   }
 
   disposeApplyForMessage(messageId: string): void {
-    this.codeBlockMap.forEach((blockData) => {
+    this.codeBlockMapObservable.get().forEach((blockData) => {
       if (blockData.id.endsWith(':' + messageId)) {
         if (blockData.status === 'generating') {
           this.cancelApply(blockData.relativePath);
         }
         // TODO: 副作用清理
-        this.codeBlockMap.delete(blockData.id);
+        this.codeBlockMapObservable.get().delete(blockData.id);
       }
     });
   }
 
   revealApplyPosition(blockId: string): void {
-    const blockData = this.codeBlockMap[blockId];
+    const blockData = this.codeBlockMapObservable.get().get(blockId);
     if (blockData) {
       const hunkInfo = blockData.applyResult?.split('\n').find((line) => line.startsWith('@@'));
       let startLine = 0;
       let endLine = 0;
       if (hunkInfo) {
-        const [_, start, end] = hunkInfo.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
+        // 取改动后的区间
+        const [, , , start, end] = hunkInfo.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
         startLine = parseInt(start, 10) - 1;
         endLine = parseInt(end, 10) - 1;
       }
