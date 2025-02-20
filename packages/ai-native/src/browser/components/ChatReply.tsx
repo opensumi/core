@@ -149,8 +149,8 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
   );
 };
 
-const ToolCallRender = (props: { toolCall: IChatToolContent['content'] }) => {
-  const { toolCall } = props;
+const ToolCallRender = (props: { toolCall: IChatToolContent['content']; messageId?: string }) => {
+  const { toolCall, messageId } = props;
   const chatAgentViewService = useInjectable<IChatAgentViewService>(ChatAgentViewServiceToken);
   const [node, setNode] = useState<React.JSX.Element | null>(null);
 
@@ -158,7 +158,7 @@ const ToolCallRender = (props: { toolCall: IChatToolContent['content'] }) => {
     const config = chatAgentViewService.getChatComponent('toolCall');
     if (config) {
       const { component: Component, initialProps } = config;
-      setNode(<Component {...initialProps} value={toolCall} />);
+      setNode(<Component {...initialProps} value={toolCall} messageId={messageId} />);
       return;
     }
     setNode(
@@ -169,14 +169,14 @@ const ToolCallRender = (props: { toolCall: IChatToolContent['content'] }) => {
     );
     const deferred = chatAgentViewService.getChatComponentDeferred('toolCall')!;
     deferred.promise.then(({ component: Component, initialProps }) => {
-      setNode(<Component {...initialProps} value={toolCall} />);
+      setNode(<Component {...initialProps} value={toolCall} messageId={messageId} />);
     });
   }, [toolCall.state]);
 
   return node;
 };
 
-const ComponentRender = (props: { component: string; value?: unknown }) => {
+const ComponentRender = (props: { component: string; value?: unknown; messageId?: string }) => {
   const chatAgentViewService = useInjectable<IChatAgentViewService>(ChatAgentViewServiceToken);
   const [node, setNode] = useState<React.JSX.Element | null>(null);
 
@@ -184,7 +184,7 @@ const ComponentRender = (props: { component: string; value?: unknown }) => {
     const config = chatAgentViewService.getChatComponent(props.component);
     if (config) {
       const { component: Component, initialProps } = config;
-      setNode(<Component {...initialProps} value={props.value} />);
+      setNode(<Component {...initialProps} value={props.value} messageId={props.messageId} />);
       return;
     }
     setNode(
@@ -297,12 +297,6 @@ export const ChatReply = (props: IChatReplyProps) => {
     </div>
   );
 
-  const renderComponent = (componentId: string, value: unknown) => (
-    <ComponentRender component={componentId} value={value} />
-  );
-
-  const renderToolCall = (toolCall: IChatToolContent['content']) => <ToolCallRender toolCall={toolCall} />;
-
   const contentNode = React.useMemo(
     () =>
       request.response.responseContents.map((item, index) => {
@@ -312,9 +306,9 @@ export const ChatReply = (props: IChatReplyProps) => {
         } else if (item.kind === 'treeData') {
           node = renderTreeData(item.treeData);
         } else if (item.kind === 'component') {
-          node = renderComponent(item.component, item.value);
+          node = <ComponentRender component={item.component} value={item.value} messageId={msgId} />;
         } else if (item.kind === 'toolCall') {
-          node = renderToolCall(item.content);
+          node = <ToolCallRender toolCall={item.content} messageId={msgId} />;
         } else {
           node = renderMarkdown(item.content);
         }

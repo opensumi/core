@@ -82,8 +82,18 @@ You should specify the following arguments before the others: [target_file]`,
             ? `The apply model made the following changes to the file:
 
 \`\`\`
-${result.applyResult}
-\`\`\``
+${result.applyResult.diff}
+\`\`\`
+${
+  result.applyResult.diagnosticInfos.length > 0
+    ? `The edit introduced the following new linter errors:
+${result.applyResult.diagnosticInfos
+  .map((error) => `Line ${error.startLineNumber}: ${error.message.split('\n')[0]}`)
+  .join('\n')}
+
+Please fix the linter errors if it is clear how to (or you can easily figure out how to). Do not make uneducated guesses. And do not loop more than 3 times on fixing linter errors on the same file.`
+    : ''
+}`
             : 'User cancelled the edit.',
         },
       ],

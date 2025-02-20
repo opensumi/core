@@ -9,6 +9,7 @@ import {
   IAIBackService,
   IApplicationService,
   IChatProgress,
+  IMarker,
   PreferenceService,
   URI,
   path,
@@ -36,7 +37,7 @@ export class ApplyService extends BaseApplyService {
     relativePath: string,
     newContent: string,
     instructions?: string,
-  ): Promise<string | undefined> {
+  ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
     let fileReadResult = this.fileHandler.getFileReadResult(relativePath);
     const uri = new URI(path.join(this.appConfig.workspaceDir, relativePath));
     const modelReference = await this.modelService.createModelReference(uri);
@@ -113,7 +114,7 @@ export class ApplyService extends BaseApplyService {
       throw new Error('Failed to open editor');
     }
 
-    return await new Promise<string | undefined>((resolve, reject) => {
+    return await new Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined>((resolve, reject) => {
       chatResponse.onDidChange(async () => {
         if (chatResponse.isComplete) {
           if (chatResponse.errorDetails) {

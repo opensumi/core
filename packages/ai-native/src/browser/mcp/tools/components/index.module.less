@@ -38,3 +38,31 @@
 :global(.clickable) {
   cursor: pointer;
 }
+.edit-file-tool-diagnostic-errors {
+  padding: 8px;
+  border: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  background-color: var(--design-block-background);
+  border-radius: 8px;
+  font-size: 12px;
+  margin: 4px 0;
+  > div {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+  }
+  :global(.codicon) {
+    margin-right: 4px;
+  }
+  .title {
+    margin-bottom: 3px;
+    display: inline-block;
+  }
+}
+.error,
+.error > span {
+  color: var(--debugConsole-errorForeground);
+}
+.warning,
+.warning > span {
+  color: var(--debugConsole-warningForeground);
+}

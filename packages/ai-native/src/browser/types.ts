@@ -364,6 +364,9 @@ export interface IMCPServerToolComponentProps {
   state?: 'streaming-start' | 'streaming' | 'complete' | 'result';
   args?: Record<string, any>;
   result?: any;
+  index?: number;
+  messageId?: string;
+  toolCallId?: string;
 }
 
 export interface IMCPServerRegistry {
@@ -380,11 +383,6 @@ export interface IMCPServerRegistry {
   }>;
   // 后续支持其他 MCP 功能
 }
-
-// MCP Server 的 贡献点
-export const MCPServerContribution = Symbol('MCPServerContribution');
-
-export const TokenMCPServerRegistry = Symbol('TokenMCPServerRegistry');
 
 export interface MCPServerContribution {
   registerMCPServer(registry: IMCPServerRegistry): void;

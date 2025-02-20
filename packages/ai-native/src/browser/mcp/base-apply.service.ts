@@ -1,10 +1,11 @@
 import { createPatch } from 'diff';
 
 import { Autowired } from '@opensumi/di';
-import { AppConfig, ChatMessageRole, OnEvent, WithEventBus } from '@opensumi/ide-core-browser';
+import { AppConfig, ChatMessageRole, IMarker, MarkerSeverity, OnEvent, WithEventBus } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
-import { Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
+import { IMarkerService } from '@opensumi/ide-markers';
+import { Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
 import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { Deferred, URI, path } from '@opensumi/ide-utils';
 
@@ -37,16 +38,18 @@ export abstract class BaseApplyService extends WithEventBus {
   @Autowired(InlineDiffService)
   private readonly inlineDiffService: InlineDiffService;
 
+  @Autowired(IMarkerService)
+  private readonly markerService: IMarkerService;
+
   constructor() {
     super();
     this.chatInternalService.onCancelRequest(() => {
       this.cancelAllApply();
     });
     this.chatInternalService.onRegenerateRequest(() => {
-      const lastUserMessageId = this.chatInternalService.sessionModel.history
-        .getMessages()
-        .findLast((msg) => msg.role === ChatMessageRole.User)?.id;
-      lastUserMessageId && this.disposeApplyForMessage(lastUserMessageId);
+      const messages = this.chatInternalService.sessionModel.history.getMessages();
+      const messageId = messages[messages.length - 1].id;
+      messageId && this.disposeApplyForMessage(messageId);
     });
   }
 
@@ -70,12 +73,19 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
-  getCodeBlock(relativeOrAbsolutePath: string): CodeBlockData | undefined {
+  /**
+   * Get the code block data by relative or absolute path of the last assistant message
+   */
+  getCodeBlock(relativeOrAbsolutePath: string, messageId?: string): CodeBlockData | undefined {
     if (!relativeOrAbsolutePath) {
       return undefined;
     }
-    const blockId = this.generateBlockId(relativeOrAbsolutePath);
+    const blockId = this.generateBlockId(relativeOrAbsolutePath, messageId);
     return this.codeBlockMapObservable.get().get(blockId);
+  }
+
+  getCodeBlockById(id: string): CodeBlockData | undefined {
+    return this.codeBlockMapObservable.get().get(id);
   }
 
   protected updateCodeBlock(codeBlock: CodeBlockData) {
@@ -106,6 +116,13 @@ export abstract class BaseApplyService extends WithEventBus {
     return blockId;
   }
 
+  initToolCallId(blockId: string, toolCallId: string): void {
+    const blockData = this.getCodeBlockById(blockId);
+    if (blockData && !blockData.initToolCallId) {
+      blockData.initToolCallId = toolCallId;
+    }
+  }
+
   /**
    * Apply changes of a code block
    */
@@ -115,8 +132,12 @@ export abstract class BaseApplyService extends WithEventBus {
       throw new Error('Code block not found');
     }
     try {
-      blockData.iterationCount++;
+      if (++blockData.iterationCount > 3) {
+        throw new Error('Max iteration count exceeded');
+      }
+      blockData.status = 'generating';
       blockData.content = newContent;
+      this.updateCodeBlock(blockData);
       const applyDiffResult = await this.doApply(relativePath, newContent, instructions);
       blockData.applyResult = applyDiffResult;
       return blockData;
@@ -131,14 +152,21 @@ export abstract class BaseApplyService extends WithEventBus {
     if (!this.pendingApplyParams) {
       throw new Error('No pending apply params');
     }
-    await this.renderApplyResult(
+    const result = await this.renderApplyResult(
       this.pendingApplyParams.relativePath,
       this.pendingApplyParams.newContent,
       this.pendingApplyParams.range,
     );
+    if (result) {
+      this.getCodeBlock(this.pendingApplyParams.relativePath)!.applyResult = result;
+    }
   }
 
-  async renderApplyResult(relativePath: string, newContent: string, range?: Range): Promise<string | undefined> {
+  async renderApplyResult(
+    relativePath: string,
+    newContent: string,
+    range?: Range,
+  ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
     // 用户可能会关闭编辑器，所以需要缓存参数
     this.pendingApplyParams = {
       relativePath,
@@ -172,7 +200,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
     const fullOriginalContent = editor.getModel()!.getValue();
     const savedContent = editor.getModel()!.getValueInRange(range);
-    const deferred = new Deferred<string>();
+    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
     if (newContent === savedContent) {
       blockData.status = 'success';
       this.updateCodeBlock(blockData);
@@ -186,15 +214,31 @@ export abstract class BaseApplyService extends WithEventBus {
             blockData.status = 'success';
             this.updateCodeBlock(blockData);
             const appliedResult = editor.getModel()!.getValue();
+            const diffResult = createPatch(relativePath, fullOriginalContent, appliedResult)
+              .split('\n')
+              .slice(4)
+              .join('\n');
+            const rangesFromDiffHunk = diffResult
+              .split('\n')
+              .map((line) => {
+                if (line.startsWith('@@')) {
+                  const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
+                  return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
+                }
+                return null;
+              })
+              .filter((range) => range !== null);
+            const diagnosticInfos = this.getdiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
             // 移除开头的几个固定信息，避免浪费 tokens
-            deferred.resolve(
-              createPatch(relativePath, fullOriginalContent, appliedResult).split('\n').slice(4).join('\n'),
-            );
+            deferred.resolve({
+              diff: diffResult,
+              diagnosticInfos,
+            });
           } else {
             // 用户全部取消
             blockData.status = 'cancelled';
             this.updateCodeBlock(blockData);
-            deferred.resolve(undefined);
+            deferred.resolve();
           }
         }
       });
@@ -240,7 +284,7 @@ export abstract class BaseApplyService extends WithEventBus {
   revealApplyPosition(blockId: string): void {
     const blockData = this.codeBlockMapObservable.get().get(blockId);
     if (blockData) {
-      const hunkInfo = blockData.applyResult?.split('\n').find((line) => line.startsWith('@@'));
+      const hunkInfo = blockData.applyResult?.diff.split('\n').find((line) => line.startsWith('@@'));
       let startLine = 0;
       let endLine = 0;
       if (hunkInfo) {
@@ -261,28 +305,40 @@ export abstract class BaseApplyService extends WithEventBus {
     relativePath: string,
     newContent: string,
     instructions?: string,
-  ): Promise<string | undefined>;
+  ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined>;
 
-  protected generateBlockId(absoluteOrRelativePath: string): string {
+  protected generateBlockId(absoluteOrRelativePath: string, messageId?: string): string {
     if (!absoluteOrRelativePath.startsWith('/')) {
       absoluteOrRelativePath = path.join(this.appConfig.workspaceDir, absoluteOrRelativePath);
     }
     const sessionId = this.chatInternalService.sessionModel.sessionId;
-    const lastUserMessageId = this.chatInternalService.sessionModel.history
-      .getMessages()
-      .findLast((msg) => msg.role === ChatMessageRole.User)?.id;
-    return `${sessionId}:${absoluteOrRelativePath}:${lastUserMessageId || '-'}`;
+    const messages = this.chatInternalService.sessionModel.history.getMessages();
+    messageId = messageId || messages[messages.length - 1].id;
+    return `${sessionId}:${absoluteOrRelativePath}:${messageId || '-'}`;
+  }
+
+  protected getdiagnosticInfos(uri: string, ranges: Range[]) {
+    const markers = this.markerService.getManager().getMarkers({ resource: uri });
+    return markers.filter(
+      (marker) =>
+        marker.severity >= MarkerSeverity.Warning &&
+        ranges.some((range) => range.containsPosition(new Position(marker.startLineNumber, marker.startColumn))),
+    );
   }
 }
 
 export interface CodeBlockData {
   id: string;
+  initToolCallId?: string;
   content: string;
   relativePath: string;
   status: CodeBlockStatus;
   iterationCount: number;
   createdAt: number;
-  applyResult?: string;
+  applyResult?: {
+    diff: string;
+    diagnosticInfos: IMarker[];
+  };
 }
 
 export type CodeBlockStatus = 'generating' | 'pending' | 'success' | 'rejected' | 'failed' | 'cancelled';

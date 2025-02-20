@@ -11,8 +11,8 @@ import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 import { CodeEditorWithHighlight } from './ChatEditor';
 import styles from './ChatToolRender.module.less';
 
-export const ChatToolRender = (props: { value: IChatToolContent['content'] }) => {
-  const { value } = props;
+export const ChatToolRender = (props: { value: IChatToolContent['content']; messageId?: string }) => {
+  const { value, messageId } = props;
   const [isExpanded, setIsExpanded] = useState(false);
   const mcpServerFeatureRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
 
@@ -54,7 +54,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content'] }) =>
   const stateInfo = getStateInfo(value.state);
 
   return [
-    <div className={styles['chat-tool-render']}>
+    <div className={styles['chat-tool-render']} key='chat-tool-render'>
       <div className={styles['tool-header']} onClick={toggleExpand}>
         <div className={styles['tool-name']}>
           <span className={cls(styles['expand-icon'], { [styles.expanded]: isExpanded })}>▶</span>
@@ -82,6 +82,16 @@ export const ChatToolRender = (props: { value: IChatToolContent['content'] }) =>
         )}
       </div>
     </div>,
-    ToolComponent && <ToolComponent state={value.state} args={getParsedArgs()} result={value.result} />,
+    ToolComponent && (
+      <ToolComponent
+        key='tool-component'
+        state={value.state}
+        args={getParsedArgs()}
+        result={value.result}
+        index={value.index}
+        messageId={messageId}
+        toolCallId={value.id}
+      />
+    ),
   ];
 };
