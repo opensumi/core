@@ -186,8 +186,10 @@ export abstract class BaseApplyService extends WithEventBus {
             blockData.status = 'success';
             this.updateCodeBlock(blockData);
             const appliedResult = editor.getModel()!.getValue();
-            // TODO: 可以移除header
-            deferred.resolve(createPatch(relativePath, fullOriginalContent, appliedResult));
+            // 移除开头的几个固定信息，避免浪费 tokens
+            deferred.resolve(
+              createPatch(relativePath, fullOriginalContent, appliedResult).split('\n').slice(4).join('\n'),
+            );
           } else {
             // 用户全部取消
             blockData.status = 'cancelled';
