@@ -71,8 +71,6 @@ You should specify the following arguments before the others: [target_file]`,
   }
 
   private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
-    // TODO: 应该添加统一的 validate 逻辑
-    args = inputSchema.parse(args);
     const result = await this.editFileHandler.handler(args.targetFile, args.codeEdit, args.instructions);
     return {
       content: [
