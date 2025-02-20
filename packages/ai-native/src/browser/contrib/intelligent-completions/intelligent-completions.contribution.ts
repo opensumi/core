@@ -74,10 +74,13 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
       KeybindingScope.USER,
     );
 
-    keybindings.registerKeybinding({
-      command: AI_CODE_EDITS_COMMANDS.TRIGGER.id,
-      keybinding: codeEdits.triggerKeybinding,
-      when: 'editorFocus',
-    });
+    keybindings.registerKeybinding(
+      {
+        command: AI_CODE_EDITS_COMMANDS.TRIGGER.id,
+        keybinding: codeEdits.triggerKeybinding,
+        when: 'editorFocus',
+      },
+      KeybindingScope.USER,
+    );
   }
 }

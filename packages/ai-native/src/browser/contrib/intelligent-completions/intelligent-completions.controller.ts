@@ -19,7 +19,6 @@ import {
 import { Emitter, ICodeEditor, ICursorPositionChangedEvent, IRange, ITextModel, Range } from '@opensumi/ide-monaco';
 import {
   IObservable,
-  IObservableSignal,
   ISettableObservable,
   ITransaction,
   autorun,
@@ -28,7 +27,6 @@ import {
   derivedHandleChanges,
   derivedOpts,
   observableFromEvent,
-  observableSignal,
   observableValue,
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
@@ -38,7 +36,7 @@ import { inlineSuggestCommitId } from '@opensumi/monaco-editor-core/esm/vs/edito
 import { InlineCompletionContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/inlineCompletionContextKeys';
 import { InlineCompletionsController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/controller/inlineCompletionsController';
 import {
-  SuggestItemInfo,
+  ObservableSuggestWidgetAdapter,
   SuggestWidgetAdaptor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/model/suggestWidgetAdapter';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
@@ -59,6 +57,7 @@ import { IntelligentCompletionsRegistry } from './intelligent-completions.featur
 import { CodeEditsSourceCollection } from './source/base';
 import { LineChangeCodeEditsSource } from './source/line-change.source';
 import { LintErrorCodeEditsSource } from './source/lint-error.source';
+import { TriggerCodeEditsSource } from './source/trigger.source';
 import { TypingCodeEditsSource } from './source/typing.source';
 
 import { CodeEditsResultValue, VALID_TIME } from './index';
@@ -96,20 +95,17 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   private codeEditsSourceCollection: CodeEditsSourceCollection;
   private aiNativeContextKey: AINativeContextKey;
   private rewriteWidget: RewriteWidget | null;
-  private codeEditsTriggerSignal: IObservableSignal<void>;
   private multiLineEditsIsVisibleObs: IObservable<boolean>;
 
   public mount(): IDisposable {
     this.handlerAlwaysVisiblePreference();
 
     this.codeEditsResult = observableValue<CodeEditsResultValue | undefined>(this, undefined);
-    this.codeEditsTriggerSignal = observableSignal(this);
-
     this.multiLineDecorationModel = new MultiLineDecorationModel(this.monacoEditor);
     this.additionsDeletionsDecorationModel = new AdditionsDeletionsDecorationModel(this.monacoEditor);
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [this.monacoEditor.contextKeyService]);
     this.codeEditsSourceCollection = this.injector.get(CodeEditsSourceCollection, [
-      [LintErrorCodeEditsSource, LineChangeCodeEditsSource, TypingCodeEditsSource],
+      [LintErrorCodeEditsSource, LineChangeCodeEditsSource, TypingCodeEditsSource, TriggerCodeEditsSource],
       this.monacoEditor,
     ]);
 
@@ -165,15 +161,24 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
             const model = inlineCompletionsController.model.read(reader);
             model?.inlineCompletionState.read(reader);
 
-            const suggestWidgetSelectedItem = inlineCompletionsController['_suggestWidgetSelectedItem'] as IObservable<
-              SuggestItemInfo | undefined
-            >;
-            const selectedItem = suggestWidgetSelectedItem.get();
-            if (selectedItem) {
-              const suggestWidgetAdaptor = inlineCompletionsController['_suggestWidgetAdaptor'] as SuggestWidgetAdaptor;
-              suggestWidgetAdaptor['_currentSuggestItemInfo'] = undefined;
-              (suggestWidgetAdaptor['_onDidSelectedItemChange'] as Emitter<void>).fire();
+            const observableSuggestWidgetAdapter = inlineCompletionsController[
+              '_suggestWidgetAdapter'
+            ] as ObservableSuggestWidgetAdapter;
+            if (!observableSuggestWidgetAdapter) {
+              return;
             }
+
+            const selectedItem = observableSuggestWidgetAdapter.selectedItem.get();
+            if (!selectedItem) {
+              return;
+            }
+
+            const suggestWidgetAdaptor = observableSuggestWidgetAdapter[
+              '_suggestWidgetAdaptor'
+            ] as SuggestWidgetAdaptor;
+
+            suggestWidgetAdaptor['_currentSuggestItemInfo'] = undefined;
+            (suggestWidgetAdaptor['_onDidSelectedItemChange'] as Emitter<void>).fire();
           }),
         );
       }
@@ -411,7 +416,10 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   });
 
   public trigger(tx: ITransaction): void {
-    this.codeEditsTriggerSignal.trigger(tx);
+    const triggerSource = this.codeEditsSourceCollection.getSource(TriggerCodeEditsSource) as TriggerCodeEditsSource;
+    if (triggerSource) {
+      triggerSource.triggerSignal.trigger(tx);
+    }
   }
 
   private registerFeature(monacoEditor: ICodeEditor): void {
@@ -463,14 +471,11 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
               // 如果上一次补全结果还在，则不重复请求
               const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
               return !isVisible;
-            } else if (context.didChange(this.codeEditsTriggerSignal)) {
-              return true;
             }
             return false;
           },
         },
         async (reader, _, store) => {
-          this.codeEditsTriggerSignal.read(reader);
           const context = this.codeEditsSourceCollection.codeEditsContextBean.read(reader);
 
           const provider = this.intelligentCompletionsRegistry.getCodeEditsProvider();
