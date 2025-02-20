@@ -70,11 +70,9 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
 
   useAutorun(applyService.codeBlockMapObservable);
 
-  useEffect(() => {
-    if (toolCallId && codeBlockData) {
-      applyService.initToolCallId(codeBlockData.id, toolCallId);
-    }
-  }, [toolCallId, codeBlockData]);
+  if (toolCallId && codeBlockData) {
+    applyService.initToolCallId(codeBlockData.id, toolCallId);
+  }
 
   const icon = useMemo(() => {
     if (!target_file) {

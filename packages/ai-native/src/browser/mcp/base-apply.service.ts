@@ -140,6 +140,7 @@ export abstract class BaseApplyService extends WithEventBus {
       this.updateCodeBlock(blockData);
       const applyDiffResult = await this.doApply(relativePath, newContent, instructions);
       blockData.applyResult = applyDiffResult;
+      this.updateCodeBlock(blockData);
       return blockData;
     } catch (err) {
       blockData.status = 'failed';
@@ -158,7 +159,9 @@ export abstract class BaseApplyService extends WithEventBus {
       this.pendingApplyParams.range,
     );
     if (result) {
-      this.getCodeBlock(this.pendingApplyParams.relativePath)!.applyResult = result;
+      const blockData = this.getCodeBlock(this.pendingApplyParams.relativePath)!;
+      blockData.applyResult = result;
+      this.updateCodeBlock(blockData);
     }
   }
 
@@ -203,7 +206,6 @@ export abstract class BaseApplyService extends WithEventBus {
     const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
     if (newContent === savedContent) {
       blockData.status = 'success';
-      this.updateCodeBlock(blockData);
       deferred.resolve();
     } else {
       previewer.setValue(newContent);
@@ -212,7 +214,6 @@ export abstract class BaseApplyService extends WithEventBus {
         if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
           if (event.acceptPartialEditCount > 0) {
             blockData.status = 'success';
-            this.updateCodeBlock(blockData);
             const appliedResult = editor.getModel()!.getValue();
             const diffResult = createPatch(relativePath, fullOriginalContent, appliedResult)
               .split('\n')
@@ -237,7 +238,6 @@ export abstract class BaseApplyService extends WithEventBus {
           } else {
             // 用户全部取消
             blockData.status = 'cancelled';
-            this.updateCodeBlock(blockData);
             deferred.resolve();
           }
         }
