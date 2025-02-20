@@ -432,5 +432,7 @@ export enum ECodeEditsSourceTyping {
   LinterErrors = 'lint_errors',
   LineChange = 'line_change',
   Typing = 'typing',
+  // 主动触发
+  Trigger = 'trigger',
 }
 // ## Code Edits ends ##

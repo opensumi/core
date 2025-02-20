@@ -32,7 +32,7 @@ export interface SideStateManager {
 export interface View {
   id: string;
   name?: string;
-  description?: string;
+  description?: string | React.ReactNode;
   message?: string;
   weight?: number;
   priority?: number;
