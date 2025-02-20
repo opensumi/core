@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
@@ -65,7 +64,7 @@ But, each edit should contain sufficient context of unchanged lines around the c
 DO NOT omit spans of pre-existing code without using the \`// ... existing code ...\` comment to indicate its absence.
 Make sure it is clear what the edit should be.
 You should specify the following arguments before the others: [target_file]`,
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

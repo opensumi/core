@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
@@ -34,7 +33,7 @@ export class ReplaceOpenEditorFileByDiffPreviewerTool implements MCPServerContri
         '"ok" if the file content was successfully replaced, ' +
         '"no file open" if no editor is active, ' +
         '"unknown error" if the operation fails.',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

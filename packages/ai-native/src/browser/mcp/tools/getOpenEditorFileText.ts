@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
@@ -25,7 +24,7 @@ export class GetOpenEditorFileTextTool implements MCPServerContribution {
         'Retrieves the complete text content of the currently active file in the IDE editor. ' +
         "Use this tool to access and analyze the file's contents for tasks such as code review, content inspection, or text processing. " +
         'Returns empty string if no file is currently open.',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
@@ -49,7 +48,7 @@ When using this tool to gather information, it's your responsibility to ensure y
 If reading a range of lines is not enough, you may choose to read the entire file.
 Reading entire files is often wasteful and slow, especially for large files (i.e. more than a few hundred lines). So you should use this option sparingly.
 Reading the entire file is not allowed in most cases. You are only allowed to read the entire file if it has been edited or manually attached to the conversation by the user.`,
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

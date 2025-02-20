@@ -1,7 +1,6 @@
 import * as path from 'path';
 
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain, URI } from '@opensumi/ide-core-common';
@@ -38,7 +37,7 @@ export class GetFileTextByPathTool implements MCPServerContribution {
         '- error "project dir not found" if project directory cannot be determined ' +
         '- error "file not found" if the file doesn\'t exist or is outside project scope ' +
         'Note: Automatically refreshes the file system before reading',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

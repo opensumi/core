@@ -1,7 +1,6 @@
 import * as path from 'path';
 
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain, URI } from '@opensumi/ide-core-common';
@@ -47,7 +46,7 @@ export class GetDiagnosticsByPathTool implements MCPServerContribution {
         '- "error": Must be fixed immediately as they indicate critical issues that will prevent code from working correctly. ' +
         '- "warning": For user code, preserve unless the warning indicates a clear improvement opportunity. For generated code, optimize to remove warnings. ' +
         '- "information"/"hint": For user code, preserve as they might reflect intentional patterns. For generated code, optimize if it improves code quality without changing functionality.',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

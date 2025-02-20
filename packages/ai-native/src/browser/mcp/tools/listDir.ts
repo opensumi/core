@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
@@ -36,7 +35,7 @@ export class ListDirTool implements MCPServerContribution {
       label: 'List Directory',
       description:
         'List the contents of a directory. The quick tool to use for discovery, before using more targeted tools like semantic search or file reading. Useful to try to understand the file structure before diving deeper into specific files. Can be used to explore the codebase.',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

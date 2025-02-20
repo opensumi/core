@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
@@ -25,7 +24,7 @@ export class GetCurrentFilePathTool implements MCPServerContribution {
         'Retrieves the absolute path of the currently active file in the VS Code editor. ' +
         'Use this tool to get the file location for tasks requiring file path information. ' +
         'Returns an empty string if no file is currently open.',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }
