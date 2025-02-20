@@ -97,7 +97,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   }
 
   return [
-    <div className={styles['edit-file-tool']}>
+    <div className={styles['edit-file-tool']} key={`edit-file-tool-${codeBlockData.id}`}>
       <div
         className={cls(styles['edit-file-tool-header'], {
           clickable: codeBlockData.status === 'pending' || codeBlockData.status === 'success',
@@ -120,7 +120,10 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
       <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} hideInsert={true} />
     </div>,
     codeBlockData.applyResult && codeBlockData.applyResult.diagnosticInfos.length > 0 && (
-      <div className={styles['edit-file-tool-diagnostic-errors']}>
+      <div
+        className={styles['edit-file-tool-diagnostic-errors']}
+        key={`edit-file-tool-diagnostic-errors-${codeBlockData.id}`}
+      >
         <div className={styles['title']}>Found Lints:</div>
         {codeBlockData.applyResult?.diagnosticInfos.map((info) => (
           <div
