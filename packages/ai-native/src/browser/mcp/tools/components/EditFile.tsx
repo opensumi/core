@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import React, { useMemo } from 'react';
 
 import { Icon, Popover } from '@opensumi/ide-components';
@@ -22,7 +23,7 @@ import { BaseApplyService, CodeBlockData } from '../../base-apply.service';
 
 import styles from './index.module.less';
 
-const renderStatus = (codeBlockData: CodeBlockData, onRerender: () => void, onReveal: () => void) => {
+const renderStatus = (codeBlockData: CodeBlockData) => {
   const status = codeBlockData.status;
   switch (status) {
     case 'generating':
@@ -30,23 +31,13 @@ const renderStatus = (codeBlockData: CodeBlockData, onRerender: () => void, onRe
     case 'pending':
       return (
         <Popover title={status} id={'edit-file-tool-status-pending'}>
-          <Icon
-            iconClass='codicon codicon-circle-large'
-            onClick={() => {
-              onRerender();
-            }}
-          />
+          <Icon iconClass='codicon codicon-circle-large' />
         </Popover>
       );
     case 'success':
       return (
         <Popover title={status} id={'edit-file-tool-status-success'}>
-          <Icon
-            iconClass='codicon codicon-check-all'
-            onClick={() => {
-              onReveal();
-            }}
-          />
+          <Icon iconClass='codicon codicon-check-all' />
         </Popover>
       );
     case 'failed':
@@ -100,15 +91,24 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
 
   return (
     <div className={styles['edit-file-tool']}>
-      <div className={styles['edit-file-tool-header']}>
+      <div
+        className={cls(styles['edit-file-tool-header'], {
+          clickable: codeBlockData.status === 'pending' || codeBlockData.status === 'success',
+        })}
+        onClick={() => {
+          if (codeBlockData.status === 'pending') {
+            applyService.reRenderPendingApply();
+          } else if (codeBlockData.status === 'success') {
+            applyService.revealApplyPosition(codeBlockData.id);
+          }
+        }}
+      >
         {icon && <span className={icon}></span>}
         <span className={styles['edit-file-tool-file-name']}>{target_file}</span>
         {codeBlockData.iterationCount > 1 && (
           <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
         )}
-        {renderStatus(codeBlockData, applyService.reRenderPendingApply.bind(applyService), () =>
-          applyService.revealApplyPosition(codeBlockData.id),
-        )}
+        {renderStatus(codeBlockData)}
       </div>
       <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} hideInsert={true} />
     </div>

@@ -426,6 +426,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       uri: this.model.uri,
       totalPartialEditCount: this.partialEditWidgetList.length,
       resolvedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
+      acceptPartialEditCount: this.partialEditWidgetList.filter((w) => w.isAccepted).length,
       currentPartialEdit: {
         addedLinesCount,
         deletedLinesCount,
@@ -509,14 +510,6 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     const removedWidgetList = this.removedZoneWidgets;
 
     return LivePreviewDiffDecorationModel.computeCodeInfo(partialEditWidgetList, addedDecList, removedWidgetList);
-  }
-
-  /**
-   * 检查是否有任何改动被接受
-   * @returns boolean 是否有改动被接受
-   */
-  hasAcceptedChanges(): boolean {
-    return this.partialEditWidgetList.some((widget) => widget.isHidden && widget.status === 'accept');
   }
 
   /**

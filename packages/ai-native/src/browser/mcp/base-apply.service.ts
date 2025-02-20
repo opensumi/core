@@ -182,7 +182,7 @@ export abstract class BaseApplyService extends WithEventBus {
       this.inlineDiffService.onPartialEdit((event) => {
         // TODO 支持自动保存
         if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
-          if (previewer.getNode()?.livePreviewDiffDecorationModel.hasAcceptedChanges()) {
+          if (event.acceptPartialEditCount > 0) {
             blockData.status = 'success';
             this.updateCodeBlock(blockData);
             const appliedResult = editor.getModel()!.getValue();

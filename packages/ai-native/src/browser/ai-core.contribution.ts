@@ -343,11 +343,6 @@ export class AINativeBrowserContribution
     this.mcpServerContributions.getContributions().forEach((contribution) => {
       contribution.registerMCPServer(this.mcpServerRegistry);
     });
-
-    // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
-    this.mcpServerContributions.getContributions().forEach((contribution) => {
-      contribution.registerMCPServer(this.mcpServerRegistry);
-    });
   }
 
   registerSetting(registry: ISettingRegistry) {
