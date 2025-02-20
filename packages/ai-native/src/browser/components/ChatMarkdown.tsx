@@ -43,7 +43,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
         <div className={styles.code}>
           <ConfigProvider value={appConfig}>
             <div className={styles.code_block}>
-              <div className={cls(styles.code_language, 'langauge-badge')}>{language}</div>
+              <div className={cls(styles.code_language, 'language-badge')}>{language}</div>
               <CodeEditorWithHighlight
                 input={code as string}
                 language={language}

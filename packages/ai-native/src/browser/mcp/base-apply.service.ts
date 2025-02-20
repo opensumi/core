@@ -275,7 +275,6 @@ export abstract class BaseApplyService extends WithEventBus {
         if (blockData.status === 'generating') {
           this.cancelApply(blockData.relativePath);
         }
-        // TODO: 副作用清理
         this.codeBlockMapObservable.get().delete(blockData.id);
       }
     });

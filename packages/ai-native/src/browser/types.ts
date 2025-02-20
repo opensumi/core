@@ -386,41 +386,6 @@ export interface IMCPServerRegistry {
   // 后续支持其他 MCP 功能
 }
 
-export interface MCPServerContribution {
-  registerMCPServer(registry: IMCPServerRegistry): void;
-}
-
-export interface MCPLogger {
-  appendLine(message: string): void;
-}
-
-export interface MCPToolDefinition {
-  name: string;
-  label?: string;
-  description: string;
-  inputSchema: any; // JSON Schema
-  handler: (
-    args: any,
-    logger: MCPLogger,
-  ) => Promise<{
-    content: { type: string; text: string }[];
-    isError?: boolean;
-  }>;
-}
-
-export interface IMCPServerRegistry {
-  registerMCPTool(tool: MCPToolDefinition): void;
-  getMCPTools(): MCPToolDefinition[];
-  callMCPTool(
-    name: string,
-    args: any,
-  ): Promise<{
-    content: { type: string; text: string }[];
-    isError?: boolean;
-  }>;
-  // 后续支持其他 MCP 功能
-}
-
 export interface IChatComponentConfig {
   id: string;
   component: React.ComponentType<Record<string, unknown>>;
