@@ -73,7 +73,10 @@ import {
   AI_CHAT_VIEW_ID,
   AI_MENU_BAR_DEBUG_TOOLBAR,
   ChatProxyServiceToken,
+  ISumiMCPServerBackend,
+  SumiMCPServerProxyServicePath,
 } from '../common';
+import { MCPServerDescription } from '../common/mcp-server-manager';
 
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { AIChatView } from './chat/chat.view';
@@ -97,10 +100,13 @@ import {
   IChatFeatureRegistry,
   IChatRenderRegistry,
   IIntelligentCompletionsRegistry,
+  IMCPServerRegistry,
   IProblemFixProviderRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
+  MCPServerContribution,
+  TokenMCPServerRegistry,
 } from './types';
 import { InlineChatEditorController } from './widget/inline-chat/inline-chat-editor.controller';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -144,6 +150,12 @@ export class AINativeBrowserContribution
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
+
+  @Autowired(MCPServerContribution)
+  private readonly mcpServerContributions: ContributionProvider<MCPServerContribution>;
+
+  @Autowired(TokenMCPServerRegistry)
+  private readonly mcpServerRegistry: IMCPServerRegistry;
 
   @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
@@ -208,6 +220,9 @@ export class AINativeBrowserContribution
   @Autowired(CodeActionSingleHandler)
   private readonly codeActionSingleHandler: CodeActionSingleHandler;
 
+  @Autowired(SumiMCPServerProxyServicePath)
+  private readonly sumiMCPServerBackendProxy: ISumiMCPServerBackend;
+
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
@@ -260,7 +275,7 @@ export class AINativeBrowserContribution
       register(
         IntelligentCompletionsController.ID,
         new SyncDescriptor(IntelligentCompletionsController, [this.injector]),
-        EditorContributionInstantiation.AfterFirstRender,
+        EditorContributionInstantiation.Eager,
       );
       register(
         InlineCompletionsController.ID,
@@ -279,7 +294,7 @@ export class AINativeBrowserContribution
 
   onDidStart() {
     runWhenIdle(() => {
-      const { supportsRenameSuggestions, supportsInlineChat } = this.aiNativeConfigService.capabilities;
+      const { supportsRenameSuggestions, supportsInlineChat, supportsMCP } = this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
@@ -295,6 +310,19 @@ export class AINativeBrowserContribution
       if (supportsInlineChat) {
         this.codeActionSingleHandler.load();
       }
+
+      if (supportsMCP) {
+        // 初始化内置 MCP Server
+        this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
+
+        // 从 preferences 获取并初始化外部 MCP Servers
+        const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(
+          AINativeSettingSectionsId.MCPServers,
+        );
+        if (mcpServers && mcpServers.length > 0) {
+          this.sumiMCPServerBackendProxy.initExternalMCPServers(mcpServers);
+        }
+      }
     });
   }
 
@@ -308,6 +336,12 @@ export class AINativeBrowserContribution
       contribution.registerTerminalProvider?.(this.terminalProviderRegistry);
       contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
       contribution.registerProblemFixFeature?.(this.problemFixProviderRegistry);
+      contribution.registerChatAgentPromptProvider?.();
+    });
+
+    // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
+    this.mcpServerContributions.getContributions().forEach((contribution) => {
+      contribution.registerMCPServer(this.mcpServerRegistry);
     });
   }
 
@@ -374,6 +408,48 @@ export class AINativeBrowserContribution
           {
             id: AINativeSettingSectionsId.CodeEditsTyping,
             localized: 'preference.ai.native.codeEdits.typing',
+          },
+        ],
+      });
+    }
+
+    // Register language model API key settings
+    if (this.aiNativeConfigService.capabilities.supportsCustomLLMSettings) {
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.llm.apiSettings.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.LLMModelSelection,
+            localized: 'preference.ai.native.llm.model.selection',
+          },
+          {
+            id: AINativeSettingSectionsId.DeepseekApiKey,
+            localized: 'preference.ai.native.deepseek.apiKey',
+          },
+          {
+            id: AINativeSettingSectionsId.AnthropicApiKey,
+            localized: 'preference.ai.native.anthropic.apiKey',
+          },
+          {
+            id: AINativeSettingSectionsId.OpenaiApiKey,
+            localized: 'preference.ai.native.openai.apiKey',
+          },
+          {
+            id: AINativeSettingSectionsId.OpenaiBaseURL,
+            localized: 'preference.ai.native.openai.baseURL',
+          },
+        ],
+      });
+    }
+
+    // Register MCP server settings
+    if (this.aiNativeConfigService.capabilities.supportsMCP) {
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.mcp.settings.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.MCPServers,
+            localized: 'preference.ai.native.mcp.servers',
           },
         ],
       });

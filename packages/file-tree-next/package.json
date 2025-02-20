@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-file-tree-next",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "files": [
     "lib",
     "src"
@@ -32,6 +32,7 @@
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
+    "@opensumi/ide-utils": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
     "@opensumi/ide-workspace-edit": "workspace:*"
   }

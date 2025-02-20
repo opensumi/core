@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   BaseTerminalDetectionLineMatcher,
@@ -11,6 +11,7 @@ import {
 import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/contrib/terminal/utils/ansi-parser';
 import {
   AINativeCoreContribution,
+  ChatAgentPromptProvider,
   ERunStrategy,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
@@ -24,6 +25,7 @@ import {
   TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
+import { SerializedContext } from '@opensumi/ide-ai-native/lib/common/llm-context';
 import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
 import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
@@ -64,6 +66,9 @@ export class AINativeContribution implements AINativeCoreContribution {
 
   @Autowired(MergeConflictPromptManager)
   mergeConflictPromptManager: MergeConflictPromptManager;
+
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
 
   @Autowired(ChatServiceToken)
   private readonly aiChatService: ChatService;
@@ -408,9 +413,9 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
-    registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
-      items: [{ insertText: 'Hello OpenSumi' }],
-    }));
+    // registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
+    //   items: [{ insertText: 'Hello OpenSumi' }],
+    // }));
 
     registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
       const model = editor.getModel();
@@ -491,6 +496,40 @@ export class AINativeContribution implements AINativeCoreContribution {
       } catch (error) {
         throw error;
       }
+    });
+  }
+
+  registerChatAgentPromptProvider(): void {
+    this.injector.addProviders({
+      token: ChatAgentPromptProvider,
+      useValue: {
+        provideContextPrompt: (context: SerializedContext, userMessage: string) => `
+          <additional_data>
+          Below are some potentially helpful/relevant pieces of information for figuring out to respond
+          <recently_viewed_files>
+          ${context.recentlyViewFiles.map((file, idx) => `${idx} + 1: ${file}`)}
+          </recently_viewed_files>
+          <attached_files>
+          ${context.attachedFiles.map(
+            (file) =>
+              `
+          <file_contents>
+          \`\`\`${file.language} ${file.path}
+          ${file.content}
+          \`\`\`
+          </file_contents>
+          <linter_errors>
+          ${file.lineErrors.join('`n')}
+          </linter_errors>
+          `,
+          )}
+          
+          </attached_files>
+          </additional_data>
+          <user_query>
+          ${userMessage}
+          </user_query>`,
+      },
     });
   }
 }

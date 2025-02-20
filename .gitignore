@@ -99,3 +99,4 @@ tools/workspace
 .ipynb_checkpoints
 
 *.tsbuildinfo
+.env

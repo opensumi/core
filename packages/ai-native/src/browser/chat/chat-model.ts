@@ -6,6 +6,7 @@ import {
   IChatComponent,
   IChatMarkdownContent,
   IChatProgress,
+  IChatToolContent,
   IChatTreeData,
   ILogger,
   memoize,
@@ -26,7 +27,12 @@ import {
 import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
 
-export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
+export type IChatProgressResponseContent =
+  | IChatMarkdownContent
+  | IChatAsyncContent
+  | IChatTreeData
+  | IChatComponent
+  | IChatToolContent;
 
 @Injectable({ multiple: true })
 export class ChatResponseModel extends Disposable {
@@ -81,8 +87,8 @@ export class ChatResponseModel extends Disposable {
   }
 
   updateContent(progress: IChatProgress, quiet?: boolean): void {
+    const responsePartLength = this.#responseParts.length - 1;
     if (progress.kind === 'content' || progress.kind === 'markdownContent') {
-      const responsePartLength = this.#responseParts.length - 1;
       const lastResponsePart = this.#responseParts[responsePartLength];
 
       if (!lastResponsePart || lastResponsePart.kind !== 'markdownContent') {
@@ -120,11 +126,20 @@ export class ChatResponseModel extends Disposable {
         }
         this.#updateResponseText(quiet);
       });
-    } else if (progress.kind === 'treeData') {
+    } else if (progress.kind === 'treeData' || progress.kind === 'component') {
       this.#responseParts.push(progress);
       this.#updateResponseText(quiet);
-    } else if (progress.kind === 'component') {
-      this.#responseParts.push(progress);
+    } else if (progress.kind === 'toolCall') {
+      const find = this.#responseParts.find(
+        (item) => item.kind === 'toolCall' && item.content.id === progress.content.id,
+      );
+      if (find) {
+        // @ts-ignore
+        find.content = progress.content;
+        // this.#responseParts[responsePartLength] = find;
+      } else {
+        this.#responseParts.push(progress);
+      }
       this.#updateResponseText(quiet);
     }
   }
@@ -140,6 +155,9 @@ export class ChatResponseModel extends Disposable {
         }
         if (part.kind === 'component') {
           return '';
+        }
+        if (part.kind === 'toolCall') {
+          return part.content.function.name;
         }
         return part.content.value;
       })
@@ -258,7 +276,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
     const { kind } = progress;
 
-    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component'];
+    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component', 'toolCall'];
 
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);
