@@ -69,6 +69,10 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
   public livePreviewDiffDecorationModel: LivePreviewDiffDecorationModel;
 
+  public get uri() {
+    return this.originalModel.uri;
+  }
+
   constructor(private readonly monacoEditor: ICodeEditor) {
     super();
 

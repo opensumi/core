@@ -1,8 +1,9 @@
 import { createPatch } from 'diff';
 
 import { Autowired } from '@opensumi/di';
-import { AppConfig, ChatMessageRole } from '@opensumi/ide-core-browser';
+import { AppConfig, ChatMessageRole, OnEvent, WithEventBus } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import { Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
 import { observableValue, transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { Deferred, URI, path } from '@opensumi/ide-utils';
@@ -20,7 +21,7 @@ import { InlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-str
 import { FileHandler } from './tools/handlers/ReadFile';
 
 // 提供代码块的唯一索引，迭代轮次，生成状态管理（包括取消），关联文件位置这些信息的记录，后续并行 apply 的支持
-export abstract class BaseApplyService {
+export abstract class BaseApplyService extends WithEventBus {
   @Autowired(FileHandler)
   protected fileHandler: FileHandler;
 
@@ -37,6 +38,7 @@ export abstract class BaseApplyService {
   private readonly inlineDiffService: InlineDiffService;
 
   constructor() {
+    super();
     this.chatInternalService.onCancelRequest(() => {
       this.cancelAllApply();
     });
@@ -59,6 +61,14 @@ export abstract class BaseApplyService {
         range?: Range;
       }
     | undefined;
+
+  @OnEvent(EditorGroupCloseEvent)
+  onEditorGroupClose(event: EditorGroupCloseEvent) {
+    if (this.activePreviewer?.getNode()?.uri.path.toString() === event.payload.resource.uri.path.toString()) {
+      this.activePreviewer.dispose();
+      this.activePreviewer = undefined;
+    }
+  }
 
   getCodeBlock(relativeOrAbsolutePath: string): CodeBlockData | undefined {
     if (!relativeOrAbsolutePath) {
