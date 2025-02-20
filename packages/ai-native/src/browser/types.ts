@@ -1,5 +1,5 @@
 import React from 'react';
-import { ZodEffects, ZodObject } from 'zod';
+import { ZodSchema } from 'zod';
 
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
@@ -352,7 +352,7 @@ export interface MCPToolDefinition {
   name: string;
   label?: string;
   description: string;
-  inputSchema: ZodEffects<any>; // JSON Schema
+  inputSchema: ZodSchema<any>; // JSON Schema
   handler: (
     args: any,
     logger: MCPLogger,

@@ -78,15 +78,6 @@ export class ApplyService extends BaseApplyService {
               'You are a coding assistant that helps merge code updates, ensuring every modification is fully integrated.',
           },
         ],
-        // TODO: 特殊参数如何透传
-        providerOptions: {
-          openai: {
-            extend_fields: {
-              sp_edit: 1,
-              sp_advice_prompt: `<updated-code>${fileReadResult.content}</updated-code>`,
-            },
-          },
-        },
       },
     );
 

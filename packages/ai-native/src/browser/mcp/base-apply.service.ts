@@ -43,14 +43,18 @@ export abstract class BaseApplyService extends WithEventBus {
 
   constructor() {
     super();
-    this.chatInternalService.onCancelRequest(() => {
-      this.cancelAllApply();
-    });
-    this.chatInternalService.onRegenerateRequest(() => {
-      const messages = this.chatInternalService.sessionModel.history.getMessages();
-      const messageId = messages[messages.length - 1].id;
-      messageId && this.disposeApplyForMessage(messageId);
-    });
+    this.addDispose(
+      this.chatInternalService.onCancelRequest(() => {
+        this.cancelAllApply();
+      }),
+    );
+    this.addDispose(
+      this.chatInternalService.onRegenerateRequest(() => {
+        const messages = this.chatInternalService.sessionModel.history.getMessages();
+        const messageId = messages[messages.length - 1].id;
+        messageId && this.disposeApplyForMessage(messageId);
+      }),
+    );
   }
 
   public readonly codeBlockMapObservable = observableValue<Map<string, CodeBlockData>>(this, new Map());
@@ -209,39 +213,41 @@ export abstract class BaseApplyService extends WithEventBus {
       deferred.resolve();
     } else {
       previewer.setValue(newContent);
-      this.inlineDiffService.onPartialEdit((event) => {
-        // TODO 支持自动保存
-        if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
-          if (event.acceptPartialEditCount > 0) {
-            blockData.status = 'success';
-            const appliedResult = editor.getModel()!.getValue();
-            const diffResult = createPatch(relativePath, fullOriginalContent, appliedResult)
-              .split('\n')
-              .slice(4)
-              .join('\n');
-            const rangesFromDiffHunk = diffResult
-              .split('\n')
-              .map((line) => {
-                if (line.startsWith('@@')) {
-                  const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
-                  return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
-                }
-                return null;
-              })
-              .filter((range) => range !== null);
-            const diagnosticInfos = this.getdiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
-            // 移除开头的几个固定信息，避免浪费 tokens
-            deferred.resolve({
-              diff: diffResult,
-              diagnosticInfos,
-            });
-          } else {
-            // 用户全部取消
-            blockData.status = 'cancelled';
-            deferred.resolve();
+      this.addDispose(
+        this.inlineDiffService.onPartialEdit((event) => {
+          // TODO 支持自动保存
+          if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
+            if (event.acceptPartialEditCount > 0) {
+              blockData.status = 'success';
+              const appliedResult = editor.getModel()!.getValue();
+              const diffResult = createPatch(relativePath, fullOriginalContent, appliedResult)
+                .split('\n')
+                .slice(4)
+                .join('\n');
+              const rangesFromDiffHunk = diffResult
+                .split('\n')
+                .map((line) => {
+                  if (line.startsWith('@@')) {
+                    const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
+                    return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
+                  }
+                  return null;
+                })
+                .filter((range) => range !== null);
+              const diagnosticInfos = this.getdiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
+              // 移除开头的几个固定信息，避免浪费 tokens
+              deferred.resolve({
+                diff: diffResult,
+                diagnosticInfos,
+              });
+            } else {
+              // 用户全部取消
+              blockData.status = 'cancelled';
+              deferred.resolve();
+            }
           }
-        }
-      });
+        }),
+      );
     }
     return deferred.promise;
   }
