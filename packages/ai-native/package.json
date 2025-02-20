@@ -52,6 +52,7 @@
     "tiktoken": "1.0.12",
     "web-tree-sitter": "0.22.6",
     "zod": "^3.23.8",
+    "diff": "^7.0.0",
     "zod-to-json-schema": "^3.24.1"
   },
   "devDependencies": {
