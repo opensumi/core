@@ -25,6 +25,10 @@ export class MCPServerRegistry implements IMCPServerRegistry {
     return new LoggerAdapter(this.baseLogger);
   }
 
+  getMCPTool(name: string, serverName = 'sumi-builtin'): MCPToolDefinition | undefined {
+    return this.tools.find((tool) => getToolName(tool.name, serverName) === name);
+  }
+
   registerMCPTool(tool: MCPToolDefinition): void {
     this.tools.push(tool);
   }

@@ -19,6 +19,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
   if (!value || !value.function || !value.id) {
     return null;
   }
+  const label = mcpServerFeatureRegistry.getMCPTool(value.function.name)?.label || value.function.name;
 
   const ToolComponent = mcpServerFeatureRegistry.getToolComponent(value.function.name);
 
@@ -58,7 +59,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
       <div className={styles['tool-header']} onClick={toggleExpand}>
         <div className={styles['tool-name']}>
           <span className={cls(styles['expand-icon'], { [styles.expanded]: isExpanded })}>▶</span>
-          {value?.function?.name}
+          {label}
         </div>
         {value.state && (
           <div className={styles['tool-state']}>

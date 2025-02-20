@@ -349,6 +349,7 @@ export interface MCPLogger {
 
 export interface MCPToolDefinition {
   name: string;
+  label?: string;
   description: string;
   inputSchema: any; // JSON Schema
   handler: (
@@ -372,6 +373,7 @@ export interface IMCPServerToolComponentProps {
 export interface IMCPServerRegistry {
   registerMCPTool(tool: MCPToolDefinition): void;
   getMCPTools(): MCPToolDefinition[];
+  getMCPTool(name: string): MCPToolDefinition | undefined;
   registerToolComponent(name: string, component: React.FC<IMCPServerToolComponentProps>): void;
   getToolComponent(name: string): React.FC<IMCPServerToolComponentProps> | undefined;
   callMCPTool(
@@ -394,6 +396,7 @@ export interface MCPLogger {
 
 export interface MCPToolDefinition {
   name: string;
+  label?: string;
   description: string;
   inputSchema: any; // JSON Schema
   handler: (
