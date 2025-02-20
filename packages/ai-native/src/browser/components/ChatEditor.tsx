@@ -31,9 +31,10 @@ interface Props {
   language?: string;
   agentId?: string;
   command?: string;
+  hideInsert?: boolean;
 }
 export const CodeEditorWithHighlight = (props: Props) => {
-  const { input, language, relationId, agentId, command } = props;
+  const { input, language, relationId, agentId, command, hideInsert } = props;
   const ref = React.useRef<HTMLDivElement | null>(null);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);
@@ -101,15 +102,17 @@ export const CodeEditorWithHighlight = (props: Props) => {
   return (
     <div className={styles.monaco_wrapper}>
       <div className={styles.action_toolbar}>
-        <Popover id={`ai-chat-inser-${useUUID}`} title={localize('aiNative.chat.code.insert')}>
-          <EnhanceIcon
-            className={getIcon('insert')}
-            onClick={() => handleInsert()}
-            tabIndex={0}
-            role='button'
-            ariaLabel={localize('aiNative.chat.code.insert')}
-          />
-        </Popover>
+        {!hideInsert && (
+          <Popover id={`ai-chat-inser-${useUUID}`} title={localize('aiNative.chat.code.insert')}>
+            <EnhanceIcon
+              className={getIcon('insert')}
+              onClick={() => handleInsert()}
+              tabIndex={0}
+              role='button'
+              ariaLabel={localize('aiNative.chat.code.insert')}
+            />
+          </Popover>
+        )}
         <Popover
           id={`ai-chat-copy-${useUUID}`}
           title={localize(isCoping ? 'aiNative.chat.code.copy.success' : 'aiNative.chat.code.copy')}

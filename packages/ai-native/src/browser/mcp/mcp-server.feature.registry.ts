@@ -1,11 +1,12 @@
 // OpenSumi as MCP Server 前端的代理服务
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAIBackService, ILogger } from '@opensumi/ide-core-common';
+import { ILogger } from '@opensumi/ide-core-common';
 
-import { IMCPServerRegistry, MCPLogger, MCPToolDefinition } from '../types';
+import { getToolName } from '../../common/utils';
+import { IMCPServerRegistry, IMCPServerToolComponentProps, MCPLogger, MCPToolDefinition } from '../types';
 
 class LoggerAdapter implements MCPLogger {
-  constructor(private readonly logger: ILogger) { }
+  constructor(private readonly logger: ILogger) {}
 
   appendLine(message: string): void {
     this.logger.log(message);
@@ -15,6 +16,7 @@ class LoggerAdapter implements MCPLogger {
 @Injectable()
 export class MCPServerRegistry implements IMCPServerRegistry {
   private tools: MCPToolDefinition[] = [];
+  private toolComponents: Record<string, React.FC<IMCPServerToolComponentProps>> = {};
 
   @Autowired(ILogger)
   private readonly baseLogger: ILogger;
@@ -23,8 +25,24 @@ export class MCPServerRegistry implements IMCPServerRegistry {
     return new LoggerAdapter(this.baseLogger);
   }
 
+  getMCPTool(name: string, serverName = 'sumi-builtin'): MCPToolDefinition | undefined {
+    return this.tools.find((tool) => getToolName(tool.name, serverName) === name);
+  }
+
   registerMCPTool(tool: MCPToolDefinition): void {
     this.tools.push(tool);
+  }
+
+  registerToolComponent(
+    name: string,
+    component: React.FC<IMCPServerToolComponentProps>,
+    serverName = 'sumi-builtin',
+  ): void {
+    this.toolComponents[getToolName(name, serverName)] = component;
+  }
+
+  getToolComponent(name: string): React.FC<IMCPServerToolComponentProps> | undefined {
+    return this.toolComponents[name];
   }
 
   getMCPTools(): MCPToolDefinition[] {
@@ -43,8 +61,12 @@ export class MCPServerRegistry implements IMCPServerRegistry {
       if (!tool) {
         throw new Error(`MCP tool ${name} not found`);
       }
+      // 统一校验并转换
+      args = tool.inputSchema.parse(args);
       return await tool.handler(args, this.logger);
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('callMCPTool error:', error);
       return {
         content: [{ type: 'text', text: `The tool ${name} failed to execute. Error: ${error}` }],
         isError: true,

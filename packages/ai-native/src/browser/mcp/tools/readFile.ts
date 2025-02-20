@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
@@ -37,6 +36,7 @@ export class ReadFileTool implements MCPServerContribution {
   getToolDefinition(): MCPToolDefinition {
     return {
       name: 'read_file',
+      label: 'Read File',
       description: `Read the contents of a file (and the outline).
 
 When using this tool to gather information, it's your responsibility to ensure you have the COMPLETE context. Each time you call this command you should:
@@ -48,14 +48,12 @@ When using this tool to gather information, it's your responsibility to ensure y
 If reading a range of lines is not enough, you may choose to read the entire file.
 Reading entire files is often wasteful and slow, especially for large files (i.e. more than a few hundred lines). So you should use this option sparingly.
 Reading the entire file is not allowed in most cases. You are only allowed to read the entire file if it has been edited or manually attached to the conversation by the user.`,
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }
 
   private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
-    // TODO: 应该添加统一的 validate 逻辑
-    args = inputSchema.parse(args);
     const result = await this.fileHandler.readFile(args);
     return {
       content: [

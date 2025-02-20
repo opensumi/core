@@ -37,6 +37,11 @@ export enum AINativeSettingSectionsId {
    */
   MCPServers = 'ai.native.mcp.servers',
   CodeEditsTyping = 'ai.native.codeEdits.typing',
+
+  /**
+   * System prompt
+   */
+  SystemPrompt = 'ai.native.chat.system.prompt',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';

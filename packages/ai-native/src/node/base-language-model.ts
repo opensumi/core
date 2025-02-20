@@ -52,6 +52,11 @@ export abstract class BaseLanguageModel {
       allFunctions,
       chatReadableStream,
       options.history || [],
+      options.modelId,
+      options.temperature,
+      options.topP,
+      options.topK,
+      options.providerOptions,
       cancellationToken,
     );
   }
@@ -65,7 +70,7 @@ export abstract class BaseLanguageModel {
     });
   }
 
-  protected abstract getModelIdentifier(provider: any): any;
+  protected abstract getModelIdentifier(provider: any, modelId?: string): any;
 
   protected async handleStreamingRequest(
     provider: any,
@@ -73,6 +78,11 @@ export abstract class BaseLanguageModel {
     tools: ToolRequest[],
     chatReadableStream: ChatReadableStream,
     history: IChatMessage[] = [],
+    modelId?: string,
+    temperature?: number,
+    topP?: number,
+    topK?: number,
+    providerOptions?: Record<string, any>,
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -92,15 +102,18 @@ export abstract class BaseLanguageModel {
         })),
         { role: 'user', content: request },
       ];
-
-      const stream = await streamText({
-        model: this.getModelIdentifier(provider),
+      const stream = streamText({
+        model: this.getModelIdentifier(provider, modelId),
         maxTokens: 4096,
         tools: aiTools,
         messages,
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
         maxSteps: 12,
+        temperature,
+        topP: topP || 0.8,
+        topK: topK || 1,
+        providerOptions,
       });
 
       for await (const chunk of stream.fullStream) {

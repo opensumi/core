@@ -1,4 +1,5 @@
 import React from 'react';
+import { ZodSchema } from 'zod';
 
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
@@ -349,8 +350,9 @@ export interface MCPLogger {
 
 export interface MCPToolDefinition {
   name: string;
+  label?: string;
   description: string;
-  inputSchema: any; // JSON Schema
+  inputSchema: ZodSchema<any>; // JSON Schema
   handler: (
     args: any,
     logger: MCPLogger,
@@ -360,9 +362,21 @@ export interface MCPToolDefinition {
   }>;
 }
 
+export interface IMCPServerToolComponentProps {
+  state?: 'streaming-start' | 'streaming' | 'complete' | 'result';
+  args?: Record<string, any>;
+  result?: any;
+  index?: number;
+  messageId?: string;
+  toolCallId?: string;
+}
+
 export interface IMCPServerRegistry {
   registerMCPTool(tool: MCPToolDefinition): void;
   getMCPTools(): MCPToolDefinition[];
+  getMCPTool(name: string): MCPToolDefinition | undefined;
+  registerToolComponent(name: string, component: React.FC<IMCPServerToolComponentProps>): void;
+  getToolComponent(name: string): React.FC<IMCPServerToolComponentProps> | undefined;
   callMCPTool(
     name: string,
     args: any,

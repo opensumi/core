@@ -1,0 +1,67 @@
+.edit-file-tool-header {
+  display: flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-bottom: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  background-color: var(--design-block-background);
+  font-size: 10px;
+  margin-bottom: -4px;
+  border-radius: 8px 8px 0 0;
+  > span {
+    margin-right: 4px;
+  }
+  :global(span.codicon) {
+    font-size: 12px;
+  }
+  :global(.kt-popover-trigger) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+.edit-file-tool {
+  border: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  border-radius: 4px;
+  margin: 8px 0;
+  :global(.language-badge) {
+    border-top-left-radius: 0;
+  }
+  pre > code {
+    border-radius: 0 0 8px 8px !important;
+  }
+}
+.edit-file-tool-iteration-count {
+  color: var(--vscode-input-placeholderForeground);
+  margin-left: 4px;
+}
+:global(.clickable) {
+  cursor: pointer;
+}
+.edit-file-tool-diagnostic-errors {
+  padding: 8px;
+  border: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  background-color: var(--design-block-background);
+  border-radius: 8px;
+  font-size: 12px;
+  margin: 4px 0;
+  > div {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+  }
+  :global(.codicon) {
+    margin-right: 4px;
+  }
+  .title {
+    margin-bottom: 3px;
+    display: inline-block;
+  }
+}
+.error,
+.error > span {
+  color: var(--debugConsole-errorForeground);
+}
+.warning,
+.warning > span {
+  color: var(--debugConsole-warningForeground);
+}

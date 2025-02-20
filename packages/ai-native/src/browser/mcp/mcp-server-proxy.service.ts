@@ -1,3 +1,5 @@
+import { zodToJsonSchema } from 'zod-to-json-schema';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import { ILogger } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
@@ -29,10 +31,10 @@ export class MCPServerProxyService implements IMCPServerProxyService {
   async $getMCPTools() {
     const tools = await this.mcpServerRegistry.getMCPTools().map((tool) =>
       // 不要传递 handler
-       ({
+      ({
         name: tool.name,
         description: tool.description,
-        inputSchema: tool.inputSchema,
+        inputSchema: zodToJsonSchema(tool.inputSchema),
         providerName: 'sumi-builtin',
       }),
     );

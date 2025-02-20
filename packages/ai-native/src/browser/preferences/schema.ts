@@ -122,5 +122,10 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [AINativeSettingSectionsId.SystemPrompt]: {
+      type: 'string',
+      default: '',
+      description: localize('preference.ai.native.chat.system.prompt.description'),
+    },
   },
 };

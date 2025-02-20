@@ -13,6 +13,7 @@ import {
   ILogger,
   toDisposable,
 } from '@opensumi/ide-core-common';
+import { ChatMessageRole } from '@opensumi/ide-core-common';
 import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import {
@@ -118,6 +119,12 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     const data = this.agents.get(id);
     if (!data) {
       throw new Error(`No agent with id ${id}`);
+    }
+    if (data.agent.metadata.systemPrompt) {
+      history.unshift({
+        role: ChatMessageRole.System,
+        content: data.agent.metadata.systemPrompt,
+      });
     }
 
     const result = await data.agent.invoke(request, progress, history, token);

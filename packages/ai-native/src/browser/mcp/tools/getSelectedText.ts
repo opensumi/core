@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common';
@@ -25,7 +24,7 @@ export class GetSelectedTextTool implements MCPServerContribution {
         'Retrieves the currently selected text from the active editor in VS Code. ' +
         'Use this tool when you need to access and analyze text that has been highlighted/selected by the user. ' +
         'Returns an empty string if no text is selected or no editor is open.',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

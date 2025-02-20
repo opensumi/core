@@ -1514,6 +1514,7 @@ export const localizationBundle = {
     'preference.ai.native.codeEdits.lineChange':
       'Whether to trigger intelligent rewriting when the cursor line number changes',
     'preference.ai.native.codeEdits.typing': 'Whether to trigger intelligent rewriting when the content changes',
+    'preference.ai.native.chat.system.prompt': 'Default Chat System Prompt',
     // #endregion AI Native
 
     // #endregion merge editor

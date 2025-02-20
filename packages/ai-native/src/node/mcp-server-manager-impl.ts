@@ -2,6 +2,7 @@ import { ILogger } from '@opensumi/ide-core-common';
 
 import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
+import { getToolName } from '../common/utils';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
 import { IMCPServer, MCPServerImpl } from './mcp-server';
@@ -62,7 +63,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
   }
 
   private convertToToolRequest(tool: MCPTool, serverName: string): ToolRequest {
-    const id = `mcp_${serverName}_${tool.name}`;
+    const id = getToolName(tool.name, serverName);
 
     return {
       id,

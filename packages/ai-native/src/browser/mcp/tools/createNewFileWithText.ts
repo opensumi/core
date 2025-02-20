@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired } from '@opensumi/di';
 import { Domain, URI, path } from '@opensumi/ide-core-common';
@@ -38,7 +37,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
         '"ok" if the file was successfully created and populated, ' +
         '"can\'t find project dir" if the project directory cannot be determined. ' +
         'Note: Creates any necessary parent directories automatically.',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }

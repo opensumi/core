@@ -1,7 +1,6 @@
 import * as path from 'path';
 
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain, URI } from '@opensumi/ide-core-common';
@@ -38,7 +37,7 @@ export class FindFilesByNameSubstringTool implements MCPServerContribution {
         '- name: File name ' +
         'Returns an empty array ([]) if no matching files are found. ' +
         'Note: Only searches through files within the project directory, excluding libraries and external dependencies.',
-      inputSchema: zodToJsonSchema(inputSchema),
+      inputSchema,
       handler: this.handler.bind(this),
     };
   }
