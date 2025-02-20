@@ -13,6 +13,7 @@ import { AppConfig } from '../react-providers/config-provider';
 const DEFAULT_CAPABILITIES: Required<IAINativeCapabilities> = {
   supportsMarkers: true,
   supportsChatAssistant: true,
+  supportsCodeAction: true,
   supportsInlineChat: true,
   supportsInlineCompletion: true,
   supportsConflictResolve: true,

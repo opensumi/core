@@ -25,6 +25,10 @@ export interface IAINativeCapabilities {
    */
   supportsInlineCompletion?: boolean;
   /**
+   * Use ai to provide code actions
+   */
+  supportsCodeAction?: boolean;
+  /**
    * Use ai to intelligently resolve conflicts
    */
   supportsConflictResolve?: boolean;
