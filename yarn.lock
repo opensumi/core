@@ -3391,6 +3391,7 @@ __metadata:
     "@xterm/xterm": "npm:5.5.0"
     ai: "npm:^4.1.21"
     ansi-regex: "npm:^2.0.0"
+    diff: "npm:^7.0.0"
     dom-align: "npm:^1.7.0"
     rc-collapse: "npm:^4.0.0"
     react-chat-elements: "npm:^12.0.10"
