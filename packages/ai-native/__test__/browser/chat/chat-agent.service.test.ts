@@ -56,6 +56,9 @@ describe('ChatAgentService', () => {
     const agent = {
       id: 'agent1',
       invoke: jest.fn().mockResolvedValue({}),
+      metadata: {
+        systemPrompt: 'You are a helpful assistant.',
+      },
     } as unknown as IChatAgent;
     chatAgentService.registerAgent(agent);
 
