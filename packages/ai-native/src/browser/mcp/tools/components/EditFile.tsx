@@ -63,7 +63,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   const labelService = useInjectable(LabelService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
-  const { target_file = '', code_edit } = args || {};
+  const { target_file = '', code_edit, instructions } = args || {};
   const absolutePath = path.join(appConfig.workspaceDir, target_file);
 
   const codeBlockData = applyService.getCodeBlock(absolutePath, messageId);
@@ -97,6 +97,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   }
 
   return [
+    instructions && <p>{instructions}</p>,
     <div className={styles['edit-file-tool']} key={`edit-file-tool-${codeBlockData.id}`}>
       <div
         className={cls(styles['edit-file-tool-header'], {
