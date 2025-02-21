@@ -505,7 +505,7 @@ export class AINativeContribution implements AINativeCoreContribution {
   registerChatAgentPromptProvider(): void {
     this.injector.overrideProviders({
       token: ChatAgentPromptProvider,
-      useValue: DefaultChatAgentPromptProvider,
+      useClass: DefaultChatAgentPromptProvider,
     });
   }
 }

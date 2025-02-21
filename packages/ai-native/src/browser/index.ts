@@ -201,7 +201,7 @@ export class AINativeModule extends BrowserModule {
     },
     {
       token: ChatAgentPromptProvider,
-      useValue: DefaultChatAgentPromptProvider,
+      useClass: DefaultChatAgentPromptProvider,
     },
   ];
 
