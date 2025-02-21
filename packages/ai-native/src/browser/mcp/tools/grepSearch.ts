@@ -6,7 +6,7 @@ import { ContentSearchResult, IContentSearchClientService } from '@opensumi/ide-
 import { ContentSearchClientService } from '@opensumi/ide-search/lib/browser/search.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { IChatInternalService } from '../../../../';
+import { IChatInternalService } from '../../../common';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 

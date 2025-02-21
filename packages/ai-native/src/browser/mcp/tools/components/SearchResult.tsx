@@ -4,7 +4,7 @@ import { LabelService, URI, path, useInjectable } from '@opensumi/ide-core-brows
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { IChatInternalService } from '../../../../../';
+import { IChatInternalService } from '../../../../common';
 import { ChatInternalService } from '../../../chat/chat.internal.service';
 
 import styles from './index.module.less';

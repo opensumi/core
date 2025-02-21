@@ -5,7 +5,7 @@ import { Domain, URI } from '@opensumi/ide-core-common';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { IChatInternalService } from '../../../../';
+import { IChatInternalService } from '../../../common';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
