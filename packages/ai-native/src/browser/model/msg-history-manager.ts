@@ -100,7 +100,7 @@ export class MsgHistoryManager extends Disposable {
   toJSON() {
     return {
       messages: this.getMessages(),
-      additional: this.messageAdditionalMap,
+      additional: Object.fromEntries(this.messageAdditionalMap.entries()),
     };
   }
 }

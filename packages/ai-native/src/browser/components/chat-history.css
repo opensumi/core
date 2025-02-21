@@ -5,7 +5,6 @@
   font-size: 13px;
   padding: 0 4px 0 12px;
   color: var(--editor-foreground);
-  box-shadow: 0px 3px 15px 0px var(--widget-shadow);
   text-overflow: ellipsis;
   white-space: nowrap;
 

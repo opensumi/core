@@ -47,7 +47,7 @@ export class ChatInternalService extends Disposable {
     this.chatManagerService.onStorageInit(() => {
       const sessions = this.chatManagerService.getSessions();
       if (sessions.length > 0) {
-        this.activateSession(sessions[0].sessionId);
+        this.activateSession(sessions[sessions.length - 1].sessionId);
       } else {
         this.createSessionModel();
       }
@@ -84,7 +84,9 @@ export class ChatInternalService extends Disposable {
   clearSessionModel(sessionId?: string) {
     sessionId = sessionId || this.#sessionModel.sessionId;
     this.chatManagerService.clearSession(sessionId);
-    this.#sessionModel = this.chatManagerService.startSession();
+    if (sessionId === this.#sessionModel.sessionId) {
+      this.#sessionModel = this.chatManagerService.startSession();
+    }
     this._onChangeSession.fire(this.#sessionModel.sessionId);
   }
 

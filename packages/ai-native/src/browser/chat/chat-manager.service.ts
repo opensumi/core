@@ -17,6 +17,22 @@ import { MsgHistoryManager } from '../model/msg-history-manager';
 
 import { ChatModel, ChatRequestModel, ChatResponseModel, IChatProgressResponseContent } from './chat-model';
 
+interface ISessionModel {
+  sessionId: string;
+  history: { additional: Record<string, any>; messages: IHistoryChatMessage[] };
+  requests: {
+    requestId: string;
+    message: IChatRequestMessage;
+    response: {
+      isCanceled: boolean;
+      responseText: string;
+      responseContents: IChatProgressResponseContent[];
+      errorDetails: IChatResponseErrorDetails | undefined;
+      followups: IChatFollowup[];
+    };
+  }[];
+}
+
 @Injectable()
 export class ChatManagerService extends Disposable {
   #sessionModels = this.registerDispose(new DisposableMap<string, ChatModel>());
@@ -35,23 +51,8 @@ export class ChatManagerService extends Disposable {
 
   private _chatStorage: IStorage;
 
-  protected fromJSON(
-    data: {
-      sessionId: string;
-      history: { additional: Record<string, any>; messages: IHistoryChatMessage[] };
-      requests: {
-        requestId: string;
-        message: IChatRequestMessage;
-        response: {
-          isCanceled: boolean;
-          responseText: string;
-          responseContents: IChatProgressResponseContent[];
-          errorDetails: IChatResponseErrorDetails | undefined;
-          followups: IChatFollowup[];
-        };
-      }[];
-    }[],
-  ) {
+  protected fromJSON(data: ISessionModel[]) {
+    // TODO: 支持ApplyService恢复
     return data.map((item) => {
       const model = new ChatModel({
         sessionId: item.sessionId,
@@ -84,24 +85,7 @@ export class ChatManagerService extends Disposable {
 
   async init() {
     this._chatStorage = await this.storageProvider(STORAGE_NAMESPACE.CHAT);
-    const sessionsModelData = this._chatStorage.get<
-      {
-        sessionId: string;
-        history: { additional: Record<string, any>; messages: IHistoryChatMessage[] };
-        requests: {
-          requestId: string;
-          message: IChatRequestMessage;
-          response: {
-            isComplete: boolean;
-            isCanceled: boolean;
-            responseText: string;
-            responseContents: IChatProgressResponseContent[];
-            errorDetails: IChatResponseErrorDetails | undefined;
-            followups: IChatFollowup[];
-          };
-        }[];
-      }[]
-    >('sessionModels', []);
+    const sessionsModelData = this._chatStorage.get<ISessionModel[]>('sessionModels', []);
     const savedSessions = this.fromJSON(sessionsModelData);
     savedSessions.forEach((session) => {
       this.#sessionModels.set(session.sessionId, session);
@@ -219,5 +203,6 @@ export class ChatManagerService extends Disposable {
   cancelRequest(sessionId: string) {
     this.#pendingRequests.get(sessionId)?.cancel();
     this.#pendingRequests.disposeKey(sessionId);
+    this.saveSessions();
   }
 }
