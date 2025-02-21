@@ -3999,6 +3999,7 @@ export enum NotebookVariablesRequestKind {
 }
 
 // #region InlineEdit
+
 export class InlineEdit implements vscode.InlineEdit {
   constructor(public readonly text: string, public readonly range: Range) {}
 }
