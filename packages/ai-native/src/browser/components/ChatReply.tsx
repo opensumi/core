@@ -360,7 +360,11 @@ export const ChatReply = (props: IChatReplyProps) => {
 
   return (
     <ChatThinkingResult
-      hasMessage={request.response.responseParts.length > 0 || !!request.response.errorDetails?.message}
+      hasMessage={
+        request.response.responseParts.length > 0 ||
+        request.response.responseContents.length > 0 ||
+        !!request.response.errorDetails?.message
+      }
       onRegenerate={handleRegenerate}
       requestId={request.requestId}
     >

@@ -43,9 +43,15 @@ export class ChatInternalService extends Disposable {
     return this.#sessionModel;
   }
 
-  constructor() {
-    super();
-    this.#sessionModel = this.chatManagerService.startSession();
+  init() {
+    this.chatManagerService.onStorageInit(() => {
+      const sessions = this.chatManagerService.getSessions();
+      if (sessions.length > 0) {
+        this.activateSession(sessions[0].sessionId);
+      } else {
+        this.createSessionModel();
+      }
+    });
   }
 
   public setLatestRequestId(id: string): void {

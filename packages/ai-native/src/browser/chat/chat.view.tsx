@@ -452,7 +452,9 @@ export const AIChatView = () => {
               setLoading(false);
             }}
             onRegenerate={() => {
-              aiChatService.sendRequest(request, true);
+              if (request) {
+                aiChatService.sendRequest(request, true);
+              }
             }}
             msgId={msgId}
           />
@@ -615,7 +617,8 @@ export const AIChatView = () => {
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.requestId) {
           const request = aiChatService.sessionModel.getRequest(msg.requestId)!;
-          if (!request.response.isComplete) {
+          // 从storage恢复时，request为undefined
+          if (request && !request.response.isComplete) {
             setLoading(true);
           }
           await renderReply({
@@ -625,7 +628,7 @@ export const AIChatView = () => {
             agentId: msg.agentId,
             command: msg.agentCommand,
             startTime: msg.replyStartTime!,
-            request: aiChatService.sessionModel.getRequest(msg.requestId)!,
+            request,
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.content) {
           await renderSimpleMarkdownReply({
@@ -756,6 +759,7 @@ export function DefaultChatViewHeader({
 }) {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
+  const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const handleNewChat = React.useCallback(() => {
     if (aiChatService.sessionModel.history.getMessages().length > 0) {
       aiChatService.createSessionModel();
@@ -775,7 +779,13 @@ export function DefaultChatViewHeader({
   );
 
   React.useEffect(() => {
-    const getHistoryList = () =>
+    const getHistoryList = () => {
+      const currentMessages = aiChatService.sessionModel.history.getMessages();
+      setCurrentTitle(
+        currentMessages.length > 0
+          ? currentMessages[currentMessages.length - 1].content.slice(0, MAX_TITLE_LENGTH)
+          : '',
+      );
       setHistoryList(
         aiChatService.getSessions().map((session) => {
           const history = session.history;
@@ -792,6 +802,7 @@ export function DefaultChatViewHeader({
           };
         }),
       );
+    };
     getHistoryList();
     const toDispose = new DisposableCollection();
     const sessionListenIds = new Set<string>();
@@ -817,11 +828,6 @@ export function DefaultChatViewHeader({
     return () => {
       toDispose.dispose();
     };
-  }, [aiChatService]);
-
-  const currentTitle = React.useMemo(() => {
-    const messages = aiChatService.sessionModel.history.getMessages();
-    return messages.length > 0 ? messages[messages.length - 1].content.slice(0, MAX_TITLE_LENGTH) : '';
   }, [aiChatService]);
 
   return (
