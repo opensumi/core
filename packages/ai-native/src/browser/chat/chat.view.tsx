@@ -25,6 +25,7 @@ import {
   IChatComponent,
   IChatContent,
   MessageType,
+  formatLocalize,
   localize,
   uuid,
 } from '@opensumi/ide-core-common';
@@ -692,7 +693,7 @@ export const AIChatView = () => {
           {msgHistoryManager.slicedMessageCount ? (
             <div className={styles.chat_tips_text}>
               <div className={styles.chat_tips_container}>
-                {`${msgHistoryManager.slicedMessageCount} ${localize('aiNative.chat.ai.assistant.limit.message')}`}
+                {formatLocalize('aiNative.chat.ai.assistant.limit.message', msgHistoryManager.slicedMessageCount)}
               </div>
             </div>
           ) : null}
