@@ -58,7 +58,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   removeFileFromContext(uri: URI): void {
     const index = this.contextFiles.findIndex((file) => file.uri.toString() === uri.toString());
     if (index > -1) {
-      this.contextFiles.splice(index, 1); // 从数组中移除指定的文件上下文
+      this.contextFiles.splice(index, 1);
       this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
     }
   }
@@ -78,7 +78,8 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         if (event.payload.uri.scheme !== 'file') {
           return;
         }
-        this.addFileToContext(event.payload.uri);
+        // FIXME: 暂时不自动添加
+        // this.addFileToContext(event.payload.uri);
       }),
     );
 
