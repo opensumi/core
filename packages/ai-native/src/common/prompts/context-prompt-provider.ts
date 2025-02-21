@@ -20,7 +20,7 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
           <additional_data>
           Below are some potentially helpful/relevant pieces of information for figuring out to respond
           <recently_viewed_files>
-          ${context.recentlyViewFiles.map((file, idx) => `${idx} + 1: ${file}`)}
+          ${context.recentlyViewFiles.map((file, idx) => `${idx + 1} : ${file}`)}
           </recently_viewed_files>
           <attached_files>
           ${context.attachedFiles.map(
@@ -32,7 +32,7 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
           \`\`\`
           </file_contents>
           <linter_errors>
-          ${file.lineErrors.join('`n')}
+          ${file.lineErrors.join('\n')}
           </linter_errors>
           `,
           )}
