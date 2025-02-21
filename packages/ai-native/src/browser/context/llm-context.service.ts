@@ -21,7 +21,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   @Autowired(IEditorDocumentModelService)
   protected readonly docModelManager: IEditorDocumentModelService;
-  z;
+
   @Autowired(IMarkerService)
   protected readonly markerService: IMarkerService;
 
