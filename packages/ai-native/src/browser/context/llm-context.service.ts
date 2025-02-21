@@ -21,7 +21,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   @Autowired(IEditorDocumentModelService)
   protected readonly docModelManager: IEditorDocumentModelService;
-  z
+  z;
   @Autowired(IMarkerService)
   protected readonly markerService: IMarkerService;
 
@@ -35,15 +35,12 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;
 
   addFileToContext(uri: URI, selection?: [number, number], isManual = true): void {
-    // 如果已经存在，则移除旧的条目
     this.removeFileFromContext(uri);
 
-    // 添加新的文件上下文
     this.contextFiles.push({ uri, selection, isManual });
 
-    // 如果超过了最大数量，则移除最旧的文件上下文
     if (this.contextFiles.length > this.maxFiles) {
-      this.contextFiles.shift(); // 移除最旧的条目
+      this.contextFiles.shift();
     }
 
     this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
@@ -98,7 +95,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         if (event.payload.scheme !== 'file') {
           return;
         }
-        // 这里可以添加保存文件的逻辑
+        // TODO: 保存文件的逻辑
       }),
     );
 
