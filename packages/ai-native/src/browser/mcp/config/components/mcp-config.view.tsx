@@ -47,6 +47,16 @@ export const MCPConfigView: React.FC = () => {
       } else {
         await mcpServerProxyService.$stopServer(serverName);
       }
+
+      // Update enabled state in preferences
+      const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
+      const updatedServers = servers.map((server) => {
+        if (server.name === serverName) {
+          return { ...server, enabled: start };
+        }
+        return server;
+      });
+      await preferenceService.set(AINativeSettingSectionsId.MCPServers, updatedServers);
       await loadServers();
     } catch (error) {
       logger.error(`Failed to ${start ? 'start' : 'stop'} server ${serverName}:`, error);
@@ -60,9 +70,7 @@ export const MCPConfigView: React.FC = () => {
 
   const handleEditServer = (server: MCPServer) => {
     const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
-    logger.log('Current server configurations:', servers);
     const serverConfig = servers.find((s) => s.name === server.name);
-    logger.log('Found server config:', serverConfig);
 
     if (serverConfig) {
       setEditingServer(serverConfig);
@@ -72,16 +80,13 @@ export const MCPConfigView: React.FC = () => {
 
   const handleDeleteServer = async (serverName: string) => {
     const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
-    logger.log('Current server configurations before delete:', servers);
     const updatedServers = servers.filter((s) => s.name !== serverName);
-    logger.log('Updated server configurations after delete:', updatedServers);
     await preferenceService.set(AINativeSettingSectionsId.MCPServers, updatedServers);
     await loadServers();
   };
 
   const handleSaveServer = async (data: MCPServerFormData) => {
     const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
-    logger.log('Current server configurations before save:', servers);
     const existingIndex = servers.findIndex((s) => s.name === data.name);
 
     if (existingIndex >= 0) {
@@ -90,7 +95,6 @@ export const MCPConfigView: React.FC = () => {
       servers.push(data);
     }
 
-    logger.log('Updated server configurations after save:', servers);
     await preferenceService.set(AINativeSettingSectionsId.MCPServers, servers);
     setFormVisible(false);
     await loadServers();

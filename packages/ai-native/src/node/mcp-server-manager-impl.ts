@@ -7,7 +7,7 @@ import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invo
 import { getToolName } from '../common/utils';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
-import { MCPServerImpl } from './mcp-server';
+import { StdioMCPServerImpl } from './mcp-server';
 // 这应该是 Browser Tab 维度的，每个 Tab 对应一个 MCPServerManagerImpl
 export class MCPServerManagerImpl implements MCPServerManager {
   protected servers: Map<string, IMCPServer> = new Map();
@@ -73,6 +73,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
       throw new Error(`MCP server "${serverName}" not found.`);
     }
     await server.start();
+    await this.registerTools(serverName);
   }
 
   async getServerNames(): Promise<string[]> {
@@ -132,7 +133,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
     if (existingServer) {
       existingServer.update(command, args, env);
     } else {
-      const newServer = new MCPServerImpl(name, command, args, env, this.logger);
+      const newServer = new StdioMCPServerImpl(name, command, args, env, this.logger);
       this.servers.set(name, newServer);
     }
   }
@@ -148,9 +149,12 @@ export class MCPServerManagerImpl implements MCPServerManager {
 
   async addExternalMCPServers(servers: MCPServerDescription[]): Promise<void> {
     for (const server of servers) {
+      if (!server.enabled) {
+        // 如果是 enabled 为 false 的 server，则不进行启动
+        continue;
+      }
       this.addOrUpdateServer(server);
       await this.startServer(server.name);
-      await this.registerTools(server.name);
     }
   }
 

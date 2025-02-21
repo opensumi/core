@@ -6,7 +6,7 @@ import { ILogger } from '@opensumi/ide-core-common';
 
 import { IMCPServer } from '../common/mcp-server-manager';
 
-export class MCPServerImpl implements IMCPServer {
+export class StdioMCPServerImpl implements IMCPServer {
   private name: string;
   private command: string;
   private args?: string[];

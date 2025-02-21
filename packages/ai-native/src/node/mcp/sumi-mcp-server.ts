@@ -139,11 +139,19 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
           const toolsResponse = await server.getTools();
           toolNames = toolsResponse.tools.map((tool) => tool.name);
         }
+        if (server instanceof BuiltinMCPServer) {
+          return {
+            name: server.getServerName(),
+            isStarted: server.isStarted(),
+            type: 'builtin rpc',
+            tools: toolNames,
+          };
+        }
         return {
           name: server.getServerName(),
           isStarted: server.isStarted(),
-          type: 'stdio',
-          command: 'npx sumi-ide-mcp-server',
+          type: '[MOCK] stdio',
+          command: '[MOCK] npx sumi-ide-mcp-server',
           tools: toolNames,
         };
       }),

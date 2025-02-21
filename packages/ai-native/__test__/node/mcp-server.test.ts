@@ -3,13 +3,13 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 import { ILogger } from '@opensumi/ide-core-common';
 
-import { MCPServerImpl } from '../../src/node/mcp-server';
+import { StdioMCPServerImpl } from '../../src/node/mcp-server';
 
 jest.mock('@modelcontextprotocol/sdk/client/index.js');
 jest.mock('@modelcontextprotocol/sdk/client/stdio.js');
 
-describe('MCPServerImpl', () => {
-  let server: MCPServerImpl;
+describe('StdioMCPServerImpl', () => {
+  let server: StdioMCPServerImpl;
   const mockLogger: ILogger = {
     log: jest.fn(),
     error: jest.fn(),
@@ -24,7 +24,7 @@ describe('MCPServerImpl', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    server = new MCPServerImpl('test-server', 'test-command', ['arg1', 'arg2'], { ENV: 'test' }, mockLogger);
+    server = new StdioMCPServerImpl('test-server', 'test-command', ['arg1', 'arg2'], { ENV: 'test' }, mockLogger);
   });
 
   describe('constructor', () => {

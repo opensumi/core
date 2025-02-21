@@ -4,7 +4,7 @@ export interface IMCPServer {
   isStarted(): boolean;
   start(): Promise<void>;
   getServerName(): string;
-  callTool(toolName: string, arg_string: string): ReturnType<Client['callTool']>;
+  callTool(toolName: string, toolCallId: string, arg_string: string): ReturnType<Client['callTool']>;
   getTools(): ReturnType<Client['listTools']>;
   update(command: string, args?: string[], env?: { [key: string]: string }): void;
   stop(): void;

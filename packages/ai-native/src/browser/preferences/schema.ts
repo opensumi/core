@@ -100,6 +100,11 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
             type: 'string',
             description: localize('preference.ai.native.mcp.servers.command.description'),
           },
+          enabled: {
+            type: 'boolean',
+            description: localize('preference.ai.native.mcp.servers.enabled.description'),
+            default: true,
+          },
           args: {
             type: 'array',
             items: {
