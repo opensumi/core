@@ -419,13 +419,3 @@ export interface IAIMiddleware {
     provideInlineCompletions?: IProvideInlineCompletionsSignature;
   };
 }
-
-export const ChatAgentPromptProvider = Symbol('ChatAgentPromptProvider');
-
-export interface ChatAgentPromptProvider {
-  /**
-   * 提供上下文提示
-   * @param context 上下文
-   */
-  provideContextPrompt(context: SerializedContext, userMessage: string): MaybePromise<string>;
-}
