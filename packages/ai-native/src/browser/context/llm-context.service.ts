@@ -27,32 +27,40 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   private isAutoCollecting = false;
 
-  private contextFiles: Map<string, FileContext> = new Map();
+  private contextFiles: FileContext[] = [];
+
+  private maxFiles: number = 10; // 上下文的最大长度限制
 
   private onDidContextFilesChangeEmitter = new Emitter<FileContext[]>();
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;
 
   addFileToContext(uri: URI, selection?: [number, number], isManual = true): void {
-    this.contextFiles.set(uri.toString(), {
-      uri,
-      selection,
-      isManual,
-    });
+    this.removeFileFromContext(uri);
+
+    this.contextFiles.push({ uri, selection, isManual });
+
+    if (this.contextFiles.length > this.maxFiles) {
+      this.contextFiles.shift();
+    }
+
     this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
   }
 
   cleanFileContext() {
-    this.contextFiles.clear();
+    this.contextFiles = [];
     this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
   }
 
   private getAllContextFiles() {
-    return Array.from(this.contextFiles.values());
+    return [...this.contextFiles];
   }
 
   removeFileFromContext(uri: URI): void {
-    this.contextFiles.delete(uri.toString());
-    this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
+    const index = this.contextFiles.findIndex((file) => file.uri.toString() === uri.toString());
+    if (index > -1) {
+      this.contextFiles.splice(index, 1);
+      this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
+    }
   }
 
   startAutoCollection(): void {
@@ -65,18 +73,16 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   }
 
   private startAutoCollectionInternal(): void {
-    // 文件打开
     this.disposables.push(
       this.eventBus.on(EditorDocumentModelCreationEvent, (event) => {
         if (event.payload.uri.scheme !== 'file') {
           return;
         }
-        // TODO: 是否自动添加文件到上下文？
+        // FIXME: 暂时不自动添加
         // this.addFileToContext(event.payload.uri);
       }),
     );
 
-    // 删除
     this.disposables.push(
       this.eventBus.on(EditorDocumentModelRemovalEvent, (event) => {
         if (event.payload.scheme !== 'file') {
@@ -85,16 +91,15 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       }),
     );
 
-    // 保存
     this.disposables.push(
       this.eventBus.on(EditorDocumentModelSavedEvent, (event) => {
         if (event.payload.scheme !== 'file') {
           return;
         }
+        // TODO: 保存文件的逻辑
       }),
     );
 
-    // 光标选中
     this.disposables.push(
       this.eventBus.on(EditorSelectionChangeEvent, (event) => {
         if (event.payload.selections.length > 0) {
@@ -102,9 +107,9 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
             event.payload.selections[0].selectionStartLineNumber,
             event.payload.selections[0].positionLineNumber,
           ].sort() as [number, number];
+
           if (selection[0] === selection[1]) {
-            // TODO: 是否自动添加文件到上下文？
-            // this.addFileToContext(event.payload.editorUri, undefined);
+            this.addFileToContext(event.payload.editorUri, undefined);
           } else {
             this.addFileToContext(
               event.payload.editorUri,
@@ -124,8 +129,15 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     const files = this.getAllContextFiles();
     const recentlyViewFiles = files
       .filter((v) => !v.selection)
-      .map((file) => URI.file(this.appConfig.workspaceDir).relative(file.uri)!.toString())
+      .map((file) => {
+        const relativePath = URI.file(this.appConfig.workspaceDir).relative(file.uri);
+        if (relativePath) {
+          return relativePath.toString();
+        }
+        return file.uri.parent.toString();
+      })
       .filter(Boolean);
+
     const attachedFiles = files
       .filter((v) => v.selection)
       .map((file) => {
