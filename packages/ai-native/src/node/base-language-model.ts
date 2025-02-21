@@ -1,4 +1,4 @@
-import { CoreMessage, jsonSchema, streamText, tool } from 'ai';
+import { CoreMessage, ToolExecutionOptions, jsonSchema, streamText, tool } from 'ai';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { ChatMessageRole, IAIBackServiceOption, IChatMessage } from '@opensumi/ide-core-common';
@@ -66,7 +66,8 @@ export abstract class BaseLanguageModel {
       description: toolRequest.description || '',
       // TODO 这里应该是 z.object 而不是 JSON Schema
       parameters: jsonSchema(toolRequest.parameters),
-      execute: async (args: any) => await toolRequest.handler(JSON.stringify(args)),
+      execute: async (args: any, options: ToolExecutionOptions) =>
+        await toolRequest.handler(JSON.stringify(args), options),
     });
   }
 

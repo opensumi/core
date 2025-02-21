@@ -232,16 +232,20 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     await this.doSearch(value, state, this.searchCancelToken.token);
   }
 
-  async doSearch(value: string, state: IUIState, token: CancellationToken) {
+  async doSearch(
+    value: string,
+    state: IUIState & { include?: string[]; exclude?: string[]; maxResults?: number },
+    token: CancellationToken,
+  ) {
     const searchOptions: ContentSearchOptions = {
-      maxResults: 2000,
+      maxResults: state.maxResults || 2000,
       matchCase: state.isMatchCase,
       matchWholeWord: state.isWholeWord,
       useRegExp: state.isUseRegexp,
       includeIgnored: state.isIncludeIgnored,
 
-      include: splitOnComma(this.includeValue || ''),
-      exclude: splitOnComma(this.excludeValue || ''),
+      include: state.include || splitOnComma(this.includeValue || ''),
+      exclude: state.exclude || splitOnComma(this.excludeValue || ''),
     };
 
     searchOptions.exclude = this.getExcludeWithSetting(searchOptions, state);

@@ -429,6 +429,9 @@ export interface IHistoryChatMessage extends IChatMessage {
   agentCommand?: string;
   requestId?: string;
   replyStartTime?: number;
+
+  /** 存储工具调用结果等额外信息 */
+  additional?: Record<string, any>;
 }
 
 // ## Code Edits start ##

@@ -15,6 +15,7 @@ const inputSchema = z
     end_line_one_indexed_inclusive: z.number().describe('The one-indexed line number to end reading at (inclusive).'),
     explanation: z
       .string()
+      .optional()
       .describe('One sentence explanation as to why this tool is being used, and how it contributes to the goal.'),
   })
   .transform((data) => ({
