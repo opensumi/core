@@ -4,8 +4,8 @@
   justify-content: space-between;
   font-size: 13px;
   padding: 0 4px 0 12px;
-  color: var(--vscode-editor-foreground);
-  box-shadow: 0px 3px 15px 0px var(--vscode-widget-shadow);
+  color: var(--editor-foreground);
+  box-shadow: 0px 3px 15px 0px var(--widget-shadow);
 
   .dm-chat-history-header-title {
     opacity: 0.6;
@@ -33,41 +33,41 @@
       margin-left: 2px;
       cursor: pointer;
     }
+
+    .kt-popover-title {
+      margin-bottom: 8px;
+    }
   }
 
   .kt-popover {
     .kt-popover-content {
       width: 300px;
     }
-    .kt-popover-inner {
-      color: var(--vscode-editor-foreground);
-      background-color: var(--vscode-editor-background);
+    .kt-popover-content {
+      color: var(--editor-foreground);
+      background-color: var(--editor-background);
       padding: 12px 12px;
       border-radius: 3px;
-      box-shadow: 0 0 8px 2px var(--vscode-widget-shadow);
-
-      .dm--content {
-        color: var(--vscode-editor-foreground);
-      }
+      box-shadow: 0 0 8px 2px var(--widget-shadow);
     }
     .kt-popover-title {
-      color: var(--vscode-editor-foreground);
+      color: var(--editor-foreground);
       font-size: 13px;
     }
     .kt-input {
-      color: var(--vscode-input-foreground);
-      background: var(--vscode-input-background);
-      border: 1px solid var(--vscode-input-border);
+      color: var(--input-foreground);
+      background: var(--input-background);
+      border: 1px solid var(--input-border);
       text-align: left;
       height: 24px;
       font-size: 13px;
       border-radius: 4px;
       &:focus {
-        border-color: var(--vscode-inputValidation-infoBorder);
+        border-color: var(--inputValidation-infoBorder);
       }
 
       &::placeholder {
-        color: var(--vscode-input-placeholderForeground);
+        color: var(--input-placeholderForeground);
         opacity: 0.6;
       }
     }
@@ -114,11 +114,11 @@
     }
 
     .dm-chat-history-item-selected {
-      background: var(--vscode-textPreformat-background);
+      background: var(--textPreformat-background);
     }
 
     &:hover {
-      background: var(--vscode-textPreformat-background);
+      background: var(--textPreformat-background);
 
       .dm-chat-history-item-actions {
         display: block;
@@ -131,7 +131,7 @@
 
   svg {
     path {
-      fill: var(--vscode-foreground);
+      fill: var(--foreground);
     }
   }
 }
