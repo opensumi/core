@@ -83,6 +83,7 @@ describe('MCPServerImpl', () => {
       await server.callTool(toolName, 'toolCallId', argString);
       expect(mockClient.callTool).toHaveBeenCalledWith({
         name: toolName,
+        toolCallId: 'toolCallId',
         arguments: { key: 'value' },
       });
     });
