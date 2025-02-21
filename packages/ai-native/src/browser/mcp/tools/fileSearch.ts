@@ -46,11 +46,7 @@ export class FileSearchTool implements MCPServerContribution {
     // 获取工作区根目录
     const workspaceRoots = this.workspaceService.tryGetRoots();
     if (!workspaceRoots || workspaceRoots.length === 0) {
-      logger.appendLine('Error: Cannot determine project directory');
-      return {
-        content: [{ type: 'text', text: '[]' }],
-        isError: true,
-      };
+      throw new Error('Cannot determine project directory');
     }
 
     // 使用 OpenSumi 的文件搜索 API
@@ -73,9 +69,11 @@ export class FileSearchTool implements MCPServerContribution {
       content: [
         {
           type: 'text',
-          text: `Found ${searchResults.length} files matching "${
-            args.query
-          }", only return the first ${MAX_RESULTS} results: [${files.join(', ')}]`,
+          text: `${files.join('\n')}\n${
+            searchResults.length > MAX_RESULTS
+              ? `\nFound ${searchResults.length} files matching "${args.query}", only return the first ${MAX_RESULTS} results`
+              : ''
+          }`,
         },
       ],
     };

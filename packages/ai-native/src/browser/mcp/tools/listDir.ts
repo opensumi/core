@@ -14,6 +14,7 @@ const inputSchema = z
       .describe("Path to list contents of, relative to the workspace root. Ex: './' is the root of the workspace"),
     explanation: z
       .string()
+      .optional()
       .describe('One sentence explanation as to why this tool is being used, and how it contributes to the goal.'),
   })
   .transform((data) => ({
