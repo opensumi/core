@@ -24,6 +24,7 @@ export class MsgHistoryManager extends Disposable {
   public clearMessages() {
     this.messageMap.clear();
     this.messageAdditionalMap.clear();
+    this.startIndex = 0;
   }
 
   private doAddMessage(message: IExcludeMessage): string {
