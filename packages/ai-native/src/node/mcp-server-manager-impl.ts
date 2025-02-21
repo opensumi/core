@@ -35,7 +35,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
     if (!server) {
       throw new Error(`MCP server "${serverName}" not found.`);
     }
-    server.stop();
+    await server.stop();
     // 停止服务器后，需要从注册表中移除该服务器的所有工具
     this.unregisterServerTools(serverName);
     this.logger.log(`MCP server "${serverName}" stopped and tools unregistered.`);

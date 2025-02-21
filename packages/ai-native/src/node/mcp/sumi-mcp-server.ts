@@ -54,7 +54,6 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     }
     // 获取 MCP 工具
     const tools = await this.client.$getMCPTools();
-    this.logger.log('[Node backend] SUMI MCP tools', tools);
     return tools;
   }
 
@@ -132,10 +131,23 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
 
   async getServers() {
     const servers = Array.from(this.mcpServerManager.getServers().entries());
-    return servers.map(([name, server]) => ({
-      name: server.getServerName(),
-      isStarted: server.isStarted(),
-    }));
+    return Promise.all(
+      servers.map(async ([name, server]) => {
+        let toolNames: string[] = [];
+        if (server.isStarted()) {
+          // 只获取正在运行的 MCP Server 的工具列表
+          const toolsResponse = await server.getTools();
+          toolNames = toolsResponse.tools.map((tool) => tool.name);
+        }
+        return {
+          name: server.getServerName(),
+          isStarted: server.isStarted(),
+          type: 'stdio',
+          command: 'npx sumi-ide-mcp-server',
+          tools: toolNames,
+        };
+      }),
+    );
   }
 
   async startServer(serverName: string) {
@@ -196,7 +208,6 @@ export class BuiltinMCPServer implements IMCPServer {
       throw new Error('MCP Server not started');
     }
     const tools = await this.sumiMCPServer.getMCPTools();
-    this.logger.debug('[BuiltinMCPServer] getTools', tools);
     return { tools } as any;
   }
 

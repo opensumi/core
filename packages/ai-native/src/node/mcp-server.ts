@@ -107,12 +107,17 @@ export class MCPServerImpl implements IMCPServer {
     this.env = env;
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     if (!this.started || !this.client) {
       return;
     }
     this.logger?.log(`Stopping MCP server "${this.name}"`);
-    this.client.close();
+    try {
+      await this.client.close();
+    } catch (error) {
+      this.logger?.error(`Failed to stop MCP server "${this.name}":`, error);
+    }
+    this.logger?.log(`MCP server "${this.name}" stopped`);
     this.started = false;
   }
 }

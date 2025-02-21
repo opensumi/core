@@ -29,7 +29,7 @@ export class MCPServerProxyService implements IMCPServerProxyService {
   async $getMCPTools() {
     const tools = await this.mcpServerRegistry.getMCPTools().map((tool) =>
       // 不要传递 handler
-       ({
+      ({
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
@@ -49,5 +49,17 @@ export class MCPServerProxyService implements IMCPServerProxyService {
 
   async getAllMCPTools() {
     return this.sumiMCPServerProxyService.getAllMCPTools();
+  }
+
+  async $getServers() {
+    return this.sumiMCPServerProxyService.getServers();
+  }
+
+  async $startServer(serverName: string) {
+    await this.sumiMCPServerProxyService.startServer(serverName);
+  }
+
+  async $stopServer(serverName: string) {
+    await this.sumiMCPServerProxyService.stopServer(serverName);
   }
 }
