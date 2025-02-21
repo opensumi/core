@@ -28,6 +28,10 @@ export class ChatManagerService extends Disposable {
     super();
   }
 
+  getSessions() {
+    return Array.from(this.#sessionModels.values());
+  }
+
   startSession() {
     const model = this.injector.get(ChatModel);
     this.#sessionModels.set(model.sessionId, model);

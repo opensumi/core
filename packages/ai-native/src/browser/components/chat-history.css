@@ -1,0 +1,137 @@
+.dm-chat-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 0 4px 0 12px;
+  color: var(--vscode-editor-foreground);
+  box-shadow: 0px 3px 15px 0px var(--vscode-widget-shadow);
+
+  .dm-chat-history-header-title {
+    opacity: 0.6;
+    display: flex;
+    align-items: center;
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: calc(100vw - 80px);
+      display: inline-block;
+      white-space: nowrap;
+    }
+  }
+
+  .dm-chat-history-header-actions {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+
+    .dm-chat-history-header-actions-history {
+      cursor: pointer;
+    }
+
+    .dm-chat-history-header-actions-new {
+      margin-left: 2px;
+      cursor: pointer;
+    }
+  }
+
+  .kt-popover {
+    .kt-popover-content {
+      width: 300px;
+    }
+    .kt-popover-inner {
+      color: var(--vscode-editor-foreground);
+      background-color: var(--vscode-editor-background);
+      padding: 12px 12px;
+      border-radius: 3px;
+      box-shadow: 0 0 8px 2px var(--vscode-widget-shadow);
+
+      .dm--content {
+        color: var(--vscode-editor-foreground);
+      }
+    }
+    .kt-popover-title {
+      color: var(--vscode-editor-foreground);
+      font-size: 13px;
+    }
+    .kt-input {
+      color: var(--vscode-input-foreground);
+      background: var(--vscode-input-background);
+      border: 1px solid var(--vscode-input-border);
+      text-align: left;
+      height: 24px;
+      font-size: 13px;
+      border-radius: 4px;
+      &:focus {
+        border-color: var(--vscode-inputValidation-infoBorder);
+      }
+
+      &::placeholder {
+        color: var(--vscode-input-placeholderForeground);
+        opacity: 0.6;
+      }
+    }
+  }
+
+  .dm-chat-history-list {
+    overflow: auto;
+    max-height: 400px;
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  .dm-chat-history-time {
+    opacity: 0.6;
+    padding-left: 4px;
+  }
+
+  .dm-chat-history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 4px;
+    margin-top: 2px;
+    border-radius: 3px;
+
+    .dm-chat-history-item-content {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+      height: 24px;
+    }
+
+    .dm-chat-history-item-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .dm-chat-history-item-actions {
+      display: none;
+    }
+
+    .dm-chat-history-item-selected {
+      background: var(--vscode-textPreformat-background);
+    }
+
+    &:hover {
+      background: var(--vscode-textPreformat-background);
+
+      .dm-chat-history-item-actions {
+        display: block;
+      }
+      .dm-chat-history-item-content {
+        max-width: calc(100% - 50px);
+      }
+    }
+  }
+
+  svg {
+    path {
+      fill: var(--vscode-foreground);
+    }
+  }
+}

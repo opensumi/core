@@ -70,10 +70,20 @@ export class ChatInternalService extends Disposable {
     this._onCancelRequest.fire();
   }
 
-  clearSessionModel() {
-    this.chatManagerService.clearSession(this.#sessionModel.sessionId);
+  createSessionModel() {
     this.#sessionModel = this.chatManagerService.startSession();
     this._onChangeSession.fire(this.#sessionModel.sessionId);
+  }
+
+  clearSessionModel(sessionId?: string) {
+    sessionId = sessionId || this.#sessionModel.sessionId;
+    this.chatManagerService.clearSession(sessionId);
+    this.#sessionModel = this.chatManagerService.startSession();
+    this._onChangeSession.fire(this.#sessionModel.sessionId);
+  }
+
+  getSessions() {
+    return this.chatManagerService.getSessions();
   }
 
   activateSession(sessionId: string) {
