@@ -134,7 +134,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         if (relativePath) {
           return relativePath.toString();
         }
-        return file.uri.parent.toString;
+        return file.uri.parent.toString();
       })
       .filter(Boolean);
 
