@@ -1486,6 +1486,7 @@ export const localizationBundle = {
     'aiNative.operate.clear.title': 'Clear',
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
+    'aiNative.chat.ai.assistant.limit.message': 'earlest messages are dropped due to the input token limit',
 
     'preference.ai.native.inlineChat.title': 'Inline Chat',
     'preference.ai.native.chat.title': 'Chat',

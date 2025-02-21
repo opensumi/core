@@ -65,8 +65,8 @@ export class ChatService extends Disposable {
     this._onChatMessageListLaunch.fire(list);
   }
 
-  public getHistoryMessages(): IHistoryChatMessage[] {
-    return this.chatInternalService.sessionModel?.history.getMessages() || [];
+  public getHistoryMessages(maxInputTokens = 128000): IHistoryChatMessage[] {
+    return this.chatInternalService.sessionModel?.history.getMessages(maxInputTokens) || [];
   }
 
   public scrollToBottom(): void {

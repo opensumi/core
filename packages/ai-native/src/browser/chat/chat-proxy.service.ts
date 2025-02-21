@@ -125,13 +125,13 @@ export class ChatProxyService extends Disposable {
           } else {
             apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey, '');
           }
-
+          const MAX_INPUT_TOKENS = 30720;
           const stream = await this.aiBackService.requestStream(
             prompt,
             {
               requestId: request.requestId,
               sessionId: request.sessionId,
-              history: this.aiChatService.getHistoryMessages(),
+              history: this.aiChatService.getHistoryMessages(MAX_INPUT_TOKENS),
               clientId: this.applicationService.clientId,
               apiKey,
               model,
