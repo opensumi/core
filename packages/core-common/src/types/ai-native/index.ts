@@ -25,6 +25,10 @@ export interface IAINativeCapabilities {
    */
   supportsInlineCompletion?: boolean;
   /**
+   * Use ai to provide code actions
+   */
+  supportsCodeAction?: boolean;
+  /**
    * Use ai to intelligently resolve conflicts
    */
   supportsConflictResolve?: boolean;
@@ -169,8 +173,15 @@ export interface IAIBackServiceOption {
   tools?: any[];
   clientId?: string;
   apiKey?: string;
+  /** 模型提供商，如 openai, anthropic, deepseek */
   model?: string;
+  /** 模型ID，如 gpt-4o-mini, claude-3-5-sonnet-20240620 */
+  modelId?: string;
   baseURL?: string;
+  temperature?: number;
+  topP?: number;
+  topK?: number;
+  providerOptions?: any;
 }
 
 /**
@@ -418,6 +429,9 @@ export interface IHistoryChatMessage extends IChatMessage {
   agentCommand?: string;
   requestId?: string;
   replyStartTime?: number;
+
+  /** 存储工具调用结果等额外信息 */
+  additional?: Record<string, any>;
 }
 
 // ## Code Edits start ##
@@ -425,5 +439,7 @@ export enum ECodeEditsSourceTyping {
   LinterErrors = 'lint_errors',
   LineChange = 'line_change',
   Typing = 'typing',
+  // 主动触发
+  Trigger = 'trigger',
 }
 // ## Code Edits ends ##

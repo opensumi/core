@@ -19,7 +19,7 @@ export class OpenAIModel extends BaseLanguageModel {
     });
   }
 
-  protected getModelIdentifier(provider: OpenAIProvider) {
-    return provider('qwen-max');
+  protected getModelIdentifier(provider: OpenAIProvider, modelId?: string) {
+    return provider(modelId || 'qwen-max');
   }
 }

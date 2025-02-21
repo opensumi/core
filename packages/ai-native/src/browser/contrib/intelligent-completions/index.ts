@@ -1,6 +1,8 @@
 import { Disposable, ECodeEditsSourceTyping } from '@opensumi/ide-core-common';
 import { IModelContentChangedEvent, IPosition, IRange, InlineCompletion } from '@opensumi/ide-monaco';
 
+import { ITriggerData } from './source/trigger.source';
+
 import type { ILineChangeData } from './source/line-change.source';
 import type { ILinterErrorData } from './source/lint-error.source';
 
@@ -25,6 +27,7 @@ export interface ICodeEditsContextBean {
     [ECodeEditsSourceTyping.LinterErrors]?: ILinterErrorData;
     [ECodeEditsSourceTyping.LineChange]?: ILineChangeData;
     [ECodeEditsSourceTyping.Typing]?: IModelContentChangedEvent;
+    [ECodeEditsSourceTyping.Trigger]?: ITriggerData;
   };
 }
 

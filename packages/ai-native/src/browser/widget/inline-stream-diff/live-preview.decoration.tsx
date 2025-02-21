@@ -426,6 +426,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       uri: this.model.uri,
       totalPartialEditCount: this.partialEditWidgetList.length,
       resolvedPartialEditCount: this.partialEditWidgetList.filter((w) => w.isHidden).length,
+      acceptPartialEditCount: this.partialEditWidgetList.filter((w) => w.isAccepted).length,
       currentPartialEdit: {
         addedLinesCount,
         deletedLinesCount,

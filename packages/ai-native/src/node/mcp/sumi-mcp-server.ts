@@ -185,7 +185,7 @@ export class BuiltinMCPServer implements IMCPServer {
     this.started = true;
   }
 
-  async callTool(toolName: string, arg_string: string): Promise<any> {
+  async callTool(toolName: string, toolCallId: string, arg_string: string): Promise<any> {
     if (!this.started) {
       throw new Error('MCP Server not started');
     }
@@ -200,7 +200,10 @@ export class BuiltinMCPServer implements IMCPServer {
       );
       throw error;
     }
-    return this.sumiMCPServer.callMCPTool(toolName, args);
+    return this.sumiMCPServer.callMCPTool(toolName, {
+      ...args,
+      toolCallId,
+    });
   }
 
   async getTools(): ReturnType<Client['listTools']> {

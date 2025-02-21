@@ -85,8 +85,8 @@ describe('MCPServerManager Interface', () => {
     it('should call tool on server', async () => {
       const toolName = 'test-tool';
       const argString = '{"key": "value"}';
-      await mockManager.callTool('test-server', toolName, argString);
-      expect(mockManager.callTool).toHaveBeenCalledWith('test-server', toolName, argString);
+      await mockManager.callTool('test-server', toolName, 'call-x', argString);
+      expect(mockManager.callTool).toHaveBeenCalledWith('test-server', toolName, 'call-x', argString);
     });
 
     it('should get tools from server', async () => {

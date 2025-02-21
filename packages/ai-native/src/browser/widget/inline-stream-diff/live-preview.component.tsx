@@ -66,6 +66,10 @@ export interface IPartialEditEvent {
    */
   totalAddedLinesCount: number;
   /**
+   * 已采纳的个数
+   */
+  acceptPartialEditCount: number;
+  /**
    * 已删除行数
    */
   totalDeletedLinesCount: number;

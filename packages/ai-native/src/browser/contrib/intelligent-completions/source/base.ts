@@ -72,10 +72,10 @@ export class CodeEditsContextBean extends Disposable {
 @Injectable({ multiple: true })
 export abstract class BaseCodeEditsSource extends Disposable {
   @Autowired(IAIReporter)
-  private aiReporter: IAIReporter;
+  private readonly aiReporter: IAIReporter;
 
   @Autowired(PreferenceService)
-  protected preferenceService: PreferenceService;
+  protected readonly preferenceService: PreferenceService;
 
   private cancellationTokenSource = new CancellationTokenSource();
   private readonly relationID = observableValue<string | undefined>(this, undefined);
@@ -143,7 +143,12 @@ export class CodeEditsSourceCollection extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  private sources: BaseCodeEditsSource[] = [];
   public readonly codeEditsContextBean = disposableObservableValue<CodeEditsContextBean | undefined>(this, undefined);
+
+  public getSource(source: ConstructorOf<BaseCodeEditsSource>): BaseCodeEditsSource | undefined {
+    return this.sources.find((s) => s instanceof source);
+  }
 
   constructor(
     private readonly constructorSources: ConstructorOf<BaseCodeEditsSource>[],
@@ -151,13 +156,13 @@ export class CodeEditsSourceCollection extends Disposable {
   ) {
     super();
 
-    const sources = this.constructorSources.map((source) => this.injector.get(source, [this.monacoEditor]));
+    this.sources = this.constructorSources.map((source) => this.injector.get(source, [this.monacoEditor]));
 
-    sources.forEach((source) => this.addDispose(source.mount()));
+    this.sources.forEach((source) => this.addDispose(source.mount()));
 
     // 观察所有 source 的 codeEditsContextBean
     const observerCodeEditsContextBean = derived((reader) => ({
-      codeEditsContextBean: new Map(sources.map((source) => [source, source.codeEditsContextBean.read(reader)])),
+      codeEditsContextBean: new Map(this.sources.map((source) => [source, source.codeEditsContextBean.read(reader)])),
     }));
 
     this.addDispose(
@@ -166,7 +171,7 @@ export class CodeEditsSourceCollection extends Disposable {
         debouncedObservable2(observerCodeEditsContextBean, 0),
         ({ lastValue, newValue }) => {
           // 只拿最新的订阅值，如果 uid 相同，表示该值没有变化，就不用往下通知了
-          const lastSources = sources.filter((source) => {
+          const lastSources = this.sources.filter((source) => {
             const newBean = newValue?.codeEditsContextBean.get(source);
             const lastBean = lastValue?.codeEditsContextBean?.get(source);
             return newBean && (!lastBean || newBean.uid !== lastBean.uid);
@@ -197,7 +202,6 @@ export class CodeEditsSourceCollection extends Disposable {
           }
 
           transaction((tx) => {
-            // 只通知最高优先级的结果
             this.codeEditsContextBean.set(contextBean, tx);
           });
         },

@@ -68,6 +68,9 @@ export const oneOf = (
       case 7:
         v = serializers[7].read();
         break;
+      default: {
+        throw new Error('unknown index: ' + idx);
+      }
     }
 
     v.kind = kinds[idx];

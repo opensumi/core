@@ -148,7 +148,7 @@ export interface ContentSearchResult {
   matchLength: number;
 
   /**
-   * 整行的内容，出于性能考虑，存在 rangeLineText 时为空
+   * 整行的内容，出于性能考虑，存在 renderLineText 时为空
    */
   lineText?: string;
 

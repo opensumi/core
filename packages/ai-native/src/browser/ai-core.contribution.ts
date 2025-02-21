@@ -241,7 +241,7 @@ export class AINativeBrowserContribution
   }
 
   registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
-    const { supportsInlineChat, supportsInlineCompletion, supportsProblemFix } =
+    const { supportsInlineChat, supportsInlineCompletion, supportsProblemFix, supportsCodeAction } =
       this.aiNativeConfigService.capabilities;
 
     register(
@@ -250,8 +250,11 @@ export class AINativeBrowserContribution
       EditorContributionInstantiation.Lazy,
     );
 
-    if (supportsInlineChat) {
+    if (supportsCodeAction) {
       register(SumiLightBulbWidget.ID, SumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+    }
+
+    if (supportsInlineChat) {
       register(
         InlineChatEditorController.ID,
         new SyncDescriptor(InlineChatEditorController, [this.injector]),
@@ -408,6 +411,10 @@ export class AINativeBrowserContribution
           {
             id: AINativeSettingSectionsId.CodeEditsTyping,
             localized: 'preference.ai.native.codeEdits.typing',
+          },
+          {
+            id: AINativeSettingSectionsId.SystemPrompt,
+            localized: 'preference.ai.native.chat.system.prompt',
           },
         ],
       });

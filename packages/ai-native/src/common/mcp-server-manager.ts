@@ -11,7 +11,12 @@ export interface IMCPServer {
 }
 
 export interface MCPServerManager {
-  callTool(serverName: string, toolName: string, arg_string: string): ReturnType<Client['callTool']>;
+  callTool(
+    serverName: string,
+    toolName: string,
+    toolCallId: string,
+    arg_string: string,
+  ): ReturnType<Client['callTool']>;
   removeServer(name: string): void;
   addOrUpdateServer(description: MCPServerDescription): void;
   // invoke in node.js only

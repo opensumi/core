@@ -80,9 +80,10 @@ describe('MCPServerImpl', () => {
     it('should call tool with parsed arguments', async () => {
       const toolName = 'test-tool';
       const argString = '{"key": "value"}';
-      await server.callTool(toolName, argString);
+      await server.callTool(toolName, 'toolCallId', argString);
       expect(mockClient.callTool).toHaveBeenCalledWith({
         name: toolName,
+        toolCallId: 'toolCallId',
         arguments: { key: 'value' },
       });
     });
@@ -90,7 +91,7 @@ describe('MCPServerImpl', () => {
     it('should handle invalid JSON arguments', async () => {
       const toolName = 'test-tool';
       const invalidArgString = '{invalid json}';
-      await server.callTool(toolName, invalidArgString);
+      await server.callTool(toolName, 'toolCallId', invalidArgString);
       expect(mockLogger.error).toHaveBeenCalled();
     });
   });

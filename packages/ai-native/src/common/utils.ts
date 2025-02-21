@@ -48,3 +48,5 @@ export const extractCodeBlocks = (content: string): string => {
 
   return newContents.join('\n');
 };
+
+export const getToolName = (toolName: string, serverName = 'sumi-builtin') => `mcp_${serverName}_${toolName}`;

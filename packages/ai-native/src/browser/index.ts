@@ -30,6 +30,7 @@ import {
 } from '../common';
 import { LLMContextServiceToken } from '../common/llm-context';
 import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
+import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../common/prompts/context-prompt-provider';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { ChatAgentService } from './chat/chat-agent.service';
@@ -59,16 +60,13 @@ import { MCPConfigContribution } from './mcp/config/mcp-config.contribution';
 import { MCPServerProxyService } from './mcp/mcp-server-proxy.service';
 import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
 import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
-import { FindFilesByNameSubstringTool } from './mcp/tools/findFilesByNameSubstring';
-import { GetCurrentFilePathTool } from './mcp/tools/getCurrentFilePath';
+import { EditFileTool } from './mcp/tools/editFile';
+import { FileSearchTool } from './mcp/tools/fileSearch';
 import { GetDiagnosticsByPathTool } from './mcp/tools/getDiagnosticsByPath';
-import { GetFileTextByPathTool } from './mcp/tools/getFileTextByPath';
 import { GetOpenEditorFileDiagnosticsTool } from './mcp/tools/getOpenEditorFileDiagnostics';
-import { GetOpenEditorFileTextTool } from './mcp/tools/getOpenEditorFileText';
-import { GetSelectedTextTool } from './mcp/tools/getSelectedText';
+import { GrepSearchTool } from './mcp/tools/grepSearch';
 import { ListDirTool } from './mcp/tools/listDir';
 import { ReadFileTool } from './mcp/tools/readFile';
-import { ReplaceOpenEditorFileByDiffPreviewerTool } from './mcp/tools/replaceOpenEditorFileByDiffPreviewer';
 import { RunTerminalCommandTool } from './mcp/tools/runTerminalCmd';
 import { AINativePreferencesContribution } from './preferences';
 import { AINativeCoreContribution, MCPServerContribution, TokenMCPServerRegistry } from './types';
@@ -101,16 +99,13 @@ export class AINativeModule extends BrowserModule {
     // MCP Server Contributions START
     ListDirTool,
     ReadFileTool,
+    EditFileTool,
     CreateNewFileWithTextTool,
-    GetSelectedTextTool,
     GetOpenEditorFileDiagnosticsTool,
-    GetOpenEditorFileTextTool,
-    GetFileTextByPathTool,
-    GetCurrentFilePathTool,
-    FindFilesByNameSubstringTool,
+    FileSearchTool,
+    GrepSearchTool,
     GetDiagnosticsByPathTool,
     RunTerminalCommandTool,
-    ReplaceOpenEditorFileByDiffPreviewerTool,
     // MCP Server Contributions END
 
     // Context Service
@@ -199,6 +194,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: InlineDiffService,
       useClass: InlineDiffService,
+    },
+    {
+      token: ChatAgentPromptProvider,
+      useClass: DefaultChatAgentPromptProvider,
     },
   ];
 

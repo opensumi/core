@@ -57,7 +57,7 @@ export interface SectionState {
 interface AccordionViewChangeEvent {
   id: string;
   title?: string;
-  description?: string;
+  description?: string | React.ReactNode;
   message?: string;
   badge?: string | ViewBadge | undefined;
 }
@@ -198,7 +198,7 @@ export class AccordionService extends WithEventBus {
     }
   }
 
-  updateViewDesciption(viewId: string, desc: string) {
+  updateViewDesciption(viewId: string, desc: string | React.ReactNode) {
     const view = this.views.find((view) => view.id === viewId);
     if (view) {
       view.description = desc;

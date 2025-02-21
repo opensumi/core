@@ -34,7 +34,6 @@ export type IChatProgressResponseContent =
   | IChatComponent
   | IChatToolContent;
 
-@Injectable({ multiple: true })
 export class ChatResponseModel extends Disposable {
   #responseParts: IChatProgressResponseContent[] = [];
   get responseParts() {
@@ -218,7 +217,6 @@ export class ChatResponseModel extends Disposable {
   }
 }
 
-@Injectable({ multiple: true })
 export class ChatRequestModel implements IChatRequestModel {
   #requestId: string;
   public get requestId(): string {

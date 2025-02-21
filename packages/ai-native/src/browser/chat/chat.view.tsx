@@ -40,6 +40,7 @@ import {
   TokenMCPServerProxyService,
 } from '../../common';
 import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
+import { ChatAgentPromptProvider } from '../../common/prompts/context-prompt-provider';
 import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
@@ -50,7 +51,7 @@ import { MessageData, createMessageByAI, createMessageByUser } from '../componen
 import { WelcomeMessage } from '../components/WelcomeMsg';
 import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
-import { ChatAgentPromptProvider, ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
+import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';

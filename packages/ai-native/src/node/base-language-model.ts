@@ -1,4 +1,4 @@
-import { CoreMessage, jsonSchema, streamText, tool } from 'ai';
+import { CoreMessage, ToolExecutionOptions, jsonSchema, streamText, tool } from 'ai';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { ChatMessageRole, IAIBackServiceOption, IChatMessage } from '@opensumi/ide-core-common';
@@ -52,6 +52,11 @@ export abstract class BaseLanguageModel {
       allFunctions,
       chatReadableStream,
       options.history || [],
+      options.modelId,
+      options.temperature,
+      options.topP,
+      options.topK,
+      options.providerOptions,
       cancellationToken,
     );
   }
@@ -61,11 +66,12 @@ export abstract class BaseLanguageModel {
       description: toolRequest.description || '',
       // TODO 这里应该是 z.object 而不是 JSON Schema
       parameters: jsonSchema(toolRequest.parameters),
-      execute: async (args: any) => await toolRequest.handler(JSON.stringify(args)),
+      execute: async (args: any, options: ToolExecutionOptions) =>
+        await toolRequest.handler(JSON.stringify(args), options),
     });
   }
 
-  protected abstract getModelIdentifier(provider: any): any;
+  protected abstract getModelIdentifier(provider: any, modelId?: string): any;
 
   protected async handleStreamingRequest(
     provider: any,
@@ -73,6 +79,11 @@ export abstract class BaseLanguageModel {
     tools: ToolRequest[],
     chatReadableStream: ChatReadableStream,
     history: IChatMessage[] = [],
+    modelId?: string,
+    temperature?: number,
+    topP?: number,
+    topK?: number,
+    providerOptions?: Record<string, any>,
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -92,15 +103,18 @@ export abstract class BaseLanguageModel {
         })),
         { role: 'user', content: request },
       ];
-
-      const stream = await streamText({
-        model: this.getModelIdentifier(provider),
+      const stream = streamText({
+        model: this.getModelIdentifier(provider, modelId),
         maxTokens: 4096,
         tools: aiTools,
         messages,
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
         maxSteps: 12,
+        temperature,
+        topP: topP || 0.8,
+        topK: topK || 1,
+        providerOptions,
       });
 
       for await (const chunk of stream.fullStream) {

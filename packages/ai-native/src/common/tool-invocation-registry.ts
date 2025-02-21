@@ -1,3 +1,4 @@
+import { ToolExecutionOptions } from 'ai';
 import { z } from 'zod';
 
 import { Injectable } from '@opensumi/di';
@@ -18,7 +19,7 @@ export interface ToolRequest {
   name: string;
   parameters?: any;
   description?: string;
-  handler: (arg_string: string) => Promise<any>;
+  handler: (arg_string: string, options?: ToolExecutionOptions) => Promise<any>;
   providerName?: string;
 }
 

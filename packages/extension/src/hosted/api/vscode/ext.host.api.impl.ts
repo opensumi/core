@@ -277,5 +277,7 @@ export function createApiFactory(
     TabInputWebview: extTypes.WebviewEditorTabInput,
     TabInputTerminal: extTypes.TerminalEditorTabInput,
     TabInputInteractiveWindow: extTypes.InteractiveWindowInput,
+    InlineEdit: extTypes.InlineEdit,
+    InlineEditTriggerKind: extTypes.InlineEditTriggerKind,
   });
 }

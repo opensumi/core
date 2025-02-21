@@ -1,7 +1,10 @@
+import { ToolExecutionOptions } from 'ai';
+
 import { ILogger } from '@opensumi/ide-core-common';
 
 import { IMCPServer, MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
+import { getToolName } from '../common/utils';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
 import { MCPServerImpl } from './mcp-server';
@@ -51,12 +54,17 @@ export class MCPServerManagerImpl implements MCPServerManager {
     return startedServers;
   }
 
-  callTool(serverName: string, toolName: string, arg_string: string): ReturnType<IMCPServer['callTool']> {
+  callTool(
+    serverName: string,
+    toolName: string,
+    toolCallId: string,
+    arg_string: string,
+  ): ReturnType<IMCPServer['callTool']> {
     const server = this.servers.get(serverName);
     if (!server) {
       throw new Error(`MCP server "${toolName}" not found.`);
     }
-    return server.callTool(toolName, arg_string);
+    return server.callTool(toolName, toolCallId, arg_string);
   }
 
   async startServer(serverName: string): Promise<void> {
@@ -72,7 +80,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
   }
 
   private convertToToolRequest(tool: MCPTool, serverName: string): ToolRequest {
-    const id = `mcp_${serverName}_${tool.name}`;
+    const id = getToolName(tool.name, serverName);
 
     return {
       id,
@@ -80,9 +88,9 @@ export class MCPServerManagerImpl implements MCPServerManager {
       providerName: serverName,
       parameters: tool.inputSchema,
       description: tool.description,
-      handler: async (arg_string: string) => {
+      handler: async (arg_string: string, options?: ToolExecutionOptions) => {
         try {
-          const res = await this.callTool(serverName, tool.name, arg_string);
+          const res = await this.callTool(serverName, tool.name, options?.toolCallId || '', arg_string);
           this.logger.debug(`[MCP: ${serverName}] ${tool.name} called with ${arg_string}`);
           this.logger.debug('Tool execution result:', res);
           return JSON.stringify(res);
