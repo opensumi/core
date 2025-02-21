@@ -30,6 +30,7 @@ import {
 } from '../common';
 import { LLMContextServiceToken } from '../common/llm-context';
 import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
+import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../common/prompts/context-prompt-provider';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { ChatAgentService } from './chat/chat-agent.service';
@@ -197,6 +198,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: InlineDiffService,
       useClass: InlineDiffService,
+    },
+    {
+      token: ChatAgentPromptProvider,
+      useValue: DefaultChatAgentPromptProvider,
     },
   ];
 
