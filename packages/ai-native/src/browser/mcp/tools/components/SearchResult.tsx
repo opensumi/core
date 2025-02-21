@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { IChatInternalService } from '@opensumi/ide-ai-native/lib/common';
 import { LabelService, URI, path, useInjectable } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { IChatInternalService } from '../../../../../';
 import { ChatInternalService } from '../../../chat/chat.internal.service';
 
 import styles from './index.module.less';

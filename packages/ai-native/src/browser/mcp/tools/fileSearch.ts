@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
-import { IChatInternalService } from '@opensumi/ide-ai-native/lib/common';
 import { Domain, URI } from '@opensumi/ide-core-common';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { IChatInternalService } from '../../../../';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 

@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
-import { IChatInternalService } from '@opensumi/ide-ai-native/lib/common';
 import { CancellationToken, Deferred, Domain } from '@opensumi/ide-core-common';
 import { ContentSearchResult, IContentSearchClientService } from '@opensumi/ide-search';
 import { ContentSearchClientService } from '@opensumi/ide-search/lib/browser/search.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { IChatInternalService } from '../../../../';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
