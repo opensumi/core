@@ -1,12 +1,16 @@
 import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
+import { IChatInternalService } from '@opensumi/ide-ai-native/lib/common';
 import { CancellationToken, Deferred, Domain } from '@opensumi/ide-core-common';
-import { IContentSearchClientService } from '@opensumi/ide-search';
+import { ContentSearchResult, IContentSearchClientService } from '@opensumi/ide-search';
 import { ContentSearchClientService } from '@opensumi/ide-search/lib/browser/search.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
+
+import { GrepSearchToolComponent } from './components/SearchResult';
 
 const inputSchema = z.object({
   query: z.string().describe('The regex pattern to search for'),
@@ -25,15 +29,19 @@ const inputSchema = z.object({
 const MAX_RESULTS = 50;
 
 @Domain(MCPServerContribution)
-export class FileSearchTool implements MCPServerContribution {
+export class GrepSearchTool implements MCPServerContribution {
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
 
   @Autowired(IContentSearchClientService)
   private readonly searchService: ContentSearchClientService;
 
+  @Autowired(IChatInternalService)
+  private readonly chatInternalService: ChatInternalService;
+
   registerMCPServer(registry: IMCPServerRegistry): void {
     registry.registerMCPTool(this.getToolDefinition());
+    registry.registerToolComponent('grep_search', GrepSearchToolComponent);
   }
 
   getToolDefinition(): MCPToolDefinition {
@@ -48,7 +56,7 @@ export class FileSearchTool implements MCPServerContribution {
     };
   }
 
-  private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
+  private async handler(args: z.infer<typeof inputSchema> & { toolCallId: string }, logger: MCPLogger) {
     if (!args.query) {
       throw new Error('No ripgrep search parameters provided. Need to give at least a query.');
     }
@@ -78,19 +86,36 @@ export class FileSearchTool implements MCPServerContribution {
     );
     const deferred = new Deferred<string>();
     this.searchService.onDidChange(() => {
+      if (this.searchService.isSearching) {
+        return;
+      }
       const results: string[] = [];
+      const files: string[] = [];
       for (const [fileUri, result] of this.searchService.searchResults.entries()) {
         results.push(
           `File: ${fileUri}\n${result
+            .reduce((acc, r) => {
+              if (acc.find((a) => a.line === r.line)) {
+                return acc;
+              }
+              return [...acc, r];
+            }, [] as ContentSearchResult[])
             .map((r) => `Line: ${r.line}\nContent: ${r.lineText || r.renderLineText}`)
             .join('\n')}`,
         );
+        files.push(fileUri);
       }
       deferred.resolve(results.join('\n\n'));
+      const messages = this.chatInternalService.sessionModel.history.getMessages();
+      this.chatInternalService.sessionModel.history.setMessageAdditional(messages[messages.length - 1].id, {
+        [args.toolCallId]: {
+          files,
+        },
+      });
     });
-
+    const text = await deferred.promise;
     return {
-      content: [{ type: 'text', text: await deferred.promise }],
+      content: [{ type: 'text', text }],
     };
   }
 }

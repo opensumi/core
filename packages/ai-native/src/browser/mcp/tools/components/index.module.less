@@ -65,3 +65,68 @@
 .warning > span {
   color: var(--debugConsole-warningForeground);
 }
+
+.container {
+  border: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  border-radius: 8px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.header {
+  padding: 8px 12px;
+  background-color: var(--design-block-background);
+  border-bottom: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--design-text-foreground);
+  font-size: 12px;
+}
+
+.fileList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: block;
+  background-color: var(--design-block-background);
+}
+
+.fileList.collapsed {
+  display: none;
+}
+
+.fileItem {
+  padding: 2px 6px;
+  font-size: 12px;
+  margin: 0px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--design-text-primary);
+  &:hover {
+    background-color: var(--design-block-background);
+  }
+  > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.fileIcon {
+  color: var(--design-text-secondary);
+  font-size: 12px;
+  width: 16px;
+}
+
+.filePath {
+  color: var(--design-text-secondary);
+  font-size: 12px;
+  margin-left: auto;
+  flex-basis: 0px;
+  flex-grow: 1;
+}

@@ -54,8 +54,17 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
 
   const stateInfo = getStateInfo(value.state);
 
-  return [
-    <div className={styles['chat-tool-render']} key='chat-tool-render'>
+  return ToolComponent && (value.state === 'complete' || value.state === 'result') ? (
+    <ToolComponent
+      state={value.state}
+      args={getParsedArgs()}
+      result={value.result}
+      index={value.index}
+      messageId={messageId}
+      toolCallId={value.id}
+    />
+  ) : (
+    <div className={styles['chat-tool-render']}>
       <div className={styles['tool-header']} onClick={toggleExpand}>
         <div className={styles['tool-name']}>
           <span className={cls(styles['expand-icon'], { [styles.expanded]: isExpanded })}>▶</span>
@@ -82,17 +91,6 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
           </div>
         )}
       </div>
-    </div>,
-    ToolComponent && (
-      <ToolComponent
-        key='tool-component'
-        state={value.state}
-        args={getParsedArgs()}
-        result={value.result}
-        index={value.index}
-        messageId={messageId}
-        toolCallId={value.id}
-      />
-    ),
-  ];
+    </div>
+  );
 };

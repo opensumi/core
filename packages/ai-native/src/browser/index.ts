@@ -59,15 +59,11 @@ import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
 import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
 import { EditFileTool } from './mcp/tools/editFile';
 import { FileSearchTool } from './mcp/tools/fileSearch';
-import { GetCurrentFilePathTool } from './mcp/tools/getCurrentFilePath';
 import { GetDiagnosticsByPathTool } from './mcp/tools/getDiagnosticsByPath';
-import { GetFileTextByPathTool } from './mcp/tools/getFileTextByPath';
 import { GetOpenEditorFileDiagnosticsTool } from './mcp/tools/getOpenEditorFileDiagnostics';
-import { GetOpenEditorFileTextTool } from './mcp/tools/getOpenEditorFileText';
-import { GetSelectedTextTool } from './mcp/tools/getSelectedText';
+import { GrepSearchTool } from './mcp/tools/grepSearch';
 import { ListDirTool } from './mcp/tools/listDir';
 import { ReadFileTool } from './mcp/tools/readFile';
-import { ReplaceOpenEditorFileByDiffPreviewerTool } from './mcp/tools/replaceOpenEditorFileByDiffPreviewer';
 import { RunTerminalCommandTool } from './mcp/tools/runTerminalCmd';
 import { AINativePreferencesContribution } from './preferences';
 import { AINativeCoreContribution, MCPServerContribution, TokenMCPServerRegistry } from './types';
@@ -100,15 +96,11 @@ export class AINativeModule extends BrowserModule {
     ReadFileTool,
     EditFileTool,
     CreateNewFileWithTextTool,
-    GetSelectedTextTool,
     GetOpenEditorFileDiagnosticsTool,
-    GetOpenEditorFileTextTool,
-    GetFileTextByPathTool,
-    GetCurrentFilePathTool,
     FileSearchTool,
+    GrepSearchTool,
     GetDiagnosticsByPathTool,
     RunTerminalCommandTool,
-    ReplaceOpenEditorFileByDiffPreviewerTool,
     // MCP Server Contributions END
 
     // Context Service

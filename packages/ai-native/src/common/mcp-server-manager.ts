@@ -1,19 +1,24 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
 export interface MCPServerManager {
-    callTool(serverName: string, toolName: string, arg_string: string): ReturnType<Client['callTool']>;
-    removeServer(name: string): void;
-    addOrUpdateServer(description: MCPServerDescription): void;
-    // invoke in node.js only
-    addOrUpdateServerDirectly(server: any): void;
-    initBuiltinServer(builtinMCPServer: any): void;
-    getTools(serverName: string): ReturnType<Client['listTools']>;
-    getServerNames(): Promise<string[]>;
-    startServer(serverName: string): Promise<void>;
-    stopServer(serverName: string): Promise<void>;
-    getStartedServers(): Promise<string[]>;
-    registerTools(serverName: string): Promise<void>;
-    addExternalMCPServers(servers: MCPServerDescription[]): void;
+  callTool(
+    serverName: string,
+    toolName: string,
+    toolCallId: string,
+    arg_string: string,
+  ): ReturnType<Client['callTool']>;
+  removeServer(name: string): void;
+  addOrUpdateServer(description: MCPServerDescription): void;
+  // invoke in node.js only
+  addOrUpdateServerDirectly(server: any): void;
+  initBuiltinServer(builtinMCPServer: any): void;
+  getTools(serverName: string): ReturnType<Client['listTools']>;
+  getServerNames(): Promise<string[]>;
+  startServer(serverName: string): Promise<void>;
+  stopServer(serverName: string): Promise<void>;
+  getStartedServers(): Promise<string[]>;
+  registerTools(serverName: string): Promise<void>;
+  addExternalMCPServers(servers: MCPServerDescription[]): void;
 }
 
 export type MCPTool = Awaited<ReturnType<MCPServerManager['getTools']>>['tools'][number];

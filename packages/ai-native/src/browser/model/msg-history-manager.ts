@@ -8,9 +8,13 @@ type IExcludeMessage = Omit<IHistoryChatMessage, 'id' | 'order'>;
 @Injectable({ multiple: false })
 export class MsgHistoryManager extends Disposable {
   private messageMap: Map<string, IHistoryChatMessage> = new Map();
+  private messageAdditionalMap: Map<string, Record<string, any>> = new Map();
 
   private readonly _onMessageChange = new Emitter<IHistoryChatMessage[]>();
   public readonly onMessageChange: Event<IHistoryChatMessage[]> = this._onMessageChange.event;
+
+  private readonly _onMessageAdditionalChange = new Emitter<Record<string, any>>();
+  public readonly onMessageAdditionalChange: Event<Record<string, any>> = this._onMessageAdditionalChange.event;
 
   override dispose(): void {
     this.clearMessages();
@@ -19,6 +23,7 @@ export class MsgHistoryManager extends Disposable {
 
   public clearMessages() {
     this.messageMap.clear();
+    this.messageAdditionalMap.clear();
   }
 
   private doAddMessage(message: IExcludeMessage): string {
@@ -69,5 +74,19 @@ export class MsgHistoryManager extends Disposable {
       ...oldMessage!,
       content: message.content,
     });
+  }
+
+  public setMessageAdditional(id: string, additional: Record<string, any>) {
+    if (!this.messageMap.has(id)) {
+      return;
+    }
+
+    this.messageAdditionalMap.set(id, additional);
+
+    this._onMessageAdditionalChange.fire(additional);
+  }
+
+  public getMessageAdditional(id: string): Record<string, any> {
+    return this.messageAdditionalMap.get(id) || {};
   }
 }

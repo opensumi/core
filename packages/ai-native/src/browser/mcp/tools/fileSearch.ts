@@ -1,11 +1,15 @@
 import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
+import { IChatInternalService } from '@opensumi/ide-ai-native/lib/common';
 import { Domain, URI } from '@opensumi/ide-core-common';
-import { IFileSearchService } from '@opensumi/ide-file-search/lib/common';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
+
+import { FileSearchToolComponent } from './components/SearchResult';
 
 const inputSchema = z.object({
   query: z.string().describe('Fuzzy filename to search for'),
@@ -21,11 +25,15 @@ export class FileSearchTool implements MCPServerContribution {
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
 
-  @Autowired(IFileSearchService)
+  @Autowired(FileSearchServicePath)
   private readonly fileSearchService: IFileSearchService;
+
+  @Autowired(IChatInternalService)
+  private readonly chatInternalService: ChatInternalService;
 
   registerMCPServer(registry: IMCPServerRegistry): void {
     registry.registerMCPTool(this.getToolDefinition());
+    registry.registerToolComponent('file_search', FileSearchToolComponent);
   }
 
   getToolDefinition(): MCPToolDefinition {
@@ -39,7 +47,7 @@ export class FileSearchTool implements MCPServerContribution {
     };
   }
 
-  private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
+  private async handler(args: z.infer<typeof inputSchema> & { toolCallId: string }, logger: MCPLogger) {
     if (!args.query) {
       throw new Error('No fileSearch parameters provided. Need to give a query.');
     }
@@ -52,15 +60,25 @@ export class FileSearchTool implements MCPServerContribution {
     // 使用 OpenSumi 的文件搜索 API
     const searchPattern = args.query;
     const searchResults = await this.fileSearchService.find(searchPattern, {
-      rootUris: [workspaceRoots[0].uri],
+      rootUris: [new URI(workspaceRoots[0].uri).codeUri.fsPath],
       // TODO: 忽略配置
       excludePatterns: ['**/node_modules/**'],
       limit: 100,
+      useGitIgnore: true,
+      noIgnoreParent: true,
+      fuzzyMatch: true,
     });
 
     const files = searchResults.slice(0, MAX_RESULTS).map((file) => {
       const uri = URI.parse(file);
       return uri.codeUri.fsPath;
+    });
+
+    const messages = this.chatInternalService.sessionModel.history.getMessages();
+    this.chatInternalService.sessionModel.history.setMessageAdditional(messages[messages.length - 1].id, {
+      [args.toolCallId]: {
+        files,
+      },
     });
 
     logger.appendLine(`Found ${files.length} files matching "${args.query}"`);

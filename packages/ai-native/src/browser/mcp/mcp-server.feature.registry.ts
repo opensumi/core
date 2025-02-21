@@ -62,8 +62,9 @@ export class MCPServerRegistry implements IMCPServerRegistry {
         throw new Error(`MCP tool ${name} not found`);
       }
       // 统一校验并转换
+      const toolCallId = args.toolCallId;
       args = tool.inputSchema.parse(args);
-      return await tool.handler(args, this.logger);
+      return await tool.handler({ ...args, toolCallId }, this.logger);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('callMCPTool error:', error);
