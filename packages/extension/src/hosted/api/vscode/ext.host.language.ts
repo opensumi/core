@@ -698,7 +698,8 @@ export class ExtHostLanguages implements IExtHostLanguages {
       handle,
       InlineEditAdapter,
       async (adapter) => {
-        adapter.disposeEdit(pid);
+        // 增加延迟释放，避免在 ESC 退出时，InlineEdit 的 Rejected 命令被提前销毁导致异常
+        setTimeout(() => adapter.disposeEdit(pid), 100);
       },
       undefined,
       undefined,
