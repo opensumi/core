@@ -15,13 +15,16 @@ function getResult(raw: string) {
   } = {};
 
   try {
-    const data = JSON.parse(raw);
+    const data: {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    } = JSON.parse(raw);
     if (data.isError) {
       result.isError = data.isError;
     }
 
     if (data.content) {
-      result.text = data.content;
+      result.text = data.content.map((item) => item.text).join('\n');
     }
 
     return result;
@@ -36,7 +39,10 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
   const [disabled, toggleDisabled] = useState(false);
 
   const handleClick = useCallback((approval: boolean) => {
-    handler.handleApproval(toolCallId!, approval);
+    if (!toolCallId) {
+      return;
+    }
+    handler.handleApproval(toolCallId, approval);
     toggleDisabled(true);
   }, []);
 

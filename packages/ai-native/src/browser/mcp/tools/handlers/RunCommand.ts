@@ -56,7 +56,12 @@ export class RunCommandHandler {
       if (!approval) {
         return {
           isError: false,
-          content: 'User rejection',
+          content: [
+            {
+              type: 'text',
+              text: 'User rejection',
+            },
+          ],
         };
       }
     }
@@ -67,11 +72,14 @@ export class RunCommandHandler {
 
     this.terminalController.showTerminalPanel();
 
-    const result: string[] = [];
-    const def = new Deferred<{ isError?: boolean; content: string[] }>();
+    const result: { type: string; text: string }[] = [];
+    const def = new Deferred<{ isError?: boolean; content: { type: string; text: string }[] }>();
 
     terminalClient.onOutput((e) => {
-      result.push(e.data.toString());
+      result.push({
+        type: 'text',
+        text: e.data.toString(),
+      });
     });
 
     terminalClient.onExit((e) => {
