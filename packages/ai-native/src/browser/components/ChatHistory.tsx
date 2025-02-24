@@ -1,4 +1,3 @@
-import { DeleteOutlined } from '@ant-design/icons';
 import cls from 'classnames';
 import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -198,13 +197,14 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
                 handleTitleEdit(item);
               }}
             /> */}
-            <DeleteOutlined
-              title={localize('aiNative.operate.chatHistory.delete')}
+            <EnhanceIcon
+              className={cls('dm-chat-history-item-actions-delete', getIcon('delete'))}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 handleHistoryItemDelete(item);
               }}
+              ariaLabel={localize('aiNative.operate.chatHistory.delete')}
             />
           </div>
         </div>
