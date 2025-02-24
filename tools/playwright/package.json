@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/playwright",
-  "version": "3.7.1",
+  "version": "3.8.0",
   "description": "E2E test module for OpenSumi",
   "files": [
     "lib",
