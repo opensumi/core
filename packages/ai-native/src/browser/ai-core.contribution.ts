@@ -425,6 +425,10 @@ export class AINativeBrowserContribution
             localized: 'preference.ai.native.codeEdits.typing',
           },
           {
+            id: AINativeSettingSectionsId.CodeEditsRenderType,
+            localized: 'preference.ai.native.codeEdits.renderType',
+          },
+          {
             id: AINativeSettingSectionsId.SystemPrompt,
             localized: 'preference.ai.native.chat.system.prompt',
           },

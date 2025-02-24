@@ -1,6 +1,8 @@
 import { AINativeSettingSectionsId, PreferenceSchema } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-common';
 
+import { CodeEditsRenderType } from '../contrib/intelligent-completions';
+
 export enum EInlineDiffPreviewMode {
   inlineLive = 'inlineLive',
   sideBySide = 'sideBySide',
@@ -57,6 +59,12 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     [AINativeSettingSectionsId.CodeEditsLineChange]: {
       type: 'boolean',
       default: false,
+    },
+    [AINativeSettingSectionsId.CodeEditsRenderType]: {
+      type: 'string',
+      default: CodeEditsRenderType.default,
+      enum: [CodeEditsRenderType.legacy, CodeEditsRenderType.default],
+      description: localize('preference.ai.native.codeEdits.renderType'),
     },
     [AINativeSettingSectionsId.LLMModelSelection]: {
       type: 'string',

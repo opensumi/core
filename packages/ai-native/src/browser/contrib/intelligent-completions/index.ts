@@ -1,10 +1,23 @@
 import { Disposable, ECodeEditsSourceTyping } from '@opensumi/ide-core-common';
-import { IModelContentChangedEvent, IPosition, IRange, InlineCompletion } from '@opensumi/ide-monaco';
+import {
+  IModelContentChangedEvent,
+  IPosition,
+  IRange,
+  InlineCompletion,
+  InlineCompletions,
+} from '@opensumi/ide-monaco';
 
 import { ITriggerData } from './source/trigger.source';
 
 import type { ILineChangeData } from './source/line-change.source';
 import type { ILinterErrorData } from './source/lint-error.source';
+
+export const CodeEditsRenderType = {
+  legacy: 'legacy',
+  default: 'default',
+} as const;
+
+export type CodeEditsRenderType = (typeof CodeEditsRenderType)[keyof typeof CodeEditsRenderType];
 
 /**
  * 有效弃用时间（毫秒）
@@ -31,7 +44,7 @@ export interface ICodeEditsContextBean {
   };
 }
 
-export interface ICodeEdit {
+export interface ICodeEdit extends InlineCompletion {
   /**
    * 插入的文本
    */
@@ -41,16 +54,24 @@ export interface ICodeEdit {
    */
   readonly range: IRange;
 }
-export interface ICodeEditsResult {
-  readonly items: ICodeEdit[];
+
+export interface ICodeEditsResult<T extends ICodeEdit = ICodeEdit> extends InlineCompletions<T> {
+  readonly items: readonly T[];
 }
 
-export class CodeEditsResultValue extends Disposable {
-  constructor(private readonly raw: ICodeEditsResult) {
+export class CodeEditsResultValue<T extends ICodeEdit = ICodeEdit> extends Disposable {
+  constructor(private readonly raw: ICodeEditsResult<T>) {
     super();
   }
 
-  public get items(): ICodeEdit[] {
-    return this.raw.items;
+  public get items(): T[] {
+    return this.raw.items.map((item) => ({
+        ...item,
+        isInlineEdit: true,
+      }));
+  }
+
+  public get range(): IRange {
+    return this.raw.items[0].range;
   }
 }
