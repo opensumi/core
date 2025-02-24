@@ -45,7 +45,7 @@ export abstract class BaseLanguageModel {
       throw new Error('clientId is required');
     }
     const registry = this.toolInvocationRegistryManager.getRegistry(clientId);
-    const allFunctions = registry.getAllFunctions();
+    const allFunctions = options.noTool ? [] : registry.getAllFunctions();
     return this.handleStreamingRequest(
       provider,
       request,
