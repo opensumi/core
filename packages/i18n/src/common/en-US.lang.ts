@@ -1560,5 +1560,11 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.command.description': 'Command to start the MCP server',
     'preference.ai.native.mcp.servers.args.description': 'Command line arguments for the MCP server',
     'preference.ai.native.mcp.servers.env.description': 'Environment variables for the MCP server',
+
+    // MCP Terminal Tool
+    'ai.native.mcp.terminal.output': 'Output',
+    'ai.native.ncp.terminal.allow-question': 'Allow the terminal to run the command?',
+    'ai.native.mcp.terminal.allow': 'Allow',
+    'ai.native.mcp.terminal.deny': 'Reject',
   },
 };

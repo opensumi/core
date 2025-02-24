@@ -2,6 +2,7 @@ import React, { memo, useCallback, useMemo, useState } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
+import { localize } from '@opensumi/ide-core-common';
 
 import { IMCPServerToolComponentProps } from '../../../types';
 import { RunCommandHandler } from '../handlers/RunCommand';
@@ -59,7 +60,7 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
         <div>
           <div className={styles.command_title}>
             <Icon icon='terminal' />
-            <span>输出</span>
+            <span>{localize('ai.native.mcp.terminal.output')}</span>
           </div>
           {output ? (
             <div className={styles.command_content}>
@@ -75,7 +76,7 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
         <div>
           <div className={styles.command_title}>
             <Icon icon='terminal' />
-            <span>是否允许运行命令?</span>
+            <span>{localize('ai.native.ncp.terminal.allow-question')}</span>
           </div>
           <p className={styles.command_content}>
             <code>$ {args.command}</code>
@@ -83,10 +84,10 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
           <p className={styles.comand_description}>{args.explanation}</p>
           <div className={styles.cmmand_footer}>
             <Button type='link' size='small' disabled={disabled} onClick={() => handleClick(true)}>
-              允许
+              {localize('ai.native.mcp.terminal.allow')}
             </Button>
             <Button type='link' size='small' disabled={disabled} onClick={() => handleClick(false)}>
-              不允许
+              {localize('ai.native.mcp.terminal.deny')}
             </Button>
           </div>
         </div>
