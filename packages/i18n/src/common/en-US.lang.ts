@@ -1563,7 +1563,7 @@ export const localizationBundle = {
 
     // MCP Terminal Tool
     'ai.native.mcp.terminal.output': 'Output',
-    'ai.native.ncp.terminal.allow-question': 'Allow the terminal to run the command?',
+    'ai.native.mcp.terminal.allow-question': 'Allow the terminal to run the command?',
     'ai.native.mcp.terminal.allow': 'Allow',
     'ai.native.mcp.terminal.deny': 'Reject',
   },

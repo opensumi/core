@@ -1325,7 +1325,7 @@ export const localizationBundle = {
 
     // MCP Terminal Tool
     'ai.native.mcp.terminal.output': '输出',
-    'ai.native.ncp.terminal.allow-question': '是否允许运行命令?',
+    'ai.native.mcp.terminal.allow-question': '是否允许运行命令?',
     'ai.native.mcp.terminal.allow': '允许',
     'ai.native.mcp.terminal.deny': '拒绝',
   },

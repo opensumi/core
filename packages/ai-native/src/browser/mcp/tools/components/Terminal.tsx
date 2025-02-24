@@ -76,7 +76,7 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
         <div>
           <div className={styles.command_title}>
             <Icon icon='terminal' />
-            <span>{localize('ai.native.ncp.terminal.allow-question')}</span>
+            <span>{localize('ai.native.mcp.terminal.allow-question')}</span>
           </div>
           <p className={styles.command_content}>
             <code>$ {args.command}</code>
