@@ -1327,5 +1327,11 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.command.description': '启动 MCP 服务器的命令',
     'preference.ai.native.mcp.servers.args.description': 'MCP 服务器的命令行参数',
     'preference.ai.native.mcp.servers.env.description': 'MCP 服务器的环境变量',
+
+    // MCP Terminal Tool
+    'ai.native.mcp.terminal.output': '输出',
+    'ai.native.mcp.terminal.allow-question': '是否允许运行命令?',
+    'ai.native.mcp.terminal.allow': '允许',
+    'ai.native.mcp.terminal.deny': '拒绝',
   },
 };

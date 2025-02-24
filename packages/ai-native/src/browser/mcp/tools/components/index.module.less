@@ -130,3 +130,39 @@
   flex-basis: 0px;
   flex-grow: 1;
 }
+
+.run_cmd_tool {
+  .command_title {
+    display: flex;
+    align-items: center;
+    span {
+      margin-left: 5px;
+    }
+  }
+
+  .command_content {
+    padding: 4px;
+    font-size: 12px;
+    color: var(--design-text-foreground);
+    margin: 0px;
+    background-color: var(--terminal-background);
+    margin: 10px 0px;
+    border-radius: 4px;
+    overflow: auto;
+
+    code {
+      font-size: 12px;
+      white-space: pre;
+    }
+  }
+
+  .comand_description {
+    font-size: 11px;
+    color: var(--descriptionForeground);
+  }
+
+  .cmmand_footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
