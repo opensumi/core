@@ -31,6 +31,7 @@ export class MsgHistoryManager extends Disposable {
   public clearMessages() {
     this.messageMap.clear();
     this.messageAdditionalMap.clear();
+    this.startIndex = 0;
   }
 
   private doAddMessage(message: IExcludeMessage): string {
@@ -50,8 +51,28 @@ export class MsgHistoryManager extends Disposable {
     return id;
   }
 
-  public getMessages(): IHistoryChatMessage[] {
+  private get messageList(): IHistoryChatMessage[] {
     return Array.from(this.messageMap.values()).sort((a, b) => a.order - b.order);
+  }
+
+  private startIndex = 0;
+
+  private get totalTokens(): number {
+    const list = this.messageList.slice(this.startIndex);
+    return list.reduce((acc, msg) => acc + (msg.content.length || 0), 0) / 3;
+  }
+
+  public get slicedMessageCount(): number {
+    return this.startIndex;
+  }
+
+  public getMessages(maxTokens?: number): IHistoryChatMessage[] {
+    if (maxTokens && this.totalTokens > maxTokens) {
+      while (this.totalTokens > maxTokens) {
+        this.startIndex++;
+      }
+    }
+    return this.messageList.slice(this.startIndex);
   }
 
   public addUserMessage(
