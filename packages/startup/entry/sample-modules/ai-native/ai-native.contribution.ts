@@ -422,7 +422,7 @@ export class AINativeContribution implements AINativeCoreContribution {
 
     registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
       const model = editor.getModel();
-      const maxLine = Math.max(position.lineNumber + 3, model?.getLineCount() ?? 0);
+      const maxLine = Math.min(position.lineNumber + 3, model?.getLineCount() ?? 0);
       const lineMaxColumn = model!.getLineMaxColumn(maxLine) ?? 1;
 
       const value = model!.getValueInRange({
