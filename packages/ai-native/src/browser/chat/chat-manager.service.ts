@@ -4,19 +4,41 @@ import {
   CancellationTokenSource,
   Disposable,
   DisposableMap,
+  Emitter,
   IChatProgress,
+  IStorage,
+  STORAGE_NAMESPACE,
+  StorageProvider,
 } from '@opensumi/ide-core-common';
-import { ChatMessageRole } from '@opensumi/ide-core-common/lib/types/ai-native';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatMessageRole, IChatMessage, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
-import { IChatAgentService } from '../../common';
+import { IChatAgentService, IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
+import { MsgHistoryManager } from '../model/msg-history-manager';
 
-import { ChatModel, ChatRequestModel } from './chat-model';
+import { ChatModel, ChatRequestModel, ChatResponseModel, IChatProgressResponseContent } from './chat-model';
+
+interface ISessionModel {
+  sessionId: string;
+  history: { additional: Record<string, any>; messages: IHistoryChatMessage[] };
+  requests: {
+    requestId: string;
+    message: IChatRequestMessage;
+    response: {
+      isCanceled: boolean;
+      responseText: string;
+      responseContents: IChatProgressResponseContent[];
+      errorDetails: IChatResponseErrorDetails | undefined;
+      followups: IChatFollowup[];
+    };
+  }[];
+}
 
 @Injectable()
 export class ChatManagerService extends Disposable {
   #sessionModels = this.registerDispose(new DisposableMap<string, ChatModel>());
   #pendingRequests = this.registerDispose(new DisposableMap<string, CancellationTokenSource>());
+  private storageInitEmitter = new Emitter<void>();
+  public onStorageInit = this.storageInitEmitter.event;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -24,12 +46,59 @@ export class ChatManagerService extends Disposable {
   @Autowired(IChatAgentService)
   chatAgentService: IChatAgentService;
 
+  @Autowired(StorageProvider)
+  private storageProvider: StorageProvider;
+
+  private _chatStorage: IStorage;
+
+  protected fromJSON(data: ISessionModel[]) {
+    // TODO: 支持ApplyService恢复
+    return data.map((item) => {
+      const model = new ChatModel({
+        sessionId: item.sessionId,
+        history: new MsgHistoryManager(item.history),
+      });
+      const requests = item.requests.map(
+        (request) =>
+          new ChatRequestModel(
+            request.requestId,
+            model,
+            request.message,
+            new ChatResponseModel(request.requestId, model, request.message.agentId, {
+              responseContents: request.response.responseContents,
+              isComplete: true,
+              responseText: request.response.responseText,
+              errorDetails: request.response.errorDetails,
+              followups: request.response.followups,
+              isCanceled: request.response.isCanceled,
+            }),
+          ),
+      );
+      model.restoreRequests(requests);
+      return model;
+    });
+  }
+
   constructor() {
     super();
   }
 
+  async init() {
+    this._chatStorage = await this.storageProvider(STORAGE_NAMESPACE.CHAT);
+    const sessionsModelData = this._chatStorage.get<ISessionModel[]>('sessionModels', []);
+    const savedSessions = this.fromJSON(sessionsModelData);
+    savedSessions.forEach((session) => {
+      this.#sessionModels.set(session.sessionId, session);
+    });
+    await this.storageInitEmitter.fireAndAwait();
+  }
+
+  getSessions() {
+    return Array.from(this.#sessionModels.values());
+  }
+
   startSession() {
-    const model = this.injector.get(ChatModel);
+    const model = new ChatModel();
     this.#sessionModels.set(model.sessionId, model);
     return model;
   }
@@ -46,6 +115,7 @@ export class ChatManagerService extends Disposable {
     this.#sessionModels.disposeKey(sessionId);
     this.#pendingRequests.get(sessionId)?.cancel();
     this.#pendingRequests.disposeKey(sessionId);
+    this.saveSessions();
   }
 
   createRequest(sessionId: string, message: string, agentId: string, command?: string) {
@@ -122,11 +192,17 @@ export class ChatManagerService extends Disposable {
     } finally {
       listener.dispose();
       this.#pendingRequests.disposeKey(model.sessionId);
+      this.saveSessions();
     }
+  }
+
+  protected saveSessions() {
+    this._chatStorage.set('sessionModels', this.getSessions());
   }
 
   cancelRequest(sessionId: string) {
     this.#pendingRequests.get(sessionId)?.cancel();
     this.#pendingRequests.disposeKey(sessionId);
+    this.saveSessions();
   }
 }

@@ -1484,6 +1484,11 @@ export const localizationBundle = {
     'aiNative.operate.stop.title': 'Stop',
     'aiNative.operate.close.title': 'Close',
     'aiNative.operate.clear.title': 'Clear',
+    'aiNative.operate.newChat.title': 'New Chat',
+    'aiNative.operate.chatHistory.title': 'Chat History',
+    'aiNative.operate.chatHistory.searchPlaceholder': 'Search Chats...',
+    'aiNative.operate.chatHistory.edit': 'Edit',
+    'aiNative.operate.chatHistory.delete': 'Delete',
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
     'aiNative.chat.ai.assistant.limit.message': '{0} earliest messages are dropped due to the input token limit',
