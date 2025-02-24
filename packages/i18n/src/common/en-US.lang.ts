@@ -1484,6 +1484,7 @@ export const localizationBundle = {
     'aiNative.operate.stop.title': 'Stop',
     'aiNative.operate.close.title': 'Close',
     'aiNative.operate.clear.title': 'Clear',
+    'aiNative.operate.tools.title': 'MCP Tools',
     'aiNative.operate.newChat.title': 'New Chat',
     'aiNative.operate.chatHistory.title': 'Chat History',
     'aiNative.operate.chatHistory.searchPlaceholder': 'Search Chats...',
