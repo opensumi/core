@@ -22,6 +22,8 @@ export enum AINativeSettingSectionsId {
    */
   CodeEditsLintErrors = 'ai.native.codeEdits.lintErrors',
   CodeEditsLineChange = 'ai.native.codeEdits.lineChange',
+  CodeEditsTyping = 'ai.native.codeEdits.typing',
+  CodeEditsRenderType = 'ai.native.codeEdits.renderType',
 
   /**
    * Language model API keys
@@ -36,7 +38,6 @@ export enum AINativeSettingSectionsId {
    * MCP Server configurations
    */
   MCPServers = 'ai.native.mcp.servers',
-  CodeEditsTyping = 'ai.native.codeEdits.typing',
 
   /**
    * System prompt

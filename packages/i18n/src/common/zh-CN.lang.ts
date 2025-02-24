@@ -1287,6 +1287,8 @@ export const localizationBundle = {
     'preference.ai.native.codeEdits.lintErrors': '是否在发生 Lint Error 时触发智能改写',
     'preference.ai.native.codeEdits.lineChange': '是否在光标行号发生变化时触发智能改写',
     'preference.ai.native.codeEdits.typing': '是否在内容发生变化时触发智能改写',
+    'preference.ai.native.codeEdits.renderType': '智能改写渲染方式',
+
     'preference.ai.native.chat.system.prompt': '默认聊天系统提示词',
     // #endregion AI Native
 
