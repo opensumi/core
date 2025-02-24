@@ -61,7 +61,13 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
             <Icon icon='terminal' />
             <span>输出</span>
           </div>
-          {output ? <div className={styles.command_content}>{output.text}</div> : ''}
+          {output ? (
+            <div className={styles.command_content}>
+              <code>{output.text}</code>
+            </div>
+          ) : (
+            ''
+          )}
         </div>
       )}
 
@@ -71,7 +77,9 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
             <Icon icon='terminal' />
             <span>是否允许运行命令?</span>
           </div>
-          <p className={styles.command_content}>{args.command}</p>
+          <p className={styles.command_content}>
+            <code>$ {args.command}</code>
+          </p>
           <p className={styles.comand_description}>{args.explanation}</p>
           <div className={styles.cmmand_footer}>
             <Button type='link' size='small' disabled={disabled} onClick={() => handleClick(true)}>
