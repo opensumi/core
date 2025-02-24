@@ -25,7 +25,7 @@
   .dm-chat-history-header-actions {
     display: flex;
     align-items: center;
-    font-size: 14px;
+    font-size: 12px;
 
     .dm-chat-history-header-actions-history {
       cursor: pointer;
