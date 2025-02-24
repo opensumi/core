@@ -1252,6 +1252,11 @@ export const localizationBundle = {
     'aiNative.operate.stop.title': '停止',
     'aiNative.operate.close.title': '关闭',
     'aiNative.operate.clear.title': '清空',
+    'aiNative.operate.newChat.title': '新建聊天',
+    'aiNative.operate.chatHistory.title': '聊天历史',
+    'aiNative.operate.chatHistory.searchPlaceholder': '请搜索...',
+    'aiNative.operate.chatHistory.edit': '编辑',
+    'aiNative.operate.chatHistory.delete': '删除',
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
 

@@ -5,7 +5,6 @@ import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-nati
 
 type IExcludeMessage = Omit<IHistoryChatMessage, 'id' | 'order'>;
 
-@Injectable({ multiple: false })
 export class MsgHistoryManager extends Disposable {
   private messageMap: Map<string, IHistoryChatMessage> = new Map();
   private messageAdditionalMap: Map<string, Record<string, any>> = new Map();
@@ -15,6 +14,14 @@ export class MsgHistoryManager extends Disposable {
 
   private readonly _onMessageAdditionalChange = new Emitter<Record<string, any>>();
   public readonly onMessageAdditionalChange: Event<Record<string, any>> = this._onMessageAdditionalChange.event;
+
+  constructor(data?: { additional: Record<string, any>; messages: IHistoryChatMessage[] }) {
+    super();
+    if (data) {
+      this.messageMap = new Map(data.messages.map((item) => [item.id, item]));
+      this.messageAdditionalMap = new Map(Object.entries(data.additional));
+    }
+  }
 
   override dispose(): void {
     this.clearMessages();
@@ -88,5 +95,12 @@ export class MsgHistoryManager extends Disposable {
 
   public getMessageAdditional(id: string): Record<string, any> {
     return this.messageAdditionalMap.get(id) || {};
+  }
+
+  toJSON() {
+    return {
+      messages: this.getMessages(),
+      additional: Object.fromEntries(this.messageAdditionalMap.entries()),
+    };
   }
 }
