@@ -12,12 +12,10 @@ import { ITriggerData } from './source/trigger.source';
 import type { ILineChangeData } from './source/line-change.source';
 import type { ILinterErrorData } from './source/lint-error.source';
 
-export const CodeEditsRenderType = {
-  legacy: 'legacy',
-  default: 'default',
-} as const;
-
-export type CodeEditsRenderType = (typeof CodeEditsRenderType)[keyof typeof CodeEditsRenderType];
+export enum CodeEditsRenderType {
+  Legacy = 'legacy',
+  Default = 'default',
+}
 
 /**
  * 有效弃用时间（毫秒）
@@ -66,9 +64,9 @@ export class CodeEditsResultValue<T extends ICodeEdit = ICodeEdit> extends Dispo
 
   public get items(): T[] {
     return this.raw.items.map((item) => ({
-        ...item,
-        isInlineEdit: true,
-      }));
+      ...item,
+      isInlineEdit: true,
+    }));
   }
 
   public get range(): IRange {

@@ -29,7 +29,7 @@ export class CodeEditsPreviewer extends Disposable {
     super();
 
     this.renderTypeObs = observableFromEvent(this, this.preferenceService.onPreferenceChanged, () =>
-      this.preferenceService.getValid(AINativeSettingSectionsId.CodeEditsRenderType, CodeEditsRenderType.default),
+      this.preferenceService.getValid(AINativeSettingSectionsId.CodeEditsRenderType, CodeEditsRenderType.Default),
     );
 
     this.addDispose(
@@ -40,7 +40,7 @@ export class CodeEditsPreviewer extends Disposable {
           this.view = undefined;
         }
 
-        if (renderType === CodeEditsRenderType.default) {
+        if (renderType === CodeEditsRenderType.Default) {
           this.view = new DefaultCodeEditsView(this.monacoEditor, this.injector);
         } else {
           this.view = new LegacyCodeEditsView(this.monacoEditor, this.injector);

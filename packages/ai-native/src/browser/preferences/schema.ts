@@ -62,8 +62,8 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.CodeEditsRenderType]: {
       type: 'string',
-      default: CodeEditsRenderType.default,
-      enum: [CodeEditsRenderType.legacy, CodeEditsRenderType.default],
+      default: CodeEditsRenderType.Default,
+      enum: [CodeEditsRenderType.Legacy, CodeEditsRenderType.Default],
       description: localize('preference.ai.native.codeEdits.renderType'),
     },
     [AINativeSettingSectionsId.LLMModelSelection]: {
