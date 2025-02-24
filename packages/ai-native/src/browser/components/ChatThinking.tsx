@@ -118,7 +118,7 @@ export const ChatThinkingResult = ({
 
   const isRenderRegenerate = useMemo(() => {
     if (isUndefined(showRegenerate)) {
-      return latestRequestId === requestId;
+      return latestRequestId === requestId && !!requestId;
     }
 
     return !!showRegenerate;
