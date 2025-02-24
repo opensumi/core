@@ -1484,8 +1484,14 @@ export const localizationBundle = {
     'aiNative.operate.stop.title': 'Stop',
     'aiNative.operate.close.title': 'Close',
     'aiNative.operate.clear.title': 'Clear',
+    'aiNative.operate.newChat.title': 'New Chat',
+    'aiNative.operate.chatHistory.title': 'Chat History',
+    'aiNative.operate.chatHistory.searchPlaceholder': 'Search Chats...',
+    'aiNative.operate.chatHistory.edit': 'Edit',
+    'aiNative.operate.chatHistory.delete': 'Delete',
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
+    'aiNative.chat.ai.assistant.limit.message': '{0} earliest messages are dropped due to the input token limit',
 
     'preference.ai.native.inlineChat.title': 'Inline Chat',
     'preference.ai.native.chat.title': 'Chat',
@@ -1560,5 +1566,11 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.command.description': 'Command to start the MCP server',
     'preference.ai.native.mcp.servers.args.description': 'Command line arguments for the MCP server',
     'preference.ai.native.mcp.servers.env.description': 'Environment variables for the MCP server',
+
+    // MCP Terminal Tool
+    'ai.native.mcp.terminal.output': 'Output',
+    'ai.native.mcp.terminal.allow-question': 'Allow the terminal to run the command?',
+    'ai.native.mcp.terminal.allow': 'Allow',
+    'ai.native.mcp.terminal.deny': 'Reject',
   },
 };

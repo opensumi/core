@@ -21,10 +21,12 @@ import {
   ChatRenderRegistryToken,
   ChatServiceToken,
   Disposable,
+  DisposableCollection,
   IAIReporter,
   IChatComponent,
   IChatContent,
   MessageType,
+  formatLocalize,
   localize,
   uuid,
 } from '@opensumi/ide-core-common';
@@ -43,6 +45,7 @@ import { LLMContextService, LLMContextServiceToken } from '../../common/llm-cont
 import { ChatAgentPromptProvider } from '../../common/prompts/context-prompt-provider';
 import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
+import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
@@ -66,6 +69,8 @@ interface TDispatchAction {
   type: 'add' | 'clear' | 'init';
   payload?: MessageData[];
 }
+
+const MAX_TITLE_LENGTH = 100;
 
 export const AIChatView = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
@@ -448,7 +453,9 @@ export const AIChatView = () => {
               setLoading(false);
             }}
             onRegenerate={() => {
-              aiChatService.sendRequest(request, true);
+              if (request) {
+                aiChatService.sendRequest(request, true);
+              }
             }}
             msgId={msgId}
           />
@@ -611,7 +618,8 @@ export const AIChatView = () => {
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.requestId) {
           const request = aiChatService.sessionModel.getRequest(msg.requestId)!;
-          if (!request.response.isComplete) {
+          // 从storage恢复时，request为undefined
+          if (request && !request.response.isComplete) {
             setLoading(true);
           }
           await renderReply({
@@ -621,7 +629,7 @@ export const AIChatView = () => {
             agentId: msg.agentId,
             command: msg.agentCommand,
             startTime: msg.replyStartTime!,
-            request: aiChatService.sessionModel.getRequest(msg.requestId)!,
+            request,
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.content) {
           await renderSimpleMarkdownReply({
@@ -689,6 +697,13 @@ export const AIChatView = () => {
               dataSource={messageListData}
             />
           </div>
+          {msgHistoryManager.slicedMessageCount ? (
+            <div className={styles.chat_tips_text}>
+              <div className={styles.chat_tips_container}>
+                {formatLocalize('aiNative.chat.ai.assistant.limit.message', msgHistoryManager.slicedMessageCount)}
+              </div>
+            </div>
+          ) : null}
           <div className={styles.chat_input_wrap}>
             <ChatContext />
             <div className={styles.header_operate}>
@@ -750,44 +765,121 @@ export function DefaultChatViewHeader({
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
-  const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
+  const [currentTitle, setCurrentTitle] = React.useState<string>('');
+  const handleNewChat = React.useCallback(() => {
+    if (aiChatService.sessionModel.history.getMessages().length > 0) {
+      aiChatService.createSessionModel();
+    }
+  }, [aiChatService]);
+  const handleHistoryItemSelect = React.useCallback(
+    (item: IChatHistoryItem) => {
+      aiChatService.activateSession(item.id);
+    },
+    [aiChatService],
+  );
+  const handleHistoryItemDelete = React.useCallback(
+    (item: IChatHistoryItem) => {
+      aiChatService.clearSessionModel(item.id);
+    },
+    [aiChatService],
+  );
+
+  React.useEffect(() => {
+    const getHistoryList = () => {
+      const currentMessages = aiChatService.sessionModel.history.getMessages();
+      setCurrentTitle(
+        currentMessages.length > 0
+          ? currentMessages[currentMessages.length - 1].content.slice(0, MAX_TITLE_LENGTH)
+          : '',
+      );
+      setHistoryList(
+        aiChatService.getSessions().map((session) => {
+          const history = session.history;
+          const messages = history.getMessages();
+          const title = messages.length > 0 ? messages[0].content.slice(0, MAX_TITLE_LENGTH) : '';
+          const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
+          // const loading = session.requests[session.requests.length - 1]?.response.isComplete;
+          return {
+            id: session.sessionId,
+            title,
+            updatedAt,
+            // TODO: 后续支持
+            loading: false,
+          };
+        }),
+      );
+    };
+    getHistoryList();
+    const toDispose = new DisposableCollection();
+    const sessionListenIds = new Set<string>();
+    toDispose.push(
+      aiChatService.onChangeSession((sessionId) => {
+        getHistoryList();
+        if (sessionListenIds.has(sessionId)) {
+          return;
+        }
+        sessionListenIds.add(sessionId);
+        toDispose.push(
+          aiChatService.sessionModel.history.onMessageChange(() => {
+            getHistoryList();
+          }),
+        );
+      }),
+    );
+    toDispose.push(
+      aiChatService.sessionModel.history.onMessageChange(() => {
+        getHistoryList();
+      }),
+    );
+    return () => {
+      toDispose.dispose();
+    };
+  }, [aiChatService]);
 
   return (
-    <>
-      <div className={styles.left}>
-        <span className={styles.title}>{aiAssistantName}</span>
-      </div>
-      <div className={styles.right}>
-        <Popover
-          overlayClassName={styles.popover_icon}
-          id={'ai-chat-header-clear'}
-          title={localize('aiNative.operate.clear.title')}
-        >
-          <EnhanceIcon
-            wrapperClassName={styles.action_btn}
-            className={getIcon('clear')}
-            onClick={handleClear}
-            tabIndex={0}
-            role='button'
-            ariaLabel={localize('aiNative.operate.clear.title')}
-          />
-        </Popover>
-        <Popover
-          overlayClassName={styles.popover_icon}
-          id={'ai-chat-header-close'}
-          position={PopoverPosition.left}
-          title={localize('aiNative.operate.close.title')}
-        >
-          <EnhanceIcon
-            wrapperClassName={styles.action_btn}
-            className={getIcon('window-close')}
-            onClick={handleCloseChatView}
-            tabIndex={0}
-            role='button'
-            ariaLabel={localize('aiNative.operate.close.title')}
-          />
-        </Popover>
-      </div>
-    </>
+    <div className={styles.header}>
+      <ChatHistory
+        className={styles.chat_history}
+        // 取对话名称
+        currentId={aiChatService.sessionModel.sessionId}
+        title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
+        historyList={historyList}
+        onNewChat={handleNewChat}
+        onHistoryItemSelect={handleHistoryItemSelect}
+        onHistoryItemDelete={handleHistoryItemDelete}
+        onHistoryItemChange={() => {}}
+      />
+      <Popover
+        overlayClassName={styles.popover_icon}
+        id={'ai-chat-header-clear'}
+        title={localize('aiNative.operate.clear.title')}
+      >
+        <EnhanceIcon
+          wrapperClassName={styles.action_btn}
+          className={getIcon('clear')}
+          onClick={handleClear}
+          tabIndex={0}
+          role='button'
+          ariaLabel={localize('aiNative.operate.clear.title')}
+        />
+      </Popover>
+      <Popover
+        overlayClassName={styles.popover_icon}
+        id={'ai-chat-header-close'}
+        position={PopoverPosition.left}
+        title={localize('aiNative.operate.close.title')}
+      >
+        <EnhanceIcon
+          wrapperClassName={styles.action_btn}
+          className={getIcon('window-close')}
+          onClick={handleCloseChatView}
+          tabIndex={0}
+          role='button'
+          ariaLabel={localize('aiNative.operate.close.title')}
+        />
+      </Popover>
+    </div>
   );
 }

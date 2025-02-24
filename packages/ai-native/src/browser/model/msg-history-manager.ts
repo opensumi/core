@@ -5,7 +5,6 @@ import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-nati
 
 type IExcludeMessage = Omit<IHistoryChatMessage, 'id' | 'order'>;
 
-@Injectable({ multiple: false })
 export class MsgHistoryManager extends Disposable {
   private messageMap: Map<string, IHistoryChatMessage> = new Map();
   private messageAdditionalMap: Map<string, Record<string, any>> = new Map();
@@ -16,6 +15,14 @@ export class MsgHistoryManager extends Disposable {
   private readonly _onMessageAdditionalChange = new Emitter<Record<string, any>>();
   public readonly onMessageAdditionalChange: Event<Record<string, any>> = this._onMessageAdditionalChange.event;
 
+  constructor(data?: { additional: Record<string, any>; messages: IHistoryChatMessage[] }) {
+    super();
+    if (data) {
+      this.messageMap = new Map(data.messages.map((item) => [item.id, item]));
+      this.messageAdditionalMap = new Map(Object.entries(data.additional));
+    }
+  }
+
   override dispose(): void {
     this.clearMessages();
     super.dispose();
@@ -24,6 +31,7 @@ export class MsgHistoryManager extends Disposable {
   public clearMessages() {
     this.messageMap.clear();
     this.messageAdditionalMap.clear();
+    this.startIndex = 0;
   }
 
   private doAddMessage(message: IExcludeMessage): string {
@@ -43,8 +51,28 @@ export class MsgHistoryManager extends Disposable {
     return id;
   }
 
-  public getMessages(): IHistoryChatMessage[] {
+  private get messageList(): IHistoryChatMessage[] {
     return Array.from(this.messageMap.values()).sort((a, b) => a.order - b.order);
+  }
+
+  private startIndex = 0;
+
+  private get totalTokens(): number {
+    const list = this.messageList.slice(this.startIndex);
+    return list.reduce((acc, msg) => acc + (msg.content.length || 0), 0) / 3;
+  }
+
+  public get slicedMessageCount(): number {
+    return this.startIndex;
+  }
+
+  public getMessages(maxTokens?: number): IHistoryChatMessage[] {
+    if (maxTokens && this.totalTokens > maxTokens) {
+      while (this.totalTokens > maxTokens) {
+        this.startIndex++;
+      }
+    }
+    return this.messageList.slice(this.startIndex);
   }
 
   public addUserMessage(
@@ -88,5 +116,12 @@ export class MsgHistoryManager extends Disposable {
 
   public getMessageAdditional(id: string): Record<string, any> {
     return this.messageAdditionalMap.get(id) || {};
+  }
+
+  toJSON() {
+    return {
+      messages: this.getMessages(),
+      additional: Object.fromEntries(this.messageAdditionalMap.entries()),
+    };
   }
 }

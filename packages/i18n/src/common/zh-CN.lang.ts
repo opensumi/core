@@ -1252,8 +1252,14 @@ export const localizationBundle = {
     'aiNative.operate.stop.title': '停止',
     'aiNative.operate.close.title': '关闭',
     'aiNative.operate.clear.title': '清空',
+    'aiNative.operate.newChat.title': '新建聊天',
+    'aiNative.operate.chatHistory.title': '聊天历史',
+    'aiNative.operate.chatHistory.searchPlaceholder': '请搜索...',
+    'aiNative.operate.chatHistory.edit': '编辑',
+    'aiNative.operate.chatHistory.delete': '删除',
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
+    'aiNative.chat.ai.assistant.limit.message': '{0} 条最早的消息因输入 Tokens 限制而被丢弃',
 
     'preference.ai.native.inlineChat.title': 'Inline Chat',
     'preference.ai.native.chat.title': 'Chat',
@@ -1322,5 +1328,11 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.command.description': '启动 MCP 服务器的命令',
     'preference.ai.native.mcp.servers.args.description': 'MCP 服务器的命令行参数',
     'preference.ai.native.mcp.servers.env.description': 'MCP 服务器的环境变量',
+
+    // MCP Terminal Tool
+    'ai.native.mcp.terminal.output': '输出',
+    'ai.native.mcp.terminal.allow-question': '是否允许运行命令?',
+    'ai.native.mcp.terminal.allow': '允许',
+    'ai.native.mcp.terminal.deny': '拒绝',
   },
 };

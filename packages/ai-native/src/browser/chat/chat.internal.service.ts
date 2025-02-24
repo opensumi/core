@@ -43,9 +43,15 @@ export class ChatInternalService extends Disposable {
     return this.#sessionModel;
   }
 
-  constructor() {
-    super();
-    this.#sessionModel = this.chatManagerService.startSession();
+  init() {
+    this.chatManagerService.onStorageInit(() => {
+      const sessions = this.chatManagerService.getSessions();
+      if (sessions.length > 0) {
+        this.activateSession(sessions[sessions.length - 1].sessionId);
+      } else {
+        this.createSessionModel();
+      }
+    });
   }
 
   public setLatestRequestId(id: string): void {
@@ -70,10 +76,22 @@ export class ChatInternalService extends Disposable {
     this._onCancelRequest.fire();
   }
 
-  clearSessionModel() {
-    this.chatManagerService.clearSession(this.#sessionModel.sessionId);
+  createSessionModel() {
     this.#sessionModel = this.chatManagerService.startSession();
     this._onChangeSession.fire(this.#sessionModel.sessionId);
+  }
+
+  clearSessionModel(sessionId?: string) {
+    sessionId = sessionId || this.#sessionModel.sessionId;
+    this.chatManagerService.clearSession(sessionId);
+    if (sessionId === this.#sessionModel.sessionId) {
+      this.#sessionModel = this.chatManagerService.startSession();
+    }
+    this._onChangeSession.fire(this.#sessionModel.sessionId);
+  }
+
+  getSessions() {
+    return this.chatManagerService.getSessions();
   }
 
   activateSession(sessionId: string) {

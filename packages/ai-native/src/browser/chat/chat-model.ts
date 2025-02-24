@@ -80,9 +80,29 @@ export class ChatResponseModel extends Disposable {
     return this.#onDidChange.event;
   }
 
-  constructor(requestId: string, public readonly session: IChatModel, public readonly agentId: string) {
+  constructor(
+    requestId: string,
+    public readonly session: IChatModel,
+    public readonly agentId: string,
+    initParams?: {
+      isComplete: boolean;
+      isCanceled: boolean;
+      responseContents: IChatProgressResponseContent[];
+      responseText: string;
+      errorDetails: IChatResponseErrorDetails | undefined;
+      followups: IChatFollowup[] | undefined;
+    },
+  ) {
     super();
     this.#requestId = requestId;
+    if (initParams) {
+      this.#responseContents = initParams.responseContents;
+      this.#responseText = initParams.responseText;
+      this.#isComplete = initParams.isComplete;
+      this.#isCanceled = initParams.isCanceled;
+      this.#errorDetails = initParams.errorDetails;
+      this.#followups = initParams.followups;
+    }
   }
 
   updateContent(progress: IChatProgress, quiet?: boolean): void {
@@ -215,6 +235,16 @@ export class ChatResponseModel extends Disposable {
     this.#followups = followups;
     this.#onDidChange.fire();
   }
+
+  toJSON() {
+    return {
+      isCanceled: this.isCanceled,
+      responseContents: this.responseContents,
+      responseText: this.responseText,
+      errorDetails: this.errorDetails,
+      followups: this.followups,
+    };
+  }
 }
 
 export class ChatRequestModel implements IChatRequestModel {
@@ -231,19 +261,29 @@ export class ChatRequestModel implements IChatRequestModel {
   ) {
     this.#requestId = requestId;
   }
+
+  toJSON() {
+    return {
+      requestId: this.requestId,
+      message: this.message,
+      response: this.response,
+    };
+  }
 }
 
-@Injectable({ multiple: true })
 export class ChatModel extends Disposable implements IChatModel {
   private static requestIdPool = 0;
 
-  @Autowired(ILogger)
-  protected readonly logger: ILogger;
+  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; requests?: ChatRequestModel[] }) {
+    super();
+    this.#sessionId = initParams?.sessionId ?? uuid();
+    this.history = initParams?.history ?? new MsgHistoryManager();
+    if (initParams?.requests) {
+      this.#requests = new Map(initParams.requests.map((r) => [r.requestId, r]));
+    }
+  }
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
-
-  #sessionId: string = uuid();
+  #sessionId: string;
   get sessionId(): string {
     return this.#sessionId;
   }
@@ -253,10 +293,11 @@ export class ChatModel extends Disposable implements IChatModel {
     return Array.from(this.#requests.values());
   }
 
-  @memoize
-  get history(): MsgHistoryManager {
-    return this.injector.get(MsgHistoryManager, []);
+  restoreRequests(requests: ChatRequestModel[]): void {
+    this.#requests = new Map(requests.map((r) => [r.requestId, r]));
   }
+
+  readonly history: MsgHistoryManager;
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
     const requestId = `${this.sessionId}_request_${ChatModel.requestIdPool++}`;
@@ -279,7 +320,8 @@ export class ChatModel extends Disposable implements IChatModel {
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);
     } else {
-      this.logger.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
+      // eslint-disable-next-line no-console
+      console.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
     }
   }
 
@@ -290,6 +332,14 @@ export class ChatModel extends Disposable implements IChatModel {
   override dispose(): void {
     super.dispose();
     this.#requests.forEach((r) => r.response.dispose());
+  }
+
+  toJSON() {
+    return {
+      sessionId: this.sessionId,
+      history: this.history,
+      requests: this.requests,
+    };
   }
 }
 

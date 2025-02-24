@@ -73,12 +73,16 @@ import {
   AI_CHAT_VIEW_ID,
   AI_MENU_BAR_DEBUG_TOOLBAR,
   ChatProxyServiceToken,
+  IChatInternalService,
+  IChatManagerService,
   ISumiMCPServerBackend,
   SumiMCPServerProxyServicePath,
 } from '../common';
 import { MCPServerDescription } from '../common/mcp-server-manager';
 
+import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
+import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
@@ -226,17 +230,25 @@ export class AINativeBrowserContribution
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
+  @Autowired(IChatManagerService)
+  private readonly chatManagerService: ChatManagerService;
+
+  @Autowired(IChatInternalService)
+  private readonly chatInternalService: ChatInternalService;
+
   constructor() {
     this.registerFeature();
   }
 
-  initialize() {
+  async initialize() {
     const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
 
     if (supportsChatAssistant) {
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, AI_CHAT_VIEW_ID, AI_CHAT_CONTAINER_ID);
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, DESIGN_MENU_BAR_RIGHT, AI_CHAT_LOGO_AVATAR_ID);
       this.chatProxyService.registerDefaultAgent();
+      this.chatInternalService.init();
+      await this.chatManagerService.init();
     }
   }
 

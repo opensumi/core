@@ -75,53 +75,14 @@
 
   .header_container {
     height: 36px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0 12px 16px;
+    padding: 8px 0 8px 16px;
     box-sizing: border-box;
     background-color: var(--editorGroupHeader-tabsBackground);
     user-select: none;
 
-    .left {
+    .header {
       display: flex;
       align-items: center;
-      height: 16px;
-      color: var(--design-title-foreground);
-      font-size: 12px;
-
-      .ai_avatar_icon {
-        width: 18px;
-        height: 18px;
-      }
-
-      .avatar_icon_normal {
-        width: 18px;
-        height: 18px;
-        font-size: 14px !important;
-      }
-
-      & > * {
-        margin-right: 8px;
-      }
-    }
-
-    .right {
-      display: flex;
-      align-items: center;
-      padding-right: 10px;
-      .popover_icon {
-        margin-left: 2px;
-      }
-
-      .action_btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 22px;
-        height: 22px;
-        padding: 0;
-      }
     }
   }
 
@@ -316,4 +277,19 @@
       }
     }
   }
+}
+
+
+.chat_tips_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tab-inactiveForeground);
+  font-size: 12px;
+  margin-top: 16px;
+}
+
+.chat_history {
+  width: calc(100% - 60px);
+  color: var(--design-text-foreground);
 }
