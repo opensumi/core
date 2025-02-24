@@ -182,6 +182,7 @@ export interface IAIBackServiceOption {
   topP?: number;
   topK?: number;
   providerOptions?: any;
+  noTool?: boolean;
 }
 
 /**
