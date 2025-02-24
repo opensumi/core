@@ -3,6 +3,8 @@ import React from 'react';
 import { AINativeSettingSectionsId, ILogger, useInjectable } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
 
+import { BUILTIN_MCP_SERVER_NAME } from '../../../../common';
+import { MCPServerDescription } from '../../../../common/mcp-server-manager';
 import { MCPServerProxyService } from '../../mcp-server-proxy.service';
 
 import styles from './mcp-config.module.less';
@@ -49,13 +51,42 @@ export const MCPConfigView: React.FC = () => {
       }
 
       // Update enabled state in preferences
-      const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
-      const updatedServers = servers.map((server) => {
-        if (server.name === serverName) {
-          return { ...server, enabled: start };
+      const servers = preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
+      let updatedServers = servers;
+
+      // 处理内置服务器的特殊情况
+      if (serverName === BUILTIN_MCP_SERVER_NAME) {
+        const builtinServerExists = servers.some((server) => server.name === BUILTIN_MCP_SERVER_NAME);
+        if (!builtinServerExists && !start) {
+          // 如果是停止内置服务器且之前没有配置，添加一个新的配置项
+          // 内置服务器不需要 command，因为它是直接集成在 IDE 中的
+          updatedServers = [
+            ...servers,
+            {
+              name: BUILTIN_MCP_SERVER_NAME,
+              enabled: false,
+              command: '', // 内置服务器的 command 为空字符串
+            },
+          ];
+        } else {
+          // 如果已经存在配置，更新 enabled 状态
+          updatedServers = servers.map((server) => {
+            if (server.name === BUILTIN_MCP_SERVER_NAME) {
+              return { ...server, enabled: start };
+            }
+            return server;
+          });
         }
-        return server;
-      });
+      } else {
+        // 处理其他外部服务器
+        updatedServers = servers.map((server) => {
+          if (server.name === serverName) {
+            return { ...server, enabled: start };
+          }
+          return server;
+        });
+      }
+
       await preferenceService.set(AINativeSettingSectionsId.MCPServers, updatedServers);
       await loadServers();
     } catch (error) {

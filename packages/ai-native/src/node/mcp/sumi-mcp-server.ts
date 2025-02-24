@@ -10,10 +10,11 @@ import { RPCService } from '@opensumi/ide-connection';
 import { ILogger } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { ISumiMCPServerBackend } from '../../common';
+import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend } from '../../common';
 import { IMCPServer, MCPServerDescription } from '../../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolInvocationRegistryManager } from '../../common/tool-invocation-registry';
 import { IMCPServerProxyService, MCPTool } from '../../common/types';
+import { StdioMCPServerImpl } from '../mcp-server';
 import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
 
 // 每个 BrowserTab 都对应了一个 SumiMCPServerBackend 实例
@@ -79,10 +80,10 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     }));
   }
 
-  public async initBuiltinMCPServer() {
+  public async initBuiltinMCPServer(enabled: boolean) {
     const builtinMCPServer = new BuiltinMCPServer(this, this.logger);
     this.mcpServerManager.setClientId(this.clientId);
-    await this.mcpServerManager.initBuiltinServer(builtinMCPServer);
+    await this.mcpServerManager.initBuiltinServer(builtinMCPServer, enabled);
     this.client?.$updateMCPServers();
   }
 
@@ -131,15 +132,17 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
 
   async getServers() {
     const servers = Array.from(this.mcpServerManager.getServers().entries());
-    return Promise.all(
-      servers.map(async ([name, server]) => {
+    const serverInfos = await Promise.all(
+      servers.map(async ([serverName, server]) => {
         let toolNames: string[] = [];
         if (server.isStarted()) {
           // 只获取正在运行的 MCP Server 的工具列表
           const toolsResponse = await server.getTools();
           toolNames = toolsResponse.tools.map((tool) => tool.name);
         }
-        if (server instanceof BuiltinMCPServer) {
+
+        // OpenSumi 内置的 MCP Server
+        if (serverName === BUILTIN_MCP_SERVER_NAME) {
           return {
             name: server.getServerName(),
             isStarted: server.isStarted(),
@@ -147,6 +150,20 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
             tools: toolNames,
           };
         }
+
+        // 第三方 Stdio 类型的 MCP Server
+        if (server instanceof StdioMCPServerImpl) {
+          return {
+            name: server.getServerName(),
+            isStarted: server.isStarted(),
+            type: 'stdio',
+            command: server.command + ' ' + (server.args?.join(' ') || ''),
+            tools: toolNames,
+          };
+        }
+
+        // TODO SSE 类型的 MCP Server
+
         return {
           name: server.getServerName(),
           isStarted: server.isStarted(),
@@ -156,6 +173,11 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
         };
       }),
     );
+
+    // 将 builtin server 放在第一位
+    const builtinServer = serverInfos.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
+    const otherServers = serverInfos.filter((server) => server.name !== BUILTIN_MCP_SERVER_NAME);
+    return builtinServer ? [builtinServer, ...otherServers] : otherServers;
   }
 
   async startServer(serverName: string) {
@@ -172,7 +194,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
 export const TokenBuiltinMCPServer = Symbol('TokenBuiltinMCPServer');
 
 export class BuiltinMCPServer implements IMCPServer {
-  private started: boolean = true;
+  private started: boolean = false;
 
   constructor(private readonly sumiMCPServer: SumiMCPServerBackend, private readonly logger: ILogger) {}
 
@@ -181,7 +203,7 @@ export class BuiltinMCPServer implements IMCPServer {
   }
 
   getServerName(): string {
-    return 'sumi-builtin';
+    return BUILTIN_MCP_SERVER_NAME;
   }
 
   async start(): Promise<void> {

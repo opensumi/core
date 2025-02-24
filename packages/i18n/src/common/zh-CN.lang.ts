@@ -1330,6 +1330,10 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.args.description': 'MCP 服务器的命令行参数',
     'preference.ai.native.mcp.servers.env.description': 'MCP 服务器的环境变量',
 
+    'preference.ai.native.mcp.servers.type.description': 'MCP 服务器连接类型',
+    'preference.ai.native.mcp.servers.type.stdio': 'Stdio 连接',
+    'preference.ai.native.mcp.servers.type.sse': 'SSE 连接',
+
     // MCP Terminal Tool
     'ai.native.mcp.terminal.output': '输出',
     'ai.native.mcp.terminal.allow-question': '是否允许运行命令?',

@@ -21,7 +21,7 @@ export interface MCPServerManager {
   addOrUpdateServer(description: MCPServerDescription): void;
   // invoke in node.js only
   addOrUpdateServerDirectly(server: any): void;
-  initBuiltinServer(builtinMCPServer: any): void;
+  initBuiltinServer(builtinMCPServer: any, enabled: boolean): void;
   getTools(serverName: string): ReturnType<Client['listTools']>;
   getServerNames(): Promise<string[]>;
   startServer(serverName: string): Promise<void>;

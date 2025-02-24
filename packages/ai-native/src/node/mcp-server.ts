@@ -8,8 +8,8 @@ import { IMCPServer } from '../common/mcp-server-manager';
 
 export class StdioMCPServerImpl implements IMCPServer {
   private name: string;
-  private command: string;
-  private args?: string[];
+  public command: string;
+  public args?: string[];
   private client: Client;
   private env?: { [key: string]: string };
   private started: boolean = false;

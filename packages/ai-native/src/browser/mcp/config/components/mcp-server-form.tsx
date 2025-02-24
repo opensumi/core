@@ -25,6 +25,7 @@ export const MCPServerForm: React.FC<Props> = ({ visible, initialData, onSave, o
     command: '',
     args: [],
     env: {},
+    type: 'stdio', // TODO: 支持 SSE
     ...initialData,
   }));
 
@@ -89,9 +90,6 @@ export const MCPServerForm: React.FC<Props> = ({ visible, initialData, onSave, o
       style={{
         background: 'var(--editor-background)',
       }}
-      // bodyStyle={{
-      //   background: 'var(--editor-background)',
-      // }}
     >
       <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
         <div className={styles.formItem}>

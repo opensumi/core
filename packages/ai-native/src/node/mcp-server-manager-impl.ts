@@ -142,18 +142,22 @@ export class MCPServerManagerImpl implements MCPServerManager {
     this.servers.set(server.getServerName(), server);
   }
 
-  async initBuiltinServer(builtinMCPServer: BuiltinMCPServer): Promise<void> {
+  // enabled 为 true 时，会自动启动内置服务器, 并注册工具
+  async initBuiltinServer(builtinMCPServer: BuiltinMCPServer, enabled: boolean = true): Promise<void> {
     this.addOrUpdateServerDirectly(builtinMCPServer);
-    await this.registerTools(builtinMCPServer.getServerName());
+    if (enabled) {
+      await builtinMCPServer.start();
+      await this.registerTools(builtinMCPServer.getServerName());
+    }
   }
 
   async addExternalMCPServers(servers: MCPServerDescription[]): Promise<void> {
     for (const server of servers) {
+      this.addOrUpdateServer(server);
       if (!server.enabled) {
         // 如果是 enabled 为 false 的 server，则不进行启动
         continue;
       }
-      this.addOrUpdateServer(server);
       await this.startServer(server.name);
     }
   }
