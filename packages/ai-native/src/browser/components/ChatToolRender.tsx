@@ -67,13 +67,12 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
     <div className={styles['chat-tool-render']}>
       <div className={styles['tool-header']} onClick={toggleExpand}>
         <div className={styles['tool-name']}>
-          <span className={cls(styles['expand-icon'], { [styles.expanded]: isExpanded })}>▶</span>
+          <Icon iconClass={`codicon codicon-triangle-${isExpanded ? 'down' : 'right'}`} />
           {label}
         </div>
         {value.state && (
           <div className={styles['tool-state']}>
             <span className={styles['state-icon']}>{stateInfo.icon}</span>
-            <span className={styles['state-label']}>{stateInfo.label}</span>
           </div>
         )}
       </div>
