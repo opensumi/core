@@ -3,6 +3,7 @@ import { MessageList } from 'react-chat-elements';
 
 import {
   AINativeConfigService,
+  CommandService,
   getIcon,
   useEventEffect,
   useInjectable,
@@ -52,6 +53,7 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
+import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
 import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
 import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
@@ -63,6 +65,7 @@ import { ChatFeatureRegistry } from './chat.feature.registry';
 import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
+
 const SCROLL_CLASSNAME = 'chat_scroll';
 
 interface TDispatchAction {
@@ -81,14 +84,15 @@ export const AIChatView = () => {
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const contextService = useInjectable<LLMContextService>(LLMContextServiceToken);
   const promptProvider = useInjectable<ChatAgentPromptProvider>(ChatAgentPromptProvider);
+  const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
   const msgHistoryManager = aiChatService.sessionModel.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
 
@@ -111,6 +115,7 @@ export const AIChatView = () => {
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
   const [mcpToolsCount, setMcpToolsCount] = React.useState<number>(0);
+  const [mcpServersCount, setMcpServersCount] = React.useState<number>(0);
 
   React.useEffect(() => {
     const featureSlashCommands = chatFeatureRegistry.getAllShortcutSlashCommand();
@@ -668,6 +673,9 @@ export const AIChatView = () => {
       mcpServerProxyService.getAllMCPTools().then((tools) => {
         setMcpToolsCount(tools.length);
       });
+      mcpServerProxyService.$getServers().then((servers) => {
+        setMcpServersCount(servers.length);
+      });
     },
     [mcpServerProxyService],
   );
@@ -680,6 +688,10 @@ export const AIChatView = () => {
       buttons: ['关闭'],
     });
   }, [mcpServerProxyService, dialogService]);
+
+  const handleShowMCPConfig = React.useCallback(() => {
+    commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
+  }, [commandService]);
 
   return (
     <div id={styles.ai_chat_view}>
@@ -722,9 +734,14 @@ export const AIChatView = () => {
               </div>
               <div className={styles.header_operate_right}>
                 {aiNativeConfigService.capabilities.supportsMCP && (
-                  <div className={styles.tag} onClick={handleShowMCPTools}>
-                    {`MCP Tools: ${mcpToolsCount}`}
-                  </div>
+                  <>
+                    <div className={styles.tag} onClick={handleShowMCPConfig}>
+                      {`MCP Servers: ${mcpServersCount}`}
+                    </div>
+                    <div className={styles.tag} onClick={handleShowMCPTools}>
+                      {`MCP Tools: ${mcpToolsCount}`}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -765,6 +782,9 @@ export function DefaultChatViewHeader({
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
+  const dialogService = useInjectable<IDialogService>(IDialogService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -785,6 +805,15 @@ export function DefaultChatViewHeader({
     },
     [aiChatService],
   );
+
+  const handleShowMCPTools = React.useCallback(async () => {
+    const tools = await mcpServerProxyService.getAllMCPTools();
+    dialogService.open({
+      message: <MCPToolsDialog tools={tools} />,
+      type: MessageType.Empty,
+      buttons: ['关闭'],
+    });
+  }, [mcpServerProxyService, dialogService]);
 
   React.useEffect(() => {
     const getHistoryList = () => {
@@ -865,6 +894,23 @@ export function DefaultChatViewHeader({
           ariaLabel={localize('aiNative.operate.clear.title')}
         />
       </Popover>
+      {aiNativeConfigService.capabilities.supportsMCP && (
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-tools'}
+          position={PopoverPosition.left}
+          title={localize('aiNative.operate.tools.title')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('menubar-tool')}
+            onClick={handleShowMCPTools}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.operate.tools.title')}
+          />
+        </Popover>
+      )}
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-close'}

@@ -31,6 +31,7 @@ describe('MCPServerManager Interface', () => {
       getStartedServers: jest.fn(),
       registerTools: jest.fn(),
       addExternalMCPServers: jest.fn(),
+      getServers: jest.fn(),
     };
   });
 

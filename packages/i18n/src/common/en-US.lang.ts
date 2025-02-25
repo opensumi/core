@@ -1484,6 +1484,7 @@ export const localizationBundle = {
     'aiNative.operate.stop.title': 'Stop',
     'aiNative.operate.close.title': 'Close',
     'aiNative.operate.clear.title': 'Clear',
+    'aiNative.operate.tools.title': 'MCP Tools',
     'aiNative.operate.newChat.title': 'New Chat',
     'aiNative.operate.chatHistory.title': 'Chat History',
     'aiNative.operate.chatHistory.searchPlaceholder': 'Search Chats...',
@@ -1520,6 +1521,8 @@ export const localizationBundle = {
     'preference.ai.native.codeEdits.lineChange':
       'Whether to trigger intelligent rewriting when the cursor line number changes',
     'preference.ai.native.codeEdits.typing': 'Whether to trigger intelligent rewriting when the content changes',
+    'preference.ai.native.codeEdits.renderType': 'Code Edits Render Type',
+
     'preference.ai.native.chat.system.prompt': 'Default Chat System Prompt',
     // #endregion AI Native
 
@@ -1566,6 +1569,9 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.command.description': 'Command to start the MCP server',
     'preference.ai.native.mcp.servers.args.description': 'Command line arguments for the MCP server',
     'preference.ai.native.mcp.servers.env.description': 'Environment variables for the MCP server',
+    'preference.ai.native.mcp.servers.type.description': 'Type of the MCP server connection',
+    'preference.ai.native.mcp.servers.type.stdio': 'Stdio connection',
+    'preference.ai.native.mcp.servers.type.sse': 'SSE connection',
 
     // MCP Terminal Tool
     'ai.native.mcp.terminal.output': 'Output',

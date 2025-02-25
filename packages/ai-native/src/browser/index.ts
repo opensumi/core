@@ -55,6 +55,8 @@ import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.featur
 import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
 import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
+import { MCPConfigCommandContribution } from './mcp/config/mcp-config.commands';
+import { MCPConfigContribution } from './mcp/config/mcp-config.contribution';
 import { MCPServerProxyService } from './mcp/mcp-server-proxy.service';
 import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
 import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
@@ -91,6 +93,8 @@ export class AINativeModule extends BrowserModule {
     AICodeActionContribution,
     AINativePreferencesContribution,
     IntelligentCompletionsContribution,
+    MCPConfigContribution,
+    MCPConfigCommandContribution,
 
     // MCP Server Contributions START
     ListDirTool,

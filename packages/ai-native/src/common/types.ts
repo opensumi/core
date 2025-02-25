@@ -32,6 +32,12 @@ export interface IMCPServerProxyService {
   $getMCPTools(): Promise<MCPTool[]>;
   // 通知前端 MCP 服务注册表发生了变化
   $updateMCPServers(): Promise<void>;
+  // 获取所有 MCP 服务器列表
+  $getServers(): Promise<Array<{ name: string; isStarted: boolean }>>;
+  // 启动指定的 MCP 服务器
+  $startServer(serverName: string): Promise<void>;
+  // 停止指定的 MCP 服务器
+  $stopServer(serverName: string): Promise<void>;
 }
 
 export interface MCPTool {

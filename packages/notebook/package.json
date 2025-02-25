@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-notebook",
-  "version": "3.7.1",
+  "version": "3.8.0",
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",

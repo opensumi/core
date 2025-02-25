@@ -2,19 +2,22 @@ import { ToolExecutionOptions } from 'ai';
 
 import { ILogger } from '@opensumi/ide-core-common';
 
-import { MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
+import { IMCPServer, MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
 import { getToolName } from '../common/utils';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
-import { IMCPServer, MCPServerImpl } from './mcp-server';
-
+import { StdioMCPServerImpl } from './mcp-server';
 // 这应该是 Browser Tab 维度的，每个 Tab 对应一个 MCPServerManagerImpl
 export class MCPServerManagerImpl implements MCPServerManager {
   protected servers: Map<string, IMCPServer> = new Map();
 
   // 当前实例对应的 clientId
   private clientId: string;
+
+  getServers(): Map<string, IMCPServer> {
+    return this.servers;
+  }
 
   constructor(
     private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager,
@@ -25,13 +28,20 @@ export class MCPServerManagerImpl implements MCPServerManager {
     this.clientId = clientId;
   }
 
+  private unregisterServerTools(serverName: string) {
+    const registry = this.toolInvocationRegistryManager.getRegistry(this.clientId);
+    registry.unregisterProviderTools(serverName);
+  }
+
   async stopServer(serverName: string): Promise<void> {
     const server = this.servers.get(serverName);
     if (!server) {
       throw new Error(`MCP server "${serverName}" not found.`);
     }
-    server.stop();
-    this.logger.log(`MCP server "${serverName}" stopped.`);
+    await server.stop();
+    // 停止服务器后，需要从注册表中移除该服务器的所有工具
+    this.unregisterServerTools(serverName);
+    this.logger.log(`MCP server "${serverName}" stopped and tools unregistered.`);
   }
 
   async getStartedServers(): Promise<string[]> {
@@ -63,6 +73,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
       throw new Error(`MCP server "${serverName}" not found.`);
     }
     await server.start();
+    await this.registerTools(serverName);
   }
 
   async getServerNames(): Promise<string[]> {
@@ -122,7 +133,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
     if (existingServer) {
       existingServer.update(command, args, env);
     } else {
-      const newServer = new MCPServerImpl(name, command, args, env, this.logger);
+      const newServer = new StdioMCPServerImpl(name, command, args, env, this.logger);
       this.servers.set(name, newServer);
     }
   }
@@ -131,16 +142,23 @@ export class MCPServerManagerImpl implements MCPServerManager {
     this.servers.set(server.getServerName(), server);
   }
 
-  async initBuiltinServer(builtinMCPServer: BuiltinMCPServer): Promise<void> {
+  // enabled 为 true 时，会自动启动内置服务器, 并注册工具
+  async initBuiltinServer(builtinMCPServer: BuiltinMCPServer, enabled: boolean = true): Promise<void> {
     this.addOrUpdateServerDirectly(builtinMCPServer);
-    await this.registerTools(builtinMCPServer.getServerName());
+    if (enabled) {
+      await builtinMCPServer.start();
+      await this.registerTools(builtinMCPServer.getServerName());
+    }
   }
 
   async addExternalMCPServers(servers: MCPServerDescription[]): Promise<void> {
     for (const server of servers) {
       this.addOrUpdateServer(server);
+      if (!server.enabled) {
+        // 如果是 enabled 为 false 的 server，则不进行启动
+        continue;
+      }
       await this.startServer(server.name);
-      await this.registerTools(server.name);
     }
   }
 
@@ -148,7 +166,10 @@ export class MCPServerManagerImpl implements MCPServerManager {
     const server = this.servers.get(name);
     if (server) {
       server.stop();
+      // 移除服务器时，也需要从注册表中移除该服务器的所有工具
+      this.unregisterServerTools(name);
       this.servers.delete(name);
+      this.logger.log(`MCP server "${name}" removed and tools unregistered.`);
     } else {
       this.logger.warn(`MCP server "${name}" not found.`);
     }

@@ -40,6 +40,10 @@ export class InlineHintController extends BaseAIMonacoEditorController {
         return;
       }
 
+      if (position.lineNumber > model.getLineCount()) {
+        return;
+      }
+
       if (this.inlineCompletionsService.isVisibleCompletion) {
         return;
       }
@@ -50,7 +54,7 @@ export class InlineHintController extends BaseAIMonacoEditorController {
       );
       if (!hasPreviewDecoration) {
         const inlineHintLineDecoration = this.injector.get(InlineHintLineDecoration, [monacoEditor]);
-        const lineContent = monacoEditor.getModel()?.getLineContent(position.lineNumber);
+        const lineContent = model.getLineContent(position.lineNumber);
         if (!lineContent?.trim()) {
           inlineHintLineDecoration.show(position);
         }

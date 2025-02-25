@@ -1252,6 +1252,7 @@ export const localizationBundle = {
     'aiNative.operate.stop.title': '停止',
     'aiNative.operate.close.title': '关闭',
     'aiNative.operate.clear.title': '清空',
+    'aiNative.operate.tools.title': 'MCP 工具',
     'aiNative.operate.newChat.title': '新建聊天',
     'aiNative.operate.chatHistory.title': '聊天历史',
     'aiNative.operate.chatHistory.searchPlaceholder': '请搜索...',
@@ -1286,6 +1287,8 @@ export const localizationBundle = {
     'preference.ai.native.codeEdits.lintErrors': '是否在发生 Lint Error 时触发智能改写',
     'preference.ai.native.codeEdits.lineChange': '是否在光标行号发生变化时触发智能改写',
     'preference.ai.native.codeEdits.typing': '是否在内容发生变化时触发智能改写',
+    'preference.ai.native.codeEdits.renderType': '智能改写渲染方式',
+
     'preference.ai.native.chat.system.prompt': '默认聊天系统提示词',
     // #endregion AI Native
 
@@ -1328,6 +1331,10 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.command.description': '启动 MCP 服务器的命令',
     'preference.ai.native.mcp.servers.args.description': 'MCP 服务器的命令行参数',
     'preference.ai.native.mcp.servers.env.description': 'MCP 服务器的环境变量',
+
+    'preference.ai.native.mcp.servers.type.description': 'MCP 服务器连接类型',
+    'preference.ai.native.mcp.servers.type.stdio': 'Stdio 连接',
+    'preference.ai.native.mcp.servers.type.sse': 'SSE 连接',
 
     // MCP Terminal Tool
     'ai.native.mcp.terminal.output': '输出',

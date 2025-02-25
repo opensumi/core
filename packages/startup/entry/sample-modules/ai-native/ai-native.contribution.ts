@@ -160,30 +160,30 @@ export class AINativeContribution implements AINativeCoreContribution {
       },
     );
 
-    registry.registerEditorInlineChat(
-      {
-        id: 'ai-explain',
-        name: EInlineOperation.Explain,
-        renderType: 'button',
-        codeAction: {
-          isPreferred: true,
-        },
-      },
-      {
-        execute: async (editor: ICodeEditor, selection: ISelection, token) => {
-          const model = editor.getModel();
-          if (!model) {
-            return;
-          }
+    // registry.registerEditorInlineChat(
+    //   {
+    //     id: 'ai-explain',
+    //     name: EInlineOperation.Explain,
+    //     renderType: 'button',
+    //     codeAction: {
+    //       isPreferred: true,
+    //     },
+    //   },
+    //   {
+    //     execute: async (editor: ICodeEditor, selection: ISelection, token) => {
+    //       const model = editor.getModel();
+    //       if (!model) {
+    //         return;
+    //       }
 
-          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
-          this.aiChatService.sendMessage({
-            message: `Explain code: \`\`\`\n${crossCode}\n\`\`\``,
-            prompt: `Help me, Explain code: \`\`\`\n${crossCode}\n\`\`\``,
-          });
-        },
-      },
-    );
+    //       const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
+    //       this.aiChatService.sendMessage({
+    //         message: `Explain code: \`\`\`\n${crossCode}\n\`\`\``,
+    //         prompt: `Help me, Explain code: \`\`\`\n${crossCode}\n\`\`\``,
+    //       });
+    //     },
+    //   },
+    // );
 
     registry.registerTerminalInlineChat(
       {
@@ -236,38 +236,38 @@ export class AINativeContribution implements AINativeCoreContribution {
       ],
     );
 
-    registry.registerSlashCommand(
-      {
-        name: 'Explain',
-        description: 'Explain',
-        isShortcut: true,
-        tooltip: 'Explain',
-      },
-      {
-        providerRender: SlashCommand,
-        providerInputPlaceholder(value, editor) {
-          return 'Please enter or paste the code.';
-        },
-        providerPrompt(value, editor) {
-          return `Explain code: \`\`\`\n${value}\n\`\`\``;
-        },
-        execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
-          send(value);
-        },
-      },
-    );
+    // registry.registerSlashCommand(
+    //   {
+    //     name: 'Explain',
+    //     description: 'Explain',
+    //     isShortcut: true,
+    //     tooltip: 'Explain',
+    //   },
+    //   {
+    //     providerRender: SlashCommand,
+    //     providerInputPlaceholder(value, editor) {
+    //       return 'Please enter or paste the code.';
+    //     },
+    //     providerPrompt(value, editor) {
+    //       return `Explain code: \`\`\`\n${value}\n\`\`\``;
+    //     },
+    //     execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
+    //       send(value);
+    //     },
+    //   },
+    // );
 
-    registry.registerSlashCommand(
-      {
-        name: 'Test',
-        description: 'Test',
-      },
-      {
-        execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
-          send(value);
-        },
-      },
-    );
+    // registry.registerSlashCommand(
+    //   {
+    //     name: 'Test',
+    //     description: 'Test',
+    //   },
+    //   {
+    //     execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
+    //       send(value);
+    //     },
+    //   },
+    // );
   }
 
   registerResolveConflictFeature(registry: IResolveConflictRegistry): void {
@@ -422,7 +422,7 @@ export class AINativeContribution implements AINativeCoreContribution {
 
     registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
       const model = editor.getModel();
-      const maxLine = Math.max(position.lineNumber + 3, model?.getLineCount() ?? 0);
+      const maxLine = Math.min(position.lineNumber + 3, model?.getLineCount() ?? 0);
       const lineMaxColumn = model!.getLineMaxColumn(maxLine) ?? 1;
 
       const value = model!.getValueInRange({

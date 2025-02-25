@@ -3,13 +3,13 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 import { ILogger } from '@opensumi/ide-core-common';
 
-import { MCPServerImpl } from '../../src/node/mcp-server';
+import { StdioMCPServerImpl } from '../../src/node/mcp-server';
 
 jest.mock('@modelcontextprotocol/sdk/client/index.js');
 jest.mock('@modelcontextprotocol/sdk/client/stdio.js');
 
-describe('MCPServerImpl', () => {
-  let server: MCPServerImpl;
+describe('StdioMCPServerImpl', () => {
+  let server: StdioMCPServerImpl;
   const mockLogger: ILogger = {
     log: jest.fn(),
     error: jest.fn(),
@@ -24,7 +24,7 @@ describe('MCPServerImpl', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    server = new MCPServerImpl('test-server', 'test-command', ['arg1', 'arg2'], { ENV: 'test' }, mockLogger);
+    server = new StdioMCPServerImpl('test-server', 'test-command', ['arg1', 'arg2'], { ENV: 'test' }, mockLogger);
   });
 
   describe('constructor', () => {
@@ -108,16 +108,16 @@ describe('MCPServerImpl', () => {
       await server.start();
     });
 
-    it('should stop the server successfully', () => {
-      server.stop();
+    it('should stop the server successfully', async () => {
+      await server.stop();
       expect(mockClient.close).toHaveBeenCalled();
       expect(server.isStarted()).toBe(false);
     });
 
-    it('should not attempt to stop if server is not started', () => {
-      server.stop(); // First stop
+    it('should not attempt to stop if server is not started', async () => {
+      await server.stop(); // First stop
       mockClient.close.mockClear();
-      server.stop(); // Second stop
+      await server.stop(); // Second stop
       expect(mockClient.close).not.toHaveBeenCalled();
     });
   });
