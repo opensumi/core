@@ -39,7 +39,7 @@ export const ChatContext = memo(() => {
       50,
     )((files) => {
       if (files) {
-        updateAddedFiles(files);
+        updateAddedFiles([...files.attached]);
       }
     }, contextService);
 
@@ -57,7 +57,7 @@ export const ChatContext = memo(() => {
   }, []);
 
   const onDidDeselect = useCallback((uri: URI) => {
-    contextService.removeFileFromContext(uri);
+    contextService.removeFileFromContext(uri, true);
   }, []);
 
   const onDidClickFile = useCallback((uri: URI) => {
