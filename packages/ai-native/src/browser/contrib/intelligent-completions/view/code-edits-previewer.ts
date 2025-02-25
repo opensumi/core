@@ -51,19 +51,21 @@ export class CodeEditsPreviewer extends Disposable {
 
   public render(completionModel: CodeEditsResultValue) {
     this.view?.render(completionModel);
-    this.aiNativeContextKey.multiLineEditsIsVisible.set(true);
+    this.aiNativeContextKey.codeEditsIsVisible.set(true);
   }
 
   public hide() {
     this.view?.hide();
-    this.aiNativeContextKey.multiLineEditsIsVisible.set(false);
+    this.aiNativeContextKey.codeEditsIsVisible.set(false);
   }
 
   public accept() {
     this.view?.accept();
+    this.aiNativeContextKey.codeEditsIsVisible.set(false);
   }
 
   public discard() {
     this.view?.discard();
+    this.aiNativeContextKey.codeEditsIsVisible.set(false);
   }
 }
