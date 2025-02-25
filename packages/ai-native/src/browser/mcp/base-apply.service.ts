@@ -8,7 +8,6 @@ import { IMarkerService } from '@opensumi/ide-markers';
 import { Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
 import { Deferred, Emitter, URI, path } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
 import { CodeBlockData, CodeBlockStatus } from '../../common/types';
@@ -43,9 +42,6 @@ export abstract class BaseApplyService extends WithEventBus {
 
   @Autowired(IMarkerService)
   private readonly markerService: IMarkerService;
-
-  @Autowired(IWorkspaceService)
-  private readonly workspaceService: IWorkspaceService;
 
   private onCodeBlockUpdateEmitter = new Emitter<CodeBlockData>();
   public onCodeBlockUpdate = this.onCodeBlockUpdateEmitter.event;
@@ -97,10 +93,10 @@ export abstract class BaseApplyService extends WithEventBus {
 
   @OnEvent(EditorGroupOpenEvent)
   async onEditorGroupOpen(event: EditorGroupOpenEvent) {
-    const relativePath = await this.workspaceService.asRelativePath(event.payload.resource.uri.toString());
+    const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
     const filePendingApplies = Object.values(
       this.getMessageCodeBlocks(this.chatInternalService.sessionModel.history.lastMessageId) || {},
-    ).filter((block) => block.relativePath === relativePath?.path && block.status === 'pending');
+    ).filter((block) => block.relativePath === relativePath && block.status === 'pending');
     // TODO: 暂时只支持 pending 串行的 apply，后续支持批量apply后统一accept
     if (filePendingApplies.length > 0) {
       this.renderApplyResult(filePendingApplies[0], filePendingApplies[0].updatedCode!);
@@ -178,7 +174,6 @@ export abstract class BaseApplyService extends WithEventBus {
       }
 
       // trigger diffPreivewer & return expected diff result directly
-      codeBlock.updatedCode = fastApplyFileResult.result;
       const applyResult = await this.renderApplyResult(
         codeBlock,
         (fastApplyFileResult.result || fastApplyFileResult.stream)!,
@@ -229,16 +224,19 @@ export abstract class BaseApplyService extends WithEventBus {
       ) as LiveInlineDiffPreviewer;
       // TODO: 支持多个diffPreviewer
       this.activePreviewer = previewer;
-      previewer.setValue(codeBlock.updatedCode!);
+      codeBlock.updatedCode = updatedContentOrStream;
+      previewer.setValue(updatedContentOrStream);
     } else {
       const controller = new InlineChatController();
       controller.mountReadable(updatedContentOrStream);
       const inlineDiffHandler = InlineDiffController.get(editor)!;
+      // FIXME: 结束以后要立刻更新 updatedCode，确保后续可恢复
       this.activePreviewer = inlineDiffHandler.showPreviewerByStream(editor, {
         crossSelection: Selection.fromRange(range, SelectionDirection.LTR),
         chatResponse: controller,
         previewerOptions: {
           disposeWhenEditorClosed: true,
+          renderRemovedWidgetImmediately: true,
         },
       }) as LiveInlineDiffPreviewer;
     }
