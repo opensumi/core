@@ -108,16 +108,16 @@ describe('StdioMCPServerImpl', () => {
       await server.start();
     });
 
-    it('should stop the server successfully', () => {
-      server.stop();
+    it('should stop the server successfully', async () => {
+      await server.stop();
       expect(mockClient.close).toHaveBeenCalled();
       expect(server.isStarted()).toBe(false);
     });
 
-    it('should not attempt to stop if server is not started', () => {
-      server.stop(); // First stop
+    it('should not attempt to stop if server is not started', async () => {
+      await server.stop(); // First stop
       mockClient.close.mockClear();
-      server.stop(); // Second stop
+      await server.stop(); // Second stop
       expect(mockClient.close).not.toHaveBeenCalled();
     });
   });
