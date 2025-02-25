@@ -21,7 +21,7 @@ export interface LLMContextService {
    * 从 context 中移除文件
    * @param uri URI
    */
-  removeFileFromContext(uri: URI): void;
+  removeFileFromContext(uri: URI, isManual?: boolean): void;
 
   /** 导出为可序列化格式 */
   serialize(): SerializedContext;
