@@ -5,7 +5,6 @@ import {
   AINativeConfigService,
   CommandService,
   getIcon,
-  useEventEffect,
   useInjectable,
   useUpdateOnEvent,
 } from '@opensumi/ide-core-browser';
@@ -80,14 +79,11 @@ export const AIChatView = () => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
-  const dialogService = useInjectable<IDialogService>(IDialogService);
-  const commandService = useInjectable<CommandService>(CommandService);
 
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
 
@@ -852,40 +848,6 @@ export function DefaultChatViewHeader({
           ariaLabel={localize('aiNative.operate.clear.title')}
         />
       </Popover>
-      {aiNativeConfigService.capabilities.supportsMCP && (
-        <>
-          <Popover
-            overlayClassName={styles.popover_icon}
-            id={'ai-chat-header-mcp-server'}
-            position={PopoverPosition.left}
-            title={'MCP Server'}
-          >
-            <EnhanceIcon
-              wrapperClassName={styles.action_btn}
-              className={'codicon codicon-server'}
-              onClick={handleShowMCPConfig}
-              tabIndex={0}
-              role='button'
-              ariaLabel={'MCP Server'}
-            />
-          </Popover>
-          <Popover
-            overlayClassName={styles.popover_icon}
-            id={'ai-chat-header-tools'}
-            position={PopoverPosition.left}
-            title={localize('aiNative.operate.tools.title')}
-          >
-            <EnhanceIcon
-              wrapperClassName={styles.action_btn}
-              className={getIcon('menubar-tool')}
-              onClick={handleShowMCPTools}
-              tabIndex={0}
-              role='button'
-              ariaLabel={localize('aiNative.operate.tools.title')}
-            />
-          </Popover>
-        </>
-      )}
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-close'}
