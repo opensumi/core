@@ -13,6 +13,8 @@ import {
 import { ChatMessageRole, IChatMessage, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { IChatAgentService, IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
+import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
+import { ChatAgentPromptProvider } from '../../common/prompts/context-prompt-provider';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 
 import { ChatModel, ChatRequestModel, ChatResponseModel, IChatProgressResponseContent } from './chat-model';
@@ -48,6 +50,12 @@ export class ChatManagerService extends Disposable {
 
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
+
+  @Autowired(ChatAgentPromptProvider)
+  protected readonly promptProvider: ChatAgentPromptProvider;
+
+  @Autowired(LLMContextServiceToken)
+  protected readonly contextService: LLMContextService;
 
   private _chatStorage: IStorage;
 
@@ -98,9 +106,17 @@ export class ChatManagerService extends Disposable {
   }
 
   startSession() {
-    const model = new ChatModel();
+    const model = new ChatModel({
+      provideContext: this.provideContextPrompt.bind(this),
+    });
     this.#sessionModels.set(model.sessionId, model);
     return model;
+  }
+
+  private provideContextPrompt(message: string) {
+    const context = this.contextService.serialize();
+    const fullMessage = this.promptProvider.provideContextPrompt(context, message);
+    return fullMessage;
   }
 
   getSession(sessionId: string): ChatModel | undefined {

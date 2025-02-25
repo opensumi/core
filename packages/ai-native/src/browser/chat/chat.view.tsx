@@ -42,8 +42,6 @@ import {
   IChatMessageStructure,
   TokenMCPServerProxyService,
 } from '../../common';
-import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
-import { ChatAgentPromptProvider } from '../../common/prompts/context-prompt-provider';
 import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
@@ -82,8 +80,6 @@ export const AIChatView = () => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const contextService = useInjectable<LLMContextService>(LLMContextServiceToken);
-  const promptProvider = useInjectable<ChatAgentPromptProvider>(ChatAgentPromptProvider);
   const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
@@ -515,10 +511,7 @@ export const AIChatView = () => {
       const { message, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
-      const context = contextService.serialize();
-      const fullMessage = await promptProvider.provideContextPrompt(context, message);
-
-      const request = aiChatService.createRequest(fullMessage, agentId!, command);
+      const request = aiChatService.createRequest(message, agentId!, command);
       if (!request) {
         return;
       }

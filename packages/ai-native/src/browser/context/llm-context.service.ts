@@ -55,6 +55,10 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     const targetList = isManual ? this.attachedFiles : this.recentlyViewFiles;
     const maxLimit = isManual ? this.maxAttachFilesLimit : this.maxViewFilesLimit;
 
+    if (isManual) {
+      this.docModelManager.createModelReference(uri);
+    }
+
     this.addFileToList(file, targetList, maxLimit);
     this.notifyContextChange();
   }
