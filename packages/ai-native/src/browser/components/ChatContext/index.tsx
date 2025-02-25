@@ -39,7 +39,7 @@ export const ChatContext = memo(() => {
       50,
     )((files) => {
       if (files) {
-        updateAddedFiles(files);
+        updateAddedFiles(files.attached);
       }
     }, contextService);
 
