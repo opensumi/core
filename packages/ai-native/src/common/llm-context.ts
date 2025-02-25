@@ -15,7 +15,7 @@ export interface LLMContextService {
    */
   cleanFileContext(): void;
 
-  onDidContextFilesChangeEvent: Event<FileContext[]>;
+  onDidContextFilesChangeEvent: Event<{ viewed: FileContext[]; attached: FileContext[] }>;
 
   /**
    * 从 context 中移除文件
@@ -30,12 +30,18 @@ export interface LLMContextService {
 export interface FileContext {
   uri: URI;
   selection?: [number, number];
-  isManual: boolean;
 }
 
 export const LLMContextServiceToken = Symbol('LLMContextService');
 
+export interface AttachFileContext {
+  content: string;
+  lineErrors: string[];
+  path: string;
+  language: string;
+}
+
 export interface SerializedContext {
   recentlyViewFiles: string[];
-  attachedFiles: Array<{ content: string; lineErrors: string[]; path: string; language: string }>;
+  attachedFiles: Array<AttachFileContext>;
 }
