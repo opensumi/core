@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Icon, Popover } from '@opensumi/ide-components';
 import {
@@ -10,7 +10,6 @@ import {
   Uri,
   detectModeId,
   path,
-  useAutorun,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
@@ -18,11 +17,99 @@ import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/com
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
+import { CodeBlockData } from '../../../../common/types';
 import { ChatMarkdown } from '../../../components/ChatMarkdown';
 import { IMCPServerToolComponentProps } from '../../../types';
-import { BaseApplyService, CodeBlockData } from '../../base-apply.service';
+import { BaseApplyService } from '../../base-apply.service';
 
 import styles from './index.module.less';
+
+export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
+  const { args, messageId, toolCallId } = props;
+  const labelService = useInjectable(LabelService);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
+  const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+  const { target_file = '', code_edit, instructions } = args || {};
+  const absolutePath = path.join(appConfig.workspaceDir, target_file);
+  const [codeBlockData, setCodeBlockData] = useState<CodeBlockData | undefined>(
+    applyService.getCodeBlock(toolCallId, messageId),
+  );
+
+  const icon = useMemo(() => {
+    if (!target_file) {
+      return;
+    }
+    const icon = `file-icon ${labelService.getIcon(URI.file(absolutePath))}`;
+    return icon;
+  }, [target_file, absolutePath]);
+  const languageId = useMemo(() => {
+    if (!target_file) {
+      return;
+    }
+    const modelService = StandaloneServices.get(IModelService);
+    const languageService = StandaloneServices.get(ILanguageService);
+    const detectedModeId = detectModeId(modelService, languageService, Uri.file(absolutePath));
+    return detectedModeId;
+  }, [target_file, absolutePath]);
+
+  useEffect(() => {
+    const disposable = applyService.onCodeBlockUpdate((codeBlockData) => {
+      setCodeBlockData({ ...codeBlockData });
+    });
+    return () => {
+      disposable.dispose();
+    };
+  }, []);
+
+  // 多次迭代时，仅在首处tool组件中展示
+  // FIXME: 这个优化有必要吗？每次都展示也挺好？
+  if (!args || !codeBlockData) {
+    return null;
+  }
+
+  return [
+    instructions && <p>{instructions}</p>,
+    <div className={styles['edit-file-tool']} key={`edit-file-tool-${codeBlockData.id}`}>
+      <div
+        className={cls(styles['edit-file-tool-header'], {
+          clickable: codeBlockData.status === 'pending' || codeBlockData.status === 'success',
+        })}
+        onClick={() => {
+          if (codeBlockData.status === 'pending') {
+            applyService.renderApplyResult(codeBlockData);
+          } else if (codeBlockData.status === 'success') {
+            applyService.revealApplyPosition(codeBlockData);
+          }
+        }}
+      >
+        {icon && <span className={icon}></span>}
+        <span className={styles['edit-file-tool-file-name']}>{target_file}</span>
+        {codeBlockData.iterationCount > 1 && (
+          <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
+        )}
+        {renderStatus(codeBlockData)}
+      </div>
+      <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} hideInsert={true} />
+    </div>,
+    codeBlockData.applyResult && codeBlockData.applyResult.diagnosticInfos.length > 0 && (
+      <div className={styles['edit-file-tool-diagnostic-errors']} key={'edit-file-tool-diagnostic-errors'}>
+        <div className={styles['title']}>Found Lints:</div>
+        {codeBlockData.applyResult?.diagnosticInfos.map((info) => (
+          <div
+            key={info.message}
+            className={cls({
+              [styles['error']]: info.severity === MarkerSeverity.Error,
+              [styles['warning']]: info.severity === MarkerSeverity.Warning,
+            })}
+          >
+            <Icon className={`codicon codicon-${info.severity === MarkerSeverity.Error ? 'error' : 'warning'}`} />
+            {info.message.split('\n')[0]}
+          </div>
+        ))}
+      </div>
+    ),
+  ];
+};
 
 const renderStatus = (codeBlockData: CodeBlockData) => {
   const status = codeBlockData.status;
@@ -44,101 +131,16 @@ const renderStatus = (codeBlockData: CodeBlockData) => {
     case 'failed':
       return (
         <Popover title={status} id={'edit-file-tool-status-failed'}>
-          <Icon iconClass='codicon codicon-error' color='var(--vscode-input-errorForeground)' />
+          <Icon iconClass='codicon codicon-error' style={{ color: 'var(--debugConsole-errorForeground)' }} />
         </Popover>
       );
     case 'cancelled':
       return (
         <Popover title={status} id={'edit-file-tool-status-cancelled'}>
-          <Icon iconClass='codicon codicon-close' color='var(--vscode-input-placeholderForeground)' />
+          <Icon iconClass='codicon codicon-close' style={{ color: 'var(--input-placeholderForeground)' }} />
         </Popover>
       );
     default:
       return null;
   }
-};
-
-export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
-  const { args, messageId, toolCallId } = props;
-  const labelService = useInjectable(LabelService);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
-  const applyService = useInjectable<BaseApplyService>(BaseApplyService);
-  const { target_file = '', code_edit, instructions } = args || {};
-  const absolutePath = path.join(appConfig.workspaceDir, target_file);
-
-  const codeBlockData = applyService.getCodeBlock(absolutePath, messageId);
-
-  useAutorun(applyService.codeBlockMapObservable);
-
-  if (toolCallId && codeBlockData) {
-    applyService.initToolCallId(codeBlockData.id, toolCallId);
-  }
-
-  const icon = useMemo(() => {
-    if (!target_file) {
-      return;
-    }
-    const icon = `file-icon ${labelService.getIcon(URI.file(absolutePath))}`;
-    return icon;
-  }, [target_file, absolutePath]);
-  const languageId = useMemo(() => {
-    if (!target_file) {
-      return;
-    }
-    const modelService = StandaloneServices.get(IModelService);
-    const languageService = StandaloneServices.get(ILanguageService);
-    const detectedModeId = detectModeId(modelService, languageService, Uri.file(absolutePath));
-    return detectedModeId;
-  }, [target_file, absolutePath]);
-
-  // 多次迭代时，仅在首处tool组件中展示
-  if (!args || !codeBlockData || (toolCallId && toolCallId !== codeBlockData.initToolCallId)) {
-    return null;
-  }
-
-  return [
-    instructions && <p>{instructions}</p>,
-    <div className={styles['edit-file-tool']} key={`edit-file-tool-${codeBlockData.id}`}>
-      <div
-        className={cls(styles['edit-file-tool-header'], {
-          clickable: codeBlockData.status === 'pending' || codeBlockData.status === 'success',
-        })}
-        onClick={() => {
-          if (codeBlockData.status === 'pending') {
-            applyService.reRenderPendingApply();
-          } else if (codeBlockData.status === 'success') {
-            applyService.revealApplyPosition(codeBlockData.id);
-          }
-        }}
-      >
-        {icon && <span className={icon}></span>}
-        <span className={styles['edit-file-tool-file-name']}>{target_file}</span>
-        {codeBlockData.iterationCount > 1 && (
-          <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
-        )}
-        {renderStatus(codeBlockData)}
-      </div>
-      <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} hideInsert={true} />
-    </div>,
-    codeBlockData.applyResult && codeBlockData.applyResult.diagnosticInfos.length > 0 && (
-      <div
-        className={styles['edit-file-tool-diagnostic-errors']}
-        key={`edit-file-tool-diagnostic-errors-${codeBlockData.id}`}
-      >
-        <div className={styles['title']}>Found Lints:</div>
-        {codeBlockData.applyResult?.diagnosticInfos.map((info) => (
-          <div
-            key={info.message}
-            className={cls({
-              [styles['error']]: info.severity === MarkerSeverity.Error,
-              [styles['warning']]: info.severity === MarkerSeverity.Warning,
-            })}
-          >
-            <Icon className={`codicon codicon-${info.severity === MarkerSeverity.Error ? 'error' : 'warning'}`} />
-            {info.message.split('\n')[0]}
-          </div>
-        ))}
-      </div>
-    ),
-  ];
 };
