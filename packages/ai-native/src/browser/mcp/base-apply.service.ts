@@ -1,17 +1,19 @@
 import { createPatch } from 'diff';
 
 import { Autowired } from '@opensumi/di';
-import { AppConfig, IMarker, MarkerSeverity, OnEvent, WithEventBus } from '@opensumi/ide-core-browser';
+import { AppConfig, IChatProgress, IMarker, MarkerSeverity, OnEvent, WithEventBus } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
 import { Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
 import { Deferred, Emitter, URI, path } from '@opensumi/ide-utils';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
 import { CodeBlockData, CodeBlockStatus } from '../../common/types';
 import { ChatInternalService } from '../chat/chat.internal.service';
+import { InlineChatController } from '../widget/inline-chat/inline-chat-controller';
 import {
   BaseInlineDiffPreviewer,
   InlineDiffController,
@@ -101,7 +103,7 @@ export abstract class BaseApplyService extends WithEventBus {
     ).filter((block) => block.relativePath === relativePath?.path && block.status === 'pending');
     // TODO: 暂时只支持 pending 串行的 apply，后续支持批量apply后统一accept
     if (filePendingApplies.length > 0) {
-      this.renderApplyResult(filePendingApplies[0]);
+      this.renderApplyResult(filePendingApplies[0], filePendingApplies[0].updatedCode!);
     }
   }
 
@@ -171,16 +173,20 @@ export abstract class BaseApplyService extends WithEventBus {
         throw new Error('Lint error max iteration count exceeded');
       }
       const fastApplyFileResult = await this.doApply(codeBlock);
-      if (!fastApplyFileResult) {
-        throw new Error('Failed to apply, no changes made');
+      if (!fastApplyFileResult.stream && !fastApplyFileResult.result) {
+        throw new Error('No apply content provided');
       }
 
       // trigger diffPreivewer & return expected diff result directly
-      codeBlock.updatedCode = fastApplyFileResult;
-      const result = await this.renderApplyResult(codeBlock);
-      if (result) {
+      codeBlock.updatedCode = fastApplyFileResult.result;
+      const applyResult = await this.renderApplyResult(
+        codeBlock,
+        (fastApplyFileResult.result || fastApplyFileResult.stream)!,
+        fastApplyFileResult.range,
+      );
+      if (applyResult) {
         // 用户实际接受的 apply 结果
-        codeBlock.applyResult = result;
+        codeBlock.applyResult = applyResult;
         this.updateCodeBlock(codeBlock);
       }
 
@@ -194,6 +200,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
   async renderApplyResult(
     codeBlock: CodeBlockData,
+    updatedContentOrStream: string | SumiReadableStream<IChatProgress>,
     range?: Range,
   ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
     const { relativePath } = codeBlock;
@@ -206,63 +213,73 @@ export abstract class BaseApplyService extends WithEventBus {
     codeBlock.status = 'pending';
     this.updateCodeBlock(codeBlock);
 
-    range = range || editor.getModel()?.getFullModelRange()!;
-    // Create diff previewer
-    const previewer = inlineDiffController.createDiffPreviewer(
-      editor,
-      Selection.fromRange(range, SelectionDirection.LTR),
-      {
-        disposeWhenEditorClosed: true,
-        renderRemovedWidgetImmediately: true,
-      },
-    ) as LiveInlineDiffPreviewer;
-    // TODO: 支持多个diffPreviewer
-    this.activePreviewer = previewer;
-
     const fullOriginalContent = editor.getModel()!.getValue();
-    const savedContent = editor.getModel()!.getValueInRange(range);
-    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
-    if (codeBlock.updatedCode === savedContent) {
-      codeBlock.status = 'success';
-      deferred.resolve();
-    } else {
+    range = range || editor.getModel()?.getFullModelRange()!;
+    // const savedRangeContent = editor.getModel()!.getValueInRange(range);
+
+    if (typeof updatedContentOrStream === 'string') {
+      // Create diff previewer
+      const previewer = inlineDiffController.createDiffPreviewer(
+        editor,
+        Selection.fromRange(range, SelectionDirection.LTR),
+        {
+          disposeWhenEditorClosed: true,
+          renderRemovedWidgetImmediately: true,
+        },
+      ) as LiveInlineDiffPreviewer;
+      // TODO: 支持多个diffPreviewer
+      this.activePreviewer = previewer;
       previewer.setValue(codeBlock.updatedCode!);
-      this.addDispose(
-        this.inlineDiffService.onPartialEdit((event) => {
-          // TODO 支持自动保存
-          if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
-            if (event.acceptPartialEditCount > 0) {
-              codeBlock.status = 'success';
-              const appliedResult = editor.getModel()!.getValue();
-              const diffResult = createPatch(relativePath, fullOriginalContent, appliedResult)
-                .split('\n')
-                .slice(4)
-                .join('\n');
-              const rangesFromDiffHunk = diffResult
-                .split('\n')
-                .map((line) => {
-                  if (line.startsWith('@@')) {
-                    const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
-                    return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
-                  }
-                  return null;
-                })
-                .filter((range) => range !== null);
-              const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
-              // 移除开头的几个固定信息，避免浪费 tokens
-              deferred.resolve({
-                diff: diffResult,
-                diagnosticInfos,
-              });
-            } else {
-              // 用户全部取消
-              codeBlock.status = 'cancelled';
-              deferred.resolve();
-            }
-          }
-        }),
-      );
+    } else {
+      const controller = new InlineChatController();
+      controller.mountReadable(updatedContentOrStream);
+      const inlineDiffHandler = InlineDiffController.get(editor)!;
+      this.activePreviewer = inlineDiffHandler.showPreviewerByStream(editor, {
+        crossSelection: Selection.fromRange(range, SelectionDirection.LTR),
+        chatResponse: controller,
+        previewerOptions: {
+          disposeWhenEditorClosed: true,
+        },
+      }) as LiveInlineDiffPreviewer;
     }
+
+    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
+    // FIXME: 无diff时上层如何感知？
+    this.addDispose(
+      this.inlineDiffService.onPartialEdit((event) => {
+        // TODO 支持自动保存
+        if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
+          if (event.acceptPartialEditCount > 0) {
+            codeBlock.status = 'success';
+            const appliedResult = editor.getModel()!.getValue();
+            const diffResult = createPatch(relativePath, fullOriginalContent, appliedResult)
+              .split('\n')
+              .slice(4)
+              .join('\n');
+            const rangesFromDiffHunk = diffResult
+              .split('\n')
+              .map((line) => {
+                if (line.startsWith('@@')) {
+                  const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
+                  return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
+                }
+                return null;
+              })
+              .filter((range) => range !== null);
+            const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
+            // 移除开头的几个固定信息，避免浪费 tokens
+            deferred.resolve({
+              diff: diffResult,
+              diagnosticInfos,
+            });
+          } else {
+            // 用户全部取消
+            codeBlock.status = 'cancelled';
+            deferred.resolve();
+          }
+        }
+      }),
+    );
     return deferred.promise;
   }
 
@@ -309,7 +326,15 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
-  protected abstract doApply(codeBlock: CodeBlockData): Promise<string | undefined>;
+  /**
+   * Apply changes of a code block, return stream to render inline diff in stream mode, result to render inline diff directly
+   * range is optional, if not provided, the result will be applied to the the full file
+   */
+  protected abstract doApply(codeBlock: CodeBlockData): Promise<{
+    range?: Range;
+    stream?: SumiReadableStream<IChatProgress, Error>;
+    result?: string;
+  }>;
 
   // TODO: 支持使用内存中的document获取诊断信息，实现并行apply accept
   protected getDiagnosticInfos(uri: string, ranges: Range[]) {
