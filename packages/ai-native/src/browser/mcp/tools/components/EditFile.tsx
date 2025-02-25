@@ -26,6 +26,7 @@ import styles from './index.module.less';
 
 export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   const { args, messageId, toolCallId } = props;
+  const [mode, setMode] = useState<'code' | 'diff'>('code');
   const labelService = useInjectable(LabelService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
@@ -82,14 +83,33 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
           }
         }}
       >
-        {icon && <span className={icon}></span>}
-        <span className={styles['edit-file-tool-file-name']}>{target_file}</span>
-        {codeBlockData.iterationCount > 1 && (
-          <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
-        )}
-        {renderStatus(codeBlockData)}
+        <div className={styles.left}>
+          {icon && <span className={icon}></span>}
+          <span className={styles['edit-file-tool-file-name']}>{target_file}</span>
+          {codeBlockData.iterationCount > 1 && (
+            <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
+          )}
+          {renderStatus(codeBlockData)}
+        </div>
+        <div className={styles.right}>
+          <Popover title={'Show Code'} id={'edit-file-tool-show-code'}>
+            <Icon iconClass='codicon codicon-file-code' onClick={() => setMode('code')} />
+          </Popover>
+          {codeBlockData.applyResult?.diff && (
+            <Popover title={'Show Diff'} id={'edit-file-tool-show-diff'}>
+              <Icon iconClass='codicon codicon-diff-multiple' onClick={() => setMode('diff')} />
+            </Popover>
+          )}
+        </div>
       </div>
-      <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} hideInsert={true} />
+      <ChatMarkdown
+        markdown={
+          mode === 'code'
+            ? `\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``
+            : `\`\`\`diff\n${codeBlockData.applyResult?.diff}\n\`\`\``
+        }
+        hideInsert={true}
+      />
     </div>,
     codeBlockData.applyResult && codeBlockData.applyResult.diagnosticInfos.length > 0 && (
       <div className={styles['edit-file-tool-diagnostic-errors']} key={'edit-file-tool-diagnostic-errors'}>
