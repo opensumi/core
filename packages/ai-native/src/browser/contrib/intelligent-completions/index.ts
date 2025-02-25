@@ -69,7 +69,11 @@ export class CodeEditsResultValue<T extends ICodeEdit = ICodeEdit> extends Dispo
     }));
   }
 
-  public get range(): IRange {
+  public get firstRange(): IRange {
     return this.raw.items[0].range;
+  }
+
+  public get firstText(): string {
+    return this.raw.items[0].insertText;
   }
 }
