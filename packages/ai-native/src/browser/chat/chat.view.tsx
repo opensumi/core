@@ -862,7 +862,7 @@ export function DefaultChatViewHeader({
           >
             <EnhanceIcon
               wrapperClassName={styles.action_btn}
-              className={'codicon codicon-server-environment'}
+              className={'codicon codicon-server'}
               onClick={handleShowMCPConfig}
               tabIndex={0}
               role='button'
