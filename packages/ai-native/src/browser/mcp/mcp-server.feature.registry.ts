@@ -2,6 +2,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { ILogger } from '@opensumi/ide-core-common';
 
+import { BUILTIN_MCP_SERVER_NAME } from '../../common';
 import { getToolName } from '../../common/utils';
 import { IMCPServerRegistry, IMCPServerToolComponentProps, MCPLogger, MCPToolDefinition } from '../types';
 
@@ -25,7 +26,7 @@ export class MCPServerRegistry implements IMCPServerRegistry {
     return new LoggerAdapter(this.baseLogger);
   }
 
-  getMCPTool(name: string, serverName = 'sumi-builtin'): MCPToolDefinition | undefined {
+  getMCPTool(name: string, serverName = BUILTIN_MCP_SERVER_NAME): MCPToolDefinition | undefined {
     return this.tools.find((tool) => getToolName(tool.name, serverName) === name);
   }
 
@@ -36,7 +37,7 @@ export class MCPServerRegistry implements IMCPServerRegistry {
   registerToolComponent(
     name: string,
     component: React.FC<IMCPServerToolComponentProps>,
-    serverName = 'sumi-builtin',
+    serverName = BUILTIN_MCP_SERVER_NAME,
   ): void {
     this.toolComponents[getToolName(name, serverName)] = component;
   }

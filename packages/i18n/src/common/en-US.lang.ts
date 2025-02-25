@@ -1569,6 +1569,9 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.command.description': 'Command to start the MCP server',
     'preference.ai.native.mcp.servers.args.description': 'Command line arguments for the MCP server',
     'preference.ai.native.mcp.servers.env.description': 'Environment variables for the MCP server',
+    'preference.ai.native.mcp.servers.type.description': 'Type of the MCP server connection',
+    'preference.ai.native.mcp.servers.type.stdio': 'Stdio connection',
+    'preference.ai.native.mcp.servers.type.sse': 'SSE connection',
 
     // MCP Terminal Tool
     'ai.native.mcp.terminal.output': 'Output',

@@ -72,6 +72,7 @@ import {
   AI_CHAT_LOGO_AVATAR_ID,
   AI_CHAT_VIEW_ID,
   AI_MENU_BAR_DEBUG_TOOLBAR,
+  BUILTIN_MCP_SERVER_NAME,
   ChatProxyServiceToken,
   IChatInternalService,
   IChatManagerService,
@@ -327,15 +328,23 @@ export class AINativeBrowserContribution
       }
 
       if (supportsMCP) {
-        // 初始化内置 MCP Server
-        this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
-
         // 从 preferences 获取并初始化外部 MCP Servers
         const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(
           AINativeSettingSectionsId.MCPServers,
         );
+
+        // 查找内置 MCP Server 的配置
+        const builtinServer = mcpServers?.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
+
+        // 总是初始化内置服务器，根据配置决定是否启用
+        this.sumiMCPServerBackendProxy.initBuiltinMCPServer(builtinServer?.enabled ?? true);
+
+        // 初始化其他外部 MCP Servers
         if (mcpServers && mcpServers.length > 0) {
-          this.sumiMCPServerBackendProxy.initExternalMCPServers(mcpServers);
+          const externalServers = mcpServers.filter((server) => server.name !== BUILTIN_MCP_SERVER_NAME);
+          if (externalServers.length > 0) {
+            this.sumiMCPServerBackendProxy.initExternalMCPServers(externalServers);
+          }
         }
       }
     });
