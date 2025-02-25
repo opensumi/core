@@ -368,7 +368,7 @@ export interface IMCPServerToolComponentProps {
   result?: any;
   index?: number;
   messageId?: string;
-  toolCallId?: string;
+  toolCallId: string;
 }
 
 export interface IMCPServerRegistry {

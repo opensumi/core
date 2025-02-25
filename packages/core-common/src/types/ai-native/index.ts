@@ -183,6 +183,8 @@ export interface IAIBackServiceOption {
   topK?: number;
   providerOptions?: any;
   noTool?: boolean;
+  /** 响应首尾是否有需要trim的内容 */
+  trimTexts?: [string, string];
 }
 
 /**

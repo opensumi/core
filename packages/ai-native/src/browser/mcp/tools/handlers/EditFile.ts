@@ -12,10 +12,10 @@ export class EditFileHandler {
   @Autowired(BaseApplyService)
   private applyService: BaseApplyService;
 
-  async handler(relativePath: string, updateContent: string, instructions?: string) {
-    // TODO: ignore file
-    this.applyService.registerCodeBlock(relativePath, updateContent);
-    const blockData = await this.applyService.apply(relativePath, updateContent, instructions);
+  async handler(params: { targetFile: string; codeEdit: string; instructions?: string }, toolCallId: string) {
+    const { targetFile, codeEdit } = params;
+    const block = this.applyService.registerCodeBlock(targetFile, codeEdit, toolCallId);
+    const blockData = await this.applyService.apply(block);
     return blockData;
   }
 }

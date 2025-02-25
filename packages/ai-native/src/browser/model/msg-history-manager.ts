@@ -66,6 +66,11 @@ export class MsgHistoryManager extends Disposable {
     return this.startIndex;
   }
 
+  public get lastMessageId(): string {
+    const list = this.messageList;
+    return list[list.length - 1].id;
+  }
+
   public getMessages(maxTokens?: number): IHistoryChatMessage[] {
     if (maxTokens && this.totalTokens > maxTokens) {
       while (this.totalTokens > maxTokens) {

@@ -1,15 +1,14 @@
 .edit-file-tool-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 2px 8px;
   border-bottom: 1px solid var(--vscode-commandCenter-inactiveBorder);
   background-color: var(--design-block-background);
   font-size: 10px;
   margin-bottom: -4px;
   border-radius: 8px 8px 0 0;
-  > span {
-    margin-right: 4px;
-  }
+  white-space: nowrap;
   :global(span.codicon) {
     font-size: 12px;
   }
@@ -18,6 +17,26 @@
     align-items: center;
     justify-content: center;
   }
+  .left,
+  .right {
+    display: flex;
+    align-items: center;
+  }
+  &::after {
+    display: none;
+  }
+  .left {
+    > span {
+      margin-right: 4px;
+    }
+  }
+  .right > div {
+    margin-left: 4px;
+  }
+}
+.edit-file-tool-file-name {
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 .edit-file-tool {
   border: 1px solid var(--vscode-commandCenter-inactiveBorder);

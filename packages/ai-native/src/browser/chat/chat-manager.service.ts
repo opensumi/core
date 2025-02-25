@@ -9,6 +9,7 @@ import {
   IStorage,
   STORAGE_NAMESPACE,
   StorageProvider,
+  debounce,
 } from '@opensumi/ide-core-common';
 import { ChatMessageRole, IChatMessage, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
@@ -158,6 +159,7 @@ export class ChatManagerService extends Disposable {
         if (token.isCancellationRequested) {
           return;
         }
+        this.saveSessions();
         model.acceptResponseProgress(request, progress);
       };
       const requestProps = {
@@ -196,6 +198,7 @@ export class ChatManagerService extends Disposable {
     }
   }
 
+  @debounce(1000)
   protected saveSessions() {
     this._chatStorage.set('sessionModels', this.getSessions());
   }
