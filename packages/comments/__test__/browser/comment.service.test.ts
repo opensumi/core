@@ -218,59 +218,6 @@ describe('comment service test', () => {
     expect(threadsChangedListener.mock.calls.length).toBe(1);
   });
 
-  it('unvisible widget not to be called with showWidgetsIfShowed method', async () => {
-    const uri = URI.file('/test');
-    const [thread] = createTestThreads(uri);
-    act(() => {
-      currentEditor.currentUri = uri;
-      // 生成一个 widget
-      thread.show(currentEditor);
-      // 调用隐藏方法，此时 isShow 为 false
-      thread.hide();
-    });
-    const widget = thread.getWidgetByEditor(currentEditor);
-    expect(widget?.isShow).toBeFalsy();
-    const onShow = jest.fn();
-    widget?.onShow(onShow);
-    thread.showWidgetsIfShowed();
-    // 不会被调用 show 方法
-    expect(onShow).not.toHaveBeenCalled();
-    expect(widget?.isShow).toBeFalsy();
-  });
-
-  it('show widget when isShow is true', async () => {
-    const uri = URI.file('/test');
-    const [thread] = createTestThreads(uri);
-    currentEditor.currentUri = uri;
-    act(() => {
-      // 生成一个 widget
-      thread.show(currentEditor);
-      // 先通过 dispose 方式隐藏，此时 isShow 仍为 true
-      thread.hideWidgetsByDispose();
-    });
-    const widget = thread.getWidgetByEditor(currentEditor);
-    expect(widget?.isShow).toBeTruthy();
-    const onShow = jest.fn();
-    widget?.onShow(onShow);
-    thread.showWidgetsIfShowed();
-    expect(onShow).toHaveBeenCalled();
-  });
-
-  it('dispose should not effect isShow state', async () => {
-    const uri = URI.file('/test');
-    const [thread] = createTestThreads(uri);
-    currentEditor.currentUri = uri;
-    act(() => {
-      // 生成一个 widget
-      thread.show(currentEditor);
-    });
-    const widget = thread.getWidgetByEditor(currentEditor);
-    expect(widget?.isShow).toBeTruthy();
-    thread.hideWidgetsByDispose();
-    // 虽然隐藏了，但是 show 变量还是不变
-    expect(widget?.isShow).toBeTruthy();
-  });
-
   it('registerDecorationProvider to be recalled when register resource provider', () => {
     // @ts-ignore
     const $registerDecorationProvider = jest.spyOn(commentsService, 'registerDecorationProvider');

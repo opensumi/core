@@ -250,9 +250,12 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       if (!widget) {
         widget = this.addWidgetByEditor(editor);
       }
-      // 如果标记之前是已经展示的 widget，则调用 show 方法
-      if (editor.currentUri?.isEqual(this.uri) && widget.isShow) {
-        widget.show();
+      // 切回来时展示已存在的 comment 组件
+      if (editor.currentUri?.isEqual(this.uri)) {
+        // 必须使用 setTimeout, 因为两边的 editor 出现时机问题，diffEditor是异步显示和渲染
+        setTimeout(() => {
+          widget?.show();
+        });
       }
     }
   }
