@@ -70,7 +70,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
 
   return [
     instructions && <p>{instructions}</p>,
-    <div className={styles['edit-file-tool']} key={`edit-file-tool-${codeBlockData.id}`}>
+    <div className={styles['edit-file-tool']} key={'edit-file-tool'}>
       <div
         className={cls(styles['edit-file-tool-header'], {
           clickable: codeBlockData.status === 'pending' || codeBlockData.status === 'success',
