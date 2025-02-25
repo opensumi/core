@@ -4,6 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   CancellationToken,
   ChatFeatureRegistryToken,
+  ChatMessageRole,
   ChatServiceToken,
   Disposable,
   Emitter,
@@ -24,6 +25,8 @@ import {
   IChatFollowup,
   IChatMessageStructure,
 } from '../../common';
+import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
+import { ChatAgentPromptProvider } from '../../common/prompts/context-prompt-provider';
 import { IChatFeatureRegistry } from '../types';
 
 import { ChatService } from './chat.api.service';
@@ -34,6 +37,12 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 
   private defaultAgentId: string | undefined;
 
+  private initialUserMessageMap: Map<string, string> = new Map();
+
+  private shouldUpdateContext = false;
+
+  private contextVersion: number;
+
   private readonly _onDidChangeAgents = new Emitter<void>();
   readonly onDidChangeAgents = this._onDidChangeAgents.event;
 
@@ -42,6 +51,12 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 
   @Autowired(ILogger)
   logger: ILogger;
+
+  @Autowired(LLMContextServiceToken)
+  protected readonly contextService: LLMContextService;
+
+  @Autowired(ChatAgentPromptProvider)
+  protected readonly promptProvider: ChatAgentPromptProvider;
 
   @Autowired(ChatServiceToken)
   private aiChatService: ChatService;
@@ -52,6 +67,12 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   constructor() {
     super();
     this.addDispose(this._onDidChangeAgents);
+    this.addDispose(this.contextService.onDidContextFilesChangeEvent((event) => {
+      if (event.version !== this.contextVersion) {
+        this.contextVersion = event.version;
+        this.shouldUpdateContext = true;
+      }
+    }));
   }
 
   registerAgent(agent: IChatAgent): IDisposable {
@@ -119,8 +140,26 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
       throw new Error(`No agent with id ${id}`);
     }
 
+    // 发送第一条消息时携带初始 context
+    if (!this.initialUserMessageMap.has(id)) {
+      this.initialUserMessageMap.set(id, request.message);
+      const rawMessage = request.message;
+      request.message = this.provideContextMessage(rawMessage);
+    }
+
+    if (this.shouldUpdateContext) {
+      request.message = this.provideContextMessage(request.message);
+      this.shouldUpdateContext = false;
+    }
+
     const result = await data.agent.invoke(request, progress, history, token);
     return result;
+  }
+
+  private provideContextMessage(message: string) {
+    const context = this.contextService.serialize();
+    const fullMessage = this.promptProvider.provideContextPrompt(context, message);
+    return fullMessage;
   }
 
   populateChatInput(id: string, message: IChatMessageStructure) {
