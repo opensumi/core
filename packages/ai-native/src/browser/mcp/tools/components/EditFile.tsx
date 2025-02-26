@@ -138,25 +138,25 @@ const renderStatus = (codeBlockData: CodeBlockData) => {
       return <Loading />;
     case 'pending':
       return (
-        <Popover title={status} id={'edit-file-tool-status-pending'}>
+        <Popover title='Pending' id={'edit-file-tool-status-pending'}>
           <Icon iconClass='codicon codicon-circle-large' />
         </Popover>
       );
     case 'success':
       return (
-        <Popover title={status} id={'edit-file-tool-status-success'}>
+        <Popover title='Success' id={'edit-file-tool-status-success'}>
           <Icon iconClass='codicon codicon-check-all' />
         </Popover>
       );
     case 'failed':
       return (
-        <Popover title={status} id={'edit-file-tool-status-failed'}>
+        <Popover title='Failed' id={'edit-file-tool-status-failed'}>
           <Icon iconClass='codicon codicon-error' style={{ color: 'var(--debugConsole-errorForeground)' }} />
         </Popover>
       );
     case 'cancelled':
       return (
-        <Popover title={status} id={'edit-file-tool-status-cancelled'}>
+        <Popover title='Cancelled' id={'edit-file-tool-status-cancelled'}>
           <Icon iconClass='codicon codicon-close' style={{ color: 'var(--input-placeholderForeground)' }} />
         </Popover>
       );
