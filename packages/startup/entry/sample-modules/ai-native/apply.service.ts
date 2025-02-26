@@ -1,7 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { ChatResponseModel } from '@opensumi/ide-ai-native/lib/browser/chat/chat-model';
-import { ChatProxyService } from '@opensumi/ide-ai-native/lib/browser/chat/chat-proxy.service';
 import { BaseApplyService } from '@opensumi/ide-ai-native/lib/browser/mcp/base-apply.service';
+import { CodeBlockData } from '@opensumi/ide-ai-native/lib/common/types';
 import {
   AIBackSerivcePath,
   AINativeSettingSectionsId,
@@ -9,14 +8,12 @@ import {
   IAIBackService,
   IApplicationService,
   IChatProgress,
-  IMarker,
   PreferenceService,
   URI,
   path,
-  uuid,
 } from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { listenReadable } from '@opensumi/ide-utils/lib/stream';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { Range } from '@opensumi/monaco-editor-core';
 
 @Injectable()
@@ -33,13 +30,14 @@ export class ApplyService extends BaseApplyService {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  protected async doApply(
-    relativePath: string,
-    newContent: string,
-    instructions?: string,
-  ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
-    let fileReadResult = this.fileHandler.getFileReadResult(relativePath);
-    const uri = new URI(path.join(this.appConfig.workspaceDir, relativePath));
+  protected async doApply(codeBlock: CodeBlockData): Promise<{
+    range?: Range;
+    stream?: SumiReadableStream<IChatProgress, Error>;
+    result?: string;
+  }> {
+    let fileReadResult = this.fileHandler.getFileReadResult(codeBlock.relativePath);
+    let isFullFile = false;
+    const uri = new URI(path.join(this.appConfig.workspaceDir, codeBlock.relativePath));
     const modelReference = await this.modelService.createModelReference(uri);
     const fileContent = modelReference.instance.getMonacoModel().getValue();
     if (!fileReadResult) {
@@ -48,6 +46,7 @@ export class ApplyService extends BaseApplyService {
         startLineOneIndexed: 1,
         endLineOneIndexedInclusive: fileContent.split('\n').length,
       };
+      isFullFile = true;
     }
     const apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
     const baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
@@ -59,7 +58,7 @@ export class ApplyService extends BaseApplyService {
     
     <code>${fileReadResult.content}</code>
     
-    <update>${newContent}</update>
+    <update>${codeBlock.codeEdit}</update>
     
     Provide the complete updated code.
     <updated-code>`,
@@ -69,6 +68,7 @@ export class ApplyService extends BaseApplyService {
         baseURL,
         apiKey,
         clientId: this.applicationService.clientId,
+        trimTexts: ['<updated-code>', '</updated-code>'],
         history: [
           {
             id: 'system',
@@ -81,52 +81,9 @@ export class ApplyService extends BaseApplyService {
       },
     );
 
-    const chatResponse = new ChatResponseModel(
-      uuid(),
-      this.chatInternalService.sessionModel,
-      ChatProxyService.AGENT_ID,
-    );
-    listenReadable<IChatProgress>(stream, {
-      onData: (data) => {
-        chatResponse.updateContent(data, true);
-      },
-      onEnd: () => {
-        chatResponse.complete();
-      },
-      onError: (error) => {
-        chatResponse.setErrorDetails({
-          message: error.message,
-        });
-        chatResponse.cancel();
-      },
-    });
-    const openResult = await this.editorService.open(URI.file(this.appConfig.workspaceDir + '/' + relativePath));
-    if (!openResult) {
-      throw new Error('Failed to open editor');
-    }
-
-    return await new Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined>((resolve, reject) => {
-      chatResponse.onDidChange(async () => {
-        if (chatResponse.isComplete) {
-          if (chatResponse.errorDetails) {
-            reject(new Error(chatResponse.errorDetails.message));
-          }
-          // Set the new content
-          const newContent = chatResponse.responseText.match(/<updated-code>([\s\S]*?)<\/updated-code>/)?.[1] || '';
-          if (!newContent) {
-            reject(new Error('No updated code found'));
-          }
-          const applyResult = await this.renderApplyResult(
-            relativePath,
-            newContent,
-            new Range(fileReadResult.startLineOneIndexed, 0, fileReadResult.endLineOneIndexedInclusive, 0),
-          );
-          resolve(applyResult);
-        } else if (chatResponse.isCanceled) {
-          reject(new Error('Apply cancelled: ' + chatResponse.errorDetails?.message));
-        }
-      });
-    });
-    // TODO: 诊断信息+迭代
+    return {
+      stream,
+      range: new Range(fileReadResult.startLineOneIndexed, 0, fileReadResult.endLineOneIndexedInclusive, 0),
+    };
   }
 }

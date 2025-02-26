@@ -9,6 +9,7 @@ import {
   IStorage,
   STORAGE_NAMESPACE,
   StorageProvider,
+  debounce,
 } from '@opensumi/ide-core-common';
 import { ChatMessageRole, IChatMessage, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
@@ -89,6 +90,7 @@ export class ChatManagerService extends Disposable {
     const savedSessions = this.fromJSON(sessionsModelData);
     savedSessions.forEach((session) => {
       this.#sessionModels.set(session.sessionId, session);
+      this.listenSession(session);
     });
     await this.storageInitEmitter.fireAndAwait();
   }
@@ -100,6 +102,7 @@ export class ChatManagerService extends Disposable {
   startSession() {
     const model = new ChatModel();
     this.#sessionModels.set(model.sessionId, model);
+    this.listenSession(model);
     return model;
   }
 
@@ -196,6 +199,15 @@ export class ChatManagerService extends Disposable {
     }
   }
 
+  protected listenSession(session: ChatModel) {
+    this.addDispose(
+      session.history.onMessageAdditionalChange(() => {
+        this.saveSessions();
+      }),
+    );
+  }
+
+  @debounce(1000)
   protected saveSessions() {
     this._chatStorage.set('sessionModels', this.getSessions());
   }

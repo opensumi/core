@@ -59,7 +59,11 @@ import {
 } from '@opensumi/ide-core-common';
 import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import {
+  BrowserEditorContribution,
+  EditorComponentRegistry,
+  IEditorFeatureRegistry,
+} from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
@@ -99,6 +103,7 @@ import {
   AIRightTabRenderer,
 } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
+import { BaseApplyService } from './mcp/base-apply.service';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -115,12 +120,15 @@ import {
 import { InlineChatEditorController } from './widget/inline-chat/inline-chat-editor.controller';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatService } from './widget/inline-chat/inline-chat.service';
+import { InlineDiffManager } from './widget/inline-diff/inline-diff-manager';
 import { InlineDiffController } from './widget/inline-diff/inline-diff.controller';
 import { InlineHintController } from './widget/inline-hint/inline-hint.controller';
 import { InlineInputController } from './widget/inline-input/inline-input.controller';
 import { InlineInputService } from './widget/inline-input/inline-input.service';
 import { InlineStreamDiffService } from './widget/inline-stream-diff/inline-stream-diff.service';
 import { SumiLightBulbWidget } from './widget/light-bulb';
+
+export const INLINE_DIFF_MANAGER_WIDGET_ID = 'inline-diff-manager-widget';
 
 @Domain(
   ClientAppContribution,
@@ -235,6 +243,9 @@ export class AINativeBrowserContribution
 
   @Autowired(IChatInternalService)
   private readonly chatInternalService: ChatInternalService;
+
+  @Autowired(BaseApplyService)
+  private readonly applyService: BaseApplyService;
 
   constructor() {
     this.registerFeature();
@@ -511,6 +522,19 @@ export class AINativeBrowserContribution
             this.ctxMenuRenderer.hide(true);
           }
         });
+      },
+    });
+  }
+
+  registerEditorComponent(registry: EditorComponentRegistry): void {
+    registry.registerEditorSideWidget({
+      id: INLINE_DIFF_MANAGER_WIDGET_ID,
+      component: InlineDiffManager,
+      displaysOnResource: (resource) => {
+        if (this.applyService.getUriPendingCodeBlock(resource.uri)) {
+          return true;
+        }
+        return false;
       },
     });
   }

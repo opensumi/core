@@ -69,8 +69,8 @@ You should specify the following arguments before the others: [target_file]`,
     };
   }
 
-  private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
-    const result = await this.editFileHandler.handler(args.targetFile, args.codeEdit, args.instructions);
+  private async handler(args: z.infer<typeof inputSchema> & { toolCallId: string }, logger: MCPLogger) {
+    const result = await this.editFileHandler.handler(args, args.toolCallId);
     return {
       content: [
         {

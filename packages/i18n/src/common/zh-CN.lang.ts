@@ -1261,6 +1261,8 @@ export const localizationBundle = {
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
     'aiNative.chat.ai.assistant.limit.message': '{0} 条最早的消息因输入 Tokens 限制而被丢弃',
+    'aiNative.inlineDiff.acceptAll': '接受全部',
+    'aiNative.inlineDiff.rejectAll': '拒绝全部',
 
     'preference.ai.native.inlineChat.title': 'Inline Chat',
     'preference.ai.native.chat.title': 'Chat',

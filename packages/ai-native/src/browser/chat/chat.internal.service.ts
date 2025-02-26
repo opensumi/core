@@ -94,6 +94,10 @@ export class ChatInternalService extends Disposable {
     return this.chatManagerService.getSessions();
   }
 
+  getSession(sessionId: string) {
+    return this.chatManagerService.getSession(sessionId);
+  }
+
   activateSession(sessionId: string) {
     const targetSession = this.chatManagerService.getSession(sessionId);
     if (!targetSession) {

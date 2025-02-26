@@ -1,3 +1,5 @@
+import { IMarker } from '@opensumi/ide-core-browser';
+
 export enum NearestCodeBlockType {
   Block = 'block',
   Line = 'line',
@@ -40,3 +42,21 @@ export interface MCPTool {
   inputSchema: any;
   providerName: string;
 }
+
+export interface CodeBlockData {
+  toolCallId: string;
+  codeEdit: string;
+  updatedCode?: string;
+  relativePath: string;
+  status: CodeBlockStatus;
+  iterationCount: number;
+  createdAt: number;
+  version: number;
+  instructions?: string;
+  applyResult?: {
+    diff: string;
+    diagnosticInfos: IMarker[];
+  };
+}
+
+export type CodeBlockStatus = 'generating' | 'pending' | 'success' | 'rejected' | 'failed' | 'cancelled';
