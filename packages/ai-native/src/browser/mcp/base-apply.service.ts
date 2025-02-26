@@ -256,7 +256,7 @@ export abstract class BaseApplyService extends WithEventBus {
         chatResponse: controller,
         previewerOptions: {
           disposeWhenEditorClosed: true,
-          renderRemovedWidgetImmediately: true,
+          renderRemovedWidgetImmediately: false,
         },
       }) as LiveInlineDiffPreviewer;
       this.addDispose(
