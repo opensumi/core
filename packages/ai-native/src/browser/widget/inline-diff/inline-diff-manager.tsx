@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Button } from '@opensumi/ide-components';
 import { localize, useInjectable } from '@opensumi/ide-core-browser';
@@ -10,22 +10,28 @@ import styles from './inline-diff-widget.module.less';
 
 export const InlineDiffManager: React.FC<{ resource: IResource }> = (props) => {
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+  const [show, setShow] = useState(true);
+  useEffect(() => {
+    applyService.onCodeBlockUpdate((codeBlock) => {
+      setShow(codeBlock.status === 'pending');
+    });
+  }, []);
   return (
-    <div className={styles.inlineDiffManager}>
+    <div className={styles.inlineDiffManager} style={{ display: show ? 'flex' : 'none' }}>
       <Button
         onClick={() => {
-          applyService.acceptAll(props.resource.uri);
+          applyService.processAll(props.resource.uri, 'accept');
         }}
       >
-        {localize('ai.native.inlineDiff.acceptAll')}
+        {localize('aiNative.inlineDiff.acceptAll')}
       </Button>
       <Button
         type='ghost'
         onClick={() => {
-          applyService.rejectAll(props.resource.uri);
+          applyService.processAll(props.resource.uri, 'reject');
         }}
       >
-        {localize('ai.native.inlineDiff.rejectAll')}
+        {localize('aiNative.inlineDiff.rejectAll')}
       </Button>
     </div>
   );

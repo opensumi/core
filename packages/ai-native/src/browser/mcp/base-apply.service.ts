@@ -310,51 +310,61 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
-  acceptAll(uri: URI): void {
-    this.activePreviewer?.getNode()?.livePreviewDiffDecorationModel.acceptUnProcessed();
-  }
-
-  rejectAll(uri: URI): void {
-    this.activePreviewer?.getNode()?.livePreviewDiffDecorationModel.discardUnProcessed();
+  processAll(uri: URI, type: 'accept' | 'reject'): void {
+    const codeBlock = this.getUriPendingCodeBlock(uri);
+    if (!codeBlock) {
+      throw new Error('No pending code block found');
+    }
+    const decorationModel = this.activePreviewer?.getNode()?.livePreviewDiffDecorationModel;
+    if (!decorationModel) {
+      throw new Error('No active previewer found');
+    }
+    if (type === 'accept') {
+      decorationModel.acceptUnProcessed();
+    } else {
+      decorationModel.discardUnProcessed();
+    }
+    this.editorService.save(uri);
+    codeBlock.status = type === 'accept' ? 'success' : 'cancelled';
+    this.updateCodeBlock(codeBlock);
   }
 
   protected listenPartialEdit(editor: ICodeEditor, codeBlock: CodeBlockData, fullOriginalContent: string) {
     const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
-    this.addDispose(
-      this.inlineDiffService.onPartialEdit((event) => {
-        // TODO 支持自动保存
-        if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
-          if (event.acceptPartialEditCount > 0) {
-            codeBlock.status = 'success';
-            const appliedResult = editor.getModel()!.getValue();
-            const diffResult = createPatch(codeBlock.relativePath, fullOriginalContent, appliedResult)
-              .split('\n')
-              .slice(4)
-              .join('\n');
-            const rangesFromDiffHunk = diffResult
-              .split('\n')
-              .map((line) => {
-                if (line.startsWith('@@')) {
-                  const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
-                  return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
-                }
-                return null;
-              })
-              .filter((range) => range !== null);
-            const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
-            // 移除开头的几个固定信息，避免浪费 tokens
-            deferred.resolve({
-              diff: diffResult,
-              diagnosticInfos,
-            });
-          } else {
-            // 用户全部取消
-            codeBlock.status = 'cancelled';
-            deferred.resolve();
-          }
+    const toDispose = this.inlineDiffService.onPartialEdit((event) => {
+      // TODO 支持自动保存
+      if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
+        if (event.acceptPartialEditCount > 0) {
+          codeBlock.status = 'success';
+          const appliedResult = editor.getModel()!.getValue();
+          const diffResult = createPatch(codeBlock.relativePath, fullOriginalContent, appliedResult)
+            .split('\n')
+            .slice(4)
+            .join('\n');
+          const rangesFromDiffHunk = diffResult
+            .split('\n')
+            .map((line) => {
+              if (line.startsWith('@@')) {
+                const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
+                return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
+              }
+              return null;
+            })
+            .filter((range) => range !== null);
+          const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
+          // 移除开头的几个固定信息，避免浪费 tokens
+          deferred.resolve({
+            diff: diffResult,
+            diagnosticInfos,
+          });
+        } else {
+          // 用户全部取消
+          codeBlock.status = 'cancelled';
+          deferred.resolve();
         }
-      }),
-    );
+        toDispose.dispose();
+      }
+    });
     return deferred.promise;
   }
 
