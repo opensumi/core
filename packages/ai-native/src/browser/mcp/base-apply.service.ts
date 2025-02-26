@@ -3,7 +3,11 @@ import { createPatch } from 'diff';
 import { Autowired } from '@opensumi/di';
 import { AppConfig, IChatProgress, IMarker, MarkerSeverity, OnEvent, WithEventBus } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorGroupCloseEvent,
+  EditorGroupOpenEvent,
+  RegisterEditorSideComponentEvent,
+} from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
 import { ICodeEditor, Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
 import { Deferred, Emitter, URI, path } from '@opensumi/ide-utils';
@@ -98,7 +102,7 @@ export abstract class BaseApplyService extends WithEventBus {
     }
     const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
     const filePendingApplies = Object.values(
-      this.getMessageCodeBlocks(this.chatInternalService.sessionModel.history.lastMessageId) || {},
+      this.getMessageCodeBlocks(this.chatInternalService.sessionModel.history.lastMessageId!) || {},
     ).filter((block) => block.relativePath === relativePath && block.status === 'pending');
     // TODO: 刷新后重新应用，事件无法恢复 & 恢复继续请求，需要改造成批量apply形式
     // TODO: 暂时只支持 pending 串行的 apply，后续支持批量apply后统一accept
@@ -109,6 +113,9 @@ export abstract class BaseApplyService extends WithEventBus {
 
   getUriPendingCodeBlock(uri: URI): CodeBlockData | undefined {
     const messageId = this.chatInternalService.sessionModel.history.lastMessageId;
+    if (!messageId) {
+      return undefined;
+    }
     const codeBlockMap = this.getMessageCodeBlocks(messageId);
     if (!codeBlockMap) {
       return undefined;
@@ -149,7 +156,7 @@ export abstract class BaseApplyService extends WithEventBus {
   }
 
   registerCodeBlock(relativePath: string, content: string, toolCallId: string): CodeBlockData {
-    const lastMessageId = this.chatInternalService.sessionModel.history.lastMessageId;
+    const lastMessageId = this.chatInternalService.sessionModel.history.lastMessageId!;
     const savedCodeBlockMap = this.getMessageCodeBlocks(lastMessageId) || {};
     const newBlock: CodeBlockData = {
       codeEdit: content,
@@ -226,6 +233,8 @@ export abstract class BaseApplyService extends WithEventBus {
     const editor = openResult.group.codeEditor.monacoEditor;
     const inlineDiffController = InlineDiffController.get(editor)!;
     codeBlock.status = 'pending';
+    // 强刷展示 manager 视图
+    this.eventBus.fire(new RegisterEditorSideComponentEvent());
     this.updateCodeBlock(codeBlock);
 
     const fullOriginalContent = editor.getModel()!.getValue();
@@ -286,7 +295,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
   // TODO: 目前的设计下，有一个工具 apply 没返回，是不会触发下一个的(cursor 是会全部自动 apply 的），所以这个方法目前还没有必要
   cancelAllApply(): void {
-    const messageId = this.chatInternalService.sessionModel.history.lastMessageId;
+    const messageId = this.chatInternalService.sessionModel.history.lastMessageId!;
     const codeBlockMap = this.getMessageCodeBlocks(messageId);
     if (!codeBlockMap) {
       return;

@@ -66,9 +66,9 @@ export class MsgHistoryManager extends Disposable {
     return this.startIndex;
   }
 
-  public get lastMessageId(): string {
+  public get lastMessageId(): string | undefined {
     const list = this.messageList;
-    return list[list.length - 1].id;
+    return list[list.length - 1]?.id;
   }
 
   public getMessages(maxTokens?: number): IHistoryChatMessage[] {
