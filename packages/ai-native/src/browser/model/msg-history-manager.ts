@@ -114,9 +114,14 @@ export class MsgHistoryManager extends Disposable {
       return;
     }
 
-    this.messageAdditionalMap.set(id, additional);
+    const oldAdditional = this.messageAdditionalMap.get(id) || {};
+    const newAdditional = {
+      ...oldAdditional,
+      ...additional,
+    };
 
-    this._onMessageAdditionalChange.fire(additional);
+    this.messageAdditionalMap.set(id, newAdditional);
+    this._onMessageAdditionalChange.fire(newAdditional);
   }
 
   public getMessageAdditional(id: string): Record<string, any> {

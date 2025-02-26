@@ -90,6 +90,7 @@ export class ChatManagerService extends Disposable {
     const savedSessions = this.fromJSON(sessionsModelData);
     savedSessions.forEach((session) => {
       this.#sessionModels.set(session.sessionId, session);
+      this.listenSession(session);
     });
     await this.storageInitEmitter.fireAndAwait();
   }
@@ -101,6 +102,7 @@ export class ChatManagerService extends Disposable {
   startSession() {
     const model = new ChatModel();
     this.#sessionModels.set(model.sessionId, model);
+    this.listenSession(model);
     return model;
   }
 
@@ -159,7 +161,6 @@ export class ChatManagerService extends Disposable {
         if (token.isCancellationRequested) {
           return;
         }
-        this.saveSessions();
         model.acceptResponseProgress(request, progress);
       };
       const requestProps = {
@@ -196,6 +197,14 @@ export class ChatManagerService extends Disposable {
       this.#pendingRequests.disposeKey(model.sessionId);
       this.saveSessions();
     }
+  }
+
+  protected listenSession(session: ChatModel) {
+    this.addDispose(
+      session.history.onMessageAdditionalChange(() => {
+        this.saveSessions();
+      }),
+    );
   }
 
   @debounce(1000)

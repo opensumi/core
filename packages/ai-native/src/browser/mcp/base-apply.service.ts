@@ -5,7 +5,7 @@ import { AppConfig, IChatProgress, IMarker, MarkerSeverity, OnEvent, WithEventBu
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
-import { Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
+import { ICodeEditor, Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
 import { Deferred, Emitter, URI, path } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
@@ -97,6 +97,7 @@ export abstract class BaseApplyService extends WithEventBus {
     const filePendingApplies = Object.values(
       this.getMessageCodeBlocks(this.chatInternalService.sessionModel.history.lastMessageId) || {},
     ).filter((block) => block.relativePath === relativePath && block.status === 'pending');
+    // TODO: 刷新后重新应用，事件无法恢复 & 恢复继续请求，需要改造成批量apply形式
     // TODO: 暂时只支持 pending 串行的 apply，后续支持批量apply后统一accept
     if (filePendingApplies.length > 0) {
       this.renderApplyResult(filePendingApplies[0], filePendingApplies[0].updatedCode!);
@@ -125,6 +126,9 @@ export abstract class BaseApplyService extends WithEventBus {
       throw new Error('Code block not found');
     }
     codeBlockMap[codeBlock.toolCallId] = codeBlock;
+    this.chatInternalService.sessionModel.history.setMessageAdditional(messageId, {
+      codeBlockMap,
+    });
     this.onCodeBlockUpdateEmitter.fire(codeBlock);
   }
 
@@ -230,7 +234,7 @@ export abstract class BaseApplyService extends WithEventBus {
       const controller = new InlineChatController();
       controller.mountReadable(updatedContentOrStream);
       const inlineDiffHandler = InlineDiffController.get(editor)!;
-      // FIXME: 结束以后要立刻更新 updatedCode，确保后续可恢复
+
       this.activePreviewer = inlineDiffHandler.showPreviewerByStream(editor, {
         crossSelection: Selection.fromRange(range, SelectionDirection.LTR),
         chatResponse: controller,
@@ -239,46 +243,15 @@ export abstract class BaseApplyService extends WithEventBus {
           renderRemovedWidgetImmediately: true,
         },
       }) as LiveInlineDiffPreviewer;
+      this.addDispose(
+        this.activePreviewer.getNode()!.onDiffFinished((diffModel) => {
+          codeBlock.updatedCode = diffModel.newFullRangeTextLines.join('\n');
+          this.updateCodeBlock(codeBlock);
+        }),
+      );
     }
 
-    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
-    // FIXME: 无diff时上层如何感知？
-    this.addDispose(
-      this.inlineDiffService.onPartialEdit((event) => {
-        // TODO 支持自动保存
-        if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
-          if (event.acceptPartialEditCount > 0) {
-            codeBlock.status = 'success';
-            const appliedResult = editor.getModel()!.getValue();
-            const diffResult = createPatch(relativePath, fullOriginalContent, appliedResult)
-              .split('\n')
-              .slice(4)
-              .join('\n');
-            const rangesFromDiffHunk = diffResult
-              .split('\n')
-              .map((line) => {
-                if (line.startsWith('@@')) {
-                  const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
-                  return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
-                }
-                return null;
-              })
-              .filter((range) => range !== null);
-            const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
-            // 移除开头的几个固定信息，避免浪费 tokens
-            deferred.resolve({
-              diff: diffResult,
-              diagnosticInfos,
-            });
-          } else {
-            // 用户全部取消
-            codeBlock.status = 'cancelled';
-            deferred.resolve();
-          }
-        }
-      }),
-    );
-    return deferred.promise;
+    return this.listenPartialEdit(editor, codeBlock, fullOriginalContent);
   }
 
   /**
@@ -322,6 +295,46 @@ export abstract class BaseApplyService extends WithEventBus {
     if (editor) {
       editor.setSelection(new Selection(startLine, 0, endLine, 0));
     }
+  }
+
+  protected listenPartialEdit(editor: ICodeEditor, codeBlock: CodeBlockData, fullOriginalContent: string) {
+    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
+    this.addDispose(
+      this.inlineDiffService.onPartialEdit((event) => {
+        // TODO 支持自动保存
+        if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
+          if (event.acceptPartialEditCount > 0) {
+            codeBlock.status = 'success';
+            const appliedResult = editor.getModel()!.getValue();
+            const diffResult = createPatch(codeBlock.relativePath, fullOriginalContent, appliedResult)
+              .split('\n')
+              .slice(4)
+              .join('\n');
+            const rangesFromDiffHunk = diffResult
+              .split('\n')
+              .map((line) => {
+                if (line.startsWith('@@')) {
+                  const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
+                  return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
+                }
+                return null;
+              })
+              .filter((range) => range !== null);
+            const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
+            // 移除开头的几个固定信息，避免浪费 tokens
+            deferred.resolve({
+              diff: diffResult,
+              diagnosticInfos,
+            });
+          } else {
+            // 用户全部取消
+            codeBlock.status = 'cancelled';
+            deferred.resolve();
+          }
+        }
+      }),
+    );
+    return deferred.promise;
   }
 
   /**

@@ -52,6 +52,9 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
 
+  protected readonly onDiffFinishedEmitter = this.registerDispose(new Emitter<IComputeDiffData>());
+  public readonly onDiffFinished: Event<IComputeDiffData> = this.onDiffFinishedEmitter.event;
+
   public previewerOptions: IDiffPreviewerOptions;
 
   private originalModel: ITextModel;
@@ -445,6 +448,8 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
           this.diffModel.set(currentDiffModel, tx);
         });
 
+        this.onDiffFinishedEmitter.fire(currentDiffModel);
+
         if (this.originalModel.id === this.monacoEditor.getModel()?.id) {
           this.renderDiffEdits(currentDiffModel);
         }
@@ -471,10 +476,13 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   }
 
   public pushRateFinallyDiffStack(diffModel: IComputeDiffData): void {
-    // 可能存在 rate editor controller 处理完之后接口层流式才结束
-    if (this.isEditing === false) {
-      this.finallyRender(diffModel);
-    }
+    transaction((tx) => {
+      this.finallyDiffModel.set(diffModel, tx);
+      // 可能存在 rate editor controller 处理完之后接口层流式才结束
+      if (this.isEditing === false) {
+        this.finallyRender(diffModel);
+      }
+    });
   }
 
   public finallyRender(diffModel: IComputeDiffData): void {
@@ -487,6 +495,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
       return;
     }
 
+    this.onDiffFinishedEmitter.fire(diffModel);
     this.renderPartialEditWidgets(diffModel);
     this.renderDiffEdits(diffModel);
     this.pushStackElement();
