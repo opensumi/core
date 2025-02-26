@@ -77,7 +77,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
         })}
         onClick={() => {
           if (codeBlockData.status === 'pending') {
-            applyService.renderApplyResult(codeBlockData);
+            applyService.renderApplyResult(codeBlockData, codeBlockData.updatedCode!);
           } else if (codeBlockData.status === 'success') {
             applyService.revealApplyPosition(codeBlockData);
           }

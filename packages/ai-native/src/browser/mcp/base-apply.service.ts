@@ -104,6 +104,19 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
+  getUriPendingCodeBlock(uri: URI): CodeBlockData | undefined {
+    const messageId = this.chatInternalService.sessionModel.history.lastMessageId;
+    const codeBlockMap = this.getMessageCodeBlocks(messageId);
+    if (!codeBlockMap) {
+      return undefined;
+    }
+    return Object.values(codeBlockMap).find(
+      (block) =>
+        block.relativePath === path.relative(this.appConfig.workspaceDir, uri.path.toString()) &&
+        block.status === 'pending',
+    );
+  }
+
   getCodeBlock(toolCallId: string, messageId?: string): CodeBlockData | undefined {
     messageId = messageId || this.chatInternalService.sessionModel.history.lastMessageId;
     if (!messageId) {
@@ -295,6 +308,14 @@ export abstract class BaseApplyService extends WithEventBus {
     if (editor) {
       editor.setSelection(new Selection(startLine, 0, endLine, 0));
     }
+  }
+
+  acceptAll(uri: URI): void {
+    this.activePreviewer?.getNode()?.livePreviewDiffDecorationModel.acceptUnProcessed();
+  }
+
+  rejectAll(uri: URI): void {
+    this.activePreviewer?.getNode()?.livePreviewDiffDecorationModel.discardUnProcessed();
   }
 
   protected listenPartialEdit(editor: ICodeEditor, codeBlock: CodeBlockData, fullOriginalContent: string) {
