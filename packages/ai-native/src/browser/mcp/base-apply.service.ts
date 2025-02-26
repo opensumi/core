@@ -93,6 +93,9 @@ export abstract class BaseApplyService extends WithEventBus {
 
   @OnEvent(EditorGroupOpenEvent)
   async onEditorGroupOpen(event: EditorGroupOpenEvent) {
+    if (!this.chatInternalService.sessionModel.history.getMessages().length) {
+      return;
+    }
     const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
     const filePendingApplies = Object.values(
       this.getMessageCodeBlocks(this.chatInternalService.sessionModel.history.lastMessageId) || {},
