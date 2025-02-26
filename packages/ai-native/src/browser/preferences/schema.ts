@@ -108,11 +108,27 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
             type: 'string',
             description: localize('preference.ai.native.mcp.servers.command.description'),
           },
+          type: {
+            type: 'string',
+            enum: ['stdio', 'sse'],
+            enumDescriptions: [
+              localize('preference.ai.native.mcp.servers.type.stdio'),
+              localize('preference.ai.native.mcp.servers.type.sse'),
+            ],
+            description: localize('preference.ai.native.mcp.servers.type.description'),
+            default: 'stdio',
+          },
+          enabled: {
+            type: 'boolean',
+            description: localize('preference.ai.native.mcp.servers.enabled.description'),
+            default: true,
+          },
           args: {
             type: 'array',
             items: {
               type: 'string',
             },
+            default: [],
             description: localize('preference.ai.native.mcp.servers.args.description'),
           },
           env: {

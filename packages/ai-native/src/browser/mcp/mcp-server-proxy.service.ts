@@ -4,7 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { ILogger } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 
-import { ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../common';
+import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../common';
 import { IMCPServerProxyService } from '../../common/types';
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
@@ -35,7 +35,7 @@ export class MCPServerProxyService implements IMCPServerProxyService {
         name: tool.name,
         description: tool.description,
         inputSchema: zodToJsonSchema(tool.inputSchema),
-        providerName: 'sumi-builtin',
+        providerName: BUILTIN_MCP_SERVER_NAME,
       }),
     );
 
@@ -51,5 +51,17 @@ export class MCPServerProxyService implements IMCPServerProxyService {
 
   async getAllMCPTools() {
     return this.sumiMCPServerProxyService.getAllMCPTools();
+  }
+
+  async $getServers() {
+    return this.sumiMCPServerProxyService.getServers();
+  }
+
+  async $startServer(serverName: string) {
+    await this.sumiMCPServerProxyService.startServer(serverName);
+  }
+
+  async $stopServer(serverName: string) {
+    await this.sumiMCPServerProxyService.stopServer(serverName);
   }
 }

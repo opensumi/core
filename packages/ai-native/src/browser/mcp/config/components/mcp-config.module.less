@@ -1,0 +1,178 @@
+.container {
+  padding: 20px;
+  color: var(--foreground);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0;
+  color: var(--descriptionForeground);
+  font-size: 14px;
+}
+
+.addButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: var(--button-primary-background);
+  color: var(--button-primary-foreground);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    background-color: var(--button-primary-hover-background);
+  }
+}
+
+.serversList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.serverItem {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--editorWidget-background);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--focusBorder);
+  }
+}
+
+.serverHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.serverTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.serverName {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.serverStatus,
+.serverType {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.serverType {
+  background-color: var(--editor-background);
+  color: var(--descriptionForeground);
+}
+
+.running {
+  background-color: var(--notification-info-background);
+  color: var(--notification-info-foreground);
+}
+
+.stopped {
+  background-color: var(--notification-error-background);
+  color: var(--notification-error-foreground);
+}
+
+.serverActions {
+  display: flex;
+  gap: 4px;
+}
+
+.iconButton {
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--icon-foreground);
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--list-hover-background);
+  }
+}
+
+.serverDetail {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: var(--editor-background);
+  font-size: 13px;
+
+  &:not(:last-child) {
+    margin-bottom: 8px;
+  }
+}
+
+.detailRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+  align-items: center;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.detailLabel {
+  color: var(--descriptionForeground);
+  min-width: 70px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.detailContent {
+  color: var(--foreground);
+  word-break: break-all;
+  flex: 1;
+  background-color: var(--editor-background);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: var(--monaco-monospace-font);
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: var(--editorWidget-background);
+  color: var(--button-secondary-foreground);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+}

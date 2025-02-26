@@ -41,11 +41,14 @@ export abstract class BaseLanguageModel {
   ): Promise<any> {
     const provider = this.initializeProvider(options);
     const clientId = options.clientId;
-    if (!clientId) {
-      throw new Error('clientId is required');
+
+    let allFunctions: ToolRequest[] = [];
+    // 如果没有传入 clientId，则不使用工具
+    if (clientId) {
+      const registry = this.toolInvocationRegistryManager.getRegistry(clientId);
+      allFunctions = options.noTool ? [] : registry.getAllFunctions();
     }
-    const registry = this.toolInvocationRegistryManager.getRegistry(clientId);
-    const allFunctions = options.noTool ? [] : registry.getAllFunctions();
+
     return this.handleStreamingRequest(
       provider,
       request,
