@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Icon, Popover } from '@opensumi/ide-components';
 import {
@@ -10,7 +10,6 @@ import {
   Uri,
   detectModeId,
   path,
-  useAutorun,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
@@ -18,61 +17,24 @@ import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/com
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
+import { CodeBlockData } from '../../../../common/types';
 import { ChatMarkdown } from '../../../components/ChatMarkdown';
 import { IMCPServerToolComponentProps } from '../../../types';
-import { BaseApplyService, CodeBlockData } from '../../base-apply.service';
+import { BaseApplyService } from '../../base-apply.service';
 
 import styles from './index.module.less';
 
-const renderStatus = (codeBlockData: CodeBlockData) => {
-  const status = codeBlockData.status;
-  switch (status) {
-    case 'generating':
-      return <Loading />;
-    case 'pending':
-      return (
-        <Popover title={status} id={'edit-file-tool-status-pending'}>
-          <Icon iconClass='codicon codicon-circle-large' />
-        </Popover>
-      );
-    case 'success':
-      return (
-        <Popover title={status} id={'edit-file-tool-status-success'}>
-          <Icon iconClass='codicon codicon-check-all' />
-        </Popover>
-      );
-    case 'failed':
-      return (
-        <Popover title={status} id={'edit-file-tool-status-failed'}>
-          <Icon iconClass='codicon codicon-error' color='var(--vscode-input-errorForeground)' />
-        </Popover>
-      );
-    case 'cancelled':
-      return (
-        <Popover title={status} id={'edit-file-tool-status-cancelled'}>
-          <Icon iconClass='codicon codicon-close' color='var(--vscode-input-placeholderForeground)' />
-        </Popover>
-      );
-    default:
-      return null;
-  }
-};
-
 export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   const { args, messageId, toolCallId } = props;
+  const [mode, setMode] = useState<'code' | 'diff'>('code');
   const labelService = useInjectable(LabelService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
   const { target_file = '', code_edit, instructions } = args || {};
   const absolutePath = path.join(appConfig.workspaceDir, target_file);
-
-  const codeBlockData = applyService.getCodeBlock(absolutePath, messageId);
-
-  useAutorun(applyService.codeBlockMapObservable);
-
-  if (toolCallId && codeBlockData) {
-    applyService.initToolCallId(codeBlockData.id, toolCallId);
-  }
+  const [codeBlockData, setCodeBlockData] = useState<CodeBlockData | undefined>(
+    applyService.getCodeBlock(toolCallId, messageId),
+  );
 
   const icon = useMemo(() => {
     if (!target_file) {
@@ -91,40 +53,66 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
     return detectedModeId;
   }, [target_file, absolutePath]);
 
+  useEffect(() => {
+    const disposable = applyService.onCodeBlockUpdate((codeBlockData) => {
+      setCodeBlockData({ ...codeBlockData });
+    });
+    return () => {
+      disposable.dispose();
+    };
+  }, []);
+
   // 多次迭代时，仅在首处tool组件中展示
-  if (!args || !codeBlockData || (toolCallId && toolCallId !== codeBlockData.initToolCallId)) {
+  // FIXME: 这个优化有必要吗？每次都展示也挺好？
+  if (!args || !codeBlockData) {
     return null;
   }
 
   return [
     instructions && <p>{instructions}</p>,
-    <div className={styles['edit-file-tool']} key={`edit-file-tool-${codeBlockData.id}`}>
+    <div className={styles['edit-file-tool']} key={'edit-file-tool'}>
       <div
         className={cls(styles['edit-file-tool-header'], {
           clickable: codeBlockData.status === 'pending' || codeBlockData.status === 'success',
         })}
         onClick={() => {
           if (codeBlockData.status === 'pending') {
-            applyService.reRenderPendingApply();
+            applyService.renderApplyResult(codeBlockData, codeBlockData.updatedCode!);
           } else if (codeBlockData.status === 'success') {
-            applyService.revealApplyPosition(codeBlockData.id);
+            applyService.revealApplyPosition(codeBlockData);
           }
         }}
       >
-        {icon && <span className={icon}></span>}
-        <span className={styles['edit-file-tool-file-name']}>{target_file}</span>
-        {codeBlockData.iterationCount > 1 && (
-          <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
-        )}
-        {renderStatus(codeBlockData)}
+        <div className={styles.left}>
+          {icon && <span className={icon}></span>}
+          <span className={styles['edit-file-tool-file-name']}>{target_file}</span>
+          {codeBlockData.iterationCount > 1 && (
+            <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
+          )}
+          {renderStatus(codeBlockData)}
+        </div>
+        <div className={styles.right}>
+          <Popover title={'Show Code'} id={'edit-file-tool-show-code'}>
+            <Icon iconClass='codicon codicon-file-code' onClick={() => setMode('code')} />
+          </Popover>
+          {codeBlockData.applyResult?.diff && (
+            <Popover title={'Show Diff'} id={'edit-file-tool-show-diff'}>
+              <Icon iconClass='codicon codicon-diff-multiple' onClick={() => setMode('diff')} />
+            </Popover>
+          )}
+        </div>
       </div>
-      <ChatMarkdown markdown={`\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``} hideInsert={true} />
+      <ChatMarkdown
+        markdown={
+          mode === 'code'
+            ? `\`\`\`${languageId || ''}\n${code_edit}\n\`\`\``
+            : `\`\`\`diff\n${codeBlockData.applyResult?.diff}\n\`\`\``
+        }
+        hideInsert={true}
+      />
     </div>,
     codeBlockData.applyResult && codeBlockData.applyResult.diagnosticInfos.length > 0 && (
-      <div
-        className={styles['edit-file-tool-diagnostic-errors']}
-        key={`edit-file-tool-diagnostic-errors-${codeBlockData.id}`}
-      >
+      <div className={styles['edit-file-tool-diagnostic-errors']} key={'edit-file-tool-diagnostic-errors'}>
         <div className={styles['title']}>Found Lints:</div>
         {codeBlockData.applyResult?.diagnosticInfos.map((info) => (
           <div
@@ -141,4 +129,38 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
       </div>
     ),
   ];
+};
+
+const renderStatus = (codeBlockData: CodeBlockData) => {
+  const status = codeBlockData.status;
+  switch (status) {
+    case 'generating':
+      return <Loading />;
+    case 'pending':
+      return (
+        <Popover title='Pending' id={'edit-file-tool-status-pending'}>
+          <Icon iconClass='codicon codicon-circle-large' />
+        </Popover>
+      );
+    case 'success':
+      return (
+        <Popover title='Success' id={'edit-file-tool-status-success'}>
+          <Icon iconClass='codicon codicon-check-all' />
+        </Popover>
+      );
+    case 'failed':
+      return (
+        <Popover title='Failed' id={'edit-file-tool-status-failed'}>
+          <Icon iconClass='codicon codicon-error' style={{ color: 'var(--debugConsole-errorForeground)' }} />
+        </Popover>
+      );
+    case 'cancelled':
+      return (
+        <Popover title='Cancelled' id={'edit-file-tool-status-cancelled'}>
+          <Icon iconClass='codicon codicon-close' style={{ color: 'var(--input-placeholderForeground)' }} />
+        </Popover>
+      );
+    default:
+      return null;
+  }
 };

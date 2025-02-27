@@ -60,6 +60,7 @@ export abstract class BaseLanguageModel {
       options.topP,
       options.topK,
       options.providerOptions,
+      options.trimTexts,
       cancellationToken,
     );
   }
@@ -87,6 +88,7 @@ export abstract class BaseLanguageModel {
     topP?: number,
     topK?: number,
     providerOptions?: Record<string, any>,
+    trimTexts?: [string, string],
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -120,9 +122,42 @@ export abstract class BaseLanguageModel {
         providerOptions,
       });
 
+      // 状态跟踪变量
+      let isFirstChunk = true;
+      let bufferedText = '';
+      const pendingLines: string[] = [];
       for await (const chunk of stream.fullStream) {
         if (chunk.type === 'text-delta') {
-          chatReadableStream.emitData({ kind: 'content', content: chunk.textDelta });
+          if (trimTexts?.length) {
+            // 将收到的文本追加到缓冲区
+            bufferedText += chunk.textDelta;
+
+            // 处理第一个文本块的前缀（只处理一次）
+            if (isFirstChunk && bufferedText.includes(trimTexts[0])) {
+              bufferedText = bufferedText.substring(bufferedText.indexOf(trimTexts[0]) + trimTexts[0].length);
+              isFirstChunk = false;
+            }
+
+            // 检查是否有完整的行，并将它们添加到待发送行队列
+            const lines = bufferedText.split('\n');
+
+            // 最后一个元素可能是不完整的行，保留在缓冲区
+            bufferedText = lines.pop() || '';
+
+            // 将完整的行添加到待发送队列
+            if (lines.length > 0) {
+              pendingLines.push(...lines);
+            }
+
+            // 发送除最后几行外的所有行（保留足够的行以处理后缀）
+            while (pendingLines.length > 3) {
+              // 保留最后3行以确保能完整识别后缀
+              const lineToSend = pendingLines.shift() + '\n';
+              chatReadableStream.emitData({ kind: 'content', content: lineToSend });
+            }
+          } else {
+            chatReadableStream.emitData({ kind: 'content', content: chunk.textDelta });
+          }
         } else if (chunk.type === 'tool-call') {
           chatReadableStream.emitData({
             kind: 'toolCall',
@@ -166,6 +201,33 @@ export abstract class BaseLanguageModel {
           });
         } else if (chunk.type === 'error') {
           chatReadableStream.emitError(new Error(chunk.error as string));
+        }
+      }
+
+      if (trimTexts?.[1]) {
+        // 完成处理所有块后，检查并发送剩余文本
+
+        // 将剩余缓冲区加入待发送行
+        if (bufferedText) {
+          pendingLines.push(bufferedText);
+        }
+
+        // 处理最后一行可能存在的后缀
+        if (pendingLines.length > 0) {
+          let lastLine = pendingLines[pendingLines.length - 1];
+
+          if (lastLine.endsWith(trimTexts[1])) {
+            // 移除后缀
+            lastLine = lastLine.substring(0, lastLine.length - trimTexts[1].length);
+            pendingLines[pendingLines.length - 1] = lastLine;
+          }
+        }
+
+        // 发送所有剩余的行
+        for (let i = 0; i < pendingLines.length; i++) {
+          const isLastLine = i === pendingLines.length - 1;
+          const lineToSend = pendingLines[i] + (isLastLine ? '' : '\n');
+          chatReadableStream.emitData({ kind: 'content', content: lineToSend });
         }
       }
 
