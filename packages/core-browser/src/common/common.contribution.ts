@@ -60,8 +60,8 @@ export class ClientCommonContribution
 
   constructor() {
     const overridePropertiesDefault = {
-      'application.supportsOpenFolder': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
-      'application.supportsOpenWorkspace': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
+      'application.supportsOpenFolder': !this.appConfig.isRemote,
+      'application.supportsOpenWorkspace': !this.appConfig.isRemote,
       'debug.toolbar.top': this.appConfig.isElectronRenderer ? 0 : this.layoutViewSize.menubarHeight,
     };
     const keys = Object.keys(this.schema.properties);
