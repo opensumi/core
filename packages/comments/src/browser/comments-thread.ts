@@ -251,8 +251,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
         widget = this.addWidgetByEditor(editor);
       }
       // 如果标记之前是已经展示的 widget，则调用 show 方法
-      if (editor.currentUri?.isEqual(this.uri) && widget.isShow) {
-        widget.show();
+      if (editor.currentUri?.isEqual(this.uri)) {
+        setTimeout(() => {
+          widget?.show();
+        }, 0);
       }
     }
   }
