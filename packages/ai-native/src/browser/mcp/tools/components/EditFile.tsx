@@ -62,8 +62,11 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
     };
   }, []);
 
-  // 多次迭代时，仅在首处tool组件中展示
-  // FIXME: 这个优化有必要吗？每次都展示也挺好？
+  const handleToggleMode = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setMode(mode === 'code' ? 'diff' : 'code');
+  };
+
   if (!args || !codeBlockData) {
     return null;
   }
@@ -93,11 +96,11 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
         </div>
         <div className={styles.right}>
           <Popover title={'Show Code'} id={'edit-file-tool-show-code'}>
-            <Icon iconClass='codicon codicon-file-code' onClick={() => setMode('code')} />
+            <Icon iconClass='codicon codicon-file-code' onClick={handleToggleMode} />
           </Popover>
           {codeBlockData.applyResult?.diff && (
             <Popover title={'Show Diff'} id={'edit-file-tool-show-diff'}>
-              <Icon iconClass='codicon codicon-diff-multiple' onClick={() => setMode('diff')} />
+              <Icon iconClass='codicon codicon-diff-multiple' onClick={handleToggleMode} />
             </Popover>
           )}
         </div>

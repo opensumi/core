@@ -9,7 +9,7 @@ import {
   useInjectable,
   useUpdateOnEvent,
 } from '@opensumi/ide-core-browser';
-import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
+import { Popover, PopoverPosition, message } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   AIServiceType,
@@ -790,7 +790,11 @@ export function DefaultChatViewHeader({
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const handleNewChat = React.useCallback(() => {
     if (aiChatService.sessionModel.history.getMessages().length > 0) {
-      aiChatService.createSessionModel();
+      try {
+        aiChatService.createSessionModel();
+      } catch (error) {
+        message.error(error);
+      }
     }
   }, [aiChatService]);
   const handleHistoryItemSelect = React.useCallback(

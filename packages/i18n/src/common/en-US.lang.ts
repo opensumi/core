@@ -1495,7 +1495,7 @@ export const localizationBundle = {
     'aiNative.chat.ai.assistant.limit.message': '{0} earliest messages are dropped due to the input token limit',
     'aiNative.inlineDiff.acceptAll': 'Accept All',
     'aiNative.inlineDiff.rejectAll': 'Reject All',
-
+    'aiNative.chat.session.max': 'You can only create {0} chats at a time',
     'preference.ai.native.inlineChat.title': 'Inline Chat',
     'preference.ai.native.chat.title': 'Chat',
     'preference.ai.native.interface.quick.title': 'Interface Quick Navigation',
