@@ -7,7 +7,8 @@ export enum AIServiceType {
   InlineChat = 'inlineChat',
   CodeAction = 'codeAction',
   InlineChatInput = 'inlineChatInput',
-  CustomReplay = 'customReplay',
+  CustomReply = 'customReply',
+  ToolCall = 'toolCall',
   Completion = 'completion',
   Agent = 'agent',
   MergeConflict = 'mergeConflict',
@@ -129,6 +130,8 @@ export interface ChatRT extends Partial<CommonLogInfo> {
   command?: string;
   userMessage?: string;
   assistantMessage?: string;
+  sessionId: string;
+  messageId?: string;
 }
 
 export interface MergeConflictRT extends Partial<CommonLogInfo> {
