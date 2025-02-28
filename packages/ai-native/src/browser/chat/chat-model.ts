@@ -311,7 +311,7 @@ export class ChatModel extends Disposable implements IChatModel {
   addRequest(message: IChatRequestMessage): ChatRequestModel {
     const msg = message;
     // first msg
-    if (ChatModel.requestIdPool === 0 && this.provideContextPrompt) {
+    if (this.provideContextPrompt) {
       msg.prompt = this.provideContextPrompt(msg.prompt);
     }
 

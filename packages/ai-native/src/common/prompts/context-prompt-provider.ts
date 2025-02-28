@@ -1,4 +1,5 @@
-import { Injectable } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
+import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser/types';
 
 import { SerializedContext } from '../llm-context';
 
@@ -14,7 +15,13 @@ export interface ChatAgentPromptProvider {
 
 @Injectable()
 export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
+  @Autowired(WorkbenchEditorService)
+  protected readonly workbenchEditorService: WorkbenchEditorService;
+
   provideContextPrompt(context: SerializedContext, userMessage: string): string {
+    const editor = this.workbenchEditorService.currentEditor;
+    const currentModel = editor?.currentDocumentModel;
+    currentModel
     return `
 <additional_data>
   Below are some potentially helpful/relevant pieces of information for figuring out to respond
@@ -36,6 +43,11 @@ ${context.recentlyViewFiles.map((file, idx) => `    ${idx + 1}: ${file}`).join('
               `,
     )}
   </attached_files>
+${currentModel ? `<current_opened_file>
+  \`\`\`${currentModel.languageId} ${currentModel.uri.toString()}
+${currentModel.getText()}
+  \`\`\`
+  </current_opened_file>` : ''}
 </additional_data>
 <user_query>
 ${userMessage}
