@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser/types';
+import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common/editor';
 
 import { SerializedContext } from '../llm-context';
 
@@ -21,7 +21,6 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
   provideContextPrompt(context: SerializedContext, userMessage: string): string {
     const editor = this.workbenchEditorService.currentEditor;
     const currentModel = editor?.currentDocumentModel;
-    currentModel
     return `
 <additional_data>
   Below are some potentially helpful/relevant pieces of information for figuring out to respond
