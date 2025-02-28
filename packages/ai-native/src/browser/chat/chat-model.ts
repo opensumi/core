@@ -274,13 +274,22 @@ export class ChatRequestModel implements IChatRequestModel {
 export class ChatModel extends Disposable implements IChatModel {
   private static requestIdPool = 0;
 
-  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; requests?: ChatRequestModel[] }) {
+  private provideContextPrompt?: (string) => string;
+
+  constructor(initParams?: {
+    sessionId?: string;
+    history?: MsgHistoryManager;
+    requests?: ChatRequestModel[];
+    provideContext?: (msg: string) => string;
+  }) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
     this.history = initParams?.history ?? new MsgHistoryManager();
     if (initParams?.requests) {
       this.#requests = new Map(initParams.requests.map((r) => [r.requestId, r]));
     }
+
+    this.provideContextPrompt = initParams?.provideContext;
   }
 
   #sessionId: string;
@@ -300,9 +309,15 @@ export class ChatModel extends Disposable implements IChatModel {
   readonly history: MsgHistoryManager;
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
+    const msg = message;
+    // first msg
+    if (this.provideContextPrompt) {
+      msg.prompt = this.provideContextPrompt(msg.prompt);
+    }
+
     const requestId = `${this.sessionId}_request_${ChatModel.requestIdPool++}`;
-    const response = new ChatResponseModel(requestId, this, message.agentId);
-    const request = new ChatRequestModel(requestId, this, message, response);
+    const response = new ChatResponseModel(requestId, this, msg.agentId);
+    const request = new ChatRequestModel(requestId, this, msg, response);
 
     this.#requests.set(requestId, request);
     return request;

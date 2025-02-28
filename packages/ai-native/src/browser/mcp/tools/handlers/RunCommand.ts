@@ -49,6 +49,7 @@ export class RunCommandHandler {
   }
 
   async handler(args: z.infer<typeof inputSchema> & { toolCallId: string }, logger: MCPLogger) {
+    logger.appendLine(`Executing command: ${args.command}`);
     if (args.require_user_approval) {
       const def = new Deferred<boolean>();
       this.approvalDeferredMap.set(args.toolCallId, def);
@@ -89,6 +90,7 @@ export class RunCommandHandler {
         content: result,
       });
 
+      logger.appendLine(`Command ${args.command} finished with exit code: ${e.code}`);
       terminalClient.term.writeln(
         `\n${color.italic}> Command ${args.command} executed successfully. Terminal will close in ${
           3000 / 1000

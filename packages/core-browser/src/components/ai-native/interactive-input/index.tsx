@@ -12,7 +12,7 @@ import { EnhanceIcon } from '../index';
 import styles from './index.module.less';
 
 const MAX_WRAPPER_HEIGHT = 160;
-const DEFAULT_HEIGHT = 32;
+const DEFAULT_HEIGHT = 64;
 
 export interface IInteractiveInputProps extends IInputBaseProps<HTMLTextAreaElement> {
   style?: React.CSSProperties;
@@ -40,7 +40,6 @@ export const InteractiveInput = React.forwardRef(
       onSend,
       disabled = false,
       className,
-      height,
       width,
       sendBtnClassName,
       popoverPosition,
@@ -53,7 +52,6 @@ export const InteractiveInput = React.forwardRef(
     const history = useRef<string[]>();
     const historyIndex = useRef<number>(0);
     const [internalValue, setInternalValue] = useState(defaultValue || props.value || '');
-    const [wrapperHeight, setWrapperHeight] = useState(height || DEFAULT_HEIGHT);
     const [focus, setFocus] = useState(false);
     const isDirtyInput = React.useRef<boolean>(false);
 
@@ -84,33 +82,8 @@ export const InteractiveInput = React.forwardRef(
     }, [props.value, internalValue, internalRef]);
 
     useEffect(() => {
-      if (isUndefined(height)) {
-        return;
-      }
-
-      if (height !== wrapperHeight) {
-        setWrapperHeight(height);
-      }
-    }, [height, wrapperHeight, onHeightChange]);
-
-    useEffect(() => {
-      if (!internalValue) {
-        setWrapperHeight(DEFAULT_HEIGHT);
-        return;
-      }
-
-      if (internalRef && internalRef.current && wrapperHeight <= MAX_WRAPPER_HEIGHT) {
-        internalRef.current.style.height = 0 + 'px';
-        const scrollHeight = internalRef.current.scrollHeight;
-        internalRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
-        const wrapperHeight = Math.min(scrollHeight + 12, MAX_WRAPPER_HEIGHT);
-        setWrapperHeight(wrapperHeight);
-      }
-    }, [internalRef, internalValue, onHeightChange, wrapperHeight]);
-
-    useEffect(() => {
-      onHeightChange?.(wrapperHeight);
-    }, [wrapperHeight]);
+      onHeightChange?.(DEFAULT_HEIGHT);
+    }, []);
 
     const handleInputChange = useCallback(
       (value: string) => {
@@ -237,9 +210,9 @@ export const InteractiveInput = React.forwardRef(
       <TextArea
         ref={internalRef}
         placeholder={placeholder}
-        wrapperStyle={{ height: wrapperHeight + 'px', width: wrapperWidth }}
+        wrapperStyle={{ height: 64, width: wrapperWidth }}
         style={{
-          height: wrapperHeight - 10 + 'px',
+          height: 64,
         }}
         value={internalValue}
         onKeyDown={handleKeyDown}
