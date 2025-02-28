@@ -235,7 +235,7 @@ export const ChatReply = (props: IChatReplyProps) => {
           if (onDone) {
             onDone();
           }
-
+          // 模型消息返回结束，上报消息（包含toolCall等全部结束）
           aiReporter.end(relationId, {
             assistantMessage: request.response.responseText,
             replytime: Date.now() - startTime,
@@ -243,6 +243,8 @@ export const ChatReply = (props: IChatReplyProps) => {
             isStop: false,
             command,
             agentId,
+            messageId: msgId,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
         }
 
@@ -272,6 +274,8 @@ export const ChatReply = (props: IChatReplyProps) => {
       isStop: true,
       command,
       agentId,
+      messageId: msgId,
+      sessionId: aiChatService.sessionModel.sessionId,
     });
     aiChatService.cancelRequest();
   };

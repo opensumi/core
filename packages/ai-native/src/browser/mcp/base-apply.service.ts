@@ -1,7 +1,18 @@
 import { createPatch } from 'diff';
 
 import { Autowired } from '@opensumi/di';
-import { AppConfig, IChatProgress, IMarker, MarkerSeverity, OnEvent, WithEventBus } from '@opensumi/ide-core-browser';
+import {
+  AIServiceType,
+  ActionSourceEnum,
+  ActionTypeEnum,
+  AppConfig,
+  IAIReporter,
+  IChatProgress,
+  IMarker,
+  MarkerSeverity,
+  OnEvent,
+  WithEventBus,
+} from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorGroupCloseEvent,
@@ -46,6 +57,9 @@ export abstract class BaseApplyService extends WithEventBus {
 
   @Autowired(IMarkerService)
   private readonly markerService: IMarkerService;
+
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
 
   private onCodeBlockUpdateEmitter = new Emitter<CodeBlockData>();
   public onCodeBlockUpdate = this.onCodeBlockUpdateEmitter.event;
@@ -365,6 +379,19 @@ export abstract class BaseApplyService extends WithEventBus {
             .filter((range) => range !== null);
           const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
           // 移除开头的几个固定信息，避免浪费 tokens
+          this.aiReporter.record({
+            msgType: AIServiceType.Chat,
+            actionType: ActionTypeEnum.Accept,
+            actionSource: ActionSourceEnum.Chat,
+            sessionId: this.chatInternalService.sessionModel.sessionId,
+            isReceive: true,
+            isDrop: false,
+            code: codeBlock.codeEdit,
+            message: JSON.stringify({
+              diff: diffResult,
+              diagnosticInfos,
+            }),
+          });
           deferred.resolve({
             diff: diffResult,
             diagnosticInfos,
@@ -373,6 +400,16 @@ export abstract class BaseApplyService extends WithEventBus {
           // 用户全部取消
           codeBlock.status = 'cancelled';
           deferred.resolve();
+          this.aiReporter.record({
+            msgType: AIServiceType.Chat,
+            actionType: ActionTypeEnum.Discard,
+            actionSource: ActionSourceEnum.Chat,
+            sessionId: this.chatInternalService.sessionModel.sessionId,
+            isReceive: false,
+            isDrop: true,
+            code: codeBlock.codeEdit,
+            originCode: fullOriginalContent,
+          });
         }
         toDispose.dispose();
       }

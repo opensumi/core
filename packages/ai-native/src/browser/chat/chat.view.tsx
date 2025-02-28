@@ -56,7 +56,7 @@ import { WelcomeMessage } from '../components/WelcomeMsg';
 import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
 import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
-import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
+import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
@@ -85,6 +85,7 @@ export const AIChatView = () => {
   const contextService = useInjectable<LLMContextService>(LLMContextServiceToken);
   const promptProvider = useInjectable<ChatAgentPromptProvider>(ChatAgentPromptProvider);
   const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
+  const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
@@ -225,8 +226,9 @@ export const AIChatView = () => {
     disposer.addDispose(
       chatApiService.onChatReplyMessageLaunch((data) => {
         if (data.kind === 'content') {
-          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: data.content,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             content: data.content,
@@ -234,8 +236,9 @@ export const AIChatView = () => {
           });
           renderSimpleMarkdownReply({ chunk: data.content, relationId });
         } else {
-          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: 'component#' + data.component,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             componentId: data.component,
@@ -257,6 +260,7 @@ export const AIChatView = () => {
 
           const relationId = aiReporter.start(AIServiceType.Chat, {
             message: '',
+            sessionId: aiChatService.sessionModel.sessionId,
           });
 
           if (role === 'assistant') {
@@ -528,12 +532,14 @@ export const AIChatView = () => {
 
       const startTime = Date.now();
       const reportType = ChatProxyService.AGENT_ID === agentId ? AIServiceType.Chat : AIServiceType.Agent;
+
+      // 用户发送消息打点，此处会经由上下文模块处理（只对第一条消息生效，后续动态修改上下文不会生效）
       const relationId = aiReporter.start(command || reportType, {
-        message,
         agentId,
-        userMessage: message,
+        userMessage: fullMessage,
         actionType,
         actionSource,
+        sessionId: aiChatService.sessionModel.sessionId,
       });
 
       msgHistoryManager.addUserMessage({
@@ -558,6 +564,12 @@ export const AIChatView = () => {
         requestId: request.requestId,
         replyStartTime: startTime,
       });
+
+      // 创建消息时，设置当前活跃的消息信息，便于toolCall打点
+      mcpServerRegistry.activeMessageInfo = {
+        messageId: msgId,
+        sessionId: aiChatService.sessionModel.sessionId,
+      };
 
       await renderReply({
         startTime,
