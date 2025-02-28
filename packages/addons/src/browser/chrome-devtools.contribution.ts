@@ -61,7 +61,7 @@ export class ChromeDevtoolsContribution extends Disposable implements ClientAppC
       const start = Date.now();
       await this.rttService.measure();
       const rtt = Date.now() - start;
-      // "if" below is to prevent setting latency after stoping capturing
+      // "if" below is to prevent setting latency after stopping capturing
       if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.captureRPC) {
         window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.latency = rtt;
       }
