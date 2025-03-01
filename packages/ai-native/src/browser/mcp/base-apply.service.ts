@@ -249,6 +249,7 @@ export abstract class BaseApplyService extends WithEventBus {
         {
           disposeWhenEditorClosed: true,
           renderRemovedWidgetImmediately: true,
+          reverse: true,
         },
       ) as LiveInlineDiffPreviewer;
       // TODO: 支持多个diffPreviewer

@@ -1,5 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, ErrorResponse, IDisposable, ReplyResponse } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EOL, ICodeEditor, IPosition, ITextModel, Position, Selection } from '@opensumi/ide-monaco';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { empty, getLeadingWhitespace } from '@opensumi/ide-utils/lib/strings';
@@ -29,6 +30,11 @@ export interface IDiffPreviewerOptions {
    * 默认情况下，removed widget 会在 `runWhenIdle` 内被添加，如果需要立即添加，可以设置为 true
    */
   renderRemovedWidgetImmediately?: boolean;
+
+  /**
+   * 是否为回退模式，即 setValue 内容作为 original，编辑器 getValue 内容作为 modified
+   */
+  reverse?: boolean;
 }
 
 export interface IInlineDiffPreviewerNode extends IDisposable {
@@ -41,6 +47,8 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
+  @Autowired(WorkbenchEditorService)
+  protected readonly editorService: WorkbenchEditorService;
   protected inlineContentWidget: AIInlineContentWidget | null = null;
   protected selection: Selection;
   protected model: ITextModel;
@@ -124,7 +132,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     return Disposable.NULL;
   }
 
-  protected abstract createNode(): N;
+  protected abstract createNode(reverse?: boolean): N;
   abstract onData(data: ReplyResponse): void;
   abstract handleAction(action: EResultKind): void;
   abstract getPosition(): IPosition;
@@ -136,7 +144,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     },
   ): void {
     this.selection = selection;
-    this.node = this.createNode();
+    this.node = this.createNode(options.reverse);
     this.node.setPreviewerOptions(options);
   }
 
@@ -331,9 +339,9 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.addDispose(node);
   }
 
-  createNode(): InlineStreamDiffHandler {
+  createNode(reverse?: boolean): InlineStreamDiffHandler {
     const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
-    node.initialize(this.selection);
+    node.initialize(this.selection, reverse);
     this.listenNode(node);
     return node;
   }
