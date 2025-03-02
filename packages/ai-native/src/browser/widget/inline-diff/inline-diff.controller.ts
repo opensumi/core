@@ -23,7 +23,7 @@ import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { EResultKind } from '../inline-chat/inline-chat.service';
-import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { BaseInlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import {
   BaseInlineDiffPreviewer,
@@ -33,7 +33,7 @@ import {
 } from './inline-diff-previewer';
 import { InlineDiffWidget } from './inline-diff-widget';
 
-type IInlineDiffPreviewer = BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
+type IInlineDiffPreviewer = BaseInlineDiffPreviewer<InlineDiffWidget | BaseInlineStreamDiffHandler>;
 
 export class InlineDiffController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.inline.diff';
@@ -118,7 +118,7 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
       chatResponse?: ChatResponse | InlineChatController;
       previewerOptions?: IDiffPreviewerOptions;
     },
-  ): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> {
+  ): BaseInlineDiffPreviewer<InlineDiffWidget | BaseInlineStreamDiffHandler> {
     const { crossSelection, chatResponse } = options;
 
     const disposable = new Disposable();

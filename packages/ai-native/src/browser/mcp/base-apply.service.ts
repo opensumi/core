@@ -23,7 +23,7 @@ import {
   InlineDiffService,
   LiveInlineDiffPreviewer,
 } from '../widget/inline-diff';
-import { InlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
+import { BaseInlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
 
 import { FileHandler } from './tools/handlers/ReadFile';
 
@@ -85,7 +85,7 @@ export abstract class BaseApplyService extends WithEventBus {
     return message?.codeBlockMap;
   }
 
-  private activePreviewer: BaseInlineDiffPreviewer<InlineStreamDiffHandler> | undefined;
+  private activePreviewer: BaseInlineDiffPreviewer<BaseInlineStreamDiffHandler> | undefined;
 
   @OnEvent(EditorGroupCloseEvent)
   onEditorGroupClose(event: EditorGroupCloseEvent) {
@@ -107,7 +107,8 @@ export abstract class BaseApplyService extends WithEventBus {
     // TODO: 刷新后重新应用，事件无法恢复 & 恢复继续请求，需要改造成批量apply形式
     // TODO: 暂时只支持 pending 串行的 apply，后续支持批量apply后统一accept
     if (filePendingApplies.length > 0) {
-      this.renderApplyResult(filePendingApplies[0], filePendingApplies[0].updatedCode!);
+      const editor = event.payload.group.codeEditor.monacoEditor;
+      this.renderApplyResult(editor, filePendingApplies[0], filePendingApplies[0].updatedCode!);
     }
   }
 
@@ -200,17 +201,19 @@ export abstract class BaseApplyService extends WithEventBus {
         throw new Error('No apply content provided');
       }
 
-      // trigger diffPreivewer & return expected diff result directly
-      const applyResult = await this.renderApplyResult(
-        codeBlock,
-        (fastApplyFileResult.result || fastApplyFileResult.stream)!,
-        fastApplyFileResult.range,
-      );
-      if (applyResult) {
-        // 用户实际接受的 apply 结果
-        codeBlock.applyResult = applyResult;
-        this.updateCodeBlock(codeBlock);
-      }
+      // FIXME: 异步apply
+      // // trigger diffPreivewer & return expected diff result directly
+      // const applyResult = await this.renderApplyResult(
+      //   this.editorService.currentEditor!,
+      //   codeBlock,
+      //   (fastApplyFileResult.result || fastApplyFileResult.stream)!,
+      //   fastApplyFileResult.range,
+      // );
+      // if (applyResult) {
+      //   // 用户实际接受的 apply 结果
+      //   codeBlock.applyResult = applyResult;
+      //   this.updateCodeBlock(codeBlock);
+      // }
 
       return codeBlock;
     } catch (err) {
@@ -221,16 +224,11 @@ export abstract class BaseApplyService extends WithEventBus {
   }
 
   async renderApplyResult(
+    editor: ICodeEditor,
     codeBlock: CodeBlockData,
     updatedContentOrStream: string | SumiReadableStream<IChatProgress>,
     range?: Range,
   ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
-    const { relativePath } = codeBlock;
-    const openResult = await this.editorService.open(URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
-    if (!openResult) {
-      throw new Error('Failed to open editor');
-    }
-    const editor = openResult.group.codeEditor.monacoEditor;
     const inlineDiffController = InlineDiffController.get(editor)!;
     codeBlock.status = 'pending';
     // 强刷展示 manager 视图

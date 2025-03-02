@@ -15,7 +15,12 @@ import {
 
 import { EResultKind } from '../inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from '../inline-chat/inline-content-widget';
-import { EComputerMode, InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import {
+  BaseInlineStreamDiffHandler,
+  EComputerMode,
+  InlineStreamDiffHandler,
+  ReverseInlineStreamDiffHandler,
+} from '../inline-stream-diff/inline-stream-diff.handler';
 
 import { InlineDiffWidget } from './inline-diff-widget';
 
@@ -319,8 +324,8 @@ export class SideBySideInlineDiffWidget extends BaseInlineDiffPreviewer<InlineDi
 }
 
 @Injectable({ multiple: true })
-export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStreamDiffHandler> {
-  private listenNode(node: InlineStreamDiffHandler): void {
+export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<BaseInlineStreamDiffHandler> {
+  private listenNode(node: BaseInlineStreamDiffHandler): void {
     node.addDispose(node.onDidEditChange(() => this.layout()));
     node.addDispose(
       node.onPartialEditWidgetListChange((widgets) => {
@@ -339,9 +344,14 @@ export class LiveInlineDiffPreviewer extends BaseInlineDiffPreviewer<InlineStrea
     this.addDispose(node);
   }
 
-  createNode(reverse?: boolean): InlineStreamDiffHandler {
-    const node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
-    node.initialize(this.selection, reverse);
+  createNode(reverse?: boolean): BaseInlineStreamDiffHandler {
+    let node: BaseInlineStreamDiffHandler;
+    if (reverse) {
+      node = this.injector.get(ReverseInlineStreamDiffHandler, [this.monacoEditor]);
+    } else {
+      node = this.injector.get(InlineStreamDiffHandler, [this.monacoEditor]);
+    }
+    node.initialize(this.selection);
     this.listenNode(node);
     return node;
   }

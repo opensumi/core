@@ -13,6 +13,7 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
@@ -30,6 +31,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   const labelService = useInjectable(LabelService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+  const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const { target_file = '', code_edit, instructions } = args || {};
   const absolutePath = path.join(appConfig.workspaceDir, target_file);
   const [codeBlockData, setCodeBlockData] = useState<CodeBlockData | undefined>(
@@ -80,7 +82,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
         })}
         onClick={() => {
           if (codeBlockData.status === 'pending') {
-            applyService.renderApplyResult(codeBlockData, codeBlockData.updatedCode!);
+            editorService.open(URI.file(absolutePath));
           } else if (codeBlockData.status === 'success') {
             applyService.revealApplyPosition(codeBlockData);
           }

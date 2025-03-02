@@ -7,7 +7,6 @@ import { ISettableObservable, observableValue, transaction } from '@opensumi/ide
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { linesDiffComputers } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputers';
 import { DetailedLineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
-import { LanguageId } from '@opensumi/monaco-editor-core/esm/vs/editor/common/encodedTokenAttributes';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
@@ -45,10 +44,13 @@ export enum EComputerMode {
 
 const inlineStreamDiffComputer = new InlineStreamDiffComputer();
 
+/**
+ * Abstract base class for inline streaming diff handlers
+ */
 @Injectable({ multiple: true })
-export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPreviewerNode {
+export abstract class BaseInlineStreamDiffHandler extends Disposable implements IInlineDiffPreviewerNode {
   @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
+  protected readonly injector: Injector;
 
   protected readonly _onDidEditChange = this.registerDispose(new Emitter<void>());
   public readonly onDidEditChange: Event<void> = this._onDidEditChange.event;
@@ -58,14 +60,16 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
   public previewerOptions: IDiffPreviewerOptions;
 
-  private savedModel: ITextModel;
-  private virtualModel: ITextModel;
+  protected savedModel: ITextModel;
+  protected virtualModel: ITextModel;
 
-  private rawSavedTextLines: string[];
-  // private rawOriginTextLinesTokens: LineTokens[] = [];
-  private undoRedoGroup: UndoRedoGroup = new UndoRedoGroup();
+  protected rawSavedTextLines: string[];
+  protected rawOriginTextLinesTokens: LineTokens[] | undefined;
+  protected undoRedoGroup: UndoRedoGroup = new UndoRedoGroup();
 
-  private readonly finallyDiffModel: ISettableObservable<IComputeDiffData | undefined> = observableValue(
+  protected selection: Selection;
+
+  protected readonly finallyDiffModel: ISettableObservable<IComputeDiffData | undefined> = observableValue(
     this,
     undefined,
   );
@@ -76,7 +80,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     return this.savedModel.uri;
   }
 
-  constructor(private readonly monacoEditor: ICodeEditor) {
+  constructor(protected readonly monacoEditor: ICodeEditor) {
     super();
 
     const modelService = StandaloneServices.get(IModelService);
@@ -90,7 +94,6 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
       }),
       true,
     );
-    // reverseModel 为 true savedModel 和 virtualModel 互换
     this.savedModel = savedModel;
     this.virtualModel = setModel;
 
@@ -116,7 +119,8 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     });
   }
 
-  initialize(selection: Selection, reverse?: boolean): void {
+  initialize(selection: Selection): void {
+    this.selection = selection;
     const eol = this.savedModel.getEOL();
     const startPosition = selection.getStartPosition();
     const endPosition = selection.getEndPosition();
@@ -124,14 +128,6 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     this.rawSavedTextLines = this.savedModel
       .getValueInRange(Range.fromPositions(startPosition, endPosition))
       .split(eol);
-
-    // const baseModel = reverse ? this.virtualModel : this.savedModel;
-    // this.rawOriginTextLinesTokens = baseModel.getLinesContent().map((_, index) => {
-    //   const lineNumber = startPosition.lineNumber + index;
-    //   baseModel.tokenization.forceTokenization(lineNumber);
-    //   const lineTokens = baseModel.tokenization.getLineTokens(lineNumber);
-    //   return lineTokens;
-    // });
 
     const zone = LineRange.fromRangeInclusive(
       Range.fromPositions(
@@ -155,7 +151,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     return this.livePreviewDiffDecorationModel.onPartialEditWidgetListChange;
   }
 
-  private computeDiff(
+  protected computeDiff(
     originalTextLines: string[],
     newTextLines: string[],
     computerMode: EComputerMode = EComputerMode.default,
@@ -289,12 +285,12 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
           },
           textLines: removedTextLines.map((text, index) => ({
             text,
-            // reverse 时左侧为 virtualModel，setValue 时才有值
-            lineTokens: LineTokens.createEmpty(text, {
-              encodeLanguageId: (languageId: string) => 0,
-              decodeLanguageId: (languageId: LanguageId) => 'plaintext',
-            }),
-            // lineTokens: this.rawOriginTextLinesTokens[removedLinesOriginalRange.startLineNumber - 1 + index],
+            lineTokens:
+              this.rawOriginTextLinesTokens?.[removedLinesOriginalRange.startLineNumber - 1 + index] ||
+              LineTokens.createEmpty(text, {
+                encodeLanguageId: () => 0,
+                decodeLanguageId: () => 'plaintext',
+              }),
           })),
         });
       }
@@ -308,6 +304,11 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
   }
 
   /**
+   * Get the original model for diff operations
+   */
+  protected abstract getOriginalModel(): ITextModel;
+
+  /**
    * 令当前的 inline diff 在流式渲染过程当中使用 pushEditOperations 进行编辑的操作都放在同一组 undo/redo 堆栈里
    * 一旦撤销到最顶层则关闭当前的 inline diff
    */
@@ -319,12 +320,12 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     });
   }
 
-  private renderDiffEdits(diffModel: IComputeDiffData): void {
+  protected renderDiffEdits(diffModel: IComputeDiffData): void {
     const { activeLine, newFullRangeTextLines, pendingRange } = diffModel;
     const eol = this.savedModel.getEOL();
     const zone = this.getZone();
 
-    const sourceModel = this.previewerOptions.reverse ? this.virtualModel : this.savedModel;
+    const originalModel = this.getOriginalModel();
 
     const validZone =
       zone.startLineNumber < zone.endLineNumberExclusive
@@ -332,11 +333,11 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
             zone.startLineNumber,
             1,
             zone.endLineNumberExclusive - 1,
-            sourceModel.getLineMaxColumn(zone.endLineNumberExclusive - 1),
+            originalModel.getLineMaxColumn(zone.endLineNumberExclusive - 1),
           )
         : new Range(zone.startLineNumber, 1, zone.startLineNumber, 1);
 
-    const newOriginalTextLines = sourceModel.getValueInRange(validZone).split(eol);
+    const newOriginalTextLines = originalModel.getValueInRange(validZone).split(eol);
     const diffComputation = linesDiffComputers.getDefault().computeDiff(newOriginalTextLines, newFullRangeTextLines, {
       computeMoves: false,
       maxComputationTimeMs: 200,
@@ -381,7 +382,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
             validZone.startLineNumber + change.original.startLineNumber - 1,
             1,
             validZone.startLineNumber + change.original.endLineNumberExclusive - 2,
-            sourceModel.getLineMaxColumn(validZone.startLineNumber + change.original.endLineNumberExclusive - 2),
+            originalModel.getLineMaxColumn(validZone.startLineNumber + change.original.endLineNumberExclusive - 2),
           );
         }
         const edit = {
@@ -392,7 +393,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
         realTimeChanges.push(edit);
       }
     }
-    sourceModel.pushEditOperations(null, realTimeChanges, () => null, this.undoRedoGroup);
+    originalModel.pushEditOperations(null, realTimeChanges, () => null, this.undoRedoGroup);
 
     /**
      * 根据 newFullRangeTextLines 内容长度重新计算 zone，避免超过最大长度，进而影响未选中的代码区域
@@ -438,13 +439,14 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
     }
 
     const textLines = this.virtualModel.getLinesContent();
-    return this.previewerOptions.reverse
-      ? this.computeDiff(textLines, this.rawSavedTextLines, computerMode)
-      : this.computeDiff(this.rawSavedTextLines, textLines, computerMode);
+    return this.processDiffComputation(textLines, computerMode);
   }
 
-  private currentEditLine = 0;
-  private isEditing = false;
+  protected currentEditLine = 0;
+  protected isEditing = false;
+
+  protected abstract processDiffComputation(currentText: string[], computerMode?: EComputerMode): IComputeDiffData;
+
   public async rateRenderEditController(): Promise<void> {
     if (this.isEditing === false) {
       this.isEditing = true;
@@ -456,9 +458,7 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
         const virtualTextLines = this.virtualModel.getLinesContent();
         const currentText = virtualTextLines.slice(0, this.currentEditLine);
-        const currentDiffModel = this.previewerOptions.reverse
-          ? this.computeDiff(currentText, this.rawSavedTextLines)
-          : this.computeDiff(this.rawSavedTextLines, currentText);
+        const currentDiffModel = this.processDiffComputation(currentText);
 
         this.onDiffFinishedEmitter.fire(currentDiffModel);
 
@@ -543,5 +543,56 @@ export class InlineStreamDiffHandler extends Disposable implements IInlineDiffPr
 
   getTotalCodeInfo() {
     return this.livePreviewDiffDecorationModel.getTotalCodeInfo();
+  }
+}
+
+/**
+ * Regular inline stream diff handler (non-reverse mode)
+ */
+@Injectable({ multiple: true })
+export class InlineStreamDiffHandler extends BaseInlineStreamDiffHandler {
+  initialize(selection: Selection): void {
+    super.initialize(selection);
+    const startPosition = selection.getStartPosition();
+    this.rawOriginTextLinesTokens = this.rawSavedTextLines.map((_, index) => {
+      const lineNumber = startPosition.lineNumber + index;
+      this.savedModel.tokenization.forceTokenization(lineNumber);
+      const lineTokens = this.savedModel.tokenization.getLineTokens(lineNumber);
+      return lineTokens;
+    });
+  }
+
+  protected processDiffComputation(currentText: string[], computerMode?: EComputerMode): IComputeDiffData {
+    return this.computeDiff(this.rawSavedTextLines, currentText, computerMode);
+  }
+
+  protected getOriginalModel(): ITextModel {
+    return this.savedModel;
+  }
+}
+
+/**
+ * Reverse inline stream diff handler
+ * In reverse mode, the roles of savedModel and virtualModel are swapped
+ */
+@Injectable({ multiple: true })
+export class ReverseInlineStreamDiffHandler extends BaseInlineStreamDiffHandler {
+  recompute(computerMode: EComputerMode, content?: string): IComputeDiffData {
+    const result = super.recompute(computerMode, content);
+    this.rawOriginTextLinesTokens = this.virtualModel.getLinesContent().map((_, index) => {
+      const lineNumber = index + 1;
+      this.virtualModel.tokenization.forceTokenization(lineNumber);
+      const lineTokens = this.virtualModel.tokenization.getLineTokens(lineNumber);
+      return lineTokens;
+    });
+    return result;
+  }
+
+  protected getOriginalModel(): ITextModel {
+    return this.virtualModel;
+  }
+
+  protected processDiffComputation(currentText: string[], computerMode?: EComputerMode): IComputeDiffData {
+    return this.computeDiff(currentText, this.rawSavedTextLines, computerMode);
   }
 }
