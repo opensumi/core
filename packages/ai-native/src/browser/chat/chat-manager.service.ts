@@ -10,7 +10,7 @@ import {
   STORAGE_NAMESPACE,
   StorageProvider,
   debounce,
-  localize,
+  formatLocalize,
 } from '@opensumi/ide-core-common';
 import { ChatMessageRole, IChatMessage, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
@@ -105,7 +105,7 @@ export class ChatManagerService extends Disposable {
 
   startSession() {
     if (this.#sessionModels.size >= MAX_SESSION_COUNT) {
-      throw new Error(localize('ai.chat.session.max', MAX_SESSION_COUNT.toString()));
+      throw new Error(formatLocalize('aiNative.chat.session.max', MAX_SESSION_COUNT.toString()));
     }
     const model = new ChatModel();
     this.#sessionModels.set(model.sessionId, model);
