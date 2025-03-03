@@ -322,10 +322,10 @@ export abstract class BaseInlineStreamDiffHandler extends Disposable implements 
 
   protected renderDiffEdits(diffModel: IComputeDiffData): void {
     const { activeLine, newFullRangeTextLines, pendingRange } = diffModel;
-    const eol = this.savedModel.getEOL();
     const zone = this.getZone();
 
     const originalModel = this.getOriginalModel();
+    const eol = originalModel.getEOL();
 
     const validZone =
       zone.startLineNumber < zone.endLineNumberExclusive

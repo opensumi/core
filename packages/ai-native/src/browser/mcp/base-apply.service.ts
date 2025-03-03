@@ -106,6 +106,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
   private activePreviewerMap: Map<string, BaseInlineDiffPreviewer<BaseInlineStreamDiffHandler>> = new Map();
 
+  // TODO: 使用disposableMap
   private editorListenerMap: Map<string, IDisposable> = new Map();
 
   @OnEvent(EditorGroupCloseEvent)
@@ -116,12 +117,17 @@ export abstract class BaseApplyService extends WithEventBus {
       activePreviewer.dispose();
       this.activePreviewerMap.delete(relativePath);
     }
-    this.editorListenerMap.get(relativePath)?.dispose();
+    this.editorListenerMap.get(event.payload.resource.uri.toString())?.dispose();
+    this.editorListenerMap.delete(event.payload.resource.uri.toString());
   }
 
   @OnEvent(EditorGroupOpenEvent)
   async onEditorGroupOpen(event: EditorGroupOpenEvent) {
-    if (this.duringApply || !this.chatInternalService.sessionModel.history.getMessages().length) {
+    if (
+      this.duringApply ||
+      this.editorListenerMap.has(event.payload.resource.uri.toString()) ||
+      !this.chatInternalService.sessionModel.history.getMessages().length
+    ) {
       return;
     }
     const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
