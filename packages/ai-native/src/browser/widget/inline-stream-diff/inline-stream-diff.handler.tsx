@@ -460,8 +460,6 @@ export abstract class BaseInlineStreamDiffHandler extends Disposable implements 
         const currentText = virtualTextLines.slice(0, this.currentEditLine);
         const currentDiffModel = this.processDiffComputation(currentText);
 
-        this.onDiffFinishedEmitter.fire(currentDiffModel);
-
         if (this.savedModel.id === this.monacoEditor.getModel()?.id) {
           this.renderDiffEdits(currentDiffModel);
         }
@@ -586,6 +584,18 @@ export class ReverseInlineStreamDiffHandler extends BaseInlineStreamDiffHandler 
       return lineTokens;
     });
     return result;
+  }
+
+  initialize(selection: Selection): void {
+    super.initialize(selection);
+    // TODO: reverse 模式暂不支持 range
+    const zone = LineRange.fromRangeInclusive(
+      Range.fromPositions(
+        { lineNumber: 1, column: 1 },
+        { lineNumber: this.virtualModel.getLineCount(), column: Number.MAX_SAFE_INTEGER },
+      ),
+    );
+    this.livePreviewDiffDecorationModel.initialize(zone);
   }
 
   protected getOriginalModel(): ITextModel {

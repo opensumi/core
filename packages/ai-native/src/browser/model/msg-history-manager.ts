@@ -128,6 +128,10 @@ export class MsgHistoryManager extends Disposable {
     return this.messageAdditionalMap.get(id) || {};
   }
 
+  public get sessionAdditionals() {
+    return this.messageAdditionalMap;
+  }
+
   toJSON() {
     return {
       messages: this.getMessages(),
