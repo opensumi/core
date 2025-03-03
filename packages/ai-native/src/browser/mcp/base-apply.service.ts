@@ -110,17 +110,19 @@ export abstract class BaseApplyService extends WithEventBus {
     return codeBlocks;
   }
 
-  private activePreviewer: BaseInlineDiffPreviewer<BaseInlineStreamDiffHandler> | undefined;
+  private activePreviewerMap: Map<string, BaseInlineDiffPreviewer<BaseInlineStreamDiffHandler>> = new Map();
 
   private editorListenerMap: Map<string, IDisposable> = new Map();
 
   @OnEvent(EditorGroupCloseEvent)
   onEditorGroupClose(event: EditorGroupCloseEvent) {
-    if (this.activePreviewer?.getNode()?.uri.path.toString() === event.payload.resource.uri.path.toString()) {
-      this.activePreviewer.dispose();
-      this.activePreviewer = undefined;
+    const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
+    const activePreviewer = this.activePreviewerMap.get(relativePath);
+    if (activePreviewer) {
+      activePreviewer.dispose();
+      this.activePreviewerMap.delete(relativePath);
     }
-    this.editorListenerMap.get(event.payload.resource.uri.path.toString())?.dispose();
+    this.editorListenerMap.get(relativePath)?.dispose();
   }
 
   @OnEvent(EditorGroupOpenEvent)
@@ -236,8 +238,9 @@ export abstract class BaseApplyService extends WithEventBus {
         throw new Error('No apply content provided');
       }
 
-      if (this.activePreviewer) {
-        this.activePreviewer.dispose();
+      if (this.activePreviewerMap.has(codeBlock.relativePath)) {
+        this.activePreviewerMap.get(codeBlock.relativePath)?.dispose();
+        this.activePreviewerMap.delete(codeBlock.relativePath);
       }
       // trigger diffPreivewer & return expected diff result directly
       const result = await this.editorService.open(
@@ -287,7 +290,7 @@ export abstract class BaseApplyService extends WithEventBus {
         (block) => block.status === 'pending',
       );
       // Create diff previewer
-      this.activePreviewer = inlineDiffController.createDiffPreviewer(
+      const previewer = inlineDiffController.createDiffPreviewer(
         editor,
         Selection.fromRange((range = range || editor.getModel()!.getFullModelRange()), SelectionDirection.LTR),
         {
@@ -296,9 +299,11 @@ export abstract class BaseApplyService extends WithEventBus {
           reverse: true,
         },
       ) as LiveInlineDiffPreviewer;
+      this.activePreviewerMap.set(codeBlock.relativePath, previewer);
       codeBlock.updatedCode = updatedContentOrStream;
       codeBlock.status = 'pending';
-      this.activePreviewer.setValue(earlistPendingCodeBlock?.originalCode || codeBlock.originalCode);
+      this.updateCodeBlock(codeBlock);
+      previewer.setValue(earlistPendingCodeBlock?.originalCode || codeBlock.originalCode);
       // 强刷展示 manager 视图
       this.eventBus.fire(new RegisterEditorSideComponentEvent());
 
@@ -325,7 +330,7 @@ export abstract class BaseApplyService extends WithEventBus {
       controller.mountReadable(updatedContentOrStream);
       const inlineDiffHandler = InlineDiffController.get(editor)!;
 
-      this.activePreviewer = inlineDiffHandler.showPreviewerByStream(editor, {
+      const previewer = inlineDiffHandler.showPreviewerByStream(editor, {
         crossSelection: Selection.fromRange(range || editor.getModel()!.getFullModelRange(), SelectionDirection.LTR),
         chatResponse: controller,
         previewerOptions: {
@@ -335,14 +340,15 @@ export abstract class BaseApplyService extends WithEventBus {
       }) as LiveInlineDiffPreviewer;
       this.addDispose(
         // 流式输出结束后，转为直接输出逻辑
-        this.activePreviewer.getNode()!.onDiffFinished(async (diffModel) => {
+        previewer.getNode()!.onDiffFinished(async (diffModel) => {
           codeBlock.updatedCode = diffModel.newFullRangeTextLines.join('\n');
           this.updateCodeBlock(codeBlock);
-          this.activePreviewer!.dispose();
+          previewer.dispose();
           const result = await this.renderApplyResult(editor, codeBlock, codeBlock.updatedCode);
           deferred.resolve(result);
         }),
       );
+      this.activePreviewerMap.set(codeBlock.relativePath, previewer);
     }
     return deferred.promise;
   }
@@ -352,9 +358,13 @@ export abstract class BaseApplyService extends WithEventBus {
    */
   cancelApply(blockData: CodeBlockData): void {
     if (blockData.status === 'generating' || blockData.status === 'pending') {
-      if (this.activePreviewer) {
-        this.activePreviewer.getNode()?.livePreviewDiffDecorationModel.discardUnProcessed();
-        this.activePreviewer.dispose();
+      if (this.activePreviewerMap.has(blockData.relativePath)) {
+        this.activePreviewerMap
+          .get(blockData.relativePath)
+          ?.getNode()
+          ?.livePreviewDiffDecorationModel.discardUnProcessed();
+        this.activePreviewerMap.get(blockData.relativePath)?.dispose();
+        this.activePreviewerMap.delete(blockData.relativePath);
       }
       blockData.status = 'cancelled';
       this.updateCodeBlock(blockData);
@@ -395,7 +405,9 @@ export abstract class BaseApplyService extends WithEventBus {
     if (!codeBlock) {
       throw new Error('No pending code block found');
     }
-    const decorationModel = this.activePreviewer?.getNode()?.livePreviewDiffDecorationModel;
+    const decorationModel = this.activePreviewerMap
+      .get(codeBlock.relativePath)
+      ?.getNode()?.livePreviewDiffDecorationModel;
     if (!decorationModel) {
       throw new Error('No active previewer found');
     }
@@ -414,7 +426,10 @@ export abstract class BaseApplyService extends WithEventBus {
     const uriString = editor.getModel()!.uri.toString();
     const toDispose = this.inlineDiffService.onPartialEdit((event) => {
       // TODO 支持自动保存
-      if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
+      if (
+        event.totalPartialEditCount === event.resolvedPartialEditCount &&
+        event.uri.path === editor.getModel()!.uri.path.toString()
+      ) {
         if (event.acceptPartialEditCount > 0) {
           codeBlock.status = 'success';
           const appliedResult = editor.getModel()!.getValue();
