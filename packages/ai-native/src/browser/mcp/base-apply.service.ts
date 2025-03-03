@@ -48,11 +48,22 @@ export abstract class BaseApplyService extends WithEventBus {
   private onCodeBlockUpdateEmitter = new Emitter<CodeBlockData>();
   public onCodeBlockUpdate = this.onCodeBlockUpdateEmitter.event;
 
+  private currentSessionId?: string;
+
   constructor() {
     super();
     this.addDispose(
       this.chatInternalService.onCancelRequest(() => {
         this.cancelAllApply();
+      }),
+    );
+    this.currentSessionId = this.chatInternalService.sessionModel.sessionId;
+    this.addDispose(
+      this.chatInternalService.onChangeSession((sessionId) => {
+        if (sessionId !== this.currentSessionId) {
+          this.cancelAllApply();
+          this.currentSessionId = sessionId;
+        }
       }),
     );
     this.addDispose(
@@ -336,9 +347,8 @@ export abstract class BaseApplyService extends WithEventBus {
     } else {
       const controller = new InlineChatController();
       controller.mountReadable(updatedContentOrStream);
-      const inlineDiffHandler = InlineDiffController.get(editor)!;
 
-      const previewer = inlineDiffHandler.showPreviewerByStream(editor, {
+      const previewer = inlineDiffController.showPreviewerByStream(editor, {
         crossSelection: Selection.fromRange(range || editor.getModel()!.getFullModelRange(), SelectionDirection.LTR),
         chatResponse: controller,
         previewerOptions: {
