@@ -124,10 +124,6 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
     const disposable = new Disposable();
 
     const previewer = this.createDiffPreviewer(monacoEditor, crossSelection, options.previewerOptions);
-    transaction((tx) => {
-      this.currentPreviewer.set(previewer, tx);
-      this.previewerStore.set(previewer.modelId, previewer);
-    });
 
     const onFinish = () => {
       previewer.layout();
@@ -195,6 +191,11 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
         this.previewerStore.delete(previewer.modelId);
       }),
     );
+
+    transaction((tx) => {
+      this.currentPreviewer.set(previewer, tx);
+      this.previewerStore.set(previewer.modelId, previewer);
+    });
 
     return previewer;
   }
