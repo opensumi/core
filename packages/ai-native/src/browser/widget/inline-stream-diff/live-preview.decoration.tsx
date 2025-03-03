@@ -616,7 +616,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     if (this.options.renderRemovedWidgetImmediately) {
       run();
     } else {
-      runWhenIdle(run);
+      this.addDispose(runWhenIdle(run));
     }
   }
 

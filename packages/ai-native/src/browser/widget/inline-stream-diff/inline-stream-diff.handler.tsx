@@ -465,7 +465,7 @@ export abstract class BaseInlineStreamDiffHandler extends Disposable implements 
         }
 
         this.currentEditLine += 1;
-
+        // 这个 sleep 会带来潜在的时序问题，如 finallyRender 时模型已经被 dispose
         await sleep(FRAME_THREE);
       }
 
@@ -502,6 +502,10 @@ export abstract class BaseInlineStreamDiffHandler extends Disposable implements 
     }
 
     this.onDiffFinishedEmitter.fire(diffModel);
+
+    if (this.livePreviewDiffDecorationModel.disposed) {
+      return;
+    }
     this.renderPartialEditWidgets(diffModel);
     this.renderDiffEdits(diffModel);
     this.pushStackElement();
