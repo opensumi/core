@@ -35,19 +35,9 @@ export class ApplyService extends BaseApplyService {
     stream?: SumiReadableStream<IChatProgress, Error>;
     result?: string;
   }> {
-    let fileReadResult = this.fileHandler.getFileReadResult(codeBlock.relativePath);
-    let isFullFile = false;
     const uri = new URI(path.join(this.appConfig.workspaceDir, codeBlock.relativePath));
     const modelReference = await this.modelService.createModelReference(uri);
     const fileContent = modelReference.instance.getMonacoModel().getValue();
-    if (!fileReadResult) {
-      fileReadResult = {
-        content: fileContent,
-        startLineOneIndexed: 1,
-        endLineOneIndexedInclusive: fileContent.split('\n').length,
-      };
-      isFullFile = true;
-    }
     const apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
     const baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
     const stream = await this.aiBackService.requestStream(
@@ -56,7 +46,7 @@ export class ApplyService extends BaseApplyService {
     - Output only the updated code, enclosed within <updated-code> and </updated-code> tags.
     - Do not include any additional text, explanations, placeholders, ellipses, or code fences.
     
-    <code>${fileReadResult.content}</code>
+    <code>${fileContent}</code>
     
     <update>${codeBlock.codeEdit}</update>
     
@@ -83,7 +73,6 @@ export class ApplyService extends BaseApplyService {
 
     return {
       stream,
-      range: new Range(fileReadResult.startLineOneIndexed, 0, fileReadResult.endLineOneIndexedInclusive, 0),
     };
   }
 }

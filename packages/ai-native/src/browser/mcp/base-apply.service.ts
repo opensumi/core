@@ -26,13 +26,7 @@ import {
 } from '../widget/inline-diff';
 import { BaseInlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
 
-import { FileHandler } from './tools/handlers/ReadFile';
-
-// 提供代码块的唯一索引，迭代轮次，生成状态管理（包括取消），关联文件位置这些信息的记录，后续并行 apply 的支持
 export abstract class BaseApplyService extends WithEventBus {
-  @Autowired(FileHandler)
-  protected fileHandler: FileHandler;
-
   @Autowired(IChatInternalService)
   protected chatInternalService: ChatInternalService;
 
