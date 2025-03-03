@@ -240,6 +240,7 @@ export abstract class BaseApplyService extends WithEventBus {
       if (this.activePreviewerMap.has(codeBlock.relativePath)) {
         this.activePreviewerMap.disposeKey(codeBlock.relativePath);
       }
+      // FIXME: 同一个bubble单个文件多次写入（如迭代）兼容
       // trigger diffPreivewer & return expected diff result directly
       const result = await this.editorService.open(
         URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)),
@@ -280,13 +281,22 @@ export abstract class BaseApplyService extends WithEventBus {
 
     if (typeof updatedContentOrStream === 'string') {
       const editorCurrentContent = editor.getModel()!.getValue();
-      if (editorCurrentContent !== updatedContentOrStream) {
+      const document = this.editorDocumentModelService.getModelReference(
+        URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)),
+      );
+      if (editorCurrentContent !== updatedContentOrStream || document?.instance.dirty) {
         editor.getModel()!.setValue(updatedContentOrStream);
         await this.editorService.save(URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)));
       }
       const earlistPendingCodeBlock = this.getSessionCodeBlocksForPath(codeBlock.relativePath).find(
         (block) => block.status === 'pending',
       );
+      if ((earlistPendingCodeBlock?.originalCode || codeBlock.originalCode) === updatedContentOrStream) {
+        codeBlock.status = 'cancelled';
+        this.updateCodeBlock(codeBlock);
+        deferred.resolve();
+        return;
+      }
       // Create diff previewer
       const previewer = inlineDiffController.createDiffPreviewer(
         editor,
@@ -340,6 +350,15 @@ export abstract class BaseApplyService extends WithEventBus {
         // 流式输出结束后，转为直接输出逻辑
         previewer.getNode()!.onDiffFinished(async (diffModel) => {
           codeBlock.updatedCode = diffModel.newFullRangeTextLines.join('\n');
+          // TODO: 添加 reapply
+          // 实际应用结果为空，则取消
+          if (codeBlock.updatedCode === codeBlock.originalCode) {
+            codeBlock.status = 'cancelled';
+            this.updateCodeBlock(codeBlock);
+            previewer.dispose();
+            deferred.resolve();
+            return;
+          }
           this.updateCodeBlock(codeBlock);
           previewer.dispose();
           const result = await this.renderApplyResult(editor, codeBlock, codeBlock.updatedCode);

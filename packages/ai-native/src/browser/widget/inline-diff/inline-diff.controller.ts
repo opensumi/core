@@ -3,6 +3,7 @@ import {
   AINativeSettingSectionsId,
   ChatResponse,
   Disposable,
+  DisposableCollection,
   Emitter,
   Event,
   IDisposable,
@@ -130,12 +131,14 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
       disposable.dispose();
     };
 
+    const previewerDisposable = new DisposableCollection();
+
     disposable.addDispose(
       previewer.onReady(() => {
         if (InlineChatController.is(chatResponse)) {
           const controller = chatResponse as InlineChatController;
 
-          disposable.addDispose([
+          previewerDisposable.pushAll([
             controller.onData((data) => {
               if (ReplyResponse.is(data)) {
                 this.renderDiff(previewer, data);
@@ -163,6 +166,10 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
       }),
     );
 
+    previewer.onDispose(() => {
+      previewerDisposable.dispose();
+    });
+    disposable.addDispose(previewerDisposable);
     previewer.layout();
     return previewer;
   }
