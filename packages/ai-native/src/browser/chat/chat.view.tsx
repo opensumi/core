@@ -89,6 +89,7 @@ export const AIChatView = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const autoScroll = React.useRef<boolean>(true);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
@@ -165,8 +166,29 @@ export const AIChatView = () => {
     [],
   );
 
+  const onDidWheel = React.useCallback(
+    (e: WheelEvent) => {
+      // 向上滚动
+      if (e.deltaY < 0) {
+        autoScroll.current = false;
+      } else {
+        autoScroll.current = true;
+      }
+    },
+    [autoScroll],
+  );
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.addEventListener('wheel', onDidWheel);
+      return () => {
+        containerRef.current?.removeEventListener('wheel', onDidWheel);
+      };
+    }
+  }, [autoScroll]);
+
   const scrollToBottom = React.useCallback(() => {
-    if (containerRef && containerRef.current) {
+    if (containerRef && containerRef.current && autoScroll.current) {
       const lastElement = containerRef.current.lastElementChild;
       if (lastElement) {
         lastElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -176,7 +198,7 @@ export const AIChatView = () => {
         containerRef.current.classList.add(SCROLL_CLASSNAME);
       }
     }
-  }, [containerRef]);
+  }, [containerRef, autoScroll]);
 
   const handleDispatchMessage = React.useCallback(
     (dispatch: TDispatchAction) => {
@@ -198,7 +220,7 @@ export const AIChatView = () => {
     disposer.addDispose(
       chatApiService.onScrollToBottom(() => {
         requestAnimationFrame(() => {
-          scrollToBottom();
+          // scrollToBottom();
         });
       }),
     );
