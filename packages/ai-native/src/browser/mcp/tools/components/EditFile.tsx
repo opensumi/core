@@ -57,7 +57,9 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
 
   useEffect(() => {
     const disposable = applyService.onCodeBlockUpdate((codeBlockData) => {
-      setCodeBlockData({ ...codeBlockData });
+      if (codeBlockData.toolCallId === toolCallId) {
+        setCodeBlockData({ ...codeBlockData });
+      }
     });
     return () => {
       disposable.dispose();
