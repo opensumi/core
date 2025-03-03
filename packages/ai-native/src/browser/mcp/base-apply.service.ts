@@ -11,7 +11,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
 import { ICodeEditor, Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
-import { Deferred, Emitter, IDisposable, URI, path } from '@opensumi/ide-utils';
+import { Deferred, DisposableMap, Emitter, IDisposable, URI, path } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { IChatInternalService } from '../../common';
@@ -104,33 +104,32 @@ export abstract class BaseApplyService extends WithEventBus {
     return codeBlocks;
   }
 
-  private activePreviewerMap: Map<string, BaseInlineDiffPreviewer<BaseInlineStreamDiffHandler>> = new Map();
+  private activePreviewerMap = this.registerDispose(
+    new DisposableMap<string, BaseInlineDiffPreviewer<BaseInlineStreamDiffHandler>>(),
+  );
 
-  // TODO: 使用disposableMap
-  private editorListenerMap: Map<string, IDisposable> = new Map();
+  private editorListenerMap = this.registerDispose(new DisposableMap<string, IDisposable>());
 
   @OnEvent(EditorGroupCloseEvent)
   onEditorGroupClose(event: EditorGroupCloseEvent) {
     const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
     const activePreviewer = this.activePreviewerMap.get(relativePath);
     if (activePreviewer) {
-      activePreviewer.dispose();
-      this.activePreviewerMap.delete(relativePath);
+      this.activePreviewerMap.disposeKey(relativePath);
     }
-    this.editorListenerMap.get(event.payload.resource.uri.toString())?.dispose();
-    this.editorListenerMap.delete(event.payload.resource.uri.toString());
+    this.editorListenerMap.disposeKey(event.payload.resource.uri.toString());
   }
 
   @OnEvent(EditorGroupOpenEvent)
   async onEditorGroupOpen(event: EditorGroupOpenEvent) {
+    const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
     if (
       this.duringApply ||
-      this.editorListenerMap.has(event.payload.resource.uri.toString()) ||
+      this.activePreviewerMap.has(relativePath) ||
       !this.chatInternalService.sessionModel.history.getMessages().length
     ) {
       return;
     }
-    const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
     const filePendingApplies = Object.values(
       this.getMessageCodeBlocks(this.chatInternalService.sessionModel.history.lastMessageId!) || {},
     ).filter((block) => block.relativePath === relativePath && block.status === 'pending');
@@ -239,8 +238,7 @@ export abstract class BaseApplyService extends WithEventBus {
       }
 
       if (this.activePreviewerMap.has(codeBlock.relativePath)) {
-        this.activePreviewerMap.get(codeBlock.relativePath)?.dispose();
-        this.activePreviewerMap.delete(codeBlock.relativePath);
+        this.activePreviewerMap.disposeKey(codeBlock.relativePath);
       }
       // trigger diffPreivewer & return expected diff result directly
       const result = await this.editorService.open(
@@ -363,8 +361,7 @@ export abstract class BaseApplyService extends WithEventBus {
           .get(blockData.relativePath)
           ?.getNode()
           ?.livePreviewDiffDecorationModel.discardUnProcessed();
-        this.activePreviewerMap.get(blockData.relativePath)?.dispose();
-        this.activePreviewerMap.delete(blockData.relativePath);
+        this.activePreviewerMap.disposeKey(blockData.relativePath);
       }
       blockData.status = 'cancelled';
       this.updateCodeBlock(blockData);
@@ -450,7 +447,7 @@ export abstract class BaseApplyService extends WithEventBus {
           deferred.resolve();
         }
         toDispose.dispose();
-        this.editorListenerMap.delete(uriString);
+        this.editorListenerMap.disposeKey(uriString);
       }
     });
     this.editorListenerMap.set(uriString, toDispose);
