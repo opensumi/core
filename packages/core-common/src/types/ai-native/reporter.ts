@@ -64,6 +64,8 @@ export enum ActionTypeEnum {
   Regenerate = 'regenerate',
   // 悬停的问题修复
   HoverFix = 'hoverFix',
+  // 上下文增强
+  ContextEnhance = 'contextEnhance',
   // 包含业务自定义的Action
 }
 
