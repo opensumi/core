@@ -14,10 +14,12 @@ import {
   Domain,
   IAIInlineChatService,
   IEditorExtensionContribution,
+  IPreferenceSettingsService,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
   MonacoContribution,
+  PreferenceSchemaProvider,
   PreferenceService,
   SlotLocation,
   SlotRendererContribution,
@@ -82,6 +84,9 @@ import {
   IChatManagerService,
   ISumiMCPServerBackend,
   SumiMCPServerProxyServicePath,
+  anthropicModels,
+  deepSeekModels,
+  openAiNativeModels,
 } from '../common';
 import { MCPServerDescription } from '../common/mcp-server-manager';
 
@@ -209,6 +214,12 @@ export class AINativeBrowserContribution
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
+  @Autowired(PreferenceSchemaProvider)
+  private preferenceSchemaProvider: PreferenceSchemaProvider;
+
+  @Autowired(IPreferenceSettingsService)
+  private preferenceSettings: IPreferenceSettingsService;
+
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
@@ -321,7 +332,8 @@ export class AINativeBrowserContribution
 
   onDidStart() {
     runWhenIdle(() => {
-      const { supportsRenameSuggestions, supportsInlineChat, supportsMCP } = this.aiNativeConfigService.capabilities;
+      const { supportsRenameSuggestions, supportsInlineChat, supportsMCP, supportsCustomLLMSettings } =
+        this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
@@ -358,7 +370,47 @@ export class AINativeBrowserContribution
           }
         }
       }
+
+      if (supportsCustomLLMSettings) {
+        this.preferenceService.onSpecificPreferenceChange(AINativeSettingSectionsId.LLMModelSelection, (change) => {
+          const model = this.getModelByName(change.newValue);
+          const modelIds = model ? Object.keys(model) : [];
+          const defaultModelId = modelIds.length ? modelIds[0] : '';
+          const currentSchemas = this.preferenceSchemaProvider.getPreferenceProperty(AINativeSettingSectionsId.ModelID);
+          this.preferenceSchemaProvider.setSchema(
+            {
+              properties: {
+                [AINativeSettingSectionsId.ModelID]: {
+                  ...currentSchemas,
+                  default: defaultModelId,
+                  defaultValue: defaultModelId,
+                  enum: modelIds.length ? modelIds : undefined,
+                },
+              },
+            },
+            true,
+          );
+          this.preferenceService.set(AINativeSettingSectionsId.ModelID, defaultModelId, change.scope);
+          this.preferenceSettings.setEnumLabels(
+            AINativeSettingSectionsId.ModelID,
+            modelIds.reduce((obj, item) => ({ ...obj, [item]: item }), {}),
+          );
+        });
+      }
     });
+  }
+
+  private getModelByName(modelName: string) {
+    switch (modelName) {
+      case 'deepseek':
+        return deepSeekModels;
+      case 'anthropic':
+        return anthropicModels;
+      case 'openai':
+        return openAiNativeModels;
+      default:
+        return undefined;
+    }
   }
 
   private registerFeature() {
@@ -464,6 +516,10 @@ export class AINativeBrowserContribution
           {
             id: AINativeSettingSectionsId.LLMModelSelection,
             localized: 'preference.ai.native.llm.model.selection',
+          },
+          {
+            id: AINativeSettingSectionsId.ModelID,
+            localized: 'preference.ai.native.llm.model.id',
           },
           {
             id: AINativeSettingSectionsId.DeepseekApiKey,

@@ -115,15 +115,19 @@ export class ChatProxyService extends Disposable {
           }
 
           const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
+          const modelId = this.preferenceService.get<string>(AINativeSettingSectionsId.ModelID);
           let apiKey: string = '';
           let baseURL: string = '';
           if (model === 'deepseek') {
             apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.DeepseekApiKey, '');
           } else if (model === 'openai') {
             apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
-            baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
-          } else {
+          } else if (model === 'anthropic') {
             apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey, '');
+          } else {
+            // openai-compatible 为兜底
+            apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
+            baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
           }
           const MAX_INPUT_TOKENS = 30720;
           const stream = await this.aiBackService.requestStream(
@@ -135,6 +139,7 @@ export class ChatProxyService extends Disposable {
               clientId: this.applicationService.clientId,
               apiKey,
               model,
+              modelId,
               baseURL,
             },
             token,
