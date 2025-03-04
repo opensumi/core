@@ -173,6 +173,7 @@ export const InteractiveInput = React.forwardRef(
             const value = history.current?.[history.current.length - 1 - historyIndex.current];
             if (value) {
               setInternalValue(value);
+              onValueChange?.(value);
               historyIndex.current = Math.min(historyIndex.current + 1, history.current?.length || 0);
             }
           } else if (event.key === Key.ARROW_DOWN.code) {
@@ -180,6 +181,7 @@ export const InteractiveInput = React.forwardRef(
             const value = history.current?.[history.current.length - 1 - historyIndex.current];
             if (value) {
               setInternalValue(value);
+              onValueChange?.(value);
               historyIndex.current = Math.max(historyIndex.current - 1, 0);
             }
           }
