@@ -1,9 +1,12 @@
-import { CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken, Emitter } from '@opensumi/ide-core-common';
+import { ChatFeatureRegistryToken, ChatServiceToken } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { ChatAgentService } from '../../../lib/browser/chat/chat-agent.service';
 import { IChatAgent, IChatAgentMetadata, IChatAgentRequest, IChatManagerService } from '../../../lib/common';
+import { LLMContextServiceToken } from '../../../lib/common/llm-context';
+import { ChatAgentPromptProvider } from '../../../lib/common/prompts/context-prompt-provider';
 
 describe('ChatAgentService', () => {
   let injector: MockInjector;
@@ -19,9 +22,32 @@ describe('ChatAgentService', () => {
             startSession: jest.fn(),
           },
         },
+        {
+          token: ChatAgentPromptProvider,
+          useValue: {
+            provideContextPrompt: (val, msg) => msg,
+          },
+        },
+        {
+          token: ChatServiceToken,
+          useValue: {
+          },
+        },
+        {
+          token: LLMContextServiceToken,
+          useValue: {
+            onDidContextFilesChangeEvent: new Emitter().event,
+            serialize: () => { },
+          },
+        },
+        {
+          token: ChatFeatureRegistryToken,
+          useValue: {
+          },
+        },
       ]),
     );
-    chatAgentService = new ChatAgentService();
+    chatAgentService = injector.get(ChatAgentService);
   });
 
   it('should register an agent', () => {
@@ -42,7 +68,7 @@ describe('ChatAgentService', () => {
       id: 'agent1',
       metadata: {},
       provideSlashCommands: () => Promise.resolve([]),
-      invoke: () => {},
+      invoke: () => { },
     } as unknown as IChatAgent;
     chatAgentService.registerAgent(agent);
 

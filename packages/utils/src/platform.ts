@@ -85,7 +85,7 @@ if (typeof navigator === 'object' && !isNodeNavigator && !isElectronRenderer) {
       // VSCode's default language is 'en'
       _language = resolved ? resolved : LANGUAGE_DEFAULT;
       _translationsConfigFile = nlsConfig._translationsConfigFile;
-    } catch (e) {}
+    } catch (e) { }
   }
   _isNative = true;
 }
@@ -132,6 +132,16 @@ export const isWebKit = _isWebKit;
 
 export function isRootUser(): boolean {
   return _isNative && !_isWindows && process.getuid() === 0;
+}
+
+export function getOperatingSystemName() {
+  if (isWindows) {
+    return 'Windows';
+  }
+  if (isMacintosh) {
+    return 'Macintosh';
+  }
+  return 'Linux';
 }
 
 /**
