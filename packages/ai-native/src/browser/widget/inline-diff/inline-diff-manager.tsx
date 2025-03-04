@@ -38,7 +38,7 @@ export const InlineDiffManager: React.FC<{ resource: IResource }> = (props) => {
 
   useEffect(() => {
     const toDispose = applyService.onCodeBlockUpdate((codeBlock) => {
-      if (props.resource.uri.path.relative(new Path(appConfig.workspaceDir))?.toString() === codeBlock.relativePath) {
+      if (path.relative(appConfig.workspaceDir, props.resource.uri.path.toString()) === codeBlock.relativePath) {
         setShow(codeBlock.status === 'pending');
       }
       const pendingPaths = applyService.getPendingPaths();
