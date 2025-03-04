@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import {
   Disposable,
   Emitter,
@@ -8,8 +8,6 @@ import {
   IChatProgress,
   IChatToolContent,
   IChatTreeData,
-  ILogger,
-  memoize,
   uuid,
 } from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -274,13 +272,18 @@ export class ChatRequestModel implements IChatRequestModel {
 export class ChatModel extends Disposable implements IChatModel {
   private static requestIdPool = 0;
 
-  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; requests?: ChatRequestModel[] }) {
+  constructor(initParams?: {
+    sessionId?: string;
+    history?: MsgHistoryManager;
+    requests?: ChatRequestModel[];
+  }) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
     this.history = initParams?.history ?? new MsgHistoryManager();
     if (initParams?.requests) {
       this.#requests = new Map(initParams.requests.map((r) => [r.requestId, r]));
     }
+
   }
 
   #sessionId: string;
@@ -300,9 +303,11 @@ export class ChatModel extends Disposable implements IChatModel {
   readonly history: MsgHistoryManager;
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
+    const msg = message;
+
     const requestId = `${this.sessionId}_request_${ChatModel.requestIdPool++}`;
-    const response = new ChatResponseModel(requestId, this, message.agentId);
-    const request = new ChatRequestModel(requestId, this, message, response);
+    const response = new ChatResponseModel(requestId, this, msg.agentId);
+    const request = new ChatRequestModel(requestId, this, msg, response);
 
     this.#requests.set(requestId, request);
     return request;
