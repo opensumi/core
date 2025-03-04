@@ -12,7 +12,7 @@ import { EditFileToolComponent } from './components/EditFile';
 
 const inputSchema = z.object({
   target_file: z.string().describe('The relative path where the file should be created'),
-  code_edit: z.string().describe('The content of the new file'),
+  code_edit: z.string().describe('The content to write into the new file'),
 });
 
 @Domain(MCPServerContribution)
@@ -83,7 +83,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
     } catch (error) {
       logger.appendLine(`Error during file creation: ${error}`);
       return {
-        content: [{ type: 'text', text: 'unknown error' }],
+        content: [{ type: 'text', text: error.message }],
         isError: true,
       };
     }

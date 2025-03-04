@@ -96,7 +96,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
           {codeBlockData.iterationCount > 1 && (
             <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
           )}
-          {renderStatus(codeBlockData)}
+          {renderStatus(codeBlockData, props.result)}
         </div>
         <div className={styles.right}>
           <Popover title={'Show Code'} id={'edit-file-tool-show-code'}>
@@ -138,7 +138,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   ];
 };
 
-const renderStatus = (codeBlockData: CodeBlockData) => {
+const renderStatus = (codeBlockData: CodeBlockData, error?: string) => {
   const status = codeBlockData.status;
   switch (status) {
     case 'generating':
@@ -157,7 +157,7 @@ const renderStatus = (codeBlockData: CodeBlockData) => {
       );
     case 'failed':
       return (
-        <Popover title='Failed' id={'edit-file-tool-status-failed'}>
+        <Popover title={`Failed (${error})`} id={'edit-file-tool-status-failed'}>
           <Icon iconClass='codicon codicon-error' style={{ color: 'var(--debugConsole-errorForeground)' }} />
         </Popover>
       );

@@ -356,7 +356,8 @@ export abstract class BaseApplyService extends WithEventBus {
       codeBlock.updatedCode = updatedContentOrStream;
       codeBlock.status = 'pending';
       this.updateCodeBlock(codeBlock);
-      previewer.setValue(earlistPendingCodeBlock?.originalCode || codeBlock.originalCode);
+      // 新建文件场景，为避免model为空，加一个空行
+      previewer.setValue(earlistPendingCodeBlock?.originalCode || codeBlock.originalCode || '\n');
       // 强刷展示 manager 视图
       this.eventBus.fire(new RegisterEditorSideComponentEvent());
 
