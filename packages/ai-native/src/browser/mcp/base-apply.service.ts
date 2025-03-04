@@ -152,6 +152,14 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
+  get currentPreviewer() {
+    const currentUri = this.editorService.currentEditor?.currentUri;
+    if (!currentUri) {
+      return undefined;
+    }
+    return this.activePreviewerMap.get(path.relative(this.appConfig.workspaceDir, currentUri.path.toString()));
+  }
+
   getUriPendingCodeBlock(uri: URI): CodeBlockData | undefined {
     const messageId = this.chatInternalService.sessionModel.history.lastMessageId;
     if (!messageId) {
@@ -166,6 +174,25 @@ export abstract class BaseApplyService extends WithEventBus {
         block.relativePath === path.relative(this.appConfig.workspaceDir, uri.path.toString()) &&
         block.status === 'pending',
     );
+  }
+
+  getPendingPaths(sessionId?: string): string[] {
+    sessionId = sessionId || this.chatInternalService.sessionModel.sessionId;
+    const sessionModel = this.chatInternalService.getSession(sessionId);
+    if (!sessionModel) {
+      throw new Error(`Session ${sessionId} not found`);
+    }
+    const sessionAdditionals = sessionModel.history.sessionAdditionals;
+    return Array.from(sessionAdditionals.values())
+      .map((additional) => additional.codeBlockMap as { [toolCallId: string]: CodeBlockData })
+      .reduce((acc, cur) => {
+        Object.values(cur).forEach((block) => {
+          if (block.status === 'pending' && !acc.includes(block.relativePath)) {
+            acc.push(block.relativePath);
+          }
+        });
+        return acc;
+      }, [] as string[]);
   }
 
   getCodeBlock(toolCallId: string, messageId?: string): CodeBlockData | undefined {
