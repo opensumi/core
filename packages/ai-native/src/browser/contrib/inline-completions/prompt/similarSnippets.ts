@@ -15,9 +15,9 @@ import {
 import { MAX_NEIGHBOR_AGGREGATE_LENGTH } from './const';
 import { FixedWindowSizeJaccardMatcher } from './jaccardMatcher';
 
-export const getOpenedTabFileList = (docuemnts: IEditorDocumentModel[]) => {
+export const getOpenedTabFileList = (documents: IEditorDocumentModel[]) => {
   // 过滤超大文档
-  const recentFiles = docuemnts.filter((document) => isDocumentValid(document));
+  const recentFiles = documents.filter((document) => isDocumentValid(document));
   return recentFiles;
 };
 

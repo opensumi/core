@@ -166,22 +166,22 @@ export type Matcher<T> = (matcherInput: T) => number;
 
 export const noMatch = (_scope: ProbeScope) => -1;
 
-export function nameMatcher(identifers: string[], scope: ProbeScope): number {
+export function nameMatcher(identifiers: string[], scope: ProbeScope): number {
   function findInIdents(s: string, lastIndent: number): number {
     for (let i = lastIndent - 1; i >= 0; i--) {
-      if (scopesAreMatching(s, identifers[i])) {
+      if (scopesAreMatching(s, identifiers[i])) {
         return i;
       }
     }
     return -1;
   }
-  if (scope.length < identifers.length) {
+  if (scope.length < identifiers.length) {
     return -1;
   }
   let lastScopeIndex = scope.length - 1;
-  let lastIdentifierIndex = findInIdents(scope[lastScopeIndex--], identifers.length);
+  let lastIdentifierIndex = findInIdents(scope[lastScopeIndex--], identifiers.length);
   if (lastIdentifierIndex >= 0) {
-    const score = (lastIdentifierIndex + 1) * 0x10000 + identifers[lastIdentifierIndex].length;
+    const score = (lastIdentifierIndex + 1) * 0x10000 + identifiers[lastIdentifierIndex].length;
     while (lastScopeIndex >= 0) {
       lastIdentifierIndex = findInIdents(scope[lastScopeIndex--], lastIdentifierIndex);
       if (lastIdentifierIndex === -1) {
