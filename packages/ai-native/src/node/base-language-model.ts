@@ -112,7 +112,6 @@ export abstract class BaseLanguageModel {
       ];
       const stream = streamText({
         model: this.getModelIdentifier(provider, modelId),
-        maxTokens: 4096,
         tools: aiTools,
         messages,
         abortSignal: abortController.signal,
