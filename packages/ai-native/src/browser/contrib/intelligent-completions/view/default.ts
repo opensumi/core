@@ -1,3 +1,5 @@
+import { AI_CODE_EDITS_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { CommandService } from '@opensumi/ide-core-common';
 import {
   InlineCompletionContext,
   InlineCompletionTriggerKind,
@@ -26,6 +28,7 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/inlineCompletions/browser/model/provideInlineCompletions';
 
 import { CodeEditsResultValue, ICodeEdit, ICodeEditsResult } from '../index';
+
 
 import { BaseCodeEditsView } from './base';
 
@@ -115,6 +118,10 @@ export class DefaultCodeEditsView extends BaseCodeEditsView {
                 return completionModel;
               },
               freeInlineCompletions: () => [],
+              handleRejection: (completions, item) => {
+                const commandService: CommandService = this.injector.get(CommandService);
+                commandService.executeCommand(AI_CODE_EDITS_COMMANDS.DISCARD.id);
+              },
             } as InlineCompletionsProvider<ICodeEditsResult<ICodeEdit>>,
           ],
         } as unknown as LanguageFeatureRegistry<InlineCompletionsProvider>,

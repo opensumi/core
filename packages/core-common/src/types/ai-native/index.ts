@@ -181,6 +181,7 @@ export interface IAIBackServiceOption {
   temperature?: number;
   topP?: number;
   topK?: number;
+  system?: string;
   providerOptions?: any;
   noTool?: boolean;
   /** 响应首尾是否有需要trim的内容 */
