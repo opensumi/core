@@ -319,6 +319,13 @@ export class AINativeBrowserContribution
     }
   }
 
+  onReconnect(): void {
+    const { supportsMCP } = this.aiNativeConfigService.capabilities;
+    if (supportsMCP) {
+      this.initMCPServers();
+    }
+  }
+
   onDidStart() {
     runWhenIdle(() => {
       const { supportsRenameSuggestions, supportsInlineChat, supportsMCP } = this.aiNativeConfigService.capabilities;
@@ -339,26 +346,28 @@ export class AINativeBrowserContribution
       }
 
       if (supportsMCP) {
-        // 从 preferences 获取并初始化外部 MCP Servers
-        const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(
-          AINativeSettingSectionsId.MCPServers,
-        );
-
-        // 查找内置 MCP Server 的配置
-        const builtinServer = mcpServers?.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
-
-        // 总是初始化内置服务器，根据配置决定是否启用
-        this.sumiMCPServerBackendProxy.initBuiltinMCPServer(builtinServer?.enabled ?? true);
-
-        // 初始化其他外部 MCP Servers
-        if (mcpServers && mcpServers.length > 0) {
-          const externalServers = mcpServers.filter((server) => server.name !== BUILTIN_MCP_SERVER_NAME);
-          if (externalServers.length > 0) {
-            this.sumiMCPServerBackendProxy.initExternalMCPServers(externalServers);
-          }
-        }
+        this.initMCPServers();
       }
     });
+  }
+
+  private initMCPServers() {
+    // 从 preferences 获取并初始化外部 MCP Servers
+    const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers);
+
+    // 查找内置 MCP Server 的配置
+    const builtinServer = mcpServers?.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
+
+    // 总是初始化内置服务器，根据配置决定是否启用
+    this.sumiMCPServerBackendProxy.initBuiltinMCPServer(builtinServer?.enabled ?? true);
+
+    // 初始化其他外部 MCP Servers
+    if (mcpServers && mcpServers.length > 0) {
+      const externalServers = mcpServers.filter((server) => server.name !== BUILTIN_MCP_SERVER_NAME);
+      if (externalServers.length > 0) {
+        this.sumiMCPServerBackendProxy.initExternalMCPServers(externalServers);
+      }
+    }
   }
 
   private registerFeature() {
