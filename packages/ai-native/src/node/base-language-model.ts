@@ -5,6 +5,7 @@ import { ChatMessageRole, IAIBackServiceOption, IChatMessage } from '@opensumi/i
 import { ChatReadableStream } from '@opensumi/ide-core-node';
 import { CancellationToken } from '@opensumi/ide-utils';
 
+import { ModelInfo } from '../common';
 import {
   IToolInvocationRegistryManager,
   ToolInvocationRegistryManager,
@@ -13,6 +14,8 @@ import {
 
 @Injectable()
 export abstract class BaseLanguageModel {
+  static ModelOptions: Record<string, ModelInfo>;
+
   @Autowired(ToolInvocationRegistryManager)
   protected readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
 
@@ -56,9 +59,6 @@ export abstract class BaseLanguageModel {
       chatReadableStream,
       options.history || [],
       options.modelId,
-      options.temperature,
-      options.topP,
-      options.topK,
       options.providerOptions,
       options.trimTexts,
       options.system,
@@ -78,6 +78,8 @@ export abstract class BaseLanguageModel {
 
   protected abstract getModelIdentifier(provider: any, modelId?: string): any;
 
+  protected abstract getModelInfo(modelId: string): ModelInfo | undefined;
+
   protected async handleStreamingRequest(
     provider: any,
     request: string,
@@ -85,9 +87,6 @@ export abstract class BaseLanguageModel {
     chatReadableStream: ChatReadableStream,
     history: IChatMessage[] = [],
     modelId?: string,
-    temperature?: number,
-    topP?: number,
-    topK?: number,
     providerOptions?: Record<string, any>,
     trimTexts?: [string, string],
     systemPrompt?: string,
@@ -110,6 +109,7 @@ export abstract class BaseLanguageModel {
         })),
         { role: 'user', content: request },
       ];
+      const modelInfo = modelId ? this.getModelInfo(modelId) : undefined;
       const stream = streamText({
         model: this.getModelIdentifier(provider, modelId),
         tools: aiTools,
@@ -117,9 +117,9 @@ export abstract class BaseLanguageModel {
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
         maxSteps: 12,
-        temperature,
-        topP: topP || 0.8,
-        topK: topK || 1,
+        temperature: modelInfo?.temperature || 0,
+        topP: modelInfo?.topP || 0.8,
+        topK: modelInfo?.topK || 1,
         system: systemPrompt,
         providerOptions,
       });

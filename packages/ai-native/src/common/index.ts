@@ -19,6 +19,8 @@ import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-mo
 import { MCPServerDescription } from './mcp-server-manager';
 import { MCPTool } from './types';
 
+export * from './model';
+
 export const IAINativeService = Symbol('IAINativeService');
 
 /**

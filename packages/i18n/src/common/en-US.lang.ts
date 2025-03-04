@@ -1554,6 +1554,7 @@ export const localizationBundle = {
 
     // AI Native Settings
     'preference.ai.native.llm.apiSettings.title': 'LLM API Settings',
+    'preference.ai.native.llm.model.id': 'Model ID',
     'preference.ai.native.deepseek.apiKey': 'Deepseek API Key',
     'preference.ai.native.deepseek.apiKey.description': 'API key for Deepseek language model',
     'preference.ai.native.anthropic.apiKey': 'Anthropic API Key',

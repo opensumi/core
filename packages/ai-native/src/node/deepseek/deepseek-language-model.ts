@@ -4,6 +4,7 @@ import { Injectable } from '@opensumi/di';
 import { IAIBackServiceOption } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 
+import { ModelInfo, deepSeekModels } from '../../common';
 import { BaseLanguageModel } from '../base-language-model';
 
 export const DeepSeekModelIdentifier = Symbol('DeepSeekModelIdentifier');
@@ -19,7 +20,11 @@ export class DeepSeekModel extends BaseLanguageModel {
     return createDeepSeek({ apiKey });
   }
 
-  protected getModelIdentifier(provider: DeepSeekProvider) {
-    return provider('deepseek-chat');
+  protected getModelIdentifier(provider: DeepSeekProvider, modelId = 'deepseek-chat') {
+    return provider(modelId);
+  }
+
+  protected getModelInfo(modelId: string): ModelInfo | undefined {
+    return deepSeekModels[modelId];
   }
 }

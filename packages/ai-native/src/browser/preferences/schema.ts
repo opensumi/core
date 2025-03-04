@@ -69,8 +69,13 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     [AINativeSettingSectionsId.LLMModelSelection]: {
       type: 'string',
       default: 'deepseek',
-      enum: ['deepseek', 'anthropic', 'openai'],
+      enum: ['deepseek', 'anthropic', 'openai', 'openai-compatible'],
       description: localize('preference.ai.native.llm.model.selection.description'),
+    },
+    [AINativeSettingSectionsId.ModelID]: {
+      type: 'string',
+      default: 'deepseek-chat',
+      description: localize('preference.ai.native.llm.model.id'),
     },
     [AINativeSettingSectionsId.DeepseekApiKey]: {
       type: 'string',

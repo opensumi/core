@@ -49,6 +49,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/openai@npm:^1.1.9":
+  version: 1.2.0
+  resolution: "@ai-sdk/openai@npm:1.2.0"
+  dependencies:
+    "@ai-sdk/provider": "npm:1.0.9"
+    "@ai-sdk/provider-utils": "npm:2.1.10"
+  peerDependencies:
+    zod: ^3.0.0
+  checksum: 10/d54d8ec629f3a3322ad1370ba0f6ff9804290415dacf05a2f8cd8aa422de9308635023ef89f3b54aee502ac641e35e447dab11762b8630365e66609d474593e5
+  languageName: node
+  linkType: hard
+
+"@ai-sdk/provider-utils@npm:2.1.10":
+  version: 2.1.10
+  resolution: "@ai-sdk/provider-utils@npm:2.1.10"
+  dependencies:
+    "@ai-sdk/provider": "npm:1.0.9"
+    eventsource-parser: "npm:^3.0.0"
+    nanoid: "npm:^3.3.8"
+    secure-json-parse: "npm:^2.7.0"
+  peerDependencies:
+    zod: ^3.0.0
+  peerDependenciesMeta:
+    zod:
+      optional: true
+  checksum: 10/600a732d5e0b02b873234921b8aa873a9c78b23a4d058a68e30e0783b1be0ba5067621cf119a3a676d082d1fbacad6951533ab7bb55bdb3a7d29b63a0bcd9b18
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/provider-utils@npm:2.1.9":
   version: 2.1.9
   resolution: "@ai-sdk/provider-utils@npm:2.1.9"
@@ -72,6 +101,15 @@ __metadata:
   dependencies:
     json-schema: "npm:^0.4.0"
   checksum: 10/2fb2621390941a0018ea800927ed3b31a398dd4d54de9693773e6aae3b6a751debcaac3b9624ee5c1cd03b2a962aba372b3d6e8922a627fd171f1c4e1d42d507
+  languageName: node
+  linkType: hard
+
+"@ai-sdk/provider@npm:1.0.9":
+  version: 1.0.9
+  resolution: "@ai-sdk/provider@npm:1.0.9"
+  dependencies:
+    json-schema: "npm:^0.4.0"
+  checksum: 10/5f399ded99da304821010ef189df3f7da72fc4c28c73d570bdc27dc8157dfa35cef8552099c450bef51b1c74c80a6029b36a515a035d4426fae8d5c5269fb82c
   languageName: node
   linkType: hard
 
@@ -3354,6 +3392,7 @@ __metadata:
   dependencies:
     "@ai-sdk/anthropic": "npm:^1.1.9"
     "@ai-sdk/deepseek": "npm:^0.1.11"
+    "@ai-sdk/openai": "npm:^1.1.9"
     "@ai-sdk/openai-compatible": "npm:^0.1.11"
     "@modelcontextprotocol/sdk": "npm:^1.3.1"
     "@opensumi/ide-addons": "workspace:*"
