@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
+import { getValidateInput } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
 import { Domain, URI } from '@opensumi/ide-core-common';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -10,7 +11,6 @@ import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
 import { FileSearchToolComponent } from './components/SearchResult';
-import { getValidateInput } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
 
 const inputSchema = z.object({
   query: z.string().describe('Fuzzy filename to search for'),
