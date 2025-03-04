@@ -19,8 +19,8 @@ export class OpenAIModel extends BaseLanguageModel {
     });
   }
 
-  protected getModelIdentifier(provider: OpenAIProvider, modelId: string): LanguageModelV1 {
-    return provider(modelId);
+  protected getModelIdentifier(provider: OpenAIProvider, modelId: string) {
+    return provider(modelId) as LanguageModelV1;
   }
 
   protected getModelInfo(modelId: string): ModelInfo | undefined {
