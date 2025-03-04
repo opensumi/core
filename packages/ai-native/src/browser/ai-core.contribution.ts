@@ -549,7 +549,7 @@ export class AINativeBrowserContribution
       id: INLINE_DIFF_MANAGER_WIDGET_ID,
       component: InlineDiffManager,
       displaysOnResource: (resource) => {
-        if (this.applyService.getUriPendingCodeBlock(resource.uri)) {
+        if (this.injector.hasInstance(BaseApplyService) && this.applyService.getUriPendingCodeBlock(resource.uri)) {
           return true;
         }
         return false;
