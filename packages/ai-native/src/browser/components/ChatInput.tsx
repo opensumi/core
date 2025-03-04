@@ -224,7 +224,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     dialogService.open({
       message: <MCPToolsDialog tools={tools} />,
       type: MessageType.Empty,
-      buttons: ['关闭'],
+      buttons: [localize('dialog.file.close')],
     });
   }, [mcpServerProxyService, dialogService]);
 
