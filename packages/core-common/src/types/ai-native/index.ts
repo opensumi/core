@@ -179,6 +179,7 @@ export interface IAIBackServiceOption {
   modelId?: string;
   baseURL?: string;
   system?: string;
+  maxTokens?: number;
   providerOptions?: any;
   noTool?: boolean;
   /** 响应首尾是否有需要trim的内容 */
@@ -249,7 +250,7 @@ export class ReplyResponse {
     return this._message;
   }
 
-  constructor(private _message: string) {}
+  constructor(private _message: string) { }
 
   static is(response: any): boolean {
     return response instanceof ReplyResponse || (typeof response === 'object' && response.message !== undefined);
@@ -267,7 +268,7 @@ export class ReplyResponse {
 }
 
 export class ErrorResponse {
-  constructor(readonly error: any, readonly message?: string) {}
+  constructor(readonly error: any, readonly message?: string) { }
 
   static is(response: any): boolean {
     return response instanceof ErrorResponse || (typeof response === 'object' && response.error !== undefined);
@@ -277,7 +278,7 @@ export class ErrorResponse {
 export class CancelResponse {
   readonly cancellation: boolean = true;
 
-  constructor(readonly message?: string) {}
+  constructor(readonly message?: string) { }
 
   static is(response: any): boolean {
     return response instanceof CancelResponse || (typeof response === 'object' && response.cancellation !== undefined);
