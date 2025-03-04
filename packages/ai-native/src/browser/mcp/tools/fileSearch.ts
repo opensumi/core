@@ -10,6 +10,7 @@ import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
 import { FileSearchToolComponent } from './components/SearchResult';
+import { getValidateInput } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
 
 const inputSchema = z.object({
   query: z.string().describe('Fuzzy filename to search for'),
@@ -58,7 +59,7 @@ export class FileSearchTool implements MCPServerContribution {
     }
 
     // 使用 OpenSumi 的文件搜索 API
-    const searchPattern = args.query;
+    const searchPattern = this.normalizeQuery(args.query);
     const searchResults = await this.fileSearchService.find(searchPattern, {
       rootUris: [new URI(workspaceRoots[0].uri).codeUri.fsPath],
       // TODO: 忽略配置
@@ -95,5 +96,11 @@ export class FileSearchTool implements MCPServerContribution {
         },
       ],
     };
+  }
+
+  private normalizeQuery(query: string): string {
+    const nonBlank = query.trim().replace(/\s/g, '');
+    const validated = getValidateInput(nonBlank);
+    return validated;
   }
 }
