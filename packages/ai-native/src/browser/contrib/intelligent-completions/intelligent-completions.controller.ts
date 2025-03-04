@@ -290,7 +290,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
           const range = completionModel.items[0].range;
           if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
             runWhenIdle(() => {
-              this.discard.get();
+              this.hide();
             });
           }
         }
