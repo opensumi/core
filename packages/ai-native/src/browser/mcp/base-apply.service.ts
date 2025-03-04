@@ -10,7 +10,7 @@ import {
   RegisterEditorSideComponentEvent,
 } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
-import { ICodeEditor, Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
+import { ICodeEditor, ITextModel, Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
 import { Deferred, DisposableMap, Emitter, IDisposable, URI, path } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
@@ -331,7 +331,7 @@ export abstract class BaseApplyService extends WithEventBus {
       // 强刷展示 manager 视图
       this.eventBus.fire(new RegisterEditorSideComponentEvent());
 
-      this.listenPartialEdit(editor, codeBlock).then((result) => {
+      this.listenPartialEdit(editor.getModel()!, codeBlock).then((result) => {
         if (result) {
           codeBlock.applyResult = result;
         }
@@ -452,24 +452,24 @@ export abstract class BaseApplyService extends WithEventBus {
     this.updateCodeBlock(codeBlock);
   }
 
-  protected listenPartialEdit(editor: ICodeEditor, codeBlock: CodeBlockData) {
+  protected listenPartialEdit(model: ITextModel, codeBlock: CodeBlockData) {
     const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
-    const uriString = editor.getModel()!.uri.toString();
+    const uriString = model.uri.toString();
     const toDispose = this.inlineDiffService.onPartialEdit((event) => {
       // TODO 支持自动保存
       if (
         event.totalPartialEditCount === event.resolvedPartialEditCount &&
-        event.uri.path === editor.getModel()!.uri.path.toString()
+        event.uri.path === model.uri.path.toString()
       ) {
         if (event.acceptPartialEditCount > 0) {
           codeBlock.status = 'success';
-          const appliedResult = editor.getModel()!.getValue();
+          const appliedResult = model.getValue();
           const { diff, rangesFromDiffHunk } = this.getDiffResult(
             codeBlock.originalCode,
             appliedResult,
             codeBlock.relativePath,
           );
-          const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
+          const diagnosticInfos = this.getDiagnosticInfos(model.uri.toString(), rangesFromDiffHunk);
           // 移除开头的几个固定信息，避免浪费 tokens
           deferred.resolve({
             diff,
@@ -480,7 +480,6 @@ export abstract class BaseApplyService extends WithEventBus {
           codeBlock.status = 'cancelled';
           deferred.resolve();
         }
-        toDispose.dispose();
         this.editorListenerMap.disposeKey(uriString);
       }
     });

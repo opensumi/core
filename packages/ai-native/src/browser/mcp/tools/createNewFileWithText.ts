@@ -8,9 +8,11 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 import { BaseApplyService } from '../base-apply.service';
 
+import { EditFileToolComponent } from './components/EditFile';
+
 const inputSchema = z.object({
-  pathInProject: z.string().describe('The relative path where the file should be created'),
-  text: z.string().describe('The content to write into the new file'),
+  target_file: z.string().describe('The relative path where the file should be created'),
+  code_edit: z.string().describe('The content of the new file'),
 });
 
 @Domain(MCPServerContribution)
@@ -26,6 +28,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
 
   registerMCPServer(registry: IMCPServerRegistry): void {
     registry.registerMCPTool(this.getToolDefinition());
+    registry.registerToolComponent('create_new_file_with_text', EditFileToolComponent);
   }
 
   getToolDefinition(): MCPToolDefinition {
@@ -35,13 +38,10 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
       description:
         'Creates a new file at the specified path within the project directory and populates it with the provided text. ' +
         'Use this tool to generate new files in your project structure. ' +
-        'Requires two parameters: ' +
-        '- pathInProject: The relative path where the file should be created ' +
-        '- text: The content to write into the new file ' +
         'Returns one of two possible responses: ' +
         '"ok" if the file was successfully created and populated, ' +
         '"can\'t find project dir" if the project directory cannot be determined. ' +
-        'Note: Creates any necessary parent directories automatically.',
+        'Note: This tool creates any necessary parent directories automatically.',
       inputSchema,
       handler: this.handler.bind(this),
     };
@@ -61,7 +61,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
 
       // 构建完整的文件路径
       const rootUri = URI.parse(workspaceRoots[0].uri);
-      const fullPath = path.join(rootUri.codeUri.fsPath, args.pathInProject);
+      const fullPath = path.join(rootUri.codeUri.fsPath, args.target_file);
       const fileUri = URI.file(fullPath);
 
       // 创建父目录
@@ -73,10 +73,10 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
       await this.fileService.createFile(fileUri.toString());
 
       // 使用 applyService 写入文件内容
-      const codeBlock = await this.applyService.registerCodeBlock(args.pathInProject, args.text, args.toolCallId);
+      const codeBlock = await this.applyService.registerCodeBlock(args.target_file, args.code_edit, args.toolCallId);
       await this.applyService.apply(codeBlock);
 
-      logger.appendLine(`Successfully created file at: ${args.pathInProject}`);
+      logger.appendLine(`Successfully created file at: ${args.target_file}`);
       return {
         content: [{ type: 'text', text: 'ok' }],
       };
