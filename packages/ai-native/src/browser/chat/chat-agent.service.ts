@@ -141,8 +141,8 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     }
 
     // 发送第一条消息时携带初始 context
-    if (!this.initialUserMessageMap.has(id)) {
-      this.initialUserMessageMap.set(id, request.message);
+    if (!this.initialUserMessageMap.has(request.sessionId)) {
+      this.initialUserMessageMap.set(request.sessionId, request.message);
       const rawMessage = request.message;
       request.message = this.provideContextMessage(rawMessage);
     }
