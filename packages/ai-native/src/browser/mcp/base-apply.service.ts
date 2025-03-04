@@ -198,7 +198,7 @@ export abstract class BaseApplyService extends WithEventBus {
   async registerCodeBlock(relativePath: string, content: string, toolCallId: string): Promise<CodeBlockData> {
     const lastMessageId = this.chatInternalService.sessionModel.history.lastMessageId!;
     const savedCodeBlockMap = this.getMessageCodeBlocks(lastMessageId) || {};
-    const originalCode = await this.editorDocumentModelService.createModelReference(
+    const originalModelRef = await this.editorDocumentModelService.createModelReference(
       URI.file(path.join(this.appConfig.workspaceDir, relativePath)),
     );
     const newBlock: CodeBlockData = {
@@ -210,7 +210,7 @@ export abstract class BaseApplyService extends WithEventBus {
       createdAt: Date.now(),
       toolCallId,
       // TODO: 支持range
-      originalCode: originalCode.instance.getText(),
+      originalCode: originalModelRef.instance.getText(),
     };
     const samePathCodeBlocks = Object.values(savedCodeBlockMap).filter((block) => block.relativePath === relativePath);
     if (samePathCodeBlocks.length > 0) {
@@ -243,7 +243,12 @@ export abstract class BaseApplyService extends WithEventBus {
       if (codeBlock.iterationCount > 3) {
         throw new Error('Lint error max iteration count exceeded');
       }
-      const fastApplyFileResult = await this.doApply(codeBlock);
+      // 新建文件场景，直接返回codeEdit
+      const fastApplyFileResult = !codeBlock.originalCode
+        ? {
+            result: codeBlock.codeEdit,
+          }
+        : await this.doApply(codeBlock);
       if (!fastApplyFileResult.stream && !fastApplyFileResult.result) {
         throw new Error('No apply content provided');
       }

@@ -6,6 +6,7 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
+import { BaseApplyService } from '../base-apply.service';
 
 const inputSchema = z.object({
   pathInProject: z.string().describe('The relative path where the file should be created'),
@@ -20,6 +21,9 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
   @Autowired(IFileServiceClient)
   private readonly fileService: IFileServiceClient;
 
+  @Autowired(BaseApplyService)
+  private applyService: BaseApplyService;
+
   registerMCPServer(registry: IMCPServerRegistry): void {
     registry.registerMCPTool(this.getToolDefinition());
   }
@@ -27,6 +31,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
   getToolDefinition(): MCPToolDefinition {
     return {
       name: 'create_new_file_with_text',
+      label: 'Create File',
       description:
         'Creates a new file at the specified path within the project directory and populates it with the provided text. ' +
         'Use this tool to generate new files in your project structure. ' +
@@ -42,7 +47,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
     };
   }
 
-  private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
+  private async handler(args: z.infer<typeof inputSchema> & { toolCallId: string }, logger: MCPLogger) {
     try {
       // 获取工作区根目录
       const workspaceRoots = this.workspaceService.tryGetRoots();
@@ -64,8 +69,12 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
       const parentUri = URI.file(parentDir);
       await this.fileService.createFolder(parentUri.toString());
 
-      // 写入文件内容
-      await this.fileService.createFile(fileUri.toString(), { content: args.text });
+      // 创建文件
+      await this.fileService.createFile(fileUri.toString());
+
+      // 使用 applyService 写入文件内容
+      const codeBlock = await this.applyService.registerCodeBlock(args.pathInProject, args.text, args.toolCallId);
+      await this.applyService.apply(codeBlock);
 
       logger.appendLine(`Successfully created file at: ${args.pathInProject}`);
       return {
