@@ -126,6 +126,7 @@ export class ChatProxyService extends Disposable {
             apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey, '');
           }
           const MAX_INPUT_TOKENS = 30720;
+          const agent = this.chatAgentService.getAgent(ChatProxyService.AGENT_ID);
           const stream = await this.aiBackService.requestStream(
             prompt,
             {
@@ -136,6 +137,7 @@ export class ChatProxyService extends Disposable {
               apiKey,
               model,
               baseURL,
+              system: agent?.metadata.systemPrompt,
             },
             token,
           );

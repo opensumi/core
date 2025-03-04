@@ -1583,6 +1583,7 @@ export const localizationBundle = {
     'preference.ai.native.mcp.servers.type.sse': 'SSE connection',
 
     // MCP Terminal Tool
+    'ai.native.mcp.terminal.command': 'Command',
     'ai.native.mcp.terminal.output': 'Output',
     'ai.native.mcp.terminal.allow-question': 'Allow the terminal to run the command?',
     'ai.native.mcp.terminal.allow': 'Allow',

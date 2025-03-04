@@ -61,6 +61,7 @@ export abstract class BaseLanguageModel {
       options.topK,
       options.providerOptions,
       options.trimTexts,
+      options.system,
       cancellationToken,
     );
   }
@@ -89,6 +90,7 @@ export abstract class BaseLanguageModel {
     topK?: number,
     providerOptions?: Record<string, any>,
     trimTexts?: [string, string],
+    systemPrompt?: string,
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -110,7 +112,6 @@ export abstract class BaseLanguageModel {
       ];
       const stream = streamText({
         model: this.getModelIdentifier(provider, modelId),
-        maxTokens: 4096,
         tools: aiTools,
         messages,
         abortSignal: abortController.signal,
@@ -119,6 +120,7 @@ export abstract class BaseLanguageModel {
         temperature,
         topP: topP || 0.8,
         topK: topK || 1,
+        system: systemPrompt,
         providerOptions,
       });
 
