@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
+import { getValidateInput } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
 import { Domain, URI } from '@opensumi/ide-core-common';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -9,7 +10,7 @@ import { IChatInternalService } from '../../../common';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
-import { FileSearchToolComponent } from './components/SearchResult';
+import { FileSearchToolComponent } from './components/ExpandableFileList';
 
 const inputSchema = z.object({
   query: z.string().describe('Fuzzy filename to search for'),
@@ -58,7 +59,7 @@ export class FileSearchTool implements MCPServerContribution {
     }
 
     // 使用 OpenSumi 的文件搜索 API
-    const searchPattern = args.query;
+    const searchPattern = this.normalizeQuery(args.query);
     const searchResults = await this.fileSearchService.find(searchPattern, {
       rootUris: [new URI(workspaceRoots[0].uri).codeUri.fsPath],
       // TODO: 忽略配置
@@ -71,7 +72,10 @@ export class FileSearchTool implements MCPServerContribution {
 
     const files = searchResults.slice(0, MAX_RESULTS).map((file) => {
       const uri = URI.parse(file);
-      return uri.codeUri.fsPath;
+      return {
+        uri: uri.codeUri.fsPath,
+        isDirectory: false, // 文件搜索结果都是文件
+      };
     });
 
     const messages = this.chatInternalService.sessionModel.history.getMessages();
@@ -87,7 +91,7 @@ export class FileSearchTool implements MCPServerContribution {
       content: [
         {
           type: 'text',
-          text: `${files.join('\n')}\n${
+          text: `${files.map((f) => f.uri).join('\n')}\n${
             searchResults.length > MAX_RESULTS
               ? `\nFound ${searchResults.length} files matching "${args.query}", only return the first ${MAX_RESULTS} results`
               : ''
@@ -95,5 +99,11 @@ export class FileSearchTool implements MCPServerContribution {
         },
       ],
     };
+  }
+
+  private normalizeQuery(query: string): string {
+    const nonBlank = query.trim().replace(/\s/g, '');
+    const validated = getValidateInput(nonBlank);
+    return validated;
   }
 }

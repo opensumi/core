@@ -130,6 +130,7 @@ export class ChatProxyService extends Disposable {
             baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
           }
           const MAX_INPUT_TOKENS = 30720;
+          const agent = this.chatAgentService.getAgent(ChatProxyService.AGENT_ID);
           const stream = await this.aiBackService.requestStream(
             prompt,
             {
@@ -141,6 +142,7 @@ export class ChatProxyService extends Disposable {
               model,
               modelId,
               baseURL,
+              system: agent?.metadata.systemPrompt,
             },
             token,
           );
