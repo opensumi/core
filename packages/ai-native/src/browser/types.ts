@@ -372,6 +372,7 @@ export interface IMCPServerToolComponentProps {
 }
 
 export interface IMCPServerRegistry {
+  activeMessageInfo: { messageId: string; sessionId: string };
   registerMCPTool(tool: MCPToolDefinition): void;
   getMCPTools(): MCPToolDefinition[];
   getMCPTool(name: string): MCPToolDefinition | undefined;

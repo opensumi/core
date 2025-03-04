@@ -7,7 +7,8 @@ export enum AIServiceType {
   InlineChat = 'inlineChat',
   CodeAction = 'codeAction',
   InlineChatInput = 'inlineChatInput',
-  CustomReplay = 'customReplay',
+  CustomReply = 'customReply',
+  ToolCall = 'toolCall',
   Completion = 'completion',
   Agent = 'agent',
   MergeConflict = 'mergeConflict',
@@ -63,6 +64,8 @@ export enum ActionTypeEnum {
   Regenerate = 'regenerate',
   // 悬停的问题修复
   HoverFix = 'hoverFix',
+  // 上下文增强
+  ContextEnhance = 'contextEnhance',
   // 包含业务自定义的Action
 }
 
@@ -129,6 +132,8 @@ export interface ChatRT extends Partial<CommonLogInfo> {
   command?: string;
   userMessage?: string;
   assistantMessage?: string;
+  sessionId: string;
+  messageId?: string;
 }
 
 export interface MergeConflictRT extends Partial<CommonLogInfo> {
