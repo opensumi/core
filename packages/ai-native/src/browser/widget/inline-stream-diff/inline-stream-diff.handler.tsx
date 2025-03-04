@@ -67,8 +67,6 @@ export abstract class BaseInlineStreamDiffHandler extends Disposable implements 
   protected rawOriginTextLinesTokens: LineTokens[] | undefined;
   protected undoRedoGroup: UndoRedoGroup = new UndoRedoGroup();
 
-  protected selection: Selection;
-
   protected readonly finallyDiffModel: ISettableObservable<IComputeDiffData | undefined> = observableValue(
     this,
     undefined,
@@ -119,25 +117,7 @@ export abstract class BaseInlineStreamDiffHandler extends Disposable implements 
     });
   }
 
-  initialize(selection: Selection): void {
-    this.selection = selection;
-    const eol = this.savedModel.getEOL();
-    const startPosition = selection.getStartPosition();
-    const endPosition = selection.getEndPosition();
-
-    this.rawSavedTextLines = this.savedModel
-      .getValueInRange(Range.fromPositions(startPosition, endPosition))
-      .split(eol);
-
-    const zone = LineRange.fromRangeInclusive(
-      Range.fromPositions(
-        { lineNumber: selection.startLineNumber, column: 1 },
-        { lineNumber: selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
-      ),
-    );
-
-    this.livePreviewDiffDecorationModel.initialize(zone);
-  }
+  abstract initialize(selection: Selection): void;
 
   getVirtualModelValue() {
     return this.virtualModel.getValue();
@@ -554,8 +534,22 @@ export abstract class BaseInlineStreamDiffHandler extends Disposable implements 
 @Injectable({ multiple: true })
 export class InlineStreamDiffHandler extends BaseInlineStreamDiffHandler {
   initialize(selection: Selection): void {
-    super.initialize(selection);
+    const eol = this.savedModel.getEOL();
     const startPosition = selection.getStartPosition();
+    const endPosition = selection.getEndPosition();
+
+    this.rawSavedTextLines = this.savedModel
+      .getValueInRange(Range.fromPositions(startPosition, endPosition))
+      .split(eol);
+
+    const zone = LineRange.fromRangeInclusive(
+      Range.fromPositions(
+        { lineNumber: selection.startLineNumber, column: 1 },
+        { lineNumber: selection.endLineNumber, column: Number.MAX_SAFE_INTEGER },
+      ),
+    );
+
+    this.livePreviewDiffDecorationModel.initialize(zone);
     this.rawOriginTextLinesTokens = this.rawSavedTextLines.map((_, index) => {
       const lineNumber = startPosition.lineNumber + index;
       this.savedModel.tokenization.forceTokenization(lineNumber);
@@ -590,8 +584,12 @@ export class ReverseInlineStreamDiffHandler extends BaseInlineStreamDiffHandler 
     return result;
   }
 
-  initialize(selection: Selection): void {
-    super.initialize(selection);
+  initialize(): void {
+    const eol = this.savedModel.getEOL();
+
+    // reverse 模式不支持 range
+    this.rawSavedTextLines = this.savedModel.getValue().split(eol);
+
     // TODO: reverse 模式暂不支持 range
     const zone = LineRange.fromRangeInclusive(
       Range.fromPositions(

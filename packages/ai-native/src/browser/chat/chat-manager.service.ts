@@ -89,7 +89,6 @@ export class ChatManagerService extends Disposable {
 
   async init() {
     this._chatStorage = await this.storageProvider(STORAGE_NAMESPACE.CHAT);
-    // TODO: 最大数量控制
     const sessionsModelData = this._chatStorage.get<ISessionModel[]>('sessionModels', []);
     const savedSessions = this.fromJSON(sessionsModelData);
     savedSessions.forEach((session) => {
