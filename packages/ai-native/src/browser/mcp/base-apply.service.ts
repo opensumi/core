@@ -13,6 +13,7 @@ import { IMarkerService } from '@opensumi/ide-markers';
 import { ICodeEditor, ITextModel, Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
 import { Deferred, DisposableMap, Emitter, IDisposable, URI, path } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 
 import { IChatInternalService } from '../../common';
 import { CodeBlockData, CodeBlockStatus } from '../../common/types';
@@ -294,6 +295,7 @@ export abstract class BaseApplyService extends WithEventBus {
   ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
     const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
     const inlineDiffController = InlineDiffController.get(editor)!;
+    range = range || editor.getModel()!.getFullModelRange();
 
     if (typeof updatedContentOrStream === 'string') {
       const editorCurrentContent = editor.getModel()!.getValue();
@@ -301,7 +303,7 @@ export abstract class BaseApplyService extends WithEventBus {
         URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)),
       );
       if (editorCurrentContent !== updatedContentOrStream || document?.instance.dirty) {
-        editor.getModel()!.setValue(updatedContentOrStream);
+        editor.getModel()?.pushEditOperations([], [EditOperation.replace(range, updatedContentOrStream)], () => null);
         await this.editorService.save(URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)));
       }
       const earlistPendingCodeBlock = this.getSessionCodeBlocksForPath(codeBlock.relativePath).find(
@@ -316,7 +318,7 @@ export abstract class BaseApplyService extends WithEventBus {
       // Create diff previewer
       const previewer = inlineDiffController.createDiffPreviewer(
         editor,
-        Selection.fromRange((range = range || editor.getModel()!.getFullModelRange()), SelectionDirection.LTR),
+        Selection.fromRange(range, SelectionDirection.LTR),
         {
           disposeWhenEditorClosed: true,
           renderRemovedWidgetImmediately: true,
@@ -354,7 +356,7 @@ export abstract class BaseApplyService extends WithEventBus {
       controller.mountReadable(updatedContentOrStream);
 
       const previewer = inlineDiffController.showPreviewerByStream(editor, {
-        crossSelection: Selection.fromRange(range || editor.getModel()!.getFullModelRange(), SelectionDirection.LTR),
+        crossSelection: Selection.fromRange(range, SelectionDirection.LTR),
         chatResponse: controller,
         previewerOptions: {
           disposeWhenEditorClosed: true,
