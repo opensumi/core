@@ -6,12 +6,14 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorGroupCloseEvent,
   EditorGroupOpenEvent,
+  IEditorDocumentModelService,
   RegisterEditorSideComponentEvent,
 } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
-import { ICodeEditor, Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
-import { Deferred, Emitter, URI, path } from '@opensumi/ide-utils';
+import { ICodeEditor, ITextModel, Position, Range, Selection, SelectionDirection } from '@opensumi/ide-monaco';
+import { Deferred, DisposableMap, Emitter, IDisposable, URI, path } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 
 import { IChatInternalService } from '../../common';
 import { CodeBlockData, CodeBlockStatus } from '../../common/types';
@@ -23,15 +25,9 @@ import {
   InlineDiffService,
   LiveInlineDiffPreviewer,
 } from '../widget/inline-diff';
-import { InlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
+import { BaseInlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
 
-import { FileHandler } from './tools/handlers/ReadFile';
-
-// 提供代码块的唯一索引，迭代轮次，生成状态管理（包括取消），关联文件位置这些信息的记录，后续并行 apply 的支持
 export abstract class BaseApplyService extends WithEventBus {
-  @Autowired(FileHandler)
-  protected fileHandler: FileHandler;
-
   @Autowired(IChatInternalService)
   protected chatInternalService: ChatInternalService;
 
@@ -47,14 +43,28 @@ export abstract class BaseApplyService extends WithEventBus {
   @Autowired(IMarkerService)
   private readonly markerService: IMarkerService;
 
+  @Autowired(IEditorDocumentModelService)
+  private readonly editorDocumentModelService: IEditorDocumentModelService;
+
   private onCodeBlockUpdateEmitter = new Emitter<CodeBlockData>();
   public onCodeBlockUpdate = this.onCodeBlockUpdateEmitter.event;
+
+  private currentSessionId?: string;
 
   constructor() {
     super();
     this.addDispose(
       this.chatInternalService.onCancelRequest(() => {
         this.cancelAllApply();
+      }),
+    );
+    this.currentSessionId = this.chatInternalService.sessionModel.sessionId;
+    this.addDispose(
+      this.chatInternalService.onChangeSession((sessionId) => {
+        if (sessionId !== this.currentSessionId) {
+          this.cancelAllApply();
+          this.currentSessionId = sessionId;
+        }
       }),
     );
     this.addDispose(
@@ -85,30 +95,69 @@ export abstract class BaseApplyService extends WithEventBus {
     return message?.codeBlockMap;
   }
 
-  private activePreviewer: BaseInlineDiffPreviewer<InlineStreamDiffHandler> | undefined;
+  private getSessionCodeBlocksForPath(relativePath: string, sessionId?: string) {
+    sessionId = sessionId || this.chatInternalService.sessionModel.sessionId;
+    const sessionModel = this.chatInternalService.getSession(sessionId);
+    if (!sessionModel) {
+      throw new Error(`Session ${sessionId} not found`);
+    }
+    const sessionAdditionals = sessionModel.history.sessionAdditionals;
+    const codeBlocks: CodeBlockData[] = Array.from(sessionAdditionals.values())
+      .map((additional) => additional.codeBlockMap as { [toolCallId: string]: CodeBlockData })
+      .reduce((acc, cur) => {
+        Object.values(cur).forEach((block) => {
+          if (block.relativePath === relativePath) {
+            acc.push(block);
+          }
+        });
+        return acc;
+      }, [] as CodeBlockData[])
+      .sort((a, b) => b.version - a.version);
+    return codeBlocks;
+  }
+
+  private activePreviewerMap = this.registerDispose(
+    new DisposableMap<string, BaseInlineDiffPreviewer<BaseInlineStreamDiffHandler>>(),
+  );
+
+  private editorListenerMap = this.registerDispose(new DisposableMap<string, IDisposable>());
 
   @OnEvent(EditorGroupCloseEvent)
   onEditorGroupClose(event: EditorGroupCloseEvent) {
-    if (this.activePreviewer?.getNode()?.uri.path.toString() === event.payload.resource.uri.path.toString()) {
-      this.activePreviewer.dispose();
-      this.activePreviewer = undefined;
+    const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
+    const activePreviewer = this.activePreviewerMap.get(relativePath);
+    if (activePreviewer) {
+      this.activePreviewerMap.disposeKey(relativePath);
     }
+    this.editorListenerMap.disposeKey(event.payload.resource.uri.toString());
   }
 
   @OnEvent(EditorGroupOpenEvent)
   async onEditorGroupOpen(event: EditorGroupOpenEvent) {
-    if (!this.chatInternalService.sessionModel.history.getMessages().length) {
+    const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
+    if (
+      this.duringApply ||
+      this.activePreviewerMap.has(relativePath) ||
+      !this.chatInternalService.sessionModel.history.getMessages().length
+    ) {
       return;
     }
-    const relativePath = path.relative(this.appConfig.workspaceDir, event.payload.resource.uri.path.toString());
     const filePendingApplies = Object.values(
       this.getMessageCodeBlocks(this.chatInternalService.sessionModel.history.lastMessageId!) || {},
     ).filter((block) => block.relativePath === relativePath && block.status === 'pending');
     // TODO: 刷新后重新应用，事件无法恢复 & 恢复继续请求，需要改造成批量apply形式
-    // TODO: 暂时只支持 pending 串行的 apply，后续支持批量apply后统一accept
-    if (filePendingApplies.length > 0) {
-      this.renderApplyResult(filePendingApplies[0], filePendingApplies[0].updatedCode!);
+    if (filePendingApplies.length > 0 && filePendingApplies[0].updatedCode) {
+      const editor = event.payload.group.codeEditor.monacoEditor;
+      this.renderApplyResult(editor, filePendingApplies[0], filePendingApplies[0].updatedCode);
     }
+  }
+
+  get currentPreviewer() {
+    const currentUri = this.editorService.currentEditor?.currentUri;
+    if (!currentUri) {
+      return undefined;
+    }
+    return this.activePreviewerMap.get(path.relative(this.appConfig.workspaceDir, currentUri.path.toString()));
   }
 
   getUriPendingCodeBlock(uri: URI): CodeBlockData | undefined {
@@ -125,6 +174,25 @@ export abstract class BaseApplyService extends WithEventBus {
         block.relativePath === path.relative(this.appConfig.workspaceDir, uri.path.toString()) &&
         block.status === 'pending',
     );
+  }
+
+  getPendingPaths(sessionId?: string): string[] {
+    sessionId = sessionId || this.chatInternalService.sessionModel.sessionId;
+    const sessionModel = this.chatInternalService.getSession(sessionId);
+    if (!sessionModel) {
+      throw new Error(`Session ${sessionId} not found`);
+    }
+    const sessionAdditionals = sessionModel.history.sessionAdditionals;
+    return Array.from(sessionAdditionals.values())
+      .map((additional) => additional.codeBlockMap as { [toolCallId: string]: CodeBlockData })
+      .reduce((acc, cur) => {
+        Object.values(cur).forEach((block) => {
+          if (block.status === 'pending' && !acc.includes(block.relativePath)) {
+            acc.push(block.relativePath);
+          }
+        });
+        return acc;
+      }, [] as string[]);
   }
 
   getCodeBlock(toolCallId: string, messageId?: string): CodeBlockData | undefined {
@@ -155,9 +223,12 @@ export abstract class BaseApplyService extends WithEventBus {
     this.onCodeBlockUpdateEmitter.fire(codeBlock);
   }
 
-  registerCodeBlock(relativePath: string, content: string, toolCallId: string): CodeBlockData {
+  async registerCodeBlock(relativePath: string, content: string, toolCallId: string): Promise<CodeBlockData> {
     const lastMessageId = this.chatInternalService.sessionModel.history.lastMessageId!;
     const savedCodeBlockMap = this.getMessageCodeBlocks(lastMessageId) || {};
+    const originalModelRef = await this.editorDocumentModelService.createModelReference(
+      URI.file(path.join(this.appConfig.workspaceDir, relativePath)),
+    );
     const newBlock: CodeBlockData = {
       codeEdit: content,
       relativePath,
@@ -166,11 +237,13 @@ export abstract class BaseApplyService extends WithEventBus {
       version: 1,
       createdAt: Date.now(),
       toolCallId,
+      // TODO: 支持range
+      originalCode: originalModelRef.instance.getText(),
     };
     const samePathCodeBlocks = Object.values(savedCodeBlockMap).filter((block) => block.relativePath === relativePath);
     if (samePathCodeBlocks.length > 0) {
       newBlock.version = samePathCodeBlocks.length;
-      for (const block of samePathCodeBlocks.sort((a, b) => b.version - a.version)) {
+      for (const block of samePathCodeBlocks.sort((a, b) => a.version - b.version)) {
         // 如果连续的上一个同文件apply结果存在LintError，则iterationCount++
         if (block.relativePath === relativePath && block.applyResult?.diagnosticInfos?.length) {
           newBlock.iterationCount++;
@@ -187,21 +260,40 @@ export abstract class BaseApplyService extends WithEventBus {
     return newBlock;
   }
 
+  private duringApply?: boolean;
+
   /**
    * Apply changes of a code block
    */
   async apply(codeBlock: CodeBlockData): Promise<CodeBlockData> {
     try {
+      this.duringApply = true;
       if (codeBlock.iterationCount > 3) {
         throw new Error('Lint error max iteration count exceeded');
       }
-      const fastApplyFileResult = await this.doApply(codeBlock);
+      // 新建文件场景，直接返回codeEdit
+      const fastApplyFileResult = !codeBlock.originalCode
+        ? {
+            result: codeBlock.codeEdit,
+          }
+        : await this.doApply(codeBlock);
       if (!fastApplyFileResult.stream && !fastApplyFileResult.result) {
         throw new Error('No apply content provided');
       }
 
+      if (this.activePreviewerMap.has(codeBlock.relativePath)) {
+        this.activePreviewerMap.disposeKey(codeBlock.relativePath);
+      }
+      // FIXME: 同一个bubble单个文件多次写入（如迭代）兼容
       // trigger diffPreivewer & return expected diff result directly
+      const result = await this.editorService.open(
+        URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)),
+      );
+      if (!result) {
+        throw new Error('Failed to open file');
+      }
       const applyResult = await this.renderApplyResult(
+        result.group.codeEditor.monacoEditor,
         codeBlock,
         (fastApplyFileResult.result || fastApplyFileResult.stream)!,
         fastApplyFileResult.range,
@@ -217,31 +309,39 @@ export abstract class BaseApplyService extends WithEventBus {
       codeBlock.status = 'failed';
       this.updateCodeBlock(codeBlock);
       throw err;
+    } finally {
+      this.duringApply = false;
     }
   }
 
   async renderApplyResult(
+    editor: ICodeEditor,
     codeBlock: CodeBlockData,
     updatedContentOrStream: string | SumiReadableStream<IChatProgress>,
     range?: Range,
   ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
-    const { relativePath } = codeBlock;
-    const openResult = await this.editorService.open(URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
-    if (!openResult) {
-      throw new Error('Failed to open editor');
-    }
-    const editor = openResult.group.codeEditor.monacoEditor;
+    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
     const inlineDiffController = InlineDiffController.get(editor)!;
-    codeBlock.status = 'pending';
-    // 强刷展示 manager 视图
-    this.eventBus.fire(new RegisterEditorSideComponentEvent());
-    this.updateCodeBlock(codeBlock);
-
-    const fullOriginalContent = editor.getModel()!.getValue();
-    range = range || editor.getModel()?.getFullModelRange()!;
-    // const savedRangeContent = editor.getModel()!.getValueInRange(range);
+    range = range || editor.getModel()!.getFullModelRange();
 
     if (typeof updatedContentOrStream === 'string') {
+      const editorCurrentContent = editor.getModel()!.getValue();
+      const document = this.editorDocumentModelService.getModelReference(
+        URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)),
+      );
+      if (editorCurrentContent !== updatedContentOrStream || document?.instance.dirty) {
+        editor.getModel()?.pushEditOperations([], [EditOperation.replace(range, updatedContentOrStream)], () => null);
+        await this.editorService.save(URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)));
+      }
+      const earlistPendingCodeBlock = this.getSessionCodeBlocksForPath(codeBlock.relativePath).find(
+        (block) => block.status === 'pending',
+      );
+      if ((earlistPendingCodeBlock?.originalCode || codeBlock.originalCode) === updatedContentOrStream) {
+        codeBlock.status = 'cancelled';
+        this.updateCodeBlock(codeBlock);
+        deferred.resolve();
+        return;
+      }
       // Create diff previewer
       const previewer = inlineDiffController.createDiffPreviewer(
         editor,
@@ -249,18 +349,41 @@ export abstract class BaseApplyService extends WithEventBus {
         {
           disposeWhenEditorClosed: true,
           renderRemovedWidgetImmediately: true,
+          reverse: true,
         },
       ) as LiveInlineDiffPreviewer;
-      // TODO: 支持多个diffPreviewer
-      this.activePreviewer = previewer;
+      this.activePreviewerMap.set(codeBlock.relativePath, previewer);
       codeBlock.updatedCode = updatedContentOrStream;
-      previewer.setValue(updatedContentOrStream);
+      codeBlock.status = 'pending';
+      this.updateCodeBlock(codeBlock);
+      // 新建文件场景，为避免model为空，加一个空行
+      previewer.setValue(earlistPendingCodeBlock?.originalCode || codeBlock.originalCode || '\n');
+      // 强刷展示 manager 视图
+      this.eventBus.fire(new RegisterEditorSideComponentEvent());
+
+      this.listenPartialEdit(editor.getModel()!, codeBlock).then((result) => {
+        if (result) {
+          codeBlock.applyResult = result;
+        }
+        this.updateCodeBlock(codeBlock);
+        this.editorService.save(URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)));
+      });
+
+      const { diff, rangesFromDiffHunk } = this.getDiffResult(
+        codeBlock.originalCode,
+        codeBlock.updatedCode,
+        codeBlock.relativePath,
+      );
+      const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
+      deferred.resolve({
+        diff,
+        diagnosticInfos,
+      });
     } else {
       const controller = new InlineChatController();
       controller.mountReadable(updatedContentOrStream);
-      const inlineDiffHandler = InlineDiffController.get(editor)!;
 
-      this.activePreviewer = inlineDiffHandler.showPreviewerByStream(editor, {
+      const previewer = inlineDiffController.showPreviewerByStream(editor, {
         crossSelection: Selection.fromRange(range, SelectionDirection.LTR),
         chatResponse: controller,
         previewerOptions: {
@@ -269,14 +392,27 @@ export abstract class BaseApplyService extends WithEventBus {
         },
       }) as LiveInlineDiffPreviewer;
       this.addDispose(
-        this.activePreviewer.getNode()!.onDiffFinished((diffModel) => {
+        // 流式输出结束后，转为直接输出逻辑
+        previewer.getNode()!.onDiffFinished(async (diffModel) => {
           codeBlock.updatedCode = diffModel.newFullRangeTextLines.join('\n');
+          // TODO: 添加 reapply
+          // 实际应用结果为空，则取消
+          if (codeBlock.updatedCode === codeBlock.originalCode) {
+            codeBlock.status = 'cancelled';
+            this.updateCodeBlock(codeBlock);
+            previewer.dispose();
+            deferred.resolve();
+            return;
+          }
           this.updateCodeBlock(codeBlock);
+          previewer.dispose();
+          const result = await this.renderApplyResult(editor, codeBlock, codeBlock.updatedCode);
+          deferred.resolve(result);
         }),
       );
+      this.activePreviewerMap.set(codeBlock.relativePath, previewer);
     }
-
-    return this.listenPartialEdit(editor, codeBlock, fullOriginalContent);
+    return deferred.promise;
   }
 
   /**
@@ -284,9 +420,12 @@ export abstract class BaseApplyService extends WithEventBus {
    */
   cancelApply(blockData: CodeBlockData): void {
     if (blockData.status === 'generating' || blockData.status === 'pending') {
-      if (this.activePreviewer) {
-        this.activePreviewer.getNode()?.livePreviewDiffDecorationModel.discardUnProcessed();
-        this.activePreviewer.dispose();
+      if (this.activePreviewerMap.has(blockData.relativePath)) {
+        this.activePreviewerMap
+          .get(blockData.relativePath)
+          ?.getNode()
+          ?.livePreviewDiffDecorationModel.discardUnProcessed();
+        this.activePreviewerMap.disposeKey(blockData.relativePath);
       }
       blockData.status = 'cancelled';
       this.updateCodeBlock(blockData);
@@ -327,7 +466,9 @@ export abstract class BaseApplyService extends WithEventBus {
     if (!codeBlock) {
       throw new Error('No pending code block found');
     }
-    const decorationModel = this.activePreviewer?.getNode()?.livePreviewDiffDecorationModel;
+    const decorationModel = this.activePreviewerMap
+      .get(codeBlock.relativePath)
+      ?.getNode()?.livePreviewDiffDecorationModel;
     if (!decorationModel) {
       throw new Error('No active previewer found');
     }
@@ -341,32 +482,27 @@ export abstract class BaseApplyService extends WithEventBus {
     this.updateCodeBlock(codeBlock);
   }
 
-  protected listenPartialEdit(editor: ICodeEditor, codeBlock: CodeBlockData, fullOriginalContent: string) {
+  protected listenPartialEdit(model: ITextModel, codeBlock: CodeBlockData) {
     const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
+    const uriString = model.uri.toString();
     const toDispose = this.inlineDiffService.onPartialEdit((event) => {
       // TODO 支持自动保存
-      if (event.totalPartialEditCount === event.resolvedPartialEditCount) {
+      if (
+        event.totalPartialEditCount === event.resolvedPartialEditCount &&
+        event.uri.path === model.uri.path.toString()
+      ) {
         if (event.acceptPartialEditCount > 0) {
           codeBlock.status = 'success';
-          const appliedResult = editor.getModel()!.getValue();
-          const diffResult = createPatch(codeBlock.relativePath, fullOriginalContent, appliedResult)
-            .split('\n')
-            .slice(4)
-            .join('\n');
-          const rangesFromDiffHunk = diffResult
-            .split('\n')
-            .map((line) => {
-              if (line.startsWith('@@')) {
-                const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
-                return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
-              }
-              return null;
-            })
-            .filter((range) => range !== null);
-          const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
+          const appliedResult = model.getValue();
+          const { diff, rangesFromDiffHunk } = this.getDiffResult(
+            codeBlock.originalCode,
+            appliedResult,
+            codeBlock.relativePath,
+          );
+          const diagnosticInfos = this.getDiagnosticInfos(model.uri.toString(), rangesFromDiffHunk);
           // 移除开头的几个固定信息，避免浪费 tokens
           deferred.resolve({
-            diff: diffResult,
+            diff,
             diagnosticInfos,
           });
         } else {
@@ -374,10 +510,29 @@ export abstract class BaseApplyService extends WithEventBus {
           codeBlock.status = 'cancelled';
           deferred.resolve();
         }
-        toDispose.dispose();
+        this.editorListenerMap.disposeKey(uriString);
       }
     });
+    this.editorListenerMap.set(uriString, toDispose);
     return deferred.promise;
+  }
+
+  protected getDiffResult(originalContent: string, appliedResult: string, relativePath: string) {
+    const diffResult = createPatch(relativePath, originalContent, appliedResult).split('\n').slice(4).join('\n');
+    const rangesFromDiffHunk = diffResult
+      .split('\n')
+      .map((line) => {
+        if (line.startsWith('@@')) {
+          const [, , , start, end] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
+          return new Range(parseInt(start, 10), 0, parseInt(end, 10), 0);
+        }
+        return null;
+      })
+      .filter((range) => range !== null);
+    return {
+      diff: diffResult,
+      rangesFromDiffHunk,
+    };
   }
 
   /**

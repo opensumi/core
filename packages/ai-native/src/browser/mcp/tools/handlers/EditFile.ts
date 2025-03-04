@@ -14,7 +14,7 @@ export class EditFileHandler {
 
   async handler(params: { targetFile: string; codeEdit: string; instructions?: string }, toolCallId: string) {
     const { targetFile, codeEdit } = params;
-    const block = this.applyService.registerCodeBlock(targetFile, codeEdit, toolCallId);
+    const block = await this.applyService.registerCodeBlock(targetFile, codeEdit, toolCallId);
     const blockData = await this.applyService.apply(block);
     return blockData;
   }

@@ -31,7 +31,7 @@ import {
   uuid,
 } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IDialogService } from '@opensumi/ide-overlay';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import 'react-chat-elements/dist/main.css';
 import {
@@ -756,13 +756,18 @@ export function DefaultChatViewHeader({
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
   const commandService = useInjectable<CommandService>(CommandService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const handleNewChat = React.useCallback(() => {
     if (aiChatService.sessionModel.history.getMessages().length > 0) {
-      aiChatService.createSessionModel();
+      try {
+        aiChatService.createSessionModel();
+      } catch (error) {
+        messageService.error(error.message);
+      }
     }
   }, [aiChatService]);
   const handleHistoryItemSelect = React.useCallback(

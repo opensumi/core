@@ -22,12 +22,33 @@
 
 .inlineDiffManager {
   display: flex;
-  padding: 12px 16px;
-  justify-content: center;
+  border-radius: 13px;
+  align-items: center;
   position: absolute;
-  bottom: 0;
+  bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
-  gap: 12px;
+  overflow: hidden;
   z-index: 999;
+  > div {
+    display: flex;
+    align-items: center;
+  }
+  .mid {
+    border-right: 1px solid var(--design-borderColor);
+  }
+  :global(.codicon) {
+    font-size: 20px;
+    padding: 6px;
+    color: var(--kt-primaryButton-foreground);
+    background-color: var(--kt-primaryButton-hoverBackground);
+    &:hover {
+      background-color: var(--kt-primaryButton-background);
+    }
+  }
+}
+.disabled {
+  // color: var(--kt-button-disableForeground) !important;
+  background-color: var(--kt-button-disableBackground) !important;
+  cursor: not-allowed;
 }

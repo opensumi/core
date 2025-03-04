@@ -52,6 +52,7 @@ export interface MCPTool {
 export interface CodeBlockData {
   toolCallId: string;
   codeEdit: string;
+  originalCode: string;
   updatedCode?: string;
   relativePath: string;
   status: CodeBlockStatus;
