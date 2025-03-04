@@ -10,7 +10,7 @@ import { IChatInternalService } from '../../../common';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
-import { FileSearchToolComponent } from './components/SearchResult';
+import { FileSearchToolComponent } from './components/ExpandableFileList';
 
 const inputSchema = z.object({
   query: z.string().describe('Fuzzy filename to search for'),
@@ -72,7 +72,10 @@ export class FileSearchTool implements MCPServerContribution {
 
     const files = searchResults.slice(0, MAX_RESULTS).map((file) => {
       const uri = URI.parse(file);
-      return uri.codeUri.fsPath;
+      return {
+        uri: uri.codeUri.fsPath,
+        isDirectory: false, // 文件搜索结果都是文件
+      };
     });
 
     const messages = this.chatInternalService.sessionModel.history.getMessages();
@@ -88,7 +91,7 @@ export class FileSearchTool implements MCPServerContribution {
       content: [
         {
           type: 'text',
-          text: `${files.join('\n')}\n${
+          text: `${files.map((f) => f.uri).join('\n')}\n${
             searchResults.length > MAX_RESULTS
               ? `\nFound ${searchResults.length} files matching "${args.query}", only return the first ${MAX_RESULTS} results`
               : ''

@@ -56,6 +56,10 @@ export class ListDirHandler {
   @Autowired(IFileServiceClient)
   private readonly fileSystemService: IFileServiceClient;
 
+  getWorkspaceDir(): string {
+    return this.appConfig.workspaceDir;
+  }
+
   async handler(args: { relativeWorkspacePath: string }) {
     const { relativeWorkspacePath } = args;
     if (!relativeWorkspacePath) {

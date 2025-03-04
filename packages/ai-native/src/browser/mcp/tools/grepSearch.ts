@@ -10,7 +10,7 @@ import { IChatInternalService } from '../../../common';
 import { ChatInternalService } from '../../chat/chat.internal.service';
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
-import { GrepSearchToolComponent } from './components/SearchResult';
+import { GrepSearchToolComponent } from './components/ExpandableFileList';
 
 const inputSchema = z.object({
   query: z.string().describe('The regex pattern to search for'),
@@ -90,7 +90,7 @@ export class GrepSearchTool implements MCPServerContribution {
         return;
       }
       const results: string[] = [];
-      const files: string[] = [];
+      const files: Array<{ uri: string; isDirectory: boolean }> = [];
       for (const [fileUri, result] of this.searchService.searchResults.entries()) {
         results.push(
           `File: ${fileUri}\n${result
@@ -103,7 +103,10 @@ export class GrepSearchTool implements MCPServerContribution {
             .map((r) => `Line: ${r.line}\nContent: ${r.lineText || r.renderLineText}`)
             .join('\n')}`,
         );
-        files.push(fileUri);
+        files.push({
+          uri: fileUri,
+          isDirectory: false, // grep 搜索结果都是文件
+        });
       }
       deferred.resolve(results.join('\n\n'));
       const messages = this.chatInternalService.sessionModel.history.getMessages();
