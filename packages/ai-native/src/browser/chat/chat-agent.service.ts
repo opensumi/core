@@ -2,12 +2,15 @@ import flatMap from 'lodash/flatMap';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  AIServiceType,
+  ActionSourceEnum,
+  ActionTypeEnum,
   CancellationToken,
   ChatFeatureRegistryToken,
-  ChatMessageRole,
   ChatServiceToken,
   Disposable,
   Emitter,
+  IAIReporter,
   IChatProgress,
   IDisposable,
   ILogger,
@@ -52,6 +55,9 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   @Autowired(ILogger)
   logger: ILogger;
 
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
+
   @Autowired(LLMContextServiceToken)
   protected readonly contextService: LLMContextService;
 
@@ -67,12 +73,14 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   constructor() {
     super();
     this.addDispose(this._onDidChangeAgents);
-    this.addDispose(this.contextService.onDidContextFilesChangeEvent((event) => {
-      if (event.version !== this.contextVersion) {
-        this.contextVersion = event.version;
-        this.shouldUpdateContext = true;
-      }
-    }));
+    this.addDispose(
+      this.contextService.onDidContextFilesChangeEvent((event) => {
+        if (event.version !== this.contextVersion) {
+          this.contextVersion = event.version;
+          this.shouldUpdateContext = true;
+        }
+      }),
+    );
   }
 
   registerAgent(agent: IChatAgent): IDisposable {
@@ -144,11 +152,11 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     if (!this.initialUserMessageMap.has(request.sessionId)) {
       this.initialUserMessageMap.set(request.sessionId, request.message);
       const rawMessage = request.message;
-      request.message = this.provideContextMessage(rawMessage);
+      request.message = this.provideContextMessage(rawMessage, request.sessionId);
     }
 
     if (this.shouldUpdateContext) {
-      request.message = this.provideContextMessage(request.message);
+      request.message = this.provideContextMessage(request.message, request.sessionId);
       this.shouldUpdateContext = false;
     }
 
@@ -156,9 +164,16 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     return result;
   }
 
-  private provideContextMessage(message: string) {
+  private provideContextMessage(message: string, sessionId: string) {
     const context = this.contextService.serialize();
     const fullMessage = this.promptProvider.provideContextPrompt(context, message);
+    this.aiReporter.record({
+      msgType: AIServiceType.Chat,
+      actionType: ActionTypeEnum.ContextEnhance,
+      actionSource: ActionSourceEnum.Chat,
+      sessionId,
+      message: fullMessage,
+    });
     return fullMessage;
   }
 

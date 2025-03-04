@@ -1,13 +1,7 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import {
-  AINativeConfigService,
-  CommandService,
-  getIcon,
-  useInjectable,
-  useUpdateOnEvent,
-} from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -25,22 +19,15 @@ import {
   IAIReporter,
   IChatComponent,
   IChatContent,
-  MessageType,
   formatLocalize,
   localize,
   uuid,
 } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { IMessageService } from '@opensumi/ide-overlay';
 
 import 'react-chat-elements/dist/main.css';
-import {
-  AI_CHAT_VIEW_ID,
-  IChatAgentService,
-  IChatInternalService,
-  IChatMessageStructure,
-  TokenMCPServerProxyService,
-} from '../../common';
+import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
 import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
@@ -50,10 +37,7 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
-import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
-import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
-import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
-import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
+import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
@@ -79,6 +63,7 @@ export const AIChatView = () => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
@@ -236,8 +221,9 @@ export const AIChatView = () => {
     disposer.addDispose(
       chatApiService.onChatReplyMessageLaunch((data) => {
         if (data.kind === 'content') {
-          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: data.content,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             content: data.content,
@@ -245,8 +231,9 @@ export const AIChatView = () => {
           });
           renderSimpleMarkdownReply({ chunk: data.content, relationId });
         } else {
-          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: 'component#' + data.component,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             componentId: data.component,
@@ -268,6 +255,7 @@ export const AIChatView = () => {
 
           const relationId = aiReporter.start(AIServiceType.Chat, {
             message: '',
+            sessionId: aiChatService.sessionModel.sessionId,
           });
 
           if (role === 'assistant') {
@@ -536,12 +524,13 @@ export const AIChatView = () => {
 
       const startTime = Date.now();
       const reportType = ChatProxyService.AGENT_ID === agentId ? AIServiceType.Chat : AIServiceType.Agent;
+
       const relationId = aiReporter.start(command || reportType, {
-        message,
         agentId,
         userMessage: message,
         actionType,
         actionSource,
+        sessionId: aiChatService.sessionModel.sessionId,
       });
 
       msgHistoryManager.addUserMessage({
@@ -566,6 +555,12 @@ export const AIChatView = () => {
         requestId: request.requestId,
         replyStartTime: startTime,
       });
+
+      // 创建消息时，设置当前活跃的消息信息，便于toolCall打点
+      mcpServerRegistry.activeMessageInfo = {
+        messageId: msgId,
+        sessionId: aiChatService.sessionModel.sessionId,
+      };
 
       await renderReply({
         startTime,
@@ -752,12 +747,8 @@ export function DefaultChatViewHeader({
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
-  const dialogService = useInjectable<IDialogService>(IDialogService);
-  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
-  const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
-  const commandService = useInjectable<CommandService>(CommandService);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -782,19 +773,6 @@ export function DefaultChatViewHeader({
     },
     [aiChatService],
   );
-
-  const handleShowMCPConfig = React.useCallback(() => {
-    commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
-  }, [commandService]);
-
-  const handleShowMCPTools = React.useCallback(async () => {
-    const tools = await mcpServerProxyService.getAllMCPTools();
-    dialogService.open({
-      message: <MCPToolsDialog tools={tools} />,
-      type: MessageType.Empty,
-      buttons: ['关闭'],
-    });
-  }, [mcpServerProxyService, dialogService]);
 
   React.useEffect(() => {
     const getHistoryList = () => {
