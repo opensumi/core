@@ -117,6 +117,7 @@ export abstract class BaseLanguageModel {
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
         maxSteps: 12,
+        maxTokens: 32_768,
         temperature: modelInfo?.temperature || 0,
         topP: modelInfo?.topP || 0.8,
         topK: modelInfo?.topK || 1,
