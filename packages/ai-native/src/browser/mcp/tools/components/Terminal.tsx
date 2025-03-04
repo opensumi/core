@@ -3,6 +3,7 @@ import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
 import { localize } from '@opensumi/ide-core-common';
+import { stripAnsi } from '@opensumi/ide-utils/lib/ansi';
 
 import { IMCPServerToolComponentProps } from '../../../types';
 import { RunCommandHandler } from '../handlers/RunCommand';
@@ -58,13 +59,23 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
     <div className={styles.run_cmd_tool}>
       {props.state === 'result' && (
         <div>
+          {args && (
+            <>
+              <div className={styles.command_title}>
+                <Icon icon='terminal' />
+                <span>{localize('ai.native.mcp.terminal.command')}</span>
+              </div>
+              <p className={styles.command_content}>
+                <code>$ {args.command}</code>
+              </p>
+            </>
+          )}
           <div className={styles.command_title}>
-            <Icon icon='terminal' />
             <span>{localize('ai.native.mcp.terminal.output')}</span>
           </div>
           {output ? (
             <div className={styles.command_content}>
-              <code>{output.text}</code>
+              <code>{stripAnsi(output.text)}</code>
             </div>
           ) : (
             ''
