@@ -15,7 +15,6 @@ import { ChatProxyService } from '../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { IChatSlashCommandItem } from '../types';
 
-import { ChatContext } from './ChatContext';
 import styles from './components.module.less';
 
 const INSTRUCTION_BOTTOM = 8;
