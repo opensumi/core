@@ -57,7 +57,7 @@ export const InlineDiffManager: React.FC<{ resource: IResource }> = (props) => {
     if (decorationModelService) {
       setChangesCount(decorationModelService.partialEditWidgetCount);
       toDispose = decorationModelService.onPartialEditWidgetListChange((e) => {
-        setChangesCount(e.length);
+        setChangesCount(e.filter((item) => item.status === 'pending').length);
       });
     }
     return () => {
