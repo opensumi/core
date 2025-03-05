@@ -69,7 +69,17 @@ export abstract class BaseApplyService extends WithEventBus {
     super();
     this.addDispose(
       this.chatInternalService.onCancelRequest(() => {
-        this.cancelAllApply();
+        const currentMessageId = this.chatInternalService.sessionModel.history.lastMessageId;
+        if (!currentMessageId) {
+          return;
+        }
+        const codeBlockMap = this.getMessageCodeBlocks(currentMessageId);
+        if (!codeBlockMap) {
+          return;
+        }
+        Object.values(codeBlockMap).forEach((blockData) => {
+          this.cancelApply(blockData);
+        });
       }),
     );
     this.currentSessionId = this.chatInternalService.sessionModel.sessionId;
