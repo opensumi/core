@@ -52,7 +52,7 @@ export const localizationBundle = {
     'file.location': '在文件树中定位',
     'file.open.folder': '打开文件夹',
     'file.open.workspace': '从文件打开工作区',
-    'file.confirm.delete': '###确定从工作区删除下面的 {0} 个文件?  \n{1}',
+    'file.confirm.delete': '### 确定从工作区删除下面的 {0} 个文件?  \n{1}',
     'file.confirm.deleteTips': '你可以从回收站还原文件',
     'file.confirm.moveToTrash.ok': '移入回收站',
     'file.confirm.delete.ok': '删除',
