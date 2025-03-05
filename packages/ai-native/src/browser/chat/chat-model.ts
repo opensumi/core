@@ -1,10 +1,12 @@
 import { Injectable } from '@opensumi/di';
 import {
+  ChatMessageRole,
   Disposable,
   Emitter,
   IChatAsyncContent,
   IChatComponent,
   IChatMarkdownContent,
+  IChatMessage,
   IChatProgress,
   IChatToolContent,
   IChatTreeData,
@@ -272,18 +274,13 @@ export class ChatRequestModel implements IChatRequestModel {
 export class ChatModel extends Disposable implements IChatModel {
   private static requestIdPool = 0;
 
-  constructor(initParams?: {
-    sessionId?: string;
-    history?: MsgHistoryManager;
-    requests?: ChatRequestModel[];
-  }) {
+  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; requests?: ChatRequestModel[] }) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
     this.history = initParams?.history ?? new MsgHistoryManager();
     if (initParams?.requests) {
       this.#requests = new Map(initParams.requests.map((r) => [r.requestId, r]));
     }
-
   }
 
   #sessionId: string;
@@ -301,6 +298,41 @@ export class ChatModel extends Disposable implements IChatModel {
   }
 
   readonly history: MsgHistoryManager;
+
+  get messageHistory() {
+    const history: IChatMessage[] = [];
+    for (const request of this.requests) {
+      if (!request.response.isComplete) {
+        continue;
+      }
+      history.push({ role: ChatMessageRole.User, content: request.message.prompt });
+      for (let i = 0; i < request.response.responseParts.length; i++) {
+        const part = request.response.responseParts[i];
+        if (part.kind === 'treeData' || part.kind === 'component') {
+          continue;
+        }
+        if (part.kind !== 'toolCall') {
+          const assistantMessage: IChatMessage = {
+            role: ChatMessageRole.Assistant,
+            content: part.content.toString(),
+          };
+          if (request.response.responseParts[i + 1].kind === 'toolCall') {
+            assistantMessage.tool_calls = [(request.response.responseParts[i + 1] as IChatToolContent).content];
+            i++;
+          }
+          history.push(assistantMessage);
+        } else {
+          history.push({
+            role: ChatMessageRole.Function,
+            name: part.content.function.name,
+            content: part.content.result || '',
+            tool_call_id: part.content.id,
+          });
+        }
+      }
+    }
+    return history;
+  }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
     const msg = message;
