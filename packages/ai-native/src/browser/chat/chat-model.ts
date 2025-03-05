@@ -88,6 +88,7 @@ export class ChatResponseModel extends Disposable {
       isComplete: boolean;
       isCanceled: boolean;
       responseContents: IChatProgressResponseContent[];
+      responseParts: IChatProgressResponseContent[];
       responseText: string;
       errorDetails: IChatResponseErrorDetails | undefined;
       followups: IChatFollowup[] | undefined;
@@ -97,6 +98,7 @@ export class ChatResponseModel extends Disposable {
     this.#requestId = requestId;
     if (initParams) {
       this.#responseContents = initParams.responseContents;
+      this.#responseParts = initParams.responseParts;
       this.#responseText = initParams.responseText;
       this.#isComplete = initParams.isComplete;
       this.#isCanceled = initParams.isCanceled;
@@ -241,6 +243,7 @@ export class ChatResponseModel extends Disposable {
       isCanceled: this.isCanceled,
       responseContents: this.responseContents,
       responseText: this.responseText,
+      responseParts: this.responseParts,
       errorDetails: this.errorDetails,
       followups: this.followups,
     };
@@ -306,22 +309,33 @@ export class ChatModel extends Disposable implements IChatModel {
         continue;
       }
       history.push({ role: ChatMessageRole.User, content: request.message.prompt });
-      for (let i = 0; i < request.response.responseParts.length; i++) {
-        const part = request.response.responseParts[i];
+      for (const part of request.response.responseParts) {
         if (part.kind === 'treeData' || part.kind === 'component') {
           continue;
         }
         if (part.kind !== 'toolCall') {
-          const assistantMessage: IChatMessage = {
+          history.push({
             role: ChatMessageRole.Assistant,
-            content: part.content.toString(),
-          };
-          if (request.response.responseParts[i + 1].kind === 'toolCall') {
-            assistantMessage.tool_calls = [(request.response.responseParts[i + 1] as IChatToolContent).content];
-            i++;
-          }
-          history.push(assistantMessage);
+            content: part.kind === 'markdownContent' ? part.content.value : part.content,
+          });
         } else {
+          // 直接开始toolCall场景
+          if (history[history.length - 1].role !== ChatMessageRole.Assistant) {
+            history.push({
+              role: ChatMessageRole.Assistant,
+              content: '\n\n',
+            });
+          }
+          history[history.length - 1].tool_calls = [
+            {
+              type: 'function',
+              id: part.content.id,
+              function: {
+                name: part.content.function.name,
+                arguments: part.content.function.arguments || '',
+              },
+            },
+          ];
           history.push({
             role: ChatMessageRole.Function,
             name: part.content.function.name,

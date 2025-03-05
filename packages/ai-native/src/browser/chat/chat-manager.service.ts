@@ -30,6 +30,7 @@ interface ISessionModel {
       isCanceled: boolean;
       responseText: string;
       responseContents: IChatProgressResponseContent[];
+      responseParts: IChatProgressResponseContent[];
       errorDetails: IChatResponseErrorDetails | undefined;
       followups: IChatFollowup[];
     };
@@ -73,6 +74,7 @@ export class ChatManagerService extends Disposable {
               responseContents: request.response.responseContents,
               isComplete: true,
               responseText: request.response.responseText,
+              responseParts: request.response.responseParts,
               errorDetails: request.response.errorDetails,
               followups: request.response.followups,
               isCanceled: request.response.isCanceled,
