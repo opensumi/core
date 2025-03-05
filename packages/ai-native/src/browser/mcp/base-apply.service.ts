@@ -150,7 +150,8 @@ export abstract class BaseApplyService extends WithEventBus {
     ) {
       return;
     }
-    const filePendingApplies = this.getUriPendingCodeBlocks(event.payload.resource.uri) || [];
+    const filePendingApplies =
+      this.getUriCodeBlocks(event.payload.resource.uri)?.filter((block) => block.status === 'pending') || [];
     // 使用最后一个版本内容渲染 apply 内容
     if (filePendingApplies.length > 0 && filePendingApplies[0].updatedCode) {
       const editor = event.payload.group.codeEditor.monacoEditor;
@@ -167,13 +168,13 @@ export abstract class BaseApplyService extends WithEventBus {
   }
 
   /**
-   * 获取指定uri的pending code block，按version降序排序
+   * 获取指定uri的 code block，按version降序排序
    */
-  getUriPendingCodeBlocks(uri: URI): CodeBlockData[] | undefined {
+  getUriCodeBlocks(uri: URI): CodeBlockData[] | undefined {
     const sessionCodeBlocks = this.getSessionCodeBlocks();
     const relativePath = path.relative(this.appConfig.workspaceDir, uri.path.toString());
     return sessionCodeBlocks
-      .filter((block) => block.status === 'pending' && block.relativePath === relativePath)
+      .filter((block) => block.relativePath === relativePath)
       .sort((a, b) => b.version - a.version);
   }
 
@@ -226,7 +227,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
   async registerCodeBlock(relativePath: string, content: string, toolCallId: string): Promise<CodeBlockData> {
     const lastMessageId = this.chatInternalService.sessionModel.history.lastMessageId!;
-    const savedCodeBlockMap = this.getMessageCodeBlocks(lastMessageId) || {};
+    const uriCodeBlocks = this.getUriCodeBlocks(URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
     const originalModelRef = await this.editorDocumentModelService.createModelReference(
       URI.file(path.join(this.appConfig.workspaceDir, relativePath)),
     );
@@ -242,10 +243,9 @@ export abstract class BaseApplyService extends WithEventBus {
       // TODO: 支持range
       originalCode: originalModelRef.instance.getText(),
     };
-    const samePathCodeBlocks = Object.values(savedCodeBlockMap).filter((block) => block.relativePath === relativePath);
-    if (samePathCodeBlocks.length > 0) {
-      newBlock.version = samePathCodeBlocks.length;
-      for (const block of samePathCodeBlocks.sort((a, b) => a.version - b.version)) {
+    if (uriCodeBlocks?.length) {
+      newBlock.version = uriCodeBlocks.length;
+      for (const block of uriCodeBlocks) {
         // 如果连续的上一个同文件apply结果存在LintError，则iterationCount++
         if (block.relativePath === relativePath && block.applyResult?.diagnosticInfos?.length) {
           newBlock.iterationCount++;
@@ -254,6 +254,7 @@ export abstract class BaseApplyService extends WithEventBus {
         }
       }
     }
+    const savedCodeBlockMap = this.getMessageCodeBlocks(lastMessageId) || {};
     savedCodeBlockMap[toolCallId] = newBlock;
     this.chatInternalService.sessionModel.history.setMessageAdditional(lastMessageId, {
       codeBlockMap: savedCodeBlockMap,
@@ -339,7 +340,7 @@ export abstract class BaseApplyService extends WithEventBus {
         editor.getModel()?.pushEditOperations([], [EditOperation.replace(range, updatedContentOrStream)], () => null);
         await this.editorService.save(uri);
       }
-      const uriPendingCodeBlocks = this.getUriPendingCodeBlocks(uri);
+      const uriPendingCodeBlocks = this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending');
       const earlistPendingCodeBlock = uriPendingCodeBlocks?.[uriPendingCodeBlocks.length - 1];
       if ((earlistPendingCodeBlock?.originalCode || codeBlock.originalCode) === updatedContentOrStream) {
         codeBlock.status = 'cancelled';
@@ -477,7 +478,7 @@ export abstract class BaseApplyService extends WithEventBus {
   }
 
   processAll(uri: URI, type: 'accept' | 'reject'): void {
-    const codeBlocks = this.getUriPendingCodeBlocks(uri);
+    const codeBlocks = this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending');
     if (!codeBlocks?.length) {
       throw new Error('No pending code block found');
     }

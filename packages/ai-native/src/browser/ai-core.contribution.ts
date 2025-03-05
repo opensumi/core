@@ -605,7 +605,7 @@ export class AINativeBrowserContribution
       id: INLINE_DIFF_MANAGER_WIDGET_ID,
       component: InlineDiffManager,
       displaysOnResource: (resource) => {
-        if (this.applyService.getUriPendingCodeBlocks(resource.uri)?.length) {
+        if (this.applyService.getUriCodeBlocks(resource.uri)?.filter((block) => block.status === 'pending').length) {
           return true;
         }
         return false;
