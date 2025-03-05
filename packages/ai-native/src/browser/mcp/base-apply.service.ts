@@ -95,7 +95,7 @@ export abstract class BaseApplyService extends WithEventBus {
       }),
     );
     this.addDispose(
-      this.chatInternalService.onClearSession((sessionId) => {
+      this.chatInternalService.onWillClearSession((sessionId) => {
         this.cancelAllApply(sessionId);
       }),
     );
@@ -169,10 +169,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
   getPendingPaths(sessionId?: string): string[] {
     const sessionCodeBlocks = this.getSessionCodeBlocks(sessionId);
-    return sessionCodeBlocks
-      .filter((block) => block.status === 'pending')
-      .map((block) => block.relativePath)
-      .filter((path, index, self) => self.indexOf(path) === index);
+    return sessionCodeBlocks.filter((block) => block.status === 'pending').map((block) => block.relativePath);
   }
 
   protected getSessionCodeBlocks(sessionId?: string) {
@@ -287,6 +284,11 @@ export abstract class BaseApplyService extends WithEventBus {
       if (!result) {
         throw new Error('Failed to open file');
       }
+      if (typeof fastApplyFileResult.result === 'string') {
+        codeBlock.updatedCode = fastApplyFileResult.result;
+        codeBlock.status = 'pending';
+        this.updateCodeBlock(codeBlock);
+      }
       const applyResult = await this.renderApplyResult(
         result.group.codeEditor.monacoEditor,
         codeBlock,
@@ -346,9 +348,6 @@ export abstract class BaseApplyService extends WithEventBus {
         },
       ) as LiveInlineDiffPreviewer;
       this.activePreviewerMap.set(codeBlock.relativePath, previewer);
-      codeBlock.updatedCode = updatedContentOrStream;
-      codeBlock.status = 'pending';
-      this.updateCodeBlock(codeBlock);
       // 新建文件场景，为避免model为空，加一个空行
       previewer.setValue(earlistPendingCodeBlock?.originalCode || codeBlock.originalCode || '\n');
       // 强刷展示 manager 视图
@@ -364,7 +363,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
       const { diff, rangesFromDiffHunk } = this.getDiffResult(
         codeBlock.originalCode,
-        codeBlock.updatedCode,
+        codeBlock.updatedCode || updatedContentOrStream,
         codeBlock.relativePath,
       );
       const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
@@ -408,6 +407,7 @@ export abstract class BaseApplyService extends WithEventBus {
             deferred.resolve();
             return;
           }
+          codeBlock.status = 'pending';
           this.updateCodeBlock(codeBlock);
           previewer.dispose();
           const result = await this.renderApplyResult(editor, codeBlock, codeBlock.updatedCode);
@@ -424,6 +424,10 @@ export abstract class BaseApplyService extends WithEventBus {
    */
   cancelApply(blockData: CodeBlockData, keepStatus?: boolean): void {
     if (blockData.status === 'generating' || blockData.status === 'pending') {
+      // 先取消掉相关的监听器
+      this.editorListenerMap.disposeKey(
+        URI.file(path.join(this.appConfig.workspaceDir, blockData.relativePath)).toString(),
+      );
       if (this.activePreviewerMap.has(blockData.relativePath)) {
         this.activePreviewerMap
           .get(blockData.relativePath)

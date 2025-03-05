@@ -30,8 +30,8 @@ export class ChatInternalService extends Disposable {
   private readonly _onCancelRequest = new Emitter<void>();
   public readonly onCancelRequest: Event<void> = this._onCancelRequest.event;
 
-  private readonly _onClearSession = new Emitter<string>();
-  public readonly onClearSession: Event<string> = this._onClearSession.event;
+  private readonly _onWillClearSession = new Emitter<string>();
+  public readonly onWillClearSession: Event<string> = this._onWillClearSession.event;
 
   private readonly _onRegenerateRequest = new Emitter<void>();
   public readonly onRegenerateRequest: Event<void> = this._onRegenerateRequest.event;
@@ -86,11 +86,11 @@ export class ChatInternalService extends Disposable {
 
   clearSessionModel(sessionId?: string) {
     sessionId = sessionId || this.#sessionModel.sessionId;
+    this._onWillClearSession.fire(sessionId);
     this.chatManagerService.clearSession(sessionId);
     if (sessionId === this.#sessionModel.sessionId) {
       this.#sessionModel = this.chatManagerService.startSession();
     }
-    this._onClearSession.fire(sessionId);
     this._onChangeSession.fire(this.#sessionModel.sessionId);
   }
 
