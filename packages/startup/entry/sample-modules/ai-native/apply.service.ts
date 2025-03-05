@@ -53,7 +53,7 @@ export class ApplyService extends BaseApplyService {
     Provide the complete updated code.
     <updated-code>`,
       {
-        model: 'openai',
+        model: 'openai-compatible',
         modelId: 'qwen-turbo',
         baseURL,
         apiKey,

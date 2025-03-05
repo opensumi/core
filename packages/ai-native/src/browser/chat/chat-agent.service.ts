@@ -165,7 +165,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   private provideContextMessage(message: string, sessionId: string) {
     const context = this.contextService.serialize();
     const fullMessage = this.promptProvider.provideContextPrompt(context, message);
-    this.aiReporter.record({
+    this.aiReporter.send({
       msgType: AIServiceType.Chat,
       actionType: ActionTypeEnum.ContextEnhance,
       actionSource: ActionSourceEnum.Chat,
