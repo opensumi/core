@@ -99,7 +99,7 @@ export class ChatResponseModel extends Disposable {
     this.#requestId = requestId;
     if (initParams) {
       this.#responseContents = initParams.responseContents;
-      this.#responseParts = initParams.responseParts;
+      this.#responseParts = initParams.responseParts || [];
       this.#responseText = initParams.responseText;
       this.#isComplete = initParams.isComplete;
       this.#isCanceled = initParams.isCanceled;
