@@ -4,7 +4,6 @@ import { CodeBlockData } from '@opensumi/ide-ai-native/lib/common/types';
 import {
   AIBackSerivcePath,
   AINativeSettingSectionsId,
-  ChatMessageRole,
   IAIBackService,
   IApplicationService,
   IChatProgress,
@@ -61,9 +60,7 @@ export class ApplyService extends BaseApplyService {
         trimTexts: ['<updated-code>', '</updated-code>'],
         history: [
           {
-            id: 'system',
-            order: 0,
-            role: ChatMessageRole.System,
+            role: 'system',
             content:
               'You are a coding assistant that helps merge code updates, ensuring every modification is fully integrated.',
           },

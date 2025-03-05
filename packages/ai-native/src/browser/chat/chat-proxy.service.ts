@@ -15,12 +15,12 @@ import {
   getOperatingSystemName,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import {
+  CoreMessage,
   IChatAgentCommand,
   IChatAgentRequest,
   IChatAgentResult,
@@ -99,7 +99,7 @@ export class ChatProxyService extends Disposable {
         invoke: async (
           request: IChatAgentRequest,
           progress: (part: IChatProgress) => void,
-          history: IChatMessage[],
+          history: CoreMessage[],
           token: CancellationToken,
         ): Promise<IChatAgentResult> => {
           this.chatDeferred = new Deferred<void>();

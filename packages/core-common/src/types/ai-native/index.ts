@@ -5,6 +5,8 @@ import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
 import { IAIReportCompletionOption } from './reporter';
+
+import type { CoreMessage } from 'ai';
 export * from './reporter';
 
 export interface IAINativeCapabilities {
@@ -169,7 +171,7 @@ export interface IAIBackServiceOption {
   type?: string;
   requestId?: string;
   sessionId?: string;
-  history?: IChatMessage[];
+  history?: CoreMessage[];
   tools?: any[];
   clientId?: string;
   apiKey?: string;
@@ -411,8 +413,6 @@ export interface IChatMessage {
   role: ChatMessageRole;
   content: string;
   name?: string;
-  tool_calls?: IChatToolCall[];
-  tool_call_id?: string;
 }
 
 export const enum ChatMessageRole {
@@ -421,6 +421,13 @@ export const enum ChatMessageRole {
   Assistant,
   Function,
 }
+
+export const CoreMessgaeRoleMap = {
+  system: ChatMessageRole.System,
+  user: ChatMessageRole.User,
+  tool: ChatMessageRole.Function,
+  assistant: ChatMessageRole.Assistant,
+};
 
 export interface IHistoryChatMessage extends IChatMessage {
   id: string;

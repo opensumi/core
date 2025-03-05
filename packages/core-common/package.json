@@ -18,6 +18,7 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
   "dependencies": {
+    "ai": "^4.1.45",
     "@opensumi/di": "^1.8.0",
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-utils": "workspace:*"

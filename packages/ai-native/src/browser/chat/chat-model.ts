@@ -1,12 +1,10 @@
 import { Injectable } from '@opensumi/di';
 import {
-  ChatMessageRole,
   Disposable,
   Emitter,
   IChatAsyncContent,
   IChatComponent,
   IChatMarkdownContent,
-  IChatMessage,
   IChatProgress,
   IChatToolContent,
   IChatTreeData,
@@ -15,6 +13,7 @@ import {
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
+  CoreMessage,
   IChatFollowup,
   IChatModel,
   IChatRequestMessage,
@@ -26,6 +25,8 @@ import {
 } from '../../common';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
+
+import type { TextPart, ToolCallPart } from 'ai';
 
 export type IChatProgressResponseContent =
   | IChatMarkdownContent
@@ -303,44 +304,50 @@ export class ChatModel extends Disposable implements IChatModel {
   readonly history: MsgHistoryManager;
 
   get messageHistory() {
-    const history: IChatMessage[] = [];
+    const history: CoreMessage[] = [];
     for (const request of this.requests) {
       if (!request.response.isComplete) {
         continue;
       }
-      history.push({ role: ChatMessageRole.User, content: request.message.prompt });
+      history.push({ role: 'user', content: request.message.prompt });
       for (const part of request.response.responseParts) {
         if (part.kind === 'treeData' || part.kind === 'component') {
           continue;
         }
         if (part.kind !== 'toolCall') {
           history.push({
-            role: ChatMessageRole.Assistant,
-            content: part.kind === 'markdownContent' ? part.content.value : part.content,
+            role: 'assistant',
+            content: [
+              {
+                type: 'text',
+                text: part.kind === 'markdownContent' ? part.content.value : part.content,
+              },
+            ],
           });
         } else {
           // 直接开始toolCall场景
-          if (history[history.length - 1].role !== ChatMessageRole.Assistant) {
+          if (history[history.length - 1].role !== 'assistant') {
             history.push({
-              role: ChatMessageRole.Assistant,
-              content: '\n\n',
+              role: 'assistant',
+              content: [],
             });
           }
-          history[history.length - 1].tool_calls = [
-            {
-              type: 'function',
-              id: part.content.id,
-              function: {
-                name: part.content.function.name,
-                arguments: part.content.function.arguments || '',
-              },
-            },
-          ];
+          (history[history.length - 1].content as Array<TextPart | ToolCallPart>).push({
+            type: 'tool-call',
+            toolCallId: part.content.id,
+            toolName: part.content.function.name,
+            args: JSON.parse(part.content.function.arguments || '{}'),
+          });
           history.push({
-            role: ChatMessageRole.Function,
-            name: part.content.function.name,
-            content: part.content.result || '',
-            tool_call_id: part.content.id,
+            role: 'tool',
+            content: [
+              {
+                type: 'tool-result',
+                toolCallId: part.content.id,
+                toolName: part.content.function.name,
+                result: JSON.parse(part.content.result || '{}'),
+              },
+            ],
           });
         }
       }
