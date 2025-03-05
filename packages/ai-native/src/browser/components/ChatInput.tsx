@@ -16,11 +16,18 @@ import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { IDialogService } from '@opensumi/ide-overlay';
 
-import { AT_SIGN_SYMBOL, IChatAgentService, SLASH_SYMBOL, TokenMCPServerProxyService } from '../../common';
+import {
+  AT_SIGN_SYMBOL,
+  IChatAgentService,
+  IChatInternalService,
+  SLASH_SYMBOL,
+  TokenMCPServerProxyService,
+} from '../../common';
 import { ChatAgentViewService } from '../chat/chat-agent.view.service';
 import { ChatSlashCommandItemModel } from '../chat/chat-model';
 import { ChatProxyService } from '../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
+import { ChatInternalService } from '../chat/chat.internal.service';
 import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
 import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
@@ -204,7 +211,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const [showExpand, setShowExpand] = useState(false);
   const [isExpand, setIsExpand] = useState(false);
   const [placeholder, setPlaceHolder] = useState(localize('aiNative.chat.input.placeholder.default'));
-
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
@@ -322,6 +329,10 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     if (onValueChange) {
       onValueChange(value);
     }
+  }, []);
+
+  const handleStop = useCallback(() => {
+    aiChatService.cancelRequest();
   }, []);
 
   const handleSend = useCallback(async () => {
@@ -484,6 +495,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         disabled={disabled}
         className={styles.input_wrapper}
         onSend={handleSend}
+        onStop={handleStop}
         sendBtnClassName={sendBtnClassName}
         onHeightChange={handleHeightChange}
         height={inputHeight}

@@ -18,14 +18,12 @@ interface ITinkingProps {
   message?: string;
   onRegenerate?: () => void;
   requestId?: string;
-  onStop?: () => void;
   thinkingText?: string;
-  showStop?: boolean;
   showRegenerate?: boolean;
 }
 
 export const ChatThinking = (props: ITinkingProps) => {
-  const { children, message, onStop, showStop = true, thinkingText } = props;
+  const { children, message, thinkingText } = props;
 
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
@@ -33,10 +31,6 @@ export const ChatThinking = (props: ITinkingProps) => {
     () => chatRenderRegistry.chatThinkingRender,
     [chatRenderRegistry, chatRenderRegistry.chatThinkingRender],
   );
-
-  const handlePause = useCallback(async () => {
-    onStop && onStop();
-  }, []);
 
   const renderContent = useCallback(() => {
     if (!children || !message?.trim()) {
@@ -61,12 +55,12 @@ export const ChatThinking = (props: ITinkingProps) => {
               {!children && <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />}
             </span>
           )}
-          {showStop && (
+          {/* {showStop && (
             <div className={styles.block} onClick={handlePause} tabIndex={0} role='button'>
               <Icon className={getIcon('circle-pause')}></Icon>
               <span>{localize('aiNative.operate.stop.title')}</span>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </>

@@ -355,11 +355,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   }, [request.response.followups]);
 
   if (!request.response.isComplete) {
-    return (
-      <ChatThinking message={request.response.responseText} onStop={onStop}>
-        {contentNode}
-      </ChatThinking>
-    );
+    return <ChatThinking message={request.response.responseText}>{contentNode}</ChatThinking>;
   }
 
   return (
