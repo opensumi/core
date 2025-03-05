@@ -605,7 +605,10 @@ export class AINativeBrowserContribution
       id: INLINE_DIFF_MANAGER_WIDGET_ID,
       component: InlineDiffManager,
       displaysOnResource: (resource) => {
-        if (this.applyService.getUriCodeBlocks(resource.uri)?.filter((block) => block.status === 'pending').length) {
+        if (
+          this.aiNativeConfigService.capabilities.supportsMCP &&
+          this.applyService.getUriCodeBlocks(resource.uri)?.filter((block) => block.status === 'pending').length
+        ) {
           return true;
         }
         return false;
