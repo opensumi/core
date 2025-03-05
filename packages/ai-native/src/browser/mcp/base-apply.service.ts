@@ -69,7 +69,17 @@ export abstract class BaseApplyService extends WithEventBus {
     super();
     this.addDispose(
       this.chatInternalService.onCancelRequest(() => {
-        this.cancelAllApply();
+        const currentMessageId = this.chatInternalService.sessionModel.history.lastMessageId;
+        if (!currentMessageId) {
+          return;
+        }
+        const codeBlockMap = this.getMessageCodeBlocks(currentMessageId);
+        if (!codeBlockMap) {
+          return;
+        }
+        Object.values(codeBlockMap).forEach((blockData) => {
+          this.cancelApply(blockData);
+        });
       }),
     );
     this.currentSessionId = this.chatInternalService.sessionModel.sessionId;
@@ -94,6 +104,11 @@ export abstract class BaseApplyService extends WithEventBus {
         });
       }),
     );
+    this.addDispose(
+      this.chatInternalService.onWillClearSession((sessionId) => {
+        this.cancelAllApply(sessionId);
+      }),
+    );
   }
 
   private getMessageCodeBlocks(
@@ -107,27 +122,6 @@ export abstract class BaseApplyService extends WithEventBus {
     }
     const message = sessionModel.history.getMessageAdditional(messageId);
     return message?.codeBlockMap;
-  }
-
-  private getSessionCodeBlocksForPath(relativePath: string, sessionId?: string) {
-    sessionId = sessionId || this.chatInternalService.sessionModel.sessionId;
-    const sessionModel = this.chatInternalService.getSession(sessionId);
-    if (!sessionModel) {
-      throw new Error(`Session ${sessionId} not found`);
-    }
-    const sessionAdditionals = sessionModel.history.sessionAdditionals;
-    const codeBlocks: CodeBlockData[] = Array.from(sessionAdditionals.values())
-      .map((additional) => additional.codeBlockMap as { [toolCallId: string]: CodeBlockData })
-      .reduce((acc, cur) => {
-        Object.values(cur).forEach((block) => {
-          if (block.relativePath === relativePath) {
-            acc.push(block);
-          }
-        });
-        return acc;
-      }, [] as CodeBlockData[])
-      .sort((a, b) => b.version - a.version);
-    return codeBlocks;
   }
 
   private activePreviewerMap = this.registerDispose(
@@ -156,10 +150,9 @@ export abstract class BaseApplyService extends WithEventBus {
     ) {
       return;
     }
-    const filePendingApplies = Object.values(
-      this.getMessageCodeBlocks(this.chatInternalService.sessionModel.history.lastMessageId!) || {},
-    ).filter((block) => block.relativePath === relativePath && block.status === 'pending');
-    // TODO: 刷新后重新应用，事件无法恢复 & 恢复继续请求，需要改造成批量apply形式
+    const filePendingApplies =
+      this.getUriCodeBlocks(event.payload.resource.uri)?.filter((block) => block.status === 'pending') || [];
+    // 使用最后一个版本内容渲染 apply 内容
     if (filePendingApplies.length > 0 && filePendingApplies[0].updatedCode) {
       const editor = event.payload.group.codeEditor.monacoEditor;
       this.renderApplyResult(editor, filePendingApplies[0], filePendingApplies[0].updatedCode);
@@ -174,23 +167,23 @@ export abstract class BaseApplyService extends WithEventBus {
     return this.activePreviewerMap.get(path.relative(this.appConfig.workspaceDir, currentUri.path.toString()));
   }
 
-  getUriPendingCodeBlock(uri: URI): CodeBlockData | undefined {
-    const messageId = this.chatInternalService.sessionModel.history.lastMessageId;
-    if (!messageId) {
-      return undefined;
-    }
-    const codeBlockMap = this.getMessageCodeBlocks(messageId);
-    if (!codeBlockMap) {
-      return undefined;
-    }
-    return Object.values(codeBlockMap).find(
-      (block) =>
-        block.relativePath === path.relative(this.appConfig.workspaceDir, uri.path.toString()) &&
-        block.status === 'pending',
-    );
+  /**
+   * 获取指定uri的 code block，按version降序排序
+   */
+  getUriCodeBlocks(uri: URI): CodeBlockData[] | undefined {
+    const sessionCodeBlocks = this.getSessionCodeBlocks();
+    const relativePath = path.relative(this.appConfig.workspaceDir, uri.path.toString());
+    return sessionCodeBlocks
+      .filter((block) => block.relativePath === relativePath)
+      .sort((a, b) => b.version - a.version);
   }
 
   getPendingPaths(sessionId?: string): string[] {
+    const sessionCodeBlocks = this.getSessionCodeBlocks(sessionId);
+    return sessionCodeBlocks.filter((block) => block.status === 'pending').map((block) => block.relativePath);
+  }
+
+  protected getSessionCodeBlocks(sessionId?: string) {
     sessionId = sessionId || this.chatInternalService.sessionModel.sessionId;
     const sessionModel = this.chatInternalService.getSession(sessionId);
     if (!sessionModel) {
@@ -198,15 +191,13 @@ export abstract class BaseApplyService extends WithEventBus {
     }
     const sessionAdditionals = sessionModel.history.sessionAdditionals;
     return Array.from(sessionAdditionals.values())
-      .map((additional) => additional.codeBlockMap as { [toolCallId: string]: CodeBlockData })
+      .map((additional) => (additional.codeBlockMap || {}) as { [toolCallId: string]: CodeBlockData })
       .reduce((acc, cur) => {
         Object.values(cur).forEach((block) => {
-          if (block.status === 'pending' && !acc.includes(block.relativePath)) {
-            acc.push(block.relativePath);
-          }
+          acc.push(block);
         });
         return acc;
-      }, [] as string[]);
+      }, [] as CodeBlockData[]);
   }
 
   getCodeBlock(toolCallId: string, messageId?: string): CodeBlockData | undefined {
@@ -221,11 +212,8 @@ export abstract class BaseApplyService extends WithEventBus {
     return codeBlockMap[toolCallId];
   }
 
-  protected updateCodeBlock(codeBlock: CodeBlockData, messageId?: string) {
-    messageId = messageId || this.chatInternalService.sessionModel.history.lastMessageId;
-    if (!messageId) {
-      throw new Error('Message ID is required');
-    }
+  protected updateCodeBlock(codeBlock: CodeBlockData) {
+    const messageId = codeBlock.messageId;
     const codeBlockMap = this.getMessageCodeBlocks(messageId);
     if (!codeBlockMap) {
       throw new Error('Code block not found');
@@ -239,7 +227,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
   async registerCodeBlock(relativePath: string, content: string, toolCallId: string): Promise<CodeBlockData> {
     const lastMessageId = this.chatInternalService.sessionModel.history.lastMessageId!;
-    const savedCodeBlockMap = this.getMessageCodeBlocks(lastMessageId) || {};
+    const uriCodeBlocks = this.getUriCodeBlocks(URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
     const originalModelRef = await this.editorDocumentModelService.createModelReference(
       URI.file(path.join(this.appConfig.workspaceDir, relativePath)),
     );
@@ -251,13 +239,13 @@ export abstract class BaseApplyService extends WithEventBus {
       version: 1,
       createdAt: Date.now(),
       toolCallId,
+      messageId: lastMessageId,
       // TODO: 支持range
       originalCode: originalModelRef.instance.getText(),
     };
-    const samePathCodeBlocks = Object.values(savedCodeBlockMap).filter((block) => block.relativePath === relativePath);
-    if (samePathCodeBlocks.length > 0) {
-      newBlock.version = samePathCodeBlocks.length;
-      for (const block of samePathCodeBlocks.sort((a, b) => a.version - b.version)) {
+    if (uriCodeBlocks?.length) {
+      newBlock.version = uriCodeBlocks.length;
+      for (const block of uriCodeBlocks) {
         // 如果连续的上一个同文件apply结果存在LintError，则iterationCount++
         if (block.relativePath === relativePath && block.applyResult?.diagnosticInfos?.length) {
           newBlock.iterationCount++;
@@ -266,6 +254,7 @@ export abstract class BaseApplyService extends WithEventBus {
         }
       }
     }
+    const savedCodeBlockMap = this.getMessageCodeBlocks(lastMessageId) || {};
     savedCodeBlockMap[toolCallId] = newBlock;
     this.chatInternalService.sessionModel.history.setMessageAdditional(lastMessageId, {
       codeBlockMap: savedCodeBlockMap,
@@ -296,15 +285,20 @@ export abstract class BaseApplyService extends WithEventBus {
       }
 
       if (this.activePreviewerMap.has(codeBlock.relativePath)) {
-        this.activePreviewerMap.disposeKey(codeBlock.relativePath);
+        // 有正在进行的 apply，则取消（但不更新block状态，只清理副作用）
+        this.cancelApply(codeBlock, true);
       }
-      // FIXME: 同一个bubble单个文件多次写入（如迭代）兼容
       // trigger diffPreivewer & return expected diff result directly
       const result = await this.editorService.open(
         URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)),
       );
       if (!result) {
         throw new Error('Failed to open file');
+      }
+      if (typeof fastApplyFileResult.result === 'string') {
+        codeBlock.updatedCode = fastApplyFileResult.result;
+        codeBlock.status = 'pending';
+        this.updateCodeBlock(codeBlock);
       }
       const applyResult = await this.renderApplyResult(
         result.group.codeEditor.monacoEditor,
@@ -340,16 +334,14 @@ export abstract class BaseApplyService extends WithEventBus {
 
     if (typeof updatedContentOrStream === 'string') {
       const editorCurrentContent = editor.getModel()!.getValue();
-      const document = this.editorDocumentModelService.getModelReference(
-        URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)),
-      );
+      const uri = URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath));
+      const document = this.editorDocumentModelService.getModelReference(uri);
       if (editorCurrentContent !== updatedContentOrStream || document?.instance.dirty) {
         editor.getModel()?.pushEditOperations([], [EditOperation.replace(range, updatedContentOrStream)], () => null);
-        await this.editorService.save(URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)));
+        await this.editorService.save(uri);
       }
-      const earlistPendingCodeBlock = this.getSessionCodeBlocksForPath(codeBlock.relativePath).find(
-        (block) => block.status === 'pending',
-      );
+      const uriPendingCodeBlocks = this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending');
+      const earlistPendingCodeBlock = uriPendingCodeBlocks?.[uriPendingCodeBlocks.length - 1];
       if ((earlistPendingCodeBlock?.originalCode || codeBlock.originalCode) === updatedContentOrStream) {
         codeBlock.status = 'cancelled';
         this.updateCodeBlock(codeBlock);
@@ -367,9 +359,6 @@ export abstract class BaseApplyService extends WithEventBus {
         },
       ) as LiveInlineDiffPreviewer;
       this.activePreviewerMap.set(codeBlock.relativePath, previewer);
-      codeBlock.updatedCode = updatedContentOrStream;
-      codeBlock.status = 'pending';
-      this.updateCodeBlock(codeBlock);
       // 新建文件场景，为避免model为空，加一个空行
       previewer.setValue(earlistPendingCodeBlock?.originalCode || codeBlock.originalCode || '\n');
       // 强刷展示 manager 视图
@@ -385,7 +374,7 @@ export abstract class BaseApplyService extends WithEventBus {
 
       const { diff, rangesFromDiffHunk } = this.getDiffResult(
         codeBlock.originalCode,
-        codeBlock.updatedCode,
+        codeBlock.updatedCode || updatedContentOrStream,
         codeBlock.relativePath,
       );
       const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
@@ -405,6 +394,17 @@ export abstract class BaseApplyService extends WithEventBus {
           renderRemovedWidgetImmediately: false,
         },
       }) as LiveInlineDiffPreviewer;
+
+      this.addDispose(
+        controller.onError((err) => {
+          deferred.reject(err);
+        }),
+      );
+      this.addDispose(
+        controller.onAbort(() => {
+          deferred.reject(new Error('Apply aborted'));
+        }),
+      );
       this.addDispose(
         // 流式输出结束后，转为直接输出逻辑
         previewer.getNode()!.onDiffFinished(async (diffModel) => {
@@ -418,6 +418,7 @@ export abstract class BaseApplyService extends WithEventBus {
             deferred.resolve();
             return;
           }
+          codeBlock.status = 'pending';
           this.updateCodeBlock(codeBlock);
           previewer.dispose();
           const result = await this.renderApplyResult(editor, codeBlock, codeBlock.updatedCode);
@@ -432,8 +433,12 @@ export abstract class BaseApplyService extends WithEventBus {
   /**
    * Cancel an ongoing apply operation
    */
-  cancelApply(blockData: CodeBlockData): void {
+  cancelApply(blockData: CodeBlockData, keepStatus?: boolean): void {
     if (blockData.status === 'generating' || blockData.status === 'pending') {
+      // 先取消掉相关的监听器
+      this.editorListenerMap.disposeKey(
+        URI.file(path.join(this.appConfig.workspaceDir, blockData.relativePath)).toString(),
+      );
       if (this.activePreviewerMap.has(blockData.relativePath)) {
         this.activePreviewerMap
           .get(blockData.relativePath)
@@ -441,19 +446,16 @@ export abstract class BaseApplyService extends WithEventBus {
           ?.livePreviewDiffDecorationModel.discardUnProcessed();
         this.activePreviewerMap.disposeKey(blockData.relativePath);
       }
-      blockData.status = 'cancelled';
-      this.updateCodeBlock(blockData);
+      if (!keepStatus) {
+        blockData.status = 'cancelled';
+        this.updateCodeBlock(blockData);
+      }
     }
   }
 
-  // TODO: 目前的设计下，有一个工具 apply 没返回，是不会触发下一个的(cursor 是会全部自动 apply 的），所以这个方法目前还没有必要
-  cancelAllApply(): void {
-    const messageId = this.chatInternalService.sessionModel.history.lastMessageId!;
-    const codeBlockMap = this.getMessageCodeBlocks(messageId);
-    if (!codeBlockMap) {
-      return;
-    }
-    Object.values(codeBlockMap).forEach((blockData) => {
+  cancelAllApply(sessionId?: string): void {
+    const sessionCodeBlocks = this.getSessionCodeBlocks(sessionId);
+    sessionCodeBlocks.forEach((blockData) => {
       this.cancelApply(blockData);
     });
   }
@@ -476,12 +478,12 @@ export abstract class BaseApplyService extends WithEventBus {
   }
 
   processAll(uri: URI, type: 'accept' | 'reject'): void {
-    const codeBlock = this.getUriPendingCodeBlock(uri);
-    if (!codeBlock) {
+    const codeBlocks = this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending');
+    if (!codeBlocks?.length) {
       throw new Error('No pending code block found');
     }
     const decorationModel = this.activePreviewerMap
-      .get(codeBlock.relativePath)
+      .get(codeBlocks[0].relativePath)
       ?.getNode()?.livePreviewDiffDecorationModel;
     if (!decorationModel) {
       throw new Error('No active previewer found');
@@ -492,8 +494,11 @@ export abstract class BaseApplyService extends WithEventBus {
       decorationModel.discardUnProcessed();
     }
     this.editorService.save(uri);
-    codeBlock.status = type === 'accept' ? 'success' : 'cancelled';
-    this.updateCodeBlock(codeBlock);
+    codeBlocks.forEach((codeBlock) => {
+      codeBlock.status = type === 'accept' ? 'success' : 'cancelled';
+      // TODO: 批量更新
+      this.updateCodeBlock(codeBlock);
+    });
   }
 
   protected listenPartialEdit(model: ITextModel, codeBlock: CodeBlockData) {

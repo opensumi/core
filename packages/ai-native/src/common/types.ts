@@ -50,6 +50,7 @@ export interface MCPTool {
 }
 
 export interface CodeBlockData {
+  messageId: string;
   toolCallId: string;
   codeEdit: string;
   originalCode: string;
