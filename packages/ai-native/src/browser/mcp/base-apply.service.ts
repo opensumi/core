@@ -272,7 +272,8 @@ export abstract class BaseApplyService extends WithEventBus {
       }
 
       if (this.activePreviewerMap.has(codeBlock.relativePath)) {
-        this.activePreviewerMap.disposeKey(codeBlock.relativePath);
+        // 有正在进行的 apply，则取消（但不更新block状态，只清理副作用）
+        this.cancelApply(codeBlock, true);
       }
       // trigger diffPreivewer & return expected diff result directly
       const result = await this.editorService.open(
@@ -378,6 +379,17 @@ export abstract class BaseApplyService extends WithEventBus {
           renderRemovedWidgetImmediately: false,
         },
       }) as LiveInlineDiffPreviewer;
+
+      this.addDispose(
+        controller.onError((err) => {
+          deferred.reject(err);
+        }),
+      );
+      this.addDispose(
+        controller.onAbort(() => {
+          deferred.reject(new Error('Apply aborted'));
+        }),
+      );
       this.addDispose(
         // 流式输出结束后，转为直接输出逻辑
         previewer.getNode()!.onDiffFinished(async (diffModel) => {
@@ -405,7 +417,7 @@ export abstract class BaseApplyService extends WithEventBus {
   /**
    * Cancel an ongoing apply operation
    */
-  cancelApply(blockData: CodeBlockData): void {
+  cancelApply(blockData: CodeBlockData, keepStatus?: boolean): void {
     if (blockData.status === 'generating' || blockData.status === 'pending') {
       if (this.activePreviewerMap.has(blockData.relativePath)) {
         this.activePreviewerMap
@@ -414,8 +426,10 @@ export abstract class BaseApplyService extends WithEventBus {
           ?.livePreviewDiffDecorationModel.discardUnProcessed();
         this.activePreviewerMap.disposeKey(blockData.relativePath);
       }
-      blockData.status = 'cancelled';
-      this.updateCodeBlock(blockData);
+      if (!keepStatus) {
+        blockData.status = 'cancelled';
+        this.updateCodeBlock(blockData);
+      }
     }
   }
 
