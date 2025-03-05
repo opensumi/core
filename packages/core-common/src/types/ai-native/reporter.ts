@@ -205,6 +205,7 @@ export interface IAIReporter {
   record(data: ReportInfo, relationId?: string): ReportInfo;
   getRelationId(): string;
   // 返回关联 ID
-  start(msg: string, data: ReportInfo): string;
+  start(msg: string, data: ReportInfo, timeout?: number): string;
   end(relationId: string, data: ReportInfo): void;
+  send(data: ReportInfo): void;
 }

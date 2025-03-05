@@ -97,14 +97,12 @@ export class MCPServerRegistry implements IMCPServerRegistry {
     if (!tool) {
       throw new Error(`MCP tool ${name} not found`);
     }
-    this.aiReporter.record(
-      {
-        msgType: AIServiceType.ToolCall,
-        message: JSON.stringify({ args, name, result }),
-        messageId: this._activeMessageInfo.messageId,
-        sessionId: this._activeMessageInfo.sessionId,
-      },
-      toolCallId,
-    );
+    this.aiReporter.send({
+      msgType: AIServiceType.ToolCall,
+      message: JSON.stringify({ args, name, result }),
+      messageId: this._activeMessageInfo.messageId,
+      sessionId: this._activeMessageInfo.sessionId,
+      relationId: toolCallId,
+    });
   }
 }

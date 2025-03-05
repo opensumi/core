@@ -525,13 +525,18 @@ export const AIChatView = () => {
       const startTime = Date.now();
       const reportType = ChatProxyService.AGENT_ID === agentId ? AIServiceType.Chat : AIServiceType.Agent;
 
-      const relationId = aiReporter.start(command || reportType, {
-        agentId,
-        userMessage: message,
-        actionType,
-        actionSource,
-        sessionId: aiChatService.sessionModel.sessionId,
-      });
+      const relationId = aiReporter.start(
+        command || reportType,
+        {
+          agentId,
+          userMessage: message,
+          actionType,
+          actionSource,
+          sessionId: aiChatService.sessionModel.sessionId,
+        },
+        // 由于涉及 tool 调用，超时时间设置长一点
+        600 * 1000,
+      );
 
       msgHistoryManager.addUserMessage({
         content: message,

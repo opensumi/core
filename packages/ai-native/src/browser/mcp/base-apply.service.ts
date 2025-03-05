@@ -515,7 +515,7 @@ export abstract class BaseApplyService extends WithEventBus {
           );
           const diagnosticInfos = this.getDiagnosticInfos(model.uri.toString(), rangesFromDiffHunk);
           // 移除开头的几个固定信息，避免浪费 tokens
-          this.aiReporter.record({
+          this.aiReporter.send({
             msgType: AIServiceType.Chat,
             actionType: ActionTypeEnum.Accept,
             actionSource: ActionSourceEnum.Chat,
@@ -536,7 +536,7 @@ export abstract class BaseApplyService extends WithEventBus {
           // 用户全部取消
           codeBlock.status = 'cancelled';
           deferred.resolve();
-          this.aiReporter.record({
+          this.aiReporter.send({
             msgType: AIServiceType.Chat,
             actionType: ActionTypeEnum.Discard,
             actionSource: ActionSourceEnum.Chat,
