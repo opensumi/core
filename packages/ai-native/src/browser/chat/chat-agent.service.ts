@@ -155,7 +155,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
       request.message = this.provideContextMessage(rawMessage, request.sessionId);
     }
 
-    if (this.shouldUpdateContext) {
+    if (this.shouldUpdateContext || request.regenerate || history.length === 0) {
       request.message = this.provideContextMessage(request.message, request.sessionId);
       this.shouldUpdateContext = false;
     }
