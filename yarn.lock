@@ -3555,6 +3555,7 @@ __metadata:
     "@opensumi/events": "npm:^1.0.0"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
+    ai: "npm:^4.1.45"
   languageName: unknown
   linkType: soft
 
