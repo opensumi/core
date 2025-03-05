@@ -94,6 +94,11 @@ export abstract class BaseApplyService extends WithEventBus {
         });
       }),
     );
+    this.addDispose(
+      this.chatInternalService.onClearSession((sessionId) => {
+        this.cancelAllApply(sessionId);
+      }),
+    );
   }
 
   private getMessageCodeBlocks(
@@ -433,8 +438,8 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
-  cancelAllApply(): void {
-    const sessionCodeBlocks = this.getSessionCodeBlocks();
+  cancelAllApply(sessionId?: string): void {
+    const sessionCodeBlocks = this.getSessionCodeBlocks(sessionId);
     sessionCodeBlocks.forEach((blockData) => {
       this.cancelApply(blockData);
     });
