@@ -58,7 +58,10 @@ export class ApplyService extends BaseApplyService {
         baseURL,
         apiKey,
         clientId: this.applicationService.clientId,
-        trimTexts: ['<updated-code>', '</updated-code>'],
+        trimTextPairs: {
+          start: ['<updated-code>'],
+          end: ['</updated-code>'],
+        },
         history: [
           {
             id: 'system',

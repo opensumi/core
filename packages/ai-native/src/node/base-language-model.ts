@@ -60,7 +60,7 @@ export abstract class BaseLanguageModel {
       options.history || [],
       options.modelId,
       options.providerOptions,
-      options.trimTexts,
+      options.trimTextPairs,
       options.system,
       cancellationToken,
     );
@@ -88,7 +88,10 @@ export abstract class BaseLanguageModel {
     history: IChatMessage[] = [],
     modelId?: string,
     providerOptions?: Record<string, any>,
-    trimTexts?: [string, string],
+    trimTextPairs?: {
+      start?: string[];
+      end?: string[];
+    },
     systemPrompt?: string,
     cancellationToken?: CancellationToken,
   ): Promise<any> {
@@ -130,13 +133,14 @@ export abstract class BaseLanguageModel {
       const pendingLines: string[] = [];
       for await (const chunk of stream.fullStream) {
         if (chunk.type === 'text-delta') {
-          if (trimTexts?.length) {
+          if (trimTextPairs?.start?.length) {
             // 将收到的文本追加到缓冲区
             bufferedText += chunk.textDelta;
 
             // 处理第一个文本块的前缀（只处理一次）
-            if (isFirstChunk && bufferedText.includes(trimTexts[0])) {
-              bufferedText = bufferedText.substring(bufferedText.indexOf(trimTexts[0]) + trimTexts[0].length);
+            const startText = trimTextPairs.start.find((start) => bufferedText.startsWith(start));
+            if (isFirstChunk && startText) {
+              bufferedText = bufferedText.substring(startText.length);
               isFirstChunk = false;
             }
 
@@ -206,7 +210,7 @@ export abstract class BaseLanguageModel {
         }
       }
 
-      if (trimTexts?.[1]) {
+      if (trimTextPairs?.end?.length) {
         // 完成处理所有块后，检查并发送剩余文本
 
         // 将剩余缓冲区加入待发送行
@@ -218,9 +222,10 @@ export abstract class BaseLanguageModel {
         if (pendingLines.length > 0) {
           let lastLine = pendingLines[pendingLines.length - 1];
 
-          if (lastLine.endsWith(trimTexts[1])) {
+          const endText = trimTextPairs.end.find((end) => lastLine.endsWith(end));
+          if (endText) {
             // 移除后缀
-            lastLine = lastLine.substring(0, lastLine.length - trimTexts[1].length);
+            lastLine = lastLine.substring(0, lastLine.length - endText.length);
             pendingLines[pendingLines.length - 1] = lastLine;
           }
         }
