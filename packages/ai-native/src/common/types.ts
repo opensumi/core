@@ -49,6 +49,11 @@ export interface MCPTool {
   providerName: string;
 }
 
+export enum MCP_SERVER_TYPE {
+  STDIO = 'stdio',
+  SSE = 'sse',
+}
+
 export interface CodeBlockData {
   messageId: string;
   toolCallId: string;

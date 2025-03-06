@@ -4,9 +4,10 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 import { ILogger } from '@opensumi/ide-core-common';
 
+import pkg from '../../package.json';
 import { IMCPServer } from '../common/mcp-server-manager';
 
-export class StdioMCPServerImpl implements IMCPServer {
+export class StdioMCPServer implements IMCPServer {
   private name: string;
   public command: string;
   public args?: string[];
@@ -64,8 +65,8 @@ export class StdioMCPServerImpl implements IMCPServer {
 
     this.client = new Client(
       {
-        name: 'opensumi-mcp-client',
-        version: '1.0.0',
+        name: 'sumi-ide-stdio-mcp-client',
+        version: pkg.version,
       },
       {
         capabilities: {},

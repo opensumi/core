@@ -13,10 +13,10 @@ import { INodeLogger } from '@opensumi/ide-core-node';
 import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend } from '../../common';
 import { IMCPServer, MCPServerDescription } from '../../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolInvocationRegistryManager } from '../../common/tool-invocation-registry';
-import { IMCPServerProxyService, MCPTool } from '../../common/types';
-import { StdioMCPServerImpl } from '../mcp-server';
+import { IMCPServerProxyService, MCPTool, MCP_SERVER_TYPE } from '../../common/types';
 import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
-
+import { SSEMCPServer } from '../mcp-server.sse';
+import { StdioMCPServer } from '../mcp-server.stdio';
 // 每个 BrowserTab 都对应了一个 SumiMCPServerBackend 实例
 // SumiMCPServerBackend 需要做的事情：
 // 维护 Browser 端工具的注册和调用
@@ -152,17 +152,22 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
         }
 
         // 第三方 Stdio 类型的 MCP Server
-        if (server instanceof StdioMCPServerImpl) {
+        if (server instanceof StdioMCPServer) {
           return {
             name: server.getServerName(),
             isStarted: server.isStarted(),
-            type: 'stdio',
+            type: MCP_SERVER_TYPE.STDIO,
             command: server.command + ' ' + (server.args?.join(' ') || ''),
             tools: toolNames,
           };
+        } else if (server instanceof SSEMCPServer) {
+          return {
+            name: server.getServerName(),
+            isStarted: server.isStarted(),
+            type: MCP_SERVER_TYPE.SSE,
+            serverHost: server.serverHost,
+          };
         }
-
-        // TODO SSE 类型的 MCP Server
 
         return {
           name: server.getServerName(),

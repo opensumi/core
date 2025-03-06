@@ -1352,5 +1352,9 @@ export const localizationBundle = {
     'ai.native.mcp.terminal.allow-question': '是否允许运行命令?',
     'ai.native.mcp.terminal.allow': '允许',
     'ai.native.mcp.terminal.deny': '拒绝',
+    'ai.native.mcp.name': '名称:',
+    'ai.native.mcp.command': '命令:',
+    'ai.native.mcp.args': '参数:',
+    'ai.native.mcp.env': '环境变量:',
   },
 };

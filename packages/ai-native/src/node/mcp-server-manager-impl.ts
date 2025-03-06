@@ -7,7 +7,7 @@ import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invo
 import { getToolName } from '../common/utils';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
-import { StdioMCPServerImpl } from './mcp-server';
+import { StdioMCPServer } from './mcp-server';
 // 这应该是 Browser Tab 维度的，每个 Tab 对应一个 MCPServerManagerImpl
 export class MCPServerManagerImpl implements MCPServerManager {
   protected servers: Map<string, IMCPServer> = new Map();
@@ -133,7 +133,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
     if (existingServer) {
       existingServer.update(command, args, env);
     } else {
-      const newServer = new StdioMCPServerImpl(name, command, args, env, this.logger);
+      const newServer = new StdioMCPServer(name, command, args, env, this.logger);
       this.servers.set(name, newServer);
     }
   }
