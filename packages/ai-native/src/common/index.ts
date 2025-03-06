@@ -12,12 +12,15 @@ import {
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
 import { MCPServerDescription } from './mcp-server-manager';
 import { MCPTool } from './types';
+
+import type { CoreMessage } from 'ai';
+
+export type { CoreMessage };
 
 export * from './model';
 
@@ -146,7 +149,7 @@ export interface IChatAgentService {
     id: string,
     request: IChatAgentRequest,
     progress: (part: IChatProgress) => void,
-    history: IChatMessage[],
+    history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult>;
   getAgents(): Array<IChatAgent>;
@@ -167,7 +170,7 @@ export interface IChatAgent extends IChatAgentData {
   invoke(
     request: IChatAgentRequest,
     progress: (part: IChatProgress) => void,
-    history: IChatMessage[],
+    history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult>;
   provideFollowups?(sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;

@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
-import { IChatComponent, IChatContent, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IChatComponent, IChatContent } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_CHAT_VIEW_ID, IChatInternalService, IChatMessageListItem, IChatMessageStructure } from '../../common';
@@ -63,10 +63,6 @@ export class ChatService extends Disposable {
 
   public sendMessageList(list: IChatMessageListItem[]) {
     this._onChatMessageListLaunch.fire(list);
-  }
-
-  public getHistoryMessages(maxInputTokens?: number): IHistoryChatMessage[] {
-    return this.chatInternalService.sessionModel?.history.getMessages(maxInputTokens) || [];
   }
 
   public scrollToBottom(): void {

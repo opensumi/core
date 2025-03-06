@@ -16,9 +16,9 @@ import {
   ILogger,
   toDisposable,
 } from '@opensumi/ide-core-common';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import {
+  CoreMessage,
   IChatAgent,
   IChatAgentCommand,
   IChatAgentMetadata,
@@ -140,7 +140,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     id: string,
     request: IChatAgentRequest,
     progress: (part: IChatProgress) => void,
-    history: IChatMessage[],
+    history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult> {
     const data = this.agents.get(id);

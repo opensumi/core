@@ -1,7 +1,7 @@
 import { CoreMessage, ToolExecutionOptions, jsonSchema, streamText, tool } from 'ai';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { ChatMessageRole, IAIBackServiceOption, IChatMessage } from '@opensumi/ide-core-common';
+import { IAIBackServiceOption } from '@opensumi/ide-core-common';
 import { ChatReadableStream } from '@opensumi/ide-core-node';
 import { CancellationToken } from '@opensumi/ide-utils';
 
@@ -20,21 +20,6 @@ export abstract class BaseLanguageModel {
   protected readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
 
   protected abstract initializeProvider(options: IAIBackServiceOption): any;
-
-  private convertChatMessageRole(role: ChatMessageRole) {
-    switch (role) {
-      case ChatMessageRole.System:
-        return 'system';
-      case ChatMessageRole.User:
-        return 'user';
-      case ChatMessageRole.Assistant:
-        return 'assistant';
-      case ChatMessageRole.Function:
-        return 'tool';
-      default:
-        return 'user';
-    }
-  }
 
   async request(
     request: string,
@@ -86,7 +71,7 @@ export abstract class BaseLanguageModel {
     request: string,
     tools: ToolRequest[],
     chatReadableStream: ChatReadableStream,
-    history: IChatMessage[] = [],
+    history: CoreMessage[] = [],
     modelId?: string,
     providerOptions?: Record<string, any>,
     trimTexts?: [string, string],
@@ -104,13 +89,7 @@ export abstract class BaseLanguageModel {
         });
       }
 
-      const messages: CoreMessage[] = [
-        ...history.map((msg) => ({
-          role: this.convertChatMessageRole(msg.role) as any, // 这个 SDK 包里的类型不太好完全对应，
-          content: msg.content,
-        })),
-        { role: 'user', content: request },
-      ];
+      const messages: CoreMessage[] = [...history, { role: 'user', content: request }];
       const modelInfo = modelId ? this.getModelInfo(modelId) : undefined;
       const stream = streamText({
         model: this.getModelIdentifier(provider, modelId),

@@ -10,6 +10,7 @@ import {
 } from '@opensumi/ide-ai-native/lib/common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
+  CoreMessgaeRoleMap,
   Deferred,
   IChatProgress,
   IChatTreeData,
@@ -149,7 +150,19 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
       invoke: async (request, progress, history, token) => {
         this.pendingProgress.set(request.requestId, progress);
         try {
-          return (await this.#proxy.$invokeAgent(handle, request, { history }, token)) ?? {};
+          return (
+            (await this.#proxy.$invokeAgent(
+              handle,
+              request,
+              {
+                history: history.map((item) => ({
+                  role: CoreMessgaeRoleMap[item.role],
+                  content: item.content.toString(),
+                })),
+              },
+              token,
+            )) ?? {}
+          );
         } finally {
           this.pendingProgress.delete(request.requestId);
         }

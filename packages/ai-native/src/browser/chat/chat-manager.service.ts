@@ -6,6 +6,7 @@ import {
   DisposableMap,
   Emitter,
   IChatProgress,
+  IChatToolContent,
   IStorage,
   STORAGE_NAMESPACE,
   StorageProvider,
@@ -29,6 +30,7 @@ interface ISessionModel {
       isCanceled: boolean;
       responseText: string;
       responseContents: IChatProgressResponseContent[];
+      responseParts: IChatProgressResponseContent[];
       errorDetails: IChatResponseErrorDetails | undefined;
       followups: IChatFollowup[];
     };
@@ -72,6 +74,7 @@ export class ChatManagerService extends Disposable {
               responseContents: request.response.responseContents,
               isComplete: true,
               responseText: request.response.responseText,
+              responseParts: request.response.responseParts,
               errorDetails: request.response.errorDetails,
               followups: request.response.followups,
               isCanceled: request.response.isCanceled,
@@ -153,14 +156,7 @@ export class ChatManagerService extends Disposable {
       request.response.cancel();
     });
 
-    const history: IChatMessage[] = [];
-    for (const request of model.requests) {
-      if (!request.response.isComplete) {
-        continue;
-      }
-      history.push({ role: ChatMessageRole.User, content: request.message.prompt });
-      history.push({ role: ChatMessageRole.Assistant, content: request.response.responseText });
-    }
+    const history = model.messageHistory;
 
     try {
       const progressCallback = (progress: IChatProgress) => {

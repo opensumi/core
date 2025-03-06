@@ -412,10 +412,10 @@ export abstract class BaseApplyService extends WithEventBus {
           // TODO: 添加 reapply
           // 实际应用结果为空，则取消
           if (codeBlock.updatedCode === codeBlock.originalCode) {
-            codeBlock.status = 'cancelled';
+            codeBlock.status = 'failed';
             this.updateCodeBlock(codeBlock);
             previewer.dispose();
-            deferred.resolve();
+            deferred.reject(new Error('no changes applied'));
             return;
           }
           codeBlock.status = 'pending';
