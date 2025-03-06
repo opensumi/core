@@ -197,7 +197,7 @@ export const MCPConfigView: React.FC = () => {
               {server.type && (
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Type:</span>
-                  <Badge className={styles.serverType}>{getReadableServerType(server.type)}</Badge>
+                  <Badge className={cls(styles.serverType, styles.typeTag)}>{getReadableServerType(server.type)}</Badge>
                 </div>
               )}
             </div>
