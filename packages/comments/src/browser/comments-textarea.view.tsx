@@ -52,7 +52,7 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
       event.stopPropagation();
       event.preventDefault();
 
-      const files = event.clipboardData?.files; // FileList object.
+      const files = event.clipboardData?.files;
       if (files && dragFiles) {
         await dragFiles(files);
       }
