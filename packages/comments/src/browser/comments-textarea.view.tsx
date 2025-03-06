@@ -10,6 +10,8 @@ import { CommentsBody } from './comments-body';
 import styles from './comments.module.less';
 import { getMentionBoxStyle } from './mentions.style';
 
+import type { ClipboardEvent } from 'react';
+
 export interface ICommentTextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   focusDelay?: number;
   minRows?: number;
@@ -46,11 +48,11 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
   React.useImperativeHandle(ref, () => inputRef.current!);
 
   const handleFileSelect = React.useCallback(
-    async (event: React.DragEvent<HTMLTextAreaElement>) => {
+    async (event: ClipboardEvent<HTMLTextAreaElement>) => {
       event.stopPropagation();
       event.preventDefault();
 
-      const files = event.dataTransfer?.files; // FileList object.
+      const files = event.clipboardData?.files; // FileList object.
       if (files && dragFiles) {
         await dragFiles(files);
       }
@@ -62,12 +64,6 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
     },
     [dragFiles],
   );
-
-  const handleDragOver = React.useCallback((event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
-  }, []);
 
   const selectLastPosition = React.useCallback((value) => {
     const textarea = inputRef.current;
@@ -162,8 +158,7 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
           <div ref={mentionsRef}>
             <MentionsInput
               autoFocus={autoFocus}
-              onDragOver={handleDragOver}
-              onDrop={handleFileSelect}
+              onPaste={handleFileSelect}
               inputRef={inputRef}
               // in react 18, the type of ref is changed to LegacyRef<ClassComponent>
               // but actually it is working pass a dom element ref
