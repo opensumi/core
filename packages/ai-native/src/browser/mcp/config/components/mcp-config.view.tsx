@@ -1,7 +1,10 @@
-import React from 'react';
+import cls from 'classnames';
+import React, { useCallback } from 'react';
 
+import { Badge } from '@opensumi/ide-components';
 import { AINativeSettingSectionsId, ILogger, useInjectable } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
+import { localize } from '@opensumi/ide-core-common';
 
 import { BUILTIN_MCP_SERVER_NAME } from '../../../../common';
 import { MCPServerDescription } from '../../../../common/mcp-server-manager';
@@ -17,6 +20,7 @@ interface MCPServer {
   tools?: string[];
   command?: string;
   type?: string;
+  serverHost?: string;
 }
 
 export const MCPConfigView: React.FC = () => {
@@ -54,7 +58,6 @@ export const MCPConfigView: React.FC = () => {
       // Update enabled state in preferences
       const servers = preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
       let updatedServers = servers;
-
       // 处理内置服务器的特殊情况
       if (serverName === BUILTIN_MCP_SERVER_NAME) {
         const builtinServerExists = servers.some((server) => server.name === BUILTIN_MCP_SERVER_NAME);
@@ -133,6 +136,19 @@ export const MCPConfigView: React.FC = () => {
     await loadServers();
   };
 
+  const getReadableServerType = useCallback((type: string) => {
+    switch (type) {
+      case MCP_SERVER_TYPE.STDIO:
+        return localize('ai.native.mcp.type.stdio');
+      case MCP_SERVER_TYPE.SSE:
+        return localize('ai.native.mcp.type.sse');
+      case MCP_SERVER_TYPE.BUILTIN:
+        return localize('ai.native.mcp.type.builtin');
+      default:
+        return type;
+    }
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -152,9 +168,11 @@ export const MCPConfigView: React.FC = () => {
                 <h3 className={styles.serverName}>{server.name}</h3>
               </div>
               <div className={styles.serverActions}>
-                <button className={styles.iconButton} title='Edit' onClick={() => handleEditServer(server)}>
-                  <i className='codicon codicon-edit' />
-                </button>
+                {server.name !== BUILTIN_MCP_SERVER_NAME && (
+                  <button className={styles.iconButton} title='Edit' onClick={() => handleEditServer(server)}>
+                    <i className='codicon codicon-edit' />
+                  </button>
+                )}
                 <button
                   className={styles.iconButton}
                   title={server.isStarted ? 'Stop' : 'Start'}
@@ -162,9 +180,11 @@ export const MCPConfigView: React.FC = () => {
                 >
                   <i className={`codicon ${server.isStarted ? 'codicon-debug-stop' : 'codicon-debug-start'}`} />
                 </button>
-                <button className={styles.iconButton} title='Delete' onClick={() => handleDeleteServer(server.name)}>
-                  <i className='codicon codicon-trash' />
-                </button>
+                {server.name !== BUILTIN_MCP_SERVER_NAME && (
+                  <button className={styles.iconButton} title='Delete' onClick={() => handleDeleteServer(server.name)}>
+                    <i className='codicon codicon-trash' />
+                  </button>
+                )}
               </div>
             </div>
             <div className={styles.serverDetail}>
@@ -177,7 +197,7 @@ export const MCPConfigView: React.FC = () => {
               {server.type && (
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Type:</span>
-                  <span className={styles.serverType}>{server.type}</span>
+                  <Badge className={styles.serverType}>{getReadableServerType(server.type)}</Badge>
                 </div>
               )}
             </div>
@@ -200,6 +220,14 @@ export const MCPConfigView: React.FC = () => {
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Command:</span>
                   <span className={styles.detailContent}>{server.command}</span>
+                </div>
+              </div>
+            )}
+            {server.serverHost && (
+              <div className={styles.serverDetail}>
+                <div className={styles.detailRow}>
+                  <span className={styles.detailLabel}>Server Link:</span>
+                  <span className={cls(styles.detailContent, styles.link)}>{server.serverHost}</span>
                 </div>
               </div>
             )}

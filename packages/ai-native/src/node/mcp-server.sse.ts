@@ -1,12 +1,14 @@
 // have to import with extension since the exports map is ./* -> ./dist/cjs/*
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { EventSource } from 'eventsource';
 
 import { ILogger } from '@opensumi/ide-core-common';
 
 import pkg from '../../package.json';
 import { IMCPServer } from '../common/mcp-server-manager';
 
+global.EventSource = EventSource as any;
 export class SSEMCPServer implements IMCPServer {
   private name: string;
   public serverHost: string;
@@ -32,7 +34,9 @@ export class SSEMCPServer implements IMCPServer {
     }
     this.logger?.log(`Starting server "${this.name}" with serverHost: ${this.serverHost}`);
 
-    const transport = new SSEClientTransport(new URL(this.serverHost));
+    const transport = new SSEClientTransport(new URL(this.serverHost), {
+      eventSourceInit: {},
+    });
     transport.onerror = (error) => {
       this.logger?.error('Transport Error:', error);
     };
@@ -74,7 +78,9 @@ export class SSEMCPServer implements IMCPServer {
   }
 
   async getTools() {
-    return await this.client.listTools();
+    const tools = await this.client.listTools();
+    this.logger?.log(`Got tools from MCP server "${this.name}" with serverHost "${this.serverHost}":`, tools);
+    return tools;
   }
 
   update(serverHost: string): void {

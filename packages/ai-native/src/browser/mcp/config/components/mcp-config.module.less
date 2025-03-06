@@ -162,6 +162,15 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  &.link {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    &:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  }
 }
 
 .toolTag {

@@ -28,7 +28,7 @@ export class MCPServerProxyService implements IMCPServerProxyService {
   }
 
   // 获取 OpenSumi 内部注册的 MCP tools
-  async $getMCPTools() {
+  async $getBuiltinMCPTools() {
     const tools = await this.mcpServerRegistry.getMCPTools().map((tool) =>
       // 不要传递 handler
       ({
