@@ -110,6 +110,8 @@ export interface IThemeData extends IStandaloneThemeData {
   colorMap: IColorMap;
   themeSettings: IRawThemeSetting[];
   settings: IRawThemeSetting[];
+  tokenColors: IRawThemeSetting[];
+
   initializeFromData(data): void;
   initializeThemeData(id, name, base, themeLocation: URI): Promise<void>;
   loadCustomTokens(customTokenColors: ITokenColorizationRule[]): unknown;
@@ -230,11 +232,11 @@ export interface ITokenThemeRule {
 
 export interface ITokenColorCustomizations {
   [groupIdOrThemeSettingsId: string]:
-    | string
-    | ITokenColorizationSetting
-    | ITokenColorCustomizations
-    | undefined
-    | ITokenColorizationRule[];
+  | string
+  | ITokenColorizationSetting
+  | ITokenColorCustomizations
+  | undefined
+  | ITokenColorizationRule[];
   comments?: string | ITokenColorizationSetting;
   strings?: string | ITokenColorizationSetting;
   numbers?: string | ITokenColorizationSetting;

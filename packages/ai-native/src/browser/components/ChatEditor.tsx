@@ -35,7 +35,7 @@ interface Props {
 }
 export const CodeEditorWithHighlight = (props: Props) => {
   const { input, language, relationId, agentId, command, hideInsert } = props;
-  console.log('do render: ', input);
+
   const ref = React.useRef<HTMLDivElement | null>(null);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);
