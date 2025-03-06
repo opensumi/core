@@ -4,10 +4,12 @@ import { ILogger } from '@opensumi/ide-core-common';
 
 import { IMCPServer, MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
+import { MCP_SERVER_TYPE } from '../common/types';
 import { getToolName } from '../common/utils';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
-import { StdioMCPServer } from './mcp-server';
+import { SSEMCPServer } from './mcp-server.sse';
+import { StdioMCPServer } from './mcp-server.stdio';
 // 这应该是 Browser Tab 维度的，每个 Tab 对应一个 MCPServerManagerImpl
 export class MCPServerManagerImpl implements MCPServerManager {
   protected servers: Map<string, IMCPServer> = new Map();
@@ -127,14 +129,23 @@ export class MCPServerManagerImpl implements MCPServerManager {
   }
 
   addOrUpdateServer(description: MCPServerDescription): void {
-    const { name, command, args, env } = description;
-    const existingServer = this.servers.get(name);
-
-    if (existingServer) {
-      existingServer.update(command, args, env);
-    } else {
-      const newServer = new StdioMCPServer(name, command, args, env, this.logger);
-      this.servers.set(name, newServer);
+    const existingServer = this.servers.get(description.name);
+    if (description.type === MCP_SERVER_TYPE.STDIO) {
+      const { name, command, args, env } = description;
+      if (existingServer) {
+        existingServer.update(command, args, env);
+      } else {
+        const newServer = new StdioMCPServer(name, command, args, env, this.logger);
+        this.servers.set(name, newServer);
+      }
+    } else if (description.type === MCP_SERVER_TYPE.SSE) {
+      const { name, serverHost } = description;
+      if (existingServer) {
+        existingServer.update(serverHost);
+      } else {
+        const newServer = new SSEMCPServer(name, serverHost, this.logger);
+        this.servers.set(name, newServer);
+      }
     }
   }
 
