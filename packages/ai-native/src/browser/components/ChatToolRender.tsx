@@ -10,6 +10,7 @@ import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
 import { CodeEditorWithHighlight } from './ChatEditor';
 import styles from './ChatToolRender.module.less';
+import { ShikiHighlight } from './Shiki-Highlight';
 
 export const ChatToolRender = (props: { value: IChatToolContent['content']; messageId?: string }) => {
   const { value, messageId } = props;
@@ -80,13 +81,13 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
         {value?.function?.arguments && (
           <div className={styles['tool-arguments']}>
             <div className={styles['section-label']}>Arguments</div>
-            <CodeEditorWithHighlight input={value?.function?.arguments} language={'json'} relationId={uuid(4)} />
+            <ShikiHighlight input={value?.function?.arguments} language={'json'} relationId={uuid(4)} />
           </div>
         )}
         {value?.result && (
           <div className={styles['tool-result']}>
             <div className={styles['section-label']}>Result</div>
-            <CodeEditorWithHighlight input={value.result} language={'json'} relationId={uuid(4)} />
+            <ShikiHighlight input={value.result} language={'json'} relationId={uuid(4)} />
           </div>
         )}
       </div>

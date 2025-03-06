@@ -8,6 +8,7 @@ import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/es
 
 import { CodeEditorWithHighlight } from './ChatEditor';
 import styles from './components.module.less';
+import { ShikiHighlight } from './Shiki-Highlight';
 
 interface MarkdownProps {
   markdown: IMarkdownString | string;
@@ -44,7 +45,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
           <ConfigProvider value={appConfig}>
             <div className={styles.code_block}>
               <div className={cls(styles.code_language, 'language-badge')}>{language}</div>
-              <CodeEditorWithHighlight
+              <ShikiHighlight
                 input={code as string}
                 language={language}
                 relationId={props.relationId || ''}

@@ -437,7 +437,7 @@ export const AIChatView = () => {
           });
         }
       }
-
+      console.log("ai msg");
       const aiMessage = createMessageByAI({
         id: uuid(6),
         relationId,
@@ -473,6 +473,7 @@ export const AIChatView = () => {
   const renderSimpleMarkdownReply = React.useCallback(
     (renderModel: { chunk: string; relationId: string }) => {
       const { chunk, relationId } = renderModel;
+      console.log('simple markdown reply: ', chunk);
       let renderContent = <ChatMarkdown markdown={chunk} fillInIncompleteTokens agentId={agentId} command={command} />;
 
       if (chatRenderRegistry.chatAIRoleRender) {

@@ -263,30 +263,13 @@ export const ChatReply = (props: IChatReplyProps) => {
     onRegenerate?.();
   }, [onRegenerate]);
 
-  const onStop = () => {
-    if (onDone) {
-      onDone();
-    }
-    aiReporter.end(relationId, {
-      assistantMessage: request.response.responseText,
-      replytime: Date.now() - startTime,
-      success: false,
-      isStop: true,
-      command,
-      agentId,
-      messageId: msgId,
-      sessionId: aiChatService.sessionModel.sessionId,
-    });
-    aiChatService.cancelRequest();
-  };
-
   const renderMarkdown = useCallback(
     (markdown: IMarkdownString) => {
       if (chatRenderRegistry.chatAIRoleRender) {
         const Render = chatRenderRegistry.chatAIRoleRender;
         return <Render content={markdown.value} />;
       }
-
+      
       return <ChatMarkdown markdown={markdown} fillInIncompleteTokens />;
     },
     [chatRenderRegistry, chatRenderRegistry.chatAIRoleRender],
