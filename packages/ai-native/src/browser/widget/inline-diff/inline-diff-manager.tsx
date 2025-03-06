@@ -29,7 +29,7 @@ export const InlineDiffManager: React.FC<{ resource: IResource }> = (props) => {
   const [show, setShow] = useState(true);
   const [changesCount, setChangesCount] = useState(0);
   const [currentChangeIndex, setCurrentChangeIndex] = useState(0);
-  const [filePaths, setFilePaths] = useState<string[]>([]);
+  const [filePaths, setFilePaths] = useState<string[]>(applyService.getPendingPaths());
 
   const currentFilePath = useMemo(
     () => path.relative(appConfig.workspaceDir, resource.uri.path.toString()),

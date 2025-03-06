@@ -83,7 +83,11 @@ export class InlineChatController {
         this._onData.fire(reply);
       },
       onEnd: () => {
-        this._onEnd.fire();
+        if (!wholeContent) {
+          this._onError.fire(new ErrorResponse(new Error('No content')));
+        } else {
+          this._onEnd.fire();
+        }
       },
       onError: (error) => {
         if (AbortError.is(error)) {

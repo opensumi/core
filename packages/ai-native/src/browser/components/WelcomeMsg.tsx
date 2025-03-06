@@ -62,7 +62,7 @@ export const WelcomeMessage = () => {
   }, []);
 
   if (!welcomeMessage) {
-    return <ChatThinking showStop={false} thinkingText={localize('aiNative.chat.welcome.loading.text')} />;
+    return <ChatThinking thinkingText={localize('aiNative.chat.welcome.loading.text')} />;
   }
 
   const allSampleQuestions = React.useMemo(
