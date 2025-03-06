@@ -5,6 +5,8 @@ import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
 import { IAIReportCompletionOption } from './reporter';
+
+import type { CoreMessage } from 'ai';
 export * from './reporter';
 
 export interface IAINativeCapabilities {
@@ -169,7 +171,7 @@ export interface IAIBackServiceOption {
   type?: string;
   requestId?: string;
   sessionId?: string;
-  history?: IHistoryChatMessage[];
+  history?: CoreMessage[];
   tools?: any[];
   clientId?: string;
   apiKey?: string;
@@ -250,7 +252,7 @@ export class ReplyResponse {
     return this._message;
   }
 
-  constructor(private _message: string) { }
+  constructor(private _message: string) {}
 
   static is(response: any): boolean {
     return response instanceof ReplyResponse || (typeof response === 'object' && response.message !== undefined);
@@ -268,7 +270,7 @@ export class ReplyResponse {
 }
 
 export class ErrorResponse {
-  constructor(readonly error: any, readonly message?: string) { }
+  constructor(readonly error: any, readonly message?: string) {}
 
   static is(response: any): boolean {
     return response instanceof ErrorResponse || (typeof response === 'object' && response.error !== undefined);
@@ -278,7 +280,7 @@ export class ErrorResponse {
 export class CancelResponse {
   readonly cancellation: boolean = true;
 
-  constructor(readonly message?: string) { }
+  constructor(readonly message?: string) {}
 
   static is(response: any): boolean {
     return response instanceof CancelResponse || (typeof response === 'object' && response.cancellation !== undefined);
@@ -348,18 +350,20 @@ export interface IChatContent {
   kind: 'content';
 }
 
-export interface IChatToolContent {
-  content: {
-    id: string;
-    type: string;
-    function: {
-      name: string;
-      arguments?: string;
-    };
-    result?: string;
-    index?: number;
-    state?: 'streaming-start' | 'streaming' | 'complete' | 'result';
+export interface IChatToolCall {
+  id: string;
+  type: string;
+  function: {
+    name: string;
+    arguments?: string;
   };
+  result?: string;
+  index?: number;
+  state?: 'streaming-start' | 'streaming' | 'complete' | 'result';
+}
+
+export interface IChatToolContent {
+  content: IChatToolCall;
   kind: 'toolCall';
 }
 
@@ -406,9 +410,9 @@ export type IChatProgress =
   | IChatToolContent;
 
 export interface IChatMessage {
-  readonly role: ChatMessageRole;
-  readonly content: string;
-  readonly name?: string;
+  role: ChatMessageRole;
+  content: string;
+  name?: string;
 }
 
 export const enum ChatMessageRole {
@@ -417,6 +421,13 @@ export const enum ChatMessageRole {
   Assistant,
   Function,
 }
+
+export const CoreMessgaeRoleMap = {
+  system: ChatMessageRole.System,
+  user: ChatMessageRole.User,
+  tool: ChatMessageRole.Function,
+  assistant: ChatMessageRole.Assistant,
+};
 
 export interface IHistoryChatMessage extends IChatMessage {
   id: string;
