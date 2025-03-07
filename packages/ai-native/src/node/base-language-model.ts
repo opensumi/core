@@ -1,10 +1,11 @@
 import { CoreMessage, ToolExecutionOptions, jsonSchema, streamText, tool } from 'ai';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { ChatMessageRole, IAIBackServiceOption, IChatMessage } from '@opensumi/ide-core-common';
+import { IAIBackServiceOption } from '@opensumi/ide-core-common';
 import { ChatReadableStream } from '@opensumi/ide-core-node';
 import { CancellationToken } from '@opensumi/ide-utils';
 
+import { ModelInfo } from '../common';
 import {
   IToolInvocationRegistryManager,
   ToolInvocationRegistryManager,
@@ -13,25 +14,12 @@ import {
 
 @Injectable()
 export abstract class BaseLanguageModel {
+  static ModelOptions: Record<string, ModelInfo>;
+
   @Autowired(ToolInvocationRegistryManager)
   protected readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
 
   protected abstract initializeProvider(options: IAIBackServiceOption): any;
-
-  private convertChatMessageRole(role: ChatMessageRole) {
-    switch (role) {
-      case ChatMessageRole.System:
-        return 'system';
-      case ChatMessageRole.User:
-        return 'user';
-      case ChatMessageRole.Assistant:
-        return 'assistant';
-      case ChatMessageRole.Function:
-        return 'tool';
-      default:
-        return 'user';
-    }
-  }
 
   async request(
     request: string,
@@ -41,11 +29,14 @@ export abstract class BaseLanguageModel {
   ): Promise<any> {
     const provider = this.initializeProvider(options);
     const clientId = options.clientId;
-    if (!clientId) {
-      throw new Error('clientId is required');
+
+    let allFunctions: ToolRequest[] = [];
+    // 如果没有传入 clientId，则不使用工具
+    if (clientId) {
+      const registry = this.toolInvocationRegistryManager.getRegistry(clientId);
+      allFunctions = options.noTool ? [] : registry.getAllFunctions();
     }
-    const registry = this.toolInvocationRegistryManager.getRegistry(clientId);
-    const allFunctions = options.noTool ? [] : registry.getAllFunctions();
+
     return this.handleStreamingRequest(
       provider,
       request,
@@ -53,11 +44,10 @@ export abstract class BaseLanguageModel {
       chatReadableStream,
       options.history || [],
       options.modelId,
-      options.temperature,
-      options.topP,
-      options.topK,
       options.providerOptions,
       options.trimTexts,
+      options.system,
+      options.maxTokens,
       cancellationToken,
     );
   }
@@ -74,18 +64,19 @@ export abstract class BaseLanguageModel {
 
   protected abstract getModelIdentifier(provider: any, modelId?: string): any;
 
+  protected abstract getModelInfo(modelId: string): ModelInfo | undefined;
+
   protected async handleStreamingRequest(
     provider: any,
     request: string,
     tools: ToolRequest[],
     chatReadableStream: ChatReadableStream,
-    history: IChatMessage[] = [],
+    history: CoreMessage[] = [],
     modelId?: string,
-    temperature?: number,
-    topP?: number,
-    topK?: number,
     providerOptions?: Record<string, any>,
     trimTexts?: [string, string],
+    systemPrompt?: string,
+    maxTokens?: number,
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -98,24 +89,20 @@ export abstract class BaseLanguageModel {
         });
       }
 
-      const messages: CoreMessage[] = [
-        ...history.map((msg) => ({
-          role: this.convertChatMessageRole(msg.role) as any, // 这个 SDK 包里的类型不太好完全对应，
-          content: msg.content,
-        })),
-        { role: 'user', content: request },
-      ];
+      const messages: CoreMessage[] = [...history, { role: 'user', content: request }];
+      const modelInfo = modelId ? this.getModelInfo(modelId) : undefined;
       const stream = streamText({
         model: this.getModelIdentifier(provider, modelId),
-        maxTokens: 4096,
         tools: aiTools,
         messages,
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
         maxSteps: 12,
-        temperature,
-        topP: topP || 0.8,
-        topK: topK || 1,
+        maxTokens,
+        temperature: modelInfo?.temperature || 0,
+        topP: modelInfo?.topP || 0.8,
+        topK: modelInfo?.topK || 1,
+        system: systemPrompt,
         providerOptions,
       });
 
@@ -211,7 +198,7 @@ export abstract class BaseLanguageModel {
 
         // 处理最后一行可能存在的后缀
         if (pendingLines.length > 0) {
-          let lastLine = pendingLines[pendingLines.length - 1];
+          let lastLine = pendingLines[pendingLines.length - 1].trim();
 
           if (lastLine.endsWith(trimTexts[1])) {
             // 移除后缀

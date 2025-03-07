@@ -1,10 +1,11 @@
 import { OpenAIProvider, createOpenAI } from '@ai-sdk/openai';
+import { LanguageModelV1 } from 'ai';
 
 import { Injectable } from '@opensumi/di';
 import { AINativeSettingSectionsId, IAIBackServiceOption } from '@opensumi/ide-core-common';
 
+import { ModelInfo, openAiNativeModels } from '../../common/model';
 import { BaseLanguageModel } from '../base-language-model';
-export const DeepSeekModelIdentifier = Symbol('DeepSeekModelIdentifier');
 
 @Injectable()
 export class OpenAIModel extends BaseLanguageModel {
@@ -15,11 +16,14 @@ export class OpenAIModel extends BaseLanguageModel {
     }
     return createOpenAI({
       apiKey,
-      baseURL: options.baseURL || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     });
   }
 
-  protected getModelIdentifier(provider: OpenAIProvider, modelId?: string) {
-    return provider(modelId || 'qwen-max');
+  protected getModelIdentifier(provider: OpenAIProvider, modelId: string) {
+    return provider(modelId) as LanguageModelV1;
+  }
+
+  protected getModelInfo(modelId: string): ModelInfo | undefined {
+    return openAiNativeModels[modelId];
   }
 }

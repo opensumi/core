@@ -145,7 +145,10 @@ export const NextPreferenceItem = ({
     renderSchema.default;
 
   // 目前还没法对 input 的数字值进行 === 校验，先全部转为 String
-  const isModified = value !== undefined && String(value) !== String(defaultValue);
+  const isModified = React.useMemo(
+    () => value !== undefined && String(value) !== String(defaultValue),
+    [value, defaultValue],
+  );
 
   const renderPreferenceItem = () => {
     if (renderSchema) {

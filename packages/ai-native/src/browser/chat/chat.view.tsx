@@ -1,13 +1,7 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import {
-  AINativeConfigService,
-  getIcon,
-  useEventEffect,
-  useInjectable,
-  useUpdateOnEvent,
-} from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -25,24 +19,15 @@ import {
   IAIReporter,
   IChatComponent,
   IChatContent,
-  MessageType,
   formatLocalize,
   localize,
   uuid,
 } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IDialogService } from '@opensumi/ide-overlay';
+import { IMessageService } from '@opensumi/ide-overlay';
 
 import 'react-chat-elements/dist/main.css';
-import {
-  AI_CHAT_VIEW_ID,
-  IChatAgentService,
-  IChatInternalService,
-  IChatMessageStructure,
-  TokenMCPServerProxyService,
-} from '../../common';
-import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
-import { ChatAgentPromptProvider } from '../../common/prompts/context-prompt-provider';
+import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
 import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
@@ -52,9 +37,7 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
-import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
-import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
-import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
+import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
@@ -63,6 +46,7 @@ import { ChatFeatureRegistry } from './chat.feature.registry';
 import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
+
 const SCROLL_CLASSNAME = 'chat_scroll';
 
 interface TDispatchAction {
@@ -79,12 +63,12 @@ export const AIChatView = () => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const contextService = useInjectable<LLMContextService>(LLMContextServiceToken);
-  const promptProvider = useInjectable<ChatAgentPromptProvider>(ChatAgentPromptProvider);
+  const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const autoScroll = React.useRef<boolean>(true);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
 
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
@@ -156,8 +140,29 @@ export const AIChatView = () => {
     [],
   );
 
+  const onDidWheel = React.useCallback(
+    (e: WheelEvent) => {
+      // 向上滚动
+      if (e.deltaY < 0) {
+        autoScroll.current = false;
+      } else {
+        autoScroll.current = true;
+      }
+    },
+    [autoScroll],
+  );
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.addEventListener('wheel', onDidWheel);
+      return () => {
+        containerRef.current?.removeEventListener('wheel', onDidWheel);
+      };
+    }
+  }, [autoScroll]);
+
   const scrollToBottom = React.useCallback(() => {
-    if (containerRef && containerRef.current) {
+    if (containerRef && containerRef.current && autoScroll.current) {
       const lastElement = containerRef.current.lastElementChild;
       if (lastElement) {
         lastElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -167,7 +172,7 @@ export const AIChatView = () => {
         containerRef.current.classList.add(SCROLL_CLASSNAME);
       }
     }
-  }, [containerRef]);
+  }, [containerRef, autoScroll]);
 
   const handleDispatchMessage = React.useCallback(
     (dispatch: TDispatchAction) => {
@@ -189,7 +194,7 @@ export const AIChatView = () => {
     disposer.addDispose(
       chatApiService.onScrollToBottom(() => {
         requestAnimationFrame(() => {
-          scrollToBottom();
+          // scrollToBottom();
         });
       }),
     );
@@ -216,8 +221,9 @@ export const AIChatView = () => {
     disposer.addDispose(
       chatApiService.onChatReplyMessageLaunch((data) => {
         if (data.kind === 'content') {
-          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: data.content,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             content: data.content,
@@ -225,8 +231,9 @@ export const AIChatView = () => {
           });
           renderSimpleMarkdownReply({ chunk: data.content, relationId });
         } else {
-          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: 'component#' + data.component,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             componentId: data.component,
@@ -248,6 +255,7 @@ export const AIChatView = () => {
 
           const relationId = aiReporter.start(AIServiceType.Chat, {
             message: '',
+            sessionId: aiChatService.sessionModel.sessionId,
           });
 
           if (role === 'assistant') {
@@ -506,10 +514,7 @@ export const AIChatView = () => {
       const { message, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
-      const context = contextService.serialize();
-      const fullMessage = await promptProvider.provideContextPrompt(context, message);
-
-      const request = aiChatService.createRequest(fullMessage, agentId!, command);
+      const request = aiChatService.createRequest(message, agentId!, command);
       if (!request) {
         return;
       }
@@ -519,13 +524,19 @@ export const AIChatView = () => {
 
       const startTime = Date.now();
       const reportType = ChatProxyService.AGENT_ID === agentId ? AIServiceType.Chat : AIServiceType.Agent;
-      const relationId = aiReporter.start(command || reportType, {
-        message,
-        agentId,
-        userMessage: message,
-        actionType,
-        actionSource,
-      });
+
+      const relationId = aiReporter.start(
+        command || reportType,
+        {
+          agentId,
+          userMessage: message,
+          actionType,
+          actionSource,
+          sessionId: aiChatService.sessionModel.sessionId,
+        },
+        // 由于涉及 tool 调用，超时时间设置长一点
+        600 * 1000,
+      );
 
       msgHistoryManager.addUserMessage({
         content: message,
@@ -549,6 +560,12 @@ export const AIChatView = () => {
         requestId: request.requestId,
         replyStartTime: startTime,
       });
+
+      // 创建消息时，设置当前活跃的消息信息，便于toolCall打点
+      mcpServerRegistry.activeMessageInfo = {
+        messageId: msgId,
+        sessionId: aiChatService.sessionModel.sessionId,
+      };
 
       await renderReply({
         startTime,
@@ -735,15 +752,18 @@ export function DefaultChatViewHeader({
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
-  const dialogService = useInjectable<IDialogService>(IDialogService);
-  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
-  const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
+
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const handleNewChat = React.useCallback(() => {
     if (aiChatService.sessionModel.history.getMessages().length > 0) {
-      aiChatService.createSessionModel();
+      try {
+        aiChatService.createSessionModel();
+      } catch (error) {
+        messageService.error(error.message);
+      }
     }
   }, [aiChatService]);
   const handleHistoryItemSelect = React.useCallback(
@@ -758,15 +778,6 @@ export function DefaultChatViewHeader({
     },
     [aiChatService],
   );
-
-  const handleShowMCPTools = React.useCallback(async () => {
-    const tools = await mcpServerProxyService.getAllMCPTools();
-    dialogService.open({
-      message: <MCPToolsDialog tools={tools} />,
-      type: MessageType.Empty,
-      buttons: ['关闭'],
-    });
-  }, [mcpServerProxyService, dialogService]);
 
   React.useEffect(() => {
     const getHistoryList = () => {
@@ -847,23 +858,6 @@ export function DefaultChatViewHeader({
           ariaLabel={localize('aiNative.operate.clear.title')}
         />
       </Popover>
-      {aiNativeConfigService.capabilities.supportsMCP && (
-        <Popover
-          overlayClassName={styles.popover_icon}
-          id={'ai-chat-header-tools'}
-          position={PopoverPosition.left}
-          title={localize('aiNative.operate.tools.title')}
-        >
-          <EnhanceIcon
-            wrapperClassName={styles.action_btn}
-            className={getIcon('menubar-tool')}
-            onClick={handleShowMCPTools}
-            tabIndex={0}
-            role='button'
-            ariaLabel={localize('aiNative.operate.tools.title')}
-          />
-        </Popover>
-      )}
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-close'}

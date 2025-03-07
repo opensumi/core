@@ -8,7 +8,7 @@ import {
   KeybindingScope,
 } from '@opensumi/ide-core-browser';
 import { AI_CODE_EDITS_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { CodeEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { CommandContribution, CommandRegistry, Domain } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -61,7 +61,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
     keybindings.registerKeybinding({
       command: AI_CODE_EDITS_COMMANDS.DISCARD.id,
       keybinding: Key.ESCAPE.code,
-      when: MultiLineEditsIsVisible.raw,
+      when: CodeEditsIsVisible.raw,
       priority: 100,
     });
 
@@ -69,7 +69,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
       {
         command: AI_CODE_EDITS_COMMANDS.ACCEPT.id,
         keybinding: Key.TAB.code,
-        when: MultiLineEditsIsVisible.raw,
+        when: CodeEditsIsVisible.raw,
       },
       KeybindingScope.USER,
     );

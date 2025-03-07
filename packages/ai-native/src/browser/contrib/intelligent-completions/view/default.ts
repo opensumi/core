@@ -1,3 +1,5 @@
+import { AI_CODE_EDITS_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { CommandService } from '@opensumi/ide-core-common';
 import {
   InlineCompletionContext,
   InlineCompletionTriggerKind,
@@ -80,17 +82,23 @@ export class DefaultCodeEditsView extends BaseCodeEditsView {
       return;
     }
 
+    const position = this.editorObs.positions.get()?.[0];
+    if (!position) {
+      return;
+    }
+
+    const model = this.editorObs.model.get();
+    if (!model) {
+      return;
+    }
+
+    const originalContent = model.getValueInRange(completionModel.firstRange);
+    // edits 的内容与原内容一样就不展示
+    if (originalContent === completionModel.firstText) {
+      return;
+    }
+
     asyncTransaction(async (tx) => {
-      const position = this.editorObs.positions.get()?.[0];
-      if (!position) {
-        return;
-      }
-
-      const model = this.editorObs.model.get();
-      if (!model) {
-        return;
-      }
-
       const versionId = this.editorObs.versionId.get();
       const context: InlineCompletionContext = {
         triggerKind: InlineCompletionTriggerKind.Automatic,
@@ -103,16 +111,20 @@ export class DefaultCodeEditsView extends BaseCodeEditsView {
       const inlineEdits: InlineCompletionProviderResult = await provideInlineCompletions(
         {
           all: () => [
-              {
-                provideInlineCompletions: () => {},
-                provideInlineEditsForRange(model, range, context, token) {
-                  return completionModel;
-                },
-                freeInlineCompletions: () => [],
-              } as InlineCompletionsProvider<ICodeEditsResult<ICodeEdit>>,
-            ],
+            {
+              provideInlineCompletions: () => {},
+              provideInlineEditsForRange(model, range, context, token) {
+                return completionModel;
+              },
+              freeInlineCompletions: () => [],
+              handleRejection: (completions, item) => {
+                const commandService: CommandService = this.injector.get(CommandService);
+                commandService.executeCommand(AI_CODE_EDITS_COMMANDS.DISCARD.id);
+              },
+            } as InlineCompletionsProvider<ICodeEditsResult<ICodeEdit>>,
+          ],
         } as unknown as LanguageFeatureRegistry<InlineCompletionsProvider>,
-        Range.lift(completionModel.range),
+        Range.lift(completionModel.firstRange),
         model,
         context,
       );
@@ -122,9 +134,11 @@ export class DefaultCodeEditsView extends BaseCodeEditsView {
         request,
         model,
         this.editorObs.versionId,
-        constObservable(1000),
+        constObservable(4000),
       );
+
       source.inlineCompletions.set(completions, tx);
+      source.loading.set(false, tx);
     });
   }
 

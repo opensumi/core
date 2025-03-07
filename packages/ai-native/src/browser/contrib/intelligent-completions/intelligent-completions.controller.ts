@@ -5,7 +5,7 @@ import {
   KeybindingScope,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { CodeEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import {
   AINativeSettingSectionsId,
   CodeEditsRT,
@@ -98,13 +98,13 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
       this.monacoEditor,
     ]);
 
-    const multiLineEditsIsVisibleKey = new Set([MultiLineEditsIsVisible.raw]);
+    const multiLineEditsIsVisibleKey = new Set([CodeEditsIsVisible.raw]);
     this.multiLineEditsIsVisibleObs = observableFromEvent(
       this,
       Event.filter(this.aiNativeContextKey.contextKeyService!.onDidChangeContext, (e: ContextKeyChangeEvent) =>
         e.payload.affectsSome(multiLineEditsIsVisibleKey),
       ),
-      () => !!this.aiNativeContextKey.multiLineEditsIsVisible.get(),
+      () => !!this.aiNativeContextKey.codeEditsIsVisible.get(),
     );
 
     this.registerFeature(this.monacoEditor);
@@ -205,7 +205,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
 
   public hide() {
     this.cancelToken();
-    this.aiNativeContextKey.multiLineEditsIsVisible.reset();
+    this.aiNativeContextKey.codeEditsIsVisible.reset();
     this.codeEditsPreviewer.hide();
   }
 
@@ -273,6 +273,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
   public trigger(tx: ITransaction): void {
     const triggerSource = this.codeEditsSourceCollection.getSource(TriggerCodeEditsSource) as TriggerCodeEditsSource;
     if (triggerSource) {
+      this.hide();
       triggerSource.triggerSignal.trigger(tx);
     }
   }
@@ -289,7 +290,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
           const range = completionModel.items[0].range;
           if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
             runWhenIdle(() => {
-              this.discard.get();
+              this.hide();
             });
           }
         }
@@ -314,7 +315,7 @@ export class IntelligentCompletionsController extends BaseAIMonacoEditorControll
           handleChange: (context) => {
             if (context.didChange(this.codeEditsSourceCollection.codeEditsContextBean)) {
               // 如果上一次补全结果还在，则不重复请求
-              const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
+              const isVisible = this.aiNativeContextKey.codeEditsIsVisible.get();
               return !isVisible;
             }
             return false;

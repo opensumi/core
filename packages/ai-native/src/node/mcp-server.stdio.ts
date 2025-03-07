@@ -4,20 +4,13 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 import { ILogger } from '@opensumi/ide-core-common';
 
-export interface IMCPServer {
-  isStarted(): boolean;
-  start(): Promise<void>;
-  getServerName(): string;
-  callTool(toolName: string, toolCallId: string, arg_string: string): ReturnType<Client['callTool']>;
-  getTools(): ReturnType<Client['listTools']>;
-  update(command: string, args?: string[], env?: { [key: string]: string }): void;
-  stop(): void;
-}
+import pkg from '../../package.json';
+import { IMCPServer } from '../common/mcp-server-manager';
 
-export class MCPServerImpl implements IMCPServer {
+export class StdioMCPServer implements IMCPServer {
   private name: string;
-  private command: string;
-  private args?: string[];
+  public command: string;
+  public args?: string[];
   private client: Client;
   private env?: { [key: string]: string };
   private started: boolean = false;
@@ -72,8 +65,8 @@ export class MCPServerImpl implements IMCPServer {
 
     this.client = new Client(
       {
-        name: 'opensumi-mcp-client',
-        version: '1.0.0',
+        name: 'sumi-ide-stdio-mcp-client',
+        version: pkg.version,
       },
       {
         capabilities: {},
@@ -116,12 +109,17 @@ export class MCPServerImpl implements IMCPServer {
     this.env = env;
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     if (!this.started || !this.client) {
       return;
     }
     this.logger?.log(`Stopping MCP server "${this.name}"`);
-    this.client.close();
+    try {
+      await this.client.close();
+    } catch (error) {
+      this.logger?.error(`Failed to stop MCP server "${this.name}":`, error);
+    }
+    this.logger?.log(`MCP server "${this.name}" stopped`);
     this.started = false;
   }
 }

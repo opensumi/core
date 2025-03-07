@@ -1,5 +1,7 @@
 import { IEditorDocumentModel } from '@opensumi/ide-editor';
 
+import { BUILTIN_MCP_SERVER_NAME } from './index';
+
 const BACK_QUOTE_3_SYMBOL = '```';
 const MIN_PROMPT_CHARS = 10;
 
@@ -49,4 +51,4 @@ export const extractCodeBlocks = (content: string): string => {
   return newContents.join('\n');
 };
 
-export const getToolName = (toolName: string, serverName = 'sumi-builtin') => `mcp_${serverName}_${toolName}`;
+export const getToolName = (toolName: string, serverName = BUILTIN_MCP_SERVER_NAME) => `mcp_${serverName}_${toolName}`;

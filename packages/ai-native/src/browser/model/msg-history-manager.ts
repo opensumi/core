@@ -1,7 +1,5 @@
-import { Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event, uuid } from '@opensumi/ide-core-common';
-import { ChatMessageRole } from '@opensumi/ide-core-common/lib/types/ai-native';
-import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatMessageRole, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 type IExcludeMessage = Omit<IHistoryChatMessage, 'id' | 'order'>;
 
@@ -57,11 +55,6 @@ export class MsgHistoryManager extends Disposable {
 
   private startIndex = 0;
 
-  private get totalTokens(): number {
-    const list = this.messageList.slice(this.startIndex);
-    return list.reduce((acc, msg) => acc + (msg.content.length || 0), 0) / 3;
-  }
-
   public get slicedMessageCount(): number {
     return this.startIndex;
   }
@@ -71,12 +64,7 @@ export class MsgHistoryManager extends Disposable {
     return list[list.length - 1]?.id;
   }
 
-  public getMessages(maxTokens?: number): IHistoryChatMessage[] {
-    if (maxTokens && this.totalTokens > maxTokens) {
-      while (this.totalTokens > maxTokens) {
-        this.startIndex++;
-      }
-    }
+  public getMessages(): IHistoryChatMessage[] {
     return this.messageList.slice(this.startIndex);
   }
 
@@ -126,6 +114,10 @@ export class MsgHistoryManager extends Disposable {
 
   public getMessageAdditional(id: string): Record<string, any> {
     return this.messageAdditionalMap.get(id) || {};
+  }
+
+  public get sessionAdditionals() {
+    return this.messageAdditionalMap;
   }
 
   toJSON() {

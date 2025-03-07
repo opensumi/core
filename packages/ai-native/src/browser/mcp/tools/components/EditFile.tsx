@@ -13,6 +13,7 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
@@ -30,6 +31,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   const labelService = useInjectable(LabelService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+  const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const { target_file = '', code_edit, instructions } = args || {};
   const absolutePath = path.join(appConfig.workspaceDir, target_file);
   const [codeBlockData, setCodeBlockData] = useState<CodeBlockData | undefined>(
@@ -55,15 +57,20 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
 
   useEffect(() => {
     const disposable = applyService.onCodeBlockUpdate((codeBlockData) => {
-      setCodeBlockData({ ...codeBlockData });
+      if (codeBlockData.toolCallId === toolCallId) {
+        setCodeBlockData({ ...codeBlockData });
+      }
     });
     return () => {
       disposable.dispose();
     };
   }, []);
 
-  // 多次迭代时，仅在首处tool组件中展示
-  // FIXME: 这个优化有必要吗？每次都展示也挺好？
+  const handleToggleMode = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setMode(mode === 'code' ? 'diff' : 'code');
+  };
+
   if (!args || !codeBlockData) {
     return null;
   }
@@ -77,7 +84,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
         })}
         onClick={() => {
           if (codeBlockData.status === 'pending') {
-            applyService.renderApplyResult(codeBlockData, codeBlockData.updatedCode!);
+            editorService.open(URI.file(absolutePath));
           } else if (codeBlockData.status === 'success') {
             applyService.revealApplyPosition(codeBlockData);
           }
@@ -89,15 +96,15 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
           {codeBlockData.iterationCount > 1 && (
             <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
           )}
-          {renderStatus(codeBlockData)}
+          {renderStatus(codeBlockData, props.result)}
         </div>
         <div className={styles.right}>
           <Popover title={'Show Code'} id={'edit-file-tool-show-code'}>
-            <Icon iconClass='codicon codicon-file-code' onClick={() => setMode('code')} />
+            <Icon iconClass='codicon codicon-file-code' onClick={handleToggleMode} />
           </Popover>
           {codeBlockData.applyResult?.diff && (
             <Popover title={'Show Diff'} id={'edit-file-tool-show-diff'}>
-              <Icon iconClass='codicon codicon-diff-multiple' onClick={() => setMode('diff')} />
+              <Icon iconClass='codicon codicon-diff-multiple' onClick={handleToggleMode} />
             </Popover>
           )}
         </div>
@@ -131,7 +138,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   ];
 };
 
-const renderStatus = (codeBlockData: CodeBlockData) => {
+const renderStatus = (codeBlockData: CodeBlockData, error?: string) => {
   const status = codeBlockData.status;
   switch (status) {
     case 'generating':
@@ -150,7 +157,7 @@ const renderStatus = (codeBlockData: CodeBlockData) => {
       );
     case 'failed':
       return (
-        <Popover title='Failed' id={'edit-file-tool-status-failed'}>
+        <Popover title={`Failed (${error})`} id={'edit-file-tool-status-failed'}>
           <Icon iconClass='codicon codicon-error' style={{ color: 'var(--debugConsole-errorForeground)' }} />
         </Popover>
       );

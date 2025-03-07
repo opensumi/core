@@ -69,8 +69,13 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     [AINativeSettingSectionsId.LLMModelSelection]: {
       type: 'string',
       default: 'deepseek',
-      enum: ['deepseek', 'anthropic', 'openai'],
+      enum: ['deepseek', 'anthropic', 'openai', 'openai-compatible'],
       description: localize('preference.ai.native.llm.model.selection.description'),
+    },
+    [AINativeSettingSectionsId.ModelID]: {
+      type: 'string',
+      default: 'deepseek-chat',
+      description: localize('preference.ai.native.llm.model.id'),
     },
     [AINativeSettingSectionsId.DeepseekApiKey]: {
       type: 'string',
@@ -108,11 +113,27 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
             type: 'string',
             description: localize('preference.ai.native.mcp.servers.command.description'),
           },
+          type: {
+            type: 'string',
+            enum: ['stdio', 'sse'],
+            enumDescriptions: [
+              localize('preference.ai.native.mcp.servers.type.stdio'),
+              localize('preference.ai.native.mcp.servers.type.sse'),
+            ],
+            description: localize('preference.ai.native.mcp.servers.type.description'),
+            default: 'stdio',
+          },
+          enabled: {
+            type: 'boolean',
+            description: localize('preference.ai.native.mcp.servers.enabled.description'),
+            default: true,
+          },
           args: {
             type: 'array',
             items: {
               type: 'string',
             },
+            default: [],
             description: localize('preference.ai.native.mcp.servers.args.description'),
           },
           env: {
@@ -132,7 +153,6 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.SystemPrompt]: {
       type: 'string',
-      default: '',
       description: localize('preference.ai.native.chat.system.prompt.description'),
     },
   },

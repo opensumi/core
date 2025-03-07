@@ -14,10 +14,12 @@ import {
   Domain,
   IAIInlineChatService,
   IEditorExtensionContribution,
+  IPreferenceSettingsService,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
   MonacoContribution,
+  PreferenceSchemaProvider,
   PreferenceService,
   SlotLocation,
   SlotRendererContribution,
@@ -76,11 +78,15 @@ import {
   AI_CHAT_LOGO_AVATAR_ID,
   AI_CHAT_VIEW_ID,
   AI_MENU_BAR_DEBUG_TOOLBAR,
+  BUILTIN_MCP_SERVER_NAME,
   ChatProxyServiceToken,
   IChatInternalService,
   IChatManagerService,
   ISumiMCPServerBackend,
   SumiMCPServerProxyServicePath,
+  anthropicModels,
+  deepSeekModels,
+  openAiNativeModels,
 } from '../common';
 import { MCPServerDescription } from '../common/mcp-server-manager';
 
@@ -208,6 +214,12 @@ export class AINativeBrowserContribution
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
+  @Autowired(PreferenceSchemaProvider)
+  private preferenceSchemaProvider: PreferenceSchemaProvider;
+
+  @Autowired(IPreferenceSettingsService)
+  private preferenceSettings: IPreferenceSettingsService;
+
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
@@ -318,9 +330,17 @@ export class AINativeBrowserContribution
     }
   }
 
+  onReconnect(): void {
+    const { supportsMCP } = this.aiNativeConfigService.capabilities;
+    if (supportsMCP) {
+      this.initMCPServers();
+    }
+  }
+
   onDidStart() {
     runWhenIdle(() => {
-      const { supportsRenameSuggestions, supportsInlineChat, supportsMCP } = this.aiNativeConfigService.capabilities;
+      const { supportsRenameSuggestions, supportsInlineChat, supportsMCP, supportsCustomLLMSettings } =
+        this.aiNativeConfigService.capabilities;
       const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.ChatVisibleType);
 
       if (prefChatVisibleType === 'always') {
@@ -337,19 +357,69 @@ export class AINativeBrowserContribution
         this.codeActionSingleHandler.load();
       }
 
-      if (supportsMCP) {
-        // 初始化内置 MCP Server
-        this.sumiMCPServerBackendProxy.initBuiltinMCPServer();
+      if (supportsCustomLLMSettings) {
+        this.preferenceService.onSpecificPreferenceChange(AINativeSettingSectionsId.LLMModelSelection, (change) => {
+          const model = this.getModelByName(change.newValue);
+          const modelIds = model ? Object.keys(model) : [];
+          const defaultModelId = modelIds.length ? modelIds[0] : '';
+          const currentSchemas = this.preferenceSchemaProvider.getPreferenceProperty(AINativeSettingSectionsId.ModelID);
+          this.preferenceSchemaProvider.setSchema(
+            {
+              properties: {
+                [AINativeSettingSectionsId.ModelID]: {
+                  ...currentSchemas,
+                  default: defaultModelId,
+                  defaultValue: defaultModelId,
+                  enum: modelIds.length ? modelIds : undefined,
+                },
+              },
+            },
+            true,
+          );
+          this.preferenceService.set(AINativeSettingSectionsId.ModelID, defaultModelId, change.scope);
+          this.preferenceSettings.setEnumLabels(
+            AINativeSettingSectionsId.ModelID,
+            modelIds.reduce((obj, item) => ({ ...obj, [item]: item }), {}),
+          );
+        });
+      }
 
-        // 从 preferences 获取并初始化外部 MCP Servers
-        const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(
-          AINativeSettingSectionsId.MCPServers,
-        );
-        if (mcpServers && mcpServers.length > 0) {
-          this.sumiMCPServerBackendProxy.initExternalMCPServers(mcpServers);
-        }
+      if (supportsMCP) {
+        this.initMCPServers();
       }
     });
+  }
+
+  private initMCPServers() {
+    // 从 preferences 获取并初始化外部 MCP Servers
+    const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers);
+
+    // 查找内置 MCP Server 的配置
+    const builtinServer = mcpServers?.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
+
+    // 总是初始化内置服务器，根据配置决定是否启用
+    this.sumiMCPServerBackendProxy.initBuiltinMCPServer(builtinServer?.enabled ?? true);
+
+    // 初始化其他外部 MCP Servers
+    if (mcpServers && mcpServers.length > 0) {
+      const externalServers = mcpServers.filter((server) => server.name !== BUILTIN_MCP_SERVER_NAME);
+      if (externalServers.length > 0) {
+        this.sumiMCPServerBackendProxy.initExternalMCPServers(externalServers);
+      }
+    }
+  }
+
+  private getModelByName(modelName: string) {
+    switch (modelName) {
+      case 'deepseek':
+        return deepSeekModels;
+      case 'anthropic':
+        return anthropicModels;
+      case 'openai':
+        return openAiNativeModels;
+      default:
+        return undefined;
+    }
   }
 
   private registerFeature() {
@@ -457,6 +527,10 @@ export class AINativeBrowserContribution
             localized: 'preference.ai.native.llm.model.selection',
           },
           {
+            id: AINativeSettingSectionsId.ModelID,
+            localized: 'preference.ai.native.llm.model.id',
+          },
+          {
             id: AINativeSettingSectionsId.DeepseekApiKey,
             localized: 'preference.ai.native.deepseek.apiKey',
           },
@@ -531,7 +605,10 @@ export class AINativeBrowserContribution
       id: INLINE_DIFF_MANAGER_WIDGET_ID,
       component: InlineDiffManager,
       displaysOnResource: (resource) => {
-        if (this.applyService.getUriPendingCodeBlock(resource.uri)) {
+        if (
+          this.aiNativeConfigService.capabilities.supportsMCP &&
+          this.applyService.getUriCodeBlocks(resource.uri)?.filter((block) => block.status === 'pending').length
+        ) {
           return true;
         }
         return false;

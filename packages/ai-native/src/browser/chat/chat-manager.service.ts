@@ -10,8 +10,9 @@ import {
   STORAGE_NAMESPACE,
   StorageProvider,
   debounce,
+  formatLocalize,
 } from '@opensumi/ide-core-common';
-import { ChatMessageRole, IChatMessage, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { IChatAgentService, IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 import { MsgHistoryManager } from '../model/msg-history-manager';
@@ -28,11 +29,14 @@ interface ISessionModel {
       isCanceled: boolean;
       responseText: string;
       responseContents: IChatProgressResponseContent[];
+      responseParts: IChatProgressResponseContent[];
       errorDetails: IChatResponseErrorDetails | undefined;
       followups: IChatFollowup[];
     };
   }[];
 }
+
+const MAX_SESSION_COUNT = 20;
 
 @Injectable()
 export class ChatManagerService extends Disposable {
@@ -69,6 +73,7 @@ export class ChatManagerService extends Disposable {
               responseContents: request.response.responseContents,
               isComplete: true,
               responseText: request.response.responseText,
+              responseParts: request.response.responseParts,
               errorDetails: request.response.errorDetails,
               followups: request.response.followups,
               isCanceled: request.response.isCanceled,
@@ -100,6 +105,9 @@ export class ChatManagerService extends Disposable {
   }
 
   startSession() {
+    if (this.#sessionModels.size >= MAX_SESSION_COUNT) {
+      throw new Error(formatLocalize('aiNative.chat.session.max', MAX_SESSION_COUNT.toString()));
+    }
     const model = new ChatModel();
     this.#sessionModels.set(model.sessionId, model);
     this.listenSession(model);
@@ -147,14 +155,7 @@ export class ChatManagerService extends Disposable {
       request.response.cancel();
     });
 
-    const history: IChatMessage[] = [];
-    for (const request of model.requests) {
-      if (!request.response.isComplete) {
-        continue;
-      }
-      history.push({ role: ChatMessageRole.User, content: request.message.prompt });
-      history.push({ role: ChatMessageRole.Assistant, content: request.response.responseText });
-    }
+    const history = model.messageHistory;
 
     try {
       const progressCallback = (progress: IChatProgress) => {

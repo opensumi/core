@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-ai-native",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "files": [
     "lib",
     "src"
@@ -19,9 +19,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^1.1.6",
-    "@ai-sdk/deepseek": "^0.1.8",
+    "@ai-sdk/anthropic": "^1.1.9",
+    "@ai-sdk/deepseek": "^0.1.11",
     "@ai-sdk/openai": "^1.1.9",
+    "@ai-sdk/openai-compatible": "^0.1.11",
     "@modelcontextprotocol/sdk": "^1.3.1",
     "@opensumi/ide-addons": "workspace:*",
     "@opensumi/ide-components": "workspace:*",
@@ -44,10 +45,11 @@
     "@opensumi/ide-utils": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
     "@xterm/xterm": "5.5.0",
-    "ai": "^4.1.21",
+    "ai": "^4.1.45",
     "ansi-regex": "^2.0.0",
     "diff": "^7.0.0",
     "dom-align": "^1.7.0",
+    "eventsource": "^3.0.5",
     "rc-collapse": "^4.0.0",
     "react-chat-elements": "^12.0.10",
     "react-highlight": "^0.15.0",

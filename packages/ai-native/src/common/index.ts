@@ -12,12 +12,17 @@ import {
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
 import { MCPServerDescription } from './mcp-server-manager';
 import { MCPTool } from './types';
+
+import type { CoreMessage } from 'ai';
+
+export type { CoreMessage };
+
+export * from './model';
 
 export const IAINativeService = Symbol('IAINativeService');
 
@@ -30,6 +35,9 @@ export const AI_CHAT_VIEW_ID = 'AI-Chat';
 export const AI_CHAT_CONTAINER_ID = 'AI-Chat-Container';
 export const AI_CHAT_LOGO_AVATAR_ID = 'AI-Chat-Logo-Avatar';
 export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
+
+// 内置 MCP 服务器名称
+export const BUILTIN_MCP_SERVER_NAME = 'sumi-builtin';
 
 /**
  * @deprecated Use {@link DESIGN_MENUBAR_CONTAINER_VIEW_ID} instead
@@ -123,9 +131,14 @@ export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 export const TokenMCPServerProxyService = Symbol('TokenMCPServerProxyService');
 
 export interface ISumiMCPServerBackend {
-  initBuiltinMCPServer(): void;
+  initBuiltinMCPServer(enabled: boolean): void;
   initExternalMCPServers(servers: MCPServerDescription[]): void;
   getAllMCPTools(): Promise<MCPTool[]>;
+  getServers(): Promise<Array<{ name: string; isStarted: boolean }>>;
+  startServer(serverName: string): Promise<void>;
+  stopServer(serverName: string): Promise<void>;
+  addOrUpdateServer(description: MCPServerDescription): void;
+  removeServer(name: string): void;
 }
 
 export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';
@@ -138,7 +151,7 @@ export interface IChatAgentService {
     id: string,
     request: IChatAgentRequest,
     progress: (part: IChatProgress) => void,
-    history: IChatMessage[],
+    history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult>;
   getAgents(): Array<IChatAgent>;
@@ -159,7 +172,7 @@ export interface IChatAgent extends IChatAgentData {
   invoke(
     request: IChatAgentRequest,
     progress: (part: IChatProgress) => void,
-    history: IChatMessage[],
+    history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult>;
   provideFollowups?(sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;

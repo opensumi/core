@@ -11,8 +11,9 @@ import {
 } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser/types';
 import { IMarkerService } from '@opensumi/ide-markers/lib/common/types';
+import { Range } from '@opensumi/ide-monaco';
 
-import { FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
+import { AttachFileContext, FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
 
 @Injectable()
 export class LLMContextServiceImpl extends WithEventBus implements LLMContextService {
@@ -27,40 +28,72 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   private isAutoCollecting = false;
 
-  private contextFiles: FileContext[] = [];
+  private contextVersion = 0;
 
-  private maxFiles: number = 10; // 上下文的最大长度限制
-
-  private onDidContextFilesChangeEmitter = new Emitter<FileContext[]>();
+  private readonly maxAttachFilesLimit = 10;
+  private readonly maxViewFilesLimit = 20;
+  private readonly attachedFiles: FileContext[] = [];
+  private readonly recentlyViewFiles: FileContext[] = [];
+  private readonly onDidContextFilesChangeEmitter = new Emitter<{
+    viewed: FileContext[];
+    attached: FileContext[];
+    version: number;
+  }>();
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;
 
-  addFileToContext(uri: URI, selection?: [number, number], isManual = true): void {
-    this.removeFileFromContext(uri);
-
-    this.contextFiles.push({ uri, selection, isManual });
-
-    if (this.contextFiles.length > this.maxFiles) {
-      this.contextFiles.shift();
+  private addFileToList(file: FileContext, list: FileContext[], maxLimit: number) {
+    const existingIndex = list.findIndex((f) => f.uri.toString() === file.uri.toString());
+    if (existingIndex > -1) {
+      list.splice(existingIndex, 1);
     }
 
+    list.push(file);
+    if (list.length > maxLimit) {
+      list.shift();
+    }
+  }
+
+  addFileToContext(uri: URI, selection?: [number, number], isManual = false): void {
+    if (!uri) {
+      return;
+    }
+
+    const file = { uri, selection };
+    const targetList = isManual ? this.attachedFiles : this.recentlyViewFiles;
+    const maxLimit = isManual ? this.maxAttachFilesLimit : this.maxViewFilesLimit;
+
+    if (isManual) {
+      this.docModelManager.createModelReference(uri);
+    }
+
+    this.addFileToList(file, targetList, maxLimit);
+    this.notifyContextChange();
+  }
+
+  private notifyContextChange(): void {
     this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
   }
 
   cleanFileContext() {
-    this.contextFiles = [];
-    this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
+    this.attachedFiles.length = 0;
+    this.notifyContextChange();
   }
 
   private getAllContextFiles() {
-    return [...this.contextFiles];
+    return {
+      viewed: this.recentlyViewFiles,
+      attached: this.attachedFiles,
+      version: this.contextVersion++,
+    };
   }
 
-  removeFileFromContext(uri: URI): void {
-    const index = this.contextFiles.findIndex((file) => file.uri.toString() === uri.toString());
+  removeFileFromContext(uri: URI, isManual = false): void {
+    const targetList = isManual ? this.attachedFiles : this.recentlyViewFiles;
+    const index = targetList.findIndex((file) => file.uri.toString() === uri.toString());
     if (index > -1) {
-      this.contextFiles.splice(index, 1);
-      this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
+      targetList.splice(index, 1);
     }
+    this.notifyContextChange();
   }
 
   startAutoCollection(): void {
@@ -78,8 +111,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         if (event.payload.uri.scheme !== 'file') {
           return;
         }
-        // FIXME: 暂时不自动添加
-        // this.addFileToContext(event.payload.uri);
+        this.addFileToContext(event.payload.uri, undefined, false);
       }),
     );
 
@@ -88,6 +120,8 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         if (event.payload.scheme !== 'file') {
           return;
         }
+
+        this.removeFileFromContext(event.payload, false);
       }),
     );
 
@@ -109,11 +143,12 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
           ].sort() as [number, number];
 
           if (selection[0] === selection[1]) {
-            this.addFileToContext(event.payload.editorUri, undefined);
+            this.addFileToContext(event.payload.editorUri, undefined, false);
           } else {
             this.addFileToContext(
               event.payload.editorUri,
               selection.sort((a, b) => a - b),
+              false,
             );
           }
         }
@@ -127,42 +162,53 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   serialize(): SerializedContext {
     const files = this.getAllContextFiles();
-    const recentlyViewFiles = files
-      .filter((v) => !v.selection)
-      .map((file) => {
-        const relativePath = URI.file(this.appConfig.workspaceDir).relative(file.uri);
-        if (relativePath) {
-          return relativePath.toString();
-        }
-        return file.uri.parent.toString();
-      })
-      .filter(Boolean);
-
-    const attachedFiles = files
-      .filter((v) => v.selection)
-      .map((file) => {
-        const ref = this.docModelManager.getModelReference(file.uri);
-        const content = ref!.instance.getText();
-        const lineErrors = this.markerService
-          .getManager()
-          .getMarkers({
-            resource: file.uri.toString(),
-            severities: MarkerSeverity.Error,
-          })
-          .map((marker) => marker.message);
-
-        return {
-          content,
-          lineErrors,
-          path: URI.file(this.appConfig.workspaceDir).relative(file.uri)!.toString(),
-          language: ref?.instance.languageId!,
-        };
-      })
-      .filter(Boolean);
+    const workspaceRoot = URI.file(this.appConfig.workspaceDir);
 
     return {
-      recentlyViewFiles,
-      attachedFiles,
+      recentlyViewFiles: this.serializeRecentlyViewFiles(files.viewed, workspaceRoot),
+      attachedFiles: this.serializeAttachedFiles(files.attached, workspaceRoot),
     };
+  }
+
+  private serializeRecentlyViewFiles(files: FileContext[], workspaceRoot: URI): string[] {
+    return files
+      .map((file) => workspaceRoot.relative(file.uri)?.toString() || file.uri.parent.toString())
+      .filter(Boolean);
+  }
+
+  private serializeAttachedFiles(files: FileContext[], workspaceRoot: URI): AttachFileContext[] {
+    return files
+      .map((file) => this.serializeAttachedFile(file, workspaceRoot))
+      .filter(Boolean) as unknown as AttachFileContext[];
+  }
+
+  private serializeAttachedFile(file: FileContext, workspaceRoot: URI) {
+    try {
+      const ref = this.docModelManager.getModelReference(file.uri);
+      if (!ref) {
+        return null;
+      }
+
+      return {
+        content: ref.instance.getText(
+          file.selection && new Range(file.selection[0], Infinity, file.selection[1], Infinity),
+        ),
+        lineErrors: this.getFileErrors(file.uri),
+        path: workspaceRoot.relative(file.uri)!.toString(),
+        language: ref.instance.languageId!,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  private getFileErrors(uri: URI): string[] {
+    return this.markerService
+      .getManager()
+      .getMarkers({
+        resource: uri.toString(),
+        severities: MarkerSeverity.Error,
+      })
+      .map((marker) => marker.message);
   }
 }

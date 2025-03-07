@@ -4,7 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { ILogger } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 
-import { ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../common';
+import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../common';
 import { IMCPServerProxyService } from '../../common/types';
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
@@ -28,14 +28,14 @@ export class MCPServerProxyService implements IMCPServerProxyService {
   }
 
   // 获取 OpenSumi 内部注册的 MCP tools
-  async $getMCPTools() {
+  async $getBuiltinMCPTools() {
     const tools = await this.mcpServerRegistry.getMCPTools().map((tool) =>
       // 不要传递 handler
       ({
         name: tool.name,
         description: tool.description,
         inputSchema: zodToJsonSchema(tool.inputSchema),
-        providerName: 'sumi-builtin',
+        providerName: BUILTIN_MCP_SERVER_NAME,
       }),
     );
 
@@ -51,5 +51,17 @@ export class MCPServerProxyService implements IMCPServerProxyService {
 
   async getAllMCPTools() {
     return this.sumiMCPServerProxyService.getAllMCPTools();
+  }
+
+  async $getServers() {
+    return this.sumiMCPServerProxyService.getServers();
+  }
+
+  async $startServer(serverName: string) {
+    await this.sumiMCPServerProxyService.startServer(serverName);
+  }
+
+  async $stopServer(serverName: string) {
+    await this.sumiMCPServerProxyService.stopServer(serverName);
   }
 }

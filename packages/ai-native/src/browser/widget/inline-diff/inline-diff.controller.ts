@@ -3,6 +3,7 @@ import {
   AINativeSettingSectionsId,
   ChatResponse,
   Disposable,
+  DisposableCollection,
   Emitter,
   Event,
   IDisposable,
@@ -23,7 +24,7 @@ import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
 import { EResultKind } from '../inline-chat/inline-chat.service';
-import { InlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
+import { BaseInlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import {
   BaseInlineDiffPreviewer,
@@ -33,7 +34,7 @@ import {
 } from './inline-diff-previewer';
 import { InlineDiffWidget } from './inline-diff-widget';
 
-type IInlineDiffPreviewer = BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler>;
+type IInlineDiffPreviewer = BaseInlineDiffPreviewer<InlineDiffWidget | BaseInlineStreamDiffHandler>;
 
 export class InlineDiffController extends BaseAIMonacoEditorController {
   public static readonly ID = 'editor.contrib.ai.inline.diff';
@@ -118,28 +119,26 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
       chatResponse?: ChatResponse | InlineChatController;
       previewerOptions?: IDiffPreviewerOptions;
     },
-  ): BaseInlineDiffPreviewer<InlineDiffWidget | InlineStreamDiffHandler> {
+  ): BaseInlineDiffPreviewer<InlineDiffWidget | BaseInlineStreamDiffHandler> {
     const { crossSelection, chatResponse } = options;
 
     const disposable = new Disposable();
 
     const previewer = this.createDiffPreviewer(monacoEditor, crossSelection, options.previewerOptions);
-    transaction((tx) => {
-      this.currentPreviewer.set(previewer, tx);
-      this.previewerStore.set(previewer.modelId, previewer);
-    });
 
     const onFinish = () => {
       previewer.layout();
       disposable.dispose();
     };
 
+    const previewerDisposable = new DisposableCollection();
+
     disposable.addDispose(
       previewer.onReady(() => {
         if (InlineChatController.is(chatResponse)) {
           const controller = chatResponse as InlineChatController;
 
-          disposable.addDispose([
+          previewerDisposable.pushAll([
             controller.onData((data) => {
               if (ReplyResponse.is(data)) {
                 this.renderDiff(previewer, data);
@@ -167,6 +166,10 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
       }),
     );
 
+    previewer.onDispose(() => {
+      previewerDisposable.dispose();
+    });
+    disposable.addDispose(previewerDisposable);
     previewer.layout();
     return previewer;
   }
@@ -195,6 +198,11 @@ export class InlineDiffController extends BaseAIMonacoEditorController {
         this.previewerStore.delete(previewer.modelId);
       }),
     );
+
+    transaction((tx) => {
+      this.currentPreviewer.set(previewer, tx);
+      this.previewerStore.set(previewer.modelId, previewer);
+    });
 
     return previewer;
   }

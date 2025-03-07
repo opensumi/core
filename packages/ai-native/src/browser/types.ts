@@ -27,7 +27,6 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
-import { SerializedContext } from '../common/llm-context';
 
 import {
   ICodeEditsContextBean,
@@ -372,6 +371,7 @@ export interface IMCPServerToolComponentProps {
 }
 
 export interface IMCPServerRegistry {
+  activeMessageInfo: { messageId: string; sessionId: string };
   registerMCPTool(tool: MCPToolDefinition): void;
   getMCPTools(): MCPToolDefinition[];
   getMCPTool(name: string): MCPToolDefinition | undefined;

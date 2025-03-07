@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import {
   Disposable,
   Emitter,
@@ -8,13 +8,12 @@ import {
   IChatProgress,
   IChatToolContent,
   IChatTreeData,
-  ILogger,
-  memoize,
   uuid,
 } from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
+  CoreMessage,
   IChatFollowup,
   IChatModel,
   IChatRequestMessage,
@@ -26,6 +25,8 @@ import {
 } from '../../common';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
+
+import type { TextPart, ToolCallPart } from 'ai';
 
 export type IChatProgressResponseContent =
   | IChatMarkdownContent
@@ -88,6 +89,7 @@ export class ChatResponseModel extends Disposable {
       isComplete: boolean;
       isCanceled: boolean;
       responseContents: IChatProgressResponseContent[];
+      responseParts: IChatProgressResponseContent[];
       responseText: string;
       errorDetails: IChatResponseErrorDetails | undefined;
       followups: IChatFollowup[] | undefined;
@@ -97,6 +99,7 @@ export class ChatResponseModel extends Disposable {
     this.#requestId = requestId;
     if (initParams) {
       this.#responseContents = initParams.responseContents;
+      this.#responseParts = initParams.responseParts || [];
       this.#responseText = initParams.responseText;
       this.#isComplete = initParams.isComplete;
       this.#isCanceled = initParams.isCanceled;
@@ -241,6 +244,7 @@ export class ChatResponseModel extends Disposable {
       isCanceled: this.isCanceled,
       responseContents: this.responseContents,
       responseText: this.responseText,
+      responseParts: this.responseParts,
       errorDetails: this.errorDetails,
       followups: this.followups,
     };
@@ -299,10 +303,64 @@ export class ChatModel extends Disposable implements IChatModel {
 
   readonly history: MsgHistoryManager;
 
+  get messageHistory() {
+    const history: CoreMessage[] = [];
+    for (const request of this.requests) {
+      if (!request.response.isComplete) {
+        continue;
+      }
+      history.push({ role: 'user', content: request.message.prompt });
+      for (const part of request.response.responseParts) {
+        if (part.kind === 'treeData' || part.kind === 'component') {
+          continue;
+        }
+        if (part.kind !== 'toolCall') {
+          history.push({
+            role: 'assistant',
+            content: [
+              {
+                type: 'text',
+                text: part.kind === 'markdownContent' ? part.content.value : part.content,
+              },
+            ],
+          });
+        } else {
+          // 直接开始toolCall场景
+          if (history[history.length - 1].role !== 'assistant') {
+            history.push({
+              role: 'assistant',
+              content: [],
+            });
+          }
+          (history[history.length - 1].content as Array<TextPart | ToolCallPart>).push({
+            type: 'tool-call',
+            toolCallId: part.content.id,
+            toolName: part.content.function.name,
+            args: JSON.parse(part.content.function.arguments || '{}'),
+          });
+          history.push({
+            role: 'tool',
+            content: [
+              {
+                type: 'tool-result',
+                toolCallId: part.content.id,
+                toolName: part.content.function.name,
+                result: JSON.parse(part.content.result || '{}'),
+              },
+            ],
+          });
+        }
+      }
+    }
+    return history;
+  }
+
   addRequest(message: IChatRequestMessage): ChatRequestModel {
+    const msg = message;
+
     const requestId = `${this.sessionId}_request_${ChatModel.requestIdPool++}`;
-    const response = new ChatResponseModel(requestId, this, message.agentId);
-    const request = new ChatRequestModel(requestId, this, message, response);
+    const response = new ChatResponseModel(requestId, this, msg.agentId);
+    const request = new ChatRequestModel(requestId, this, msg, response);
 
     this.#requests.set(requestId, request);
     return request;

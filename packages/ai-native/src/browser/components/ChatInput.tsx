@@ -1,21 +1,38 @@
 import cls from 'classnames';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
-import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, useInjectable, useLatest } from '@opensumi/ide-core-browser';
 import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
-import { ChatAgentViewServiceToken, ChatFeatureRegistryToken, localize, runWhenIdle } from '@opensumi/ide-core-common';
+import {
+  ChatAgentViewServiceToken,
+  ChatFeatureRegistryToken,
+  MessageType,
+  localize,
+  runWhenIdle,
+} from '@opensumi/ide-core-common';
+import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { IDialogService } from '@opensumi/ide-overlay';
 
-import { AT_SIGN_SYMBOL, IChatAgentService, SLASH_SYMBOL } from '../../common';
+import {
+  AT_SIGN_SYMBOL,
+  IChatAgentService,
+  IChatInternalService,
+  SLASH_SYMBOL,
+  TokenMCPServerProxyService,
+} from '../../common';
 import { ChatAgentViewService } from '../chat/chat-agent.view.service';
 import { ChatSlashCommandItemModel } from '../chat/chat-model';
 import { ChatProxyService } from '../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
+import { ChatInternalService } from '../chat/chat.internal.service';
+import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
+import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
+import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
 import { IChatSlashCommandItem } from '../types';
 
-import { ChatContext } from './ChatContext';
 import styles from './components.module.less';
 
 const INSTRUCTION_BOTTOM = 8;
@@ -194,12 +211,29 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const [showExpand, setShowExpand] = useState(false);
   const [isExpand, setIsExpand] = useState(false);
   const [placeholder, setPlaceHolder] = useState(localize('aiNative.chat.input.placeholder.default'));
-
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const dialogService = useInjectable<IDialogService>(IDialogService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const mcpServerProxyService = useInjectable<MCPServerProxyService>(TokenMCPServerProxyService);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const currentAgentIdRef = useLatest(agentId);
+
+  const handleShowMCPConfig = React.useCallback(() => {
+    commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
+  }, [commandService]);
+
+  const handleShowMCPTools = React.useCallback(async () => {
+    const tools = await mcpServerProxyService.getAllMCPTools();
+    dialogService.open({
+      message: <MCPToolsDialog tools={tools} />,
+      type: MessageType.Empty,
+      buttons: [localize('dialog.file.close')],
+    });
+  }, [mcpServerProxyService, dialogService]);
 
   useImperativeHandle(ref, () => ({
     setInputValue: (v: string) => {
@@ -295,6 +329,10 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     if (onValueChange) {
       onValueChange(value);
     }
+  }, []);
+
+  const handleStop = useCallback(() => {
+    aiChatService.cancelRequest();
   }, []);
 
   const handleSend = useCallback(async () => {
@@ -457,11 +495,48 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         disabled={disabled}
         className={styles.input_wrapper}
         onSend={handleSend}
+        onStop={handleStop}
         sendBtnClassName={sendBtnClassName}
         onHeightChange={handleHeightChange}
         height={inputHeight}
         popoverPosition={PopoverPosition.left}
       />
+      <div className={styles.chat_input_footer}>
+        {aiNativeConfigService.capabilities.supportsMCP && (
+          <div className={styles.mcp_desc}>
+            <Popover
+              overlayClassName={styles.popover_icon}
+              id={'ai-chat-header-mcp-server'}
+              position={PopoverPosition.left}
+              title={'MCP Server'}
+            >
+              <EnhanceIcon
+                wrapperClassName={styles.action_btn}
+                className={'codicon codicon-radio-tower'}
+                onClick={handleShowMCPConfig}
+                tabIndex={0}
+                role='button'
+                ariaLabel={'MCP Server'}
+              />
+            </Popover>
+            <Popover
+              overlayClassName={styles.popover_icon}
+              id={'ai-chat-header-tools'}
+              position={PopoverPosition.left}
+              title={localize('aiNative.operate.tools.title')}
+            >
+              <EnhanceIcon
+                wrapperClassName={styles.action_btn}
+                className={getIcon('menubar-tool')}
+                onClick={handleShowMCPTools}
+                tabIndex={0}
+                role='button'
+                ariaLabel={localize('aiNative.operate.tools.title')}
+              />
+            </Popover>
+          </div>
+        )}
+      </div>
     </div>
   );
 });

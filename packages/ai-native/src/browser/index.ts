@@ -33,6 +33,7 @@ import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-man
 import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../common/prompts/context-prompt-provider';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
+import { ApplyService } from './chat/apply.service';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -55,6 +56,9 @@ import { RenameCandidatesProviderRegistry } from './contrib/rename/rename.featur
 import { TerminalAIContribution } from './contrib/terminal/terminal-ai.contributon';
 import { TerminalFeatureRegistry } from './contrib/terminal/terminal.feature.registry';
 import { LanguageParserService } from './languages/service';
+import { BaseApplyService } from './mcp/base-apply.service';
+import { MCPConfigCommandContribution } from './mcp/config/mcp-config.commands';
+import { MCPConfigContribution } from './mcp/config/mcp-config.contribution';
 import { MCPServerProxyService } from './mcp/mcp-server-proxy.service';
 import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
 import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
@@ -91,6 +95,8 @@ export class AINativeModule extends BrowserModule {
     AICodeActionContribution,
     AINativePreferencesContribution,
     IntelligentCompletionsContribution,
+    MCPConfigContribution,
+    MCPConfigCommandContribution,
 
     // MCP Server Contributions START
     ListDirTool,
@@ -194,6 +200,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: ChatAgentPromptProvider,
       useClass: DefaultChatAgentPromptProvider,
+    },
+    {
+      token: BaseApplyService,
+      useClass: ApplyService,
     },
   ];
 

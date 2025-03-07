@@ -20,10 +20,12 @@ import {
   Emitter,
   Event,
   FILE_COMMANDS,
+  IApplicationService,
   IClipboardService,
   IContextKey,
   IStorage,
   MessageType,
+  OperatingSystem,
   STORAGE_NAMESPACE,
   StorageProvider,
   ThrottledDelayer,
@@ -31,7 +33,6 @@ import {
   URI,
   arrays,
   formatLocalize,
-  isLinux,
   localize,
   path,
   strings,
@@ -131,6 +132,9 @@ export class FileTreeModelService {
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
 
+  @Autowired(IApplicationService)
+  private readonly applicationService: IApplicationService;
+
   private _isDisposed = false;
 
   private _treeModel: FileTreeModel;
@@ -183,7 +187,6 @@ export class FileTreeModelService {
   private _fileToLocation: URI | string | undefined;
 
   private treeStateWatcher: TreeStateWatcher;
-  private willSelectedNodePath: string | null;
 
   private _initTreeModelReady = false;
 
@@ -989,6 +992,7 @@ export class FileTreeModelService {
     }
     // 默认过滤掉根目录的选择
     if (this.corePreferences['explorer.confirmDelete']) {
+      const isLinux = this.applicationService.backendOS === OperatingSystem.Linux;
       const ok = isLinux ? localize('file.confirm.delete.ok') : localize('file.confirm.moveToTrash.ok');
       const cancel = localize('file.confirm.delete.cancel');
       const MAX_FILES = 10;

@@ -1,5 +1,17 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
+import { MCP_SERVER_TYPE } from './types';
+
+export interface IMCPServer {
+  isStarted(): boolean;
+  start(): Promise<void>;
+  getServerName(): string;
+  callTool(toolName: string, toolCallId: string, arg_string: string): ReturnType<Client['callTool']>;
+  getTools(): ReturnType<Client['listTools']>;
+  update(command: string, args?: string[], env?: { [key: string]: string }): void;
+  stop(): void;
+}
+
 export interface MCPServerManager {
   callTool(
     serverName: string,
@@ -11,7 +23,7 @@ export interface MCPServerManager {
   addOrUpdateServer(description: MCPServerDescription): void;
   // invoke in node.js only
   addOrUpdateServerDirectly(server: any): void;
-  initBuiltinServer(builtinMCPServer: any): void;
+  initBuiltinServer(builtinMCPServer: any, enabled: boolean): void;
   getTools(serverName: string): ReturnType<Client['listTools']>;
   getServerNames(): Promise<string[]>;
   startServer(serverName: string): Promise<void>;
@@ -19,13 +31,25 @@ export interface MCPServerManager {
   getStartedServers(): Promise<string[]>;
   registerTools(serverName: string): Promise<void>;
   addExternalMCPServers(servers: MCPServerDescription[]): void;
+  getServers(): Map<string, IMCPServer>;
 }
 
 export type MCPTool = Awaited<ReturnType<MCPServerManager['getTools']>>['tools'][number];
 
 export type MCPToolParameter = Awaited<ReturnType<MCPServerManager['getTools']>>['tools'][number]['inputSchema'];
 
-export interface MCPServerDescription {
+export interface BaseMCPServerDescription {
+  /**
+   * The unique name of the MCP server.
+   */
+  name: string;
+  /**
+   * Whether to enable the MCP server.
+   */
+  enabled?: boolean;
+}
+
+export interface StdioMCPServerDescription extends BaseMCPServerDescription {
   /**
    * The unique name of the MCP server.
    */
@@ -46,6 +70,17 @@ export interface MCPServerDescription {
    */
   env?: { [key: string]: string };
 }
+
+export interface SSEMCPServerDescription extends BaseMCPServerDescription {
+  /**
+   * The host of the MCP server.
+   */
+  serverHost: string;
+}
+
+export type MCPServerDescription =
+  | ({ type: MCP_SERVER_TYPE.STDIO } & StdioMCPServerDescription)
+  | ({ type: MCP_SERVER_TYPE.SSE } & SSEMCPServerDescription);
 
 export const MCPServerManager = Symbol('MCPServerManager');
 export const MCPServerManagerPath = 'ServicesMCPServerManager';

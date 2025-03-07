@@ -72,7 +72,7 @@ export interface ToolInvocationRegistry {
    *
    * @param providerName - 要移除其工具的工具提供者名称（在 `ToolRequest` 中指定）
    */
-  unregisterAllTools(providerName: string): void;
+  unregisterProviderTools(providerName: string): void;
 }
 
 export const ToolProvider = Symbol('ToolProvider');
@@ -83,7 +83,7 @@ export interface ToolProvider {
 export class ToolInvocationRegistryImpl implements ToolInvocationRegistry {
   private tools: Map<string, ToolRequest> = new Map<string, ToolRequest>();
 
-  unregisterAllTools(providerName: string): void {
+  unregisterProviderTools(providerName: string): void {
     const toolsToRemove: string[] = [];
     for (const [id, tool] of this.tools.entries()) {
       if (tool.providerName === providerName) {

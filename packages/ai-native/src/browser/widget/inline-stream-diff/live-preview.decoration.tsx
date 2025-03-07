@@ -7,11 +7,13 @@ import {
   Emitter,
   Event,
   IAIReporter,
+  localize,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDecorationsCollection, ITextModel, Position, Range } from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
@@ -67,6 +69,9 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(InlineDiffService)
   private readonly inlineDiffService: InlineDiffService;
 
+  @Autowired(IMessageService)
+  private readonly messageService: IMessageService;
+
   private activeLineDec: IEditorDecorationsCollection;
   private pendingRangeDec: IEditorDecorationsCollection;
   private aiNativeContextKey: AINativeContextKey;
@@ -86,6 +91,10 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   private partialEditWidgetList: AcceptPartialEditWidget[] = [];
   private removedZoneWidgets: RemovedZoneWidget[] = [];
   private zone: LineRange;
+
+  public get partialEditWidgetCount() {
+    return this.partialEditWidgetList.length;
+  }
 
   constructor(private readonly monacoEditor: ICodeEditor) {
     super();
@@ -616,7 +625,7 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     if (this.options.renderRemovedWidgetImmediately) {
       run();
     } else {
-      runWhenIdle(run);
+      this.addDispose(runWhenIdle(run));
     }
   }
 
@@ -678,6 +687,26 @@ export class LivePreviewDiffDecorationModel extends Disposable {
       if (pos) {
         this.monacoEditor.revealLineInCenterIfOutsideViewport(pos.lineNumber);
       }
+    }
+  }
+
+  currentChangeIndex: number = 0;
+
+  revealSiblingChange(direction: 'up' | 'down') {
+    this.currentChangeIndex = this.currentChangeIndex + (direction === 'up' ? -1 : 1);
+    if (this.currentChangeIndex >= 0 && this.currentChangeIndex < this.partialEditWidgetList.length) {
+      const siblingChange = this.partialEditWidgetList[this.currentChangeIndex];
+      const pos = siblingChange.getPosition();
+      if (pos?.position) {
+        this.monacoEditor.revealLineInCenter(pos.position!.lineNumber);
+        return this.currentChangeIndex;
+      }
+    } else {
+      this.messageService.info(
+        direction === 'up'
+          ? localize('aiNative.inlineDiff.noMoreChangesUp')
+          : localize('aiNative.inlineDiff.noMoreChangesDown'),
+      );
     }
   }
 

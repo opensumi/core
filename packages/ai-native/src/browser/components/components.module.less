@@ -96,6 +96,7 @@
 .chat_input_container {
   position: relative;
   border-radius: 9px;
+  padding: 10px 0px 0px 0px;
   border: 1px solid var(--kt-input-border);
   background-color: var(--design-chatInput-background);
   &.active {
@@ -283,6 +284,8 @@
   position: relative;
   min-width: 100px;
   margin-top: 4px;
+  max-height: 300px;
+  overflow: auto;
 
   :global {
     .hljs {
@@ -503,5 +506,24 @@
       margin-top: 4px;
       display: block;
     }
+  }
+}
+
+.chat_input_footer {
+  padding: 0px 10px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+
+  .model_selector {
+    display: flex;
+    font-size: 11px;
+    align-items: center;
+  }
+
+  .mcp_desc {
+    padding: 5px 0px;
+    display: flex;
+    align-items: center;
   }
 }

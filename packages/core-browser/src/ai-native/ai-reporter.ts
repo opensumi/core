@@ -29,7 +29,7 @@ export class AIReporter implements IAIReporter {
   }
 
   // 返回关联 ID
-  start(msg: AIServiceType, data: ReportInfo): string {
+  start(msg: AIServiceType, data: ReportInfo, timeout = 60 * 1000): string {
     const relationId = this.getRelationId();
 
     this.report(relationId, { ...data, msgType: msg, isStart: true });
@@ -37,7 +37,7 @@ export class AIReporter implements IAIReporter {
     // 这里做个兜底，如果 60s 模型还没有返回结果，上报失败
     const cancleHanddler = setTimeout(() => {
       this.report(relationId, { ...data, success: false });
-    }, 60 * 1000);
+    }, timeout);
 
     this.reporterCancelHandler.set(relationId, cancleHanddler);
     return relationId;
@@ -50,6 +50,10 @@ export class AIReporter implements IAIReporter {
     }
 
     this.report(relationId, { success: true, ...data, isStart: false });
+  }
+
+  public send(data: ReportInfo) {
+    this.reporter.point(AI_REPORTER_NAME, data.msgType, data);
   }
 
   // 记录数据但不上报
