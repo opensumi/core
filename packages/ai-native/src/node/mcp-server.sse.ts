@@ -34,9 +34,7 @@ export class SSEMCPServer implements IMCPServer {
     }
     this.logger?.log(`Starting server "${this.name}" with serverHost: ${this.serverHost}`);
 
-    const transport = new SSEClientTransport(new URL(this.serverHost), {
-      eventSourceInit: {},
-    });
+    const transport = new SSEClientTransport(new URL(this.serverHost));
     transport.onerror = (error) => {
       this.logger?.error('Transport Error:', error);
     };
