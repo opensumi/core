@@ -1,19 +1,15 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-
 import { MCPServerDescription, MCPServerManager } from '../../src/common/mcp-server-manager';
+import { MCP_SERVER_TYPE } from '../../src/common/types';
 
 describe('MCPServerManager Interface', () => {
   let mockManager: MCPServerManager;
-  const mockClient = {
-    callTool: jest.fn(),
-    listTools: jest.fn(),
-  };
 
   const mockServer: MCPServerDescription = {
     name: 'test-server',
     command: 'test-command',
     args: ['arg1', 'arg2'],
     env: { TEST_ENV: 'value' },
+    type: MCP_SERVER_TYPE.STDIO,
   };
 
   beforeEach(() => {
@@ -116,6 +112,7 @@ describe('MCPServerManager Interface', () => {
           command: 'external-command',
           args: ['ext-arg'],
           env: { EXT_ENV: 'value' },
+          type: MCP_SERVER_TYPE.STDIO,
         },
       ];
 
