@@ -3421,6 +3421,7 @@ __metadata:
     ansi-regex: "npm:^2.0.0"
     diff: "npm:^7.0.0"
     dom-align: "npm:^1.7.0"
+    eventsource: "npm:^3.0.5"
     rc-collapse: "npm:^4.0.0"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
@@ -11543,6 +11544,15 @@ __metadata:
   version: 3.0.0
   resolution: "eventsource-parser@npm:3.0.0"
   checksum: 10/8215adf5d8404105ecd0658030b0407e06987ceb9aadcea28a38d69bacf02e5d0fc8bba5fa7c3954552c89509c8ef5e1fa3895e000c061411c055b4bbc26f4b0
+  languageName: node
+  linkType: hard
+
+"eventsource@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "eventsource@npm:3.0.5"
+  dependencies:
+    eventsource-parser: "npm:^3.0.0"
+  checksum: 10/ac55b78d6f468bb7d1e0bed5af66ab4ad5059e04cb8af0c2a12880ae534f39b67b2cb60b5df9ae04bac105e267e91b90bff4a8f683951c2807f38fb94681ae2c
   languageName: node
   linkType: hard
 

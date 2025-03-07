@@ -13,7 +13,6 @@
   top: 100px;
   width: auto;
   margin: 0 auto;
-  padding-bottom: 24px;
   pointer-events: none;
 
   &-wrap {
@@ -30,7 +29,6 @@
 
   &-title {
     margin: 0;
-    color: @modal-heading-color;
     font-weight: 500;
     font-size: @font-size-lg;
     line-height: 22px;
@@ -39,7 +37,8 @@
 
   &-content {
     position: relative;
-    background-color: @component-background;
+    color: var(--notifications-foreground);
+    background-color: var(--notifications-background);
     background-clip: padding-box;
     border: 0;
     border-radius: @border-radius-base;
@@ -53,7 +52,7 @@
     right: 0;
     z-index: @zindex-popup-close;
     padding: 0;
-    color: @text-color-secondary;
+    color: var(--notifications-foreground);
     font-weight: 700;
     line-height: 1;
     text-decoration: none;
@@ -65,28 +64,29 @@
 
     &-x {
       display: block;
-      width: 56px;
-      height: 56px;
+      width: 39px;
+      height: 39px;
       font-size: @font-size-lg;
       font-style: normal;
-      line-height: 56px;
+      line-height: 39px;
       text-align: center;
       text-transform: none;
       text-rendering: auto;
+      opacity: 0.8;
     }
 
     &:focus,
     &:hover {
-      color: @icon-color-hover;
+      opacity: 1;
       text-decoration: none;
     }
   }
 
   &-header {
-    padding: 16px 24px;
-    color: @text-color;
-    background: @modal-header-bg;
-    border-bottom: @border-width-base @border-style-base @border-color-split;
+    padding: 8px 12px;
+    background: var(--notifications-background);
+    color: var(--notifications-foreground);
+    border-bottom: @border-width-base @border-style-base var(--notifications-border);
     border-radius: @border-radius-base @border-radius-base 0 0;
   }
 
@@ -94,6 +94,7 @@
     padding: @modal-body-padding;
     font-size: @font-size-base;
     line-height: @line-height-base;
+    background-color: var(--editor-background);
     word-wrap: break-word;
   }
 

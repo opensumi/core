@@ -31,7 +31,7 @@ export interface IMCPServerProxyService {
     isError?: boolean;
   }>;
   // 获取 browser 层注册的 MCP 工具列表 (Browser tab 维度)
-  $getMCPTools(): Promise<MCPTool[]>;
+  $getBuiltinMCPTools(): Promise<MCPTool[]>;
   // 通知前端 MCP 服务注册表发生了变化
   $updateMCPServers(): Promise<void>;
   // 获取所有 MCP 服务器列表
@@ -42,11 +42,26 @@ export interface IMCPServerProxyService {
   $stopServer(serverName: string): Promise<void>;
 }
 
+export interface MCPServer {
+  name: string;
+  isStarted: boolean;
+  tools?: string[];
+  command?: string;
+  type?: string;
+  serverHost?: string;
+}
+
 export interface MCPTool {
   name: string;
   description: string;
   inputSchema: any;
   providerName: string;
+}
+
+export enum MCP_SERVER_TYPE {
+  STDIO = 'stdio',
+  SSE = 'sse',
+  BUILTIN = 'builtin',
 }
 
 export interface CodeBlockData {

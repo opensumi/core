@@ -44,9 +44,32 @@
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.formItemName {
+  flex: 1;
+}
+
+.formItemType {
+  flex-grow: 0;
+  min-width: 120px;
+}
+
+.formItemSelect {
+  height: 37.5px;
+  :global(.kt-select-value-large) {
+    height: 100% !important;
+  }
 }
 
 .cancelButton {
