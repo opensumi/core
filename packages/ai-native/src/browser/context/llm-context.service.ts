@@ -11,6 +11,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser/types';
 import { IMarkerService } from '@opensumi/ide-markers/lib/common/types';
+import { Range } from '@opensumi/ide-monaco';
 
 import { AttachFileContext, FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
 
@@ -33,7 +34,11 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   private readonly maxViewFilesLimit = 20;
   private readonly attachedFiles: FileContext[] = [];
   private readonly recentlyViewFiles: FileContext[] = [];
-  private readonly onDidContextFilesChangeEmitter = new Emitter<{ viewed: FileContext[]; attached: FileContext[]; version: number }>();
+  private readonly onDidContextFilesChangeEmitter = new Emitter<{
+    viewed: FileContext[];
+    attached: FileContext[];
+    version: number;
+  }>();
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;
 
   private addFileToList(file: FileContext, list: FileContext[], maxLimit: number) {
@@ -185,7 +190,9 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       }
 
       return {
-        content: ref.instance.getText(),
+        content: ref.instance.getText(
+          file.selection && new Range(file.selection[0], Infinity, file.selection[1], Infinity),
+        ),
         lineErrors: this.getFileErrors(file.uri),
         path: workspaceRoot.relative(file.uri)!.toString(),
         language: ref.instance.languageId!,
