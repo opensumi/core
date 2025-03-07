@@ -810,6 +810,7 @@ export class TerminalClientFactory {
     ]);
 
     const client = child.get(TerminalClient);
+
     await client.init2(widget, options);
     return client;
   }

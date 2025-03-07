@@ -44,11 +44,14 @@
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
+    "@shikijs/markdown-it": "^3.1.0",
     "@xterm/xterm": "5.5.0",
     "ai": "^4.1.45",
     "ansi-regex": "^2.0.0",
     "diff": "^7.0.0",
     "dom-align": "^1.7.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-async": "^2.1.0",
     "rc-collapse": "^4.0.0",
     "react-chat-elements": "^12.0.10",
     "react-highlight": "^0.15.0",
@@ -60,6 +63,7 @@
     "zod-to-json-schema": "^3.24.1"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "workspace:*"
+    "@opensumi/ide-core-browser": "workspace:*",
+    "@types/markdown-it": "^14"
   }
 }

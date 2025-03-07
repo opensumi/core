@@ -40,6 +40,7 @@ export const ShikiHighlight = memo(({ input, language = 'text' }: ShikiHighlight
       start(controller) {
         streamController = controller;
         controller.enqueue(input);
+        console.log('input: ', input);
         prevInputRef.current = input;
       },
     });
@@ -74,9 +75,6 @@ export const ShikiHighlight = memo(({ input, language = 'text' }: ShikiHighlight
         next: tokenStream,
       }));
 
-      // 等待一个渲染周期
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
       // 更新控制器和高亮器引用
       if (controllerRef.current) {
         controllerRef.current.close();
@@ -90,19 +88,22 @@ export const ShikiHighlight = memo(({ input, language = 'text' }: ShikiHighlight
         next: null,
       }));
 
-    } catch {
+    } catch (err) {
+      console.log('err reset highligher', err);
     }
   };
 
   // 初始化
   useEffect(() => {
+    console.log('init');
     const initHighlighter = async () => {
       const currentTheme = workbenchThemeService.getCurrentThemeSync();
+      console.log('init highligther', currentTheme);
       await resetHighlighter(currentTheme);
     };
 
     initHighlighter();
-  }, [language]);
+  }, []);
 
   // 监听主题变化
   useEffect(() => {
