@@ -198,6 +198,14 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     await this.mcpServerManager.stopServer(serverName);
     this.client?.$updateMCPServers();
   }
+
+  public addOrUpdateServer(description: MCPServerDescription) {
+    this.mcpServerManager.addOrUpdateServer(description);
+  }
+
+  public removeServer(name: string) {
+    this.mcpServerManager.removeServer(name);
+  }
 }
 
 export const TokenBuiltinMCPServer = Symbol('TokenBuiltinMCPServer');

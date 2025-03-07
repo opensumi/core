@@ -1,12 +1,14 @@
 import cls from 'classnames';
-import React, { useCallback } from 'react';
+import React, { ChangeEvent, FC, FormEvent, useCallback, useEffect, useState } from 'react';
 
 import { Select } from '@opensumi/ide-components';
 import { Button } from '@opensumi/ide-components/lib/button';
 import { Modal } from '@opensumi/ide-components/lib/modal';
-import { localize } from '@opensumi/ide-core-common';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { formatLocalize, localize } from '@opensumi/ide-core-common';
+import { IMessageService } from '@opensumi/ide-overlay';
 
-import { MCP_SERVER_TYPE } from '../../../../common/types';
+import { MCPServer, MCP_SERVER_TYPE } from '../../../../common/types';
 
 import styles from './mcp-server-form.module.less';
 export interface MCPServerFormData {
@@ -21,12 +23,13 @@ export interface MCPServerFormData {
 interface Props {
   visible: boolean;
   initialData?: MCPServerFormData;
+  servers: MCPServer[];
   onSave: (data: MCPServerFormData) => void;
   onCancel: () => void;
 }
 
-export const MCPServerForm: React.FC<Props> = ({ visible, initialData, onSave, onCancel }) => {
-  const [formData, setFormData] = React.useState<MCPServerFormData>(() => ({
+export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCancel, servers: existingServers }) => {
+  const [formData, setFormData] = useState<MCPServerFormData>(() => ({
     name: '',
     command: '',
     args: [],
@@ -34,9 +37,9 @@ export const MCPServerForm: React.FC<Props> = ({ visible, initialData, onSave, o
     type: MCP_SERVER_TYPE.STDIO,
     ...initialData,
   }));
-
-  const [argsText, setArgsText] = React.useState(() => initialData?.args?.join(' ') || '');
-  const [envText, setEnvText] = React.useState(() => {
+  const messageService = useInjectable<IMessageService>(IMessageService);
+  const [argsText, setArgsText] = useState(() => initialData?.args?.join(' ') || '');
+  const [envText, setEnvText] = useState(() => {
     if (!initialData?.env) {
       return '';
     }
@@ -45,7 +48,7 @@ export const MCPServerForm: React.FC<Props> = ({ visible, initialData, onSave, o
       .join('\n');
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     setFormData({
       name: '',
       command: '',
@@ -64,8 +67,12 @@ export const MCPServerForm: React.FC<Props> = ({ visible, initialData, onSave, o
     );
   }, [initialData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    const isValid = validateForm(formData);
+    if (!isValid) {
+      return;
+    }
     const form = {
       ...formData,
     };
@@ -91,29 +98,28 @@ export const MCPServerForm: React.FC<Props> = ({ visible, initialData, onSave, o
   };
 
   const handleCommandChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       setFormData({ ...formData, command: e.target.value });
-      setArgsText(e.target.value.split(' ').filter(Boolean).join(' '));
     },
     [formData, argsText],
   );
 
   const handleArgsChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
       setArgsText(e.target.value);
     },
     [argsText],
   );
 
   const handleEnvChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
       setEnvText(e.target.value);
     },
     [envText],
   );
 
   const handleServerHostChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
       setFormData({ ...formData, serverHost: e.target.value });
     },
     [formData],
@@ -176,6 +182,32 @@ export const MCPServerForm: React.FC<Props> = ({ visible, initialData, onSave, o
       );
     }
   }, [formData, argsText, envText]);
+
+  const validateForm = useCallback(
+    (formData: MCPServerFormData) => {
+      if (formData.name.trim() === '') {
+        messageService.error(localize('ai.native.mcp.name.isRequired'));
+        return false;
+      }
+      if (existingServers.some((server) => server.name.toLocaleLowerCase() === formData.name.toLocaleLowerCase())) {
+        messageService.error(formatLocalize('ai.native.mcp.serverNameExists', formData.name));
+        return false;
+      }
+      if (formData.type === MCP_SERVER_TYPE.SSE) {
+        const isServerHostValid = formData.serverHost?.trim() !== '';
+        if (!isServerHostValid) {
+          messageService.error(localize('ai.native.mcp.serverHost.isRequired'));
+        }
+        return isServerHostValid;
+      }
+      const isCommandValid = formData.command?.trim() !== '';
+      if (!isCommandValid) {
+        messageService.error(localize('ai.native.mcp.command.isRequired'));
+      }
+      return isCommandValid;
+    },
+    [existingServers],
+  );
 
   return (
     <Modal

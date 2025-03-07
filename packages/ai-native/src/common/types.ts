@@ -42,6 +42,15 @@ export interface IMCPServerProxyService {
   $stopServer(serverName: string): Promise<void>;
 }
 
+export interface MCPServer {
+  name: string;
+  isStarted: boolean;
+  tools?: string[];
+  command?: string;
+  type?: string;
+  serverHost?: string;
+}
+
 export interface MCPTool {
   name: string;
   description: string;

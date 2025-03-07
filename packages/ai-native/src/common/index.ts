@@ -137,6 +137,8 @@ export interface ISumiMCPServerBackend {
   getServers(): Promise<Array<{ name: string; isStarted: boolean }>>;
   startServer(serverName: string): Promise<void>;
   stopServer(serverName: string): Promise<void>;
+  addOrUpdateServer(description: MCPServerDescription): void;
+  removeServer(name: string): void;
 }
 
 export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';

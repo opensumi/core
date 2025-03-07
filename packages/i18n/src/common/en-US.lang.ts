@@ -1611,5 +1611,9 @@ export const localizationBundle = {
     'ai.native.mcp.type.builtin': 'Built-in',
     'ai.native.mcp.type.sse': 'SSE',
     'ai.native.mcp.type.stdio': 'Command',
+    'ai.native.mcp.serverNameExists': 'Server name "{0}" already exists',
+    'ai.native.mcp.name.isRequired': 'Server name is required',
+    'ai.native.mcp.command.isRequired': 'Command is required',
+    'ai.native.mcp.serverHost.isRequired': 'SSE URL is required',
   },
 };

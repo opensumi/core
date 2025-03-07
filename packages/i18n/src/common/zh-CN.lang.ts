@@ -1374,5 +1374,9 @@ export const localizationBundle = {
     'ai.native.mcp.type.builtin': '内置',
     'ai.native.mcp.type.sse': 'SSE',
     'ai.native.mcp.type.stdio': '命令',
+    'ai.native.mcp.serverNameExists': '服务名称 "{0}" 已存在',
+    'ai.native.mcp.name.isRequired': '服务名称不能为空',
+    'ai.native.mcp.command.isRequired': '命令不能为空',
+    'ai.native.mcp.serverHost.isRequired': 'SSE URL 不能为空',
   },
 };
