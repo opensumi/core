@@ -19,6 +19,7 @@
     "build:all": "yarn build:webview-prebuilt && yarn run build && yarn run build:worker-host && yarn run build:ext-host && yarn build:watcher-host && yarn run build:components && yarn build:monaco-worker",
     "build:cli-engine": "cd tools/cli-engine && yarn run build",
     "build:components": "cd packages/components && yarn run build:dist",
+    "build:components:lib": "cd packages/components && yarn run build",
     "build:ext-host": "cd packages/extension && yarn run build:ext-host",
     "build:watcher-host": "cd packages/file-service && yarn run build:watcher-host",
     "build:monaco-worker": "cd packages/monaco && yarn run build:worker",
