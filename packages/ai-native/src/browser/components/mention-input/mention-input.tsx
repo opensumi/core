@@ -18,7 +18,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   firstLevelItems = [],
   secondLevelItems = {},
   onSend,
-  placeholder = 'Ask anything (⌘L), @ to mention code blocks',
+  placeholder = 'Ask anything (⌘L), @ to mention',
 }) => {
   // 默认一级菜单项
   const defaultFirstLevelItems: MentionItem[] = [{ id: 'file', type: 'file', text: 'File', hasSubmenu: true }];
