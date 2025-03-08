@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import * as React from 'react';
 
-import { Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-components';
+import { Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 
 import styles from './mention-input.module.less';
