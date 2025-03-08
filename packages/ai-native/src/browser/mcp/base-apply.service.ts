@@ -295,11 +295,6 @@ export abstract class BaseApplyService extends WithEventBus {
       if (!result) {
         throw new Error('Failed to open file');
       }
-      if (typeof fastApplyFileResult.result === 'string') {
-        codeBlock.updatedCode = fastApplyFileResult.result;
-        codeBlock.status = 'pending';
-        this.updateCodeBlock(codeBlock);
-      }
       const res = await this.renderApplyResult(
         result.group.codeEditor.monacoEditor,
         codeBlock,
@@ -307,6 +302,7 @@ export abstract class BaseApplyService extends WithEventBus {
         fastApplyFileResult.range,
       );
       codeBlock.updatedCode = res.updatedCode;
+      codeBlock.status = 'pending';
       // 用户实际接受的 apply 结果
       codeBlock.applyResult = res.result;
       this.updateCodeBlock(codeBlock);
