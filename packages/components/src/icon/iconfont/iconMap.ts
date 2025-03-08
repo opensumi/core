@@ -163,7 +163,7 @@ export const defaultIconfont = {
   'scm': 'scm',
   'search': 'search',
   'send': 'send',
-  'send-hollow': 'send-hollow',
+  'send-outlined': 'send-outlined',
   'send-solid': 'send-solid',
   'setting': 'setting',
   'sever': 'sever',

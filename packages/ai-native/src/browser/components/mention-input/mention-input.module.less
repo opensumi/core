@@ -74,6 +74,29 @@
     justify-content: flex-start;
     align-items: center;
     flex-direction: row;
+    .left_control {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-direction: row;
+      flex: 1;
+    }
+    .right_control {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-direction: row;
+      .send_logo {
+        background-color: var(--badge-background);
+        color: var(--badge-foreground);
+        &:hover {
+          background-color: var(--kt-primaryButton-background);
+          .send_logo_icon {
+            color: var(--kt-primaryButton-foreground);
+          }
+        }
+      }
+    }
   }
 
   .send_button {
@@ -201,4 +224,26 @@
   text-align: center;
   color: var(--descriptionForeground);
   font-size: 14px;
+}
+
+.model_selector {
+  margin-right: 5px;
+}
+
+.mcp_logo {
+  margin-right: 5px;
+}
+
+.send_logo {
+  color: var(--icon-foreground);
+  cursor: pointer;
+  margin-left: auto;
+
+  &:hover {
+    color: var(--notification-success-foreground);
+  }
+}
+
+.popover_icon {
+  // 移除 margin-left: auto
 }
