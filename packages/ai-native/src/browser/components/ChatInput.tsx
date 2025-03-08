@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import { AINativeConfigService, useInjectable, useLatest } from '@opensumi/ide-core-browser';
-import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ChatAgentViewServiceToken,
@@ -502,7 +502,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         popoverPosition={PopoverPosition.left}
       /> */}
       <MentionInput />
-      <div className={styles.chat_input_footer}>
+      {/* <div className={styles.chat_input_footer}>
         {aiNativeConfigService.capabilities.supportsMCP && (
           <div className={styles.mcp_desc}>
             <Popover
@@ -537,7 +537,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
             </Popover>
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   );
 });
