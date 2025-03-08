@@ -593,8 +593,6 @@ export abstract class BaseApplyService extends WithEventBus {
     result?: string;
   }>;
 
-  // FIXME: 貌似筛选逻辑不太对，需要重构
-  // TODO: 支持使用内存中的document获取诊断信息，实现并行apply accept
   protected getDiagnosticInfos(uri: string, ranges: Range[]) {
     const markers = this.markerService.getManager().getMarkers({ resource: uri });
     return markers.filter(
