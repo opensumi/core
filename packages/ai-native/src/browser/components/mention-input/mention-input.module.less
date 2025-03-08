@@ -10,8 +10,8 @@
   .editor_area {
     position: relative;
     padding: 0 15px;
-    min-height: 60px;
-    max-height: 120px;
+    min-height: 42px;
+    max-height: 105px;
   }
 
   .editor {
@@ -34,7 +34,8 @@
     }
   }
 
-  .editor:empty:before {
+  .editor:empty:before,
+  .editor[data-content=''] + .editor:before {
     content: attr(data-placeholder);
     color: var(--descriptionForeground);
     pointer-events: none;

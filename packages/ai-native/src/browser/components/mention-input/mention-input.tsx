@@ -153,6 +153,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         editorRef.current.style.overflowY = 'hidden';
       }
     }
+
+    // 检查编辑器内容，处理只有 <br> 标签的情况
+    if (editorRef.current) {
+      const content = editorRef.current.innerHTML;
+      // 如果内容为空或只有 <br> 标签
+      if (content === '' || content === '<br>' || content === '<br/>') {
+        // 清空编辑器内容
+        editorRef.current.innerHTML = '';
+      }
+    }
   };
 
   // 处理键盘事件
@@ -254,6 +264,14 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       if (filteredItems.length > 0) {
         handleSelectItem(filteredItems[mentionState.activeIndex]);
         e.preventDefault();
+      }
+    }
+
+    // 处理 Backspace 键，检查是否需要清空编辑器
+    if (e.key === 'Backspace' && editorRef.current) {
+      const content = editorRef.current.innerHTML;
+      if (content === '<br>' || content === '<br/>') {
+        editorRef.current.innerHTML = '';
       }
     }
   };
