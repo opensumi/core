@@ -1,6 +1,11 @@
 import { Autowired } from '@opensumi/di';
+import { ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '@opensumi/ide-ai-native/lib/common';
+import { MCPServerDescription } from '@opensumi/ide-ai-native/lib/common/mcp-server-manager';
+import { ClientAppContribution, IClientApp } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Domain, Schemes, URI } from '@opensumi/ide-core-common';
+import { Domain, MaybePromise, URI } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
@@ -18,16 +23,27 @@ export const MCP_CONFIG_COMPONENTS_SCHEME_ID = 'mcp-config';
 
 export type IMCPConfigResource = IResource<{ configType: string }>;
 
-@Domain(BrowserEditorContribution)
-export class MCPConfigContribution implements BrowserEditorContribution {
+@Domain(BrowserEditorContribution, ClientAppContribution)
+export class MCPConfigContribution implements BrowserEditorContribution, ClientAppContribution {
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
+
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
 
   @Autowired(IconService)
   protected readonly iconService: IconService;
 
+  @Autowired(SumiMCPServerProxyServicePath)
+  protected readonly sumiMCPServerBackendProxy: ISumiMCPServerBackend;
+
   @Autowired()
   labelService: LabelService;
+
+  onDidStart(app: IClientApp): MaybePromise<void> {
+    const servers = this.preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
+    // this.sumiMCPServerBackendProxy.addOrUpdateServer(servers);
+  }
 
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorComponent({
