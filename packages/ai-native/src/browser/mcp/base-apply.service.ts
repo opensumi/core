@@ -155,7 +155,7 @@ export abstract class BaseApplyService extends WithEventBus {
     // 使用最后一个版本内容渲染 apply 内容
     if (filePendingApplies.length > 0 && filePendingApplies[0].updatedCode) {
       const editor = event.payload.group.codeEditor.monacoEditor;
-      this.renderApplyResult(editor, filePendingApplies[0], filePendingApplies[0].updatedCode);
+      await this.renderApplyResult(editor, filePendingApplies[0], filePendingApplies[0].updatedCode);
     }
   }
 
@@ -300,17 +300,16 @@ export abstract class BaseApplyService extends WithEventBus {
         codeBlock.status = 'pending';
         this.updateCodeBlock(codeBlock);
       }
-      const applyResult = await this.renderApplyResult(
+      const res = await this.renderApplyResult(
         result.group.codeEditor.monacoEditor,
         codeBlock,
         (fastApplyFileResult.result || fastApplyFileResult.stream)!,
         fastApplyFileResult.range,
       );
-      if (applyResult) {
-        // 用户实际接受的 apply 结果
-        codeBlock.applyResult = applyResult;
-        this.updateCodeBlock(codeBlock);
-      }
+      codeBlock.updatedCode = res.updatedCode;
+      // 用户实际接受的 apply 结果
+      codeBlock.applyResult = res.result;
+      this.updateCodeBlock(codeBlock);
 
       return codeBlock;
     } catch (err) {
@@ -322,31 +321,33 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
+  /**
+   * 渲染apply结果（支持流式和直接输出结果）
+   * 副作用：渲染时会添加accept、reject操作监听器，监听到结果时会自动更新codeBlock的result
+   */
   async renderApplyResult(
     editor: ICodeEditor,
     codeBlock: CodeBlockData,
     updatedContentOrStream: string | SumiReadableStream<IChatProgress>,
     range?: Range,
-  ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
-    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
+  ): Promise<{ result?: { diff: string; diagnosticInfos: IMarker[] }; updatedCode: string }> {
+    const deferred = new Deferred<{ result?: { diff: string; diagnosticInfos: IMarker[] }; updatedCode: string }>();
     const inlineDiffController = InlineDiffController.get(editor)!;
     range = range || editor.getModel()!.getFullModelRange();
 
     if (typeof updatedContentOrStream === 'string') {
+      const updatedContent = updatedContentOrStream;
       const editorCurrentContent = editor.getModel()!.getValue();
       const uri = URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath));
       const document = this.editorDocumentModelService.getModelReference(uri);
-      if (editorCurrentContent !== updatedContentOrStream || document?.instance.dirty) {
-        editor.getModel()?.pushEditOperations([], [EditOperation.replace(range, updatedContentOrStream)], () => null);
+      if (editorCurrentContent !== updatedContent || document?.instance.dirty) {
+        editor.getModel()?.pushEditOperations([], [EditOperation.replace(range, updatedContent)], () => null);
         await this.editorService.save(uri);
       }
       const uriPendingCodeBlocks = this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending');
       const earlistPendingCodeBlock = uriPendingCodeBlocks?.[uriPendingCodeBlocks.length - 1];
-      if ((earlistPendingCodeBlock?.originalCode || codeBlock.originalCode) === updatedContentOrStream) {
-        codeBlock.status = 'cancelled';
-        this.updateCodeBlock(codeBlock);
-        deferred.resolve();
-        return;
+      if ((earlistPendingCodeBlock || codeBlock)?.originalCode === updatedContent) {
+        throw new Error('No changes applied');
       }
       // Create diff previewer
       const previewer = inlineDiffController.createDiffPreviewer(
@@ -374,13 +375,16 @@ export abstract class BaseApplyService extends WithEventBus {
 
       const { diff, rangesFromDiffHunk } = this.getDiffResult(
         codeBlock.originalCode,
-        codeBlock.updatedCode || updatedContentOrStream,
+        updatedContent,
         codeBlock.relativePath,
       );
       const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
       deferred.resolve({
-        diff,
-        diagnosticInfos,
+        result: {
+          diff,
+          diagnosticInfos,
+        },
+        updatedCode: updatedContent,
       });
     } else {
       const controller = new InlineChatController();
@@ -408,21 +412,21 @@ export abstract class BaseApplyService extends WithEventBus {
       this.addDispose(
         // 流式输出结束后，转为直接输出逻辑
         previewer.getNode()!.onDiffFinished(async (diffModel) => {
-          codeBlock.updatedCode = diffModel.newFullRangeTextLines.join('\n');
           // TODO: 添加 reapply
+          const updatedCode = diffModel.newFullRangeTextLines.join('\n');
           // 实际应用结果为空，则取消
-          if (codeBlock.updatedCode === codeBlock.originalCode) {
-            codeBlock.status = 'failed';
-            this.updateCodeBlock(codeBlock);
+          if (codeBlock.originalCode === updatedCode) {
             previewer.dispose();
             deferred.reject(new Error('no changes applied'));
             return;
           }
-          codeBlock.status = 'pending';
-          this.updateCodeBlock(codeBlock);
           previewer.dispose();
-          const result = await this.renderApplyResult(editor, codeBlock, codeBlock.updatedCode);
-          deferred.resolve(result);
+          try {
+            const res = await this.renderApplyResult(editor, codeBlock, updatedCode);
+            deferred.resolve(res);
+          } catch (err) {
+            deferred.reject(err);
+          }
         }),
       );
       this.activePreviewerMap.set(codeBlock.relativePath, previewer);
