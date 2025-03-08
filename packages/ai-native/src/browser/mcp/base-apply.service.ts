@@ -572,7 +572,7 @@ export abstract class BaseApplyService extends WithEventBus {
       .map((line) => {
         if (line.startsWith('@@')) {
           const [, , , start, lineCount] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
-          return new Range(parseInt(start, 10), 0, parseInt(start, 10) + parseInt(lineCount, 10), 0);
+          return new Range(parseInt(start, 10), 0, parseInt(start, 10) + parseInt(lineCount, 10) - 1, 0);
         }
         return null;
       })
