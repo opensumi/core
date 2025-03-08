@@ -1618,5 +1618,9 @@ export const localizationBundle = {
     'ai.native.mcp.manage.connections': 'Manage your MCP server connections',
     'ai.native.mcp.running': 'Running',
     'ai.native.mcp.stopped': 'Stopped',
+
+    // MCP View
+    'ai.native.mcp.tool.arguments': 'Arguments',
+    'ai.native.mcp.tool.results': 'Result',
   },
 };

@@ -21,6 +21,7 @@ export const MCPConfigView: React.FC = () => {
   const messageService = useInjectable<IMessageService>(IMessageService);
   const sumiMCPServerBackendProxy = useInjectable<ISumiMCPServerBackend>(SumiMCPServerProxyServicePath);
   const logger = useInjectable<ILogger>(ILogger);
+  const messageService = useInjectable<IMessageService>(IMessageService);
   const [servers, setServers] = React.useState<MCPServer[]>([]);
   const [formVisible, setFormVisible] = React.useState(false);
   const [editingServer, setEditingServer] = React.useState<MCPServerFormData | undefined>();
@@ -92,6 +93,7 @@ export const MCPConfigView: React.FC = () => {
         await loadServers();
         setLoadingServer(undefined);
       } catch (error) {
+        const msg = error.message || error;
         logger.error(`Failed to ${start ? 'start' : 'stop'} server ${serverName}:`, error);
         messageService.error(error.message);
         setLoadingServer(undefined);

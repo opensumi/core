@@ -1225,7 +1225,8 @@ export const localizationBundle = {
     'aiNative.chat.code.copy': '复制代码',
     'aiNative.chat.code.copy.success': '复制成功',
     'aiNative.chat.expand.unfullscreen': '收起',
-    'aiNative.chat.expand.fullescreen': '展开全屏',
+    'aiNative.chat.expand.fullescr
+    een': '展开全屏',
     'aiNative.chat.enter.send': 'Enter 发送',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
@@ -1381,5 +1382,9 @@ export const localizationBundle = {
     'ai.native.mcp.manage.connections': '管理你的 MCP 服务器连接',
     'ai.native.mcp.running': '运行中',
     'ai.native.mcp.stopped': '已停止',
+
+    // MCP View
+    'ai.native.mcp.tool.arguments': '参数',
+    'ai.native.mcp.tool.results': '返回',
   },
 };
