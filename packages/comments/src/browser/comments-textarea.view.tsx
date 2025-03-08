@@ -10,6 +10,8 @@ import { CommentsBody } from './comments-body';
 import styles from './comments.module.less';
 import { getMentionBoxStyle } from './mentions.style';
 
+import type { ClipboardEvent } from 'react';
+
 export interface ICommentTextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   focusDelay?: number;
   minRows?: number;
@@ -45,6 +47,32 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
   // make `ref` to input works
   React.useImperativeHandle(ref, () => inputRef.current!);
 
+  const handleDragOver = React.useCallback((event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  }, []);
+
+  // 复制图片
+  const handleFilePaste = React.useCallback(
+    async (event: ClipboardEvent<HTMLTextAreaElement>) => {
+      event.stopPropagation();
+      event.preventDefault();
+
+      const files = event.clipboardData?.files;
+      if (files && dragFiles) {
+        await dragFiles(files);
+      }
+
+      if (inputRef.current) {
+        inputRef.current.focus();
+        selectLastPosition(inputRef.current.value);
+      }
+    },
+    [dragFiles],
+  );
+
+  // 拖拽文件
   const handleFileSelect = React.useCallback(
     async (event: React.DragEvent<HTMLTextAreaElement>) => {
       event.stopPropagation();
@@ -62,12 +90,6 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
     },
     [dragFiles],
   );
-
-  const handleDragOver = React.useCallback((event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
-  }, []);
 
   const selectLastPosition = React.useCallback((value) => {
     const textarea = inputRef.current;
@@ -162,9 +184,10 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
           <div ref={mentionsRef}>
             <MentionsInput
               autoFocus={autoFocus}
+              onPaste={handleFilePaste}
+              inputRef={inputRef}
               onDragOver={handleDragOver}
               onDrop={handleFileSelect}
-              inputRef={inputRef}
               // in react 18, the type of ref is changed to LegacyRef<ClassComponent>
               // but actually it is working pass a dom element ref
               ref={itemRef as any}
