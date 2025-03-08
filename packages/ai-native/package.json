@@ -47,6 +47,7 @@
     "@xterm/xterm": "5.5.0",
     "ai": "^4.1.45",
     "ansi-regex": "^2.0.0",
+    "ansi_up": "^5.1.0",
     "diff": "^7.0.0",
     "dom-align": "^1.7.0",
     "eventsource": "^3.0.5",
