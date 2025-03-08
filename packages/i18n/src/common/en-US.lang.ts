@@ -1615,5 +1615,8 @@ export const localizationBundle = {
     'ai.native.mcp.name.isRequired': 'Server name is required',
     'ai.native.mcp.command.isRequired': 'Command is required',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL is required',
+    'ai.native.mcp.manage.connections': 'Manage your MCP server connections',
+    'ai.native.mcp.running': 'Running',
+    'ai.native.mcp.stopped': 'Stopped',
   },
 };
