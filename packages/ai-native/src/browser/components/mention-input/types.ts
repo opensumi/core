@@ -6,7 +6,7 @@ export interface MentionItem {
 }
 
 export interface MentionPosition {
-  bottom: number;
+  top: number;
   left: number;
 }
 

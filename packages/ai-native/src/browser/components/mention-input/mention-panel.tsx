@@ -84,9 +84,9 @@ export const MentionPanel: React.FC<MentionPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className={styles['mention-panel']}
+      className={styles.mention_panel}
       style={{
-        bottom: position.bottom + 'px',
+        top: position.top + 'px',
         left: position.left + 'px',
       }}
     >

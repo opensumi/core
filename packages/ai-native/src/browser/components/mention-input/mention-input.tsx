@@ -43,7 +43,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     active: false,
     startPos: null,
     filter: '',
-    position: { bottom: 0, left: 0 },
+    position: { top: 0, left: 0 },
     activeIndex: 0,
     level: 0, // 0: 一级菜单, 1: 二级菜单
     parentType: null, // 二级菜单的父类型
@@ -99,7 +99,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         filter: '@',
         position: {
           // 使用 window 绝对位置以配合 fixed 定位
-          bottom: rect.bottom + window.scrollY + 5,
+          top: rect.bottom + window.scrollY + 5,
           left: rect.left + window.scrollX,
         },
         activeIndex: 0,
@@ -142,7 +142,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           secondLevelFilter: searchText,
           active: true,
           position: {
-            bottom: range.getBoundingClientRect().bottom + window.scrollY + 5,
+            top: range.getBoundingClientRect().bottom + window.scrollY + 5,
             left: range.getBoundingClientRect().left + window.scrollX,
           },
           activeIndex: 0,
@@ -274,7 +274,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           setMentionState((prev) => ({
             ...prev,
             position: {
-              bottom: rect.bottom + window.scrollY + 5,
+              top: rect.bottom + window.scrollY + 5,
               left: rect.left + window.scrollX,
             },
           }));
@@ -338,7 +338,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           secondLevelFilter: '',
           activeIndex: 0,
           position: {
-            bottom: range.getBoundingClientRect().bottom + window.scrollY + 5,
+            top: range.getBoundingClientRect().bottom + window.scrollY + 5,
             left: range.getBoundingClientRect().left + window.scrollX,
           },
         }));
@@ -370,7 +370,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       if (prefixPos >= 0) {
         // 创建一个带样式的提及标签
         const mentionTag = document.createElement('span');
-        mentionTag.className = 'mention-tag';
+        mentionTag.className = styles.mention_tag;
         mentionTag.dataset.id = item.id;
         mentionTag.dataset.type = item.type;
         mentionTag.contentEditable = 'false';
@@ -451,7 +451,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     // 原有的处理逻辑（用于非内联搜索情况）
     // 创建一个带样式的提及标签
     const mentionTag = document.createElement('span');
-    mentionTag.className = 'mention-tag';
+    mentionTag.className = styles.mention_tag;
     mentionTag.dataset.id = item.id;
     mentionTag.dataset.type = item.type;
     mentionTag.contentEditable = 'false';
@@ -566,7 +566,15 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         />
       </div>
       <div className={styles.footer}>
-        <Select options={[]} value={''} className={styles.model_selector} size='small' />
+        <Select
+          options={[
+            { label: 'Claude 3.5 Sonnet (外部模型)', value: 'Claude 3.5 Sonnet (外部模型)' },
+            { label: 'Claude 3.5 Sonnet (内部模型)', value: 'Claude 3.5 Sonnet (内部模型)' },
+          ]}
+          value={'Claude 3.5 Sonnet (外部模型)'}
+          className={styles.model_selector}
+          size='small'
+        />
         <Popover
           overlayClassName={styles.popover_icon}
           id={'ai-chat-header-mcp-server'}
@@ -575,7 +583,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         >
           <EnhanceIcon
             className={cls(getIcon('mcp'), styles.mcp_logo)}
-            onClick={handleShowMCPConfig}
+            // onClick={handleShowMCPConfig}
             tabIndex={0}
             role='button'
             ariaLabel={'MCP Server'}
