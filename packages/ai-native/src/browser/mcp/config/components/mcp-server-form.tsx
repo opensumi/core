@@ -67,35 +67,75 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
     );
   }, [initialData]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    const isValid = validateForm(formData);
-    if (!isValid) {
-      return;
-    }
-    const form = {
-      ...formData,
-    };
-    if (formData.type === MCP_SERVER_TYPE.SSE) {
-      form.serverHost = form.serverHost?.trim();
-    } else {
-      const args = argsText.split(' ').filter(Boolean);
-      const env = envText
-        .split('\n')
-        .filter(Boolean)
-        .reduce((acc, line) => {
-          const [key, value] = line.split('=');
-          if (key && value) {
-            acc[key.trim()] = value.trim();
-          }
-          return acc;
-        }, {} as Record<string, string>);
-      form.args = args;
-      form.env = env;
-    }
+  const validateForm = useCallback(
+    (formData: MCPServerFormData) => {
+      if (formData.name.trim() === '') {
+        messageService.error(localize('ai.native.mcp.name.isRequired'));
+        return false;
+      }
+      if (
+        !initialData &&
+        existingServers.some((server) => server.name.toLocaleLowerCase() === formData.name.toLocaleLowerCase())
+      ) {
+        messageService.error(formatLocalize('ai.native.mcp.serverNameExists', formData.name));
+        return false;
+      }
+      if (formData.type === MCP_SERVER_TYPE.SSE) {
+        const isServerHostValid = formData.serverHost?.trim() !== '';
+        if (!isServerHostValid) {
+          messageService.error(localize('ai.native.mcp.serverHost.isRequired'));
+        }
+        return isServerHostValid;
+      }
+      const isCommandValid = formData.command?.trim() !== '';
+      if (!isCommandValid) {
+        messageService.error(localize('ai.native.mcp.command.isRequired'));
+      }
+      return isCommandValid;
+    },
+    [existingServers, initialData],
+  );
 
-    onSave(form);
-  };
+  const handleSubmit = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault();
+      const isValid = validateForm(formData);
+      if (!isValid) {
+        return;
+      }
+      const form = {
+        ...formData,
+      };
+      if (formData.type === MCP_SERVER_TYPE.SSE) {
+        form.serverHost = form.serverHost?.trim();
+      } else {
+        const args = argsText.split(' ').filter(Boolean);
+        const env = envText
+          .split('\n')
+          .filter(Boolean)
+          .reduce((acc, line) => {
+            const [key, value] = line.split('=');
+            if (key && value) {
+              acc[key.trim()] = value.trim();
+            }
+            return acc;
+          }, {} as Record<string, string>);
+        form.args = args;
+        form.env = env;
+      }
+
+      setFormData({
+        ...formData,
+        command: '',
+        serverHost: '',
+        args: [],
+        env: {},
+      });
+
+      onSave(form);
+    },
+    [formData, argsText, envText, onSave, validateForm],
+  );
 
   const handleCommandChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -182,32 +222,6 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
       );
     }
   }, [formData, argsText, envText]);
-
-  const validateForm = useCallback(
-    (formData: MCPServerFormData) => {
-      if (formData.name.trim() === '') {
-        messageService.error(localize('ai.native.mcp.name.isRequired'));
-        return false;
-      }
-      if (existingServers.some((server) => server.name.toLocaleLowerCase() === formData.name.toLocaleLowerCase())) {
-        messageService.error(formatLocalize('ai.native.mcp.serverNameExists', formData.name));
-        return false;
-      }
-      if (formData.type === MCP_SERVER_TYPE.SSE) {
-        const isServerHostValid = formData.serverHost?.trim() !== '';
-        if (!isServerHostValid) {
-          messageService.error(localize('ai.native.mcp.serverHost.isRequired'));
-        }
-        return isServerHostValid;
-      }
-      const isCommandValid = formData.command?.trim() !== '';
-      if (!isCommandValid) {
-        messageService.error(localize('ai.native.mcp.command.isRequired'));
-      }
-      return isCommandValid;
-    },
-    [existingServers],
-  );
 
   return (
     <Modal
