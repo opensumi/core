@@ -225,7 +225,12 @@ export abstract class BaseApplyService extends WithEventBus {
     this.onCodeBlockUpdateEmitter.fire(codeBlock);
   }
 
-  async registerCodeBlock(relativePath: string, content: string, toolCallId: string): Promise<CodeBlockData> {
+  async registerCodeBlock(
+    relativePath: string,
+    content: string,
+    toolCallId: string,
+    instructions?: string,
+  ): Promise<CodeBlockData> {
     const lastMessageId = this.chatInternalService.sessionModel.history.lastMessageId!;
     const uriCodeBlocks = this.getUriCodeBlocks(URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
     const originalModelRef = await this.editorDocumentModelService.createModelReference(
@@ -240,6 +245,7 @@ export abstract class BaseApplyService extends WithEventBus {
       createdAt: Date.now(),
       toolCallId,
       messageId: lastMessageId,
+      instructions,
       // TODO: 支持range
       originalCode: originalModelRef.instance.getText(),
     };
@@ -587,6 +593,7 @@ export abstract class BaseApplyService extends WithEventBus {
     result?: string;
   }>;
 
+  // FIXME: 貌似筛选逻辑不太对，需要重构
   // TODO: 支持使用内存中的document获取诊断信息，实现并行apply accept
   protected getDiagnosticInfos(uri: string, ranges: Range[]) {
     const markers = this.markerService.getManager().getMarkers({ resource: uri });
