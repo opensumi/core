@@ -80,12 +80,15 @@ export const MentionPanel: React.FC<MentionPanelProps> = ({
         return '选择项目';
     }
   };
+  if (level === 0 && filteredItems.length === 0) {
+    return null;
+  }
 
   return (
     <div ref={panelRef} className={styles.mention_panel}>
       {level > 0 && <div className={styles.mention_panel_title}>{getPanelTitle()}</div>}
 
-      {filteredItems.length === 0 ? (
+      {filteredItems.length === 0 && level > 0 ? (
         <div className={styles.empty_state}>没有找到匹配的内容</div>
       ) : (
         <>
