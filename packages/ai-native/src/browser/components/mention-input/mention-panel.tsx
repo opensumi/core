@@ -68,7 +68,7 @@ export const MentionPanel: React.FC<MentionPanelProps> = ({
   // 获取面板标题
   const getPanelTitle = () => {
     if (level === 0) {
-      return '选择要提及的内容';
+      return '';
     }
 
     switch (parentType) {
@@ -82,23 +82,8 @@ export const MentionPanel: React.FC<MentionPanelProps> = ({
   };
 
   return (
-    <div
-      ref={panelRef}
-      className={styles.mention_panel}
-      style={{
-        top: position.top + 'px',
-        left: position.left + 'px',
-      }}
-    >
-      <div className={styles.mention_panel_title}>
-        {getPanelTitle()}
-        {level > 0 && (
-          <button className={styles.back_button} onClick={onBackToParent}>
-            <span className={styles.back_icon}>←</span>
-            ESC 返回/关闭
-          </button>
-        )}
-      </div>
+    <div ref={panelRef} className={styles.mention_panel}>
+      {level > 0 && <div className={styles.mention_panel_title}>{getPanelTitle()}</div>}
 
       {filteredItems.length === 0 ? (
         <div className={styles.empty_state}>没有找到匹配的内容</div>
@@ -109,8 +94,6 @@ export const MentionPanel: React.FC<MentionPanelProps> = ({
           ))}
         </>
       )}
-
-      <div className={styles.keyboard_hint}>使用 ↑↓ 键导航，Enter 确认选择</div>
     </div>
   );
 };

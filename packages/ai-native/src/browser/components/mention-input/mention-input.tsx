@@ -84,24 +84,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       return;
     }
 
-    const range = selection.getRangeAt(0);
     const text = editorRef.current.textContent || '';
     const cursorPos = getCursorPosition(editorRef.current);
 
     // 判断是否刚输入了 @
     if (text[cursorPos - 1] === '@' && !mentionState.active && !mentionState.inlineSearchActive) {
-      // 获取 @ 符号在视窗中的位置
-      const rect = range.getBoundingClientRect();
-
       setMentionState({
         active: true,
         startPos: cursorPos,
         filter: '@',
-        position: {
-          // 使用 window 绝对位置以配合 fixed 定位
-          top: rect.bottom + window.scrollY + 5,
-          left: rect.left + window.scrollX,
-        },
+        position: { top: 0, left: 0 }, // 固定位置，不再需要动态计算
         activeIndex: 0,
         level: 0,
         parentType: null,
@@ -136,15 +128,10 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         // 提取搜索文本
         const searchText = text.substring(prefixPos + filePrefix.length, cursorPos);
 
-        // 更新搜索文本和面板位置
         setMentionState((prev) => ({
           ...prev,
           secondLevelFilter: searchText,
           active: true,
-          position: {
-            top: range.getBoundingClientRect().bottom + window.scrollY + 5,
-            left: range.getBoundingClientRect().left + window.scrollX,
-          },
           activeIndex: 0,
         }));
       } else if (cursorPos <= prefixPos) {
@@ -154,6 +141,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           inlineSearchActive: false,
           active: false,
         }));
+      }
+    }
+
+    // 检查输入框高度，如果超过最大高度则添加滚动条
+    if (editorRef.current) {
+      const editorHeight = editorRef.current.scrollHeight;
+      if (editorHeight > 120) {
+        editorRef.current.style.overflowY = 'auto';
+      } else {
+        editorRef.current.style.overflowY = 'hidden';
       }
     }
   };
@@ -181,6 +178,35 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       }
       e.preventDefault();
       return;
+    }
+
+    // 添加对 @ 键的监听，支持在任意位置触发菜单
+    if (e.key === '@' && !mentionState.active && !mentionState.inlineSearchActive && editorRef.current) {
+      const cursorPos = getCursorPosition(editorRef.current);
+
+      // 立即设置菜单状态，不等待 handleInput
+      setMentionState({
+        active: true,
+        startPos: cursorPos + 1, // +1 因为 @ 还没有被插入
+        filter: '@',
+        position: { top: 0, left: 0 }, // 固定位置
+        activeIndex: 0,
+        level: 0,
+        parentType: null,
+        secondLevelFilter: '',
+        inlineSearchActive: false,
+        inlineSearchStartPos: null,
+      });
+
+      // 不要阻止默认行为，让 @ 正常输入到编辑器中
+    }
+    // 添加对 Enter 键的处理，只有在按下 Shift+Enter 时才允许换行
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!mentionState.active) {
+        handleSend();
+        return;
+      }
     }
 
     // 如果提及面板未激活，不处理其他键盘事件
@@ -232,6 +258,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
   };
 
+  // 初始化编辑器
+  React.useEffect(() => {
+    if (editorRef.current) {
+      // 设置初始占位符
+      if (placeholder && !editorRef.current.textContent) {
+        editorRef.current.setAttribute('data-placeholder', placeholder);
+      }
+    }
+  }, [placeholder]);
+
   // 处理返回上一级
   const handleBackToParent = () => {
     setMentionState((prev) => ({
@@ -262,31 +298,8 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   // 添加和移除全局点击事件监听器
   React.useEffect(() => {
     document.addEventListener('click', handleDocumentClick);
-
-    // 添加滚动事件监听，确保面板跟随滚动
-    const handleScroll = () => {
-      if (mentionState.active) {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount) {
-          const range = selection.getRangeAt(0);
-          const rect = range.getBoundingClientRect();
-
-          setMentionState((prev) => ({
-            ...prev,
-            position: {
-              top: rect.bottom + window.scrollY + 5,
-              left: rect.left + window.scrollX,
-            },
-          }));
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-
     return () => {
       document.removeEventListener('click', handleDocumentClick);
-      window.removeEventListener('scroll', handleScroll);
     };
   }, [mentionState.active]);
 
@@ -303,48 +316,69 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         return;
       }
 
-      const range = selection.getRangeAt(0);
       const cursorPos = getCursorPosition(editorRef.current);
 
       // 如果是从一级菜单选择了 file 类型
       if (mentionState.level === 0 && item.type === 'file' && mentionState.startPos !== null) {
-        // 创建一个文本节点 "@file:"
-        const filePrefix = document.createTextNode('@file:');
+        // 更安全地处理文本替换
+        let textNode;
+        let startOffset;
+        let endOffset;
 
-        // 删除 @ 符号及后面可能输入的内容
-        const tempRange = document.createRange();
-        tempRange.setStart(range.startContainer, mentionState.startPos - 1);
-        tempRange.setEnd(range.startContainer, cursorPos);
-        tempRange.deleteContents();
+        // 找到包含 @ 符号的文本节点
+        const walker = document.createTreeWalker(editorRef.current, NodeFilter.SHOW_TEXT);
+        let charCount = 0;
+        let node;
 
-        // 插入 "@file:"
-        tempRange.insertNode(filePrefix);
+        while ((node = walker.nextNode())) {
+          const nodeLength = node.textContent?.length || 0;
 
-        // 将光标移到 "@file:" 后面
-        const newRange = document.createRange();
-        newRange.setStartAfter(filePrefix);
-        newRange.setEndAfter(filePrefix);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
+          // 检查 @ 符号是否在这个节点中
+          if (mentionState.startPos - 1 >= charCount && mentionState.startPos - 1 < charCount + nodeLength) {
+            textNode = node;
+            startOffset = mentionState.startPos - 1 - charCount;
 
-        // 激活内联搜索模式
-        setMentionState((prev) => ({
-          ...prev,
-          active: true,
-          level: 1,
-          parentType: 'file',
-          inlineSearchActive: true,
-          inlineSearchStartPos: getCursorPosition(editorRef.current as HTMLElement),
-          secondLevelFilter: '',
-          activeIndex: 0,
-          position: {
-            top: range.getBoundingClientRect().bottom + window.scrollY + 5,
-            left: range.getBoundingClientRect().left + window.scrollX,
-          },
-        }));
+            // 确保不会超出节点范围
+            endOffset = Math.min(cursorPos - charCount, nodeLength);
+            break;
+          }
 
-        editorRef.current.focus();
-        return;
+          charCount += nodeLength;
+        }
+
+        if (textNode) {
+          // 创建一个新的范围来替换文本
+          const tempRange = document.createRange();
+          tempRange.setStart(textNode, startOffset);
+          tempRange.setEnd(textNode, endOffset);
+
+          // 替换为 @file:
+          tempRange.deleteContents();
+          const filePrefix = document.createTextNode('@file:');
+          tempRange.insertNode(filePrefix);
+
+          // 将光标移到 @file: 后面
+          const newRange = document.createRange();
+          newRange.setStartAfter(filePrefix);
+          newRange.setEndAfter(filePrefix);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+
+          // 激活内联搜索模式
+          setMentionState((prev) => ({
+            ...prev,
+            active: true,
+            level: 1,
+            parentType: 'file',
+            inlineSearchActive: true,
+            inlineSearchStartPos: getCursorPosition(editorRef.current as HTMLElement),
+            secondLevelFilter: '',
+            activeIndex: 0,
+          }));
+
+          editorRef.current.focus();
+          return;
+        }
       }
 
       return;
@@ -429,8 +463,8 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           selection.removeAllRanges();
           selection.addRange(newRange);
 
-          // 添加一个空格
-          const spaceNode = document.createTextNode(' ');
+          // 添加一个空格，增加间隔
+          const spaceNode = document.createTextNode('\u00A0'); // 使用不间断空格
           newRange.insertNode(spaceNode);
           newRange.setStartAfter(spaceNode);
           newRange.setEndAfter(spaceNode);
@@ -511,8 +545,8 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       selection.removeAllRanges();
       selection.addRange(newRange);
 
-      // 添加一个空格
-      const spaceNode = document.createTextNode(' ');
+      // 添加一个空格，增加间隔
+      const spaceNode = document.createTextNode('\u00A0'); // 使用不间断空格
       newRange.insertNode(spaceNode);
       newRange.setStartAfter(spaceNode);
       newRange.setEndAfter(spaceNode);
@@ -540,10 +574,31 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
 
     editorRef.current.innerHTML = '';
+
+    // 重置编辑器高度和滚动条
+    if (editorRef.current) {
+      editorRef.current.style.overflowY = 'hidden';
+      editorRef.current.style.height = 'auto';
+    }
   };
 
   return (
     <div className={styles.input_container}>
+      {mentionState.active && (
+        <div className={styles.mention_panel_container}>
+          <MentionPanel
+            items={getCurrentItems()}
+            activeIndex={mentionState.activeIndex}
+            onSelectItem={handleSelectItem}
+            onBackToParent={handleBackToParent}
+            position={{ top: 0, left: 0 }} // 固定位置
+            filter={mentionState.level === 0 ? mentionState.filter : mentionState.secondLevelFilter}
+            visible={true}
+            level={mentionState.level}
+            parentType={mentionState.parentType}
+          />
+        </div>
+      )}
       <div className={styles.editor_area}>
         <div
           ref={editorRef}
@@ -551,18 +606,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           contentEditable={true}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
-        />
-
-        <MentionPanel
-          items={getCurrentItems()}
-          activeIndex={mentionState.activeIndex}
-          onSelectItem={handleSelectItem}
-          onBackToParent={handleBackToParent}
-          position={mentionState.position}
-          filter={mentionState.level === 0 ? mentionState.filter : mentionState.secondLevelFilter}
-          visible={mentionState.active}
-          level={mentionState.level}
-          parentType={mentionState.parentType}
         />
       </div>
       <div className={styles.footer}>
@@ -583,7 +626,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         >
           <EnhanceIcon
             className={cls(getIcon('mcp'), styles.mcp_logo)}
-            // onClick={handleShowMCPConfig}
             tabIndex={0}
             role='button'
             ariaLabel={'MCP Server'}
