@@ -18,7 +18,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   firstLevelItems = [],
   secondLevelItems = {},
   onSend,
-  placeholder = '🔍 请输入要搜索的文件内容',
+  placeholder = 'Ask anything (⌘L), @ to mention code blocks',
 }) => {
   // 默认一级菜单项
   const defaultFirstLevelItems: MentionItem[] = [{ id: 'file', type: 'file', text: 'File', hasSubmenu: true }];
@@ -609,28 +609,46 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         />
       </div>
       <div className={styles.footer}>
-        <Select
-          options={[
-            { label: 'Claude 3.5 Sonnet (外部模型)', value: 'Claude 3.5 Sonnet (外部模型)' },
-            { label: 'Claude 3.5 Sonnet (内部模型)', value: 'Claude 3.5 Sonnet (内部模型)' },
-          ]}
-          value={'Claude 3.5 Sonnet (外部模型)'}
-          className={styles.model_selector}
-          size='small'
-        />
-        <Popover
-          overlayClassName={styles.popover_icon}
-          id={'ai-chat-header-mcp-server'}
-          position={PopoverPosition.top}
-          title={'MCP Server'}
-        >
-          <EnhanceIcon
-            className={cls(getIcon('mcp'), styles.mcp_logo)}
-            tabIndex={0}
-            role='button'
-            ariaLabel={'MCP Server'}
+        <div className={styles.left_control}>
+          <Select
+            options={[
+              { label: 'Claude 3.5 Sonnet (外部模型)', value: 'Claude 3.5 Sonnet (外部模型)' },
+              { label: 'Claude 3.5 Sonnet (内部模型)', value: 'Claude 3.5 Sonnet (内部模型)' },
+            ]}
+            value={'Claude 3.5 Sonnet (外部模型)'}
+            className={styles.model_selector}
+            size='small'
           />
-        </Popover>
+          <Popover
+            overlayClassName={styles.popover_icon}
+            id={'ai-chat-mcp-server'}
+            position={PopoverPosition.top}
+            title={'MCP Server'}
+          >
+            <EnhanceIcon
+              className={cls(getIcon('mcp'), styles.mcp_logo)}
+              tabIndex={0}
+              role='button'
+              ariaLabel={'MCP Server'}
+            />
+          </Popover>
+        </div>
+        <div className={styles.right_control}>
+          <Popover
+            overlayClassName={styles.popover_icon}
+            id={'ai-chat-send'}
+            position={PopoverPosition.top}
+            title={'Send'}
+          >
+            <EnhanceIcon
+              wrapperClassName={styles.send_logo}
+              className={cls(getIcon('send-outlined'), styles.send_logo_icon)}
+              tabIndex={0}
+              role='button'
+              ariaLabel={'Send'}
+            />
+          </Popover>
+        </div>
       </div>
     </div>
   );
