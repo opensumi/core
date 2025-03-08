@@ -21,7 +21,6 @@ export const MCPConfigView: React.FC = () => {
   const messageService = useInjectable<IMessageService>(IMessageService);
   const sumiMCPServerBackendProxy = useInjectable<ISumiMCPServerBackend>(SumiMCPServerProxyServicePath);
   const logger = useInjectable<ILogger>(ILogger);
-  const messageService = useInjectable<IMessageService>(IMessageService);
   const [servers, setServers] = React.useState<MCPServer[]>([]);
   const [formVisible, setFormVisible] = React.useState(false);
   const [editingServer, setEditingServer] = React.useState<MCPServerFormData | undefined>();
