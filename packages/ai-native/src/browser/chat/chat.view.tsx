@@ -28,7 +28,7 @@ import { IMessageService } from '@opensumi/ide-overlay';
 
 import 'react-chat-elements/dist/main.css';
 import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
-import { ChatContext } from '../components/ChatContext';
+import { ChatContext } from '../components/chat-context';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';

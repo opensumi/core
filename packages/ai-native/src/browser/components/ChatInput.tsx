@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, us
 import { AINativeConfigService, useInjectable, useLatest } from '@opensumi/ide-core-browser';
 import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { InteractiveInput } from '@opensumi/ide-core-browser/lib/components/ai-native/interactive-input/index';
 import {
   ChatAgentViewServiceToken,
   ChatFeatureRegistryToken,
@@ -34,6 +33,7 @@ import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
 import { IChatSlashCommandItem } from '../types';
 
 import styles from './components.module.less';
+import { MentionInput } from './mention-input/mention-input';
 
 const INSTRUCTION_BOTTOM = 8;
 const EXPAND_CRITICAL_HEIGHT = 68;
@@ -484,7 +484,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
           </Popover>
         </div>
       )}
-      <InteractiveInput
+      {/* <InteractiveInput
         ref={textareaRef}
         placeholder={placeholder}
         value={value}
@@ -500,7 +500,8 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         onHeightChange={handleHeightChange}
         height={inputHeight}
         popoverPosition={PopoverPosition.left}
-      />
+      /> */}
+      <MentionInput />
       <div className={styles.chat_input_footer}>
         {aiNativeConfigService.capabilities.supportsMCP && (
           <div className={styles.mcp_desc}>

@@ -15,7 +15,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser/types';
 
 import { FileContext, LLMContextService, LLMContextServiceToken } from '../../../common/llm-context';
 
-import { ContextSelector } from './ContextSelector';
+import { ContextSelector } from './context-selector';
 import styles from './style.module.less';
 
 const getCollapsedHeight = () => ({ height: 0, opacity: 0 });
