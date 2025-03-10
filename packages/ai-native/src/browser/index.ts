@@ -25,6 +25,7 @@ import {
   IChatAgentService,
   IChatInternalService,
   IChatManagerService,
+  InlineDiffServiceToken,
   SumiMCPServerProxyServicePath,
   TokenMCPServerProxyService,
 } from '../common';
@@ -194,12 +195,12 @@ export class AINativeModule extends BrowserModule {
       useClass: AIInlineCompletionsProvider,
     },
     {
-      token: InlineDiffService,
-      useClass: InlineDiffService,
-    },
-    {
       token: ChatAgentPromptProvider,
       useClass: DefaultChatAgentPromptProvider,
+    },
+    {
+      token: InlineDiffServiceToken,
+      useClass: InlineDiffService,
     },
     {
       token: BaseApplyService,
