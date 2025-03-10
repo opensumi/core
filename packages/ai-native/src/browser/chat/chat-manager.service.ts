@@ -6,14 +6,14 @@ import {
   DisposableMap,
   Emitter,
   IChatProgress,
-  IChatToolContent,
+  IDisposable,
   IStorage,
+  LRUCache,
   STORAGE_NAMESPACE,
   StorageProvider,
   debounce,
-  formatLocalize,
 } from '@opensumi/ide-core-common';
-import { ChatMessageRole, IChatMessage, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { IChatAgentService, IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 import { MsgHistoryManager } from '../model/msg-history-manager';
@@ -39,9 +39,22 @@ interface ISessionModel {
 
 const MAX_SESSION_COUNT = 20;
 
+class DisposableLRUCache<K, V extends IDisposable = IDisposable> extends LRUCache<K, V> implements IDisposable {
+  disposeKey(key: K): void {
+    const disposable = this.get(key);
+    if (disposable) {
+      disposable.dispose();
+    }
+  }
+
+  dispose(): void {
+    this.clear();
+  }
+}
+
 @Injectable()
 export class ChatManagerService extends Disposable {
-  #sessionModels = this.registerDispose(new DisposableMap<string, ChatModel>());
+  #sessionModels = this.registerDispose(new DisposableLRUCache<string, ChatModel>(MAX_SESSION_COUNT));
   #pendingRequests = this.registerDispose(new DisposableMap<string, CancellationTokenSource>());
   private storageInitEmitter = new Emitter<void>();
   public onStorageInit = this.storageInitEmitter.event;
@@ -58,7 +71,6 @@ export class ChatManagerService extends Disposable {
   private _chatStorage: IStorage;
 
   protected fromJSON(data: ISessionModel[]) {
-    // TODO: 支持ApplyService恢复
     return data.map((item) => {
       const model = new ChatModel({
         sessionId: item.sessionId,
@@ -106,9 +118,6 @@ export class ChatManagerService extends Disposable {
   }
 
   startSession() {
-    if (this.#sessionModels.size >= MAX_SESSION_COUNT) {
-      throw new Error(formatLocalize('aiNative.chat.session.max', MAX_SESSION_COUNT.toString()));
-    }
     const model = new ChatModel();
     this.#sessionModels.set(model.sessionId, model);
     this.listenSession(model);
