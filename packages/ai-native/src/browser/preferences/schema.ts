@@ -97,6 +97,14 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       default: '',
       description: localize('preference.ai.native.openai.baseURL.description'),
     },
+    [AINativeSettingSectionsId.ContextWindow]: {
+      type: 'number',
+      description: localize('preference.ai.native.contextWindow.description'),
+    },
+    [AINativeSettingSectionsId.MaxTokens]: {
+      type: 'number',
+      description: localize('preference.ai.native.maxTokens.description'),
+    },
     [AINativeSettingSectionsId.MCPServers]: {
       type: 'array',
       default: [],

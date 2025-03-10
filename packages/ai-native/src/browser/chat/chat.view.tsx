@@ -748,10 +748,13 @@ export const AIChatView = () => {
               dataSource={messageListData}
             />
           </div>
-          {msgHistoryManager.slicedMessageCount ? (
+          {aiChatService.sessionModel.slicedMessageCount ? (
             <div className={styles.chat_tips_text}>
               <div className={styles.chat_tips_container}>
-                {formatLocalize('aiNative.chat.ai.assistant.limit.message', msgHistoryManager.slicedMessageCount)}
+                {formatLocalize(
+                  'aiNative.chat.ai.assistant.limit.message',
+                  aiChatService.sessionModel.slicedMessageCount,
+                )}
               </div>
             </div>
           ) : null}
