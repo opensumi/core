@@ -80,31 +80,33 @@ export class ChatManagerService extends Disposable {
   private _chatStorage: IStorage;
 
   protected fromJSON(data: ISessionModel[]) {
-    return data.map((item) => {
-      const model = new ChatModel({
-        sessionId: item.sessionId,
-        history: new MsgHistoryManager(item.history),
+    return data
+      .filter((item) => item.history.messages.length > 0)
+      .map((item) => {
+        const model = new ChatModel({
+          sessionId: item.sessionId,
+          history: new MsgHistoryManager(item.history),
+        });
+        const requests = item.requests.map(
+          (request) =>
+            new ChatRequestModel(
+              request.requestId,
+              model,
+              request.message,
+              new ChatResponseModel(request.requestId, model, request.message.agentId, {
+                responseContents: request.response.responseContents,
+                isComplete: true,
+                responseText: request.response.responseText,
+                responseParts: request.response.responseParts,
+                errorDetails: request.response.errorDetails,
+                followups: request.response.followups,
+                isCanceled: request.response.isCanceled,
+              }),
+            ),
+        );
+        model.restoreRequests(requests);
+        return model;
       });
-      const requests = item.requests.map(
-        (request) =>
-          new ChatRequestModel(
-            request.requestId,
-            model,
-            request.message,
-            new ChatResponseModel(request.requestId, model, request.message.agentId, {
-              responseContents: request.response.responseContents,
-              isComplete: true,
-              responseText: request.response.responseText,
-              responseParts: request.response.responseParts,
-              errorDetails: request.response.errorDetails,
-              followups: request.response.followups,
-              isCanceled: request.response.isCanceled,
-            }),
-          ),
-      );
-      model.restoreRequests(requests);
-      return model;
-    });
   }
 
   constructor() {

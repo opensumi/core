@@ -276,15 +276,12 @@ export class ChatRequestModel implements IChatRequestModel {
 }
 
 export class ChatModel extends Disposable implements IChatModel {
-  private static requestIdPool = 0;
+  private requestIdPool = 0;
 
-  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; requests?: ChatRequestModel[] }) {
+  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager }) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
     this.history = initParams?.history ?? new MsgHistoryManager();
-    if (initParams?.requests) {
-      this.#requests = new Map(initParams.requests.map((r) => [r.requestId, r]));
-    }
   }
 
   #sessionId: string;
@@ -299,6 +296,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
   restoreRequests(requests: ChatRequestModel[]): void {
     this.#requests = new Map(requests.map((r) => [r.requestId, r]));
+    this.requestIdPool = requests.length;
   }
 
   readonly history: MsgHistoryManager;
@@ -374,7 +372,7 @@ export class ChatModel extends Disposable implements IChatModel {
   addRequest(message: IChatRequestMessage): ChatRequestModel {
     const msg = message;
 
-    const requestId = `${this.sessionId}_request_${ChatModel.requestIdPool++}`;
+    const requestId = `${this.sessionId}_request_${this.requestIdPool++}`;
     const response = new ChatResponseModel(requestId, this, msg.agentId);
     const request = new ChatRequestModel(requestId, this, msg, response);
 
