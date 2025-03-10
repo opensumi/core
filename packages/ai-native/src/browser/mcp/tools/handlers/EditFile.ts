@@ -13,8 +13,8 @@ export class EditFileHandler {
   private applyService: BaseApplyService;
 
   async handler(params: { targetFile: string; codeEdit: string; instructions?: string }, toolCallId: string) {
-    const { targetFile, codeEdit } = params;
-    const block = await this.applyService.registerCodeBlock(targetFile, codeEdit, toolCallId);
+    const { targetFile, codeEdit, instructions } = params;
+    const block = await this.applyService.registerCodeBlock(targetFile, codeEdit, toolCallId, instructions);
     const blockData = await this.applyService.apply(block);
     return blockData;
   }

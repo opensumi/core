@@ -37,7 +37,7 @@ export class ApplyService extends BaseApplyService {
     <code>${fileContent}</code>
     
     <update>${codeBlock.codeEdit}</update>
-    
+    ${codeBlock.instructions ? `\nUser's intention: ${codeBlock.instructions}\n` : ''}
     Provide the complete updated code.
 `,
       {
