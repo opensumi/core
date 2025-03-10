@@ -179,9 +179,10 @@ export abstract class BaseApplyService extends WithEventBus {
     return sessionCodeBlocks.filter((block) => block.status === 'pending').map((block) => block.relativePath);
   }
 
-  protected getSessionCodeBlocks(sessionId?: string) {
-    sessionId = sessionId || this.chatInternalService.sessionModel.sessionId;
-    const sessionModel = this.chatInternalService.getSession(sessionId);
+  getSessionCodeBlocks(sessionId?: string) {
+    const sessionModel = sessionId
+      ? this.chatInternalService.getSession(sessionId)
+      : this.chatInternalService.sessionModel;
     if (!sessionModel) {
       throw new Error(`Session ${sessionId} not found`);
     }
@@ -473,14 +474,36 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
-  processAll(uri: URI, type: 'accept' | 'reject'): void {
-    const codeBlocks = this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending');
+  processAll(type: 'accept' | 'reject', uri?: URI): void {
+    const codeBlocks = uri
+      ? this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending')
+      : this.getSessionCodeBlocks().filter((block) => block.status === 'pending');
     if (!codeBlocks?.length) {
       throw new Error('No pending code block found');
     }
-    const decorationModel = this.activePreviewerMap
-      .get(codeBlocks[0].relativePath)
-      ?.getNode()?.livePreviewDiffDecorationModel;
+    const relativePaths = uri
+      ? [codeBlocks[0].relativePath]
+      : codeBlocks
+          .map((block) => block.relativePath)
+          .reduce((acc, cur) => {
+            if (acc.includes(cur)) {
+              return acc;
+            }
+            acc.push(cur);
+            return acc;
+          }, [] as string[]);
+    relativePaths.forEach((relativePath) => {
+      this.doProcess(type, relativePath);
+    });
+    codeBlocks.forEach((codeBlock) => {
+      codeBlock.status = type === 'accept' ? 'success' : 'cancelled';
+      // TODO: 批量更新
+      this.updateCodeBlock(codeBlock);
+    });
+  }
+
+  protected doProcess(type: 'accept' | 'reject', relativePath: string) {
+    const decorationModel = this.activePreviewerMap.get(relativePath)?.getNode()?.livePreviewDiffDecorationModel;
     if (!decorationModel) {
       throw new Error('No active previewer found');
     }
@@ -489,12 +512,7 @@ export abstract class BaseApplyService extends WithEventBus {
     } else {
       decorationModel.discardUnProcessed();
     }
-    this.editorService.save(uri);
-    codeBlocks.forEach((codeBlock) => {
-      codeBlock.status = type === 'accept' ? 'success' : 'cancelled';
-      // TODO: 批量更新
-      this.updateCodeBlock(codeBlock);
-    });
+    this.editorService.save(URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
   }
 
   protected listenPartialEdit(model: ITextModel, codeBlock: CodeBlockData) {

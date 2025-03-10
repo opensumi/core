@@ -42,6 +42,7 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
+import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
@@ -61,36 +62,27 @@ interface TDispatchAction {
 
 const MAX_TITLE_LENGTH = 100;
 
-// TODO: 全量获取性能不好
-const getFileChanges = (sessionAdditionals: Map<string, Record<string, any>>) =>
-  Array.from(sessionAdditionals.values())
-    .map((additional) => (additional.codeBlockMap || {}) as { [toolCallId: string]: CodeBlockData })
-    .reduce((acc, cur) => {
-      Object.values(cur).forEach((block) => {
-        acc.push(block);
-      });
-      return acc;
-    }, [] as CodeBlockData[])
-    .map((block) => {
-      const rangesFromDiffHunk =
-        block.applyResult?.diff.split('\n').reduce(
-          ([del, add], line) => {
-            if (line.startsWith('-')) {
-              del += 1;
-            } else if (line.startsWith('+')) {
-              add += 1;
-            }
-            return [del, add];
-          },
-          [0, 0],
-        ) || [];
-      return {
-        path: block.relativePath,
-        additions: rangesFromDiffHunk[1],
-        deletions: rangesFromDiffHunk[0],
-        status: block.status,
-      };
-    });
+const getFileChanges = (codeBlocks: CodeBlockData[]) =>
+  codeBlocks.map((block) => {
+    const rangesFromDiffHunk =
+      block.applyResult?.diff.split('\n').reduce(
+        ([del, add], line) => {
+          if (line.startsWith('-')) {
+            del += 1;
+          } else if (line.startsWith('+')) {
+            add += 1;
+          }
+          return [del, add];
+        },
+        [0, 0],
+      ) || [];
+    return {
+      path: block.relativePath,
+      additions: rangesFromDiffHunk[1],
+      deletions: rangesFromDiffHunk[0],
+      status: block.status,
+    };
+  });
 
 export const AIChatView = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
@@ -108,11 +100,10 @@ export const AIChatView = () => {
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const applyService = useInjectable<BaseApplyService>(BaseApplyService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
 
-  const [changeList, setChangeList] = React.useState<FileChange[]>(
-    getFileChanges(msgHistoryManager.sessionAdditionals),
-  );
+  const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
 
   const [messageListData, dispatchMessage] = React.useReducer((state: MessageData[], action: TDispatchAction) => {
     switch (action.type) {
@@ -135,20 +126,15 @@ export const AIChatView = () => {
 
   React.useEffect(() => {
     const disposer = new Disposable();
-    disposer.addDispose(
-      msgHistoryManager.onMessageAdditionalChange(() => {
-        const fileChanges = getFileChanges(msgHistoryManager.sessionAdditionals);
-        setChangeList(fileChanges);
-      }),
-    );
-    disposer.addDispose(
-      aiChatService.onChangeSession(() => {
-        const fileChanges = getFileChanges(aiChatService.sessionModel.history.sessionAdditionals);
-        setChangeList(fileChanges);
-      }),
-    );
+    const doUpdate = () => {
+      const fileChanges = getFileChanges(applyService.getSessionCodeBlocks());
+      setChangeList(fileChanges);
+    };
+    disposer.addDispose(aiChatService.onChangeSession(doUpdate));
+    // TODO: 全量获取性能不好
+    disposer.addDispose(applyService.onCodeBlockUpdate(doUpdate));
     return () => disposer.dispose();
-  }, [msgHistoryManager, aiChatService]);
+  }, []);
 
   React.useEffect(() => {
     const featureSlashCommands = chatFeatureRegistry.getAllShortcutSlashCommand();
@@ -778,6 +764,12 @@ export const AIChatView = () => {
                 files={changeList}
                 onFileClick={(filePath) => {
                   editorService.open(URI.file(path.join(appConfig.workspaceDir, filePath)));
+                }}
+                onRejectAll={() => {
+                  applyService.processAll('reject');
+                }}
+                onAcceptAll={() => {
+                  applyService.processAll('accept');
                 }}
               />
             )}

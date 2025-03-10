@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-import { Icon } from '@opensumi/ide-components';
+import { Button, Icon } from '@opensumi/ide-components';
 import { LabelService, URI, useInjectable } from '@opensumi/ide-core-browser';
 
 import { CodeBlockStatus } from '../../common/types';
@@ -18,9 +18,12 @@ export interface FileChange {
 interface FileListDisplayProps {
   files: FileChange[];
   onFileClick: (path: string) => void;
+  onRejectAll: () => void;
+  onAcceptAll: () => void;
 }
 
-export const FileListDisplay: React.FC<FileListDisplayProps> = ({ files, onFileClick }) => {
+export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
+  const { files, onFileClick, onRejectAll, onAcceptAll } = props;
   const [isExpanded, setIsExpanded] = useState(true);
   const labelService = useInjectable<LabelService>(LabelService);
   const fileIcons = useMemo(
@@ -82,10 +85,20 @@ export const FileListDisplay: React.FC<FileListDisplayProps> = ({ files, onFileC
   return (
     <div className={styles.container}>
       <div className={styles.header} onClick={handleToggle}>
-        <button className={styles.toggleButton}>{isExpanded ? <Icon icon='down' /> : <Icon icon='right' />}</button>
         <span className={styles.title}>
+          <button className={styles.toggleButton}>{isExpanded ? <Icon icon='down' /> : <Icon icon='right' />}</button>
           Changed Files ({totalFiles}) {renderChangeStats(totalChanges.additions, totalChanges.deletions)}
         </span>
+        {files.some((file) => file.status === 'pending') && (
+          <div className={styles.actions}>
+            <Button type='link' size='small' onClick={onRejectAll}>
+              Reject
+            </Button>
+            <Button size='small' onClick={onAcceptAll}>
+              Accept
+            </Button>
+          </div>
+        )}
       </div>
 
       <ul className={`${styles.fileList} ${!isExpanded ? styles.collapsed : ''}`}>
