@@ -42,11 +42,15 @@ ${context.recentlyViewFiles.map((file, idx) => `    ${idx + 1}: ${file}`).join('
               `,
     )}
   </attached_files>
-${currentModel ? `<current_opened_file>
+${
+  currentModel
+    ? `<current_opened_file>
   \`\`\`${currentModel.languageId} ${currentModel.uri.toString()}
 ${currentModel.getText()}
   \`\`\`
-  </current_opened_file>` : ''}
+  </current_opened_file>`
+    : ''
+}
 </additional_data>
 <user_query>
 ${userMessage}

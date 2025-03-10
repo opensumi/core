@@ -29,7 +29,6 @@ import {
 
 import { CodeEditsResultValue, ICodeEdit, ICodeEditsResult } from '../index';
 
-
 import { BaseCodeEditsView } from './base';
 
 /**

@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Icon, Popover } from '@opensumi/ide-components';
 import { AppConfig, IDisposable, URI, localize, path, useInjectable } from '@opensumi/ide-core-browser';
 import { IResource, WorkbenchEditorService } from '@opensumi/ide-editor';
-import { Path } from '@opensumi/ide-utils/lib/path';
 
 import { BaseApplyService } from '../../mcp/base-apply.service';
 

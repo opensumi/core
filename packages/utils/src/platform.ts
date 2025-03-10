@@ -85,7 +85,7 @@ if (typeof navigator === 'object' && !isNodeNavigator && !isElectronRenderer) {
       // VSCode's default language is 'en'
       _language = resolved ? resolved : LANGUAGE_DEFAULT;
       _translationsConfigFile = nlsConfig._translationsConfigFile;
-    } catch (e) { }
+    } catch (e) {}
   }
   _isNative = true;
 }

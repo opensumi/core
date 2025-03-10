@@ -1,7 +1,5 @@
-import { Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event, uuid } from '@opensumi/ide-core-common';
-import { ChatMessageRole } from '@opensumi/ide-core-common/lib/types/ai-native';
-import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatMessageRole, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 type IExcludeMessage = Omit<IHistoryChatMessage, 'id' | 'order'>;
 
