@@ -4578,9 +4578,9 @@ __metadata:
   linkType: hard
 
 "@opensumi/vscode-jsonrpc@npm:^8.0.0-next.2":
-  version: 8.0.0-next.9
-  resolution: "@opensumi/vscode-jsonrpc@npm:8.0.0-next.9"
-  checksum: 10/b6b768177ef756224b9e14271f5b6f32b2774f779a316e6500ada289e32ebdb74e111d84a60a48a45b4c7e3eac965c2f7c18da1e368737f8f96410f10389b852
+  version: 8.2.1
+  resolution: "@opensumi/vscode-jsonrpc@npm:8.2.1"
+  checksum: 10/b364541723620e1bfb1d8fc20e2e98075101cddad4f7c8b6b8e958edfd8facf0de63b0ba183b0bb2db066b3dccd30c1b27da720ddb5a3a8812d7d0fdd57a9d21
   languageName: node
   linkType: hard
 
