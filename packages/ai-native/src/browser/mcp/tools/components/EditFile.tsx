@@ -18,7 +18,7 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { CodeBlockData } from '../../../../common/types';
-import { renderStatus } from '../../../components/ApplyStatus';
+import { ApplyStatus } from '../../../components/ApplyStatus';
 import { ChatMarkdown } from '../../../components/ChatMarkdown';
 import { IMCPServerToolComponentProps } from '../../../types';
 import { BaseApplyService } from '../../base-apply.service';
@@ -96,7 +96,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
           {codeBlockData.iterationCount > 1 && (
             <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
           )}
-          {renderStatus(codeBlockData.status, props.result)}
+          <ApplyStatus status={codeBlockData.status} error={props.result} />
         </div>
         <div className={styles.right}>
           <Popover title={'Show Code'} id={'edit-file-tool-show-code'}>

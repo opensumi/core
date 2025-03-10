@@ -23,6 +23,10 @@
 
 .header:hover {
   color: var(--design-text-highlightForeground);
+  .toggleButton :global(.kt-icon) {
+    transition: color 0.2s ease-in-out;
+    color: var(--design-text-highlightForeground);
+  }
 }
 
 .toggleButton {
@@ -56,7 +60,7 @@
   cursor: pointer;
   border: none;
   font-size: 13px;
-  color: #666;
+  color: var(--descriptionForeground);
 }
 
 .fileItem:hover {
@@ -104,13 +108,11 @@
 }
 
 .additions {
-  color: #28a745;
-  font-weight: 500;
+  color: #52c41a;
 }
 
 .deletions {
-  color: #d73a49;
-  font-weight: 500;
+  color: var(--debugConsole-errorForeground);
 }
 
 .noChange {

@@ -5,7 +5,7 @@ import { LabelService, URI, useInjectable } from '@opensumi/ide-core-browser';
 
 import { CodeBlockStatus } from '../../common/types';
 
-import { renderStatus } from './ApplyStatus';
+import { ApplyStatus } from './ApplyStatus';
 import styles from './change-list.module.less';
 
 export interface FileChange {
@@ -121,7 +121,7 @@ export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
             <div className={styles.fileInfo}>
               <div className={styles.filePath}>{file.path}</div>
               <div className={styles.fileStats}>{renderChangeStats(file.additions, file.deletions)}</div>
-              {renderStatus(file.status)}
+              <ApplyStatus status={file.status} />
             </div>
           </li>
         ))}
