@@ -3418,7 +3418,7 @@ __metadata:
     "@opensumi/ide-workspace": "workspace:*"
     "@xterm/xterm": "npm:5.5.0"
     ai: "npm:^4.1.45"
-    ansi-escapes: "npm:^7.0.0"
+    ansi-escapes: "npm:5.0.0"
     ansi-regex: "npm:^2.0.0"
     ansi_up: "npm:^5.1.0"
     diff: "npm:^7.0.0"
@@ -6993,6 +6993,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ansi-escapes@npm:5.0.0":
+  version: 5.0.0
+  resolution: "ansi-escapes@npm:5.0.0"
+  dependencies:
+    type-fest: "npm:^1.0.2"
+  checksum: 10/cbfb95f9f6d8a1ffc89f50fcda3313effae2d9ac2f357f89f626815b4d95fdc3f10f74e0887614ff850d01f805b7505eb1e7ebfdd26144bbfc26c5de08e19195
+  languageName: node
+  linkType: hard
+
 "ansi-escapes@npm:^4.2.1":
   version: 4.3.2
   resolution: "ansi-escapes@npm:4.3.2"
@@ -7006,15 +7015,6 @@ __metadata:
   version: 6.2.1
   resolution: "ansi-escapes@npm:6.2.1"
   checksum: 10/3b064937dc8a0645ed8094bc8b09483ee718f3aa3139746280e6c2ea80e28c0a3ce66973d0f33e88e60021abbf67e5f877deabfc810e75edf8a19dfa128850be
-  languageName: node
-  linkType: hard
-
-"ansi-escapes@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "ansi-escapes@npm:7.0.0"
-  dependencies:
-    environment: "npm:^1.0.0"
-  checksum: 10/2d0e2345087bd7ae6bf122b9cc05ee35560d40dcc061146edcdc02bc2d7c7c50143cd12a22e69a0b5c0f62b948b7bc9a4539ee888b80f5bd33cdfd82d01a70ab
   languageName: node
   linkType: hard
 
@@ -10816,13 +10816,6 @@ __metadata:
   bin:
     envinfo: dist/cli.js
   checksum: 10/5a18ead05954ac1643350170fefce2436a9cb758dc402e36fe4616553ee46469f766fcb6df72379d1741a2e5b55918949b343ff6174502c31c524a5cf75f05cd
-  languageName: node
-  linkType: hard
-
-"environment@npm:^1.0.0":
-  version: 1.1.0
-  resolution: "environment@npm:1.1.0"
-  checksum: 10/dd3c1b9825e7f71f1e72b03c2344799ac73f2e9ef81b78ea8b373e55db021786c6b9f3858ea43a436a2c4611052670ec0afe85bc029c384cc71165feee2f4ba6
   languageName: node
   linkType: hard
 
@@ -24116,6 +24109,13 @@ __metadata:
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: 10/fd4a91bfb706aeeb0d326ebd2e9a8ea5263979e5dec8d16c3e469a5bd3a946e014a062ef76c02e3086d3d1c7209a56a20a4caafd0e9f9a5c2ab975084ea3d388
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^1.0.2":
+  version: 1.4.0
+  resolution: "type-fest@npm:1.4.0"
+  checksum: 10/89875c247564601c2650bacad5ff80b859007fbdb6c9e43713ae3ffa3f584552eea60f33711dd762e16496a1ab4debd409822627be14097d9a17e39c49db591a
   languageName: node
   linkType: hard
 
