@@ -519,7 +519,6 @@ export abstract class BaseApplyService extends WithEventBus {
     const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
     const uriString = model.uri.toString();
     const toDispose = this.inlineDiffService.onPartialEdit((event) => {
-      // TODO 支持自动保存
       if (
         event.totalPartialEditCount === event.resolvedPartialEditCount &&
         event.uri.path === model.uri.path.toString()
@@ -540,11 +539,19 @@ export abstract class BaseApplyService extends WithEventBus {
             actionSource: ActionSourceEnum.Chat,
             sessionId: this.chatInternalService.sessionModel.sessionId,
             isReceive: true,
-            isDrop: false,
-            code: codeBlock.codeEdit,
+            // 是否有丢弃部分代码
+            isDrop: event.acceptPartialEditCount !== event.totalPartialEditCount,
+            code: appliedResult,
+            originCode: codeBlock.originalCode,
             message: JSON.stringify({
               diff,
               diagnosticInfos,
+              instructions: codeBlock.instructions,
+              codeEdit: codeBlock.codeEdit,
+              partialEditCount: event.totalPartialEditCount,
+              acceptPartialEditCount: event.acceptPartialEditCount,
+              addedLinesCount: event.totalAddedLinesCount,
+              deletedLinesCount: event.totalDeletedLinesCount,
             }),
           });
           deferred.resolve({
@@ -562,8 +569,11 @@ export abstract class BaseApplyService extends WithEventBus {
             sessionId: this.chatInternalService.sessionModel.sessionId,
             isReceive: false,
             isDrop: true,
-            code: codeBlock.codeEdit,
             originCode: codeBlock.originalCode,
+            message: JSON.stringify({
+              instructions: codeBlock.instructions,
+              codeEdit: codeBlock.codeEdit,
+            }),
           });
         }
         this.editorListenerMap.disposeKey(uriString);
