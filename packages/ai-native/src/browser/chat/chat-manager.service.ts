@@ -47,9 +47,13 @@ class DisposableLRUCache<K, V extends IDisposable = IDisposable> extends LRUCach
     if (disposable) {
       disposable.dispose();
     }
+    this.delete(key);
   }
 
   dispose(): void {
+    this.forEach((disposable) => {
+      disposable.dispose();
+    });
     this.clear();
   }
 }
@@ -224,6 +228,7 @@ export class ChatManagerService extends Disposable {
     );
   }
 
+  @debounce(1000)
   protected saveSessions() {
     this._chatStorage.set('sessionModels', this.getSessions());
   }
