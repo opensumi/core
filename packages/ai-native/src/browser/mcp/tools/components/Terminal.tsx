@@ -70,9 +70,6 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
               </p>
             </>
           )}
-          <div className={styles.command_title}>
-            <span>{localize('ai.native.mcp.terminal.output')}:</span>
-          </div>
           {output ? (
             <div className={styles.command_content}>
               <Icon icon='output' />

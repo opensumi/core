@@ -8,12 +8,6 @@ const ansiUp = new AnsiUp();
 
 export function computeAnsiLogString(logs: LogContent, enableEraseLineFilter = true, hideEmptyLine = false): string {
   const splittedLogs = logs.split('\n');
-  if (!Array.isArray(logs)) {
-    // eslint-disable-next-line no-console
-    console.warn('[AnsiLog] prop "logs"\'s type is incorrect.');
-    return '';
-  }
-
   // 处理清空上行逻辑
   // 上移 cursor + 清空整行
   let filteredLogs = enableEraseLineFilter ? filterEraseMultipleLine(splittedLogs) : splittedLogs;
@@ -26,6 +20,5 @@ export function computeAnsiLogString(logs: LogContent, enableEraseLineFilter = t
 
     return htmlLog;
   });
-
   return htmlLogLines.join('\n');
 }
