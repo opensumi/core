@@ -63,26 +63,39 @@ interface TDispatchAction {
 const MAX_TITLE_LENGTH = 100;
 
 const getFileChanges = (codeBlocks: CodeBlockData[]) =>
-  codeBlocks.map((block) => {
-    const rangesFromDiffHunk =
-      block.applyResult?.diff.split('\n').reduce(
-        ([del, add], line) => {
-          if (line.startsWith('-')) {
-            del += 1;
-          } else if (line.startsWith('+')) {
-            add += 1;
-          }
-          return [del, add];
-        },
-        [0, 0],
-      ) || [];
-    return {
-      path: block.relativePath,
-      additions: rangesFromDiffHunk[1],
-      deletions: rangesFromDiffHunk[0],
-      status: block.status,
-    };
-  });
+  codeBlocks
+    .map((block) => {
+      const rangesFromDiffHunk =
+        block.applyResult?.diff.split('\n').reduce(
+          ([del, add], line) => {
+            if (line.startsWith('-')) {
+              del += 1;
+            } else if (line.startsWith('+')) {
+              add += 1;
+            }
+            return [del, add];
+          },
+          [0, 0],
+        ) || [];
+      return {
+        path: block.relativePath,
+        additions: rangesFromDiffHunk[1],
+        deletions: rangesFromDiffHunk[0],
+        status: block.status,
+      };
+    })
+    .reduce((acc, curr) => {
+      const existingFile = acc.find((file) => file.path === curr.path);
+      if (existingFile) {
+        existingFile.additions += curr.additions;
+        existingFile.deletions += curr.deletions;
+        // 使用最新的状态
+        existingFile.status = curr.status;
+      } else {
+        acc.push(curr);
+      }
+      return acc;
+    }, [] as FileChange[]);
 
 export const AIChatView = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);

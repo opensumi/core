@@ -16,16 +16,15 @@
   background-color: transparent;
   cursor: pointer;
   user-select: none;
-  transition: color 0.2s ease-in-out;
   font-size: 12px;
   color: var(--descriptionForeground);
 }
 
-.header:hover {
+.title:hover {
   color: var(--design-text-highlightForeground);
   .toggleButton :global(.kt-icon) {
-    transition: color 0.2s ease-in-out;
     color: var(--design-text-highlightForeground);
+    transition: color 0.2s ease-in-out;
   }
 }
 
@@ -44,6 +43,7 @@
 
 .title {
   gap: 6px;
+  transition: color 0.2s ease-in-out;
   display: flex;
 }
 
