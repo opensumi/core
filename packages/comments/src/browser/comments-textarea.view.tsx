@@ -47,12 +47,6 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
   // make `ref` to input works
   React.useImperativeHandle(ref, () => inputRef.current!);
 
-  const handleDragOver = React.useCallback((event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
-  }, []);
-
   // 复制图片
   const handleFilePaste = React.useCallback(
     async (event: ClipboardEvent<HTMLTextAreaElement>) => {
@@ -90,6 +84,12 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
     },
     [dragFiles],
   );
+
+  const handleDragOver = React.useCallback((event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  }, []);
 
   const selectLastPosition = React.useCallback((value) => {
     const textarea = inputRef.current;
