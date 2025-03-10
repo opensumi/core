@@ -1,5 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
+  AINativeSettingSectionsId,
   CancellationToken,
   CancellationTokenSource,
   Disposable,
@@ -67,6 +69,9 @@ export class ChatManagerService extends Disposable {
 
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
+
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
 
   private _chatStorage: IStorage;
 
@@ -165,7 +170,8 @@ export class ChatManagerService extends Disposable {
       request.response.cancel();
     });
 
-    const history = model.messageHistory;
+    const contextWindow = this.preferenceService.get<number>(AINativeSettingSectionsId.ContextWindow);
+    const history = model.getMessageHistory(contextWindow);
 
     try {
       const progressCallback = (progress: IChatProgress) => {
@@ -218,7 +224,6 @@ export class ChatManagerService extends Disposable {
     );
   }
 
-  @debounce(1000)
   protected saveSessions() {
     this._chatStorage.set('sessionModels', this.getSessions());
   }

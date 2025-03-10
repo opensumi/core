@@ -303,7 +303,13 @@ export class ChatModel extends Disposable implements IChatModel {
 
   readonly history: MsgHistoryManager;
 
-  get messageHistory() {
+  #slicedMessageCount = 0;
+
+  public get slicedMessageCount() {
+    return this.#slicedMessageCount;
+  }
+
+  getMessageHistory(contextWindow?: number) {
     const history: CoreMessage[] = [];
     for (const request of this.requests) {
       if (!request.response.isComplete) {
@@ -352,7 +358,17 @@ export class ChatModel extends Disposable implements IChatModel {
         }
       }
     }
-    return history;
+    if (contextWindow) {
+      while (this.#slicedMessageCount < history.length) {
+        // 简单的使用 JSON.stringify 计算 token 数量
+        const tokenCount = JSON.stringify(history.slice(this.#slicedMessageCount)).length / 3;
+        if (tokenCount <= contextWindow) {
+          break;
+        }
+        this.#slicedMessageCount++;
+      }
+    }
+    return history.slice(this.#slicedMessageCount);
   }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
