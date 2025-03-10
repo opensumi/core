@@ -16,7 +16,7 @@ import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/commo
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
 import { MCPServerDescription } from './mcp-server-manager';
-import { MCPTool } from './types';
+import { IPartialEditEvent, MCPTool } from './types';
 
 import type { CoreMessage } from 'ai';
 
@@ -309,3 +309,10 @@ export interface IAIInlineCompletionsProvider {
   ): Promise<T>;
   setVisibleCompletion(arg0: boolean): void;
 }
+
+export interface IInlineDiffService {
+  onPartialEdit: Event<IPartialEditEvent>;
+  firePartialEdit(event: IPartialEditEvent): void;
+}
+
+export const InlineDiffServiceToken = Symbol('InlineDiffService');

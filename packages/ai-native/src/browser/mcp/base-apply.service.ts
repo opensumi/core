@@ -26,17 +26,13 @@ import { Deferred, DisposableMap, Emitter, IDisposable, URI, path } from '@opens
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 
-import { IChatInternalService } from '../../common';
+import { IChatInternalService, IInlineDiffService, InlineDiffServiceToken } from '../../common';
 import { CodeBlockData, CodeBlockStatus } from '../../common/types';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { InlineChatController } from '../widget/inline-chat/inline-chat-controller';
-import {
-  BaseInlineDiffPreviewer,
-  InlineDiffController,
-  InlineDiffService,
-  LiveInlineDiffPreviewer,
-} from '../widget/inline-diff';
-import { BaseInlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
+import { BaseInlineDiffPreviewer, InlineDiffController, LiveInlineDiffPreviewer } from '../widget/inline-diff';
+
+import type { BaseInlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
 
 export abstract class BaseApplyService extends WithEventBus {
   @Autowired(IChatInternalService)
@@ -48,8 +44,8 @@ export abstract class BaseApplyService extends WithEventBus {
   @Autowired(WorkbenchEditorService)
   protected readonly editorService: WorkbenchEditorService;
 
-  @Autowired(InlineDiffService)
-  private readonly inlineDiffService: InlineDiffService;
+  @Autowired(InlineDiffServiceToken)
+  private readonly inlineDiffService: IInlineDiffService;
 
   @Autowired(IMarkerService)
   private readonly markerService: IMarkerService;
