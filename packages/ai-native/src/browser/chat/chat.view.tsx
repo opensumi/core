@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import { AppConfig, getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, AppConfig, getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -38,6 +38,7 @@ import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
+import { ChatMentionInput } from '../components/ChatMentionInput';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
@@ -105,6 +106,7 @@ export const AIChatView = () => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
@@ -183,6 +185,9 @@ export const AIChatView = () => {
   const ChatInputWrapperRender = React.useMemo(() => {
     if (chatRenderRegistry.chatInputRender) {
       return chatRenderRegistry.chatInputRender;
+    }
+    if (aiNativeConfigService.capabilities.supportsMCP) {
+      return ChatMentionInput;
     }
     return ChatInput;
   }, [chatRenderRegistry.chatInputRender]);

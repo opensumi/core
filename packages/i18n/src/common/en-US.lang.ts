@@ -1449,7 +1449,7 @@ export const localizationBundle = {
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',
-    'aiNative.chat.input.placeholder.default': 'Ask Copilot or type / for commands',
+    'aiNative.chat.input.placeholder.default': 'Ask anything, @ to mention',
     'aiNative.chat.stop.immediately': 'I don’t think about it anymore. If you need anything, you can ask me anytime.',
     'aiNative.chat.error.response':
       'There are too many people interacting with me at the moment. Please try again later. Thank you for your understanding and support.',
@@ -1459,7 +1459,8 @@ export const localizationBundle = {
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
     'aiNative.chat.enter.send': 'Send (Enter)',
-
+    'aiNative.chat.defaultContextFile': 'Current File',
+    'aiNative.chat.defaultContextFolder': 'Current Folder',
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
