@@ -5,6 +5,7 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { IChatToolContent, uuid } from '@opensumi/ide-core-common';
+import { localize } from '@opensumi/ide-core-common/lib/localize';
 
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
@@ -64,28 +65,29 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
       toolCallId={value.id}
     />
   ) : (
-    <div className={styles['chat-tool-render']}>
-      <div className={styles['tool-header']} onClick={toggleExpand}>
-        <div className={styles['tool-name']}>
-          <Icon iconClass={`codicon codicon-triangle-${isExpanded ? 'down' : 'right'}`} />
-          {label}
+    <div className={styles.chat_tool_render}>
+      <div className={styles.tool_header} onClick={toggleExpand}>
+        <div className={styles.tool_name}>
+          <Icon iconClass={`codicon codicon-chevron-${isExpanded ? 'down' : 'right'}`} />
+          <Icon size='small' iconClass={cls('codicon codicon-tools', styles.tool_icon)} />
+          <span className={styles.tool_label}>{label}</span>
         </div>
         {value.state && (
-          <div className={styles['tool-state']}>
-            <span className={styles['state-icon']}>{stateInfo.icon}</span>
+          <div className={styles.tool_state}>
+            <span className={styles.state_icon}>{stateInfo.icon}</span>
           </div>
         )}
       </div>
-      <div className={cls(styles['tool-content'], { [styles.expanded]: isExpanded })}>
+      <div className={cls(styles.tool_content, { [styles.expanded]: isExpanded })}>
         {value?.function?.arguments && (
-          <div className={styles['tool-arguments']}>
-            <div className={styles['section-label']}>Arguments</div>
+          <div className={styles.tool_arguments}>
+            <div className={styles.section_label}>{localize('ai.native.mcp.tool.arguments')}:</div>
             <CodeEditorWithHighlight input={value?.function?.arguments} language={'json'} relationId={uuid(4)} />
           </div>
         )}
         {value?.result && (
-          <div className={styles['tool-result']}>
-            <div className={styles['section-label']}>Result</div>
+          <div className={styles.tool_result}>
+            <div className={styles.section_label}>{localize('ai.native.mcp.tool.results')}:</div>
             <CodeEditorWithHighlight input={value.result} language={'json'} relationId={uuid(4)} />
           </div>
         )}

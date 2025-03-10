@@ -96,7 +96,7 @@
 }
 
 .header {
-  padding: 8px 12px;
+  padding: 4px;
   background-color: var(--design-block-background);
   border-bottom: 1px solid var(--vscode-commandCenter-inactiveBorder);
   cursor: pointer;
@@ -104,7 +104,7 @@
   align-items: center;
   gap: 4px;
   color: var(--design-text-foreground);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .fileList {
@@ -162,14 +162,17 @@
   .command_title {
     display: flex;
     align-items: center;
+    font-size: 11px;
     span {
       margin-left: 5px;
     }
   }
 
   .command_content {
-    padding: 4px;
-    font-size: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 2px 4px;
+    font-size: 11px;
     color: var(--design-text-foreground);
     margin: 0px;
     background-color: var(--terminal-background);
@@ -178,7 +181,7 @@
     overflow: auto;
 
     code {
-      font-size: 12px;
+      font-size: 11px;
       white-space: pre;
     }
   }

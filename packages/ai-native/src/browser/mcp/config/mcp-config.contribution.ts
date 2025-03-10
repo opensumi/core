@@ -1,6 +1,6 @@
 import { Autowired } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Domain, Schemes, URI } from '@opensumi/ide-core-common';
+import { Domain, URI } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,

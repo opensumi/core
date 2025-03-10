@@ -3418,7 +3418,9 @@ __metadata:
     "@opensumi/ide-workspace": "workspace:*"
     "@xterm/xterm": "npm:5.5.0"
     ai: "npm:^4.1.45"
+    ansi-escapes: "npm:5.0.0"
     ansi-regex: "npm:^2.0.0"
+    ansi_up: "npm:^5.1.0"
     diff: "npm:^7.0.0"
     dom-align: "npm:^1.7.0"
     eventsource: "npm:^3.0.5"
@@ -6991,6 +6993,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ansi-escapes@npm:5.0.0":
+  version: 5.0.0
+  resolution: "ansi-escapes@npm:5.0.0"
+  dependencies:
+    type-fest: "npm:^1.0.2"
+  checksum: 10/cbfb95f9f6d8a1ffc89f50fcda3313effae2d9ac2f357f89f626815b4d95fdc3f10f74e0887614ff850d01f805b7505eb1e7ebfdd26144bbfc26c5de08e19195
+  languageName: node
+  linkType: hard
+
 "ansi-escapes@npm:^4.2.1":
   version: 4.3.2
   resolution: "ansi-escapes@npm:4.3.2"
@@ -7073,6 +7084,13 @@ __metadata:
   version: 6.2.1
   resolution: "ansi-styles@npm:6.2.1"
   checksum: 10/70fdf883b704d17a5dfc9cde206e698c16bcd74e7f196ab821511651aee4f9f76c9514bdfa6ca3a27b5e49138b89cb222a28caf3afe4567570139577f991df32
+  languageName: node
+  linkType: hard
+
+"ansi_up@npm:^5.1.0":
+  version: 5.2.1
+  resolution: "ansi_up@npm:5.2.1"
+  checksum: 10/abf4f2e4abc1f54ef41d5668b22967c33117faf31308211858ff3bb898f4839f97a7bde081d6eb988532a90a1ccd37f1ef5c0f0f3e409d1b96ed4c5bd41d11c7
   languageName: node
   linkType: hard
 
@@ -24091,6 +24109,13 @@ __metadata:
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: 10/fd4a91bfb706aeeb0d326ebd2e9a8ea5263979e5dec8d16c3e469a5bd3a946e014a062ef76c02e3086d3d1c7209a56a20a4caafd0e9f9a5c2ab975084ea3d388
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^1.0.2":
+  version: 1.4.0
+  resolution: "type-fest@npm:1.4.0"
+  checksum: 10/89875c247564601c2650bacad5ff80b859007fbdb6c9e43713ae3ffa3f584552eea60f33711dd762e16496a1ab4debd409822627be14097d9a17e39c49db591a
   languageName: node
   linkType: hard
 

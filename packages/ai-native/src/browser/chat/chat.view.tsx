@@ -782,11 +782,8 @@ export function DefaultChatViewHeader({
   React.useEffect(() => {
     const getHistoryList = () => {
       const currentMessages = aiChatService.sessionModel.history.getMessages();
-      setCurrentTitle(
-        currentMessages.length > 0
-          ? currentMessages[currentMessages.length - 1].content.slice(0, MAX_TITLE_LENGTH)
-          : '',
-      );
+      const latestUserMessage = currentMessages.findLast((m) => m.role === ChatMessageRole.User);
+      setCurrentTitle(latestUserMessage ? latestUserMessage.content.slice(0, MAX_TITLE_LENGTH) : '');
       setHistoryList(
         aiChatService.getSessions().map((session) => {
           const history = session.history;

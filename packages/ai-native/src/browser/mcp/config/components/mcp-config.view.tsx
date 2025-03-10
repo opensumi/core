@@ -5,6 +5,7 @@ import { Badge } from '@opensumi/ide-components';
 import { AINativeSettingSectionsId, ILogger, useInjectable } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
 import { localize } from '@opensumi/ide-core-common';
+import { IMessageService } from '@opensumi/ide-overlay/lib/common';
 
 import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../../../common';
 import { MCPServerDescription } from '../../../../common/mcp-server-manager';
@@ -19,6 +20,7 @@ export const MCPConfigView: React.FC = () => {
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const sumiMCPServerBackendProxy = useInjectable<ISumiMCPServerBackend>(SumiMCPServerProxyServicePath);
   const logger = useInjectable<ILogger>(ILogger);
+  const messageService = useInjectable<IMessageService>(IMessageService);
   const [servers, setServers] = React.useState<MCPServer[]>([]);
   const [formVisible, setFormVisible] = React.useState(false);
   const [editingServer, setEditingServer] = React.useState<MCPServerFormData | undefined>();
@@ -88,7 +90,9 @@ export const MCPConfigView: React.FC = () => {
         await preferenceService.set(AINativeSettingSectionsId.MCPServers, updatedServers);
         await loadServers();
       } catch (error) {
+        const msg = error.message || error;
         logger.error(`Failed to ${start ? 'start' : 'stop'} server ${serverName}:`, error);
+        messageService.error(`Failed to ${start ? 'start' : 'stop'} server ${serverName}:` + msg);
       }
     },
     [mcpServerProxyService, preferenceService, sumiMCPServerBackendProxy, loadServers],
