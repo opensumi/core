@@ -1,4 +1,7 @@
+import cls from 'classnames';
 import * as React from 'react';
+
+import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 
 import styles from './mention-input.module.less';
 import { MentionItem as MentionItemType } from './types';
@@ -9,29 +12,13 @@ interface MentionItemProps {
   onClick: (item: MentionItemType) => void;
 }
 
-export const MentionItem: React.FC<MentionItemProps> = ({ item, isActive, onClick }) => {
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'file':
-        return '📄';
-      case 'folder':
-        return '📁';
-      case 'code':
-        return '💻';
-      case 'back':
-        return '⬅️';
-      default:
-        return '📌';
-    }
-  };
-
-  return (
-    <div className={`${styles.mention_item} ${isActive ? styles.active : ''}`} onClick={() => onClick(item)}>
-      <div className={styles.mention_item_left}>
-        <span className={styles.mention_item_icon}>{getIcon(item.type)}</span>
-        <span className={styles.mention_item_text}>{item.text}</span>
-      </div>
-      {item.hasSubmenu && <div className={styles.mention_item_right}>&gt;</div>}
+export const MentionItem: React.FC<MentionItemProps> = ({ item, isActive, onClick }) => (
+  <div className={`${styles.mention_item} ${isActive ? styles.active : ''}`} onClick={() => onClick(item)}>
+    <div className={styles.mention_item_left}>
+      <Icon className={cls(styles.mention_item_icon, item.icon)} />
+      <span className={styles.mention_item_text}>{item.text}</span>
+      <span className={styles.mention_item_description}>{item.description}</span>
     </div>
-  );
-};
+    {item.getItems && <Icon className={cls(styles.mention_item_right, getIcon('arrowright'))} />}
+  </div>
+);

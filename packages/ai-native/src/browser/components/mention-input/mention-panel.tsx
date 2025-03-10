@@ -7,32 +7,30 @@ import { MentionItem as MentionItemType, MentionPosition } from './types';
 interface MentionPanelProps {
   items: MentionItemType[];
   activeIndex: number;
-  onSelectItem: (item: MentionItemType) => void;
-  onBackToParent: () => void;
+  onSelectItem: (item: MentionItemType, isTriggerByClick?: boolean) => void;
   position: MentionPosition;
   filter: string;
   visible: boolean;
   level: number;
-  parentType: string | null;
+  loading?: boolean;
 }
 
 export const MentionPanel: React.FC<MentionPanelProps> = ({
   items,
   activeIndex,
   onSelectItem,
-  onBackToParent,
   position,
   filter,
   visible,
   level,
-  parentType,
+  loading = false,
 }) => {
   const panelRef = React.useRef<HTMLDivElement>(null);
 
   // 当活动项改变时滚动到可见区域
   React.useEffect(() => {
     if (visible && panelRef.current) {
-      const activeItem = panelRef.current.querySelector('.mention-item.active');
+      const activeItem = panelRef.current.querySelector(`.${styles.mention_item}.${styles.active}`);
       if (activeItem) {
         activeItem.scrollIntoView({ block: 'nearest' });
       }
@@ -65,37 +63,26 @@ export const MentionPanel: React.FC<MentionPanelProps> = ({
 
   const filteredItems = getFilteredItems();
 
-  // 获取面板标题
-  const getPanelTitle = () => {
-    if (level === 0) {
-      return '';
-    }
-
-    switch (parentType) {
-      case 'file':
-        return '选择文件';
-      case 'folder':
-        return '选择文件夹';
-      default:
-        return '选择项目';
-    }
-  };
   if (level === 0 && filteredItems.length === 0) {
     return null;
   }
 
   return (
-    <div ref={panelRef} className={styles.mention_panel}>
-      {level > 0 && <div className={styles.mention_panel_title}>{getPanelTitle()}</div>}
-
-      {filteredItems.length === 0 && level > 0 ? (
-        <div className={styles.empty_state}>没有找到匹配的内容</div>
-      ) : (
-        <>
-          {filteredItems.map((item, index) => (
-            <MentionItem key={item.id} item={item} isActive={index === activeIndex} onClick={onSelectItem} />
+    <div ref={panelRef} className={styles.mention_panel} style={{ top: position.top, left: position.left }}>
+      {loading && <div className={styles.loading_bar}></div>}
+      {items.length > 0 ? (
+        <ul className={styles.mention_list}>
+          {items.map((item, index) => (
+            <MentionItem
+              key={item.id}
+              item={item}
+              isActive={index === activeIndex}
+              onClick={() => onSelectItem(item, true)}
+            />
           ))}
-        </>
+        </ul>
+      ) : (
+        <div className={styles.no_results}>{loading ? '正在搜索...' : '无匹配结果'}</div>
       )}
     </div>
   );

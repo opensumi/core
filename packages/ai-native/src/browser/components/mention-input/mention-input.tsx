@@ -6,38 +6,22 @@ import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native
 
 import styles from './mention-input.module.less';
 import { MentionPanel } from './mention-panel';
-import { MentionItem, MentionState } from './types';
-interface MentionInputProps {
-  firstLevelItems?: MentionItem[];
-  secondLevelItems?: Record<string, MentionItem[]>;
-  onSend?: (content: string) => void;
-  placeholder?: string;
-}
+import { FooterButtonPosition, MENTION_KEYWORD, MentionInputProps, MentionItem, MentionState } from './types';
+
+export const WHITE_SPACE_TEXT = '&nbsp;';
 
 export const MentionInput: React.FC<MentionInputProps> = ({
-  firstLevelItems = [],
-  secondLevelItems = {},
+  mentionItems = [],
   onSend,
-  placeholder = 'Ask anything (⌘L), @ to mention',
+  onStop,
+  loading = false,
+  mentionKeyword = MENTION_KEYWORD,
+  placeholder = 'Ask anything, @ to mention',
+  footerConfig = {
+    buttons: [],
+    showModelSelector: false,
+  },
 }) => {
-  // 默认一级菜单项
-  const defaultFirstLevelItems: MentionItem[] = [{ id: 'file', type: 'file', text: 'File', hasSubmenu: true }];
-
-  // 默认二级菜单项
-  const defaultSecondLevelItems: Record<string, MentionItem[]> = {
-    file: [
-      { id: 'file1', type: 'file', text: '文件1.js' },
-      { id: 'file2', type: 'file', text: '文件2.css' },
-      { id: 'file3', type: 'file', text: '文件3.html' },
-      { id: 'file4', type: 'file', text: '文件4.json' },
-      { id: 'file5', type: 'file', text: '文件5.ts' },
-    ],
-  };
-
-  // 使用传入的菜单项或默认菜单项
-  const actualFirstLevelItems = firstLevelItems.length > 0 ? firstLevelItems : defaultFirstLevelItems;
-  const actualSecondLevelItems = Object.keys(secondLevelItems).length > 0 ? secondLevelItems : defaultSecondLevelItems;
-
   const editorRef = React.useRef<HTMLDivElement>(null);
   const [mentionState, setMentionState] = React.useState<MentionState>({
     active: false,
@@ -50,18 +34,124 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     secondLevelFilter: '', // 二级菜单的筛选文本
     inlineSearchActive: false, // 是否在输入框中进行二级搜索
     inlineSearchStartPos: null, // 内联搜索的起始位置
+    loading: false, // 添加加载状态
   });
+
+  // 添加模型选择状态
+  const [selectedModel, setSelectedModel] = React.useState<string>(footerConfig.defaultModel || '');
+
+  // 添加缓存状态，用于存储二级菜单项
+  const [secondLevelCache, setSecondLevelCache] = React.useState<Record<string, MentionItem[]>>({});
+
+  // 添加历史记录状态
+  const [history, setHistory] = React.useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = React.useState<number>(-1);
+  const [currentInput, setCurrentInput] = React.useState<string>('');
+  const [isNavigatingHistory, setIsNavigatingHistory] = React.useState<boolean>(false);
 
   // 获取当前菜单项
   const getCurrentItems = (): MentionItem[] => {
     if (mentionState.level === 0) {
-      return actualFirstLevelItems;
-    } else {
-      return mentionState.parentType && actualSecondLevelItems[mentionState.parentType]
-        ? actualSecondLevelItems[mentionState.parentType]
-        : [];
+      return mentionItems;
+    } else if (mentionState.parentType) {
+      // 如果正在加载，返回缓存的项目
+      if (mentionState.loading) {
+        return secondLevelCache[mentionState.parentType] || [];
+      }
+
+      // 返回缓存的项目
+      return secondLevelCache[mentionState.parentType] || [];
     }
+    return [];
   };
+
+  // 添加防抖函数
+  const useDebounce = <T,>(value: T, delay: number): T => {
+    const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
+
+    React.useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+
+    return debouncedValue;
+  };
+
+  // 使用防抖处理搜索文本
+  const debouncedSecondLevelFilter = useDebounce(mentionState.secondLevelFilter, 300);
+
+  // 监听搜索文本变化，实时更新二级菜单
+  React.useEffect(() => {
+    if (mentionState.level === 1 && mentionState.parentType && debouncedSecondLevelFilter !== undefined) {
+      // 查找父级菜单项
+      const parentItem = mentionItems.find((item) => item.id === mentionState.parentType);
+      if (!parentItem) {
+        return;
+      }
+
+      // 设置加载状态
+      setMentionState((prev) => ({ ...prev, loading: true }));
+
+      // 异步加载
+      const fetchItems = async () => {
+        try {
+          // 首先显示高优先级项目（如果有）
+          const items: MentionItem[] = [];
+          if (parentItem.getHighestLevelItems) {
+            const highestLevelItems = parentItem.getHighestLevelItems();
+            for (const item of highestLevelItems) {
+              if (!items.some((i) => i.id === item.id)) {
+                items.push(item);
+              }
+            }
+            // 立即更新缓存，显示高优先级项目
+            setSecondLevelCache((prev) => ({
+              ...prev,
+              [mentionState.parentType!]: highestLevelItems,
+            }));
+          }
+
+          // 然后异步加载更多项目
+          if (parentItem.getItems) {
+            try {
+              // 获取子菜单项
+              const newItems = await parentItem.getItems(debouncedSecondLevelFilter);
+
+              // 去重合并
+              const combinedItems: MentionItem[] = [...items];
+
+              for (const item of newItems) {
+                if (!combinedItems.some((i) => i.id === item.id)) {
+                  combinedItems.push(item);
+                }
+              }
+
+              // 更新缓存
+              setSecondLevelCache((prev) => ({
+                ...prev,
+                [mentionState.parentType!]: combinedItems,
+              }));
+            } catch (error) {
+              // 如果异步加载失败，至少保留高优先级项目
+              setMentionState((prev) => ({ ...prev, loading: false }));
+            }
+          }
+
+          // 最后清除加载状态
+          setMentionState((prev) => ({ ...prev, loading: false }));
+        } catch (error) {
+          setMentionState((prev) => ({ ...prev, loading: false }));
+        }
+      };
+
+      fetchItems();
+    }
+  }, [debouncedSecondLevelFilter, mentionState.level, mentionState.parentType]);
 
   // 获取光标位置
   const getCursorPosition = (element: HTMLElement): number => {
@@ -78,7 +168,13 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   };
 
   // 处理输入事件
-  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+  const handleInput = () => {
+    // 如果用户开始输入，退出历史导航模式
+    if (isNavigatingHistory) {
+      setIsNavigatingHistory(false);
+      setHistoryIndex(-1);
+    }
+
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount || !editorRef.current) {
       return;
@@ -88,11 +184,11 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     const cursorPos = getCursorPosition(editorRef.current);
 
     // 判断是否刚输入了 @
-    if (text[cursorPos - 1] === '@' && !mentionState.active && !mentionState.inlineSearchActive) {
+    if (text[cursorPos - 1] === mentionKeyword && !mentionState.active && !mentionState.inlineSearchActive) {
       setMentionState({
         active: true,
         startPos: cursorPos,
-        filter: '@',
+        filter: mentionKeyword,
         position: { top: 0, left: 0 }, // 固定位置，不再需要动态计算
         activeIndex: 0,
         level: 0,
@@ -100,6 +196,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         secondLevelFilter: '',
         inlineSearchActive: false,
         inlineSearchStartPos: null,
+        loading: false,
       });
     }
 
@@ -119,23 +216,32 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
 
     // 如果在输入框中进行二级搜索
-    if (mentionState.inlineSearchActive && mentionState.inlineSearchStartPos !== null) {
-      // 检查光标是否在 @file: 之后
-      const filePrefix = '@file:';
-      const prefixPos = mentionState.inlineSearchStartPos - filePrefix.length;
+    if (mentionState.inlineSearchActive && mentionState.inlineSearchStartPos !== null && mentionState.parentType) {
+      // 获取父级类型
+      const parentItem = mentionItems.find((i) => i.id === mentionState.parentType);
+      if (!parentItem) {
+        return;
+      }
 
-      if (prefixPos >= 0 && cursorPos > prefixPos + filePrefix.length) {
+      // 检查光标是否在 @type: 之后
+      const typePrefix = `@${parentItem.type}:`;
+      const prefixPos = mentionState.inlineSearchStartPos - typePrefix.length;
+
+      if (prefixPos >= 0 && cursorPos > prefixPos + typePrefix.length) {
         // 提取搜索文本
-        const searchText = text.substring(prefixPos + filePrefix.length, cursorPos);
+        const searchText = text.substring(prefixPos + typePrefix.length, cursorPos);
 
-        setMentionState((prev) => ({
-          ...prev,
-          secondLevelFilter: searchText,
-          active: true,
-          activeIndex: 0,
-        }));
+        // 只有当搜索文本变化时才更新状态
+        if (searchText !== mentionState.secondLevelFilter) {
+          setMentionState((prev) => ({
+            ...prev,
+            secondLevelFilter: searchText,
+            active: true,
+            activeIndex: 0,
+          }));
+        }
       } else if (cursorPos <= prefixPos) {
-        // 如果光标移到了 @file: 之前，关闭内联搜索
+        // 如果光标移到了 @type: 之前，关闭内联搜索
         setMentionState((prev) => ({
           ...prev,
           inlineSearchActive: false,
@@ -191,14 +297,14 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
 
     // 添加对 @ 键的监听，支持在任意位置触发菜单
-    if (e.key === '@' && !mentionState.active && !mentionState.inlineSearchActive && editorRef.current) {
+    if (e.key === MENTION_KEYWORD && !mentionState.active && !mentionState.inlineSearchActive && editorRef.current) {
       const cursorPos = getCursorPosition(editorRef.current);
 
       // 立即设置菜单状态，不等待 handleInput
       setMentionState({
         active: true,
         startPos: cursorPos + 1, // +1 因为 @ 还没有被插入
-        filter: '@',
+        filter: mentionKeyword,
         position: { top: 0, left: 0 }, // 固定位置
         activeIndex: 0,
         level: 0,
@@ -206,17 +312,78 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         secondLevelFilter: '',
         inlineSearchActive: false,
         inlineSearchStartPos: null,
+        loading: false,
       });
 
       // 不要阻止默认行为，让 @ 正常输入到编辑器中
     }
+
     // 添加对 Enter 键的处理，只有在按下 Shift+Enter 时才允许换行
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!mentionState.active) {
-        handleSend();
+    if (e.key === 'Enter') {
+      // 检查是否是输入法的回车键
+      // isComposing 属性表示是否正在进行输入法组合输入
+      if (e.nativeEvent.isComposing) {
+        return; // 如果是输入法组合输入过程中的回车，不做任何处理
+      }
+
+      if (!e.shiftKey) {
+        e.preventDefault();
+        if (!mentionState.active) {
+          handleSend();
+          return;
+        }
+      }
+    }
+
+    // 处理上下方向键导航历史记录
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      // 只有在非提及面板激活状态下才处理历史导航
+      if (!mentionState.active && !mentionState.inlineSearchActive && editorRef.current) {
+        e.preventDefault();
+
+        // 如果是第一次按上下键，保存当前输入
+        if (!isNavigatingHistory) {
+          setCurrentInput(editorRef.current.innerHTML);
+          setIsNavigatingHistory(true);
+        }
+
+        // 计算新的历史索引
+        let newIndex = historyIndex;
+        if (e.key === 'ArrowUp') {
+          // 向上导航到较早的历史记录
+          newIndex = Math.min(history.length - 1, historyIndex + 1);
+        } else {
+          // 向下导航到较新的历史记录
+          newIndex = Math.max(-1, historyIndex - 1);
+        }
+
+        setHistoryIndex(newIndex);
+
+        // 更新编辑器内容
+        if (newIndex === -1) {
+          // 恢复到当前输入
+          editorRef.current.innerHTML = currentInput;
+        } else {
+          // 显示历史记录
+          editorRef.current.innerHTML = history[history.length - 1 - newIndex];
+        }
+
+        // 将光标移到末尾
+        const range = document.createRange();
+        range.selectNodeContents(editorRef.current);
+        range.collapse(false);
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+
         return;
       }
+    } else if (isNavigatingHistory && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
+      // 如果用户在浏览历史记录后开始输入，退出历史导航模式
+      setIsNavigatingHistory(false);
+      setHistoryIndex(-1);
     }
 
     // 如果提及面板未激活，不处理其他键盘事件
@@ -226,20 +393,14 @@ export const MentionInput: React.FC<MentionInputProps> = ({
 
     // 获取当前过滤后的项目
     let filteredItems = getCurrentItems();
-    const filter = mentionState.level === 0 ? mentionState.filter : mentionState.secondLevelFilter;
 
-    if (mentionState.level === 0) {
-      // 一级菜单过滤
-      if (filter && filter.length > 1) {
-        const searchText = filter.substring(1).toLowerCase();
-        filteredItems = filteredItems.filter((item) => item.text.toLowerCase().includes(searchText));
-      }
-    } else {
-      // 二级菜单过滤
-      if (filter && filter.length > 0) {
-        filteredItems = filteredItems.filter((item) => item.text.toLowerCase().includes(filter.toLowerCase()));
-      }
+    // 一级菜单过滤
+    if (mentionState.level === 0 && mentionState.filter && mentionState.filter.length > 1) {
+      const searchText = mentionState.filter.substring(1).toLowerCase();
+      filteredItems = filteredItems.filter((item) => item.text.toLowerCase().includes(searchText));
     }
+
+    // 二级菜单过滤已经在 getCurrentItems 中处理
 
     if (filteredItems.length === 0) {
       return;
@@ -276,6 +437,12 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
   };
 
+  // 添加对输入法事件的处理
+  const handleCompositionEnd = () => {
+    // 输入法输入完成后的处理
+    // 这里可以添加额外的逻辑，如果需要的话
+  };
+
   // 初始化编辑器
   React.useEffect(() => {
     if (editorRef.current) {
@@ -286,25 +453,9 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
   }, [placeholder]);
 
-  // 处理返回上一级
-  const handleBackToParent = () => {
-    setMentionState((prev) => ({
-      ...prev,
-      level: 0,
-      activeIndex: 0,
-      secondLevelFilter: '',
-      inlineSearchActive: false,
-    }));
-  };
-
   // 处理点击事件
   const handleDocumentClick = (e: MouseEvent) => {
-    if (
-      mentionState.active &&
-      editorRef.current &&
-      !editorRef.current.contains(e.target as Node) &&
-      !document.querySelector('.mention-panel')?.contains(e.target as Node)
-    ) {
+    if (mentionState.active && !document.querySelector(`.${styles.mention_panel}`)?.contains(e.target as Node)) {
       setMentionState((prev) => ({
         ...prev,
         active: false,
@@ -315,29 +466,27 @@ export const MentionInput: React.FC<MentionInputProps> = ({
 
   // 添加和移除全局点击事件监听器
   React.useEffect(() => {
-    document.addEventListener('click', handleDocumentClick);
+    document.addEventListener('click', handleDocumentClick, true);
     return () => {
-      document.removeEventListener('click', handleDocumentClick);
+      document.removeEventListener('click', handleDocumentClick, true);
     };
   }, [mentionState.active]);
 
   // 选择提及项目
-  const handleSelectItem = (item: MentionItem) => {
+  const handleSelectItem = (item: MentionItem, isTriggerByClick = false) => {
     if (!editorRef.current) {
       return;
     }
 
     // 如果项目有子菜单，进入二级菜单
-    if (item.hasSubmenu) {
+    if (item.getItems) {
       const selection = window.getSelection();
       if (!selection || !selection.rangeCount) {
         return;
       }
 
-      const cursorPos = getCursorPosition(editorRef.current);
-
-      // 如果是从一级菜单选择了 file 类型
-      if (mentionState.level === 0 && item.type === 'file' && mentionState.startPos !== null) {
+      // 如果是从一级菜单选择了带子菜单的项目
+      if (mentionState.level === 0 && mentionState.startPos !== null) {
         // 更安全地处理文本替换
         let textNode;
         let startOffset;
@@ -357,6 +506,9 @@ export const MentionInput: React.FC<MentionInputProps> = ({
             startOffset = mentionState.startPos - 1 - charCount;
 
             // 确保不会超出节点范围
+            const cursorPos = isTriggerByClick
+              ? mentionState.startPos + mentionState.filter.length - 1
+              : getCursorPosition(editorRef.current);
             endOffset = Math.min(cursorPos - charCount, nodeLength);
             break;
           }
@@ -370,30 +522,28 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           tempRange.setStart(textNode, startOffset);
           tempRange.setEnd(textNode, endOffset);
 
-          // 替换为 @file:
+          // 替换为 @type:
           tempRange.deleteContents();
-          const filePrefix = document.createTextNode('@file:');
-          tempRange.insertNode(filePrefix);
+          const typePrefix = document.createTextNode(`${mentionKeyword}${item.type}:`);
+          tempRange.insertNode(typePrefix);
 
-          // 将光标移到 @file: 后面
+          // 将光标移到 @type: 后面
           const newRange = document.createRange();
-          newRange.setStartAfter(filePrefix);
-          newRange.setEndAfter(filePrefix);
+          newRange.setStartAfter(typePrefix);
+          newRange.setEndAfter(typePrefix);
           selection.removeAllRanges();
           selection.addRange(newRange);
-
           // 激活内联搜索模式
           setMentionState((prev) => ({
             ...prev,
             active: true,
             level: 1,
-            parentType: 'file',
+            parentType: item.id,
             inlineSearchActive: true,
             inlineSearchStartPos: getCursorPosition(editorRef.current as HTMLElement),
             secondLevelFilter: '',
             activeIndex: 0,
           }));
-
           editorRef.current.focus();
           return;
         }
@@ -407,17 +557,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       return;
     }
 
-    const cursorPos = getCursorPosition(editorRef.current);
+    // 如果是在内联搜索模式下选择项目
+    if (mentionState.inlineSearchActive && mentionState.parentType && mentionState.inlineSearchStartPos !== null) {
+      // 找到 @type: 的位置
+      const parentItem = mentionItems.find((i) => i.id === mentionState.parentType);
+      if (!parentItem) {
+        return;
+      }
 
-    // 如果是在内联搜索模式下选择文件
-    if (
-      mentionState.inlineSearchActive &&
-      mentionState.parentType === 'file' &&
-      mentionState.inlineSearchStartPos !== null
-    ) {
-      // 找到 @file: 的位置
-      const filePrefix = '@file:';
-      const prefixPos = mentionState.inlineSearchStartPos - filePrefix.length;
+      const typePrefix = `${mentionKeyword}${parentItem.type}:`;
+      const prefixPos = mentionState.inlineSearchStartPos - typePrefix.length;
 
       if (prefixPos >= 0) {
         // 创建一个带样式的提及标签
@@ -425,13 +574,14 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         mentionTag.className = styles.mention_tag;
         mentionTag.dataset.id = item.id;
         mentionTag.dataset.type = item.type;
+        mentionTag.dataset.contextId = item.contextId || '';
         mentionTag.contentEditable = 'false';
-        mentionTag.textContent = '@' + item.text;
+        mentionTag.textContent = mentionKeyword + item.text;
 
-        // 创建一个范围从 @file: 开始到当前光标
+        // 创建一个范围从 @type: 开始到当前光标
         const tempRange = document.createRange();
 
-        // 定位到 @file: 的位置
+        // 定位到 @type: 的位置
         let charIndex = 0;
         let foundStart = false;
         const textNodes: Array<{ node: Node; start: number; end: number }> = [];
@@ -463,10 +613,17 @@ export const MentionInput: React.FC<MentionInputProps> = ({
             foundStart = true;
           }
 
-          if (foundStart && cursorPos >= textNode.start && cursorPos <= textNode.end) {
-            const endOffset = cursorPos - textNode.start;
-            tempRange.setEnd(textNode.node, endOffset);
-            break;
+          if (foundStart) {
+            // 如果是点击触发，使用过滤文本的长度来确定结束位置
+            const cursorPos = isTriggerByClick
+              ? prefixPos + typePrefix.length + mentionState.secondLevelFilter.length
+              : getCursorPosition(editorRef.current);
+
+            if (cursorPos >= textNode.start && cursorPos <= textNode.end) {
+              const endOffset = cursorPos - textNode.start;
+              tempRange.setEnd(textNode.node, endOffset);
+              break;
+            }
           }
         }
 
@@ -506,8 +663,9 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     mentionTag.className = styles.mention_tag;
     mentionTag.dataset.id = item.id;
     mentionTag.dataset.type = item.type;
+    mentionTag.dataset.contextId = item.contextId || '';
     mentionTag.contentEditable = 'false';
-    mentionTag.textContent = '@' + item.text;
+    mentionTag.textContent = mentionKeyword + item.text;
 
     // 定位到 @ 符号的位置
     let charIndex = 0;
@@ -544,10 +702,17 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           foundStart = true;
         }
 
-        if (foundStart && cursorPos >= textNode.start && cursorPos <= textNode.end) {
-          const endOffset = cursorPos - textNode.start;
-          tempRange.setEnd(textNode.node, endOffset);
-          break;
+        if (foundStart) {
+          // 如果是点击触发，使用过滤文本的长度来确定结束位置
+          const cursorPos = isTriggerByClick
+            ? mentionState.startPos + mentionState.filter.length - 1
+            : getCursorPosition(editorRef.current);
+
+          if (cursorPos >= textNode.start && cursorPos <= textNode.end) {
+            const endOffset = cursorPos - textNode.start;
+            tempRange.setEnd(textNode.node, endOffset);
+            break;
+          }
         }
       }
     }
@@ -571,24 +736,62 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       selection.removeAllRanges();
       selection.addRange(newRange);
     }
-
     setMentionState((prev) => ({ ...prev, active: false }));
     editorRef.current.focus();
   };
 
-  // 发送消息
+  // 处理模型选择变更
+  const handleModelChange = (value: string) => {
+    setSelectedModel(value);
+  };
+
+  // 修改 handleSend 函数
   const handleSend = () => {
     if (!editorRef.current) {
       return;
     }
 
-    const content = editorRef.current.innerHTML;
+    // 获取原始HTML内容
+    const rawContent = editorRef.current.innerHTML;
+    if (!rawContent) {
+      return;
+    }
+
+    // 创建一个临时元素来处理内容
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = rawContent;
+
+    // 查找所有提及标签并替换为对应的contextId
+    const mentionTags = tempDiv.querySelectorAll(`.${styles.mention_tag}`);
+    mentionTags.forEach((tag) => {
+      const contextId = tag.getAttribute('data-context-id');
+      if (contextId) {
+        // 替换为contextId
+        const replacement = document.createTextNode(
+          `{{${mentionKeyword}${tag.getAttribute('data-type')}:${contextId}}}`,
+        );
+        // 替换内容
+        tag.parentNode?.replaceChild(replacement, tag);
+      }
+    });
+
+    // 获取处理后的内容
+    let processedContent = tempDiv.innerHTML;
+    processedContent = processedContent.trim().replaceAll(WHITE_SPACE_TEXT, ' ');
+    // 添加到历史记录
+    if (rawContent) {
+      setHistory((prev) => [...prev, rawContent]);
+      // 重置历史导航状态
+      setHistoryIndex(-1);
+      setIsNavigatingHistory(false);
+    }
 
     if (onSend) {
-      onSend(content);
-    } else {
-      // 默认行为
-      alert('已发送消息！内容已记录到控制台。');
+      // 传递当前选择的模型和其他配置信息
+      onSend(processedContent, {
+        model: selectedModel,
+        ...footerConfig,
+      });
     }
 
     editorRef.current.innerHTML = '';
@@ -600,6 +803,34 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
   };
 
+  const handleStop = React.useCallback(() => {
+    if (onStop) {
+      onStop();
+    }
+  }, [onStop]);
+
+  // 渲染自定义按钮
+  const renderButtons = (position: FooterButtonPosition) =>
+    (footerConfig.buttons || [])
+      .filter((button) => button.position === position)
+      .map((button) => (
+        <Popover
+          key={button.id}
+          overlayClassName={styles.popover_icon}
+          id={`ai-chat-${button.id}`}
+          position={PopoverPosition.top}
+          title={button.title}
+        >
+          <EnhanceIcon
+            className={cls(getIcon(button.icon), styles[`${button.id}_logo`])}
+            tabIndex={0}
+            role='button'
+            ariaLabel={button.title}
+            onClick={button.onClick}
+          />
+        </Popover>
+      ));
+
   return (
     <div className={styles.input_container}>
       {mentionState.active && (
@@ -607,13 +838,12 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           <MentionPanel
             items={getCurrentItems()}
             activeIndex={mentionState.activeIndex}
-            onSelectItem={handleSelectItem}
-            onBackToParent={handleBackToParent}
-            position={{ top: 0, left: 0 }} // 固定位置
+            onSelectItem={(item) => handleSelectItem(item, true)}
+            position={{ top: 0, left: 0 }}
             filter={mentionState.level === 0 ? mentionState.filter : mentionState.secondLevelFilter}
             visible={true}
             level={mentionState.level}
-            parentType={mentionState.parentType}
+            loading={mentionState.loading}
           />
         </div>
       )}
@@ -624,47 +854,49 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           contentEditable={true}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
+          onCompositionEnd={handleCompositionEnd}
         />
       </div>
       <div className={styles.footer}>
         <div className={styles.left_control}>
-          <Select
-            options={[
-              { label: 'Claude 3.5 Sonnet (外部模型)', value: 'Claude 3.5 Sonnet (外部模型)' },
-              { label: 'Claude 3.5 Sonnet (内部模型)', value: 'Claude 3.5 Sonnet (内部模型)' },
-            ]}
-            value={'Claude 3.5 Sonnet (外部模型)'}
-            className={styles.model_selector}
-            size='small'
-          />
-          <Popover
-            overlayClassName={styles.popover_icon}
-            id={'ai-chat-mcp-server'}
-            position={PopoverPosition.top}
-            title={'MCP Server'}
-          >
-            <EnhanceIcon
-              className={cls(getIcon('mcp'), styles.mcp_logo)}
-              tabIndex={0}
-              role='button'
-              ariaLabel={'MCP Server'}
+          {footerConfig.showModelSelector && (
+            <Select
+              options={footerConfig.modelOptions || []}
+              value={selectedModel}
+              onChange={handleModelChange}
+              className={styles.model_selector}
+              size='small'
             />
-          </Popover>
+          )}
+          {renderButtons(FooterButtonPosition.LEFT)}
         </div>
         <div className={styles.right_control}>
+          {renderButtons(FooterButtonPosition.RIGHT)}
           <Popover
             overlayClassName={styles.popover_icon}
             id={'ai-chat-send'}
             position={PopoverPosition.top}
-            title={'Send'}
+            title={!loading ? 'Send' : 'Stop'}
           >
-            <EnhanceIcon
-              wrapperClassName={styles.send_logo}
-              className={cls(getIcon('send-outlined'), styles.send_logo_icon)}
-              tabIndex={0}
-              role='button'
-              ariaLabel={'Send'}
-            />
+            {!loading ? (
+              <EnhanceIcon
+                wrapperClassName={styles.send_logo}
+                className={cls(getIcon('send-outlined'), styles.send_logo_icon)}
+                tabIndex={0}
+                role='button'
+                onClick={handleSend}
+                ariaLabel={'Send'}
+              />
+            ) : (
+              <EnhanceIcon
+                wrapperClassName={styles.stop_logo}
+                className={cls(getIcon('stop'), styles.stop_logo_icon)}
+                tabIndex={0}
+                role='button'
+                ariaLabel={'Stop'}
+                onClick={handleStop}
+              />
+            )}
           </Popover>
         </div>
       </div>
