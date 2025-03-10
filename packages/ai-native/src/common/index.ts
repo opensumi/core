@@ -37,7 +37,7 @@ export const AI_CHAT_LOGO_AVATAR_ID = 'AI-Chat-Logo-Avatar';
 export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
 
 // 内置 MCP 服务器名称
-export const BUILTIN_MCP_SERVER_NAME = 'sumi-builtin';
+export const BUILTIN_MCP_SERVER_NAME = 'builtin';
 
 /**
  * @deprecated Use {@link DESIGN_MENUBAR_CONTAINER_VIEW_ID} instead
