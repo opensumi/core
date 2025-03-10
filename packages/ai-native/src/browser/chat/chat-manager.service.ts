@@ -6,14 +6,13 @@ import {
   DisposableMap,
   Emitter,
   IChatProgress,
-  IChatToolContent,
   IStorage,
   STORAGE_NAMESPACE,
   StorageProvider,
   debounce,
   formatLocalize,
 } from '@opensumi/ide-core-common';
-import { ChatMessageRole, IChatMessage, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { IChatAgentService, IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 import { MsgHistoryManager } from '../model/msg-history-manager';
