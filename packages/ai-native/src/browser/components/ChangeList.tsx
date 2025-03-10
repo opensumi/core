@@ -91,10 +91,23 @@ export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
         </span>
         {files.some((file) => file.status === 'pending') && (
           <div className={styles.actions}>
-            <Button type='link' size='small' onClick={onRejectAll}>
+            <Button
+              type='link'
+              size='small'
+              onClick={(e) => {
+                e.stopPropagation();
+                onRejectAll();
+              }}
+            >
               Reject
             </Button>
-            <Button size='small' onClick={onAcceptAll}>
+            <Button
+              size='small'
+              onClick={(e) => {
+                e.stopPropagation();
+                onAcceptAll();
+              }}
+            >
               Accept
             </Button>
           </div>
