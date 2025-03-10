@@ -1378,5 +1378,9 @@ export const localizationBundle = {
     'ai.native.mcp.name.isRequired': '服务名称不能为空',
     'ai.native.mcp.command.isRequired': '命令不能为空',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL 不能为空',
+
+    // MCP View
+    'ai.native.mcp.tool.arguments': '参数',
+    'ai.native.mcp.tool.results': '返回',
   },
 };
