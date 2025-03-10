@@ -23,7 +23,6 @@ import {
 import { BaseAIMonacoEditorController } from '../../contrib/base';
 import { EInlineDiffPreviewMode } from '../../preferences/schema';
 import { InlineChatController } from '../inline-chat/inline-chat-controller';
-import { EResultKind } from '../inline-chat/inline-chat.service';
 import { BaseInlineStreamDiffHandler } from '../inline-stream-diff/inline-stream-diff.handler';
 
 import {
@@ -33,6 +32,8 @@ import {
   SideBySideInlineDiffWidget,
 } from './inline-diff-previewer';
 import { InlineDiffWidget } from './inline-diff-widget';
+
+import type { EResultKind } from '../inline-chat/inline-chat.service';
 
 type IInlineDiffPreviewer = BaseInlineDiffPreviewer<InlineDiffWidget | BaseInlineStreamDiffHandler>;
 
