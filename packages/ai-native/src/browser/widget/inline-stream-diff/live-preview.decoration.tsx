@@ -536,15 +536,15 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public acceptUnProcessed(): void {
-    const showingWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
-    showingWidgets.forEach((widget) => {
+    const pendingWidgets = this.partialEditWidgetList.filter((widget) => widget.isPending);
+    pendingWidgets.forEach((widget) => {
       this.handlePartialEditAction(EPartialEdit.accept, widget, false);
     });
   }
 
   public discardUnProcessed(): void {
-    const showingWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
-    showingWidgets.forEach((widget) => {
+    const pendingWidgets = this.partialEditWidgetList.filter((widget) => widget.isPending);
+    pendingWidgets.forEach((widget) => {
       this.handlePartialEditAction(EPartialEdit.discard, widget, false);
     });
   }

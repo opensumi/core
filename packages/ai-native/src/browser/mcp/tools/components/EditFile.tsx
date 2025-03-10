@@ -76,7 +76,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
   }
 
   return [
-    instructions && <p>{instructions}</p>,
+    instructions && <p key={'edit-file-tool-instructions'}>{instructions}</p>,
     <div className={styles['edit-file-tool']} key={'edit-file-tool'}>
       <div
         className={cls(styles['edit-file-tool-header'], {
