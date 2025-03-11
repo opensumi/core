@@ -60,7 +60,7 @@ export class MCPServerRegistry implements IMCPServerRegistry {
   }
 
   getMCPTools(): MCPToolDefinition[] {
-    return this.tools;
+    return this.tools.sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity));
   }
 
   async callMCPTool(
