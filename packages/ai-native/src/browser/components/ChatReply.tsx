@@ -287,23 +287,6 @@ export const ChatReply = (props: IChatReplyProps) => {
     onRegenerate?.();
   }, [onRegenerate]);
 
-  const onStop = () => {
-    if (onDone) {
-      onDone();
-    }
-    aiReporter.end(relationId, {
-      assistantMessage: request.response.responseText,
-      replytime: Date.now() - startTime,
-      success: false,
-      isStop: true,
-      command,
-      agentId,
-      messageId: msgId,
-      sessionId: aiChatService.sessionModel.sessionId,
-    });
-    aiChatService.cancelRequest();
-  };
-
   const renderMarkdown = useCallback(
     (markdown: IMarkdownString) => {
       if (chatRenderRegistry.chatAIRoleRender) {
@@ -358,6 +341,7 @@ export const ChatReply = (props: IChatReplyProps) => {
                   setCollapseThinkingIndexSet(new Set(collapseThinkingIndexSet));
                 }}
               >
+                <Icon iconClass='codicon codicon-sparkle' />
                 {localize('aiNative.chat.thinking')}
                 {isThinking ? (
                   <Loading />

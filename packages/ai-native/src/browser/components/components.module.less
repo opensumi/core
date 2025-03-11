@@ -549,13 +549,19 @@
     gap: 4px;
     margin-bottom: 4px;
     transition: color 0.2s ease-in-out;
-    :global(.codicon) {
-      color: inherit;
+    :global {
+      .codicon {
+        color: inherit;
+      }
+      .codicon-sparkle {
+        margin-right: -1px;
+        font-size: 14px;
+      }
     }
   }
   .reasoning_content {
     padding-left: 12px;
-    border-left: 2px solid var(--design-text-foreground);
-    color: var(--design-text-foreground);
+    border-left: 2px solid var(--descriptionForeground);
+    color: var(--descriptionForeground);
   }
 }
