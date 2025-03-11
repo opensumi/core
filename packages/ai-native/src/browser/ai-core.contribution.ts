@@ -360,6 +360,7 @@ export class AINativeBrowserContribution
       if (supportsCustomLLMSettings) {
         this.preferenceService.onSpecificPreferenceChange(AINativeSettingSectionsId.LLMModelSelection, (change) => {
           const model = this.getModelByName(change.newValue);
+          // support modelIds
           const modelIds = model ? Object.keys(model) : [];
           const defaultModelId = modelIds.length ? modelIds[0] : '';
           const currentSchemas = this.preferenceSchemaProvider.getPreferenceProperty(AINativeSettingSectionsId.ModelID);
@@ -381,6 +382,25 @@ export class AINativeBrowserContribution
             AINativeSettingSectionsId.ModelID,
             modelIds.reduce((obj, item) => ({ ...obj, [item]: item }), {}),
           );
+        });
+        this.preferenceService.onSpecificPreferenceChange(AINativeSettingSectionsId.ModelID, (change) => {
+          const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
+          if (!model) {
+            return;
+          }
+          const modelInfo = this.getModelByName(model);
+          if (modelInfo && modelInfo[change.newValue]) {
+            this.preferenceService.set(
+              AINativeSettingSectionsId.MaxTokens,
+              modelInfo[change.newValue].maxTokens,
+              change.scope,
+            );
+            this.preferenceService.set(
+              AINativeSettingSectionsId.ContextWindow,
+              modelInfo[change.newValue].contextWindow,
+              change.scope,
+            );
+          }
         });
       }
 
@@ -545,6 +565,14 @@ export class AINativeBrowserContribution
           {
             id: AINativeSettingSectionsId.OpenaiBaseURL,
             localized: 'preference.ai.native.openai.baseURL',
+          },
+          {
+            id: AINativeSettingSectionsId.MaxTokens,
+            localized: 'preference.ai.native.maxTokens',
+          },
+          {
+            id: AINativeSettingSectionsId.ContextWindow,
+            localized: 'preference.ai.native.contextWindow',
           },
         ],
       });

@@ -217,9 +217,8 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   const renderDescription = (node: ExpressionContainer | ExpressionNode) => {
     const booleanRegex = /^true|false$/i;
     const stringRegex = /^(['"]).*\1$/;
-    const description = (node as DebugVariableContainer).description
-      ? (node as DebugVariableContainer).description.replace('function', 'ƒ ')
-      : '';
+    const { description: desc = '' } = node as DebugVariableContainer;
+    const description = desc !== 'undefined' ? desc.replace('function', 'ƒ ') : '';
     const addonClass = [styles.debug_variables_variable];
     if (item.variableType === 'number' || item.variableType === 'boolean' || item.variableType === 'string') {
       addonClass.push(styles[item.variableType]);

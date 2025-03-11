@@ -1,10 +1,11 @@
 import { Injectable } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-utils';
 
-import { IPartialEditEvent } from '../inline-stream-diff/live-preview.component';
+import type { IInlineDiffService } from '../../../common/index';
+import type { IPartialEditEvent } from '../../../common/types';
 
 @Injectable()
-export class InlineDiffService {
+export class InlineDiffService implements IInlineDiffService {
   /**
    * Used in `codeblitz`, do not remove it.
    */
