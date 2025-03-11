@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import { getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
+import { AppConfig, getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -19,15 +19,20 @@ import {
   IAIReporter,
   IChatComponent,
   IChatContent,
+  URI,
   formatLocalize,
   localize,
+  path,
   uuid,
 } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import 'react-chat-elements/dist/main.css';
 import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
+import { CodeBlockData } from '../../common/types';
+import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
@@ -37,6 +42,7 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
+import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
@@ -56,6 +62,41 @@ interface TDispatchAction {
 
 const MAX_TITLE_LENGTH = 100;
 
+const getFileChanges = (codeBlocks: CodeBlockData[]) =>
+  codeBlocks
+    .map((block) => {
+      const rangesFromDiffHunk =
+        block.applyResult?.diff.split('\n').reduce(
+          ([del, add], line) => {
+            if (line.startsWith('-')) {
+              del += 1;
+            } else if (line.startsWith('+')) {
+              add += 1;
+            }
+            return [del, add];
+          },
+          [0, 0],
+        ) || [];
+      return {
+        path: block.relativePath,
+        additions: rangesFromDiffHunk[1],
+        deletions: rangesFromDiffHunk[0],
+        status: block.status,
+      };
+    })
+    .reduce((acc, curr) => {
+      const existingFile = acc.find((file) => file.path === curr.path);
+      if (existingFile) {
+        existingFile.additions += curr.additions;
+        existingFile.deletions += curr.deletions;
+        // 使用最新的状态
+        existingFile.status = curr.status;
+      } else {
+        acc.push(curr);
+      }
+      return acc;
+    }, [] as FileChange[]);
+
 export const AIChatView = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
@@ -70,8 +111,12 @@ export const AIChatView = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const autoScroll = React.useRef<boolean>(true);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
-
+  const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
+  const applyService = useInjectable<BaseApplyService>(BaseApplyService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
+
+  const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
 
   const [messageListData, dispatchMessage] = React.useReducer((state: MessageData[], action: TDispatchAction) => {
     switch (action.type) {
@@ -91,6 +136,18 @@ export const AIChatView = () => {
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const disposer = new Disposable();
+    const doUpdate = () => {
+      const fileChanges = getFileChanges(applyService.getSessionCodeBlocks());
+      setChangeList(fileChanges);
+    };
+    disposer.addDispose(aiChatService.onChangeSession(doUpdate));
+    // TODO: 全量获取性能不好
+    disposer.addDispose(applyService.onCodeBlockUpdate(doUpdate));
+    return () => disposer.dispose();
+  }, []);
 
   React.useEffect(() => {
     const featureSlashCommands = chatFeatureRegistry.getAllShortcutSlashCommand();
@@ -691,10 +748,13 @@ export const AIChatView = () => {
               dataSource={messageListData}
             />
           </div>
-          {msgHistoryManager.slicedMessageCount ? (
+          {aiChatService.sessionModel.slicedMessageCount ? (
             <div className={styles.chat_tips_text}>
               <div className={styles.chat_tips_container}>
-                {formatLocalize('aiNative.chat.ai.assistant.limit.message', msgHistoryManager.slicedMessageCount)}
+                {formatLocalize(
+                  'aiNative.chat.ai.assistant.limit.message',
+                  aiChatService.sessionModel.slicedMessageCount,
+                )}
               </div>
             </div>
           ) : null}
@@ -715,6 +775,20 @@ export const AIChatView = () => {
                 ))}
               </div>
             </div>
+            {changeList.length > 0 && (
+              <FileListDisplay
+                files={changeList}
+                onFileClick={(filePath) => {
+                  editorService.open(URI.file(path.join(appConfig.workspaceDir, filePath)));
+                }}
+                onRejectAll={() => {
+                  applyService.processAll('reject');
+                }}
+                onAcceptAll={() => {
+                  applyService.processAll('accept');
+                }}
+              />
+            )}
             <ChatInputWrapperRender
               onSend={(value, agentId, command) =>
                 handleSend({

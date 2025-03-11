@@ -92,6 +92,7 @@ export class ChatProxyService extends Disposable {
       apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
       baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
     }
+    const maxTokens = this.preferenceService.get<number>(AINativeSettingSectionsId.MaxTokens);
     const agent = this.chatAgentService.getAgent(ChatProxyService.AGENT_ID);
     return {
       clientId: this.applicationService.clientId,
@@ -99,6 +100,7 @@ export class ChatProxyService extends Disposable {
       modelId,
       apiKey,
       baseURL,
+      maxTokens,
       system: agent?.metadata.systemPrompt,
     };
   }
