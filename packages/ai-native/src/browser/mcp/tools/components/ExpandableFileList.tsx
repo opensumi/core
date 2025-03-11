@@ -72,7 +72,9 @@ const ExpandableFileList: React.FC<ExpandableFileListProps> = ({
 
   useEffect(() => {
     const toDispose = chatService.sessionModel.history.onMessageAdditionalChange((additional) => {
-      setFileList(additional[toolCallId]?.files || []);
+      if (additional[toolCallId]) {
+        setFileList(additional[toolCallId].files || []);
+      }
     });
     return () => {
       toDispose.dispose();

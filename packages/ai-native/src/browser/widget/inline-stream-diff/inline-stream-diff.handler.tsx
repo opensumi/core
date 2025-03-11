@@ -11,12 +11,12 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LineTokens } from '@opensumi/monaco-editor-core/esm/vs/editor/common/tokens/lineTokens';
 import { UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
-import { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
-import { IDiffPreviewerOptions, IInlineDiffPreviewerNode } from '../inline-diff/inline-diff-previewer';
-
 import { InlineStreamDiffComputer } from './inline-stream-diff-computer';
-import { IRemovedWidgetState } from './live-preview.component';
 import { LivePreviewDiffDecorationModel } from './live-preview.decoration';
+
+import type { IRemovedWidgetState } from './live-preview.component';
+import type { IDecorationSerializableState } from '../../model/enhanceDecorationsCollection';
+import type { IDiffPreviewerOptions, IInlineDiffPreviewerNode } from '../inline-diff/inline-diff-previewer';
 
 interface IRangeChangeData {
   removedTextLines: string[];

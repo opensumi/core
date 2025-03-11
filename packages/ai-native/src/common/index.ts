@@ -16,7 +16,7 @@ import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/commo
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
 import { MCPServerDescription } from './mcp-server-manager';
-import { MCPTool } from './types';
+import { IPartialEditEvent, MCPTool } from './types';
 
 import type { CoreMessage } from 'ai';
 
@@ -37,7 +37,7 @@ export const AI_CHAT_LOGO_AVATAR_ID = 'AI-Chat-Logo-Avatar';
 export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
 
 // 内置 MCP 服务器名称
-export const BUILTIN_MCP_SERVER_NAME = 'sumi-builtin';
+export const BUILTIN_MCP_SERVER_NAME = 'builtin';
 
 /**
  * @deprecated Use {@link DESIGN_MENUBAR_CONTAINER_VIEW_ID} instead
@@ -309,3 +309,10 @@ export interface IAIInlineCompletionsProvider {
   ): Promise<T>;
   setVisibleCompletion(arg0: boolean): void;
 }
+
+export interface IInlineDiffService {
+  onPartialEdit: Event<IPartialEditEvent>;
+  firePartialEdit(event: IPartialEditEvent): void;
+}
+
+export const InlineDiffServiceToken = Symbol('InlineDiffService');

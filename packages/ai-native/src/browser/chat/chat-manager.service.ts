@@ -1,16 +1,19 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
+  AINativeSettingSectionsId,
   CancellationToken,
   CancellationTokenSource,
   Disposable,
   DisposableMap,
   Emitter,
   IChatProgress,
+  IDisposable,
   IStorage,
+  LRUCache,
   STORAGE_NAMESPACE,
   StorageProvider,
   debounce,
-  formatLocalize,
 } from '@opensumi/ide-core-common';
 import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
@@ -38,9 +41,26 @@ interface ISessionModel {
 
 const MAX_SESSION_COUNT = 20;
 
+class DisposableLRUCache<K, V extends IDisposable = IDisposable> extends LRUCache<K, V> implements IDisposable {
+  disposeKey(key: K): void {
+    const disposable = this.get(key);
+    if (disposable) {
+      disposable.dispose();
+    }
+    this.delete(key);
+  }
+
+  dispose(): void {
+    this.forEach((disposable) => {
+      disposable.dispose();
+    });
+    this.clear();
+  }
+}
+
 @Injectable()
 export class ChatManagerService extends Disposable {
-  #sessionModels = this.registerDispose(new DisposableMap<string, ChatModel>());
+  #sessionModels = this.registerDispose(new DisposableLRUCache<string, ChatModel>(MAX_SESSION_COUNT));
   #pendingRequests = this.registerDispose(new DisposableMap<string, CancellationTokenSource>());
   private storageInitEmitter = new Emitter<void>();
   public onStorageInit = this.storageInitEmitter.event;
@@ -54,35 +74,39 @@ export class ChatManagerService extends Disposable {
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
   private _chatStorage: IStorage;
 
   protected fromJSON(data: ISessionModel[]) {
-    // TODO: 支持ApplyService恢复
-    return data.map((item) => {
-      const model = new ChatModel({
-        sessionId: item.sessionId,
-        history: new MsgHistoryManager(item.history),
+    return data
+      .filter((item) => item.history.messages.length > 0)
+      .map((item) => {
+        const model = new ChatModel({
+          sessionId: item.sessionId,
+          history: new MsgHistoryManager(item.history),
+        });
+        const requests = item.requests.map(
+          (request) =>
+            new ChatRequestModel(
+              request.requestId,
+              model,
+              request.message,
+              new ChatResponseModel(request.requestId, model, request.message.agentId, {
+                responseContents: request.response.responseContents,
+                isComplete: true,
+                responseText: request.response.responseText,
+                responseParts: request.response.responseParts,
+                errorDetails: request.response.errorDetails,
+                followups: request.response.followups,
+                isCanceled: request.response.isCanceled,
+              }),
+            ),
+        );
+        model.restoreRequests(requests);
+        return model;
       });
-      const requests = item.requests.map(
-        (request) =>
-          new ChatRequestModel(
-            request.requestId,
-            model,
-            request.message,
-            new ChatResponseModel(request.requestId, model, request.message.agentId, {
-              responseContents: request.response.responseContents,
-              isComplete: true,
-              responseText: request.response.responseText,
-              responseParts: request.response.responseParts,
-              errorDetails: request.response.errorDetails,
-              followups: request.response.followups,
-              isCanceled: request.response.isCanceled,
-            }),
-          ),
-      );
-      model.restoreRequests(requests);
-      return model;
-    });
   }
 
   constructor() {
@@ -105,9 +129,6 @@ export class ChatManagerService extends Disposable {
   }
 
   startSession() {
-    if (this.#sessionModels.size >= MAX_SESSION_COUNT) {
-      throw new Error(formatLocalize('aiNative.chat.session.max', MAX_SESSION_COUNT.toString()));
-    }
     const model = new ChatModel();
     this.#sessionModels.set(model.sessionId, model);
     this.listenSession(model);
@@ -155,7 +176,8 @@ export class ChatManagerService extends Disposable {
       request.response.cancel();
     });
 
-    const history = model.messageHistory;
+    const contextWindow = this.preferenceService.get<number>(AINativeSettingSectionsId.ContextWindow);
+    const history = model.getMessageHistory(contextWindow);
 
     try {
       const progressCallback = (progress: IChatProgress) => {
