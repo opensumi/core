@@ -1459,6 +1459,7 @@ export const localizationBundle = {
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
     'aiNative.chat.enter.send': 'Send (Enter)',
+    'aiNative.chat.thinking': 'Deep Think',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': 'Check',

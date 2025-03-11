@@ -33,7 +33,7 @@ export const ChatThinking = (props: ITinkingProps) => {
   );
 
   const renderContent = useCallback(() => {
-    if (!children || !message?.trim()) {
+    if (!children) {
       if (CustomThinkingRender) {
         return <CustomThinkingRender thinkingText={thinkingText} />;
       }
