@@ -17,7 +17,7 @@ import { MentionInput } from './mention-input/mention-input';
 import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from './mention-input/types';
 
 export interface IChatMentionInputProps {
-  onSend: (value: string, agentId?: string, command?: string) => void;
+  onSend: (value: string, agentId?: string, command?: string, option?: { model: string; [key: string]: any }) => void;
   onValueChange?: (value: string) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
@@ -243,37 +243,11 @@ export const ChatMentionInput = React.forwardRef((props: IChatMentionInputProps)
   }, []);
 
   const handleSend = useCallback(
-    async (content: string, config?: { model: string; [key: string]: any }) => {
+    async (content: string, option?: { model: string; [key: string]: any }) => {
       if (disabled) {
         return;
       }
-
-      // 提取并替换 {{@file:xxx}} 中的文件内容
-      let processedContent = content;
-      const filePattern = /\{\{@file:(.*?)\}\}/g;
-      const fileMatches = content.match(filePattern);
-
-      if (fileMatches) {
-        for (const match of fileMatches) {
-          const filePath = match.replace(/\{\{@file:(.*?)\}\}/, '$1');
-          const fileUri = new URI(filePath);
-          // 获取文件内容
-          // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
-          processedContent = processedContent.replace(match, `\`@${fileUri.displayName}\``);
-        }
-      }
-
-      const folderPattern = /\{\{@folder:(.*?)\}\}/g;
-      const folderMatches = processedContent.match(folderPattern);
-      if (folderMatches) {
-        for (const match of folderMatches) {
-          const folderPath = match.replace(/\{\{@folder:(.*?)\}\}/, '$1');
-          const folderUri = new URI(folderPath);
-          // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
-          processedContent = processedContent.replace(match, `\`@${folderUri.displayName}\``);
-        }
-      }
-      onSend(processedContent);
+      onSend(content, undefined, undefined, option);
     },
     [onSend, editorService, disabled],
   );

@@ -31,9 +31,9 @@ import { IMessageService } from '@opensumi/ide-overlay';
 
 import 'react-chat-elements/dist/main.css';
 import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
+import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
-import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';
@@ -107,6 +107,7 @@ export const AIChatView = () => {
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
@@ -267,7 +268,7 @@ export const AIChatView = () => {
           if (loading) {
             return;
           }
-          await handleSend(message);
+          await handleSend(message.message, message.agentId, message.command);
         } else {
           if (message.agentId) {
             setAgentId(message.agentId);
@@ -643,11 +644,44 @@ export const AIChatView = () => {
   );
 
   const handleSend = React.useCallback(
-    async (value: IChatMessageStructure) => {
-      const { message, command, reportExtra } = value;
+    async (message: string, agentId?: string, command?: string) => {
+      const reportExtra = {
+        actionSource: ActionSourceEnum.Chat,
+        actionType: ActionTypeEnum.Send,
+      };
+      agentId = agentId ? agentId : ChatProxyService.AGENT_ID;
+      // 提取并替换 {{@file:xxx}} 中的文件内容
+      let processedContent = message;
+      const filePattern = /\{\{@file:(.*?)\}\}/g;
+      const fileMatches = message.match(filePattern);
+      let isCleanContext = false;
+      if (fileMatches) {
+        for (const match of fileMatches) {
+          const filePath = match.replace(/\{\{@file:(.*?)\}\}/, '$1');
+          if (filePath && !isCleanContext) {
+            isCleanContext = true;
+            llmContextService.cleanFileContext();
+          }
+          const fileUri = new URI(filePath);
+          llmContextService.addFileToContext(fileUri, undefined, true);
+          // 获取文件内容
+          // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
+          processedContent = processedContent.replace(match, `\`File:${fileUri.displayName}\``);
+        }
+      }
 
-      const agentId = value.agentId ? value.agentId : ChatProxyService.AGENT_ID;
-      return handleAgentReply({ message, agentId, command, reportExtra });
+      const folderPattern = /\{\{@folder:(.*?)\}\}/g;
+      const folderMatches = processedContent.match(folderPattern);
+      if (folderMatches) {
+        for (const match of folderMatches) {
+          const folderPath = match.replace(/\{\{@folder:(.*?)\}\}/, '$1');
+          const folderUri = new URI(folderPath);
+          llmContextService.addFolderToContext(folderUri);
+          // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
+          processedContent = processedContent.replace(match, `\`Folder:${folderUri.displayName}\``);
+        }
+      }
+      return handleAgentReply({ message: processedContent, agentId, command, reportExtra });
     },
     [handleAgentReply],
   );
@@ -764,7 +798,6 @@ export const AIChatView = () => {
             </div>
           ) : null}
           <div className={styles.chat_input_wrap}>
-            <ChatContext />
             <div className={styles.header_operate}>
               <div className={styles.header_operate_left}>
                 {shortcutCommands.map((command) => (
@@ -795,17 +828,7 @@ export const AIChatView = () => {
               />
             )}
             <ChatInputWrapperRender
-              onSend={(value, agentId, command) =>
-                handleSend({
-                  message: value,
-                  agentId,
-                  command,
-                  reportExtra: {
-                    actionSource: ActionSourceEnum.Chat,
-                    actionType: ActionTypeEnum.Send,
-                  },
-                })
-              }
+              onSend={handleSend}
               disabled={loading}
               enableOptions={true}
               theme={theme}
