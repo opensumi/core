@@ -1332,6 +1332,10 @@ export const localizationBundle = {
     'preference.ai.native.openai.apiKey.description': 'OpenAI 兼容语言模型的 API 密钥',
     'preference.ai.native.openai.baseURL': 'OpenAI Base URL',
     'preference.ai.native.openai.baseURL.description': 'OpenAI 兼容语言模型的 Base URL',
+    'preference.ai.native.contextWindow': '上下文窗口',
+    'preference.ai.native.contextWindow.description': '上下文窗口的最大Token数',
+    'preference.ai.native.maxTokens': '最大输出',
+    'preference.ai.native.maxTokens.description': '最大输出Token数',
 
     // MCP Server Settings
     'preference.ai.native.mcp.settings.title': 'MCP 服务器设置',
@@ -1378,5 +1382,9 @@ export const localizationBundle = {
     'ai.native.mcp.name.isRequired': '服务名称不能为空',
     'ai.native.mcp.command.isRequired': '命令不能为空',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL 不能为空',
+
+    // MCP View
+    'ai.native.mcp.tool.arguments': '参数',
+    'ai.native.mcp.tool.results': '返回',
   },
 };

@@ -19,9 +19,10 @@ import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/cor
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { IUndoRedoService, UndoRedoGroup } from '@opensumi/monaco-editor-core/esm/vs/platform/undoRedo/common/undoRedo';
 
+import { IInlineDiffService, InlineDiffServiceToken } from '../../../common';
+import { EPartialEdit, IPartialEditEvent } from '../../../common/types';
 import { AINativeContextKey } from '../../ai-core.contextkeys';
 import { IDecorationSerializableState, IEnhanceModelDeltaDecoration } from '../../model/enhanceDecorationsCollection';
-import { InlineDiffService } from '../inline-diff';
 
 import styles from './inline-stream-diff.module.less';
 import { InlineStreamDiffService } from './inline-stream-diff.service';
@@ -31,8 +32,6 @@ import {
   ActiveLineDecoration,
   AddedRangeDecoration,
   AddedRangeDecorationsCollection,
-  EPartialEdit,
-  IPartialEditEvent,
   IPartialEditWidgetOptions,
   IRemovedWidgetState,
   IRemovedZoneWidgetOptions,
@@ -66,8 +65,8 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   @Autowired(InlineStreamDiffService)
   private readonly inlineStreamDiffService: InlineStreamDiffService;
 
-  @Autowired(InlineDiffService)
-  private readonly inlineDiffService: InlineDiffService;
+  @Autowired(InlineDiffServiceToken)
+  private readonly inlineDiffService: IInlineDiffService;
 
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
@@ -537,15 +536,15 @@ export class LivePreviewDiffDecorationModel extends Disposable {
   }
 
   public acceptUnProcessed(): void {
-    const showingWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
-    showingWidgets.forEach((widget) => {
+    const pendingWidgets = this.partialEditWidgetList.filter((widget) => widget.isPending);
+    pendingWidgets.forEach((widget) => {
       this.handlePartialEditAction(EPartialEdit.accept, widget, false);
     });
   }
 
   public discardUnProcessed(): void {
-    const showingWidgets = this.partialEditWidgetList.filter((widget) => !widget.isHidden);
-    showingWidgets.forEach((widget) => {
+    const pendingWidgets = this.partialEditWidgetList.filter((widget) => widget.isPending);
+    pendingWidgets.forEach((widget) => {
       this.handlePartialEditAction(EPartialEdit.discard, widget, false);
     });
   }

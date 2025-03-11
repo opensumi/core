@@ -1570,6 +1570,10 @@ export const localizationBundle = {
     'preference.ai.native.openai.apiKey.description': 'API key for OpenAI Compatible language model',
     'preference.ai.native.openai.baseURL': 'OpenAI Base URL',
     'preference.ai.native.openai.baseURL.description': 'Base URL for OpenAI Compatible language model',
+    'preference.ai.native.contextWindow': 'Context Window',
+    'preference.ai.native.contextWindow.description': 'The maximum number of tokens in the context window',
+    'preference.ai.native.maxTokens': 'Maximum Output Tokens',
+    'preference.ai.native.maxTokens.description': 'The maximum number of tokens in the output',
 
     // MCP Server Settings
     'preference.ai.native.mcp.settings.title': 'MCP Server Settings',
@@ -1615,5 +1619,9 @@ export const localizationBundle = {
     'ai.native.mcp.name.isRequired': 'Server name is required',
     'ai.native.mcp.command.isRequired': 'Command is required',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL is required',
+
+    // MCP View
+    'ai.native.mcp.tool.arguments': 'Arguments',
+    'ai.native.mcp.tool.results': 'Result',
   },
 };
