@@ -543,7 +543,19 @@
 }
 
 .reasoning {
-  padding-left: 12px;
-  border-left: 2px solid var(--design-text-foreground);
-  color: var(--design-text-foreground);
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    transition: color 0.2s ease-in-out;
+    :global(.codicon) {
+      color: inherit;
+    }
+  }
+  .reasoning_content {
+    padding-left: 12px;
+    border-left: 2px solid var(--design-text-foreground);
+    color: var(--design-text-foreground);
+  }
 }

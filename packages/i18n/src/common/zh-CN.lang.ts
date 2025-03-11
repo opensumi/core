@@ -1227,6 +1227,7 @@ export const localizationBundle = {
     'aiNative.chat.expand.unfullscreen': '收起',
     'aiNative.chat.expand.fullescreen': '展开全屏',
     'aiNative.chat.enter.send': 'Enter 发送',
+    'aiNative.chat.thinking': '深度思考中',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': '采纳',
