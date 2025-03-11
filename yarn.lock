@@ -3419,6 +3419,7 @@ __metadata:
     "@xterm/xterm": "npm:5.5.0"
     ai: "npm:^4.1.45"
     ansi-regex: "npm:^2.0.0"
+    ansi_up: "npm:^5.1.0"
     diff: "npm:^7.0.0"
     dom-align: "npm:^1.7.0"
     eventsource: "npm:^3.0.5"
@@ -7073,6 +7074,13 @@ __metadata:
   version: 6.2.1
   resolution: "ansi-styles@npm:6.2.1"
   checksum: 10/70fdf883b704d17a5dfc9cde206e698c16bcd74e7f196ab821511651aee4f9f76c9514bdfa6ca3a27b5e49138b89cb222a28caf3afe4567570139577f991df32
+  languageName: node
+  linkType: hard
+
+"ansi_up@npm:^5.1.0":
+  version: 5.2.1
+  resolution: "ansi_up@npm:5.2.1"
+  checksum: 10/abf4f2e4abc1f54ef41d5668b22967c33117faf31308211858ff3bb898f4839f97a7bde081d6eb988532a90a1ccd37f1ef5c0f0f3e409d1b96ed4c5bd41d11c7
   languageName: node
   linkType: hard
 

@@ -59,9 +59,12 @@ export class MarkdownReactParser extends marked.Renderer {
 
               listItemChildren.push(this.parse(item.tokens));
 
-              return React.cloneElement(this.renderer.listItem(listItemChildren) as React.ReactElement, {
-                key: `list-item-${itemIndex}`,
-              });
+              return React.cloneElement(
+                this.renderer.listItem(listItemChildren) as React.ReactElement,
+                {
+                  key: `list-item-${itemIndex}`,
+                },
+              );
             });
 
             return this.renderer.list(children, token.ordered);
@@ -83,9 +86,12 @@ export class MarkdownReactParser extends marked.Renderer {
               ),
             );
 
-            const headerRow = React.cloneElement(this.renderer.tableRow(headerCells) as React.ReactElement, {
-              key: 'header-row',
-            });
+            const headerRow = React.cloneElement(
+              this.renderer.tableRow(headerCells) as React.ReactElement,
+              {
+                key: 'header-row',
+              },
+            );
             const header = this.renderer.tableHeader(headerRow);
 
             const bodyChilren = tableToken.rows.map((row, rowIndex) => {
@@ -99,9 +105,12 @@ export class MarkdownReactParser extends marked.Renderer {
                 ),
               );
 
-              return React.cloneElement(this.renderer.tableRow(rowChildren) as React.ReactElement, {
-                key: `body-row-${rowIndex}`,
-              });
+              return React.cloneElement(
+                this.renderer.tableRow(rowChildren) as React.ReactElement,
+                {
+                  key: `body-row-${rowIndex}`,
+                },
+              );
             });
 
             const body = this.renderer.tableBody(bodyChilren);
@@ -185,5 +194,7 @@ export class MarkdownReactParser extends marked.Renderer {
 function htmlUnescape(htmlStr) {
   return htmlStr
     .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
-    .replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+    .replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) =>
+      String.fromCharCode(parseInt(hex, 16)),
+    );
 }
