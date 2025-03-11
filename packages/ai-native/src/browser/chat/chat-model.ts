@@ -6,6 +6,7 @@ import {
   IChatComponent,
   IChatMarkdownContent,
   IChatProgress,
+  IChatReasoning,
   IChatToolContent,
   IChatTreeData,
   uuid,
@@ -33,7 +34,8 @@ export type IChatProgressResponseContent =
   | IChatAsyncContent
   | IChatTreeData
   | IChatComponent
-  | IChatToolContent;
+  | IChatToolContent
+  | IChatReasoning;
 
 export class ChatResponseModel extends Disposable {
   #responseParts: IChatProgressResponseContent[] = [];
@@ -132,6 +134,18 @@ export class ChatResponseModel extends Disposable {
       }
 
       this.#updateResponseText();
+    } else if (progress.kind === 'reasoning') {
+      const lastResponsePart = this.#responseParts[responsePartLength];
+      if (!lastResponsePart || lastResponsePart.kind !== 'reasoning') {
+        // 去掉开头的 <think> 标签
+        this.#responseParts.push({ content: progress.content.replace(/^<think>/, ''), kind: 'reasoning' });
+      } else {
+        this.#responseParts[responsePartLength] = {
+          content: lastResponsePart.content + progress.content,
+          kind: 'reasoning',
+        };
+      }
+      this.#updateResponseText();
     } else if (progress.kind === 'asyncContent') {
       // Add a new resolving part
       const responsePosition = this.#responseParts.push(progress) - 1;
@@ -180,6 +194,9 @@ export class ChatResponseModel extends Disposable {
         }
         if (part.kind === 'toolCall') {
           return part.content.function.name;
+        }
+        if (part.kind === 'reasoning') {
+          return '';
         }
         return part.content.value;
       })
@@ -387,7 +404,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
     const { kind } = progress;
 
-    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component', 'toolCall'];
+    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component', 'toolCall', 'reasoning'];
 
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);

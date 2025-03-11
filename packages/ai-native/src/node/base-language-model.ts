@@ -185,6 +185,11 @@ export abstract class BaseLanguageModel {
           });
         } else if (chunk.type === 'error') {
           chatReadableStream.emitError(new Error(chunk.error as string));
+        } else if (chunk.type === 'reasoning') {
+          chatReadableStream.emitData({
+            kind: 'reasoning',
+            content: chunk.textDelta,
+          });
         }
       }
 

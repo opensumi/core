@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import React, {
   Fragment,
   ReactNode,
@@ -313,6 +314,12 @@ export const ChatReply = (props: IChatReplyProps) => {
           node = <ComponentRender component={item.component} value={item.value} messageId={msgId} />;
         } else if (item.kind === 'toolCall') {
           node = <ToolCallRender toolCall={item.content} messageId={msgId} />;
+        } else if (item.kind === 'reasoning') {
+          node = (
+            <div className={cls(styles.reasoning, { [styles.collapse]: request.response.isComplete })}>
+              {item.content}
+            </div>
+          );
         } else {
           node = renderMarkdown(item.content);
         }
