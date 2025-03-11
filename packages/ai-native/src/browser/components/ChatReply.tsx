@@ -237,6 +237,18 @@ export const ChatReply = (props: IChatReplyProps) => {
   );
 
   useEffect(() => {
+    if (request.response.isComplete) {
+      setCollapseThinkingIndexSet(
+        new Set(
+          request.response.responseContents
+            .map((item, index) => (item.kind === 'reasoning' ? index : -1))
+            .filter((item) => item !== -1),
+        ),
+      );
+    }
+  }, [request.response.isComplete]);
+
+  useEffect(() => {
     const disposableCollection = new DisposableCollection();
 
     disposableCollection.push(
