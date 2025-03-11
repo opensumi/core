@@ -222,7 +222,12 @@ export abstract class BaseApplyService extends WithEventBus {
     this.onCodeBlockUpdateEmitter.fire(codeBlock);
   }
 
-  async registerCodeBlock(relativePath: string, content: string, toolCallId: string): Promise<CodeBlockData> {
+  async registerCodeBlock(
+    relativePath: string,
+    content: string,
+    toolCallId: string,
+    instructions?: string,
+  ): Promise<CodeBlockData> {
     const lastMessageId = this.chatInternalService.sessionModel.history.lastMessageId!;
     const uriCodeBlocks = this.getUriCodeBlocks(URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
     const originalModelRef = await this.editorDocumentModelService.createModelReference(
@@ -237,6 +242,7 @@ export abstract class BaseApplyService extends WithEventBus {
       createdAt: Date.now(),
       toolCallId,
       messageId: lastMessageId,
+      instructions,
       // TODO: 支持range
       originalCode: originalModelRef.instance.getText(),
     };
@@ -590,7 +596,7 @@ export abstract class BaseApplyService extends WithEventBus {
       .map((line) => {
         if (line.startsWith('@@')) {
           const [, , , start, lineCount] = line.match(/@@ -(\d+),(\d+) \+(\d+),(\d+) @@/)!;
-          return new Range(parseInt(start, 10), 0, parseInt(start, 10) + parseInt(lineCount, 10), 0);
+          return new Range(parseInt(start, 10), 0, parseInt(start, 10) + parseInt(lineCount, 10) - 1, 0);
         }
         return null;
       })
@@ -611,7 +617,6 @@ export abstract class BaseApplyService extends WithEventBus {
     result?: string;
   }>;
 
-  // TODO: 支持使用内存中的document获取诊断信息，实现并行apply accept
   protected getDiagnosticInfos(uri: string, ranges: Range[]) {
     const markers = this.markerService.getManager().getMarkers({ resource: uri });
     return markers.filter(
