@@ -1,4 +1,8 @@
-import ansiEscapes from 'ansi-escapes';
+export const ESC = '\u001B[';
+export const eraseLine = ESC + '2K';
+export const eraseEndLine = ESC + 'K';
+
+export const cursorUp = (count = 1) => ESC + count + 'A';
 
 /**
  * 处理过滤清空上行，清空本行逻辑。
@@ -14,9 +18,9 @@ import ansiEscapes from 'ansi-escapes';
  */
 export default function filterEraseMultipleLine(logs: string[]) {
   // 上移 cursor + 清空整行
-  const eraseLastLine = ansiEscapes.cursorUp(1) + ansiEscapes.eraseLine;
-  const eraseCurrentLine = ansiEscapes.eraseLine;
-  const eraseCurrentLine2 = `\r${ansiEscapes.eraseEndLine}`;
+  const eraseLastLine = cursorUp(1) + eraseLine;
+  const eraseCurrentLine = eraseLine;
+  const eraseCurrentLine2 = `\r${eraseEndLine}`;
 
   const moveCursorToLeftRegStrs = ['\\r', '\\u001b\\[G', '\\u001b\\[1G'];
   const moveCursorToLeftRegStr = new RegExp(`${moveCursorToLeftRegStrs.join('|')}`);
