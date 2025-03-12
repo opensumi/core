@@ -109,12 +109,13 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           return Promise.all(
             recentFile.map(async (file) => {
               const uri = new URI(file);
+              const relatveParentPath = (await workspaceService.asRelativePath(uri.parent))?.path;
               return {
                 id: uri.codeUri.fsPath,
                 type: MentionType.FILE,
                 text: uri.displayName,
                 value: uri.codeUri.fsPath,
-                description: (await workspaceService.asRelativePath(uri.parent))?.path || '',
+                description: relatveParentPath || '',
                 contextId: uri.codeUri.fsPath,
                 icon: labelService.getIcon(uri),
               };
@@ -132,12 +133,13 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           return Promise.all(
             results.map(async (file) => {
               const uri = new URI(file);
+              const relatveParentPath = (await workspaceService.asRelativePath(uri.parent))?.path;
               return {
                 id: uri.codeUri.fsPath,
                 type: MentionType.FILE,
                 text: uri.displayName,
                 value: uri.codeUri.fsPath,
-                description: (await workspaceService.asRelativePath(uri.parent))?.path || '',
+                description: relatveParentPath || '',
                 contextId: uri.codeUri.fsPath,
                 icon: labelService.getIcon(uri),
               };
