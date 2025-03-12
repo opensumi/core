@@ -2,14 +2,15 @@ import capitalize from 'lodash/capitalize';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
-import { IClipboardService, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
-import { Popover } from '@opensumi/ide-core-browser/lib/components';
+import { IClipboardService, LabelService, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ActionSourceEnum,
   ActionTypeEnum,
   ChatFeatureRegistryToken,
   IAIReporter,
+  URI,
   localize,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -139,16 +140,26 @@ const CodeBlock = ({
   renderText,
   agentId = '',
   command = '',
+  labelService,
 }: {
   content?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
   agentId?: string;
   command?: string;
+  labelService?: LabelService;
 }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
   const rgBlockCodeBefore = /```([^]+)?/g;
+  const rgAttachedFile = /<attached_file>(.*)/g;
+  const rgAttachedFolder = /<attached_folder>(.*)/g;
+  const renderAttachment = (text: string, isFolder = false, key: string) => (
+    <span className={styles.attachment} key={key}>
+      <Icon iconClass={isFolder ? getIcon('folder') : labelService?.getIcon(new URI(text || 'file'))} />
+      <span className={styles.attachment_text}>{text}</span>
+    </span>
+  );
 
   const renderCodeEditor = (content: string) => {
     const language = content.split('\n')[0].trim().toLowerCase();
@@ -193,11 +204,47 @@ const CodeBlock = ({
               renderedContent.push(text);
             }
           } else {
-            renderedContent.push(
-              <span className={styles.code_inline} key={index}>
-                {text}
-              </span>,
-            );
+            // 处理文件和文件夹标记
+            const processedText = text;
+            const fileMatches = [...text.matchAll(rgAttachedFile)];
+            const folderMatches = [...text.matchAll(rgAttachedFolder)];
+            if (fileMatches.length || folderMatches.length) {
+              let lastIndex = 0;
+              const fragments: (string | React.ReactNode)[] = [];
+
+              // 处理文件标记
+              fileMatches.forEach((match, matchIndex) => {
+                if (match.index !== undefined) {
+                  const spanText = processedText.slice(lastIndex, match.index);
+                  if (spanText) {
+                    fragments.push(<span key={`${index}-${matchIndex}`}>{spanText}</span>);
+                  }
+                  fragments.push(renderAttachment(match[1], false, `${index}-tag-${matchIndex}`));
+                  lastIndex = match.index + match[0].length;
+                }
+              });
+
+              // 处理文件夹标记
+              folderMatches.forEach((match, matchIndex) => {
+                if (match.index !== undefined) {
+                  const spanText = processedText.slice(lastIndex, match.index);
+                  if (spanText) {
+                    fragments.push(<span key={`${index}-${matchIndex}`}>{spanText}</span>);
+                  }
+                  fragments.push(renderAttachment(match[1], true, `${index}-tag-${matchIndex}`));
+                  lastIndex = match.index + match[0].length;
+                }
+              });
+
+              fragments.push(processedText.slice(lastIndex));
+              renderedContent.push(...fragments);
+            } else {
+              renderedContent.push(
+                <span className={styles.code_inline} key={index}>
+                  {text}
+                </span>,
+              );
+            }
           }
         });
       } else {
@@ -216,15 +263,23 @@ export const CodeBlockWrapper = ({
   renderText,
   relationId,
   agentId,
+  labelService,
 }: {
   text?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
   agentId?: string;
+  labelService?: LabelService;
 }) => (
   <div className={styles.ai_chat_code_wrapper}>
     <div className={styles.render_text}>
-      <CodeBlock content={text} renderText={renderText} relationId={relationId} agentId={agentId} />
+      <CodeBlock
+        content={text}
+        labelService={labelService}
+        renderText={renderText}
+        relationId={relationId}
+        agentId={agentId}
+      />
     </div>
   </div>
 );
@@ -234,11 +289,13 @@ export const CodeBlockWrapperInput = ({
   relationId,
   agentId,
   command,
+  labelService,
 }: {
   text: string;
   relationId: string;
   agentId?: string;
   command?: string;
+  labelService?: LabelService;
 }) => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const [tag, setTag] = useState<string>('');
@@ -271,7 +328,13 @@ export const CodeBlockWrapperInput = ({
           </div>
         )}
         {command && <div className={styles.tag}>/ {command}</div>}
-        <CodeBlock content={txt} relationId={relationId} agentId={agentId} command={command} />
+        <CodeBlock
+          content={txt}
+          labelService={labelService}
+          relationId={relationId}
+          agentId={agentId}
+          command={command}
+        />
       </div>
     </div>
   );

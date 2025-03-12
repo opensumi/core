@@ -1,3 +1,5 @@
+import type { LabelService } from '@opensumi/ide-core-browser';
+
 export interface MentionItem {
   id: string;
   type: string;
@@ -74,6 +76,7 @@ export interface MentionInputProps {
   onSelectionChange?: (value: string) => void;
   footerConfig?: FooterConfig; // 新增配置项
   mentionKeyword?: string;
+  labelService?: LabelService;
 }
 
 export const MENTION_KEYWORD = '@';

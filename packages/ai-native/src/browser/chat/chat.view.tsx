@@ -1,7 +1,14 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import { AINativeConfigService, AppConfig, getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
+import {
+  AINativeConfigService,
+  AppConfig,
+  LabelService,
+  getIcon,
+  useInjectable,
+  useUpdateOnEvent,
+} from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -117,6 +124,7 @@ export const AIChatView = () => {
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+  const labelService = useInjectable<LabelService>(LabelService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
@@ -355,6 +363,7 @@ export const AIChatView = () => {
                       text={message}
                       agentId={visibleAgentId}
                       command={command}
+                      labelService={labelService}
                     />
                   ),
                 },
@@ -460,7 +469,13 @@ export const AIChatView = () => {
           text: ChatUserRoleRender ? (
             <ChatUserRoleRender content={message} agentId={visibleAgentId} command={command} />
           ) : (
-            <CodeBlockWrapperInput relationId={relationId} text={message} agentId={visibleAgentId} command={command} />
+            <CodeBlockWrapperInput
+              labelService={labelService}
+              relationId={relationId}
+              text={message}
+              agentId={visibleAgentId}
+              command={command}
+            />
           ),
         },
         styles.chat_message_code,
@@ -666,7 +681,7 @@ export const AIChatView = () => {
           llmContextService.addFileToContext(fileUri, undefined, true);
           // 获取文件内容
           // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
-          processedContent = processedContent.replace(match, `\`File:${fileUri.displayName}\``);
+          processedContent = processedContent.replace(match, `\`<attached_file>${fileUri.displayName}\``);
         }
       }
 
@@ -678,7 +693,7 @@ export const AIChatView = () => {
           const folderUri = new URI(folderPath);
           llmContextService.addFolderToContext(folderUri);
           // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
-          processedContent = processedContent.replace(match, `\`Folder:${folderUri.displayName}\``);
+          processedContent = processedContent.replace(match, `\`<attached_folder>${folderUri.displayName}\``);
         }
       }
       return handleAgentReply({ message: processedContent, agentId, command, reportExtra });

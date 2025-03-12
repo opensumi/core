@@ -3,6 +3,7 @@ import * as React from 'react';
 
 import { Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { URI } from '@opensumi/ide-utils';
 
 import styles from './mention-input.module.less';
 import { MentionPanel } from './mention-panel';
@@ -17,6 +18,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   loading = false,
   mentionKeyword = MENTION_KEYWORD,
   onSelectionChange,
+  labelService,
   placeholder = 'Ask anything, @ to mention',
   footerConfig = {
     buttons: [],
@@ -577,7 +579,21 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         mentionTag.dataset.type = item.type;
         mentionTag.dataset.contextId = item.contextId || '';
         mentionTag.contentEditable = 'false';
-        mentionTag.textContent = mentionKeyword + item.text;
+
+        // 为 file 和 folder 类型添加图标
+        if (item.type === 'file' || item.type === 'folder') {
+          // 创建图标容器
+          const iconSpan = document.createElement('span');
+          iconSpan.className = cls(
+            styles.mention_icon,
+            item.type === 'file' ? labelService?.getIcon(new URI(item.text)) : getIcon('folder'),
+          );
+          mentionTag.appendChild(iconSpan);
+        }
+
+        // 创建文本内容容器
+        const textSpan = document.createTextNode(item.text);
+        mentionTag.appendChild(textSpan);
 
         // 创建一个范围从 @type: 开始到当前光标
         const tempRange = document.createRange();
@@ -666,7 +682,21 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     mentionTag.dataset.type = item.type;
     mentionTag.dataset.contextId = item.contextId || '';
     mentionTag.contentEditable = 'false';
-    mentionTag.textContent = mentionKeyword + item.text;
+
+    // 为 file 和 folder 类型添加图标
+    if (item.type === 'file' || item.type === 'folder') {
+      // 创建图标容器
+      const iconSpan = document.createElement('span');
+      iconSpan.className = cls(
+        styles.mention_icon,
+        item.type === 'file' ? labelService?.getIcon(new URI(item.text)) : getIcon('folder'),
+      );
+      mentionTag.appendChild(iconSpan);
+    }
+
+    // 创建文本内容容器
+    const textSpan = document.createTextNode(item.text);
+    mentionTag.appendChild(textSpan);
 
     // 定位到 @ 符号的位置
     let charIndex = 0;

@@ -3,6 +3,7 @@
   width: 100%;
   margin: 0 auto;
   border-radius: 4px;
+
   .model_selector {
     margin-right: 5px;
   }
@@ -55,8 +56,10 @@
     span {
       color: var(--design-text-foreground);
     }
+
     &:hover {
       background-color: var(--badge-background);
+
       span {
         color: var(--badge-foreground);
       }
@@ -75,6 +78,7 @@
     justify-content: flex-start;
     align-items: center;
     flex-direction: row;
+
     .left_control {
       display: flex;
       align-items: center;
@@ -82,17 +86,21 @@
       flex-direction: row;
       flex: 1;
     }
+
     .right_control {
       display: flex;
       align-items: center;
       justify-content: flex-end;
       flex-direction: row;
+
       .send_logo,
       .stop_logo {
         background-color: var(--badge-background);
         color: var(--badge-foreground);
+
         &:hover {
           background-color: var(--kt-primaryButton-background);
+
           .send_logo_icon,
           .stop_logo_icon {
             color: var(--kt-primaryButton-foreground);
@@ -155,6 +163,7 @@
   color: var(--foreground);
   border-radius: 4px;
   margin-bottom: 5px;
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -242,9 +251,17 @@
   border-radius: 4px;
   padding: 0 4px;
   margin: 0 3px;
-  display: inline-block;
   user-select: all;
   cursor: default;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mention_icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty_state {
@@ -296,6 +313,7 @@
   0% {
     background-position: 100% 0;
   }
+
   100% {
     background-position: -100% 0;
   }
