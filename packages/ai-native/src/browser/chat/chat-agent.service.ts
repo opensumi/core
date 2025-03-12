@@ -59,7 +59,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   private readonly aiReporter: IAIReporter;
 
   @Autowired(LLMContextServiceToken)
-  protected readonly contextService: LLMContextService;
+  protected readonly llmContextService: LLMContextService;
 
   @Autowired(ChatAgentPromptProvider)
   protected readonly promptProvider: ChatAgentPromptProvider;
@@ -74,7 +74,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     super();
     this.addDispose(this._onDidChangeAgents);
     this.addDispose(
-      this.contextService.onDidContextFilesChangeEvent((event) => {
+      this.llmContextService.onDidContextFilesChangeEvent((event) => {
         if (event.version !== this.contextVersion) {
           this.contextVersion = event.version;
           this.shouldUpdateContext = true;
@@ -163,8 +163,8 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   }
 
   private async provideContextMessage(message: string, sessionId: string) {
-    const context = await this.contextService.serialize();
-    const fullMessage = this.promptProvider.provideContextPrompt(context, message);
+    const context = await this.llmContextService.serialize();
+    const fullMessage = await this.promptProvider.provideContextPrompt(context, message);
     this.aiReporter.send({
       msgType: AIServiceType.Chat,
       actionType: ActionTypeEnum.ContextEnhance,

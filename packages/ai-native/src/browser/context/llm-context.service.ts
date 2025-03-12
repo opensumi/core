@@ -209,9 +209,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       folderPath.map(async (folder) => {
         const folderUri = new URI(folder);
         const root = workspaceRoot.relative(folderUri)?.toString() || '/';
-        return `# Partial Folder Structure\n\`\`\`\n${root}\n${(
-          await this.getPartiaFolderStructure(folderUri.codeUri.fsPath)
-        )
+        return `\`\`\`\n${root}\n${(await this.getPartiaFolderStructure(folderUri.codeUri.fsPath))
           .map((line) => `- ${line}`)
           .join('\n')}\n\`\`\`\n`;
       }),
