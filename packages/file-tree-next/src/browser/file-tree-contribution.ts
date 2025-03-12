@@ -446,11 +446,10 @@ export class FileTreeContribution
       execute: (locationUri?: URI) => {
         const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
         if (handler && !handler.isVisible) {
-          handler.show();
-          const isViewVisibled = handler.isCollapsed(RESOURCE_VIEW_ID);
-          if (!isViewVisibled) {
-            handler.toggleViews([RESOURCE_VIEW_ID], true);
-          }
+          handler.activate();
+          setTimeout(() => {
+            handler.setCollapsed(RESOURCE_VIEW_ID, false);
+          }, 200);
         }
         if (locationUri) {
           this.revealFile(locationUri);
