@@ -113,13 +113,13 @@ export const InlineDiffManager: React.FC<{ resource: IResource }> = (props) => {
       <div className={styles.mid}>
         <IconWithPopover
           icon='codicon codicon-check'
-          onClick={() => applyService.processAll(props.resource.uri, 'accept')}
+          onClick={() => applyService.processAll('accept', props.resource.uri)}
           content={localize('aiNative.inlineDiff.acceptAll')}
           id='inline-diff-manager-accept-all'
         />
         <IconWithPopover
           icon='codicon codicon-close'
-          onClick={() => applyService.processAll(props.resource.uri, 'reject')}
+          onClick={() => applyService.processAll('reject', props.resource.uri)}
           content={localize('aiNative.inlineDiff.rejectAll')}
           id='inline-diff-manager-reject-all'
         />

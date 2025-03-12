@@ -1,4 +1,5 @@
 import { IMarker } from '@opensumi/ide-core-browser';
+import { Uri } from '@opensumi/monaco-editor-core';
 
 export enum NearestCodeBlockType {
   Block = 'block',
@@ -83,3 +84,37 @@ export interface CodeBlockData {
 }
 
 export type CodeBlockStatus = 'generating' | 'pending' | 'success' | 'rejected' | 'failed' | 'cancelled';
+
+export enum EPartialEdit {
+  accept = 'accept',
+  discard = 'discard',
+}
+
+export interface IPartialEditEvent {
+  uri: Uri;
+  /**
+   * 总 diff 数
+   */
+  totalPartialEditCount: number;
+  /**
+   * 已处理的个数
+   */
+  resolvedPartialEditCount: number;
+  /**
+   * 已添加行数
+   */
+  totalAddedLinesCount: number;
+  /**
+   * 已采纳的个数
+   */
+  acceptPartialEditCount: number;
+  /**
+   * 已删除行数
+   */
+  totalDeletedLinesCount: number;
+  currentPartialEdit: {
+    type: EPartialEdit;
+    addedLinesCount: number;
+    deletedLinesCount: number;
+  };
+}

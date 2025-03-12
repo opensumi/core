@@ -6,6 +6,7 @@ import {
   IChatComponent,
   IChatMarkdownContent,
   IChatProgress,
+  IChatReasoning,
   IChatToolContent,
   IChatTreeData,
   uuid,
@@ -33,7 +34,8 @@ export type IChatProgressResponseContent =
   | IChatAsyncContent
   | IChatTreeData
   | IChatComponent
-  | IChatToolContent;
+  | IChatToolContent
+  | IChatReasoning;
 
 export class ChatResponseModel extends Disposable {
   #responseParts: IChatProgressResponseContent[] = [];
@@ -132,6 +134,18 @@ export class ChatResponseModel extends Disposable {
       }
 
       this.#updateResponseText();
+    } else if (progress.kind === 'reasoning') {
+      const lastResponsePart = this.#responseParts[responsePartLength];
+      if (!lastResponsePart || lastResponsePart.kind !== 'reasoning') {
+        // 去掉开头的 <think> 标签
+        this.#responseParts.push({ content: progress.content.replace(/^<think>/, ''), kind: 'reasoning' });
+      } else {
+        this.#responseParts[responsePartLength] = {
+          content: lastResponsePart.content + progress.content,
+          kind: 'reasoning',
+        };
+      }
+      this.#updateResponseText();
     } else if (progress.kind === 'asyncContent') {
       // Add a new resolving part
       const responsePosition = this.#responseParts.push(progress) - 1;
@@ -180,6 +194,9 @@ export class ChatResponseModel extends Disposable {
         }
         if (part.kind === 'toolCall') {
           return part.content.function.name;
+        }
+        if (part.kind === 'reasoning') {
+          return '';
         }
         return part.content.value;
       })
@@ -276,15 +293,12 @@ export class ChatRequestModel implements IChatRequestModel {
 }
 
 export class ChatModel extends Disposable implements IChatModel {
-  private static requestIdPool = 0;
+  private requestIdPool = 0;
 
-  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; requests?: ChatRequestModel[] }) {
+  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager }) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
     this.history = initParams?.history ?? new MsgHistoryManager();
-    if (initParams?.requests) {
-      this.#requests = new Map(initParams.requests.map((r) => [r.requestId, r]));
-    }
   }
 
   #sessionId: string;
@@ -299,11 +313,18 @@ export class ChatModel extends Disposable implements IChatModel {
 
   restoreRequests(requests: ChatRequestModel[]): void {
     this.#requests = new Map(requests.map((r) => [r.requestId, r]));
+    this.requestIdPool = requests.length;
   }
 
   readonly history: MsgHistoryManager;
 
-  get messageHistory() {
+  #slicedMessageCount = 0;
+
+  public get slicedMessageCount() {
+    return this.#slicedMessageCount;
+  }
+
+  getMessageHistory(contextWindow?: number) {
     const history: CoreMessage[] = [];
     for (const request of this.requests) {
       if (!request.response.isComplete) {
@@ -352,13 +373,23 @@ export class ChatModel extends Disposable implements IChatModel {
         }
       }
     }
-    return history;
+    if (contextWindow) {
+      while (this.#slicedMessageCount < history.length) {
+        // 简单的使用 JSON.stringify 计算 token 数量
+        const tokenCount = JSON.stringify(history.slice(this.#slicedMessageCount)).length / 3;
+        if (tokenCount <= contextWindow) {
+          break;
+        }
+        this.#slicedMessageCount++;
+      }
+    }
+    return history.slice(this.#slicedMessageCount);
   }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
     const msg = message;
 
-    const requestId = `${this.sessionId}_request_${ChatModel.requestIdPool++}`;
+    const requestId = `${this.sessionId}_request_${this.requestIdPool++}`;
     const response = new ChatResponseModel(requestId, this, msg.agentId);
     const request = new ChatRequestModel(requestId, this, msg, response);
 
@@ -373,7 +404,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
     const { kind } = progress;
 
-    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component', 'toolCall'];
+    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component', 'toolCall', 'reasoning'];
 
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);

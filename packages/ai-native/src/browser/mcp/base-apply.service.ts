@@ -26,17 +26,13 @@ import { Deferred, DisposableMap, Emitter, IDisposable, URI, path } from '@opens
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 
-import { IChatInternalService } from '../../common';
+import { IChatInternalService, IInlineDiffService, InlineDiffServiceToken } from '../../common';
 import { CodeBlockData, CodeBlockStatus } from '../../common/types';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { InlineChatController } from '../widget/inline-chat/inline-chat-controller';
-import {
-  BaseInlineDiffPreviewer,
-  InlineDiffController,
-  InlineDiffService,
-  LiveInlineDiffPreviewer,
-} from '../widget/inline-diff';
-import { BaseInlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
+import { BaseInlineDiffPreviewer, InlineDiffController, LiveInlineDiffPreviewer } from '../widget/inline-diff';
+
+import type { BaseInlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
 
 export abstract class BaseApplyService extends WithEventBus {
   @Autowired(IChatInternalService)
@@ -48,8 +44,8 @@ export abstract class BaseApplyService extends WithEventBus {
   @Autowired(WorkbenchEditorService)
   protected readonly editorService: WorkbenchEditorService;
 
-  @Autowired(InlineDiffService)
-  private readonly inlineDiffService: InlineDiffService;
+  @Autowired(InlineDiffServiceToken)
+  private readonly inlineDiffService: IInlineDiffService;
 
   @Autowired(IMarkerService)
   private readonly markerService: IMarkerService;
@@ -155,7 +151,7 @@ export abstract class BaseApplyService extends WithEventBus {
     // 使用最后一个版本内容渲染 apply 内容
     if (filePendingApplies.length > 0 && filePendingApplies[0].updatedCode) {
       const editor = event.payload.group.codeEditor.monacoEditor;
-      this.renderApplyResult(editor, filePendingApplies[0], filePendingApplies[0].updatedCode);
+      await this.renderApplyResult(editor, filePendingApplies[0], filePendingApplies[0].updatedCode);
     }
   }
 
@@ -183,9 +179,10 @@ export abstract class BaseApplyService extends WithEventBus {
     return sessionCodeBlocks.filter((block) => block.status === 'pending').map((block) => block.relativePath);
   }
 
-  protected getSessionCodeBlocks(sessionId?: string) {
-    sessionId = sessionId || this.chatInternalService.sessionModel.sessionId;
-    const sessionModel = this.chatInternalService.getSession(sessionId);
+  getSessionCodeBlocks(sessionId?: string) {
+    const sessionModel = sessionId
+      ? this.chatInternalService.getSession(sessionId)
+      : this.chatInternalService.sessionModel;
     if (!sessionModel) {
       throw new Error(`Session ${sessionId} not found`);
     }
@@ -301,22 +298,17 @@ export abstract class BaseApplyService extends WithEventBus {
       if (!result) {
         throw new Error('Failed to open file');
       }
-      if (typeof fastApplyFileResult.result === 'string') {
-        codeBlock.updatedCode = fastApplyFileResult.result;
-        codeBlock.status = 'pending';
-        this.updateCodeBlock(codeBlock);
-      }
-      const applyResult = await this.renderApplyResult(
+      const res = await this.renderApplyResult(
         result.group.codeEditor.monacoEditor,
         codeBlock,
         (fastApplyFileResult.result || fastApplyFileResult.stream)!,
         fastApplyFileResult.range,
       );
-      if (applyResult) {
-        // 用户实际接受的 apply 结果
-        codeBlock.applyResult = applyResult;
-        this.updateCodeBlock(codeBlock);
-      }
+      codeBlock.updatedCode = res.updatedCode;
+      codeBlock.status = 'pending';
+      // 用户实际接受的 apply 结果
+      codeBlock.applyResult = res.result;
+      this.updateCodeBlock(codeBlock);
 
       return codeBlock;
     } catch (err) {
@@ -328,31 +320,33 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
+  /**
+   * 渲染apply结果（支持流式和直接输出结果）
+   * 副作用：渲染时会添加accept、reject操作监听器，监听到结果时会自动更新codeBlock的result
+   */
   async renderApplyResult(
     editor: ICodeEditor,
     codeBlock: CodeBlockData,
     updatedContentOrStream: string | SumiReadableStream<IChatProgress>,
     range?: Range,
-  ): Promise<{ diff: string; diagnosticInfos: IMarker[] } | undefined> {
-    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
+  ): Promise<{ result?: { diff: string; diagnosticInfos: IMarker[] }; updatedCode: string }> {
+    const deferred = new Deferred<{ result?: { diff: string; diagnosticInfos: IMarker[] }; updatedCode: string }>();
     const inlineDiffController = InlineDiffController.get(editor)!;
     range = range || editor.getModel()!.getFullModelRange();
 
     if (typeof updatedContentOrStream === 'string') {
+      const updatedContent = updatedContentOrStream;
       const editorCurrentContent = editor.getModel()!.getValue();
       const uri = URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath));
       const document = this.editorDocumentModelService.getModelReference(uri);
-      if (editorCurrentContent !== updatedContentOrStream || document?.instance.dirty) {
-        editor.getModel()?.pushEditOperations([], [EditOperation.replace(range, updatedContentOrStream)], () => null);
+      if (editorCurrentContent !== updatedContent || document?.instance.dirty) {
+        editor.getModel()?.pushEditOperations([], [EditOperation.replace(range, updatedContent)], () => null);
         await this.editorService.save(uri);
       }
       const uriPendingCodeBlocks = this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending');
       const earlistPendingCodeBlock = uriPendingCodeBlocks?.[uriPendingCodeBlocks.length - 1];
-      if ((earlistPendingCodeBlock?.originalCode || codeBlock.originalCode) === updatedContentOrStream) {
-        codeBlock.status = 'cancelled';
-        this.updateCodeBlock(codeBlock);
-        deferred.resolve();
-        return;
+      if ((earlistPendingCodeBlock || codeBlock)?.originalCode === updatedContent) {
+        throw new Error('No changes applied');
       }
       // Create diff previewer
       const previewer = inlineDiffController.createDiffPreviewer(
@@ -380,13 +374,16 @@ export abstract class BaseApplyService extends WithEventBus {
 
       const { diff, rangesFromDiffHunk } = this.getDiffResult(
         codeBlock.originalCode,
-        codeBlock.updatedCode || updatedContentOrStream,
+        updatedContent,
         codeBlock.relativePath,
       );
       const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
       deferred.resolve({
-        diff,
-        diagnosticInfos,
+        result: {
+          diff,
+          diagnosticInfos,
+        },
+        updatedCode: updatedContent,
       });
     } else {
       const controller = new InlineChatController();
@@ -414,21 +411,21 @@ export abstract class BaseApplyService extends WithEventBus {
       this.addDispose(
         // 流式输出结束后，转为直接输出逻辑
         previewer.getNode()!.onDiffFinished(async (diffModel) => {
-          codeBlock.updatedCode = diffModel.newFullRangeTextLines.join('\n');
           // TODO: 添加 reapply
+          const updatedCode = diffModel.newFullRangeTextLines.join('\n');
           // 实际应用结果为空，则取消
-          if (codeBlock.updatedCode === codeBlock.originalCode) {
-            codeBlock.status = 'failed';
-            this.updateCodeBlock(codeBlock);
+          if (codeBlock.originalCode === updatedCode) {
             previewer.dispose();
             deferred.reject(new Error('no changes applied'));
             return;
           }
-          codeBlock.status = 'pending';
-          this.updateCodeBlock(codeBlock);
           previewer.dispose();
-          const result = await this.renderApplyResult(editor, codeBlock, codeBlock.updatedCode);
-          deferred.resolve(result);
+          try {
+            const res = await this.renderApplyResult(editor, codeBlock, updatedCode);
+            deferred.resolve(res);
+          } catch (err) {
+            deferred.reject(err);
+          }
         }),
       );
       this.activePreviewerMap.set(codeBlock.relativePath, previewer);
@@ -483,14 +480,36 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
-  processAll(uri: URI, type: 'accept' | 'reject'): void {
-    const codeBlocks = this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending');
+  processAll(type: 'accept' | 'reject', uri?: URI): void {
+    const codeBlocks = uri
+      ? this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending')
+      : this.getSessionCodeBlocks().filter((block) => block.status === 'pending');
     if (!codeBlocks?.length) {
       throw new Error('No pending code block found');
     }
-    const decorationModel = this.activePreviewerMap
-      .get(codeBlocks[0].relativePath)
-      ?.getNode()?.livePreviewDiffDecorationModel;
+    const relativePaths = uri
+      ? [codeBlocks[0].relativePath]
+      : codeBlocks
+          .map((block) => block.relativePath)
+          .reduce((acc, cur) => {
+            if (acc.includes(cur)) {
+              return acc;
+            }
+            acc.push(cur);
+            return acc;
+          }, [] as string[]);
+    relativePaths.forEach((relativePath) => {
+      this.doProcess(type, relativePath);
+    });
+    codeBlocks.forEach((codeBlock) => {
+      codeBlock.status = type === 'accept' ? 'success' : 'cancelled';
+      // TODO: 批量更新
+      this.updateCodeBlock(codeBlock);
+    });
+  }
+
+  protected doProcess(type: 'accept' | 'reject', relativePath: string) {
+    const decorationModel = this.activePreviewerMap.get(relativePath)?.getNode()?.livePreviewDiffDecorationModel;
     if (!decorationModel) {
       throw new Error('No active previewer found');
     }
@@ -499,19 +518,13 @@ export abstract class BaseApplyService extends WithEventBus {
     } else {
       decorationModel.discardUnProcessed();
     }
-    this.editorService.save(uri);
-    codeBlocks.forEach((codeBlock) => {
-      codeBlock.status = type === 'accept' ? 'success' : 'cancelled';
-      // TODO: 批量更新
-      this.updateCodeBlock(codeBlock);
-    });
+    this.editorService.save(URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
   }
 
   protected listenPartialEdit(model: ITextModel, codeBlock: CodeBlockData) {
     const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
     const uriString = model.uri.toString();
     const toDispose = this.inlineDiffService.onPartialEdit((event) => {
-      // TODO 支持自动保存
       if (
         event.totalPartialEditCount === event.resolvedPartialEditCount &&
         event.uri.path === model.uri.path.toString()
@@ -532,11 +545,19 @@ export abstract class BaseApplyService extends WithEventBus {
             actionSource: ActionSourceEnum.Chat,
             sessionId: this.chatInternalService.sessionModel.sessionId,
             isReceive: true,
-            isDrop: false,
-            code: codeBlock.codeEdit,
+            // 是否有丢弃部分代码
+            isDrop: event.acceptPartialEditCount !== event.totalPartialEditCount,
+            code: appliedResult,
+            originCode: codeBlock.originalCode,
             message: JSON.stringify({
               diff,
               diagnosticInfos,
+              instructions: codeBlock.instructions,
+              codeEdit: codeBlock.codeEdit,
+              partialEditCount: event.totalPartialEditCount,
+              acceptPartialEditCount: event.acceptPartialEditCount,
+              addedLinesCount: event.totalAddedLinesCount,
+              deletedLinesCount: event.totalDeletedLinesCount,
             }),
           });
           deferred.resolve({
@@ -554,8 +575,11 @@ export abstract class BaseApplyService extends WithEventBus {
             sessionId: this.chatInternalService.sessionModel.sessionId,
             isReceive: false,
             isDrop: true,
-            code: codeBlock.codeEdit,
             originCode: codeBlock.originalCode,
+            message: JSON.stringify({
+              instructions: codeBlock.instructions,
+              codeEdit: codeBlock.codeEdit,
+            }),
           });
         }
         this.editorListenerMap.disposeKey(uriString);
@@ -593,8 +617,6 @@ export abstract class BaseApplyService extends WithEventBus {
     result?: string;
   }>;
 
-  // FIXME: 貌似筛选逻辑不太对，需要重构
-  // TODO: 支持使用内存中的document获取诊断信息，实现并行apply accept
   protected getDiagnosticInfos(uri: string, ranges: Range[]) {
     const markers = this.markerService.getManager().getMarkers({ resource: uri });
     return markers.filter(

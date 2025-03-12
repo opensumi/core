@@ -38,6 +38,7 @@ export class ReadFileTool implements MCPServerContribution {
     return {
       name: 'read_file',
       label: 'Read File',
+      order: 1,
       description: `Read the contents of a file (and the outline).
 
 When using this tool to gather information, it's your responsibility to ensure you have the COMPLETE context. Each time you call this command you should:
