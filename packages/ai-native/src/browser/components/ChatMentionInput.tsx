@@ -37,7 +37,7 @@ export interface IChatMentionInputProps {
 }
 
 // 指令命令激活组件
-export const ChatMentionInput = React.forwardRef((props: IChatMentionInputProps) => {
+export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const { onSend, disabled = false } = props;
 
   const [value, setValue] = useState(props.value || '');
@@ -266,4 +266,4 @@ export const ChatMentionInput = React.forwardRef((props: IChatMentionInputProps)
       />
     </div>
   );
-});
+};
