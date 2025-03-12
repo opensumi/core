@@ -71,6 +71,7 @@ export interface MentionInputProps {
   onStop?: () => void;
   placeholder?: string;
   loading?: boolean;
+  onSelectionChange?: (value: string) => void;
   footerConfig?: FooterConfig; // 新增配置项
   mentionKeyword?: string;
 }

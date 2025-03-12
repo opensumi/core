@@ -16,6 +16,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   onStop,
   loading = false,
   mentionKeyword = MENTION_KEYWORD,
+  onSelectionChange,
   placeholder = 'Ask anything, @ to mention',
   footerConfig = {
     buttons: [],
@@ -741,9 +742,13 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   };
 
   // 处理模型选择变更
-  const handleModelChange = (value: string) => {
-    setSelectedModel(value);
-  };
+  const handleModelChange = React.useCallback(
+    (value: string) => {
+      setSelectedModel(value);
+      onSelectionChange?.(value);
+    },
+    [selectedModel, onSelectionChange],
+  );
 
   // 修改 handleSend 函数
   const handleSend = () => {
@@ -810,26 +815,29 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   }, [onStop]);
 
   // 渲染自定义按钮
-  const renderButtons = (position: FooterButtonPosition) =>
-    (footerConfig.buttons || [])
-      .filter((button) => button.position === position)
-      .map((button) => (
-        <Popover
-          key={button.id}
-          overlayClassName={styles.popover_icon}
-          id={`ai-chat-${button.id}`}
-          position={PopoverPosition.top}
-          title={button.title}
-        >
-          <EnhanceIcon
-            className={cls(getIcon(button.icon), styles[`${button.id}_logo`])}
-            tabIndex={0}
-            role='button'
-            ariaLabel={button.title}
-            onClick={button.onClick}
-          />
-        </Popover>
-      ));
+  const renderButtons = React.useCallback(
+    (position: FooterButtonPosition) =>
+      (footerConfig.buttons || [])
+        .filter((button) => button.position === position)
+        .map((button) => (
+          <Popover
+            key={button.id}
+            overlayClassName={styles.popover_icon}
+            id={`ai-chat-${button.id}`}
+            position={PopoverPosition.top}
+            title={button.title}
+          >
+            <EnhanceIcon
+              className={cls(getIcon(button.icon), styles[`${button.id}_logo`])}
+              tabIndex={0}
+              role='button'
+              ariaLabel={button.title}
+              onClick={button.onClick}
+            />
+          </Popover>
+        )),
+    [footerConfig.buttons],
+  );
 
   return (
     <div className={styles.input_container}>
