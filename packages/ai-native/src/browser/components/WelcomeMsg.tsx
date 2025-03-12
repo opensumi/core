@@ -79,7 +79,7 @@ export const WelcomeMessage = () => {
     return (
       <div className={styles.chat_welcome_head}>
         <div className={styles.chat_container_des}>
-          {isMarkdownString(welcomeMessage) ? <ChatMarkdown markdown={welcomeMessage} /> : welcomeMessage}
+          {isMarkdownString(welcomeMessage) ? <ChatMarkdown key='welcome' markdown={welcomeMessage} /> : welcomeMessage}
         </div>
         <div className={styles.chat_container_content}>
           {allSampleQuestions.map((data: any, index) => {

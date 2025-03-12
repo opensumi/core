@@ -3,11 +3,11 @@ import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
 import { localize } from '@opensumi/ide-core-common';
-import { stripAnsi } from '@opensumi/ide-utils/lib/ansi';
 
 import { IMCPServerToolComponentProps } from '../../../types';
 import { RunCommandHandler } from '../handlers/RunCommand';
 
+import { computeAnsiLogString } from './computeAnsiLogString';
 import styles from './index.module.less';
 
 function getResult(raw: string) {
@@ -63,19 +63,17 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
             <>
               <div className={styles.command_title}>
                 <Icon icon='terminal' />
-                <span>{localize('ai.native.mcp.terminal.command')}</span>
+                <span>{localize('ai.native.mcp.terminal.command')}:</span>
               </div>
               <p className={styles.command_content}>
                 <code>$ {args.command}</code>
               </p>
             </>
           )}
-          <div className={styles.command_title}>
-            <span>{localize('ai.native.mcp.terminal.output')}</span>
-          </div>
           {output ? (
             <div className={styles.command_content}>
-              <code>{stripAnsi(output.text)}</code>
+              <Icon icon='output' />
+              <code dangerouslySetInnerHTML={{ __html: computeAnsiLogString(output.text || '') }} />
             </div>
           ) : (
             ''
