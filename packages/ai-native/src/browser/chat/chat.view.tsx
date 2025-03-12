@@ -687,9 +687,10 @@ export const AIChatView = () => {
           }
           const fileUri = new URI(filePath);
           llmContextService.addFileToContext(fileUri, undefined, true);
+          const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
           // 获取文件内容
           // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
-          processedContent = processedContent.replace(match, `\`<attached_file>${fileUri.displayName}\``);
+          processedContent = processedContent.replace(match, `\`<attached_file>${relativePath}\``);
         }
       }
 
@@ -700,8 +701,9 @@ export const AIChatView = () => {
           const folderPath = match.replace(/\{\{@folder:(.*?)\}\}/, '$1');
           const folderUri = new URI(folderPath);
           llmContextService.addFolderToContext(folderUri);
+          const relativePath = (await workspaceService.asRelativePath(folderUri))?.path || folderUri.displayName;
           // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
-          processedContent = processedContent.replace(match, `\`<attached_folder>${folderUri.displayName}\``);
+          processedContent = processedContent.replace(match, `\`<attached_folder>${relativePath}\``);
         }
       }
       return handleAgentReply({ message: processedContent, agentId, command, reportExtra });

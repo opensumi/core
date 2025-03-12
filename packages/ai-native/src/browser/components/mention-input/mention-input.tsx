@@ -19,6 +19,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   mentionKeyword = MENTION_KEYWORD,
   onSelectionChange,
   labelService,
+  workspaceService,
   placeholder = 'Ask anything, @ to mention',
   footerConfig = {
     buttons: [],
@@ -590,9 +591,13 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           );
           mentionTag.appendChild(iconSpan);
         }
-
+        const workspace = workspaceService?.workspace;
+        let relativePath = item.text;
+        if (workspace && item.contextId) {
+          relativePath = item.contextId.replace(new URI(workspace.uri).codeUri.fsPath, '').slice(1);
+        }
         // 创建文本内容容器
-        const textSpan = document.createTextNode(item.text);
+        const textSpan = document.createTextNode(relativePath);
         mentionTag.appendChild(textSpan);
 
         // 创建一个范围从 @type: 开始到当前光标
@@ -693,9 +698,13 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       );
       mentionTag.appendChild(iconSpan);
     }
-
+    const workspace = workspaceService?.workspace;
+    let relativePath = item.text;
+    if (workspace && item.contextId) {
+      relativePath = item.contextId.replace(new URI(workspace.uri).codeUri.fsPath, '').slice(1);
+    }
     // 创建文本内容容器
-    const textSpan = document.createTextNode(item.text);
+    const textSpan = document.createTextNode(relativePath);
     mentionTag.appendChild(textSpan);
 
     // 定位到 @ 符号的位置
@@ -914,7 +923,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
             overlayClassName={styles.popover_icon}
             id={'ai-chat-send'}
             position={PopoverPosition.top}
-            title={!loading ? 'Send' : 'Stop'}
+            content={!loading ? 'Send' : 'Stop'}
           >
             {!loading ? (
               <EnhanceIcon

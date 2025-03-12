@@ -4,9 +4,9 @@
   height: 100%;
   .stop {
     position: absolute;
-    bottom: -38px;
+    bottom: -15px;
     padding-top: 12px;
-    left: -8px;
+    left: -9px;
     width: 105%;
   }
 
@@ -578,10 +578,17 @@
   vertical-align: middle;
   font-size: 12px;
   cursor: pointer;
+  opacity: 0.8;
   :global {
     .kt-icon {
+      font-size: 12px;
       margin-right: 3px;
     }
+  }
+  &:hover {
+    opacity: 1;
+    background-color: var(--chat-slashCommandBackground);
+    color: var(--chat-slashCommandForeground);
   }
 }
 

@@ -1,4 +1,5 @@
 import type { LabelService } from '@opensumi/ide-core-browser';
+import type { IWorkspaceService } from '@opensumi/ide-workspace';
 
 export interface MentionItem {
   id: string;
@@ -77,6 +78,7 @@ export interface MentionInputProps {
   footerConfig?: FooterConfig; // 新增配置项
   mentionKeyword?: string;
   labelService?: LabelService;
+  workspaceService?: IWorkspaceService;
 }
 
 export const MENTION_KEYWORD = '@';

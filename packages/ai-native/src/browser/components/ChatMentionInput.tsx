@@ -260,6 +260,7 @@ export const ChatMentionInput = React.forwardRef((props: IChatMentionInputProps)
         onStop={handleStop}
         loading={disabled}
         labelService={labelService}
+        workspaceService={workspaceService}
         placeholder={localize('aiNative.chat.input.placeholder.default')}
         footerConfig={defaultMentionInputFooterOptions}
       />
