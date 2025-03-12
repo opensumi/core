@@ -83,8 +83,8 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     return new Promise<void>((resolve, rej) => {
       const timer = setTimeout(() => {
         rej(`Watch ${uri} Timeout`);
-        // FIXME：暂时写死3秒
-      }, 3000);
+        // FIXME：暂时写死60秒
+      }, 60000);
 
       if (options?.excludes) {
         this.updateWatcherFileExcludes(options.excludes);
