@@ -444,6 +444,14 @@ export class FileTreeContribution
 
     commands.registerCommand(FILE_COMMANDS.LOCATION, {
       execute: (locationUri?: URI) => {
+        const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
+        if (handler && !handler.isVisible) {
+          handler.show();
+          const isViewVisibled = handler.isCollapsed(RESOURCE_VIEW_ID);
+          if (!isViewVisibled) {
+            handler.toggleViews([RESOURCE_VIEW_ID], true);
+          }
+        }
         if (locationUri) {
           this.revealFile(locationUri);
         } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
