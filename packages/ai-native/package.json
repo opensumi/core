@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-ai-native",
-  "version": "3.8.0",
+  "version": "3.8.2",
   "files": [
     "lib",
     "src"
@@ -47,8 +47,10 @@
     "@xterm/xterm": "5.5.0",
     "ai": "^4.1.45",
     "ansi-regex": "^2.0.0",
+    "ansi_up": "^5.1.0",
     "diff": "^7.0.0",
     "dom-align": "^1.7.0",
+    "eventsource": "^3.0.5",
     "rc-collapse": "^4.0.0",
     "react-chat-elements": "^12.0.10",
     "react-highlight": "^0.15.0",

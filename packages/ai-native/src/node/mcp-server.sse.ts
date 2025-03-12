@@ -1,30 +1,23 @@
 // have to import with extension since the exports map is ./* -> ./dist/cjs/*
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { EventSource } from 'eventsource';
 
 import { ILogger } from '@opensumi/ide-core-common';
 
+import pkg from '../../package.json';
 import { IMCPServer } from '../common/mcp-server-manager';
 
-export class StdioMCPServerImpl implements IMCPServer {
+global.EventSource = EventSource as any;
+export class SSEMCPServer implements IMCPServer {
   private name: string;
-  public command: string;
-  public args?: string[];
+  public serverHost: string;
   private client: Client;
-  private env?: { [key: string]: string };
   private started: boolean = false;
 
-  constructor(
-    name: string,
-    command: string,
-    args?: string[],
-    env?: Record<string, string>,
-    private readonly logger?: ILogger,
-  ) {
+  constructor(name: string, serverHost: string, private readonly logger?: ILogger) {
     this.name = name;
-    this.command = command;
-    this.args = args;
-    this.env = env;
+    this.serverHost = serverHost;
   }
 
   isStarted(): boolean {
@@ -39,33 +32,17 @@ export class StdioMCPServerImpl implements IMCPServer {
     if (this.started) {
       return;
     }
-    this.logger?.log(
-      `Starting server "${this.name}" with command: ${this.command} and args: ${this.args?.join(
-        ' ',
-      )} and env: ${JSON.stringify(this.env)}`,
-    );
-    // Filter process.env to exclude undefined values
-    const sanitizedEnv: Record<string, string> = Object.fromEntries(
-      Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined),
-    );
+    this.logger?.log(`Starting server "${this.name}" with serverHost: ${this.serverHost}`);
 
-    const mergedEnv: Record<string, string> = {
-      ...sanitizedEnv,
-      ...(this.env || {}),
-    };
-    const transport = new StdioClientTransport({
-      command: this.command,
-      args: this.args,
-      env: mergedEnv,
-    });
+    const transport = new SSEClientTransport(new URL(this.serverHost));
     transport.onerror = (error) => {
       this.logger?.error('Transport Error:', error);
     };
 
     this.client = new Client(
       {
-        name: 'opensumi-mcp-client',
-        version: '1.0.0',
+        name: 'sumi-ide-sse-mcp-client',
+        version: pkg.version,
       },
       {
         capabilities: {},
@@ -85,7 +62,7 @@ export class StdioMCPServerImpl implements IMCPServer {
       args = JSON.parse(arg_string);
     } catch (error) {
       this.logger?.error(
-        `Failed to parse arguments for calling tool "${toolName}" in MCP server "${this.name}" with command "${this.command}".
+        `Failed to parse arguments for calling tool "${toolName}" in MCP server "${this.name}" with serverHost "${this.serverHost}".
                 Invalid JSON: ${arg_string}`,
         error,
       );
@@ -99,13 +76,13 @@ export class StdioMCPServerImpl implements IMCPServer {
   }
 
   async getTools() {
-    return await this.client.listTools();
+    const tools = await this.client.listTools();
+    this.logger?.log(`Got tools from MCP server "${this.name}" with serverHost "${this.serverHost}":`, tools);
+    return tools;
   }
 
-  update(command: string, args?: string[], env?: { [key: string]: string }): void {
-    this.command = command;
-    this.args = args;
-    this.env = env;
+  update(serverHost: string): void {
+    this.serverHost = serverHost;
   }
 
   async stop(): Promise<void> {

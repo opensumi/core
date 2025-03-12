@@ -46,6 +46,7 @@ export class EditFileTool implements MCPServerContribution {
     return {
       name: 'edit_file',
       label: 'Edit File',
+      order: 5,
       description: `Use this tool to propose an edit to an existing file.
 This will be read by a less intelligent model, which will quickly apply the edit. You should make it clear what the edit is, while also minimizing the unchanged code you write.
 When writing the edit, you should specify each edit in sequence, with the special comment \`// ... existing code ...\` to represent unchanged code in between edited lines.

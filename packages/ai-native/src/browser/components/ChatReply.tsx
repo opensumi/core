@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import React, {
   Fragment,
   ReactNode,
@@ -40,6 +41,7 @@ import {
   IChatResponseProgressFileTreeData,
   IChatToolContent,
   URI,
+  localize,
 } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -224,6 +226,28 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const [collapseThinkingIndexSet, setCollapseThinkingIndexSet] = useState<Set<number>>(
+    !request.response.isComplete
+      ? new Set()
+      : new Set(
+          request.response.responseContents
+            .map((item, index) => (item.kind === 'reasoning' ? index : -1))
+            .filter((item) => item !== -1),
+        ),
+  );
+
+  useEffect(() => {
+    if (request.response.isComplete) {
+      setCollapseThinkingIndexSet(
+        new Set(
+          request.response.responseContents
+            .map((item, index) => (item.kind === 'reasoning' ? index : -1))
+            .filter((item) => item !== -1),
+        ),
+      );
+    }
+  }, [request.response.isComplete]);
+
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
 
@@ -263,23 +287,6 @@ export const ChatReply = (props: IChatReplyProps) => {
     onRegenerate?.();
   }, [onRegenerate]);
 
-  const onStop = () => {
-    if (onDone) {
-      onDone();
-    }
-    aiReporter.end(relationId, {
-      assistantMessage: request.response.responseText,
-      replytime: Date.now() - startTime,
-      success: false,
-      isStop: true,
-      command,
-      agentId,
-      messageId: msgId,
-      sessionId: aiChatService.sessionModel.sessionId,
-    });
-    aiChatService.cancelRequest();
-  };
-
   const renderMarkdown = useCallback(
     (markdown: IMarkdownString) => {
       if (chatRenderRegistry.chatAIRoleRender) {
@@ -313,12 +320,48 @@ export const ChatReply = (props: IChatReplyProps) => {
           node = <ComponentRender component={item.component} value={item.value} messageId={msgId} />;
         } else if (item.kind === 'toolCall') {
           node = <ToolCallRender toolCall={item.content} messageId={msgId} />;
+        } else if (item.kind === 'reasoning') {
+          // 思考中必然为最后一条
+          const isThinking = index === request.response.responseContents.length - 1 && !request.response.isComplete;
+          node = (
+            <div className={cls(styles.reasoning, { [styles.thinking]: isThinking })}>
+              <Button
+                size='small'
+                type='secondary'
+                className={styles.thinking}
+                onClick={() => {
+                  if (isThinking) {
+                    return;
+                  }
+                  if (collapseThinkingIndexSet.has(index)) {
+                    collapseThinkingIndexSet.delete(index);
+                  } else {
+                    collapseThinkingIndexSet.add(index);
+                  }
+                  setCollapseThinkingIndexSet(new Set(collapseThinkingIndexSet));
+                }}
+              >
+                <Icon iconClass='codicon codicon-sparkle' />
+                {localize('aiNative.chat.thinking')}
+                {isThinking ? (
+                  <Loading />
+                ) : collapseThinkingIndexSet.has(index) ? (
+                  <Icon iconClass='codicon codicon-chevron-right' />
+                ) : (
+                  <Icon iconClass='codicon codicon-chevron-down' />
+                )}
+              </Button>
+              {!collapseThinkingIndexSet.has(index) ? (
+                <div className={styles.reasoning_content}>{renderMarkdown(new MarkdownString(item.content))}</div>
+              ) : null}
+            </div>
+          );
         } else {
           node = renderMarkdown(item.content);
         }
         return <Fragment key={`${item.kind}-${index}`}>{node}</Fragment>;
       }),
-    [request.response.responseContents],
+    [request.response.responseContents, collapseThinkingIndexSet],
   );
 
   const followupNode = React.useMemo(() => {

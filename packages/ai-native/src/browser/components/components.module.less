@@ -527,3 +527,41 @@
     align-items: center;
   }
 }
+
+.status {
+  :global {
+    .codicon-pass {
+      color: #52c41a;
+    }
+    .codicon-error {
+      color: var(--debugConsole-errorForeground);
+    }
+    .codicon-circle-slash {
+      color: var(--input-placeholderForeground);
+    }
+  }
+}
+
+.reasoning {
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    transition: color 0.2s ease-in-out;
+    :global {
+      .codicon {
+        color: inherit;
+      }
+      .codicon-sparkle {
+        margin-right: -1px;
+        font-size: 14px;
+      }
+    }
+  }
+  .reasoning_content {
+    padding-left: 12px;
+    border-left: 2px solid var(--descriptionForeground);
+    color: var(--descriptionForeground);
+  }
+}

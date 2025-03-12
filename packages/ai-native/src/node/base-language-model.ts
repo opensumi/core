@@ -185,6 +185,11 @@ export abstract class BaseLanguageModel {
           });
         } else if (chunk.type === 'error') {
           chatReadableStream.emitError(new Error(chunk.error as string));
+        } else if (chunk.type === 'reasoning') {
+          chatReadableStream.emitData({
+            kind: 'reasoning',
+            content: chunk.textDelta,
+          });
         }
       }
 
@@ -198,7 +203,7 @@ export abstract class BaseLanguageModel {
 
         // 处理最后一行可能存在的后缀
         if (pendingLines.length > 0) {
-          let lastLine = pendingLines[pendingLines.length - 1];
+          let lastLine = pendingLines[pendingLines.length - 1].trim();
 
           if (lastLine.endsWith(trimTexts[1])) {
             // 移除后缀

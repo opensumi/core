@@ -76,6 +76,35 @@ export class ChatProxyService extends Disposable {
 
   private chatDeferred: Deferred<void> = new Deferred<void>();
 
+  public getRequestOptions() {
+    const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
+    const modelId = this.preferenceService.get<string>(AINativeSettingSectionsId.ModelID);
+    let apiKey: string = '';
+    let baseURL: string = '';
+    if (model === 'deepseek') {
+      apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.DeepseekApiKey, '');
+    } else if (model === 'openai') {
+      apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
+    } else if (model === 'anthropic') {
+      apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey, '');
+    } else {
+      // openai-compatible 为兜底
+      apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
+      baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
+    }
+    const maxTokens = this.preferenceService.get<number>(AINativeSettingSectionsId.MaxTokens);
+    const agent = this.chatAgentService.getAgent(ChatProxyService.AGENT_ID);
+    return {
+      clientId: this.applicationService.clientId,
+      model,
+      modelId,
+      apiKey,
+      baseURL,
+      maxTokens,
+      system: agent?.metadata.systemPrompt,
+    };
+  }
+
   public registerDefaultAgent() {
     this.chatAgentViewService.registerChatComponent({
       id: 'toolCall',
@@ -116,34 +145,13 @@ export class ChatProxyService extends Disposable {
             }
           }
 
-          const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
-          const modelId = this.preferenceService.get<string>(AINativeSettingSectionsId.ModelID);
-          let apiKey: string = '';
-          let baseURL: string = '';
-          if (model === 'deepseek') {
-            apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.DeepseekApiKey, '');
-          } else if (model === 'openai') {
-            apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
-          } else if (model === 'anthropic') {
-            apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.AnthropicApiKey, '');
-          } else {
-            // openai-compatible 为兜底
-            apiKey = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiApiKey, '');
-            baseURL = this.preferenceService.get<string>(AINativeSettingSectionsId.OpenaiBaseURL, '');
-          }
-          const agent = this.chatAgentService.getAgent(ChatProxyService.AGENT_ID);
           const stream = await this.aiBackService.requestStream(
             prompt,
             {
               requestId: request.requestId,
               sessionId: request.sessionId,
               history,
-              clientId: this.applicationService.clientId,
-              apiKey,
-              model,
-              modelId,
-              baseURL,
-              system: agent?.metadata.systemPrompt,
+              ...this.getRequestOptions(),
             },
             token,
           );

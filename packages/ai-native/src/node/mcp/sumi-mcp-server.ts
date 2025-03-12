@@ -10,12 +10,14 @@ import { RPCService } from '@opensumi/ide-connection';
 import { ILogger } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
+import pkg from '../../../package.json';
 import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend } from '../../common';
 import { IMCPServer, MCPServerDescription } from '../../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolInvocationRegistryManager } from '../../common/tool-invocation-registry';
-import { IMCPServerProxyService, MCPTool } from '../../common/types';
-import { StdioMCPServerImpl } from '../mcp-server';
+import { IMCPServerProxyService, MCPTool, MCP_SERVER_TYPE } from '../../common/types';
 import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
+import { SSEMCPServer } from '../mcp-server.sse';
+import { StdioMCPServer } from '../mcp-server.stdio';
 
 // 每个 BrowserTab 都对应了一个 SumiMCPServerBackend 实例
 // SumiMCPServerBackend 需要做的事情：
@@ -49,12 +51,12 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     this.mcpServerManager.setClientId(clientId);
   }
 
-  async getMCPTools() {
+  async $getMCPTools() {
     if (!this.client) {
       throw new Error('SUMI MCP RPC Client not initialized');
     }
-    // 获取 MCP 工具
-    const tools = await this.client.$getMCPTools();
+    // 获取 MCP 工具，这里的 client 为 MCPServerProxyService
+    const tools = await this.client.$getBuiltinMCPTools();
     return tools;
   }
 
@@ -98,7 +100,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     this.server = new Server(
       {
         name: 'sumi-ide-mcp-server',
-        version: '0.2.0',
+        version: pkg.version,
       },
       {
         capabilities: {
@@ -108,8 +110,8 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     );
 
     // 设置工具列表请求处理器
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-      const tools = await this.getMCPTools();
+    this.server.setRequestHandler(ListToolsRequestSchema, async (event) => {
+      const tools = await this.$getMCPTools();
       return { tools };
     });
 
@@ -138,6 +140,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
         if (server.isStarted()) {
           // 只获取正在运行的 MCP Server 的工具列表
           const toolsResponse = await server.getTools();
+          this.logger.log(`Server ${serverName} tools:`, toolsResponse.tools);
           toolNames = toolsResponse.tools.map((tool) => tool.name);
         }
 
@@ -146,23 +149,29 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
           return {
             name: server.getServerName(),
             isStarted: server.isStarted(),
-            type: 'builtin rpc',
+            type: MCP_SERVER_TYPE.BUILTIN,
             tools: toolNames,
           };
         }
 
         // 第三方 Stdio 类型的 MCP Server
-        if (server instanceof StdioMCPServerImpl) {
+        if (server instanceof StdioMCPServer) {
           return {
             name: server.getServerName(),
             isStarted: server.isStarted(),
-            type: 'stdio',
+            type: MCP_SERVER_TYPE.STDIO,
             command: server.command + ' ' + (server.args?.join(' ') || ''),
             tools: toolNames,
           };
+        } else if (server instanceof SSEMCPServer) {
+          return {
+            name: server.getServerName(),
+            isStarted: server.isStarted(),
+            type: MCP_SERVER_TYPE.SSE,
+            serverHost: server.serverHost,
+            tools: toolNames,
+          };
         }
-
-        // TODO SSE 类型的 MCP Server
 
         return {
           name: server.getServerName(),
@@ -188,6 +197,14 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
   async stopServer(serverName: string) {
     await this.mcpServerManager.stopServer(serverName);
     this.client?.$updateMCPServers();
+  }
+
+  public addOrUpdateServer(description: MCPServerDescription) {
+    this.mcpServerManager.addOrUpdateServer(description);
+  }
+
+  public removeServer(name: string) {
+    this.mcpServerManager.removeServer(name);
   }
 }
 
@@ -240,7 +257,7 @@ export class BuiltinMCPServer implements IMCPServer {
     if (!this.started) {
       throw new Error('MCP Server not started');
     }
-    const tools = await this.sumiMCPServer.getMCPTools();
+    const tools = await this.sumiMCPServer.$getMCPTools();
     return { tools } as any;
   }
 

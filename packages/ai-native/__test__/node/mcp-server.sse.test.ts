@@ -1,15 +1,15 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 
 import { ILogger } from '@opensumi/ide-core-common';
 
-import { StdioMCPServerImpl } from '../../src/node/mcp-server';
+import { SSEMCPServer } from '../../src/node/mcp-server.sse';
 
 jest.mock('@modelcontextprotocol/sdk/client/index.js');
-jest.mock('@modelcontextprotocol/sdk/client/stdio.js');
+jest.mock('@modelcontextprotocol/sdk/client/sse.js');
 
-describe('StdioMCPServerImpl', () => {
-  let server: StdioMCPServerImpl;
+describe('SSEMCPServer', () => {
+  let server: SSEMCPServer;
   const mockLogger: ILogger = {
     log: jest.fn(),
     error: jest.fn(),
@@ -24,12 +24,13 @@ describe('StdioMCPServerImpl', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    server = new StdioMCPServerImpl('test-server', 'test-command', ['arg1', 'arg2'], { ENV: 'test' }, mockLogger);
+    server = new SSEMCPServer('test-server', 'http://localhost:3000', mockLogger);
   });
 
   describe('constructor', () => {
     it('should initialize with correct parameters', () => {
       expect(server.getServerName()).toBe('test-server');
+      expect(server.serverHost).toBe('http://localhost:3000');
       expect(server.isStarted()).toBe(false);
     });
   });
@@ -40,7 +41,7 @@ describe('StdioMCPServerImpl', () => {
         connect: jest.fn().mockResolvedValue(undefined),
         onerror: jest.fn(),
       }));
-      (StdioClientTransport as jest.Mock).mockImplementation(() => ({
+      (SSEClientTransport as jest.Mock).mockImplementation(() => ({
         onerror: jest.fn(),
       }));
     });
@@ -48,20 +49,14 @@ describe('StdioMCPServerImpl', () => {
     it('should start the server successfully', async () => {
       await server.start();
       expect(server.isStarted()).toBe(true);
-      expect(StdioClientTransport).toHaveBeenCalledWith(
-        expect.objectContaining({
-          command: 'test-command',
-          args: ['arg1', 'arg2'],
-          env: expect.objectContaining({ ENV: 'test' }),
-        }),
-      );
+      expect(SSEClientTransport).toHaveBeenCalledWith(expect.any(URL));
     });
 
     it('should not start server if already started', async () => {
       await server.start();
-      const firstCallCount = (StdioClientTransport as jest.Mock).mock.calls.length;
+      const firstCallCount = (SSEClientTransport as jest.Mock).mock.calls.length;
       await server.start();
-      expect((StdioClientTransport as jest.Mock).mock.calls.length).toBe(firstCallCount);
+      expect((SSEClientTransport as jest.Mock).mock.calls.length).toBe(firstCallCount);
     });
   });
 
@@ -96,6 +91,25 @@ describe('StdioMCPServerImpl', () => {
     });
   });
 
+  describe('getTools', () => {
+    const mockClient = {
+      connect: jest.fn(),
+      listTools: jest.fn().mockResolvedValue(['tool1', 'tool2']),
+      onerror: jest.fn(),
+    };
+
+    beforeEach(async () => {
+      (Client as jest.Mock).mockImplementation(() => mockClient);
+      await server.start();
+    });
+
+    it('should return list of available tools', async () => {
+      const tools = await server.getTools();
+      expect(mockClient.listTools).toHaveBeenCalled();
+      expect(tools).toEqual(['tool1', 'tool2']);
+    });
+  });
+
   describe('stop', () => {
     const mockClient = {
       connect: jest.fn(),
@@ -124,23 +138,9 @@ describe('StdioMCPServerImpl', () => {
 
   describe('update', () => {
     it('should update server configuration', () => {
-      const newCommand = 'new-command';
-      const newArgs = ['new-arg'];
-      const newEnv = { NEW_ENV: 'test' };
-
-      server.update(newCommand, newArgs, newEnv);
-
-      // Start server to verify new config is used
-      const transportMock = StdioClientTransport as jest.Mock;
-      server.start();
-
-      expect(transportMock).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          command: newCommand,
-          args: newArgs,
-          env: expect.objectContaining(newEnv),
-        }),
-      );
+      const newServerHost = 'http://localhost:4000';
+      server.update(newServerHost);
+      expect(server.serverHost).toBe(newServerHost);
     });
   });
 });

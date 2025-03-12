@@ -7,6 +7,495 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
+## v3.8.0
+
+### What's New Features
+
+- feat: terminal adds drag-and-drop by @lulusir in https://github.com/opensumi/core/pull/4300
+- feat: improve terminal local link parser by @erha19 in https://github.com/opensumi/core/pull/4302
+- feat: show inline input after cmd+K is triggered by @erha19 in https://github.com/opensumi/core/pull/4309
+- feat: support search path on file dialog by @erha19 in https://github.com/opensumi/core/pull/4306
+- feat: support property ThemeColor id by @quxingkai in https://github.com/opensumi/core/pull/4298
+- feat: support typing code edits source by @Ricbet in https://github.com/opensumi/core/pull/4316
+- feat: support diff & git uri preview of notebook file by @ensorrow in https://github.com/opensumi/core/pull/4323
+- feat: line-change of code edits adds change parameter by @Ricbet in https://github.com/opensumi/core/pull/4329
+- feat: add word link provider by @Aaaaash in https://github.com/opensumi/core/pull/4327
+- feat: support polling watcher by @Aaaaash in https://github.com/opensumi/core/pull/4299
+- feat: enhance file search service to handle absolute paths and update… by @Aaaaash in https://github.com/opensumi/core/pull/4334
+- feat: add styles for dialog content and update file dialog logic by @erha19 in https://github.com/opensumi/core/pull/4337
+- feat: support inline input restore by @Ricbet in https://github.com/opensumi/core/pull/4345
+- feat: improve file delete confirmation message and styling by @erha19 in https://github.com/opensumi/core/pull/4333
+- feat: support code edits keybinding by @Ricbet in https://github.com/opensumi/core/pull/4362
+- feat: support fetching preference file after editor is saved by @erha19 in https://github.com/opensumi/core/pull/4365
+- feat: support file dialog renderCustomMsg by @xujingli in https://github.com/opensumi/core/pull/4352
+- feat: improve code edits source data by @Ricbet in https://github.com/opensumi/core/pull/4368
+- feat: inline chat handler api adds selection parameter by @Ricbet in https://github.com/opensumi/core/pull/4366
+- feat: make terminal draggable by @Marckon in https://github.com/opensumi/core/pull/4340
+- feat: support copy relative path from link files by @erha19 in https://github.com/opensumi/core/pull/4367
+- feat: improve line change code edits trigger rule by @Ricbet in https://github.com/opensumi/core/pull/4373
+- refactor: upgrade monaco to 0.54.0 and support vscode.languages.registerInlineEditProvider API by @erha19 in https://github.com/opensumi/core/pull/4359
+- feat: terminal search optimization by @Marckon in https://github.com/opensumi/core/pull/4384
+- feat: support MCP server and client by @life2015 in https://github.com/opensumi/core/pull/4335
+- feat: tabbar supports React.ReactNode for description by @wangxiaojuan in https://github.com/opensumi/core/pull/4386
+- feat: send data by chunk in websocket by @bytemain in https://github.com/opensumi/core/pull/3988
+- feat: support trigger source code edits by @Ricbet in https://github.com/opensumi/core/pull/4389
+- feat: upgrade monaco core to 0.54.0-patch.2 by @erha19 in https://github.com/opensumi/core/pull/4391
+- feat: support edit_file tool by @ensorrow in https://github.com/opensumi/core/pull/4385
+- feat: add search file & content tool by @ensorrow in https://github.com/opensumi/core/pull/4396
+- feat: support chat sessions management & recover from storage by @ensorrow in https://github.com/opensumi/core/pull/4399
+- feat: add terminal command execution tool with user approval by @Aaaaash in https://github.com/opensumi/core/pull/4398
+- feat: support maxInputTokens for agent by @ensorrow in https://github.com/opensumi/core/pull/4397
+- feat: support NES render in code edits by @Ricbet in https://github.com/opensumi/core/pull/4403
+
+### Refactor
+
+- refactor: inline chat & input and support config by @Ricbet in https://github.com/opensumi/core/pull/4339
+- refactor: inline diff data layer & render layer by @Ricbet in https://github.com/opensumi/core/pull/4353
+
+### Style Changes
+
+- fix: video preview style and static server by @Aaaaash in https://github.com/opensumi/core/pull/4324
+- style: improve search panel popover content style by @erha19 in https://github.com/opensumi/core/pull/4342
+- style: improve inline input decoration by @Ricbet in https://github.com/opensumi/core/pull/4343
+- style: improve hover widget style by @erha19 in https://github.com/opensumi/core/pull/4390
+
+### Other Changes
+
+- fix(ai-native): use path.join for wasm file paths in WasmModuleManager by @nxps in https://github.com/opensumi/core/pull/4304
+- fix: remove all unexpected errors by @erha19 in https://github.com/opensumi/core/pull/4307
+- chore: revert incorrect prop name in Modal component by @erha19 in https://github.com/opensumi/core/pull/4311
+- fix: debug toolbar is disappeared or session paused after debug session started by @erha19 in https://github.com/opensumi/core/pull/4312
+- chore: outout channel append line type by @Aaaaash in https://github.com/opensumi/core/pull/4303
+- Revert "chore: enable local worker file in development mode" by @Ricbet in https://github.com/opensumi/core/pull/4314
+- fix: debug breakpoint paused and updated current session handling by @erha19 in https://github.com/opensumi/core/pull/4315
+- docs: add codefuse ide to getting started by @hacke2 in https://github.com/opensumi/core/pull/4321
+- chore: update default vscode engine version to 1.96.2 by @bk1012 in https://github.com/opensumi/core/pull/4320
+- fix: retore files by order by @Aaaaash in https://github.com/opensumi/core/pull/4325
+- fix: add method to check if doc is ignored by @erha19 in https://github.com/opensumi/core/pull/4341
+- fix: display debug hover view with correct size config by @erha19 in https://github.com/opensumi/core/pull/4338
+- fix: interactive input handle api adds selection parameter by @Ricbet in https://github.com/opensumi/core/pull/4346
+- fix: always dispose debug unexpected widget in the end by @erha19 in https://github.com/opensumi/core/pull/4349
+- fix: watcher dispose logic by @Aaaaash in https://github.com/opensumi/core/pull/4355
+- fix: adjust default sizes for top slot and menubar height by @erha19 in https://github.com/opensumi/core/pull/4356
+- fix: add default file name handling for save dialog by @erha19 in https://github.com/opensumi/core/pull/4357
+- fix: getDefaultPath add model param by @xujingli in https://github.com/opensumi/core/pull/4372
+- fix: normalize content type by converting file extension to lowercase by @Aaaaash in https://github.com/opensumi/core/pull/4375
+- chore: update to the latest diff package by @ensorrow in https://github.com/opensumi/core/pull/4376
+- fix: notebook diff monaco upgrade issue by @ensorrow in https://github.com/opensumi/core/pull/4379
+- chore(release): release v3.7.1 by @Ricbet in https://github.com/opensumi/core/pull/4380
+- fix: tabbar supports React.ReactNode for description by @wangxiaojuan in https://github.com/opensumi/core/pull/4388
+- chore: add missing InlineEdit export by @erha19 in https://github.com/opensumi/core/pull/4393
+- chore: improve llm context by @Aaaaash in https://github.com/opensumi/core/pull/4394
+- fix: add default context prompt provider by @Aaaaash in https://github.com/opensumi/core/pull/4395
+- fix: add delay for disposing inline edit adapter to prevent rejection by @erha19 in https://github.com/opensumi/core/pull/4400
+- fix: reduce font size in chat components and update MCP tools localiz… by @Aaaaash in https://github.com/opensumi/core/pull/4401
+
+## New Contributors
+
+- @lulusir made their first contribution in https://github.com/opensumi/core/pull/4300
+- @xujingli made their first contribution in https://github.com/opensumi/core/pull/4352
+- @Marckon made their first contribution in https://github.com/opensumi/core/pull/4340
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v3.7.1...v3.8.0
+
+## v3.7.0
+
+### What's New Features
+
+- feat: support VSCode API TreeView.badge by @zhiyudangchu in https://github.com/opensumi/core/pull/4185
+- feat: partially supported the VSCode TerminalExitReason API by @life2015 in https://github.com/opensumi/core/pull/4195
+- feat: empty implement treeview support treeItem.checkboxstate by @zhiyudangchu in https://github.com/opensumi/core/pull/4198
+- feat: remove alipay cloudrun marketplace by @bk1012 in https://github.com/opensumi/core/pull/4200
+- feat: empty impl VSCode TestCoverage API by @bk1012 in https://github.com/opensumi/core/pull/4206
+- feat: empty impl VSCode TerminalShellIntegration API by @bk1012 in https://github.com/opensumi/core/pull/4210
+- feat: fix git branch input box flashing by @bk1012 in https://github.com/opensumi/core/pull/4190
+- feat: support VSCode API: DocumentDropEdit by @bk1012 in https://github.com/opensumi/core/pull/4213
+- feat: support TestRunProfile.onDidChangeDefault by @bk1012 in https://github.com/opensumi/core/pull/4215
+- feat: support treeview treeItem.checkboxstate by @zhiyudangchu in https://github.com/opensumi/core/pull/4214
+- feat: support VSCode API: TextEditorLineNumbersStyle.Interval by @bk1012 in https://github.com/opensumi/core/pull/4216
+- feat: support VSCode API: env.onDidChangeShell by @bk1012 in https://github.com/opensumi/core/pull/4223
+- feat: support VSCode API: AuthenticationGetSessionOptions.account by @hui2334387208 in https://github.com/opensumi/core/pull/4224
+- feat: empty impl VSCode DebugThread and DebugStackFrame debug by @quxingkai in https://github.com/opensumi/core/pull/4225
+- feat: support VSCode API: createTelemetryLogger.logUsage、createTeleme… by @hui2334387208 in https://github.com/opensumi/core/pull/4226
+- feat: update vscode engine version to 1.88.1 by @bk1012 in https://github.com/opensumi/core/pull/4199
+- feat: empty impl VSCode TestRunRequest.preserveFocus API by @hui2334387208 in https://github.com/opensumi/core/pull/4232
+- feat: support VSCode API: WindowState.active by @quxingkai in https://github.com/opensumi/core/pull/4233
+- feat: update default extension by @bk1012 in https://github.com/opensumi/core/pull/4246
+- feat: support VSCode API: TestMessage.stackTrace by @hui2334387208 in https://github.com/opensumi/core/pull/4247
+- feat: update vscode engine to 1.94.2 by @bk1012 in https://github.com/opensumi/core/pull/4248
+- chore: update comments、language、tests extension type by @hui2334387208 in https://github.com/opensumi/core/pull/4257
+- feat: support editor action arguments by @hacke2 in https://github.com/opensumi/core/pull/4254
+- feat: improve file drop to upload ux by @erha19 in https://github.com/opensumi/core/pull/4260
+- feat: support toggle column selection by @hacke2 in https://github.com/opensumi/core/pull/4265
+- feat: design menubar toolbar actions by @Ricbet in https://github.com/opensumi/core/pull/4268
+- feat: support activeEditorIsDirty contextKey by @Aaaaash in https://github.com/opensumi/core/pull/4276
+- feat: update rc dependencies version by @quxingkai in https://github.com/opensumi/core/pull/4288
+- feat: support VSCode API: Workspace.save and Workspace.saveAs by @hui2334387208 in https://github.com/opensumi/core/pull/4277
+- chore: update SnippetString.appendChoice param by @hui2334387208 in https://github.com/opensumi/core/pull/4293
+- feat: improve inlineChat and inlineEditInput UX by @erha19 in https://github.com/opensumi/core/pull/4291
+- feat: Define the exported IconPath type by @quxingkai in https://github.com/opensumi/core/pull/4297
+- chore: update WebviewPortMapping and proposed type by @hui2334387208 in https://github.com/opensumi/core/pull/4295
+
+### Refactor
+
+- refactor: run file watcher in child process by @Aaaaash in https://github.com/opensumi/core/pull/4202
+- refactor: upgrade monaco 0.53.0-dev by @Ricbet in https://github.com/opensumi/core/pull/4227
+
+### Style Changes
+
+- style: improve editor context menu style by @erha19 in https://github.com/opensumi/core/pull/4261
+- style: improve inline diff partial edit by @Ricbet in https://github.com/opensumi/core/pull/4255
+- style: prettify output log by @Ricbet in https://github.com/opensumi/core/pull/4263
+
+### Other Changes
+
+- chore(release): release v3.6.1 by @Ricbet in https://github.com/opensumi/core/pull/4207
+- fix: rename log service dispose by @winjo in https://github.com/opensumi/core/pull/4212
+- fix: update light theme by @wangxiaojuan in https://github.com/opensumi/core/pull/4229
+- fix: desing menubar order default by @winjo in https://github.com/opensumi/core/pull/4231
+- chore(deps): bump nanoid from 3.3.4 to 3.3.8 by @dependabot in https://github.com/opensumi/core/pull/4209
+- chore(release): release v3.6.2 by @Ricbet in https://github.com/opensumi/core/pull/4239
+- chore(release): release v3.6.3 by @Ricbet in https://github.com/opensumi/core/pull/4244
+- fix: pseudoterminal issue by @Aaaaash in https://github.com/opensumi/core/pull/4242
+- chore(release): release v3.6.4 by @Ricbet in https://github.com/opensumi/core/pull/4256
+- fix: debug stop render by @Ricbet in https://github.com/opensumi/core/pull/4264
+- fix: adjust the scope of the diffEditor.hideUnchangedRegions.enabled configuration to the user level by @hacke2 in https://github.com/opensumi/core/pull/4270
+- fix: fire quick pick accept after selection event by @ensorrow in https://github.com/opensumi/core/pull/4267
+- fix: intelligent completion render unusual by @Ricbet in https://github.com/opensumi/core/pull/4280
+- fix: provide default watch host by @hacke2 in https://github.com/opensumi/core/pull/4284
+- chore: enable local worker file in development mode by @Ricbet in https://github.com/opensumi/core/pull/4273
+- fix: quickopen auto focus previous active element by @hacke2 in https://github.com/opensumi/core/pull/4272
+- fix: add context check for debug mode by @erha19 in https://github.com/opensumi/core/pull/4275
+- chore: remove codeedits line change limit by @Ricbet in https://github.com/opensumi/core/pull/4294
+- fix: ai layout right tabbar render by @Ricbet in https://github.com/opensumi/core/pull/4290
+- fix: tabbar dnd invalid by @Ricbet in https://github.com/opensumi/core/pull/4296
+
+## New Contributors
+
+- @zhiyudangchu made their first contribution in https://github.com/opensumi/core/pull/4185
+- @hui2334387208 made their first contribution in https://github.com/opensumi/core/pull/4224
+- @quxingkai made their first contribution in https://github.com/opensumi/core/pull/4225
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v3.6.4...v3.7.0
+
+## v3.6.0
+
+### What's New Features
+
+- feat: add support for VSCode API: TextEditorOptions.indentSize by @bk1012 in https://github.com/opensumi/core/pull/4146
+- feat: support VSCode API: inputBox.valueSelection by @bk1012 in https://github.com/opensumi/core/pull/4145
+- feat: add code edits perferences by @Ricbet in https://github.com/opensumi/core/pull/4155
+- feat: empty implement testing 1.84 api by @Ricbet in https://github.com/opensumi/core/pull/4167
+- feat: add notebook by @zhanba in https://github.com/opensumi/core/pull/3945
+- feat: support VSCode API: SnippetTextEdit by @bk1012 in https://github.com/opensumi/core/pull/4154
+- feat: support VSCode API: TaskPresentationOptions by @bk1012 in https://github.com/opensumi/core/pull/4137
+- feat: support VSCode API: EnvironmentVariableMutator.option by @bk1012 in https://github.com/opensumi/core/pull/4169
+- feat: empty implement VSCode proposed API: registerMultiDocumentHighlightProvider by @bk1012 in https://github.com/opensumi/core/pull/4172
+- feat：support VSCode API: GlobalEnvironmentVariableCollectoin by @bk1012 in https://github.com/opensumi/core/pull/4171
+- feat: empty implement VSCode API: DebugSessionOptions by @bk1012 in https://github.com/opensumi/core/pull/4184
+- fix: when using language pack extensions, extensions that use i10n do not load correctly by @xkaede in https://github.com/opensumi/core/pull/4181
+- feat: add notebook variable inspector panel by @ensorrow in https://github.com/opensumi/core/pull/4186
+- chore(deps): bump codecov/codecov-action from 4 to 5 by @dependabot in https://github.com/opensumi/core/pull/4175
+
+### Refactor
+
+- refactor: remove mobx by @Ricbet in https://github.com/opensumi/core/pull/4131
+
+### Other Changes
+
+- chore(release): release v3.5.0 by @Ricbet in https://github.com/opensumi/core/pull/4144
+- fix: code edits reporter code by @Ricbet in https://github.com/opensumi/core/pull/4153
+- fix: quick pick update options by @Ricbet in https://github.com/opensumi/core/pull/4163
+- fix: use modified uri handling for diff editor by @erha19 in https://github.com/opensumi/core/pull/4150
+- fix: correct width calculation in resize component by @erha19 in https://github.com/opensumi/core/pull/4170
+- fix: support ensure save file dialog by enter keyboard event by @erha19 in https://github.com/opensumi/core/pull/4165
+- chore: revert vscode engine version by @bk1012 in https://github.com/opensumi/core/pull/4173
+- fix: right panel container view by @Ricbet in https://github.com/opensumi/core/pull/4178
+- chore(deps-dev): bump webpack-bundle-analyzer from 4.10.1 to 4.10.2 by @dependabot in https://github.com/opensumi/core/pull/4176
+- chore(deps-dev): bump @types/react-mentions from 4.1.13 to 4.4.0 by @dependabot in https://github.com/opensumi/core/pull/4090
+- chore(deps): bump cross-spawn from 6.0.5 to 6.0.6 in /tools/electron by @dependabot in https://github.com/opensumi/core/pull/4179
+- fix: when context key cause different menu bars change at same time. only one menu bar refreshed by @xkaede in https://github.com/opensumi/core/pull/4182
+- fix: restored notebook have invalid keybinding by @zhanba in https://github.com/opensumi/core/pull/4174
+- fix: terminal open link on changed cwd by @zhanba in https://github.com/opensumi/core/pull/4188
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v3.5.0...v3.6.0
+
+## v3.5.0
+
+### What's New Features
+
+- chore(deps): bump express from 4.18.3 to 4.21.0 by @dependabot in https://github.com/opensumi/core/pull/4034
+- feat(inline-diff): support hide accpet widget by @bytemain in https://github.com/opensumi/core/pull/4066
+- feat(iframe): support load webview by srcdoc by @bytemain in https://github.com/opensumi/core/pull/4071
+- feat: enhance data store by @bytemain in https://github.com/opensumi/core/pull/4081
+- chore(deps-dev): bump @commitlint/cli from 19.2.2 to 19.5.0 by @dependabot in https://github.com/opensumi/core/pull/4057
+- feat(ext): support `sumiContributesOverride` field by @bytemain in https://github.com/opensumi/core/pull/4092
+- feat: improve ghost text render by @Ricbet in https://github.com/opensumi/core/pull/4102
+- feat: implement line change code edits api by @Ricbet in https://github.com/opensumi/core/pull/4106
+- feat: add option to render removed widget immediately by @bytemain in https://github.com/opensumi/core/pull/4113
+- feat: support VSCode API: provideDocumentRangesFormattingEdits by @bk1012 in https://github.com/opensumi/core/pull/4116
+- feat: support AuthenticationForceNewSessionOptions by @bk1012 in https://github.com/opensumi/core/pull/4115
+- feat: add code edits api reporter by @Ricbet in https://github.com/opensumi/core/pull/4118
+- feat: support AutoClosingPair by @bk1012 in https://github.com/opensumi/core/pull/4117
+- feat: support WorkspaceEditMetadata by @bk1012 in https://github.com/opensumi/core/pull/4120
+- feat: add zsh integration support by @life2015 in https://github.com/opensumi/core/pull/4130
+- feat: support QuickPickItem.iconPath by @bk1012 in https://github.com/opensumi/core/pull/4134
+- feat: Implementing an Empty Function for registerDocumentDropEditProvider and registerDocumentPasteEditProvider by @bk1012 in https://github.com/opensumi/core/pull/4136
+- feat: support MessageOptions.detail by @bk1012 in https://github.com/opensumi/core/pull/4135
+
+### Refactor
+
+- refactor: intelligent completion & implement code edits api by @Ricbet in https://github.com/opensumi/core/pull/4105
+
+### Style Changes
+
+- style: editor tab design style by @Ricbet in https://github.com/opensumi/core/pull/4099
+- style: beautify suggest style by @Ricbet in https://github.com/opensumi/core/pull/4101
+- style: improve notice toast style by @erha19 in https://github.com/opensumi/core/pull/4142
+- style: improve notification buttons style by @erha19 in https://github.com/opensumi/core/pull/4141
+- style: improve statusbar popover style by @erha19 in https://github.com/opensumi/core/pull/4140
+
+### Other Changes
+
+- chore(release): release v3.4.1 by @bytemain in https://github.com/opensumi/core/pull/4056
+- fix: build error in node16 by @zhanba in https://github.com/opensumi/core/pull/4069
+- chore: update xterm imports to use @xterm/xterm package (#4036) by @nxps in https://github.com/opensumi/core/pull/4068
+- fix(inline-diff): fix error in calculating lines of code change by @bytemain in https://github.com/opensumi/core/pull/4074
+- chore: add missing ajv dep for keymaps package by @MMhunter in https://github.com/opensumi/core/pull/4072
+- chore(release): release v3.4.3 by @Ricbet in https://github.com/opensumi/core/pull/4082
+- fix: incorrect actionType in data reporting by @wangxiaojuan in https://github.com/opensumi/core/pull/4084
+- chore(ext-service): remove unused method by @bytemain in https://github.com/opensumi/core/pull/4086
+- fix(inline-diff): fix cannot listen partial accept event by @bytemain in https://github.com/opensumi/core/pull/4088
+- chore: use tiktoken instead of js-tiktoken by @Aaaaash in https://github.com/opensumi/core/pull/4094
+- chore(release): release v3.4.4 by @Ricbet in https://github.com/opensumi/core/pull/4097
+- fix: improve inline diff widget render by @Ricbet in https://github.com/opensumi/core/pull/4100
+- fix: rewrite content minimum width by @Ricbet in https://github.com/opensumi/core/pull/4103
+- fix: diff editor model not exist error by @erha19 in https://github.com/opensumi/core/pull/4109
+- chore: improve code edits source trigger by @Ricbet in https://github.com/opensumi/core/pull/4114
+- chore: add extract code utils by @Ricbet in https://github.com/opensumi/core/pull/4123
+- fix: markdown html link render error by @Ricbet in https://github.com/opensumi/core/pull/4119
+- fix: diff computer null reference errors by @Ricbet in https://github.com/opensumi/core/pull/4125
+- chore(deps): bump http-proxy-middleware from 2.0.6 to 2.0.7 by @dependabot in https://github.com/opensumi/core/pull/4124
+- chore(release): release v3.4.5 by @Ricbet in https://github.com/opensumi/core/pull/4132
+- chore(deps): bump elliptic from 6.5.7 to 6.6.0 by @dependabot in https://github.com/opensumi/core/pull/4133
+- chore(deps): bump koa from 2.15.0 to 2.15.3 by @dependabot in https://github.com/opensumi/core/pull/4128
+- fix: open recent workspace in web by @weiwen111 in https://github.com/opensumi/core/pull/4139
+- fix: tiktoken dependencies build error by @Ricbet in https://github.com/opensumi/core/pull/4143
+
+## New Contributors
+
+- @nxps made their first contribution in https://github.com/opensumi/core/pull/4068
+- @weiwen111 made their first contribution in https://github.com/opensumi/core/pull/4139
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v3.4.5...v3.5.0
+
+## v3.4.0
+
+### What's New Features
+
+- feat: add notebook extension api by @zhanba in https://github.com/opensumi/core/pull/3963
+- feat: support using editor AI in notebook by @zhanba in https://github.com/opensumi/core/pull/4006
+- feat: support problem fix api by @Ricbet in https://github.com/opensumi/core/pull/3999
+- feat: support inline chat proposed extension api by @Ricbet in https://github.com/opensumi/core/pull/3936
+- fix: ai feature support multiple instances by @Ricbet in https://github.com/opensumi/core/pull/4027
+- refactor: ai feature binding editor lifecycle by @Ricbet in https://github.com/opensumi/core/pull/4033
+- feat: support extension register panel to ai chat by @bytemain in https://github.com/opensumi/core/pull/4012
+- feat: use async in watch file changes by @bytemain in https://github.com/opensumi/core/pull/4026
+- feat: support intelligent completions always visible by @Ricbet in https://github.com/opensumi/core/pull/4039
+- feat: supports ai history relative feature by @MMhunter in https://github.com/opensumi/core/pull/3989
+- feat: support intelligent completions always visible preference by @Ricbet in https://github.com/opensumi/core/pull/4043
+- feat: revert an API that will be removed in a future version of VSCode by @bk1012 in https://github.com/opensumi/core/pull/4044
+- feat: upgrade inline completion extension api by @Ricbet in https://github.com/opensumi/core/pull/4047
+- feat: support detect EOL from file content by @erha19 in https://github.com/opensumi/core/pull/4045
+- feat: introduce new remote service by @bytemain in https://github.com/opensumi/core/pull/4037
+- feat: compatibility with the experimental API registerEditSessionIdentityProvider by @bk1012 in https://github.com/opensumi/core/pull/4049
+
+### Style Changes
+
+- style: design light selected background color by @Ricbet in https://github.com/opensumi/core/pull/4016
+- style: improve quickpick item style by @erha19 in https://github.com/opensumi/core/pull/4020
+
+### Other Changes
+
+- fix: inline chat controller timing by @Ricbet in https://github.com/opensumi/core/pull/4010
+- fix: inline chat first line overflow visible by @Ricbet in https://github.com/opensumi/core/pull/4011
+- chore: fix typos by @co63oc in https://github.com/opensumi/core/pull/4013
+- fix: store diff editor state while docs not destory by @erha19 in https://github.com/opensumi/core/pull/4015
+- fix: fire properties change on time by @bytemain in https://github.com/opensumi/core/pull/4014
+- fix: platform detect logic by @erha19 in https://github.com/opensumi/core/pull/4021
+- fix: remove global from browser by @bytemain in https://github.com/opensumi/core/pull/4022
+- fix: direct debug adapter fix, and runInTerminal fix by @life2015 in https://github.com/opensumi/core/pull/4031
+- fix: layout state restore not work by @bytemain in https://github.com/opensumi/core/pull/3941
+- fix: avoid rpc proxy leak by @bytemain in https://github.com/opensumi/core/pull/4042
+
+## New Contributors
+
+- @co63oc made their first contribution in https://github.com/opensumi/core/pull/4013
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v3.3.3...v3.4.0
+
+## v3.3.0
+
+### What's New Features
+
+- feat: support register tabbar right component by @bytemain in https://github.com/opensumi/core/pull/3907
+- feat: support change editor tabbar height by @bytemain in https://github.com/opensumi/core/pull/3920
+- feat: support configure inline diff style by @bytemain in https://github.com/opensumi/core/pull/3924
+- feat: add 'clear result' button to search panel by @Souls-R in https://github.com/opensumi/core/pull/3906
+- feat: chat slash command support isShortcut by @Ricbet in https://github.com/opensumi/core/pull/3929
+- feat(enhance-icon): add accessibility support by @lilangtop in https://github.com/opensumi/core/pull/3926
+- feat(ai-native): improve accessibility support by @lilangtop in https://github.com/opensumi/core/pull/3937
+- feat: support multi inline completion by @Ricbet in https://github.com/opensumi/core/pull/3874
+- feat: support register external ext api by @hacke2 in https://github.com/opensumi/core/pull/3933
+- feat: support multi-line edits rewrite widget by @Ricbet in https://github.com/opensumi/core/pull/3962
+- feat: support configure ext host spawn options by @bytemain in https://github.com/opensumi/core/pull/3980
+- feat(inline-diff): adjust data calculation for changed lines by @bytemain in https://github.com/opensumi/core/pull/3983
+- feat: avoid layouts thrashing by @bytemain in https://github.com/opensumi/core/pull/3764
+
+### Refactor
+
+- refactor: inline diff previewer snapshot by @Ricbet in https://github.com/opensumi/core/pull/3919
+- refactor: optimize editor tabbar scroll by @bytemain in https://github.com/opensumi/core/pull/3953
+- refactor: organize dependencies by @bytemain in https://github.com/opensumi/core/pull/3977
+
+### Style Changes
+
+- fix: edit tab scrollbar style problem by @bytemain in https://github.com/opensumi/core/pull/3899
+- fix: update scrollbar component style by @bytemain in https://github.com/opensumi/core/pull/3909
+- fix: update scrollbar component style by @bytemain in https://github.com/opensumi/core/pull/3917
+- style: fix editor tabbar style by @bytemain in https://github.com/opensumi/core/pull/3967
+- style: fix editor tab style by @bytemain in https://github.com/opensumi/core/pull/3970
+
+### Other Changes
+
+- fix: hide bottom tab panel if no container by @bytemain in https://github.com/opensumi/core/pull/3925
+- fix: rjsf version is inconsistent by @bytemain in https://github.com/opensumi/core/pull/3934
+- fix: capturer not work in web worker by @bytemain in https://github.com/opensumi/core/pull/3935
+- fix: inline input allow editor overflow by @Ricbet in https://github.com/opensumi/core/pull/3944
+- fix: improve inline chat position calculate by @Ricbet in https://github.com/opensumi/core/pull/3942
+- fix: electron reload not work by @winjo in https://github.com/opensumi/core/pull/3958
+- fix: add keyboard focus and accessibility support for editor tabs and close buttons by @lilangtop in https://github.com/opensumi/core/pull/3957
+- fix: right panel has two resize handle by @bytemain in https://github.com/opensumi/core/pull/3960
+- fix: inline chat indent by @Ricbet in https://github.com/opensumi/core/pull/3961
+- fix: document status may out of sync by @bytemain in https://github.com/opensumi/core/pull/3954
+- fix: model leak by @bytemain in https://github.com/opensumi/core/pull/3969
+- fix: listen previewer when change by @bytemain in https://github.com/opensumi/core/pull/3972
+- fix: set \_currentScope when update tabList in constructor by @winjo in https://github.com/opensumi/core/pull/3979
+- fix: event driven state by @winjo in https://github.com/opensumi/core/pull/3978
+
+## New Contributors
+
+- @Souls-R made their first contribution in https://github.com/opensumi/core/pull/3906
+- @lilangtop made their first contribution in https://github.com/opensumi/core/pull/3926
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v3.2.5...v3.3.0
+
+## v3.2.0
+
+### What's New Features
+
+- feat: optimize tree performance by @bytemain in https://github.com/opensumi/core/pull/3742
+- feat: avoid send too many log request by @bytemain in https://github.com/opensumi/core/pull/3767
+- feat: support inline chat on empty lines by @Ricbet in https://github.com/opensumi/core/pull/3762
+- chore(deps): bump braces from 3.0.2 to 3.0.3 by @dependabot in https://github.com/opensumi/core/pull/3776
+- Revert "feat: optimize tree performance" by @bytemain in https://github.com/opensumi/core/pull/3783
+- chore(deps): bump braces from 3.0.2 to 3.0.3 in /tools/electron by @dependabot in https://github.com/opensumi/core/pull/3777
+- feat: prevent accidentally opening binary file by @bytemain in https://github.com/opensumi/core/pull/3772
+- feat: optimize merge conflicts by @bytemain in https://github.com/opensumi/core/pull/3787
+- feat: support show inline chat on diff editor by @erha19 in https://github.com/opensumi/core/pull/3774
+- feat: inline diff supports live preview mode by @Ricbet in https://github.com/opensumi/core/pull/3798
+- feat: support partial edit widget by @Ricbet in https://github.com/opensumi/core/pull/3814
+- feat: add autoApplyNonConflictChanges configuration by @Ricbet in https://github.com/opensumi/core/pull/3829
+- feat: support live inline diff undo/redo edit by @Ricbet in https://github.com/opensumi/core/pull/3823
+- feat(editor-collection): add getEditorByUri method by @bytemain in https://github.com/opensumi/core/pull/3840
+- feat: support disable restore editor group state by @bytemain in https://github.com/opensumi/core/pull/3838
+- feat: request completion support workspaceDir by @bytemain in https://github.com/opensumi/core/pull/3833
+- chore(deps): bump mini-css-extract-plugin from 2.8.1 to 2.9.0 by @dependabot in https://github.com/opensumi/core/pull/3662
+- feat: optimize inline diff viewer by @bytemain in https://github.com/opensumi/core/pull/3836
+- chore(deps): bump koa-router from 10.1.1 to 12.0.1 by @dependabot in https://github.com/opensumi/core/pull/3663
+- feat(editor): add a preference prevent scroll after get focused by @bytemain in https://github.com/opensumi/core/pull/3846
+- feat(inline-diff): support serialize state by @bytemain in https://github.com/opensumi/core/pull/3855
+- feat: support 3-way change encoding by @Ricbet in https://github.com/opensumi/core/pull/3851
+- feat: control whether previewer to dispose when editor closed by @bytemain in https://github.com/opensumi/core/pull/3888
+- chore(deps): bump @rjsf/validator-ajv6 from 5.4.0 to 5.19.4 by @dependabot in https://github.com/opensumi/core/pull/3893
+- feat: support rate edit controller by @Ricbet in https://github.com/opensumi/core/pull/3896
+
+### Refactor
+
+- refactor(ai-native): optimize monaco contrib registration by @bytemain in https://github.com/opensumi/core/pull/3763
+- refactor: optimize the logic of inline widget display by @Ricbet in https://github.com/opensumi/core/pull/3885
+
+### Style Changes
+
+- style: add border-radius to scrollbar thumbs by @erha19 in https://github.com/opensumi/core/pull/3752
+- style: adjust tabbar close popover styles by @erha19 in https://github.com/opensumi/core/pull/3749
+- style: improve action widget styles by @Ricbet in https://github.com/opensumi/core/pull/3748
+- style: adjust status bar colors for default and light themes by @erha19 in https://github.com/opensumi/core/pull/3756
+- style: add box-sizing and border-radius properties by @erha19 in https://github.com/opensumi/core/pull/3759
+- style: adjust title actions style by @erha19 in https://github.com/opensumi/core/pull/3765
+- style: adjust z-index values for layout components by @erha19 in https://github.com/opensumi/core/pull/3769
+- style: add styles for markdown popover and icons by @erha19 in https://github.com/opensumi/core/pull/3766
+- style: remove unnecessary overflow:hidden from menubar in global style by @erha19 in https://github.com/opensumi/core/pull/3768
+- style: improve SCM action button style by @erha19 in https://github.com/opensumi/core/pull/3788
+- style: inline-hint line height by @Ricbet in https://github.com/opensumi/core/pull/3826
+- style: remove useless styles by @Ricbet in https://github.com/opensumi/core/pull/3854
+- style: inline diff removed widget style by @Ricbet in https://github.com/opensumi/core/pull/3868
+- style: improve inline diff partial style by @Ricbet in https://github.com/opensumi/core/pull/3877
+- style: improve light theme editor style by @Ricbet in https://github.com/opensumi/core/pull/3884
+
+### Other Changes
+
+- chore(release): v3.1.0 by @Ricbet in https://github.com/opensumi/core/pull/3745
+- docs: add v3.1.0 changelog by @Ricbet in https://github.com/opensumi/core/pull/3746
+- fix: adjust zone widget width for scrollbar by @erha19 in https://github.com/opensumi/core/pull/3750
+- fix: validate copy and move operations by @bytemain in https://github.com/opensumi/core/pull/3754
+- fix: conditionally show HorizontalVertical component based on visible by @erha19 in https://github.com/opensumi/core/pull/3757
+- fix: update default editor background color to #181818 by @erha19 in https://github.com/opensumi/core/pull/3760
+- fix: correct uri equality check with comments service by @erha19 in https://github.com/opensumi/core/pull/3755
+- fix: improve handling extra menu nodes on left tabbar by @erha19 in https://github.com/opensumi/core/pull/3771
+- chore(release): release v3.1.1 by @bytemain in https://github.com/opensumi/core/pull/3775
+- fix: server's incorrect dispose of service center by @bytemain in https://github.com/opensumi/core/pull/3785
+- chore(deps): bump file-type from 16.5.3 to 16.5.4 by @dependabot in https://github.com/opensumi/core/pull/3790
+- chore(deps): bump ws from 8.16.0 to 8.17.1 by @dependabot in https://github.com/opensumi/core/pull/3786
+- chore(release): release v3.1.2 by @bytemain in https://github.com/opensumi/core/pull/3795
+- fix(merge-editor): some scm provider cannot switch to text editor by @bytemain in https://github.com/opensumi/core/pull/3799
+- fix: skip locked panels during resize check by @erha19 in https://github.com/opensumi/core/pull/3797
+- chore(release): release v3.1.3 by @bytemain in https://github.com/opensumi/core/pull/3807
+- fix: inline chat code blocks controller by @Ricbet in https://github.com/opensumi/core/pull/3809
+- fix: inline live diff zone range by @Ricbet in https://github.com/opensumi/core/pull/3810
+- chore(deps): bump xterm-addon-fit from 0.7.0 to 0.8.0 by @dependabot in https://github.com/opensumi/core/pull/3818
+- chore(release): release v3.1.4 by @Ricbet in https://github.com/opensumi/core/pull/3821
+- fix: skip locked panels during resize check by @erha19 in https://github.com/opensumi/core/pull/3801
+- fix: add intersection observer for resize detection by @erha19 in https://github.com/opensumi/core/pull/3819
+- fix: will watch same folder multiple times by @bytemain in https://github.com/opensumi/core/pull/3831
+- fix: improve chat reporter by @Ricbet in https://github.com/opensumi/core/pull/3832
+- fix: ai native left panel supports large size by @wangxiaojuan in https://github.com/opensumi/core/pull/3828
+- fix: copy/paste in symbolic file by @zhanba in https://github.com/opensumi/core/pull/3827
+- fix: improve live inline diff prioritization and fix discard functionality by @Ricbet in https://github.com/opensumi/core/pull/3837
+- fix: add pty socket timeout by @winjo in https://github.com/opensumi/core/pull/3834
+- fix: textmate service is not compatible with monaco 0.47 by @bytemain in https://github.com/opensumi/core/pull/3847
+- chore(deps): bump v8-inspect-profiler from 0.0.20 to 0.1.1 by @dependabot in https://github.com/opensumi/core/pull/3665
+- fix: enable multi-root workspace support by @zhanba in https://github.com/opensumi/core/pull/3848
+- fix: open folder on web by @zhanba in https://github.com/opensumi/core/pull/3863
+- fix: debug console readonly status by @Ricbet in https://github.com/opensumi/core/pull/3852
+- chore(deps): bump nsfw from 2.2.0 to 2.2.4 by @dependabot in https://github.com/opensumi/core/pull/3859
+- fix: overlap between inline hint and gitlens by @Ricbet in https://github.com/opensumi/core/pull/3870
+- fix: not restore diff editor state by @erha19 in https://github.com/opensumi/core/pull/3850
+- fix: check potential null by @bytemain in https://github.com/opensumi/core/pull/3872
+- fix: left tabbar item cannot drag by @bytemain in https://github.com/opensumi/core/pull/3873
+- fix: inline input edit operations by @Ricbet in https://github.com/opensumi/core/pull/3876
+- chore: improve inline stream diff render by @Ricbet in https://github.com/opensumi/core/pull/3881
+- fix(inline-diff): remove-widget at first line cannot be dismissed by @bytemain in https://github.com/opensumi/core/pull/3882
+- chore: improve inline chat content visible by @Ricbet in https://github.com/opensumi/core/pull/3883
+- fix: avoid multi ServerApp instance share one path handler by @bytemain in https://github.com/opensumi/core/pull/3887
+- fix: add workspace context by @zhanba in https://github.com/opensumi/core/pull/3890
+- chore: improve inline diff indent by @Ricbet in https://github.com/opensumi/core/pull/3894
+- fix: inline chat shortcut display by @Ricbet in https://github.com/opensumi/core/pull/3897
+- fix: memory leak by @bytemain in https://github.com/opensumi/core/pull/3898
+- fix: render tabbar correctly on initial load by @erha19 in https://github.com/opensumi/core/pull/3895
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v3.1.4...v3.2.0
+
 ## v3.1.0
 
 ### What's New Features

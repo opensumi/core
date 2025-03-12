@@ -1,5 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
+import { MCP_SERVER_TYPE } from './types';
+
 export interface IMCPServer {
   isStarted(): boolean;
   start(): Promise<void>;
@@ -36,7 +38,18 @@ export type MCPTool = Awaited<ReturnType<MCPServerManager['getTools']>>['tools']
 
 export type MCPToolParameter = Awaited<ReturnType<MCPServerManager['getTools']>>['tools'][number]['inputSchema'];
 
-export interface MCPServerDescription {
+export interface BaseMCPServerDescription {
+  /**
+   * The unique name of the MCP server.
+   */
+  name: string;
+  /**
+   * Whether to enable the MCP server.
+   */
+  enabled?: boolean;
+}
+
+export interface StdioMCPServerDescription extends BaseMCPServerDescription {
   /**
    * The unique name of the MCP server.
    */
@@ -56,12 +69,18 @@ export interface MCPServerDescription {
    * Optional environment variables to set when starting the server.
    */
   env?: { [key: string]: string };
-
-  /**
-   * Whether to enable the MCP server.
-   */
-  enabled?: boolean;
 }
+
+export interface SSEMCPServerDescription extends BaseMCPServerDescription {
+  /**
+   * The host of the MCP server.
+   */
+  serverHost: string;
+}
+
+export type MCPServerDescription =
+  | ({ type: MCP_SERVER_TYPE.STDIO } & StdioMCPServerDescription)
+  | ({ type: MCP_SERVER_TYPE.SSE } & SSEMCPServerDescription);
 
 export const MCPServerManager = Symbol('MCPServerManager');
 export const MCPServerManagerPath = 'ServicesMCPServerManager';

@@ -1,14 +1,14 @@
-.chat-tool-render {
+.chat_tool_render {
   margin: 8px 0;
   border: 1px solid var(--design-borderColor);
   border-radius: 6px;
   overflow: hidden;
 
-  .tool-header {
+  .tool_header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    padding: 4px;
     background-color: var(--design-block-background);
     cursor: pointer;
     user-select: none;
@@ -18,14 +18,25 @@
     }
   }
 
-  .tool-name {
+  .tool_name {
+    font-size: 12px;
     display: flex;
     align-items: center;
     font-weight: 500;
     color: var(--design-text-foreground);
   }
 
-  .expand-icon {
+  .tool_icon {
+    font-size: 12px !important;
+  }
+
+  .tool_label {
+    margin-left: 5px;
+    font-size: 11px;
+    color: var(--descriptionForeground);
+  }
+
+  .expand_icon {
     display: inline-block;
     margin-right: 8px;
     transition: transform 0.2s;
@@ -36,29 +47,29 @@
     }
   }
 
-  .tool-state {
+  .tool_state {
     display: flex;
     align-items: center;
     font-size: 12px;
     color: var(--design-text-placeholderForeground);
   }
 
-  .state-icon {
+  .state_icon {
     display: flex;
     align-items: center;
     margin-right: 6px;
   }
 
-  .loading-icon {
+  .loading_icon {
     width: 12px;
     height: 12px;
   }
 
-  .state-label {
+  .state_label {
     margin-left: 4px;
   }
 
-  .tool-content {
+  .tool_content {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
@@ -69,18 +80,19 @@
     }
   }
 
-  .tool-arguments,
-  .tool-result {
-    padding: 12px;
+  .tool_arguments,
+  .tool_result {
+    font-size: 11px;
+    padding: 5px;
   }
 
-  .section-label {
+  .section_label {
     font-size: 12px;
     color: var(--design-text-placeholderForeground);
     margin-bottom: 8px;
   }
 
-  .tool-result {
+  .tool_result {
     border-top: 1px solid var(--design-borderColor);
   }
 }

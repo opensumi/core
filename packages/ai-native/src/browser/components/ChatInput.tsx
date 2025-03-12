@@ -512,7 +512,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
             >
               <EnhanceIcon
                 wrapperClassName={styles.action_btn}
-                className={'codicon codicon-server'}
+                className={'codicon codicon-radio-tower'}
                 onClick={handleShowMCPConfig}
                 tabIndex={0}
                 role='button'

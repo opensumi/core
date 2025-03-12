@@ -1,7 +1,5 @@
-import { Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event, uuid } from '@opensumi/ide-core-common';
-import { ChatMessageRole } from '@opensumi/ide-core-common/lib/types/ai-native';
-import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatMessageRole, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 type IExcludeMessage = Omit<IHistoryChatMessage, 'id' | 'order'>;
 
@@ -31,7 +29,6 @@ export class MsgHistoryManager extends Disposable {
   public clearMessages() {
     this.messageMap.clear();
     this.messageAdditionalMap.clear();
-    this.startIndex = 0;
   }
 
   private doAddMessage(message: IExcludeMessage): string {
@@ -55,19 +52,13 @@ export class MsgHistoryManager extends Disposable {
     return Array.from(this.messageMap.values()).sort((a, b) => a.order - b.order);
   }
 
-  private startIndex = 0;
-
-  public get slicedMessageCount(): number {
-    return this.startIndex;
-  }
-
   public get lastMessageId(): string | undefined {
     const list = this.messageList;
     return list[list.length - 1]?.id;
   }
 
   public getMessages(): IHistoryChatMessage[] {
-    return this.messageList.slice(this.startIndex);
+    return this.messageList;
   }
 
   public addUserMessage(

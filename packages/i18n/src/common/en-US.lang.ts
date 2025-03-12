@@ -1459,6 +1459,7 @@ export const localizationBundle = {
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
     'aiNative.chat.enter.send': 'Send (Enter)',
+    'aiNative.chat.thinking': 'Deep Think',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': 'Check',
@@ -1570,6 +1571,10 @@ export const localizationBundle = {
     'preference.ai.native.openai.apiKey.description': 'API key for OpenAI Compatible language model',
     'preference.ai.native.openai.baseURL': 'OpenAI Base URL',
     'preference.ai.native.openai.baseURL.description': 'Base URL for OpenAI Compatible language model',
+    'preference.ai.native.contextWindow': 'Context Window',
+    'preference.ai.native.contextWindow.description': 'The maximum number of tokens in the context window',
+    'preference.ai.native.maxTokens': 'Maximum Output Tokens',
+    'preference.ai.native.maxTokens.description': 'The maximum number of tokens in the output',
 
     // MCP Server Settings
     'preference.ai.native.mcp.settings.title': 'MCP Server Settings',
@@ -1589,5 +1594,38 @@ export const localizationBundle = {
     'ai.native.mcp.terminal.allow-question': 'Allow the terminal to run the command?',
     'ai.native.mcp.terminal.allow': 'Allow',
     'ai.native.mcp.terminal.deny': 'Reject',
+
+    // MCP Server Configuration
+    'ai.native.mcp.name': 'Name:',
+    'ai.native.mcp.command': 'Command:',
+    'ai.native.mcp.args': 'Arguments:',
+    'ai.native.mcp.env': 'Environment Variables:',
+    'ai.native.mcp.type': 'Type:',
+    'ai.native.mcp.stdio': 'Command',
+    'ai.native.mcp.sse': 'SSE',
+    'ai.native.mcp.buttonSave': 'Add',
+    'ai.native.mcp.buttonUpdate': 'Update',
+    'ai.native.mcp.buttonCancel': 'Cancel',
+    'ai.native.mcp.addMCPServer.title': 'Add MCP Server',
+    'ai.native.mcp.editMCPServer.title': 'Edit MCP Server',
+    'ai.native.mcp.serverHost.placeHolder': 'URL to SSE endpoint',
+    'ai.native.mcp.command.placeHolder': 'Command to execute',
+    'ai.native.mcp.args.placeHolder': 'Arguments',
+    'ai.native.mcp.env.placeHolder': 'KEY=value (one per line)',
+    'ai.native.mcp.name.placeHolder': 'Server Name',
+    'ai.native.mcp.type.builtin': 'Built-in',
+    'ai.native.mcp.type.sse': 'SSE',
+    'ai.native.mcp.type.stdio': 'Command',
+    'ai.native.mcp.serverNameExists': 'Server name "{0}" already exists',
+    'ai.native.mcp.name.isRequired': 'Server name is required',
+    'ai.native.mcp.command.isRequired': 'Command is required',
+    'ai.native.mcp.serverHost.isRequired': 'SSE URL is required',
+    'ai.native.mcp.manage.connections': 'Manage your MCP server connections',
+    'ai.native.mcp.running': 'Running',
+    'ai.native.mcp.stopped': 'Stopped',
+
+    // MCP View
+    'ai.native.mcp.tool.arguments': 'Arguments',
+    'ai.native.mcp.tool.results': 'Result',
   },
 };

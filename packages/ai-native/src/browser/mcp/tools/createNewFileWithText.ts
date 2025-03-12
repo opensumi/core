@@ -35,6 +35,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
     return {
       name: 'create_new_file_with_text',
       label: 'Create File',
+      order: 7,
       description:
         'Creates a new file at the specified path within the project directory and populates it with the provided text. ' +
         'Use this tool to generate new files in your project structure. ' +
