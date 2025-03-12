@@ -30,20 +30,18 @@ describe('ChatAgentService', () => {
         },
         {
           token: ChatServiceToken,
-          useValue: {
-          },
+          useValue: {},
         },
         {
           token: LLMContextServiceToken,
           useValue: {
             onDidContextFilesChangeEvent: new Emitter().event,
-            serialize: () => { },
+            serialize: () => {},
           },
         },
         {
           token: ChatFeatureRegistryToken,
-          useValue: {
-          },
+          useValue: {},
         },
       ]),
     );
@@ -68,7 +66,7 @@ describe('ChatAgentService', () => {
       id: 'agent1',
       metadata: {},
       provideSlashCommands: () => Promise.resolve([]),
-      invoke: () => { },
+      invoke: () => {},
     } as unknown as IChatAgent;
     chatAgentService.registerAgent(agent);
 

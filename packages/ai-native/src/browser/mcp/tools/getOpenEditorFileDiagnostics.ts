@@ -31,6 +31,8 @@ export class GetOpenEditorFileDiagnosticsTool implements MCPServerContribution {
   getToolDefinition(): MCPToolDefinition {
     return {
       name: 'get_open_in_editor_file_diagnostics',
+      label: 'Get Current Editor Diagnostics',
+      order: 8,
       description:
         'Retrieves diagnostic information (errors, warnings, etc.) from the currently active file in VS Code editor. ' +
         'Use this tool to get information about problems in your current file. ' +

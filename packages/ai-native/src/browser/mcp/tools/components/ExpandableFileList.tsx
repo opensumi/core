@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { Icon } from '@opensumi/ide-components/lib/icon/icon';
 import { CommandService, LabelService, URI, path, useInjectable } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -110,7 +111,9 @@ const ExpandableFileList: React.FC<ExpandableFileListProps> = ({
   return (
     <div className={styles.container}>
       <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
-        <span style={{ transform: `rotate(${isExpanded ? '90deg' : '0deg'})` }}>▶</span>
+        <span style={{ transform: `rotate(${isExpanded ? '90deg' : '0deg'})`, display: 'flex' }}>
+          <Icon iconClass={'codicon codicon-chevron-right'} />
+        </span>
         <span>
           {headerText} · {fileList.length} files
         </span>

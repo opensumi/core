@@ -48,6 +48,7 @@ export class GrepSearchTool implements MCPServerContribution {
     return {
       name: 'grep_search',
       label: 'Search Contents',
+      order: 4,
       description:
         // TODO: 支持语义化搜索后需要描述清楚优劣势
         'Fast text-based regex search that finds exact pattern matches within files or directories, utilizing the ripgrep command for efficient searching.\nResults will be formatted in the style of ripgrep and can be configured to include line numbers and content.\nTo avoid overwhelming output, the results are capped at 50 matches.\nUse the include or exclude patterns to filter the search scope by file type or specific paths.\n\nThis is best for finding exact text matches or regex patterns.',

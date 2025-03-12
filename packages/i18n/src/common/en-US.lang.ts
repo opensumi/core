@@ -1459,6 +1459,7 @@ export const localizationBundle = {
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
     'aiNative.chat.enter.send': 'Send (Enter)',
+    'aiNative.chat.thinking': 'Deep Think',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': 'Check',
@@ -1619,6 +1620,9 @@ export const localizationBundle = {
     'ai.native.mcp.name.isRequired': 'Server name is required',
     'ai.native.mcp.command.isRequired': 'Command is required',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL is required',
+    'ai.native.mcp.manage.connections': 'Manage your MCP server connections',
+    'ai.native.mcp.running': 'Running',
+    'ai.native.mcp.stopped': 'Stopped',
 
     // MCP View
     'ai.native.mcp.tool.arguments': 'Arguments',

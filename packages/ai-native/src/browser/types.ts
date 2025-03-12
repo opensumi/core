@@ -350,6 +350,7 @@ export interface MCPLogger {
 export interface MCPToolDefinition {
   name: string;
   label?: string;
+  order?: number;
   description: string;
   inputSchema: ZodSchema<any>; // JSON Schema
   handler: (

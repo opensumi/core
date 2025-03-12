@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-import { MaybeNull, readUInt32LE } from '@opensumi/ide-core-common';
+import { MaybeNull, readUInt32LE, setImmediate } from '@opensumi/ide-core-common';
 
 import { Buffers } from '../../buffers/buffers';
 

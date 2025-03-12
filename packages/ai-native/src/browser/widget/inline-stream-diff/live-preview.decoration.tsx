@@ -326,11 +326,15 @@ export class LivePreviewDiffDecorationModel extends Disposable {
     let modifyContent: string;
     const removeContent = removedWidget?.getRemovedTextLines().join('\n') || '';
     const range = addedDec?.getRange();
-    if (range) {
-      modifyContent = model.getValueInRange({
-        ...range,
-        endColumn: model.getLineMaxColumn(range.endLineNumber),
-      });
+    try {
+      if (range) {
+        modifyContent = model.getValueInRange({
+          ...range,
+          endColumn: model.getLineMaxColumn(range.endLineNumber),
+        });
+      }
+    } catch (error) {
+      modifyContent = '';
     }
     const discard = (decorationModel: LivePreviewDiffDecorationModel) => {
       // 只有点击行丢弃时才会上报

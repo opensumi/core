@@ -401,13 +401,19 @@ export interface IChatComponent {
   kind: 'component';
 }
 
+export interface IChatReasoning {
+  content: string;
+  kind: 'reasoning';
+}
+
 export type IChatProgress =
   | IChatContent
   | IChatMarkdownContent
   | IChatAsyncContent
   | IChatTreeData
   | IChatComponent
-  | IChatToolContent;
+  | IChatToolContent
+  | IChatReasoning;
 
 export interface IChatMessage {
   role: ChatMessageRole;

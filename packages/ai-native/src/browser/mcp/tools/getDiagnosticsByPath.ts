@@ -29,7 +29,8 @@ export class GetDiagnosticsByPathTool implements MCPServerContribution {
   getToolDefinition(): MCPToolDefinition {
     return {
       name: 'get_diagnostics_by_path',
-      label: 'Get Diagnostics',
+      label: 'Get Diagnostics By Path',
+      order: 9,
       description:
         'Retrieves diagnostic information (errors, warnings, etc.) from a specific file in the project. ' +
         'Use this tool to get information about problems in any project file. ' +
