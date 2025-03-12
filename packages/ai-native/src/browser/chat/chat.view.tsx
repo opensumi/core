@@ -21,6 +21,7 @@ import {
   ChatMessageRole,
   ChatRenderRegistryToken,
   ChatServiceToken,
+  CommandService,
   Disposable,
   DisposableCollection,
   IAIReporter,
@@ -35,8 +36,9 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
-
 import 'react-chat-elements/dist/main.css';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
 import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
@@ -125,6 +127,8 @@ export const AIChatView = () => {
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
   const labelService = useInjectable<LabelService>(LabelService);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const commandService = useInjectable<CommandService>(CommandService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
@@ -364,6 +368,8 @@ export const AIChatView = () => {
                       agentId={visibleAgentId}
                       command={command}
                       labelService={labelService}
+                      workspaceService={workspaceService}
+                      commandService={commandService}
                     />
                   ),
                 },
@@ -475,6 +481,8 @@ export const AIChatView = () => {
               text={message}
               agentId={visibleAgentId}
               command={command}
+              workspaceService={workspaceService}
+              commandService={commandService}
             />
           ),
         },

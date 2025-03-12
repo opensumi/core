@@ -2,13 +2,22 @@ import capitalize from 'lodash/capitalize';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
-import { IClipboardService, LabelService, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import {
+  EDITOR_COMMANDS,
+  FILE_COMMANDS,
+  IClipboardService,
+  LabelService,
+  getIcon,
+  useInjectable,
+  uuid,
+} from '@opensumi/ide-core-browser';
 import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ActionSourceEnum,
   ActionTypeEnum,
   ChatFeatureRegistryToken,
+  CommandService,
   IAIReporter,
   URI,
   localize,
@@ -23,6 +32,9 @@ import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 
 import styles from './components.module.less';
 import { highLightLanguageSupport } from './highLight';
+import { MentionType } from './mention-input/types';
+
+import type { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import './highlightTheme.less';
 
@@ -141,6 +153,8 @@ const CodeBlock = ({
   agentId = '',
   command = '',
   labelService,
+  commandService,
+  workspaceService,
 }: {
   content?: string;
   relationId: string;
@@ -148,14 +162,42 @@ const CodeBlock = ({
   agentId?: string;
   command?: string;
   labelService?: LabelService;
+  commandService?: CommandService;
+  workspaceService?: IWorkspaceService;
 }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
   const rgBlockCodeBefore = /```([^]+)?/g;
   const rgAttachedFile = /<attached_file>(.*)/g;
   const rgAttachedFolder = /<attached_folder>(.*)/g;
+  const handleAttachmentClick = useCallback(
+    async (text: string, type: MentionType) => {
+      const roots = await workspaceService?.roots;
+      let uri;
+      if (!roots) {
+        return;
+      }
+      for (const root of roots) {
+        uri = new URI(root.uri).resolve(text);
+        try {
+          await commandService?.executeCommand(FILE_COMMANDS.LOCATION.id, uri);
+          if (type === MentionType.FILE) {
+            await commandService?.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+          }
+          break;
+        } catch {
+          continue;
+        }
+      }
+    },
+    [commandService, workspaceService],
+  );
   const renderAttachment = (text: string, isFolder = false, key: string) => (
-    <span className={styles.attachment} key={key}>
+    <span
+      className={styles.attachment}
+      key={key}
+      onClick={() => handleAttachmentClick(text, isFolder ? MentionType.FOLDER : MentionType.FILE)}
+    >
       <Icon iconClass={isFolder ? getIcon('folder') : labelService?.getIcon(new URI(text || 'file'))} />
       <span className={styles.attachment_text}>{text}</span>
     </span>
@@ -264,12 +306,16 @@ export const CodeBlockWrapper = ({
   relationId,
   agentId,
   labelService,
+  commandService,
+  workspaceService,
 }: {
   text?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
   agentId?: string;
   labelService?: LabelService;
+  commandService?: CommandService;
+  workspaceService?: IWorkspaceService;
 }) => (
   <div className={styles.ai_chat_code_wrapper}>
     <div className={styles.render_text}>
@@ -279,6 +325,8 @@ export const CodeBlockWrapper = ({
         renderText={renderText}
         relationId={relationId}
         agentId={agentId}
+        commandService={commandService}
+        workspaceService={workspaceService}
       />
     </div>
   </div>
@@ -290,12 +338,16 @@ export const CodeBlockWrapperInput = ({
   agentId,
   command,
   labelService,
+  workspaceService,
+  commandService,
 }: {
   text: string;
   relationId: string;
   agentId?: string;
   command?: string;
   labelService?: LabelService;
+  workspaceService?: IWorkspaceService;
+  commandService?: CommandService;
 }) => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const [tag, setTag] = useState<string>('');
@@ -334,6 +386,8 @@ export const CodeBlockWrapperInput = ({
           relationId={relationId}
           agentId={agentId}
           command={command}
+          workspaceService={workspaceService}
+          commandService={commandService}
         />
       </div>
     </div>
