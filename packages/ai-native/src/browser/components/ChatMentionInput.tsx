@@ -1,7 +1,8 @@
+import { DataContent } from 'ai';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { LabelService, RecentFilesManager, useInjectable } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { URI, localize } from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -9,6 +10,7 @@ import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-se
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
+import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
 
@@ -26,6 +28,7 @@ export interface IChatMentionInputProps {
   sendBtnClassName?: string;
   defaultHeight?: number;
   value?: string;
+  images?: Array<DataContent | URL>;
   autoFocus?: boolean;
   theme?: string | null;
   setTheme: (theme: string | null) => void;
@@ -41,6 +44,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const { onSend, disabled = false } = props;
 
   const [value, setValue] = useState(props.value || '');
+  const [images, setImages] = useState(props.images || []);
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const commandService = useInjectable<CommandService>(CommandService);
   const searchService = useInjectable<IFileSearchService>(FileSearchServicePath);
@@ -48,6 +52,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const labelService = useInjectable<LabelService>(LabelService);
+  const aiContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
 
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
@@ -254,8 +259,25 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
     [onSend, editorService, disabled],
   );
 
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      const data = await aiContextService.addImageToContext(file);
+      setImages([...images, data]);
+    },
+    [images],
+  );
+
+  const handleDeleteImage = useCallback(
+    (index: number) => {
+      setImages(images.filter((_, i) => i !== index));
+      aiContextService.removeImageFromContext(images[index]);
+    },
+    [images],
+  );
+
   return (
     <div className={styles.chat_input_container}>
+      {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
       <MentionInput
         mentionItems={defaultMenuItems}
         onSend={handleSend}
@@ -265,7 +287,29 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         workspaceService={workspaceService}
         placeholder={localize('aiNative.chat.input.placeholder.default')}
         footerConfig={defaultMentionInputFooterOptions}
+        onImageUpload={handleImageUpload}
       />
     </div>
   );
 };
+
+const ImagePreviewer = ({
+  images,
+  onDelete,
+}: {
+  images: Array<DataContent | URL>;
+  onDelete: (index: number) => void;
+}) => (
+  <div>
+    <div className={styles.thumbnail_container}>
+      {images.map((image, index) => (
+        <div key={index} className={styles.thumbnail}>
+          <img src={image.toString()} />
+          <button onClick={() => onDelete(index)} className={styles.delete_button}>
+            <Icon iconClass='codicon codicon-close' />
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+);

@@ -1,3 +1,5 @@
+import { DataContent } from 'ai';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus/event-decorator';
@@ -16,8 +18,7 @@ import { Range } from '@opensumi/ide-monaco';
 
 import { AttachFileContext, FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
 
-@Injectable()
-export class LLMContextServiceImpl extends WithEventBus implements LLMContextService {
+export abstract class BaseLLMContextService extends WithEventBus implements LLMContextService {
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
 
@@ -39,6 +40,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   private readonly maxViewFilesLimit = 20;
   private attachedFiles: FileContext[] = [];
   private attachedFolders: FileContext[] = [];
+  private attachedImages: Array<DataContent | URL> = [];
   private readonly recentlyViewFiles: FileContext[] = [];
   private readonly onDidContextFilesChangeEmitter = new Emitter<{
     viewed: FileContext[];
@@ -46,6 +48,8 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     version: number;
   }>();
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;
+
+  protected abstract processImage(file: File): Promise<DataContent | URL>;
 
   private addFileToList(file: FileContext, list: FileContext[], maxLimit: number) {
     const existingIndex = list.findIndex((f) => f.uri.toString() === file.uri.toString());
@@ -69,6 +73,21 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     if (list.length > maxLimit) {
       list.shift();
     }
+  }
+
+  async addImageToContext(file: File): Promise<DataContent | URL> {
+    const data = await this.processImage(file);
+    this.attachedImages.push(data);
+    this.notifyContextChange();
+    return data;
+  }
+
+  removeImageFromContext(image: DataContent | URL): void {
+    const index = this.attachedImages.indexOf(image);
+    if (index > -1) {
+      this.attachedImages.splice(index, 1);
+    }
+    this.notifyContextChange();
   }
 
   addFileToContext(uri: URI, selection?: [number, number], isManual = false): void {
@@ -288,5 +307,13 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         severities: MarkerSeverity.Error,
       })
       .map((marker) => marker.message);
+  }
+}
+
+@Injectable()
+export class LLMContextServiceImpl extends BaseLLMContextService {
+  // 一般提供一个图片上传函数，此处仅作为示例
+  protected async processImage(): Promise<DataContent | URL> {
+    return 'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
   }
 }
