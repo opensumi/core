@@ -1384,8 +1384,10 @@ export const localizationBundle = {
     'ai.native.mcp.command.isRequired': '命令不能为空',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL 不能为空',
     'ai.native.mcp.manage.connections': '管理你的 MCP 服务器连接',
-    'ai.native.mcp.running': '运行中',
-    'ai.native.mcp.stopped': '已停止',
+    'ai.native.mcp.enabled': '已启用',
+    'ai.native.mcp.disabled': '已禁用',
+    'ai.native.mcp.enable.title': '启动该服务',
+    'ai.native.mcp.disable.title': '停止该服务',
 
     // MCP View
     'ai.native.mcp.tool.arguments': '参数',

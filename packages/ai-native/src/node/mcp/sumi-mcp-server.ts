@@ -136,12 +136,16 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     const servers = Array.from(this.mcpServerManager.getServers().entries());
     const serverInfos = await Promise.all(
       servers.map(async ([serverName, server]) => {
-        let toolNames: string[] = [];
+        let tools: MCPTool[] = [];
         if (server.isStarted()) {
           // 只获取正在运行的 MCP Server 的工具列表
           const toolsResponse = await server.getTools();
-          this.logger.log(`Server ${serverName} tools:`, toolsResponse.tools);
-          toolNames = toolsResponse.tools.map((tool) => tool.name);
+          tools = toolsResponse.tools.map((tool) => ({
+            name: tool.name,
+            description: tool.description || '',
+            inputSchema: tool.inputSchema,
+            providerName: serverName,
+          }));
         }
 
         // OpenSumi 内置的 MCP Server
@@ -150,7 +154,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
             name: server.getServerName(),
             isStarted: server.isStarted(),
             type: MCP_SERVER_TYPE.BUILTIN,
-            tools: toolNames,
+            tools,
           };
         }
 
@@ -161,7 +165,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
             isStarted: server.isStarted(),
             type: MCP_SERVER_TYPE.STDIO,
             command: server.command + ' ' + (server.args?.join(' ') || ''),
-            tools: toolNames,
+            tools,
           };
         } else if (server instanceof SSEMCPServer) {
           return {
@@ -169,7 +173,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
             isStarted: server.isStarted(),
             type: MCP_SERVER_TYPE.SSE,
             serverHost: server.serverHost,
-            tools: toolNames,
+            tools,
           };
         }
 
@@ -178,7 +182,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
           isStarted: server.isStarted(),
           type: '[MOCK] stdio',
           command: '[MOCK] npx sumi-ide-mcp-server',
-          tools: toolNames,
+          tools,
         };
       }),
     );
