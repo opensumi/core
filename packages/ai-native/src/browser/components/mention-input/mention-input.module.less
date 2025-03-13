@@ -97,12 +97,16 @@
       .stop_logo {
         background-color: var(--badge-background);
         color: var(--badge-foreground);
-
+        .stop_logo_icon {
+          line-height: 16px;
+          color: var(--kt-dangerButton-background);
+        }
+      }
+      .send_logo {
         &:hover {
           background-color: var(--kt-primaryButton-background);
 
-          .send_logo_icon,
-          .stop_logo_icon {
+          .send_logo_icon {
             color: var(--kt-primaryButton-foreground);
           }
         }

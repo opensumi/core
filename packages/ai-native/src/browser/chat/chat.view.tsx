@@ -663,7 +663,7 @@ export const AIChatView = () => {
         msgId,
       });
     },
-    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom],
+    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom, loading],
   );
 
   const handleSend = React.useCallback(
