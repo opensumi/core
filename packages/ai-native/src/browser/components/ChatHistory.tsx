@@ -225,7 +225,7 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
         <div>
           <Input
             placeholder={localize('aiNative.operate.chatHistory.searchPlaceholder')}
-            style={{ width: '100%', maxWidth: '100%' }}
+            className={styles.chat_history_search}
             value={searchValue}
             onChange={handleSearchChange}
           />

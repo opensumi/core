@@ -42,6 +42,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
 import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
+import { cleanAttachedTextWrapper } from '../../common/utils';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
@@ -910,12 +911,15 @@ export function DefaultChatViewHeader({
     const getHistoryList = () => {
       const currentMessages = aiChatService.sessionModel.history.getMessages();
       const latestUserMessage = currentMessages.findLast((m) => m.role === ChatMessageRole.User);
-      setCurrentTitle(latestUserMessage ? latestUserMessage.content.slice(0, MAX_TITLE_LENGTH) : '');
+      setCurrentTitle(
+        latestUserMessage ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH) : '',
+      );
       setHistoryList(
         aiChatService.getSessions().map((session) => {
           const history = session.history;
           const messages = history.getMessages();
-          const title = messages.length > 0 ? messages[0].content.slice(0, MAX_TITLE_LENGTH) : '';
+          const title =
+            messages.length > 0 ? cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH) : '';
           const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
           // const loading = session.requests[session.requests.length - 1]?.response.isComplete;
           return {

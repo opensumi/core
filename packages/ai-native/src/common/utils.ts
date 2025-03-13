@@ -52,3 +52,11 @@ export const extractCodeBlocks = (content: string): string => {
 };
 
 export const getToolName = (toolName: string, serverName = BUILTIN_MCP_SERVER_NAME) => `mcp_${serverName}_${toolName}`;
+
+export const cleanAttachedTextWrapper = (text: string) => {
+  const rgAttachedFile = /`<attached_file>(.*)`/g;
+  const rgAttachedFolder = /`<attached_folder>(.*)`/g;
+  text = text.replace(rgAttachedFile, '$1');
+  text = text.replace(rgAttachedFolder, '$1');
+  return text;
+};

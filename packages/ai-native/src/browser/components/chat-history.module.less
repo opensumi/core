@@ -36,8 +36,20 @@
       cursor: pointer;
     }
 
-    .kt-popover-title {
-      margin-bottom: 8px;
+    :global {
+      .kt-popover-title {
+        margin-bottom: 8px;
+      }
+      .kt-popover-content {
+        background-color: var(--editor-background);
+        color: var(--editor-foreground);
+      }
+      .kt-popover-arrow {
+        border-bottom-color: var(--editor-background);
+      }
+      .kt-popover {
+        opacity: 1;
+      }
     }
   }
 
@@ -73,6 +85,11 @@
         opacity: 0.6;
       }
     }
+  }
+
+  .chat_history_search {
+    width: 100%;
+    border-radius: 4px;
   }
 
   .chat_history_list {
