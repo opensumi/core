@@ -159,6 +159,9 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         if (!currentFolderUri) {
           return [];
         }
+        if (currentFolderUri.toString() === workspaceService.workspace?.uri) {
+          return [];
+        }
         return [
           {
             id: currentFolderUri.codeUri.fsPath,
@@ -172,10 +175,11 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         ];
       },
       getItems: async (searchText: string) => {
+        let folders: MentionItem[] = [];
         if (!searchText) {
           const recentFile = await recentFilesManager.getMostRecentlyOpenedFiles();
           const recentFolder = Array.from(new Set(recentFile.map((file) => new URI(file).parent.codeUri.fsPath)));
-          return Promise.all(
+          folders = await Promise.all(
             recentFolder.map(async (folder) => {
               const uri = new URI(folder);
               const relativePath = await workspaceService.asRelativePath(uri);
@@ -191,7 +195,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
             }),
           );
         } else {
-          const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
+          const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath);
           const results = await searchService.find(searchText, {
             rootUris,
             useGitIgnore: true,
@@ -200,7 +204,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
             limit: 10,
             onlyFolders: true,
           });
-          return Promise.all(
+          folders = await Promise.all(
             results.map(async (folder) => {
               const uri = new URI(folder);
               return {
@@ -215,6 +219,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
             }),
           );
         }
+        return folders.filter((folder) => folder.id !== new URI(workspaceService.workspace?.uri).codeUri.fsPath);
       },
     },
   ];
