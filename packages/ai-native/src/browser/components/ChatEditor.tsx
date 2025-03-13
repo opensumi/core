@@ -180,7 +180,7 @@ const CodeBlock = ({
       for (const root of roots) {
         uri = new URI(root.uri).resolve(text);
         try {
-          await commandService?.executeCommand(FILE_COMMANDS.LOCATION.id, uri);
+          await commandService?.executeCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER.id, uri);
           if (type === MentionType.FILE) {
             await commandService?.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
           }
