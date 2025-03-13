@@ -247,7 +247,7 @@ export abstract class BaseApplyService extends WithEventBus {
       originalCode: originalModelRef.instance.getText(),
     };
     if (uriCodeBlocks?.length) {
-      newBlock.version = uriCodeBlocks.length;
+      newBlock.version = uriCodeBlocks.length + 1;
       for (const block of uriCodeBlocks) {
         // 如果连续的上一个同文件apply结果存在LintError，则iterationCount++
         if (block.relativePath === relativePath && block.applyResult?.diagnosticInfos?.length) {
@@ -480,7 +480,7 @@ export abstract class BaseApplyService extends WithEventBus {
     }
   }
 
-  processAll(type: 'accept' | 'reject', uri?: URI): void {
+  async processAll(type: 'accept' | 'reject', uri?: URI): Promise<void> {
     const codeBlocks = uri
       ? this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending')
       : this.getSessionCodeBlocks().filter((block) => block.status === 'pending');
@@ -498,6 +498,13 @@ export abstract class BaseApplyService extends WithEventBus {
             acc.push(cur);
             return acc;
           }, [] as string[]);
+    const openedEditor = this.editorService.getAllOpenedUris();
+    const unopenedUris = relativePaths
+      .filter((relativePath) => !openedEditor.some((editor) => editor.codeUri.fsPath.endsWith(relativePath)))
+      .map((relativePath) => URI.file(path.join(this.appConfig.workspaceDir, relativePath)));
+    if (unopenedUris.length) {
+      await this.editorService.openUris(unopenedUris);
+    }
     relativePaths.forEach((relativePath) => {
       this.doProcess(type, relativePath);
     });
