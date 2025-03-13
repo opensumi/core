@@ -334,6 +334,7 @@ export const CodeBlockWrapper = ({
 
 export const CodeBlockWrapperInput = ({
   text,
+  images,
   relationId,
   agentId,
   command,
@@ -342,6 +343,7 @@ export const CodeBlockWrapperInput = ({
   commandService,
 }: {
   text: string;
+  images?: string[];
   relationId: string;
   agentId?: string;
   command?: string;
@@ -368,6 +370,11 @@ export const CodeBlockWrapperInput = ({
 
   return (
     <div className={styles.ai_chat_code_wrapper}>
+      {images?.map((image) => (
+        <div className={styles.image_wrapper}>
+          <img src={image} alt='image' />
+        </div>
+      ))}
       <div className={styles.render_text}>
         {tag && (
           <div className={styles.tag_wrapper}>

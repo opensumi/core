@@ -13,6 +13,7 @@ import {
   AINativeCoreContribution,
   ERunStrategy,
   IChatFeatureRegistry,
+  IImageUploadProviderRegistry,
   IInlineChatFeatureRegistry,
   IIntelligentCompletionsRegistry,
   IProblemFixContext,
@@ -506,6 +507,13 @@ export class AINativeContribution implements AINativeCoreContribution {
     this.injector.overrideProviders({
       token: ChatAgentPromptProvider,
       useClass: DefaultChatAgentPromptProvider,
+    });
+  }
+
+  registerImageUploadProvider(registry: IImageUploadProviderRegistry): void {
+    registry.registerImageUploadProvider({
+      imageUpload: async (file) =>
+        'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg',
     });
   }
 }

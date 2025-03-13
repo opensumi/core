@@ -53,6 +53,10 @@ export interface IChatMessageStructure {
    */
   message: string;
   /**
+   * 图片
+   */
+  images?: string[];
+  /**
    * 实际调用的 prompt
    */
   prompt?: string;
@@ -200,6 +204,7 @@ export interface IChatAgentRequest {
   requestId: string;
   command?: string;
   message: string;
+  images?: string[];
   regenerate?: boolean;
 }
 
@@ -237,6 +242,7 @@ export type IChatFollowup = IChatReplyFollowup | IChatResponseCommandFollowup;
 
 export interface IChatRequestMessage {
   prompt: string;
+  images?: string[];
   agentId: string;
   command?: string;
 }

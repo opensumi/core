@@ -19,16 +19,6 @@ export interface LLMContextService {
   addFileToContext(uri: URI, selection?: [number, number], isManual?: boolean): void;
 
   /**
-   * 添加图片到 context 中
-   */
-  addImageToContext(file: File): Promise<DataContent | URL>;
-
-  /**
-   * 从 context 中移除图片
-   */
-  removeImageFromContext(image: DataContent | URL): void;
-
-  /**
    * 添加文件夹到 context 中
    */
   addFolderToContext(uri: URI, isManual?: boolean): void;

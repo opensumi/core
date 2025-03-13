@@ -18,7 +18,8 @@ import { Range } from '@opensumi/ide-monaco';
 
 import { AttachFileContext, FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
 
-export abstract class BaseLLMContextService extends WithEventBus implements LLMContextService {
+@Injectable()
+export class LLMContextServiceImpl extends WithEventBus implements LLMContextService {
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
 
@@ -49,8 +50,6 @@ export abstract class BaseLLMContextService extends WithEventBus implements LLMC
   }>();
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;
 
-  protected abstract processImage(file: File): Promise<DataContent | URL>;
-
   private addFileToList(file: FileContext, list: FileContext[], maxLimit: number) {
     const existingIndex = list.findIndex((f) => f.uri.toString() === file.uri.toString());
     if (existingIndex > -1) {
@@ -73,21 +72,6 @@ export abstract class BaseLLMContextService extends WithEventBus implements LLMC
     if (list.length > maxLimit) {
       list.shift();
     }
-  }
-
-  async addImageToContext(file: File): Promise<DataContent | URL> {
-    const data = await this.processImage(file);
-    this.attachedImages.push(data);
-    this.notifyContextChange();
-    return data;
-  }
-
-  removeImageFromContext(image: DataContent | URL): void {
-    const index = this.attachedImages.indexOf(image);
-    if (index > -1) {
-      this.attachedImages.splice(index, 1);
-    }
-    this.notifyContextChange();
   }
 
   addFileToContext(uri: URI, selection?: [number, number], isManual = false): void {
@@ -307,13 +291,5 @@ export abstract class BaseLLMContextService extends WithEventBus implements LLMC
         severities: MarkerSeverity.Error,
       })
       .map((marker) => marker.message);
-  }
-}
-
-@Injectable()
-export class LLMContextServiceImpl extends BaseLLMContextService {
-  // 一般提供一个图片上传函数，此处仅作为示例
-  protected async processImage(): Promise<DataContent | URL> {
-    return 'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
   }
 }

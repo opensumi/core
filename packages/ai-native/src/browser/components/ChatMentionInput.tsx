@@ -7,19 +7,28 @@ import { URI, localize } from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
 import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
 import { ChatInternalService } from '../chat/chat.internal.service';
+import { ImageUploadProviderRegistryToken } from '../contrib/image-upload/image-upload.feature.registry';
 import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
+import { IImageUploadProviderRegistry } from '../types';
 
 import styles from './components.module.less';
 import { MentionInput } from './mention-input/mention-input';
 import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from './mention-input/types';
 
 export interface IChatMentionInputProps {
-  onSend: (value: string, agentId?: string, command?: string, option?: { model: string; [key: string]: any }) => void;
+  onSend: (
+    value: string,
+    images?: string[],
+    agentId?: string,
+    command?: string,
+    option?: { model: string; [key: string]: any },
+  ) => void;
   onValueChange?: (value: string) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
@@ -52,7 +61,8 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const labelService = useInjectable<LabelService>(LabelService);
-  const aiContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
+  const messageService = useInjectable<IMessageService>(IMessageService);
+  const imageUploadProviderRegistry = useInjectable<IImageUploadProviderRegistry>(ImageUploadProviderRegistryToken);
 
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
@@ -254,14 +264,25 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       if (disabled) {
         return;
       }
-      onSend(content, undefined, undefined, option);
+      onSend(
+        content,
+        images.map((image) => image.toString()),
+        undefined,
+        undefined,
+        option,
+      );
     },
-    [onSend, editorService, disabled],
+    [onSend, images, disabled],
   );
 
   const handleImageUpload = useCallback(
     async (file: File) => {
-      const data = await aiContextService.addImageToContext(file);
+      const imageUploadProvider = imageUploadProviderRegistry.getImageUploadProvider();
+      if (!imageUploadProvider) {
+        messageService.error('No image upload provider found');
+        return;
+      }
+      const data = await imageUploadProvider.imageUpload(file);
       setImages([...images, data]);
     },
     [images],
@@ -270,7 +291,6 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const handleDeleteImage = useCallback(
     (index: number) => {
       setImages(images.filter((_, i) => i !== index));
-      aiContextService.removeImageFromContext(images[index]);
     },
     [images],
   );

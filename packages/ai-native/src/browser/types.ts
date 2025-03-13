@@ -1,3 +1,4 @@
+import { DataContent } from 'ai';
 import React from 'react';
 import { ZodSchema } from 'zod';
 
@@ -140,13 +141,14 @@ export type ChatWelcomeRender = (props: {
 export type ChatAIRoleRender = (props: { content: string }) => React.ReactElement | React.JSX.Element;
 export type ChatUserRoleRender = (props: {
   content: string;
+  images?: string[];
   agentId?: string;
   command?: string;
 }) => React.ReactElement | React.JSX.Element;
 export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactElement | React.JSX.Element;
 export type ChatThinkingResultRender = (props: { thinkingResult?: string }) => React.ReactElement | React.JSX.Element;
 export type ChatInputRender = (props: {
-  onSend: (value: string, agentId?: string, command?: string) => void;
+  onSend: (value: string, images?: string[], agentId?: string, command?: string) => void;
   onValueChange?: (value: string) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
@@ -289,6 +291,15 @@ export interface IProblemFixProviderRegistry {
   registerHoverFixProvider(handler: IHoverFixHandler): void;
 }
 
+export interface IImageUploadProvider {
+  imageUpload(file: File): Promise<DataContent | URL>;
+}
+
+export interface IImageUploadProviderRegistry {
+  registerImageUploadProvider(provider: IImageUploadProvider): void;
+  getImageUploadProvider(): IImageUploadProvider | undefined;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
@@ -332,6 +343,11 @@ export interface AINativeCoreContribution {
    * @param provider
    */
   registerChatAgentPromptProvider?(): void;
+
+  /**
+   * 注册图片上传的能力
+   */
+  registerImageUploadProvider?(registry: IImageUploadProviderRegistry): void;
 }
 
 // MCP Server 的 贡献点

@@ -1,4 +1,13 @@
-import { CoreMessage, ToolExecutionOptions, jsonSchema, streamText, tool } from 'ai';
+import {
+  CoreMessage,
+  CoreUserMessage,
+  ImagePart,
+  TextPart,
+  ToolExecutionOptions,
+  jsonSchema,
+  streamText,
+  tool,
+} from 'ai';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IAIBackServiceOption } from '@opensumi/ide-core-common';
@@ -48,6 +57,7 @@ export abstract class BaseLanguageModel {
       options.trimTexts,
       options.system,
       options.maxTokens,
+      options.images,
       cancellationToken,
     );
   }
@@ -77,6 +87,7 @@ export abstract class BaseLanguageModel {
     trimTexts?: [string, string],
     systemPrompt?: string,
     maxTokens?: number,
+    images?: string[],
     cancellationToken?: CancellationToken,
   ): Promise<any> {
     try {
@@ -89,7 +100,18 @@ export abstract class BaseLanguageModel {
         });
       }
 
-      const messages: CoreMessage[] = [...history, { role: 'user', content: request }];
+      const messages: CoreMessage[] = [
+        ...history,
+        {
+          role: 'user',
+          content: images?.length
+            ? [
+                { type: 'text', text: request } as TextPart,
+                ...images.map((image) => ({ type: 'image', image } as ImagePart)),
+              ]
+            : request,
+        },
+      ];
       const modelInfo = modelId ? this.getModelInfo(modelId) : undefined;
       const stream = streamText({
         model: this.getModelIdentifier(provider, modelId),

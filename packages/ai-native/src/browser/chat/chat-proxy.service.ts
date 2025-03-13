@@ -151,6 +151,7 @@ export class ChatProxyService extends Disposable {
               requestId: request.requestId,
               sessionId: request.sessionId,
               history,
+              images: request.images,
               ...this.getRequestOptions(),
             },
             token,
