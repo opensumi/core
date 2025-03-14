@@ -134,7 +134,14 @@ export interface ISumiMCPServerBackend {
   initBuiltinMCPServer(enabled: boolean): void;
   initExternalMCPServers(servers: MCPServerDescription[]): void;
   getAllMCPTools(): Promise<MCPTool[]>;
-  getServers(): Promise<Array<{ name: string; isStarted: boolean; tools: MCPTool[] }>>;
+  getServers(): Promise<
+    Array<{
+      name: string;
+      isStarted: boolean;
+      type: string;
+      tools: MCPTool[];
+    }>
+  >;
   startServer(serverName: string): Promise<void>;
   stopServer(serverName: string): Promise<void>;
   addOrUpdateServer(description: MCPServerDescription): void;
