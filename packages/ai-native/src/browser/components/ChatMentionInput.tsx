@@ -294,6 +294,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         undefined,
         option,
       );
+      setImages(props.images || []);
     },
     [onSend, images, disabled],
   );
