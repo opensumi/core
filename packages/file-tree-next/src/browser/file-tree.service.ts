@@ -628,7 +628,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
         if (rootUri.isEqualOrParent(pathURI)) {
           const relativePath = rootUri.relative(pathURI);
           if (relativePath) {
-            path = new Path(this.root.path).join(relativePath.toString()).toString();
+            if (this.isMultipleWorkspace) {
+              path = new Path(this.root.path).join(rootUri.displayName).join(relativePath.toString()).toString();
+            } else {
+              path = new Path(this.root.path).join(relativePath.toString()).toString();
+            }
           }
         }
       }
@@ -726,8 +730,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
   /**
    * 将文件排序并删除多余文件（指已有父文件夹将被删除）
    */
-  public sortPaths(_paths: (string | URI)[]) {
-    const paths = _paths.slice();
+  public sortPaths(pathOrUri: (string | URI)[]) {
+    const paths = pathOrUri.slice();
     const nodes = paths
       .map((path) => ({
         node: this.getNodeByPathOrUri(path),
@@ -735,7 +739,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }))
       .filter((node) => node && !!node.node) as ISortNode[];
 
-    if (_paths.length > 1) {
+    if (pathOrUri.length > 1) {
       nodes.sort((pathA, pathB) => {
         // 直接获取节点深度比通过path取深度更可靠
         const pathADepth = pathA.node?.depth || 0;
