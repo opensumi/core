@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image } from '@opensumi/ide-components/lib/image';
 import { LabelService, RecentFilesManager, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { URI, localize } from '@opensumi/ide-core-common';
+import { ChatFeatureRegistryToken, URI, localize } from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search';
@@ -12,10 +12,9 @@ import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
+import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
-import { ImageUploadProviderRegistryToken } from '../contrib/image-upload/image-upload.feature.registry';
 import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
-import { IImageUploadProviderRegistry } from '../types';
 
 import styles from './components.module.less';
 import { MentionInput } from './mention-input/mention-input';
@@ -62,8 +61,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const labelService = useInjectable<LabelService>(LabelService);
   const messageService = useInjectable<IMessageService>(IMessageService);
-  const imageUploadProviderRegistry = useInjectable<IImageUploadProviderRegistry>(ImageUploadProviderRegistryToken);
-
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
   }, [commandService]);
@@ -307,7 +305,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         return;
       }
 
-      const imageUploadProvider = imageUploadProviderRegistry.getImageUploadProvider();
+      const imageUploadProvider = chatFeatureRegistry.getImageUploadProvider();
       if (!imageUploadProvider) {
         messageService.error('No image upload provider found');
         return;

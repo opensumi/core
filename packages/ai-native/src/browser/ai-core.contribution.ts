@@ -95,7 +95,6 @@ import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
-import { ImageUploadProviderRegistryToken } from './contrib/image-upload/image-upload.feature.registry';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
 import { InlineCompletionsController } from './contrib/inline-completions/inline-completions.controller';
 import { AICompletionsService } from './contrib/inline-completions/service/ai-completions.service';
@@ -115,7 +114,6 @@ import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
   IChatRenderRegistry,
-  IImageUploadProviderRegistry,
   IIntelligentCompletionsRegistry,
   IMCPServerRegistry,
   IProblemFixProviderRegistry,
@@ -197,9 +195,6 @@ export class AINativeBrowserContribution
 
   @Autowired(IntelligentCompletionsRegistryToken)
   private readonly intelligentCompletionsRegistry: IIntelligentCompletionsRegistry;
-
-  @Autowired(ImageUploadProviderRegistryToken)
-  private readonly imageUploadProviderRegistry: IImageUploadProviderRegistry;
 
   @Autowired(ProblemFixRegistryToken)
   private readonly problemFixProviderRegistry: IProblemFixProviderRegistry;
@@ -458,7 +453,6 @@ export class AINativeBrowserContribution
       contribution.registerIntelligentCompletionFeature?.(this.intelligentCompletionsRegistry);
       contribution.registerProblemFixFeature?.(this.problemFixProviderRegistry);
       contribution.registerChatAgentPromptProvider?.();
-      contribution.registerImageUploadProvider?.(this.imageUploadProviderRegistry);
     });
 
     // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)

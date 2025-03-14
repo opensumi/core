@@ -130,6 +130,7 @@ export interface IChatSlashCommandHandler {
 }
 
 export interface IChatFeatureRegistry {
+  registerImageUploadProvider(provider: IImageUploadProvider): void;
   registerWelcome(content: IChatWelcomeMessageContent | React.ReactNode, sampleQuestions?: ISampleQuestions[]): void;
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void;
 }
@@ -295,11 +296,6 @@ export interface IImageUploadProvider {
   imageUpload(file: File): Promise<DataContent | URL>;
 }
 
-export interface IImageUploadProviderRegistry {
-  registerImageUploadProvider(provider: IImageUploadProvider): void;
-  getImageUploadProvider(): IImageUploadProvider | undefined;
-}
-
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
@@ -343,11 +339,6 @@ export interface AINativeCoreContribution {
    * @param provider
    */
   registerChatAgentPromptProvider?(): void;
-
-  /**
-   * 注册图片上传的能力
-   */
-  registerImageUploadProvider?(registry: IImageUploadProviderRegistry): void;
 }
 
 // MCP Server 的 贡献点

@@ -13,7 +13,6 @@ import {
   AINativeCoreContribution,
   ERunStrategy,
   IChatFeatureRegistry,
-  IImageUploadProviderRegistry,
   IInlineChatFeatureRegistry,
   IIntelligentCompletionsRegistry,
   IProblemFixContext,
@@ -21,11 +20,9 @@ import {
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
-  TChatSlashCommandSend,
   TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
-import { SerializedContext } from '@opensumi/ide-ai-native/lib/common/llm-context';
 import {
   ChatAgentPromptProvider,
   DefaultChatAgentPromptProvider,
@@ -48,8 +45,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ISelection, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
-
-import { SlashCommand } from './SlashCommand';
 
 export enum EInlineOperation {
   Comments = 'Comments',
@@ -236,6 +231,10 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       ],
     );
+
+    registry.registerImageUploadProvider({
+      imageUpload: imageToBase64,
+    });
 
     // registry.registerSlashCommand(
     //   {
@@ -507,15 +506,6 @@ export class AINativeContribution implements AINativeCoreContribution {
     this.injector.overrideProviders({
       token: ChatAgentPromptProvider,
       useClass: DefaultChatAgentPromptProvider,
-    });
-  }
-
-  registerImageUploadProvider(registry: IImageUploadProviderRegistry): void {
-    registry.registerImageUploadProvider({
-      imageUpload: async (file) => {
-        const base64 = await imageToBase64(file);
-        return new URL(base64);
-      },
     });
   }
 }
