@@ -59,7 +59,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   private readonly aiReporter: IAIReporter;
 
   @Autowired(LLMContextServiceToken)
-  protected readonly contextService: LLMContextService;
+  protected readonly llmContextService: LLMContextService;
 
   @Autowired(ChatAgentPromptProvider)
   protected readonly promptProvider: ChatAgentPromptProvider;
@@ -74,7 +74,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     super();
     this.addDispose(this._onDidChangeAgents);
     this.addDispose(
-      this.contextService.onDidContextFilesChangeEvent((event) => {
+      this.llmContextService.onDidContextFilesChangeEvent((event) => {
         if (event.version !== this.contextVersion) {
           this.contextVersion = event.version;
           this.shouldUpdateContext = true;
@@ -152,9 +152,9 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     if (!this.initialUserMessageMap.has(request.sessionId)) {
       this.initialUserMessageMap.set(request.sessionId, request.message);
       const rawMessage = request.message;
-      request.message = this.provideContextMessage(rawMessage, request.sessionId);
+      request.message = await this.provideContextMessage(rawMessage, request.sessionId);
     } else if (this.shouldUpdateContext || request.regenerate || history.length === 0) {
-      request.message = this.provideContextMessage(request.message, request.sessionId);
+      request.message = await this.provideContextMessage(request.message, request.sessionId);
       this.shouldUpdateContext = false;
     }
 
@@ -162,9 +162,9 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     return result;
   }
 
-  private provideContextMessage(message: string, sessionId: string) {
-    const context = this.contextService.serialize();
-    const fullMessage = this.promptProvider.provideContextPrompt(context, message);
+  private async provideContextMessage(message: string, sessionId: string) {
+    const context = await this.llmContextService.serialize();
+    const fullMessage = await this.promptProvider.provideContextPrompt(context, message);
     this.aiReporter.send({
       msgType: AIServiceType.Chat,
       actionType: ActionTypeEnum.ContextEnhance,

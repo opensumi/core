@@ -25,7 +25,7 @@ describe('ChatAgentService', () => {
         {
           token: ChatAgentPromptProvider,
           useValue: {
-            provideContextPrompt: (val, msg) => msg,
+            provideContextPrompt: async (val, msg) => msg,
           },
         },
         {

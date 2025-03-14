@@ -46,7 +46,7 @@ export interface IMCPServerProxyService {
 export interface MCPServer {
   name: string;
   isStarted: boolean;
-  tools?: string[];
+  tools?: MCPTool[];
   command?: string;
   type?: string;
   serverHost?: string;

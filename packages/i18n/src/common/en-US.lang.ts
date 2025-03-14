@@ -1449,7 +1449,7 @@ export const localizationBundle = {
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',
-    'aiNative.chat.input.placeholder.default': 'Ask Copilot or type / for commands',
+    'aiNative.chat.input.placeholder.default': 'Ask anything, @ to mention',
     'aiNative.chat.stop.immediately': 'I don’t think about it anymore. If you need anything, you can ask me anytime.',
     'aiNative.chat.error.response':
       'There are too many people interacting with me at the moment. Please try again later. Thank you for your understanding and support.',
@@ -1459,6 +1459,8 @@ export const localizationBundle = {
     'aiNative.chat.expand.unfullscreen': 'unfullscreen',
     'aiNative.chat.expand.fullescreen': 'fullescreen',
     'aiNative.chat.enter.send': 'Send (Enter)',
+    'aiNative.chat.defaultContextFile': 'Current File',
+    'aiNative.chat.defaultContextFolder': 'Current Folder',
     'aiNative.chat.thinking': 'Deep Think',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
@@ -1621,8 +1623,10 @@ export const localizationBundle = {
     'ai.native.mcp.command.isRequired': 'Command is required',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL is required',
     'ai.native.mcp.manage.connections': 'Manage your MCP server connections',
-    'ai.native.mcp.running': 'Running',
-    'ai.native.mcp.stopped': 'Stopped',
+    'ai.native.mcp.enabled': 'Enabled',
+    'ai.native.mcp.disabled': 'Disabled',
+    'ai.native.mcp.enable.title': 'Start this service',
+    'ai.native.mcp.disable.title': 'Stop this service',
 
     // MCP View
     'ai.native.mcp.tool.arguments': 'Arguments',

@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { Badge } from '@opensumi/ide-components';
+import { Badge, Button, Popover, PopoverTriggerType } from '@opensumi/ide-components';
 import { AINativeSettingSectionsId, ILogger, useInjectable } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
 import { PreferenceScope, localize } from '@opensumi/ide-core-common';
@@ -178,43 +178,60 @@ export const MCPConfigView: React.FC = () => {
           <div key={server.name} className={styles.serverItem}>
             <div className={styles.serverHeader}>
               <div className={styles.serverTitleRow}>
-                <h3 className={styles.serverName}>{server.name}</h3>
+                <h3 className={styles.serverName}>
+                  {server.name}
+                  <span
+                    className={cls(styles.serverStatusIcon, server.isStarted ? styles.active : styles.inactive)}
+                  ></span>
+                </h3>
               </div>
               <div className={styles.serverActions}>
-                {server.name !== BUILTIN_MCP_SERVER_NAME && (
-                  <button className={styles.iconButton} title='Edit' onClick={() => handleEditServer(server)}>
-                    <i className='codicon codicon-edit' />
-                  </button>
-                )}
-                <button
-                  className={styles.iconButton}
-                  title={server.isStarted ? 'Stop' : 'Start'}
-                  onClick={() => handleServerControl(server.name, !server.isStarted)}
+                <Popover
+                  id='mcp-server-action-popover'
+                  trigger={PopoverTriggerType.hover}
+                  content={
+                    server.isStarted ? localize('ai.native.mcp.disable.title') : localize('ai.native.mcp.enable.title')
+                  }
                 >
-                  <i
-                    className={`codicon ${
-                      loadingServer === server.name
-                        ? 'codicon-loading kt-icon-loading'
-                        : server.isStarted
-                        ? 'codicon-debug-stop'
-                        : 'codicon-debug-start'
-                    }`}
-                  />
-                </button>
+                  <Button
+                    type='default'
+                    className={cls(styles.serverActionButton, server.isStarted && styles.active)}
+                    onClick={() => handleServerControl(server.name, !server.isStarted)}
+                  >
+                    <i
+                      className={`codicon ${
+                        loadingServer === server.name
+                          ? 'codicon-loading kt-icon-loading'
+                          : server.isStarted
+                          ? 'codicon-check'
+                          : 'codicon-circle'
+                      }`}
+                    />
+                    <span>{localize(server.isStarted ? 'ai.native.mcp.enabled' : 'ai.native.mcp.disabled')}</span>
+                  </Button>
+                </Popover>
                 {server.name !== BUILTIN_MCP_SERVER_NAME && (
-                  <button className={styles.iconButton} title='Delete' onClick={() => handleDeleteServer(server.name)}>
-                    <i className='codicon codicon-trash' />
-                  </button>
+                  <Button
+                    type='icon'
+                    iconClass='codicon codicon-edit'
+                    className={styles.iconButton}
+                    title='Edit'
+                    onClick={() => handleEditServer(server)}
+                  />
+                )}
+
+                {server.name !== BUILTIN_MCP_SERVER_NAME && (
+                  <Button
+                    type='icon'
+                    iconClass='codicon codicon-trash'
+                    className={styles.iconButton}
+                    title='Delete'
+                    onClick={() => handleDeleteServer(server.name)}
+                  />
                 )}
               </div>
             </div>
             <div className={styles.serverDetail}>
-              <div className={styles.detailRow}>
-                <span className={styles.detailLabel}>Status:</span>
-                <span className={`${styles.serverStatus} ${server.isStarted ? styles.running : styles.stopped}`}>
-                  {server.isStarted ? localize('ai.native.mcp.running') : localize('ai.native.mcp.stopped')}
-                </span>
-              </div>
               {server.type && (
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Type:</span>
@@ -228,9 +245,9 @@ export const MCPConfigView: React.FC = () => {
                   <span className={styles.detailLabel}>Tools:</span>
                   <span className={styles.detailContent}>
                     {server.tools.map((tool, index) => (
-                      <span key={index} className={styles.toolTag}>
-                        {tool}
-                      </span>
+                      <Badge key={index} className={styles.toolTag} title={tool.description}>
+                        {tool.name}
+                      </Badge>
                     ))}
                   </span>
                 </div>

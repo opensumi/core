@@ -10,6 +10,7 @@ import {
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser/types';
+import { FileType, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMarkerService } from '@opensumi/ide-markers/lib/common/types';
 import { Range } from '@opensumi/ide-monaco';
 
@@ -26,13 +27,18 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   @Autowired(IMarkerService)
   protected readonly markerService: IMarkerService;
 
+  @Autowired(IFileServiceClient)
+  protected readonly fileService: IFileServiceClient;
+
   private isAutoCollecting = false;
 
   private contextVersion = 0;
 
   private readonly maxAttachFilesLimit = 10;
+  private readonly maxAttachFoldersLimit = 10;
   private readonly maxViewFilesLimit = 20;
-  private readonly attachedFiles: FileContext[] = [];
+  private attachedFiles: FileContext[] = [];
+  private attachedFolders: FileContext[] = [];
   private readonly recentlyViewFiles: FileContext[] = [];
   private readonly onDidContextFilesChangeEmitter = new Emitter<{
     viewed: FileContext[];
@@ -48,6 +54,18 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     }
 
     list.push(file);
+    if (list.length > maxLimit) {
+      list.shift();
+    }
+  }
+
+  private addFolderToList(folder: FileContext, list: FileContext[], maxLimit: number) {
+    const existingIndex = list.findIndex((f) => f.uri.toString() === folder.uri.toString());
+    if (existingIndex > -1) {
+      list.splice(existingIndex, 1);
+    }
+
+    list.push(folder);
     if (list.length > maxLimit) {
       list.shift();
     }
@@ -70,12 +88,24 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     this.notifyContextChange();
   }
 
+  addFolderToContext(uri: URI): void {
+    if (!uri) {
+      return;
+    }
+
+    const file = { uri };
+
+    this.addFolderToList(file, this.attachedFolders, this.maxAttachFoldersLimit);
+    this.notifyContextChange();
+  }
+
   private notifyContextChange(): void {
     this.onDidContextFilesChangeEmitter.fire(this.getAllContextFiles());
   }
 
   cleanFileContext() {
-    this.attachedFiles.length = 0;
+    this.attachedFiles = [];
+    this.attachedFolders = [];
     this.notifyContextChange();
   }
 
@@ -83,6 +113,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     return {
       viewed: this.recentlyViewFiles,
       attached: this.attachedFiles,
+      attachedFolders: this.attachedFolders,
       version: this.contextVersion++,
     };
   }
@@ -160,14 +191,65 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     this.dispose();
   }
 
-  serialize(): SerializedContext {
+  async serialize(): Promise<SerializedContext> {
     const files = this.getAllContextFiles();
     const workspaceRoot = URI.file(this.appConfig.workspaceDir);
 
     return {
       recentlyViewFiles: this.serializeRecentlyViewFiles(files.viewed, workspaceRoot),
       attachedFiles: this.serializeAttachedFiles(files.attached, workspaceRoot),
+      attachedFolders: await this.serializeAttachedFolders(files.attachedFolders, workspaceRoot),
     };
+  }
+
+  private async serializeAttachedFolders(folders: FileContext[], workspaceRoot: URI): Promise<string[]> {
+    // 去重
+    const folderPath = Array.from(new Set(folders.map((folder) => folder.uri.toString())));
+    return Promise.all(
+      folderPath.map(async (folder) => {
+        const folderUri = new URI(folder);
+        const root = workspaceRoot.relative(folderUri)?.toString() || '/';
+        return `\`\`\`\n${root}\n${(await this.getPartiaFolderStructure(folderUri.codeUri.fsPath))
+          .map((line) => `- ${line}`)
+          .join('\n')}\n\`\`\`\n`;
+      }),
+    );
+  }
+
+  private async getPartiaFolderStructure(folder: string, level = 2): Promise<string[]> {
+    const result: string[] = [];
+    try {
+      const stat = await this.fileService.getFileStat(folder);
+
+      for (const child of stat?.children || []) {
+        const relativePath = new URI(folder).relative(new URI(child.uri))!.toString();
+
+        if (child.isSymbolicLink) {
+          // 处理软链接
+          const target = await this.fileService.getFileStat(child.realUri || child.uri);
+          if (target) {
+            result.push(`${relativePath} -> ${target} (symbolic link)`);
+          } else {
+            result.push(`${relativePath} (broken symbolic link)`);
+          }
+          continue;
+        }
+
+        if (child.type === FileType.Directory) {
+          result.push(`${relativePath}/`);
+          if (level > 1) {
+            const subDirStructure = await this.getPartiaFolderStructure(child.uri, level - 1);
+            result.push(...subDirStructure.map((subEntry) => `${relativePath}/${subEntry}`));
+          }
+        } else if (child.type === FileType.File) {
+          result.push(relativePath);
+        }
+      }
+    } catch {
+      return result;
+    }
+
+    return result;
   }
 
   private serializeRecentlyViewFiles(files: FileContext[], workspaceRoot: URI): string[] {

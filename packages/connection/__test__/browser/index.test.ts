@@ -1,4 +1,4 @@
-import { WSWebSocketConnection, furySerializer } from '@opensumi/ide-connection';
+import { furySerializer } from '@opensumi/ide-connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import { sleep } from '@opensumi/ide-core-common';
 import { Server, WebSocket } from '@opensumi/mock-socket';
@@ -21,11 +21,10 @@ describe('connection browser', () => {
       let data2Received = false;
 
       mockServer.on('connection', (socket) => {
-        const connection = new WSWebSocketConnection(socket as any);
-        connection.onMessage((msg) => {
+        socket.on('message', (msg) => {
           const msgObj = furySerializer.deserialize(msg as Uint8Array);
           if (msgObj.kind === 'open') {
-            connection.send(
+            socket.send(
               furySerializer.serialize({
                 id: msgObj.id,
                 kind: 'server-ready',

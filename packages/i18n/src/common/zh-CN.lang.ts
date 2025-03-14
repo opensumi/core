@@ -1218,7 +1218,7 @@ export const localizationBundle = {
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI 研发助手',
-    'aiNative.chat.input.placeholder.default': '可以问我任何问题，或键入主题 "/" ',
+    'aiNative.chat.input.placeholder.default': '可以问我任何问题，输入 @ 可引用内容',
     'aiNative.chat.stop.immediately': '我先不想了，有需要可以随时问我',
     'aiNative.chat.error.response': '当前与我互动的人太多，请稍后再试，感谢您的理解与支持',
     'aiNative.chat.code.insert': '插入代码',
@@ -1227,6 +1227,8 @@ export const localizationBundle = {
     'aiNative.chat.expand.unfullscreen': '收起',
     'aiNative.chat.expand.fullescreen': '展开全屏',
     'aiNative.chat.enter.send': 'Enter 发送',
+    'aiNative.chat.defaultContextFile': '当前文件',
+    'aiNative.chat.defaultContextFolder': '当前文件夹',
     'aiNative.chat.thinking': '深度思考',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
@@ -1384,8 +1386,10 @@ export const localizationBundle = {
     'ai.native.mcp.command.isRequired': '命令不能为空',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL 不能为空',
     'ai.native.mcp.manage.connections': '管理你的 MCP 服务器连接',
-    'ai.native.mcp.running': '运行中',
-    'ai.native.mcp.stopped': '已停止',
+    'ai.native.mcp.enabled': '已启用',
+    'ai.native.mcp.disabled': '已禁用',
+    'ai.native.mcp.enable.title': '启动该服务',
+    'ai.native.mcp.disable.title': '停止该服务',
 
     // MCP View
     'ai.native.mcp.tool.arguments': '参数',
