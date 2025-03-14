@@ -512,8 +512,30 @@ export class AINativeContribution implements AINativeCoreContribution {
 
   registerImageUploadProvider(registry: IImageUploadProviderRegistry): void {
     registry.registerImageUploadProvider({
-      imageUpload: async (file) =>
-        'https://img.alicdn.com/imgextra/i1/O1CN01IhPyCU1JeK3xDkJVv_!!6000000001053-2-tps-180-180.png',
+      imageUpload: async (file) => {
+        const base64 = await imageToBase64(file);
+        return new URL(base64);
+      },
     });
   }
 }
+
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024;
+
+const imageToBase64 = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    if (file.size > MAX_IMAGE_SIZE) {
+      reject(new Error('Image size exceeds 3MB limit'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      resolve(base64String);
+    };
+    reader.onerror = () => {
+      reject(new Error('Failed to convert image to base64'));
+    };
+    reader.readAsDataURL(file);
+  });

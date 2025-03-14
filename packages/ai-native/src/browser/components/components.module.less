@@ -635,12 +635,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: var(--badge-background);
     &:hover {
       cursor: pointer;
       transform: scale(1.2);
     }
     :global(.codicon) {
       font-size: 12px;
+      color: var(--badge-foreground);
     }
   }
 }
