@@ -85,7 +85,7 @@ describe('ws channel node', () => {
         }),
         new Promise<void>((resolve) => {
           for (let i = 0; i < total; i++) {
-            channel2.send('hello' + i);
+            channel2.send('hello');
           }
           resolve();
         }),
@@ -95,7 +95,7 @@ describe('ws channel node', () => {
       socket2.destroy();
       socket2.end();
     },
-    30 * 1000,
+    20 * 1000,
   );
 
   it(
@@ -149,6 +149,6 @@ describe('ws channel node', () => {
       socket2.destroy();
       socket2.end();
     },
-    30 * 1000,
+    20 * 1000,
   );
 });
