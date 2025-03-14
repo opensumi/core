@@ -1623,8 +1623,10 @@ export const localizationBundle = {
     'ai.native.mcp.command.isRequired': 'Command is required',
     'ai.native.mcp.serverHost.isRequired': 'SSE URL is required',
     'ai.native.mcp.manage.connections': 'Manage your MCP server connections',
-    'ai.native.mcp.running': 'Running',
-    'ai.native.mcp.stopped': 'Stopped',
+    'ai.native.mcp.enabled': 'Enabled',
+    'ai.native.mcp.disabled': 'Disabled',
+    'ai.native.mcp.enable.title': 'Start this service',
+    'ai.native.mcp.disable.title': 'Stop this service',
 
     // MCP View
     'ai.native.mcp.tool.arguments': 'Arguments',

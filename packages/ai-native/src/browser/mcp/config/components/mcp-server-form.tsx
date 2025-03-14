@@ -263,7 +263,7 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
         </div>
         {renderFormItems()}
         <div className={styles.formActions}>
-          <Button onClick={onCancel} type='ghost'>
+          <Button onClick={onCancel} type='primary' className={styles.secondaryButton}>
             {localize('ai.native.mcp.buttonCancel')}
           </Button>
           <Button onClick={handleSubmit} type='primary'>

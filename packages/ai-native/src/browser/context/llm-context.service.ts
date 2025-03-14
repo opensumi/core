@@ -41,7 +41,6 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   private readonly maxViewFilesLimit = 20;
   private attachedFiles: FileContext[] = [];
   private attachedFolders: FileContext[] = [];
-  private attachedImages: Array<DataContent | URL> = [];
   private readonly recentlyViewFiles: FileContext[] = [];
   private readonly onDidContextFilesChangeEmitter = new Emitter<{
     viewed: FileContext[];
@@ -221,31 +220,35 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   private async getPartiaFolderStructure(folder: string, level = 2): Promise<string[]> {
     const result: string[] = [];
-    const stat = await this.fileService.getFileStat(folder);
+    try {
+      const stat = await this.fileService.getFileStat(folder);
 
-    for (const child of stat?.children || []) {
-      const relativePath = new URI(folder).relative(new URI(child.uri))!.toString();
+      for (const child of stat?.children || []) {
+        const relativePath = new URI(folder).relative(new URI(child.uri))!.toString();
 
-      if (child.isSymbolicLink) {
-        // 处理软链接
-        const target = await this.fileService.getFileStat(child.realUri || child.uri);
-        if (target) {
-          result.push(`${relativePath} -> ${target} (symbolic link)`);
-        } else {
-          result.push(`${relativePath} (broken symbolic link)`);
+        if (child.isSymbolicLink) {
+          // 处理软链接
+          const target = await this.fileService.getFileStat(child.realUri || child.uri);
+          if (target) {
+            result.push(`${relativePath} -> ${target} (symbolic link)`);
+          } else {
+            result.push(`${relativePath} (broken symbolic link)`);
+          }
+          continue;
         }
-        continue;
-      }
 
-      if (child.type === FileType.Directory) {
-        result.push(`${relativePath}/`);
-        if (level > 1) {
-          const subDirStructure = await this.getPartiaFolderStructure(child.uri, level - 1);
-          result.push(...subDirStructure.map((subEntry) => `${relativePath}/${subEntry}`));
+        if (child.type === FileType.Directory) {
+          result.push(`${relativePath}/`);
+          if (level > 1) {
+            const subDirStructure = await this.getPartiaFolderStructure(child.uri, level - 1);
+            result.push(...subDirStructure.map((subEntry) => `${relativePath}/${subEntry}`));
+          }
+        } else if (child.type === FileType.File) {
+          result.push(relativePath);
         }
-      } else if (child.type === FileType.File) {
-        result.push(relativePath);
       }
+    } catch {
+      return result;
     }
 
     return result;
