@@ -45,34 +45,86 @@
 .serverItem {
   padding: 16px;
   border-radius: 8px;
-  background-color: var(--editorWidget-background);
-  border: 1px solid var(--border-color);
+  background-color: var(--editor-background);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
-
+  .serverHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    .iconButton {
+      padding: 2px 5px;
+      margin-left: 5px;
+      cursor: pointer;
+      border-radius: 4px;
+      line-height: 20px;
+      font-size: 14px;
+      &:hover {
+        background-color: var(--badge-background);
+      }
+    }
+    .serverActionButton {
+      height: 24px;
+      background-color: var(--badge-background);
+      color: var(--badge-foreground);
+      span {
+        min-width: 52px;
+      }
+      &.active {
+        i {
+          color: var(--testing-iconPassed);
+        }
+      }
+      i {
+        color: var(--testing-iconErrored);
+        margin-right: 3px;
+      }
+    }
+  }
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-color: var(--focusBorder);
   }
 }
 
-.serverHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
 .serverTitleRow {
   display: flex;
   align-items: center;
   gap: 8px;
+  text-indent: 12px;
+}
+
+.serverActions {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .serverName {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.serverStatusIcon {
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: 12px;
+  display: inline-block;
+  &.active {
+    background-color: var(--testing-iconPassed);
+    box-shadow: 0 0 0 1px var(--testing-iconPassed);
+  }
+  &.inactive {
+    background-color: var(--testing-iconErrored);
+    box-shadow: 0 0 0 1px var(--testing-iconErrored);
+  }
 }
 
 .serverStatus,
@@ -104,26 +156,7 @@
   color: var(--notification-error-foreground);
 }
 
-.serverActions {
-  display: flex;
-  gap: 4px;
-}
-
-.iconButton {
-  padding: 4px;
-  border: none;
-  background: none;
-  color: var(--icon-foreground);
-  cursor: pointer;
-  border-radius: 4px;
-
-  &:hover {
-    background-color: var(--list-hover-background);
-  }
-}
-
 .serverDetail {
-  margin-top: 12px;
   padding: 12px;
   border-radius: 6px;
   background-color: var(--editor-background);
@@ -181,11 +214,9 @@
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  background-color: var(--editorWidget-background);
-  color: var(--button-secondary-foreground);
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
   transition: all 0.2s ease;
-  border: 1px solid var(--border-color);
+  cursor: pointer;
 }
