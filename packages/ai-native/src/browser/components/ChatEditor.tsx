@@ -254,29 +254,31 @@ const CodeBlock = ({
               let lastIndex = 0;
               const fragments: (string | React.ReactNode)[] = [];
 
-              // 处理文件标记
-              fileMatches.forEach((match, matchIndex) => {
-                if (match.index !== undefined) {
-                  const spanText = processedText.slice(lastIndex, match.index);
-                  if (spanText) {
-                    fragments.push(<span key={`${index}-${matchIndex}`}>{spanText}</span>);
+              // 通用处理函数
+              const processMatches = (matches: RegExpMatchArray[], isFolder: boolean) => {
+                matches.forEach((match, matchIndex) => {
+                  if (match.index !== undefined) {
+                    const spanText = processedText.slice(lastIndex, match.index);
+                    if (spanText) {
+                      fragments.push(
+                        <span key={`${index}-${matchIndex}-${isFolder ? 'folder' : 'file'}`}>{spanText}</span>,
+                      );
+                    }
+                    fragments.push(
+                      renderAttachment(
+                        match[1],
+                        isFolder,
+                        `${index}-tag-${matchIndex}-${isFolder ? 'folder' : 'file'}`,
+                      ),
+                    );
+                    lastIndex = match.index + match[0].length;
                   }
-                  fragments.push(renderAttachment(match[1], false, `${index}-tag-${matchIndex}`));
-                  lastIndex = match.index + match[0].length;
-                }
-              });
+                });
+              };
 
-              // 处理文件夹标记
-              folderMatches.forEach((match, matchIndex) => {
-                if (match.index !== undefined) {
-                  const spanText = processedText.slice(lastIndex, match.index);
-                  if (spanText) {
-                    fragments.push(<span key={`${index}-${matchIndex}`}>{spanText}</span>);
-                  }
-                  fragments.push(renderAttachment(match[1], true, `${index}-tag-${matchIndex}`));
-                  lastIndex = match.index + match[0].length;
-                }
-              });
+              // 处理文件标记
+              processMatches(fileMatches, false);
+              processMatches(folderMatches, true);
 
               fragments.push(processedText.slice(lastIndex));
               renderedContent.push(...fragments);
