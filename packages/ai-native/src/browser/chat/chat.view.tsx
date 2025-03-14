@@ -1,7 +1,14 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import { AppConfig, getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
+import {
+  AINativeConfigService,
+  AppConfig,
+  LabelService,
+  getIcon,
+  useInjectable,
+  useUpdateOnEvent,
+} from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -14,6 +21,7 @@ import {
   ChatMessageRole,
   ChatRenderRegistryToken,
   ChatServiceToken,
+  CommandService,
   Disposable,
   DisposableCollection,
   IAIReporter,
@@ -28,16 +36,19 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
-
 import 'react-chat-elements/dist/main.css';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
+import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
+import { cleanAttachedTextWrapper } from '../../common/utils';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
-import { ChatContext } from '../components/ChatContext';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
+import { ChatMentionInput } from '../components/ChatMentionInput';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
@@ -105,6 +116,8 @@ export const AIChatView = () => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
@@ -114,6 +127,9 @@ export const AIChatView = () => {
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+  const labelService = useInjectable<LabelService>(LabelService);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const commandService = useInjectable<CommandService>(CommandService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
@@ -183,6 +199,9 @@ export const AIChatView = () => {
   const ChatInputWrapperRender = React.useMemo(() => {
     if (chatRenderRegistry.chatInputRender) {
       return chatRenderRegistry.chatInputRender;
+    }
+    if (aiNativeConfigService.capabilities.supportsMCP) {
+      return ChatMentionInput;
     }
     return ChatInput;
   }, [chatRenderRegistry.chatInputRender]);
@@ -262,7 +281,7 @@ export const AIChatView = () => {
           if (loading) {
             return;
           }
-          await handleSend(message);
+          await handleSend(message.message, message.agentId, message.command);
         } else {
           if (message.agentId) {
             setAgentId(message.agentId);
@@ -349,6 +368,9 @@ export const AIChatView = () => {
                       text={message}
                       agentId={visibleAgentId}
                       command={command}
+                      labelService={labelService}
+                      workspaceService={workspaceService}
+                      commandService={commandService}
                     />
                   ),
                 },
@@ -454,7 +476,15 @@ export const AIChatView = () => {
           text: ChatUserRoleRender ? (
             <ChatUserRoleRender content={message} agentId={visibleAgentId} command={command} />
           ) : (
-            <CodeBlockWrapperInput relationId={relationId} text={message} agentId={visibleAgentId} command={command} />
+            <CodeBlockWrapperInput
+              labelService={labelService}
+              relationId={relationId}
+              text={message}
+              agentId={visibleAgentId}
+              command={command}
+              workspaceService={workspaceService}
+              commandService={commandService}
+            />
           ),
         },
         styles.chat_message_code,
@@ -634,15 +664,50 @@ export const AIChatView = () => {
         msgId,
       });
     },
-    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom],
+    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom, loading],
   );
 
   const handleSend = React.useCallback(
-    async (value: IChatMessageStructure) => {
-      const { message, command, reportExtra } = value;
+    async (message: string, agentId?: string, command?: string) => {
+      const reportExtra = {
+        actionSource: ActionSourceEnum.Chat,
+        actionType: ActionTypeEnum.Send,
+      };
+      agentId = agentId ? agentId : ChatProxyService.AGENT_ID;
+      // 提取并替换 {{@file:xxx}} 中的文件内容
+      let processedContent = message;
+      const filePattern = /\{\{@file:(.*?)\}\}/g;
+      const fileMatches = message.match(filePattern);
+      let isCleanContext = false;
+      if (fileMatches) {
+        for (const match of fileMatches) {
+          const filePath = match.replace(/\{\{@file:(.*?)\}\}/, '$1');
+          if (filePath && !isCleanContext) {
+            isCleanContext = true;
+            llmContextService.cleanFileContext();
+          }
+          const fileUri = new URI(filePath);
+          llmContextService.addFileToContext(fileUri, undefined, true);
+          const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
+          // 获取文件内容
+          // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
+          processedContent = processedContent.replace(match, `\`<attached_file>${relativePath}\``);
+        }
+      }
 
-      const agentId = value.agentId ? value.agentId : ChatProxyService.AGENT_ID;
-      return handleAgentReply({ message, agentId, command, reportExtra });
+      const folderPattern = /\{\{@folder:(.*?)\}\}/g;
+      const folderMatches = processedContent.match(folderPattern);
+      if (folderMatches) {
+        for (const match of folderMatches) {
+          const folderPath = match.replace(/\{\{@folder:(.*?)\}\}/, '$1');
+          const folderUri = new URI(folderPath);
+          llmContextService.addFolderToContext(folderUri);
+          const relativePath = (await workspaceService.asRelativePath(folderUri))?.path || folderUri.displayName;
+          // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
+          processedContent = processedContent.replace(match, `\`<attached_folder>${relativePath}\``);
+        }
+      }
+      return handleAgentReply({ message: processedContent, agentId, command, reportExtra });
     },
     [handleAgentReply],
   );
@@ -759,7 +824,6 @@ export const AIChatView = () => {
             </div>
           ) : null}
           <div className={styles.chat_input_wrap}>
-            <ChatContext />
             <div className={styles.header_operate}>
               <div className={styles.header_operate_left}>
                 {shortcutCommands.map((command) => (
@@ -790,17 +854,7 @@ export const AIChatView = () => {
               />
             )}
             <ChatInputWrapperRender
-              onSend={(value, agentId, command) =>
-                handleSend({
-                  message: value,
-                  agentId,
-                  command,
-                  reportExtra: {
-                    actionSource: ActionSourceEnum.Chat,
-                    actionType: ActionTypeEnum.Send,
-                  },
-                })
-              }
+              onSend={handleSend}
               disabled={loading}
               enableOptions={true}
               theme={theme}
@@ -857,12 +911,15 @@ export function DefaultChatViewHeader({
     const getHistoryList = () => {
       const currentMessages = aiChatService.sessionModel.history.getMessages();
       const latestUserMessage = currentMessages.findLast((m) => m.role === ChatMessageRole.User);
-      setCurrentTitle(latestUserMessage ? latestUserMessage.content.slice(0, MAX_TITLE_LENGTH) : '');
+      setCurrentTitle(
+        latestUserMessage ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH) : '',
+      );
       setHistoryList(
         aiChatService.getSessions().map((session) => {
           const history = session.history;
           const messages = history.getMessages();
-          const title = messages.length > 0 ? messages[0].content.slice(0, MAX_TITLE_LENGTH) : '';
+          const title =
+            messages.length > 0 ? cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH) : '';
           const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
           // const loading = session.requests[session.requests.length - 1]?.response.isComplete;
           return {

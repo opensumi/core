@@ -1,8 +1,14 @@
 import { Event, URI } from '@opensumi/ide-core-common/lib/utils';
 
 export interface LLMContextService {
+  /**
+   * 开始自动收集
+   */
   startAutoCollection(): void;
 
+  /**
+   * 停止自动收集
+   */
   stopAutoCollection(): void;
 
   /**
@@ -11,10 +17,18 @@ export interface LLMContextService {
   addFileToContext(uri: URI, selection?: [number, number], isManual?: boolean): void;
 
   /**
+   * 添加文件夹到 context 中
+   */
+  addFolderToContext(uri: URI, isManual?: boolean): void;
+
+  /**
    * 清除上下文
    */
   cleanFileContext(): void;
 
+  /**
+   * 上下文文件变化事件
+   */
   onDidContextFilesChangeEvent: Event<{ viewed: FileContext[]; attached: FileContext[]; version: number }>;
 
   /**
@@ -24,7 +38,7 @@ export interface LLMContextService {
   removeFileFromContext(uri: URI, isManual?: boolean): void;
 
   /** 导出为可序列化格式 */
-  serialize(): SerializedContext;
+  serialize(): Promise<SerializedContext>;
 }
 
 export interface FileContext {
@@ -44,4 +58,5 @@ export interface AttachFileContext {
 export interface SerializedContext {
   recentlyViewFiles: string[];
   attachedFiles: Array<AttachFileContext>;
+  attachedFolders: string[];
 }

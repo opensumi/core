@@ -1,4 +1,4 @@
-.dm-chat-history-header {
+.chat_history_header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -8,7 +8,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  .dm-chat-history-header-title {
+  .chat_history_header_title {
     opacity: 0.6;
     display: flex;
     align-items: center;
@@ -22,22 +22,34 @@
     }
   }
 
-  .dm-chat-history-header-actions {
+  .chat_history_header_actions {
     display: flex;
     align-items: center;
     font-size: 12px;
 
-    .dm-chat-history-header-actions-history {
+    .chat_history_header_actions_history {
       cursor: pointer;
     }
 
-    .dm-chat-history-header-actions-new {
+    .chat_history_header_actions_new {
       margin-left: 2px;
       cursor: pointer;
     }
 
-    .kt-popover-title {
-      margin-bottom: 8px;
+    :global {
+      .kt-popover-title {
+        margin-bottom: 8px;
+      }
+      .kt-popover-content {
+        background-color: var(--editor-background);
+        color: var(--editor-foreground);
+      }
+      .kt-popover-arrow {
+        border-bottom-color: var(--editor-background);
+      }
+      .kt-popover {
+        opacity: 1;
+      }
     }
   }
 
@@ -75,7 +87,12 @@
     }
   }
 
-  .dm-chat-history-list {
+  .chat_history_search {
+    width: 100%;
+    border-radius: 4px;
+  }
+
+  .chat_history_list {
     overflow: auto;
     max-height: 400px;
     width: 300px;
@@ -83,12 +100,12 @@
     font-size: 13px;
   }
 
-  .dm-chat-history-time {
+  .chat_history_time {
     opacity: 0.6;
     padding-left: 4px;
   }
 
-  .dm-chat-history-item {
+  .chat_history_item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -97,7 +114,7 @@
     margin-top: 2px;
     border-radius: 3px;
 
-    .dm-chat-history-item-content {
+    .chat_history_item_content {
       display: flex;
       align-items: center;
       width: 100%;
@@ -105,28 +122,28 @@
       height: 24px;
     }
 
-    .dm-chat-history-item-title {
+    .chat_history_item_title {
       overflow: hidden;
       text-overflow: ellipsis;
       display: inline-block;
       white-space: nowrap;
     }
 
-    .dm-chat-history-item-actions {
+    .chat_history_item_actions {
       display: none;
     }
 
-    .dm-chat-history-item-selected {
+    .chat_history_item_selected {
       background: var(--textPreformat-background);
     }
 
     &:hover {
       background: var(--textPreformat-background);
 
-      .dm-chat-history-item-actions {
+      .chat_history_item_actions {
         display: block;
       }
-      .dm-chat-history-item-content {
+      .chat_history_item_content {
         max-width: calc(100% - 50px);
       }
     }

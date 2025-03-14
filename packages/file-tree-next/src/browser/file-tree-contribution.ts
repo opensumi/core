@@ -1016,9 +1016,10 @@ export class FileTreeContribution
         const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
         if (handler && !handler.isVisible) {
           handler.activate();
-        }
-        if (handler && handler.isCollapsed(RESOURCE_VIEW_ID)) {
-          handler?.setCollapsed(RESOURCE_VIEW_ID, false);
+          setTimeout(() => {
+            // FIXME: 目前通过 handler.isCollapsed 方法获取到的这段状态不准确
+            handler.setCollapsed(RESOURCE_VIEW_ID, false);
+          }, 200);
         }
         if (!uri && this.workbenchEditorService.currentEditor?.currentUri) {
           uri = this.workbenchEditorService.currentEditor.currentUri;

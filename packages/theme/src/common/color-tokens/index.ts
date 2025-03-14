@@ -35,5 +35,5 @@ export * from './minimap';
 export * from './testing';
 export * from './design';
 export * from './ai-native';
-
+export * from './chatColors';
 export * from './custom';

@@ -2,14 +2,24 @@ import capitalize from 'lodash/capitalize';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
-import { IClipboardService, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
-import { Popover } from '@opensumi/ide-core-browser/lib/components';
+import {
+  EDITOR_COMMANDS,
+  FILE_COMMANDS,
+  IClipboardService,
+  LabelService,
+  getIcon,
+  useInjectable,
+  uuid,
+} from '@opensumi/ide-core-browser';
+import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   ActionSourceEnum,
   ActionTypeEnum,
   ChatFeatureRegistryToken,
+  CommandService,
   IAIReporter,
+  URI,
   localize,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -22,6 +32,9 @@ import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 
 import styles from './components.module.less';
 import { highLightLanguageSupport } from './highLight';
+import { MentionType } from './mention-input/types';
+
+import type { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import './highlightTheme.less';
 
@@ -139,16 +152,56 @@ const CodeBlock = ({
   renderText,
   agentId = '',
   command = '',
+  labelService,
+  commandService,
+  workspaceService,
 }: {
   content?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
   agentId?: string;
   command?: string;
+  labelService?: LabelService;
+  commandService?: CommandService;
+  workspaceService?: IWorkspaceService;
 }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
   const rgBlockCodeBefore = /```([^]+)?/g;
+  const rgAttachedFile = /<attached_file>(.*)/g;
+  const rgAttachedFolder = /<attached_folder>(.*)/g;
+  const handleAttachmentClick = useCallback(
+    async (text: string, type: MentionType) => {
+      const roots = await workspaceService?.roots;
+      let uri;
+      if (!roots) {
+        return;
+      }
+      for (const root of roots) {
+        uri = new URI(root.uri).resolve(text);
+        try {
+          await commandService?.executeCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER.id, uri);
+          if (type === MentionType.FILE) {
+            await commandService?.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+          }
+          break;
+        } catch {
+          continue;
+        }
+      }
+    },
+    [commandService, workspaceService],
+  );
+  const renderAttachment = (text: string, isFolder = false, key: string) => (
+    <span
+      className={styles.attachment}
+      key={key}
+      onClick={() => handleAttachmentClick(text, isFolder ? MentionType.FOLDER : MentionType.FILE)}
+    >
+      <Icon iconClass={isFolder ? getIcon('folder') : labelService?.getIcon(new URI(text || 'file'))} />
+      <span className={styles.attachment_text}>{text}</span>
+    </span>
+  );
 
   const renderCodeEditor = (content: string) => {
     const language = content.split('\n')[0].trim().toLowerCase();
@@ -193,11 +246,49 @@ const CodeBlock = ({
               renderedContent.push(text);
             }
           } else {
-            renderedContent.push(
-              <span className={styles.code_inline} key={index}>
-                {text}
-              </span>,
-            );
+            // 处理文件和文件夹标记
+            const processedText = text;
+            const fileMatches = [...text.matchAll(rgAttachedFile)];
+            const folderMatches = [...text.matchAll(rgAttachedFolder)];
+            if (fileMatches.length || folderMatches.length) {
+              let lastIndex = 0;
+              const fragments: (string | React.ReactNode)[] = [];
+
+              // 通用处理函数
+              const processMatches = (matches: RegExpMatchArray[], isFolder: boolean) => {
+                matches.forEach((match, matchIndex) => {
+                  if (match.index !== undefined) {
+                    const spanText = processedText.slice(lastIndex, match.index);
+                    if (spanText) {
+                      fragments.push(
+                        <span key={`${index}-${matchIndex}-${isFolder ? 'folder' : 'file'}`}>{spanText}</span>,
+                      );
+                    }
+                    fragments.push(
+                      renderAttachment(
+                        match[1],
+                        isFolder,
+                        `${index}-tag-${matchIndex}-${isFolder ? 'folder' : 'file'}`,
+                      ),
+                    );
+                    lastIndex = match.index + match[0].length;
+                  }
+                });
+              };
+
+              // 处理文件标记
+              processMatches(fileMatches, false);
+              processMatches(folderMatches, true);
+
+              fragments.push(processedText.slice(lastIndex));
+              renderedContent.push(...fragments);
+            } else {
+              renderedContent.push(
+                <span className={styles.code_inline} key={index}>
+                  {text}
+                </span>,
+              );
+            }
           }
         });
       } else {
@@ -216,15 +307,29 @@ export const CodeBlockWrapper = ({
   renderText,
   relationId,
   agentId,
+  labelService,
+  commandService,
+  workspaceService,
 }: {
   text?: string;
   relationId: string;
   renderText?: (t: string) => React.ReactNode;
   agentId?: string;
+  labelService?: LabelService;
+  commandService?: CommandService;
+  workspaceService?: IWorkspaceService;
 }) => (
   <div className={styles.ai_chat_code_wrapper}>
     <div className={styles.render_text}>
-      <CodeBlock content={text} renderText={renderText} relationId={relationId} agentId={agentId} />
+      <CodeBlock
+        content={text}
+        labelService={labelService}
+        renderText={renderText}
+        relationId={relationId}
+        agentId={agentId}
+        commandService={commandService}
+        workspaceService={workspaceService}
+      />
     </div>
   </div>
 );
@@ -234,11 +339,17 @@ export const CodeBlockWrapperInput = ({
   relationId,
   agentId,
   command,
+  labelService,
+  workspaceService,
+  commandService,
 }: {
   text: string;
   relationId: string;
   agentId?: string;
   command?: string;
+  labelService?: LabelService;
+  workspaceService?: IWorkspaceService;
+  commandService?: CommandService;
 }) => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const [tag, setTag] = useState<string>('');
@@ -271,7 +382,15 @@ export const CodeBlockWrapperInput = ({
           </div>
         )}
         {command && <div className={styles.tag}>/ {command}</div>}
-        <CodeBlock content={txt} relationId={relationId} agentId={agentId} command={command} />
+        <CodeBlock
+          content={txt}
+          labelService={labelService}
+          relationId={relationId}
+          agentId={agentId}
+          command={command}
+          workspaceService={workspaceService}
+          commandService={commandService}
+        />
       </div>
     </div>
   );

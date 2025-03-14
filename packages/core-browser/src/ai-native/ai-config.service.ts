@@ -53,7 +53,6 @@ export class AINativeConfigService implements IAINativeConfig {
   private internalCapabilities = DEFAULT_CAPABILITIES;
   private internalInlineChat = DEFAULT_INLINE_CHAT_CONFIG;
   private internalCodeEdits = DEFAULT_CODE_EDITS_CONFIG;
-
   public get capabilities(): Required<IAINativeCapabilities> {
     if (!this.aiModuleLoaded) {
       return DISABLED_ALL_CAPABILITIES;

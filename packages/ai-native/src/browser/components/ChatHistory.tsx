@@ -163,25 +163,22 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
       (item: IChatHistoryItem) => (
         <div
           key={item.id}
-          className={cls(
-            styles['dm-chat-history-item'],
-            item.id === currentId ? styles['dm-chat-history-item-selected'] : '',
-          )}
+          className={cls(styles.chat_history_item, item.id === currentId ? styles.chat_history_item_selected : '')}
           onClick={() => handleHistoryItemSelect(item)}
         >
-          <div className={styles['dm-chat-history-item-content']}>
+          <div className={styles.chat_history_item_content}>
             {item.loading ? (
               <Loading />
             ) : (
               <Icon icon='message' style={{ width: '16px', height: '16px', marginRight: 4 }} />
             )}
             {!historyTitleEditable?.[item.id] ? (
-              <span id={`dm-chat-history-item-title-${item.id}`} className={styles['dm-chat-history-item-title']}>
+              <span id={`chat-history-item-title-${item.id}`} className={styles.chat_history_item_title}>
                 {item.title}
               </span>
             ) : (
               <Input
-                className={styles['dm-chat-history-item-title']}
+                className={styles.chat_history_item_title}
                 defaultValue={item.title}
                 ref={inputRef}
                 onPressEnter={(e: any) => {
@@ -191,18 +188,9 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
               />
             )}
           </div>
-          <div className={styles['dm-chat-history-item-actions']}>
-            {/* <EditOutlined
-              title={localize('aiNative.operate.chatHistory.edit')}
-              style={{ marginRight: 8 }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleTitleEdit(item);
-              }}
-            /> */}
+          <div className={styles.chat_history_item_actions}>
             <EnhanceIcon
-              className={cls(styles['dm-chat-history-item-actions-delete'], getIcon('delete'))}
+              className={cls(styles.chat_history_item_actions_delete, getIcon('delete'))}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -237,14 +225,14 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
         <div>
           <Input
             placeholder={localize('aiNative.operate.chatHistory.searchPlaceholder')}
-            style={{ width: '100%', maxWidth: '100%' }}
+            className={styles.chat_history_search}
             value={searchValue}
             onChange={handleSearchChange}
           />
-          <div className={styles['dm-chat-history-list']}>
+          <div className={styles.chat_history_list}>
             {groupedHistoryList.map((group) => (
               <div key={group.key} style={{ padding: '4px' }}>
-                <div className={styles['dm-chat-history-time']}>{group.key}</div>
+                <div className={styles.chat_history_time}>{group.key}</div>
                 {group.items.map(renderHistoryItem)}
               </div>
             ))}
@@ -257,13 +245,13 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
     const getPopupContainer = useCallback((triggerNode: HTMLElement) => triggerNode.parentElement!, []);
 
     return (
-      <div className={cls(styles['dm-chat-history-header'], className)}>
-        <div className={styles['dm-chat-history-header-title']}>
+      <div className={cls(styles.chat_history_header, className)}>
+        <div className={styles.chat_history_header_title}>
           <span>{title}</span>
         </div>
-        <div className={styles['dm-chat-history-header-actions']}>
+        <div className={styles.chat_history_header_actions}>
           <Popover
-            id='dm-chat-history-header-actions-history'
+            id='chat-history-header-actions-history'
             content={renderHistory()}
             trigger={PopoverTriggerType.click}
             position={PopoverPosition.bottomRight}
@@ -271,12 +259,10 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
             getPopupContainer={getPopupContainer}
           >
             <div
-              className={styles['dm-chat-history-header-actions-history']}
+              className={styles.chat_history_header_actions_history}
               title={localize('aiNative.operate.chatHistory.title')}
             >
-              <EnhanceIcon
-                className={cls(styles['dm-chat-history-header-actions-history'], 'codicon codicon-history')}
-              />
+              <EnhanceIcon className={cls(styles.chat_history_header_actions_history, 'codicon codicon-history')} />
             </div>
           </Popover>
           <Popover
@@ -285,7 +271,7 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
             title={localize('aiNative.operate.newChat.title')}
           >
             <EnhanceIcon
-              className={cls(styles['dm-chat-history-header-actions-new'], getIcon('plus'))}
+              className={cls(styles.chat_history_header_actions_new, getIcon('plus'))}
               onClick={handleNewChat}
             />
           </Popover>
