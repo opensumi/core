@@ -5,7 +5,6 @@
  */
 
 export const emptyBuffer = new Uint8Array(0);
-export const buffer4Capacity = new Uint8Array(4);
 
 export function copy(
   source: Uint8Array,
@@ -59,39 +58,6 @@ export class Buffers {
     }
 
     const target = new Uint8Array(end - start);
-
-    let ti = 0;
-    for (let ii = si; ti < end - start && ii < buffers.length; ii++) {
-      const len = buffers[ii].length;
-
-      const _start = ti === 0 ? start - startBytes : 0;
-      const _end = ti + len >= end - start ? Math.min(_start + (end - start) - ti, len) : len;
-      copy(buffers[ii], target, ti, _start, _end);
-      ti += _end - _start;
-    }
-
-    return target;
-  }
-
-  slice4(start: number) {
-    let end = start + 4;
-    const buffers = this.buffers;
-
-    if (end > this.size) {
-      end = this.size;
-    }
-
-    if (start >= end) {
-      return emptyBuffer;
-    }
-
-    let startBytes = 0;
-    let si = 0;
-    for (; si < buffers.length && startBytes + buffers[si].length <= start; si++) {
-      startBytes += buffers[si].length;
-    }
-
-    const target = buffer4Capacity;
 
     let ti = 0;
     for (let ii = si; ti < end - start && ii < buffers.length; ii++) {
@@ -299,12 +265,6 @@ export class Cursor {
     const end = this.offset + n;
     const buffers = this.buffers.slice(this.offset, end);
     this.skip(n);
-    return buffers;
-  }
-
-  read4() {
-    const buffers = this.buffers.slice4(this.offset);
-    this.skip(4);
     return buffers;
   }
 

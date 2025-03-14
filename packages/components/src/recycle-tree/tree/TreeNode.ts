@@ -39,15 +39,9 @@ const { Path } = path;
  * @param items 插入的数组
  */
 export function spliceArray(arr: number[], start: number, deleteCount = 0, items?: number[] | null) {
-  // 如果没有修改操作，直接返回原数组
-  if (deleteCount === 0 && (!items || items.length === 0)) {
-    return arr;
-  }
-
-  // 直接使用 slice + concat 避免 spread operator
-  const before = arr.slice(0, start);
-  const after = arr.slice(start + deleteCount);
-  return before.concat(items || []).concat(after);
+  const a = arr.slice(0);
+  a.splice(start, deleteCount, ...(items || []));
+  return a;
 }
 
 export enum BranchOperatorStatus {
@@ -576,10 +570,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   /**
-   * 确保此"目录"的子级已加载（不影响"展开"状态）
+   * 确保此“目录”的子级已加载（不影响“展开”状态）
    * 如果子级已经加载，则返回的Promise将立即解决
    * 否则，将发出重新加载请求并返回Promise
-   * 一旦返回的Promise.resolve，"CompositeTreeNode＃children" 便可以访问到对于节点
+   * 一旦返回的Promise.resolve，“CompositeTreeNode＃children” 便可以访问到对于节点
    */
   public async ensureLoaded(token?: CancellationToken) {
     if (this._children) {
