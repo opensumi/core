@@ -46,10 +46,6 @@ import { ChatRenderRegistry } from './chat/chat.render.registry';
 import { LlmContextContribution } from './context/llm-context.contribution';
 import { LLMContextServiceImpl } from './context/llm-context.service';
 import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
-import {
-  ImageUploadProviderRegistry,
-  ImageUploadProviderRegistryToken,
-} from './contrib/image-upload/image-upload.feature.registry';
 import { AIInlineCompletionsProvider } from './contrib/inline-completions/completeProvider';
 import { IntelligentCompletionsContribution } from './contrib/intelligent-completions/intelligent-completions.contribution';
 import { IntelligentCompletionsRegistry } from './contrib/intelligent-completions/intelligent-completions.feature.registry';
@@ -189,10 +185,6 @@ export class AINativeModule extends BrowserModule {
     {
       token: TerminalRegistryToken,
       useClass: TerminalFeatureRegistry,
-    },
-    {
-      token: ImageUploadProviderRegistryToken,
-      useClass: ImageUploadProviderRegistry,
     },
     {
       token: LanguageParserService,
