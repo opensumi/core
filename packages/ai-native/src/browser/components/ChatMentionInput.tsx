@@ -1,14 +1,18 @@
+import { DataContent } from 'ai';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Image } from '@opensumi/ide-components/lib/image';
 import { LabelService, RecentFilesManager, useInjectable } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { URI, localize } from '@opensumi/ide-core-common';
+import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { ChatFeatureRegistryToken, URI, localize } from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
+import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
 
@@ -17,7 +21,13 @@ import { MentionInput } from './mention-input/mention-input';
 import { FooterButtonPosition, FooterConfig, MentionItem, MentionType } from './mention-input/types';
 
 export interface IChatMentionInputProps {
-  onSend: (value: string, agentId?: string, command?: string, option?: { model: string; [key: string]: any }) => void;
+  onSend: (
+    value: string,
+    images?: string[],
+    agentId?: string,
+    command?: string,
+    option?: { model: string; [key: string]: any },
+  ) => void;
   onValueChange?: (value: string) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
@@ -26,6 +36,7 @@ export interface IChatMentionInputProps {
   sendBtnClassName?: string;
   defaultHeight?: number;
   value?: string;
+  images?: Array<DataContent | URL>;
   autoFocus?: boolean;
   theme?: string | null;
   setTheme: (theme: string | null) => void;
@@ -41,6 +52,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const { onSend, disabled = false } = props;
 
   const [value, setValue] = useState(props.value || '');
+  const [images, setImages] = useState(props.images || []);
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const commandService = useInjectable<CommandService>(CommandService);
   const searchService = useInjectable<IFileSearchService>(FileSearchServicePath);
@@ -48,7 +60,8 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const labelService = useInjectable<LabelService>(LabelService);
-
+  const messageService = useInjectable<IMessageService>(IMessageService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
   }, [commandService]);
@@ -239,6 +252,24 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           onClick: handleShowMCPConfig,
           position: FooterButtonPosition.LEFT,
         },
+        {
+          id: 'upload-image',
+          iconClass: 'codicon codicon-file-media',
+          title: 'Upload Image',
+          onClick: () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+              const file = (e.target as HTMLInputElement).files?.[0];
+              if (file) {
+                handleImageUpload(file);
+              }
+            };
+            input.click();
+          },
+          position: FooterButtonPosition.LEFT,
+        },
       ],
       showModelSelector: true,
     }),
@@ -254,13 +285,47 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       if (disabled) {
         return;
       }
-      onSend(content, undefined, undefined, option);
+      onSend(
+        content,
+        images.map((image) => image.toString()),
+        undefined,
+        undefined,
+        option,
+      );
+      setImages(props.images || []);
     },
-    [onSend, editorService, disabled],
+    [onSend, images, disabled],
+  );
+
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        messageService.error('Only JPG, PNG, WebP and GIF images are supported');
+        return;
+      }
+
+      const imageUploadProvider = chatFeatureRegistry.getImageUploadProvider();
+      if (!imageUploadProvider) {
+        messageService.error('No image upload provider found');
+        return;
+      }
+      const data = await imageUploadProvider.imageUpload(file);
+      setImages([...images, data]);
+    },
+    [images],
+  );
+
+  const handleDeleteImage = useCallback(
+    (index: number) => {
+      setImages(images.filter((_, i) => i !== index));
+    },
+    [images],
   );
 
   return (
     <div className={styles.chat_input_container}>
+      {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
       <MentionInput
         mentionItems={defaultMenuItems}
         onSend={handleSend}
@@ -270,7 +335,29 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         workspaceService={workspaceService}
         placeholder={localize('aiNative.chat.input.placeholder.default')}
         footerConfig={defaultMentionInputFooterOptions}
+        onImageUpload={handleImageUpload}
       />
     </div>
   );
 };
+
+const ImagePreviewer = ({
+  images,
+  onDelete,
+}: {
+  images: Array<DataContent | URL>;
+  onDelete: (index: number) => void;
+}) => (
+  <div>
+    <div className={styles.thumbnail_container}>
+      {images.map((image, index) => (
+        <div key={index} className={styles.thumbnail}>
+          <Image src={image.toString()} />
+          <button onClick={() => onDelete(index)} className={styles.delete_button}>
+            <Icon iconClass='codicon codicon-close' />
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+);

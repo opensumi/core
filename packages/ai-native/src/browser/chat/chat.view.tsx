@@ -281,7 +281,7 @@ export const AIChatView = () => {
           if (loading) {
             return;
           }
-          await handleSend(message.message, message.agentId, message.command);
+          await handleSend(message.message, message.images, message.agentId, message.command);
         } else {
           if (message.agentId) {
             setAgentId(message.agentId);
@@ -462,10 +462,16 @@ export const AIChatView = () => {
   );
 
   const renderUserMessage = React.useCallback(
-    async (renderModel: { message: string; agentId?: string; relationId: string; command?: string }) => {
+    async (renderModel: {
+      message: string;
+      images?: string[];
+      agentId?: string;
+      relationId: string;
+      command?: string;
+    }) => {
       const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
-      const { message, agentId, relationId, command } = renderModel;
+      const { message, images, agentId, relationId, command } = renderModel;
 
       const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
 
@@ -474,12 +480,13 @@ export const AIChatView = () => {
           id: uuid(6),
           relationId,
           text: ChatUserRoleRender ? (
-            <ChatUserRoleRender content={message} agentId={visibleAgentId} command={command} />
+            <ChatUserRoleRender content={message} images={images} agentId={visibleAgentId} command={command} />
           ) : (
             <CodeBlockWrapperInput
               labelService={labelService}
               relationId={relationId}
               text={message}
+              images={images}
               agentId={visibleAgentId}
               command={command}
               workspaceService={workspaceService}
@@ -598,10 +605,10 @@ export const AIChatView = () => {
 
   const handleAgentReply = React.useCallback(
     async (value: IChatMessageStructure) => {
-      const { message, agentId, command, reportExtra } = value;
+      const { message, images, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
-      const request = aiChatService.createRequest(message, agentId!, command);
+      const request = aiChatService.createRequest(message, agentId!, images, command);
       if (!request) {
         return;
       }
@@ -627,6 +634,7 @@ export const AIChatView = () => {
 
       msgHistoryManager.addUserMessage({
         content: message,
+        images: images || [],
         agentId: agentId!,
         agentCommand: command!,
         relationId,
@@ -635,6 +643,7 @@ export const AIChatView = () => {
       await renderUserMessage({
         relationId,
         message,
+        images,
         command,
         agentId,
       });
@@ -668,7 +677,7 @@ export const AIChatView = () => {
   );
 
   const handleSend = React.useCallback(
-    async (message: string, agentId?: string, command?: string) => {
+    async (message: string, images?: string[], agentId?: string, command?: string) => {
       const reportExtra = {
         actionSource: ActionSourceEnum.Chat,
         actionType: ActionTypeEnum.Send,
@@ -707,7 +716,7 @@ export const AIChatView = () => {
           processedContent = processedContent.replace(match, `\`<attached_folder>${relativePath}\``);
         }
       }
-      return handleAgentReply({ message: processedContent, agentId, command, reportExtra });
+      return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra });
     },
     [handleAgentReply],
   );
@@ -750,6 +759,7 @@ export const AIChatView = () => {
             message: msg.content,
             agentId: msg.agentId,
             command: msg.agentCommand,
+            images: msg.images,
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.requestId) {
           const request = aiChatService.sessionModel.getRequest(msg.requestId)!;

@@ -3490,6 +3490,7 @@ __metadata:
     raf: "npm:^3.4.1"
     rc-dialog: "npm:^9.6.0"
     rc-dropdown: "npm:~2.4.1"
+    rc-image: "npm:^7.11.0"
     rc-input-number: "npm:^9.3.0"
     rc-menu: "npm:^9.16.0"
     rc-notification: "npm:~3.3.1"
@@ -20350,7 +20351,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-image@npm:~7.11.0":
+"rc-image@npm:^7.11.0, rc-image@npm:~7.11.0":
   version: 7.11.0
   resolution: "rc-image@npm:7.11.0"
   dependencies:

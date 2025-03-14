@@ -9,6 +9,7 @@ export * from './tabs';
 export * from './overlay';
 export * from './dialog';
 export * from './icon';
+export * from './image';
 export * from './notification';
 export * from './popover';
 export * from './message';

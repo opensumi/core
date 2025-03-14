@@ -1,3 +1,4 @@
+import { DataContent } from 'ai';
 import React from 'react';
 import { ZodSchema } from 'zod';
 
@@ -129,6 +130,7 @@ export interface IChatSlashCommandHandler {
 }
 
 export interface IChatFeatureRegistry {
+  registerImageUploadProvider(provider: IImageUploadProvider): void;
   registerWelcome(content: IChatWelcomeMessageContent | React.ReactNode, sampleQuestions?: ISampleQuestions[]): void;
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void;
 }
@@ -140,13 +142,14 @@ export type ChatWelcomeRender = (props: {
 export type ChatAIRoleRender = (props: { content: string }) => React.ReactElement | React.JSX.Element;
 export type ChatUserRoleRender = (props: {
   content: string;
+  images?: string[];
   agentId?: string;
   command?: string;
 }) => React.ReactElement | React.JSX.Element;
 export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactElement | React.JSX.Element;
 export type ChatThinkingResultRender = (props: { thinkingResult?: string }) => React.ReactElement | React.JSX.Element;
 export type ChatInputRender = (props: {
-  onSend: (value: string, agentId?: string, command?: string) => void;
+  onSend: (value: string, images?: string[], agentId?: string, command?: string) => void;
   onValueChange?: (value: string) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
@@ -287,6 +290,10 @@ export interface IHoverFixHandler {
 
 export interface IProblemFixProviderRegistry {
   registerHoverFixProvider(handler: IHoverFixHandler): void;
+}
+
+export interface IImageUploadProvider {
+  imageUpload(file: File): Promise<DataContent | URL>;
 }
 
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');

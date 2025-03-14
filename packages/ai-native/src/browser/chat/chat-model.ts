@@ -27,7 +27,7 @@ import {
 import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
 
-import type { TextPart, ToolCallPart } from 'ai';
+import type { ImagePart, TextPart, ToolCallPart } from 'ai';
 
 export type IChatProgressResponseContent =
   | IChatMarkdownContent
@@ -330,7 +330,15 @@ export class ChatModel extends Disposable implements IChatModel {
       if (!request.response.isComplete) {
         continue;
       }
-      history.push({ role: 'user', content: request.message.prompt });
+      history.push({
+        role: 'user',
+        content: request.message.images?.length
+          ? [
+              { type: 'text', text: request.message.prompt },
+              ...request.message.images.map((image) => ({ type: 'image', image: new URL(image) } as ImagePart)),
+            ]
+          : request.message.prompt,
+      });
       for (const part of request.response.responseParts) {
         if (part.kind === 'treeData' || part.kind === 'component') {
           continue;

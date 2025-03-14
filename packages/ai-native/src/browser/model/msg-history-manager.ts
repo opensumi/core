@@ -62,7 +62,7 @@ export class MsgHistoryManager extends Disposable {
   }
 
   public addUserMessage(
-    message: Required<Pick<IExcludeMessage, 'agentId' | 'agentCommand' | 'content' | 'relationId'>>,
+    message: Required<Pick<IExcludeMessage, 'agentId' | 'agentCommand' | 'content' | 'relationId' | 'images'>>,
   ): string {
     return this.doAddMessage({
       ...message,
