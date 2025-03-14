@@ -37,8 +37,10 @@ export const MCPConfigView: React.FC = () => {
         isStarted: !!runningServer,
         tools: runningServer?.tools,
       };
-    });
-    allServers.unshift(builtinServer as any);
+    }) as MCPServer[];
+    if (builtinServer) {
+      allServers.unshift(builtinServer);
+    }
     setServers(allServers);
   }, [mcpServerProxyService]);
 
