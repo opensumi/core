@@ -256,7 +256,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         },
         {
           id: 'upload-image',
-          icon: 'image',
+          iconClass: 'codicon codicon-file-media',
           title: 'Upload Image',
           onClick: () => {
             const input = document.createElement('input');
