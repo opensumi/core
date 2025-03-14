@@ -55,7 +55,8 @@ export enum MentionType {
 
 interface FooterButton {
   id: string;
-  icon: string;
+  icon?: string;
+  iconClass?: string;
   title: string;
   onClick?: () => void;
   position: FooterButtonPosition;

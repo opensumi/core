@@ -107,7 +107,7 @@ export abstract class BaseLanguageModel {
           content: images?.length
             ? [
                 { type: 'text', text: request } as TextPart,
-                ...images.map((image) => ({ type: 'image', image } as ImagePart)),
+                ...images.map((image) => ({ type: 'image', image: new URL(image) } as ImagePart)),
               ]
             : request,
         },
@@ -123,9 +123,9 @@ export abstract class BaseLanguageModel {
         maxTokens,
         temperature: modelInfo?.temperature || 0,
         topP: modelInfo?.topP || 0.8,
-        topK: modelInfo?.topK || 1,
         system: systemPrompt,
         providerOptions,
+        ...(!images?.length && { topK: modelInfo?.topK || 1 }),
       });
 
       // 状态跟踪变量

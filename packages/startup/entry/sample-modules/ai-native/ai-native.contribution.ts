@@ -513,7 +513,7 @@ export class AINativeContribution implements AINativeCoreContribution {
   registerImageUploadProvider(registry: IImageUploadProviderRegistry): void {
     registry.registerImageUploadProvider({
       imageUpload: async (file) =>
-        'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg',
+        'https://idealab-platform.oss-accelerate.aliyuncs.com/20231125/33808fdb-10ad-428c-8a76-11532ad93b15_idealab2.png?Expires=4102329600&OSSAccessKeyId=LTAI5tFJF3QLwHzEmkhLs9dB&Signature=YcbZrM98pHRRMd%2BGFaI2OiFf8Z8%3D',
     });
   }
 }

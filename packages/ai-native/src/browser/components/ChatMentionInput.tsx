@@ -249,6 +249,24 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           onClick: handleShowMCPConfig,
           position: FooterButtonPosition.LEFT,
         },
+        {
+          id: 'upload-image',
+          icon: 'image',
+          title: 'Upload Image',
+          onClick: () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+              const file = (e.target as HTMLInputElement).files?.[0];
+              if (file) {
+                handleImageUpload(file);
+              }
+            };
+            input.click();
+          },
+          position: FooterButtonPosition.LEFT,
+        },
       ],
       showModelSelector: true,
     }),
@@ -277,6 +295,12 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
 
   const handleImageUpload = useCallback(
     async (file: File) => {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        messageService.error('Only JPG, PNG, WebP and GIF images are supported');
+        return;
+      }
+
       const imageUploadProvider = imageUploadProviderRegistry.getImageUploadProvider();
       if (!imageUploadProvider) {
         messageService.error('No image upload provider found');

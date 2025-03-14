@@ -883,7 +883,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
             title={button.title}
           >
             <EnhanceIcon
-              className={cls(getIcon(button.icon), styles[`${button.id}_logo`])}
+              className={cls(button.icon ? getIcon(button.icon) : button.iconClass, styles[`${button.id}_logo`])}
               tabIndex={0}
               role='button'
               ariaLabel={button.title}
