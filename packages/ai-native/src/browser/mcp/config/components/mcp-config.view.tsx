@@ -26,7 +26,21 @@ export const MCPConfigView: React.FC = () => {
   const [editingServer, setEditingServer] = React.useState<MCPServerFormData | undefined>();
   const [loadingServer, setLoadingServer] = React.useState<string | undefined>();
   const loadServers = useCallback(async () => {
-    const allServers = await mcpServerProxyService.$getServers();
+    const userServers = preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
+    const runningServers = await mcpServerProxyService.$getServers();
+    const builtinServer = runningServers.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
+    const allServers = userServers.map((server) => {
+      const runningServer = runningServers.find((s) => s.name === server.name);
+      return {
+        ...server,
+        name: server.name,
+        isStarted: !!runningServer,
+        tools: runningServer?.tools,
+      };
+    }) as MCPServer[];
+    if (builtinServer) {
+      allServers.unshift(builtinServer);
+    }
     setServers(allServers);
   }, [mcpServerProxyService]);
 
