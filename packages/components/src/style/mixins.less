@@ -133,3 +133,40 @@
     clear: both;
   }
 }
+
+.box(@position: absolute) {
+  position: @position;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.modal-mask() {
+  pointer-events: none;
+
+  &.@{prefix}-zoom-enter,
+  &.@{prefix}-zoom-appear {
+    transform: none; // reset scale avoid mousePosition bug
+    opacity: 0;
+    animation-duration: @animation-duration-slow;
+    user-select: none; // https://github.com/ant-design/ant-design/issues/11777
+  }
+
+  &-mask {
+    .box(fixed);
+    z-index: @zindex-modal-mask;
+    height: 100%;
+    background-color: @modal-mask-bg;
+
+    &-hidden {
+      display: none;
+    }
+  }
+
+  &-wrap {
+    .box(fixed);
+    overflow: auto;
+    outline: 0;
+  }
+}

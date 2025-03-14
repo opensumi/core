@@ -2,6 +2,7 @@ import capitalize from 'lodash/capitalize';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
+import { Image } from '@opensumi/ide-components/lib/image';
 import {
   EDITOR_COMMANDS,
   FILE_COMMANDS,
@@ -374,7 +375,7 @@ export const CodeBlockWrapperInput = ({
     <div className={styles.ai_chat_code_wrapper}>
       {images?.map((image) => (
         <div className={styles.image_wrapper}>
-          <img src={image} alt='image' />
+          <Image src={image} />
         </div>
       ))}
       <div className={styles.render_text}>

@@ -1,6 +1,7 @@
 import { DataContent } from 'ai';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Image } from '@opensumi/ide-components/lib/image';
 import { LabelService, RecentFilesManager, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { URI, localize } from '@opensumi/ide-core-common';
@@ -11,7 +12,6 @@ import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
-import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { ImageUploadProviderRegistryToken } from '../contrib/image-upload/image-upload.feature.registry';
 import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
@@ -353,7 +353,7 @@ const ImagePreviewer = ({
     <div className={styles.thumbnail_container}>
       {images.map((image, index) => (
         <div key={index} className={styles.thumbnail}>
-          <img src={image.toString()} />
+          <Image src={image.toString()} />
           <button onClick={() => onDelete(index)} className={styles.delete_button}>
             <Icon iconClass='codicon codicon-close' />
           </button>
