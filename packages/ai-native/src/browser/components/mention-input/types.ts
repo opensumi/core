@@ -76,7 +76,7 @@ export interface MentionInputProps {
   placeholder?: string;
   loading?: boolean;
   onSelectionChange?: (value: string) => void;
-  onImageUpload?: (file: File) => void;
+  onImageUpload?: (files: File[]) => Promise<void>;
   footerConfig?: FooterConfig; // 新增配置项
   mentionKeyword?: string;
   labelService?: LabelService;

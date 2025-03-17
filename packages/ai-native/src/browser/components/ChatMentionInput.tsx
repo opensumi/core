@@ -263,7 +263,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
             input.onchange = (e) => {
               const file = (e.target as HTMLInputElement).files?.[0];
               if (file) {
-                handleImageUpload(file);
+                handleImageUpload([file]);
               }
             };
             input.click();
@@ -298,9 +298,12 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   );
 
   const handleImageUpload = useCallback(
-    async (file: File) => {
+    async (files: File[]) => {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-      if (!allowedTypes.includes(file.type)) {
+
+      // Validate file types
+      const invalidFiles = files.filter((file) => !allowedTypes.includes(file.type));
+      if (invalidFiles.length > 0) {
         messageService.error('Only JPG, PNG, WebP and GIF images are supported');
         return;
       }
@@ -310,8 +313,12 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         messageService.error('No image upload provider found');
         return;
       }
-      const data = await imageUploadProvider.imageUpload(file);
-      setImages([...images, data]);
+
+      // Upload all files
+      const uploadedData = await Promise.all(files.map((file) => imageUploadProvider.imageUpload(file)));
+
+      const newImages = [...images, ...uploadedData];
+      setImages(newImages);
     },
     [images],
   );
