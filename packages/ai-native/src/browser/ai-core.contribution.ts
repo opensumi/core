@@ -418,13 +418,13 @@ export class AINativeBrowserContribution
     const builtinServer = mcpServers?.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
 
     // 总是初始化内置服务器，根据配置决定是否启用
-    this.sumiMCPServerBackendProxy.initBuiltinMCPServer(builtinServer?.enabled ?? true);
+    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(builtinServer?.enabled ?? true);
 
     // 初始化其他外部 MCP Servers
     if (mcpServers && mcpServers.length > 0) {
       const externalServers = mcpServers.filter((server) => server.name !== BUILTIN_MCP_SERVER_NAME);
       if (externalServers.length > 0) {
-        this.sumiMCPServerBackendProxy.initExternalMCPServers(externalServers);
+        this.sumiMCPServerBackendProxy.$initExternalMCPServers(externalServers);
       }
     }
   }

@@ -137,7 +137,7 @@ export const MCPConfigView: React.FC = () => {
     async (serverName: string) => {
       const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
       const updatedServers = servers.filter((s) => s.name !== serverName);
-      sumiMCPServerBackendProxy.removeServer(serverName);
+      sumiMCPServerBackendProxy.$removeServer(serverName);
       await preferenceService.set(AINativeSettingSectionsId.MCPServers, updatedServers, PreferenceScope.User);
       await loadServers();
     },
@@ -156,7 +156,7 @@ export const MCPConfigView: React.FC = () => {
       }
       setServers(servers as MCPServer[]);
       setFormVisible(false);
-      await sumiMCPServerBackendProxy.addOrUpdateServer(data as MCPServerDescription);
+      await sumiMCPServerBackendProxy.$addOrUpdateServer(data as MCPServerDescription);
       await preferenceService.set(AINativeSettingSectionsId.MCPServers, servers, PreferenceScope.User);
       await loadServers();
     },
