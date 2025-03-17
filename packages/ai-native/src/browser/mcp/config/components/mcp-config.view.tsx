@@ -34,7 +34,7 @@ export const MCPConfigView: React.FC = () => {
       return {
         ...server,
         name: server.name,
-        isStarted: !!runningServer,
+        isStarted: runningServer?.isStarted,
         tools: runningServer?.tools,
       };
     }) as MCPServer[];
@@ -107,8 +107,8 @@ export const MCPConfigView: React.FC = () => {
         setLoadingServer(undefined);
       } catch (error) {
         const msg = error.message || error;
-        logger.error(`Failed to ${start ? 'start' : 'stop'} server ${serverName}:`, error);
-        messageService.error(error.message);
+        logger.error(`Failed to ${start ? 'start' : 'stop'} server ${serverName}:`, msg);
+        messageService.error(msg);
         setLoadingServer(undefined);
       }
     },
