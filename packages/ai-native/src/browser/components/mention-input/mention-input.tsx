@@ -18,6 +18,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   loading = false,
   mentionKeyword = MENTION_KEYWORD,
   onSelectionChange,
+  onImageUpload,
   labelService,
   workspaceService,
   placeholder = 'Ask anything, @ to mention',
@@ -271,6 +272,21 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       if (content === '' || content === '<br>' || content === '<br/>') {
         // 清空编辑器内容
         editorRef.current.innerHTML = '';
+      }
+    }
+  };
+
+  // 处理图片粘贴事件
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const items = e.clipboardData.items;
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file && onImageUpload) {
+          e.preventDefault();
+          onImageUpload(file);
+        }
       }
     }
   };
@@ -867,7 +883,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
             title={button.title}
           >
             <EnhanceIcon
-              className={cls(getIcon(button.icon), styles[`${button.id}_logo`])}
+              className={cls(button.icon ? getIcon(button.icon) : button.iconClass, styles[`${button.id}_logo`])}
               tabIndex={0}
               role='button'
               ariaLabel={button.title}
@@ -901,6 +917,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           contentEditable={true}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           onCompositionEnd={handleCompositionEnd}
         />
       </div>

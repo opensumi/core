@@ -162,7 +162,7 @@ const AgentWidget = ({ agentId, command }) => (
 );
 
 export interface IChatInputProps {
-  onSend: (value: string, agentId?: string, command?: string) => void;
+  onSend: (value: string, images?: string[], agentId?: string, command?: string) => void;
   onValueChange?: (value: string) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
@@ -341,7 +341,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     }
 
     const handleSendLogic = (newValue: string = value) => {
-      onSend(newValue, agentId, command);
+      onSend(newValue, [], agentId, command);
       setValue('');
       setTheme('');
       setAgentId('');

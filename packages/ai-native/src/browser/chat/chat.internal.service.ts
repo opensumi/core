@@ -62,8 +62,8 @@ export class ChatInternalService extends Disposable {
     this._onChangeRequestId.fire(id);
   }
 
-  createRequest(input: string, agentId: string, command?: string) {
-    return this.chatManagerService.createRequest(this.#sessionModel.sessionId, input, agentId, command);
+  createRequest(input: string, agentId: string, images?: string[], command?: string) {
+    return this.chatManagerService.createRequest(this.#sessionModel.sessionId, input, agentId, command, images);
   }
 
   sendRequest(request: ChatRequestModel, regenerate = false) {

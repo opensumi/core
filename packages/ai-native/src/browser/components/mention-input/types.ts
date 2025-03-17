@@ -55,7 +55,8 @@ export enum MentionType {
 
 interface FooterButton {
   id: string;
-  icon: string;
+  icon?: string;
+  iconClass?: string;
   title: string;
   onClick?: () => void;
   position: FooterButtonPosition;
@@ -75,6 +76,7 @@ export interface MentionInputProps {
   placeholder?: string;
   loading?: boolean;
   onSelectionChange?: (value: string) => void;
+  onImageUpload?: (file: File) => void;
   footerConfig?: FooterConfig; // 新增配置项
   mentionKeyword?: string;
   labelService?: LabelService;

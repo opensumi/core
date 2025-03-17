@@ -150,7 +150,7 @@ export class ChatManagerService extends Disposable {
     this.saveSessions();
   }
 
-  createRequest(sessionId: string, message: string, agentId: string, command?: string) {
+  createRequest(sessionId: string, message: string, agentId: string, command?: string, images?: string[]) {
     const model = this.getSession(sessionId);
     if (!model) {
       throw new Error(`Unknown session: ${sessionId}`);
@@ -160,7 +160,7 @@ export class ChatManagerService extends Disposable {
       return;
     }
 
-    return model.addRequest({ prompt: message, agentId, command });
+    return model.addRequest({ prompt: message, agentId, command, images });
   }
 
   async sendRequest(sessionId: string, request: ChatRequestModel, regenerate: boolean) {
@@ -191,6 +191,7 @@ export class ChatManagerService extends Disposable {
         requestId: request.requestId,
         message: request.message.prompt,
         command: request.message.command,
+        images: request.message.images,
         regenerate,
       };
       const result = await this.chatAgentService.invokeAgent(

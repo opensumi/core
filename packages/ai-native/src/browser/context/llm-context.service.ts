@@ -1,3 +1,5 @@
+import { DataContent } from 'ai';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus/event-decorator';

@@ -20,11 +20,9 @@ import {
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
-  TChatSlashCommandSend,
   TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
-import { SerializedContext } from '@opensumi/ide-ai-native/lib/common/llm-context';
 import {
   ChatAgentPromptProvider,
   DefaultChatAgentPromptProvider,
@@ -47,8 +45,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ISelection, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
-
-import { SlashCommand } from './SlashCommand';
 
 export enum EInlineOperation {
   Comments = 'Comments',
@@ -235,6 +231,10 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       ],
     );
+
+    registry.registerImageUploadProvider({
+      imageUpload: imageToBase64,
+    });
 
     // registry.registerSlashCommand(
     //   {
@@ -509,3 +509,23 @@ export class AINativeContribution implements AINativeCoreContribution {
     });
   }
 }
+
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024;
+
+const imageToBase64 = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    if (file.size > MAX_IMAGE_SIZE) {
+      reject(new Error('Image size exceeds 3MB limit'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      resolve(base64String);
+    };
+    reader.onerror = () => {
+      reject(new Error('Failed to convert image to base64'));
+    };
+    reader.readAsDataURL(file);
+  });

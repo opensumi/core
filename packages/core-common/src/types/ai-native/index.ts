@@ -171,6 +171,7 @@ export interface IAIBackServiceOption {
   type?: string;
   requestId?: string;
   sessionId?: string;
+  images?: string[];
   history?: CoreMessage[];
   tools?: any[];
   clientId?: string;
@@ -440,6 +441,7 @@ export interface IHistoryChatMessage extends IChatMessage {
   order: number;
 
   type?: 'string' | 'component';
+  images?: string[];
   relationId?: string;
   componentId?: string;
   componentValue?: any;

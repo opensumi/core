@@ -1,3 +1,5 @@
+import { DataContent } from 'ai';
+
 import { Event, URI } from '@opensumi/ide-core-common/lib/utils';
 
 export interface LLMContextService {
