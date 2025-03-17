@@ -276,21 +276,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
   };
 
-  // 处理图片粘贴事件
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    const items = e.clipboardData.items;
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
-        const file = items[i].getAsFile();
-        if (file && onImageUpload) {
-          e.preventDefault();
-          onImageUpload(file);
-        }
-      }
-    }
-  };
-
   // 处理键盘事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     // 如果按下ESC键且提及面板处于活动状态或内联搜索处于活动状态
@@ -463,20 +448,35 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   };
 
   // 添加粘贴事件处理
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    // 阻止默认粘贴行为
+  const handlePaste = async (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const items = e.clipboardData.items;
+
+    // 先收集所有图片文件
+    const imageFiles: File[] = [];
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) {
+          imageFiles.push(file);
+        }
+      }
+    }
+
     e.preventDefault();
 
-    // 获取剪贴板中的纯文本内容
+    // 处理所有收集到的图片
+    if (imageFiles.length > 0 && onImageUpload) {
+      await onImageUpload(imageFiles);
+      return;
+    }
+
     const text = e.clipboardData.getData('text/plain');
 
     // 处理文本，保留换行和缩进
     const processedText = text
-      // 将制表符转换为4个空格
       .replace(/\t/g, '    ')
-      // 将连续的换行符转换为单个换行
       .replace(/\n\s*\n/g, '\n\n')
-      // 移除行尾空格
       .replace(/[ \t]+$/gm, '');
 
     const selection = window.getSelection();
@@ -983,7 +983,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           onCompositionEnd={handleCompositionEnd}
-          onPaste={handlePaste}
         />
       </div>
       <div className={styles.footer}>
