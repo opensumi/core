@@ -288,8 +288,11 @@ export abstract class BaseApplyService extends WithEventBus {
       }
 
       if (this.activePreviewerMap.has(codeBlock.relativePath)) {
-        // 有正在进行的 apply，则取消（但不更新block状态，只清理副作用）
-        this.cancelApply(codeBlock, true);
+        // 有正在进行的 apply，则销毁previewer和监听器（不需要操作 reject，因为总是基于磁盘版本改写的）
+        this.editorListenerMap.disposeKey(
+          URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)).toString(),
+        );
+        this.activePreviewerMap.disposeKey(codeBlock.relativePath);
       }
       // trigger diffPreivewer & return expected diff result directly
       const result = await this.editorService.open(
@@ -449,10 +452,8 @@ export abstract class BaseApplyService extends WithEventBus {
           ?.livePreviewDiffDecorationModel.discardUnProcessed();
         this.activePreviewerMap.disposeKey(blockData.relativePath);
       }
-      if (!keepStatus) {
-        blockData.status = 'cancelled';
-        this.updateCodeBlock(blockData);
-      }
+      blockData.status = 'cancelled';
+      this.updateCodeBlock(blockData);
     }
   }
 
