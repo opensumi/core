@@ -334,14 +334,74 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         inlineSearchStartPos: null,
         loading: false,
       });
+    }
 
-      // 不要阻止默认行为，让 @ 正常输入到编辑器中
+    // 处理上下方向键导航历史记录
+    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      // 只有在非提及面板激活状态下才处理历史导航
+      if (!mentionState.active && !mentionState.inlineSearchActive && editorRef.current && history.length > 0) {
+        const currentContent = editorRef.current.innerHTML;
+
+        // 检查是否应该触发历史导航
+        const shouldTriggerHistory =
+          // 当前内容为空
+          !currentContent ||
+          currentContent === '<br>' ||
+          // 或者当前内容与历史记录中的某一项匹配（正在浏览历史）
+          (isNavigatingHistory && historyIndex >= 0 && history[history.length - 1 - historyIndex] === currentContent);
+
+        if (shouldTriggerHistory) {
+          e.preventDefault();
+
+          // 如果是第一次按上下键，保存当前输入
+          if (!isNavigatingHistory) {
+            setCurrentInput(currentContent);
+            setIsNavigatingHistory(true);
+          }
+
+          // 计算新的历史索引
+          let newIndex = historyIndex;
+          if (e.key === 'ArrowUp') {
+            // 向上导航到较早的历史记录
+            newIndex = Math.min(history.length - 1, historyIndex + 1);
+          } else {
+            // 向下导航到较新的历史记录
+            newIndex = Math.max(-1, historyIndex - 1);
+          }
+
+          setHistoryIndex(newIndex);
+
+          // 更新编辑器内容
+          if (newIndex === -1) {
+            // 恢复到当前输入
+            editorRef.current.innerHTML = currentInput;
+          } else {
+            // 显示历史记录
+            editorRef.current.innerHTML = history[history.length - 1 - newIndex];
+          }
+
+          // 将光标移到末尾
+          const range = document.createRange();
+          range.selectNodeContents(editorRef.current);
+          range.collapse(false);
+          const selection = window.getSelection();
+          if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+
+          return;
+        }
+      }
+    } else if (isNavigatingHistory && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
+      // 如果用户在浏览历史记录后开始输入其他内容，退出历史导航模式
+      setIsNavigatingHistory(false);
+      setHistoryIndex(-1);
     }
 
     // 添加对 Enter 键的处理，只有在按下 Shift+Enter 时才允许换行
     if (e.key === 'Enter') {
       // 检查是否是输入法的回车键
-      // isComposing 属性表示是否正在进行输入法组合输入
       if (e.nativeEvent.isComposing) {
         return; // 如果是输入法组合输入过程中的回车，不做任何处理
       }
@@ -353,57 +413,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           return;
         }
       }
-    }
-
-    // 处理上下方向键导航历史记录
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      // 只有在非提及面板激活状态下才处理历史导航
-      if (!mentionState.active && !mentionState.inlineSearchActive && editorRef.current) {
-        e.preventDefault();
-
-        // 如果是第一次按上下键，保存当前输入
-        if (!isNavigatingHistory) {
-          setCurrentInput(editorRef.current.innerHTML);
-          setIsNavigatingHistory(true);
-        }
-
-        // 计算新的历史索引
-        let newIndex = historyIndex;
-        if (e.key === 'ArrowUp') {
-          // 向上导航到较早的历史记录
-          newIndex = Math.min(history.length - 1, historyIndex + 1);
-        } else {
-          // 向下导航到较新的历史记录
-          newIndex = Math.max(-1, historyIndex - 1);
-        }
-
-        setHistoryIndex(newIndex);
-
-        // 更新编辑器内容
-        if (newIndex === -1) {
-          // 恢复到当前输入
-          editorRef.current.innerHTML = currentInput;
-        } else {
-          // 显示历史记录
-          editorRef.current.innerHTML = history[history.length - 1 - newIndex];
-        }
-
-        // 将光标移到末尾
-        const range = document.createRange();
-        range.selectNodeContents(editorRef.current);
-        range.collapse(false);
-        const selection = window.getSelection();
-        if (selection) {
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
-
-        return;
-      }
-    } else if (isNavigatingHistory && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
-      // 如果用户在浏览历史记录后开始输入，退出历史导航模式
-      setIsNavigatingHistory(false);
-      setHistoryIndex(-1);
     }
 
     // 如果提及面板未激活，不处理其他键盘事件
@@ -419,8 +428,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       const searchText = mentionState.filter.substring(1).toLowerCase();
       filteredItems = filteredItems.filter((item) => item.text.toLowerCase().includes(searchText));
     }
-
-    // 二级菜单过滤已经在 getCurrentItems 中处理
 
     if (filteredItems.length === 0) {
       return;
@@ -447,20 +454,77 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         e.preventDefault();
       }
     }
-
-    // 处理 Backspace 键，检查是否需要清空编辑器
-    if (e.key === 'Backspace' && editorRef.current) {
-      const content = editorRef.current.innerHTML;
-      if (content === '<br>' || content === '<br/>') {
-        editorRef.current.innerHTML = '';
-      }
-    }
   };
 
   // 添加对输入法事件的处理
   const handleCompositionEnd = () => {
     // 输入法输入完成后的处理
     // 这里可以添加额外的逻辑，如果需要的话
+  };
+
+  // 添加粘贴事件处理
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    // 阻止默认粘贴行为
+    e.preventDefault();
+
+    // 获取剪贴板中的纯文本内容
+    const text = e.clipboardData.getData('text/plain');
+
+    // 处理文本，保留换行和缩进
+    const processedText = text
+      // 将制表符转换为4个空格
+      .replace(/\t/g, '    ')
+      // 将连续的换行符转换为单个换行
+      .replace(/\n\s*\n/g, '\n\n')
+      // 移除行尾空格
+      .replace(/[ \t]+$/gm, '');
+
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) {
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    // 将处理后的文本按行分割
+    const lines = processedText.split('\n');
+    const fragment = document.createDocumentFragment();
+
+    lines.forEach((line, index) => {
+      // 处理行首空格，将每个空格转换为 &nbsp;
+      const processedLine = line.replace(/^[ ]+/g, (match) => {
+        const span = document.createElement('span');
+        span.innerHTML = '\u00A0'.repeat(match.length);
+        return span.innerHTML;
+      });
+
+      // 创建一个临时容器来保持 HTML 内容
+      const container = document.createElement('span');
+      container.innerHTML = processedLine;
+
+      // 将容器的内容添加到文档片段
+      while (container.firstChild) {
+        fragment.appendChild(container.firstChild);
+      }
+
+      // 如果不是最后一行，添加换行符
+      if (index < lines.length - 1) {
+        fragment.appendChild(document.createElement('br'));
+      }
+    });
+
+    // 插入处理后的内容
+    range.insertNode(fragment);
+
+    // 将光标移动到插入内容的末尾
+    range.setStartAfter(fragment);
+    range.setEndAfter(fragment);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // 触发 input 事件以更新状态
+    handleInput();
   };
 
   // 初始化编辑器
@@ -919,6 +983,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           onCompositionEnd={handleCompositionEnd}
+          onPaste={handlePaste}
         />
       </div>
       <div className={styles.footer}>
