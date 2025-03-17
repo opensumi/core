@@ -254,16 +254,16 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         },
         {
           id: 'upload-image',
-          iconClass: 'codicon codicon-file-media',
-          title: 'Upload Image',
+          icon: 'image',
+          title: localize('aiNative.chat.imageUpload'),
           onClick: () => {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*';
             input.onchange = (e) => {
-              const file = (e.target as HTMLInputElement).files?.[0];
-              if (file) {
-                handleImageUpload([file]);
+              const files = (e.target as HTMLInputElement).files;
+              if (files?.length) {
+                handleImageUpload(Array.from(files));
               }
             };
             input.click();

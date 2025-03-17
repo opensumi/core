@@ -99,6 +99,7 @@ export const defaultIconfont = {
   'global-search': 'global-search',
   'go': 'go',
   'hex': 'hex',
+  'image': 'image',
   'info-circle': 'info-circle',
   'info-circle-fill': 'info-circle-fill',
   'insert': 'insert',

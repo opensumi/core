@@ -1462,6 +1462,7 @@ export const localizationBundle = {
     'aiNative.chat.defaultContextFile': 'Current File',
     'aiNative.chat.defaultContextFolder': 'Current Folder',
     'aiNative.chat.thinking': 'Deep Think',
+    'aiNative.chat.imageUpload': 'Image Upload',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': 'Check',

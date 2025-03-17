@@ -1230,6 +1230,7 @@ export const localizationBundle = {
     'aiNative.chat.defaultContextFile': '当前文件',
     'aiNative.chat.defaultContextFolder': '当前文件夹',
     'aiNative.chat.thinking': '深度思考',
+    'aiNative.chat.imageUpload': '图片上传',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': '采纳',
