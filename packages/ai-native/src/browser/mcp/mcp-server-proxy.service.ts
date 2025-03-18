@@ -50,18 +50,18 @@ export class MCPServerProxyService implements IMCPServerProxyService {
   }
 
   async getAllMCPTools() {
-    return this.sumiMCPServerProxyService.getAllMCPTools();
+    return this.sumiMCPServerProxyService.$getAllMCPTools();
   }
 
   async $getServers() {
-    return this.sumiMCPServerProxyService.getServers();
+    return this.sumiMCPServerProxyService.$getServers();
   }
 
   async $startServer(serverName: string) {
-    await this.sumiMCPServerProxyService.startServer(serverName);
+    await this.sumiMCPServerProxyService.$startServer(serverName);
   }
 
   async $stopServer(serverName: string) {
-    await this.sumiMCPServerProxyService.stopServer(serverName);
+    await this.sumiMCPServerProxyService.$stopServer(serverName);
   }
 }

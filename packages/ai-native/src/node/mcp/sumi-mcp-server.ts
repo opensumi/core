@@ -72,7 +72,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
   }
 
   // TODO 这里涉及到 Chat Stream Call 中带上 ClientID，具体方案需要进一步讨论
-  async getAllMCPTools(): Promise<MCPTool[]> {
+  async $getAllMCPTools(): Promise<MCPTool[]> {
     const registry = this.toolInvocationRegistryManager.getRegistry(this.clientId);
     return registry.getAllFunctions().map((tool) => ({
       name: tool.name || 'no-name',
@@ -82,20 +82,20 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     }));
   }
 
-  public async initBuiltinMCPServer(enabled: boolean) {
+  public async $initBuiltinMCPServer(enabled: boolean) {
     const builtinMCPServer = new BuiltinMCPServer(this, this.logger);
     this.mcpServerManager.setClientId(this.clientId);
     await this.mcpServerManager.initBuiltinServer(builtinMCPServer, enabled);
     this.client?.$updateMCPServers();
   }
 
-  public async initExternalMCPServers(servers: MCPServerDescription[]) {
+  public async $initExternalMCPServers(servers: MCPServerDescription[]) {
     this.mcpServerManager.setClientId(this.clientId);
     await this.mcpServerManager.addExternalMCPServers(servers);
     this.client?.$updateMCPServers();
   }
 
-  async initExposedMCPServer() {
+  async $initExposedMCPServer() {
     // 初始化 MCP Server
     this.server = new Server(
       {
@@ -132,7 +132,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     return this.server;
   }
 
-  async getServers() {
+  async $getServers() {
     const servers = Array.from(this.mcpServerManager.getServers().entries());
     const serverInfos = await Promise.all(
       servers.map(async ([serverName, server]) => {
@@ -193,21 +193,21 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     return builtinServer ? [builtinServer, ...otherServers] : otherServers;
   }
 
-  async startServer(serverName: string) {
+  async $startServer(serverName: string) {
     await this.mcpServerManager.startServer(serverName);
     this.client?.$updateMCPServers();
   }
 
-  async stopServer(serverName: string) {
+  async $stopServer(serverName: string) {
     await this.mcpServerManager.stopServer(serverName);
     this.client?.$updateMCPServers();
   }
 
-  public addOrUpdateServer(description: MCPServerDescription) {
+  public $addOrUpdateServer(description: MCPServerDescription) {
     this.mcpServerManager.addOrUpdateServer(description);
   }
 
-  public removeServer(name: string) {
+  public $removeServer(name: string) {
     this.mcpServerManager.removeServer(name);
   }
 }
