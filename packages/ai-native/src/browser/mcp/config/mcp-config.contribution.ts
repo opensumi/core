@@ -1,6 +1,7 @@
 import { Autowired } from '@opensumi/di';
+import { getIcon } from '@opensumi/ide-components';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Domain, URI } from '@opensumi/ide-core-common';
+import { Domain, URI, localize } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
@@ -53,8 +54,8 @@ export class MCPConfigContribution implements BrowserEditorContribution {
 
         return {
           uri,
-          name: 'MCP Configuration',
-          icon: 'settings',
+          name: localize('ai.native.mcp.config.title'),
+          icon: getIcon('mcp'),
           metadata: {
             configType,
           },

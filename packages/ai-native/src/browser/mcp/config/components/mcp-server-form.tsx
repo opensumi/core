@@ -167,7 +167,14 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
 
   const handleTypeChange = useCallback(
     (value: MCP_SERVER_TYPE) => {
-      setFormData({ ...formData, type: value });
+      setFormData({
+        ...formData,
+        type: value,
+        command: '',
+        args: [],
+        env: {},
+        serverHost: '',
+      });
     },
     [formData],
   );

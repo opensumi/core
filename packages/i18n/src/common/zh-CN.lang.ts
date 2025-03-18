@@ -1391,6 +1391,7 @@ export const localizationBundle = {
     'ai.native.mcp.disabled': '已禁用',
     'ai.native.mcp.enable.title': '启动该服务',
     'ai.native.mcp.disable.title': '停止该服务',
+    'ai.native.mcp.config.title': 'MCP 配置',
 
     // MCP View
     'ai.native.mcp.tool.arguments': '参数',

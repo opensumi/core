@@ -1,6 +1,7 @@
 import { ToolExecutionOptions } from 'ai';
 
 import { ILogger } from '@opensumi/ide-core-common';
+import { getShellPath } from '@opensumi/ide-core-node';
 
 import { IMCPServer, MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
@@ -17,6 +18,8 @@ export class MCPServerManagerImpl implements MCPServerManager {
   // 当前实例对应的 clientId
   private clientId: string;
 
+  private shellPath: string | undefined;
+
   getServers(): Map<string, IMCPServer> {
     return this.servers;
   }
@@ -25,6 +28,13 @@ export class MCPServerManagerImpl implements MCPServerManager {
     private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager,
     private readonly logger: ILogger,
   ) {}
+
+  async updateShellPath() {
+    const shellPath = await getShellPath();
+    if (shellPath) {
+      this.shellPath = shellPath;
+    }
+  }
 
   setClientId(clientId: string) {
     this.clientId = clientId;
@@ -132,10 +142,14 @@ export class MCPServerManagerImpl implements MCPServerManager {
     const existingServer = this.servers.get(description.name);
     if (description.type === MCP_SERVER_TYPE.STDIO) {
       const { name, command, args, env } = description;
+      const envs = {
+        ...env,
+        PATH: this.shellPath || process.env.PATH || '',
+      };
       if (existingServer) {
-        existingServer.update(command, args, env);
+        existingServer.update(command, args, envs);
       } else {
-        const newServer = new StdioMCPServer(name, command, args, env, this.logger);
+        const newServer = new StdioMCPServer(name, command, args, envs, this.logger);
         this.servers.set(name, newServer);
       }
     } else if (description.type === MCP_SERVER_TYPE.SSE) {
@@ -163,6 +177,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
   }
 
   async addExternalMCPServers(servers: MCPServerDescription[]): Promise<void> {
+    await this.updateShellPath();
     for (const server of servers) {
       this.addOrUpdateServer(server);
       if (!server.enabled) {
