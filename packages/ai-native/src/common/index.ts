@@ -150,6 +150,7 @@ export interface ISumiMCPServerBackend {
   $stopServer(serverName: string): Promise<void>;
   $addOrUpdateServer(description: MCPServerDescription): void;
   $removeServer(name: string): void;
+  $syncServer(name: string): Promise<void>;
 }
 
 export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';

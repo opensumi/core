@@ -207,8 +207,12 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     this.mcpServerManager.addOrUpdateServer(description);
   }
 
-  public $removeServer(name: string) {
-    this.mcpServerManager.removeServer(name);
+  public async $removeServer(name: string) {
+    await this.mcpServerManager.removeServer(name);
+  }
+
+  public async $syncServer(name: string) {
+    await this.mcpServerManager.syncServer(name);
   }
 }
 
