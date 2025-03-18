@@ -1632,5 +1632,8 @@ export const localizationBundle = {
     // MCP View
     'ai.native.mcp.tool.arguments': 'Arguments',
     'ai.native.mcp.tool.results': 'Result',
+    'ai.native.mcp.tool.action.edit': 'Edit',
+    'ai.native.mcp.tool.action.delete': 'Delete',
+    'ai.native.mcp.tool.action.sync': 'Sync',
   },
 };
