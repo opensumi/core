@@ -1396,5 +1396,8 @@ export const localizationBundle = {
     // MCP View
     'ai.native.mcp.tool.arguments': '参数',
     'ai.native.mcp.tool.results': '返回',
+    'ai.native.mcp.tool.action.edit': '修改',
+    'ai.native.mcp.tool.action.delete': '删除',
+    'ai.native.mcp.tool.action.sync': '同步',
   },
 };

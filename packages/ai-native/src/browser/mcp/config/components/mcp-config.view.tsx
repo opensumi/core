@@ -176,6 +176,16 @@ export const MCPConfigView: React.FC = () => {
     }
   }, []);
 
+  const handleSyncServer = useCallback(
+    async (server: MCPServer) => {
+      setLoadingServer(server.name);
+      await sumiMCPServerBackendProxy.$syncServer(server.name);
+      await loadServers();
+      setLoadingServer(undefined);
+    },
+    [loadServers, loadingServer],
+  );
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -229,17 +239,25 @@ export const MCPConfigView: React.FC = () => {
                     type='icon'
                     iconClass='codicon codicon-edit'
                     className={styles.iconButton}
-                    title='Edit'
+                    title={localize('ai.native.mcp.tool.action.edit')}
                     onClick={() => handleEditServer(server)}
                   />
                 )}
-
+                {server.name !== BUILTIN_MCP_SERVER_NAME && (
+                  <Button
+                    type='icon'
+                    iconClass='codicon codicon-sync'
+                    className={styles.iconButton}
+                    title={localize('ai.native.mcp.tool.action.sync')}
+                    onClick={() => handleSyncServer(server)}
+                  />
+                )}
                 {server.name !== BUILTIN_MCP_SERVER_NAME && (
                   <Button
                     type='icon'
                     iconClass='codicon codicon-trash'
                     className={styles.iconButton}
-                    title='Delete'
+                    title={localize('ai.native.mcp.tool.action.delete')}
                     onClick={() => handleDeleteServer(server.name)}
                   />
                 )}
