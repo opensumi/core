@@ -204,6 +204,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
   }
 
   public $addOrUpdateServer(description: MCPServerDescription) {
+    this.mcpServerManager.updateShellPath();
     this.mcpServerManager.addOrUpdateServer(description);
   }
 
