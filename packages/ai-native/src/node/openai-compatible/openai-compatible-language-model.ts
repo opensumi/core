@@ -24,7 +24,7 @@ export class OpenAICompatibleModel extends BaseLanguageModel {
     return provider(modelId);
   }
 
-  protected getModelInfo() {
+  protected getModelInfo(_modelId: string, _providerOptions?: Record<string, any>) {
     return undefined;
   }
 }
