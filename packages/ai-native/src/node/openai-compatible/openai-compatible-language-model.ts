@@ -4,6 +4,7 @@ import { LanguageModelV1 } from 'ai';
 import { Injectable } from '@opensumi/di';
 import { AINativeSettingSectionsId, IAIBackServiceOption } from '@opensumi/ide-core-common';
 
+import { ModelInfo } from '../../common';
 import { BaseLanguageModel } from '../base-language-model';
 
 @Injectable()
@@ -24,7 +25,7 @@ export class OpenAICompatibleModel extends BaseLanguageModel {
     return provider(modelId);
   }
 
-  protected getModelInfo(_modelId: string, _providerOptions?: Record<string, any>) {
+  protected getModelInfo(_modelId: string, _providerOptions?: Record<string, any>): ModelInfo | undefined {
     return undefined;
   }
 }
