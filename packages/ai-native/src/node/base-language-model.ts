@@ -74,7 +74,7 @@ export abstract class BaseLanguageModel {
 
   protected abstract getModelIdentifier(provider: any, modelId?: string): any;
 
-  protected abstract getModelInfo(modelId: string): ModelInfo | undefined;
+  protected abstract getModelInfo(modelId: string, providerOptions?: Record<string, any>): ModelInfo | undefined;
 
   protected async handleStreamingRequest(
     provider: any,
@@ -112,7 +112,7 @@ export abstract class BaseLanguageModel {
             : request,
         },
       ];
-      const modelInfo = modelId ? this.getModelInfo(modelId) : undefined;
+      const modelInfo = modelId ? this.getModelInfo(modelId, providerOptions) : undefined;
       const stream = streamText({
         model: this.getModelIdentifier(provider, modelId),
         tools: aiTools,
@@ -121,11 +121,11 @@ export abstract class BaseLanguageModel {
         experimental_toolCallStreaming: true,
         maxSteps: 12,
         maxTokens,
-        temperature: modelInfo?.temperature || 0,
-        topP: modelInfo?.topP || 0.8,
         system: systemPrompt,
         providerOptions,
-        ...(!images?.length && { topK: modelInfo?.topK || 1 }),
+        ...(modelInfo?.temperature !== undefined && { temperature: modelInfo.temperature }),
+        ...(modelInfo?.topP !== undefined && { topP: modelInfo.topP }),
+        ...(modelInfo?.topK !== undefined && { topK: modelInfo.topK }),
       });
 
       // 状态跟踪变量
