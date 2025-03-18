@@ -135,10 +135,10 @@ export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 export const TokenMCPServerProxyService = Symbol('TokenMCPServerProxyService');
 
 export interface ISumiMCPServerBackend {
-  initBuiltinMCPServer(enabled: boolean): void;
-  initExternalMCPServers(servers: MCPServerDescription[]): void;
-  getAllMCPTools(): Promise<MCPTool[]>;
-  getServers(): Promise<
+  $initBuiltinMCPServer(enabled: boolean): void;
+  $initExternalMCPServers(servers: MCPServerDescription[]): void;
+  $getAllMCPTools(): Promise<MCPTool[]>;
+  $getServers(): Promise<
     Array<{
       name: string;
       isStarted: boolean;
@@ -146,10 +146,10 @@ export interface ISumiMCPServerBackend {
       tools: MCPTool[];
     }>
   >;
-  startServer(serverName: string): Promise<void>;
-  stopServer(serverName: string): Promise<void>;
-  addOrUpdateServer(description: MCPServerDescription): void;
-  removeServer(name: string): void;
+  $startServer(serverName: string): Promise<void>;
+  $stopServer(serverName: string): Promise<void>;
+  $addOrUpdateServer(description: MCPServerDescription): void;
+  $removeServer(name: string): void;
 }
 
 export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';
