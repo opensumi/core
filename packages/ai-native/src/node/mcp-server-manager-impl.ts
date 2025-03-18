@@ -206,9 +206,9 @@ export class MCPServerManagerImpl implements MCPServerManager {
     if (!server) {
       throw new Error(`MCP server "${name}" not found.`);
     }
+    await this.updateShellPath();
     if (server?.isStarted()) {
       await this.stopServer(name);
-      await this.updateShellPath();
       await this.startServer(name);
     }
   }
