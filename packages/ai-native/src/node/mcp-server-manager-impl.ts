@@ -200,4 +200,16 @@ export class MCPServerManagerImpl implements MCPServerManager {
       this.logger.warn(`MCP server "${name}" not found.`);
     }
   }
+
+  async syncServer(name: string): Promise<void> {
+    const server = this.servers.get(name);
+    if (!server) {
+      throw new Error(`MCP server "${name}" not found.`);
+    }
+    await this.updateShellPath();
+    if (server?.isStarted()) {
+      await this.stopServer(name);
+      await this.startServer(name);
+    }
+  }
 }

@@ -66,6 +66,7 @@ export class RunCommandHandler {
         };
       }
     }
+
     const terminalClient = await this.terminalController.createTerminalWithWidget({
       config: this.getShellLaunchConfig(args.command),
       closeWhenExited: false,
@@ -75,6 +76,13 @@ export class RunCommandHandler {
 
     const result: { type: string; text: string }[] = [];
     const def = new Deferred<{ isError?: boolean; content: { type: string; text: string }[] }>();
+
+    if (args.is_background) {
+      def.resolve({
+        isError: false,
+        content: [{ type: 'text', text: `Successful run command ${args.command} in background.` }],
+      });
+    }
 
     terminalClient.onOutput((e) => {
       result.push({
