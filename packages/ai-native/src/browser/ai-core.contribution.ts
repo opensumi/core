@@ -89,6 +89,7 @@ import {
   openAiNativeModels,
 } from '../common';
 import { MCPServerDescription } from '../common/mcp-server-manager';
+import { MCP_SERVER_TYPE } from '../common/types';
 
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
@@ -415,7 +416,9 @@ export class AINativeBrowserContribution
     const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers);
 
     // 查找内置 MCP Server 的配置
-    const builtinServer = mcpServers?.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
+    const builtinServer = mcpServers?.find(
+      (server) => server.name === BUILTIN_MCP_SERVER_NAME && server.type === MCP_SERVER_TYPE.BUILTIN,
+    );
 
     // 总是初始化内置服务器，根据配置决定是否启用
     this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(builtinServer?.enabled ?? true);

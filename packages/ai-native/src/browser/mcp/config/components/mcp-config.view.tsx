@@ -29,15 +29,17 @@ export const MCPConfigView: React.FC = () => {
     const userServers = preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
     const runningServers = await mcpServerProxyService.$getServers();
     const builtinServer = runningServers.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
-    const allServers = userServers.map((server) => {
-      const runningServer = runningServers.find((s) => s.name === server.name);
-      return {
-        ...server,
-        name: server.name,
-        isStarted: runningServer?.isStarted,
-        tools: runningServer?.tools,
-      };
-    }) as MCPServer[];
+    const allServers = userServers
+      .filter((server) => server.type === MCP_SERVER_TYPE.STDIO || server.type === MCP_SERVER_TYPE.SSE)
+      .map((server) => {
+        const runningServer = runningServers.find((s) => s.name === server.name);
+        return {
+          ...server,
+          name: server.name,
+          isStarted: runningServer?.isStarted,
+          tools: runningServer?.tools,
+        };
+      }) as MCPServer[];
     if (builtinServer) {
       allServers.unshift(builtinServer);
     }
@@ -79,8 +81,7 @@ export const MCPConfigView: React.FC = () => {
               {
                 name: BUILTIN_MCP_SERVER_NAME,
                 enabled: false,
-                command: '', // 内置服务器的 command 为空字符串
-                type: MCP_SERVER_TYPE.STDIO,
+                type: MCP_SERVER_TYPE.BUILTIN,
               },
             ];
           } else {

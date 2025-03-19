@@ -78,9 +78,21 @@ export interface SSEMCPServerDescription extends BaseMCPServerDescription {
   serverHost: string;
 }
 
+export interface BuiltinMCPServerDescription {
+  /**
+   * The unique name of the MCP server.
+   */
+  name: string;
+  /**
+   * Whether to enable the MCP server.
+   */
+  enabled?: boolean;
+}
+
 export type MCPServerDescription =
   | ({ type: MCP_SERVER_TYPE.STDIO } & StdioMCPServerDescription)
-  | ({ type: MCP_SERVER_TYPE.SSE } & SSEMCPServerDescription);
+  | ({ type: MCP_SERVER_TYPE.SSE } & SSEMCPServerDescription)
+  | ({ type: MCP_SERVER_TYPE.BUILTIN } & BuiltinMCPServerDescription);
 
 export const MCPServerManager = Symbol('MCPServerManager');
 export const MCPServerManagerPath = 'ServicesMCPServerManager';
