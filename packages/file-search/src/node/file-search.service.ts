@@ -40,7 +40,6 @@ export class FileSearchService implements IFileSearchService {
       fuzzyMatch: true,
       limit: Number.MAX_SAFE_INTEGER,
       useGitIgnore: true,
-      onlyFolders: false,
       ...options,
     };
 
@@ -94,18 +93,6 @@ export class FileSearchService implements IFileSearchService {
             (candidate) => {
               const fileUri = path.join(cwd, candidate);
 
-              if (opts.onlyFolders) {
-                try {
-                  const fs = require('fs');
-                  const stat = fs.statSync(fileUri);
-                  if (!stat.isDirectory()) {
-                    return;
-                  }
-                } catch (e) {
-                  return;
-                }
-              }
-
               if (exactMatches.has(fileUri) || fuzzyMatches.has(fileUri)) {
                 return;
               }
@@ -154,11 +141,6 @@ export class FileSearchService implements IFileSearchService {
       try {
         const args = this.getSearchArgs(options);
 
-        if (options.onlyFolders) {
-          args.push('--type-list', 'd:dir');
-          args.push('--type', 'd');
-        }
-
         const process = this.processFactory.create({ command: replaceAsarInPath(rgPath), args, options: { cwd } });
         process.onError(reject);
         process.outputStream.on('close', resolve);
@@ -182,11 +164,6 @@ export class FileSearchService implements IFileSearchService {
 
   private getSearchArgs(options: IFileSearchService.BaseOptions): string[] {
     const args = ['--files', '--hidden', '--case-sensitive', '--no-require-git'];
-
-    if (options.onlyFolders) {
-      args.push('--type-list', 'd:dir');
-      args.push('--type', 'd');
-    }
 
     if (options.includePatterns) {
       for (const includePattern of options.includePatterns) {
