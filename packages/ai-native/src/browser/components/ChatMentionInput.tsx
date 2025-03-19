@@ -208,17 +208,24 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
             }),
           );
         } else {
-          const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath);
-          const results = await searchService.find(searchText, {
+          const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
+          const files = await searchService.find(searchText, {
             rootUris,
             useGitIgnore: true,
             noIgnoreParent: true,
             fuzzyMatch: true,
+            excludePatterns: ['**/node_modules/**/*', '**/.git/**/*'],
             limit: 10,
-            onlyFolders: true,
           });
-          folders = await Promise.all(
-            results.map(async (folder) => {
+          const folders = Array.from(
+            new Set(
+              files
+                .map((file) => new URI(file).parent.toString())
+                .filter((folder) => folder !== workspaceService.workspace?.uri.toString()),
+            ),
+          );
+          return Promise.all(
+            folders.map(async (folder) => {
               const uri = new URI(folder);
               return {
                 id: uri.codeUri.fsPath,

@@ -25,7 +25,6 @@ export namespace IFileSearchService {
     noIgnoreParent?: boolean; // 是否忽略祖先目录的 gitIgnore
     includePatterns?: string[];
     excludePatterns?: string[];
-    onlyFolders?: boolean;
   }
   export interface RootOptions {
     [rootUri: string]: BaseOptions;
