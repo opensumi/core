@@ -8,11 +8,10 @@
 
 <div align="center">
  
-[![CI][ci-image]][ci-url]
-[![E2E][e2e-image]][e2e-url]
-[![Test Coverage][test-image]][test-url]
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![Issues need help][help-wanted-image]][help-wanted-url]
+[![MCP][mcp-client-image]][mcp-client-url]
+[![MCP Feature][mcp-client-feature-image]][mcp-client-feature-url]
+
+[![CI][ci-image]][ci-url] [![E2E][e2e-image]][e2e-url] [![Test Coverage][test-image]][test-url] [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![Issues need help][help-wanted-image]][help-wanted-url]
 
 [![Discussions][discussions-image]][discussions-url] [![CLA assistant][cla-image]][cla-url] [![License][license-image]][license-url]
 
@@ -41,6 +40,10 @@
 [github-issues-url]: https://github.com/opensumi/core/issues
 [help-wanted-image]: https://flat.badgen.net/github/label-issues/opensumi/core/🤔%20help%20wanted/open
 [help-wanted-url]: https://github.com/opensumi/core/issues?q=is%3Aopen+is%3Aissue+label%3A%22🤔+help+wanted%22
+[mcp-client-image]: https://badge.mcpx.dev/?type=client
+[mcp-client-url]: https://modelcontextprotocol.io
+[mcp-client-feature-image]: https://badge.mcpx.dev/?type=client&features=tools
+[mcp-client-feature-url]: https://modelcontextprotocol.io/clients
 
 [Changelog](./CHANGELOG.md) · [Report Bug][github-issues-url] · [Request Feature][github-issues-url] · English · [中文](./README-zh_CN.md)
 
