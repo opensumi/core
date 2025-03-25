@@ -146,12 +146,16 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
         if (treeModel) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
           await treeModel.ensureReady;
+
+          if (wrapperRef.current) {
+            fileTreeService.initContextKey(wrapperRef.current);
+          }
         }
         setModel(treeModel);
         setIsLoading(false);
       });
     }
-  }, [isReady]);
+  }, [isReady, wrapperRef.current, fileTreeService]);
 
   useEffect(() => {
     const tokenSource = new CancellationTokenSource();
