@@ -511,6 +511,15 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     const provider = await this.getProvider(_uri.scheme);
 
     if (!containsExtraFileMethod(provider, 'access')) {
+      if (mode === FileAccess.Constants.F_OK) {
+        // 当 mode 为 F_OK 时，如果 provider 不支持 access 方法，则使用 stat 方法判断文件是否存在
+        try {
+          const stat = await provider.stat(_uri.codeUri);
+          return !!stat;
+        } catch (error) {
+          return false;
+        }
+      }
       throw this.getErrorProvideNotSupport(_uri.scheme, 'access');
     }
 
