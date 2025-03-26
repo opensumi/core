@@ -176,6 +176,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private isExtProcessWaitingForRestart: ERestartPolicy | undefined;
   private pCrashMessageModel: MayCancelablePromise<string | undefined> | undefined;
 
+  // 是否正在显示插件重启的 loading 状态
+  private isProgressShowing = false;
+
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
 
@@ -383,6 +386,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         this.logger.log('[ext-restart]: ext process restart canceled');
         this.isExtProcessRestarting = false;
         this.isExtProcessWaitingForRestart = undefined;
+        this.isProgressShowing = false;
       });
 
       try {
@@ -393,6 +397,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
       this.isExtProcessRestarting = false;
       this.isExtProcessWaitingForRestart = undefined;
+      this.isProgressShowing = false;
 
       this.disposeAllOverlayWindow();
     };
@@ -412,6 +417,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
           break;
         }
       case ERestartPolicy.Always:
+        if (this.isProgressShowing) {
+          this.logger.log('[ext-restart]: progress is already showing, skip');
+          return;
+        }
+
+        this.isProgressShowing = true;
         await this.progressService.withProgress(
           {
             location: ProgressLocation.Notification,
@@ -429,9 +440,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
             ],
           },
           async () => {
-            if (this.extProcessRestartPromise) {
-              this.extProcessRestartPromise.cancel();
-            }
+            // doRestart 存在严重的副作用且不可 Cancel，因此单次重启只允许执行一次
             this.extProcessRestartPromise = createCancelablePromise(doRestart);
             await this.extProcessRestartPromise;
           },
@@ -769,13 +778,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private async rerunSumiViewExtensionContributes() {
     const { activatedViewExtensionMap } = this.viewExtensionService;
     const extensionPaths = Array.from(activatedViewExtensionMap.keys());
-
     await Promise.all(
       extensionPaths.map((path) => {
         const extension = this.extensionInstanceManageService.getExtensionInstanceByPath(path);
         if (extension) {
           extension.initialize();
-          this.contributesService.register(extension.id, extension.contributes);
           this.sumiContributesService.register(extension.id, extension.packageJSON.sumiContributes || {});
         }
       }),
