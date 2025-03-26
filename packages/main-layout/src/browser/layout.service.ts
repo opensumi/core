@@ -228,7 +228,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         }
       }
     } else if (currentId === '' || this.isDropContainer(currentId)) {
-      service.updateCurrentContainerId('');
+      service.updateCurrentContainerId(defaultContainer || '');
     }
   };
 
