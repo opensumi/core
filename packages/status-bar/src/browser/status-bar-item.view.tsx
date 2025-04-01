@@ -137,22 +137,23 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
       >
         <div className={styles.popover_item}>
           {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
-          {text &&
-            transformLabelWithCodicon(
-              text,
-              {},
-              iconService.fromString.bind(iconService),
-              (text: string, index: number) => (
-                <span
-                  key={`${text}-${index}`}
-                  style={{ height: '22px', lineHeight: '22px' }}
-                  aria-label={ariaLabel}
-                  role={role}
-                >
-                  {replaceLocalizePlaceholder(text)}
-                </span>
-              ),
-            )}
+          {typeof text === 'string'
+            ? transformLabelWithCodicon(
+                text,
+                {},
+                iconService.fromString.bind(iconService),
+                (text: string, index: number) => (
+                  <span
+                    key={`${text}-${index}`}
+                    style={{ height: '22px', lineHeight: '22px' }}
+                    aria-label={ariaLabel}
+                    role={role}
+                  >
+                    {replaceLocalizePlaceholder(text)}
+                  </span>
+                ),
+              )
+            : text}
         </div>
       </Popover>
     </div>
