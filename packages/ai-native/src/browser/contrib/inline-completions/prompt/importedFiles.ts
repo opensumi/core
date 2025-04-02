@@ -1,13 +1,11 @@
 import { Injector } from '@opensumi/di';
-import { URI } from '@opensumi/ide-core-common';
+import { LANGUAGE_TO_SUFFIX, URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { Path } from '@opensumi/ide-utils/lib/path';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { LanguageParserService } from '../../../languages/service';
 import { ICompletionContext, ImportedFileOptions, ResourceDocument } from '../types';
-
-import { LANGUAGE_TO_SUFFIX } from './languages';
 
 export const getImportedFilesInterface = async (
   code: string,

@@ -36,3 +36,4 @@ export * from './extension.schema';
 export * from './ai-native';
 export * from './remote-service';
 export * from './collections';
+export * from './language';
