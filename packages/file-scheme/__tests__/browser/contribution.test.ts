@@ -99,6 +99,7 @@ describe('contribution test', () => {
   });
 
   it('should open file with type of video and image', async () => {
+    mockFileService.getFileType.mockReset();
     mockFileService.getFileType.mockReturnValueOnce('video').mockReturnValueOnce('image');
     let openTypes: IEditorOpenType[];
     openTypes = await registry.resolveEditorComponent(createMockResource('file:///foo/video.mp4'));
