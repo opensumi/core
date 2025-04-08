@@ -190,6 +190,8 @@ export interface KeybindingService {
    * @param when
    */
   convertMonacoWhen(when: any): string;
+  handleCompositionStart(): void;
+  handleCompositionEnd(): void;
 }
 
 @Injectable()
@@ -230,6 +232,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   @Autowired(IStatusBarService)
   protected readonly statusBar: IStatusBarService;
 
+  private _inComposition = false;
+
   public async initialize(): Promise<void> {
     await this.keyboardLayoutService.initialize();
     this.keyboardLayoutService.onKeyboardLayoutChanged(() => {
@@ -242,6 +246,14 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   protected keybindingsChanged = new Emitter<{ affectsCommands: string[] }>();
+
+  public handleCompositionStart = () => {
+    this._inComposition = true;
+  };
+
+  public handleCompositionEnd = () => {
+    this._inComposition = false;
+  };
 
   /**
    * 由于不同的键盘布局发生更改时触发的事件。
@@ -807,6 +819,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param event 键盘事件
    */
   public run(event: KeyboardEvent): void {
+    if (this._inComposition) {
+      return;
+    }
     if (event.defaultPrevented) {
       return;
     }
