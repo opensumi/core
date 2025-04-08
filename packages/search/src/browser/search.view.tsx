@@ -95,7 +95,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
 
   const collapsePanelContainerStyle = {
     width: viewState.width || '100%',
-    height: viewState.height,
+    height: viewState.height || '100%',
   };
 
   const SearchProcess = useMemo(

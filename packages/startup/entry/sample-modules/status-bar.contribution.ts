@@ -51,7 +51,7 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
     if (!this.statusBarElement) {
       this.statusBarElement = this.statusBarService.addElement('OpenSumi', {
         backgroundColor: 'var(--button-background)',
-        color: '#FFFFFF',
+        color: 'var(--button-foreground)',
         tooltip: 'OpenSumi',
         alignment: StatusBarAlignment.LEFT,
         iconClass: getIcon('code'),

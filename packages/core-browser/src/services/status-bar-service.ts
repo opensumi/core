@@ -51,7 +51,7 @@ export interface StatusBarEntry {
    * 可以通过 text 设置图标
    * $(iconClassName) :text
    */
-  text?: string;
+  text?: string | React.ReactNode;
   /**
    * 当前菜单显示名称
    * 标识当前状态栏组件 contextmenu 显示的名称，如果没有使用 text 代替

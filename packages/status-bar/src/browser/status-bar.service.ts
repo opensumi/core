@@ -27,7 +27,7 @@ export class StatusBarService extends Disposable implements IStatusBarService {
   private background: string | undefined;
   private foreground: string | undefined;
 
-  private entriesObservable = observableValue<Map<string, StatusBarEntry>>(this, new Map());
+  entriesObservable = observableValue<Map<string, StatusBarEntry>>(this, new Map());
 
   @Autowired(CommandService)
   private commandService: CommandService;
@@ -101,14 +101,14 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @param id 状态栏 id
    * @returns
    */
-  private getEntriesById(id: string) {
+  getEntriesById(id: string) {
     return this.entriesArray.get().filter((entry) => entry.id === id);
   }
 
   /**
    * 从 storage 中读取 state
    */
-  private getStorageState(id: string) {
+  getStorageState(id: string) {
     return this.layoutState.getState<{ [id: string]: StatusBarState }>(LAYOUT_STATE.STATUSBAR, {})[id];
   }
 
