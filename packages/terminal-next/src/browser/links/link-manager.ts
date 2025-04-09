@@ -139,9 +139,7 @@ export class TerminalLinkManager extends Disposable {
       async (link, cb) => cb(await this._resolvePath(link)),
     ]);
     this._standardLinkProviders.push(validatedProvider);
-
-    this.enableTerminalWordLinkProvider();
-
+    this.addTerminalWordLinkProvider();
     this._registerStandardLinkProviders();
   }
 
@@ -149,7 +147,7 @@ export class TerminalLinkManager extends Disposable {
     this._processCwd = processCwd;
   }
 
-  public enableTerminalWordLinkProvider() {
+  public addTerminalWordLinkProvider() {
     const wordLinkProvider = this.injector.get(TerminalWordLinkProvider, [
       this._xterm,
       async (link, cb) => cb(await this._resolvePath(link)),
