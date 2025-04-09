@@ -3,6 +3,7 @@ import {
   Disposable,
   ILogger,
   KeybindingRegistry,
+  KeybindingService,
   MonacoOverrideServiceRegistry,
   ServiceNames,
 } from '@opensumi/ide-core-browser';
@@ -43,6 +44,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   @Autowired(KeybindingRegistry)
   private readonly keybindingRegistry: KeybindingRegistry;
+
+  @Autowired(KeybindingService)
+  protected readonly keybindingService: KeybindingService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -105,6 +109,19 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     );
   }
 
+  private doAddCompositionEventListener(editor: ICodeEditor) {
+    this.addDispose(
+      editor.onDidCompositionStart((e) => {
+        this.keybindingService?.handleCompositionStart();
+      }),
+    );
+    this.addDispose(
+      editor.onDidCompositionEnd((e) => {
+        this.keybindingService?.handleCompositionEnd();
+      }),
+    );
+  }
+
   private addClickEventListener(editor: IEditorType) {
     if (isDiffEditor(editor)) {
       const originalEditor = editor.getOriginalEditor();
@@ -114,6 +131,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       this.doAddClickEventListener(modifiedEditor);
     } else {
       this.doAddClickEventListener(editor as ICodeEditor);
+      this.doAddCompositionEventListener(editor as ICodeEditor);
     }
   }
 
