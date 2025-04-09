@@ -488,6 +488,11 @@ export class ClientApp implements IClientApp, IDisposable {
     window.addEventListener('beforeunload', this._handleBeforeUpload);
     window.addEventListener('unload', this._handleUnload);
     window.addEventListener('resize', this._handleResize);
+
+    // 处理中文输入回退时可能出现多个光标问题
+    // https://github.com/eclipse-theia/theia/pull/6673
+    window.addEventListener('compositionstart', this.keybindingService?.handleCompositionStart);
+    window.addEventListener('compositionend', this.keybindingService?.handleCompositionEnd);
     window.addEventListener('keydown', this._handleKeydown, true);
     window.addEventListener('keyup', this._handleKeyup, true);
 
