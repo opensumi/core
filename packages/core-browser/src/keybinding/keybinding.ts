@@ -235,6 +235,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   private _inComposition = false;
 
   public async initialize(): Promise<void> {
+    window.removeEventListener('compositionstart', this.handleCompositionStart);
+    window.removeEventListener('compositionend', this.handleCompositionEnd);
+
     await this.keyboardLayoutService.initialize();
     this.keyboardLayoutService.onKeyboardLayoutChanged(() => {
       this.clearResolvedKeybindings();

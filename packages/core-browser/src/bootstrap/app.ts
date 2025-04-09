@@ -487,12 +487,7 @@ export class ClientApp implements IClientApp, IDisposable {
   protected registerEventListeners(): void {
     window.addEventListener('beforeunload', this._handleBeforeUpload);
     window.addEventListener('unload', this._handleUnload);
-
     window.addEventListener('resize', this._handleResize);
-    // 处理中文输入回退时可能出现多个光标问题
-    // https://github.com/eclipse-theia/theia/pull/6673
-    window.addEventListener('compositionstart', this._handleCompositionstart);
-    window.addEventListener('compositionend', this._handleCompositionend);
     window.addEventListener('keydown', this._handleKeydown, true);
     window.addEventListener('keyup', this._handleKeyup, true);
 
@@ -589,8 +584,6 @@ export class ClientApp implements IClientApp, IDisposable {
     window.removeEventListener('beforeunload', this._handleBeforeUpload);
     window.removeEventListener('unload', this._handleUnload);
     window.removeEventListener('resize', this._handleResize);
-    window.removeEventListener('compositionstart', this._handleCompositionstart);
-    window.removeEventListener('compositionend', this._handleCompositionend);
     window.removeEventListener('keydown', this._handleKeydown, true);
     if (isOSX) {
       document.body.removeEventListener('wheel', this._handleWheel);
@@ -660,21 +653,13 @@ export class ClientApp implements IClientApp, IDisposable {
   };
 
   private _handleKeydown = (event: any) => {
-    if (event && event.target!.name !== NO_KEYBINDING_NAME && !this._inComposition) {
+    if (event && event.target!.name !== NO_KEYBINDING_NAME) {
       this.keybindingService.run(event);
     }
   };
 
   private _handleKeyup = (event: any) => {
     this.keybindingService.resolveModifierKey(event);
-  };
-
-  private _handleCompositionstart = () => {
-    this._inComposition = true;
-  };
-
-  private _handleCompositionend = () => {
-    this._inComposition = false;
   };
 
   private _handleWheel = () => {
