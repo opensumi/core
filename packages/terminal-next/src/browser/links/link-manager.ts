@@ -113,6 +113,8 @@ export class TerminalLinkManager extends Disposable {
 
   private _getHomeDirPromise: Promise<string>;
 
+  private _wrappedTextLinkActivateCallback: XtermLinkMatcherHandler;
+
   constructor(private _xterm: Terminal, private _client: TerminalClient) {
     super();
 
@@ -127,6 +129,7 @@ export class TerminalLinkManager extends Disposable {
 
     // Validated local links
     const wrappedTextLinkActivateCallback = this._wrapLinkHandler((_, link) => this._handleLocalLink(link));
+    this._wrappedTextLinkActivateCallback = wrappedTextLinkActivateCallback;
     const validatedProvider = this.injector.get(TerminalValidatedLocalLinkProvider, [
       this._xterm,
       this._client,
@@ -136,19 +139,21 @@ export class TerminalLinkManager extends Disposable {
       async (link, cb) => cb(await this._resolvePath(link)),
     ]);
     this._standardLinkProviders.push(validatedProvider);
-
-    const wordLinkProvider = this.injector.get(TerminalWordLinkProvider, [
-      this._xterm,
-      async (link, cb) => cb(await this._resolvePath(link)),
-      wrappedTextLinkActivateCallback,
-    ]);
-    this._standardLinkProviders.push(wordLinkProvider);
-
+    this.addTerminalWordLinkProvider();
     this._registerStandardLinkProviders();
   }
 
   public set processCwd(processCwd: string) {
     this._processCwd = processCwd;
+  }
+
+  public addTerminalWordLinkProvider() {
+    const wordLinkProvider = this.injector.get(TerminalWordLinkProvider, [
+      this._xterm,
+      async (link, cb) => cb(await this._resolvePath(link)),
+      this._wrappedTextLinkActivateCallback,
+    ]);
+    this._standardLinkProviders.push(wordLinkProvider);
   }
 
   // user may change the terminal cwd, so we need to get it from the service
