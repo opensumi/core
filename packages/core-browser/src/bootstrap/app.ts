@@ -584,6 +584,8 @@ export class ClientApp implements IClientApp, IDisposable {
     window.removeEventListener('beforeunload', this._handleBeforeUpload);
     window.removeEventListener('unload', this._handleUnload);
     window.removeEventListener('resize', this._handleResize);
+    window.removeEventListener('compositionstart', this.keybindingService?.handleCompositionStart);
+    window.removeEventListener('compositionend', this.keybindingService?.handleCompositionEnd);
     window.removeEventListener('keydown', this._handleKeydown, true);
     if (isOSX) {
       document.body.removeEventListener('wheel', this._handleWheel);
