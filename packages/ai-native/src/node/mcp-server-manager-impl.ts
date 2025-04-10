@@ -92,6 +92,10 @@ export class MCPServerManagerImpl implements MCPServerManager {
     return Array.from(this.servers.keys());
   }
 
+  getServerByName(name: string): IMCPServer | undefined {
+    return this.servers.get(name);
+  }
+
   private convertToToolRequest(tool: MCPTool, serverName: string): ToolRequest {
     const id = getToolName(tool.name, serverName);
 

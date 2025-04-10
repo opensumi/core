@@ -36,6 +36,10 @@ export class StdioMCPServer implements IMCPServer {
     return this.name;
   }
 
+  getClient(): Client | null {
+    return this.client;
+  }
+
   async start(): Promise<void> {
     if (this.started) {
       return;
