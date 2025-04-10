@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { useEffect } from 'react';
+import React, { CSSProperties, FC, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { Badge, Icon } from '@opensumi/ide-components';
 import {
@@ -47,13 +47,13 @@ function getBadgeValue(badge: string | ViewBadge) {
 }
 
 export interface ITabbarViewProps {
-  TabView: React.FC<{ component: ComponentRegistryInfo }>;
+  TabView: FC<{ component: ComponentRegistryInfo }>;
   forbidCollapse?: boolean;
   // tabbar的尺寸（横向为宽，纵向高），tab折叠后为改尺寸加上panelBorderSize
   barSize?: number;
   // 包含tab的内外边距的总尺寸，用于控制溢出隐藏逻辑
   tabSize: number;
-  MoreTabView: React.FC;
+  MoreTabView: FC;
   /**
    * 禁用自动检测高度或者宽度变化后自动调整显示 tab 的数量
    */
@@ -64,7 +64,7 @@ export interface ITabbarViewProps {
   // tab上预留的位置，用来控制tab过多的显示效果
   margin?: number;
   canHideTabbar?: boolean;
-  renderOtherVisibleContainers?: React.FC<{
+  renderOtherVisibleContainers?: FC<{
     props: ITabbarViewProps;
     renderContainers: (
       component: ComponentRegistryInfo,
@@ -74,7 +74,7 @@ export interface ITabbarViewProps {
   }>;
 }
 
-export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
+export const TabbarViewBase: FC<ITabbarViewProps> = (props) => {
   const {
     TabView,
     MoreTabView,
@@ -89,18 +89,47 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
     renderOtherVisibleContainers = () => null,
     disableAutoAdjust,
   } = props;
-  const { side, direction, fullSize } = React.useContext(TabbarConfig);
+  const { side, direction, fullSize } = useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const styles_tab_bar = useDesignStyles(styles.tab_bar, 'tab_bar');
   const styles_bar_content = useDesignStyles(styles.bar_content, 'bar_content');
+  const visibleCount = useMemo(
+    () => (disableAutoAdjust ? Number.MAX_SAFE_INTEGER : Math.floor(fullSize - (margin || 0) / tabSize)),
+    [disableAutoAdjust, fullSize, margin, tabSize],
+  );
+  const [containers, setContainers] = useState<ComponentRegistryInfo[][]>(
+    splitVisibleTabs(
+      tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
+      visibleCount,
+    ),
+  );
 
-  React.useEffect(() => {
+  useEffect(() => {
     // 内部只关注总的宽度
     tabbarService.updateBarSize(barSize + panelBorderSize);
   }, []);
 
-  const currentContainerId = useAutorun(tabbarService.currentContainerId);
+  useEffect(() => {
+    setContainers(
+      splitVisibleTabs(
+        tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
+        visibleCount,
+      ),
+    );
+    const disposable = tabbarService.onStateChange(() => {
+      setContainers(
+        splitVisibleTabs(
+          tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
+          visibleCount,
+        ),
+      );
+    });
+    return () => {
+      disposable.dispose();
+    };
+  }, [visibleCount]);
 
+  const currentContainerId = useAutorun(tabbarService.currentContainerId);
   const hideTabBarWhenHidePanel = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
 
   const willHideTabbar = canHideTabbar && hideTabBarWhenHidePanel;
@@ -113,18 +142,13 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
     tabbarService.resizeHandle?.setSize(0);
   }
 
-  const visibleCount = disableAutoAdjust ? Number.MAX_SAFE_INTEGER : Math.floor(fullSize - (margin || 0) / tabSize);
-
-  const [visibleContainers, hideContainers] = splitVisibleTabs(
-    tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
-    visibleCount,
-  );
+  const [visibleContainers, hideContainers] = containers;
 
   hideContainers.forEach((componentInfo) => {
     tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
   });
 
-  const renderContainers = React.useCallback(
+  const renderContainers = useCallback(
     (component: ComponentRegistryInfo, tabbarService: TabbarService, currentContainerId?: string, side?: string) => {
       const containerId = component.options?.containerId;
       if (!containerId) {
@@ -215,16 +239,16 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = (props) => {
   );
 };
 
-export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = ({ component: defaultComponent }) => {
+export const IconTabView: FC<{ component: ComponentRegistryProvider }> = ({ component: defaultComponent }) => {
   const progressService: IProgressService = useInjectable(IProgressService);
   const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
   const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
-  const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
+  const [component, setComponent] = useState<ComponentRegistryProvider>(defaultComponent);
   const indicator = progressService.getIndicator(component.options?.containerId || '');
 
   const inProgress = useAutorun(indicator!.progressModel.show);
 
-  const title = React.useMemo(() => {
+  const title = useMemo(() => {
     const options = component.options;
     if (options?.activateKeyBinding) {
       return `${options?.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
@@ -258,8 +282,8 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = (
   );
 };
 
-export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = ({ component: defaultComponent }) => {
-  const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
+export const TextTabView: FC<{ component: ComponentRegistryProvider }> = ({ component: defaultComponent }) => {
+  const [component, setComponent] = useState<ComponentRegistryProvider>(defaultComponent);
   useEffect(() => {
     const dispose = component.onChange((newComponent) => {
       // Immediately update with current component to handle initial badge value
@@ -277,7 +301,7 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = (
   );
 };
 
-export const IconElipses: React.FC = () => {
+export const IconElipses: FC = () => {
   const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
   return (
     <div className={styles_icon_tab}>
@@ -287,7 +311,7 @@ export const IconElipses: React.FC = () => {
   );
 };
 
-export const TextElipses: React.FC = () => (
+export const TextElipses: FC = () => (
   <div className={styles.text_tab}>
     <div className={styles.bottom_tab_title}>
       <i className={getIcon('doubleright')}></i>
@@ -295,9 +319,9 @@ export const TextElipses: React.FC = () => (
   </div>
 );
 
-export const RightTabbarRenderer: React.FC<{ barSize?: number; style?: React.CSSProperties }> = (props) => {
+export const RightTabbarRenderer: FC<{ barSize?: number; style?: CSSProperties }> = (props) => {
   const { barSize = 48, style } = props;
-  const { side } = React.useContext(TabbarConfig);
+  const { side } = useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
 
   const styles_right_tab_bar = useDesignStyles(styles.right_tab_bar, 'right_tab_bar');
@@ -322,8 +346,8 @@ export const RightTabbarRenderer: React.FC<{ barSize?: number; style?: React.CSS
   );
 };
 
-export const LeftTabbarRenderer: React.FC<{
-  renderOtherVisibleContainers?: React.FC<{
+export const LeftTabbarRenderer: FC<{
+  renderOtherVisibleContainers?: FC<{
     props: ITabbarViewProps;
     renderContainers: (
       component: ComponentRegistryInfo,
@@ -332,15 +356,15 @@ export const LeftTabbarRenderer: React.FC<{
     ) => JSX.Element | null;
   }>;
   isRenderExtraTopMenus?: boolean;
-  renderExtraMenus?: React.ReactNode;
+  renderExtraMenus?: ReactNode;
   tabbarViewProps?: Partial<ITabbarViewProps>;
 }> = ({ renderOtherVisibleContainers, isRenderExtraTopMenus = true, renderExtraMenus, tabbarViewProps }) => {
-  const { side } = React.useContext(TabbarConfig);
+  const { side } = useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
 
-  const extraTopMenus = React.useMemo(() => layoutService.getExtraTopMenu(), [layoutService]);
-  const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
+  const extraTopMenus = useMemo(() => layoutService.getExtraTopMenu(), [layoutService]);
+  const extraMenus = useMemo(() => layoutService.getExtraMenu(), [layoutService]);
 
   const styles_left_tab_bar = useDesignStyles(styles.left_tab_bar, 'left_tab_bar');
   const styles_left_tab = useDesignStyles(styles.left_tab, 'left_tab');
@@ -371,8 +395,8 @@ export const LeftTabbarRenderer: React.FC<{
   );
 };
 
-export const BottomTabbarRenderer: React.FC = () => {
-  const { side } = React.useContext(TabbarConfig);
+export const BottomTabbarRenderer: FC = () => {
+  const { side } = useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const styles_bottom_bar_container = useDesignStyles(styles.bottom_bar_container, 'bottom_bar_container');
   const styles_bottom_tab = useDesignStyles(styles.bottom_tab, 'bottom_tab');
@@ -396,9 +420,9 @@ export const BottomTabbarRenderer: React.FC = () => {
   );
 };
 
-export const ChatTabbarRenderer2: React.FC<{ barSize?: number; style?: React.CSSProperties }> = (props) => {
+export const ChatTabbarRenderer2: FC<{ barSize?: number; style?: CSSProperties }> = (props) => {
   const { barSize = 32, style } = props;
-  const { side } = React.useContext(TabbarConfig);
+  const { side } = useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   useEffect(() => {
     tabbarService.setIsLatter(true);
