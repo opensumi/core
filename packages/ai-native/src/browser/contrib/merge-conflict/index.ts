@@ -439,8 +439,9 @@ export class MergeConflictContribution
   }
 
   private getCacheResolvedConflicts(currentUri?: string) {
+    currentUri = currentUri || this.getModel()?.uri.toString();
     if (!currentUri) {
-      currentUri = this.getModel().uri.toString();
+      return new Map();
     }
     const cache = this.cacheResolvedConflicts.get(currentUri);
     if (cache) {
@@ -942,7 +943,7 @@ export class MergeConflictContribution
    * 刷新 codelens
    */
   private updateCodeLens() {
-    if (this.getModel().uri) {
+    if (this.getModel()?.uri) {
       // @ts-ignore
       languageFeaturesService.codeLensProvider._onDidChange.fire();
     }
