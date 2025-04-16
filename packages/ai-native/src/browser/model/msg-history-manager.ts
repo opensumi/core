@@ -26,6 +26,10 @@ export class MsgHistoryManager extends Disposable {
     super.dispose();
   }
 
+  public get size(): number {
+    return this.messageMap.size;
+  }
+
   public clearMessages() {
     this.messageMap.clear();
     this.messageAdditionalMap.clear();

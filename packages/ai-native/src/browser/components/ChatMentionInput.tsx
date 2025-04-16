@@ -45,6 +45,7 @@ export interface IChatMentionInputProps {
   defaultAgentId?: string;
   command: string;
   setCommand: (command: string) => void;
+  disableModelSelector?: boolean;
 }
 
 // 指令命令激活组件
@@ -278,7 +279,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           position: FooterButtonPosition.LEFT,
         },
       ],
-      showModelSelector: true,
+      showModelSelector: props.disableModelSelector ? false : true,
     }),
     [handleShowMCPConfig],
   );

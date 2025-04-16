@@ -875,6 +875,7 @@ export const AIChatView = () => {
               command={command}
               setCommand={setCommand}
               ref={chatInputRef}
+              disableModelSelector={msgHistoryManager.size > 0}
             />
           </div>
         </div>
