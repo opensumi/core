@@ -131,6 +131,7 @@ export const AIChatView = () => {
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const commandService = useInjectable<CommandService>(CommandService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
+  const [disableModelSelector, setDisableModelSelector] = React.useState(msgHistoryManager.size > 0);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
 
@@ -152,6 +153,16 @@ export const AIChatView = () => {
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setDisableModelSelector(msgHistoryManager.size > 0);
+    const toDispose = msgHistoryManager.onMessageChange(() => {
+      setDisableModelSelector(msgHistoryManager.size > 0);
+    });
+    return () => {
+      toDispose.dispose();
+    };
+  }, [msgHistoryManager]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -875,7 +886,7 @@ export const AIChatView = () => {
               command={command}
               setCommand={setCommand}
               ref={chatInputRef}
-              disableModelSelector={msgHistoryManager.size > 0}
+              disableModelSelector={disableModelSelector}
             />
           </div>
         </div>

@@ -281,7 +281,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       ],
       showModelSelector: props.disableModelSelector ? false : true,
     }),
-    [handleShowMCPConfig],
+    [handleShowMCPConfig, props.disableModelSelector],
   );
 
   const handleStop = useCallback(() => {
