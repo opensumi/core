@@ -66,8 +66,13 @@
 
     &.kt-select-disabled {
       pointer-events: none;
+      cursor: not-allowed;
       background-color: var(--kt-select-disableBackground);
       color: var(--kt-select-disableForeground);
+      .kt-select-option,
+      .kt-icon {
+        color: inherit;
+      }
     }
     &.kt-select-warning {
       border-color: var(--kt-select-warningForeground);

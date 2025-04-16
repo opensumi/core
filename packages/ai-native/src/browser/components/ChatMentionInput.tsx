@@ -279,7 +279,8 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           position: FooterButtonPosition.LEFT,
         },
       ],
-      showModelSelector: props.disableModelSelector ? false : true,
+      showModelSelector: true,
+      disableModelSelector: props.disableModelSelector,
     }),
     [handleShowMCPConfig, props.disableModelSelector],
   );

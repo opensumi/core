@@ -994,6 +994,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
               onChange={handleModelChange}
               className={styles.model_selector}
               size='small'
+              disabled={footerConfig.disableModelSelector}
             />
           )}
           {renderButtons(FooterButtonPosition.LEFT)}
