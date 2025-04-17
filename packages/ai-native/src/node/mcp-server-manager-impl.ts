@@ -157,11 +157,11 @@ export class MCPServerManagerImpl implements MCPServerManager {
         this.servers.set(name, newServer);
       }
     } else if (description.type === MCP_SERVER_TYPE.SSE) {
-      const { name, serverHost } = description;
+      const { name, serverHost, transportOptions } = description;
       if (existingServer) {
         existingServer.update(serverHost);
       } else {
-        const newServer = new SSEMCPServer(name, serverHost, this.logger);
+        const newServer = new SSEMCPServer(name, serverHost, this.logger, transportOptions);
         this.servers.set(name, newServer);
       }
     }

@@ -6,17 +6,25 @@ import { ILogger } from '@opensumi/ide-core-common';
 
 import pkg from '../../package.json';
 import { IMCPServer } from '../common/mcp-server-manager';
+import { SSEClientTransportOptions } from '../common/types';
 
 global.EventSource = EventSource as any;
 export class SSEMCPServer implements IMCPServer {
   private name: string;
   public serverHost: string;
+  private transportOptions?: SSEClientTransportOptions;
   private client: Client;
   private started: boolean = false;
 
-  constructor(name: string, serverHost: string, private readonly logger?: ILogger) {
+  constructor(
+    name: string,
+    serverHost: string,
+    private readonly logger?: ILogger,
+    private readonly options?: SSEClientTransportOptions,
+  ) {
     this.name = name;
     this.serverHost = serverHost;
+    this.transportOptions = options;
   }
 
   isStarted(): boolean {
@@ -39,7 +47,8 @@ export class SSEMCPServer implements IMCPServer {
 
     const SSEClientTransport = (await import('@modelcontextprotocol/sdk/client/sse.js')).SSEClientTransport;
 
-    const transport = new SSEClientTransport(new URL(this.serverHost));
+    const transport = new SSEClientTransport(new URL(this.serverHost), this.transportOptions);
+
     transport.onerror = (error) => {
       this.logger?.error('Transport Error:', error);
     };

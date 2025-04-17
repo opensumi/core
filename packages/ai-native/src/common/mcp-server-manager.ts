@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
-import { MCP_SERVER_TYPE } from './types';
+import { MCP_SERVER_TYPE, SSEClientTransportOptions } from './types';
 
 export interface IMCPServer {
   isStarted(): boolean;
@@ -78,6 +78,7 @@ export interface SSEMCPServerDescription extends BaseMCPServerDescription {
    * The host of the MCP server.
    */
   serverHost: string;
+  transportOptions?: SSEClientTransportOptions;
 }
 
 export interface BuiltinMCPServerDescription {
