@@ -24,6 +24,7 @@ import { ChatModel, ChatRequestModel, ChatResponseModel, IChatProgressResponseCo
 
 interface ISessionModel {
   sessionId: string;
+  modelId: string;
   history: { additional: Record<string, any>; messages: IHistoryChatMessage[] };
   requests: {
     requestId: string;
@@ -86,6 +87,7 @@ export class ChatManagerService extends Disposable {
         const model = new ChatModel({
           sessionId: item.sessionId,
           history: new MsgHistoryManager(item.history),
+          modelId: item.modelId,
         });
         const requests = item.requests.map(
           (request) =>
@@ -167,6 +169,16 @@ export class ChatManagerService extends Disposable {
     const model = this.getSession(sessionId);
     if (!model) {
       throw new Error(`Unknown session: ${sessionId}`);
+    }
+
+    const savedModelId = model.modelId;
+    const modelId = this.preferenceService.get<string>(AINativeSettingSectionsId.ModelID);
+    if (!savedModelId) {
+      // 首次对话时记录 modelId
+      model.modelId = modelId;
+    } else if (savedModelId !== modelId) {
+      // 模型切换时，清空对话历史
+      throw new Error('Model changed unexpectedly');
     }
 
     const source = new CancellationTokenSource();

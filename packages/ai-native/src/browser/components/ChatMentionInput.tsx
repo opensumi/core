@@ -46,6 +46,7 @@ export interface IChatMentionInputProps {
   command: string;
   setCommand: (command: string) => void;
   disableModelSelector?: boolean;
+  sessionModelId?: string;
 }
 
 // 指令命令激活组件
@@ -251,7 +252,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         { label: 'QWQ 32B', value: 'qwq-32b' },
         { label: 'DeepSeek R1', value: 'deepseek-r1' },
       ],
-      defaultModel: 'deepseek-r1',
+      defaultModel: props.sessionModelId || 'deepseek-r1',
       buttons: [
         {
           id: 'mcp-server',
@@ -282,7 +283,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       showModelSelector: true,
       disableModelSelector: props.disableModelSelector,
     }),
-    [handleShowMCPConfig, props.disableModelSelector],
+    [handleShowMCPConfig, props.disableModelSelector, props.sessionModelId],
   );
 
   const handleStop = useCallback(() => {
