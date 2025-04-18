@@ -223,7 +223,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     const shortId = uuid();
     const terminal = new Terminal(options.name, options, this.proxy);
     const p = new ExtHostPseudoterminal(options.pty);
-    terminal.createExtensionTerminal(shortId);
+    terminal.createExtensionTerminal(shortId, options.iconPath, options.color);
     this.terminalsMap.set(shortId, terminal);
     this._terminalStartDeferreds.set(shortId, new Deferred());
     const disposable = this._setupExtHostProcessListeners(shortId, p);
@@ -773,8 +773,11 @@ export class Terminal implements vscode.Terminal {
     this.proxy.$dispose(this.id);
   }
 
-  async createExtensionTerminal(id: string): Promise<void> {
-    await this.proxy.$createTerminal({ name: this.name, isExtensionTerminal: true }, id);
+  async createExtensionTerminal(id: string, iconPath?: vscode.IconPath, color?: vscode.ThemeColor): Promise<void> {
+    await this.proxy.$createTerminal(
+      { name: this.name, isExtensionTerminal: true, iconPath, color, isTransient: true },
+      id,
+    );
     this.created(id);
   }
 
