@@ -76,6 +76,12 @@ export class TerminalExternalLinkProviderAdapter extends TerminalBaseLinkProvide
       );
       const matchingText = lineContent.substr(link.startIndex, link.length) || '';
       const activateLink = this._wrapLinkHandler((_, text) => link.activate(text));
+      const tooltipCallback = (
+        link: TerminalLink,
+        viewportRange: IViewportRange,
+        modifierDownCallback?: () => void,
+        modifierUpCallback?: () => void,
+      ) => this._tooltipCallback(link, viewportRange, modifierDownCallback, modifierUpCallback);
 
       return this.injector.get(TerminalLink, [
         this._xterm,
@@ -83,7 +89,7 @@ export class TerminalExternalLinkProviderAdapter extends TerminalBaseLinkProvide
         matchingText,
         this._xterm.buffer.active.viewportY,
         activateLink,
-        this._tooltipCallback,
+        tooltipCallback,
         true,
         link.label,
       ]);

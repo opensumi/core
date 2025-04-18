@@ -175,13 +175,6 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
       }
     }
 
-    if (result.length === 0) {
-      const validatedLinks = await this.detectLocalLink(text, lines, startLine, stringIndex, 2);
-      if (validatedLinks.length > 0) {
-        result.push(...validatedLinks);
-      }
-    }
-
     return result;
   }
 
@@ -220,6 +213,12 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
             },
             startLine,
           );
+          const tooltipCallback = (
+            link: TerminalLink,
+            viewportRange: IViewportRange,
+            modifierDownCallback?: () => void,
+            modifierUpCallback?: () => void,
+          ) => this._tooltipCallback(link, viewportRange, modifierDownCallback, modifierUpCallback);
           r(
             this.injector.get(TerminalLink, [
               this._xterm,
@@ -227,7 +226,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
               text,
               this._xterm.buffer.active.viewportY,
               activateCallback,
-              this._tooltipCallback,
+              tooltipCallback,
               true,
               label,
             ]),

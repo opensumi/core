@@ -331,6 +331,11 @@ export interface AppConfig {
    * Default value is `nsfw`
    */
   recursiveWatcherBackend?: RecursiveWatcherBackend;
+
+  /**
+   * Open word link with palette on terminal
+   */
+  openWordLinkWithPaletteOnTerminal?: boolean;
 }
 
 export interface ICollaborationClientOpts {
