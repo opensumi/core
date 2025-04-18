@@ -15,7 +15,7 @@ import {
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
-import { MCPServerDescription } from './mcp-server-manager';
+import { IMCPServer, MCPServerDescription } from './mcp-server-manager';
 import { IPartialEditEvent, MCPTool } from './types';
 
 import type { CoreMessage } from 'ai';
@@ -151,6 +151,7 @@ export interface ISumiMCPServerBackend {
   $addOrUpdateServer(description: MCPServerDescription): void;
   $removeServer(name: string): void;
   $syncServer(name: string): Promise<void>;
+  $getMCPServerByName(name: string): IMCPServer | undefined;
 }
 
 export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';
