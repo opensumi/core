@@ -131,6 +131,7 @@ export const AIChatView = () => {
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const commandService = useInjectable<CommandService>(CommandService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
+  const [sessionModelId, setSessionModelId] = React.useState<string | undefined>(aiChatService.sessionModel.modelId);
 
   const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
 
@@ -152,6 +153,10 @@ export const AIChatView = () => {
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
+  // 切换session或Agent输出状态变化时
+  React.useEffect(() => {
+    setSessionModelId(aiChatService.sessionModel.modelId);
+  }, [loading, aiChatService.sessionModel]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -875,6 +880,8 @@ export const AIChatView = () => {
               command={command}
               setCommand={setCommand}
               ref={chatInputRef}
+              disableModelSelector={sessionModelId !== undefined || loading}
+              sessionModelId={sessionModelId}
             />
           </div>
         </div>

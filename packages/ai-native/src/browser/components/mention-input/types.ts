@@ -67,6 +67,7 @@ export interface FooterConfig {
   defaultModel?: string;
   buttons?: FooterButton[];
   showModelSelector?: boolean;
+  disableModelSelector?: boolean;
 }
 
 export interface MentionInputProps {

@@ -90,6 +90,10 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   // 使用防抖处理搜索文本
   const debouncedSecondLevelFilter = useDebounce(mentionState.secondLevelFilter, 300);
 
+  React.useEffect(() => {
+    setSelectedModel(footerConfig.defaultModel || '');
+  }, [footerConfig.defaultModel]);
+
   // 监听搜索文本变化，实时更新二级菜单
   React.useEffect(() => {
     if (mentionState.level === 1 && mentionState.parentType && debouncedSecondLevelFilter !== undefined) {
@@ -994,6 +998,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
               onChange={handleModelChange}
               className={styles.model_selector}
               size='small'
+              disabled={footerConfig.disableModelSelector}
             />
           )}
           {renderButtons(FooterButtonPosition.LEFT)}

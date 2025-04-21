@@ -295,10 +295,11 @@ export class ChatRequestModel implements IChatRequestModel {
 export class ChatModel extends Disposable implements IChatModel {
   private requestIdPool = 0;
 
-  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager }) {
+  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; modelId?: string }) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
     this.history = initParams?.history ?? new MsgHistoryManager();
+    this.#modelId = initParams?.modelId;
   }
 
   #sessionId: string;
@@ -322,6 +323,16 @@ export class ChatModel extends Disposable implements IChatModel {
 
   public get slicedMessageCount() {
     return this.#slicedMessageCount;
+  }
+
+  #modelId?: string;
+
+  public get modelId(): string | undefined {
+    return this.#modelId;
+  }
+
+  set modelId(modelId: string | undefined) {
+    this.#modelId = modelId;
   }
 
   getMessageHistory(contextWindow?: number) {
@@ -434,6 +445,7 @@ export class ChatModel extends Disposable implements IChatModel {
   toJSON() {
     return {
       sessionId: this.sessionId,
+      modelId: this.modelId,
       history: this.history,
       requests: this.requests,
     };
