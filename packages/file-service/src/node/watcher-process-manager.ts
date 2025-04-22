@@ -148,9 +148,11 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
 
     const ipcHandlerPath = await this.getIPCHandlerPath('watcher_process');
     // 如果存在连接，则关闭连接, 避免重复创建
-    const connection = this.clientWatcherConnectionServer.get(clientId);
-    if (connection) {
-      connection.close();
+    const server = this.clientWatcherConnectionServer.get(clientId);
+    if (server) {
+      // 等待真正关闭后再移除引用，避免句柄和端口泄漏
+      await new Promise<void>((res) => server.close(() => res()));
+      this.clientWatcherConnectionServer.delete(clientId);
     }
     await this.createWatcherServer(clientId, ipcHandlerPath);
 
