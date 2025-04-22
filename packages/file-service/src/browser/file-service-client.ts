@@ -352,7 +352,13 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     this.eventBus.fire(new FilesChangeEvent(changes));
   }
 
-  private uriWatcherMap: Map<string, FileSystemWatcher> = new Map();
+  private uriWatcherMap: Map<
+    string,
+    {
+      watcher: FileSystemWatcher;
+      excludes?: string[];
+    }
+  > = new Map();
 
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
@@ -367,8 +373,11 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
     let prevWatcher: IFileServiceWatcher | undefined;
     if (this.uriWatcherMap.has(_uri.toString())) {
-      prevWatcher = this.uriWatcherMap.get(_uri.toString()) as IFileServiceWatcher;
-      prevWatcher.dispose();
+      const watcherInfo = this.uriWatcherMap.get(_uri.toString());
+      prevWatcher = watcherInfo?.watcher;
+      if (prevWatcher) {
+        await prevWatcher.dispose();
+      }
     }
 
     if (prevWatcher) {
@@ -384,7 +393,8 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
     this.watcherDisposerMap.set(id, {
       dispose: async () => {
-        const watcher = this.uriWatcherMap.get(_uri.toString());
+        const watcherInfo = this.uriWatcherMap.get(_uri.toString());
+        const watcher = watcherInfo?.watcher;
         await Promise.all([provider.unwatch && provider.unwatch(watcherId), watcher && watcher.dispose()]);
         this.uriWatcherMap.delete(_uri.toString());
       },
@@ -396,7 +406,10 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
       watchId: id,
       uri,
     });
-    this.uriWatcherMap.set(_uri.toString(), watcher);
+    this.uriWatcherMap.set(_uri.toString(), {
+      watcher,
+      excludes,
+    });
     return watcher;
   }
 
@@ -722,16 +735,17 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
       await provider.initialize(this.clientId, this.appConfig.recursiveWatcherBackend);
     }
     const uriList = Array.from(this.uriWatcherMap.keys());
-    for (const uriString of uriList) {
+    const reconnectPromises = uriList.map(async (uriString) => {
       try {
         const uri = new URI(uriString);
-        const watcher = this.uriWatcherMap.get(uriString);
-        if (watcher) {
-          await this.watchFileChanges(uri);
+        const watcherInfo = this.uriWatcherMap.get(uriString);
+        if (watcherInfo?.watcher) {
+          await this.watchFileChanges(uri, watcherInfo.excludes);
         }
       } catch (err) {
         this.logger?.error('Error reconnecting watcher for:', uriString, err);
       }
-    }
+    });
+    await Promise.allSettled(reconnectPromises);
   }
 }
