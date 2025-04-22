@@ -118,3 +118,10 @@ export interface IPartialEditEvent {
     deletedLinesCount: number;
   };
 }
+
+export interface SSEClientTransportOptions {
+  /**
+   * Customizes recurring POST requests to the server.
+   */
+  requestInit?: RequestInit;
+}

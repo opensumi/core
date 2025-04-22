@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
-import { MCP_SERVER_TYPE } from './types';
+import { MCP_SERVER_TYPE, SSEClientTransportOptions } from './types';
 
 export interface IMCPServer {
   isStarted(): boolean;
@@ -8,6 +8,7 @@ export interface IMCPServer {
   getServerName(): string;
   callTool(toolName: string, toolCallId: string, arg_string: string): ReturnType<Client['callTool']>;
   getTools(): ReturnType<Client['listTools']>;
+  getClient(): Client | null;
   update(command: string, args?: string[], env?: { [key: string]: string }): void;
   stop(): void;
 }
@@ -32,6 +33,7 @@ export interface MCPServerManager {
   registerTools(serverName: string): Promise<void>;
   addExternalMCPServers(servers: MCPServerDescription[]): void;
   getServers(): Map<string, IMCPServer>;
+  getServerByName(name: string): IMCPServer | undefined;
 }
 
 export type MCPTool = Awaited<ReturnType<MCPServerManager['getTools']>>['tools'][number];
@@ -76,6 +78,7 @@ export interface SSEMCPServerDescription extends BaseMCPServerDescription {
    * The host of the MCP server.
    */
   serverHost: string;
+  transportOptions?: SSEClientTransportOptions;
 }
 
 export interface BuiltinMCPServerDescription {
