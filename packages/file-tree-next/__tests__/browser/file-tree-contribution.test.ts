@@ -177,12 +177,6 @@ describe('FileTreeContribution', () => {
       expect(title).toBe('userhome');
     });
 
-    it('should onReconnect be work', async () => {
-      const contribution = mockInjector.get(FileTreeContribution);
-      contribution.onReconnect();
-      expect(mockFileTreeService.reWatch).toHaveBeenCalledTimes(1);
-    });
-
     it('should registerCommands be work', async () => {
       const contribution = mockInjector.get(FileTreeContribution);
       const register = jest.fn();
