@@ -210,10 +210,6 @@ export class FileTreeContribution
     return resourceTitle;
   }
 
-  onReconnect() {
-    this.fileTreeService.reWatch();
-  }
-
   private revealFile(locationUri: URI) {
     if (locationUri) {
       if (this.isRendered) {

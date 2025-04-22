@@ -18,7 +18,7 @@ import {
   parseGlob,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
-import { FileSystemProviderCapabilities, IEventBus, Schemes, isUndefined } from '@opensumi/ide-core-common';
+import { FileSystemProviderCapabilities, IEventBus, ILogger, Schemes, isUndefined } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { IApplicationService } from '@opensumi/ide-core-common/lib/types/application';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
@@ -116,6 +116,8 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
 
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
   private get clientId() {
     return this.applicationService.clientId;
   }
@@ -358,19 +360,22 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     const pollingWatch = pollingWatcherDirectories.some((dir) => uri.path.toString().startsWith(dir));
 
     const _uri = this.convertUri(uri.toString());
-    const originWatcher = this.uriWatcherMap.get(_uri.toString());
-    if (originWatcher) {
-      // 这里兼容重连逻辑，重连时 watcher 会 disposed，需要重新生成
-      if (!originWatcher.isDisposed()) {
-        return originWatcher;
-      } else {
-        this.uriWatcherMap.delete(_uri.toString());
-      }
-    }
 
-    const id = this.watcherId++;
+    let id = 0;
     const provider = await this.getProvider(_uri.scheme);
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
+
+    let prevWatcher: IFileServiceWatcher | undefined;
+    if (this.uriWatcherMap.has(_uri.toString())) {
+      prevWatcher = this.uriWatcherMap.get(_uri.toString()) as IFileServiceWatcher;
+      prevWatcher.dispose();
+    }
+
+    if (prevWatcher) {
+      id = prevWatcher.watchId;
+    } else {
+      id = this.watcherId++;
+    }
 
     const watcherId = await provider.watch(_uri.codeUri, {
       excludes,
@@ -709,5 +714,24 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
   protected async doGetMoveToTrash(option?: { moveToTrash?: boolean }): Promise<boolean> {
     return option && typeof option.moveToTrash !== 'undefined' ? option.moveToTrash : this.options.moveToTrash;
+  }
+
+  async reconnect() {
+    const provider = await this.getProvider(Schemes.file);
+    if (provider.initialize) {
+      await provider.initialize(this.clientId, this.appConfig.recursiveWatcherBackend);
+    }
+    const uriList = Array.from(this.uriWatcherMap.keys());
+    for (const uriString of uriList) {
+      try {
+        const uri = new URI(uriString);
+        const watcher = this.uriWatcherMap.get(uriString);
+        if (watcher) {
+          await this.watchFileChanges(uri);
+        }
+      } catch (err) {
+        this.logger?.error('Error reconnecting watcher for:', uriString, err);
+      }
+    }
   }
 }

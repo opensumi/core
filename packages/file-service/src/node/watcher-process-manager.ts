@@ -142,10 +142,16 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
   }
 
   async createProcess(clientId: string, backend?: RecursiveWatcherBackend) {
+    this._whenReadyDeferred = new Deferred();
     this.logger.log('create watcher process for client: ', clientId);
     this.logger.log('appconfig watcherHost: ', this.watcherHost);
 
     const ipcHandlerPath = await this.getIPCHandlerPath('watcher_process');
+    // 如果存在连接，则关闭连接, 避免重复创建
+    const connection = this.clientWatcherConnectionServer.get(clientId);
+    if (connection) {
+      connection.close();
+    }
     await this.createWatcherServer(clientId, ipcHandlerPath);
 
     const pid = await this.createWatcherProcess(clientId, ipcHandlerPath, backend);
