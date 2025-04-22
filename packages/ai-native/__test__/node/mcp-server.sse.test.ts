@@ -6,10 +6,15 @@ import { ILogger } from '@opensumi/ide-core-common';
 import { SSEMCPServer } from '../../src/node/mcp-server.sse';
 
 jest.mock('@modelcontextprotocol/sdk/client/index.js');
-jest.mock('@modelcontextprotocol/sdk/client/sse.js');
+jest.mock('@modelcontextprotocol/sdk/client/sse.js', () => ({
+  SSEClientTransport: jest.fn().mockImplementation(() => ({
+    onerror: jest.fn(),
+  })),
+}));
 
 describe('SSEMCPServer', () => {
   let server: SSEMCPServer;
+  let mockSSEClientTransport: jest.Mock;
   const mockLogger: ILogger = {
     log: jest.fn(),
     error: jest.fn(),
@@ -24,7 +29,9 @@ describe('SSEMCPServer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetModules();
     server = new SSEMCPServer('test-server', 'http://localhost:3000', mockLogger);
+    mockSSEClientTransport = require('@modelcontextprotocol/sdk/client/sse.js').SSEClientTransport;
   });
 
   describe('constructor', () => {
@@ -41,22 +48,19 @@ describe('SSEMCPServer', () => {
         connect: jest.fn().mockResolvedValue(undefined),
         onerror: jest.fn(),
       }));
-      (SSEClientTransport as jest.Mock).mockImplementation(() => ({
-        onerror: jest.fn(),
-      }));
     });
 
     it('should start the server successfully', async () => {
       await server.start();
       expect(server.isStarted()).toBe(true);
-      expect(SSEClientTransport).toHaveBeenCalledWith(expect.any(URL));
+      expect(mockSSEClientTransport).toHaveBeenCalledWith(expect.any(URL), undefined);
     });
 
     it('should not start server if already started', async () => {
       await server.start();
-      const firstCallCount = (SSEClientTransport as jest.Mock).mock.calls.length;
+      const firstCallCount = mockSSEClientTransport.mock.calls.length;
       await server.start();
-      expect((SSEClientTransport as jest.Mock).mock.calls.length).toBe(firstCallCount);
+      expect(mockSSEClientTransport.mock.calls.length).toBe(firstCallCount);
     });
   });
 
