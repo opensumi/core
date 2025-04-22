@@ -92,6 +92,10 @@ export class MCPServerManagerImpl implements MCPServerManager {
     return Array.from(this.servers.keys());
   }
 
+  getServerByName(name: string): IMCPServer | undefined {
+    return this.servers.get(name);
+  }
+
   private convertToToolRequest(tool: MCPTool, serverName: string): ToolRequest {
     const id = getToolName(tool.name, serverName);
 
@@ -153,11 +157,11 @@ export class MCPServerManagerImpl implements MCPServerManager {
         this.servers.set(name, newServer);
       }
     } else if (description.type === MCP_SERVER_TYPE.SSE) {
-      const { name, serverHost } = description;
+      const { name, serverHost, transportOptions } = description;
       if (existingServer) {
         existingServer.update(serverHost);
       } else {
-        const newServer = new SSEMCPServer(name, serverHost, this.logger);
+        const newServer = new SSEMCPServer(name, serverHost, this.logger, transportOptions);
         this.servers.set(name, newServer);
       }
     }

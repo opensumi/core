@@ -50,7 +50,12 @@ export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {
 
     return links.map((link) => {
       const range = convertLinkRangeToBuffer(lines, this._xterm.cols, link.range, startLine);
-
+      const tooltipCallback = (
+        link: TerminalLink,
+        viewportRange: IViewportRange,
+        modifierDownCallback?: () => void,
+        modifierUpCallback?: () => void,
+      ) => this._tooltipCallback(link, viewportRange, modifierDownCallback, modifierUpCallback);
       // Check if the link if within the mouse position
       return this.injector.get(TerminalLink, [
         this._xterm,
@@ -58,7 +63,7 @@ export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {
         link.url?.toString() || '',
         this._xterm.buffer.active.viewportY,
         this._activateCallback,
-        this._tooltipCallback,
+        tooltipCallback,
         true,
         undefined,
       ]);

@@ -4,7 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PrefixQuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { IWindowService } from '@opensumi/ide-core-browser/lib/window';
-import { URI } from '@opensumi/ide-core-common';
+import { URI, isUndefined } from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace.interface';
 
@@ -112,11 +112,13 @@ export class TerminalWordLinkProvider extends TerminalBaseLinkProvider {
               this._activateFileCallback(event, text);
             }
           } else {
-            this.quickOpenService.open(text);
+            const openWordLinkWithPaletteOnTerminal = this.appConfig.openWordLinkWithPaletteOnTerminal;
+            if (isUndefined(openWordLinkWithPaletteOnTerminal) || openWordLinkWithPaletteOnTerminal) {
+              this.quickOpenService.open(text);
+            }
           }
         });
       };
-
       links.push(
         this.injector.get(TerminalLink, [
           this._xterm,

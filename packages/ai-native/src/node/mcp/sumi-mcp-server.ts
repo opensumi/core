@@ -60,6 +60,10 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
     return tools;
   }
 
+  $getMCPServerByName(name: string) {
+    return this.mcpServerManager.getServerByName(name);
+  }
+
   async callMCPTool(name: string, args: any) {
     if (!this.client) {
       throw new Error('SUMI MCP RPC Client not initialized');
@@ -230,6 +234,10 @@ export class BuiltinMCPServer implements IMCPServer {
 
   getServerName(): string {
     return BUILTIN_MCP_SERVER_NAME;
+  }
+
+  getClient(): Client | null {
+    return null;
   }
 
   async start(): Promise<void> {

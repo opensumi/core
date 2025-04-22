@@ -266,7 +266,7 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
             </div>
           </Popover>
           <Popover
-            id={'ai-chat-header-close'}
+            id={'ai-chat-header-new'}
             position={PopoverPosition.top}
             title={localize('aiNative.operate.newChat.title')}
           >
