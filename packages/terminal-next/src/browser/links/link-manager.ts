@@ -186,7 +186,6 @@ export class TerminalLinkManager extends Disposable {
       height: this._xterm.rows,
     };
     const boundingClientRect = core.element.getBoundingClientRect();
-
     // Don't pass the mouse event as this avoids the modifier check
     return this._showHover(
       {
