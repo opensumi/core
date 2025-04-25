@@ -12,8 +12,6 @@
   .editor_area {
     position: relative;
     padding: 0 15px;
-    min-height: 42px;
-    max-height: 105px;
   }
 
   .editor {
@@ -21,11 +19,11 @@
     background-color: transparent;
     border: none;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 24px;
+    min-height: 72px;
+    max-height: 120px;
     outline: none;
     resize: none;
-    min-height: 24px;
-    max-height: 120px;
     overflow-y: auto;
     border-radius: 4px;
     word-break: break-word;
@@ -142,6 +140,43 @@
   display: flex;
   justify-content: center;
 }
+.context_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  .context_icon {
+    flex-grow: 0;
+    flex-shrink: 0;
+    :global(.kt-icon) {
+      font-size: 12px;
+    }
+    :global(.kticon-close) {
+      display: none;
+    }
+  }
+  &:hover {
+    .context_icon {
+      :global(.kticon-close) {
+        display: block;
+      }
+      :global(.kticon-out-link) {
+        display: none;
+      }
+    }
+  }
+  .context_description {
+    flex: 1;
+    margin-left: 3px;
+    margin-right: 10px;
+    text-align: left;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--descriptionForeground);
+  }
+}
 
 .mention_panel {
   background-color: var(--editor-background);
@@ -191,6 +226,7 @@
 
 .mention_item_left {
   display: flex;
+  max-width: 100%;
   align-items: center;
   flex: 1;
 }
@@ -198,7 +234,8 @@
 .mention_item_icon {
   margin-right: 8px;
   width: 18px;
-  height: 18px;
+  height: 22px;
+  line-height: 22px !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,6 +253,7 @@
   font-size: 13px;
   display: inline;
   flex: 1;
+  direction: rtl;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -234,6 +272,40 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.context_item {
+  display: flex;
+  align-items: center;
+  background-color: var(--badge-background);
+  color: var(--badge-foreground);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.context_item_icon {
+  margin-right: 4px;
+}
+
+.context_item_text {
+  margin-right: 4px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.context_item_remove {
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .back_button {

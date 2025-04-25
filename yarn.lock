@@ -3409,6 +3409,7 @@ __metadata:
     "@opensumi/ide-main-layout": "workspace:*"
     "@opensumi/ide-markers": "workspace:*"
     "@opensumi/ide-monaco": "workspace:*"
+    "@opensumi/ide-outline": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-preferences": "workspace:*"
     "@opensumi/ide-search": "workspace:*"

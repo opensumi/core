@@ -1,5 +1,3 @@
-import { DataContent } from 'ai';
-
 import { Event, URI } from '@opensumi/ide-core-common/lib/utils';
 
 export interface LLMContextService {
@@ -31,7 +29,12 @@ export interface LLMContextService {
   /**
    * 上下文文件变化事件
    */
-  onDidContextFilesChangeEvent: Event<{ viewed: FileContext[]; attached: FileContext[]; version: number }>;
+  onDidContextFilesChangeEvent: Event<{
+    viewed: FileContext[];
+    attached: FileContext[];
+    attachedFolders: FileContext[];
+    version: number;
+  }>;
 
   /**
    * 从 context 中移除文件

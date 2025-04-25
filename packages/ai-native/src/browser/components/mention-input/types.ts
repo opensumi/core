@@ -1,3 +1,7 @@
+import { DocumentSymbol, SymbolKind } from '@opensumi/ide-monaco';
+
+import { LLMContextService } from '../../../common/llm-context';
+
 import type { LabelService } from '@opensumi/ide-core-browser';
 import type { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -8,7 +12,9 @@ export interface MentionItem {
   value?: string;
   description?: string;
   contextId?: string;
+  symbol?: DocumentSymbol;
   icon?: string;
+  kind?: SymbolKind;
   getHighestLevelItems?: () => MentionItem[];
   getItems?: (searchText: string) => Promise<MentionItem[]>;
 }
@@ -82,6 +88,7 @@ export interface MentionInputProps {
   mentionKeyword?: string;
   labelService?: LabelService;
   workspaceService?: IWorkspaceService;
+  contextService?: LLMContextService;
 }
 
 export const MENTION_KEYWORD = '@';

@@ -45,6 +45,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   private readonly onDidContextFilesChangeEmitter = new Emitter<{
     viewed: FileContext[];
     attached: FileContext[];
+    attachedFolders: FileContext[];
     version: number;
   }>();
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;

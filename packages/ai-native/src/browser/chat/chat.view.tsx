@@ -701,10 +701,7 @@ export const AIChatView = () => {
             llmContextService.cleanFileContext();
           }
           const fileUri = new URI(filePath);
-          llmContextService.addFileToContext(fileUri, undefined, true);
           const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
-          // 获取文件内容
-          // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
           processedContent = processedContent.replace(match, `\`<attached_file>${relativePath}\``);
         }
       }
@@ -715,10 +712,27 @@ export const AIChatView = () => {
         for (const match of folderMatches) {
           const folderPath = match.replace(/\{\{@folder:(.*?)\}\}/, '$1');
           const folderUri = new URI(folderPath);
-          llmContextService.addFolderToContext(folderUri);
           const relativePath = (await workspaceService.asRelativePath(folderUri))?.path || folderUri.displayName;
-          // 替换占位符，后续支持自定义渲染时可替换为自定义渲染标签
           processedContent = processedContent.replace(match, `\`<attached_folder>${relativePath}\``);
+        }
+      }
+      const codePattern = /\{\{@code:(.*?)\}\}/g;
+      const codeMatches = processedContent.match(codePattern);
+      if (codeMatches) {
+        for (const match of codeMatches) {
+          const filePathWithLineRange = match.replace(/\{\{@code:(.*?)\}\}/, '$1');
+          const [filePath, lineRange] = filePathWithLineRange.split(':');
+          let range: [number, number] = [0, 0];
+          if (lineRange) {
+            const [startLine, endLine] = lineRange.slice(1).split('-');
+            range = [parseInt(startLine, 10), parseInt(endLine, 10)];
+          }
+          const fileUri = new URI(filePath);
+          const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
+          processedContent = processedContent.replace(
+            match,
+            `\`<attached_file>${relativePath}:L${range[0]}-${range[1]}\``,
+          );
         }
       }
       return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra });
@@ -879,6 +893,7 @@ export const AIChatView = () => {
               defaultAgentId={defaultAgentId}
               command={command}
               setCommand={setCommand}
+              contextService={llmContextService}
               ref={chatInputRef}
               disableModelSelector={sessionModelId !== undefined || loading}
               sessionModelId={sessionModelId}
