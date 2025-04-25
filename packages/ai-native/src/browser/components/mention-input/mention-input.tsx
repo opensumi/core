@@ -1,13 +1,23 @@
 import cls from 'classnames';
 import * as React from 'react';
 
-import { Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { formatLocalize, getSymbolIcon, localize } from '@opensumi/ide-core-browser';
+import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
 
+import { FileContext } from '../../../common/llm-context';
+
 import styles from './mention-input.module.less';
 import { MentionPanel } from './mention-panel';
-import { FooterButtonPosition, MENTION_KEYWORD, MentionInputProps, MentionItem, MentionState } from './types';
+import {
+  FooterButtonPosition,
+  MENTION_KEYWORD,
+  MentionInputProps,
+  MentionItem,
+  MentionState,
+  MentionType,
+} from './types';
 
 export const WHITE_SPACE_TEXT = '&nbsp;';
 
@@ -26,6 +36,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     buttons: [],
     showModelSelector: false,
   },
+  contextService,
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
   const [mentionState, setMentionState] = React.useState<MentionState>({
@@ -53,8 +64,14 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   const [historyIndex, setHistoryIndex] = React.useState<number>(-1);
   const [currentInput, setCurrentInput] = React.useState<string>('');
   const [isNavigatingHistory, setIsNavigatingHistory] = React.useState<boolean>(false);
+  const [attachedFiles, setAttachedFiles] = React.useState<{
+    files: FileContext[];
+    folders: FileContext[];
+  }>({
+    files: [],
+    folders: [],
+  });
 
-  // 获取当前菜单项
   const getCurrentItems = (): MentionItem[] => {
     if (mentionState.level === 0) {
       return mentionItems;
@@ -70,7 +87,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     return [];
   };
 
-  // 添加防抖函数
   const useDebounce = <T,>(value: T, delay: number): T => {
     const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
 
@@ -87,14 +103,12 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     return debouncedValue;
   };
 
-  // 使用防抖处理搜索文本
   const debouncedSecondLevelFilter = useDebounce(mentionState.secondLevelFilter, 300);
 
   React.useEffect(() => {
     setSelectedModel(footerConfig.defaultModel || '');
   }, [footerConfig.defaultModel]);
 
-  // 监听搜索文本变化，实时更新二级菜单
   React.useEffect(() => {
     if (mentionState.level === 1 && mentionState.parentType && debouncedSecondLevelFilter !== undefined) {
       // 查找父级菜单项
@@ -162,6 +176,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     }
   }, [debouncedSecondLevelFilter, mentionState.level, mentionState.parentType]);
 
+  React.useEffect(() => {
+    const disposable = contextService?.onDidContextFilesChangeEvent(({ attached, attachedFolders }) => {
+      setAttachedFiles({ files: attached, folders: attachedFolders });
+    });
+
+    return () => {
+      disposable?.dispose();
+    };
+  }, []);
+
   // 获取光标位置
   const getCursorPosition = (element: HTMLElement): number => {
     const selection = window.getSelection();
@@ -176,7 +200,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     return preCaretRange.toString().length;
   };
 
-  // 处理输入事件
   const handleInput = () => {
     // 如果用户开始输入，退出历史导航模式
     if (isNavigatingHistory) {
@@ -303,6 +326,24 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       }
       e.preventDefault();
       return;
+    }
+
+    // 当输入框为空时，处理删除键 (Backspace) 或 Delete 键来删除上下文内容
+    if (
+      (e.key === 'Backspace' || e.key === 'Delete') &&
+      editorRef.current &&
+      (!editorRef.current.textContent || editorRef.current.textContent.trim() === '')
+    ) {
+      // 先删除文件夹，再删除文件
+      if (attachedFiles.folders.length > 0) {
+        const lastFolder = attachedFiles.folders[attachedFiles.folders.length - 1];
+        contextService?.removeFileFromContext(lastFolder.uri);
+        e.preventDefault();
+      } else if (attachedFiles.files.length > 0) {
+        const lastFile = attachedFiles.files[attachedFiles.files.length - 1];
+        contextService?.removeFileFromContext(lastFile.uri);
+        e.preventDefault();
+      }
     }
 
     // 添加对 @ 键的监听，支持在任意位置触发菜单
@@ -665,15 +706,30 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         mentionTag.dataset.contextId = item.contextId || '';
         mentionTag.contentEditable = 'false';
 
-        // 为 file 和 folder 类型添加图标
-        if (item.type === 'file' || item.type === 'folder') {
+        if (item.type === MentionType.FILE || item.type === MentionType.FOLDER) {
           // 创建图标容器
           const iconSpan = document.createElement('span');
           iconSpan.className = cls(
             styles.mention_icon,
-            item.type === 'file' ? labelService?.getIcon(new URI(item.text)) : getIcon('folder'),
+            item.type === MentionType.FILE ? labelService?.getIcon(new URI(item.text)) : getIcon('folder'),
           );
           mentionTag.appendChild(iconSpan);
+          if (item.type === MentionType.FOLDER) {
+            contextService?.addFolderToContext(new URI(item.contextId), true);
+          } else {
+            contextService?.addFileToContext(new URI(item.contextId), undefined, true);
+          }
+        } else if (item.type === MentionType.CODE) {
+          const iconSpan = document.createElement('span');
+          iconSpan.className = cls(styles.mention_icon, item.kind && getSymbolIcon(item.kind) + ' outline-icon');
+          mentionTag.appendChild(iconSpan);
+          if (item.symbol) {
+            contextService?.addFileToContext(
+              new URI(item.contextId),
+              [item.symbol.range.startLineNumber, item.symbol.range.endLineNumber],
+              true,
+            );
+          }
         }
         const workspace = workspaceService?.workspace;
         let relativePath = item.text;
@@ -913,7 +969,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       setHistoryIndex(-1);
       setIsNavigatingHistory(false);
     }
-
     if (onSend) {
       // 传递当前选择的模型和其他配置信息
       onSend(processedContent, {
@@ -930,6 +985,10 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       editorRef.current.style.height = 'auto';
     }
   };
+
+  const handleClearContext = React.useCallback(() => {
+    contextService?.cleanFileContext();
+  }, [contextService]);
 
   const handleStop = React.useCallback(() => {
     if (onStop) {
@@ -960,6 +1019,11 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           </Popover>
         )),
     [footerConfig.buttons],
+  );
+
+  const hasContext = React.useMemo(
+    () => attachedFiles.files.length > 0 || attachedFiles.folders.length > 0,
+    [attachedFiles],
   );
 
   return (
@@ -1005,6 +1069,25 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         </div>
         <div className={styles.right_control}>
           {renderButtons(FooterButtonPosition.RIGHT)}
+          <Popover
+            overlayClassName={styles.popover_icon}
+            id={'ai-chat-clear-context'}
+            position={PopoverPosition.top}
+            content={localize('aiNative.chat.context.clear')}
+          >
+            <div className={styles.context_container} onClick={handleClearContext}>
+              <div className={styles.context_icon}>
+                <Icon icon='out-link' />
+                <Icon icon='close' />
+              </div>
+              <div className={styles.context_description}>
+                {formatLocalize(
+                  'aiNative.chat.context.description',
+                  attachedFiles.files.length + attachedFiles.folders.length,
+                )}
+              </div>
+            </div>
+          </Popover>
           <Popover
             overlayClassName={styles.popover_icon}
             id={'ai-chat-send'}

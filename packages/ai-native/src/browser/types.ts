@@ -28,6 +28,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { IMarker } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, ITerminalCommandSuggestionDesc } from '../common';
+import { LLMContextService } from '../common/llm-context';
 
 import {
   ICodeEditsContextBean,
@@ -166,6 +167,7 @@ export type ChatInputRender = (props: {
   defaultAgentId?: string;
   command: string;
   setCommand: (theme: string) => void;
+  contextService?: LLMContextService;
 }) => React.ReactElement | React.JSX.Element;
 export type ChatViewHeaderRender = (props: {
   handleClear: () => any;
