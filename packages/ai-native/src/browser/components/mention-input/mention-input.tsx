@@ -328,6 +328,15 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       return;
     }
 
+    // 当输入框为空时，处理删除键 (Backspace) 或 Delete 键来删除上下文内容
+    if (
+      (e.key === 'Backspace' || e.key === 'Delete') &&
+      editorRef.current &&
+      (!editorRef.current.textContent || editorRef.current.textContent.trim() === '')
+    ) {
+      contextService?.cleanFileContext();
+    }
+
     // 添加对 @ 键的监听，支持在任意位置触发菜单
     if (e.key === MENTION_KEYWORD && !mentionState.active && !mentionState.inlineSearchActive && editorRef.current) {
       const cursorPos = getCursorPosition(editorRef.current);
