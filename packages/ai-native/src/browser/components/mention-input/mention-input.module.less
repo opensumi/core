@@ -12,8 +12,6 @@
   .editor_area {
     position: relative;
     padding: 0 15px;
-    min-height: 42px;
-    max-height: 105px;
   }
 
   .editor {
@@ -21,11 +19,11 @@
     background-color: transparent;
     border: none;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 24px;
+    min-height: 48px;
+    max-height: 120px;
     outline: none;
     resize: none;
-    min-height: 24px;
-    max-height: 120px;
     overflow-y: auto;
     border-radius: 4px;
     word-break: break-word;
@@ -198,7 +196,8 @@
 .mention_item_icon {
   margin-right: 8px;
   width: 18px;
-  height: 18px;
+  height: 22px;
+  line-height: 22px !important;
   display: flex;
   align-items: center;
   justify-content: center;

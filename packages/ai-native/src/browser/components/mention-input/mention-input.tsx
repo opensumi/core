@@ -262,7 +262,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     // 检查输入框高度，如果超过最大高度则添加滚动条
     if (editorRef.current) {
       const editorHeight = editorRef.current.scrollHeight;
-      if (editorHeight > 120) {
+      if (editorHeight >= 120) {
         editorRef.current.style.overflowY = 'auto';
       } else {
         editorRef.current.style.overflowY = 'hidden';
