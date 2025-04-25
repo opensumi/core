@@ -680,14 +680,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
   }
 
-  public reWatch() {
-    // 重连时重新监听文件变化
-    for (const [uri, watcher] of this._fileServiceWatchers) {
-      watcher.dispose();
-      this.watchFilesChange(new URI(uri));
-    }
-  }
-
   get isMultipleWorkspace(): boolean {
     return !!this.workspaceService.workspace && !this.workspaceService.workspace.isDirectory;
   }

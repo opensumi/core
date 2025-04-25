@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Autowired } from '@opensumi/di';
 import { getValidateInput } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
 import { Domain, URI } from '@opensumi/ide-core-common';
+import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -63,8 +64,7 @@ export class FileSearchTool implements MCPServerContribution {
     const searchPattern = this.normalizeQuery(args.query);
     const searchResults = await this.fileSearchService.find(searchPattern, {
       rootUris: [new URI(workspaceRoots[0].uri).codeUri.fsPath],
-      // TODO: 忽略配置
-      excludePatterns: ['**/node_modules/**'],
+      excludePatterns: Object.keys(defaultFilesWatcherExcludes),
       limit: 100,
       useGitIgnore: true,
       noIgnoreParent: true,

@@ -6,6 +6,7 @@ import { LabelService, RecentFilesManager, useInjectable } from '@opensumi/ide-c
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { ChatFeatureRegistryToken, URI, localize } from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
+import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -216,7 +217,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
             useGitIgnore: true,
             noIgnoreParent: true,
             fuzzyMatch: true,
-            excludePatterns: ['**/node_modules/**/*', '**/.git/**/*'],
+            excludePatterns: Object.keys(defaultFilesWatcherExcludes),
             limit: 10,
           });
           const folders = Array.from(

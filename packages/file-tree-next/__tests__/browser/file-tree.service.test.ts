@@ -225,15 +225,6 @@ describe('FileTree Service should be work alone', () => {
     await fileTreeService.flushEventQueue();
   });
 
-  it('Re-watch should be work while re-connect', async () => {
-    const fileTreeContribution = injector.get(FileTreeContribution);
-    const testUri = new URI('file://userhome/test.js');
-    fileTreeService.startWatchFileEvent();
-    await fileTreeService.watchFilesChange(testUri);
-    await fileTreeContribution.onReconnect();
-    expect(fileChangeWatcher.onFilesChanged).toHaveBeenCalledTimes(2);
-  });
-
   it('Commands should be work', () => {
     const testUri = new URI('file://userhome/test.js');
     // openAndFixedFile
