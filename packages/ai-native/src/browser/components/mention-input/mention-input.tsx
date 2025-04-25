@@ -184,7 +184,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     return () => {
       disposable?.dispose();
     };
-  }, []);
+  }, [contextService]);
 
   // 获取光标位置
   const getCursorPosition = (element: HTMLElement): number => {
@@ -326,24 +326,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       }
       e.preventDefault();
       return;
-    }
-
-    // 当输入框为空时，处理删除键 (Backspace) 或 Delete 键来删除上下文内容
-    if (
-      (e.key === 'Backspace' || e.key === 'Delete') &&
-      editorRef.current &&
-      (!editorRef.current.textContent || editorRef.current.textContent.trim() === '')
-    ) {
-      // 先删除文件夹，再删除文件
-      if (attachedFiles.folders.length > 0) {
-        const lastFolder = attachedFiles.folders[attachedFiles.folders.length - 1];
-        contextService?.removeFileFromContext(lastFolder.uri);
-        e.preventDefault();
-      } else if (attachedFiles.files.length > 0) {
-        const lastFile = attachedFiles.files[attachedFiles.files.length - 1];
-        contextService?.removeFileFromContext(lastFile.uri);
-        e.preventDefault();
-      }
     }
 
     // 添加对 @ 键的监听，支持在任意位置触发菜单

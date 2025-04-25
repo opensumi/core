@@ -135,6 +135,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           );
           return prevOutlineItems.current;
         } else {
+          searchText = searchText.toLocaleLowerCase();
           return prevOutlineItems.current.sort((a, b) => {
             if (a.text.toLocaleLowerCase().includes(searchText) && b.text.toLocaleLowerCase().includes(searchText)) {
               return 0;
