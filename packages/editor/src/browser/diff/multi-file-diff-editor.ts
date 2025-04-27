@@ -1,7 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
-import { Disposable, DisposableStore, Emitter, IDisposable, URI, memoize } from '@opensumi/ide-core-common';
-import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { Disposable, DisposableStore, Emitter, IDisposable, URI } from '@opensumi/ide-core-common';
 import {
   ValueWithChangeEventFromObservable,
   derived,
@@ -10,6 +9,7 @@ import {
   observableValue,
   recomputeInitiallyAndOnChange,
 } from '@opensumi/ide-monaco/lib/common/observable';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { Dimension } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
 import { ValueWithChangeEvent } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
@@ -26,29 +26,20 @@ import { IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/e
 import { IEditorDocumentModelRef } from '../../common/editor';
 import { IMultiFileDiffEditor, MultiDiffEditorItem } from '../../common/multi-file-diff';
 import { IEditorDocumentModelService } from '../doc-model/types';
+import { IConvertedMonacoOptions } from '../types';
 
 export class BrowserMultiFileDiffEditor extends Disposable implements IMultiFileDiffEditor {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
-  @Autowired(MonacoOverrideServiceRegistry)
-  private readonly overrideServiceRegistry: MonacoOverrideServiceRegistry;
+  @Autowired(IMessageService)
+  private readonly messageService: IMessageService;
 
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
 
-  @memoize
-  get globalInstantiationService() {
-    const codeEditorService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE);
-    const textModelService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.TEXT_MODEL_SERVICE);
-    const contextKeyService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.CONTEXT_KEY_SERVICE);
-    const globalInstantiationService = StandaloneServices.initialize({
-      codeEditorService,
-      textModelService,
-      contextKeyService,
-    });
-    return globalInstantiationService;
-  }
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
   public readonly onRefOpen = this._onRefOpen.event;
@@ -59,33 +50,8 @@ export class BrowserMultiFileDiffEditor extends Disposable implements IMultiFile
   private _onDiffEntriesChange = new Emitter<IDocumentDiffItem[]>();
   public readonly onDiffEntriesChange = this._onDiffEntriesChange.event;
 
-  constructor(private multiDiffWidget: MultiDiffEditorWidget) {
+  constructor(private multiDiffWidget: MultiDiffEditorWidget, private convertedOptions: IConvertedMonacoOptions) {
     super();
-    this.initializeWidget();
-  }
-
-  private initializeWidget() {
-    this.addDispose(
-      this.multiDiffWidget.onDidChangeActiveControl(() => {
-        const activeControl = this.multiDiffWidget.getActiveControl();
-        if (activeControl) {
-          this.setupDiffEditorContextKeys(activeControl);
-        }
-      }),
-    );
-  }
-
-  private setupDiffEditorContextKeys(diffEditor: IDiffEditor) {
-    const originalEditor = diffEditor.getOriginalEditor();
-    const modifiedEditor = diffEditor.getModifiedEditor();
-    // TODO
-    // const modifiedContextKeyService = this.contextKeyService.createScoped((modifiedEditor as any)._contextKeyService);
-    // const originalContextKeyService = this.contextKeyService.createScoped((originalEditor as any)._contextKeyService);
-
-    // this.diffResourceKeys = [
-    //   new ResourceContextKey(modifiedContextKeyService, undefined, 'diffResource'),
-    //   new ResourceContextKey(originalContextKeyService, undefined, 'diffResource'),
-    // ];
   }
 
   async compareMultiple(diffItems: MultiDiffEditorItem[]): Promise<void> {
@@ -93,7 +59,7 @@ export class BrowserMultiFileDiffEditor extends Disposable implements IMultiFile
     // const model: IMultiDiffEditorModel = {
     //   documents: diffItems,
     // };
-    // TODO: 监听传入resources变化
+    // TODO: 监听传入resources数量变化，修改title？这个sources应该和 URI 有一个关联关系在的
     const source = { resources: observableFromValueWithChangeEvent(this, ValueWithChangeEvent.const(diffItems)) };
     const resources = derived((reader) => source.resources.read(reader));
 
@@ -119,12 +85,13 @@ export class BrowserMultiFileDiffEditor extends Disposable implements IMultiFile
             multiDiffItemStore.add(modified);
           }
         } catch (e) {
-          // TODO: message
           // e.g. "File seems to be binary and cannot be opened as text"
-          // console.error(e);
+          this.messageService.error(e.message);
+          // eslint-disable-next-line no-console
+          console.error(e);
           return undefined;
         }
-
+        // TODO: 目前的实现方式，sources 变化感知不到
         const uri = (r.modifiedUri ?? r.originalUri)!;
         const result = {
           multiDiffEditorItem: r,
@@ -132,17 +99,15 @@ export class BrowserMultiFileDiffEditor extends Disposable implements IMultiFile
           modified: modified?.instance.getMonacoModel(),
           // contextKeys: r.contextKeys,
           options: {
-            // TODO: 参数
-            // return {
-            // 	...getReadonlyConfiguration(modified?.instance.isReadonly() ?? true),
-            // 	...computeOptions(textResourceConfigurationService.getValue(uri)),
-            // } satisfies IDiffEditorOptions;
+            ...this.convertedOptions.diffOptions,
           },
-          // onOptionsDidChange: h => this._textResourceConfigurationService.onDidChangeConfiguration(e => {
-          // 	if (e.affectsConfiguration(uri, 'editor') || e.affectsConfiguration(uri, 'diffEditor')) {
-          // 		h();
-          // 	}
-          // }),
+          // TODO: 监听配置变化验证
+          onOptionsDidChange: (h) =>
+            this.preferenceService.onPreferenceChanged((e) => {
+              if (e.affects(uri.toString()) && e.preferenceName.includes('editor')) {
+                h();
+              }
+            }),
         };
         return store.add(RefCounted.createOfNonDisposable(result, multiDiffItemStore, this));
       },

@@ -7,8 +7,10 @@ import { IEditorDocumentModelRef, IResourceOpenOptions } from './editor';
 export const MULTI_DIFF_SCHEME = 'multi-diff-editor';
 
 export interface MultiDiffEditorItem {
-  originalUri: URI;
-  modifiedUri: URI;
+  // 新增场景为空
+  originalUri?: URI;
+  // 删除场景为空
+  modifiedUri?: URI;
   goToFileUri?: URI;
   // contextKeys?: Record<string, ContextKeyValue>
 }
