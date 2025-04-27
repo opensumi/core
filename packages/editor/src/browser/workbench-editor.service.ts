@@ -53,6 +53,7 @@ import {
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import * as monaco from '@opensumi/ide-monaco';
 import { IDialogService, IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
+import { Dimension } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
 
 import {
   CursorStatus,
@@ -76,6 +77,7 @@ import {
   getSplitActionFromDragDrop,
 } from '../common';
 import { IEditorDocumentModelRef } from '../common/editor';
+import { IMultiFileDiffEditor } from '../common/multi-file-diff';
 
 import { EditorDocumentModel } from './doc-model/editor-document-model';
 import { IEditorDocumentModelService } from './doc-model/types';
@@ -730,6 +732,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   diffEditor!: IDiffEditor;
 
+  multiDiffEditor!: IMultiFileDiffEditor;
+
   mergeEditor!: IMergeEditorEditor;
 
   private openingPromise: Map<string, Promise<IOpenResourceResult>> = new Map();
@@ -824,6 +828,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private _domNode: MaybeNull<HTMLElement> = null;
   private _diffEditorDomNode: MaybeNull<HTMLElement> = null;
   private _diffEditorDomNodeAttached = false;
+  private _multiFileDiffEditorDomNode: MaybeNull<HTMLElement> = null;
+  private _multiFileDiffEditorDomNodeAttached = false;
   private _mergeEditorDomNode: MaybeNull<HTMLElement> = null;
   private _mergeEditorDomNodeAttached = false;
 
@@ -831,6 +837,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private diffEditorReady = new ReadyEvent();
   private diffEditorDomReady = new ReadyEvent();
+
+  private multiDiffEditorDomReady = new ReadyEvent();
 
   private mergeEditorReady = new ReadyEvent();
   private mergeEditorDomReady = new ReadyEvent();
@@ -840,6 +848,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private updateContextKeyWhenEditorChangesFocusDisposer: IDisposable;
 
   private _currentOrPreviousFocusedEditor: IEditor | null;
+
+  private _multiDiffEditorDomNode: HTMLElement | null | undefined;
+  private _multiDiffEditorDomNodeAttached = false;
 
   constructor(public readonly name: string, public readonly groupId: number) {
     super();
@@ -926,6 +937,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       case EditorOpenType.diff:
         if (this.diffEditor) {
           this.diffEditor.layout();
+        }
+        break;
+      case EditorOpenType.multiDiff:
+        if (this.multiDiffEditor) {
+          this.multiDiffEditor.layout(
+            new Dimension(this._multiDiffEditorDomNode!.offsetWidth, this._multiDiffEditorDomNode!.offsetHeight),
+          );
         }
         break;
       default:
@@ -1252,6 +1270,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       },
     );
     this.mergeEditorReady.ready();
+  }
+
+  createMultiFileDiffEditor(dom: HTMLElement) {
+    const editor = this.collectionService.createMultiDiffEditor(
+      dom,
+      {},
+      { [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService },
+    );
+    this.multiDiffEditor = editor;
   }
 
   createDiffEditor(dom: HTMLElement) {
@@ -1865,6 +1892,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         case EditorOpenType.diff:
           await this.openDiffEditor(resource, options);
           break;
+        case EditorOpenType.multiDiff:
+          await this.openMultiDiffEditor(resource, options);
+          break;
         case EditorOpenType.mergeEditor:
           await this.openMergeEditor(resource);
           break;
@@ -2440,6 +2470,41 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return {
       name: this.name,
     };
+  }
+
+  attachMultiDiffEditorDom(domNode: HTMLElement | null | undefined) {
+    if (!this._multiDiffEditorDomNodeAttached) {
+      this._multiDiffEditorDomNode = domNode;
+      this.multiDiffEditorDomReady.ready();
+      this._multiDiffEditorDomNodeAttached = true;
+    }
+  }
+
+  createMultiDiffEditor(dom: HTMLElement) {
+    const editor = this.collectionService.createMultiDiffEditor(
+      dom,
+      {},
+      { [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService },
+    );
+    this.multiDiffEditor = editor;
+  }
+
+  private async openMultiDiffEditor(resource: IResource, options: IResourceOpenOptions) {
+    if (!this.multiDiffEditor) {
+      await this.multiDiffEditorDomReady.onceReady(() => {
+        const container = document.createElement('div');
+        this._multiDiffEditorDomNode?.appendChild(container);
+        this.createMultiDiffEditor(container);
+      });
+    }
+
+    this.multiDiffEditor.compareMultiple(
+      resource.metadata!.sources!.map((s) => ({
+        originalUri: s.originalUri,
+        modifiedUri: s.modifiedUri,
+        goToFileUri: s.goToFileUri || s.modifiedUri,
+      })),
+    );
   }
 }
 

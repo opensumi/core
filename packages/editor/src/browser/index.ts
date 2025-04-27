@@ -23,6 +23,7 @@ import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 import { CompareEditorContribution, CompareService } from './diff/compare';
+import { MultiDiffEditorContribution } from './diff/multi-diff.contribution';
 import { EmptyDocCacheImpl } from './doc-cache';
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from './doc-model/main';
 import { SaveParticipantsContribution } from './doc-model/saveParticipants';
@@ -182,6 +183,7 @@ export class EditorModule extends BrowserModule {
     },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,
+    MultiDiffEditorContribution,
     MergeEditorContribution,
     EditorClientAppContribution,
     EditorContribution,

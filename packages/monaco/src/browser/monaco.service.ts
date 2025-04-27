@@ -15,6 +15,7 @@ import {
   MouseTargetType,
   isDiffEditor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { MultiDiffEditorWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidget';
 import { ShowLightbulbIconMode } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
@@ -151,6 +152,20 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     this.overrideMonacoKeybindingService(editor);
     this.addClickEventListener(editor);
     return editor;
+  }
+
+  createMultiDiffEditorWidget(
+    monacoContainer: HTMLElement,
+    options?: IDiffEditorConstructionOptions,
+    overrides: { [key: string]: any } = {},
+  ): MultiDiffEditorWidget {
+    const editorWidget = monaco.editor.createMultiFileDiffEditor(monacoContainer, {
+      ...this.overrideServiceRegistry.all(),
+      ...overrides,
+    });
+    // this.overrideMonacoKeybindingService(editor);
+    // this.addClickEventListener(editor);
+    return editorWidget;
   }
 
   public createMergeEditor(

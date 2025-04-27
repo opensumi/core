@@ -34,6 +34,7 @@ import {
 import { IEditorDocumentModel, IEditorDocumentModelRef, isTextEditorViewState } from '../common/editor';
 
 import { MonacoEditorDecorationApplier } from './decoration-applier';
+import { BrowserMultiFileDiffEditor } from './diff/multi-file-diff-editor';
 import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
 import { EditorFeatureRegistryImpl } from './feature';
 import { getConvertedMonacoOptions, isDiffEditorOption, isEditorOption } from './preference/converter';
@@ -149,6 +150,14 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     const monacoDiffEditor = this.monacoService.createDiffEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor, options]);
     this._onDiffEditorCreate.fire(editor);
+    return editor;
+  }
+
+  createMultiDiffEditor(dom: HTMLElement, overrides?: { [key: string]: any }) {
+    const convertedOptions = getConvertedMonacoOptions(this.configurationService);
+    const monacoMultiDiffEditorWidget = this.monacoService.createMultiDiffEditorWidget(dom, overrides);
+    // TODO: options 透传
+    const editor = this.injector.get(BrowserMultiFileDiffEditor, [monacoMultiDiffEditorWidget]);
     return editor;
   }
 
