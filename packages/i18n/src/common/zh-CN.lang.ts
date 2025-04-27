@@ -1231,6 +1231,9 @@ export const localizationBundle = {
     'aiNative.chat.defaultContextFolder': '当前文件夹',
     'aiNative.chat.thinking': '深度思考',
     'aiNative.chat.imageUpload': '上传图片',
+    'aiNative.chat.clearContext': '清空上下文',
+    'aiNative.chat.context.description': '共 {0} 个引用',
+    'aiNative.chat.context.clear': '点击清空引用',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': '采纳',

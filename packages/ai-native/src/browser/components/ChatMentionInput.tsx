@@ -1,18 +1,21 @@
 import { DataContent } from 'ai';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Image } from '@opensumi/ide-components/lib/image';
-import { LabelService, RecentFilesManager, useInjectable } from '@opensumi/ide-core-browser';
+import { LabelService, RecentFilesManager, getSymbolIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { ChatFeatureRegistryToken, URI, localize } from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search';
+import { OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
+import { LLMContextService } from '../../common/llm-context';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
@@ -48,11 +51,11 @@ export interface IChatMentionInputProps {
   setCommand: (command: string) => void;
   disableModelSelector?: boolean;
   sessionModelId?: string;
+  contextService?: LLMContextService;
 }
 
-// 指令命令激活组件
 export const ChatMentionInput = (props: IChatMentionInputProps) => {
-  const { onSend, disabled = false } = props;
+  const { onSend, disabled = false, contextService } = props;
 
   const [value, setValue] = useState(props.value || '');
   const [images, setImages] = useState(props.images || []);
@@ -65,6 +68,8 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const labelService = useInjectable<LabelService>(LabelService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
+  const prevOutlineItems = useRef<MentionItem[]>([]);
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
   }, [commandService]);
@@ -75,27 +80,76 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
     }
   }, [props.value]);
 
+  const resolveSymbols = useCallback(
+    async (parent?: OutlineCompositeTreeNode, symbols: (OutlineTreeNode | OutlineCompositeTreeNode)[] = []) => {
+      if (!parent) {
+        parent = (await outlineTreeService.resolveChildren())[0] as OutlineCompositeTreeNode;
+      }
+      const children = (await outlineTreeService.resolveChildren(parent)) as (
+        | OutlineTreeNode
+        | OutlineCompositeTreeNode
+      )[];
+      for (const child of children) {
+        symbols.push(child);
+        if (OutlineCompositeTreeNode.is(child)) {
+          await resolveSymbols(child, symbols);
+        }
+      }
+      return symbols;
+    },
+    [outlineTreeService],
+  );
+
   // 默认菜单项
   const defaultMenuItems: MentionItem[] = [
-    // {
-    //   id: 'code',
-    //   type: 'code',
-    //   text: 'Code',
-    //   icon: getIcon('codebraces'),
-    //   getHighestLevelItems: () => [],
-    //   getItems: async (searchText: string) => {
-    //     const currentEditor = editorService.currentEditor;
-    //     if (!currentEditor) {
-    //       return [];
-    //     }
-    //     const currentDocumentModel = currentEditor.currentDocumentModel;
-    //     if (!currentDocumentModel) {
-    //       return [];
-    //     }
-    //     const symbols = await commandService.executeCommand('_executeFormatDocumentProvider', currentDocumentModel.uri.codeUri);
-    //     return [];
-    //   },
-    // },
+    {
+      id: 'code',
+      type: 'code',
+      text: 'Code',
+      icon: getIcon('codebraces'),
+      getHighestLevelItems: () => [],
+      getItems: async (searchText: string) => {
+        if (!searchText || prevOutlineItems.current.length === 0) {
+          const uri = outlineTreeService.currentUri;
+          if (!uri) {
+            return [];
+          }
+          const treeNodes = await resolveSymbols();
+          prevOutlineItems.current = await Promise.all(
+            treeNodes.map(async (treeNode) => {
+              const relativePath = await workspaceService.asRelativePath(uri);
+              return {
+                id: treeNode.raw.id,
+                type: MentionType.CODE,
+                text: treeNode.raw.name,
+                symbol: treeNode.raw,
+                value: treeNode.raw.id,
+                description: `${relativePath?.root ? relativePath.path : ''}:L${treeNode.raw.range.startLineNumber}-${
+                  treeNode.raw.range.endLineNumber
+                }`,
+                kind: treeNode.raw.kind,
+                contextId: `${outlineTreeService.currentUri?.codeUri.fsPath}:L${treeNode.raw.range.startLineNumber}-${treeNode.raw.range.endLineNumber}`,
+                icon: getSymbolIcon(treeNode.raw.kind) + ' outline-icon',
+              };
+            }),
+          );
+          return prevOutlineItems.current;
+        } else {
+          searchText = searchText.toLocaleLowerCase();
+          return prevOutlineItems.current.sort((a, b) => {
+            if (a.text.toLocaleLowerCase().includes(searchText) && b.text.toLocaleLowerCase().includes(searchText)) {
+              return 0;
+            }
+            if (a.text.toLocaleLowerCase().includes(searchText)) {
+              return -1;
+            } else if (b.text.toLocaleLowerCase().includes(searchText)) {
+              return 1;
+            }
+            return 0;
+          });
+        }
+      },
+    },
     {
       id: MentionType.FILE,
       type: MentionType.FILE,
@@ -194,7 +248,13 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         let folders: MentionItem[] = [];
         if (!searchText) {
           const recentFile = await recentFilesManager.getMostRecentlyOpenedFiles();
-          const recentFolder = Array.from(new Set(recentFile.map((file) => new URI(file).parent.codeUri.fsPath)));
+          const recentFolder = Array.from(
+            new Set(
+              recentFile
+                .map((file) => new URI(file).parent.codeUri.fsPath)
+                .filter((folder) => folder !== workspaceService.workspace?.uri.toString() && folder !== '/'),
+            ),
+          );
           folders = await Promise.all(
             recentFolder.map(async (folder) => {
               const uri = new URI(folder);
@@ -354,6 +414,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         placeholder={localize('aiNative.chat.input.placeholder.default')}
         footerConfig={defaultMentionInputFooterOptions}
         onImageUpload={handleImageUpload}
+        contextService={contextService}
       />
     </div>
   );
