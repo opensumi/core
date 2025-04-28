@@ -29,13 +29,21 @@ export interface IResolvedMultiDiffSource {
   readonly contextKeys?: Record<string, ContextKeyValue>;
 }
 
-export interface MultiDiffEditorItem {
-  // 新增场景为空
-  originalUri?: URI;
-  // 删除场景为空
-  modifiedUri?: URI;
-  goToFileUri?: URI;
-  contextKeys?: Record<string, ContextKeyValue>;
+export class MultiDiffEditorItem {
+  constructor(
+    readonly originalUri: URI | undefined,
+    readonly modifiedUri: URI | undefined,
+    readonly goToFileUri: URI | undefined,
+    readonly contextKeys?: Record<string, ContextKeyValue>,
+  ) {
+    if (!originalUri && !modifiedUri) {
+      throw new Error('Invalid arguments');
+    }
+  }
+
+  getKey(): string {
+    return JSON.stringify([this.modifiedUri?.toString(), this.originalUri?.toString()]);
+  }
 }
 
 /**

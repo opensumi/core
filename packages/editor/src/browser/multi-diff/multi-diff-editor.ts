@@ -26,12 +26,7 @@ import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/ra
 import { IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
 import { IEditorDocumentModelRef, IResourceOpenOptions } from '../../common/editor';
-import {
-  IMultiDiffEditor,
-  IMultiDiffSourceResolverService,
-  IResolvedMultiDiffSource,
-  MultiDiffEditorItem,
-} from '../../common/multi-diff';
+import { IMultiDiffEditor, IMultiDiffSourceResolverService, IResolvedMultiDiffSource } from '../../common/multi-diff';
 import { IEditorDocumentModelService } from '../doc-model/types';
 import { IConvertedMonacoOptions, IResource } from '../types';
 
