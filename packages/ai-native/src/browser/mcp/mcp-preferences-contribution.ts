@@ -1,6 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  CodeSchemaId,
   Domain,
+  IJSONSchema,
+  IJSONSchemaRegistry,
+  JsonSchemaContribution,
   MaybePromise,
   PreferenceConfiguration,
   PreferenceContribution,
@@ -9,9 +13,14 @@ import {
   getIcon,
   localize,
 } from '@opensumi/ide-core-browser';
-import { IResource, IResourceProvider, ResourceService } from '@opensumi/ide-editor/lib/browser';
+import {
+  BrowserEditorContribution,
+  IResource,
+  IResourceProvider,
+  ResourceService,
+} from '@opensumi/ide-editor/lib/browser';
 
-import { MCPPreferencesSchema } from './mcp-preferences';
+import { MCPPreferencesSchema, MCPSchema, MCPSchemaUri } from './mcp-preferences';
 
 @Injectable()
 export class MCPResourceProvider implements IResourceProvider {
@@ -33,8 +42,10 @@ export class MCPResourceProvider implements IResourceProvider {
   }
 }
 
-@Domain(PreferenceContribution, PreferenceConfiguration)
-export class MCPPreferencesContribution implements PreferenceContribution, PreferenceConfiguration {
+@Domain(PreferenceContribution, PreferenceConfiguration, BrowserEditorContribution, JsonSchemaContribution)
+export class MCPPreferencesContribution
+  implements PreferenceContribution, PreferenceConfiguration, BrowserEditorContribution, JsonSchemaContribution
+{
   @Autowired(MCPResourceProvider)
   private readonly prefResourceProvider: MCPResourceProvider;
 
@@ -43,5 +54,9 @@ export class MCPPreferencesContribution implements PreferenceContribution, Prefe
 
   registerResource(resourceService: ResourceService): void {
     resourceService.registerResourceProvider(this.prefResourceProvider);
+  }
+
+  registerSchema(registry: IJSONSchemaRegistry) {
+    registry.registerSchema(MCPSchemaUri, MCPSchema, ['mcp.json']);
   }
 }

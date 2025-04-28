@@ -15,9 +15,11 @@ import {
 } from '@opensumi/ide-core-browser';
 import {
   IntelligentCompletionsRegistryToken,
+  MCPConfigServiceToken,
   ProblemFixRegistryToken,
   TerminalRegistryToken,
 } from '@opensumi/ide-core-common';
+import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
 import {
   ChatProxyServiceToken,
@@ -60,6 +62,9 @@ import { LanguageParserService } from './languages/service';
 import { BaseApplyService } from './mcp/base-apply.service';
 import { MCPConfigCommandContribution } from './mcp/config/mcp-config.commands';
 import { MCPConfigContribution } from './mcp/config/mcp-config.contribution';
+import { MCPConfigService } from './mcp/config/mcp-config.service';
+import { MCPFolderPreferenceProvider } from './mcp/mcp-folder-preference-provider';
+import { MCPPreferencesContribution } from './mcp/mcp-preferences-contribution';
 import { MCPServerProxyService } from './mcp/mcp-server-proxy.service';
 import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
 import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
@@ -98,6 +103,7 @@ export class AINativeModule extends BrowserModule {
     IntelligentCompletionsContribution,
     MCPConfigContribution,
     MCPConfigCommandContribution,
+    MCPPreferencesContribution,
 
     // MCP Server Contributions START
     ListDirTool,
@@ -205,6 +211,16 @@ export class AINativeModule extends BrowserModule {
     {
       token: BaseApplyService,
       useClass: ApplyService,
+    },
+    {
+      token: MCPConfigServiceToken,
+      useClass: MCPConfigService,
+    },
+    {
+      token: FolderFilePreferenceProvider,
+      useClass: MCPFolderPreferenceProvider,
+      dropdownForTag: true,
+      tag: 'mcp',
     },
   ];
 

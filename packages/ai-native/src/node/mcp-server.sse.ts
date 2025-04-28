@@ -11,7 +11,7 @@ import { SSEClientTransportOptions } from '../common/types';
 global.EventSource = EventSource as any;
 export class SSEMCPServer implements IMCPServer {
   private name: string;
-  public serverHost: string;
+  public url: string;
   private transportOptions?: SSEClientTransportOptions;
   private client: Client;
   private started: boolean = false;
@@ -19,12 +19,12 @@ export class SSEMCPServer implements IMCPServer {
 
   constructor(
     name: string,
-    serverHost: string,
+    url: string,
     private readonly logger?: ILogger,
     private readonly options?: SSEClientTransportOptions,
   ) {
     this.name = name;
-    this.serverHost = serverHost;
+    this.url = url;
     this.transportOptions = options;
   }
 
@@ -44,11 +44,11 @@ export class SSEMCPServer implements IMCPServer {
     if (this.started) {
       return;
     }
-    this.logger?.log(`Starting server "${this.name}" with serverHost: ${this.serverHost}`);
+    this.logger?.log(`Starting server "${this.name}" with url: ${this.url}`);
 
     const SSEClientTransport = (await import('@modelcontextprotocol/sdk/client/sse.js')).SSEClientTransport;
 
-    const transport = new SSEClientTransport(new URL(this.serverHost), this.transportOptions);
+    const transport = new SSEClientTransport(new URL(this.url), this.transportOptions);
 
     transport.onerror = (error) => {
       this.logger?.error('Transport Error:', error);
@@ -82,7 +82,7 @@ export class SSEMCPServer implements IMCPServer {
       args = JSON.parse(arg_string);
     } catch (error) {
       this.logger?.error(
-        `Failed to parse arguments for calling tool "${toolName}" in MCP server "${this.name}" with serverHost "${this.serverHost}".
+        `Failed to parse arguments for calling tool "${toolName}" in MCP server "${this.name}" with url "${this.url}".
                 Invalid JSON: ${arg_string}`,
         error,
       );
@@ -117,13 +117,13 @@ export class SSEMCPServer implements IMCPServer {
       ...originalTools,
       tools: sanitizedToolsArray,
     };
-    this.logger?.log(`Got tools from MCP server "${this.name}" with serverHost "${this.serverHost}":`, sanitizedTools);
+    this.logger?.log(`Got tools from MCP server "${this.name}" with url "${this.url}":`, sanitizedTools);
     this.logger?.log('Tool name mapping: ', Object.fromEntries(this.toolNameMap));
     return sanitizedTools;
   }
 
-  update(serverHost: string): void {
-    this.serverHost = serverHost;
+  update(url: string): void {
+    this.url = url;
   }
 
   async stop(): Promise<void> {

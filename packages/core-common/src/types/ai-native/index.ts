@@ -301,7 +301,7 @@ export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesPro
 export const ProblemFixRegistryToken = Symbol('ProblemFixRegistryToken');
 export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 export const IntelligentCompletionsRegistryToken = Symbol('IntelligentCompletionsRegistryToken');
-
+export const MCPConfigServiceToken = Symbol('MCPConfigServiceToken');
 export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 

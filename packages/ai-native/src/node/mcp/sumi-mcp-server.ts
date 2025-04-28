@@ -176,7 +176,7 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
             name: server.getServerName(),
             isStarted: server.isStarted(),
             type: MCP_SERVER_TYPE.SSE,
-            serverHost: server.serverHost,
+            url: server.url,
             tools,
           };
         }

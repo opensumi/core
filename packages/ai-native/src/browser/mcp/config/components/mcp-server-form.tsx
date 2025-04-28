@@ -17,7 +17,7 @@ export interface MCPServerFormData {
   args?: string[];
   env?: Record<string, string>;
   type: MCP_SERVER_TYPE;
-  serverHost?: string;
+  url?: string;
 }
 
 interface Props {
@@ -81,9 +81,9 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
         return false;
       }
       if (formData.type === MCP_SERVER_TYPE.SSE) {
-        const isServerHostValid = formData.serverHost?.trim() !== '';
+        const isServerHostValid = formData.url?.trim() !== '';
         if (!isServerHostValid) {
-          messageService.error(localize('ai.native.mcp.serverHost.isRequired'));
+          messageService.error(localize('ai.native.mcp.url.isRequired'));
         }
         return isServerHostValid;
       }
@@ -107,7 +107,7 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
         ...formData,
       };
       if (formData.type === MCP_SERVER_TYPE.SSE) {
-        form.serverHost = form.serverHost?.trim();
+        form.url = form.url?.trim();
       } else {
         const args = argsText.split(' ').filter(Boolean);
         const env = envText
@@ -127,7 +127,7 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
       setFormData({
         ...formData,
         command: '',
-        serverHost: '',
+        url: '',
         args: [],
         env: {},
       });
@@ -160,7 +160,7 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
 
   const handleServerHostChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setFormData({ ...formData, serverHost: e.target.value });
+      setFormData({ ...formData, url: e.target.value });
     },
     [formData],
   );
@@ -173,7 +173,7 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
         command: '',
         args: [],
         env: {},
-        serverHost: '',
+        url: '',
       });
     },
     [formData],
@@ -217,11 +217,11 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
       return (
         <>
           <div className={styles.formItem}>
-            <label>{localize('ai.native.mcp.serverHost')}</label>
+            <label>{localize('ai.native.mcp.url')}</label>
             <textarea
-              value={formData.serverHost}
+              value={formData.url}
               onChange={handleServerHostChange}
-              placeholder={localize('ai.native.mcp.serverHost.placeHolder')}
+              placeholder={localize('ai.native.mcp.url.placeHolder')}
               rows={3}
             />
           </div>

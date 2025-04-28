@@ -49,7 +49,7 @@ export interface MCPServer {
   tools?: MCPTool[];
   command?: string;
   type?: string;
-  serverHost?: string;
+  url?: string;
 }
 
 export interface MCPTool {
