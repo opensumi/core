@@ -11,6 +11,7 @@ import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
 import { CodeEditorWithHighlight } from './ChatEditor';
 import styles from './ChatToolRender.module.less';
+import { ChatToolResult } from './ChatToolResult';
 
 export const ChatToolRender = (props: { value: IChatToolContent['content']; messageId?: string }) => {
   const { value, messageId } = props;
@@ -37,6 +38,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
         return { label: state || 'Unknown', icon: <Icon iconClass='codicon codicon-question' /> };
     }
   };
+
   const getParsedArgs = () => {
     try {
       // TODO: 流式输出中function_call的参数还不完整，需要等待complete状态
@@ -88,7 +90,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
         {value?.result && (
           <div className={styles.tool_result}>
             <div className={styles.section_label}>{localize('ai.native.mcp.tool.results')}:</div>
-            <CodeEditorWithHighlight input={value.result} language={'json'} relationId={uuid(4)} />
+            <ChatToolResult result={value.result} relationId={uuid(4)} />
           </div>
         )}
       </div>
