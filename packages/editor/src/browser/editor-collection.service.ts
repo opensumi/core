@@ -34,9 +34,9 @@ import {
 import { IEditorDocumentModel, IEditorDocumentModelRef, isTextEditorViewState } from '../common/editor';
 
 import { MonacoEditorDecorationApplier } from './decoration-applier';
-import { BrowserMultiFileDiffEditor } from './diff/multi-file-diff-editor';
 import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
 import { EditorFeatureRegistryImpl } from './feature';
+import { BrowserMultiFileDiffEditor } from './multi-diff/multi-file-diff-editor';
 import { getConvertedMonacoOptions, isDiffEditorOption, isEditorOption } from './preference/converter';
 import { IEditorFeatureRegistry } from './types';
 
