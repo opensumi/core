@@ -1,16 +1,16 @@
 import { Autowired } from '@opensumi/di';
-import { Domain } from '@opensumi/ide-core-browser';
+import { Domain, URI } from '@opensumi/ide-core-browser';
 
 import { ResourceService } from '../../common';
-import { MULTI_DIFF_SCHEME } from '../../common/multi-diff';
+import { IMultiDiffSourceResolverService } from '../../common/multi-diff';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
 
 import { MultiDiffResourceProvider } from './multi-diff-resource';
 
 @Domain(BrowserEditorContribution)
 export class MultiDiffEditorContribution implements BrowserEditorContribution {
-  @Autowired()
-  private resourceService: ResourceService;
+  @Autowired(IMultiDiffSourceResolverService)
+  private readonly multiDiffSourceResolverService: IMultiDiffSourceResolverService;
 
   @Autowired()
   multiDiffResourceProvider: MultiDiffResourceProvider;
@@ -20,10 +20,21 @@ export class MultiDiffEditorContribution implements BrowserEditorContribution {
   }
 
   registerEditorComponent(registry: EditorComponentRegistry) {
-    registry.registerEditorComponentResolver(MULTI_DIFF_SCHEME, (resource, results) => {
-      results.push({
-        type: EditorOpenType.multiDiff,
-      });
-    });
+    registry.registerEditorComponentResolver(
+      (scheme) => {
+        const resolvers = this.multiDiffSourceResolverService.getResolvers();
+        for (const resolver of resolvers) {
+          if (resolver.canHandleUri(new URI(`${scheme}:/empty`))) {
+            return 10;
+          }
+        }
+        return -1;
+      },
+      (resource, results) => {
+        results.push({
+          type: EditorOpenType.multiDiff,
+        });
+      },
+    );
   }
 }

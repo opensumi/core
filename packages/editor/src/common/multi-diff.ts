@@ -8,10 +8,14 @@ import { IEditorDocumentModelRef, IResourceOpenOptions } from './editor';
 
 export const MULTI_DIFF_SCHEME = 'multi-diff-editor';
 
+export const IMultiDiffSourceResolverService = Symbol('IMultiDiffSourceResolverService');
+
 export interface IMultiDiffSourceResolverService {
   registerResolver(resolver: IMultiDiffSourceResolver): IDisposable;
 
   resolve(uri: URI): Promise<IResolvedMultiDiffSource | undefined>;
+
+  getResolvers(): IMultiDiffSourceResolver[];
 }
 
 export interface IMultiDiffSourceResolver {
@@ -41,10 +45,8 @@ export interface MultiDiffEditorItem {
 export interface IMultiDiffEditor extends IDisposable {
   /**
    * Compare multiple file pairs
-   * @param diffEntries Array of file pairs to compare
-   * @param options Resource open options
    */
-  compareMultiple(diffEntries: MultiDiffEditorItem[], options?: IResourceOpenOptions): Promise<void>;
+  compareMultiple(): Promise<void>;
 
   // /**
   //  * Add a new file pair comparison to the existing view

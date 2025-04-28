@@ -355,6 +355,8 @@ export abstract class EditorCollectionService {
     dom: HTMLElement,
     options?: any,
     overrides?: { [key: string]: any },
+    resource?: IResource,
+    resourceOptions?: IResourceOpenOptions,
   ): IMultiDiffEditor;
 
   public abstract createMergeEditor(

@@ -28,4 +28,8 @@ export class MultiDiffSourceResolverService implements IMultiDiffSourceResolverS
     }
     return Promise.resolve(undefined);
   }
+
+  getResolvers(): IMultiDiffSourceResolver[] {
+    return Array.from(this._resolvers);
+  }
 }

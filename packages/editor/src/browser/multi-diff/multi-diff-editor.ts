@@ -2,7 +2,9 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable, DisposableStore, Emitter, IDisposable, URI } from '@opensumi/ide-core-common';
 import {
+  ObservableLazyPromise,
   ValueWithChangeEventFromObservable,
+  constObservable,
   derived,
   mapObservableArrayCached,
   observableFromValueWithChangeEvent,
@@ -23,10 +25,15 @@ import { IMultiDiffResourceId } from '@opensumi/monaco-editor-core/esm/vs/editor
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
-import { IEditorDocumentModelRef } from '../../common/editor';
-import { IMultiDiffEditor, MultiDiffEditorItem } from '../../common/multi-diff';
+import { IEditorDocumentModelRef, IResourceOpenOptions } from '../../common/editor';
+import {
+  IMultiDiffEditor,
+  IMultiDiffSourceResolverService,
+  IResolvedMultiDiffSource,
+  MultiDiffEditorItem,
+} from '../../common/multi-diff';
 import { IEditorDocumentModelService } from '../doc-model/types';
-import { IConvertedMonacoOptions } from '../types';
+import { IConvertedMonacoOptions, IResource } from '../types';
 
 export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEditor {
   @Autowired(INJECTOR_TOKEN)
@@ -41,6 +48,9 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(IMultiDiffSourceResolverService)
+  private readonly multiDiffSourceResolverService: IMultiDiffSourceResolverService;
+
   private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
   public readonly onRefOpen = this._onRefOpen.event;
 
@@ -50,22 +60,31 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
   private _onDiffEntriesChange = new Emitter<IDocumentDiffItem[]>();
   public readonly onDiffEntriesChange = this._onDiffEntriesChange.event;
 
-  constructor(private multiDiffWidget: MultiDiffEditorWidget, private convertedOptions: IConvertedMonacoOptions) {
+  constructor(
+    private multiDiffWidget: MultiDiffEditorWidget,
+    private convertedOptions: IConvertedMonacoOptions,
+    private resource: IResource,
+    private resourceOptions: IResourceOpenOptions,
+  ) {
     super();
   }
 
-  async compareMultiple(diffItems: MultiDiffEditorItem[]): Promise<void> {
-    // TODO: 得用observer包一下才行，这个监听逻辑是啥？
-    // const model: IMultiDiffEditorModel = {
-    //   documents: diffItems,
-    // };
-    // TODO: 监听传入resources数量变化，修改title？这个sources应该和 URI 有一个关联关系在的
-    const source = { resources: observableFromValueWithChangeEvent(this, ValueWithChangeEvent.const(diffItems)) };
-    const resources = derived((reader) => source.resources.read(reader));
+  private readonly _resolvedSource = new ObservableLazyPromise(async () => {
+    const source: IResolvedMultiDiffSource | undefined = this.resource.metadata.sources
+      ? { resources: ValueWithChangeEvent.const(this.resource.metadata.sources) }
+      : await this.multiDiffSourceResolverService.resolve(this.resource.uri);
+    return {
+      source,
+      resources: source ? observableFromValueWithChangeEvent(this, source.resources) : constObservable([]),
+    };
+  });
+
+  async compareMultiple(): Promise<void> {
+    const source = await this._resolvedSource.getPromise();
 
     const documentsWithPromises = mapObservableArrayCached(
       this,
-      resources,
+      source.resources,
       async (r, store) => {
         /** @description documentsWithPromises */
         let original: IEditorDocumentModelRef | undefined;
@@ -91,14 +110,15 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
           console.error(e);
           return undefined;
         }
-        // TODO: 目前的实现方式，sources 变化感知不到
         const uri = (r.modifiedUri ?? r.originalUri)!;
         const result = {
           multiDiffEditorItem: r,
           original: original?.instance.getMonacoModel(),
           modified: modified?.instance.getMonacoModel(),
-          // contextKeys: r.contextKeys,
+          contextKeys: r.contextKeys,
           options: {
+            readOnly: modified?.instance.readonly,
+            // TODO: codelens，wordWrap options
             ...this.convertedOptions.diffOptions,
           },
           // TODO: 监听配置变化验证
@@ -130,12 +150,11 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
     const _viewModel: IMultiDiffEditorModel & IDisposable = {
       dispose: () => a.dispose(),
       documents: new ValueWithChangeEventFromObservable(documents),
-      // contextKeys: source.source?.contextKeys,
+      contextKeys: source.source?.contextKeys,
     };
 
     const viewModel = this.multiDiffWidget.createViewModel(_viewModel);
     await viewModel.waitForDiffs();
-    // const viewModel = this.multiDiffWidget.createViewModel(model);
     this.multiDiffWidget.setViewModel(viewModel);
     // this._onDiffEntriesChange.fire(diffItems);
   }
@@ -199,3 +218,8 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
     this._onDiffEntriesChange.dispose();
   }
 }
+
+// TODO: dirty
+// function isUriDirty(onDidChangeDirty: FastEventDispatcher<ITextFileEditorModel, URI>, textFileService: ITextFileService, uri: URI) {
+// 	return observableFromEvent(onDidChangeDirty.filteredEvent(uri), () => textFileService.isDirty(uri));
+// }

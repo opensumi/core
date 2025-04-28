@@ -1272,15 +1272,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.mergeEditorReady.ready();
   }
 
-  createMultiFileDiffEditor(dom: HTMLElement) {
-    const editor = this.collectionService.createMultiDiffEditor(
-      dom,
-      {},
-      { [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService },
-    );
-    this.multiDiffEditor = editor;
-  }
-
   createDiffEditor(dom: HTMLElement) {
     this.diffEditor = this.collectionService.createDiffEditor(
       dom,
@@ -2480,11 +2471,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  createMultiDiffEditor(dom: HTMLElement) {
+  createMultiDiffEditor(dom: HTMLElement, resource: IResource, options: IResourceOpenOptions) {
     const editor = this.collectionService.createMultiDiffEditor(
       dom,
       {},
       { [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService },
+      resource,
+      options,
     );
     this.multiDiffEditor = editor;
   }
@@ -2494,17 +2487,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       await this.multiDiffEditorDomReady.onceReady(() => {
         const container = document.createElement('div');
         this._multiDiffEditorDomNode?.appendChild(container);
-        this.createMultiDiffEditor(container);
+        this.createMultiDiffEditor(container, resource, options);
       });
     }
 
-    this.multiDiffEditor.compareMultiple(
-      resource.metadata!.sources!.map((s) => ({
-        originalUri: s.originalUri,
-        modifiedUri: s.modifiedUri,
-        goToFileUri: s.goToFileUri || s.modifiedUri,
-      })),
-    );
+    this.multiDiffEditor.compareMultiple();
   }
 }
 

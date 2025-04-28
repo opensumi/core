@@ -27,6 +27,7 @@ import {
   ResourceService,
   TrackedRangeStickiness,
 } from '../common';
+import { IMultiDiffSourceResolverService } from '../common/multi-diff';
 
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 import { EditorGroup } from './workbench-editor.service';
@@ -186,6 +187,12 @@ export interface BrowserEditorContribution {
   onDidRestoreState?(): void;
 
   registerEditorFeature?(registry: IEditorFeatureRegistry);
+}
+
+export const MultiDiffSourceContribution = Symbol('MultiDiffSourceContribution');
+
+export interface MultiDiffSourceContribution {
+  registerMultiDiffSourceResolver(resolverService: IMultiDiffSourceResolverService): IDisposable;
 }
 
 export interface IGridResizeEventPayload {

@@ -27,6 +27,7 @@ import {
   IDecorationApplyOptions,
   IDiffEditor,
   IEditor,
+  IResource,
   IResourceOpenOptions,
   IUndoStopOptions,
   ResourceDecorationNeedChangeEvent,
@@ -38,7 +39,7 @@ import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } f
 import { EditorFeatureRegistryImpl } from './feature';
 import { BrowserMultiDiffEditor } from './multi-diff/multi-diff-editor';
 import { getConvertedMonacoOptions, isDiffEditorOption, isEditorOption } from './preference/converter';
-import { IEditorFeatureRegistry } from './types';
+import { IConvertedMonacoOptions, IEditorFeatureRegistry } from './types';
 
 import type {
   ICodeEditor as IMonacoCodeEditor,
@@ -153,10 +154,22 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
-  createMultiDiffEditor(dom: HTMLElement, overrides?: { [key: string]: any }) {
+  createMultiDiffEditor(
+    dom: HTMLElement,
+    options?: any,
+    overrides?: { [key: string]: any },
+    resource?: IResource,
+    resourceOptions?: IResourceOpenOptions,
+  ) {
     const convertedOptions = getConvertedMonacoOptions(this.configurationService);
     const monacoMultiDiffEditorWidget = this.monacoService.createMultiDiffEditorWidget(dom, overrides);
-    const editor = this.injector.get(BrowserMultiDiffEditor, [monacoMultiDiffEditorWidget, convertedOptions]);
+    const mergedOptions: IConvertedMonacoOptions = { ...convertedOptions.diffOptions, ...options };
+    const editor = this.injector.get(BrowserMultiDiffEditor, [
+      monacoMultiDiffEditorWidget,
+      mergedOptions,
+      resource,
+      resourceOptions,
+    ]);
     return editor;
   }
 

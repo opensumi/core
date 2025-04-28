@@ -1,15 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, URI, WithEventBus } from '@opensumi/ide-core-browser';
+import { AppConfig, URI, WithEventBus, getIcon } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import {
-  IResourceProvider,
-  ResourceDecorationChangeEvent,
-  ResourceDecorationNeedChangeEvent,
-  ResourceService,
-} from '../../common';
-import { MULTI_DIFF_SCHEME } from '../../common/multi-diff';
+import { IResourceProvider, ResourceService } from '../../common';
+import { IMultiDiffSourceResolverService } from '../../common/multi-diff';
 
 @Injectable()
 export class MultiDiffResourceProvider extends WithEventBus implements IResourceProvider {
@@ -25,21 +20,30 @@ export class MultiDiffResourceProvider extends WithEventBus implements IResource
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
 
-  private modifiedToResource = new Map<string, URI>();
+  @Autowired(IMultiDiffSourceResolverService)
+  private readonly multiDiffSourceResolverService: IMultiDiffSourceResolverService;
 
-  private userhomePath: URI | null;
+  handlesUri(uri: URI): number {
+    const resolvers = this.multiDiffSourceResolverService.getResolvers();
+    for (const resolver of resolvers) {
+      if (resolver.canHandleUri(uri)) {
+        return 10;
+      }
+    }
+    return -1;
+  }
 
   async provideResource(uri: URI) {
     const { name, sources } = uri.getParsedQuery();
-    const parsedSources = JSON.parse(sources);
+    const parsedSources = sources ? JSON.parse(sources) : [];
 
     // Get icon from the first modified file
-    const firstModifiedUri = new URI(parsedSources[0].modifiedUri);
-    const icon = this.labelService.getIcon(firstModifiedUri);
+    const firstModifiedUri = parsedSources.length > 0 ? new URI(parsedSources[0].modifiedUri) : undefined;
+    const icon = firstModifiedUri ? this.labelService.getIcon(firstModifiedUri) : undefined;
 
     return {
       name: `Multi-Diff: ${name || parsedSources.length + ' files'}`,
-      icon,
+      icon: icon || getIcon('diff'),
       uri,
       supportsRevive: this.appConfig.enableDiffRevive ?? true,
       metadata: {
@@ -49,7 +53,7 @@ export class MultiDiffResourceProvider extends WithEventBus implements IResource
   }
 
   async shouldCloseResource(resource, openedResources): Promise<boolean> {
-    // For now, always allow closing
+    // TODO: For now, always allow closing
     return true;
   }
 }
