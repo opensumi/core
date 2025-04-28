@@ -44,7 +44,7 @@ import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-brow
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { IDisposable, ILogger, PreferenceScope, isWindows } from '@opensumi/ide-core-common';
+import { IDisposable, ILogger, PreferenceScope, Uri, UriComponents, isWindows } from '@opensumi/ide-core-common';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -68,6 +68,7 @@ import {
   WorkbenchEditorService,
 } from '../common';
 import { AUTO_SAVE_MODE } from '../common/editor';
+import { MULTI_DIFF_SCHEME } from '../common/multi-diff';
 
 import { MonacoTextModelService } from './doc-model/override';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from './doc-model/types';
@@ -1231,6 +1232,37 @@ export class EditorContribution
         formatService.formatSelectionWith();
       },
     });
+
+    commands.registerCommand(
+      {
+        id: EDITOR_COMMANDS.VSCODE_OPEN_MULTI_DIFF_EDITOR_COMMAND_ID,
+      },
+      {
+        execute: async (options: {
+          title: string;
+          resources: { originalUri: UriComponents; modifiedUri: UriComponents }[];
+        }) => {
+          const sources: { originalUri: Uri; modifiedUri: Uri }[] = [];
+          for (const { originalUri, modifiedUri } of options.resources) {
+            sources.push({
+              originalUri: URI.revive(originalUri),
+              modifiedUri: URI.revive(modifiedUri),
+            });
+          }
+          await this.workbenchEditorService.open(
+            URI.from({
+              scheme: MULTI_DIFF_SCHEME,
+              query: URI.stringifyQuery({
+                sources: JSON.stringify(sources),
+              }),
+            }),
+            {
+              label: options.title,
+            },
+          );
+        },
+      },
+    );
   }
 
   registerMenus(menus: IMenuRegistry) {
