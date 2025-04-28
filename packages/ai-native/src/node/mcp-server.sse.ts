@@ -104,6 +104,7 @@ export class SSEMCPServer implements IMCPServer {
     const sanitizedToolsArray = toolsArray.map((tool) => {
       const originalName = tool.name;
       // Remove Chinese characters from the tool name
+      // Claude 3.5+ Sonnet 不支持中文 Tool Name
       const sanitizedName = originalName.replace(/[\u4e00-\u9fa5]/g, '');
       // If the name changed, store the mapping
       if (sanitizedName !== originalName) {

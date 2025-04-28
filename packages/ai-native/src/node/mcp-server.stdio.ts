@@ -114,6 +114,7 @@ export class StdioMCPServer implements IMCPServer {
     const sanitizedToolsArray = toolsArray.map((tool) => {
       const originalName = tool.name;
       // Remove Chinese characters from the tool name
+      // Claude 3.5+ Sonnet 不支持中文 Tool Name
       const sanitizedName = originalName.replace(/[\u4e00-\u9fa5]/g, '');
       if (sanitizedName !== originalName) {
         this.toolNameMap.set(sanitizedName, originalName);
