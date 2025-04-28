@@ -434,7 +434,7 @@ export class AINativeBrowserContribution
       },
       undefined,
     );
-    if (!mcpServerFromWorkspace.value?.mcpServers.length && oldMCPServers.length > 0) {
+    if (mcpServerFromWorkspace.scope === PreferenceScope.Default && oldMCPServers.length > 0) {
       // 如果用户没有配置，也没有存储，则从旧配置迁移
       const newMCPServers = {
         mcpServers: [] as any,
