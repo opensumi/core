@@ -1240,13 +1240,13 @@ export class EditorContribution
       {
         execute: async (options: {
           title: string;
-          resources: { originalUri: UriComponents; modifiedUri: UriComponents }[];
+          resources: { originalUri?: UriComponents; modifiedUri?: UriComponents }[];
         }) => {
-          const sources: { originalUri: Uri; modifiedUri: Uri }[] = [];
+          const sources: { originalUri?: string; modifiedUri?: string }[] = [];
           for (const { originalUri, modifiedUri } of options.resources) {
             sources.push({
-              originalUri: URI.revive(originalUri),
-              modifiedUri: URI.revive(modifiedUri),
+              originalUri: originalUri ? URI.revive(originalUri).toString() : undefined,
+              modifiedUri: modifiedUri ? URI.revive(modifiedUri).toString() : undefined,
             });
           }
           await this.workbenchEditorService.open(
