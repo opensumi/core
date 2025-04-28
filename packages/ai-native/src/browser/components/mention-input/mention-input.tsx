@@ -483,7 +483,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     // 这里可以添加额外的逻辑，如果需要的话
   };
 
-  // 添加粘贴事件处理
   const handlePaste = async (e: React.ClipboardEvent<HTMLDivElement>) => {
     const items = e.clipboardData.items;
 
@@ -551,13 +550,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     });
 
     // 插入处理后的内容
+    const lastNode = fragment.lastChild;
     range.insertNode(fragment);
 
     // 将光标移动到插入内容的末尾
-    range.setStartAfter(fragment);
-    range.setEndAfter(fragment);
-    selection.removeAllRanges();
-    selection.addRange(range);
+    if (lastNode && lastNode.parentNode) {
+      const newRange = document.createRange();
+      newRange.setStartAfter(lastNode);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+    }
 
     // 触发 input 事件以更新状态
     handleInput();
@@ -1060,25 +1062,27 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         </div>
         <div className={styles.right_control}>
           {renderButtons(FooterButtonPosition.RIGHT)}
-          <Popover
-            overlayClassName={styles.popover_icon}
-            id={'ai-chat-clear-context'}
-            position={PopoverPosition.top}
-            content={localize('aiNative.chat.context.clear')}
-          >
-            <div className={styles.context_container} onClick={handleClearContext}>
-              <div className={styles.context_icon}>
-                <Icon icon='out-link' />
-                <Icon icon='close' />
+          {hasContext && (
+            <Popover
+              overlayClassName={styles.popover_icon}
+              id={'ai-chat-clear-context'}
+              position={PopoverPosition.top}
+              content={localize('aiNative.chat.context.clear')}
+            >
+              <div className={styles.context_container} onClick={handleClearContext}>
+                <div className={styles.context_icon}>
+                  <Icon icon='out-link' />
+                  <Icon icon='close' />
+                </div>
+                <div className={styles.context_description}>
+                  {formatLocalize(
+                    'aiNative.chat.context.description',
+                    attachedFiles.files.length + attachedFiles.folders.length,
+                  )}
+                </div>
               </div>
-              <div className={styles.context_description}>
-                {formatLocalize(
-                  'aiNative.chat.context.description',
-                  attachedFiles.files.length + attachedFiles.folders.length,
-                )}
-              </div>
-            </div>
-          </Popover>
+            </Popover>
+          )}
           <Popover
             overlayClassName={styles.popover_icon}
             id={'ai-chat-send'}
