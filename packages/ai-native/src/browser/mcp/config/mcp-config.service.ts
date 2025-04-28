@@ -24,7 +24,7 @@ import {
 import { MCPServer, MCP_SERVER_TYPE } from '../../../common/types';
 import { MCPServerProxyService } from '../mcp-server-proxy.service';
 
-export type MCPServerFormData = MCPServerDescription;
+import { MCPServerFormData } from './components/mcp-server-form';
 
 @Injectable()
 export class MCPConfigService extends Disposable {
@@ -216,7 +216,7 @@ export class MCPConfigService extends Disposable {
     await this.sumiMCPServerBackendProxy.$syncServer(serverName);
   }
 
-  async getServerConfigByName(serverName: string): Promise<MCPServerFormData | undefined> {
+  async getServerConfigByName(serverName: string): Promise<MCPServerDescription | undefined> {
     const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
       'mcp',
       { mcpServers: [] },
