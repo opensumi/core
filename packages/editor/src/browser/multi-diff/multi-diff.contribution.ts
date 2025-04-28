@@ -2,7 +2,7 @@ import { Autowired } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-browser';
 
 import { ResourceService } from '../../common';
-import { MULTI_DIFF_SCHEME } from '../../common/multi-file-diff';
+import { MULTI_DIFF_SCHEME } from '../../common/multi-diff';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
 
 import { MultiDiffResourceProvider } from './multi-diff-resource';

@@ -77,7 +77,7 @@ import {
   getSplitActionFromDragDrop,
 } from '../common';
 import { IEditorDocumentModelRef } from '../common/editor';
-import { IMultiFileDiffEditor } from '../common/multi-file-diff';
+import { IMultiDiffEditor } from '../common/multi-diff';
 
 import { EditorDocumentModel } from './doc-model/editor-document-model';
 import { IEditorDocumentModelService } from './doc-model/types';
@@ -732,7 +732,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   diffEditor!: IDiffEditor;
 
-  multiDiffEditor!: IMultiFileDiffEditor;
+  multiDiffEditor!: IMultiDiffEditor;
 
   mergeEditor!: IMergeEditorEditor;
 

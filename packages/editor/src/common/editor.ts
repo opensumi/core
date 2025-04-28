@@ -16,7 +16,7 @@ import {
   URI,
 } from '@opensumi/ide-core-common';
 
-import { IMultiFileDiffEditor } from './multi-file-diff';
+import { IMultiDiffEditor } from './multi-diff';
 import { IResource } from './resource';
 import { IDocModelUpdateOptions } from './types';
 
@@ -355,7 +355,7 @@ export abstract class EditorCollectionService {
     dom: HTMLElement,
     options?: any,
     overrides?: { [key: string]: any },
-  ): IMultiFileDiffEditor;
+  ): IMultiDiffEditor;
 
   public abstract createMergeEditor(
     dom: HTMLElement,

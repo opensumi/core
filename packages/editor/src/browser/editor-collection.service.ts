@@ -36,7 +36,7 @@ import { IEditorDocumentModel, IEditorDocumentModelRef, isTextEditorViewState } 
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
 import { EditorFeatureRegistryImpl } from './feature';
-import { BrowserMultiFileDiffEditor } from './multi-diff/multi-file-diff-editor';
+import { BrowserMultiDiffEditor } from './multi-diff/multi-diff-editor';
 import { getConvertedMonacoOptions, isDiffEditorOption, isEditorOption } from './preference/converter';
 import { IEditorFeatureRegistry } from './types';
 
@@ -156,7 +156,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   createMultiDiffEditor(dom: HTMLElement, overrides?: { [key: string]: any }) {
     const convertedOptions = getConvertedMonacoOptions(this.configurationService);
     const monacoMultiDiffEditorWidget = this.monacoService.createMultiDiffEditorWidget(dom, overrides);
-    const editor = this.injector.get(BrowserMultiFileDiffEditor, [monacoMultiDiffEditorWidget, convertedOptions]);
+    const editor = this.injector.get(BrowserMultiDiffEditor, [monacoMultiDiffEditorWidget, convertedOptions]);
     return editor;
   }
 

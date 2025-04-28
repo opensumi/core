@@ -24,11 +24,11 @@ import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/ra
 import { IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
 import { IEditorDocumentModelRef } from '../../common/editor';
-import { IMultiFileDiffEditor, MultiDiffEditorItem } from '../../common/multi-file-diff';
+import { IMultiDiffEditor, MultiDiffEditorItem } from '../../common/multi-diff';
 import { IEditorDocumentModelService } from '../doc-model/types';
 import { IConvertedMonacoOptions } from '../types';
 
-export class BrowserMultiFileDiffEditor extends Disposable implements IMultiFileDiffEditor {
+export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEditor {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 

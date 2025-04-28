@@ -9,7 +9,7 @@ import {
   ResourceDecorationNeedChangeEvent,
   ResourceService,
 } from '../../common';
-import { MULTI_DIFF_SCHEME } from '../../common/multi-file-diff';
+import { MULTI_DIFF_SCHEME } from '../../common/multi-diff';
 
 @Injectable()
 export class MultiDiffResourceProvider extends WithEventBus implements IResourceProvider {
@@ -25,8 +25,6 @@ export class MultiDiffResourceProvider extends WithEventBus implements IResource
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
 
-  scheme = MULTI_DIFF_SCHEME;
-
   private modifiedToResource = new Map<string, URI>();
 
   private userhomePath: URI | null;
@@ -40,14 +38,13 @@ export class MultiDiffResourceProvider extends WithEventBus implements IResource
     const icon = this.labelService.getIcon(firstModifiedUri);
 
     return {
-      name: name || 'Multi-Diff',
+      name: `Multi-Diff: ${name || parsedSources.length + ' files'}`,
       icon,
       uri,
       supportsRevive: this.appConfig.enableDiffRevive ?? true,
       metadata: {
         sources: parsedSources,
       },
-      title: `Multi-Diff: ${name || parsedSources.length + ' files'}`,
     };
   }
 
