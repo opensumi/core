@@ -66,8 +66,13 @@ export class SSEMCPServer implements IMCPServer {
       this.logger?.error('Error in MCP client:', error);
     };
 
-    await this.client.connect(transport);
-    this.started = true;
+    try {
+      await this.client.connect(transport);
+      this.started = true;
+    } catch (error) {
+      this.logger?.error(`Error in startServer for ${this.name}:`, error);
+      throw error;
+    }
   }
 
   async callTool(toolName: string, toolCallId: string, arg_string: string) {

@@ -188,7 +188,11 @@ export class MCPServerManagerImpl implements MCPServerManager {
         // 如果是 enabled 为 false 的 server，则不进行启动
         continue;
       }
-      await this.startServer(server.name);
+      try {
+        await this.startServer(server.name);
+      } catch (error) {
+        this.logger.error(`Error in addExternalMCPServers for ${server.name}:`, error);
+      }
     }
   }
 
