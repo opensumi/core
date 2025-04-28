@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { Badge, Button, Popover, PopoverTriggerType } from '@opensumi/ide-components';
+import { Badge, Button, Icon, Popover, PopoverTriggerType } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { MCPConfigServiceToken, localize } from '@opensumi/ide-core-common';
 
@@ -103,8 +103,9 @@ export const MCPConfigView: React.FC = () => {
           <h2 className={styles.title}>MCP Servers</h2>
           <p className={styles.description}>{localize('ai.native.mcp.manage.connections')}</p>
         </div>
-        <button className={styles.addButton} onClick={handleAddServer}>
-          + {localize('ai.native.mcp.addMCPServer.title')}
+        <button className={styles.actionButton} onClick={handleAddServer}>
+          <Icon icon='plus' className={styles.actionButtonIcon} />
+          {localize('ai.native.mcp.addMCPServer.title')}
         </button>
       </div>
       <div className={styles.serversList}>

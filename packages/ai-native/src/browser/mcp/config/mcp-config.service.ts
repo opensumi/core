@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AINativeSettingSectionsId, ILogger } from '@opensumi/ide-core-browser';
+import { ILogger } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
 import {
   Deferred,
@@ -11,6 +11,7 @@ import {
   StorageProvider,
   localize,
 } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../../common';
@@ -41,6 +42,9 @@ export class MCPConfigService extends Disposable {
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -254,6 +258,28 @@ export class MCPConfigService extends Disposable {
         return localize('ai.native.mcp.type.builtin');
       default:
         return type;
+    }
+  }
+
+  async openConfigFile(): Promise<void> {
+    let config = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+      'mcp',
+      { mcpServers: [] },
+      undefined,
+    );
+    if (config.scope === PreferenceScope.Default) {
+      await this.preferenceService.set('mcp', { mcpServers: [] }, PreferenceScope.Workspace);
+      config = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+        'mcp',
+        { mcpServers: [] },
+        undefined,
+      );
+    }
+    const uri = config.configUri;
+    if (uri) {
+      this.workbenchEditorService.open(uri, {
+        preview: false,
+      });
     }
   }
 }

@@ -92,12 +92,7 @@ import {
   deepSeekModels,
   openAiNativeModels,
 } from '../common';
-import {
-  MCPServerDescription,
-  MCPServersEnabledKey,
-  SSEMCPServerDescription,
-  StdioMCPServerDescription,
-} from '../common/mcp-server-manager';
+import { MCPServerDescription, MCPServersEnabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
 import { ChatManagerService } from './chat/chat-manager.service';
