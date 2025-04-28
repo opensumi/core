@@ -14,6 +14,7 @@ export class StdioMCPServer implements IMCPServer {
   private client: Client;
   private env?: { [key: string]: string };
   private started: boolean = false;
+  private toolNameMap: Map<string, string> = new Map(); // Map sanitized tool names to original names
 
   constructor(
     name: string,
@@ -95,8 +96,10 @@ export class StdioMCPServer implements IMCPServer {
         error,
       );
     }
+    // Convert sanitized tool name back to original name if it exists in the map
+    const originalToolName = this.toolNameMap.get(toolName) || toolName;
     const params = {
-      name: toolName,
+      name: originalToolName,
       arguments: args,
       toolCallId,
     };
@@ -104,7 +107,27 @@ export class StdioMCPServer implements IMCPServer {
   }
 
   async getTools() {
-    return await this.client.listTools();
+    const originalTools = await this.client.listTools();
+    this.toolNameMap.clear();
+    // Process tool names to remove Chinese characters and create mapping
+    const toolsArray = originalTools.tools || [];
+    const sanitizedToolsArray = toolsArray.map((tool) => {
+      const originalName = tool.name;
+      // Remove Chinese characters from the tool name
+      const sanitizedName = originalName.replace(/[\u4e00-\u9fa5]/g, '');
+      if (sanitizedName !== originalName) {
+        this.toolNameMap.set(sanitizedName, originalName);
+        return { ...tool, name: sanitizedName };
+      }
+      return tool;
+    });
+    const sanitizedTools = {
+      ...originalTools,
+      tools: sanitizedToolsArray,
+    };
+    this.logger?.log(`Got tools from MCP server "${this.name}":`, sanitizedTools);
+    this.logger?.log('Tool name mapping: ', Object.fromEntries(this.toolNameMap));
+    return sanitizedTools;
   }
 
   update(command: string, args?: string[], env?: { [key: string]: string }): void {

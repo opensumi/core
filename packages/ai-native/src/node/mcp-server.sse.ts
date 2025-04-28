@@ -15,6 +15,7 @@ export class SSEMCPServer implements IMCPServer {
   private transportOptions?: SSEClientTransportOptions;
   private client: Client;
   private started: boolean = false;
+  private toolNameMap: Map<string, string> = new Map(); // Map sanitized tool names to original names
 
   constructor(
     name: string,
@@ -86,8 +87,10 @@ export class SSEMCPServer implements IMCPServer {
         error,
       );
     }
+    // Convert sanitized tool name back to original name if it exists in the map
+    const originalToolName = this.toolNameMap.get(toolName) || toolName;
     const params = {
-      name: toolName,
+      name: originalToolName,
       arguments: args,
       toolCallId,
     };
@@ -95,9 +98,27 @@ export class SSEMCPServer implements IMCPServer {
   }
 
   async getTools() {
-    const tools = await this.client.listTools();
-    this.logger?.log(`Got tools from MCP server "${this.name}" with serverHost "${this.serverHost}":`, tools);
-    return tools;
+    const originalTools = await this.client.listTools();
+    this.toolNameMap.clear();
+    const toolsArray = originalTools.tools || [];
+    const sanitizedToolsArray = toolsArray.map((tool) => {
+      const originalName = tool.name;
+      // Remove Chinese characters from the tool name
+      const sanitizedName = originalName.replace(/[\u4e00-\u9fa5]/g, '');
+      // If the name changed, store the mapping
+      if (sanitizedName !== originalName) {
+        this.toolNameMap.set(sanitizedName, originalName);
+        return { ...tool, name: sanitizedName };
+      }
+      return tool;
+    });
+    const sanitizedTools = {
+      ...originalTools,
+      tools: sanitizedToolsArray,
+    };
+    this.logger?.log(`Got tools from MCP server "${this.name}" with serverHost "${this.serverHost}":`, sanitizedTools);
+    this.logger?.log('Tool name mapping: ', Object.fromEntries(this.toolNameMap));
+    return sanitizedTools;
   }
 
   update(serverHost: string): void {
