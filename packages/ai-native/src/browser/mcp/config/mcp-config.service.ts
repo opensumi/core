@@ -89,19 +89,19 @@ export class MCPConfigService extends Disposable {
 
   async getServers(): Promise<MCPServer[]> {
     // Get workspace MCP server configurations
-    const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
+    const { value: mcpConfig, scope } = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
       'mcp',
-      { mcpServers: {} },
+      { mcpServers: [] },
       undefined,
     );
 
-    if (!mcpConfig?.mcpServers || Object.keys(mcpConfig.mcpServers).length === 0) {
+    if (scope === PreferenceScope.Default) {
       const runningServers = await this.mcpServerProxyService.$getServers();
       const builtinServer = runningServers.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
       return builtinServer ? [builtinServer] : [];
     }
 
-    const userServers = mcpConfig.mcpServers.map((server) => {
+    const userServers = mcpConfig?.mcpServers.map((server) => {
       const name = Object.keys(server)[0];
       const serverConfig = server[name];
       if (serverConfig.url) {
@@ -124,7 +124,7 @@ export class MCPConfigService extends Disposable {
     const builtinServer = runningServers.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
 
     // Merge server configs with running status
-    const allServers = userServers.map((server) => {
+    const allServers = userServers?.map((server) => {
       const runningServer = runningServers.find((s) => s.name === server.name);
       return {
         ...server,
@@ -174,7 +174,7 @@ export class MCPConfigService extends Disposable {
       undefined,
     );
     const servers = mcpConfig!.mcpServers;
-    const existingIndex = servers?.findIndex((s) => s.name === data.name);
+    const existingIndex = servers?.findIndex((s) => Object.keys(s)[0] === data.name);
 
     let serverConfig;
     if (data.type === MCP_SERVER_TYPE.SSE) {
