@@ -229,6 +229,9 @@ export const AIChatView = () => {
       <span
         onClick={(e) => {
           e.stopPropagation();
+          editorService.open(URI.parse('chat-editing-multi-diff-source://chat-editing-multi-diff-source/'), {
+            label: 'View Changes',
+          });
         }}
       >
         View Changes

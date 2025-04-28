@@ -50,6 +50,7 @@ import {
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
   CommandService,
+  IDisposable,
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
@@ -70,8 +71,10 @@ import {
   EditorComponentRegistry,
   IEditorDocumentModelContentRegistry,
   IEditorFeatureRegistry,
+  MultiDiffSourceContribution,
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { IMultiDiffSourceResolverService } from '@opensumi/ide-editor/lib/common/multi-diff';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
@@ -98,6 +101,7 @@ import { MCP_SERVER_TYPE } from '../common/types';
 
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
+import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
@@ -153,6 +157,7 @@ export const INLINE_DIFF_MANAGER_WIDGET_ID = 'inline-diff-manager-widget';
   ComponentContribution,
   SlotRendererContribution,
   MonacoContribution,
+  MultiDiffSourceContribution,
 )
 export class AINativeBrowserContribution
   implements
@@ -163,7 +168,8 @@ export class AINativeBrowserContribution
     KeybindingContribution,
     ComponentContribution,
     SlotRendererContribution,
-    MonacoContribution
+    MonacoContribution,
+    MultiDiffSourceContribution
 {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
@@ -276,8 +282,15 @@ export class AINativeBrowserContribution
   @Autowired()
   private readonly chatEditResourceProvider: ChatEditSchemeDocumentProvider;
 
+  @Autowired()
+  private readonly chatMultiDiffResolver: ChatMultiDiffResolver;
+
   constructor() {
     this.registerFeature();
+  }
+
+  registerMultiDiffSourceResolver(resolverService: IMultiDiffSourceResolverService): IDisposable {
+    return resolverService.registerResolver(this.chatMultiDiffResolver);
   }
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry): void {

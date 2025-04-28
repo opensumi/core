@@ -80,11 +80,11 @@ export class ChatMultiDiffSource implements IResolvedMultiDiffSource {
       .map((block) => {
         const filePath = path.join(this.appConfig.workspaceDir, block.relativePath);
         return {
+          // FIXME: 只要一个 block，是和 block 的 oldContent 对比呀……
           originalUri: this.getResourceUri(filePath, block.oldBlockId, block.oldVersion),
           modifiedUri: this.getResourceUri(filePath, block.newBlockId, block.newVersion),
           goToFileUri: URI.file(filePath),
           getKey: () => block.relativePath,
-          ...block,
         };
       }),
     // 这里event类型错误不影响

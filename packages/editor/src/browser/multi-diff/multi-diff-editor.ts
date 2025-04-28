@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable, DisposableStore, Emitter, IDisposable, URI } from '@opensumi/ide-core-common';
 import {
@@ -30,6 +30,7 @@ import { IMultiDiffEditor, IMultiDiffSourceResolverService, IResolvedMultiDiffSo
 import { IEditorDocumentModelService } from '../doc-model/types';
 import { IConvertedMonacoOptions, IResource } from '../types';
 
+@Injectable({ multiple: true })
 export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEditor {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
@@ -65,7 +66,7 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
   }
 
   private readonly _resolvedSource = new ObservableLazyPromise(async () => {
-    const source: IResolvedMultiDiffSource | undefined = this.resource.metadata.sources
+    const source: IResolvedMultiDiffSource | undefined = this.resource.metadata.sources?.length
       ? { resources: ValueWithChangeEvent.const(this.resource.metadata.sources) }
       : await this.multiDiffSourceResolverService.resolve(this.resource.uri);
     return {
@@ -92,6 +93,7 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
             r.originalUri ? this.documentModelManager.createModelReference(r.originalUri) : undefined,
             r.modifiedUri ? this.documentModelManager.createModelReference(r.modifiedUri) : undefined,
           ]);
+          // console.log('original', original, 'modified', modified);
           if (original) {
             multiDiffItemStore.add(original);
           }
@@ -141,7 +143,7 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
 
     const a = recomputeInitiallyAndOnChange(updateDocuments);
     await updateDocuments.get();
-
+    // TODO: 复用 editor，修改 viewModel 即可
     const _viewModel: IMultiDiffEditorModel & IDisposable = {
       dispose: () => a.dispose(),
       documents: new ValueWithChangeEventFromObservable(documents),
