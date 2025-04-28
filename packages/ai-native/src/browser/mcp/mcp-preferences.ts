@@ -23,24 +23,27 @@ export const MCPSchema: IJSONSchema = {
   default: { mcpServers: [] },
   properties: {
     mcpServers: {
-      type: 'object',
+      type: 'array',
       description: 'List of MCP Servers. Add new servers or edit existing ones by using IntelliSense.',
-      properties: {
-        command: {
-          type: 'string',
-          description: 'The command to start the MCP server.',
-        },
-        args: {
-          type: 'array',
-          description: 'The arguments for the command to start the MCP server.',
-        },
-        env: {
-          type: 'object',
-          description: 'The environment variables for the command to start the MCP server.',
-        },
-        url: {
-          type: 'string',
-          description: 'The SSE URL for the MCP server.',
+      items: {
+        type: 'object',
+        properties: {
+          command: {
+            type: 'string',
+            description: 'The command to start the MCP server.',
+          },
+          args: {
+            type: 'array',
+            description: 'The arguments for the command to start the MCP server.',
+          },
+          env: {
+            type: 'object',
+            description: 'The environment variables for the command to start the MCP server.',
+          },
+          url: {
+            type: 'string',
+            description: 'The SSE URL for the MCP server.',
+          },
         },
       },
     },
