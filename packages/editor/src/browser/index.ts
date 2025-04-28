@@ -204,7 +204,7 @@ export class EditorModule extends BrowserModule {
     OpenTypeMenuContribution,
   ];
   electronProviders = [EditorElectronContribution];
-  contributionProvider = BrowserEditorContribution;
+  contributionProvider = [BrowserEditorContribution, MultiDiffSourceContribution];
 }
 
 @Domain(ClientAppContribution)

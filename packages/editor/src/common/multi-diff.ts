@@ -21,7 +21,7 @@ export interface IMultiDiffSourceResolverService {
 export interface IMultiDiffSourceResolver {
   canHandleUri(uri: URI): boolean;
 
-  resolveDiffSource(uri: URI): Promise<IResolvedMultiDiffSource>;
+  resolveDiffSource(uri: URI): Promise<IResolvedMultiDiffSource | undefined>;
 }
 
 export interface IResolvedMultiDiffSource {
