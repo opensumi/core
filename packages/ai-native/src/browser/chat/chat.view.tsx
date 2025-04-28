@@ -221,6 +221,21 @@ export const AIChatView = () => {
     [],
   );
 
+  const renderViewChanges = (totalFiles: number) => {
+    if (!totalFiles) {
+      return null;
+    }
+    return (
+      <span
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        View Changes
+      </span>
+    );
+  };
+
   const onDidWheel = React.useCallback(
     (e: WheelEvent) => {
       // 向上滚动
@@ -842,6 +857,7 @@ export const AIChatView = () => {
               dataSource={messageListData}
             />
           </div>
+          {renderViewChanges(changeList.length)}
           {aiChatService.sessionModel.slicedMessageCount ? (
             <div className={styles.chat_tips_text}>
               <div className={styles.chat_tips_container}>

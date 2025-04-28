@@ -68,6 +68,7 @@ import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
+  IEditorDocumentModelContentRegistry,
   IEditorFeatureRegistry,
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -95,6 +96,7 @@ import {
 import { MCPServerDescription, MCPServersEnabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
+import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatProxyService } from './chat/chat-proxy.service';
 import { ChatInternalService } from './chat/chat.internal.service';
@@ -271,8 +273,15 @@ export class AINativeBrowserContribution
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
 
+  @Autowired()
+  private readonly chatEditResourceProvider: ChatEditSchemeDocumentProvider;
+
   constructor() {
     this.registerFeature();
+  }
+
+  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry): void {
+    registry.registerEditorDocumentModelContentProvider(this.chatEditResourceProvider);
   }
 
   async initialize() {
