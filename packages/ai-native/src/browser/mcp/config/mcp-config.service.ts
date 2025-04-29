@@ -228,7 +228,12 @@ export class MCPConfigService extends Disposable {
   }
 
   async syncServer(serverName: string): Promise<void> {
-    await this.sumiMCPServerBackendProxy.$syncServer(serverName);
+    try {
+      await this.sumiMCPServerBackendProxy.$syncServer(serverName);
+    } catch (error) {
+      this.logger.error(`Failed to sync server ${serverName}:`, error);
+      this.messageService.error(error.message || error);
+    }
   }
 
   async getServerConfigByName(serverName: string): Promise<MCPServerDescription | undefined> {
@@ -245,16 +250,16 @@ export class MCPConfigService extends Disposable {
         return {
           name: serverName,
           type: MCP_SERVER_TYPE.SSE,
-          url: server[serverName].url,
+          url: server.url,
           enabled: enabledMCPServers.includes(serverName),
         };
       } else {
         return {
           name: serverName,
           type: MCP_SERVER_TYPE.STDIO,
-          command: server[serverName].command,
-          args: server[serverName].args,
-          env: server[serverName].env,
+          command: server.command,
+          args: server.args,
+          env: server.env,
           enabled: enabledMCPServers.includes(serverName),
         };
       }
