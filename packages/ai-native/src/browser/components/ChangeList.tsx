@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 
 import { Button, Icon } from '@opensumi/ide-components';
-import { LabelService, URI, useInjectable } from '@opensumi/ide-core-browser';
+import { LabelService, URI, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { CodeBlockStatus } from '../../common/types';
 
@@ -25,6 +26,7 @@ interface FileListDisplayProps {
 export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
   const { files, onFileClick, onRejectAll, onAcceptAll } = props;
   const [isExpanded, setIsExpanded] = useState(true);
+  const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const labelService = useInjectable<LabelService>(LabelService);
   const fileIcons = useMemo(
     () =>
@@ -47,6 +49,26 @@ export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const renderViewChanges = (totalFiles: number) => {
+    if (!totalFiles) {
+      return null;
+    }
+    return (
+      <span
+        className={styles.viewChanges}
+        onClick={(e) => {
+          e.stopPropagation();
+          editorService.open(URI.parse('chat-editing-multi-diff-source://chat-editing-multi-diff-source/'), {
+            label: localize('aiNative.chat.view-changes'),
+          });
+        }}
+      >
+        <Icon icon='unorderedlist' size='small' />
+        {localize('aiNative.chat.view-changes')}
+      </span>
+    );
   };
 
   const renderChangeStats = (additions: number, deletions: number) => {
@@ -84,10 +106,13 @@ export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header} onClick={handleToggle}>
+      <div className={styles.header}>
         <span className={styles.title}>
-          <button className={styles.toggleButton}>{isExpanded ? <Icon icon='down' /> : <Icon icon='right' />}</button>
-          Changed Files ({totalFiles}) {renderChangeStats(totalChanges.additions, totalChanges.deletions)}
+          <button className={styles.toggleButton} onClick={handleToggle}>
+            {isExpanded ? <Icon icon='down' /> : <Icon icon='right' />} Changed Files({totalFiles})
+          </button>
+          {renderChangeStats(totalChanges.additions, totalChanges.deletions)}
+          {renderViewChanges(files.length)}
         </span>
         {files.some((file) => file.status === 'pending') && (
           <div className={styles.actions}>
