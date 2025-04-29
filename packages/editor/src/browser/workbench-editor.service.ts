@@ -1884,7 +1884,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           await this.openDiffEditor(resource, options);
           break;
         case EditorOpenType.multiDiff:
-          await this.createMultiDiffEditor(resource, options);
+          await this.openMultiDiffEditor(resource, options);
           break;
         case EditorOpenType.mergeEditor:
           await this.openMergeEditor(resource);
@@ -2472,19 +2472,25 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  async createMultiDiffEditor(resource: IResource, options: IResourceOpenOptions) {
-    await this.multiDiffEditorDomReady.onceReady(async () => {
-      const container = document.createElement('div');
-      this._multiDiffEditorDomNode?.appendChild(container);
-      const editor = this.collectionService.createMultiDiffEditor(
-        container,
-        {},
-        { [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService },
-        resource,
-        options,
-      );
-      await editor.compareMultiple();
-    });
+  createMultiDiffEditor(dom: HTMLElement) {
+    const editor = this.collectionService.createMultiDiffEditor(
+      dom,
+      {},
+      { [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService },
+    );
+    this.multiDiffEditor = editor;
+  }
+
+  private async openMultiDiffEditor(resource: IResource, options: IResourceOpenOptions) {
+    if (!this.multiDiffEditor) {
+      await this.multiDiffEditorDomReady.onceReady(() => {
+        const container = document.createElement('div');
+        this._multiDiffEditorDomNode?.appendChild(container);
+        this.createMultiDiffEditor(container);
+      });
+    }
+
+    this.multiDiffEditor.compareMultiple(resource, options);
   }
 }
 

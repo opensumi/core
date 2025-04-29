@@ -5,6 +5,7 @@ import { IValueWithChangeEvent } from '@opensumi/monaco-editor-core/esm/vs/base/
 import { IDocumentDiffItem } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/model';
 
 import { IEditorDocumentModelRef, IResourceOpenOptions } from './editor';
+import { IResource } from './resource';
 
 export const MULTI_DIFF_SCHEME = 'multi-diff-editor';
 
@@ -54,34 +55,12 @@ export interface IMultiDiffEditor extends IDisposable {
   /**
    * Compare multiple file pairs
    */
-  compareMultiple(): Promise<void>;
-
-  // /**
-  //  * Add a new file pair comparison to the existing view
-  //  * @param entry The file pair entry to add
-  //  * @param options Resource open options
-  //  */
-  // addComparison(entry: IDocumentDiffItem, options?: IResourceOpenOptions): void;
-
-  // /**
-  //  * Remove a file pair comparison from the view
-  //  * @param originalUri URI of the original file to remove
-  //  * @param modifiedUri URI of the modified file to remove
-  //  */
-  // removeComparison(originalUri: URI, modifiedUri: URI): void;
-
-  /**
-   * The currently active diff editor showing the selected file pair
-   */
-  // currentDiffEditor: {
-  //   originalEditor: IEditor;
-  //   modifiedEditor: IEditor;
-  // };
+  compareMultiple(resource: IResource, options?: IResourceOpenOptions): Promise<void>;
 
   /**
    * Get all file pairs currently being compared
    */
-  getDiffEntries(): IDocumentDiffItem[];
+  getDiffEntry(uri: URI): IDocumentDiffItem | undefined;
 
   /**
    * Get the currently selected/active file pair

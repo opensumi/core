@@ -154,22 +154,11 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
-  createMultiDiffEditor(
-    dom: HTMLElement,
-    options?: any,
-    overrides?: { [key: string]: any },
-    resource?: IResource,
-    resourceOptions?: IResourceOpenOptions,
-  ) {
+  createMultiDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
     const convertedOptions = getConvertedMonacoOptions(this.configurationService);
     const monacoMultiDiffEditorWidget = this.monacoService.createMultiDiffEditorWidget(dom, overrides);
     const mergedOptions: IConvertedMonacoOptions = { ...convertedOptions.diffOptions, ...options };
-    const editor = this.injector.get(BrowserMultiDiffEditor, [
-      monacoMultiDiffEditorWidget,
-      mergedOptions,
-      resource,
-      resourceOptions,
-    ]);
+    const editor = this.injector.get(BrowserMultiDiffEditor, [monacoMultiDiffEditorWidget, mergedOptions]);
     return editor;
   }
 

@@ -2,7 +2,6 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Disposable, DisposableStore, Emitter, IDisposable, URI } from '@opensumi/ide-core-common';
 import {
-  ObservableLazyPromise,
   ValueWithChangeEventFromObservable,
   constObservable,
   derived,
@@ -47,6 +46,8 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
   @Autowired(IMultiDiffSourceResolverService)
   private readonly multiDiffSourceResolverService: IMultiDiffSourceResolverService;
 
+  private resource: IResource | undefined;
+
   private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
   public readonly onRefOpen = this._onRefOpen.event;
 
@@ -56,31 +57,19 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
   private _onDiffEntriesChange = new Emitter<IDocumentDiffItem[]>();
   public readonly onDiffEntriesChange = this._onDiffEntriesChange.event;
 
-  constructor(
-    private multiDiffWidget: MultiDiffEditorWidget,
-    private convertedOptions: IConvertedMonacoOptions,
-    private resource: IResource,
-    private resourceOptions: IResourceOpenOptions,
-  ) {
+  constructor(private multiDiffWidget: MultiDiffEditorWidget, private convertedOptions: IConvertedMonacoOptions) {
     super();
   }
 
-  private readonly _resolvedSource = new ObservableLazyPromise(async () => {
-    const source: IResolvedMultiDiffSource | undefined = this.resource.metadata.sources?.length
-      ? { resources: ValueWithChangeEvent.const(this.resource.metadata.sources) }
-      : await this.multiDiffSourceResolverService.resolve(this.resource.uri);
-    return {
-      source,
-      resources: source ? observableFromValueWithChangeEvent(this, source.resources) : constObservable([]),
-    };
-  });
-
-  async compareMultiple(): Promise<void> {
-    const source = await this._resolvedSource.getPromise();
+  async compareMultiple(resource: IResource, options?: IResourceOpenOptions): Promise<void> {
+    const source: IResolvedMultiDiffSource | undefined = resource.metadata.sources?.length
+      ? { resources: ValueWithChangeEvent.const(resource.metadata.sources) }
+      : await this.multiDiffSourceResolverService.resolve(resource.uri);
+    const resources = source ? observableFromValueWithChangeEvent(this, source.resources) : constObservable([]);
 
     const documentsWithPromises = mapObservableArrayCached(
       this,
-      source.resources,
+      resources,
       async (r, store) => {
         /** @description documentsWithPromises */
         let original: IEditorDocumentModelRef | undefined;
@@ -147,7 +136,7 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
     const _viewModel: IMultiDiffEditorModel & IDisposable = {
       dispose: () => a.dispose(),
       documents: new ValueWithChangeEventFromObservable(documents),
-      contextKeys: source.source?.contextKeys,
+      contextKeys: source?.contextKeys,
     };
 
     const viewModel = this.multiDiffWidget.createViewModel(_viewModel);
@@ -156,24 +145,8 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
     // this._onDiffEntriesChange.fire(diffItems);
   }
 
-  // addComparison(item: IDocumentDiffItem): void {
-  //   const currentItems = this.getDiffEntries();
-  //   this.compareMultiple([...currentItems, item]);
-  // }
-
-  // removeComparison(originalUri: URI, modifiedUri: URI): void {
-  //   const currentItems = this.getDiffEntries();
-  //   const filteredItems = currentItems.filter(
-  //     (item) =>
-  //       item.original.uri.toString() !== originalUri.toString() ||
-  //       item.modified.uri.toString() !== modifiedUri.toString(),
-  //   );
-  //   this.compareMultiple(filteredItems);
-  // }
-
-  getDiffEntries(): IDocumentDiffItem[] {
-    return [];
-    // return this.multiDiffWidget.findDocumentDiffItem(new URI(''))?.model.entries || [];
+  getDiffEntry(uri: URI): IDocumentDiffItem | undefined {
+    return this.multiDiffWidget.findDocumentDiffItem(uri.codeUri);
   }
 
   getCurrentDiffEntry(): IDocumentDiffItem | undefined {
