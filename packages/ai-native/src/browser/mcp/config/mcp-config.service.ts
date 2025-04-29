@@ -52,6 +52,8 @@ export class MCPConfigService extends Disposable {
   private chatStorage: IStorage;
   private whenReadyDeferred = new Deferred<void>();
 
+  private _isInitialized = false;
+
   private readonly mcpServersChangeEventEmitter = new Emitter<boolean>();
 
   constructor() {
@@ -65,6 +67,7 @@ export class MCPConfigService extends Disposable {
     );
     this.disposables.push(
       this.preferenceService.onSpecificPreferenceChange('mcp', () => {
+        // 通过修改配置增加的 server 需要重新添加到列表中
         this.fireMCPServersChange();
       }),
     );
@@ -79,11 +82,18 @@ export class MCPConfigService extends Disposable {
     return this.whenReadyDeferred.promise;
   }
 
+  get isInitialized() {
+    return this._isInitialized;
+  }
+
   get onMCPServersChange() {
     return this.mcpServersChangeEventEmitter.event;
   }
 
   fireMCPServersChange(isInit: boolean = false) {
+    if (isInit) {
+      this._isInitialized = true;
+    }
     this.mcpServersChangeEventEmitter.fire(isInit);
   }
 
@@ -126,6 +136,9 @@ export class MCPConfigService extends Disposable {
     // Merge server configs with running status
     const allServers = userServers?.map((server) => {
       const runningServer = runningServers.find((s) => s.name === server.name);
+      if (!runningServer) {
+        this.sumiMCPServerBackendProxy.$addOrUpdateServer(server as MCPServerDescription);
+      }
       return {
         ...server,
         isStarted: runningServer?.isStarted || false,
@@ -166,7 +179,7 @@ export class MCPConfigService extends Disposable {
     }
   }
 
-  async saveServer(data: MCPServerFormData): Promise<void> {
+  async saveServer(prev: MCPServerDescription | undefined, data: MCPServerFormData): Promise<void> {
     await this.whenReady;
     const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
       'mcp',
@@ -174,7 +187,7 @@ export class MCPConfigService extends Disposable {
       undefined,
     );
     const servers = mcpConfig!.mcpServers;
-    const existingIndex = servers?.findIndex((s) => Object.keys(s)[0] === data.name);
+    const existingIndex = servers?.findIndex((s) => Object.keys(s)[0] === prev?.name);
 
     let serverConfig;
     if (data.type === MCP_SERVER_TYPE.SSE) {
@@ -194,6 +207,12 @@ export class MCPConfigService extends Disposable {
       servers.push(serverConfig);
     }
     await this.sumiMCPServerBackendProxy.$addOrUpdateServer(data as MCPServerDescription);
+    // 更新情况下，如果原有服务是启用状态，则进行如下操作：
+    // 1. 关闭旧的服务
+    // 2. 启动新的服务
+    if (prev?.enabled) {
+      await this.sumiMCPServerBackendProxy.$removeServer(prev.name);
+    }
     await this.preferenceService.set('mcp', { mcpServers: servers });
   }
 

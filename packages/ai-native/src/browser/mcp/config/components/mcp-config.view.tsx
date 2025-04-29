@@ -6,6 +6,7 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { MCPConfigServiceToken, localize } from '@opensumi/ide-core-common';
 
 import { BUILTIN_MCP_SERVER_NAME } from '../../../../common';
+import { MCPServerDescription } from '../../../../common/mcp-server-manager';
 import { MCPServer } from '../../../../common/types';
 import { MCPConfigService } from '../mcp-config.service';
 
@@ -16,9 +17,9 @@ export const MCPConfigView: React.FC = () => {
   const mcpConfigService = useInjectable<MCPConfigService>(MCPConfigServiceToken);
   const [servers, setServers] = React.useState<MCPServer[]>([]);
   const [formVisible, setFormVisible] = React.useState(false);
-  const [editingServer, setEditingServer] = React.useState<MCPServerFormData | undefined>();
+  const [editingServer, setEditingServer] = React.useState<MCPServerDescription | undefined>();
   const [loadingServer, setLoadingServer] = React.useState<string | undefined>();
-  const [isReady, setIsReady] = React.useState(false);
+  const [isReady, setIsReady] = React.useState(mcpConfigService.isInitialized);
 
   const loadServers = useCallback(async () => {
     const allServers = await mcpConfigService.getServers();
@@ -78,9 +79,14 @@ export const MCPConfigView: React.FC = () => {
   );
 
   const handleSaveServer = useCallback(
-    async (data: MCPServerFormData) => {
-      await mcpConfigService.saveServer(data);
+    async (prev: MCPServerDescription | undefined, data: MCPServerFormData) => {
       setFormVisible(false);
+      await mcpConfigService.saveServer(prev, data);
+      if (prev?.enabled) {
+        setLoadingServer(data.name);
+        await mcpConfigService.controlServer(data.name, true);
+        setLoadingServer(undefined);
+      }
       await loadServers();
     },
     [mcpConfigService, loadServers],
@@ -135,7 +141,8 @@ export const MCPConfigView: React.FC = () => {
                   >
                     <i
                       className={`codicon ${
-                        loadingServer === server.name || (!isReady && server.name !== BUILTIN_MCP_SERVER_NAME)
+                        loadingServer === server.name ||
+                        (!isReady && server.name !== BUILTIN_MCP_SERVER_NAME && !server.isStarted)
                           ? 'codicon-loading kt-icon-loading'
                           : server.isStarted
                           ? 'codicon-check'
@@ -221,7 +228,7 @@ export const MCPConfigView: React.FC = () => {
         visible={formVisible}
         initialData={editingServer}
         servers={servers}
-        onSave={handleSaveServer}
+        onSave={(data) => handleSaveServer(editingServer, data)}
         onCancel={() => setFormVisible(false)}
       />
     </div>
