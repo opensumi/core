@@ -10,6 +10,7 @@ import {
   MultiDiffSourceContribution,
 } from '../types';
 
+import { MultiDiffResolver } from './multi-diff-resolver';
 import { MultiDiffResourceProvider } from './multi-diff-resource';
 
 @Domain(BrowserEditorContribution, MultiDiffSourceContribution)
@@ -17,19 +18,15 @@ export class MultiDiffEditorContribution implements BrowserEditorContribution, M
   @Autowired(IMultiDiffSourceResolverService)
   private readonly multiDiffSourceResolverService: IMultiDiffSourceResolverService;
 
+  @Autowired(MultiDiffResolver)
+  private readonly multiDiffResolver: MultiDiffResolver;
+
   @Autowired()
-  multiDiffResourceProvider: MultiDiffResourceProvider;
+  private readonly multiDiffResourceProvider: MultiDiffResourceProvider;
 
   registerMultiDiffSourceResolver(resolverService: IMultiDiffSourceResolverService): IDisposable {
-    // 内置静态实现，读取uri中的query实现
-    return resolverService.registerResolver({
-      canHandleUri(uri: URI): boolean {
-        return uri.scheme === MULTI_DIFF_SCHEME;
-      },
-      async resolveDiffSource(): Promise<IResolvedMultiDiffSource | undefined> {
-        return undefined;
-      },
-    });
+    // 内置实现，通过 command 使用
+    return resolverService.registerResolver(this.multiDiffResolver);
   }
 
   registerResource(resourceService: ResourceService): void {
