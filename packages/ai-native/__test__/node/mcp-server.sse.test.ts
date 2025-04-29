@@ -107,7 +107,7 @@ describe('SSEMCPServer', () => {
     });
 
     it('should return list of available tools', async () => {
-      const tools = await server.getTools();
+      const { tools } = await server.getTools();
       expect(mockClient.listTools).toHaveBeenCalled();
       expect(tools).toEqual(['tool1', 'tool2']);
     });
