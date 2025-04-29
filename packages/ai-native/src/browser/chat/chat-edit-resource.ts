@@ -38,9 +38,9 @@ export class ChatEditSchemeDocumentProvider implements IEditorDocumentModelConte
 
   async provideEditorDocumentModelContent(uri: URI, encoding?: string | undefined): Promise<string> {
     // Get the content from the base apply service based on the uri query parameters
-    const { id, version } = uri.getParsedQuery();
+    const { id, side } = uri.getParsedQuery();
     const codeBlock = this.baseApplyService.getCodeBlock(id);
-    const content = +version === 1 ? codeBlock?.originalCode : codeBlock?.updatedCode;
+    const content = side === 'left' ? codeBlock?.originalCode : codeBlock?.updatedCode;
     // console.log('codeBlock', codeBlock, id, version, content);
     return content || '';
   }

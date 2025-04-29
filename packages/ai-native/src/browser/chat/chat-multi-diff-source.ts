@@ -31,11 +31,11 @@ export class ChatMultiDiffResolver implements IMultiDiffSourceResolver {
 export class ChatMultiDiffSource implements IResolvedMultiDiffSource {
   constructor(private readonly baseApplyService: BaseApplyService, private readonly appConfig: AppConfig) {}
 
-  private getResourceUri(filePath: string, id: string, version: number) {
+  private getResourceUri(filePath: string, id: string, side: 'left' | 'right') {
     return URI.from({
       scheme: BaseApplyService.CHAT_EDITING_SOURCE_RESOLVER_SCHEME,
       path: filePath,
-      query: URI.stringifyQuery({ id, version }),
+      query: URI.stringifyQuery({ id, side }),
     });
   }
 
@@ -80,9 +80,8 @@ export class ChatMultiDiffSource implements IResolvedMultiDiffSource {
       .map((block) => {
         const filePath = path.join(this.appConfig.workspaceDir, block.relativePath);
         return {
-          // FIXME: 只要一个 block，是和 block 的 oldContent 对比呀……
-          originalUri: this.getResourceUri(filePath, block.oldBlockId, block.oldVersion),
-          modifiedUri: this.getResourceUri(filePath, block.newBlockId, block.newVersion),
+          originalUri: this.getResourceUri(filePath, block.oldBlockId, 'left'),
+          modifiedUri: this.getResourceUri(filePath, block.newBlockId, 'right'),
           goToFileUri: URI.file(filePath),
           getKey: () => block.relativePath,
         };
