@@ -1,5 +1,4 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 
 import { ILogger } from '@opensumi/ide-core-common';
 
@@ -37,7 +36,7 @@ describe('SSEMCPServer', () => {
   describe('constructor', () => {
     it('should initialize with correct parameters', () => {
       expect(server.getServerName()).toBe('test-server');
-      expect(server.serverHost).toBe('http://localhost:3000');
+      expect(server.url).toBe('http://localhost:3000');
       expect(server.isStarted()).toBe(false);
     });
   });
@@ -142,9 +141,9 @@ describe('SSEMCPServer', () => {
 
   describe('update', () => {
     it('should update server configuration', () => {
-      const newServerHost = 'http://localhost:4000';
-      server.update(newServerHost);
-      expect(server.serverHost).toBe(newServerHost);
+      const newUrl = 'http://localhost:4000';
+      server.update(newUrl);
+      expect(server.url).toBe(newUrl);
     });
   });
 });
