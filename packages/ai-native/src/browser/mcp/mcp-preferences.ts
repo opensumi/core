@@ -10,7 +10,7 @@ export const MCPPreferencesSchema: PreferenceSchema = {
     mcp: {
       $ref: MCPSchemaUri,
       description: 'MCP configuration for Workspace.',
-      defaultValue: { mcpServers: [] },
+      defaultValue: { mcpServers: {} },
     },
   },
 };
@@ -20,12 +20,12 @@ export const MCPSchema: IJSONSchema = {
   type: 'object',
   title: 'MCP',
   required: [],
-  default: { mcpServers: [] },
+  default: { mcpServers: {} },
   properties: {
     mcpServers: {
-      type: 'array',
+      type: 'object',
       description: 'List of MCP Servers. Add new servers or edit existing ones by using IntelliSense.',
-      items: {
+      additionalProperties: {
         type: 'object',
         properties: {
           command: {
@@ -35,16 +35,30 @@ export const MCPSchema: IJSONSchema = {
           args: {
             type: 'array',
             description: 'The arguments for the command to start the MCP server.',
+            items: {
+              type: 'string',
+            },
           },
           env: {
             type: 'object',
             description: 'The environment variables for the command to start the MCP server.',
+            additionalProperties: {
+              type: 'string',
+            },
           },
           url: {
             type: 'string',
             description: 'The SSE URL for the MCP server.',
           },
         },
+        oneOf: [
+          {
+            required: ['command'],
+          },
+          {
+            required: ['url'],
+          },
+        ],
       },
     },
   },

@@ -427,43 +427,41 @@ export class AINativeBrowserContribution
     let enabledMCPServers = storage.get<string[]>(MCPServersEnabledKey, [BUILTIN_MCP_SERVER_NAME]);
 
     const oldMCPServers = this.preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
-    let mcpServerFromWorkspace = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+    let mcpServerFromWorkspace = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
       'mcp',
       {
-        mcpServers: [] as any,
+        mcpServers: {},
       },
       undefined,
     );
     if (mcpServerFromWorkspace.scope === PreferenceScope.Default && oldMCPServers.length > 0) {
       // 如果用户没有配置，也没有存储，则从旧配置迁移
       const newMCPServers = {
-        mcpServers: [] as any,
+        mcpServers: {},
       };
       const mcpServersEnabled = new Set<string>([BUILTIN_MCP_SERVER_NAME]);
       oldMCPServers.forEach((server) => {
         if (server.type === MCP_SERVER_TYPE.SSE) {
-          newMCPServers.mcpServers.push({
-            [server.name]: {
-              url: (server as any).serverHost,
-            },
-          });
+          newMCPServers.mcpServers[server.name] = {
+            url: (server as any).serverHost,
+          };
         } else if (server.type === MCP_SERVER_TYPE.STDIO) {
-          newMCPServers.mcpServers.push({
-            [server.name]: {
-              command: server.command,
-              args: server.args,
-              env: server.env,
-            },
-          });
+          newMCPServers.mcpServers[server.name] = {
+            command: server.command,
+            args: server.args,
+            env: server.env,
+          };
         }
         if (server.enabled) {
           mcpServersEnabled.add(server.name);
         }
       });
       await this.preferenceService.set('mcp', newMCPServers, PreferenceScope.Workspace);
-      mcpServerFromWorkspace = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+      mcpServerFromWorkspace = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
         'mcp',
-        undefined,
+        {
+          mcpServers: {},
+        },
         undefined,
       );
       enabledMCPServers = Array.from(mcpServersEnabled);
@@ -473,13 +471,10 @@ export class AINativeBrowserContribution
     // 总是初始化内置服务器，根据配置决定是否启用
     this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(enabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME));
 
-    if (userServers && userServers.length > 0) {
+    if (userServers && Object.keys(userServers).length > 0) {
       const mcpServers = (
         await Promise.all(
-          userServers.map(async (server) => {
-            const name = Object.keys(server)[0];
-            return await this.mcpConfigService.getServerConfigByName(name);
-          }),
+          Object.keys(userServers).map(async (name) => await this.mcpConfigService.getServerConfigByName(name)),
         )
       ).filter((server) => server !== undefined) as MCPServerDescription[];
       await this.sumiMCPServerBackendProxy.$initExternalMCPServers(mcpServers);

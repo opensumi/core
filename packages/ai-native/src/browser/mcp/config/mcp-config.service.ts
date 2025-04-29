@@ -99,9 +99,9 @@ export class MCPConfigService extends Disposable {
 
   async getServers(): Promise<MCPServer[]> {
     // Get workspace MCP server configurations
-    const { value: mcpConfig, scope } = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+    const { value: mcpConfig, scope } = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
       'mcp',
-      { mcpServers: [] },
+      { mcpServers: {} },
       undefined,
     );
 
@@ -111,9 +111,8 @@ export class MCPConfigService extends Disposable {
       return builtinServer ? [builtinServer] : [];
     }
 
-    const userServers = mcpConfig?.mcpServers.map((server) => {
-      const name = Object.keys(server)[0];
-      const serverConfig = server[name];
+    const userServers = Object.keys(mcpConfig!.mcpServers).map((name) => {
+      const serverConfig = mcpConfig!.mcpServers[name];
       if (serverConfig.url) {
         return {
           name,
@@ -181,31 +180,28 @@ export class MCPConfigService extends Disposable {
 
   async saveServer(prev: MCPServerDescription | undefined, data: MCPServerFormData): Promise<void> {
     await this.whenReady;
-    const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+    const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
       'mcp',
-      { mcpServers: [] },
+      { mcpServers: {} },
       undefined,
     );
     const servers = mcpConfig!.mcpServers;
-    const existingIndex = servers?.findIndex((s) => Object.keys(s)[0] === prev?.name);
+    const existingServer = prev?.name ? servers[prev.name] : undefined;
 
     let serverConfig;
     if (data.type === MCP_SERVER_TYPE.SSE) {
-      serverConfig = { [data.name]: { url: (data as SSEMCPServerDescription).url } };
+      serverConfig = { url: (data as SSEMCPServerDescription).url };
     } else {
       serverConfig = {
-        [data.name]: {
-          command: (data as StdioMCPServerDescription).command,
-          args: (data as StdioMCPServerDescription).args,
-          env: (data as StdioMCPServerDescription).env,
-        },
+        command: (data as StdioMCPServerDescription).command,
+        args: (data as StdioMCPServerDescription).args,
+        env: (data as StdioMCPServerDescription).env,
       };
     }
-    if (existingIndex !== undefined && existingIndex >= 0) {
-      servers[existingIndex] = serverConfig;
-    } else {
-      servers.push(serverConfig);
+    if (existingServer) {
+      delete servers[existingServer.name];
     }
+    servers[data.name] = serverConfig;
     await this.sumiMCPServerBackendProxy.$addOrUpdateServer(data as MCPServerDescription);
     // 更新情况下，如果原有服务是启用状态，则进行如下操作：
     // 1. 关闭旧的服务
@@ -217,18 +213,18 @@ export class MCPConfigService extends Disposable {
   }
 
   async deleteServer(serverName: string): Promise<void> {
-    const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+    const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
       'mcp',
-      { mcpServers: [] },
+      { mcpServers: {} },
       undefined,
     );
-    const servers = mcpConfig?.mcpServers;
-    const serverIndex = servers?.findIndex((s) => Object.keys(s)[0] === serverName);
-    if (serverIndex !== undefined && serverIndex >= 0) {
-      servers?.splice(serverIndex, 1);
+    const servers = mcpConfig!.mcpServers;
+    const existingServer = servers[serverName];
+    if (existingServer) {
+      delete servers[serverName];
+      await this.sumiMCPServerBackendProxy.$removeServer(serverName);
+      await this.preferenceService.set('mcp', { mcpServers: servers });
     }
-    await this.sumiMCPServerBackendProxy.$removeServer(serverName);
-    await this.preferenceService.set('mcp', { mcpServers: servers });
   }
 
   async syncServer(serverName: string): Promise<void> {
@@ -236,17 +232,16 @@ export class MCPConfigService extends Disposable {
   }
 
   async getServerConfigByName(serverName: string): Promise<MCPServerDescription | undefined> {
-    const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+    const { value: mcpConfig } = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
       'mcp',
-      { mcpServers: [] },
+      { mcpServers: {} },
       undefined,
     );
     await this.whenReady;
     const enabledMCPServers = this.chatStorage.get<string[]>(MCPServersEnabledKey, [BUILTIN_MCP_SERVER_NAME]);
-    const servers = mcpConfig?.mcpServers;
-    const server = servers?.find((s) => Object.keys(s)[0] === serverName);
+    const server = mcpConfig!.mcpServers[serverName];
     if (server) {
-      if (server[serverName].url) {
+      if (server.url) {
         return {
           name: serverName,
           type: MCP_SERVER_TYPE.SSE,
@@ -281,16 +276,16 @@ export class MCPConfigService extends Disposable {
   }
 
   async openConfigFile(): Promise<void> {
-    let config = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+    let config = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
       'mcp',
-      { mcpServers: [] },
+      { mcpServers: {} },
       undefined,
     );
     if (config.scope === PreferenceScope.Default) {
-      await this.preferenceService.set('mcp', { mcpServers: [] }, PreferenceScope.Workspace);
-      config = this.preferenceService.resolve<{ mcpServers: Record<string, any>[] }>(
+      await this.preferenceService.set('mcp', { mcpServers: {} }, PreferenceScope.Workspace);
+      config = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
         'mcp',
-        { mcpServers: [] },
+        { mcpServers: {} },
         undefined,
       );
     }
