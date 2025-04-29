@@ -1,6 +1,14 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Disposable, DisposableStore, Emitter, IDisposable, URI } from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  DisposableStore,
+  Emitter,
+  IDisposable,
+  OnEvent,
+  URI,
+  WithEventBus,
+} from '@opensumi/ide-core-common';
 import {
   ValueWithChangeEventFromObservable,
   constObservable,
@@ -26,11 +34,11 @@ import { IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/e
 
 import { IEditorDocumentModelRef, IResourceOpenOptions } from '../../common/editor';
 import { IMultiDiffEditor, IMultiDiffSourceResolverService, IResolvedMultiDiffSource } from '../../common/multi-diff';
-import { IEditorDocumentModelService } from '../doc-model/types';
-import { IConvertedMonacoOptions, IResource } from '../types';
+import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from '../doc-model/types';
+import { IConvertedMonacoOptions, IResource, ResourceDecorationNeedChangeEvent } from '../types';
 
 @Injectable({ multiple: true })
-export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEditor {
+export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEditor {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
@@ -52,8 +60,35 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
   private viewStateMap: Map<string, any> = new Map();
   private currentUri: URI | undefined;
 
+  private multiDiffModel: IMultiDiffEditorModel & IDisposable;
+
   constructor(private multiDiffWidget: MultiDiffEditorWidget, private convertedOptions: IConvertedMonacoOptions) {
     super();
+  }
+
+  @OnEvent(EditorDocumentModelContentChangedEvent)
+  onDocModelContentChangedEvent(e: EditorDocumentModelContentChangedEvent) {
+    if (!this.currentUri) {
+      return;
+    }
+    // TODO: 目前的设计下，不支持动态修改 resource 的 name，diff 数量变化时会有问题
+    if (
+      this.multiDiffModel?.documents.value === 'loading' ||
+      !this.multiDiffModel.documents.value.some(
+        (document) => document.object.modified?.uri.toString() === e.payload.uri.codeUri.toString(),
+      )
+    ) {
+      return;
+    }
+    this.eventBus.fire(
+      new ResourceDecorationNeedChangeEvent({
+        uri: this.currentUri,
+        decoration: {
+          dirty: !!e.payload.dirty,
+          readOnly: !!e.payload.readonly,
+        },
+      }),
+    );
   }
 
   private saveViewState(uri: URI) {
@@ -154,13 +189,13 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
 
     const a = recomputeInitiallyAndOnChange(updateDocuments);
     await updateDocuments.get();
-    const multiDiffModel: IMultiDiffEditorModel & IDisposable = {
+    this.multiDiffModel = {
       dispose: () => a.dispose(),
       documents: new ValueWithChangeEventFromObservable(documents),
       contextKeys: source?.contextKeys,
     };
 
-    const viewModel = this.multiDiffWidget.createViewModel(multiDiffModel);
+    const viewModel = this.multiDiffWidget.createViewModel(this.multiDiffModel);
     await viewModel.waitForDiffs();
     this.multiDiffWidget.setViewModel(viewModel);
 
@@ -168,7 +203,7 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
     this.currentUri = resource.uri;
     this.restoreViewState(resource.uri);
 
-    this.multiDiffModelChangeEmitter.fire(multiDiffModel);
+    this.multiDiffModelChangeEmitter.fire(this.multiDiffModel);
   }
 
   getDiffEntry(uri: URI): IDocumentDiffItem | undefined {

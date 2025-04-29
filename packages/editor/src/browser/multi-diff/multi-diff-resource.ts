@@ -45,7 +45,7 @@ export class MultiDiffResourceProvider extends WithEventBus implements IResource
       name: `Multi-Diff: ${name || parsedSources.length + ' files'}`,
       icon: icon || getIcon('diff'),
       uri,
-      supportsRevive: this.appConfig.enableDiffRevive ?? true,
+      supportsRevive: this.appConfig.enableDiffRevive ?? false,
       metadata: {
         sources: parsedSources,
       },
