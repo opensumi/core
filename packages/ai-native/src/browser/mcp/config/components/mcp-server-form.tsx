@@ -126,6 +126,7 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
 
       setFormData({
         ...formData,
+        name: '',
         command: '',
         url: '',
         args: [],

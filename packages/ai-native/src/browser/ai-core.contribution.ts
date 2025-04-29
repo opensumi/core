@@ -483,8 +483,8 @@ export class AINativeBrowserContribution
         )
       ).filter((server) => server !== undefined) as MCPServerDescription[];
       await this.sumiMCPServerBackendProxy.$initExternalMCPServers(mcpServers);
-      this.mcpConfigService.fireMCPServersChange(true);
     }
+    this.mcpConfigService.fireMCPServersChange(true);
   }
 
   private getModelByName(modelName: string) {
