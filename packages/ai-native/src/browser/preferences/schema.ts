@@ -105,6 +105,9 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'number',
       description: localize('preference.ai.native.maxTokens.description'),
     },
+    /**
+     * @deprecated This configuration will be removed in the future. Please use `mcp.json` instead.
+     */
     [AINativeSettingSectionsId.MCPServers]: {
       type: 'array',
       default: [],

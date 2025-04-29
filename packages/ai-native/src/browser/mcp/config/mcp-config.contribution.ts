@@ -1,5 +1,8 @@
 import { Autowired } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-components';
+import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next/base';
+import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next/menu-id';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Domain, URI, localize } from '@opensumi/ide-core-common';
 import {
@@ -13,14 +16,15 @@ import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 
 import { MCPConfigView } from './components/mcp-config.view';
+import { MCPConfigCommands } from './mcp-config.commands';
 
 const COMPONENTS_ID = 'opensumi-mcp-config-viewer';
 export const MCP_CONFIG_COMPONENTS_SCHEME_ID = 'mcp-config';
 
 export type IMCPConfigResource = IResource<{ configType: string }>;
 
-@Domain(BrowserEditorContribution)
-export class MCPConfigContribution implements BrowserEditorContribution {
+@Domain(BrowserEditorContribution, MenuContribution)
+export class MCPConfigContribution implements BrowserEditorContribution, MenuContribution {
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
@@ -61,6 +65,24 @@ export class MCPConfigContribution implements BrowserEditorContribution {
           },
         };
       },
+    });
+  }
+
+  registerMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: MCPConfigCommands.OPEN_MCP_CONFIG_FILE.id,
+      iconClass: getIcon('open'),
+      group: 'navigation',
+      order: 4,
+      when: `resourceScheme == ${MCP_CONFIG_COMPONENTS_SCHEME_ID}`,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: MCPConfigCommands.OPEN_MCP_CONFIG.id,
+      iconClass: getIcon('open'),
+      group: 'navigation',
+      order: 4,
+      when: 'resourceFilename =~ /mcp.json/',
     });
   }
 }

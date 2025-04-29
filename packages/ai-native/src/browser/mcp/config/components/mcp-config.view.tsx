@@ -1,190 +1,105 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { Badge, Button, Popover, PopoverTriggerType } from '@opensumi/ide-components';
-import { AINativeSettingSectionsId, ILogger, useInjectable } from '@opensumi/ide-core-browser';
-import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
-import { PreferenceScope, localize } from '@opensumi/ide-core-common';
-import { IMessageService } from '@opensumi/ide-overlay';
+import { Badge, Button, Icon, Popover, PopoverTriggerType } from '@opensumi/ide-components';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { MCPConfigServiceToken, localize } from '@opensumi/ide-core-common';
 
-import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../../../common';
+import { BUILTIN_MCP_SERVER_NAME } from '../../../../common';
 import { MCPServerDescription } from '../../../../common/mcp-server-manager';
-import { MCPServer, MCP_SERVER_TYPE } from '../../../../common/types';
-import { MCPServerProxyService } from '../../mcp-server-proxy.service';
+import { MCPServer } from '../../../../common/types';
+import { MCPConfigService } from '../mcp-config.service';
 
 import styles from './mcp-config.module.less';
 import { MCPServerForm, MCPServerFormData } from './mcp-server-form';
 
 export const MCPConfigView: React.FC = () => {
-  const mcpServerProxyService = useInjectable<MCPServerProxyService>(MCPServerProxyService);
-  const preferenceService = useInjectable<PreferenceService>(PreferenceService);
-  const messageService = useInjectable<IMessageService>(IMessageService);
-  const sumiMCPServerBackendProxy = useInjectable<ISumiMCPServerBackend>(SumiMCPServerProxyServicePath);
-  const logger = useInjectable<ILogger>(ILogger);
+  const mcpConfigService = useInjectable<MCPConfigService>(MCPConfigServiceToken);
   const [servers, setServers] = React.useState<MCPServer[]>([]);
   const [formVisible, setFormVisible] = React.useState(false);
-  const [editingServer, setEditingServer] = React.useState<MCPServerFormData | undefined>();
+  const [editingServer, setEditingServer] = React.useState<MCPServerDescription | undefined>();
   const [loadingServer, setLoadingServer] = React.useState<string | undefined>();
+  const [isReady, setIsReady] = React.useState(mcpConfigService.isInitialized);
+
   const loadServers = useCallback(async () => {
-    const userServers = preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
-    const runningServers = await mcpServerProxyService.$getServers();
-    const builtinServer = runningServers.find((server) => server.name === BUILTIN_MCP_SERVER_NAME);
-    const allServers = userServers
-      .filter((server) => server.type === MCP_SERVER_TYPE.STDIO || server.type === MCP_SERVER_TYPE.SSE)
-      .map((server) => {
-        const runningServer = runningServers.find((s) => s.name === server.name);
-        return {
-          ...server,
-          name: server.name,
-          isStarted: runningServer?.isStarted,
-          tools: runningServer?.tools,
-        };
-      }) as MCPServer[];
-    if (builtinServer) {
-      allServers.unshift(builtinServer);
-    }
+    const allServers = await mcpConfigService.getServers();
     setServers(allServers);
-  }, [mcpServerProxyService]);
+  }, [mcpConfigService]);
 
   React.useEffect(() => {
     loadServers();
-    const disposer = mcpServerProxyService.onChangeMCPServers(() => {
+    const disposer = mcpConfigService.onMCPServersChange((isReady) => {
+      if (isReady) {
+        setIsReady(true);
+      }
       loadServers();
     });
 
     return () => {
       disposer.dispose();
     };
-  }, []);
+  }, [loadServers]);
 
   const handleServerControl = useCallback(
     async (serverName: string, start: boolean) => {
       try {
         setLoadingServer(serverName);
-        if (start) {
-          await mcpServerProxyService.$startServer(serverName);
-        } else {
-          await mcpServerProxyService.$stopServer(serverName);
-        }
-
-        // Update enabled state in preferences
-        const servers = preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
-        let updatedServers = servers;
-        // 处理内置服务器的特殊情况
-        if (serverName === BUILTIN_MCP_SERVER_NAME) {
-          const builtinServerExists = servers.some((server) => server.name === BUILTIN_MCP_SERVER_NAME);
-          if (!builtinServerExists && !start) {
-            // 如果是停止内置服务器且之前没有配置，添加一个新的配置项
-            // 内置服务器不需要 command，因为它是直接集成在 IDE 中的
-            updatedServers = [
-              ...servers,
-              {
-                name: BUILTIN_MCP_SERVER_NAME,
-                enabled: false,
-                type: MCP_SERVER_TYPE.BUILTIN,
-              },
-            ];
-          } else {
-            // 如果已经存在配置，更新 enabled 状态
-            updatedServers = servers.map((server) => {
-              if (server.name === BUILTIN_MCP_SERVER_NAME) {
-                return { ...server, enabled: start };
-              }
-              return server;
-            });
-          }
-        } else {
-          // 处理其他外部服务器
-          updatedServers = servers.map((server) => {
-            if (server.name === serverName) {
-              return { ...server, enabled: start };
-            }
-            return server;
-          });
-        }
-
-        await preferenceService.set(AINativeSettingSectionsId.MCPServers, updatedServers, PreferenceScope.User);
+        await mcpConfigService.controlServer(serverName, start);
         await loadServers();
         setLoadingServer(undefined);
       } catch (error) {
-        const msg = error.message || error;
-        logger.error(`Failed to ${start ? 'start' : 'stop'} server ${serverName}:`, msg);
-        messageService.error(msg);
         setLoadingServer(undefined);
       }
     },
-    [mcpServerProxyService, preferenceService, sumiMCPServerBackendProxy, loadServers],
+    [mcpConfigService, loadServers],
   );
 
   const handleAddServer = useCallback(() => {
     setEditingServer(undefined);
     setFormVisible(true);
-  }, [editingServer, formVisible]);
+  }, []);
 
   const handleEditServer = useCallback(
-    (server: MCPServer) => {
-      const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
-      const serverConfig = servers.find((s) => s.name === server.name);
-
+    async (server: MCPServer) => {
+      const serverConfig = await mcpConfigService.getServerConfigByName(server.name);
       if (serverConfig) {
         setEditingServer(serverConfig);
         setFormVisible(true);
       }
     },
-    [editingServer, formVisible],
+    [mcpConfigService],
   );
 
   const handleDeleteServer = useCallback(
     async (serverName: string) => {
-      const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
-      const updatedServers = servers.filter((s) => s.name !== serverName);
-      sumiMCPServerBackendProxy.$removeServer(serverName);
-      await preferenceService.set(AINativeSettingSectionsId.MCPServers, updatedServers, PreferenceScope.User);
+      await mcpConfigService.deleteServer(serverName);
       await loadServers();
     },
-    [editingServer, formVisible],
+    [mcpConfigService, loadServers],
   );
 
   const handleSaveServer = useCallback(
-    async (data: MCPServerFormData) => {
-      const servers = preferenceService.get<MCPServerFormData[]>(AINativeSettingSectionsId.MCPServers, []);
-      const existingIndex = servers.findIndex((s) => s.name === data.name);
-
-      if (existingIndex >= 0) {
-        servers[existingIndex] = data;
-      } else {
-        servers.push(data);
-      }
-      setServers(servers as MCPServer[]);
+    async (prev: MCPServerDescription | undefined, data: MCPServerFormData) => {
       setFormVisible(false);
-      await sumiMCPServerBackendProxy.$addOrUpdateServer(data as MCPServerDescription);
-      await preferenceService.set(AINativeSettingSectionsId.MCPServers, servers, PreferenceScope.User);
+      await mcpConfigService.saveServer(prev, data);
+      if (prev?.enabled) {
+        setLoadingServer(data.name);
+        await mcpConfigService.controlServer(data.name, true);
+        setLoadingServer(undefined);
+      }
       await loadServers();
     },
-    [servers, formVisible, loadServers],
+    [mcpConfigService, loadServers],
   );
-
-  const getReadableServerType = useCallback((type: string) => {
-    switch (type) {
-      case MCP_SERVER_TYPE.STDIO:
-        return localize('ai.native.mcp.type.stdio');
-      case MCP_SERVER_TYPE.SSE:
-        return localize('ai.native.mcp.type.sse');
-      case MCP_SERVER_TYPE.BUILTIN:
-        return localize('ai.native.mcp.type.builtin');
-      default:
-        return type;
-    }
-  }, []);
 
   const handleSyncServer = useCallback(
     async (server: MCPServer) => {
       setLoadingServer(server.name);
-      await sumiMCPServerBackendProxy.$syncServer(server.name);
+      await mcpConfigService.syncServer(server.name);
       await loadServers();
       setLoadingServer(undefined);
     },
-    [loadServers, loadingServer],
+    [mcpConfigService, loadServers],
   );
 
   return (
@@ -194,8 +109,9 @@ export const MCPConfigView: React.FC = () => {
           <h2 className={styles.title}>MCP Servers</h2>
           <p className={styles.description}>{localize('ai.native.mcp.manage.connections')}</p>
         </div>
-        <button className={styles.addButton} onClick={handleAddServer}>
-          + {localize('ai.native.mcp.addMCPServer.title')}
+        <button className={styles.actionButton} onClick={handleAddServer}>
+          <Icon icon='plus' className={styles.actionButtonIcon} />
+          {localize('ai.native.mcp.addMCPServer.title')}
         </button>
       </div>
       <div className={styles.serversList}>
@@ -225,7 +141,8 @@ export const MCPConfigView: React.FC = () => {
                   >
                     <i
                       className={`codicon ${
-                        loadingServer === server.name
+                        loadingServer === server.name ||
+                        (!isReady && server.name !== BUILTIN_MCP_SERVER_NAME && !server.isStarted)
                           ? 'codicon-loading kt-icon-loading'
                           : server.isStarted
                           ? 'codicon-check'
@@ -268,7 +185,9 @@ export const MCPConfigView: React.FC = () => {
               {server.type && (
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Type:</span>
-                  <Badge className={cls(styles.serverType, styles.typeTag)}>{getReadableServerType(server.type)}</Badge>
+                  <Badge className={cls(styles.serverType, styles.typeTag)}>
+                    {mcpConfigService.getReadableServerType(server.type)}
+                  </Badge>
                 </div>
               )}
             </div>
@@ -294,11 +213,11 @@ export const MCPConfigView: React.FC = () => {
                 </div>
               </div>
             )}
-            {server.serverHost && (
+            {server.url && (
               <div className={styles.serverDetail}>
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Server Link:</span>
-                  <span className={cls(styles.detailContent, styles.link)}>{server.serverHost}</span>
+                  <span className={cls(styles.detailContent, styles.link)}>{server.url}</span>
                 </div>
               </div>
             )}
@@ -309,7 +228,7 @@ export const MCPConfigView: React.FC = () => {
         visible={formVisible}
         initialData={editingServer}
         servers={servers}
-        onSave={handleSaveServer}
+        onSave={(data) => handleSaveServer(editingServer, data)}
         onCancel={() => setFormVisible(false)}
       />
     </div>

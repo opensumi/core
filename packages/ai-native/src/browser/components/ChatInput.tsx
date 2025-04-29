@@ -28,7 +28,7 @@ import { ChatSlashCommandItemModel } from '../chat/chat-model';
 import { ChatProxyService } from '../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
-import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
+import { MCPConfigCommands } from '../mcp/config/mcp-config.commands';
 import { MCPServerProxyService } from '../mcp/mcp-server-proxy.service';
 import { MCPToolsDialog } from '../mcp/mcp-tools-dialog.view';
 import { IChatSlashCommandItem } from '../types';
@@ -223,7 +223,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const currentAgentIdRef = useLatest(agentId);
 
   const handleShowMCPConfig = React.useCallback(() => {
-    commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
+    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
   }, [commandService]);
 
   const handleShowMCPTools = React.useCallback(async () => {

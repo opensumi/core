@@ -157,11 +157,11 @@ export class MCPServerManagerImpl implements MCPServerManager {
         this.servers.set(name, newServer);
       }
     } else if (description.type === MCP_SERVER_TYPE.SSE) {
-      const { name, serverHost, transportOptions } = description;
+      const { name, url, transportOptions } = description;
       if (existingServer) {
-        existingServer.update(serverHost);
+        existingServer.update(url);
       } else {
-        const newServer = new SSEMCPServer(name, serverHost, this.logger, transportOptions);
+        const newServer = new SSEMCPServer(name, url, this.logger, transportOptions);
         this.servers.set(name, newServer);
       }
     }
@@ -188,7 +188,11 @@ export class MCPServerManagerImpl implements MCPServerManager {
         // 如果是 enabled 为 false 的 server，则不进行启动
         continue;
       }
-      await this.startServer(server.name);
+      try {
+        await this.startServer(server.name);
+      } catch (error) {
+        this.logger.error(`Error in addExternalMCPServers for ${server.name}:`, error);
+      }
     }
   }
 

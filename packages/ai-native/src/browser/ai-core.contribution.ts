@@ -52,9 +52,13 @@ import {
   CommandService,
   InlineChatFeatureRegistryToken,
   IntelligentCompletionsRegistryToken,
+  MCPConfigServiceToken,
+  PreferenceScope,
   ProblemFixRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
+  STORAGE_NAMESPACE,
+  StorageProvider,
   TerminalRegistryToken,
   isUndefined,
   runWhenIdle,
@@ -88,7 +92,7 @@ import {
   deepSeekModels,
   openAiNativeModels,
 } from '../common';
-import { MCPServerDescription } from '../common/mcp-server-manager';
+import { MCPServerDescription, MCPServersEnabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -111,6 +115,7 @@ import {
 } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import { BaseApplyService } from './mcp/base-apply.service';
+import { MCPConfigService } from './mcp/config/mcp-config.service';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -248,6 +253,9 @@ export class AINativeBrowserContribution
   @Autowired(SumiMCPServerProxyServicePath)
   private readonly sumiMCPServerBackendProxy: ISumiMCPServerBackend;
 
+  @Autowired(MCPConfigServiceToken)
+  private readonly mcpConfigService: MCPConfigService;
+
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
@@ -259,6 +267,9 @@ export class AINativeBrowserContribution
 
   @Autowired(BaseApplyService)
   private readonly applyService: BaseApplyService;
+
+  @Autowired(StorageProvider)
+  private readonly storageProvider: StorageProvider;
 
   constructor() {
     this.registerFeature();
@@ -411,25 +422,64 @@ export class AINativeBrowserContribution
     });
   }
 
-  private initMCPServers() {
-    // 从 preferences 获取并初始化外部 MCP Servers
-    const mcpServers = this.preferenceService.getValid<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers);
+  private async initMCPServers() {
+    const storage = await this.storageProvider(STORAGE_NAMESPACE.CHAT);
+    let enabledMCPServers = storage.get<string[]>(MCPServersEnabledKey, [BUILTIN_MCP_SERVER_NAME]);
 
-    // 查找内置 MCP Server 的配置
-    const builtinServer = mcpServers?.find(
-      (server) => server.name === BUILTIN_MCP_SERVER_NAME && server.type === MCP_SERVER_TYPE.BUILTIN,
+    const oldMCPServers = this.preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
+    let mcpServerFromWorkspace = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
+      'mcp',
+      {
+        mcpServers: {},
+      },
+      undefined,
     );
-
-    // 总是初始化内置服务器，根据配置决定是否启用
-    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(builtinServer?.enabled ?? true);
-
-    // 初始化其他外部 MCP Servers
-    if (mcpServers && mcpServers.length > 0) {
-      const externalServers = mcpServers.filter((server) => server.name !== BUILTIN_MCP_SERVER_NAME);
-      if (externalServers.length > 0) {
-        this.sumiMCPServerBackendProxy.$initExternalMCPServers(externalServers);
-      }
+    if (mcpServerFromWorkspace.scope === PreferenceScope.Default && oldMCPServers.length > 0) {
+      // 如果用户没有配置，也没有存储，则从旧配置迁移
+      const newMCPServers = {
+        mcpServers: {},
+      };
+      const mcpServersEnabled = new Set<string>([BUILTIN_MCP_SERVER_NAME]);
+      oldMCPServers.forEach((server) => {
+        if (server.type === MCP_SERVER_TYPE.SSE) {
+          newMCPServers.mcpServers[server.name] = {
+            url: (server as any).serverHost,
+          };
+        } else if (server.type === MCP_SERVER_TYPE.STDIO) {
+          newMCPServers.mcpServers[server.name] = {
+            command: server.command,
+            args: server.args,
+            env: server.env,
+          };
+        }
+        if (server.enabled) {
+          mcpServersEnabled.add(server.name);
+        }
+      });
+      await this.preferenceService.set('mcp', newMCPServers, PreferenceScope.Workspace);
+      mcpServerFromWorkspace = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
+        'mcp',
+        {
+          mcpServers: {},
+        },
+        undefined,
+      );
+      enabledMCPServers = Array.from(mcpServersEnabled);
+      storage.set(MCPServersEnabledKey, enabledMCPServers);
     }
+    const userServers = mcpServerFromWorkspace.value?.mcpServers;
+    // 总是初始化内置服务器，根据配置决定是否启用
+    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(enabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME));
+
+    if (userServers && Object.keys(userServers).length > 0) {
+      const mcpServers = (
+        await Promise.all(
+          Object.keys(userServers).map(async (name) => await this.mcpConfigService.getServerConfigByName(name)),
+        )
+      ).filter((server) => server !== undefined) as MCPServerDescription[];
+      await this.sumiMCPServerBackendProxy.$initExternalMCPServers(mcpServers);
+    }
+    this.mcpConfigService.fireMCPServersChange(true);
   }
 
   private getModelByName(modelName: string) {

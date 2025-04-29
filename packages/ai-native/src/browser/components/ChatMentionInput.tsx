@@ -18,7 +18,7 @@ import { IChatInternalService } from '../../common';
 import { LLMContextService } from '../../common/llm-context';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
-import { OPEN_MCP_CONFIG_COMMAND } from '../mcp/config/mcp-config.commands';
+import { MCPConfigCommands } from '../mcp/config/mcp-config.commands';
 
 import styles from './components.module.less';
 import { MentionInput } from './mention-input/mention-input';
@@ -71,7 +71,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
   const prevOutlineItems = useRef<MentionItem[]>([]);
   const handleShowMCPConfig = React.useCallback(() => {
-    commandService.executeCommand(OPEN_MCP_CONFIG_COMMAND.id);
+    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
   }, [commandService]);
 
   useEffect(() => {

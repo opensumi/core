@@ -1,5 +1,4 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 
 import { ILogger } from '@opensumi/ide-core-common';
 
@@ -37,7 +36,7 @@ describe('SSEMCPServer', () => {
   describe('constructor', () => {
     it('should initialize with correct parameters', () => {
       expect(server.getServerName()).toBe('test-server');
-      expect(server.serverHost).toBe('http://localhost:3000');
+      expect(server.url).toBe('http://localhost:3000');
       expect(server.isStarted()).toBe(false);
     });
   });
@@ -98,7 +97,16 @@ describe('SSEMCPServer', () => {
   describe('getTools', () => {
     const mockClient = {
       connect: jest.fn(),
-      listTools: jest.fn().mockResolvedValue(['tool1', 'tool2']),
+      listTools: jest.fn().mockResolvedValue({
+        tools: [
+          {
+            name: 'tool1',
+          },
+          {
+            name: 'tool2',
+          },
+        ],
+      }),
       onerror: jest.fn(),
     };
 
@@ -110,7 +118,9 @@ describe('SSEMCPServer', () => {
     it('should return list of available tools', async () => {
       const tools = await server.getTools();
       expect(mockClient.listTools).toHaveBeenCalled();
-      expect(tools).toEqual(['tool1', 'tool2']);
+      expect(tools).toEqual({
+        tools: [{ name: 'tool1' }, { name: 'tool2' }],
+      });
     });
   });
 
@@ -142,9 +152,9 @@ describe('SSEMCPServer', () => {
 
   describe('update', () => {
     it('should update server configuration', () => {
-      const newServerHost = 'http://localhost:4000';
-      server.update(newServerHost);
-      expect(server.serverHost).toBe(newServerHost);
+      const newUrl = 'http://localhost:4000';
+      server.update(newUrl);
+      expect(server.url).toBe(newUrl);
     });
   });
 });

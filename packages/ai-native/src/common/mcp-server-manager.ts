@@ -77,7 +77,7 @@ export interface SSEMCPServerDescription extends BaseMCPServerDescription {
   /**
    * The host of the MCP server.
    */
-  serverHost: string;
+  url: string;
   transportOptions?: SSEClientTransportOptions;
 }
 
@@ -99,3 +99,5 @@ export type MCPServerDescription =
 
 export const MCPServerManager = Symbol('MCPServerManager');
 export const MCPServerManagerPath = 'ServicesMCPServerManager';
+
+export const MCPServersEnabledKey = 'mcp_servers_enabled';
