@@ -2,9 +2,12 @@ import { Event, IDisposable, URI } from '@opensumi/ide-core-common';
 import { ContextKeyValue } from '@opensumi/ide-monaco';
 import { Dimension } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
 import { IValueWithChangeEvent } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
-import { IDocumentDiffItem } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/model';
+import {
+  IDocumentDiffItem,
+  IMultiDiffEditorModel,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/model';
 
-import { IEditorDocumentModelRef, IResourceOpenOptions } from './editor';
+import { IResourceOpenOptions } from './editor';
 import { IResource } from './resource';
 
 export const MULTI_DIFF_SCHEME = 'multi-diff-editor';
@@ -68,11 +71,6 @@ export interface IMultiDiffEditor extends IDisposable {
   getCurrentDiffEntry(): IDocumentDiffItem | undefined;
 
   /**
-   * Get line changes for the currently selected file pair
-   */
-  // getLineChanges(): ILineChange[] | null;
-
-  /**
    * Layout the editor
    */
   layout(dimension: Dimension): void;
@@ -83,17 +81,7 @@ export interface IMultiDiffEditor extends IDisposable {
   focus(): void;
 
   /**
-   * Event emitted when a new file pair reference is opened
+   * Event emitted when the multi-diff editor model changes
    */
-  onRefOpen: Event<IEditorDocumentModelRef>;
-
-  /**
-   * Event emitted when the selected file pair changes
-   */
-  onCurrentDiffEntryChange: Event<IDocumentDiffItem | undefined>;
-
-  /**
-   * Event emitted when the list of file pairs changes
-   */
-  onDiffEntriesChange: Event<IDocumentDiffItem[]>;
+  onMultiDiffModelChange: Event<IMultiDiffEditorModel>;
 }

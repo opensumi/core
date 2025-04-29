@@ -46,22 +46,44 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
   @Autowired(IMultiDiffSourceResolverService)
   private readonly multiDiffSourceResolverService: IMultiDiffSourceResolverService;
 
-  private resource: IResource | undefined;
+  private multiDiffModelChangeEmitter = new Emitter<IMultiDiffEditorModel>();
+  public readonly onMultiDiffModelChange = this.multiDiffModelChangeEmitter.event;
 
-  private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
-  public readonly onRefOpen = this._onRefOpen.event;
-
-  private _onCurrentDiffEntryChange = new Emitter<IDocumentDiffItem | undefined>();
-  public readonly onCurrentDiffEntryChange = this._onCurrentDiffEntryChange.event;
-
-  private _onDiffEntriesChange = new Emitter<IDocumentDiffItem[]>();
-  public readonly onDiffEntriesChange = this._onDiffEntriesChange.event;
+  private viewStateMap: Map<string, any> = new Map();
+  private currentUri: URI | undefined;
 
   constructor(private multiDiffWidget: MultiDiffEditorWidget, private convertedOptions: IConvertedMonacoOptions) {
     super();
   }
 
+  private saveViewState(uri: URI) {
+    if (!uri) {
+      return;
+    }
+    const key = uri.toString();
+    const state = this.multiDiffWidget.getViewState();
+    if (state) {
+      this.viewStateMap.set(key, state);
+    }
+  }
+
+  private restoreViewState(uri: URI) {
+    if (!uri) {
+      return;
+    }
+    const key = uri.toString();
+    const state = this.viewStateMap.get(key);
+    if (state) {
+      this.multiDiffWidget.setViewState(state);
+    }
+  }
+
   async compareMultiple(resource: IResource, options?: IResourceOpenOptions): Promise<void> {
+    // Save current view state before changing
+    if (this.currentUri) {
+      this.saveViewState(this.currentUri);
+    }
+
     const source: IResolvedMultiDiffSource | undefined = resource.metadata.sources?.length
       ? { resources: ValueWithChangeEvent.const(resource.metadata.sources) }
       : await this.multiDiffSourceResolverService.resolve(resource.uri);
@@ -132,17 +154,21 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
 
     const a = recomputeInitiallyAndOnChange(updateDocuments);
     await updateDocuments.get();
-    // TODO: 复用 editor，修改 viewModel 即可
-    const _viewModel: IMultiDiffEditorModel & IDisposable = {
+    const multiDiffModel: IMultiDiffEditorModel & IDisposable = {
       dispose: () => a.dispose(),
       documents: new ValueWithChangeEventFromObservable(documents),
       contextKeys: source?.contextKeys,
     };
 
-    const viewModel = this.multiDiffWidget.createViewModel(_viewModel);
+    const viewModel = this.multiDiffWidget.createViewModel(multiDiffModel);
     await viewModel.waitForDiffs();
     this.multiDiffWidget.setViewModel(viewModel);
-    // this._onDiffEntriesChange.fire(diffItems);
+
+    // Update current URI and restore view state
+    this.currentUri = resource.uri;
+    this.restoreViewState(resource.uri);
+
+    this.multiDiffModelChangeEmitter.fire(multiDiffModel);
   }
 
   getDiffEntry(uri: URI): IDocumentDiffItem | undefined {
@@ -183,9 +209,6 @@ export class BrowserMultiDiffEditor extends Disposable implements IMultiDiffEdit
   dispose(): void {
     super.dispose();
     this.multiDiffWidget.dispose();
-    this._onRefOpen.dispose();
-    this._onCurrentDiffEntryChange.dispose();
-    this._onDiffEntriesChange.dispose();
   }
 }
 
