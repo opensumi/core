@@ -186,7 +186,6 @@ export class MCPConfigService extends Disposable {
       undefined,
     );
     const servers = mcpConfig!.mcpServers;
-    const existingServer = prev?.name ? servers[prev.name] : undefined;
 
     let serverConfig;
     if (data.type === MCP_SERVER_TYPE.SSE) {
@@ -198,8 +197,8 @@ export class MCPConfigService extends Disposable {
         env: (data as StdioMCPServerDescription).env,
       };
     }
-    if (existingServer) {
-      delete servers[existingServer.name];
+    if (prev?.name) {
+      delete servers[prev.name];
     }
     servers[data.name] = serverConfig;
     await this.sumiMCPServerBackendProxy.$addOrUpdateServer(data as MCPServerDescription);
@@ -219,8 +218,7 @@ export class MCPConfigService extends Disposable {
       undefined,
     );
     const servers = mcpConfig!.mcpServers;
-    const existingServer = servers[serverName];
-    if (existingServer) {
+    if (servers[serverName]) {
       delete servers[serverName];
       await this.sumiMCPServerBackendProxy.$removeServer(serverName);
       await this.preferenceService.set('mcp', { mcpServers: servers });
