@@ -97,7 +97,16 @@ describe('SSEMCPServer', () => {
   describe('getTools', () => {
     const mockClient = {
       connect: jest.fn(),
-      listTools: jest.fn().mockResolvedValue(['tool1', 'tool2']),
+      listTools: jest.fn().mockResolvedValue({
+        tools: [
+          {
+            name: 'tool1',
+          },
+          {
+            name: 'tool2',
+          },
+        ],
+      }),
       onerror: jest.fn(),
     };
 
@@ -107,9 +116,11 @@ describe('SSEMCPServer', () => {
     });
 
     it('should return list of available tools', async () => {
-      const { tools } = await server.getTools();
+      const tools = await server.getTools();
       expect(mockClient.listTools).toHaveBeenCalled();
-      expect(tools).toEqual(['tool1', 'tool2']);
+      expect(tools).toEqual({
+        tools: [{ name: 'tool1' }, { name: 'tool2' }],
+      });
     });
   });
 
