@@ -45,7 +45,7 @@ export class ChatMultiDiffSource implements IResolvedMultiDiffSource {
       get value(): readonly MultiDiffEditorItem[] {
         return applyService
           .getSessionCodeBlocks()
-          .filter((block) => block.status !== 'failed')
+          .filter((block) => block.status === 'success' || block.status === 'pending')
           .reduce(
             (acc, cur) => {
               const existingFile = acc.find((item) => item.relativePath === cur.relativePath);
