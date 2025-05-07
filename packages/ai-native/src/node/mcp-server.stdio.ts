@@ -24,7 +24,7 @@ export class StdioMCPServer implements IMCPServer {
     private readonly logger?: ILogger,
   ) {
     this.name = name;
-    this.command = command;
+    this.command = command === 'node' ? process.env.NODE_BINARY_PATH || 'node' : command;
     this.args = args;
     this.env = env;
   }
