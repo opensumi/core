@@ -5,6 +5,7 @@ import {
   DisposableStore,
   Emitter,
   IDisposable,
+  ILogger,
   OnEvent,
   URI,
   WithEventBus,
@@ -53,6 +54,9 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
 
   @Autowired(IMultiDiffSourceResolverService)
   private readonly multiDiffSourceResolverService: IMultiDiffSourceResolverService;
+
+  @Autowired(ILogger)
+  logger: ILogger;
 
   private multiDiffModelChangeEmitter = new Emitter<IMultiDiffEditorModel>();
   public readonly onMultiDiffModelChange = this.multiDiffModelChangeEmitter.event;
@@ -139,7 +143,6 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
             r.originalUri ? this.documentModelManager.createModelReference(r.originalUri) : undefined,
             r.modifiedUri ? this.documentModelManager.createModelReference(r.modifiedUri) : undefined,
           ]);
-          // console.log('original', original, 'modified', modified);
           if (original) {
             multiDiffItemStore.add(original);
           }
@@ -149,8 +152,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
         } catch (e) {
           // e.g. "File seems to be binary and cannot be opened as text"
           this.messageService.error(e.message);
-          // eslint-disable-next-line no-console
-          console.error(e);
+          this.logger.error(e);
           return undefined;
         }
         const uri = (r.modifiedUri ?? r.originalUri)!;

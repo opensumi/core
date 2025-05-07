@@ -5,6 +5,7 @@ import { LabelService, URI, localize, useInjectable } from '@opensumi/ide-core-b
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { CodeBlockStatus } from '../../common/types';
+import { ChatMultiDiffResolver } from '../chat/chat-multi-diff-source';
 
 import { ApplyStatus } from './ApplyStatus';
 import styles from './change-list.module.less';
@@ -60,9 +61,14 @@ export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
         className={styles.viewChanges}
         onClick={(e) => {
           e.stopPropagation();
-          editorService.open(URI.parse('chat-editing-multi-diff-source://chat-editing-multi-diff-source/'), {
-            label: localize('aiNative.chat.view-changes'),
-          });
+          editorService.open(
+            URI.parse(
+              `${ChatMultiDiffResolver.CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME}://chat-editing-multi-diff-source`,
+            ),
+            {
+              label: localize('aiNative.chat.view-changes'),
+            },
+          );
         }}
       >
         <Icon icon='unorderedlist' size='small' />
