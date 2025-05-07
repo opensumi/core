@@ -48,10 +48,16 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     attachedFolders: FileContext[];
     version: number;
   }>();
+  private hasUserManualReference = false;
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;
 
   private addFileToList(file: FileContext, list: FileContext[], maxLimit: number) {
-    const existingIndex = list.findIndex((f) => f.uri.toString() === file.uri.toString());
+    const existingIndex = list.findIndex(
+      (f) =>
+        f.uri.toString() === file.uri.toString() &&
+        f.selection?.[0] === file.selection?.[0] &&
+        f.selection?.[1] === file.selection?.[1],
+    );
     if (existingIndex > -1) {
       list.splice(existingIndex, 1);
     }
@@ -77,6 +83,10 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   addFileToContext(uri: URI, selection?: [number, number], isManual = false): void {
     if (!uri) {
       return;
+    }
+
+    if (isManual) {
+      this.hasUserManualReference = true;
     }
 
     const file = { uri, selection };
@@ -109,6 +119,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   cleanFileContext() {
     this.attachedFiles = [];
     this.attachedFolders = [];
+    this.hasUserManualReference = false;
     this.notifyContextChange();
   }
 
@@ -176,14 +187,17 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
             event.payload.selections[0].positionLineNumber,
           ].sort() as [number, number];
 
-          if (selection[0] === selection[1]) {
-            this.addFileToContext(event.payload.editorUri, undefined, false);
-          } else {
-            this.addFileToContext(
-              event.payload.editorUri,
-              selection.sort((a, b) => a - b),
-              false,
-            );
+          if (!this.hasUserManualReference) {
+            // 当没有用户手动引用时，才自动收集
+            if (selection[0] === selection[1]) {
+              this.addFileToContext(event.payload.editorUri, undefined, false);
+            } else {
+              this.addFileToContext(
+                event.payload.editorUri,
+                selection.sort((a, b) => a - b),
+                false,
+              );
+            }
           }
         }
       }),
