@@ -2,15 +2,7 @@ import cls from 'classnames';
 import * as React from 'react';
 
 import { formatLocalize, getSymbolIcon, localize } from '@opensumi/ide-core-browser';
-import {
-  Icon,
-  Popover,
-  PopoverPosition,
-  Select,
-  Tooltip,
-  Tooltip,
-  getIcon,
-} from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
 
@@ -1030,7 +1022,15 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   const renderModelSelectorTip = React.useCallback(
     (children: React.ReactNode) => {
       if (footerConfig.disableModelSelector) {
-        return <Tooltip title={localize('aiNative.chat.modelSelector.disableTip')}>{children}</Tooltip>;
+        return (
+          <Popover
+            id='ai-chat-model-selector'
+            title={localize('aiNative.chat.modelSelector.disableTip')}
+            position={PopoverPosition.top}
+          >
+            {children}
+          </Popover>
+        );
       }
       return children;
     },
