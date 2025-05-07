@@ -43,7 +43,12 @@ export class DebugStackFrame extends DebugStackFrameData {
   }
 
   get canRestart(): boolean {
-    return typeof this.raw.canRestart === 'boolean' ? this.raw.canRestart : true;
+    return (
+      !!this.session.capabilities.supportsRestartFrame &&
+      this.raw.presentationHint !== 'label' &&
+      this.raw.presentationHint !== 'subtle' &&
+      !!this.raw.canRestart
+    );
   }
 
   async open(options?: IResourceOpenOptions) {

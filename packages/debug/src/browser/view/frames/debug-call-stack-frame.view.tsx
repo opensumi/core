@@ -10,6 +10,7 @@ import {
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
+import { isFrameDeemphasized } from '@opensumi/ide-debug/lib/common/debug-frame';
 
 import { IDebugSessionManager } from '../../../common';
 import { DebugSession } from '../../debug-session';
@@ -73,7 +74,7 @@ export const DebugStackFramesView = (props: DebugStackSessionViewProps) => {
         setFrames(expanedFrames);
       }
     },
-    [currentFrames.current],
+    [currentFrames.current, frames],
   );
 
   const mergeFrames = useCallback(
@@ -209,10 +210,9 @@ export const DebugStackFramesView = (props: DebugStackSessionViewProps) => {
   const template = ({ data }) => {
     const frame: DebugStackFrame | ShowMoreDebugStackFrame = data;
     const isLabel = DebugStackFrame.is(frame) && frame.raw.presentationHint === 'label';
-    const isSubtle = DebugStackFrame.is(frame) && frame.raw.presentationHint === 'subtle';
-    const isDeemphasize = DebugStackFrame.is(frame) && frame.raw?.source?.presentationHint === 'deemphasize';
+    const isDeemphasized = DebugStackFrame.is(frame) && isFrameDeemphasized(frame.raw);
     const onClickHandler = useCallback(() => {
-      if (isLabel || isSubtle) {
+      if (isLabel) {
         return;
       }
       if (!DebugStackFrame.is(frame)) {
@@ -241,7 +241,7 @@ export const DebugStackFramesView = (props: DebugStackSessionViewProps) => {
       paddingLeft: `${indent}px`,
     };
 
-    if (DebugStackFrame.is(frame) && isDeemphasize) {
+    if (DebugStackFrame.is(frame) && isDeemphasized) {
       frameItemStyle['color'] = 'var(--list-deemphasizedForeground)';
     }
 
@@ -250,13 +250,19 @@ export const DebugStackFramesView = (props: DebugStackSessionViewProps) => {
         return (
           <>
             <span
-              className={cls(styles.debug_stack_frames_item_label, isLabel && styles.label, isSubtle && styles.subtle)}
+              className={cls(
+                styles.debug_stack_frames_item_label,
+                isLabel && styles.label,
+                (!frame.source || !frame.source.available || isDeemphasized) && styles.disabled,
+                frame.canRestart && styles.debug_stack_frames_can_restart,
+              )}
             >
               {frame.raw && frame.raw.name}
             </span>
             {!isLabel && (
               <span className={styles.debug_stack_frames_item_description}>
-                {(frame.raw && frame.raw.source && frame.raw.source.name) || localize('debug.stack.frame.noSource')}
+                {(frame.raw && frame.raw.source && (frame.raw.source.name || frame.raw.source.path)) ||
+                  localize('debug.stack.frame.noSource')}
               </span>
             )}
             <>
@@ -267,7 +273,7 @@ export const DebugStackFramesView = (props: DebugStackSessionViewProps) => {
                   className={cls(styles.debug_restart_frame_icon, getIcon('debug-restart-frame'))}
                 ></a>
               )}
-              {!isLabel && !isDeemphasize && (
+              {!isLabel && !isDeemphasized && (
                 <div className={cls(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge)}>
                   {frame.raw && frame.raw.line}
                   {!isUndefined(frame.raw.line) && ':'}
