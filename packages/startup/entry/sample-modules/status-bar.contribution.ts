@@ -69,16 +69,17 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
       multiDiffSourceUri: Uri.parse(`${MULTI_DIFF_SCHEME}://test`),
       resources: [
         {
-          originalUri: Uri.file('~/ide/opensumi/jest.setup.node.js'),
-          modifiedUri: Uri.file('~/ide/opensumi/jest.setup.jsdom.js'),
+          // NOTE: 仅用于演示用法，请修改成你本机的文件路径
+          originalUri: Uri.file('/Users/louis/ide/opensumi/jest.setup.node.js'),
+          modifiedUri: Uri.file('/Users/louis/ide/opensumi/jest.setup.jsdom.js'),
         },
       ].concat(
         executeCount++ === 0
           ? []
           : [
               {
-                originalUri: Uri.file('~/ide/opensumi/packages/startup/webpack.lite.config.js'),
-                modifiedUri: Uri.file('~/ide/opensumi/packages/startup/webpack.preview.config.js'),
+                originalUri: Uri.file('/Users/louis/ide/opensumi/packages/startup/webpack.lite.config.js'),
+                modifiedUri: Uri.file('/Users/louis/ide/opensumi/packages/startup/webpack.preview.config.js'),
               },
             ],
       ),
