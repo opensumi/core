@@ -38,7 +38,14 @@ export class MultiDiffEditorContribution implements BrowserEditorContribution, M
       (scheme) => {
         const resolvers = this.multiDiffSourceResolverService.getResolvers();
         for (const resolver of resolvers) {
-          if (resolver.canHandleUri(new URI(`${scheme}:/empty`))) {
+          if (
+            resolver.canHandleUri(
+              URI.from({
+                scheme,
+                path: 'empty',
+              }),
+            )
+          ) {
             return 10;
           }
         }

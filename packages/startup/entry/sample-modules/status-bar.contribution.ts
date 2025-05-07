@@ -66,20 +66,23 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
   private openDiff() {
     this.commandService.executeCommand('_workbench.openMultiDiffEditor', {
       title: 'compareTitle',
-      multiDiffSourceUri: Uri.parse(`${MULTI_DIFF_SCHEME}://test`),
+      multiDiffSourceUri: Uri.from({
+        scheme: MULTI_DIFF_SCHEME,
+        path: 'test',
+      }),
       resources: [
         {
           // NOTE: 仅用于演示用法，请修改成你本机的文件路径
-          originalUri: Uri.file('/Users/louis/ide/opensumi/jest.setup.node.js'),
-          modifiedUri: Uri.file('/Users/louis/ide/opensumi/jest.setup.jsdom.js'),
+          originalUri: Uri.file(''),
+          modifiedUri: Uri.file(''),
         },
       ].concat(
         executeCount++ === 0
           ? []
           : [
               {
-                originalUri: Uri.file('/Users/louis/ide/opensumi/packages/startup/webpack.lite.config.js'),
-                modifiedUri: Uri.file('/Users/louis/ide/opensumi/packages/startup/webpack.preview.config.js'),
+                originalUri: Uri.file(''),
+                modifiedUri: Uri.file(''),
               },
             ],
       ),

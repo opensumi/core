@@ -62,9 +62,10 @@ export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
         onClick={(e) => {
           e.stopPropagation();
           editorService.open(
-            URI.parse(
-              `${ChatMultiDiffResolver.CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME}://chat-editing-multi-diff-source`,
-            ),
+            URI.from({
+              scheme: ChatMultiDiffResolver.CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME,
+              path: 'chat-editing-multi-diff-source',
+            }),
             {
               label: localize('aiNative.chat.view-changes'),
             },
