@@ -2,7 +2,15 @@ import cls from 'classnames';
 import * as React from 'react';
 
 import { formatLocalize, getSymbolIcon, localize } from '@opensumi/ide-core-browser';
-import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import {
+  Icon,
+  Popover,
+  PopoverPosition,
+  Select,
+  Tooltip,
+  Tooltip,
+  getIcon,
+} from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
 
@@ -1019,6 +1027,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [attachedFiles],
   );
 
+  const renderModelSelectorTip = React.useCallback(
+    (children: React.ReactNode) => {
+      if (footerConfig.disableModelSelector) {
+        return <Tooltip title={localize('aiNative.chat.modelSelector.disableTip')}>{children}</Tooltip>;
+      }
+      return children;
+    },
+    [footerConfig.disableModelSelector],
+  );
+
   return (
     <div className={styles.input_container}>
       {mentionState.active && (
@@ -1048,16 +1066,17 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       </div>
       <div className={styles.footer}>
         <div className={styles.left_control}>
-          {footerConfig.showModelSelector && (
-            <Select
-              options={footerConfig.modelOptions || []}
-              value={selectedModel}
-              onChange={handleModelChange}
-              className={styles.model_selector}
-              size='small'
-              disabled={footerConfig.disableModelSelector}
-            />
-          )}
+          {footerConfig.showModelSelector &&
+            renderModelSelectorTip(
+              <Select
+                options={footerConfig.modelOptions || []}
+                value={selectedModel}
+                onChange={handleModelChange}
+                className={styles.model_selector}
+                size='small'
+                disabled={footerConfig.disableModelSelector}
+              />,
+            )}
           {renderButtons(FooterButtonPosition.LEFT)}
         </div>
         <div className={styles.right_control}>
