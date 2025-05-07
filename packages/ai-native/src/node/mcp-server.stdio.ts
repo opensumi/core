@@ -132,7 +132,7 @@ export class StdioMCPServer implements IMCPServer {
   }
 
   update(command: string, args?: string[], env?: { [key: string]: string }): void {
-    this.command = command;
+    this.command = command === 'node' ? process.env.NODE_BINARY_PATH || 'node' : command;
     this.args = args;
     this.env = env;
   }
