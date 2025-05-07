@@ -940,7 +940,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
         break;
       case EditorOpenType.multiDiff:
-        if (this.multiDiffEditor) {
+        if (this.multiDiffEditor && this._multiDiffEditorDomNodeAttached) {
           this.multiDiffEditor.layout(
             new Dimension(this._multiDiffEditorDomNode!.offsetWidth, this._multiDiffEditorDomNode!.offsetHeight),
           );
@@ -2490,7 +2490,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       });
     }
 
-    this.multiDiffEditor.compareMultiple(resource, options);
+    await this.multiDiffEditor.compareMultiple(resource, options);
   }
 }
 

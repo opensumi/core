@@ -189,6 +189,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
 
     const a = recomputeInitiallyAndOnChange(updateDocuments);
     await updateDocuments.get();
+    this.multiDiffModel?.dispose();
     this.multiDiffModel = {
       dispose: () => a.dispose(),
       documents: new ValueWithChangeEventFromObservable(documents),
@@ -246,8 +247,3 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     this.multiDiffWidget.dispose();
   }
 }
-
-// TODO: dirty
-// function isUriDirty(onDidChangeDirty: FastEventDispatcher<ITextFileEditorModel, URI>, textFileService: ITextFileService, uri: URI) {
-// 	return observableFromEvent(onDidChangeDirty.filteredEvent(uri), () => textFileService.isDirty(uri));
-// }
