@@ -7,10 +7,13 @@ import styles from './progress.module.less';
 
 import { IProgressModel } from '.';
 
-export const ProgressBar: React.FC<{ progressModel: IProgressModel; className?: string }> = ({
+export const ProgressBar: React.FC<{ progressModel?: IProgressModel; className?: string }> = ({
   progressModel,
   className,
 }) => {
+  if (!progressModel) {
+    return null;
+  }
   const worked = useAutorun<number>(progressModel.worked);
   const total = useAutorun<number | undefined>(progressModel.total);
   const show = useAutorun<boolean>(progressModel.show);

@@ -17,6 +17,7 @@ import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { observableValue } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { IMainLayoutService } from '../../common';
 
@@ -25,7 +26,6 @@ import styles from './styles.module.less';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 
 import type { ViewBadge } from 'vscode';
-
 function splitVisibleTabs(containers: ComponentRegistryInfo[], visibleCount: number) {
   if (visibleCount >= containers.length) {
     return [containers, []];
@@ -246,7 +246,7 @@ export const IconTabView: FC<{ component: ComponentRegistryProvider }> = ({ comp
   const [component, setComponent] = useState<ComponentRegistryProvider>(defaultComponent);
   const indicator = progressService.getIndicator(component.options?.containerId || '');
 
-  const inProgress = useAutorun(indicator!.progressModel.show);
+  const inProgress = indicator ? useAutorun(indicator.progressModel.show) : false;
 
   const title = useMemo(() => {
     const options = component.options;
