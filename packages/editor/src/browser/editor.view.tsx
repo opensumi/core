@@ -374,7 +374,7 @@ export const EditorGroupBody = ({ group }: { group: EditorGroup }) => {
       const observer = new ResizeObserver((entries) => {
         const entry = entries[0];
         if (entry && entry.contentRect.height > 0) {
-          group.layoutEditors();
+          group.doLayoutEditors();
           observer.disconnect();
         }
       });
