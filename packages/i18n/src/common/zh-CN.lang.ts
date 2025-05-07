@@ -1234,7 +1234,7 @@ export const localizationBundle = {
     'aiNative.chat.clearContext': '清空上下文',
     'aiNative.chat.context.description': '共 {0} 个引用',
     'aiNative.chat.context.clear': '点击清空引用',
-    'aiNative.chat.modelSelector.disableTip': '如需切换模型，请新建会话或清空当前会话',
+    'aiNative.chat.modelSelector.disableTip': '如需切换模型，请新建或清空会话',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': '采纳',
