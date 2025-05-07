@@ -85,16 +85,13 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       return;
     }
 
-    if (isManual) {
-      this.hasUserManualReference = true;
-    }
-
     const file = { uri, selection };
     const targetList = isManual ? this.attachedFiles : this.recentlyViewFiles;
     const maxLimit = isManual ? this.maxAttachFilesLimit : this.maxViewFilesLimit;
 
     if (isManual) {
       this.docModelManager.createModelReference(uri);
+      this.hasUserManualReference = true;
     }
 
     this.addFileToList(file, targetList, maxLimit);
@@ -137,6 +134,11 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     const index = targetList.findIndex((file) => file.uri.toString() === uri.toString());
     if (index > -1) {
       targetList.splice(index, 1);
+    }
+    if (isManual) {
+      if (this.attachedFiles.length === 0) {
+        this.hasUserManualReference = false;
+      }
     }
     this.notifyContextChange();
   }
