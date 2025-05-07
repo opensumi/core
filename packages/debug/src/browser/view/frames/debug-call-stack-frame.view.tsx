@@ -10,9 +10,9 @@ import {
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { isFrameDeemphasized } from '@opensumi/ide-debug/lib/common/debug-frame';
 
 import { IDebugSessionManager } from '../../../common';
+import { isFrameDeemphasized } from '../../../common/debug-frame';
 import { DebugSession } from '../../debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugStackFrame, ShowMoreDebugStackFrame } from '../../model';
