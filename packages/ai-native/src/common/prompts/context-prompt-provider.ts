@@ -23,7 +23,8 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
   protected readonly workspaceService: IWorkspaceService;
 
   async provideContextPrompt(context: SerializedContext, userMessage: string) {
-    const currentFileInfo = await this.getCurrentFileInfo();
+    const currentFileInfo =
+      context.attachedFiles.length > 0 || context.attachedFolders.length > 0 ? null : await this.getCurrentFileInfo();
 
     return this.buildPromptTemplate({
       recentFiles: this.buildRecentFilesSection(context.recentlyViewFiles),

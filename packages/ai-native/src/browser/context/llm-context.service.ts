@@ -290,7 +290,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
       return {
         content: ref.instance.getText(
-          file.selection && new Range(file.selection[0], Infinity, file.selection[1], Infinity),
+          file.selection && new Range(file.selection[0], 0, file.selection[1] + 1, Infinity),
         ),
         lineErrors: this.getFileErrors(file.uri),
         path: workspaceRoot.relative(file.uri)!.toString(),
