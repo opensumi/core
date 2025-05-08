@@ -42,6 +42,8 @@ export enum AINativeSettingSectionsId {
    */
   MCPServers = 'ai.native.mcp.servers',
 
+  TerminalAutoRun = 'ai.native.terminal.autorun',
+
   /**
    * System prompt
    */

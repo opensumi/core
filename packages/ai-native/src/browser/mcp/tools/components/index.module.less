@@ -180,6 +180,27 @@
     border-radius: 4px;
     overflow: auto;
 
+    .auto_execution_policy {
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      align-items: end;
+      color: var(--descriptionForeground);
+
+      .auto_execution_policy_title {
+        display: flex;
+        cursor: pointer;
+        align-items: center;
+      }
+
+      .auto_execution_policy_conf {
+        cursor: pointer;
+        &:hover {
+          color: var(--kt-linkButton-hoverForeground);
+        }
+      }
+    }
+
     code {
       font-size: 11px;
       white-space: pre;

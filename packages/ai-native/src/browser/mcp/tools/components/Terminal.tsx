@@ -1,9 +1,11 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
-import { localize } from '@opensumi/ide-core-common';
+import { CommandService, localize } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings';
 
+import { ETerminalAutoExecutionPolicy } from '../../../preferences/schema';
 import { IMCPServerToolComponentProps } from '../../../types';
 import { RunCommandHandler } from '../handlers/RunCommand';
 
@@ -38,7 +40,29 @@ function getResult(raw: string) {
 export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) => {
   const { args, toolCallId } = props;
   const handler = useInjectable<RunCommandHandler>(RunCommandHandler);
+  const preferenceService: PreferenceService = useInjectable(PreferenceService);
+  const commandService = useInjectable<CommandService>(CommandService);
+
   const [disabled, toggleDisabled] = useState(false);
+  const [showPolicy, toggleShowPolicy] = useState(false);
+
+  const terminalAutoExecution = preferenceService.get(AINativeSettingSectionsId.TerminalAutoRun);
+
+  const needApproval = useMemo(() => {
+    // 值为 off 或 auto 且 args.require_user_approval
+    if (
+      terminalAutoExecution === ETerminalAutoExecutionPolicy.off ||
+      (terminalAutoExecution === ETerminalAutoExecutionPolicy.auto && props.args?.require_user_approval)
+    ) {
+      return true;
+    }
+
+    return false;
+  }, [props.args]);
+
+  const openCommandAutoExecutionConfig = useCallback(() => {
+    commandService.executeCommand('workbench.action.openSettings', 'ai.native.terminal.autorun');
+  }, []);
 
   const handleClick = useCallback((approval: boolean) => {
     if (!toolCallId) {
@@ -74,6 +98,26 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
             <div className={styles.command_content}>
               <Icon icon='output' />
               <code dangerouslySetInnerHTML={{ __html: computeAnsiLogString(output.text || '') }} />
+              {needApproval && (
+                <div className={styles.auto_execution_policy}>
+                  <span className={styles.auto_execution_policy_title} onClick={() => toggleShowPolicy(!showPolicy)}>
+                    {showPolicy ? (
+                      <Icon iconClass='codicon codicon-chevron-down' />
+                    ) : (
+                      <Icon iconClass='codicon codicon-chevron-right' />
+                    )}
+                    {localize('ai.native.terminal.autorun.denied')}
+                  </span>
+                  {showPolicy && (
+                    <>
+                      <span>{localize('ai.native.terminal.autorun.question')}</span>
+                      <span className={styles.auto_execution_policy_conf} onClick={openCommandAutoExecutionConfig}>
+                        {localize('ai.native.terminal.autorun.command')}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             ''
@@ -81,7 +125,7 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
         </div>
       )}
 
-      {props.state === 'complete' && args?.require_user_approval && (
+      {props.state === 'complete' && needApproval && args && (
         <div>
           <div className={styles.command_title}>
             <Icon icon='terminal' />

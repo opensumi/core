@@ -1603,6 +1603,15 @@ export const localizationBundle = {
     'ai.native.mcp.terminal.allow': 'Allow',
     'ai.native.mcp.terminal.deny': 'Reject',
 
+    // Built-in tools
+    'ai.native.terminal.autorun': 'Terminal auto execution policy',
+    'ai.native.terminal.autorun.description':
+      'The auto-execution policy for Agent terminal commands.   off means never auto-execute, auto means the model will decide whether to auto-execute based on the command (only available on premium models), Always means always auto-execute.',
+
+    'ai.native.terminal.autorun.denied': 'Auto-run denied by default',
+    'ai.native.terminal.autorun.question': 'Want to run this automatically in the future?',
+    'ai.native.terminal.autorun.command': 'Change your command auto execution policy.',
+
     // MCP Server Configuration
     'ai.native.mcp.name': 'Name:',
     'ai.native.mcp.command': 'Command:',

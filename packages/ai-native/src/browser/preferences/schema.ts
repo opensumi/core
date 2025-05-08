@@ -1,5 +1,4 @@
 import { AINativeSettingSectionsId, PreferenceSchema } from '@opensumi/ide-core-browser';
-import { localize } from '@opensumi/ide-core-common';
 
 import { CodeEditsRenderType } from '../contrib/intelligent-completions';
 
@@ -8,14 +7,20 @@ export enum EInlineDiffPreviewMode {
   sideBySide = 'sideBySide',
 }
 
+export enum ETerminalAutoExecutionPolicy {
+  off = 'off',
+  auto = 'auto',
+  always = 'always',
+}
+
 export const aiNativePreferenceSchema: PreferenceSchema = {
   properties: {
     [AINativeSettingSectionsId.InlineDiffPreviewMode]: {
       type: 'string',
       enum: [EInlineDiffPreviewMode.inlineLive, EInlineDiffPreviewMode.sideBySide],
       enumDescriptions: [
-        localize('preference.ai.native.inlineDiff.preview.mode.inlineLive'),
-        localize('preference.ai.native.inlineDiff.preview.mode.sideBySide'),
+        '%preference.ai.native.inlineDiff.preview.mode.inlineLive%',
+        '%preference.ai.native.inlineDiff.preview.mode.sideBySide%',
       ],
       default: EInlineDiffPreviewMode.inlineLive,
     },
@@ -64,46 +69,46 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'string',
       default: CodeEditsRenderType.Default,
       enum: [CodeEditsRenderType.Legacy, CodeEditsRenderType.Default],
-      description: localize('preference.ai.native.codeEdits.renderType'),
+      description: '%preference.ai.native.codeEdits.renderType%',
     },
     [AINativeSettingSectionsId.LLMModelSelection]: {
       type: 'string',
       default: 'deepseek',
       enum: ['deepseek', 'anthropic', 'openai', 'openai-compatible'],
-      description: localize('preference.ai.native.llm.model.selection.description'),
+      description: '%preference.ai.native.llm.model.selection.description%',
     },
     [AINativeSettingSectionsId.ModelID]: {
       type: 'string',
       default: 'deepseek-chat',
-      description: localize('preference.ai.native.llm.model.id'),
+      description: '%preference.ai.native.llm.model.id%',
     },
     [AINativeSettingSectionsId.DeepseekApiKey]: {
       type: 'string',
       default: '',
-      description: localize('preference.ai.native.deepseek.apiKey.description'),
+      description: '%preference.ai.native.deepseek.apiKey.description%',
     },
     [AINativeSettingSectionsId.AnthropicApiKey]: {
       type: 'string',
       default: '',
-      description: localize('preference.ai.native.anthropic.apiKey.description'),
+      description: '%preference.ai.native.anthropic.apiKey.description%',
     },
     [AINativeSettingSectionsId.OpenaiApiKey]: {
       type: 'string',
       default: '',
-      description: localize('preference.ai.native.openai.apiKey.description'),
+      description: '%preference.ai.native.openai.apiKey.description%',
     },
     [AINativeSettingSectionsId.OpenaiBaseURL]: {
       type: 'string',
       default: '',
-      description: localize('preference.ai.native.openai.baseURL.description'),
+      description: '%preference.ai.native.openai.baseURL.description%',
     },
     [AINativeSettingSectionsId.ContextWindow]: {
       type: 'number',
-      description: localize('preference.ai.native.contextWindow.description'),
+      description: '%preference.ai.native.contextWindow.description%',
     },
     [AINativeSettingSectionsId.MaxTokens]: {
       type: 'number',
-      description: localize('preference.ai.native.maxTokens.description'),
+      description: '%preference.ai.native.maxTokens.description%',
     },
     /**
      * @deprecated This configuration will be removed in the future. Please use `mcp.json` instead.
@@ -111,32 +116,32 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     [AINativeSettingSectionsId.MCPServers]: {
       type: 'array',
       default: [],
-      description: localize('preference.ai.native.mcp.servers.description'),
+      description: '%preference.ai.native.mcp.servers.description%',
       items: {
         type: 'object',
         required: ['name', 'command', 'args'],
         properties: {
           name: {
             type: 'string',
-            description: localize('preference.ai.native.mcp.servers.name.description'),
+            description: '%preference.ai.native.mcp.servers.name.description%',
           },
           command: {
             type: 'string',
-            description: localize('preference.ai.native.mcp.servers.command.description'),
+            description: '%preference.ai.native.mcp.servers.command.description%',
           },
           type: {
             type: 'string',
             enum: ['stdio', 'sse'],
             enumDescriptions: [
-              localize('preference.ai.native.mcp.servers.type.stdio'),
-              localize('preference.ai.native.mcp.servers.type.sse'),
+              '%preference.ai.native.mcp.servers.type.stdio%',
+              '%preference.ai.native.mcp.servers.type.sse%',
             ],
-            description: localize('preference.ai.native.mcp.servers.type.description'),
+            description: '%preference.ai.native.mcp.servers.type.description%',
             default: 'stdio',
           },
           enabled: {
             type: 'boolean',
-            description: localize('preference.ai.native.mcp.servers.enabled.description'),
+            description: '%preference.ai.native.mcp.servers.enabled.description%',
             default: true,
           },
           args: {
@@ -145,18 +150,24 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
               type: 'string',
             },
             default: [],
-            description: localize('preference.ai.native.mcp.servers.args.description'),
+            description: '%preference.ai.native.mcp.servers.args.description%',
           },
           env: {
             type: 'object',
             additionalProperties: {
               type: 'string',
             },
-            description: localize('preference.ai.native.mcp.servers.env.description'),
+            description: '%preference.ai.native.mcp.servers.env.description%',
             default: {},
           },
         },
       },
+    },
+    [AINativeSettingSectionsId.TerminalAutoRun]: {
+      type: 'string',
+      enum: [ETerminalAutoExecutionPolicy.off, ETerminalAutoExecutionPolicy.auto, ETerminalAutoExecutionPolicy.always],
+      default: ETerminalAutoExecutionPolicy.auto,
+      markdownDescription: '%ai.native.terminal.autorun.description%',
     },
     [AINativeSettingSectionsId.CodeEditsTyping]: {
       type: 'boolean',
@@ -164,7 +175,7 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.SystemPrompt]: {
       type: 'string',
-      description: localize('preference.ai.native.chat.system.prompt.description'),
+      description: '%preference.ai.native.chat.system.prompt.description%',
     },
   },
 };
