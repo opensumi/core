@@ -20,12 +20,9 @@
   color: var(--descriptionForeground);
 }
 
-.title:hover {
+.toggleButton:hover {
   color: var(--design-text-highlightForeground);
-  .toggleButton :global(.kt-icon) {
-    color: var(--design-text-highlightForeground);
-    transition: color 0.2s ease-in-out;
-  }
+  transition: color 0.2s ease-in-out;
 }
 
 .toggleButton {
@@ -33,18 +30,22 @@
   border: none;
   cursor: pointer;
   padding: 0;
-  width: 16px;
   height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
+  gap: 2px;
+  :global(.kt-icon) {
+    color: inherit;
+  }
 }
 
 .title {
   gap: 6px;
   transition: color 0.2s ease-in-out;
   display: flex;
+  align-items: center;
 }
 
 .fileList {
@@ -125,4 +126,18 @@
 
 .collapsed {
   display: none;
+}
+
+.viewChanges {
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  :global(.kt-icon) {
+    color: inherit;
+  }
+  &:hover {
+    color: var(--design-text-highlightForeground);
+    transition: color 0.2s ease-in-out;
+  }
 }

@@ -1247,6 +1247,7 @@ export const localizationBundle = {
     'aiNative.inline.problem.fix.title': 'AI 修复',
     'aiNative.inline.diff.accept': '采纳',
     'aiNative.inline.diff.reject': '拒绝',
+    'aiNative.chat.view-changes': '查看改动',
 
     'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
     'aiNative.resolve.conflict.dialog.detection':

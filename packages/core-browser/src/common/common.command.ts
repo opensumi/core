@@ -302,6 +302,8 @@ export namespace EDITOR_COMMANDS {
   export const API_OPEN_DIFF_EDITOR_COMMAND_ID = '_workbench.diff';
   export const API_OPEN_WITH_EDITOR_COMMAND_ID = '_workbench.openWith';
 
+  export const VSCODE_OPEN_MULTI_DIFF_EDITOR_COMMAND_ID = '_workbench.openMultiDiffEditor';
+
   export const NEW_UNTITLED_FILE: Command = {
     id: 'file.new.untitled',
     category: CATEGORY,

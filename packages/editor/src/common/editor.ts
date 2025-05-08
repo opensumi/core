@@ -16,6 +16,7 @@ import {
   URI,
 } from '@opensumi/ide-core-common';
 
+import { IMultiDiffEditor } from './multi-diff';
 import { IResource } from './resource';
 import { IDocModelUpdateOptions } from './types';
 
@@ -343,6 +344,18 @@ export abstract class EditorCollectionService {
    * @param overrides
    */
   public abstract createDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): IDiffEditor;
+
+  /**
+   * 创建一个 monaco multiFileDiffEditor 实例
+   * @param dom
+   * @param options
+   * @param overrides
+   */
+  public abstract createMultiDiffEditor(
+    dom: HTMLElement,
+    options?: any,
+    overrides?: { [key: string]: any },
+  ): IMultiDiffEditor;
 
   public abstract createMergeEditor(
     dom: HTMLElement,
@@ -869,6 +882,7 @@ export enum EditorOpenType {
   diff = 'diff',
   mergeEditor = 'mergeEditor',
   component = 'component',
+  multiDiff = 'multiDiff',
 }
 
 // 定义一个resource如何被打开

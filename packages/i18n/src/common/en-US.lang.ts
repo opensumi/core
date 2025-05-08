@@ -1478,6 +1478,7 @@ export const localizationBundle = {
     'aiNative.inline.problem.fix.title': 'Fix with AI',
     'aiNative.inline.diff.accept': 'Accept',
     'aiNative.inline.diff.reject': 'Reject',
+    'aiNative.chat.view-changes': 'View Changes',
 
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':

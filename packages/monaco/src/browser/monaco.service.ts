@@ -6,6 +6,7 @@ import {
   KeybindingService,
   MonacoOverrideServiceRegistry,
   ServiceNames,
+  Uri,
 } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { KeyCodeChord } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
@@ -15,19 +16,23 @@ import {
   MouseTargetType,
   isDiffEditor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { MultiDiffEditorWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidget';
 import { ShowLightbulbIconMode } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
-import { StandaloneKeybindingService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import {
+  StandaloneKeybindingService,
+  StandaloneServices,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { MonacoService } from '../common';
 
 import { MergeEditorWidget } from './contrib/merge-editor/merge-editor-widget';
+import { ResourceLabel } from './contrib/multi-diff-editor/resource-label';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { monaco } from './monaco-api';
 import { ICodeEditor, IDiffEditor } from './monaco-api/types';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
-
 // const SUMI_OVERFLOW_WIDGETS_CONTAINER_ID = 'sumi-overflow-widgets-container';
 type IEditorType = IDiffEditor | ICodeEditor | IMergeEditorEditor;
 
@@ -151,6 +156,39 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     this.overrideMonacoKeybindingService(editor);
     this.addClickEventListener(editor);
     return editor;
+  }
+
+  createMultiDiffEditorWidget(
+    monacoContainer: HTMLElement,
+    options?: IDiffEditorConstructionOptions,
+    overrides: { [key: string]: any } = {},
+  ): MultiDiffEditorWidget {
+    const instantiationService = StandaloneServices.initialize({
+      ...this.overrideServiceRegistry.all(),
+      ...overrides,
+    });
+    const editorWidget = new MultiDiffEditorWidget(
+      monacoContainer,
+      {
+        createResourceLabel: (element: HTMLElement) => {
+          const resourceLabel = new ResourceLabel(element);
+          return {
+            setUri: (uri: Uri) => {
+              if (!uri) {
+                resourceLabel.clear();
+              } else {
+                resourceLabel.setUri(uri);
+              }
+            },
+            dispose: () => {},
+          };
+        },
+      },
+      instantiationService,
+    );
+    // this.overrideMonacoKeybindingService(editor);
+    // this.addClickEventListener(editor);
+    return editorWidget;
   }
 
   public createMergeEditor(

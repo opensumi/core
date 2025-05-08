@@ -125,7 +125,7 @@ export class DefaultUriLabelProvider extends Disposable implements ILabelProvide
   }
 
   public getIcon(uri: URI, options?: ILabelOptions): string {
-    const { iconClass, onDidChange } = getIconClass(uri, options);
+    const { iconClass, onDidChange } = getResourceIconClass(uri, options);
     if (onDidChange) {
       const disposer = onDidChange(() => {
         this._onDidChange.fire(uri);
@@ -260,7 +260,8 @@ export class LabelService extends WithEventBus {
 let modeService: any;
 let modelService: IModelService;
 let languageService: ILanguageService;
-const getIconClass = (
+
+export const getResourceIconClass = (
   resource: URI,
   options?: ILabelOptions,
 ): {

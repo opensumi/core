@@ -10,20 +10,27 @@ import {
 import {
   BrowserConnectionCloseEvent,
   BrowserConnectionOpenEvent,
+  CommandContribution,
+  CommandRegistry,
+  CommandService,
   OnEvent,
+  Uri,
   WithEventBus,
 } from '@opensumi/ide-core-common';
-import { IIconService } from '@opensumi/ide-theme';
-import { IconService } from '@opensumi/ide-theme/lib/browser';
+import { MULTI_DIFF_SCHEME } from '@opensumi/ide-editor/lib/common/multi-diff';
+
+let executeCount = 0;
+
+const TEST_MULTI_DIFF_COMMAND = 'testMultiDiffCommand';
 
 @Injectable()
-@Domain(ClientAppContribution)
-export class StatusBarContribution extends WithEventBus implements ClientAppContribution {
-  @Autowired(IIconService)
-  private iconService: IconService;
-
+@Domain(ClientAppContribution, CommandContribution)
+export class StatusBarContribution extends WithEventBus implements ClientAppContribution, CommandContribution {
   @Autowired(IStatusBarService)
   private statusBarService: IStatusBarService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   private statusBarElement?: StatusBarEntryAccessor;
 
@@ -47,6 +54,41 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
     this.onDidConnectionChange(undefined, 'var(--button-background)');
   }
 
+  registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(
+      { id: TEST_MULTI_DIFF_COMMAND },
+      {
+        execute: () => this.openDiff(),
+      },
+    );
+  }
+
+  private openDiff() {
+    this.commandService.executeCommand('_workbench.openMultiDiffEditor', {
+      title: 'compareTitle',
+      multiDiffSourceUri: Uri.from({
+        scheme: MULTI_DIFF_SCHEME,
+        path: 'test',
+      }),
+      resources: [
+        {
+          // NOTE: 仅用于演示用法，请修改成你本机的文件路径
+          originalUri: Uri.file(''),
+          modifiedUri: Uri.file(''),
+        },
+      ].concat(
+        executeCount++ === 0
+          ? []
+          : [
+              {
+                originalUri: Uri.file(''),
+                modifiedUri: Uri.file(''),
+              },
+            ],
+      ),
+    });
+  }
+
   onDidStart() {
     if (!this.statusBarElement) {
       this.statusBarElement = this.statusBarService.addElement('OpenSumi', {
@@ -56,6 +98,13 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
         alignment: StatusBarAlignment.LEFT,
         iconClass: getIcon('code'),
         priority: Infinity,
+      });
+      this.statusBarService.addElement('OpenSumi', {
+        tooltip: 'Test MultiDiff Logic, Press twice will open multi-diff editor with two files',
+        alignment: StatusBarAlignment.LEFT,
+        text: 'MultiDiff Test',
+        priority: 10,
+        command: TEST_MULTI_DIFF_COMMAND,
       });
     }
   }

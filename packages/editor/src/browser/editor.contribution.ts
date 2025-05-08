@@ -44,7 +44,7 @@ import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-brow
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { IDisposable, ILogger, PreferenceScope, isWindows } from '@opensumi/ide-core-common';
+import { IDisposable, ILogger, PreferenceScope, UriComponents, isWindows } from '@opensumi/ide-core-common';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -68,6 +68,7 @@ import {
   WorkbenchEditorService,
 } from '../common';
 import { AUTO_SAVE_MODE } from '../common/editor';
+import { MultiDiffEditorItem } from '../common/multi-diff';
 
 import { MonacoTextModelService } from './doc-model/override';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from './doc-model/types';
@@ -79,6 +80,7 @@ import { DocumentFormatService } from './format/format.service';
 import { FormattingSelector } from './format/formatter-selector';
 import { EditorHistoryService } from './history';
 import { EditorContextMenuController } from './menu/editor.context';
+import { MultiDiffResolver } from './multi-diff/multi-diff-resolver';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
 import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
@@ -230,6 +232,9 @@ export class EditorContribution
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(MultiDiffResolver)
+  private readonly multiDiffResolver: MultiDiffResolver;
 
   registerMonacoDefaultFormattingSelector(register: (selector: IFormattingEditProviderSelector) => IDisposable): void {
     const formatSelector = this.injector.get(FormattingSelector);
@@ -1231,6 +1236,36 @@ export class EditorContribution
         formatService.formatSelectionWith();
       },
     });
+
+    commands.registerCommand(
+      {
+        id: EDITOR_COMMANDS.VSCODE_OPEN_MULTI_DIFF_EDITOR_COMMAND_ID,
+      },
+      {
+        execute: async (options: {
+          title: string;
+          multiDiffSourceUri: UriComponents;
+          resources: { originalUri?: UriComponents; modifiedUri?: UriComponents }[];
+        }) => {
+          const sources: MultiDiffEditorItem[] = [];
+          for (const { originalUri, modifiedUri } of options.resources) {
+            sources.push(
+              new MultiDiffEditorItem(
+                originalUri ? URI.from(originalUri) : undefined,
+                modifiedUri ? URI.from(modifiedUri) : undefined,
+                modifiedUri ? URI.from(modifiedUri) : undefined,
+              ),
+            );
+          }
+          const multiDiffSourceUri = URI.from(options.multiDiffSourceUri);
+          // 提前注册到 resolver 内，相同的multiDiffSourceUri支持更新
+          this.multiDiffResolver.registerSources(multiDiffSourceUri, sources);
+          await this.workbenchEditorService.open(multiDiffSourceUri, {
+            label: options.title,
+          });
+        },
+      },
+    );
   }
 
   registerMenus(menus: IMenuRegistry) {

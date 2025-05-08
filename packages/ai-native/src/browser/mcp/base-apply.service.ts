@@ -35,6 +35,8 @@ import { BaseInlineDiffPreviewer, InlineDiffController, LiveInlineDiffPreviewer 
 import type { BaseInlineStreamDiffHandler } from '../widget/inline-stream-diff/inline-stream-diff.handler';
 
 export abstract class BaseApplyService extends WithEventBus {
+  static readonly CHAT_EDITING_SOURCE_RESOLVER_SCHEME = 'chat-editing-source';
+
   @Autowired(IChatInternalService)
   protected chatInternalService: ChatInternalService;
 
