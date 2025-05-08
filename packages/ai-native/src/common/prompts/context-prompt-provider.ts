@@ -23,11 +23,12 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
   protected readonly workspaceService: IWorkspaceService;
 
   async provideContextPrompt(context: SerializedContext, userMessage: string) {
-    const currentFileInfo = await this.getCurrentFileInfo();
+    const currentFileInfo =
+      context.attachedFiles.length > 0 || context.attachedFolders.length > 0 ? null : await this.getCurrentFileInfo();
 
     return this.buildPromptTemplate({
       recentFiles: this.buildRecentFilesSection(context.recentlyViewFiles),
-      attachedFiles: this.buildAttachedFilesSection(context.attachedFiles, context.recentlyViewFiles),
+      attachedFiles: this.buildAttachedFilesSection(context.attachedFiles),
       attachedFolders: this.buildAttachedFoldersSection(context.attachedFolders),
       currentFile: currentFileInfo,
       userMessage,
@@ -91,11 +92,7 @@ ${files.map((file, idx) => `    ${idx + 1}: ${file}`).join('\n')}
 </recently_viewed_files>`;
   }
 
-  private buildAttachedFilesSection(
-    files: { path: string; content: string; lineErrors: string[] }[],
-    recentlyViewFiles: string[],
-  ): string {
-    files = files.filter((file) => !recentlyViewFiles.includes(file.path));
+  private buildAttachedFilesSection(files: { path: string; content: string; lineErrors: string[] }[]): string {
     if (!files.length) {
       return '';
     }

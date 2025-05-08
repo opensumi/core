@@ -1,8 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  CodeSchemaId,
   Domain,
-  IJSONSchema,
   IJSONSchemaRegistry,
   JsonSchemaContribution,
   MaybePromise,

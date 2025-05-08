@@ -48,10 +48,16 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     attachedFolders: FileContext[];
     version: number;
   }>();
+  private hasUserManualReference = false;
   onDidContextFilesChangeEvent = this.onDidContextFilesChangeEmitter.event;
 
   private addFileToList(file: FileContext, list: FileContext[], maxLimit: number) {
-    const existingIndex = list.findIndex((f) => f.uri.toString() === file.uri.toString());
+    const existingIndex = list.findIndex(
+      (f) =>
+        f.uri.toString() === file.uri.toString() &&
+        f.selection?.[0] === file.selection?.[0] &&
+        f.selection?.[1] === file.selection?.[1],
+    );
     if (existingIndex > -1) {
       list.splice(existingIndex, 1);
     }
@@ -85,6 +91,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
     if (isManual) {
       this.docModelManager.createModelReference(uri);
+      this.hasUserManualReference = true;
     }
 
     this.addFileToList(file, targetList, maxLimit);
@@ -109,6 +116,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   cleanFileContext() {
     this.attachedFiles = [];
     this.attachedFolders = [];
+    this.hasUserManualReference = false;
     this.notifyContextChange();
   }
 
@@ -126,6 +134,11 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     const index = targetList.findIndex((file) => file.uri.toString() === uri.toString());
     if (index > -1) {
       targetList.splice(index, 1);
+    }
+    if (isManual) {
+      if (this.attachedFiles.length === 0) {
+        this.hasUserManualReference = false;
+      }
     }
     this.notifyContextChange();
   }
@@ -176,14 +189,17 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
             event.payload.selections[0].positionLineNumber,
           ].sort() as [number, number];
 
-          if (selection[0] === selection[1]) {
-            this.addFileToContext(event.payload.editorUri, undefined, false);
-          } else {
-            this.addFileToContext(
-              event.payload.editorUri,
-              selection.sort((a, b) => a - b),
-              false,
-            );
+          if (!this.hasUserManualReference) {
+            // 当没有用户手动引用时，才自动收集
+            if (selection[0] === selection[1]) {
+              this.addFileToContext(event.payload.editorUri, undefined, false);
+            } else {
+              this.addFileToContext(
+                event.payload.editorUri,
+                selection.sort((a, b) => a - b),
+                false,
+              );
+            }
           }
         }
       }),
@@ -275,9 +291,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       }
 
       return {
-        content: ref.instance.getText(
-          file.selection && new Range(file.selection[0], Infinity, file.selection[1], Infinity),
-        ),
+        content: ref.instance.getText(file.selection && new Range(file.selection[0], 0, file.selection[1], Infinity)),
         lineErrors: this.getFileErrors(file.uri),
         path: workspaceRoot.relative(file.uri)!.toString(),
         language: ref.instance.languageId!,

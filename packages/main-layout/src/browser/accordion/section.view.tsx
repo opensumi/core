@@ -212,7 +212,7 @@ export const AccordionSection = ({
         style={bodyStyle}
         ref={contentRef}
       >
-        {<ProgressBar className={styles.progressBar} progressModel={indicator!.progressModel} />}
+        {<ProgressBar className={styles.progressBar} progressModel={indicator?.progressModel} />}
         <ErrorBoundary>
           {metadata.message && <div className={styles.kt_split_panel_message}>{metadata.message}</div>}
           <Component

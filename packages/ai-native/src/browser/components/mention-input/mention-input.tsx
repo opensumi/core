@@ -1019,6 +1019,24 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [attachedFiles],
   );
 
+  const renderModelSelectorTip = React.useCallback(
+    (children: React.ReactNode) => {
+      if (footerConfig.disableModelSelector) {
+        return (
+          <Popover
+            id='ai-chat-model-selector'
+            title={localize('aiNative.chat.modelSelector.disableTip')}
+            position={PopoverPosition.top}
+          >
+            {children}
+          </Popover>
+        );
+      }
+      return children;
+    },
+    [footerConfig.disableModelSelector],
+  );
+
   return (
     <div className={styles.input_container}>
       {mentionState.active && (
@@ -1048,16 +1066,17 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       </div>
       <div className={styles.footer}>
         <div className={styles.left_control}>
-          {footerConfig.showModelSelector && (
-            <Select
-              options={footerConfig.modelOptions || []}
-              value={selectedModel}
-              onChange={handleModelChange}
-              className={styles.model_selector}
-              size='small'
-              disabled={footerConfig.disableModelSelector}
-            />
-          )}
+          {footerConfig.showModelSelector &&
+            renderModelSelectorTip(
+              <Select
+                options={footerConfig.modelOptions || []}
+                value={selectedModel}
+                onChange={handleModelChange}
+                className={styles.model_selector}
+                size='small'
+                disabled={footerConfig.disableModelSelector}
+              />,
+            )}
           {renderButtons(FooterButtonPosition.LEFT)}
         </div>
         <div className={styles.right_control}>

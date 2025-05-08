@@ -1466,6 +1466,8 @@ export const localizationBundle = {
     'aiNative.chat.clearContext': 'Clear Context',
     'aiNative.chat.context.description': 'Total {0} References',
     'aiNative.chat.context.clear': 'Clear References',
+    'aiNative.chat.modelSelector.disableTip': 'Clear or create session to change model',
+
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',

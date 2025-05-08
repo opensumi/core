@@ -201,14 +201,14 @@ export class MCPConfigService extends Disposable {
       delete servers[prev.name];
     }
     servers[data.name] = serverConfig;
-    await this.sumiMCPServerBackendProxy.$addOrUpdateServer(data as MCPServerDescription);
     // 更新情况下，如果原有服务是启用状态，则进行如下操作：
     // 1. 关闭旧的服务
     // 2. 启动新的服务
-    if (prev?.enabled) {
-      await this.sumiMCPServerBackendProxy.$removeServer(prev.name);
-    }
     await this.preferenceService.set('mcp', { mcpServers: servers });
+    if (prev?.enabled) {
+      this.sumiMCPServerBackendProxy.$removeServer(prev.name);
+    }
+    this.sumiMCPServerBackendProxy.$addOrUpdateServer(data as MCPServerDescription);
   }
 
   async deleteServer(serverName: string): Promise<void> {
