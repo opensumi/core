@@ -86,7 +86,7 @@ export class CredentialService implements INativeCredentialService {
     if (this.appConfig.disableKeytar) {
       throw new Error('keytar has been disabled via --disable-keytar option');
     }
-    // @ts-ignore
-    return await import('keytar');
+    const keytar = await import('keytar');
+    return keytar.default || keytar;
   }
 }
