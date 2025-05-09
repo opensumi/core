@@ -191,7 +191,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   };
 
   const paddingLeft = `${
-    (defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0) + (ExpressionContainer.is(item) ? 0 : 16)
+    (defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0) + (ExpressionContainer.is(item) ? 0 : 18)
   }px`;
 
   const editorNodeStyle = {

@@ -1,6 +1,6 @@
 import { CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode, TreeNode } from '@opensumi/ide-components';
 import { MessageType, localize } from '@opensumi/ide-core-browser';
-import { IRange, isDefined } from '@opensumi/ide-core-common';
+import { IRange } from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-utils/lib/path';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
@@ -114,19 +114,23 @@ export class ExpressionTreeService {
   }
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
-    // 当存在 variablesReference 属性时，默认按大小进行排序
-    if (isDefined((a as any).variablesReference) && isDefined((b as any).variablesReference)) {
-      return (a as any).variablesReference - (b as any).variablesReference;
-    }
     if (a.constructor === b.constructor) {
-      return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
+      const aName = a.displayName || a.name;
+      const bName = b.displayName || b.name;
+      const isASymbol = !/[a-zA-Z0-9]/.test(aName.charAt(0));
+      const isBSymbol = !/[a-zA-Z0-9]/.test(bName.charAt(0));
+      if (isASymbol && !isBSymbol) {
+        return 1;
+      } else if (!isASymbol && isBSymbol) {
+        return -1;
+      }
+      return aName.localeCompare(bName, 'en', { numeric: true }) as any;
     }
-    return CompositeTreeNode.is(a) ? 1 : CompositeTreeNode.is(b) ? -1 : 0;
+    return CompositeTreeNode.is(a) ? -1 : CompositeTreeNode.is(b) ? 1 : 0;
   }
 }
 
 export class DebugConsoleTreeService extends ExpressionTreeService {
-  // 按照默认次序排序
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
     if (!a) {
       return 1;

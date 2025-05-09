@@ -108,7 +108,7 @@ export class DebugConsoleSession implements IDebugConsoleSession {
       let output = body.output;
       if (output.indexOf(clearAnsiSequence) >= 0) {
         this.clearConsole();
-        await this.insertItemWithAnsi(localize('debug.console.consoleCleare'), MessageType.Info);
+        await this.insertItemWithAnsi(localize('debug.console.consoleCleared'), MessageType.Info);
         output = output.substring(output.lastIndexOf(clearAnsiSequence) + clearAnsiSequence.length);
       }
       const previousItem = this.getLastItem();
