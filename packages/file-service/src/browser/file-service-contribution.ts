@@ -6,6 +6,7 @@ import {
   Domain,
   FsProviderContribution,
   IDisposable,
+  ILogger,
   Schemes,
 } from '@opensumi/ide-core-browser';
 
@@ -26,6 +27,12 @@ export class FileServiceContribution implements ClientAppContribution, IDisposab
 
   @Autowired(FsProviderContribution)
   contributionProvider: ContributionProvider<FsProviderContribution>;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   constructor() {
     // 初始化资源读取逻辑，需要在最早初始化时注册
@@ -51,6 +58,10 @@ export class FileServiceContribution implements ClientAppContribution, IDisposab
     if (this.fileSystem.initialize) {
       await this.fileSystem.initialize();
     }
+  }
+
+  onReconnect() {
+    this.fileServiceClient.reconnect().catch((err) => this.logger.error('Failed to reconnect watchers:', err));
   }
 
   dispose() {

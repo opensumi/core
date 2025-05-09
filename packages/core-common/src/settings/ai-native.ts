@@ -22,6 +22,30 @@ export enum AINativeSettingSectionsId {
    */
   CodeEditsLintErrors = 'ai.native.codeEdits.lintErrors',
   CodeEditsLineChange = 'ai.native.codeEdits.lineChange',
+  CodeEditsTyping = 'ai.native.codeEdits.typing',
+  CodeEditsRenderType = 'ai.native.codeEdits.renderType',
+
+  /**
+   * Language model API keys
+   */
+  LLMModelSelection = 'ai.native.llm.model.selection',
+  ContextWindow = 'ai.native.llm.contextWindow',
+  MaxTokens = 'ai.native.llm.maxTokens',
+  ModelID = 'ai.native.llm.model.id',
+  DeepseekApiKey = 'ai.native.deepseek.apiKey',
+  AnthropicApiKey = 'ai.native.anthropic.apiKey',
+  OpenaiApiKey = 'ai.native.openai.apiKey',
+  OpenaiBaseURL = 'ai.native.openai.baseURL',
+
+  /**
+   * MCP Server configurations
+   */
+  MCPServers = 'ai.native.mcp.servers',
+
+  /**
+   * System prompt
+   */
+  SystemPrompt = 'ai.native.chat.system.prompt',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
 export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';

@@ -41,6 +41,7 @@ import {
   winLineAndColumnMatchIndex,
   winLocalLinkClause,
 } from './validated-local-link-provider';
+import { TerminalWordLinkProvider } from './word-link-provider';
 
 const { posix, win32 } = path;
 
@@ -112,6 +113,8 @@ export class TerminalLinkManager extends Disposable {
 
   private _getHomeDirPromise: Promise<string>;
 
+  private _wrappedTextLinkActivateCallback: XtermLinkMatcherHandler;
+
   constructor(private _xterm: Terminal, private _client: TerminalClient) {
     super();
 
@@ -126,6 +129,7 @@ export class TerminalLinkManager extends Disposable {
 
     // Validated local links
     const wrappedTextLinkActivateCallback = this._wrapLinkHandler((_, link) => this._handleLocalLink(link));
+    this._wrappedTextLinkActivateCallback = wrappedTextLinkActivateCallback;
     const validatedProvider = this.injector.get(TerminalValidatedLocalLinkProvider, [
       this._xterm,
       this._client,
@@ -135,12 +139,21 @@ export class TerminalLinkManager extends Disposable {
       async (link, cb) => cb(await this._resolvePath(link)),
     ]);
     this._standardLinkProviders.push(validatedProvider);
-
+    this.addTerminalWordLinkProvider();
     this._registerStandardLinkProviders();
   }
 
   public set processCwd(processCwd: string) {
     this._processCwd = processCwd;
+  }
+
+  public addTerminalWordLinkProvider() {
+    const wordLinkProvider = this.injector.get(TerminalWordLinkProvider, [
+      this._xterm,
+      async (link, cb) => cb(await this._resolvePath(link)),
+      this._wrappedTextLinkActivateCallback,
+    ]);
+    this._standardLinkProviders.push(wordLinkProvider);
   }
 
   // user may change the terminal cwd, so we need to get it from the service
@@ -165,15 +178,14 @@ export class TerminalLinkManager extends Disposable {
   ) {
     const core = (this._xterm as any)._core as XTermCore;
     const cellDimensions = {
-      width: core._renderService.dimensions.actualCellWidth,
-      height: core._renderService.dimensions.actualCellHeight,
+      width: core._renderService.dimensions.css.cell.width,
+      height: core._renderService.dimensions.css.cell.height,
     };
     const terminalDimensions = {
       width: this._xterm.cols,
       height: this._xterm.rows,
     };
     const boundingClientRect = core.element.getBoundingClientRect();
-
     // Don't pass the mouse event as this avoids the modifier check
     return this._showHover(
       {

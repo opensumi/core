@@ -215,6 +215,7 @@ export class DebugSession implements IDebugSession {
         }
 
         this.onStateChange();
+        this.sessionManager.currentSession = this as IDebugSession;
         this._onDidStop.fire(event);
       }),
       this.on('thread', (event: DebugProtocol.ThreadEvent) => {
@@ -288,7 +289,7 @@ export class DebugSession implements IDebugSession {
   }
 
   getMemory(memoryReference: string): IMemoryRegion {
-    return new MemoryRegion(memoryReference, this);
+    return new MemoryRegion(memoryReference, this as IDebugSession);
   }
 
   get configuration(): DebugConfiguration {
@@ -1091,20 +1092,13 @@ export class DebugSession implements IDebugSession {
     return this.connection.onDidCustomEvent;
   }
 
-  // REPL
-
   hasSeparateRepl(): boolean {
     return !this.parentSession || this.options.repl !== 'mergeWithParent';
   }
 
-  // REPL end
-
-  // report service
   reportTime(name: string, defaults?: any): (msg: string | undefined, extra?: any) => number {
     return this.sessionManager.reportTime(name, defaults);
   }
-
-  // Cancellation
 
   private getNewCancellationToken(threadId: number, token?: CancellationToken): CancellationToken {
     const tokenSource = new CancellationTokenSource(token);
@@ -1131,8 +1125,6 @@ export class DebugSession implements IDebugSession {
       this.cancelAllRequests();
     }
   }
-
-  // Cancellation end
 
   public getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined {
     const data = this.breakpointManager.getBreakpoints().find((bp) => bp.id === breakpointId);
@@ -1163,8 +1155,6 @@ export class DebugSession implements IDebugSession {
     return this.modelManager.model;
   }
 
-  // memory
-
   public async readMemory(
     memoryReference: string,
     offset: number,
@@ -1187,6 +1177,4 @@ export class DebugSession implements IDebugSession {
     }
     return Promise.resolve(undefined);
   }
-
-  // memory end
 }

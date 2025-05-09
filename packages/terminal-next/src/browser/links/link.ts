@@ -49,7 +49,7 @@ export class TerminalLink extends Disposable implements ILink {
       viewportRange: IViewportRange,
       modifierDownCallback?: () => void,
       modifierUpCallback?: () => void,
-    ) => IDisposable,
+    ) => IDisposable | undefined,
     private readonly _isHighConfidenceLink: boolean,
     readonly label: string | undefined,
   ) {
@@ -106,7 +106,7 @@ export class TerminalLink extends Disposable implements ILink {
     // links). Feedback was that this makes using the terminal overly noisy.
     if (this._isHighConfidenceLink) {
       this._tooltipScheduler = new RunOnceScheduler(() => {
-        this._tooltipDisposable = this._tooltipCallback(
+        this._tooltipDisposable = this._tooltipCallback?.(
           this,
           convertBufferRangeToViewport(this.range, this._viewportY),
           this._isHighConfidenceLink ? () => this._enableDecorations() : undefined,

@@ -244,8 +244,8 @@ export abstract class WindowedMatcher {
         tokens.slice(startLine, endLine).forEach((token) => token.forEach((word) => size.add(word)));
         cache.push(size);
       }
-      const traget = cache[index];
-      const score = this.similarityScore(traget, this.referenceTokens);
+      const target = cache[index];
+      const score = this.similarityScore(target, this.referenceTokens);
       snippets.push({
         score,
         startLine,

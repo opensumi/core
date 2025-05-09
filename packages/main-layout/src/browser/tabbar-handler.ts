@@ -156,7 +156,7 @@ export class TabBarHandler {
   /**
    * 更新子视图的描述
    */
-  updateViewDescription(viewId: string, desciption: string) {
+  updateViewDescription(viewId: string, desciption: string | React.ReactNode) {
     this.accordionService.updateViewDesciption(viewId, desciption);
   }
 

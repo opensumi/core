@@ -1,7 +1,14 @@
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
-import { getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
+import {
+  AINativeConfigService,
+  AppConfig,
+  LabelService,
+  getIcon,
+  useInjectable,
+  useUpdateOnEvent,
+} from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
@@ -14,25 +21,40 @@ import {
   ChatMessageRole,
   ChatRenderRegistryToken,
   ChatServiceToken,
+  CommandService,
   Disposable,
+  DisposableCollection,
   IAIReporter,
   IChatComponent,
   IChatContent,
+  URI,
+  formatLocalize,
   localize,
+  path,
   uuid,
 } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-
+import { IMessageService } from '@opensumi/ide-overlay';
 import 'react-chat-elements/dist/main.css';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
+import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
+import { CodeBlockData } from '../../common/types';
+import { cleanAttachedTextWrapper } from '../../common/utils';
+import { FileChange, FileListDisplay } from '../components/ChangeList';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
+import ChatHistory, { IChatHistoryItem } from '../components/ChatHistory';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
+import { ChatMentionInput } from '../components/ChatMentionInput';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
-import { ChatViewHeaderRender, TSlashCommandCustomRender } from '../types';
+import { BaseApplyService } from '../mcp/base-apply.service';
+import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
@@ -49,6 +71,43 @@ interface TDispatchAction {
   payload?: MessageData[];
 }
 
+const MAX_TITLE_LENGTH = 100;
+
+const getFileChanges = (codeBlocks: CodeBlockData[]) =>
+  codeBlocks
+    .map((block) => {
+      const rangesFromDiffHunk =
+        block.applyResult?.diff.split('\n').reduce(
+          ([del, add], line) => {
+            if (line.startsWith('-')) {
+              del += 1;
+            } else if (line.startsWith('+')) {
+              add += 1;
+            }
+            return [del, add];
+          },
+          [0, 0],
+        ) || [];
+      return {
+        path: block.relativePath,
+        additions: rangesFromDiffHunk[1],
+        deletions: rangesFromDiffHunk[0],
+        status: block.status,
+      };
+    })
+    .reduce((acc, curr) => {
+      const existingFile = acc.find((file) => file.path === curr.path);
+      if (existingFile) {
+        existingFile.additions += curr.additions;
+        existingFile.deletions += curr.deletions;
+        // 使用最新的状态
+        existingFile.status = curr.status;
+      } else {
+        acc.push(curr);
+      }
+      return acc;
+    }, [] as FileChange[]);
+
 export const AIChatView = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
@@ -56,12 +115,25 @@ export const AIChatView = () => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
+
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const autoScroll = React.useRef<boolean>(true);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
-
+  const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
+  const applyService = useInjectable<BaseApplyService>(BaseApplyService);
+  const labelService = useInjectable<LabelService>(LabelService);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const commandService = useInjectable<CommandService>(CommandService);
   const [shortcutCommands, setShortcutCommands] = React.useState<ChatSlashCommandItemModel[]>([]);
+  const [sessionModelId, setSessionModelId] = React.useState<string | undefined>(aiChatService.sessionModel.modelId);
+
+  const [changeList, setChangeList] = React.useState<FileChange[]>(getFileChanges(applyService.getSessionCodeBlocks()));
 
   const [messageListData, dispatchMessage] = React.useReducer((state: MessageData[], action: TDispatchAction) => {
     switch (action.type) {
@@ -81,6 +153,22 @@ export const AIChatView = () => {
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
+  // 切换session或Agent输出状态变化时
+  React.useEffect(() => {
+    setSessionModelId(aiChatService.sessionModel.modelId);
+  }, [loading, aiChatService.sessionModel]);
+
+  React.useEffect(() => {
+    const disposer = new Disposable();
+    const doUpdate = () => {
+      const fileChanges = getFileChanges(applyService.getSessionCodeBlocks());
+      setChangeList(fileChanges);
+    };
+    disposer.addDispose(aiChatService.onChangeSession(doUpdate));
+    // TODO: 全量获取性能不好
+    disposer.addDispose(applyService.onCodeBlockUpdate(doUpdate));
+    return () => disposer.dispose();
+  }, []);
 
   React.useEffect(() => {
     const featureSlashCommands = chatFeatureRegistry.getAllShortcutSlashCommand();
@@ -117,6 +205,9 @@ export const AIChatView = () => {
     if (chatRenderRegistry.chatInputRender) {
       return chatRenderRegistry.chatInputRender;
     }
+    if (aiNativeConfigService.capabilities.supportsMCP) {
+      return ChatMentionInput;
+    }
     return ChatInput;
   }, [chatRenderRegistry.chatInputRender]);
 
@@ -130,8 +221,29 @@ export const AIChatView = () => {
     [],
   );
 
+  const onDidWheel = React.useCallback(
+    (e: WheelEvent) => {
+      // 向上滚动
+      if (e.deltaY < 0) {
+        autoScroll.current = false;
+      } else {
+        autoScroll.current = true;
+      }
+    },
+    [autoScroll],
+  );
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.addEventListener('wheel', onDidWheel);
+      return () => {
+        containerRef.current?.removeEventListener('wheel', onDidWheel);
+      };
+    }
+  }, [autoScroll]);
+
   const scrollToBottom = React.useCallback(() => {
-    if (containerRef && containerRef.current) {
+    if (containerRef && containerRef.current && autoScroll.current) {
       const lastElement = containerRef.current.lastElementChild;
       if (lastElement) {
         lastElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -141,7 +253,7 @@ export const AIChatView = () => {
         containerRef.current.classList.add(SCROLL_CLASSNAME);
       }
     }
-  }, [containerRef]);
+  }, [containerRef, autoScroll]);
 
   const handleDispatchMessage = React.useCallback(
     (dispatch: TDispatchAction) => {
@@ -163,7 +275,7 @@ export const AIChatView = () => {
     disposer.addDispose(
       chatApiService.onScrollToBottom(() => {
         requestAnimationFrame(() => {
-          scrollToBottom();
+          // scrollToBottom();
         });
       }),
     );
@@ -174,7 +286,7 @@ export const AIChatView = () => {
           if (loading) {
             return;
           }
-          await handleSend(message);
+          await handleSend(message.message, message.images, message.agentId, message.command);
         } else {
           if (message.agentId) {
             setAgentId(message.agentId);
@@ -190,8 +302,9 @@ export const AIChatView = () => {
     disposer.addDispose(
       chatApiService.onChatReplyMessageLaunch((data) => {
         if (data.kind === 'content') {
-          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: data.content,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             content: data.content,
@@ -199,8 +312,9 @@ export const AIChatView = () => {
           });
           renderSimpleMarkdownReply({ chunk: data.content, relationId });
         } else {
-          const relationId = aiReporter.start(AIServiceType.CustomReplay, {
+          const relationId = aiReporter.start(AIServiceType.CustomReply, {
             message: 'component#' + data.component,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
           msgHistoryManager.addAssistantMessage({
             componentId: data.component,
@@ -222,6 +336,7 @@ export const AIChatView = () => {
 
           const relationId = aiReporter.start(AIServiceType.Chat, {
             message: '',
+            sessionId: aiChatService.sessionModel.sessionId,
           });
 
           if (role === 'assistant') {
@@ -258,6 +373,9 @@ export const AIChatView = () => {
                       text={message}
                       agentId={visibleAgentId}
                       command={command}
+                      labelService={labelService}
+                      workspaceService={workspaceService}
+                      commandService={commandService}
                     />
                   ),
                 },
@@ -349,10 +467,16 @@ export const AIChatView = () => {
   );
 
   const renderUserMessage = React.useCallback(
-    async (renderModel: { message: string; agentId?: string; relationId: string; command?: string }) => {
+    async (renderModel: {
+      message: string;
+      images?: string[];
+      agentId?: string;
+      relationId: string;
+      command?: string;
+    }) => {
       const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
-      const { message, agentId, relationId, command } = renderModel;
+      const { message, images, agentId, relationId, command } = renderModel;
 
       const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
 
@@ -361,9 +485,18 @@ export const AIChatView = () => {
           id: uuid(6),
           relationId,
           text: ChatUserRoleRender ? (
-            <ChatUserRoleRender content={message} agentId={visibleAgentId} command={command} />
+            <ChatUserRoleRender content={message} images={images} agentId={visibleAgentId} command={command} />
           ) : (
-            <CodeBlockWrapperInput relationId={relationId} text={message} agentId={visibleAgentId} command={command} />
+            <CodeBlockWrapperInput
+              labelService={labelService}
+              relationId={relationId}
+              text={message}
+              images={images}
+              agentId={visibleAgentId}
+              command={command}
+              workspaceService={workspaceService}
+              commandService={commandService}
+            />
           ),
         },
         styles.chat_message_code,
@@ -423,7 +556,9 @@ export const AIChatView = () => {
               setLoading(false);
             }}
             onRegenerate={() => {
-              aiChatService.sendRequest(request, true);
+              if (request) {
+                aiChatService.sendRequest(request, true);
+              }
             }}
             msgId={msgId}
           />
@@ -475,10 +610,10 @@ export const AIChatView = () => {
 
   const handleAgentReply = React.useCallback(
     async (value: IChatMessageStructure) => {
-      const { message, agentId, command, reportExtra } = value;
+      const { message, images, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
-      const request = aiChatService.createRequest(message, agentId!, command);
+      const request = aiChatService.createRequest(message, agentId!, images, command);
       if (!request) {
         return;
       }
@@ -488,16 +623,23 @@ export const AIChatView = () => {
 
       const startTime = Date.now();
       const reportType = ChatProxyService.AGENT_ID === agentId ? AIServiceType.Chat : AIServiceType.Agent;
-      const relationId = aiReporter.start(command || reportType, {
-        message,
-        agentId,
-        userMessage: message,
-        actionType,
-        actionSource,
-      });
+
+      const relationId = aiReporter.start(
+        command || reportType,
+        {
+          agentId,
+          userMessage: message,
+          actionType,
+          actionSource,
+          sessionId: aiChatService.sessionModel.sessionId,
+        },
+        // 由于涉及 tool 调用，超时时间设置长一点
+        600 * 1000,
+      );
 
       msgHistoryManager.addUserMessage({
         content: message,
+        images: images || [],
         agentId: agentId!,
         agentCommand: command!,
         relationId,
@@ -506,6 +648,7 @@ export const AIChatView = () => {
       await renderUserMessage({
         relationId,
         message,
+        images,
         command,
         agentId,
       });
@@ -519,6 +662,12 @@ export const AIChatView = () => {
         replyStartTime: startTime,
       });
 
+      // 创建消息时，设置当前活跃的消息信息，便于toolCall打点
+      mcpServerRegistry.activeMessageInfo = {
+        messageId: msgId,
+        sessionId: aiChatService.sessionModel.sessionId,
+      };
+
       await renderReply({
         startTime,
         relationId,
@@ -529,15 +678,64 @@ export const AIChatView = () => {
         msgId,
       });
     },
-    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom],
+    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom, loading],
   );
 
   const handleSend = React.useCallback(
-    async (value: IChatMessageStructure) => {
-      const { message, command, reportExtra } = value;
+    async (message: string, images?: string[], agentId?: string, command?: string) => {
+      const reportExtra = {
+        actionSource: ActionSourceEnum.Chat,
+        actionType: ActionTypeEnum.Send,
+      };
+      agentId = agentId ? agentId : ChatProxyService.AGENT_ID;
+      // 提取并替换 {{@file:xxx}} 中的文件内容
+      let processedContent = message;
+      const filePattern = /\{\{@file:(.*?)\}\}/g;
+      const fileMatches = message.match(filePattern);
+      let isCleanContext = false;
+      if (fileMatches) {
+        for (const match of fileMatches) {
+          const filePath = match.replace(/\{\{@file:(.*?)\}\}/, '$1');
+          if (filePath && !isCleanContext) {
+            isCleanContext = true;
+            llmContextService.cleanFileContext();
+          }
+          const fileUri = new URI(filePath);
+          const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
+          processedContent = processedContent.replace(match, `\`<attached_file>${relativePath}\``);
+        }
+      }
 
-      const agentId = value.agentId ? value.agentId : ChatProxyService.AGENT_ID;
-      return handleAgentReply({ message, agentId, command, reportExtra });
+      const folderPattern = /\{\{@folder:(.*?)\}\}/g;
+      const folderMatches = processedContent.match(folderPattern);
+      if (folderMatches) {
+        for (const match of folderMatches) {
+          const folderPath = match.replace(/\{\{@folder:(.*?)\}\}/, '$1');
+          const folderUri = new URI(folderPath);
+          const relativePath = (await workspaceService.asRelativePath(folderUri))?.path || folderUri.displayName;
+          processedContent = processedContent.replace(match, `\`<attached_folder>${relativePath}\``);
+        }
+      }
+      const codePattern = /\{\{@code:(.*?)\}\}/g;
+      const codeMatches = processedContent.match(codePattern);
+      if (codeMatches) {
+        for (const match of codeMatches) {
+          const filePathWithLineRange = match.replace(/\{\{@code:(.*?)\}\}/, '$1');
+          const [filePath, lineRange] = filePathWithLineRange.split(':');
+          let range: [number, number] = [0, 0];
+          if (lineRange) {
+            const [startLine, endLine] = lineRange.slice(1).split('-');
+            range = [parseInt(startLine, 10), parseInt(endLine, 10)];
+          }
+          const fileUri = new URI(filePath);
+          const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
+          processedContent = processedContent.replace(
+            match,
+            `\`<attached_file>${relativePath}:L${range[0]}-${range[1]}\``,
+          );
+        }
+      }
+      return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra });
     },
     [handleAgentReply],
   );
@@ -580,10 +778,12 @@ export const AIChatView = () => {
             message: msg.content,
             agentId: msg.agentId,
             command: msg.agentCommand,
+            images: msg.images,
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.requestId) {
           const request = aiChatService.sessionModel.getRequest(msg.requestId)!;
-          if (!request.response.isComplete) {
+          // 从storage恢复时，request为undefined
+          if (request && !request.response.isComplete) {
             setLoading(true);
           }
           await renderReply({
@@ -593,7 +793,7 @@ export const AIChatView = () => {
             agentId: msg.agentId,
             command: msg.agentCommand,
             startTime: msg.replyStartTime!,
-            request: aiChatService.sessionModel.getRequest(msg.requestId)!,
+            request,
           });
         } else if (msg.role === ChatMessageRole.Assistant && msg.content) {
           await renderSimpleMarkdownReply({
@@ -642,6 +842,16 @@ export const AIChatView = () => {
               dataSource={messageListData}
             />
           </div>
+          {aiChatService.sessionModel.slicedMessageCount ? (
+            <div className={styles.chat_tips_text}>
+              <div className={styles.chat_tips_container}>
+                {formatLocalize(
+                  'aiNative.chat.ai.assistant.limit.message',
+                  aiChatService.sessionModel.slicedMessageCount,
+                )}
+              </div>
+            </div>
+          ) : null}
           <div className={styles.chat_input_wrap}>
             <div className={styles.header_operate}>
               <div className={styles.header_operate_left}>
@@ -657,20 +867,23 @@ export const AIChatView = () => {
                   </Popover>
                 ))}
               </div>
-              <div className={styles.header_operate_right}></div>
             </div>
+            {changeList.length > 0 && (
+              <FileListDisplay
+                files={changeList}
+                onFileClick={(filePath) => {
+                  editorService.open(URI.file(path.join(appConfig.workspaceDir, filePath)));
+                }}
+                onRejectAll={() => {
+                  applyService.processAll('reject');
+                }}
+                onAcceptAll={() => {
+                  applyService.processAll('accept');
+                }}
+              />
+            )}
             <ChatInputWrapperRender
-              onSend={(value, agentId, command) =>
-                handleSend({
-                  message: value,
-                  agentId,
-                  command,
-                  reportExtra: {
-                    actionSource: ActionSourceEnum.Chat,
-                    actionType: ActionTypeEnum.Send,
-                  },
-                })
-              }
+              onSend={handleSend}
               disabled={loading}
               enableOptions={true}
               theme={theme}
@@ -680,7 +893,10 @@ export const AIChatView = () => {
               defaultAgentId={defaultAgentId}
               command={command}
               setCommand={setCommand}
+              contextService={llmContextService}
               ref={chatInputRef}
+              disableModelSelector={sessionModelId !== undefined || loading}
+              sessionModelId={sessionModelId}
             />
           </div>
         </div>
@@ -696,44 +912,127 @@ export function DefaultChatViewHeader({
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
-  const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
+
+  const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
+  const [currentTitle, setCurrentTitle] = React.useState<string>('');
+  const handleNewChat = React.useCallback(() => {
+    if (aiChatService.sessionModel.history.getMessages().length > 0) {
+      try {
+        aiChatService.createSessionModel();
+      } catch (error) {
+        messageService.error(error.message);
+      }
+    }
+  }, [aiChatService]);
+  const handleHistoryItemSelect = React.useCallback(
+    (item: IChatHistoryItem) => {
+      aiChatService.activateSession(item.id);
+    },
+    [aiChatService],
+  );
+  const handleHistoryItemDelete = React.useCallback(
+    (item: IChatHistoryItem) => {
+      aiChatService.clearSessionModel(item.id);
+    },
+    [aiChatService],
+  );
+
+  React.useEffect(() => {
+    const getHistoryList = () => {
+      const currentMessages = aiChatService.sessionModel.history.getMessages();
+      const latestUserMessage = currentMessages.findLast((m) => m.role === ChatMessageRole.User);
+      setCurrentTitle(
+        latestUserMessage ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH) : '',
+      );
+      setHistoryList(
+        aiChatService.getSessions().map((session) => {
+          const history = session.history;
+          const messages = history.getMessages();
+          const title =
+            messages.length > 0 ? cleanAttachedTextWrapper(messages[0].content).slice(0, MAX_TITLE_LENGTH) : '';
+          const updatedAt = messages.length > 0 ? messages[messages.length - 1].replyStartTime || 0 : 0;
+          // const loading = session.requests[session.requests.length - 1]?.response.isComplete;
+          return {
+            id: session.sessionId,
+            title,
+            updatedAt,
+            // TODO: 后续支持
+            loading: false,
+          };
+        }),
+      );
+    };
+    getHistoryList();
+    const toDispose = new DisposableCollection();
+    const sessionListenIds = new Set<string>();
+    toDispose.push(
+      aiChatService.onChangeSession((sessionId) => {
+        getHistoryList();
+        if (sessionListenIds.has(sessionId)) {
+          return;
+        }
+        sessionListenIds.add(sessionId);
+        toDispose.push(
+          aiChatService.sessionModel.history.onMessageChange(() => {
+            getHistoryList();
+          }),
+        );
+      }),
+    );
+    toDispose.push(
+      aiChatService.sessionModel.history.onMessageChange(() => {
+        getHistoryList();
+      }),
+    );
+    return () => {
+      toDispose.dispose();
+    };
+  }, [aiChatService]);
 
   return (
-    <>
-      <div className={styles.left}>
-        <span className={styles.title}>{aiAssistantName}</span>
-      </div>
-      <div className={styles.right}>
-        <Popover
-          overlayClassName={styles.popover_icon}
-          id={'ai-chat-header-clear'}
-          title={localize('aiNative.operate.clear.title')}
-        >
-          <EnhanceIcon
-            wrapperClassName={styles.action_btn}
-            className={getIcon('clear')}
-            onClick={handleClear}
-            tabIndex={0}
-            role='button'
-            ariaLabel={localize('aiNative.operate.clear.title')}
-          />
-        </Popover>
-        <Popover
-          overlayClassName={styles.popover_icon}
-          id={'ai-chat-header-close'}
-          position={PopoverPosition.left}
-          title={localize('aiNative.operate.close.title')}
-        >
-          <EnhanceIcon
-            wrapperClassName={styles.action_btn}
-            className={getIcon('window-close')}
-            onClick={handleCloseChatView}
-            tabIndex={0}
-            role='button'
-            ariaLabel={localize('aiNative.operate.close.title')}
-          />
-        </Popover>
-      </div>
-    </>
+    <div className={styles.header}>
+      <ChatHistory
+        className={styles.chat_history}
+        // 取对话名称
+        currentId={aiChatService.sessionModel.sessionId}
+        title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
+        historyList={historyList}
+        onNewChat={handleNewChat}
+        onHistoryItemSelect={handleHistoryItemSelect}
+        onHistoryItemDelete={handleHistoryItemDelete}
+        onHistoryItemChange={() => {}}
+      />
+      <Popover
+        overlayClassName={styles.popover_icon}
+        id={'ai-chat-header-clear'}
+        title={localize('aiNative.operate.clear.title')}
+      >
+        <EnhanceIcon
+          wrapperClassName={styles.action_btn}
+          className={getIcon('clear')}
+          onClick={handleClear}
+          tabIndex={0}
+          role='button'
+          ariaLabel={localize('aiNative.operate.clear.title')}
+        />
+      </Popover>
+      <Popover
+        overlayClassName={styles.popover_icon}
+        id={'ai-chat-header-close'}
+        position={PopoverPosition.left}
+        title={localize('aiNative.operate.close.title')}
+      >
+        <EnhanceIcon
+          wrapperClassName={styles.action_btn}
+          className={getIcon('window-close')}
+          onClick={handleCloseChatView}
+          tabIndex={0}
+          role='button'
+          ariaLabel={localize('aiNative.operate.close.title')}
+        />
+      </Popover>
+    </div>
   );
 }

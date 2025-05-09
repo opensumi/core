@@ -1,19 +1,18 @@
 import { Autowired } from '@opensumi/di';
 import {
+  AINativeConfigService,
   ClientAppContribution,
   Key,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
 } from '@opensumi/ide-core-browser';
-import {
-  AI_MULTI_LINE_COMPLETION_ACCEPT,
-  AI_MULTI_LINE_COMPLETION_DISCARD,
-} from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { MultiLineEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { AI_CODE_EDITS_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { CodeEditsIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { CommandContribution, CommandRegistry, Domain } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { transaction } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { IntelligentCompletionsController } from './intelligent-completions.controller';
 
@@ -22,8 +21,11 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
+
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(AI_MULTI_LINE_COMPLETION_DISCARD, {
+    commands.registerCommand(AI_CODE_EDITS_COMMANDS.DISCARD, {
       execute: () => {
         const editor = this.workbenchEditorService.currentCodeEditor;
         if (editor) {
@@ -32,7 +34,7 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
       },
     });
 
-    commands.registerCommand(AI_MULTI_LINE_COMPLETION_ACCEPT, {
+    commands.registerCommand(AI_CODE_EDITS_COMMANDS.ACCEPT, {
       execute: () => {
         const editor = this.workbenchEditorService.currentCodeEditor;
         if (editor) {
@@ -40,21 +42,43 @@ export class IntelligentCompletionsContribution implements KeybindingContributio
         }
       },
     });
+
+    commands.registerCommand(AI_CODE_EDITS_COMMANDS.TRIGGER, {
+      execute: () => {
+        const editor = this.workbenchEditorService.currentCodeEditor;
+        if (editor) {
+          transaction((tx) => {
+            IntelligentCompletionsController.get(editor.monacoEditor)?.trigger(tx);
+          });
+        }
+      },
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
+    const { codeEdits } = this.aiNativeConfigService;
+
     keybindings.registerKeybinding({
-      command: AI_MULTI_LINE_COMPLETION_DISCARD.id,
+      command: AI_CODE_EDITS_COMMANDS.DISCARD.id,
       keybinding: Key.ESCAPE.code,
-      when: MultiLineEditsIsVisible.raw,
+      when: CodeEditsIsVisible.raw,
       priority: 100,
     });
 
     keybindings.registerKeybinding(
       {
-        command: AI_MULTI_LINE_COMPLETION_ACCEPT.id,
+        command: AI_CODE_EDITS_COMMANDS.ACCEPT.id,
         keybinding: Key.TAB.code,
-        when: MultiLineEditsIsVisible.raw,
+        when: CodeEditsIsVisible.raw,
+      },
+      KeybindingScope.USER,
+    );
+
+    keybindings.registerKeybinding(
+      {
+        command: AI_CODE_EDITS_COMMANDS.TRIGGER.id,
+        keybinding: codeEdits.triggerKeybinding,
+        when: 'editorFocus',
       },
       KeybindingScope.USER,
     );

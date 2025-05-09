@@ -5,6 +5,8 @@ import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
 import { IAIReportCompletionOption } from './reporter';
+
+import type { CoreMessage } from 'ai';
 export * from './reporter';
 
 export interface IAINativeCapabilities {
@@ -25,6 +27,10 @@ export interface IAINativeCapabilities {
    */
   supportsInlineCompletion?: boolean;
   /**
+   * Use ai to provide code actions
+   */
+  supportsCodeAction?: boolean;
+  /**
    * Use ai to intelligently resolve conflicts
    */
   supportsConflictResolve?: boolean;
@@ -41,9 +47,17 @@ export interface IAINativeCapabilities {
    */
   supportsTerminalDetection?: boolean;
   /**
-   * Use ai terminal command suggets capabilities
+   * Use ai terminal command suggests capabilities
    */
   supportsTerminalCommandSuggest?: boolean;
+  /**
+   * Use ai to provide custom LLM settings
+   */
+  supportsCustomLLMSettings?: boolean;
+  /**
+   * supports modelcontextprotocol
+   */
+  supportsMCP?: boolean;
 }
 
 export interface IDesignLayoutConfig {
@@ -60,12 +74,48 @@ export interface IDesignLayoutConfig {
    * set menubar logo
    */
   menubarLogo?: string;
+  /**
+   * 是否支持插件注册 Chat 面板
+   */
   supportExternalChatPanel?: boolean;
+}
+
+export interface IAINativeInlineChatConfig {
+  /**
+   * inline chat 的 input 默认宽度
+   */
+  inputWidth?: number;
+  /**
+   * 唤起 input 的默认快捷键
+   */
+  inputKeybinding?: string;
+  /**
+   * inline chat 的 logo，支持图片和 react 组件
+   */
+  logo?: string | React.ReactNode | React.ComponentType<any>;
+}
+
+export interface IAINativeCodeEditsConfig {
+  /**
+   * 触发 code edits 的快捷键
+   */
+  triggerKeybinding?: string;
 }
 
 export interface IAINativeConfig {
   capabilities?: IAINativeCapabilities;
+  /**
+   * @deprecated use `designLayout` instead
+   */
   layout?: IDesignLayoutConfig;
+  /**
+   * inline chat 配置
+   */
+  inlineChat?: IAINativeInlineChatConfig;
+  /**
+   * code edits 配置
+   */
+  codeEdits?: IAINativeCodeEditsConfig;
 }
 
 export enum ECompletionType {
@@ -121,7 +171,22 @@ export interface IAIBackServiceOption {
   type?: string;
   requestId?: string;
   sessionId?: string;
-  history?: IHistoryChatMessage[];
+  images?: string[];
+  history?: CoreMessage[];
+  tools?: any[];
+  clientId?: string;
+  apiKey?: string;
+  /** 模型提供商，如 openai, anthropic, deepseek */
+  model?: string;
+  /** 模型ID，如 gpt-4o-mini, claude-3-5-sonnet-20240620 */
+  modelId?: string;
+  baseURL?: string;
+  system?: string;
+  maxTokens?: number;
+  providerOptions?: any;
+  noTool?: boolean;
+  /** 响应首尾是否有需要trim的内容 */
+  trimTexts?: [string, string];
 }
 
 /**
@@ -236,7 +301,7 @@ export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesPro
 export const ProblemFixRegistryToken = Symbol('ProblemFixRegistryToken');
 export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 export const IntelligentCompletionsRegistryToken = Symbol('IntelligentCompletionsRegistryToken');
-
+export const MCPConfigServiceToken = Symbol('MCPConfigServiceToken');
 export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 
@@ -286,6 +351,23 @@ export interface IChatContent {
   kind: 'content';
 }
 
+export interface IChatToolCall {
+  id: string;
+  type: string;
+  function: {
+    name: string;
+    arguments?: string;
+  };
+  result?: string;
+  index?: number;
+  state?: 'streaming-start' | 'streaming' | 'complete' | 'result';
+}
+
+export interface IChatToolContent {
+  content: IChatToolCall;
+  kind: 'toolCall';
+}
+
 export interface IChatMarkdownContent {
   content: IMarkdownString;
   kind: 'markdownContent';
@@ -320,12 +402,24 @@ export interface IChatComponent {
   kind: 'component';
 }
 
-export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
+export interface IChatReasoning {
+  content: string;
+  kind: 'reasoning';
+}
+
+export type IChatProgress =
+  | IChatContent
+  | IChatMarkdownContent
+  | IChatAsyncContent
+  | IChatTreeData
+  | IChatComponent
+  | IChatToolContent
+  | IChatReasoning;
 
 export interface IChatMessage {
-  readonly role: ChatMessageRole;
-  readonly content: string;
-  readonly name?: string;
+  role: ChatMessageRole;
+  content: string;
+  name?: string;
 }
 
 export const enum ChatMessageRole {
@@ -335,11 +429,19 @@ export const enum ChatMessageRole {
   Function,
 }
 
+export const CoreMessgaeRoleMap = {
+  system: ChatMessageRole.System,
+  user: ChatMessageRole.User,
+  tool: ChatMessageRole.Function,
+  assistant: ChatMessageRole.Assistant,
+};
+
 export interface IHistoryChatMessage extends IChatMessage {
   id: string;
   order: number;
 
   type?: 'string' | 'component';
+  images?: string[];
   relationId?: string;
   componentId?: string;
   componentValue?: any;
@@ -348,11 +450,17 @@ export interface IHistoryChatMessage extends IChatMessage {
   agentCommand?: string;
   requestId?: string;
   replyStartTime?: number;
+
+  /** 存储工具调用结果等额外信息 */
+  additional?: Record<string, any>;
 }
 
 // ## Code Edits start ##
 export enum ECodeEditsSourceTyping {
   LinterErrors = 'lint_errors',
   LineChange = 'line_change',
+  Typing = 'typing',
+  // 主动触发
+  Trigger = 'trigger',
 }
 // ## Code Edits ends ##

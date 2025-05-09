@@ -102,4 +102,5 @@ export const enum CodeSchemaId {
   folderSettings = 'vscode://schemas/settings/folder',
   launch = 'vscode://schemas/launch',
   tasks = 'vscode://schemas/tasks',
+  mcp = 'vscode://schemas/mcp',
 }

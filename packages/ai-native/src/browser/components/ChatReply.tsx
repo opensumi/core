@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import React, {
   Fragment,
   ReactNode,
@@ -38,7 +39,9 @@ import {
   IChatComponent,
   IChatContent,
   IChatResponseProgressFileTreeData,
+  IChatToolContent,
   URI,
+  localize,
 } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -148,7 +151,34 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
   );
 };
 
-const ComponentRender = (props: { component: string; value?: unknown }) => {
+const ToolCallRender = (props: { toolCall: IChatToolContent['content']; messageId?: string }) => {
+  const { toolCall, messageId } = props;
+  const chatAgentViewService = useInjectable<IChatAgentViewService>(ChatAgentViewServiceToken);
+  const [node, setNode] = useState<React.JSX.Element | null>(null);
+
+  useEffect(() => {
+    const config = chatAgentViewService.getChatComponent('toolCall');
+    if (config) {
+      const { component: Component, initialProps } = config;
+      setNode(<Component {...initialProps} value={toolCall} messageId={messageId} />);
+      return;
+    }
+    setNode(
+      <div>
+        <Loading />
+        <span style={{ marginLeft: 4 }}>正在加载组件</span>
+      </div>,
+    );
+    const deferred = chatAgentViewService.getChatComponentDeferred('toolCall')!;
+    deferred.promise.then(({ component: Component, initialProps }) => {
+      setNode(<Component {...initialProps} value={toolCall} messageId={messageId} />);
+    });
+  }, [toolCall.state]);
+
+  return node;
+};
+
+const ComponentRender = (props: { component: string; value?: unknown; messageId?: string }) => {
   const chatAgentViewService = useInjectable<IChatAgentViewService>(ChatAgentViewServiceToken);
   const [node, setNode] = useState<React.JSX.Element | null>(null);
 
@@ -156,7 +186,7 @@ const ComponentRender = (props: { component: string; value?: unknown }) => {
     const config = chatAgentViewService.getChatComponent(props.component);
     if (config) {
       const { component: Component, initialProps } = config;
-      setNode(<Component {...initialProps} value={props.value} />);
+      setNode(<Component {...initialProps} value={props.value} messageId={props.messageId} />);
       return;
     }
     setNode(
@@ -196,6 +226,27 @@ export const ChatReply = (props: IChatReplyProps) => {
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
+  const [collapseThinkingIndexSet, setCollapseThinkingIndexSet] = useState<Set<number>>(
+    !request.response.isComplete
+      ? new Set()
+      : new Set(
+          request.response.responseContents
+            .map((item, index) => (item.kind === 'reasoning' ? index : -1))
+            .filter((item) => item !== -1),
+        ),
+  );
+
+  useEffect(() => {
+    if (request.response.isComplete) {
+      setCollapseThinkingIndexSet(
+        new Set(
+          request.response.responseContents
+            .map((item, index) => (item.kind === 'reasoning' ? index : -1))
+            .filter((item) => item !== -1),
+        ),
+      );
+    }
+  }, [request.response.isComplete]);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
@@ -208,7 +259,7 @@ export const ChatReply = (props: IChatReplyProps) => {
           if (onDone) {
             onDone();
           }
-
+          // 模型消息返回结束，上报消息（包含toolCall等全部结束）
           aiReporter.end(relationId, {
             assistantMessage: request.response.responseText,
             replytime: Date.now() - startTime,
@@ -216,6 +267,8 @@ export const ChatReply = (props: IChatReplyProps) => {
             isStop: false,
             command,
             agentId,
+            messageId: msgId,
+            sessionId: aiChatService.sessionModel.sessionId,
           });
         }
 
@@ -233,21 +286,6 @@ export const ChatReply = (props: IChatReplyProps) => {
     request.response.reset();
     onRegenerate?.();
   }, [onRegenerate]);
-
-  const onStop = () => {
-    if (onDone) {
-      onDone();
-    }
-    aiReporter.end(relationId, {
-      assistantMessage: request.response.responseText,
-      replytime: Date.now() - startTime,
-      success: false,
-      isStop: true,
-      command,
-      agentId,
-    });
-    aiChatService.cancelRequest();
-  };
 
   const renderMarkdown = useCallback(
     (markdown: IMarkdownString) => {
@@ -270,10 +308,6 @@ export const ChatReply = (props: IChatReplyProps) => {
     </div>
   );
 
-  const renderComponent = (componentId: string, value: unknown) => (
-    <ComponentRender component={componentId} value={value} />
-  );
-
   const contentNode = React.useMemo(
     () =>
       request.response.responseContents.map((item, index) => {
@@ -283,13 +317,51 @@ export const ChatReply = (props: IChatReplyProps) => {
         } else if (item.kind === 'treeData') {
           node = renderTreeData(item.treeData);
         } else if (item.kind === 'component') {
-          node = renderComponent(item.component, item.value);
+          node = <ComponentRender component={item.component} value={item.value} messageId={msgId} />;
+        } else if (item.kind === 'toolCall') {
+          node = <ToolCallRender toolCall={item.content} messageId={msgId} />;
+        } else if (item.kind === 'reasoning') {
+          // 思考中必然为最后一条
+          const isThinking = index === request.response.responseContents.length - 1 && !request.response.isComplete;
+          node = (
+            <div className={cls(styles.reasoning, { [styles.thinking]: isThinking })}>
+              <Button
+                size='small'
+                type='secondary'
+                className={styles.thinking}
+                onClick={() => {
+                  if (isThinking) {
+                    return;
+                  }
+                  if (collapseThinkingIndexSet.has(index)) {
+                    collapseThinkingIndexSet.delete(index);
+                  } else {
+                    collapseThinkingIndexSet.add(index);
+                  }
+                  setCollapseThinkingIndexSet(new Set(collapseThinkingIndexSet));
+                }}
+              >
+                <Icon iconClass='codicon codicon-sparkle' />
+                {localize('aiNative.chat.thinking')}
+                {isThinking ? (
+                  <Loading />
+                ) : collapseThinkingIndexSet.has(index) ? (
+                  <Icon iconClass='codicon codicon-chevron-right' />
+                ) : (
+                  <Icon iconClass='codicon codicon-chevron-down' />
+                )}
+              </Button>
+              {!collapseThinkingIndexSet.has(index) ? (
+                <div className={styles.reasoning_content}>{renderMarkdown(new MarkdownString(item.content))}</div>
+              ) : null}
+            </div>
+          );
         } else {
           node = renderMarkdown(item.content);
         }
         return <Fragment key={`${item.kind}-${index}`}>{node}</Fragment>;
       }),
-    [request.response.responseContents],
+    [request.response.responseContents, collapseThinkingIndexSet],
   );
 
   const followupNode = React.useMemo(() => {
@@ -326,16 +398,16 @@ export const ChatReply = (props: IChatReplyProps) => {
   }, [request.response.followups]);
 
   if (!request.response.isComplete) {
-    return (
-      <ChatThinking message={request.response.responseText} onStop={onStop}>
-        {contentNode}
-      </ChatThinking>
-    );
+    return <ChatThinking message={request.response.responseText}>{contentNode}</ChatThinking>;
   }
 
   return (
     <ChatThinkingResult
-      hasMessage={request.response.responseParts.length > 0 || !!request.response.errorDetails?.message}
+      hasMessage={
+        request.response.responseParts.length > 0 ||
+        request.response.responseContents.length > 0 ||
+        !!request.response.errorDetails?.message
+      }
       onRegenerate={handleRegenerate}
       requestId={request.requestId}
     >

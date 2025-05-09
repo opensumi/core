@@ -596,11 +596,18 @@
     margin: 0 5px;
   }
 
+  [role='treeitem'] {
+    [class*='mod_actived__'] {
+      outline: 1px solid var(--kt-tree-inactiveSelectionBackground);
+    }
+  }
+
   .design-kt_split_panel {
     padding-bottom: 8px;
 
     &::-webkit-scrollbar {
       width: 4px;
+
       &:hover {
         width: 10px;
       }
@@ -715,6 +722,36 @@
 
   .design-extension_item {
     border-radius: 8px;
+  }
+
+  .design-tab_item_wrapper {
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      padding: 0;
+      border-radius: 4px;
+      font-size: 16px;
+
+      &:hover {
+        color: var(--design-text-hoverForeground);
+        background-color: var(--kt-icon-hoverBackground);
+      }
+    }
+  }
+}
+
+:global(.kt-dialog-content) {
+  .design-file_tree_node {
+    font-size: 13px;
+  }
+
+  .design-file_tree_node {
+    border-radius: 4px;
+    margin: 0 5px;
   }
 }
 

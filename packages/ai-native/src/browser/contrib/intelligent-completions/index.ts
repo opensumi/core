@@ -1,8 +1,27 @@
 import { Disposable, ECodeEditsSourceTyping } from '@opensumi/ide-core-common';
-import { IPosition, IRange, InlineCompletion } from '@opensumi/ide-monaco';
+import {
+  IModelContentChangedEvent,
+  IPosition,
+  IRange,
+  InlineCompletion,
+  InlineCompletions,
+} from '@opensumi/ide-monaco';
+
+import { ITriggerData } from './source/trigger.source';
 
 import type { ILineChangeData } from './source/line-change.source';
 import type { ILinterErrorData } from './source/lint-error.source';
+
+export enum CodeEditsRenderType {
+  Legacy = 'legacy',
+  Default = 'default',
+}
+
+/**
+ * 有效弃用时间（毫秒）
+ * 在可见的情况下超过 750ms 弃用才算有效数据，否则视为无效数据
+ */
+export const VALID_TIME = 750;
 
 export interface IIntelligentCompletionsResult<T = any> {
   readonly items: InlineCompletion[];
@@ -12,11 +31,18 @@ export interface IIntelligentCompletionsResult<T = any> {
   extra?: T;
 }
 
-export type ICodeEditsContextBean =
-  | { typing: ECodeEditsSourceTyping.LinterErrors; position: IPosition; data: ILinterErrorData }
-  | { typing: ECodeEditsSourceTyping.LineChange; position: IPosition; data: ILineChangeData };
+export interface ICodeEditsContextBean {
+  typing: ECodeEditsSourceTyping;
+  position: IPosition;
+  data: {
+    [ECodeEditsSourceTyping.LinterErrors]?: ILinterErrorData;
+    [ECodeEditsSourceTyping.LineChange]?: ILineChangeData;
+    [ECodeEditsSourceTyping.Typing]?: IModelContentChangedEvent;
+    [ECodeEditsSourceTyping.Trigger]?: ITriggerData;
+  };
+}
 
-export interface ICodeEdit {
+export interface ICodeEdit extends InlineCompletion {
   /**
    * 插入的文本
    */
@@ -26,16 +52,28 @@ export interface ICodeEdit {
    */
   readonly range: IRange;
 }
-export interface ICodeEditsResult {
-  readonly items: ICodeEdit[];
+
+export interface ICodeEditsResult<T extends ICodeEdit = ICodeEdit> extends InlineCompletions<T> {
+  readonly items: readonly T[];
 }
 
-export class CodeEditsResultValue extends Disposable {
-  constructor(private readonly raw: ICodeEditsResult) {
+export class CodeEditsResultValue<T extends ICodeEdit = ICodeEdit> extends Disposable {
+  constructor(private readonly raw: ICodeEditsResult<T>) {
     super();
   }
 
-  public get items(): ICodeEdit[] {
-    return this.raw.items;
+  public get items(): T[] {
+    return this.raw.items.map((item) => ({
+      ...item,
+      isInlineEdit: true,
+    }));
+  }
+
+  public get firstRange(): IRange {
+    return this.raw.items[0].range;
+  }
+
+  public get firstText(): string {
+    return this.raw.items[0].insertText;
   }
 }

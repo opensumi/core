@@ -316,6 +316,7 @@ export const EditorGroupBody = ({ group }: { group: EditorGroup }) => {
   const components: React.ReactNode[] = [];
   const codeEditorRef = React.useRef<HTMLDivElement>(null);
   const diffEditorRef = React.useRef<HTMLDivElement>(null);
+  const multiDiffEditorRef = React.useRef<HTMLDivElement>(null);
   const mergeEditorRef = React.useRef<HTMLDivElement>(null);
   const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
@@ -366,6 +367,21 @@ export const EditorGroupBody = ({ group }: { group: EditorGroup }) => {
       disposables.dispose();
     };
   }, []);
+
+  React.useEffect(() => {
+    if (multiDiffEditorRef.current) {
+      group.attachMultiDiffEditorDom(multiDiffEditorRef.current);
+      const observer = new ResizeObserver((entries) => {
+        const entry = entries[0];
+        if (entry && entry.contentRect.height > 0) {
+          group.doLayoutEditors();
+          observer.disconnect();
+        }
+      });
+      observer.observe(multiDiffEditorRef.current);
+      return () => observer.disconnect();
+    }
+  }, [multiDiffEditorRef.current]);
 
   group.activeComponents.forEach((resources, component) => {
     const initialProps = group.activateComponentsProps.get(component);
@@ -477,6 +493,12 @@ export const EditorGroupBody = ({ group }: { group: EditorGroup }) => {
               [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
             })}
             ref={diffEditorRef}
+          />
+          <div
+            className={cls(styles.kt_editor_multi_diff_editor, styles_kt_editor_component, {
+              [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.multiDiff,
+            })}
+            ref={multiDiffEditorRef}
           />
           <div
             className={cls(styles.kt_editor_diff_3_editor, styles_kt_editor_component, {

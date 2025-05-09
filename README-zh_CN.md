@@ -7,12 +7,10 @@
 <p align="center">一款帮助你快速搭建 AI 原生 IDE 产品的底层框架。</p>
 
 <div align="center">
- 
-[![CI][ci-image]][ci-url]
-[![E2E][e2e-image]][e2e-url]
-[![Test Coverage][test-image]][test-url]
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![Issues need help][help-wanted-image]][help-wanted-url]
+
+[![MCP][mcp-client-image]][mcp-client-url] [![MCP Feature][mcp-client-feature-image]][mcp-client-feature-url]
+
+[![CI][ci-image]][ci-url] [![E2E][e2e-image]][e2e-url] [![Test Coverage][test-image]][test-url] [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![Issues need help][help-wanted-image]][help-wanted-url]
 
 [![Discussions][discussions-image]][discussions-url] [![CLA assistant][cla-image]][cla-url] [![License][license-image]][license-url]
 
@@ -41,6 +39,10 @@
 [github-issues-url]: https://github.com/opensumi/core/issues
 [help-wanted-image]: https://flat.badgen.net/github/label-issues/opensumi/core/🤔%20help%20wanted/open
 [help-wanted-url]: https://github.com/opensumi/core/issues?q=is%3Aopen+is%3Aissue+label%3A%22🤔+help+wanted%22
+[mcp-client-image]: https://badge.mcpx.dev/?type=client
+[mcp-client-url]: https://modelcontextprotocol.io
+[mcp-client-feature-image]: https://badge.mcpx.dev/?type=client&features=tools
+[mcp-client-feature-url]: https://modelcontextprotocol.io/clients
 
 [Changelog](./CHANGELOG-zh_CN.md) · [Report Bug][github-issues-url] · [Request Feature][github-issues-url] · [English](./README.md) · 中文
 
@@ -53,9 +55,11 @@
 我们提供了一些示例项目帮助你快速搭建你的 IDE 项目产品
 
 - [Cloud IDE](https://github.com/opensumi/ide-startup)
-- [Desktop IDE - based on the Electron](https://github.com/opensumi/ide-electron)
-- [Lite Web IDE - pure web IDE based on the Browser](https://github.com/opensumi/ide-startup-lite)
-- [The Mini-App liked IDE](https://github.com/opensumi/app-desktop)
+- [Desktop IDE - 桌面端 IDE](https://github.com/opensumi/ide-electron)
+- [CodeFuse IDE - 基于 OpenSumi 的 AI IDE](https://github.com/codefuse-ai/codefuse-ide)
+- [CodeBlitz - 无容器 IDE 框架](https://github.com/opensumi/codeblitz)
+- [Lite Web IDE - 无容器 IDE ](https://github.com/opensumi/ide-startup-lite)
+- [小程序 IDE ](https://github.com/opensumi/app-desktop)
 
 ## ⚡️ 如何开发
 

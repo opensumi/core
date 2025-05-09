@@ -7,6 +7,7 @@ import {
   Emitter,
   Event,
   IDisposable,
+  LANGUAGE_TO_SUFFIX,
   LRUMap,
   URI,
   WithEventBus,
@@ -18,7 +19,6 @@ import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { getIcon } from '../style/icon/icon';
-
 const { addElement } = arrays;
 
 /**
@@ -125,7 +125,7 @@ export class DefaultUriLabelProvider extends Disposable implements ILabelProvide
   }
 
   public getIcon(uri: URI, options?: ILabelOptions): string {
-    const { iconClass, onDidChange } = getIconClass(uri, options);
+    const { iconClass, onDidChange } = getResourceIconClass(uri, options);
     if (onDidChange) {
       const disposer = onDidChange(() => {
         this._onDidChange.fire(uri);
@@ -260,7 +260,8 @@ export class LabelService extends WithEventBus {
 let modeService: any;
 let modelService: IModelService;
 let languageService: ILanguageService;
-const getIconClass = (
+
+export const getResourceIconClass = (
   resource: URI,
   options?: ILabelOptions,
 ): {
@@ -302,7 +303,7 @@ const getIconClass = (
     if (!modelService) {
       modelService = StandaloneServices.get(IModelService);
     }
-    const detectedModeId = detectModeId(modelService, languageService, Uri.file(resource.withoutQuery().toString()));
+    const detectedModeId = detectModeId(modelService, languageService, resource.codeUri);
     if (detectedModeId) {
       classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
     } else {
@@ -311,7 +312,7 @@ const getIconClass = (
         languageService.onDidRequestBasicLanguageFeatures,
         languageService.onDidRequestRichLanguageFeatures,
       )(() => {
-        if (detectModeId(modelService, languageService, Uri.file(resource.withoutQuery().toString()))) {
+        if (detectModeId(modelService, languageService, resource.codeUri)) {
           _onDidChange?.fire();
           _onDidChange?.dispose();
         }
@@ -335,6 +336,20 @@ export function basenameOrAuthority(resource: URI) {
   return resource.path.base || resource.authority;
 }
 
+function getLanguageIdByExtension(resource: Uri): string | null {
+  const ext = resource.path.toLowerCase().split('.').pop();
+  if (!ext) {
+    return null;
+  }
+
+  for (const [langId, suffix] of Object.entries(LANGUAGE_TO_SUFFIX)) {
+    if (suffix.toLowerCase() === `.${ext}`) {
+      return langId;
+    }
+  }
+  return null;
+}
+
 export function detectModeId(
   modelService: IModelService,
   languageService: ILanguageService,
@@ -345,12 +360,10 @@ export function detectModeId(
   }
 
   let modeId: string | null = null;
-
   // Data URI: check for encoded metadata
   if (resource.scheme === 'data') {
     const metadata = DataUri.parseMetaData(resource);
     const mime = metadata.get(DataUri.META_DATA_MIME);
-
     if (mime) {
       modeId = languageService.getLanguageIdByMimeType(mime);
     }
@@ -367,16 +380,24 @@ export function detectModeId(
   }
 
   // otherwise fallback to path based detection
-  // return modeService.getModeIdByFilepathOrFirstLine(resource);
   const guessLanguageId = languageService.guessLanguageIdByFilepathOrFirstLine(resource);
-  // 相关 issue: https://github.com/microsoft/vscode/commit/2959fcde6aa9ff2058ad13cef8a5265ddb5f58a4#diff-7dd3b615572806b4d2210a9e7b32e1ae3714bc7b5fb201e437edaa8b372ce1aaR188
+
+  // 如果 guessLanguageId 为 'unknown'，尝试通过文件后缀名判断
+  if (guessLanguageId === 'unknown') {
+    const langId = getLanguageIdByExtension(resource);
+    if (langId) {
+      return langId;
+    }
+  }
+
+  // guess langeuage id by extname
   return guessLanguageId === 'unknown' ? null : guessLanguageId;
 }
 
 export function getLanguageIdFromMonaco(uri: URI) {
   languageService = StandaloneServices.get(ILanguageService);
   modelService = StandaloneServices.get(IModelService);
-  return detectModeId(modelService, languageService, Uri.parse(uri.toString()));
+  return detectModeId(modelService, languageService, uri.codeUri);
 }
 
 /**

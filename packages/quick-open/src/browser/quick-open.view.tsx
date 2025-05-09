@@ -403,13 +403,16 @@ export const QuickOpenProgress = () => {
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(VIEW_CONTAINERS.QUICKPICK_PROGRESS);
 
+  if (!indicator) {
+    return null;
+  }
   React.useEffect(() => {
     widget.updateProgressStatus(!!busy);
   }, [busy]);
 
   return (
     <div id={VIEW_CONTAINERS.QUICKPICK_PROGRESS} className={styles.progress_bar}>
-      <ProgressBar progressModel={indicator!.progressModel} />
+      <ProgressBar progressModel={indicator.progressModel} />
     </div>
   );
 };

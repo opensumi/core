@@ -4,9 +4,9 @@
   height: 100%;
   .stop {
     position: absolute;
-    bottom: -38px;
+    bottom: -15px;
     padding-top: 12px;
-    left: -8px;
+    left: -9px;
     width: 105%;
   }
 
@@ -35,7 +35,7 @@
 }
 
 .thinking_text {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .bottom_container {
@@ -96,6 +96,7 @@
 .chat_input_container {
   position: relative;
   border-radius: 9px;
+  padding: 10px 0px 0px 0px;
   border: 1px solid var(--kt-input-border);
   background-color: var(--design-chatInput-background);
   &.active {
@@ -244,44 +245,47 @@
   }
 }
 
+.monaco_wrapper {
+  position: relative;
+  min-width: 130px;
+  > pre {
+    margin-bottom: 10px;
+  }
+  .editor {
+    border-radius: 8px;
+    font-size: 12px;
+    padding: 28px 8px 8px 8px;
+    line-height: 18px;
+    &::-webkit-scrollbar {
+      width: auto;
+      height: 4px;
+    }
+  }
+
+  .action_toolbar {
+    display: flex;
+    position: absolute;
+    right: 8px;
+    top: 2px;
+    z-index: 100;
+    height: 20px;
+    align-items: center;
+    overflow: hidden;
+
+    :global {
+      .kt-popover {
+        height: inherit;
+      }
+    }
+  }
+}
+
 .code_block {
   position: relative;
   min-width: 100px;
   margin-top: 4px;
-  .monaco_wrapper {
-    position: relative;
-    min-width: 130px;
-    > pre {
-      margin-bottom: 10px;
-    }
-    .editor {
-      border-radius: 8px;
-      font-size: 12px;
-      padding: 32px 8px 8px 8px;
-      line-height: 18px;
-      &::-webkit-scrollbar {
-        width: auto;
-        height: 4px;
-      }
-    }
-
-    .action_toolbar {
-      display: flex;
-      position: absolute;
-      right: 8px;
-      top: 6px;
-      z-index: 100;
-      height: 20px;
-      align-items: center;
-      overflow: hidden;
-
-      :global {
-        .kt-popover {
-          height: inherit;
-        }
-      }
-    }
-  }
+  max-height: 300px;
+  overflow: auto;
 
   :global {
     .hljs {
@@ -299,6 +303,7 @@
     background-color: var(--design-language-background);
     border-radius: 8px 0px 8px 0;
     color: var(--design-text-foreground);
+    font-size: 12px;
   }
 }
 
@@ -448,7 +453,13 @@
   h3,
   h4,
   h5 {
-    color: #fff;
+    color: var(--foreground);
+  }
+
+  hr {
+    border-bottom: 0;
+    opacity: 0.3;
+    border-color: var(--descriptionForeground);
   }
 
   p {
@@ -478,7 +489,7 @@
 * welcome
 */
 .chat_welcome_head {
-  font-size: 14px;
+  font-size: 12px;
   line-height: 22px;
   a {
     color: #3c8dff;
@@ -502,4 +513,142 @@
       display: block;
     }
   }
+}
+
+.chat_input_footer {
+  padding: 0px 10px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+
+  .model_selector {
+    display: flex;
+    font-size: 11px;
+    align-items: center;
+    min-width: 150px;
+  }
+
+  .mcp_desc {
+    padding: 5px 0px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.status {
+  :global {
+    .codicon-pass {
+      color: #52c41a;
+    }
+    .codicon-error {
+      color: var(--debugConsole-errorForeground);
+    }
+    .codicon-circle-slash {
+      color: var(--input-placeholderForeground);
+    }
+  }
+}
+
+.reasoning {
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    transition: color 0.2s ease-in-out;
+    :global {
+      .codicon {
+        color: inherit;
+      }
+      .codicon-sparkle {
+        margin-right: -1px;
+        font-size: 14px;
+      }
+    }
+  }
+  .reasoning_content {
+    padding-left: 12px;
+    border-left: 2px solid var(--descriptionForeground);
+    color: var(--descriptionForeground);
+  }
+}
+
+.attachment {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 4px;
+  margin: 0 2px;
+  background: var(--badge-background);
+  color: var(--badge-foreground);
+  border-radius: 3px;
+  vertical-align: middle;
+  font-size: 12px;
+  cursor: pointer;
+  :global {
+    .kt-icon {
+      font-size: 12px;
+      margin-right: 3px;
+    }
+  }
+  &:hover {
+    background-color: var(--chat-slashCommandBackground);
+    color: var(--chat-slashCommandForeground);
+  }
+}
+
+.attachment_text {
+  line-height: 20px;
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+.thumbnail_container {
+  display: flex;
+  gap: 4px;
+  padding: 4px 12px;
+  .thumbnail {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    position: relative;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  .delete_button {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 12px;
+    padding: 2px;
+    border: 0;
+    border-radius: 50%;
+    transition: transform 0.2s ease-in-out;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--badge-background);
+    &:hover {
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+    :global(.codicon) {
+      font-size: 12px;
+      color: var(--badge-foreground);
+    }
+  }
+}
+
+.image_wrapper {
+  display: inline-block;
+  border-radius: 3px;
+  overflow: hidden;
 }

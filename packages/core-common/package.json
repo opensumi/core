@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-common",
-  "version": "3.7.0",
+  "version": "3.8.2",
   "description": "@opensumi/ide-core-common",
   "files": [
     "lib",
@@ -20,7 +20,8 @@
   "dependencies": {
     "@opensumi/di": "^1.8.0",
     "@opensumi/events": "^1.0.0",
-    "@opensumi/ide-utils": "workspace:*"
+    "@opensumi/ide-utils": "workspace:*",
+    "ai": "^4.1.45"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*"

@@ -51,14 +51,15 @@
 @zindex-back-top: 10;
 @zindex-picker-panel: 10;
 @zindex-popup-close: 10;
-@zindex-modal: 1000;
-@zindex-modal-mask: 1000;
+@zindex-modal: 10000;
+@zindex-modal-mask: 10000;
 @zindex-message: 1010;
 @zindex-notification: 1010;
 @zindex-popover: 1030;
 @zindex-dropdown: 1050;
 @zindex-picker: 1050;
 @zindex-tooltip: 1060;
+@zindex-image: 1080;
 
 // Shadow
 @shadow-color: rgba(0, 0, 0, 0.15);
@@ -112,6 +113,14 @@
 @padding-md: 16px; // small containers and buttons
 @padding-sm: 12px; // Form controls and items
 @padding-xs: 8px; // small items
+@padding-xss: 4px; // more small
+
+// vertical margins
+@margin-lg: 24px; // containers
+@margin-md: 16px; // small containers and buttons
+@margin-sm: 12px; // Form controls and items
+@margin-xs: 8px; // small items
+@margin-xss: 4px; // more small
 
 // vertical padding for all form controls
 @control-padding-horizontal: @padding-sm;
@@ -136,7 +145,7 @@
 
 // Modal
 // --
-@modal-body-padding: 24px;
+@modal-body-padding: 12px;
 @modal-header-bg: @component-background;
 @modal-heading-color: @heading-color;
 @modal-footer-bg: transparent;
@@ -205,3 +214,13 @@
 // Checkbox
 @checkbox-default-size: 12px;
 @checkbox-large-size: 14px;
+
+// Image
+@image-size-base: 48px;
+@image-font-size-base: 24px;
+@image-bg: #f5f5f5;
+@image-color: #fff;
+@image-mask-font-size: 16px;
+@image-preview-operation-size: 18px;
+@image-preview-operation-color: @text-color-dark;
+@image-preview-operation-disabled-color: fade(@image-preview-operation-color, 25%);

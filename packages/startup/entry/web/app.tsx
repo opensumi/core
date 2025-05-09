@@ -12,7 +12,7 @@ renderApp(
     modules: [...AIModules, NotebookModule],
     opts: {
       layoutViewSize: {
-        menubarHeight: 48,
+        menubarHeight: 32,
       },
       layoutConfig: {
         [DESIGN_MENU_BAR_RIGHT]: {
@@ -25,6 +25,12 @@ renderApp(
       measure: {
         connection: {
           minimumReportThresholdTime: 400,
+        },
+      },
+      AINativeConfig: {
+        capabilities: {
+          supportsMCP: true,
+          supportsCustomLLMSettings: true,
         },
       },
       notebookServerHost: 'localhost:8888',

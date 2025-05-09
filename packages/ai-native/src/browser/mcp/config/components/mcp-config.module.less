@@ -1,0 +1,225 @@
+.container {
+  padding: 20px;
+  color: var(--foreground);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0;
+  color: var(--descriptionForeground);
+  font-size: 14px;
+}
+
+.actionButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: var(--button-primary-background);
+  color: var(--button-primary-foreground);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  .actionButtonIcon {
+    margin-right: 5px;
+  }
+
+  &:hover {
+    background-color: var(--button-primary-hover-background);
+  }
+}
+
+.serversList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.serverItem {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--editor-background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  .serverHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    .iconButton {
+      padding: 2px 5px;
+      margin-left: 5px;
+      cursor: pointer;
+      border-radius: 4px;
+      line-height: 20px;
+      font-size: 14px;
+      &:hover {
+        background-color: var(--badge-background);
+      }
+    }
+    .serverActionButton {
+      height: 24px;
+      background-color: var(--badge-background);
+      color: var(--badge-foreground);
+      span {
+        min-width: 52px;
+      }
+      &.active {
+        i {
+          color: var(--testing-iconPassed);
+        }
+      }
+      i {
+        color: var(--testing-iconErrored);
+        margin-right: 3px;
+      }
+    }
+  }
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--focusBorder);
+  }
+}
+
+.serverTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-indent: 12px;
+}
+
+.serverActions {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.serverName {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.serverStatusIcon {
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: 12px;
+  display: inline-block;
+  &.active {
+    background-color: var(--testing-iconPassed);
+    box-shadow: 0 0 0 1px var(--testing-iconPassed);
+  }
+  &.inactive {
+    background-color: var(--testing-iconErrored);
+    box-shadow: 0 0 0 1px var(--testing-iconErrored);
+  }
+}
+
+.serverStatus,
+.serverType {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.typeTag {
+  margin-left: 7px;
+}
+
+.serverType {
+  background-color: var(--editor-background);
+  color: var(--descriptionForeground);
+}
+
+.running {
+  background-color: var(--notification-info-background);
+  color: var(--notification-info-foreground);
+}
+
+.stopped {
+  background-color: var(--notification-error-background);
+  color: var(--notification-error-foreground);
+}
+
+.serverDetail {
+  padding: 12px;
+  border-radius: 6px;
+  background-color: var(--editor-background);
+  font-size: 13px;
+
+  &:not(:last-child) {
+    margin-bottom: 8px;
+  }
+}
+
+.detailRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+  align-items: center;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.detailLabel {
+  color: var(--descriptionForeground);
+  min-width: 70px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.detailContent {
+  color: var(--foreground);
+  word-break: break-all;
+  flex: 1;
+  background-color: var(--editor-background);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: var(--monaco-monospace-font);
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  &.link {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    &:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  }
+}
+
+.toolTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}

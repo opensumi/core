@@ -20,6 +20,10 @@ export class FileSearchService implements IFileSearchService {
   @Autowired(INodeLogger)
   logger: INodeLogger;
 
+  private isAbsolutePathPattern(pattern: string): boolean {
+    return path.isAbsolute(pattern) || pattern.startsWith('/') || pattern.startsWith('\\');
+  }
+
   // 这里应该返回文件的 `fsPath` 而非 `file://` 协议文件路径
   // 否则在 Windows 下，盘符路径会被隐藏
   async find(
@@ -40,6 +44,15 @@ export class FileSearchService implements IFileSearchService {
     };
 
     const roots: IFileSearchService.RootOptions = options.rootOptions || {};
+    let stringPattern = searchPattern.toLocaleLowerCase();
+
+    // 如果传入绝对路径，则将父级目录作为根目录
+    if (this.isAbsolutePathPattern(searchPattern)) {
+      const parent = path.dirname(searchPattern);
+      roots[parent] = {};
+      stringPattern = path.basename(searchPattern).toLocaleLowerCase();
+    }
+
     if (options.rootUris) {
       for (const rootUri of options.rootUris) {
         if (!roots[rootUri]) {
@@ -47,6 +60,7 @@ export class FileSearchService implements IFileSearchService {
         }
       }
     }
+
     // eslint-disable-next-line guard-for-in
     for (const rootUri in roots) {
       const rootOptions = roots[rootUri];
@@ -68,7 +82,7 @@ export class FileSearchService implements IFileSearchService {
 
     const exactMatches = new Set<string>();
     const fuzzyMatches = new Set<string>();
-    const stringPattern = searchPattern.toLocaleLowerCase();
+
     await Promise.all(
       Object.keys(roots).map(async (cwd) => {
         try {
@@ -78,6 +92,7 @@ export class FileSearchService implements IFileSearchService {
             rootOptions,
             (candidate) => {
               const fileUri = path.join(cwd, candidate);
+
               if (exactMatches.has(fileUri) || fuzzyMatches.has(fileUri)) {
                 return;
               }
@@ -103,7 +118,7 @@ export class FileSearchService implements IFileSearchService {
     );
     const sortedExactMatches = Array.from(exactMatches).sort((a, b) => {
       const depthA = Path.pathDepth(a);
-      const depthB = Path.pathDepth(a);
+      const depthB = Path.pathDepth(b);
       if (depthA === depthB) {
         const dirA = dirname(a);
         const dirB = dirname(b);
@@ -125,6 +140,7 @@ export class FileSearchService implements IFileSearchService {
     return new Promise((resolve, reject) => {
       try {
         const args = this.getSearchArgs(options);
+
         const process = this.processFactory.create({ command: replaceAsarInPath(rgPath), args, options: { cwd } });
         process.onError(reject);
         process.outputStream.on('close', resolve);
@@ -147,7 +163,8 @@ export class FileSearchService implements IFileSearchService {
   }
 
   private getSearchArgs(options: IFileSearchService.BaseOptions): string[] {
-    const args = ['--files', '--hidden', '--case-sensitive'];
+    const args = ['--files', '--hidden', '--case-sensitive', '--no-require-git'];
+
     if (options.includePatterns) {
       for (const includePattern of options.includePatterns) {
         if (includePattern) {

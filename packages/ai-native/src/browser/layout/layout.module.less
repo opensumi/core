@@ -14,16 +14,16 @@
       padding: 8px 12px;
       min-width: initial;
       margin: 0;
-
-      ::after {
-        content: '';
-      }
     }
 
     .rce-mbox-text {
       line-height: 18px;
       width: inherit;
-      font-size: 14px;
+      font-size: 12px;
+
+      &::after {
+        display: none;
+      }
     }
 
     .rce-smsg {
@@ -119,19 +119,19 @@
   border: none;
 }
 
+.header {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  background-color: var(--editorGroupHeader-tabsBackground);
+}
+
 .right_slot_container_wrap {
   height: 100%;
   display: flex;
   flex-direction: column;
-
-  .header {
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 10px;
-    background-color: var(--editorGroupHeader-tabsBackground);
-  }
 
   .container {
     flex: 1;

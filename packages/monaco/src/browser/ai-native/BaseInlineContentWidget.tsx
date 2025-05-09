@@ -71,7 +71,7 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
     this.options = options;
   }
 
-  show(options?: ShowAIContentOptions | undefined): void {
+  show(options: ShowAIContentOptions | undefined = this.options): void {
     if (!options) {
       return;
     }

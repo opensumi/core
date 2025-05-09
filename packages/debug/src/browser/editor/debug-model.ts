@@ -7,7 +7,6 @@ import {
   IReporterService,
   PreferenceService,
   addClassName,
-  createClassNameTokens,
 } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
@@ -139,7 +138,13 @@ export class DebugModel implements IDebugModel {
 
     this.toDispose.pushAll([
       this.breakpointWidget,
-      this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
+      this.editor.onKeyDown((e) => {
+        if (e.code === 'Escape' && !e.altKey && !e.shiftKey && !e.metaKey) {
+          this.debugHoverWidget.hide({ immediate: true });
+        } else {
+          this.debugHoverWidget.hide({ immediate: false });
+        }
+      }),
       this.editor.onDidChangeModelContent(() => this.renderFrames()),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
       this.debugBreakpointsService.onDidFocusedBreakpoints(({ range }) => {

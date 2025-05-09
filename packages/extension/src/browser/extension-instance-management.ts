@@ -75,9 +75,7 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
 
   public disposeExtensionInstancesByPath(paths: string[]) {
     paths.forEach((path) => {
-      if (this.extensionMap.has(path)) {
-        this.extensionMap.get(path)!.dispose();
-      }
+      this.extensionMap.get(path)?.dispose();
     });
   }
 

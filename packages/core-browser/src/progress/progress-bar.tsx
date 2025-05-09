@@ -7,21 +7,23 @@ import styles from './progress.module.less';
 
 import { IProgressModel } from '.';
 
-export const ProgressBar: React.FC<{ progressModel: IProgressModel; className?: string }> = ({
+export const ProgressBar: React.FC<{ progressModel?: IProgressModel; className?: string }> = ({
   progressModel,
   className,
 }) => {
-  const worked = useAutorun(progressModel.worked);
-  const total = useAutorun(progressModel.total);
-  const show = useAutorun(progressModel.show);
-  const fade = useAutorun(progressModel.fade);
+  if (!progressModel) {
+    return null;
+  }
+  const worked = useAutorun<number>(progressModel.worked);
+  const total = useAutorun<number | undefined>(progressModel.total);
+  const show = useAutorun<boolean>(progressModel.show);
+  const fade = useAutorun<boolean>(progressModel.fade);
+
+  const progressWidth = total ? (worked / total || 0.02) * 100 + '%' : '2%';
 
   return (
     <div className={cls(className, styles.progressBar, { [styles.hide]: !show }, { [styles.fade]: fade })}>
-      <div
-        className={cls(styles.progress, { [styles.infinite]: !total })}
-        style={total ? { width: (worked / total || 0.02) * 100 + '%' } : { width: '2%' }}
-      ></div>
+      <div className={cls(styles.progress, { [styles.infinite]: !total })} style={{ width: progressWidth }}></div>
     </div>
   );
 };

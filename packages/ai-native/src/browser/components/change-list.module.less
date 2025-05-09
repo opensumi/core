@@ -1,0 +1,143 @@
+.container {
+  margin: 0 12px;
+  background: var(--design-chatInput-background);
+  border-radius: 9px 9px 0 0;
+  border: 1px solid var(--kt-input-border);
+  border-bottom: none;
+  overflow: hidden;
+  padding-bottom: 6px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 2px 12px;
+  background-color: transparent;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: var(--descriptionForeground);
+}
+
+.toggleButton:hover {
+  color: var(--design-text-highlightForeground);
+  transition: color 0.2s ease-in-out;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  gap: 2px;
+  :global(.kt-icon) {
+    color: inherit;
+  }
+}
+
+.title {
+  gap: 6px;
+  transition: color 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+}
+
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0 12px;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  cursor: pointer;
+  border: none;
+  font-size: 13px;
+  color: var(--descriptionForeground);
+}
+
+.fileItem:hover {
+  background-color: var(--design-block-hoverBackground);
+}
+
+.fileIcon {
+  margin-right: 6px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileInfo {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  :global(.kt-popover-trigger) {
+    margin-left: 8px;
+  }
+  :global(.codicon) {
+    font-size: 12px !important;
+    position: relative;
+    top: 1px;
+  }
+}
+
+.filePath {
+  font-size: 12px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileStats {
+  font-size: 12px;
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+
+.additions {
+  color: #52c41a;
+}
+
+.deletions {
+  color: var(--debugConsole-errorForeground);
+}
+
+.noChange {
+  color: #6a737d;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.collapsed {
+  display: none;
+}
+
+.viewChanges {
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  :global(.kt-icon) {
+    color: inherit;
+  }
+  &:hover {
+    color: var(--design-text-highlightForeground);
+    transition: color 0.2s ease-in-out;
+  }
+}

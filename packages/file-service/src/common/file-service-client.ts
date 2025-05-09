@@ -88,6 +88,10 @@ export interface IFileServiceClient {
 
   unwatchFileChanges(watchId: number): Promise<void>;
 
+  reconnect(): Promise<void>;
+
+  dispose(): void;
+
   setWatchFileExcludes(excludes: string[]): Promise<void>;
 
   getWatchFileExcludes(): Promise<string[]>;

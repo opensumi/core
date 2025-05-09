@@ -7,7 +7,11 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/socket';
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-common/lib/log';
-import { DidFilesChangedParams, FileSystemWatcherClient } from '@opensumi/ide-core-common/lib/types/file-watch';
+import {
+  DidFilesChangedParams,
+  FileSystemWatcherClient,
+  RecursiveWatcherBackend,
+} from '@opensumi/ide-core-common/lib/types/file-watch';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { AppConfig, Deferred, ILogService, UriComponents } from '@opensumi/ide-core-node';
 import { process as processUtil } from '@opensumi/ide-utils';
@@ -110,7 +114,7 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
     );
   }
 
-  private async createWatcherProcess(clientId: string, ipcHandlerPath: string) {
+  private async createWatcherProcess(clientId: string, ipcHandlerPath: string, backend?: RecursiveWatcherBackend) {
     const forkArgs = [
       `--${SUMI_WATCHER_PROCESS_SOCK_KEY}=${JSON.stringify({
         path: ipcHandlerPath,
@@ -118,6 +122,7 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
       `--${WATCHER_INIT_DATA_KEY}=${JSON.stringify({
         logDir: this.appConfig.logDir,
         logLevel: this.appConfig.logLevel,
+        backend,
         clientId,
       })}`,
     ];
@@ -136,14 +141,22 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
     return this.watcherProcess.pid;
   }
 
-  async createProcess(clientId: string) {
+  async createProcess(clientId: string, backend?: RecursiveWatcherBackend) {
+    this._whenReadyDeferred = new Deferred();
     this.logger.log('create watcher process for client: ', clientId);
     this.logger.log('appconfig watcherHost: ', this.watcherHost);
 
     const ipcHandlerPath = await this.getIPCHandlerPath('watcher_process');
+    // 如果存在连接，则关闭连接, 避免重复创建
+    const server = this.clientWatcherConnectionServer.get(clientId);
+    if (server) {
+      // 等待真正关闭后再移除引用，避免句柄和端口泄漏
+      await new Promise<void>((res) => server.close(() => res()));
+      this.clientWatcherConnectionServer.delete(clientId);
+    }
     await this.createWatcherServer(clientId, ipcHandlerPath);
 
-    const pid = await this.createWatcherProcess(clientId, ipcHandlerPath);
+    const pid = await this.createWatcherProcess(clientId, ipcHandlerPath, backend);
 
     return pid;
   }
@@ -158,7 +171,10 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
     }
   }
 
-  async watch(uri: UriComponents, options?: { excludes?: string[]; recursive?: boolean }): Promise<number> {
+  async watch(
+    uri: UriComponents,
+    options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
+  ): Promise<number> {
     this.logger.log('Wait for watcher process ready...');
     await this._whenReadyDeferred.promise;
     this.logger.log('start watch: ', uri);

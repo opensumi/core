@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ChatService } from '@opensumi/ide-ai-native/lib/browser/chat/chat.api.service';
 import {
   BaseTerminalDetectionLineMatcher,
@@ -20,10 +20,13 @@ import {
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   ITerminalProviderRegistry,
-  TChatSlashCommandSend,
   TerminalSuggestionReadableStream,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { InlineChatController } from '@opensumi/ide-ai-native/lib/browser/widget/inline-chat/inline-chat-controller';
+import {
+  ChatAgentPromptProvider,
+  DefaultChatAgentPromptProvider,
+} from '@opensumi/ide-ai-native/lib/common/prompts/context-prompt-provider';
 import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
 import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
@@ -40,10 +43,8 @@ import {
   ReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor, NewSymbolName, NewSymbolNameTag, Range } from '@opensumi/ide-monaco';
+import { ICodeEditor, ISelection, NewSymbolName, NewSymbolNameTag, Range, Selection } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
-
-import { SlashCommand } from './SlashCommand';
 
 export enum EInlineOperation {
   Comments = 'Comments',
@@ -65,29 +66,13 @@ export class AINativeContribution implements AINativeCoreContribution {
   @Autowired(MergeConflictPromptManager)
   mergeConflictPromptManager: MergeConflictPromptManager;
 
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
+
   @Autowired(ChatServiceToken)
   private readonly aiChatService: ChatService;
 
   logger = getDebugLogger();
-
-  private getCrossCode(monacoEditor: ICodeEditor): string {
-    const model = monacoEditor.getModel();
-    if (!model) {
-      return '';
-    }
-
-    const selection = monacoEditor.getSelection();
-
-    if (!selection) {
-      return '';
-    }
-
-    const crossSelection = selection
-      .setStartPosition(selection.startLineNumber, 1)
-      .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
-    const crossCode = model.getValueInRange(crossSelection);
-    return crossCode;
-  }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
     registry.registerInteractiveInput(
@@ -101,9 +86,9 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        execute: async (editor, value, token) => {},
-        providePreviewStrategy: async (editor, value, token) => {
-          const crossCode = this.getCrossCode(editor);
+        execute: async (editor, selection, value, token) => {},
+        providePreviewStrategy: async (editor, selection, value, token) => {
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
           const controller = new InlineChatController({ enableCodeblockRender: true });
           const stream = await this.aiBackService.requestStream(prompt, {}, token);
@@ -126,8 +111,8 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providePreviewStrategy: async (editor: ICodeEditor, token) => {
-          const crossCode = this.getCrossCode(editor);
+        providePreviewStrategy: async (editor: ICodeEditor, selection: ISelection, token) => {
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
           const controller = new InlineChatController({ enableCodeblockRender: true });
@@ -150,8 +135,8 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        providePreviewStrategy: async (editor: ICodeEditor, token) => {
-          const crossCode = this.getCrossCode(editor);
+        providePreviewStrategy: async (editor: ICodeEditor, selection: ISelection, token) => {
+          const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
           const result = await this.aiBackService.request(prompt, {}, token);
@@ -171,30 +156,30 @@ export class AINativeContribution implements AINativeCoreContribution {
       },
     );
 
-    registry.registerEditorInlineChat(
-      {
-        id: 'ai-explain',
-        name: EInlineOperation.Explain,
-        renderType: 'button',
-        codeAction: {
-          isPreferred: true,
-        },
-      },
-      {
-        execute: async (editor: ICodeEditor, token) => {
-          const model = editor.getModel();
-          if (!model) {
-            return;
-          }
+    // registry.registerEditorInlineChat(
+    //   {
+    //     id: 'ai-explain',
+    //     name: EInlineOperation.Explain,
+    //     renderType: 'button',
+    //     codeAction: {
+    //       isPreferred: true,
+    //     },
+    //   },
+    //   {
+    //     execute: async (editor: ICodeEditor, selection: ISelection, token) => {
+    //       const model = editor.getModel();
+    //       if (!model) {
+    //         return;
+    //       }
 
-          const crossCode = this.getCrossCode(editor);
-          this.aiChatService.sendMessage({
-            message: `Explain code: \`\`\`\n${crossCode}\n\`\`\``,
-            prompt: `Help me, Explain code: \`\`\`\n${crossCode}\n\`\`\``,
-          });
-        },
-      },
-    );
+    //       const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
+    //       this.aiChatService.sendMessage({
+    //         message: `Explain code: \`\`\`\n${crossCode}\n\`\`\``,
+    //         prompt: `Help me, Explain code: \`\`\`\n${crossCode}\n\`\`\``,
+    //       });
+    //     },
+    //   },
+    // );
 
     registry.registerTerminalInlineChat(
       {
@@ -247,38 +232,42 @@ export class AINativeContribution implements AINativeCoreContribution {
       ],
     );
 
-    registry.registerSlashCommand(
-      {
-        name: 'Explain',
-        description: 'Explain',
-        isShortcut: true,
-        tooltip: 'Explain',
-      },
-      {
-        providerRender: SlashCommand,
-        providerInputPlaceholder(value, editor) {
-          return 'Please enter or paste the code.';
-        },
-        providerPrompt(value, editor) {
-          return `Explain code: \`\`\`\n${value}\n\`\`\``;
-        },
-        execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
-          send(value);
-        },
-      },
-    );
+    registry.registerImageUploadProvider({
+      imageUpload: imageToBase64,
+    });
 
-    registry.registerSlashCommand(
-      {
-        name: 'Test',
-        description: 'Test',
-      },
-      {
-        execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
-          send(value);
-        },
-      },
-    );
+    // registry.registerSlashCommand(
+    //   {
+    //     name: 'Explain',
+    //     description: 'Explain',
+    //     isShortcut: true,
+    //     tooltip: 'Explain',
+    //   },
+    //   {
+    //     providerRender: SlashCommand,
+    //     providerInputPlaceholder(value, editor) {
+    //       return 'Please enter or paste the code.';
+    //     },
+    //     providerPrompt(value, editor) {
+    //       return `Explain code: \`\`\`\n${value}\n\`\`\``;
+    //     },
+    //     execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
+    //       send(value);
+    //     },
+    //   },
+    // );
+
+    // registry.registerSlashCommand(
+    //   {
+    //     name: 'Test',
+    //     description: 'Test',
+    //   },
+    //   {
+    //     execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
+    //       send(value);
+    //     },
+    //   },
+    // );
   }
 
   registerResolveConflictFeature(registry: IResolveConflictRegistry): void {
@@ -427,13 +416,13 @@ export class AINativeContribution implements AINativeCoreContribution {
   }
 
   registerIntelligentCompletionFeature(registry: IIntelligentCompletionsRegistry): void {
-    registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
-      items: [{ insertText: 'Hello OpenSumi' }],
-    }));
+    // registry.registerInlineCompletionsProvider(async (editor, position, bean, token) => ({
+    //   items: [{ insertText: 'Hello OpenSumi' }],
+    // }));
 
     registry.registerCodeEditsProvider(async (editor, position, bean, token) => {
       const model = editor.getModel();
-      const maxLine = Math.max(position.lineNumber + 3, model?.getLineCount() ?? 0);
+      const maxLine = Math.min(position.lineNumber + 3, model?.getLineCount() ?? 0);
       const lineMaxColumn = model!.getLineMaxColumn(maxLine) ?? 1;
 
       const value = model!.getValueInRange({
@@ -512,4 +501,31 @@ export class AINativeContribution implements AINativeCoreContribution {
       }
     });
   }
+
+  registerChatAgentPromptProvider(): void {
+    this.injector.overrideProviders({
+      token: ChatAgentPromptProvider,
+      useClass: DefaultChatAgentPromptProvider,
+    });
+  }
 }
+
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024;
+
+const imageToBase64 = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    if (file.size > MAX_IMAGE_SIZE) {
+      reject(new Error('Image size exceeds 3MB limit'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      resolve(base64String);
+    };
+    reader.onerror = () => {
+      reject(new Error('Failed to convert image to base64'));
+    };
+    reader.readAsDataURL(file);
+  });

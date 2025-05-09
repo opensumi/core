@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import {
   Disposable,
   Emitter,
@@ -6,14 +6,15 @@ import {
   IChatComponent,
   IChatMarkdownContent,
   IChatProgress,
+  IChatReasoning,
+  IChatToolContent,
   IChatTreeData,
-  ILogger,
-  memoize,
   uuid,
 } from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
+  CoreMessage,
   IChatFollowup,
   IChatModel,
   IChatRequestMessage,
@@ -26,9 +27,16 @@ import {
 import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
 
-export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
+import type { ImagePart, TextPart, ToolCallPart } from 'ai';
 
-@Injectable({ multiple: true })
+export type IChatProgressResponseContent =
+  | IChatMarkdownContent
+  | IChatAsyncContent
+  | IChatTreeData
+  | IChatComponent
+  | IChatToolContent
+  | IChatReasoning;
+
 export class ChatResponseModel extends Disposable {
   #responseParts: IChatProgressResponseContent[] = [];
   get responseParts() {
@@ -75,14 +83,36 @@ export class ChatResponseModel extends Disposable {
     return this.#onDidChange.event;
   }
 
-  constructor(requestId: string, public readonly session: IChatModel, public readonly agentId: string) {
+  constructor(
+    requestId: string,
+    public readonly session: IChatModel,
+    public readonly agentId: string,
+    initParams?: {
+      isComplete: boolean;
+      isCanceled: boolean;
+      responseContents: IChatProgressResponseContent[];
+      responseParts: IChatProgressResponseContent[];
+      responseText: string;
+      errorDetails: IChatResponseErrorDetails | undefined;
+      followups: IChatFollowup[] | undefined;
+    },
+  ) {
     super();
     this.#requestId = requestId;
+    if (initParams) {
+      this.#responseContents = initParams.responseContents;
+      this.#responseParts = initParams.responseParts || [];
+      this.#responseText = initParams.responseText;
+      this.#isComplete = initParams.isComplete;
+      this.#isCanceled = initParams.isCanceled;
+      this.#errorDetails = initParams.errorDetails;
+      this.#followups = initParams.followups;
+    }
   }
 
   updateContent(progress: IChatProgress, quiet?: boolean): void {
+    const responsePartLength = this.#responseParts.length - 1;
     if (progress.kind === 'content' || progress.kind === 'markdownContent') {
-      const responsePartLength = this.#responseParts.length - 1;
       const lastResponsePart = this.#responseParts[responsePartLength];
 
       if (!lastResponsePart || lastResponsePart.kind !== 'markdownContent') {
@@ -104,6 +134,18 @@ export class ChatResponseModel extends Disposable {
       }
 
       this.#updateResponseText();
+    } else if (progress.kind === 'reasoning') {
+      const lastResponsePart = this.#responseParts[responsePartLength];
+      if (!lastResponsePart || lastResponsePart.kind !== 'reasoning') {
+        // 去掉开头的 <think> 标签
+        this.#responseParts.push({ content: progress.content.replace(/^<think>/, ''), kind: 'reasoning' });
+      } else {
+        this.#responseParts[responsePartLength] = {
+          content: lastResponsePart.content + progress.content,
+          kind: 'reasoning',
+        };
+      }
+      this.#updateResponseText();
     } else if (progress.kind === 'asyncContent') {
       // Add a new resolving part
       const responsePosition = this.#responseParts.push(progress) - 1;
@@ -120,11 +162,20 @@ export class ChatResponseModel extends Disposable {
         }
         this.#updateResponseText(quiet);
       });
-    } else if (progress.kind === 'treeData') {
+    } else if (progress.kind === 'treeData' || progress.kind === 'component') {
       this.#responseParts.push(progress);
       this.#updateResponseText(quiet);
-    } else if (progress.kind === 'component') {
-      this.#responseParts.push(progress);
+    } else if (progress.kind === 'toolCall') {
+      const find = this.#responseParts.find(
+        (item) => item.kind === 'toolCall' && item.content.id === progress.content.id,
+      );
+      if (find) {
+        // @ts-ignore
+        find.content = progress.content;
+        // this.#responseParts[responsePartLength] = find;
+      } else {
+        this.#responseParts.push(progress);
+      }
       this.#updateResponseText(quiet);
     }
   }
@@ -139,6 +190,12 @@ export class ChatResponseModel extends Disposable {
           return '';
         }
         if (part.kind === 'component') {
+          return '';
+        }
+        if (part.kind === 'toolCall') {
+          return part.content.function.name;
+        }
+        if (part.kind === 'reasoning') {
           return '';
         }
         return part.content.value;
@@ -198,9 +255,19 @@ export class ChatResponseModel extends Disposable {
     this.#followups = followups;
     this.#onDidChange.fire();
   }
+
+  toJSON() {
+    return {
+      isCanceled: this.isCanceled,
+      responseContents: this.responseContents,
+      responseText: this.responseText,
+      responseParts: this.responseParts,
+      errorDetails: this.errorDetails,
+      followups: this.followups,
+    };
+  }
 }
 
-@Injectable({ multiple: true })
 export class ChatRequestModel implements IChatRequestModel {
   #requestId: string;
   public get requestId(): string {
@@ -215,19 +282,27 @@ export class ChatRequestModel implements IChatRequestModel {
   ) {
     this.#requestId = requestId;
   }
+
+  toJSON() {
+    return {
+      requestId: this.requestId,
+      message: this.message,
+      response: this.response,
+    };
+  }
 }
 
-@Injectable({ multiple: true })
 export class ChatModel extends Disposable implements IChatModel {
-  private static requestIdPool = 0;
+  private requestIdPool = 0;
 
-  @Autowired(ILogger)
-  protected readonly logger: ILogger;
+  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; modelId?: string }) {
+    super();
+    this.#sessionId = initParams?.sessionId ?? uuid();
+    this.history = initParams?.history ?? new MsgHistoryManager();
+    this.#modelId = initParams?.modelId;
+  }
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
-
-  #sessionId: string = uuid();
+  #sessionId: string;
   get sessionId(): string {
     return this.#sessionId;
   }
@@ -237,15 +312,105 @@ export class ChatModel extends Disposable implements IChatModel {
     return Array.from(this.#requests.values());
   }
 
-  @memoize
-  get history(): MsgHistoryManager {
-    return this.injector.get(MsgHistoryManager, []);
+  restoreRequests(requests: ChatRequestModel[]): void {
+    this.#requests = new Map(requests.map((r) => [r.requestId, r]));
+    this.requestIdPool = requests.length;
+  }
+
+  readonly history: MsgHistoryManager;
+
+  #slicedMessageCount = 0;
+
+  public get slicedMessageCount() {
+    return this.#slicedMessageCount;
+  }
+
+  #modelId?: string;
+
+  public get modelId(): string | undefined {
+    return this.#modelId;
+  }
+
+  set modelId(modelId: string | undefined) {
+    this.#modelId = modelId;
+  }
+
+  getMessageHistory(contextWindow?: number) {
+    const history: CoreMessage[] = [];
+    for (const request of this.requests) {
+      if (!request.response.isComplete) {
+        continue;
+      }
+      history.push({
+        role: 'user',
+        content: request.message.images?.length
+          ? [
+              { type: 'text', text: request.message.prompt },
+              ...request.message.images.map((image) => ({ type: 'image', image: new URL(image) } as ImagePart)),
+            ]
+          : request.message.prompt,
+      });
+      for (const part of request.response.responseParts) {
+        if (part.kind === 'treeData' || part.kind === 'component') {
+          continue;
+        }
+        if (part.kind !== 'toolCall') {
+          history.push({
+            role: 'assistant',
+            content: [
+              {
+                type: 'text',
+                text: part.kind === 'markdownContent' ? part.content.value : part.content,
+              },
+            ],
+          });
+        } else {
+          // 直接开始toolCall场景
+          if (history[history.length - 1].role !== 'assistant') {
+            history.push({
+              role: 'assistant',
+              content: [],
+            });
+          }
+          (history[history.length - 1].content as Array<TextPart | ToolCallPart>).push({
+            type: 'tool-call',
+            toolCallId: part.content.id,
+            toolName: part.content.function.name,
+            args: JSON.parse(part.content.function.arguments || '{}'),
+          });
+          history.push({
+            role: 'tool',
+            content: [
+              {
+                type: 'tool-result',
+                toolCallId: part.content.id,
+                toolName: part.content.function.name,
+                result: JSON.parse(part.content.result || '{}'),
+              },
+            ],
+          });
+        }
+      }
+    }
+    if (contextWindow) {
+      while (this.#slicedMessageCount < history.length) {
+        // 简单的使用 JSON.stringify 计算 token 数量
+        const tokenCount = JSON.stringify(history.slice(this.#slicedMessageCount)).length / 3;
+        if (tokenCount <= contextWindow) {
+          break;
+        }
+        this.#slicedMessageCount++;
+      }
+    }
+    return history.slice(this.#slicedMessageCount);
   }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {
-    const requestId = `${this.sessionId}_request_${ChatModel.requestIdPool++}`;
-    const response = new ChatResponseModel(requestId, this, message.agentId);
-    const request = new ChatRequestModel(requestId, this, message, response);
+    const msg = message;
+
+    const requestId = `${this.sessionId}_request_${this.requestIdPool++}`;
+    const response = new ChatResponseModel(requestId, this, msg.agentId);
+    const request = new ChatRequestModel(requestId, this, msg, response);
 
     this.#requests.set(requestId, request);
     return request;
@@ -258,12 +423,13 @@ export class ChatModel extends Disposable implements IChatModel {
 
     const { kind } = progress;
 
-    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component'];
+    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component', 'toolCall', 'reasoning'];
 
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);
     } else {
-      this.logger.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
+      // eslint-disable-next-line no-console
+      console.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
     }
   }
 
@@ -274,6 +440,15 @@ export class ChatModel extends Disposable implements IChatModel {
   override dispose(): void {
     super.dispose();
     this.#requests.forEach((r) => r.response.dispose());
+  }
+
+  toJSON() {
+    return {
+      sessionId: this.sessionId,
+      modelId: this.modelId,
+      history: this.history,
+      requests: this.requests,
+    };
   }
 }
 

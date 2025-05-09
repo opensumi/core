@@ -50,6 +50,7 @@ import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explor
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 import { IOpenDialogOptions, ISaveDialogOptions, IWindowDialogService } from '@opensumi/ide-overlay';
+import { Path } from '@opensumi/ide-utils/lib/path';
 import { IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
 
 import { IFileTreeService, PasteTypes, RESOURCE_VIEW_ID } from '../common';
@@ -207,10 +208,6 @@ export class FileTreeContribution
       }
     }
     return resourceTitle;
-  }
-
-  onReconnect() {
-    this.fileTreeService.reWatch();
   }
 
   private revealFile(locationUri: URI) {
@@ -778,8 +775,14 @@ export class FileTreeContribution
         }
         if (uri.scheme === DIFF_SCHEME) {
           const query = uri.getParsedQuery();
-          // 需要file scheme才能与工作区计算相对路径
           uri = new URI(query.modified).withScheme('file');
+        }
+        const node = this.fileTreeService.getNodeByPathOrUri(uri);
+        if (node) {
+          if (node.filestat.isInSymbolicDirectory) {
+            // 软链接文件需要通过直接通过文件树 Path 获取
+            return await this.clipboardService.writeText(node.path.split(Path.separator).slice(2).join(Path.separator));
+          }
         }
         let rootUri: URI;
         if (this.fileTreeService.isMultipleWorkspace) {
@@ -1009,9 +1012,10 @@ export class FileTreeContribution
         const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
         if (handler && !handler.isVisible) {
           handler.activate();
-        }
-        if (handler && handler.isCollapsed(RESOURCE_VIEW_ID)) {
-          handler?.setCollapsed(RESOURCE_VIEW_ID, false);
+          setTimeout(() => {
+            // FIXME: 目前通过 handler.isCollapsed 方法获取到的这段状态不准确
+            handler.setCollapsed(RESOURCE_VIEW_ID, false);
+          }, 200);
         }
         if (!uri && this.workbenchEditorService.currentEditor?.currentUri) {
           uri = this.workbenchEditorService.currentEditor.currentUri;

@@ -32,6 +32,8 @@ import { Deferred, getDebugLogger, isUndefined } from '@opensumi/ide-core-common
 import { ThemeChangedEvent } from '@opensumi/ide-theme';
 
 import {
+  DROP_BOTTOM_CONTAINER,
+  DROP_RIGHT_CONTAINER,
   IMainLayoutService,
   MainLayoutContribution,
   SUPPORT_ACCORDION_LOCATION,
@@ -201,7 +203,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     /**
      * ContainerId 存在三种值类型，对应的处理模式如下：
      * 1. undefined: 采用首个注册的容器作为当前 containerId
-     * 2. string: 直接使用该 containerId 作为当前 containerId
+     * 2. string: 非 drop container 直接使用该 containerId 作为当前 containerId
      * 3. '': 直接清空当前 containerId，不展开相应的 viewContainer
      */
     if (isUndefined(currentId)) {
@@ -211,18 +213,92 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       } else {
         service.updateCurrentContainerId(defaultContainer);
       }
-    } else if (currentId) {
+    } else if (currentId && !this.isDropContainer(currentId)) {
       if (service.containersMap.has(currentId)) {
         service.updateCurrentContainerId(currentId);
       } else {
-        service.updateCurrentContainerId(defaultContainer);
-        // 等待后续新容器注册时，更新当前的 containerId
-        service.updateNextContainerId(currentId);
+        // 如果在别的 tabbar 中存在该 containerId，则将其移动到当前 tabbar
+        if (this.findTabbarServiceByContainerId(currentId)) {
+          this.moveContainerTo(currentId, service.location);
+          service.updateCurrentContainerId(currentId);
+        } else {
+          service.updateCurrentContainerId(defaultContainer);
+          // 等待后续新容器注册时，更新当前的 containerId
+          service.updateNextContainerId(currentId);
+        }
       }
-    } else if (currentId === '') {
+    } else if (currentId === '' || this.isDropContainer(currentId)) {
       service.updateCurrentContainerId('');
     }
   };
+
+  findTabbarServiceByContainerId(containerId: string): TabbarService | undefined {
+    let tabbarService: undefined | TabbarService;
+    for (const value of this.tabbarServices.values()) {
+      if (value.containersMap.has(containerId)) {
+        tabbarService = value;
+        break;
+      }
+    }
+
+    return tabbarService;
+  }
+
+  moveContainerTo(containerId: string, to: string): void {
+    const fromTabbar = this.findTabbarServiceByContainerId(containerId);
+
+    if (!fromTabbar) {
+      this.logger.error(`cannot find container: ${containerId}`);
+      return;
+    }
+    const container = fromTabbar.getContainer(containerId);
+    if (!container) {
+      this.logger.error(`cannot find container: ${containerId}`);
+      return;
+    }
+    if (!container.options?.draggable) {
+      this.logger.warn(`container: ${containerId} is not draggable`);
+      return;
+    }
+
+    const toTabbar = this.getTabbarService(to);
+
+    fromTabbar.removeContainer(containerId);
+
+    if (!fromTabbar.visibleContainers.length || fromTabbar.currentContainerId.get() === containerId) {
+      this.toggleSlot(fromTabbar.location, false);
+    }
+    toTabbar.dynamicAddContainer(containerId, container);
+    const newHandler = this.injector.get(TabBarHandler, [containerId, this.getTabbarService(toTabbar.location)]);
+    this.handleMap.set(containerId, newHandler!);
+  }
+
+  showDropAreaForContainer(containerId: string): void {
+    const tabbarService = this.findTabbarServiceByContainerId(containerId);
+    const bottomService = this.tabbarServices.get('bottom');
+    const rightService = this.tabbarServices.get('right');
+    if (!tabbarService) {
+      this.logger.error(`cannot find container: ${containerId}`);
+      return;
+    }
+    if (tabbarService?.location === 'right') {
+      bottomService?.updateCurrentContainerId(DROP_BOTTOM_CONTAINER);
+    }
+    if (tabbarService?.location === 'bottom') {
+      rightService?.updateCurrentContainerId(DROP_RIGHT_CONTAINER);
+    }
+  }
+
+  hideDropArea(): void {
+    const bottomService = this.tabbarServices.get('bottom');
+    const rightService = this.tabbarServices.get('right');
+    if (bottomService?.currentContainerId.get() === DROP_BOTTOM_CONTAINER) {
+      bottomService.updateCurrentContainerId(bottomService.previousContainerId || '');
+    }
+    if (rightService?.currentContainerId.get() === DROP_RIGHT_CONTAINER) {
+      rightService.updateCurrentContainerId(rightService.previousContainerId || '');
+    }
+  }
 
   isVisible(location: string) {
     const tabbarService = this.getTabbarService(location);
@@ -245,23 +321,40 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       return;
     }
     if (show === true) {
-      tabbarService.updateCurrentContainerId(
-        tabbarService.currentContainerId.get() ||
-          tabbarService.previousContainerId ||
-          tabbarService.containersMap.keys().next().value!,
-      );
+      // 不允许通过该api展示drop面板
+      tabbarService.updateCurrentContainerId(this.findNonDropContainerId(tabbarService));
     } else if (show === false) {
       tabbarService.updateCurrentContainerId('');
     } else {
       tabbarService.updateCurrentContainerId(
-        tabbarService.currentContainerId.get()
-          ? ''
-          : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value!,
+        tabbarService.currentContainerId.get() ? '' : this.findNonDropContainerId(tabbarService),
       );
     }
     if (tabbarService.currentContainerId.get() && size) {
       tabbarService.resizeHandle?.setSize(size);
     }
+  }
+
+  private isDropContainer(containerId: string): boolean {
+    return [DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(containerId);
+  }
+
+  private findNonDropContainerId(tabbarService: TabbarService): string {
+    const currentContainerId = tabbarService.currentContainerId.get();
+    if (currentContainerId && !this.isDropContainer(currentContainerId)) {
+      return currentContainerId;
+    }
+    if (tabbarService.previousContainerId && !this.isDropContainer(tabbarService.previousContainerId)) {
+      return tabbarService.previousContainerId;
+    }
+
+    for (const key of tabbarService.containersMap.keys()) {
+      if (!this.isDropContainer(key)) {
+        return key;
+      }
+    }
+
+    return '';
   }
 
   getTabbarService(location: string) {

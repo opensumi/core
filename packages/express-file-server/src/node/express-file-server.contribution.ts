@@ -30,21 +30,9 @@ export class ExpressFileServerContribution implements ServerAppContribution {
           return;
         }
 
-        if (process.env.NODE_ENV === 'development' && uriPath.startsWith('/monaco/worker')) {
-          const filePath = path.resolve(__dirname, `../../../${uriPath}`);
-          const contentType = ALLOW_MIME[path.extname(filePath).slice(1)];
-          if (!contentType) {
-            ctx.status = 404;
-            return;
-          }
-          ctx.set('Content-Type', contentType);
-          ctx.body = fs.createReadStream(filePath);
-          return;
-        }
-
         const filePath = URI.parse(`file://${uriPath}`).codeUri.fsPath;
         const whitelist = this.getWhiteList();
-        const contentType = ALLOW_MIME[path.extname(filePath).slice(1)];
+        const contentType = ALLOW_MIME[path.extname(filePath).slice(1).toLowerCase()];
         if (
           /**
            * 地址在白名单内
@@ -56,12 +44,47 @@ export class ExpressFileServerContribution implements ServerAppContribution {
           // 在允许的 contentType
           contentType
         ) {
-          ctx.set('Content-Type', contentType);
+          const range = ctx.headers.range;
+
+          if (!fs.existsSync(filePath)) {
+            ctx.status = 404;
+            ctx.body = '文件未找到';
+            return;
+          }
+
           if (this.appConfig.staticAllowOrigin) {
             ctx.set('Access-Control-Allow-Origin', this.appConfig.staticAllowOrigin);
           }
 
-          ctx.body = fs.createReadStream(filePath);
+          const stats = await fs.promises.stat(filePath);
+          const total = stats.size;
+
+          if (!range) {
+            ctx.status = 200;
+            ctx.set('Content-Type', contentType);
+            ctx.set('Content-Length', String(total));
+            ctx.body = fs.createReadStream(filePath);
+            return;
+          }
+
+          const parts = range.replace(/bytes=/, '').split('-');
+          const start = parseInt(parts[0], 10);
+          const end = parts[1] ? parseInt(parts[1], 10) : total - 1;
+
+          if (start >= total || end >= total || start > end) {
+            ctx.status = 416; // Range Not Satisfiable
+            ctx.set('Content-Range', `bytes */${total}`);
+            return;
+          }
+
+          ctx.status = 206;
+          ctx.set('Content-Range', `bytes ${start}-${end}/${total}`);
+          ctx.set('Accept-Ranges', 'bytes');
+          ctx.set('Content-Length', String(end - start + 1));
+          ctx.set('Content-Type', contentType);
+
+          const stream = fs.createReadStream(filePath, { start, end });
+          ctx.body = stream;
         } else {
           ctx.status = 403;
         }

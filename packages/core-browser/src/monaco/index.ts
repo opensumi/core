@@ -1,5 +1,6 @@
 import { BasicEvent, Event, IDisposable, IJSONSchema } from '@opensumi/ide-core-common';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
+import { MultiDiffEditorWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidget';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import { IMergeEditorEditor } from './merge-editor-widget';
@@ -48,6 +49,11 @@ export abstract class MonacoService {
     options?: IDiffEditorConstructionOptions,
     overrides?: { [key: string]: any },
   ): IDiffEditor;
+
+  public abstract createMultiDiffEditorWidget(
+    monacoContainer: HTMLElement,
+    overrides?: { [key: string]: any },
+  ): MultiDiffEditorWidget;
 
   public abstract createMergeEditor(
     monacoContainer: HTMLElement,

@@ -1,24 +1,38 @@
-import { Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event, uuid } from '@opensumi/ide-core-common';
-import { ChatMessageRole } from '@opensumi/ide-core-common/lib/types/ai-native';
-import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatMessageRole, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 type IExcludeMessage = Omit<IHistoryChatMessage, 'id' | 'order'>;
 
-@Injectable({ multiple: false })
 export class MsgHistoryManager extends Disposable {
   private messageMap: Map<string, IHistoryChatMessage> = new Map();
+  private messageAdditionalMap: Map<string, Record<string, any>> = new Map();
 
   private readonly _onMessageChange = new Emitter<IHistoryChatMessage[]>();
   public readonly onMessageChange: Event<IHistoryChatMessage[]> = this._onMessageChange.event;
+
+  private readonly _onMessageAdditionalChange = new Emitter<Record<string, any>>();
+  public readonly onMessageAdditionalChange: Event<Record<string, any>> = this._onMessageAdditionalChange.event;
+
+  constructor(data?: { additional: Record<string, any>; messages: IHistoryChatMessage[] }) {
+    super();
+    if (data) {
+      this.messageMap = new Map(data.messages.map((item) => [item.id, item]));
+      this.messageAdditionalMap = new Map(Object.entries(data.additional));
+    }
+  }
 
   override dispose(): void {
     this.clearMessages();
     super.dispose();
   }
 
+  public get size(): number {
+    return this.messageMap.size;
+  }
+
   public clearMessages() {
     this.messageMap.clear();
+    this.messageAdditionalMap.clear();
   }
 
   private doAddMessage(message: IExcludeMessage): string {
@@ -38,12 +52,21 @@ export class MsgHistoryManager extends Disposable {
     return id;
   }
 
-  public getMessages(): IHistoryChatMessage[] {
+  private get messageList(): IHistoryChatMessage[] {
     return Array.from(this.messageMap.values()).sort((a, b) => a.order - b.order);
   }
 
+  public get lastMessageId(): string | undefined {
+    const list = this.messageList;
+    return list[list.length - 1]?.id;
+  }
+
+  public getMessages(): IHistoryChatMessage[] {
+    return this.messageList;
+  }
+
   public addUserMessage(
-    message: Required<Pick<IExcludeMessage, 'agentId' | 'agentCommand' | 'content' | 'relationId'>>,
+    message: Required<Pick<IExcludeMessage, 'agentId' | 'agentCommand' | 'content' | 'relationId' | 'images'>>,
   ): string {
     return this.doAddMessage({
       ...message,
@@ -69,5 +92,35 @@ export class MsgHistoryManager extends Disposable {
       ...oldMessage!,
       content: message.content,
     });
+  }
+
+  public setMessageAdditional(id: string, additional: Record<string, any>) {
+    if (!this.messageMap.has(id)) {
+      return;
+    }
+
+    const oldAdditional = this.messageAdditionalMap.get(id) || {};
+    const newAdditional = {
+      ...oldAdditional,
+      ...additional,
+    };
+
+    this.messageAdditionalMap.set(id, newAdditional);
+    this._onMessageAdditionalChange.fire(newAdditional);
+  }
+
+  public getMessageAdditional(id: string): Record<string, any> {
+    return this.messageAdditionalMap.get(id) || {};
+  }
+
+  public get sessionAdditionals() {
+    return this.messageAdditionalMap;
+  }
+
+  toJSON() {
+    return {
+      messages: this.getMessages(),
+      additional: Object.fromEntries(this.messageAdditionalMap.entries()),
+    };
   }
 }

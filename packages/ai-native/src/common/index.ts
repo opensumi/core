@@ -12,9 +12,17 @@ import {
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
-import { IChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
+
+import { IMCPServer, MCPServerDescription } from './mcp-server-manager';
+import { IPartialEditEvent, MCPTool } from './types';
+
+import type { CoreMessage } from 'ai';
+
+export type { CoreMessage };
+
+export * from './model';
 
 export const IAINativeService = Symbol('IAINativeService');
 
@@ -27,6 +35,9 @@ export const AI_CHAT_VIEW_ID = 'AI-Chat';
 export const AI_CHAT_CONTAINER_ID = 'AI-Chat-Container';
 export const AI_CHAT_LOGO_AVATAR_ID = 'AI-Chat-Logo-Avatar';
 export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
+
+// 内置 MCP 服务器名称
+export const BUILTIN_MCP_SERVER_NAME = 'Builtin';
 
 /**
  * @deprecated Use {@link DESIGN_MENUBAR_CONTAINER_VIEW_ID} instead
@@ -41,6 +52,10 @@ export interface IChatMessageStructure {
    * 用于 chat 面板展示
    */
   message: string;
+  /**
+   * 图片
+   */
+  images?: string[];
   /**
    * 实际调用的 prompt
    */
@@ -116,6 +131,31 @@ export const IChatAgentService = Symbol('IChatAgentService');
 
 export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 
+// 暴露给 Node.js 层，使其可以感知 Opensumi 注册的 MCP 能力
+export const TokenMCPServerProxyService = Symbol('TokenMCPServerProxyService');
+
+export interface ISumiMCPServerBackend {
+  $initBuiltinMCPServer(enabled: boolean): void;
+  $initExternalMCPServers(servers: MCPServerDescription[]): void;
+  $getAllMCPTools(): Promise<MCPTool[]>;
+  $getServers(): Promise<
+    Array<{
+      name: string;
+      isStarted: boolean;
+      type: string;
+      tools: MCPTool[];
+    }>
+  >;
+  $startServer(serverName: string): Promise<void>;
+  $stopServer(serverName: string): Promise<void>;
+  $addOrUpdateServer(description: MCPServerDescription): void;
+  $removeServer(name: string): void;
+  $syncServer(name: string): Promise<void>;
+  $getMCPServerByName(name: string): IMCPServer | undefined;
+}
+
+export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';
+
 export interface IChatAgentService {
   readonly onDidChangeAgents: Event<void>;
   readonly onDidSendMessage: Event<IChatProgress>;
@@ -124,7 +164,7 @@ export interface IChatAgentService {
     id: string,
     request: IChatAgentRequest,
     progress: (part: IChatProgress) => void,
-    history: IChatMessage[],
+    history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult>;
   getAgents(): Array<IChatAgent>;
@@ -145,7 +185,7 @@ export interface IChatAgent extends IChatAgentData {
   invoke(
     request: IChatAgentRequest,
     progress: (part: IChatProgress) => void,
-    history: IChatMessage[],
+    history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult>;
   provideFollowups?(sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;
@@ -165,6 +205,7 @@ export interface IChatAgentMetadata {
   fullName?: string;
   icon?: Uri;
   iconDark?: Uri;
+  systemPrompt?: string;
 }
 
 export interface IChatAgentRequest {
@@ -172,6 +213,7 @@ export interface IChatAgentRequest {
   requestId: string;
   command?: string;
   message: string;
+  images?: string[];
   regenerate?: boolean;
 }
 
@@ -209,6 +251,7 @@ export type IChatFollowup = IChatReplyFollowup | IChatResponseCommandFollowup;
 
 export interface IChatRequestMessage {
   prompt: string;
+  images?: string[];
   agentId: string;
   command?: string;
 }
@@ -281,3 +324,10 @@ export interface IAIInlineCompletionsProvider {
   ): Promise<T>;
   setVisibleCompletion(arg0: boolean): void;
 }
+
+export interface IInlineDiffService {
+  onPartialEdit: Event<IPartialEditEvent>;
+  firePartialEdit(event: IPartialEditEvent): void;
+}
+
+export const InlineDiffServiceToken = Symbol('InlineDiffService');

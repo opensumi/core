@@ -18,6 +18,7 @@ import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/
 
 import { EditorCollectionService, ILanguageService, ResourceService, WorkbenchEditorService } from '../common';
 import { IDocPersistentCacheProvider } from '../common/doc-cache';
+import { IMultiDiffSourceResolverService } from '../common/multi-diff';
 
 import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorComponentRegistryImpl } from './component';
@@ -52,6 +53,8 @@ import {
   MonacoCommandService,
 } from './monaco-contrib/command/command.service';
 import { TextmateService } from './monaco-contrib/tokenizer/textmate.service';
+import { MultiDiffEditorContribution } from './multi-diff/multi-diff.contribution';
+import { MultiDiffSourceResolverService } from './multi-diff/resolver.service';
 import { NotebookService } from './notebook.service';
 import { EditorPreferenceContribution } from './preference/contribution';
 import { EditorPreferences, editorPreferenceSchema } from './preference/schema';
@@ -67,6 +70,7 @@ import {
   IEditorTabService,
   ILanguageStatusService,
   INotebookService,
+  MultiDiffSourceContribution,
 } from './types';
 import { UntitledDocumentIdCounter } from './untitled-resource';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
@@ -180,8 +184,13 @@ export class EditorModule extends BrowserModule {
       token: INotebookService,
       useClass: NotebookService,
     },
+    {
+      token: IMultiDiffSourceResolverService,
+      useClass: MultiDiffSourceResolverService,
+    },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,
+    MultiDiffEditorContribution,
     MergeEditorContribution,
     EditorClientAppContribution,
     EditorContribution,
@@ -195,7 +204,7 @@ export class EditorModule extends BrowserModule {
     OpenTypeMenuContribution,
   ];
   electronProviders = [EditorElectronContribution];
-  contributionProvider = BrowserEditorContribution;
+  contributionProvider = [BrowserEditorContribution, MultiDiffSourceContribution];
 }
 
 @Domain(ClientAppContribution)
@@ -224,8 +233,14 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired(IEditorDocumentModelService)
   modelService: EditorDocumentModelServiceImpl;
 
+  @Autowired(IMultiDiffSourceResolverService)
+  multiDiffSourceResolverService: IMultiDiffSourceResolverService;
+
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
+
+  @Autowired(MultiDiffSourceContribution)
+  private readonly multiDiffSourceContribution: ContributionProvider<MultiDiffSourceContribution>;
 
   async initialize() {
     for (const contribution of this.contributions.getContributions()) {
@@ -244,6 +259,9 @@ export class EditorClientAppContribution implements ClientAppContribution {
       if (contribution.registerEditorFeature) {
         contribution.registerEditorFeature(this.editorFeatureRegistry);
       }
+    }
+    for (const contribution of this.multiDiffSourceContribution.getContributions()) {
+      contribution.registerMultiDiffSourceResolver(this.multiDiffSourceResolverService);
     }
     this.workbenchEditorService.contributionsReady.resolve();
     await Promise.all([this.workbenchEditorService.initialize(), this.modelService.initialize()]);

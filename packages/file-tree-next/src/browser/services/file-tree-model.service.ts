@@ -20,9 +20,12 @@ import {
   Emitter,
   Event,
   FILE_COMMANDS,
+  IApplicationService,
   IClipboardService,
   IContextKey,
   IStorage,
+  MessageType,
+  OperatingSystem,
   STORAGE_NAMESPACE,
   StorageProvider,
   ThrottledDelayer,
@@ -33,6 +36,7 @@ import {
   localize,
   path,
   strings,
+  toMarkdown,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -128,6 +132,9 @@ export class FileTreeModelService {
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
 
+  @Autowired(IApplicationService)
+  private readonly applicationService: IApplicationService;
+
   private _isDisposed = false;
 
   private _treeModel: FileTreeModel;
@@ -180,7 +187,6 @@ export class FileTreeModelService {
   private _fileToLocation: URI | string | undefined;
 
   private treeStateWatcher: TreeStateWatcher;
-  private willSelectedNodePath: string | null;
 
   private _initTreeModelReady = false;
 
@@ -725,6 +731,10 @@ export class FileTreeModelService {
   };
 
   handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
+    // 由于文件树存在选择根目录的逻辑，使用 Shift+Click 时需要清理根目录选中态
+    if (this.selectedFiles.length === 1 && Directory.isRoot(this.selectedFiles[0])) {
+      this.clearFileSelectedDecoration();
+    }
     if (!this.focusedFile) {
       this.handleItemClick(item, type);
     } else if (this.focusedFile && this.focusedFile !== item) {
@@ -744,7 +754,10 @@ export class FileTreeModelService {
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;
     }
-
+    // 由于文件树存在选择根目录的逻辑，使用 Cmd/Ctrl+Click 时需要清理根目录选中态
+    if (this.selectedFiles.length === 1 && Directory.isRoot(this.selectedFiles[0])) {
+      this.clearFileSelectedDecoration();
+    }
     // 根据节点的选中态进行复选操作
     this.toggleFileSelectedDecoration(item);
   };
@@ -977,18 +990,30 @@ export class FileTreeModelService {
     if (uris.length === 0) {
       return;
     }
+    // 默认过滤掉根目录的选择
     if (this.corePreferences['explorer.confirmDelete']) {
-      const ok = localize('file.confirm.delete.ok');
+      const isLinux = this.applicationService.backendOS === OperatingSystem.Linux;
+      const ok = isLinux ? localize('file.confirm.delete.ok') : localize('file.confirm.moveToTrash.ok');
       const cancel = localize('file.confirm.delete.cancel');
-      const deleteFilesMessage = `[ ${uris
-        .slice(0, 5)
+      const MAX_FILES = 10;
+      let deleteFilesMessage = uris
+        .slice(0, MAX_FILES)
         .map((uri) => uri.displayName)
-        .join(',')}${uris.length > 5 ? ' ...' : ''} ]`;
-
-      const confirm = await this.dialogService.warning(formatLocalize('file.confirm.delete', deleteFilesMessage), [
-        cancel,
-        ok,
-      ]);
+        .join('  \n');
+      if (uris.length > MAX_FILES) {
+        deleteFilesMessage += '  \n...';
+      }
+      if (!isLinux) {
+        deleteFilesMessage += `\n\n<small>${localize('file.confirm.deleteTips')}</small>`;
+      }
+      const confirm = await this.dialogService.open({
+        message: toMarkdown(formatLocalize('file.confirm.delete', uris.length, deleteFilesMessage)),
+        type: MessageType.Warning,
+        props: {
+          width: 580,
+        },
+        buttons: [cancel, ok],
+      });
       if (confirm !== ok) {
         return;
       }
@@ -1709,7 +1734,8 @@ export class FileTreeModelService {
       this._nextLocationTarget = undefined;
     }
   };
-  selectChildNode(uris: URI[]) {
+
+  public selectChildNode(uris: URI[]) {
     for (const uri of uris) {
       const file = this.fileTreeService.getNodeByPathOrUri(uri);
 
@@ -1721,7 +1747,7 @@ export class FileTreeModelService {
           const last = children[children.length - 1];
           const firstIndex = this.treeModel.root.getIndexAtTreeNode(first);
           const lastIndex = this.treeModel.root.getIndexAtTreeNode(last);
-
+          this._isMultiSelected = true;
           this.activeFileDecorationByRange(firstIndex, lastIndex);
         }
       }

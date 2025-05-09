@@ -109,7 +109,7 @@ export class DebugBreakpointsService extends WithEventBus {
     this.contextKeyService.onDidChangeContext((e) => {
       if (e.payload.affectsSome(new Set([CONTEXT_IN_DEBUG_MODE_KEY]))) {
         transaction((tx) => {
-          this.inDebugMode.set(this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY) || false, tx);
+          this.inDebugMode.set(this.contextKeyService.getContextKeyValue(CONTEXT_IN_DEBUG_MODE_KEY) || false, tx);
         });
       }
     });
@@ -137,13 +137,13 @@ export class DebugBreakpointsService extends WithEventBus {
   async updateRoots() {
     transaction((tx) => {
       this.enable.set(this.breakpoints.breakpointsEnabled, tx);
-      this.inDebugMode.set(this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY) || false, tx);
+      this.inDebugMode.set(this.contextKeyService.getContextKeyValue(CONTEXT_IN_DEBUG_MODE_KEY) || false, tx);
     });
     const roots = await this.workspaceService.roots;
     this.roots = roots.map((file) => new URI(file.uri));
   }
 
-  toggleBreakpointEnable(data: IDebugBreakpoint | DebugExceptionBreakpoint) {
+  toggleBreakpointEnable = (data: IDebugBreakpoint | DebugExceptionBreakpoint) => {
     if (isDebugBreakpoint(data)) {
       const real = this.breakpoints.getBreakpoint(URI.parse(data.uri), {
         lineNumber: data.raw.line,
@@ -157,7 +157,7 @@ export class DebugBreakpointsService extends WithEventBus {
     if (isDebugExceptionBreakpoint(data)) {
       this.breakpoints.updateExceptionBreakpoints(data.filter, !data.default);
     }
-  }
+  };
 
   extractNodes(item: DebugExceptionBreakpoint | IDebugBreakpoint): BreakpointItem | undefined {
     if (isDebugBreakpoint(item)) {

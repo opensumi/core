@@ -19,6 +19,7 @@ export interface IInteractiveInputProps extends IInputBaseProps<HTMLTextAreaElem
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onHeightChange?: (height: number) => void;
   onSend?: (value: string) => void;
+  onStop?: () => void;
   width?: number;
   height?: number;
   sendBtnClassName?: string;
@@ -38,6 +39,7 @@ export const InteractiveInput = React.forwardRef(
       onHeightChange,
       onFocus,
       onSend,
+      onStop,
       disabled = false,
       className,
       height,
@@ -45,13 +47,14 @@ export const InteractiveInput = React.forwardRef(
       sendBtnClassName,
       popoverPosition,
       autoFocus,
+      defaultValue,
     } = props;
 
     const internalRef = useRef<HTMLTextAreaElement>(null);
     const globalStroageService = useInjectable<GlobalBrowserStorageService>(GlobalBrowserStorageService);
     const history = useRef<string[]>();
     const historyIndex = useRef<number>(0);
-    const [internalValue, setInternalValue] = useState(props.value || '');
+    const [internalValue, setInternalValue] = useState(defaultValue || props.value || '');
     const [wrapperHeight, setWrapperHeight] = useState(height || DEFAULT_HEIGHT);
     const [focus, setFocus] = useState(false);
     const isDirtyInput = React.useRef<boolean>(false);
@@ -136,6 +139,12 @@ export const InteractiveInput = React.forwardRef(
       [onBlur],
     );
 
+    const handleStop = useCallback(() => {
+      if (onStop) {
+        onStop();
+      }
+    }, []);
+
     const handleSend = useCallback(() => {
       if (disabled) {
         return;
@@ -172,6 +181,7 @@ export const InteractiveInput = React.forwardRef(
             const value = history.current?.[history.current.length - 1 - historyIndex.current];
             if (value) {
               setInternalValue(value);
+              onValueChange?.(value);
               historyIndex.current = Math.min(historyIndex.current + 1, history.current?.length || 0);
             }
           } else if (event.key === Key.ARROW_DOWN.code) {
@@ -179,6 +189,7 @@ export const InteractiveInput = React.forwardRef(
             const value = history.current?.[history.current.length - 1 - historyIndex.current];
             if (value) {
               setInternalValue(value);
+              onValueChange?.(value);
               historyIndex.current = Math.max(historyIndex.current - 1, 0);
             }
           }
@@ -195,11 +206,30 @@ export const InteractiveInput = React.forwardRef(
             className={cls(styles.send_chat_btn, focus && styles.active, disabled && styles.disabled, sendBtnClassName)}
           >
             {disabled ? (
-              <div className={styles.ai_loading}>
-                <div className={styles.loader}></div>
-                <div className={styles.loader}></div>
-                <div className={styles.loader}></div>
-              </div>
+              onStop ? (
+                <Popover
+                  id={`ai_chat_input_send_${uuid(4)}`}
+                  content={localize('aiNative.chat.enter.send')}
+                  delay={1500}
+                  position={popoverPosition ?? PopoverPosition.top}
+                  disable={disabled}
+                >
+                  <EnhanceIcon
+                    wrapperClassName={styles.stop_icon}
+                    className={'codicon codicon-debug-stop'}
+                    onClick={handleStop}
+                    tabIndex={0}
+                    role='button'
+                    ariaLabel={localize('aiNative.chat.enter.send')}
+                  />
+                </Popover>
+              ) : (
+                <div className={styles.ai_loading}>
+                  <div className={styles.loader}></div>
+                  <div className={styles.loader}></div>
+                  <div className={styles.loader}></div>
+                </div>
+              )
             ) : (
               <Popover
                 id={`ai_chat_input_send_${uuid(4)}`}

@@ -76,6 +76,9 @@ const NONE_CONTAINER_ID = undefined;
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
   private readonly doChangeViewEmitter = new Emitter<void>();
+  private readonly onStateChangeEmitter = new Emitter<void>();
+  readonly onStateChange = this.onStateChangeEmitter.event;
+
   private readonly shouldChangeView = observableFromEventOpts<void>(
     { owner: this, equalsFn: () => false },
     this.doChangeViewEmitter.event,
@@ -254,6 +257,7 @@ export class TabbarService extends WithEventBus {
     const viewState = this.state.get(containerId);
     if (viewState) {
       viewState.hidden = true;
+      this.onStateChangeEmitter.fire();
     }
   }
 
@@ -261,6 +265,7 @@ export class TabbarService extends WithEventBus {
     const viewState = this.state.get(containerId);
     if (viewState) {
       viewState.hidden = false;
+      this.onStateChangeEmitter.fire();
     }
   }
 
@@ -632,7 +637,7 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  handleContextMenu(event: React.MouseEvent, containerId?: string) {
+  handleContextMenu = (event: React.MouseEvent, containerId?: string) => {
     event.preventDefault();
     event.stopPropagation();
     const menus = this.menuService.createMenu(
@@ -647,7 +652,7 @@ export class TabbarService extends WithEventBus {
         y: event.clientY,
       },
     });
-  }
+  };
 
   showMoreMenu(event: React.MouseEvent, lastContainerId?: string) {
     const menus = this.menuService.createMenu(this.moreMenuId, this.scopedCtxKeyService);
@@ -664,6 +669,7 @@ export class TabbarService extends WithEventBus {
   // drag & drop
   handleDragStart(e: React.DragEvent, containerId: string) {
     e.dataTransfer.setData('containerId', containerId);
+    this.layoutService.showDropAreaForContainer(containerId);
   }
 
   handleDrop(e: React.DragEvent, target: string) {
@@ -675,6 +681,10 @@ export class TabbarService extends WithEventBus {
       this.doInsertTab(containers, sourceIndex, targetIndex);
       this.storeState();
     }
+  }
+
+  handleDragEnd(e: React.DragEvent) {
+    this.layoutService.hideDropArea();
   }
 
   restoreState() {
@@ -689,6 +699,19 @@ export class TabbarService extends WithEventBus {
         this.tryRestoreAccordionSize(container.options!.containerId);
       }
     });
+  }
+
+  removeContainer(containerId: string) {
+    const disposable = this.disposableMap.get(containerId);
+    disposable?.dispose();
+    this.updateCurrentContainerId('');
+    this.doChangeViewEmitter.fire();
+  }
+
+  dynamicAddContainer(containerId: string, options: ComponentRegistryInfo) {
+    this.registerContainer(containerId, options);
+    this.updateCurrentContainerId(containerId);
+    this.doChangeViewEmitter.fire();
   }
 
   protected doInsertTab(containers: ComponentRegistryInfo[], sourceIndex: number, targetIndex: number) {
@@ -720,6 +743,7 @@ export class TabbarService extends WithEventBus {
       stateObj[key] = value;
     });
     this.layoutState.setState(LAYOUT_STATE.getTabbarSpace(this.location), stateObj);
+    this.onStateChangeEmitter.fire();
   }
 
   // 注册Tab的激活快捷键，对于底部panel，为切换快捷键

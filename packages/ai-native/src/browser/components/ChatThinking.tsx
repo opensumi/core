@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
-import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { ChatRenderRegistryToken, isUndefined, localize } from '@opensumi/ide-core-common';
@@ -13,19 +12,17 @@ import { ChatRenderRegistry } from '../chat/chat.render.registry';
 import styles from './components.module.less';
 
 interface ITinkingProps {
-  children?: React.ReactNode;
+  children?: React.ReactNode | string | React.ReactNode[];
   hasMessage?: boolean;
   message?: string;
   onRegenerate?: () => void;
   requestId?: string;
-  onStop?: () => void;
   thinkingText?: string;
-  showStop?: boolean;
   showRegenerate?: boolean;
 }
 
 export const ChatThinking = (props: ITinkingProps) => {
-  const { children, message, onStop, showStop = true, thinkingText } = props;
+  const { children, message, thinkingText } = props;
 
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
@@ -34,12 +31,15 @@ export const ChatThinking = (props: ITinkingProps) => {
     [chatRenderRegistry, chatRenderRegistry.chatThinkingRender],
   );
 
-  const handlePause = useCallback(async () => {
-    onStop && onStop();
-  }, []);
+  const isEmptyChildren = useMemo(() => {
+    if (Array.isArray(children)) {
+      return children.length === 0;
+    }
+    return !children;
+  }, [children]);
 
   const renderContent = useCallback(() => {
-    if (!children || !message?.trim()) {
+    if (isEmptyChildren) {
       if (CustomThinkingRender) {
         return <CustomThinkingRender thinkingText={thinkingText} />;
       }
@@ -58,15 +58,15 @@ export const ChatThinking = (props: ITinkingProps) => {
           {!CustomThinkingRender && (
             <span className={styles.progress_bar}>
               {/* 保持动画效果一致 */}
-              {!children && <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />}
+              {isEmptyChildren && <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />}
             </span>
           )}
-          {showStop && (
+          {/* {showStop && (
             <div className={styles.block} onClick={handlePause} tabIndex={0} role='button'>
               <Icon className={getIcon('circle-pause')}></Icon>
               <span>{localize('aiNative.operate.stop.title')}</span>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </>
@@ -118,7 +118,7 @@ export const ChatThinkingResult = ({
 
   const isRenderRegenerate = useMemo(() => {
     if (isUndefined(showRegenerate)) {
-      return latestRequestId === requestId;
+      return latestRequestId === requestId && !!requestId;
     }
 
     return !!showRegenerate;

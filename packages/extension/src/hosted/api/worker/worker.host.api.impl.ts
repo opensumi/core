@@ -2,7 +2,6 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationTokenSource, DefaultReporter, Emitter, Event } from '@opensumi/ide-core-common';
 import { DEFAULT_VSCODE_ENGINE_VERSION } from '@opensumi/ide-core-common/lib/const';
 
-
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import {
   ExtHostAPIIdentifier,
@@ -239,6 +238,8 @@ export function createAPIFactory(
     InlineCompletionList: workerExtTypes.InlineSuggestionList,
     authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
     comments: createCommentsApiFactory(extension, extHostComments),
+    InlineEdit: workerExtTypes.InlineEdit,
+    InlineEditTriggerKind: workerExtTypes.InlineEditTriggerKind,
     // Sumi 扩展 API
     ...sumiAPI(extension),
   });

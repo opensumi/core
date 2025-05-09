@@ -134,6 +134,16 @@ export function isRootUser(): boolean {
   return _isNative && !_isWindows && process.getuid() === 0;
 }
 
+export function getOperatingSystemName() {
+  if (isWindows) {
+    return 'Windows';
+  }
+  if (isMacintosh) {
+    return 'Macintosh';
+  }
+  return 'Linux';
+}
+
 /**
  * The language used for the user interface. The format of
  * the string is all lower case (e.g. zh-tw for Traditional

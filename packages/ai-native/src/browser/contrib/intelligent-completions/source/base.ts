@@ -7,7 +7,6 @@ import {
   Disposable,
   IAIReporter,
   IDisposable,
-  MaybePromise,
   uuid,
 } from '@opensumi/ide-core-common';
 import { CancellationTokenSource, ICodeEditor } from '@opensumi/ide-monaco';
@@ -37,12 +36,24 @@ export class CodeEditsContextBean extends Disposable {
     return this.raw;
   }
 
+  public get typing() {
+    return this.raw.typing;
+  }
+
   public get position() {
     return this.raw.position;
   }
 
+  public get data() {
+    return this.raw.data;
+  }
+
   public get token() {
     return this.source.token;
+  }
+
+  public joinData(data: ICodeEditsContextBean['data']) {
+    this.raw.data = { ...this.data, ...data };
   }
 
   public reporterStart() {
@@ -61,15 +72,13 @@ export class CodeEditsContextBean extends Disposable {
 @Injectable({ multiple: true })
 export abstract class BaseCodeEditsSource extends Disposable {
   @Autowired(IAIReporter)
-  private aiReporter: IAIReporter;
+  private readonly aiReporter: IAIReporter;
 
   @Autowired(PreferenceService)
-  protected preferenceService: PreferenceService;
+  protected readonly preferenceService: PreferenceService;
 
   private cancellationTokenSource = new CancellationTokenSource();
   private readonly relationID = observableValue<string | undefined>(this, undefined);
-
-  protected abstract doTrigger(...args: any[]): MaybePromise<void>;
 
   public readonly codeEditsContextBean = disposableObservableValue<CodeEditsContextBean | undefined>(this, undefined);
   public abstract priority: number;
@@ -100,9 +109,9 @@ export abstract class BaseCodeEditsSource extends Disposable {
     });
   }
 
-  protected setBean(bean: ICodeEditsContextBean) {
+  protected setBean(bean: Omit<ICodeEditsContextBean, 'position'>) {
     transaction((tx) => {
-      const context = new CodeEditsContextBean(bean, this);
+      const context = new CodeEditsContextBean({ ...bean, position: this.monacoEditor.getPosition()! }, this);
       this.codeEditsContextBean.set(context, tx);
     });
   }
@@ -112,7 +121,7 @@ export abstract class BaseCodeEditsSource extends Disposable {
     if (context) {
       const relationID = this.aiReporter.start(AIServiceType.CodeEdits, {
         type: AIServiceType.CodeEdits,
-        actionSource: context?.bean.typing,
+        actionSource: context?.typing,
       });
 
       transaction((tx) => {
@@ -134,7 +143,12 @@ export class CodeEditsSourceCollection extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  private sources: BaseCodeEditsSource[] = [];
   public readonly codeEditsContextBean = disposableObservableValue<CodeEditsContextBean | undefined>(this, undefined);
+
+  public getSource(source: ConstructorOf<BaseCodeEditsSource>): BaseCodeEditsSource | undefined {
+    return this.sources.find((s) => s instanceof source);
+  }
 
   constructor(
     private readonly constructorSources: ConstructorOf<BaseCodeEditsSource>[],
@@ -142,13 +156,13 @@ export class CodeEditsSourceCollection extends Disposable {
   ) {
     super();
 
-    const sources = this.constructorSources.map((source) => this.injector.get(source, [this.monacoEditor]));
+    this.sources = this.constructorSources.map((source) => this.injector.get(source, [this.monacoEditor]));
 
-    sources.forEach((source) => this.addDispose(source.mount()));
+    this.sources.forEach((source) => this.addDispose(source.mount()));
 
     // 观察所有 source 的 codeEditsContextBean
     const observerCodeEditsContextBean = derived((reader) => ({
-      codeEditsContextBean: new Map(sources.map((source) => [source, source.codeEditsContextBean.read(reader)])),
+      codeEditsContextBean: new Map(this.sources.map((source) => [source, source.codeEditsContextBean.read(reader)])),
     }));
 
     this.addDispose(
@@ -157,7 +171,7 @@ export class CodeEditsSourceCollection extends Disposable {
         debouncedObservable2(observerCodeEditsContextBean, 0),
         ({ lastValue, newValue }) => {
           // 只拿最新的订阅值，如果 uid 相同，表示该值没有变化，就不用往下通知了
-          const lastSources = sources.filter((source) => {
+          const lastSources = this.sources.filter((source) => {
             const newBean = newValue?.codeEditsContextBean.get(source);
             const lastBean = lastValue?.codeEditsContextBean?.get(source);
             return newBean && (!lastBean || newBean.uid !== lastBean.uid);
@@ -168,15 +182,26 @@ export class CodeEditsSourceCollection extends Disposable {
 
           for (const source of lastSources) {
             const value = source.codeEditsContextBean.get();
+            if (!value) {
+              return;
+            }
 
-            if (value && value.priority >= highestPriority) {
-              highestPriority = value.priority;
+            if (!contextBean) {
               contextBean = value;
             }
+
+            if (value.priority >= highestPriority) {
+              highestPriority = value.priority;
+
+              value.joinData(contextBean.data);
+              contextBean = value;
+            }
+
+            // 将多个 source 的 data 合并到一起
+            contextBean.joinData(value.data);
           }
 
           transaction((tx) => {
-            // 只通知最高优先级的结果
             this.codeEditsContextBean.set(contextBean, tx);
           });
         },

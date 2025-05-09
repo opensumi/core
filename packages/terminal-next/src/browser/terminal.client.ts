@@ -1,3 +1,5 @@
+import { ISearchOptions } from '@xterm/addon-search';
+
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IEventBus, QuickPickService, TerminalClientAttachEvent, localize } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
@@ -729,9 +731,18 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this.xterm.raw.paste(text);
   }
 
-  findNext(text: string) {
+  findNext(text: string, searchOptions: ISearchOptions = {}) {
     this._checkReady();
-    return this.xterm.findNext(text);
+    return this.xterm.findNext(text, searchOptions);
+  }
+
+  findPrevious(text: string, searchOptions: ISearchOptions = {}) {
+    this._checkReady();
+    return this.xterm.findPrevious(text, searchOptions);
+  }
+
+  get onSearchResultsChange() {
+    return this.xterm.onSearchResultsChange;
   }
 
   closeSearch() {

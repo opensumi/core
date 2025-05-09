@@ -26,7 +26,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // Header Title
   header: string;
   // Header Description
-  description?: string;
+  description?: string | React.ReactNode;
   // Panel Message
   message?: string;
   // Header Size
@@ -185,7 +185,9 @@ export const AccordionSection = ({
             </div>
             {metadata.description && (
               <div className={styles.section_description} style={{ lineHeight: headerSize + 'px' }}>
-                {transformLabelWithCodicon(metadata.description, {}, iconService.fromString.bind(iconService))}
+                {typeof metadata.description === 'string'
+                  ? transformLabelWithCodicon(metadata.description, {}, iconService.fromString.bind(iconService))
+                  : metadata.description}
               </div>
             )}
             {metadata.badge && (
@@ -210,7 +212,7 @@ export const AccordionSection = ({
         style={bodyStyle}
         ref={contentRef}
       >
-        {<ProgressBar className={styles.progressBar} progressModel={indicator!.progressModel} />}
+        {<ProgressBar className={styles.progressBar} progressModel={indicator?.progressModel} />}
         <ErrorBoundary>
           {metadata.message && <div className={styles.kt_split_panel_message}>{metadata.message}</div>}
           <Component

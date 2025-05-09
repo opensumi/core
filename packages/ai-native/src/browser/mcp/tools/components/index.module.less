@@ -1,0 +1,198 @@
+.edit-file-tool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 8px;
+  border-bottom: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  background-color: var(--design-block-background);
+  font-size: 10px;
+  margin-bottom: -4px;
+  border-radius: 8px 8px 0 0;
+  white-space: nowrap;
+  :global(span.codicon) {
+    font-size: 12px;
+  }
+  :global(.kt-popover-trigger) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .left {
+    overflow: hidden;
+  }
+  .left,
+  .right {
+    display: flex;
+    align-items: center;
+  }
+  &::after {
+    display: none;
+  }
+  .left {
+    > span {
+      margin-right: 4px;
+    }
+  }
+  .right > div {
+    margin-left: 4px;
+  }
+}
+.edit-file-tool-file-name {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.edit-file-tool {
+  border: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  border-radius: 4px;
+  margin: 8px 0;
+  :global(.language-badge) {
+    border-top-left-radius: 0;
+  }
+  pre > code {
+    border-radius: 0 0 8px 8px !important;
+  }
+}
+.edit-file-tool-iteration-count {
+  color: var(--vscode-input-placeholderForeground);
+  margin-left: 4px;
+}
+:global(.clickable) {
+  cursor: pointer;
+}
+.edit-file-tool-diagnostic-errors {
+  padding: 8px;
+  border: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  background-color: var(--design-block-background);
+  border-radius: 8px;
+  font-size: 12px;
+  margin: 4px 0;
+  > div {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+  }
+  :global(.codicon) {
+    margin-right: 4px;
+  }
+  .title {
+    margin-bottom: 3px;
+    display: inline-block;
+  }
+}
+.error,
+.error > span {
+  color: var(--debugConsole-errorForeground);
+}
+.warning,
+.warning > span {
+  color: var(--debugConsole-warningForeground);
+}
+
+.container {
+  border: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  border-radius: 8px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.header {
+  padding: 4px;
+  background-color: var(--design-block-background);
+  border-bottom: 1px solid var(--vscode-commandCenter-inactiveBorder);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--design-text-foreground);
+  font-size: 11px;
+}
+
+.fileList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: block;
+  background-color: var(--design-block-background);
+}
+
+.fileList.collapsed {
+  display: none;
+}
+
+.fileItem {
+  padding: 2px 6px;
+  font-size: 12px;
+  margin: 0px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--design-text-primary);
+  &:hover {
+    background-color: var(--design-block-background);
+  }
+  > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.fileIcon {
+  color: var(--design-text-secondary);
+  font-size: 12px;
+  width: 16px;
+}
+
+.filePath {
+  color: var(--design-text-secondary);
+  font-size: 12px;
+  margin-left: auto;
+  flex-basis: 0px;
+  flex-grow: 1;
+}
+
+.run_cmd_tool {
+  background-color: var(--design-chatInput-background);
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0px;
+
+  .command_title {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    span {
+      margin-left: 5px;
+    }
+  }
+
+  .command_content {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 2px 4px;
+    font-size: 11px;
+    color: var(--design-text-foreground);
+    margin: 0px;
+    background-color: var(--terminal-background);
+    margin: 10px 0px;
+    border-radius: 4px;
+    overflow: auto;
+
+    code {
+      font-size: 11px;
+      white-space: pre;
+    }
+  }
+
+  .comand_description {
+    font-size: 11px;
+    color: var(--descriptionForeground);
+  }
+
+  .cmmand_footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+}

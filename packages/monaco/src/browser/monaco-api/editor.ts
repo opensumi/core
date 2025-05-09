@@ -39,6 +39,7 @@ import {
   create,
   createDiffEditor,
   createModel,
+  createMultiFileDiffEditor,
   createWebWorker,
   defineTheme,
   getModel,
@@ -69,7 +70,7 @@ export function createMonacoEditorApi() {
     create,
     onDidCreateEditor,
     createDiffEditor,
-
+    createMultiFileDiffEditor,
     createModel,
     setModelLanguage,
     setModelMarkers,

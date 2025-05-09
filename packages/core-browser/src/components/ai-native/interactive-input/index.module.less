@@ -31,6 +31,15 @@
 
   .input_icon_container {
     .send_chat_btn {
+      .stop_icon {
+        > span {
+          &::before {
+            font-size: 16px;
+            color: var(--debugIcon-stopForeground);
+          }
+        }
+      }
+
       .send_icon {
         > span {
           &::before {

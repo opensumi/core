@@ -170,7 +170,7 @@ export class InlineCompletionsController extends BaseAIMonacoEditorController {
     }
 
     // 如果上一次补全结果还在，则不重复请求
-    const isVisible = this.aiNativeContextKey.multiLineEditsIsVisible.get();
+    const isVisible = this.aiNativeContextKey.codeEditsIsVisible.get();
     if (isVisible) {
       return;
     }

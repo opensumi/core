@@ -9,11 +9,11 @@ import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import * as monaco from '@opensumi/ide-monaco';
+import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 
-import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { DebugBreakpointWidget, DebugHoverWidget, DebugModel } from '../../../src/browser/editor';
 
 describe('Debug Model', () => {
@@ -117,7 +117,7 @@ describe('Debug Model', () => {
     mockInjector.overrideProviders({
       token: IContextKeyService,
       useValue: {
-        getContextValue: jest.fn(),
+        getContextKeyValue: jest.fn(),
       },
     });
 
