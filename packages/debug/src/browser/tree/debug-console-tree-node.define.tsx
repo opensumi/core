@@ -11,7 +11,7 @@ import debugConsoleStyles from '../view/console/debug-console.module.less';
 
 const getColor = (severity?: MessageType): string => {
   if (typeof severity === 'undefined') {
-    return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
+    return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.log);
   }
   switch (severity) {
     case MessageType.Error:
@@ -21,7 +21,7 @@ const getColor = (severity?: MessageType): string => {
     case MessageType.Info:
       return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
     default:
-      return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
+      return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.log);
   }
 };
 
