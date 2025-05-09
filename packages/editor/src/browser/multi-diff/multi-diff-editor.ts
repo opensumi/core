@@ -1,15 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import {
-  Disposable,
-  DisposableStore,
-  Emitter,
-  IDisposable,
-  ILogger,
-  OnEvent,
-  URI,
-  WithEventBus,
-} from '@opensumi/ide-core-common';
+import { DisposableStore, Emitter, IDisposable, ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
 import {
   ValueWithChangeEventFromObservable,
   constObservable,
@@ -20,6 +11,7 @@ import {
   recomputeInitiallyAndOnChange,
 } from '@opensumi/ide-monaco/lib/common/observable';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { ISelection } from '@opensumi/monaco-editor-core';
 import { Dimension } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
 import { ValueWithChangeEvent } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
@@ -227,6 +219,60 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
 
   reveal(resource: IMultiDiffResourceId, options?: { range?: Range; highlight: boolean }): void {
     this.multiDiffWidget.reveal(resource, options);
+  }
+
+  /**
+   * Collapses all diff entries by updating the viewState
+   */
+  collapseAll(): void {
+    const currentState = this.multiDiffWidget.getViewState();
+    const newState = {
+      ...currentState,
+      docStates: Object.keys(currentState.docStates || {}).reduce(
+        (acc, key) => {
+          acc[key] = {
+            ...currentState.docStates![key],
+            collapsed: true,
+          };
+          return acc;
+        },
+        {} as Record<
+          string,
+          {
+            collapsed: boolean;
+            selections?: ISelection[];
+          }
+        >,
+      ),
+    };
+    this.multiDiffWidget.setViewState(newState);
+  }
+
+  /**
+   * Expands all diff entries by updating the viewState
+   */
+  expandAll(): void {
+    const currentState = this.multiDiffWidget.getViewState();
+    const newState = {
+      ...currentState,
+      docStates: Object.keys(currentState.docStates || {}).reduce(
+        (acc, key) => {
+          acc[key] = {
+            ...currentState.docStates![key],
+            collapsed: false,
+          };
+          return acc;
+        },
+        {} as Record<
+          string,
+          {
+            collapsed: boolean;
+            selections?: ISelection[];
+          }
+        >,
+      ),
+    };
+    this.multiDiffWidget.setViewState(newState);
   }
 
   layout(dimension: Dimension): void {

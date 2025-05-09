@@ -416,6 +416,11 @@ export interface IEditorGroup {
   diffEditor: IDiffEditor;
 
   /**
+   * 当前group的multiDiff编辑器实例
+   */
+  multiDiffEditor: IMultiDiffEditor;
+
+  /**
    * 当前的编辑器 （如果当前是富组件，则返回 null)
    */
   currentEditor: IEditor | null;

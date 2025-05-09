@@ -84,4 +84,14 @@ export interface IMultiDiffEditor extends IDisposable {
    * Event emitted when the multi-diff editor model changes
    */
   onMultiDiffModelChange: Event<IMultiDiffEditorModel>;
+
+  /**
+   * Collapse all files
+   */
+  collapseAll(): void;
+
+  /**
+   * Expand all files
+   */
+  expandAll(): void;
 }
