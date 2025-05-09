@@ -810,6 +810,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private _isInDiffEditorContextKey: IContextKey<boolean>;
 
+  private _isInMultiDiffEditorContextKey: IContextKey<boolean>;
+
   private _diffResourceContextKey: ResourceContextKey;
 
   private _isInDiffRightEditorContextKey: IContextKey<boolean>;
@@ -979,6 +981,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       );
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
       this._isInDiffEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffEditor', false);
+      this._isInMultiDiffEditorContextKey = this.contextKeyService.createKey<boolean>('isInMultiDiffEditor', false);
       this._activeEditorIsDirtyContextKey = this.contextKeyService.createKey<boolean>('activeEditorIsDirty', false);
       this._isInDiffRightEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffRightEditor', false);
       this._isInEditorComponentContextKey = this.contextKeyService.createKey<boolean>('inEditorComponent', false);
@@ -1003,6 +1006,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
     this._activeEditorIsDirtyContextKey.set(this.activeEditorIsDirty());
     this._isInDiffEditorContextKey.set(this.isDiffEditorMode());
+    this._isInMultiDiffEditorContextKey.set(this.isMultiDiffEditorMode());
     // 没有 focus 的时候默认添加在 RightDiffEditor
     this._isInDiffRightEditorContextKey.set(this.isDiffEditorMode());
     this._isInEditorComponentContextKey.set(this.isComponentMode());
@@ -2323,6 +2327,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   isDiffEditorMode() {
     return !!this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff;
+  }
+
+  isMultiDiffEditorMode() {
+    return !!this.currentOpenType && this.currentOpenType.type === EditorOpenType.multiDiff;
   }
 
   activeEditorIsDirty() {

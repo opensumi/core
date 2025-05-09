@@ -716,6 +716,20 @@ export namespace DIFF_EDITOR_COMMANDS {
     category: CATEGORY,
   };
 }
+
+export namespace MULTI_DIFF_EDITOR_COMMANDS {
+  const CATEGORY = 'multi-diff-editor';
+
+  export const COLLAPSE_FILES: Command = {
+    id: 'editor.diff.collapseFiles',
+    category: CATEGORY,
+  };
+
+  export const EXPAND_FILES: Command = {
+    id: 'editor.diff.expandFiles',
+    category: CATEGORY,
+  };
+}
 export namespace SEARCH_COMMANDS {
   const CATEGORY = 'search';
 

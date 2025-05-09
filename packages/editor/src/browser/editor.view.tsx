@@ -375,7 +375,6 @@ export const EditorGroupBody = ({ group }: { group: EditorGroup }) => {
         const entry = entries[0];
         if (entry && entry.contentRect.height > 0) {
           group.doLayoutEditors();
-          observer.disconnect();
         }
       });
       observer.observe(multiDiffEditorRef.current);
