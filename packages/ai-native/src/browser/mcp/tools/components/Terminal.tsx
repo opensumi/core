@@ -1,7 +1,9 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
+import { EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native/popover';
+import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { CommandService, localize } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings';
 
@@ -37,16 +39,27 @@ function getResult(raw: string) {
   }
 }
 
+const autoExecutionPolicyLabels: { [k in ETerminalAutoExecutionPolicy]: string } = {
+  [ETerminalAutoExecutionPolicy.always]: 'ai.native.terminal.autorun.always',
+  [ETerminalAutoExecutionPolicy.auto]: 'ai.native.terminal.autorun.auto',
+  [ETerminalAutoExecutionPolicy.off]: 'ai.native.terminal.autorun.off',
+};
+
+function getAutoExecutionPolicyLabels(k: ETerminalAutoExecutionPolicy) {
+  return localize(autoExecutionPolicyLabels[k]);
+}
+
 export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) => {
   const { args, toolCallId } = props;
   const handler = useInjectable<RunCommandHandler>(RunCommandHandler);
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const commandService = useInjectable<CommandService>(CommandService);
 
-  const [disabled, toggleDisabled] = useState(false);
-  const [showPolicy, toggleShowPolicy] = useState(false);
+  const [running, toggleRunning] = useState(false);
 
-  const terminalAutoExecution = preferenceService.get(AINativeSettingSectionsId.TerminalAutoRun);
+  const terminalAutoExecution = preferenceService.get<ETerminalAutoExecutionPolicy>(
+    AINativeSettingSectionsId.TerminalAutoRun,
+  );
 
   const needApproval = useMemo(() => {
     // 值为 off 或 auto 且 args.require_user_approval
@@ -60,6 +73,14 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
     return false;
   }, [props.args]);
 
+  useEffect(() => {
+    if (props.state === 'result') {
+      toggleRunning(false);
+    } else if (!needApproval) {
+      toggleRunning(true);
+    }
+  }, [props]);
+
   const openCommandAutoExecutionConfig = useCallback(() => {
     commandService.executeCommand('workbench.action.openSettings', 'ai.native.terminal.autorun');
   }, []);
@@ -69,7 +90,7 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
       return;
     }
     handler.handleApproval(toolCallId, approval);
-    toggleDisabled(true);
+    toggleRunning(true);
   }, []);
 
   const output = useMemo(() => {
@@ -81,68 +102,51 @@ export const TerminalToolComponent = memo((props: IMCPServerToolComponentProps) 
 
   return (
     <div className={styles.run_cmd_tool}>
-      {props.state === 'result' && (
-        <div>
-          {args && (
-            <>
-              <div className={styles.command_title}>
-                <Icon icon='terminal' />
-                <span>{localize('ai.native.mcp.terminal.command')}:</span>
-              </div>
-              <p className={styles.command_content}>
-                <code>$ {args.command}</code>
-              </p>
-            </>
-          )}
-          {output ? (
-            <div className={styles.command_content}>
-              <Icon icon='output' />
-              <code dangerouslySetInnerHTML={{ __html: computeAnsiLogString(output.text || '') }} />
-              {needApproval && (
-                <div className={styles.auto_execution_policy}>
-                  <span className={styles.auto_execution_policy_title} onClick={() => toggleShowPolicy(!showPolicy)}>
-                    {showPolicy ? (
-                      <Icon iconClass='codicon codicon-chevron-down' />
-                    ) : (
-                      <Icon iconClass='codicon codicon-chevron-right' />
-                    )}
-                    {localize('ai.native.terminal.autorun.denied')}
-                  </span>
-                  {showPolicy && (
-                    <>
-                      <span>{localize('ai.native.terminal.autorun.question')}</span>
-                      <span className={styles.auto_execution_policy_conf} onClick={openCommandAutoExecutionConfig}>
-                        {localize('ai.native.terminal.autorun.command')}
-                      </span>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            ''
-          )}
+      <div>
+        <div className={styles.command_title}>
+          <Icon icon='terminal' />
+          <span>
+            {needApproval
+              ? localize('ai.native.mcp.terminal.allow-question')
+              : localize('ai.native.mcp.terminal.command')}
+          </span>
         </div>
-      )}
-
-      {props.state === 'complete' && needApproval && args && (
-        <div>
-          <div className={styles.command_title}>
-            <Icon icon='terminal' />
-            <span>{localize('ai.native.mcp.terminal.allow-question')}</span>
-          </div>
-          <p className={styles.command_content}>
-            <code>$ {args.command}</code>
-          </p>
-          <p className={styles.comand_description}>{args.explanation}</p>
+        <p className={styles.command_content}>
+          <code>$ {args?.command}</code>
+        </p>
+        <p className={styles.comand_description}>{args?.explanation}</p>
+        {props.state === 'complete' && needApproval && args && !running && (
           <div className={styles.cmmand_footer}>
-            <Button type='link' size='small' disabled={disabled} onClick={() => handleClick(true)}>
+            <Button type='link' size='small' onClick={() => handleClick(true)}>
               {localize('ai.native.mcp.terminal.allow')}
             </Button>
-            <Button type='link' size='small' disabled={disabled} onClick={() => handleClick(false)}>
+            <Button type='link' size='small' onClick={() => handleClick(false)}>
               {localize('ai.native.mcp.terminal.deny')}
             </Button>
           </div>
+        )}
+        {props.state === 'result' && output && (
+          <>
+            <div className={styles.command_content}>
+              <Icon icon='output' />
+              <code dangerouslySetInnerHTML={{ __html: computeAnsiLogString(output.text || '') }} />
+            </div>
+
+            <div className={styles.auto_execution_policy}>
+              <span className={styles.auto_execution_policy_label}>
+                {getAutoExecutionPolicyLabels(terminalAutoExecution || ETerminalAutoExecutionPolicy.auto)}
+              </span>
+              <EnhancePopover id='policy-config-popover' title={localize('ai.native.terminal.autorun.command')}>
+                <Icon size='small' iconClass='codicon codicon-settings-gear' onClick={openCommandAutoExecutionConfig} />
+              </EnhancePopover>
+            </div>
+          </>
+        )}
+      </div>
+      {running && (
+        <div className={styles.running}>
+          <Loading />
+          <span>{localize('ai.native.terminal.autorun.running')}</span>
         </div>
       )}
     </div>

@@ -1374,6 +1374,10 @@ export const localizationBundle = {
     'ai.native.terminal.autorun.denied': '默认情况下拒绝自动运行',
     'ai.native.terminal.autorun.question': '希望自动运行?',
     'ai.native.terminal.autorun.command': '点击更改命令自动执行策略.',
+    'ai.native.terminal.autorun.always': '始终允许',
+    'ai.native.terminal.autorun.auto': '模型自动执行',
+    'ai.native.terminal.autorun.off': '禁止自动执行',
+    'ai.native.terminal.autorun.running': '命令执行中...',
 
     // MCP Server Configuration
     'ai.native.mcp.name': '名称:',
