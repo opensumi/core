@@ -1612,7 +1612,7 @@ export const localizationBundle = {
     'ai.native.terminal.autorun.question': 'Want to run this automatically in the future?',
     'ai.native.terminal.autorun.command': 'Change your command auto execution policy.',
 
-    'ai.native.terminal.autorun.always': 'Always auto rxecution',
+    'ai.native.terminal.autorun.always': 'Always auto run',
     'ai.native.terminal.autorun.auto': 'Auto Execution by Model',
     'ai.native.terminal.autorun.off': 'Auto Execution disabled',
     'ai.native.terminal.autorun.running': 'Command execution...',
