@@ -309,7 +309,7 @@ export class TreeNode implements ITreeNode {
     // 一个普通节点必含有父节点，根节点不允许任何操作
     const prevParent = this._parent as CompositeTreeNode;
     if (to === null || !CompositeTreeNode.is(to)) {
-      this.parent = undefined;
+      this._parent = undefined;
       this.dispose();
       return;
     }
