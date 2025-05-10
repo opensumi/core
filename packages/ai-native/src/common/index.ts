@@ -23,6 +23,7 @@ import type { CoreMessage } from 'ai';
 export type { CoreMessage };
 
 export * from './model';
+export * from './checkpoint';
 
 export const IAINativeService = Symbol('IAINativeService');
 
