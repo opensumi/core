@@ -18,7 +18,7 @@
     "@difizen/libro-code-editor": "0.2.45",
     "@difizen/libro-common": "0.2.45",
     "@difizen/libro-core": "0.2.45",
-    "@difizen/libro-jupyter": "0.2.45",
+    "@difizen/libro-jupyter": "0.3.17",
     "@difizen/libro-kernel": "0.2.45",
     "@difizen/libro-lsp": "0.2.45",
     "@difizen/libro-toc": "0.2.45",

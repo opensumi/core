@@ -1165,18 +1165,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/libro-code-cell@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-code-cell@npm:0.2.45"
+"@difizen/libro-code-cell@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-code-cell@npm:0.3.17"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
   peerDependencies:
     react: ">=16"
-  checksum: 10/45db2e73f624d4f3fbbb2ed854d5215155443d7ecf5a9a5cccf19c57ac8a6f42115bc5e3c122de4377d463c9a5df59d729e6efdd34563223f5d4362826653a0e
+  checksum: 10/05312ae7e6b727571412c7502dc9c6cc4b5bdc98b8d0c1259cbc146ef119a3067ca2da00dee648a010a8a3ee5a9daf739da71e38077949f163ca33260ca3a0b7
   languageName: node
   linkType: hard
 
@@ -1194,9 +1194,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/libro-codemirror@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-codemirror@npm:0.2.45"
+"@difizen/libro-code-editor@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-code-editor@npm:0.3.17"
+  dependencies:
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/mana-app": "npm:latest"
+    "@difizen/mana-l10n": "npm:latest"
+    uuid: "npm:^9.0.1"
+  peerDependencies:
+    react: ">=16"
+  checksum: 10/b90cbcd7d38717b232606612527a3a7c6c36477c4a8604d8b51de24a714e8732402c4462fec51b2bbd7664f8692c3e265d3b6fa26df18b1d67e6707f3ceda780
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-codemirror@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-codemirror@npm:0.3.17"
   dependencies:
     "@codemirror/autocomplete": "npm:^6.12.0"
     "@codemirror/commands": "npm:^6.3.3"
@@ -1207,10 +1221,10 @@ __metadata:
     "@codemirror/search": "npm:^6.0.0"
     "@codemirror/state": "npm:^6.4.0"
     "@codemirror/view": "npm:^6.23.0"
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-lsp": "npm:^0.2.45"
-    "@difizen/libro-rendermime": "npm:^0.2.45"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-lsp": "npm:^0.3.17"
+    "@difizen/libro-rendermime": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
     "@lezer/common": "npm:^1.2.1"
@@ -1219,42 +1233,42 @@ __metadata:
     markdown-it: "npm:^13.0.1"
     uuid: "npm:^9.0.0"
     vscode-languageserver-protocol: "npm:^3.17.0"
-  checksum: 10/125650aaeb6178d8d119e5d72b174374b82e386087822c9a2d11bee8308f8e77e0d5ddffa554bb5d594f2e469374f266f550a7fd00b4b1659f776786edf8d07c
+  checksum: 10/bd3bc2f68834cefb8ac3e5e4838d3e4e3929b6239be72985b6c55f126384830876e168d420b94631688774db9488da3ca4eb0bdaad8637dfd613ae59794ba58d
   languageName: node
   linkType: hard
 
-"@difizen/libro-cofine-editor-contribution@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-cofine-editor-contribution@npm:0.2.45"
+"@difizen/libro-cofine-editor-contribution@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-cofine-editor-contribution@npm:0.3.17"
   dependencies:
     "@difizen/mana-app": "npm:latest"
-  checksum: 10/a2d28a0ddf798e93ec9d70ff9c6364a67c9903e7cb25a20e644d991dc46f6a1753a0c8364ca88ab586fff6925a57630c10634bff3b34647e9c5db4048eac649d
+  checksum: 10/88d42600b7292da20ef2fab56773a1e1405a11cf137a91e48fb2e8678f0d8ff76c642b0a780f546ea9f9571d06f3414dd2c087f68be15ada3482ba326942a2b1
   languageName: node
   linkType: hard
 
-"@difizen/libro-cofine-editor-core@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-cofine-editor-core@npm:0.2.45"
+"@difizen/libro-cofine-editor-core@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-cofine-editor-core@npm:0.3.17"
   dependencies:
-    "@difizen/libro-cofine-editor-contribution": "npm:^0.2.45"
+    "@difizen/libro-cofine-editor-contribution": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     "@difizen/monaco-editor-core": "npm:0.39.4"
     debug: "npm:^4.3.2"
     reflect-metadata: "npm:^0.1.13"
-  checksum: 10/faa822798bc419bfcb7c91e8ac980ea9012651ee10e95737667df5932040967e25731773d24d8726ee7245a03bb31001f8f1d02d116a9a135c41e36c1aa90c5c
+  checksum: 10/60639e917ccba13295ac13a92300d39ebca4f8b06a25410a5949d79c16e902f42ab45cd0e53575d4da67e1e62a87457418e1dcbc6297ba3bdd8a3f6a6234a682
   languageName: node
   linkType: hard
 
-"@difizen/libro-cofine-editor@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-cofine-editor@npm:0.2.45"
+"@difizen/libro-cofine-editor@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-cofine-editor@npm:0.3.17"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-cofine-editor-core": "npm:^0.2.45"
-    "@difizen/libro-cofine-textmate": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
-    "@difizen/libro-lsp": "npm:^0.2.45"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-cofine-editor-core": "npm:^0.3.17"
+    "@difizen/libro-cofine-textmate": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
+    "@difizen/libro-lsp": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     "@difizen/monaco-editor-core": "npm:0.39.4"
     resize-observer-polyfill: "npm:^1.5.1"
@@ -1262,20 +1276,20 @@ __metadata:
     vscode-languageserver-protocol: "npm:^3.17.4"
   peerDependencies:
     react: ">=16"
-  checksum: 10/ffe5d5f0e847a9a79c644b3c18a2e87195ec0315f4f5bb338fde2846cb86aec81fb680863da290544adbcb382528387264f9e1f207b7b50c8ce4ca06c404f62d
+  checksum: 10/6de922ce622434c3402e5481415c3672954025dd0ff57d86ecd7e4b2653acff480813cd3cf9d4635ec06628707b993d610b31ec901d0e1ba34e07ee20a8cf82e
   languageName: node
   linkType: hard
 
-"@difizen/libro-cofine-textmate@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-cofine-textmate@npm:0.2.45"
+"@difizen/libro-cofine-textmate@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-cofine-textmate@npm:0.3.17"
   dependencies:
-    "@difizen/libro-cofine-editor-core": "npm:^0.2.45"
+    "@difizen/libro-cofine-editor-core": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     fast-plist: "npm:^0.1.2"
     vscode-oniguruma: "npm:^1.5.1"
     vscode-textmate: "npm:^9.0.0"
-  checksum: 10/bd3e831854de86c8b4ad69380feeba757b7532d98d6c7cb8654fbad61ded656179d50f5cb642a727b5461b5b580a1193ace39fd7c73732ebc7f86252105589fe
+  checksum: 10/a72e89101451d031ecf2d56cff713bbcc13ad561cc7e55ef8e378b289d8dcedd4927fce7d0a0b915175b235ae90e52a2c96fc2d5a2c87a9515d027e559bbc1a3
   languageName: node
   linkType: hard
 
@@ -1290,6 +1304,20 @@ __metadata:
   peerDependencies:
     react: ">=16"
   checksum: 10/ff448b7d9b550a4bc1a5fa9daddd1313b46cdd5501e671de2a41e09aaa68a1160918cd339f8cc5ff6e60c625a1e1341a46ccf36268278e73b28c8a2c67cfef4a
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-common@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-common@npm:0.3.17"
+  dependencies:
+    "@difizen/mana-app": "npm:latest"
+    path-browserify: "npm:^1.0.0"
+    sanitize-html: "npm:^2.7.2"
+    url-parse: "npm:^1.5.10"
+  peerDependencies:
+    react: ">=16"
+  checksum: 10/a3b5e2de56e4305dfccfe2b481bae922a39da9502ed6df8e7ddf5406115be668684047f67d3c16e1d2a0e5651cf6fd31ca4816f9f6ee1b00677aea00809cbf4b
   languageName: node
   linkType: hard
 
@@ -1319,37 +1347,66 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/libro-jupyter@npm:0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-jupyter@npm:0.2.45"
+"@difizen/libro-core@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-core@npm:0.3.17"
+  dependencies:
+    "@ant-design/icons": "npm:^5.1.0"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-shared-model": "npm:^0.3.17"
+    "@difizen/libro-virtualized": "npm:^0.3.17"
+    "@difizen/mana-app": "npm:latest"
+    "@difizen/mana-l10n": "npm:latest"
+    "@difizen/mana-react": "npm:latest"
+    classnames: "npm:^2.3.2"
+    dayjs: "npm:^1.11.10"
+    dnd-core: "npm:^16.0.1"
+    lodash: "npm:^4.17.21"
+    react-dnd: "npm:^16.0.1"
+    react-dnd-html5-backend: "npm:^16.0.1"
+    react-dom: "npm:^18.2.0"
+    resize-observer-polyfill: "npm:^1.5.1"
+    uuid: "npm:^9.0.0"
+  peerDependencies:
+    antd: ^5.8.6
+    react: ">=16"
+  checksum: 10/8c74f8ff0e0aae3df60210c4b830e292c3df6848a935b173b078d81085bb87c2b666067cef7e8957547cbfe7ea548baf77af0d8ed37598202d26edc7f39dd01d
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-jupyter@npm:0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-jupyter@npm:0.3.17"
   dependencies:
     "@ant-design/colors": "npm:^7.0.0"
     "@ant-design/icons": "npm:^5.1.0"
-    "@difizen/libro-code-cell": "npm:^0.2.45"
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-codemirror": "npm:^0.2.45"
-    "@difizen/libro-cofine-editor": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
-    "@difizen/libro-kernel": "npm:^0.2.45"
-    "@difizen/libro-l10n": "npm:^0.2.45"
-    "@difizen/libro-language-client": "npm:^0.2.45"
-    "@difizen/libro-lsp": "npm:^0.2.45"
-    "@difizen/libro-markdown-cell": "npm:^0.2.45"
-    "@difizen/libro-output": "npm:^0.2.45"
-    "@difizen/libro-raw-cell": "npm:^0.2.45"
-    "@difizen/libro-rendermime": "npm:^0.2.45"
-    "@difizen/libro-search": "npm:^0.2.45"
-    "@difizen/libro-search-code-cell": "npm:^0.2.45"
+    "@difizen/libro-code-cell": "npm:^0.3.17"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-codemirror": "npm:^0.3.17"
+    "@difizen/libro-cofine-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
+    "@difizen/libro-kernel": "npm:^0.3.17"
+    "@difizen/libro-l10n": "npm:^0.3.17"
+    "@difizen/libro-language-client": "npm:^0.3.17"
+    "@difizen/libro-lsp": "npm:^0.3.17"
+    "@difizen/libro-markdown-cell": "npm:^0.3.17"
+    "@difizen/libro-output": "npm:^0.3.17"
+    "@difizen/libro-raw-cell": "npm:^0.3.17"
+    "@difizen/libro-rendermime": "npm:^0.3.17"
+    "@difizen/libro-search": "npm:^0.3.17"
+    "@difizen/libro-search-code-cell": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
     classnames: "npm:^2.3.2"
     moment: "npm:^2.29.4"
     plotly.js: "npm:^2.35.0"
+    uuid: "npm:^9.0.0"
   peerDependencies:
     antd: ^5.8.6
     react: ">=16"
-  checksum: 10/9dc23624ce0bca43e458b74cf345dd2a2e2a46045d459b32d991c304fbeb92f7dbbfdc179a30e6226df1f6477a346ca23dfbbd75eddaad7f8e4eb1a890dca9f1
+  checksum: 10/f13a5cfa7b735439b1d0c1348aa4423066549d60db0b8a2cd5d58a8ff1e28241bf90bd4132a2adf2a4ba92a7ad062d7a4cfd10d0e935ae769869c389216fb410
   languageName: node
   linkType: hard
 
@@ -1369,25 +1426,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/libro-l10n@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-l10n@npm:0.2.45"
+"@difizen/libro-kernel@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-kernel@npm:0.3.17"
   dependencies:
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
-    "@difizen/mana-l10n": "npm:latest"
-  checksum: 10/394b12ed9a8bb1757696ea4e739491de76f534e85dcf1ad390dde113336fa90c18fe83c0b4d9f88348155f6c050e884dd75d37ef2f2e4f5fbe1e3e7f2231bdf2
+    minimist: "npm:^1.2.8"
+    query-string: "npm:^8.1.0"
+    uuid: "npm:^9.0.0"
+  peerDependencies:
+    react: ">=16"
+  checksum: 10/46e4207add8cd67b5b02d3836c9002ac618ba24c1cc7193877615dfd1ff302b1acd3ba8d4fd8104776048a4c38f276fecfe0ff7a4218040c161d9871255b3963
   languageName: node
   linkType: hard
 
-"@difizen/libro-language-client@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-language-client@npm:0.2.45"
+"@difizen/libro-l10n@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-l10n@npm:0.3.17"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
-    "@difizen/libro-kernel": "npm:^0.2.45"
-    "@difizen/libro-lsp": "npm:^0.2.45"
+    "@difizen/mana-app": "npm:latest"
+    "@difizen/mana-l10n": "npm:latest"
+  checksum: 10/6014be64a0492514e2cb7a6e4f6abcd9fb461bdf72d98d2919392719de43cb6500998b004a22017eb3da1743613d0e6704db217926e5a27df1fb113d4342fa5c
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-language-client@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-language-client@npm:0.3.17"
+  dependencies:
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
+    "@difizen/libro-kernel": "npm:^0.3.17"
+    "@difizen/libro-lsp": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-common": "npm:latest"
     "@difizen/monaco-editor-core": "npm:^0.39.4"
@@ -1398,11 +1471,11 @@ __metadata:
     vscode-ws-jsonrpc: "npm:^3.1.0"
   peerDependencies:
     react: ">=16"
-  checksum: 10/8aa0331a5deaac1f770202b09c05e7169f6c4575a5316fce647b85cb6d6275c3ff7c28e344646488040e51107d3a78883b00ac83224ae2d7372d5d9aa5c33239
+  checksum: 10/f00de2050a0659674c121ca8b352847e9d130624aade404fbe84502efa42d96c12488f1d043c5e8968b9e9988875a899b9fc7ed809df4b7fcac125be3301ab9a
   languageName: node
   linkType: hard
 
-"@difizen/libro-lsp@npm:0.2.45, @difizen/libro-lsp@npm:^0.2.45":
+"@difizen/libro-lsp@npm:0.2.45":
   version: 0.2.45
   resolution: "@difizen/libro-lsp@npm:0.2.45"
   dependencies:
@@ -1422,21 +1495,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/libro-markdown-cell@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-markdown-cell@npm:0.2.45"
+"@difizen/libro-lsp@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-lsp@npm:0.3.17"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
-    "@difizen/libro-markdown": "npm:^0.2.45"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
+    "@difizen/libro-kernel": "npm:^0.3.17"
+    "@difizen/mana-app": "npm:latest"
+    lodash.mergewith: "npm:^4.6.2"
+    uuid: "npm:^9.0.0"
+    vscode-jsonrpc: "npm:^6.0.0"
+    vscode-languageserver-protocol: "npm:^3.17.0"
+    vscode-ws-jsonrpc: "npm:~1.0.2"
+  peerDependencies:
+    react: ">=16"
+  checksum: 10/afd6116a57e7b37684f17ee69ba301c7d089194f94f6ae6e573bf21d98464cbb46ed776f5cb42b6224369b09b3102aadd0adf0110f998beba8601e41260a7843
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-markdown-cell@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-markdown-cell@npm:0.3.17"
+  dependencies:
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
+    "@difizen/libro-markdown": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     "@types/markdown-it": "npm:^12.2.3"
     markdown-it: "npm:^13.0.1"
     markdown-it-anchor: "npm:^8.6.5"
   peerDependencies:
     react: ">=16"
-  checksum: 10/071fbbab4562916ae1a8368fdb93270544be7b1472feacb49729987b86250a1dc39967cf8cf56fc5a3fb391b3d3ce62e14de118115544e64140f9579ad205e77
+  checksum: 10/56c198ffd23eecd5251f81e59c22459baeb596d18015bdb65d4b3f561459d0c63e8bf91e789db404cbc7bc9d7775a7c65f2d5bdb05bd3112d100213dbe7cfa4f
   languageName: node
   linkType: hard
 
@@ -1455,33 +1548,49 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/libro-output@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-output@npm:0.2.45"
+"@difizen/libro-markdown@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-markdown@npm:0.3.17"
   dependencies:
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
-    "@difizen/libro-rendermime": "npm:^0.2.45"
+    "@difizen/mana-app": "npm:latest"
+    "@difizen/mana-l10n": "npm:latest"
+    "@traptitech/markdown-it-katex": "npm:^3.6.0"
+    "@types/markdown-it": "npm:^12.2.3"
+    katex: "npm:^0.16.10"
+    markdown-it: "npm:^13.0.1"
+    markdown-it-anchor: "npm:^8.6.5"
+    sanitize-html: "npm:^2.14.0"
+  checksum: 10/7418a296ebf370c7baa166926511454aa90360d652ba4311bc9560addb418f7fcf94665d5fa8ff679194e8d60fba025a340d86a414f3afae57f1b8f52c254990
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-output@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-output@npm:0.3.17"
+  dependencies:
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
+    "@difizen/libro-rendermime": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     markdown-it: "npm:^13.0.1"
   peerDependencies:
     antd: ^5.8.6
     react: ">=16"
-  checksum: 10/5c7c02aa007dce7e33eedced3107a9dd029a1ea2a95389e5344927dc0a41334a4f66d8a6f8b40340da7dc0bb0e6b9281fe942ec8b7177ee17ca645be56f685cb
+  checksum: 10/44bd244d91170c45d38cbe64f555dee5afea42a7d4ca412c074edb208412c8dfba81d293ff4a58a7142c4c5f3df6ce3614c2b9aa99134e6370f5d3ec055f4ce3
   languageName: node
   linkType: hard
 
-"@difizen/libro-raw-cell@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-raw-cell@npm:0.2.45"
+"@difizen/libro-raw-cell@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-raw-cell@npm:0.3.17"
   dependencies:
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
   peerDependencies:
     react: ">=16"
-  checksum: 10/105afc37248e892786979a1b58f2efd88eefc71a07e3b8e66216e0d4bdcbce05818b117bb9e2529f03f8027ec430c435c529ee7699bf2ddc8969dc9ecd764f00
+  checksum: 10/61f89ff1655ca7797b071db017688656a03e3801977bd8953c64e33d3208f6202d086da69ae99a5ae39bfc81e347ec161612fe6f6ac56e05dbeee9283ec1ccbf
   languageName: node
   linkType: hard
 
@@ -1500,28 +1609,43 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@difizen/libro-search-code-cell@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-search-code-cell@npm:0.2.45"
+"@difizen/libro-rendermime@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-rendermime@npm:0.3.17"
   dependencies:
-    "@difizen/libro-code-cell": "npm:^0.2.45"
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
-    "@difizen/libro-search": "npm:^0.2.45"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
+    "@difizen/libro-markdown": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
-  checksum: 10/beb3be7c081c36d337d53ce2ec36b718c012a744368ef9933ca7f293a399730cc57e4322cca712a303bc2e3d85c87ed69460c3b139bc7200b8af9efc28e19b59
+    lodash.escape: "npm:^4.0.1"
+  peerDependencies:
+    react: ">=16"
+  checksum: 10/b46387f3f095262a1b1ab08776cba6bd287442cc5ebf6d99c43113a950cd09a11607dc91354de01fb7cab48eef445fac9cd4c31ccb21578e44633d9c5c639fd2
   languageName: node
   linkType: hard
 
-"@difizen/libro-search@npm:^0.2.45":
-  version: 0.2.45
-  resolution: "@difizen/libro-search@npm:0.2.45"
+"@difizen/libro-search-code-cell@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-search-code-cell@npm:0.3.17"
+  dependencies:
+    "@difizen/libro-code-cell": "npm:^0.3.17"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
+    "@difizen/libro-search": "npm:^0.3.17"
+    "@difizen/mana-app": "npm:latest"
+  checksum: 10/12e4bfd66008b1deb2b70624151909bda0d884c864a741ecd9e400a57d0807134c2621eeebfbf37339ad5481f92505f7dcdc3e51eb11b374395743e7a793e881
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-search@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-search@npm:0.3.17"
   dependencies:
     "@ant-design/icons": "npm:^5.1.0"
-    "@difizen/libro-code-editor": "npm:^0.2.45"
-    "@difizen/libro-common": "npm:^0.2.45"
-    "@difizen/libro-core": "npm:^0.2.45"
+    "@difizen/libro-code-editor": "npm:^0.3.17"
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/libro-core": "npm:^0.3.17"
     "@difizen/mana-app": "npm:latest"
     "@difizen/mana-l10n": "npm:latest"
     "@types/lodash.debounce": "npm:^4.0.7"
@@ -1531,7 +1655,7 @@ __metadata:
   peerDependencies:
     antd: ^5.8.6
     react: ">=16"
-  checksum: 10/48f49dc4b4e7b2296fb7017222691355e5adfecb2aaa5cdb4fc73510d158ac7b7ffe05f749e6b0354c6603a3555114bcdde0d88cfddd17cb7fc993fc992ea60d
+  checksum: 10/4737679a164823040c145d204bb0f920946e3cd6febbc8670722efd13dd2e9dad2bd519cea0fe6459247aa9e1b33a75d3c19421387a9aca87758ca38781cd1ff
   languageName: node
   linkType: hard
 
@@ -1545,6 +1669,19 @@ __metadata:
     y-protocols: "npm:^1.0.5"
     yjs: "npm:^13.5.40"
   checksum: 10/69d06d981c6e45139272339e569526021e84518bdf06d121377f4c4b56376c1c18e84d69abcb5702dc01546c0787f6d97ef1763570e5c71e2be9b3f3db7869e5
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-shared-model@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-shared-model@npm:0.3.17"
+  dependencies:
+    "@difizen/libro-common": "npm:^0.3.17"
+    "@difizen/mana-app": "npm:latest"
+    uuid: "npm:^9.0.0"
+    y-protocols: "npm:^1.0.5"
+    yjs: "npm:^13.5.40"
+  checksum: 10/b9703272f382917ad25285ab06551dab0057c6cef766785391af9def4b13997c1d63dd7cb58704e8d0794080de24e0f679adff9e083ae9c8d2314b2f5b3e08e5
   languageName: node
   linkType: hard
 
@@ -1574,6 +1711,19 @@ __metadata:
     react: ">=16"
     react-dom: ">=16"
   checksum: 10/b3e1164b687ad2854293d6ab633a9bba286ce4c467f8909706984a39e4559b023aa4fe3489a58e2858a092c42ecb07c813d7b7ec02eea44f7edf1b72222c583b
+  languageName: node
+  linkType: hard
+
+"@difizen/libro-virtualized@npm:^0.3.17":
+  version: 0.3.17
+  resolution: "@difizen/libro-virtualized@npm:0.3.17"
+  dependencies:
+    classnames: "npm:^2.3.2"
+    dom-helpers: "npm:^5.2.1"
+  peerDependencies:
+    react: ">=16"
+    react-dom: ">=16"
+  checksum: 10/b2a5e2f03e46c605673d41a1954c5b70c173f5749509ed32e2133ad8a1d368c0c6838370b4130d41e7671b9143190d5b51f76ce0bc47eb18a4ea628fb4722426
   languageName: node
   linkType: hard
 
@@ -4033,7 +4183,7 @@ __metadata:
     "@difizen/libro-code-editor": "npm:0.2.45"
     "@difizen/libro-common": "npm:0.2.45"
     "@difizen/libro-core": "npm:0.2.45"
-    "@difizen/libro-jupyter": "npm:0.2.45"
+    "@difizen/libro-jupyter": "npm:0.3.17"
     "@difizen/libro-kernel": "npm:0.2.45"
     "@difizen/libro-lsp": "npm:0.2.45"
     "@difizen/libro-toc": "npm:0.2.45"
@@ -21931,6 +22081,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sanitize-html@npm:^2.14.0":
+  version: 2.16.0
+  resolution: "sanitize-html@npm:2.16.0"
+  dependencies:
+    deepmerge: "npm:^4.2.2"
+    escape-string-regexp: "npm:^4.0.0"
+    htmlparser2: "npm:^8.0.0"
+    is-plain-object: "npm:^5.0.0"
+    parse-srcset: "npm:^1.0.2"
+    postcss: "npm:^8.3.11"
+  checksum: 10/eac99df964e3600717dec90867b4098ca66a75e8b0b2bb7ab1661090b35ebefd7776829d023905fbb55e58b2dd05a27dd3b99dde76d8bd75a973a26b4d77cd7a
+  languageName: node
+  linkType: hard
+
 "sanitize-html@npm:^2.7.2":
   version: 2.13.1
   resolution: "sanitize-html@npm:2.13.1"
@@ -24533,7 +24697,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^9.0.0":
+"uuid@npm:^9.0.0, uuid@npm:^9.0.1":
   version: 9.0.1
   resolution: "uuid@npm:9.0.1"
   bin:
