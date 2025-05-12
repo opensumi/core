@@ -6,7 +6,7 @@
 import React = require('react');
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { MessageType, close, update } from '@opensumi/ide-components';
+import { close, update } from '@opensumi/ide-components';
 import {
   CommandService,
   Disposable,
@@ -20,6 +20,7 @@ import {
   IProgressOptions,
   IProgressStep,
   IProgressWindowOptions,
+  MessageType,
   Progress,
   ProgressLocation,
   dispose,

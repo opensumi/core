@@ -1,10 +1,9 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { localize } from '@opensumi/ide-core-common';
+import { MessageType, localize } from '@opensumi/ide-core-common';
 
 import { Button } from '../button';
-import { MessageType } from '../common';
 import { IconContext, getIcon } from '../icon';
 import { IOverlayProps, Overlay } from '../overlay';
 

@@ -1,11 +1,10 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { IAction } from '@opensumi/ide-core-common';
+import { IAction, MessageType } from '@opensumi/ide-core-common';
 import { CancelablePromise, createCancelablePromise, isUndefined } from '@opensumi/ide-utils';
 
 import { Button } from '../button';
-import { MessageType } from '../common';
 
 import antdNotification, { ArgsProps } from './notification';
 import './notification.less';

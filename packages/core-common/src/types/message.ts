@@ -3,4 +3,5 @@ export enum MessageType {
   Warning,
   Info,
   Empty,
+  Log,
 }
