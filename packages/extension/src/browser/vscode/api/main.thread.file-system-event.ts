@@ -1,5 +1,4 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { MessageType } from '@opensumi/ide-components';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
@@ -7,6 +6,7 @@ import {
   CancellationTokenSource,
   Disposable,
   ILogger,
+  MessageType,
   ProgressLocation,
   URI,
   Uri,
