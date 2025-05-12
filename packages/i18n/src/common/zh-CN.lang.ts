@@ -1157,6 +1157,9 @@ export const localizationBundle = {
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
     'diffEditor.action.toggleCollapseUnchangedRegions': '折叠未更改的代码区域',
 
+    'multiDiffEditor.action.collapseFiles': '折叠所有文件',
+    'multiDiffEditor.action.expandFiles': '展开所有文件',
+
     'inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
 
     'view.component.renderedError': '视图组件渲染异常',
