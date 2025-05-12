@@ -114,30 +114,12 @@ export class ExpressionTreeService {
   }
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
-    if (a.constructor === b.constructor) {
-      const aName = a.displayName || a.name;
-      const bName = b.displayName || b.name;
-      const isASymbol = !/[a-zA-Z0-9]/.test(aName.charAt(0));
-      const isBSymbol = !/[a-zA-Z0-9]/.test(bName.charAt(0));
-      if (isASymbol && !isBSymbol) {
-        return 1;
-      } else if (!isASymbol && isBSymbol) {
-        return -1;
-      }
-      return aName.localeCompare(bName, 'en', { numeric: true }) as any;
-    }
-    return CompositeTreeNode.is(a) ? -1 : CompositeTreeNode.is(b) ? 1 : 0;
+    return 0;
   }
 }
 
 export class DebugConsoleTreeService extends ExpressionTreeService {
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
-    if (!a) {
-      return 1;
-    }
-    if (!b) {
-      return -1;
-    }
     return 0;
   }
 }

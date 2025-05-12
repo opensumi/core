@@ -210,7 +210,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
       )}
     >
       {node.displayName}
-      {(node as DebugVariable).description ? ':' : ''}
+      {(node as DebugVariable).value ? ':' : ''}
     </div>
   );
 
