@@ -1,5 +1,4 @@
 import { SearchOutlined, SelectOutlined } from '@ant-design/icons';
-import { LibroContextKey, LibroJupyterModel, LibroView, NotebookCommands } from '@difizen/libro-jupyter/noeditor';
 import {
   BaseView,
   CommandRegistry,
@@ -10,7 +9,8 @@ import {
   transient,
   useInject,
   view,
-} from '@difizen/mana-app';
+} from '@difizen/libro-common/app';
+import { LibroContextKey, LibroJupyterModel, LibroView, NotebookCommands } from '@difizen/libro-jupyter/noeditor';
 import { Input, List, Tag, Tooltip, message } from 'antd';
 import React, { forwardRef } from 'react';
 import './index.less';

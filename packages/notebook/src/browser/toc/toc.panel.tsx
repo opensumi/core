@@ -1,5 +1,5 @@
+import { Container, ViewManager, ViewRender } from '@difizen/libro-common/app';
 import { TOCView } from '@difizen/libro-toc';
-import { Container, ViewManager, ViewRender } from '@difizen/mana-app';
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 
 import { URI, ViewState, useInjectable } from '@opensumi/ide-core-browser';

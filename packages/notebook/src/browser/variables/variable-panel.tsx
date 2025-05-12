@@ -1,4 +1,4 @@
-import { Container, ViewManager, ViewRender } from '@difizen/mana-app';
+import { Container, ViewManager, ViewRender } from '@difizen/libro-common/app';
 import { Empty } from 'antd';
 import React, { PropsWithChildren, memo, useEffect, useState } from 'react';
 

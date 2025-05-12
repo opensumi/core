@@ -1,4 +1,4 @@
-import { ViewManager, ViewRender, useInject } from '@difizen/mana-app';
+import { ViewManager, ViewRender, useInject } from '@difizen/libro-common/app';
 import React, { useEffect, useState } from 'react';
 
 import { libroDiffViewFactoryId } from './libro-diff-protocol';

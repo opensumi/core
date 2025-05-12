@@ -1,4 +1,4 @@
-import { GlobalContainer, Syringe } from '@difizen/mana-app';
+import { GlobalContainer, Syringe } from '@difizen/libro-common/app';
 
 import { Injector } from '@opensumi/di';
 

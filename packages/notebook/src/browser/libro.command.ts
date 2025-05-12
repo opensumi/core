@@ -1,5 +1,5 @@
+import { Container } from '@difizen/libro-common/app';
 import { LibroSearchManager, LibroService } from '@difizen/libro-jupyter/noeditor';
-import { Container } from '@difizen/mana-app';
 
 import { Autowired } from '@opensumi/di';
 import { CommandContribution, CommandRegistry, Domain, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';

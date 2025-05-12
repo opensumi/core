@@ -1,5 +1,4 @@
 import { ColumnHeightOutlined } from '@ant-design/icons';
-import { LibroContentService } from '@difizen/libro-core';
 import {
   BaseView,
   ViewInstance,
@@ -10,7 +9,8 @@ import {
   transient,
   useInject,
   view,
-} from '@difizen/mana-app';
+} from '@difizen/libro-common/app';
+import { LibroContentService } from '@difizen/libro-core';
 import { Spin } from 'antd';
 import { diffArrays } from 'diff';
 import React, { forwardRef, useEffect } from 'react';
@@ -25,7 +25,7 @@ import { DiffCellItem, DiffCellUnchangedItems, DiffOption, libroDiffViewFactoryI
 
 import type { DiffArrayItem, DiffCellItemResult, DiffView, IDiffNotebookContent } from './libro-diff-protocol';
 import type { ICell, MultilineString } from '@difizen/libro-common';
-import type { ViewComponent } from '@difizen/mana-app';
+import type { ViewComponent } from '@difizen/libro-common/app';
 
 function comparator(compareLeft: ICell, compareRight: ICell) {
   return compareLeft.id === compareRight.id;

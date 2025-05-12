@@ -1,3 +1,4 @@
+import { Container, ManaAppPreset, ManaComponents, ThemeService } from '@difizen/libro-common/app';
 import {
   ISettings,
   LibroJupyterNoEditorModule,
@@ -5,7 +6,6 @@ import {
   ServerManager,
 } from '@difizen/libro-jupyter/noeditor';
 import { LibroTOCModule } from '@difizen/libro-toc';
-import { Container, ManaAppPreset, ManaComponents, ThemeService } from '@difizen/mana-app';
 import React, { useState } from 'react';
 
 import { Autowired, Injector } from '@opensumi/di';
