@@ -3316,7 +3316,7 @@ __metadata:
     git-rev-sync: "npm:^3.0.1"
     glob: "npm:^8.0.1"
     handlebars: "npm:^4.7.3"
-    husky: "npm:^7.0.4"
+    husky: "npm:^9.1.7"
     intersection-observer: "npm:^0.12.2"
     is-git-clean: "npm:^1.1.0"
     jest: "npm:^29.7.0"
@@ -13721,12 +13721,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:^7.0.4":
-  version: 7.0.4
-  resolution: "husky@npm:7.0.4"
+"husky@npm:^9.1.7":
+  version: 9.1.7
+  resolution: "husky@npm:9.1.7"
   bin:
-    husky: lib/bin.js
-  checksum: 10/8fecb619ab924bd99b2c9ce494bff88e45369c1125e07a603dfacb4bd60ef86840e08c689794c476189183e6223f0ea93aadebf78e3508479453c219358ca787
+    husky: bin.js
+  checksum: 10/c2412753f15695db369634ba70f50f5c0b7e5cb13b673d0826c411ec1bd9ddef08c1dad89ea154f57da2521d2605bd64308af748749b27d08c5f563bcd89975f
   languageName: node
   linkType: hard
 
