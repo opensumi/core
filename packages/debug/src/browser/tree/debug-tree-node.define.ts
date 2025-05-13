@@ -20,6 +20,7 @@ export class ExpressionTreeService {
     if (DebugVariableRoot.is(parent) && !parent.variablesReference && !parent.presetChildren) {
       return (await this.session?.getScopes(parent)) || [];
     }
+    const data = 'test';
     return await this.doResolve(parent);
   }
 
