@@ -381,7 +381,7 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
    * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
    */
   private isEnableNSFW(): boolean {
-    return this.backend === RecursiveWatcherBackend.NSFW || isLinux;
+    return this.backend === RecursiveWatcherBackend.NSFW && isLinux;
   }
 
   private async handleNSFWEvents(events: INsfw.ChangeEvent[], realPath: string): Promise<void> {
