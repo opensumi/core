@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Icon, Popover } from '@opensumi/ide-components';
-import { AppConfig, IDisposable, URI, localize, path, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, DisposableStore, URI, localize, path, useInjectable } from '@opensumi/ide-core-browser';
 import { IResource, WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { BaseApplyService } from '../../mcp/base-apply.service';
@@ -35,32 +35,34 @@ export const InlineDiffManager: React.FC<{ resource: IResource }> = (props) => {
     [resource],
   );
 
-  useEffect(() => {
-    const toDispose = applyService.onCodeBlockUpdate((codeBlock) => {
-      if (path.relative(appConfig.workspaceDir, props.resource.uri.path.toString()) === codeBlock.relativePath) {
-        setShow(codeBlock.status === 'pending');
-      }
-      const pendingPaths = applyService.getPendingPaths();
-      setFilePaths(pendingPaths);
-    });
-    return () => {
-      toDispose.dispose();
-    };
-  }, []);
-
   // 不同编辑器是不同实例，所以不需要监听
   const decorationModelService = applyService.currentPreviewer?.getNode()?.livePreviewDiffDecorationModel;
 
   useEffect(() => {
-    let toDispose: IDisposable | undefined;
+    const toDispose = new DisposableStore();
     if (decorationModelService) {
       setChangesCount(decorationModelService.partialEditWidgetCount);
-      toDispose = decorationModelService.onPartialEditWidgetListChange((e) => {
-        setChangesCount(e.filter((item) => item.status === 'pending').length);
-      });
+      toDispose.add(
+        decorationModelService.onPartialEditWidgetListChange((e) => {
+          setChangesCount(e.filter((item) => item.status === 'pending').length);
+        }),
+      );
     }
+    toDispose.add(
+      applyService.onCodeBlockUpdate((codeBlock) => {
+        if (path.relative(appConfig.workspaceDir, props.resource.uri.path.toString()) === codeBlock.relativePath) {
+          setShow(codeBlock.status === 'pending');
+        }
+        const pendingPaths = applyService.getPendingPaths();
+        setFilePaths(pendingPaths);
+        if (decorationModelService) {
+          // codeBlock 更新时 changeCount 也可能变化
+          setChangesCount(decorationModelService.partialEditWidgetCount);
+        }
+      }),
+    );
     return () => {
-      toDispose?.dispose();
+      toDispose.dispose();
     };
   }, [decorationModelService]);
 
@@ -102,14 +104,6 @@ export const InlineDiffManager: React.FC<{ resource: IResource }> = (props) => {
 
   return (
     <div className={styles.inlineDiffManager} style={{ display: show ? 'flex' : 'none' }}>
-      {/* <div className={styles.left}>
-        <IconWithPopover
-          icon='codicon codicon-issues'
-          content={localize('aiNative.inlineDiff.reveal')}
-          id='inline-diff-manager-reveal'
-          onClick={handleReveal}
-        />
-      </div> */}
       <div className={styles.mid}>
         <IconWithPopover
           icon='codicon codicon-check'

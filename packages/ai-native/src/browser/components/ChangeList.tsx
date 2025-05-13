@@ -19,13 +19,14 @@ export interface FileChange {
 
 interface FileListDisplayProps {
   files: FileChange[];
+  hideActions?: boolean;
   onFileClick: (path: string) => void;
   onRejectAll: () => void;
   onAcceptAll: () => void;
 }
 
 export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
-  const { files, onFileClick, onRejectAll, onAcceptAll } = props;
+  const { files, onFileClick, onRejectAll, onAcceptAll, hideActions } = props;
   const [isExpanded, setIsExpanded] = useState(true);
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const labelService = useInjectable<LabelService>(LabelService);
@@ -119,9 +120,9 @@ export const FileListDisplay: React.FC<FileListDisplayProps> = (props) => {
             {isExpanded ? <Icon icon='down' /> : <Icon icon='right' />} Changed Files({totalFiles})
           </button>
           {renderChangeStats(totalChanges.additions, totalChanges.deletions)}
-          {renderViewChanges(files.length)}
+          {!hideActions && renderViewChanges(files.length)}
         </span>
-        {files.some((file) => file.status === 'pending') && (
+        {!hideActions && files.some((file) => file.status === 'pending') && (
           <div className={styles.actions}>
             <Button
               type='link'

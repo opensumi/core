@@ -871,6 +871,7 @@ export const AIChatView = () => {
             {changeList.length > 0 && (
               <FileListDisplay
                 files={changeList}
+                hideActions={loading}
                 onFileClick={(filePath) => {
                   editorService.open(URI.file(path.join(appConfig.workspaceDir, filePath)));
                 }}
