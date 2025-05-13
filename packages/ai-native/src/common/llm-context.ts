@@ -65,3 +65,10 @@ export interface SerializedContext {
   attachedFiles: Array<AttachFileContext>;
   attachedFolders: string[];
 }
+
+export enum LLM_CONTEXT_KEY {
+  AttachedFile = '<attached_file>',
+  AttachedFolder = '<attached_folder>',
+}
+
+export const LLM_CONTEXT_KEY_REGEX = /<attached_file>|<attached_folder>/g;

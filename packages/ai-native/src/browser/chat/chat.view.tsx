@@ -40,7 +40,12 @@ import 'react-chat-elements/dist/main.css';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
-import { LLMContextService, LLMContextServiceToken } from '../../common/llm-context';
+import {
+  LLMContextService,
+  LLMContextServiceToken,
+  LLM_CONTEXT_KEY,
+  LLM_CONTEXT_KEY_REGEX,
+} from '../../common/llm-context';
 import { CodeBlockData } from '../../common/types';
 import { cleanAttachedTextWrapper } from '../../common/utils';
 import { FileChange, FileListDisplay } from '../components/ChangeList';
@@ -636,9 +641,8 @@ export const AIChatView = () => {
         // 由于涉及 tool 调用，超时时间设置长一点
         600 * 1000,
       );
-
       msgHistoryManager.addUserMessage({
-        content: message,
+        content: message.replaceAll(LLM_CONTEXT_KEY_REGEX, ''),
         images: images || [],
         agentId: agentId!,
         agentCommand: command!,
@@ -702,7 +706,7 @@ export const AIChatView = () => {
           }
           const fileUri = new URI(filePath);
           const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
-          processedContent = processedContent.replace(match, `\`<attached_file>${relativePath}\``);
+          processedContent = processedContent.replace(match, `\`${LLM_CONTEXT_KEY.AttachedFile}${relativePath}\``);
         }
       }
 
@@ -713,7 +717,7 @@ export const AIChatView = () => {
           const folderPath = match.replace(/\{\{@folder:(.*?)\}\}/, '$1');
           const folderUri = new URI(folderPath);
           const relativePath = (await workspaceService.asRelativePath(folderUri))?.path || folderUri.displayName;
-          processedContent = processedContent.replace(match, `\`<attached_folder>${relativePath}\``);
+          processedContent = processedContent.replace(match, `\`${LLM_CONTEXT_KEY.AttachedFolder}${relativePath}\``);
         }
       }
       const codePattern = /\{\{@code:(.*?)\}\}/g;
@@ -731,7 +735,7 @@ export const AIChatView = () => {
           const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
           processedContent = processedContent.replace(
             match,
-            `\`<attached_file>${relativePath}:L${range[0]}-${range[1]}\``,
+            `\`${LLM_CONTEXT_KEY.AttachedFile}${relativePath}:L${range[0]}-${range[1]}\``,
           );
         }
       }
