@@ -305,6 +305,7 @@ export const InlineActionWidget: React.FC<
   return (
     <Button
       loading={loading}
+      showLoadingIcon={false}
       className={cls(className, styles_btnAction)}
       disabled={data.disabled}
       onClick={handleClick}
