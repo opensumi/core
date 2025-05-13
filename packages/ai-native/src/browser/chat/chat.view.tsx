@@ -76,18 +76,17 @@ const MAX_TITLE_LENGTH = 100;
 const getFileChanges = (codeBlocks: CodeBlockData[]) =>
   codeBlocks
     .map((block) => {
-      const rangesFromDiffHunk =
-        block.applyResult?.diff.split('\n').reduce(
-          ([del, add], line) => {
-            if (line.startsWith('-')) {
-              del += 1;
-            } else if (line.startsWith('+')) {
-              add += 1;
-            }
-            return [del, add];
-          },
-          [0, 0],
-        ) || [];
+      const rangesFromDiffHunk = block.applyResult?.diff.split('\n').reduce(
+        ([del, add], line) => {
+          if (line.startsWith('-')) {
+            del += 1;
+          } else if (line.startsWith('+')) {
+            add += 1;
+          }
+          return [del, add];
+        },
+        [0, 0],
+      ) || [0, 0];
       return {
         path: block.relativePath,
         additions: rangesFromDiffHunk[1],
