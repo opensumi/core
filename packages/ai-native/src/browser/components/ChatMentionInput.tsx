@@ -110,54 +110,6 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   // 默认菜单项
   const defaultMenuItems: MentionItem[] = [
     {
-      id: 'code',
-      type: 'code',
-      text: 'Code',
-      icon: getIcon('codebraces'),
-      getHighestLevelItems: () => [],
-      getItems: async (searchText: string) => {
-        if (!searchText || prevOutlineItems.current.length === 0) {
-          const uri = outlineTreeService.currentUri;
-          if (!uri) {
-            return [];
-          }
-          const treeNodes = await resolveSymbols();
-          prevOutlineItems.current = await Promise.all(
-            treeNodes.map(async (treeNode) => {
-              const relativePath = await workspaceService.asRelativePath(uri);
-              return {
-                id: treeNode.raw.id,
-                type: MentionType.CODE,
-                text: treeNode.raw.name,
-                symbol: treeNode.raw,
-                value: treeNode.raw.id,
-                description: `${relativePath?.root ? relativePath.path : ''}:L${treeNode.raw.range.startLineNumber}-${
-                  treeNode.raw.range.endLineNumber
-                }`,
-                kind: treeNode.raw.kind,
-                contextId: `${outlineTreeService.currentUri?.codeUri.fsPath}:L${treeNode.raw.range.startLineNumber}-${treeNode.raw.range.endLineNumber}`,
-                icon: getSymbolIcon(treeNode.raw.kind) + ' outline-icon',
-              };
-            }),
-          );
-          return prevOutlineItems.current;
-        } else {
-          searchText = searchText.toLocaleLowerCase();
-          return prevOutlineItems.current.sort((a, b) => {
-            if (a.text.toLocaleLowerCase().includes(searchText) && b.text.toLocaleLowerCase().includes(searchText)) {
-              return 0;
-            }
-            if (a.text.toLocaleLowerCase().includes(searchText)) {
-              return -1;
-            } else if (b.text.toLocaleLowerCase().includes(searchText)) {
-              return 1;
-            }
-            return 0;
-          });
-        }
-      },
-    },
-    {
       id: MentionType.FILE,
       type: MentionType.FILE,
       text: 'File',
@@ -310,6 +262,54 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           );
         }
         return folders.filter((folder) => folder.id !== new URI(workspaceService.workspace?.uri).codeUri.fsPath);
+      },
+    },
+    {
+      id: 'code',
+      type: 'code',
+      text: 'Code',
+      icon: getIcon('codebraces'),
+      getHighestLevelItems: () => [],
+      getItems: async (searchText: string) => {
+        if (!searchText || prevOutlineItems.current.length === 0) {
+          const uri = outlineTreeService.currentUri;
+          if (!uri) {
+            return [];
+          }
+          const treeNodes = await resolveSymbols();
+          prevOutlineItems.current = await Promise.all(
+            treeNodes.map(async (treeNode) => {
+              const relativePath = await workspaceService.asRelativePath(uri);
+              return {
+                id: treeNode.raw.id,
+                type: MentionType.CODE,
+                text: treeNode.raw.name,
+                symbol: treeNode.raw,
+                value: treeNode.raw.id,
+                description: `${relativePath?.root ? relativePath.path : ''}:L${treeNode.raw.range.startLineNumber}-${
+                  treeNode.raw.range.endLineNumber
+                }`,
+                kind: treeNode.raw.kind,
+                contextId: `${outlineTreeService.currentUri?.codeUri.fsPath}:L${treeNode.raw.range.startLineNumber}-${treeNode.raw.range.endLineNumber}`,
+                icon: getSymbolIcon(treeNode.raw.kind) + ' outline-icon',
+              };
+            }),
+          );
+          return prevOutlineItems.current;
+        } else {
+          searchText = searchText.toLocaleLowerCase();
+          return prevOutlineItems.current.sort((a, b) => {
+            if (a.text.toLocaleLowerCase().includes(searchText) && b.text.toLocaleLowerCase().includes(searchText)) {
+              return 0;
+            }
+            if (a.text.toLocaleLowerCase().includes(searchText)) {
+              return -1;
+            } else if (b.text.toLocaleLowerCase().includes(searchText)) {
+              return 1;
+            }
+            return 0;
+          });
+        }
       },
     },
   ];

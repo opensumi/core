@@ -64,7 +64,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     this._visible = false;
     this.onDidDialogVisibleChangeEmitter.fire(this._visible);
     this.contextkeyService.dialogViewVisibleContext.set(false);
-    this.deferred.resolve(value);
+    this.deferred?.resolve(value);
   }
 
   reset(): void {
