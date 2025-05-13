@@ -1,10 +1,11 @@
 import z from 'zod';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig } from '@opensumi/ide-core-browser';
+import { AINativeSettingSectionsId, AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
 import { Deferred } from '@opensumi/ide-utils/lib/promises';
 
+import { ETerminalAutoExecutionPolicy } from '../../../preferences/schema';
 import { MCPLogger } from '../../../types';
 
 const color = {
@@ -36,6 +37,9 @@ export class RunCommandHandler {
   @Autowired(ITerminalGroupViewService)
   protected readonly terminalView: ITerminalGroupViewService;
 
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
+
   private approvalDeferredMap = new Map<string, Deferred<boolean>>();
 
   private terminalId = 0;
@@ -48,9 +52,21 @@ export class RunCommandHandler {
     };
   }
 
+  private isAlwaysApproval(requireApproval: boolean) {
+    const terminalAutoExecution = this.preferenceService.get(AINativeSettingSectionsId.TerminalAutoRun);
+    if (
+      terminalAutoExecution === ETerminalAutoExecutionPolicy.off ||
+      (terminalAutoExecution === ETerminalAutoExecutionPolicy.auto && requireApproval)
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
   async handler(args: z.infer<typeof inputSchema> & { toolCallId: string }, logger: MCPLogger) {
     logger.appendLine(`Executing command: ${args.command}`);
-    if (args.require_user_approval) {
+    if (this.isAlwaysApproval(args.require_user_approval)) {
       const def = new Deferred<boolean>();
       this.approvalDeferredMap.set(args.toolCallId, def);
       const approval = await def.promise;

@@ -662,6 +662,10 @@ export class AINativeBrowserContribution
             id: AINativeSettingSectionsId.MCPServers,
             localized: 'preference.ai.native.mcp.servers',
           },
+          {
+            id: AINativeSettingSectionsId.TerminalAutoRun,
+            localized: 'ai.native.terminal.autorun',
+          },
         ],
       });
     }

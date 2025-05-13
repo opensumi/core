@@ -2,9 +2,15 @@ import { DataContent } from 'ai';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Image } from '@opensumi/ide-components/lib/image';
-import { LabelService, RecentFilesManager, getSymbolIcon, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  LabelService,
+  PreferenceService,
+  RecentFilesManager,
+  getSymbolIcon,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { ChatFeatureRegistryToken, URI, localize } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId, ChatFeatureRegistryToken, URI, localize } from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -70,6 +76,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
   const prevOutlineItems = useRef<MentionItem[]>([]);
+  const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
   }, [commandService]);
@@ -313,7 +320,8 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         { label: 'QWQ 32B', value: 'qwq-32b' },
         { label: 'DeepSeek R1', value: 'deepseek-r1' },
       ],
-      defaultModel: props.sessionModelId || 'deepseek-r1',
+      defaultModel:
+        props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
       buttons: [
         {
           id: 'mcp-server',

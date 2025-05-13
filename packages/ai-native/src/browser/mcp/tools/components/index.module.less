@@ -159,12 +159,40 @@
   border-radius: 4px;
   margin: 10px 0px;
 
+  .running {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 11px;
+    color: var(--descriptionForeground);
+  }
+
   .command_title {
     display: flex;
     align-items: center;
     font-size: 11px;
     span {
       margin-left: 5px;
+    }
+  }
+
+  .auto_execution_policy {
+    font-size: 11px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    color: var(--descriptionForeground);
+
+    :global(.kt-popover-trigger) {
+      display: flex;
+    }
+
+    :global(.kt-icon) {
+      font-size: 13px;
+    }
+
+    .auto_execution_policy_label {
+      margin-right: 5px;
     }
   }
 
@@ -194,5 +222,6 @@
   .cmmand_footer {
     display: flex;
     justify-content: flex-end;
+    font-size: 12px;
   }
 }
