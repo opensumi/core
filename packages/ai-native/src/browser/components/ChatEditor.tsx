@@ -77,6 +77,16 @@ export const CodeEditorWithHighlight = (props: Props) => {
     return () => dispose.dispose();
   }, []);
 
+  useEffect(() => {
+    if (ref.current) {
+      const highlightElement = ref.current;
+      const preElement = highlightElement.querySelector('pre');
+      if (preElement) {
+        preElement.scrollTop = preElement.scrollHeight;
+      }
+    }
+  }, [input]);
+
   const handleCopy = useCallback(async () => {
     setIsCoping(true);
     await clipboardService.writeText(input);
@@ -140,7 +150,7 @@ export const CodeEditorWithHighlight = (props: Props) => {
           />
         </Popover>
       </div>
-      <Highlight language={language} ref={ref} className={styles.editor}>
+      <Highlight language={language} ref={ref} className={styles.highlight_editor}>
         {input}
       </Highlight>
     </div>
@@ -313,8 +323,8 @@ export const CodeBlockWrapper = ({
   workspaceService,
 }: {
   text?: string;
-  relationId: string;
   renderText?: (t: string) => React.ReactNode;
+  relationId: string;
   agentId?: string;
   labelService?: LabelService;
   commandService?: CommandService;
