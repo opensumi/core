@@ -534,10 +534,20 @@
     }
   }
 
+  .design-tabs {
+    margin-top: 2px;
+    :global(.kt-scrollbar) {
+      > div {
+        &:first-child {
+          bottom: -1px;
+        }
+      }
+    }
+  }
+
   .design-tab_item_selected {
     border-radius: 12px 12px 0 0;
     position: relative;
-    margin-top: 1px;
     height: 34px !important;
     &:before {
       content: '';
@@ -564,7 +574,7 @@
   }
 
   .design-tab_contents {
-    height: 35px;
+    height: 34px;
 
     :first-child {
       &.design-item_container {
