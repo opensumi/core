@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Scrollbars } from '@opensumi/ide-components';
 import { KeybindingRegistry, useAutorun, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
@@ -39,12 +39,14 @@ export default () => {
     };
   }, []);
 
+  const visibleGroups = useMemo(() => groups.filter(Boolean), [groups]);
+
   return (
     <div className={styles.view_container}>
       <div className={styles.tabs}>
         <Scrollbars forwardedRef={(el) => (el ? (tabContainer.current = el.ref) : null)}>
           <div className={styles_tab_contents}>
-            {groups.filter(Boolean).map((group, index) => (
+            {visibleGroups.map((group, index) => (
               <TabItem
                 draggable={true}
                 onDragStart={(e) => {
@@ -60,6 +62,8 @@ export default () => {
                 }}
                 key={group.id}
                 group={group}
+                isSelectedPrev={visibleGroups[index + 1]?.id === currentGroup?.id}
+                isSelectedNext={visibleGroups[index - 1]?.id === currentGroup?.id}
                 selected={currentGroup && currentGroup.id === group.id}
                 onInputBlur={() => group.unedit()}
                 onInputEnter={(_: string, name: string) => group.rename(name)}

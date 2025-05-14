@@ -27,6 +27,8 @@ export const renderInfoItem = (props: ItemProps) => {
   const handleClose = debounce(() => props.onClose && props.onClose(), 20);
   const styles_item_container = useDesignStyles(styles.item_container, 'item_container');
   const styles_tab_item_selected = useDesignStyles(styles.tab_item_selected, 'tab_item_selected');
+  const styles_tab_item_selected_prev = useDesignStyles(styles.tab_item_selected_prev, 'tab_item_selected_prev');
+  const styles_tab_item_selected_next = useDesignStyles(styles.tab_item_selected_next, 'tab_item_selected_next');
   const styles_item_info_name = useDesignStyles(styles.item_info_name, 'item_info_name');
   const styles_tab_close_icon = useDesignStyles(styles.tab_close_icon, 'tab_close_icon');
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
@@ -116,6 +118,8 @@ export const renderInfoItem = (props: ItemProps) => {
       className={cls({
         [styles_item_container]: true,
         [styles_tab_item_selected]: !!props.selected,
+        [styles_tab_item_selected_prev]: !!props.isSelectedPrev,
+        [styles_tab_item_selected_next]: !!props.isSelectedNext,
       })}
       style={{ height: layoutViewSize.panelTitleBarHeight }}
       onClick={() => handleSelect()}
