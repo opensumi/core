@@ -100,14 +100,15 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
   }
 
   private async doWatchFileChange(uri: string, options?: WatchOptions) {
-    if (this.WATCHER_HANDLERS.has(uri)) {
-      const handler = this.WATCHER_HANDLERS.get(uri);
-      handler?.disposable.dispose();
-      this.WATCHER_HANDLERS.delete(uri);
-    }
-
     const basePath = FileUri.fsPath(uri);
-    this.logger.log('[Recursive] watch file changes: ', uri);
+    this.logger.log('[Recursive] watch file changes: ', uri, 'basePath:', basePath);
+
+    // 先检查并清理已存在的 handler（使用 basePath）
+    if (this.WATCHER_HANDLERS.has(basePath)) {
+      const handler = this.WATCHER_HANDLERS.get(basePath);
+      handler?.disposable.dispose();
+      this.WATCHER_HANDLERS.delete(basePath);
+    }
 
     const toDisposeWatcher = new DisposableCollection();
     let watchPath: string;
@@ -122,6 +123,11 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       }
     } else {
       watchPath = await this.lookup(basePath);
+    }
+
+    if (!watchPath) {
+      this.logger.warn(`[Recursive] No valid watch path found for ${uri}`);
+      return;
     }
 
     const handler = (err, events: ParcelWatcher.Event[]) => {
@@ -163,18 +169,18 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
    * @param path 监听的文件路径
    * @param count 向上查找层级
    */
-  protected async lookup(path: string, count = 5) {
+  protected async lookup(path: string, count = 5): Promise<string | undefined> {
     let uri = paths.dirname(path);
     let times = 0;
     while (!(await fs.pathExists(uri)) && times < count) {
+      if (uri === paths.dirname(uri)) {
+        // 已经到达根目录，仍未找到有效路径
+        return undefined;
+      }
       uri = paths.dirname(uri);
       times++;
     }
-    if (await fs.pathExists(uri)) {
-      return uri;
-    } else {
-      return '';
-    }
+    return (await fs.pathExists(uri)) ? uri : undefined;
   }
 
   /**
@@ -253,25 +259,34 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
           return await ParcelWatcher.subscribe(
             realPath,
             (err, events: ParcelWatcher.Event[]) => {
+              if (err) {
+                this.logger.error(`[Recursive] Watcher error for ${realPath}:`, err);
+                return;
+              }
+
               // 对于超过 5000 数量的 events 做屏蔽优化，避免潜在的卡死问题
               if (events.length > 5000) {
-                // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
-                return;
-              }
-              const handlers = this.WATCHER_HANDLERS.get(realPath)?.handlers;
-
-              if (!handlers) {
-                this.logger.log('[Recursive] No handler found for watcher', realPath);
+                this.logger.warn(`[Recursive] Too many events (${events.length}) for ${realPath}, skipping...`);
                 return;
               }
 
-              this.logger.log('[Recursive] Received events:', events);
+              const watcherInfo = this.WATCHER_HANDLERS.get(realPath);
+              if (!watcherInfo || !watcherInfo.handlers) {
+                this.logger.warn('[Recursive] No handler found for watcher', realPath);
+                return;
+              }
+
               if (events.length === 0) {
                 return;
               }
 
-              for (const handler of handlers) {
-                (handler as ParcelWatcher.SubscribeCallback)(err, events);
+              this.logger.debug('[Recursive] Received events:', events);
+              for (const handler of watcherInfo.handlers) {
+                try {
+                  (handler as ParcelWatcher.SubscribeCallback)(err, events);
+                } catch (handlerError) {
+                  this.logger.error(`[Recursive] Handler error for ${realPath}:`, handlerError);
+                }
               }
             },
             {
@@ -282,28 +297,33 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
         } catch (e) {
           // Watcher 启动失败，尝试重试
           this.logger.error('[Recursive] watcher subscribe failed ', e, ' try times ', times);
-          await new Promise((resolve) => {
-            setTimeout(resolve, retryDelay);
-          });
+          if (times < maxRetries - 1) {
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          }
         }
       }
 
       // 经过若干次的尝试后，Parcel Watcher 依然启动失败，此时就不再尝试重试
-      this.logger.error(`[Recursive] watcher subscribe finally failed after ${maxRetries} times`);
-      return undefined; // watch 失败则返回 undefined
+      this.logger.error(`[Recursive] watcher subscribe finally failed after ${maxRetries} times for ${realPath}`);
+      return undefined;
     };
 
-    const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
-
-    if (hanlder) {
-      // watch 成功才加入 disposables，否则也就无需 dispose
-      disposables.push(
-        Disposable.create(async () => {
-          if (hanlder) {
-            await hanlder.unsubscribe();
-          }
-        }),
-      );
+    try {
+      const handler = await tryWatchDir();
+      if (handler) {
+        disposables.push(
+          Disposable.create(async () => {
+            try {
+              await handler.unsubscribe();
+              this.logger.debug(`[Recursive] Successfully unsubscribed watcher for ${realPath}`);
+            } catch (error) {
+              this.logger.error(`[Recursive] Error unsubscribing watcher for ${realPath}:`, error);
+            }
+          }),
+        );
+      }
+    } catch (error) {
+      this.logger.error(`[Recursive] Error setting up watcher for ${realPath}:`, error);
     }
 
     return disposables;
