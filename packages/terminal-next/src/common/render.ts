@@ -10,8 +10,6 @@ export enum ItemType {
 export interface ItemProps {
   group?: IWidgetGroup;
   selected?: boolean;
-  isSelectedPrev?: boolean;
-  isSelectedNext?: boolean;
   type?: ItemType;
   onClick?: () => void;
   onClose?: () => void;

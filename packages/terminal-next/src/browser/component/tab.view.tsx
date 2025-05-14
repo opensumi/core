@@ -62,8 +62,6 @@ export default () => {
                 }}
                 key={group.id}
                 group={group}
-                isSelectedPrev={visibleGroups[index + 1]?.id === currentGroup?.id}
-                isSelectedNext={visibleGroups[index - 1]?.id === currentGroup?.id}
                 selected={currentGroup && currentGroup.id === group.id}
                 onInputBlur={() => group.unedit()}
                 onInputEnter={(_: string, name: string) => group.rename(name)}
