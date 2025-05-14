@@ -29,6 +29,7 @@
     "jsonc-parser": "^2.1.0",
     "keycode": "^2.2.0",
     "lodash": "^4.17.21",
+    "marked": "15.0.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-is": "^18.2.0",

@@ -66,7 +66,6 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     const description = from && typeof from === 'string' ? `${localize('component.message.origin')}: ${from}` : '';
     const key = uuid();
 
-    // 创建一个符合 marked 15.x walkTokens 返回值要求的函数
     const processToken = (token: Token): void => {
       parseWithoutEscape(token);
     };
