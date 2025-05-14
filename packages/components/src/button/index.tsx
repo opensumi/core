@@ -31,6 +31,7 @@ interface MoreActionProps {
   moreVisible?: boolean;
   placement?: Placement;
   onVisibleChange?: (visible: boolean) => void;
+  showLoadingIcon?: boolean;
 }
 
 export type ButtonProps<T> = {
@@ -101,6 +102,7 @@ export const Button = React.memo(
     moreVisible,
     placement,
     title,
+    showLoadingIcon = true,
     onVisibleChange,
     ...otherProps
   }: ButtonProps<T>): React.ReactElement<ButtonProps<T>> => {
@@ -149,7 +151,7 @@ export const Button = React.memo(
             type={htmlType}
             onClick={loading || disabled ? noop : onClick}
           >
-            {loading && type !== 'link' && <LoadingCircle />}
+            {loading && type !== 'link' && showLoadingIcon && <LoadingCircle />}
             {iconNode && iconNode}
             {children}
             {more && (
@@ -167,7 +169,7 @@ export const Button = React.memo(
         type={htmlType}
         onClick={loading || disabled ? noop : onClick}
       >
-        {loading && type !== 'link' && <LoadingCircle />}
+        {loading && type !== 'link' && showLoadingIcon && <LoadingCircle />}
         {iconNode && iconNode}
         {children}
       </button>

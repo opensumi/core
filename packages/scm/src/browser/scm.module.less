@@ -8,6 +8,14 @@
 
 .scm {
   display: block;
+  :global(.kt-primary-button-loading) {
+    & ~ :global(.secondary-button) {
+      background-color: var(--kt-button-disableBackground) !important;
+      box-shadow: var(--kt-button-disableBorder) 0 0 0 1px inset;
+      color: var(--kt-button-disableForeground) !important;
+      cursor: not-allowed;
+    }
+  }
 }
 
 .noop {

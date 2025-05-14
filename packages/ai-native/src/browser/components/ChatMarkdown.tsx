@@ -60,8 +60,14 @@ export const ChatMarkdown = (props: MarkdownProps) => {
     renderer.codespan = (code) => <code className={styles.code_inline}>{code}</code>;
 
     const reactParser = new MarkdownReactParser({ renderer });
-    const markedOptions = props.markedOptions ?? {};
-    markedOptions.renderer = reactParser;
+    const markedOptions = {
+      ...marked.defaults,
+      ...props.markedOptions,
+      renderer: reactParser,
+      mangle: false,
+      headerIds: false,
+      smartypants: false,
+    };
 
     let value = markdown.value ?? '';
     if (value.length > 100_000) {
@@ -72,7 +78,6 @@ export const ChatMarkdown = (props: MarkdownProps) => {
     let tokensList: marked.TokensList;
     if (props.fillInIncompleteTokens) {
       const opts = {
-        ...marked.defaults,
         ...markedOptions,
       };
       const tokens = marked.lexer(value, opts);
@@ -80,7 +85,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
       renderedMarkdown = marked.parser(newTokens, opts);
       tokensList = newTokens;
     } else {
-      const tokens = marked.lexer(value, marked.defaults);
+      const tokens = marked.lexer(value, markedOptions);
       renderedMarkdown = marked.parser(tokens, markedOptions);
       tokensList = tokens;
     }
