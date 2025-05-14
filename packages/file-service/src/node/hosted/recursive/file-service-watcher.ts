@@ -111,7 +111,7 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     }
 
     const toDisposeWatcher = new DisposableCollection();
-    let watchPath: string;
+    let watchPath: string | undefined;
 
     const exist = await fs.pathExists(basePath);
     if (exist) {
