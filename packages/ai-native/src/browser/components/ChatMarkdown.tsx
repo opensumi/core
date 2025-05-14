@@ -74,16 +74,13 @@ export const ChatMarkdown = (props: MarkdownProps) => {
       value = `${value.slice(0, 100_000)}…`;
     }
 
-    let renderedMarkdown: string;
     let tokensList: TokensList;
     if (props.fillInIncompleteTokens) {
       const tokens = marked.lexer(value, markedOptions);
       const newTokens = fillInIncompleteTokens(tokens);
-      renderedMarkdown = marked.parser(newTokens, markedOptions);
       tokensList = newTokens;
     } else {
       const tokens = marked.lexer(value, markedOptions);
-      renderedMarkdown = marked.parser(tokens, markedOptions);
       tokensList = tokens;
     }
 
