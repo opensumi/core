@@ -157,7 +157,6 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       handlers: [handler],
     });
 
-    toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watchPath)));
     toDisposeWatcher.push(await this.start(watchPath, options));
     this.addDispose(toDisposeWatcher);
   }
