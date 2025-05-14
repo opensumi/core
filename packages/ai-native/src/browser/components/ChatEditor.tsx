@@ -83,7 +83,7 @@ export const CodeEditorWithHighlight = (props: Props) => {
       () => {
         if (ref.current) {
           const highlightElement = ref.current;
-          const codeElement = highlightElement?.querySelector('code');
+          const codeElement = (highlightElement as any)?.el?.querySelector('code');
           const childs = codeElement?.children;
           if (childs) {
             const lastChild = childs[childs.length - 1];
