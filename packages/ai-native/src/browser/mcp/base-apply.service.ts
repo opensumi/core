@@ -286,7 +286,9 @@ export abstract class BaseApplyService extends WithEventBus {
           }
         : await this.doApply(codeBlock);
       if (!fastApplyFileResult.stream && !fastApplyFileResult.result) {
-        throw new Error('No apply content provided');
+        codeBlock.status = 'cancelled';
+        this.updateCodeBlock(codeBlock);
+        return codeBlock;
       }
 
       if (this.activePreviewerMap.has(codeBlock.relativePath)) {
