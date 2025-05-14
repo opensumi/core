@@ -25,7 +25,7 @@ export const ApplyStatus = ({ status, error }: { status: CodeBlockStatus; error?
         );
       case 'failed':
         return (
-          <Popover title={`Failed (${error || 'Unknown error'})`} id={'edit-file-tool-status-failed'}>
+          <Popover title={`(${error || 'Unknown error'})`} id={'edit-file-tool-status-failed'}>
             <Icon iconClass='codicon codicon-error' />
           </Popover>
         );
