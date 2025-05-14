@@ -43,7 +43,17 @@ export class TerminalLink extends Disposable implements ILink {
     public readonly range: IBufferRange,
     public readonly text: string,
     private readonly _viewportY: number,
-    private readonly _activateCallback: (event: MouseEvent | undefined, uri: string) => void,
+    private readonly _activateCallback: (
+      event: MouseEvent | undefined,
+      uri: string,
+      lineInfo?: {
+        filePath?: string;
+        line?: number;
+        column?: number;
+        endLine?: number;
+        endColumn?: number;
+      },
+    ) => void,
     private readonly _tooltipCallback: (
       link: TerminalLink,
       viewportRange: IViewportRange,
@@ -52,6 +62,13 @@ export class TerminalLink extends Disposable implements ILink {
     ) => IDisposable | undefined,
     private readonly _isHighConfidenceLink: boolean,
     readonly label: string | undefined,
+    private readonly _lineInfo?: {
+      filePath?: string;
+      line?: number;
+      column?: number;
+      endLine?: number;
+      endColumn?: number;
+    },
   ) {
     super();
     this.decorations = {
@@ -71,7 +88,7 @@ export class TerminalLink extends Disposable implements ILink {
   }
 
   activate(event: MouseEvent | undefined, text: string): void {
-    this._activateCallback(event, text);
+    this._activateCallback(event, text, this._lineInfo);
   }
 
   hover(event: MouseEvent, text: string): void {
