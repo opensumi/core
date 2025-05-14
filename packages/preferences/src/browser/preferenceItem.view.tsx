@@ -28,6 +28,8 @@ import { getPreferenceItemLabel, knownPrefIdMappings } from '../common';
 import { PreferenceSettingsService } from './preference-settings.service';
 import styles from './preferences.module.less';
 
+import type { Tokens } from 'marked';
+
 interface IPreferenceItemProps {
   preferenceName: string;
   localizedName?: string;
@@ -262,7 +264,7 @@ class PreferenceMarkedRender extends DefaultMarkedRenderer {
   @Autowired(IPreferenceSettingsService)
   preferenceSettingService: PreferenceSettingsService;
 
-  codespan(text: string): string {
+  codespan({ text }: Tokens.Codespan): string {
     if (text.startsWith('#') && text.endsWith('#')) {
       const _prefId = text.slice(1, text.length - 1);
       const prefId = knownPrefIdMappings[_prefId] ?? _prefId;
@@ -271,9 +273,9 @@ class PreferenceMarkedRender extends DefaultMarkedRenderer {
         const preferenceTitle = getPreferenceItemLabel(preference);
         return linkify(`${PreferenceMarkedRender.openerScheme}${preferenceTitle}`, prefId, preferenceTitle);
       }
-      return super.codespan(prefId);
+      return super.codespan({ text: prefId } as Tokens.Codespan);
     }
-    return super.codespan(text);
+    return super.codespan({ text } as Tokens.Codespan);
   }
 }
 

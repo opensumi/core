@@ -3482,11 +3482,10 @@ __metadata:
     "@opensumi/ide-utils": "workspace:*"
     "@opensumi/react-custom-scrollbars-2": "npm:^4.3.4"
     "@rc-component/mini-decimal": "npm:^1.0.1"
-    "@types/marked": "npm:^4.0.7"
     "@types/react-window": "npm:^1.8.5"
     fuzzy: "npm:^0.1.3"
     lodash: "npm:^4.17.21"
-    marked: "npm:4.0.10"
+    marked: "npm:15.0.11"
     prop-types: "npm:^15.8.1"
     raf: "npm:^3.4.1"
     rc-dialog: "npm:^9.6.0"
@@ -3538,6 +3537,7 @@ __metadata:
     jsonc-parser: "npm:^2.1.0"
     keycode: "npm:^2.2.0"
     lodash: "npm:^4.17.21"
+    marked: "npm:15.0.11"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-is: "npm:^18.2.0"
@@ -5726,13 +5726,6 @@ __metadata:
     "@types/linkify-it": "npm:*"
     "@types/mdurl": "npm:*"
   checksum: 10/8838017dd0a0a9bd596114b959d287135393a18e3ddc6a46e9770bdd35c824b88d8ba4b60540ee75ae6c79dc0ccc72ff5d7745083c27900c98925c9b5ae058e6
-  languageName: node
-  linkType: hard
-
-"@types/marked@npm:^4.0.7":
-  version: 4.3.2
-  resolution: "@types/marked@npm:4.3.2"
-  checksum: 10/c1b5aa2cee0b8929164f4a8d206d7f89256ebde0d5b9998e9cdf6da2a5fa71162f66ef30e80b98213ee2c3372514b39b756e8494980174a4907a4aa4690b4d1d
   languageName: node
   linkType: hard
 
@@ -16652,12 +16645,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:4.0.10":
-  version: 4.0.10
-  resolution: "marked@npm:4.0.10"
+"marked@npm:15.0.11":
+  version: 15.0.11
+  resolution: "marked@npm:15.0.11"
   bin:
     marked: bin/marked.js
-  checksum: 10/764e49b246ccad0afe2eedf3c5074aafa7abd445c93cb13209b39bacdf9753ae7c333f35c7fafbcb68b20639711c34d74eb06b922ac71b82e440e72ce48d4dc0
+  checksum: 10/939e75f3e989ef4d72d6da9c7e80e43d49ffdc7af8ae2a38cc8c73f20a629d9659a0acda1d0cb5a5f90876cbfb1520d029f98790a934b46592dfa178fbd2838c
   languageName: node
   linkType: hard
 

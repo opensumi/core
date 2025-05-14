@@ -1,5 +1,6 @@
 import capitalize from 'lodash/capitalize';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import throttle from 'lodash/throttle';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Highlight from 'react-highlight';
 
 import { Image } from '@opensumi/ide-components/lib/image';
@@ -77,15 +78,36 @@ export const CodeEditorWithHighlight = (props: Props) => {
     return () => dispose.dispose();
   }, []);
 
+  const throttledScrollToBottom = useRef(
+    throttle(
+      () => {
+        if (ref.current) {
+          const highlightElement = ref.current;
+          const codeElement = (highlightElement as any)?.el?.querySelector('code');
+          const childs = codeElement?.children;
+          if (childs) {
+            const lastChild = childs[childs.length - 1];
+            if (lastChild) {
+              if ((lastChild as any).scrollIntoViewIfNeeded) {
+                (lastChild as any).scrollIntoViewIfNeeded();
+              } else {
+                lastChild.scrollIntoView(false);
+              }
+            }
+          }
+        }
+      },
+      150,
+      { leading: true, trailing: true },
+    ),
+  ).current;
+
   useEffect(() => {
-    if (ref.current) {
-      const highlightElement = ref.current;
-      const preElement = highlightElement?.querySelector?.('pre');
-      if (preElement) {
-        preElement.scrollTop = preElement.scrollHeight;
-      }
-    }
-  }, [input]);
+    throttledScrollToBottom();
+    return () => {
+      throttledScrollToBottom.cancel();
+    };
+  }, [input, throttledScrollToBottom]);
 
   const handleCopy = useCallback(async () => {
     setIsCoping(true);

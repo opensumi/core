@@ -4,7 +4,7 @@ import { CancellationToken, Disposable, Event, IDisposable, IOpenerService, URI 
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 import { IWebviewService } from '@opensumi/ide-webview';
 
-import { IMarkdownService } from '../common';
+import { IMarkdownService, MarkdownOptions } from '../common';
 
 import { markdownCss } from './mardown.style';
 
@@ -25,7 +25,7 @@ export class MarkdownServiceImpl implements IMarkdownService {
     content: string,
     container: HTMLElement,
     cancellationToken: CancellationToken,
-    options?: IMarkedOptions,
+    options?: MarkdownOptions,
     onUpdate?: Event<string>,
     onLinkClick?: (uri: URI) => void,
   ): Promise<IDisposable> {
@@ -71,15 +71,20 @@ export class MarkdownServiceImpl implements IMarkdownService {
     return disposer;
   }
 
-  async getBody(content: string, options: IMarkedOptions | undefined): Promise<string> {
-    return new Promise((resolve, reject) => {
-      parseMarkdown(content, options, (err, result) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(removeEmbeddedSVGs(renderBody(result)));
-      });
-    });
+  async getBody(content: string, options: MarkdownOptions | undefined): Promise<string> {
+    // marked 15.x 不再支持回调形式
+    try {
+      const result = parseMarkdown(content, options as IMarkedOptions);
+      if (typeof result === 'string') {
+        return removeEmbeddedSVGs(renderBody(result));
+      }
+      // 处理异步结果
+      const htmlContent = await result;
+      return removeEmbeddedSVGs(renderBody(htmlContent));
+    } catch (err) {
+      // 错误处理
+      return renderBody('Failed to parse markdown.');
+    }
   }
 }
 

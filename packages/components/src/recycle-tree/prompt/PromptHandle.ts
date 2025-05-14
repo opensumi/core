@@ -156,7 +156,8 @@ export abstract class PromptHandle {
     validateBoxClassName += this._validateClassName;
 
     this.$validate.classList.value = validateBoxClassName;
-    this.$validate.innerHTML = toMarkdownHtml(validateMessage.message || '', { renderer: this.markdownRenderer });
+    const htmlContent = toMarkdownHtml(validateMessage.message || '', { renderer: this.markdownRenderer });
+    this.$validate.innerHTML = typeof htmlContent === 'string' ? htmlContent : '';
     this.$.parentElement?.parentElement?.classList.remove(
       VALIDATE_CLASS_NAME.INFO,
       VALIDATE_CLASS_NAME.ERROR,

@@ -27,6 +27,7 @@ const ghostDepsWhiteLists = [
   'sumi',
   'vscode-textmate',
   'react-window',
+  'marked',
   'vscode-languageserver-types',
   'react-is',
   'ws',

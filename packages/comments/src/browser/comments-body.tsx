@@ -7,6 +7,8 @@ import { IMarkdownString } from '@opensumi/ide-core-browser';
 import styles from './comments.module.less';
 import { markdownCss } from './markdown.style';
 
+import type { Tokens } from 'marked';
+
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 
 export const CommentsBody: React.FC<{
@@ -18,8 +20,8 @@ export const CommentsBody: React.FC<{
   const renderer = React.useMemo(() => {
     const renderer = createMarkedRenderer();
 
-    renderer.link = (href, title, text) =>
-      `<a target="_blank" rel="noopener" href="${href}" title="${title}">${text}</a>`;
+    renderer.link = ({ href, title, text }: Tokens.Link): string =>
+      `<a target="_blank" rel="noopener" href="${href}" title="${title || ''}">${text}</a>`;
     return renderer;
   }, []);
 
@@ -43,8 +45,6 @@ export const CommentsBody: React.FC<{
                 gfm: true,
                 breaks: false,
                 pedantic: false,
-                smartLists: true,
-                smartypants: false,
                 renderer,
               }),
             }}

@@ -41,7 +41,6 @@ import {
   TestMessageType,
 } from '@opensumi/ide-testing/lib/common/testCollection';
 
-
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 
 import { IDataTransferItem, VSDataTransfer } from './data-transfer';
@@ -234,8 +233,8 @@ export namespace MarkdownString {
       return '';
     };
     const renderer = createMarkedRenderer();
-    renderer.link = collectUri;
-    renderer.image = (href) => (href ? collectUri(parseHrefAndDimensions(href).href) : '');
+    renderer.link = ({ href }) => (href ? collectUri(href) : '');
+    renderer.image = ({ href }) => (href ? collectUri(parseHrefAndDimensions(href).href) : '');
 
     toMarkdownHtml(res.value, { renderer });
 

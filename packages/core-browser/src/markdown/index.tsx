@@ -6,6 +6,8 @@ import { isString } from '@opensumi/ide-core-common';
 
 import { IOpenerService } from '../opener';
 
+import type { Tokens } from 'marked';
+
 export const toMarkdown = (
   content: string | React.ReactNode,
   opener?: IOpenerService,
@@ -26,16 +28,16 @@ export const toMarkdown = (
 export const toMarkdownHtml = (message: string, options?: IMarkedOptions): string => {
   const renderer = createMarkedRenderer();
 
-  renderer.link = (href, title, text) =>
-    `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" href="javascript:void(0)" title="${title}">${text}</a>`;
+  renderer.link = ({ href, title, text }: Tokens.Link): string =>
+    `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" href="javascript:void(0)" title="${title || ''}">${text}</a>`;
 
-  return toHtml(message, {
+  const result = toHtml(message, {
     gfm: true,
     breaks: false,
     pedantic: false,
-    smartLists: true,
-    smartypants: false,
     renderer,
     ...(options || {}),
   });
+
+  return typeof result === 'string' ? result : '';
 };

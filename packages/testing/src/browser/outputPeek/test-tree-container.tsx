@@ -110,11 +110,37 @@ export const TestTreeContainer: FC<{ viewState?: ViewState }> = ({ viewState }) 
 
         const testDto = new TestDto(result.id, test, taskId, messageIndex);
 
+        const getLabel = () => {
+          if (typeof message === 'string') {
+            return firstLine(message);
+          }
+
+          const node = {
+            type: ETestTreeType.MESSAGE,
+            context: uri,
+            label: firstLine(message.value),
+            id: uri.toString(),
+            icon: '',
+            notExpandable: false,
+            location,
+            rawItem: { ...testMessage, dto: testDto },
+          };
+
+          parseMarkdownText(message.value)
+            .then((parsedText) => {
+              node.label = firstLine(parsedText);
+            })
+            .catch(() => {
+              // 解析失败时保持原始值
+            });
+
+          return node.label;
+        };
+
         return {
           type: ETestTreeType.MESSAGE,
           context: uri,
-          // ** 这里应该解析 markdown 转为纯文本信息 **
-          label: firstLine(typeof message === 'string' ? message : parseMarkdownText(message.value)),
+          label: getLabel(),
           id: uri.toString(),
           icon: '',
           notExpandable: false,
