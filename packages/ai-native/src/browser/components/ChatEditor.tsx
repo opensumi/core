@@ -80,9 +80,8 @@ export const CodeEditorWithHighlight = (props: Props) => {
   useEffect(() => {
     if (ref.current) {
       const highlightElement = ref.current;
-      const preElement = highlightElement?.querySelector?.('pre');
-      if (preElement) {
-        preElement.scrollTop = preElement.scrollHeight;
+      if (highlightElement) {
+        highlightElement.scrollTop = highlightElement.scrollHeight;
       }
     }
   }, [input]);
