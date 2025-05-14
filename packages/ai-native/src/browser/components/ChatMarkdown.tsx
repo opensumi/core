@@ -9,6 +9,8 @@ import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/es
 import { CodeEditorWithHighlight } from './ChatEditor';
 import styles from './components.module.less';
 
+import type { Token, Tokens, TokensList } from 'marked';
+
 interface MarkdownProps {
   markdown: IMarkdownString | string;
   agentId?: string;
@@ -24,7 +26,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const [reactParser, setReactParser] = useState<MarkdownReactParser>();
-  const [tokensList, setTokensList] = useState<marked.TokensList>();
+  const [tokensList, setTokensList] = useState<TokensList>();
 
   useEffect(() => {
     const element = ref.current;
@@ -64,8 +66,6 @@ export const ChatMarkdown = (props: MarkdownProps) => {
       ...marked.defaults,
       ...props.markedOptions,
       renderer: reactParser,
-      mangle: false,
-      headerIds: false,
       smartypants: false,
     };
 
@@ -75,14 +75,11 @@ export const ChatMarkdown = (props: MarkdownProps) => {
     }
 
     let renderedMarkdown: string;
-    let tokensList: marked.TokensList;
+    let tokensList: TokensList;
     if (props.fillInIncompleteTokens) {
-      const opts = {
-        ...markedOptions,
-      };
-      const tokens = marked.lexer(value, opts);
+      const tokens = marked.lexer(value, markedOptions);
       const newTokens = fillInIncompleteTokens(tokens);
-      renderedMarkdown = marked.parser(newTokens, opts);
+      renderedMarkdown = marked.parser(newTokens, markedOptions);
       tokensList = newTokens;
     } else {
       const tokens = marked.lexer(value, markedOptions);
@@ -113,9 +110,9 @@ export function postProcessCodeBlockLanguageId(lang: string | undefined): string
   return lang;
 }
 
-export function fillInIncompleteTokens(tokens: marked.TokensList): marked.TokensList {
+export function fillInIncompleteTokens(tokens: TokensList): TokensList {
   let i: number;
-  let newTokens: marked.Token[] | undefined;
+  let newTokens: Token[] | undefined;
   for (i = 0; i < tokens.length; i++) {
     const token = tokens[i];
     // 代码块补全，完整的代码块 type=code
@@ -142,7 +139,7 @@ export function fillInIncompleteTokens(tokens: marked.TokensList): marked.Tokens
   }
 
   if (newTokens) {
-    const newTokensList = [...tokens.slice(0, i), ...newTokens] as marked.TokensList;
+    const newTokensList = [...tokens.slice(0, i), ...newTokens] as TokensList;
     newTokensList.links = tokens.links;
     return newTokensList;
   }
@@ -150,48 +147,48 @@ export function fillInIncompleteTokens(tokens: marked.TokensList): marked.Tokens
   return tokens;
 }
 
-function completeCodeBlock(tokens: marked.Token[]): marked.Token[] {
+function completeCodeBlock(tokens: Token[]): Token[] {
   const mergedRawText = mergeRawTokenText(tokens);
   return marked.lexer(mergedRawText + '\n```');
 }
 
-function completeCodespan(token: marked.Token): marked.Token {
+function completeCodespan(token: Token): Token {
   return completeWithString(token, '`');
 }
 
-function completeStar(tokens: marked.Token): marked.Token {
+function completeStar(tokens: Token): Token {
   return completeWithString(tokens, '*');
 }
 
-function completeUnderscore(tokens: marked.Token): marked.Token {
+function completeUnderscore(tokens: Token): Token {
   return completeWithString(tokens, '_');
 }
 
-function completeLinkTarget(tokens: marked.Token): marked.Token {
+function completeLinkTarget(tokens: Token): Token {
   return completeWithString(tokens, ')');
 }
 
-function completeLinkText(tokens: marked.Token): marked.Token {
+function completeLinkText(tokens: Token): Token {
   return completeWithString(tokens, '](about:blank)');
 }
 
-function completeDoublestar(tokens: marked.Token): marked.Token {
+function completeDoublestar(tokens: Token): Token {
   return completeWithString(tokens, '**');
 }
 
-function completeDoubleUnderscore(tokens: marked.Token): marked.Token {
+function completeDoubleUnderscore(tokens: Token): Token {
   return completeWithString(tokens, '__');
 }
 
-function completeWithString(tokens: marked.Token[] | marked.Token, closingString: string): marked.Token {
+function completeWithString(tokens: Token[] | Token, closingString: string): Token {
   const mergedRawText = mergeRawTokenText(Array.isArray(tokens) ? tokens : [tokens]);
 
   // If it was completed correctly, this should be a single token.
   // Expecting either a Paragraph or a List
-  return marked.lexer(mergedRawText + closingString)[0] as marked.Token;
+  return marked.lexer(mergedRawText + closingString)[0] as Token;
 }
 
-function completeTable(tokens: marked.Token[]): marked.Token[] | undefined {
+function completeTable(tokens: Token[]): Token[] | undefined {
   const mergedRawText = mergeRawTokenText(tokens);
   const lines = mergedRawText.split('\n');
 
@@ -225,12 +222,12 @@ function completeTable(tokens: marked.Token[]): marked.Token[] | undefined {
   return undefined;
 }
 
-function mergeRawTokenText(tokens: marked.Token[]): string {
+function mergeRawTokenText(tokens: Token[]): string {
   return tokens.reduce((mergedTokenText, token) => mergedTokenText + token.raw, '');
 }
 
-function completeSingleLinePattern(token: marked.Tokens.ListItem | marked.Tokens.Paragraph): marked.Token | undefined {
-  for (const { type, raw } of token.tokens) {
+function completeSingleLinePattern(token: Tokens.ListItem | Tokens.Paragraph | Tokens.Generic): Token | undefined {
+  for (const { type, raw } of token.tokens ?? []) {
     if (type !== 'text') {
       continue;
     }

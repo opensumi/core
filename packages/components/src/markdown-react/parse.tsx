@@ -3,6 +3,8 @@ import React, { ReactNode } from 'react';
 
 import { HeadingLevels, MarkdownReactRenderer } from './render';
 
+import type { Token, Tokens } from 'marked';
+
 /**
  * 这里通过重新实现 marked.Renderer 的所有方法，实现一个能直接渲染 React 的 Markdown 渲染器
  */
@@ -15,12 +17,13 @@ export class MarkdownReactParser extends marked.Renderer {
     this.renderer = options.renderer;
   }
 
-  parse(tokens: marked.Token[]): ReactNode[] {
+  parse(tokens: Token[]): ReactNode[] {
     return tokens.map((token, index) => {
       const element = (() => {
         switch (token.type) {
           case 'html': {
-            return this.renderer.html(token.text);
+            const htmlToken = token as Tokens.HTML;
+            return this.renderer.html(htmlToken.text);
           }
 
           case 'space': {
@@ -28,27 +31,29 @@ export class MarkdownReactParser extends marked.Renderer {
           }
 
           case 'heading': {
-            const level = token.depth as HeadingLevels;
-            return this.renderer.heading(this.parseInline(token.tokens), level);
+            const headingToken = token as Tokens.Heading;
+            const level = headingToken.depth as HeadingLevels;
+            return this.renderer.heading(this.parseInline(headingToken.tokens), level);
           }
 
           case 'paragraph': {
-            return this.renderer.paragraph(this.parseInline(token.tokens));
+            const paragraphToken = token as Tokens.Generic;
+            return this.renderer.paragraph(this.parseInline(paragraphToken.tokens));
           }
 
           case 'text': {
-            const textToken = token as marked.Tokens.Text;
-            return textToken.tokens ? this.parseInline(textToken.tokens) : token.text;
+            const textToken = token as Tokens.Text;
+            return textToken.tokens ? this.parseInline(textToken.tokens) : textToken.text;
           }
 
           case 'blockquote': {
-            const blockquoteToken = token as marked.Tokens.Blockquote;
+            const blockquoteToken = token as Tokens.Blockquote;
             const quote = this.parse(blockquoteToken.tokens);
             return this.renderer.blockquote(quote);
           }
 
           case 'list': {
-            const listToken = token as marked.Tokens.List;
+            const listToken = token as Tokens.List;
 
             const children = listToken.items.map((item, itemIndex) => {
               const listItemChildren: ReactNode[] = [];
@@ -64,20 +69,21 @@ export class MarkdownReactParser extends marked.Renderer {
               });
             });
 
-            return this.renderer.list(children, token.ordered);
+            return this.renderer.list(children, listToken.ordered);
           }
 
           case 'code': {
-            return this.renderer.code(token.text, token.lang);
+            const codeToken = token as Tokens.Code;
+            return this.renderer.code(codeToken.text, codeToken.lang);
           }
 
           case 'table': {
-            const tableToken = token as marked.Tokens.Table;
+            const tableToken = token as Tokens.Table;
             const headerCells = tableToken.header.map((cell, cellIndex) =>
               React.cloneElement(
                 this.renderer.tableCell(this.parseInline(cell.tokens), {
                   header: true,
-                  align: token.align[cellIndex],
+                  align: tableToken.align[cellIndex],
                 }) as React.ReactElement,
                 { key: `header-cell-${cellIndex}` },
               ),
@@ -93,7 +99,7 @@ export class MarkdownReactParser extends marked.Renderer {
                 React.cloneElement(
                   this.renderer.tableCell(this.parseInline(cell.tokens), {
                     header: false,
-                    align: token.align[cellIndex],
+                    align: tableToken.align[cellIndex],
                   }) as React.ReactElement,
                   { key: `body-cell-${rowIndex}-${cellIndex}` },
                 ),
@@ -128,40 +134,48 @@ export class MarkdownReactParser extends marked.Renderer {
     });
   }
 
-  parseInline(tokens: marked.Token[] = []): ReactNode[] {
+  parseInline(tokens: Token[] = []): ReactNode[] {
     return tokens.map((token) => {
       switch (token.type) {
         case 'text': {
-          const text = htmlUnescape(token.text);
+          const textToken = token as Tokens.Text;
+          const text = htmlUnescape(textToken.text);
           return this.renderer.text(text);
         }
 
         case 'strong': {
-          return this.renderer.strong(this.parseInline(token.tokens));
+          const strongToken = token as Tokens.Strong;
+          return this.renderer.strong(this.parseInline(strongToken.tokens));
         }
 
         case 'em': {
-          return this.renderer.em(this.parseInline(token.tokens));
+          const emToken = token as Tokens.Em;
+          return this.renderer.em(this.parseInline(emToken.tokens));
         }
 
         case 'del': {
-          return this.renderer.del(this.parseInline(token.tokens));
+          const delToken = token as Tokens.Del;
+          return this.renderer.del(this.parseInline(delToken.tokens));
         }
 
         case 'codespan': {
-          return this.renderer.codespan(unescape(token.text));
+          const codespanToken = token as Tokens.Codespan;
+          return this.renderer.codespan(htmlUnescape(codespanToken.text));
         }
 
         case 'link': {
-          return this.renderer.link(token.href, this.parseInline(token.tokens));
+          const linkToken = token as Tokens.Link;
+          return this.renderer.link(linkToken.href, this.parseInline(linkToken.tokens));
         }
 
         case 'image': {
-          return this.renderer.image(token.href, token.text, token.title);
+          const imageToken = token as Tokens.Image;
+          return this.renderer.image(imageToken.href, imageToken.text, imageToken.title);
         }
 
         case 'html': {
-          return this.renderer.html(token.text);
+          const htmlToken = token as Tokens.HTML;
+          return this.renderer.html(htmlToken.text);
         }
 
         case 'br': {
@@ -169,7 +183,8 @@ export class MarkdownReactParser extends marked.Renderer {
         }
 
         case 'escape': {
-          return this.renderer.text(token.text);
+          const escapeToken = token as Tokens.Escape;
+          return this.renderer.text(escapeToken.text);
         }
 
         default: {

@@ -8,6 +8,8 @@ import { MayCancelablePromise, MessageType, localize, uuid } from '@opensumi/ide
 
 import { AbstractMessageService, IMessageService, MAX_MESSAGE_LENGTH, OpenMessageOptions } from '../common';
 
+import type { Token } from 'marked';
+
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
   @Autowired(IOpenerService)
@@ -63,8 +65,14 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     }
     const description = from && typeof from === 'string' ? `${localize('component.message.origin')}: ${from}` : '';
     const key = uuid();
+
+    // 创建一个符合 marked 15.x walkTokens 返回值要求的函数
+    const processToken = (token: Token): void => {
+      parseWithoutEscape(token);
+    };
+
     const promise = open<T>(
-      toMarkdown(message, this.openerService, { walkTokens: parseWithoutEscape }),
+      toMarkdown(message, this.openerService, { walkTokens: processToken }),
       type,
       closable,
       key,

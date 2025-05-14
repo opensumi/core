@@ -3,9 +3,11 @@ import React from 'react';
 
 import { DATA_SET_COMMAND, IOpenerShape, RenderWrapper } from './render';
 
+import type { Tokens } from 'marked';
+
 interface IMarkdownProps {
   value?: string;
-  renderer: marked.Renderer;
+  renderer: Renderer;
   opener?: IOpenerShape;
 }
 
@@ -13,13 +15,16 @@ export const linkify = (href: string | null, title: string | null, text: string)
   `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" title="${title ?? href}">${text}</a>`;
 
 export class DefaultMarkedRenderer extends Renderer {
-  link(href: string | null, title: string | null, text: string): string {
-    return linkify(href, title, text);
+  link({ href, title, text }: Tokens.Link): string {
+    return linkify(href, title || null, text);
   }
 }
 
 export function Markdown(props: IMarkdownProps) {
-  const parseMarkdown = (text: string, renderer: any) => marked.parse(text, { renderer });
+  const parseMarkdown = (text: string, renderer: any) => {
+    const result = marked.parse(text, { renderer, async: false });
+    return typeof result === 'string' ? result : '';
+  };
 
   const [htmlContent, setHtmlContent] = React.useState(parseMarkdown(props.value || '', props.renderer));
 

@@ -339,13 +339,32 @@ class TestMessageDecoration implements ITestDecoration {
     const message =
       typeof testMessage.message === 'string'
         ? removeAnsiEscapeCodes(testMessage.message)
-        : parseMarkdownText(testMessage.message.value);
+        : parseMarkdownText(
+            typeof testMessage.message === 'object' && 'value' in testMessage.message
+              ? (testMessage.message.value as string)
+              : String(testMessage.message),
+          )
+            .then((text) => text)
+            .catch(() =>
+              typeof testMessage.message === 'object' && 'value' in testMessage.message
+                ? (testMessage.message.value as string)
+                : String(testMessage.message),
+            );
+
+    // 确保我们可以为装饰器提供字符串内容
+    const contentText =
+      typeof message === 'string'
+        ? message
+        : typeof testMessage.message === 'object' && 'value' in testMessage.message
+        ? (testMessage.message.value as string)
+        : String(testMessage.message);
+
     this.codeEditorService.registerDecorationType(
       'test-message-decoration',
       this.decorationId,
       {
         after: {
-          contentText: message,
+          contentText,
           color: `${testMessageSeverityColors[severity]}`,
           fontSize: `${this.monacoEditor.getOption(EditorOption.fontSize)}px`,
           fontFamily: `var(${FONT_FAMILY_VAR})`,
@@ -357,7 +376,13 @@ class TestMessageDecoration implements ITestDecoration {
     );
 
     const options = this.codeEditorService.resolveDecorationOptions(this.decorationId, true);
-    options.hoverMessage = typeof message === 'string' ? new MarkdownString().appendText(message) : message;
+    // 使用 MarkdownString 来显示消息
+    options.hoverMessage =
+      typeof message === 'string'
+        ? new MarkdownString().appendText(message)
+        : typeof testMessage.message === 'object' && 'value' in testMessage.message
+        ? testMessage.message
+        : new MarkdownString().appendText(String(testMessage.message));
     options.afterContentClassName = `${options.afterContentClassName} testing-inline-message-content`;
     options.zIndex = 10;
     options.className = `testing-inline-message-margin testing-inline-message-severity-${severity}`;

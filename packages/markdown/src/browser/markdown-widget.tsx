@@ -3,7 +3,7 @@ import React from 'react';
 import { IMarkedOptions } from '@opensumi/ide-components/lib/utils';
 import { CancellationTokenSource, Disposable, URI, useInjectable } from '@opensumi/ide-core-browser';
 
-import { IMarkdownService } from '../common';
+import { IMarkdownService, MarkdownOptions } from '../common';
 
 export const Markdown = ({
   content,
@@ -12,7 +12,7 @@ export const Markdown = ({
   onLinkClick,
 }: {
   content: string;
-  options?: IMarkedOptions;
+  options?: MarkdownOptions;
   onLoaded?: () => void;
   onLinkClick?: (uri: URI) => void;
 }) => {
