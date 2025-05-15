@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Injectable } from '@opensumi/di';
 import {
   Disposable,
@@ -376,7 +377,14 @@ export class ChatModel extends Disposable implements IChatModel {
             type: 'tool-call',
             toolCallId: part.content.id,
             toolName: part.content.function.name,
-            args: JSON.parse(part.content.function.arguments || '{}'),
+            args: (() => {
+              try {
+                return JSON.parse(part.content.function.arguments || '{}');
+              } catch (e) {
+                console.error('Failed to parse tool call arguments:', e);
+                return {};
+              }
+            })(),
           });
           history.push({
             role: 'tool',
@@ -385,7 +393,14 @@ export class ChatModel extends Disposable implements IChatModel {
                 type: 'tool-result',
                 toolCallId: part.content.id,
                 toolName: part.content.function.name,
-                result: JSON.parse(part.content.result || '{}'),
+                result: (() => {
+                  try {
+                    return JSON.parse(part.content.result || '{}');
+                  } catch (e) {
+                    console.error('Failed to parse tool result:', e);
+                    return {};
+                  }
+                })(),
               },
             ],
           });
@@ -428,7 +443,6 @@ export class ChatModel extends Disposable implements IChatModel {
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);
     } else {
-      // eslint-disable-next-line no-console
       console.error(`Couldn't handle progress: ${JSON.stringify(progress)}`);
     }
   }
