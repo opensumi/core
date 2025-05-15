@@ -55,6 +55,17 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
     return detectedModeId;
   }, [target_file, absolutePath]);
 
+  const errorContent = useMemo(() => {
+    if (codeBlockData?.status === 'failed') {
+      try {
+        const result = JSON.parse(props.result || '{}');
+        return result.content?.[0]?.text;
+      } catch {
+        return '';
+      }
+    }
+  }, [props.result, codeBlockData]);
+
   useEffect(() => {
     const disposable = applyService.onCodeBlockUpdate((codeBlockData) => {
       if (codeBlockData.toolCallId === toolCallId) {
@@ -96,7 +107,7 @@ export const EditFileToolComponent = (props: IMCPServerToolComponentProps) => {
           {codeBlockData.iterationCount > 1 && (
             <span className={styles['edit-file-tool-iteration-count']}>{codeBlockData.iterationCount}/3</span>
           )}
-          <ApplyStatus status={codeBlockData.status} error={props.result} />
+          <ApplyStatus status={codeBlockData.status} error={errorContent} />
         </div>
         <div className={styles.right}>
           <Popover title={'Show Code'} id={'edit-file-tool-show-code'}>
