@@ -76,7 +76,6 @@ You should specify the following arguments before the others: [target_file]`,
       content: [
         {
           type: 'text',
-          // TODO: lint error
           text: result.applyResult
             ? `The apply model made the following changes to the file:
 
@@ -91,9 +90,11 @@ ${result.applyResult.diagnosticInfos
   .join('\n')}
 
 Please fix the linter errors if it is clear how to (or you can easily figure out how to). Do not make uneducated guesses. And do not loop more than 3 times on fixing linter errors on the same file.`
-    : 'The apply model made no changes to the file.'
+    : ''
 }`
-            : 'User cancelled the edit.',
+            : result.status === 'cancelled'
+            ? 'User cancelled the edit.'
+            : 'The apply model made no changes to the file.',
         },
       ],
     };
