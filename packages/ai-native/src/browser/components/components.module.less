@@ -554,7 +554,18 @@
     align-items: center;
     gap: 4px;
     margin-bottom: 4px;
-    transition: color 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    background: var(--design-container-background);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--design-text-foreground);
+
+    &:hover {
+      background: var(--design-block-hoverBackground);
+    }
+
     :global {
       .codicon {
         color: inherit;
@@ -562,13 +573,22 @@
       .codicon-sparkle {
         margin-right: -1px;
         font-size: 14px;
+        color: var(--design-text-foreground);
+      }
+      .codicon-chevron-right,
+      .codicon-chevron-down {
+        font-size: 12px;
+        margin-left: 2px;
       }
     }
   }
   .reasoning_content {
-    padding-left: 12px;
+    padding: 8px 12px;
+    margin-top: 4px;
     border-left: 2px solid var(--descriptionForeground);
     color: var(--descriptionForeground);
+    background: var(--design-block-background);
+    border-radius: 4px;
   }
 }
 

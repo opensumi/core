@@ -1464,7 +1464,7 @@ export const localizationBundle = {
     'aiNative.chat.enter.send': 'Send (Enter)',
     'aiNative.chat.defaultContextFile': 'Current File',
     'aiNative.chat.defaultContextFolder': 'Current Folder',
-    'aiNative.chat.thinking': 'Deep Think',
+    'aiNative.chat.thinking': 'Deep Thinking',
     'aiNative.chat.imageUpload': 'Upload Image',
     'aiNative.chat.clearContext': 'Clear Context',
     'aiNative.chat.context.description': 'Total {0} References',
