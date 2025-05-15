@@ -103,13 +103,6 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     const basePath = FileUri.fsPath(uri);
     this.logger.log('[Recursive] watch file changes: ', uri, 'basePath:', basePath);
 
-    // 先检查并清理已存在的 handler（使用 basePath）
-    if (this.WATCHER_HANDLERS.has(basePath)) {
-      const handler = this.WATCHER_HANDLERS.get(basePath);
-      handler?.disposable.dispose();
-      this.WATCHER_HANDLERS.delete(basePath);
-    }
-
     const toDisposeWatcher = new DisposableCollection();
     let watchPath: string | undefined;
 
@@ -128,6 +121,14 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     if (!watchPath) {
       this.logger.warn(`[Recursive] No valid watch path found for ${uri}`);
       return;
+    }
+
+    // 先检查并清理已存在的 handler（使用 watchPath 确保目录级别的去重）
+    if (this.WATCHER_HANDLERS.has(watchPath!)) {
+      this.logger.debug(`[Recursive] Cleaning up existing watcher for directory: ${watchPath}`);
+      const handler = this.WATCHER_HANDLERS.get(watchPath!);
+      handler?.disposable.dispose();
+      this.WATCHER_HANDLERS.delete(watchPath!);
     }
 
     const handler = (err, events: ParcelWatcher.Event[]) => {
