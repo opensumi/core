@@ -109,6 +109,9 @@ export const MCPServerForm: FC<Props> = ({ visible, initialData, onSave, onCance
       if (form.command) {
         form.command = form.command.trim();
       }
+      if (form.url) {
+        form.url = form.url.trim();
+      }
       if (formData.type === MCP_SERVER_TYPE.SSE) {
         form.url = form.url?.trim();
       } else {
