@@ -286,7 +286,7 @@ export abstract class BaseApplyService extends WithEventBus {
           }
         : await this.doApply(codeBlock);
       if (!fastApplyFileResult.stream && !fastApplyFileResult.result) {
-        codeBlock.status = 'cancelled';
+        codeBlock.status = 'failed';
         this.updateCodeBlock(codeBlock);
         return codeBlock;
       }
