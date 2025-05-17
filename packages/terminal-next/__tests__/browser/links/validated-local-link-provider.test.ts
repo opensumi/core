@@ -286,4 +286,79 @@ describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
       },
     ]);
   });
+
+  describe('Special formats', () => {
+    const isWindows = false;
+    test('Python error output format', async () => {
+      await assertLink('  File "/path/to/file.py", line 3, in test_func', isWindows, [
+        {
+          text: '/path/to/file.py", line 3',
+          range: [
+            [9, 1],
+            [33, 1],
+          ],
+        },
+      ]);
+      await assertLink('    File "/absolute/path/script.py", line 123, column 45', isWindows, [
+        {
+          text: '/absolute/path/script.py", line 123, column 45',
+          range: [
+            [11, 1],
+            [56, 1],
+          ],
+        },
+      ]);
+    });
+
+    test('File paths with line and column numbers', async () => {
+      await assertLink('/path/to/file.py:2, column 2', isWindows, [
+        {
+          text: '/path/to/file.py:2',
+          range: [
+            [1, 1],
+            [18, 1],
+          ],
+        },
+      ]);
+
+      await assertLink('/path/to/file.py:2, col 2', isWindows, [
+        {
+          text: '/path/to/file.py:2',
+          range: [
+            [1, 1],
+            [18, 1],
+          ],
+        },
+      ]);
+
+      await assertLink('/path/to/file.py:2:3', isWindows, [
+        {
+          text: '/path/to/file.py:2:3',
+          range: [
+            [1, 1],
+            [20, 1],
+          ],
+        },
+      ]);
+    });
+
+    test('Multiple formats in one line', async () => {
+      await assertLink('Error in /path/to/file.py:2, column 2 and /another/file.js:5:6', isWindows, [
+        {
+          text: '/path/to/file.py:2',
+          range: [
+            [10, 1],
+            [27, 1],
+          ],
+        },
+        {
+          text: '/another/file.js:5:6',
+          range: [
+            [43, 1],
+            [62, 1],
+          ],
+        },
+      ]);
+    });
+  });
 });
