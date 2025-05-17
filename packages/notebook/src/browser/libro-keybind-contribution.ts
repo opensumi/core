@@ -1,5 +1,5 @@
+import { Container, CommandRegistry as LibroCommandRegistry } from '@difizen/libro-common/app';
 import { LibroSearchToggleCommand, LibroService, NotebookCommands } from '@difizen/libro-jupyter/noeditor';
-import { Container, CommandRegistry as LibroCommandRegistry } from '@difizen/mana-app';
 
 import { Autowired } from '@opensumi/di';
 import {

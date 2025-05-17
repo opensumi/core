@@ -1,4 +1,4 @@
-import { useInject } from '@difizen/mana-app';
+import { useInject } from '@difizen/libro-common/app';
 import React, { memo, useEffect, useRef, useState } from 'react';
 
 import { IDiffEditor } from '@opensumi/ide-monaco';
