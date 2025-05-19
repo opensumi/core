@@ -44,7 +44,12 @@ export class MCPServerRegistry implements IMCPServerRegistry {
   }
 
   registerMCPTool(tool: MCPToolDefinition): void {
-    this.tools.push(tool);
+    const existingIndex = this.tools.findIndex((t) => t.name === tool.name);
+    if (existingIndex !== -1) {
+      this.tools[existingIndex] = tool;
+    } else {
+      this.tools.push(tool);
+    }
   }
 
   registerToolComponent(
