@@ -51,6 +51,7 @@ export const extractCodeBlocks = (content: string): string => {
   return newContents.join('\n');
 };
 
+// 确保 Tool Name 符合 Claude 3.5+ Sonnet 要求的 ^[a-zA-Z0-9_-]{1,64}$ 正则
 export const toClaudeToolName = (name: string) => name.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
 
 export const getToolName = (toolName: string, serverName: string) =>

@@ -104,7 +104,6 @@ export class SSEMCPServer implements IMCPServer {
     const toolsArray = originalTools.tools || [];
     const sanitizedToolsArray = toolsArray.map((tool) => {
       const originalName = tool.name;
-      // 确保 Tool Name 符合 Claude 3.5+ Sonnet 要求的 ^[a-zA-Z0-9_-]{1,64}$ 正则
       const sanitizedName = toClaudeToolName(originalName);
       if (sanitizedName !== originalName) {
         this.toolNameMap.set(sanitizedName, originalName);
