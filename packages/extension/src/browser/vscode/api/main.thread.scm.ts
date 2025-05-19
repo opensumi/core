@@ -75,21 +75,27 @@ class MainThreadSCMResourceGroup implements ISCMResourceGroup {
   }
 
   splice(start: number, deleteCount: number, toInsert: ISCMResource[]) {
-    // 部分情况下 SCM Provider 会重复调用该方法，导致 elements 被重复添加，导致重复渲染
-    // 所以这里需要先判断 toInsert 是否已经在 elements 中，如果不在，则添加，否则不添加
-    const uniqueResourcesToInsert: ISCMResource[] = [];
-    for (const resource of toInsert) {
-      const hasInserted = this.elements.some(
-        (r) =>
-          r.sourceUri.toString() === resource.sourceUri.toString() && r.resourceGroup.id === resource.resourceGroup.id,
-      );
-      if (!hasInserted) {
-        uniqueResourcesToInsert.push(resource);
+    if (deleteCount === 0) {
+      // 部分情况下 SCM Provider 会重复调用该方法，导致 elements 被重复添加，导致重复渲染
+      // 所以这里需要先判断 toInsert 是否已经在 elements 中，如果不在，则添加，否则不添加
+      const uniqueResourcesToInsert: ISCMResource[] = [];
+      for (const resource of toInsert) {
+        const hasInserted = this.elements.some(
+          (r) =>
+            r.sourceUri.toString() === resource.sourceUri.toString() &&
+            r.resourceGroup.id === resource.resourceGroup.id,
+        );
+        if (!hasInserted) {
+          uniqueResourcesToInsert.push(resource);
+        }
       }
-    }
-    if (uniqueResourcesToInsert.length > 0) {
-      this.elements.splice(start, deleteCount, ...uniqueResourcesToInsert);
-      this._onDidSplice.fire({ start, deleteCount, toInsert: uniqueResourcesToInsert });
+      if (uniqueResourcesToInsert.length > 0) {
+        this.elements.splice(start, deleteCount, ...uniqueResourcesToInsert);
+        this._onDidSplice.fire({ start, deleteCount, toInsert: uniqueResourcesToInsert });
+      }
+    } else {
+      this.elements.splice(start, deleteCount, ...toInsert);
+      this._onDidSplice.fire({ start, deleteCount, toInsert });
     }
   }
 
