@@ -7,6 +7,7 @@ import { ILogger } from '@opensumi/ide-core-common';
 import pkg from '../../package.json';
 import { IMCPServer } from '../common/mcp-server-manager';
 import { SSEClientTransportOptions } from '../common/types';
+import { toClaudeToolName } from '../common/utils';
 
 global.EventSource = EventSource as any;
 export class SSEMCPServer implements IMCPServer {
@@ -104,7 +105,7 @@ export class SSEMCPServer implements IMCPServer {
     const sanitizedToolsArray = toolsArray.map((tool) => {
       const originalName = tool.name;
       // 确保 Tool Name 符合 Claude 3.5+ Sonnet 要求的 ^[a-zA-Z0-9_-]{1,64}$ 正则
-      const sanitizedName = originalName.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
+      const sanitizedName = toClaudeToolName(originalName);
       if (sanitizedName !== originalName) {
         this.toolNameMap.set(sanitizedName, originalName);
         return { ...tool, name: sanitizedName };

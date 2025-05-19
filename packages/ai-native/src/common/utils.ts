@@ -51,10 +51,10 @@ export const extractCodeBlocks = (content: string): string => {
   return newContents.join('\n');
 };
 
+export const toClaudeToolName = (name: string) => name.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
+
 export const getToolName = (toolName: string, serverName: string) =>
-  serverName === BUILTIN_MCP_SERVER_NAME
-    ? toolName
-    : `mcp_${serverName.replace(/[^a-zA-Z0-9_-]/g, '')}_${toolName}`.slice(0, 64);
+  serverName === BUILTIN_MCP_SERVER_NAME ? toolName : toClaudeToolName(`mcp_${serverName}_${toolName}`);
 
 export const cleanAttachedTextWrapper = (text: string) => {
   const rgAttachedFile = /`<attached_file>(.*)`/g;
