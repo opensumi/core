@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AIBackSerivcePath, IAIBackService, IChatProgress, URI, path } from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { Range } from '@opensumi/monaco-editor-core';
 
@@ -12,6 +13,10 @@ import { ChatProxyService } from './chat-proxy.service';
 
 @Injectable()
 export class ApplyService extends BaseApplyService {
+  protected postApplyHandler(editor: ICodeEditor): Promise<void> {
+    return Promise.resolve();
+  }
+
   @Autowired(IEditorDocumentModelService)
   private readonly modelService: IEditorDocumentModelService;
 
