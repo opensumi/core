@@ -63,6 +63,8 @@ export abstract class BaseApplyService extends WithEventBus {
 
   private currentSessionId?: string;
 
+  protected abstract postApplyHandler(editor: ICodeEditor): Promise<void>;
+
   constructor() {
     super();
     this.addDispose(
@@ -316,6 +318,11 @@ export abstract class BaseApplyService extends WithEventBus {
       // 用户实际接受的 apply 结果
       codeBlock.applyResult = res.result;
       this.updateCodeBlock(codeBlock);
+
+      // apply 结果流式输出完成后，自动尝试修复代码中的 lint 错误
+      if (this.postApplyHandler && typeof this.postApplyHandler === 'function') {
+        await this.postApplyHandler(result.group.codeEditor.monacoEditor);
+      }
 
       return codeBlock;
     } catch (err) {
