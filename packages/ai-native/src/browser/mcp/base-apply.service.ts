@@ -321,7 +321,9 @@ export abstract class BaseApplyService extends WithEventBus {
 
       // apply 结果流式输出完成后，自动尝试修复代码中的 lint 错误
       if (this.postApplyHandler && typeof this.postApplyHandler === 'function') {
-        await this.postApplyHandler(result.group.codeEditor.monacoEditor);
+        try {
+          await this.postApplyHandler(result.group.codeEditor.monacoEditor);
+        } catch (error) {}
       }
 
       return codeBlock;
