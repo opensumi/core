@@ -7,8 +7,17 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { IWindowService } from '@opensumi/ide-core-browser/lib/window';
-import { CommandService, IDisposable, OperatingSystem, URI } from '@opensumi/ide-core-common';
+import { CommandService, FileUri, IDisposable, OperatingSystem, URI } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace.interface';
+
+import {
+  ILinkInfo,
+  MAX_LENGTH,
+  extractLineInfoFromMatch,
+  getLineAndColumnClause,
+  unixLocalLinkClause,
+  winLocalLinkClause,
+} from '../../common/terminal-link';
 
 import { TerminalBaseLinkProvider } from './base';
 import { convertLinkRangeToBuffer, getXtermLineContent } from './helpers';
@@ -17,61 +26,6 @@ import { XtermLinkMatcherHandler } from './link-manager';
 
 import type { TerminalClient } from '../terminal.client';
 import type { IBufferLine, IViewportRange, Terminal } from '@xterm/xterm';
-
-const pathPrefix = '(\\.\\.?|\\~)';
-const pathSeparatorClause = '\\/';
-// '":; are allowed in paths but they are often separators so ignore them
-// Also disallow \\ to prevent a catastropic backtracking case #24795
-const excludedPathCharactersClause = '[^\\0\\s!`&*()\\[\\]\'":;\\\\]';
-/** A regex that matches paths in the form /foo, ~/foo, ./foo, ../foo, foo/bar */
-export const unixLocalLinkClause =
-  '((' +
-  pathPrefix +
-  '|(' +
-  excludedPathCharactersClause +
-  ')+)?(' +
-  pathSeparatorClause +
-  '(' +
-  excludedPathCharactersClause +
-  ')+)+)';
-
-export const winDrivePrefix = '(?:\\\\\\\\\\?\\\\)?[a-zA-Z]:';
-const winPathPrefix = '(' + winDrivePrefix + '|\\.\\.?|\\~)';
-const winPathSeparatorClause = '(\\\\|\\/)';
-const winExcludedPathCharactersClause = '[^\\0<>\\?\\|\\/\\s!`&*()\\[\\]\'":;]';
-/** A regex that matches paths in the form \\?\c:\foo c:\foo, ~\foo, .\foo, ..\foo, foo\bar */
-export const winLocalLinkClause =
-  '((' +
-  winPathPrefix +
-  '|(' +
-  winExcludedPathCharactersClause +
-  ')+)?(' +
-  winPathSeparatorClause +
-  '(' +
-  winExcludedPathCharactersClause +
-  ')+)+)';
-
-/** As xterm reads from DOM, space in that case is nonbreaking char ASCII code - 160,
-replacing space with nonBreakningSpace or space ASCII code - 32. */
-export const lineAndColumnClause = [
-  '((\\S*)[\'"], line ((\\d+)( column (\\d+))?))', // "(file path)", line 45 [see #40468]
-  '((\\S*)[\'"],((\\d+)(:(\\d+))?))', // "(file path)",45 [see #78205]
-  '((\\S*) on line ((\\d+)(, column (\\d+))?))', // (file path) on line 8, column 13
-  '((\\S*):line ((\\d+)(, column (\\d+))?))', // (file path):line 8, column 13
-  '(([^\\s\\(\\)]*)(\\s?[\\(\\[](\\d+)(,\\s?(\\d+))?)[\\)\\]])', // (file path)(45), (file path) (45), (file path)(45,18), (file path) (45,18), (file path)(45, 18), (file path) (45, 18), also with []
-  '(([^:\\s\\(\\)<>\'"\\[\\]]*)(:(\\d+))?(:(\\d+))?)', // (file path):336, (file path):336:9
-]
-  .join('|')
-  .replace(/ /g, `[${'\u00A0'} ]`);
-
-// Changing any regex may effect this value, hence changes this as well if required.
-export const winLineAndColumnMatchIndex = 12;
-export const unixLineAndColumnMatchIndex = 11;
-
-// Each line and column clause have 6 groups (ie no. of expressions in round brackets)
-export const lineAndColumnClauseGroupCount = 6;
-
-const MAX_LENGTH = 2000;
 
 @Injectable({ multiple: true })
 export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider {
@@ -168,7 +122,9 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
         link = link.substring(2);
         stringIndex += 2;
       }
-      const validatedLinks = await this.detectLocalLink(link, lines, startLine, stringIndex, 1);
+      // 从匹配结果中提取行号信息
+      const lineInfo = this._extractLineInfoFromMatch(match);
+      const validatedLinks = await this.detectLocalLink(link, lines, startLine, stringIndex, 1, lineInfo);
 
       if (validatedLinks.length > 0) {
         result.push(...validatedLinks);
@@ -178,16 +134,33 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
     return result;
   }
 
+  private _extractLineInfoFromMatch(match: RegExpExecArray): ILinkInfo {
+    return extractLineInfoFromMatch(match);
+  }
+
+  protected get _localLinkRegex(): RegExp {
+    const baseLocalLinkClause = this._client.os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause;
+    // Append line and column number regex
+    return new RegExp(`(${baseLocalLinkClause})(${getLineAndColumnClause()})?`);
+  }
+
   private async detectLocalLink(
     text: string,
     bufferLines: IBufferLine[],
     startLine: number,
     stringIndex: number,
     offset,
+    lineInfo?: ILinkInfo,
   ) {
     const result: TerminalLink[] = [];
+
     const validatedLink = await new Promise<TerminalLink | undefined>((r) => {
-      this._validationCallback(text, async (result) => {
+      // 使用匹配到的文件路径
+      const filePath = text.match(this._localLinkRegex)?.[1] || text;
+      // 如果是 file:/// 协议，转换为本地路径
+      const localPath = filePath.startsWith('file://') ? FileUri.fsPath(URI.parse(filePath)) : filePath;
+
+      this._validationCallback(localPath, async (result) => {
         if (result) {
           const label = result.isDirectory
             ? (await this._isDirectoryInsideWorkspace(result.uri))
@@ -201,6 +174,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
               this._activateFileCallback(event, text);
             }
           });
+
           // Convert the link text's string index into a wrapped buffer range
           const bufferRange = convertLinkRangeToBuffer(
             bufferLines,
@@ -213,12 +187,14 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
             },
             startLine,
           );
+
           const tooltipCallback = (
             link: TerminalLink,
             viewportRange: IViewportRange,
             modifierDownCallback?: () => void,
             modifierUpCallback?: () => void,
           ) => this._tooltipCallback(link, viewportRange, modifierDownCallback, modifierUpCallback);
+
           r(
             this.injector.get(TerminalLink, [
               this._xterm,
@@ -229,6 +205,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
               tooltipCallback,
               true,
               label,
+              lineInfo,
             ]),
           );
         } else {
@@ -236,16 +213,11 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
         }
       });
     });
+
     if (validatedLink) {
       result.push(validatedLink);
     }
     return result;
-  }
-
-  protected get _localLinkRegex(): RegExp {
-    const baseLocalLinkClause = this._client.os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause;
-    // Append line and column number regex
-    return new RegExp(`${baseLocalLinkClause}(${lineAndColumnClause})`);
   }
 
   private async _handleLocalFolderLink(uri: URI): Promise<void> {

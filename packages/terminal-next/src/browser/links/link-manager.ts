@@ -25,22 +25,21 @@ import {
   ITerminalHoverManagerService,
   ITerminalService,
 } from '../../common';
+import {
+  ILinkInfo,
+  extractLineInfoFromMatch,
+  getLineAndColumnClause,
+  unixLocalLinkClause,
+  winDrivePrefix,
+  winLocalLinkClause,
+} from '../../common/terminal-link';
 import { XTermCore } from '../../common/xterm-private';
 import { TerminalClient } from '../terminal.client';
 
 import { TerminalExternalLinkProviderAdapter } from './external-link-provider-adapter';
 import { TerminalLink } from './link';
 import { TerminalProtocolLinkProvider } from './protocol-link-provider';
-import {
-  TerminalValidatedLocalLinkProvider,
-  lineAndColumnClause,
-  lineAndColumnClauseGroupCount,
-  unixLineAndColumnMatchIndex,
-  unixLocalLinkClause,
-  winDrivePrefix,
-  winLineAndColumnMatchIndex,
-  winLocalLinkClause,
-} from './validated-local-link-provider';
+import { TerminalValidatedLocalLinkProvider } from './validated-local-link-provider';
 import { TerminalWordLinkProvider } from './word-link-provider';
 
 const { posix, win32 } = path;
@@ -249,23 +248,22 @@ export class TerminalLinkManager extends Disposable {
   protected get _localLinkRegex(): RegExp {
     const baseLocalLinkClause = this._client.os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause;
     // Append line and column number regex
-    return new RegExp(`${baseLocalLinkClause}(${lineAndColumnClause})`);
+    return new RegExp(`${baseLocalLinkClause}(${getLineAndColumnClause()})`);
   }
 
   private async _handleLocalLink(link: string): Promise<void> {
-    // TODO: This gets resolved again but doesn't need to as it's already validated
-    const resolvedLink = await this._resolvePath(link);
+    const lineColumnInfo: LineColumnInfo = this.extractLineColumnInfo(link);
+    const resolvedLink = await this._resolvePath(lineColumnInfo.filePath);
     if (!resolvedLink) {
       return;
     }
-    const lineColumnInfo: LineColumnInfo = this.extractLineColumnInfo(link);
     const range: ITextEditorSelection = {
       startLineNumber: lineColumnInfo.lineNumber,
       endLineNumber: lineColumnInfo.lineNumber,
       startColumn: lineColumnInfo.columnNumber,
       endColumn: lineColumnInfo.columnNumber,
     };
-    await this._editorService.open(resolvedLink.uri, { range });
+    await this._editorService.open(resolvedLink.uri, { range, focus: true });
   }
 
   private _handleHypertextLink(url: string): void {
@@ -399,39 +397,31 @@ export class TerminalLinkManager extends Disposable {
     }
   }
 
+  private _extractLineInfoFromMatch(match: RegExpExecArray): ILinkInfo {
+    return extractLineInfoFromMatch(match);
+  }
+
   /**
    * Returns line and column number of URl if that is present.
    *
    * @param link Url link which may contain line and column number.
    */
   public extractLineColumnInfo(link: string): LineColumnInfo {
-    const matches: string[] | null = this._localLinkRegex.exec(link);
+    const matches: RegExpExecArray | null = this._localLinkRegex.exec(link);
     const lineColumnInfo: LineColumnInfo = {
       lineNumber: 1,
       columnNumber: 1,
+      filePath: link,
     };
-
     if (!matches) {
       return lineColumnInfo;
     }
-
-    const lineAndColumnMatchIndex =
-      this._client.os === OperatingSystem.Windows ? winLineAndColumnMatchIndex : unixLineAndColumnMatchIndex;
-    for (let i = 0; i < lineAndColumnClause.length; i++) {
-      const lineMatchIndex = lineAndColumnMatchIndex + lineAndColumnClauseGroupCount * i;
-      const rowNumber = matches[lineMatchIndex];
-      if (rowNumber) {
-        lineColumnInfo['lineNumber'] = parseInt(rowNumber, 10);
-        // Check if column number exists
-        const columnNumber = matches[lineMatchIndex + 2];
-        if (columnNumber) {
-          lineColumnInfo['columnNumber'] = parseInt(columnNumber, 10);
-        }
-        break;
-      }
-    }
-
-    return lineColumnInfo;
+    const lineInfo = this._extractLineInfoFromMatch(matches);
+    return {
+      filePath: lineInfo.filePath ?? link,
+      lineNumber: lineInfo.line ?? 1,
+      columnNumber: lineInfo.column ?? 1,
+    };
   }
 
   /**
@@ -449,6 +439,7 @@ export class TerminalLinkManager extends Disposable {
 }
 
 export interface LineColumnInfo {
+  filePath: string;
   lineNumber: number;
   columnNumber: number;
 }
