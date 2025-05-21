@@ -27,12 +27,12 @@ import {
   IDecorationApplyOptions,
   IDiffEditor,
   IEditor,
-  IResource,
   IResourceOpenOptions,
   IUndoStopOptions,
   ResourceDecorationNeedChangeEvent,
 } from '../common';
 import { IEditorDocumentModel, IEditorDocumentModelRef, isTextEditorViewState } from '../common/editor';
+import { IMultiDiffEditor } from '../common/multi-diff';
 
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
@@ -65,12 +65,23 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   private _editors: Set<ISumiEditor> = new Set();
   private _diffEditors: Set<IDiffEditor> = new Set();
+  private _multiDiffEditors: Set<IMultiDiffEditor> = new Set();
 
   private _onCodeEditorCreate = new Emitter<ICodeEditor>();
   private _onDiffEditorCreate = new Emitter<IDiffEditor>();
+  private _onMultiDiffEditorCreate = new Emitter<IMultiDiffEditor>();
+
+  private _onCodeEditorChange = new Emitter<void>();
+  private _onDiffEditorChange = new Emitter<void>();
+  private _onMultiDiffEditorChange = new Emitter<void>();
 
   public onCodeEditorCreate = this._onCodeEditorCreate.event;
   public onDiffEditorCreate = this._onDiffEditorCreate.event;
+  public onMultiDiffEditorCreate = this._onMultiDiffEditorCreate.event;
+
+  public onCodeEditorChange = this._onCodeEditorChange.event;
+  public onDiffEditorChange = this._onDiffEditorChange.event;
+  public onMultiDiffEditorChange = this._onMultiDiffEditorChange.event;
 
   @Autowired(IEditorDocumentModelService)
   documentModelService: IEditorDocumentModelService;
@@ -128,7 +139,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
       }
     });
     if (this._editors.size !== beforeSize) {
-      // fire event;
+      this._onCodeEditorChange.fire();
     }
   }
 
@@ -141,7 +152,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
       }
     });
     if (this._editors.size !== beforeSize) {
-      // fire event;
+      this._onCodeEditorChange.fire();
     }
   }
 
@@ -154,7 +165,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
-  createMultiDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
+  public createMultiDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
     const convertedOptions = getConvertedMonacoOptions(this.configurationService);
     const monacoMultiDiffEditorWidget = this.monacoService.createMultiDiffEditorWidget(dom, overrides);
     const mergedOptions: IConvertedMonacoOptions = { ...convertedOptions.diffOptions, ...options };
@@ -187,7 +198,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
       }
     });
     if (this._diffEditors.size !== beforeSize) {
-      // fire event _onDiffEditorAdd;
+      this._onDiffEditorChange.fire();
     }
   }
 
@@ -197,7 +208,33 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
       this._diffEditors.delete(diffEditor);
     });
     if (this._diffEditors.size !== beforeSize) {
-      // fire event _onDiffEditorRemove;
+      this._onDiffEditorChange.fire();
+    }
+  }
+
+  public listMultiDiffEditors(): IMultiDiffEditor[] {
+    return Array.from(this._multiDiffEditors.values());
+  }
+
+  public addMultiDiffEditors(multiDiffEditors: IMultiDiffEditor[]) {
+    const beforeSize = this._multiDiffEditors.size;
+    multiDiffEditors.forEach((multiDiffEditor) => {
+      if (!this._multiDiffEditors.has(multiDiffEditor)) {
+        this._multiDiffEditors.add(multiDiffEditor);
+      }
+    });
+    if (this._multiDiffEditors.size !== beforeSize) {
+      this._onMultiDiffEditorChange.fire();
+    }
+  }
+
+  public removeMultiDiffEditors(multiDiffEditors: IMultiDiffEditor[]) {
+    const beforeSize = this._multiDiffEditors.size;
+    multiDiffEditors.forEach((multiDiffEditor) => {
+      this._multiDiffEditors.delete(multiDiffEditor);
+    });
+    if (this._multiDiffEditors.size !== beforeSize) {
+      this._onMultiDiffEditorChange.fire();
     }
   }
 

@@ -58,7 +58,7 @@ export interface IMultiDiffEditor extends IDisposable {
   /**
    * Compare multiple file pairs
    */
-  compareMultiple(resource: IResource, options?: IResourceOpenOptions): Promise<void>;
+  compareMultiple(editor: IMultiDiffEditor, resource: IResource, options?: IResourceOpenOptions): Promise<void>;
 
   /**
    * Get all file pairs currently being compared

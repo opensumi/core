@@ -308,7 +308,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
 
   private _getWidth(info: monaco.editor.EditorLayoutInfo): number {
     // 增加部分与 Minimap 的边距，整体视觉效果更好
-    const minimapWidth = info.minimap ? info.minimap.minimapWidth + 5 : 0;
+    const minimapWidth = info.minimap && info.minimap.minimapWidth ? info.minimap.minimapWidth + 5 : 0;
     return info.width - minimapWidth - info.verticalScrollbarWidth;
   }
 

@@ -17,7 +17,6 @@ import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { observableValue } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { IMainLayoutService } from '../../common';
 
