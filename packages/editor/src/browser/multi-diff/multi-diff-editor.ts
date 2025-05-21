@@ -1,7 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
-  Disposable,
   DisposableStore,
   Emitter,
   IDisposable,
@@ -35,16 +34,13 @@ import { IMultiDiffResourceId } from '@opensumi/monaco-editor-core/esm/vs/editor
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
-import {
-  EditorCollectionService,
-  EditorType,
-  IEditorDocumentModelRef,
-  IResourceOpenOptions,
-} from '../../common/editor';
+import { EditorType, IEditorDocumentModelRef, IResourceOpenOptions } from '../../common/editor';
 import { IMultiDiffEditor, IMultiDiffSourceResolverService, IResolvedMultiDiffSource } from '../../common/multi-diff';
+import { DiffEditorPart } from '../base-editor-wrapper';
 import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from '../doc-model/types';
-import { DiffEditorPart, EditorCollectionServiceImpl } from '../editor-collection.service';
 import { IConvertedMonacoOptions, IResource, ResourceDecorationNeedChangeEvent } from '../types';
+
+import type { EditorCollectionServiceImpl } from '../editor-collection.service';
 
 @Injectable({ multiple: true })
 export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEditor {
@@ -63,9 +59,6 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
   @Autowired(IMultiDiffSourceResolverService)
   private readonly multiDiffSourceResolverService: IMultiDiffSourceResolverService;
 
-  @Autowired(EditorCollectionService)
-  private readonly collectionService: EditorCollectionServiceImpl;
-
   @Autowired(ILogger)
   logger: ILogger;
 
@@ -77,13 +70,13 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
 
   private multiDiffModel: IMultiDiffEditorModel & IDisposable;
 
-  constructor(private multiDiffWidget: MultiDiffEditorWidget, private convertedOptions: IConvertedMonacoOptions) {
+  constructor(
+    private multiDiffWidget: MultiDiffEditorWidget,
+    private convertedOptions: IConvertedMonacoOptions,
+    private editorCollectionService: EditorCollectionServiceImpl,
+  ) {
     super();
-    this.wrapEditors();
-  }
-
-  private wrapEditors() {
-    this.collectionService.addMultiDiffEditors([this]);
+    this.editorCollectionService.addMultiDiffEditors([this]);
   }
 
   @OnEvent(EditorDocumentModelContentChangedEvent)
@@ -247,7 +240,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
         () => (ref.object as any).originalInstance,
         EditorType.ORIGINAL_DIFF,
       ]);
-      this.collectionService.addEditors([modifiedDiffEditorPart, originalDiffEditorPart]);
+      this.editorCollectionService.addEditors([modifiedDiffEditorPart, originalDiffEditorPart]);
     }
     this.multiDiffModelChangeEmitter.fire(this.multiDiffModel);
   }
