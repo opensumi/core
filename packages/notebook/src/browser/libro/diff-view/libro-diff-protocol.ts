@@ -1,7 +1,7 @@
 import { concatMultilineString } from '@difizen/libro-common';
 
 import type { ICell, INotebookContent } from '@difizen/libro-common';
-import type { URI, View } from '@difizen/mana-app';
+import type { URI, View } from '@difizen/libro-common/app';
 
 export const libroDiffViewFactoryId = 'libro-diff-view-factory';
 
