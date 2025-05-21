@@ -172,65 +172,122 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     );
   }
 
-  restoreTabbarService = async (service: TabbarService) => {
+  private initializeLayout(service: TabbarService) {
+    // 1. 获取初始状态
     this.state = fixLayout(this.layoutState.getState(LAYOUT_STATE.MAIN, defaultLayoutState));
-
     const { currentId, size } = this.state[service.location] || {};
     service.prevSize = size;
-    let defaultContainer = service.visibleContainers[0] && service.visibleContainers[0].options!.containerId;
-    const defaultPanels = this.appConfig.defaultPanels;
-    const restorePanel = defaultPanels && defaultPanels[service.location];
-    if (defaultPanels && restorePanel !== undefined) {
-      if (restorePanel) {
-        if (service.containersMap.has(restorePanel)) {
-          defaultContainer = restorePanel;
-        } else {
-          const componentInfo = this.componentRegistry.getComponentRegistryInfo(restorePanel);
-          if (
-            componentInfo &&
-            this.appConfig.layoutConfig[service.location]?.modules &&
-            ~this.appConfig.layoutConfig[service.location].modules.indexOf(restorePanel)
-          ) {
-            defaultContainer = componentInfo.options!.containerId;
-          } else {
-            this.logger.warn(`[defaultPanels] No \`${restorePanel}\` view found!`);
-          }
-        }
-      } else {
-        defaultContainer = '';
-      }
+
+    // 2. 确定默认容器
+    const defaultContainer = this.determineDefaultContainer(service);
+
+    // 3. 更新当前容器ID
+    this.updateContainerId(service, currentId, defaultContainer);
+  }
+
+  private determineDefaultContainer(service: TabbarService): string {
+    // 获取默认可见容器
+    const defaultVisibleContainer = service.visibleContainers[0]?.options?.containerId || '';
+
+    // 如果没有配置默认面板，直接返回默认可见容器
+    const { defaultPanels } = this.appConfig;
+    if (!defaultPanels) {
+      return defaultVisibleContainer;
     }
-    /**
-     * ContainerId 存在三种值类型，对应的处理模式如下：
-     * 1. undefined: 采用首个注册的容器作为当前 containerId
-     * 2. string: 非 drop container 直接使用该 containerId 作为当前 containerId
-     * 3. '': 直接清空当前 containerId，不展开相应的 viewContainer
-     */
+
+    const restorePanel = defaultPanels[service.location];
+    // 如果明确设置为false，返回空字符串
+    if (!restorePanel) {
+      return '';
+    }
+    // 如果未定义，返回默认可见容器
+    if (restorePanel === undefined) {
+      return defaultVisibleContainer;
+    }
+
+    // 处理restorePanel字符串情况
+    return this.getRestorePanelContainer(service, restorePanel, service.location) || defaultVisibleContainer;
+  }
+
+  private getRestorePanelContainer(service: TabbarService, restorePanel: string, location: string): string {
+    // 直接使用已存在的容器
+    if (service.containersMap.has(restorePanel)) {
+      return restorePanel;
+    }
+
+    // 尝试从 componentRegistry 获取容器
+    const componentInfo = this.componentRegistry.getComponentRegistryInfo(restorePanel);
+    if (componentInfo && this.isValidModule(restorePanel, location)) {
+      return componentInfo.options?.containerId || '';
+    }
+
+    this.logger.warn(`[defaultPanels] No \`${restorePanel}\` view found!`);
+    return '';
+  }
+
+  /**
+   * 是否是有效的模块
+   * @param panel
+   * @param location
+   * @returns
+   */
+  private isValidModule(panel: string, location: string): boolean {
+    const modules = this.appConfig.layoutConfig[location]?.modules;
+    return modules ? modules.includes(panel) : false;
+  }
+
+  /**
+   * ContainerId 存在三种值类型，对应的处理模式如下：
+   * 1. undefined: 采用首个注册的容器作为当前 containerId
+   * 2. string: 非 drop container 直接使用该 containerId 作为当前 containerId
+   * 3. '': 使用 defaultContainer 作为当前 containerId, 如果 defaultContainer 不存在，则清空
+   */
+  private updateContainerId(service: TabbarService, currentId: string | undefined, defaultContainer: string) {
     if (isUndefined(currentId)) {
-      if (isUndefined(defaultContainer)) {
-        // 默认采用首个注册的容器作为当前 containerId
-        service.updateNextContainerId();
-      } else {
-        service.updateCurrentContainerId(defaultContainer);
-      }
+      this.handleUndefinedContainer(service, defaultContainer);
     } else if (currentId && !this.isDropContainer(currentId)) {
-      if (service.containersMap.has(currentId)) {
-        service.updateCurrentContainerId(currentId);
-      } else {
-        // 如果在别的 tabbar 中存在该 containerId，则将其移动到当前 tabbar
-        if (this.findTabbarServiceByContainerId(currentId)) {
-          this.moveContainerTo(currentId, service.location);
-          service.updateCurrentContainerId(currentId);
-        } else {
-          service.updateCurrentContainerId(defaultContainer);
-          // 等待后续新容器注册时，更新当前的 containerId
-          service.updateNextContainerId(currentId);
-        }
-      }
-    } else if (currentId === '' || this.isDropContainer(currentId)) {
-      service.updateCurrentContainerId('');
+      this.handleExistingContainer(service, currentId, defaultContainer);
+    } else {
+      service.updateCurrentContainerId(defaultContainer || '');
     }
-  };
+  }
+
+  /**
+   * 如果当前 containerId 未定义，则将相邻的 containerId 作为当前 containerId
+   * @param service
+   * @param defaultContainer
+   */
+  private handleUndefinedContainer(service: TabbarService, defaultContainer: string) {
+    if (isUndefined(defaultContainer)) {
+      service.updateNextContainerId();
+    } else {
+      service.updateCurrentContainerId(defaultContainer);
+    }
+  }
+
+  /**
+   * 如果当前 containerId 已存在，则直接使用该 containerId 作为当前 containerId
+   * 若不存在，则将当前 containerId 移动到相应的 tabbar 中
+   * @param service
+   * @param currentId
+   * @param defaultContainer
+   * @returns
+   */
+  private handleExistingContainer(service: TabbarService, currentId: string, defaultContainer: string) {
+    if (service.containersMap.has(currentId)) {
+      service.updateCurrentContainerId(currentId);
+      return;
+    }
+
+    const tabbarService = this.findTabbarServiceByContainerId(currentId);
+    if (tabbarService) {
+      this.moveContainerTo(currentId, service.location);
+      service.updateCurrentContainerId(currentId);
+    } else {
+      service.updateCurrentContainerId(defaultContainer);
+      service.updateNextContainerId(currentId);
+    }
+  }
 
   findTabbarServiceByContainerId(containerId: string): TabbarService | undefined {
     let tabbarService: undefined | TabbarService;
@@ -376,7 +433,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       );
       service.viewReady.promise
         .then(() => service.restoreState())
-        .then(() => this.restoreTabbarService(service))
+        .then(() => this.initializeLayout(service))
         .catch((err) => {
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
