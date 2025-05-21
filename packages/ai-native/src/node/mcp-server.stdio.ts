@@ -6,6 +6,7 @@ import { ILogger } from '@opensumi/ide-core-common';
 
 import pkg from '../../package.json';
 import { IMCPServer } from '../common/mcp-server-manager';
+import { toClaudeToolName } from '../common/utils';
 
 export class StdioMCPServer implements IMCPServer {
   private name: string;
@@ -113,9 +114,7 @@ export class StdioMCPServer implements IMCPServer {
     const toolsArray = originalTools.tools || [];
     const sanitizedToolsArray = toolsArray.map((tool) => {
       const originalName = tool.name;
-      // Remove Chinese characters from the tool name
-      // Claude 3.5+ Sonnet 不支持中文 Tool Name
-      const sanitizedName = originalName.replace(/[\u4e00-\u9fa5]/g, '');
+      const sanitizedName = toClaudeToolName(originalName);
       if (sanitizedName !== originalName) {
         this.toolNameMap.set(sanitizedName, originalName);
         return { ...tool, name: sanitizedName };

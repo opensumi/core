@@ -75,8 +75,28 @@ class MainThreadSCMResourceGroup implements ISCMResourceGroup {
   }
 
   splice(start: number, deleteCount: number, toInsert: ISCMResource[]) {
-    this.elements.splice(start, deleteCount, ...toInsert);
-    this._onDidSplice.fire({ start, deleteCount, toInsert });
+    if (deleteCount === 0) {
+      // 部分情况下 SCM Provider 会重复调用该方法，导致 elements 被重复添加，导致重复渲染
+      // 所以这里需要先判断 toInsert 是否已经在 elements 中，如果不在，则添加，否则不添加
+      const uniqueResourcesToInsert: ISCMResource[] = [];
+      for (const resource of toInsert) {
+        const hasInserted = this.elements.some(
+          (r) =>
+            r.sourceUri.toString() === resource.sourceUri.toString() &&
+            r.resourceGroup.id === resource.resourceGroup.id,
+        );
+        if (!hasInserted) {
+          uniqueResourcesToInsert.push(resource);
+        }
+      }
+      if (uniqueResourcesToInsert.length > 0) {
+        this.elements.splice(start, deleteCount, ...uniqueResourcesToInsert);
+        this._onDidSplice.fire({ start, deleteCount, toInsert: uniqueResourcesToInsert });
+      }
+    } else {
+      this.elements.splice(start, deleteCount, ...toInsert);
+      this._onDidSplice.fire({ start, deleteCount, toInsert });
+    }
   }
 
   $updateGroup(features: SCMGroupFeatures): void {
@@ -633,15 +653,20 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     provider.$onDidChangeHistoryProviderCurrentHistoryItemGroup(historyItemGroup);
   }
 
-  $setInputBoxActionButton(sourceControlHandle: number, actionButton?: SCMInputActionButtonDto | null | undefined): void {
-		const repository = this._repositories.get(sourceControlHandle);
+  $setInputBoxActionButton(
+    sourceControlHandle: number,
+    actionButton?: SCMInputActionButtonDto | null | undefined,
+  ): void {
+    const repository = this._repositories.get(sourceControlHandle);
 
-		if (!repository) {
-			return;
-		}
+    if (!repository) {
+      return;
+    }
 
-		repository.input.actionButton = actionButton ? { ...actionButton, icon: getSCMInputBoxActionButtonIcon(actionButton) } : undefined;
-	}
+    repository.input.actionButton = actionButton
+      ? { ...actionButton, icon: getSCMInputBoxActionButtonIcon(actionButton) }
+      : undefined;
+  }
 
   private onDidChangeSelectedRepositories(repositories: ISCMRepository[]): void {
     const handles = repositories
@@ -653,13 +678,15 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
   }
 }
 
-function getSCMInputBoxActionButtonIcon(actionButton: SCMInputActionButtonDto): URI | { light: URI; dark: URI } | vscode.ThemeIcon | undefined {
-	if (!actionButton.icon) {
-		return undefined;
-	} else if (URI.isUri(actionButton.icon)) {
-		return URI.revive(actionButton.icon);
-	} else {
-		const icon = actionButton.icon as { light: UriComponents; dark: UriComponents };
-		return { light: URI.revive(icon.light), dark: URI.revive(icon.dark) };
-	}
+function getSCMInputBoxActionButtonIcon(
+  actionButton: SCMInputActionButtonDto,
+): URI | { light: URI; dark: URI } | vscode.ThemeIcon | undefined {
+  if (!actionButton.icon) {
+    return undefined;
+  } else if (URI.isUri(actionButton.icon)) {
+    return URI.revive(actionButton.icon);
+  } else {
+    const icon = actionButton.icon as { light: UriComponents; dark: UriComponents };
+    return { light: URI.revive(icon.light), dark: URI.revive(icon.dark) };
+  }
 }
