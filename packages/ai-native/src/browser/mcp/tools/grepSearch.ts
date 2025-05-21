@@ -111,11 +111,14 @@ export class GrepSearchTool implements MCPServerContribution {
       }
       deferred.resolve(results.join('\n\n'));
       const messages = this.chatInternalService.sessionModel.history.getMessages();
-      this.chatInternalService.sessionModel.history.setMessageAdditional(messages[messages.length - 1].id, {
-        [args.toolCallId]: {
-          files,
-        },
-      });
+      const messageId = messages[messages.length - 1]?.id;
+      if (messageId) {
+        this.chatInternalService.sessionModel.history.setMessageAdditional(messageId, {
+          [args.toolCallId]: {
+            files,
+          },
+        });
+      }
     });
     const text = await deferred.promise;
     return {

@@ -63,18 +63,21 @@ export class ListDirTool implements MCPServerContribution {
 
     // 设置消息的附加数据
     const messages = this.chatInternalService.sessionModel.history.getMessages();
-    this.chatInternalService.sessionModel.history.setMessageAdditional(messages[messages.length - 1].id, {
-      [args.toolCallId]: {
-        files: fileUris,
-        title: `Listed directory "${args.relativeWorkspacePath}"`,
-        details: result.files.map((file) => ({
-          type: file.isDirectory ? 'dir' : 'file',
-          name: file.name,
-          info: file.isDirectory ? `${file.numChildren ?? '?'} items` : `${file.size}KB, ${file.numLines} lines`,
-          lastModified: file.lastModified,
-        })),
-      },
-    });
+    const messageId = messages[messages.length - 1]?.id;
+    if (messageId) {
+      this.chatInternalService.sessionModel.history.setMessageAdditional(messageId, {
+        [args.toolCallId]: {
+          files: fileUris,
+          title: `Listed directory "${args.relativeWorkspacePath}"`,
+          details: result.files.map((file) => ({
+            type: file.isDirectory ? 'dir' : 'file',
+            name: file.name,
+            info: file.isDirectory ? `${file.numChildren ?? '?'} items` : `${file.size}KB, ${file.numLines} lines`,
+            lastModified: file.lastModified,
+          })),
+        },
+      });
+    }
 
     logger.appendLine(`Listed ${fileUris.length} files in directory "${args.relativeWorkspacePath}"`);
 
