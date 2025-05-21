@@ -315,9 +315,6 @@ export abstract class BaseApplyService extends WithEventBus {
       );
       codeBlock.updatedCode = res.updatedCode;
       codeBlock.status = 'pending';
-      // 用户实际接受的 apply 结果
-      codeBlock.applyResult = res.result;
-      this.updateCodeBlock(codeBlock);
 
       // apply 结果流式输出完成后，自动尝试修复代码中的 lint 错误
       if (this.postApplyHandler && typeof this.postApplyHandler === 'function') {
@@ -326,6 +323,18 @@ export abstract class BaseApplyService extends WithEventBus {
         } catch (error) {}
       }
 
+      const textModel = result.group.codeEditor.monacoEditor.getModel();
+      const diagnosticInfos = this.getDiagnosticInfos(textModel!.uri.toString(), res.result?.rangesFromDiffHunk || []);
+
+      // 用户实际接受的 apply 结果
+      if (res.result) {
+        codeBlock.applyResult = {
+          diff: res.result?.diff,
+          diagnosticInfos,
+        };
+      }
+
+      this.updateCodeBlock(codeBlock);
       return codeBlock;
     } catch (err) {
       codeBlock.status = 'failed';
@@ -345,8 +354,8 @@ export abstract class BaseApplyService extends WithEventBus {
     codeBlock: CodeBlockData,
     updatedContentOrStream: string | SumiReadableStream<IChatProgress>,
     range?: Range,
-  ): Promise<{ result?: { diff: string; diagnosticInfos: IMarker[] }; updatedCode: string }> {
-    const deferred = new Deferred<{ result?: { diff: string; diagnosticInfos: IMarker[] }; updatedCode: string }>();
+  ): Promise<{ result?: { diff: string; rangesFromDiffHunk: Range[] }; updatedCode: string }> {
+    const deferred = new Deferred<{ result?: { diff: string; rangesFromDiffHunk: Range[] }; updatedCode: string }>();
     const inlineDiffController = InlineDiffController.get(editor)!;
     range = range || editor.getModel()!.getFullModelRange();
 
@@ -382,7 +391,11 @@ export abstract class BaseApplyService extends WithEventBus {
 
       this.listenPartialEdit(editor.getModel()!, codeBlock).then((result) => {
         if (result) {
-          codeBlock.applyResult = result;
+          const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
+          codeBlock.applyResult = {
+            diff: result.diff,
+            diagnosticInfos,
+          };
         }
         this.updateCodeBlock(codeBlock);
         this.editorService.save(URI.file(path.join(this.appConfig.workspaceDir, codeBlock.relativePath)));
@@ -393,11 +406,10 @@ export abstract class BaseApplyService extends WithEventBus {
         updatedContent,
         codeBlock.relativePath,
       );
-      const diagnosticInfos = this.getDiagnosticInfos(editor.getModel()!.uri.toString(), rangesFromDiffHunk);
       deferred.resolve({
         result: {
           diff,
-          diagnosticInfos,
+          rangesFromDiffHunk,
         },
         updatedCode: updatedContent,
       });
@@ -543,7 +555,7 @@ export abstract class BaseApplyService extends WithEventBus {
   }
 
   protected listenPartialEdit(model: ITextModel, codeBlock: CodeBlockData) {
-    const deferred = new Deferred<{ diff: string; diagnosticInfos: IMarker[] }>();
+    const deferred = new Deferred<{ diff: string; rangesFromDiffHunk: Range[] }>();
     const uriString = model.uri.toString();
     const toDispose = this.inlineDiffService.onPartialEdit((event) => {
       if (
@@ -583,7 +595,7 @@ export abstract class BaseApplyService extends WithEventBus {
           });
           deferred.resolve({
             diff,
-            diagnosticInfos,
+            rangesFromDiffHunk,
           });
         } else {
           // 用户全部取消

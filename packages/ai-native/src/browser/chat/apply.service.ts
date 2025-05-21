@@ -1,7 +1,16 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AIBackSerivcePath, IAIBackService, IChatProgress, URI, path } from '@opensumi/ide-core-browser';
+import {
+  AIBackSerivcePath,
+  CancellationTokenSource,
+  IAIBackService,
+  IChatProgress,
+  URI,
+  path,
+} from '@opensumi/ide-core-browser';
+import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { ICodeEditor } from '@opensumi/ide-monaco';
+import { CodeAction, CodeActionContext, CodeActionTriggerType, ICodeEditor } from '@opensumi/ide-monaco';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 import { Range } from '@opensumi/monaco-editor-core';
 
@@ -11,10 +20,57 @@ import { BaseApplyService } from '../mcp/base-apply.service';
 
 import { ChatProxyService } from './chat-proxy.service';
 
+/**
+ * Filter code actions to only apply batch fixes
+ * Skip individual fixes as consecutive WorkspaceEdits may interfere with each other
+ * @param codeAction The code action to check
+ * @returns boolean indicating if the action is auto-fixable
+ */
+function isAutoFixable(codeAction: CodeAction): boolean {
+  return codeAction.title.toLowerCase().includes('all');
+}
+
 @Injectable()
 export class ApplyService extends BaseApplyService {
-  protected postApplyHandler(editor: ICodeEditor): Promise<void> {
-    return Promise.resolve();
+  @Autowired(CommandService)
+  private commandService: CommandService;
+
+  protected async postApplyHandler(editor: ICodeEditor): Promise<void> {
+    const model = editor.getModel();
+    if (!model) {
+      return Promise.resolve();
+    }
+    const providers = languageFeaturesService.codeActionProvider.ordered(model);
+
+    if (!providers) {
+      return Promise.resolve();
+    }
+
+    const [provider] = providers;
+    const range = model.getFullModelRange();
+    const context: CodeActionContext = {
+      trigger: CodeActionTriggerType.Auto,
+    };
+    const ts = new CancellationTokenSource();
+    const actionList = await provider.provideCodeActions(model, range, context, ts.token);
+
+    // 提取所有可修复的代码操作
+    const fixableActions = actionList?.actions.filter(isAutoFixable) || [];
+
+    if (fixableActions.length === 0) {
+      return Promise.resolve();
+    }
+
+    // 执行所有可修复的代码操作
+    await Promise.allSettled(
+      fixableActions.map(async (action) => {
+        if (action.command) {
+          try {
+            await this.commandService.executeCommand(action.command.id, ...(action.command.arguments || []));
+          } catch (err) {}
+        }
+      }),
+    );
   }
 
   @Autowired(IEditorDocumentModelService)
