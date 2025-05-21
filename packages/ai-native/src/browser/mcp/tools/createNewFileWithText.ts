@@ -10,10 +10,15 @@ import { BaseApplyService } from '../base-apply.service';
 
 import { EditFileToolComponent } from './components/EditFile';
 
-const inputSchema = z.object({
-  target_file: z.string().describe('The relative path where the file should be created'),
-  code_edit: z.string().describe('The content to write into the new file'),
-});
+const inputSchema = z
+  .object({
+    target_file: z.string().describe('The relative path where the file should be created'),
+    code_edit: z.string().describe('The content to write into the new file'),
+  })
+  .transform((data) => ({
+    targetFile: data.target_file,
+    codeEdit: data.code_edit,
+  }));
 
 @Domain(MCPServerContribution)
 export class CreateNewFileWithTextTool implements MCPServerContribution {
@@ -62,7 +67,7 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
 
       // 构建完整的文件路径
       const rootUri = URI.parse(workspaceRoots[0].uri);
-      const fullPath = path.join(rootUri.codeUri.fsPath, args.target_file);
+      const fullPath = path.join(rootUri.codeUri.fsPath, args.targetFile);
       const fileUri = URI.file(fullPath);
 
       // 创建父目录
@@ -74,10 +79,10 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
       await this.fileService.createFile(fileUri.toString());
 
       // 使用 applyService 写入文件内容
-      const codeBlock = await this.applyService.registerCodeBlock(args.target_file, args.code_edit, args.toolCallId);
+      const codeBlock = await this.applyService.registerCodeBlock(args.targetFile, args.codeEdit, args.toolCallId);
       await this.applyService.apply(codeBlock);
 
-      logger.appendLine(`Successfully created file at: ${args.target_file}`);
+      logger.appendLine(`Successfully created file at: ${args.targetFile}`);
       return {
         content: [{ type: 'text', text: 'ok' }],
       };
