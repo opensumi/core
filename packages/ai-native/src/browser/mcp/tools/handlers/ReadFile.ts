@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { FileSearchQuickCommandHandler } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { CancellationToken, URI } from '@opensumi/ide-core-common';
+import { CancellationToken, URI, path } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelRef, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
@@ -107,7 +107,7 @@ export class FileHandler {
       throw new Error('No read file parameters provided. Need to give at least the path.');
     }
 
-    const uri = new URI(`${this.appConfig.workspaceDir}/${fileParams.relativeWorkspacePath}`);
+    const uri = new URI(path.join(this.appConfig.workspaceDir, fileParams.relativeWorkspacePath));
     if (!uri) {
       const similarFiles = await this.findSimilarFiles(fileParams.relativeWorkspacePath, 3);
       throw this.createFileNotFoundError(fileParams.relativeWorkspacePath, similarFiles);
