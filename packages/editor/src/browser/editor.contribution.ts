@@ -1245,16 +1245,15 @@ export class EditorContribution
         execute: async (options: {
           title: string;
           multiDiffSourceUri: UriComponents;
-          resources: { originalUri?: UriComponents; modifiedUri?: UriComponents; description?: string }[];
+          resources: { originalUri?: UriComponents; modifiedUri?: UriComponents }[];
         }) => {
           const sources: MultiDiffEditorItem[] = [];
-          for (const { originalUri, modifiedUri, description } of options.resources) {
+          for (const { originalUri, modifiedUri } of options.resources) {
             sources.push(
               new MultiDiffEditorItem(
                 originalUri ? URI.from(originalUri) : undefined,
                 modifiedUri ? URI.from(modifiedUri) : undefined,
                 modifiedUri ? URI.from(modifiedUri) : undefined,
-                description,
               ),
             );
           }
