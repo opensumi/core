@@ -29,5 +29,19 @@
         margin-top: 0;
       }
     }
+    .status {
+      &.added {
+        color: var(--gitDecoration-addedResourceForeground);
+      }
+      &.deleted {
+        color: var(--gitDecoration-deletedResourceForeground);
+      }
+      &.renamed {
+        color: var(--gitDecoration-renamedResourceForeground);
+      }
+      &.modified {
+        color: var(--gitDecoration-modifiedResourceForeground);
+      }
+    }
   }
 }

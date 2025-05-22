@@ -133,19 +133,24 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     modifiedInstance: any,
     originalInstance: any,
   ): void {
-    const modifiedDiffEditorPart = this.injector.get(DiffEditorPart, [
-      modifiedEditor?.editor,
-      () => modifiedInstance,
-      EditorType.MODIFIED_DIFF,
-    ]);
-
-    const originalDiffEditorPart = this.injector.get(DiffEditorPart, [
-      originalEditor?.editor,
-      () => originalInstance,
-      EditorType.ORIGINAL_DIFF,
-    ]);
-
-    this.editorCollectionService.addEditors([modifiedDiffEditorPart, originalDiffEditorPart]);
+    const editors: DiffEditorPart[] = [];
+    if (modifiedEditor) {
+      const modifiedDiffEditorPart = this.injector.get(DiffEditorPart, [
+        modifiedEditor.editor,
+        () => modifiedInstance,
+        EditorType.MODIFIED_DIFF,
+      ]);
+      editors.push(modifiedDiffEditorPart);
+    }
+    if (originalEditor) {
+      const originalDiffEditorPart = this.injector.get(DiffEditorPart, [
+        originalEditor.editor,
+        () => originalInstance,
+        EditorType.ORIGINAL_DIFF,
+      ]);
+      editors.push(originalDiffEditorPart);
+    }
+    this.editorCollectionService.addEditors(editors);
   }
 
   async compareMultiple(editor: IMultiDiffEditor, resource: IResource, options?: IResourceOpenOptions): Promise<void> {
@@ -163,12 +168,10 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
       this,
       resources,
       async (r, store) => {
-        /** @description documentsWithPromises */
         let original: IEditorDocumentModelRef | undefined;
         let modified: IEditorDocumentModelRef | undefined;
 
         const multiDiffItemStore = new DisposableStore();
-
         try {
           [original, modified] = await Promise.all([
             r.originalUri ? this.documentModelManager.createModelReference(r.originalUri) : undefined,
@@ -195,7 +198,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
           modifiedInstance: modified?.instance,
           contextKeys: r.contextKeys,
           options: {
-            readOnly: modified?.instance.readonly,
+            readOnly: (modified || original)?.instance.readonly,
             // TODO: codelens，wordWrap options
             ...this.convertedOptions.diffOptions,
           },
@@ -215,7 +218,6 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     const documents = observableValue<readonly RefCounted<IDocumentDiffItem>[] | 'loading'>('documents', 'loading');
 
     const updateDocuments = derived(async (reader) => {
-      /** @description Update documents */
       const docsPromises = documentsWithPromises.read(reader);
       const docs = await Promise.all(docsPromises);
       const newDocuments = docs.filter((item) => item !== undefined);
@@ -246,15 +248,19 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
       }
       const modified = ref.object.modified;
       const original = ref.object.original;
-      if (!modified || !original) {
+      if (!modified && !original) {
         continue;
       }
-      let modifiedEditor = this.multiDiffWidget.tryGetCodeEditor(modified?.uri);
-      let originalEditor = this.multiDiffWidget.tryGetCodeEditor(original?.uri);
-      if (!modifiedEditor || !originalEditor) {
-        Event.once(modified.onDidChangeTokens)(() => {
-          modifiedEditor = this.multiDiffWidget.tryGetCodeEditor(modified?.uri);
-          originalEditor = this.multiDiffWidget.tryGetCodeEditor(original?.uri);
+      let modifiedEditor = modified ? this.multiDiffWidget.tryGetCodeEditor(modified.uri) : undefined;
+      let originalEditor = original ? this.multiDiffWidget.tryGetCodeEditor(original.uri) : undefined;
+      if (!modifiedEditor && !originalEditor) {
+        const editor = modified || original;
+        if (!editor) {
+          continue;
+        }
+        Event.once(Event.any<any>(editor.onDidChangeDecorations))(() => {
+          modifiedEditor = modified ? this.multiDiffWidget.tryGetCodeEditor(modified.uri) : undefined;
+          originalEditor = original ? this.multiDiffWidget.tryGetCodeEditor(original.uri) : undefined;
           this.createAndRegisterEditorParts(
             modifiedEditor,
             originalEditor,
@@ -264,7 +270,6 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
         });
         continue;
       }
-
       this.createAndRegisterEditorParts(
         modifiedEditor,
         originalEditor,
