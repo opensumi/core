@@ -7,6 +7,107 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
+<!-- Release notes generated using configuration in .github/release.yml at v3.9.0 -->
+
+## v3.9.0
+
+### What's New Features
+
+- feat: add user's intention in apply prompt by @ensorrow in https://github.com/opensumi/core/pull/4454
+- feat: support builtin mcp tool order by @ensorrow in https://github.com/opensumi/core/pull/4468
+- feat: support chat reasoning by @ensorrow in https://github.com/opensumi/core/pull/4470
+- feat: improve MCP Server edit UX and i18n by @erha19 in https://github.com/opensumi/core/pull/4455
+- feat: support new chat mention input for MCP model by @erha19 in https://github.com/opensumi/core/pull/4466
+- feat: support add image to chat by @ensorrow in https://github.com/opensumi/core/pull/4476
+- feat: support upload multiple images by @ensorrow in https://github.com/opensumi/core/pull/4483
+- feat: support sync MCP server by @erha19 in https://github.com/opensumi/core/pull/4486
+- feat: add background command execution support in RunCommandHandler by @Aaaaash in https://github.com/opensumi/core/pull/4488
+- fix: comment module upload function issue fixed by @wangxiaojuan in https://github.com/opensumi/core/pull/4444
+- feat: support access function for custom fs provider by @erha19 in https://github.com/opensumi/core/pull/4496
+- feat: statusBarService support extends addElement by @wangxiaojuan in https://github.com/opensumi/core/pull/4503
+- feat: support guess languageId by fie ext name by @erha19 in https://github.com/opensumi/core/pull/4504
+- feat: support TerminalWordLink can be override by @wangxiaojuan in https://github.com/opensumi/core/pull/4509
+- fix: disable model selector when session start by @ensorrow in https://github.com/opensumi/core/pull/4513
+- feat: mcp server expose client by @moreJs in https://github.com/opensumi/core/pull/4505
+- feat: improve terminal link provider check logic by @erha19 in https://github.com/opensumi/core/pull/4514
+- feat: support recreate watcher process after reconnected by @erha19 in https://github.com/opensumi/core/pull/4517
+- feat: support code reference and reference bar by @erha19 in https://github.com/opensumi/core/pull/4519
+- feat: improve tool result display by @erha19 in https://github.com/opensumi/core/pull/4521
+- feat: support mcp.json for MCP configurations by @erha19 in https://github.com/opensumi/core/pull/4522
+- feat: improve python debug stack frames view by @erha19 in https://github.com/opensumi/core/pull/4525
+- feat: support multi file diff editor by @ensorrow in https://github.com/opensumi/core/pull/4523
+- feat: improve LLM context service enhance logic by @erha19 in https://github.com/opensumi/core/pull/4527
+- feat: improve debug variables order and fix console log by @erha19 in https://github.com/opensumi/core/pull/4533
+- feat: support collapse/expand all files in multiDiffEditor by @ensorrow in https://github.com/opensumi/core/pull/4531
+- feat: add terminal auto execution policy settings and localization by @Aaaaash in https://github.com/opensumi/core/pull/4529
+- feat: support auto scroll code block on chat by @erha19 in https://github.com/opensumi/core/pull/4547
+- feat: support apply none to skip apply by @ensorrow in https://github.com/opensumi/core/pull/4550
+- feat: optimize thinking style by @ensorrow in https://github.com/opensumi/core/pull/4553
+- feat: support more tool name by @erha19 in https://github.com/opensumi/core/pull/4558
+
+### Refactor
+
+- refactor: refactor applyService to support apply recover by @ensorrow in https://github.com/opensumi/core/pull/4410
+- refactor: upgrade markdown renderer from 4.x to 15.x by @erha19 in https://github.com/opensumi/core/pull/4548
+
+### Style Changes
+
+- chore: add chat history module styles with less by @Ricbet in https://github.com/opensumi/core/pull/4404
+- style: improve MCP configuration page style by @erha19 in https://github.com/opensumi/core/pull/4475
+- fix: update default height in search panel container style by @erha19 in https://github.com/opensumi/core/pull/4506
+- style: improve welcome button style by @erha19 in https://github.com/opensumi/core/pull/4512
+- style: improve terminal tab style by @erha19 in https://github.com/opensumi/core/pull/4551
+
+### Other Changes
+
+- chore: fix typos in packages by @co63oc in https://github.com/opensumi/core/pull/4414
+- chore(release): v3.8.1 by @erha19 in https://github.com/opensumi/core/pull/4448
+- fix(debug-variables): try to fix incorrect undefined type checking by @eason-hk-barcelona in https://github.com/opensumi/core/pull/4450
+- chore(release): v3.8.2 by @erha19 in https://github.com/opensumi/core/pull/4467
+- fix: tools view by @Aaaaash in https://github.com/opensumi/core/pull/4457
+- fix: handle potential error when retrieving modified content during report by @ensorrow in https://github.com/opensumi/core/pull/4469
+- fix: sse mcp esm module by @Ricbet in https://github.com/opensumi/core/pull/4473
+- fix: increase timeout duration in RecursiveFileSystemWatcher to 60 se… by @Aaaaash in https://github.com/opensumi/core/pull/4472
+- fix: codeBlock version & make sure block file opened by @ensorrow in https://github.com/opensumi/core/pull/4474
+- chore: revert send data by chunk in websocket (#3988) by @Aaaaash in https://github.com/opensumi/core/pull/4477
+- fix: delete files on multiple workspace by @erha19 in https://github.com/opensumi/core/pull/4449
+- fix: showing all mcp server in the list by @erha19 in https://github.com/opensumi/core/pull/4478
+- fix: paste document text to mention input and history navigator by @erha19 in https://github.com/opensumi/core/pull/4479
+- fix: mcp server running status by @erha19 in https://github.com/opensumi/core/pull/4481
+- fix: dispose previewer without reject when edit pending file by @ensorrow in https://github.com/opensumi/core/pull/4484
+- fix: start MCP command server failure by @erha19 in https://github.com/opensumi/core/pull/4485
+- fix: getModelInfo with providerOptions, pass args only when need by @ensorrow in https://github.com/opensumi/core/pull/4489
+- fix: search folders on mention input by @erha19 in https://github.com/opensumi/core/pull/4492
+- fix: toggle builtin MCP server error by @erha19 in https://github.com/opensumi/core/pull/4490
+- fix: hide debug hover widget when esc pressed by @erha19 in https://github.com/opensumi/core/pull/4487
+- chore: add MCP badge by @erha19 in https://github.com/opensumi/core/pull/4497
+- fix: sumi extension restart logic by @erha19 in https://github.com/opensumi/core/pull/4498
+- fix: monaco caused by the failure of window.addEventListener('compositionstart', () => {}) by @wangxiaojuan in https://github.com/opensumi/core/pull/4508
+- fix: tabbar view can not be hidden by @erha19 in https://github.com/opensumi/core/pull/4507
+- fix: passthrough icon and color for extension terminal by @ensorrow in https://github.com/opensumi/core/pull/4515
+- fix: remove TypeScript ignore comment and improve keytar import handling by @Aaaaash in https://github.com/opensumi/core/pull/4528
+- chore: improve terminal tool prompt by @erha19 in https://github.com/opensumi/core/pull/4530
+- fix: read default model from preference by @ensorrow in https://github.com/opensumi/core/pull/4535
+- fix: nsfw logic by @Aaaaash in https://github.com/opensumi/core/pull/4539
+- fix: debug variables order by @erha19 in https://github.com/opensumi/core/pull/4536
+- fix: update diff-manager & apply action btns when need by @ensorrow in https://github.com/opensumi/core/pull/4538
+- fix: block change lines may be undefined by @ensorrow in https://github.com/opensumi/core/pull/4544
+- fix: not process attached key to LLM by @erha19 in https://github.com/opensumi/core/pull/4545
+- fix: remove prefix of builtin tools by @ensorrow in https://github.com/opensumi/core/pull/4546
+- fix: improve error handling for tool call arguments and results by @ensorrow in https://github.com/opensumi/core/pull/4554
+- fix: watcher logic by @Aaaaash in https://github.com/opensumi/core/pull/4552
+- fix: model made no change by @ensorrow in https://github.com/opensumi/core/pull/4555
+- fix: trim mcp command and url by @erha19 in https://github.com/opensumi/core/pull/4557
+- fix: scm tree node duplicated by @erha19 in https://github.com/opensumi/core/pull/4556
+- fix: update tool name sanitization regex for Claude 3.5+ Sonnet by @erha19 in https://github.com/opensumi/core/pull/4562
+- fix: terminal validated link logic by @Aaaaash in https://github.com/opensumi/core/pull/4549
+
+## New Contributors
+
+- @eason-hk-barcelona made their first contribution in https://github.com/opensumi/core/pull/4450
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v3.8.2...v3.9.0
+
 ## v3.8.0
 
 ### What's New Features
