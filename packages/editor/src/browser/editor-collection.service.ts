@@ -231,7 +231,6 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     }
   }
 
-  // 将docModel的变更事件反映至resource的dirty装饰
   @OnEvent(EditorDocumentModelContentChangedEvent)
   onDocModelContentChangedEvent(e: EditorDocumentModelContentChangedEvent) {
     this.eventBus.fire(

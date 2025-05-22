@@ -3,6 +3,7 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   DisposableStore,
   Emitter,
+  Event,
   IDisposable,
   ILogger,
   OnEvent,
@@ -126,6 +127,27 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     }
   }
 
+  private createAndRegisterEditorParts(
+    modifiedEditor: { editor: ICodeEditor } | undefined,
+    originalEditor: { editor: ICodeEditor } | undefined,
+    modifiedInstance: any,
+    originalInstance: any,
+  ): void {
+    const modifiedDiffEditorPart = this.injector.get(DiffEditorPart, [
+      modifiedEditor?.editor,
+      () => modifiedInstance,
+      EditorType.MODIFIED_DIFF,
+    ]);
+
+    const originalDiffEditorPart = this.injector.get(DiffEditorPart, [
+      originalEditor?.editor,
+      () => originalInstance,
+      EditorType.ORIGINAL_DIFF,
+    ]);
+
+    this.editorCollectionService.addEditors([modifiedDiffEditorPart, originalDiffEditorPart]);
+  }
+
   async compareMultiple(editor: IMultiDiffEditor, resource: IResource, options?: IResourceOpenOptions): Promise<void> {
     // Save current view state before changing
     if (this.currentUri) {
@@ -227,20 +249,28 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
       if (!modified || !original) {
         continue;
       }
-      const modifiedEditor = this.multiDiffWidget.tryGetCodeEditor(modified?.uri);
-      const originalEditor = this.multiDiffWidget.tryGetCodeEditor(original?.uri);
-      const modifiedDiffEditorPart = this.injector.get(DiffEditorPart, [
-        modifiedEditor?.editor,
-        () => (ref.object as any).modifiedInstance,
-        EditorType.MODIFIED_DIFF,
-      ]);
+      let modifiedEditor = this.multiDiffWidget.tryGetCodeEditor(modified?.uri);
+      let originalEditor = this.multiDiffWidget.tryGetCodeEditor(original?.uri);
+      if (!modifiedEditor || !originalEditor) {
+        Event.once(modified.onDidChangeTokens)(() => {
+          modifiedEditor = this.multiDiffWidget.tryGetCodeEditor(modified?.uri);
+          originalEditor = this.multiDiffWidget.tryGetCodeEditor(original?.uri);
+          this.createAndRegisterEditorParts(
+            modifiedEditor,
+            originalEditor,
+            (ref.object as any).modifiedInstance,
+            (ref.object as any).originalInstance,
+          );
+        });
+        continue;
+      }
 
-      const originalDiffEditorPart = this.injector.get(DiffEditorPart, [
-        originalEditor?.editor,
-        () => (ref.object as any).originalInstance,
-        EditorType.ORIGINAL_DIFF,
-      ]);
-      this.editorCollectionService.addEditors([modifiedDiffEditorPart, originalDiffEditorPart]);
+      this.createAndRegisterEditorParts(
+        modifiedEditor,
+        originalEditor,
+        (ref.object as any).modifiedInstance,
+        (ref.object as any).originalInstance,
+      );
     }
     this.multiDiffModelChangeEmitter.fire(this.multiDiffModel);
   }

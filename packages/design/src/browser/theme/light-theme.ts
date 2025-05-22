@@ -807,6 +807,9 @@ export default {
     'list.focusBackground': '#151b5814',
     'textLink.foreground': '#3c8dff',
     'editorStickyScroll.background': '#fff',
+    'multiDiffEditor.background': '#fff',
+    'multiDiffEditor.border': '#151b211f',
+    'multiDiffEditor.headerBackground': '#fff',
   },
   semanticHighlighting: true,
   semanticTokenColors: {
