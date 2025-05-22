@@ -28,10 +28,10 @@ import {
   IDiffResource,
   IEditorDecorationCollectionService,
 } from '@opensumi/ide-editor/lib/browser';
+import { ISumiEditor } from '@opensumi/ide-editor/lib/browser/base-editor-wrapper';
 import {
   BrowserDiffEditor,
   EditorCollectionServiceImpl,
-  ISumiEditor,
 } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';

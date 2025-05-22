@@ -373,9 +373,6 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired(AppConfig)
-  private appConfig: AppConfig;
-
   private originalDocModelRef: IEditorDocumentModelRef | null;
 
   private modifiedDocModelRef: IEditorDocumentModelRef | null;
