@@ -693,17 +693,7 @@ export class AINativeBrowserContribution
 
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
     registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => {
-        const { monacoEditor } = editor;
-
-        this.codeActionSingleHandler.mountEditor(editor.monacoEditor);
-
-        return monacoEditor.onDidScrollChange(() => {
-          if (this.ctxMenuRenderer.visible) {
-            this.ctxMenuRenderer.hide(true);
-          }
-        });
-      },
+      contribute: (editor: IEditor) => this.codeActionSingleHandler.mountEditor(editor.monacoEditor),
     });
   }
 
