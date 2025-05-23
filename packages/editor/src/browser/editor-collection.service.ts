@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AppConfig, IContextKeyService, PreferenceService } from '@opensumi/ide-core-browser';
+import { IContextKeyService, PreferenceService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
 import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
@@ -10,7 +10,6 @@ import {
   OnEvent,
   URI,
   WithEventBus,
-  objects,
 } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
