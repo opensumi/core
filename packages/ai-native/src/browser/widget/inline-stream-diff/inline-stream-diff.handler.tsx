@@ -441,6 +441,9 @@ export abstract class BaseInlineStreamDiffHandler extends Disposable implements 
         const currentDiffModel = this.processDiffComputation(currentText);
 
         if (this.savedModel.id === this.monacoEditor.getModel()?.id) {
+          if (this.previewerOptions.revealLine) {
+            this.monacoEditor.revealLineInCenter(this.currentEditLine);
+          }
           this.renderDiffEdits(currentDiffModel);
         }
 

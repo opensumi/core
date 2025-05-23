@@ -40,6 +40,12 @@ export interface IDiffPreviewerOptions {
    * 是否为回退模式，即 setValue 内容作为 original，编辑器 getValue 内容作为 modified
    */
   reverse?: boolean;
+
+  /**
+   * 是否自动 reveal 到当前行
+   * @default true
+   */
+  revealLine?: boolean;
 }
 
 export interface IInlineDiffPreviewerNode extends IDisposable {
@@ -48,7 +54,7 @@ export interface IInlineDiffPreviewerNode extends IDisposable {
 }
 
 @Injectable({ multiple: true })
-export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode> extends Disposable {
+export abstract class BaseInlineDiffPreviewer<T extends IInlineDiffPreviewerNode> extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
@@ -118,8 +124,8 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     return newTextLines.join(eol);
   }
 
-  protected node: N | undefined;
-  public getNode(): N | undefined {
+  protected node: T | undefined;
+  public getNode(): T | undefined {
     return this.node;
   }
 
@@ -137,7 +143,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     return Disposable.NULL;
   }
 
-  protected abstract createNode(reverse?: boolean): N;
+  protected abstract createNode(reverse?: boolean): T;
   abstract onData(data: ReplyResponse): void;
   abstract handleAction(action: EResultKind): void;
   abstract getPosition(): IPosition;
@@ -146,6 +152,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     selection: Selection,
     options: IDiffPreviewerOptions = {
       disposeWhenEditorClosed: true,
+      revealLine: true,
     },
   ): void {
     this.selection = selection;
@@ -153,7 +160,7 @@ export abstract class BaseInlineDiffPreviewer<N extends IInlineDiffPreviewerNode
     this.node.setPreviewerOptions(options);
   }
 
-  attachNode(node: N | undefined): void {
+  attachNode(node: T | undefined): void {
     this.node = node;
   }
 
