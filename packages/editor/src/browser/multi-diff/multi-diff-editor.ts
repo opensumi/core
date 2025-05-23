@@ -72,7 +72,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
   private multiDiffModel: IMultiDiffEditorModel & IDisposable;
 
   constructor(
-    private multiDiffWidget: MultiDiffEditorWidget,
+    public readonly multiDiffWidget: MultiDiffEditorWidget,
     private convertedOptions: IConvertedMonacoOptions,
     private editorCollectionService: EditorCollectionServiceImpl,
   ) {
