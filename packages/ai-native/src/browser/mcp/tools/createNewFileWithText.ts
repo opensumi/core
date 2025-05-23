@@ -47,11 +47,13 @@ export class CreateNewFileWithTextTool implements MCPServerContribution {
 
   private async handler(args: z.infer<typeof inputSchema> & { toolCallId: string }, logger: MCPLogger) {
     try {
-      await this.createNewFileWithTextHandler.handler(args, args.toolCallId, logger);
+      await this.createNewFileWithTextHandler.handler(args, args.toolCallId);
+      logger.appendLine(`Successfully created file at: ${args.targetFile}`);
       return {
         content: [{ type: 'text', text: 'create file with text success' }],
       };
     } catch (error) {
+      logger.appendLine(`Error during file creation: ${error}`);
       return {
         content: [{ type: 'text', text: error.message }],
         isError: true,
