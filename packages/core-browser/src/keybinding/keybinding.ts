@@ -12,7 +12,10 @@ import {
   isOSX,
   isUndefined,
 } from '@opensumi/ide-core-common';
-import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import {
+  ContextKeyExpr,
+  ContextKeyExpression,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { IContextKeyService } from '../context-key';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
@@ -753,9 +756,19 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 只有在没有上下文（全局上下文）或者我们处于该上下文中时才执行
    * @param binding
    * @param event
+   * @param enablement
    */
-  public isEnabled(binding: Keybinding, event?: KeyboardEvent): boolean {
-    if (binding.when && !this.whenContextService.match(binding.when, event && (event.target as HTMLElement))) {
+  public isEnabled(binding: Keybinding, event?: KeyboardEvent, enablement?: string): boolean {
+    let { when } = binding;
+
+    const whenExpr = typeof when === 'string' ? ContextKeyExpr.deserialize(when) : when;
+    const enablementExpr = ContextKeyExpr.deserialize(enablement);
+
+    if (enablementExpr) {
+      when = ContextKeyExpr.and(enablementExpr, whenExpr)?.serialize();
+    }
+
+    if (when && !this.whenContextService.match(when, event && (event.target as HTMLElement))) {
       return false;
     }
     return true;
@@ -905,6 +918,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
         } else {
           const command = this.commandRegistry.getCommand(binding.command);
           if (command) {
+            if (!this.isEnabled(binding, event, command.enablement)) {
+              continue;
+            }
+
             this.commandService
               .executeCommand(command.id, binding.args)
               .catch((err) => this.logger.error('Failed to execute command:', err, binding.command));
