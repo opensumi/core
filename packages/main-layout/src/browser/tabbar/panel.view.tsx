@@ -224,7 +224,7 @@ const BottomPanelView: React.FC<{
         </div>
         <div className={styles_panel_toolbar_container}>
           {titleMenu && <InlineActionBar menus={titleMenu} />}
-          <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
+          <InlineMenuBar menus={tabbarService.commonTitleMenu!} moreAtFirst />
         </div>
       </div>
       <div className={styles.container_wrap} ref={(ele) => (ref.current = ele)}>
