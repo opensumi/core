@@ -52,7 +52,7 @@ export const AccordionContainer = ({
   React.useEffect(() => {
     accordionService.initConfig({ headerSize: layoutHeaderSize, minSize });
   }, []);
-
+  // FIXME: accordion 的 resize event 失效了
   return (
     <SplitPanel
       className={className}

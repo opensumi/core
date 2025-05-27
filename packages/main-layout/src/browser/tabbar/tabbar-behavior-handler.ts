@@ -68,39 +68,30 @@ export class TabbarBehaviorHandler {
     // 如果支持展开操作，注册相关命令
     if (supportedActions?.expand) {
       disposables.push(
-        context.commandRegistry.registerCommand(
-          { id: 'workbench.action.toggleBottomPanelExpanded' },
-          {
-            execute: () => {
-              context.layoutService.expandBottom(true);
-            },
+        context.commandRegistry.registerCommand(EXPAND_BOTTOM_PANEL, {
+          execute: () => {
+            context.layoutService.expandBottom(true);
           },
-        ),
+        }),
       );
 
       disposables.push(
-        context.commandRegistry.registerCommand(
-          { id: 'workbench.action.retractBottomPanel' },
-          {
-            execute: () => {
-              context.layoutService.expandBottom(false);
-            },
+        context.commandRegistry.registerCommand(RETRACT_BOTTOM_PANEL, {
+          execute: () => {
+            context.layoutService.expandBottom(false);
           },
-        ),
+        }),
       );
     }
 
     // 如果支持 toggle 操作，注册相关命令
     if (supportedActions?.toggle) {
       disposables.push(
-        context.commandRegistry.registerCommand(
-          { id: 'workbench.action.toggleBottomPanel' },
-          {
-            execute: (show?: boolean, size?: number) => {
-              context.layoutService.toggleSlot(this.location, show, size);
-            },
+        context.commandRegistry.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
+          execute: (show?: boolean, size?: number) => {
+            context.layoutService.toggleSlot(this.location, show, size);
           },
-        ),
+        }),
       );
     }
 

@@ -48,13 +48,13 @@ export const AILayout = () => {
               isTabbar={true}
             />
           </SplitPanel>
-          <SlotRenderer
+          {/* <SlotRenderer
             slot={SlotLocation.extendView}
             isTabbar={true}
             defaultSize={layout.right?.currentId ? layout.right?.size || 360 : defaultRightSize}
             minResize={280}
             minSize={defaultRightSize}
-          />
+          /> */}
         </SplitPanel>
         <SlotRenderer
           slot={AI_CHAT_VIEW_ID}
