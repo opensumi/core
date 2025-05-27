@@ -1146,9 +1146,9 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
-    'layout.tabbar.toggle': 'Toggle Bottom Panel',
-    'layout.tabbar.expand': 'Maximize Bottom Panel',
-    'layout.tabbar.retract': 'Retract Bottom Panel',
+    'layout.tabbar.toggle': 'Toggle Tab Panel',
+    'layout.tabbar.expand': 'Maximize Tab Panel',
+    'layout.tabbar.retract': 'Retract Tab Panel',
     'layout.view.hide': 'HIDE',
     'layout.action.openView': 'Open View ...',
     'layout.openView.containerTitle': 'SideBar / Panel',

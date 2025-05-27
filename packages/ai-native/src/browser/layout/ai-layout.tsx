@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { SlotRenderer, useInjectable } from '@opensumi/ide-core-browser';
+import { SlotLocation, SlotRenderer, useInjectable } from '@opensumi/ide-core-browser';
 import { BoxPanel, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 
@@ -32,7 +32,7 @@ export const AILayout = () => {
           resizeHandleClassName={'design-slot_resize_horizontal'}
         >
           <SlotRenderer
-            slot='left'
+            slot={SlotLocation.view}
             isTabbar={true}
             defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
             minResize={280}
@@ -44,12 +44,12 @@ export const AILayout = () => {
               flex={1}
               defaultSize={layout.bottom?.currentId ? layout.bottom?.size : 24}
               minResize={160}
-              slot='bottom'
+              slot={SlotLocation.panel}
               isTabbar={true}
             />
           </SplitPanel>
           <SlotRenderer
-            slot='right'
+            slot={SlotLocation.extendView}
             isTabbar={true}
             defaultSize={layout.right?.currentId ? layout.right?.size || 360 : defaultRightSize}
             minResize={280}

@@ -96,7 +96,7 @@ export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
 export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.toggle',
   iconClass: getIcon('minus'),
-  label: '%layout.tabbar.toggle%',
+  label: '%main-layout.bottom-panel.toggle %',
 };
 export const IS_VISIBLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.is-visible',
@@ -422,6 +422,7 @@ export class MainLayoutModuleContribution
       command: TOGGLE_BOTTOM_PANEL_COMMAND as MenuCommandDesc,
       group: '5_panel',
     });
+    // 为啥 tabbar 里又有一个？
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: EXPAND_BOTTOM_PANEL as MenuCommandDesc,
       group: '5_panel',

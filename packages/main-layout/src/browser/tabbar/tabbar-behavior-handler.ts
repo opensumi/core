@@ -5,6 +5,8 @@ import { AbstractContextMenuService, IContextMenu, IMenuRegistry } from '@opensu
 import { TabbarConfig } from '@opensumi/ide-core-browser/lib/react-providers';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
+import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
+
 export interface ITabbarResizeOptions {
   setSize: (targetSize?: number) => void;
   setRelativeSize: (prev: number, next: number) => void;
@@ -113,41 +115,39 @@ export class TabbarBehaviorHandler {
     ctxMenuService: AbstractContextMenuService;
   }): IContextMenu | undefined {
     // 如果支持展开操作，注册相关菜单
+    const menuItems: any[] = [];
+
     if (this.config?.supportedActions?.expand) {
-      const menuItems: any[] = [];
-
-      if (this.config.supportedActions.expand) {
-        menuItems.push(
-          {
-            command: 'workbench.action.toggleBottomPanelExpanded',
-            group: 'navigation',
-            when: '!bottomFullExpanded',
-            order: 1,
-          },
-          {
-            command: 'workbench.action.retractBottomPanel',
-            group: 'navigation',
-            when: 'bottomFullExpanded',
-            order: 1,
-          },
-        );
-      }
-
-      if (this.config.supportedActions.toggle) {
-        menuItems.push({
-          command: 'workbench.action.toggleBottomPanel',
+      menuItems.push(
+        {
+          command: EXPAND_BOTTOM_PANEL.id,
           group: 'navigation',
-          order: 2,
-        });
-      }
+          when: '!bottomFullExpanded',
+          order: 1,
+        },
+        {
+          command: RETRACT_BOTTOM_PANEL.id,
+          group: 'navigation',
+          when: 'bottomFullExpanded',
+          order: 1,
+        },
+      );
+    }
 
-      if (menuItems.length > 0) {
-        context.menuRegistry.registerMenuItems(`tabbar/${this.location}/common`, menuItems);
+    if (this.config?.supportedActions?.toggle) {
+      menuItems.push({
+        command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+        group: 'navigation',
+        order: 2,
+      });
+    }
 
-        return context.ctxMenuService.createMenu({
-          id: `tabbar/${this.location}/common`,
-        });
-      }
+    if (menuItems.length > 0) {
+      context.menuRegistry.registerMenuItems(`tabbar/${this.location}/common`, menuItems);
+
+      return context.ctxMenuService.createMenu({
+        id: `tabbar/${this.location}/common`,
+      });
     }
 
     return undefined;
