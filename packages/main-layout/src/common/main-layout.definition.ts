@@ -131,7 +131,7 @@ export class ViewCollapseChangedEvent extends BasicEvent<{
   collapsed: boolean;
 }> {}
 
-export const SUPPORT_ACCORDION_LOCATION = new Set([SlotLocation.left, SlotLocation.right]);
+export const SUPPORT_ACCORDION_LOCATION = new Set([SlotLocation.view, SlotLocation.extendView]);
 
 export const DROP_BOTTOM_CONTAINER = 'drop-bottom';
 export const DROP_RIGHT_CONTAINER = 'drop-right';

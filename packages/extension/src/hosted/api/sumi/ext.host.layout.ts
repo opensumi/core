@@ -74,7 +74,7 @@ export class ExtHostLayout implements IExtHostLayout {
     }
   }
 }
-
+// TODO: 适配改动
 export function createLayoutAPIFactory(
   extHostCommands: IExtHostCommands,
   kaitianLayout: IExtHostLayout,

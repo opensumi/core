@@ -217,65 +217,65 @@ export class MainLayoutModuleContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
-    registry.registerSlotRenderer(SlotLocation.right, RightTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.left, LeftTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.bottom, BottomTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.extendView, RightTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.view, LeftTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.panel, BottomTabRenderer);
   }
 
   registerCommands(commands: CommandRegistry): void {
     // @deprecated
     commands.registerCommand(HIDE_LEFT_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, false);
+        this.mainLayoutService.toggleSlot(SlotLocation.view, false);
       },
     });
     // @deprecated
     commands.registerCommand(SHOW_LEFT_PANEL_COMMAND, {
       execute: (size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, true, size);
+        this.mainLayoutService.toggleSlot(SlotLocation.view, true, size);
       },
     });
     commands.registerCommand(TOGGLE_LEFT_PANEL_COMMAND, {
       execute: (show?: boolean, size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, show, size);
+        this.mainLayoutService.toggleSlot(SlotLocation.view, show, size);
       },
     });
 
     // @deprecated
     commands.registerCommand(HIDE_RIGHT_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, false);
+        this.mainLayoutService.toggleSlot(SlotLocation.extendView, false);
       },
     });
     // @deprecated
     commands.registerCommand(SHOW_RIGHT_PANEL_COMMAND, {
       execute: (size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, true, size);
+        this.mainLayoutService.toggleSlot(SlotLocation.extendView, true, size);
       },
     });
     commands.registerCommand(TOGGLE_RIGHT_PANEL_COMMAND, {
       execute: (show?: boolean, size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, show, size);
+        this.mainLayoutService.toggleSlot(SlotLocation.extendView, show, size);
       },
     });
 
     commands.registerCommand(WORKBENCH_ACTION_CLOSESIDECAR, {
       execute: () =>
         Promise.all([
-          this.mainLayoutService.toggleSlot(SlotLocation.left, false),
-          this.mainLayoutService.toggleSlot(SlotLocation.right, false),
+          this.mainLayoutService.toggleSlot(SlotLocation.view, false),
+          this.mainLayoutService.toggleSlot(SlotLocation.extendView, false),
         ]),
     });
 
     commands.registerCommand(SHOW_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.bottom, true);
+        this.mainLayoutService.toggleSlot(SlotLocation.panel, true);
       },
     });
 
     commands.registerCommand(HIDE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.bottom, false);
+        this.mainLayoutService.toggleSlot(SlotLocation.panel, false);
       },
     });
     commands.registerCommand(WORKBENCH_ACTION_CLOSEPANEL);
@@ -283,10 +283,10 @@ export class MainLayoutModuleContribution
       execute: () => this.mainLayoutService.getTabbarService('bottom').currentContainerId.get() !== '',
     });
     commands.registerCommand(IS_VISIBLE_LEFT_PANEL_COMMAND, {
-      execute: () => this.mainLayoutService.isVisible(SlotLocation.left),
+      execute: () => this.mainLayoutService.isVisible(SlotLocation.view),
     });
     commands.registerCommand(IS_VISIBLE_RIGHT_PANEL_COMMAND, {
-      execute: () => this.mainLayoutService.isVisible(SlotLocation.left),
+      execute: () => this.mainLayoutService.isVisible(SlotLocation.view),
     });
 
     commands.registerCommand(
@@ -359,14 +359,14 @@ export class MainLayoutModuleContribution
     });
 
     Object.entries({
-      [SlotLocation.left]: [
+      [SlotLocation.view]: [
         EXPLORER_CONTAINER_ID,
         SEARCH_CONTAINER_ID,
         SCM_CONTAINER_ID,
         DEBUG_CONTAINER_ID,
         EXTENSION_CONTAINER_ID,
       ],
-      [SlotLocation.bottom]: [
+      [SlotLocation.panel]: [
         MARKER_CONTAINER_ID,
         OUTPUT_CONTAINER_ID,
         DEBUG_CONSOLE_CONTAINER_ID,

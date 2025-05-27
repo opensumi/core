@@ -8,7 +8,7 @@ import { IIconService } from '@opensumi/ide-theme';
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { ExtensionLoadingView } from '../../components';
 import { AbstractExtInstanceManagementService } from '../../types';
-
+// TODO: 适配改动
 export type KtViewLocation = 'left' | 'right' | 'bottom' | 'editor' | 'toolBar';
 
 export type KtViewsContribution = {

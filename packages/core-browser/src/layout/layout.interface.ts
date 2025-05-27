@@ -7,7 +7,7 @@ import type { SlotLocation } from '../react-providers';
 import type React from 'react';
 import type { ViewBadge } from 'vscode';
 
-export type Side = 'left' | 'right' | 'bottom';
+export type Side = 'view' | 'extendView' | 'panel';
 
 export interface TabbarState {
   containerId: string;

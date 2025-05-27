@@ -16,11 +16,11 @@ const logger = getDebugLogger();
 export type SlotLocation = string;
 export const SlotLocation = {
   top: 'top',
-  left: 'left',
-  right: 'right',
+  view: 'view',
+  extendView: 'extendView',
   main: 'main',
   statusBar: 'statusBar',
-  bottom: 'bottom',
+  panel: 'panel',
   extra: 'extra',
   float: 'float',
   action: 'action',
@@ -55,9 +55,9 @@ export enum TabbarContextKeys {
 
 export function getTabbarCtxKey(location: string): TabbarContextKeys {
   const standardTabbarCtxKeys = {
-    [SlotLocation.left]: TabbarContextKeys.activeViewlet,
-    [SlotLocation.right]: TabbarContextKeys.activeExtendViewlet,
-    [SlotLocation.bottom]: TabbarContextKeys.activePanel,
+    [SlotLocation.view]: TabbarContextKeys.activeViewlet,
+    [SlotLocation.extendView]: TabbarContextKeys.activeExtendViewlet,
+    [SlotLocation.panel]: TabbarContextKeys.activePanel,
   };
 
   return standardTabbarCtxKeys[location] || 'activeExtendViewlet';

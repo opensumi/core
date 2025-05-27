@@ -77,13 +77,13 @@ describe('main layout test', () => {
         [SlotLocation.top]: {
           modules: [testToken],
         },
-        [SlotLocation.left]: {
+        [SlotLocation.view]: {
           modules: [testToken],
         },
-        [SlotLocation.right]: {
+        [SlotLocation.extendView]: {
           modules: [uniqueToken],
         },
-        [SlotLocation.bottom]: {
+        [SlotLocation.panel]: {
           modules: [testToken],
         },
         [SlotLocation.statusBar]: {

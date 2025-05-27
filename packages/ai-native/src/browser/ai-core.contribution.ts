@@ -820,8 +820,8 @@ export class AINativeBrowserContribution
     }
 
     if (this.designLayoutConfig.useMergeRightWithLeftPanel) {
-      registry.registerSlotRenderer(SlotLocation.left, AILeftTabRenderer);
-      registry.registerSlotRenderer(SlotLocation.right, AIRightTabRenderer);
+      registry.registerSlotRenderer(SlotLocation.view, AILeftTabRenderer);
+      registry.registerSlotRenderer(SlotLocation.extendView, AIRightTabRenderer);
     }
   }
 

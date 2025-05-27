@@ -110,7 +110,7 @@ export const AILeftTabRenderer = ({
 const AILeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.extendView);
   const currentContainerId = useAutorun(tabbarService.currentContainerId);
 
   const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
@@ -161,7 +161,7 @@ export const AIRightTabRenderer = ({
   className: string;
   components: ComponentRegistryInfo[];
 }) => {
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.extendView);
   const designLayoutConfig = useInjectable<DesignLayoutConfig>(DesignLayoutConfig);
 
   const handleClose = useCallback(() => {

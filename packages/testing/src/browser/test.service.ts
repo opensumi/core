@@ -81,7 +81,7 @@ export class TestServiceImpl extends Disposable implements ITestService {
         component: TestingView,
         activateKeyBinding: 'ctrlcmd+shift+t',
       },
-      SlotLocation.left,
+      SlotLocation.view,
     );
   }
 

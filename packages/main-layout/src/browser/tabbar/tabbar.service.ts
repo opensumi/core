@@ -65,11 +65,6 @@ export interface TabState {
   // 排序位置，数字越小优先级越高
   priority: number;
 }
-const CONTAINER_NAME_MAP = {
-  left: 'view',
-  right: 'extendView',
-  bottom: 'panel',
-};
 
 const NONE_CONTAINER_ID = undefined;
 
@@ -178,7 +173,7 @@ export class TabbarService extends WithEventBus {
 
   constructor(public location: string) {
     super();
-    this.setIsLatter(location === SlotLocation.right || location === SlotLocation.bottom);
+    this.setIsLatter(location === SlotLocation.extendView || location === SlotLocation.panel);
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithTab', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
@@ -243,7 +238,7 @@ export class TabbarService extends WithEventBus {
     });
     this.commandRegistry.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
       execute: (show?: boolean, size?: number) => {
-        this.layoutService.toggleSlot(SlotLocation.bottom, show, size);
+        this.layoutService.toggleSlot(SlotLocation.panel, show, size);
       },
     });
   }
@@ -441,7 +436,7 @@ export class TabbarService extends WithEventBus {
     disposables.push(this.registerActivateKeyBinding(componentInfo, componentInfo.options!.fromExtension));
     // 注册视图是否存在的contextKey
     const containerExistKey = this.contextKeyService.createKey<boolean>(
-      `workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${componentInfo.options!.containerId}`,
+      `workbench.${this.location}.${componentInfo.options!.containerId}`,
       true,
     );
     disposables.push({

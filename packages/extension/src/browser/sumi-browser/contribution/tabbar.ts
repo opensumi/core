@@ -1,3 +1,4 @@
+// TODO: sumi 贡献点是不是是已经实质废弃？
 import { Autowired, Injectable } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';

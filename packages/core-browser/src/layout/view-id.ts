@@ -1,5 +1,5 @@
 const VIEW_CONTAINERS_PREFIX = 'opensumi';
-
+// TODO: 适配改动
 export namespace VIEW_CONTAINERS {
   export const LEFT_TABBAR_PANEL = `${VIEW_CONTAINERS_PREFIX}-left-tabbar-panel`;
   export const LEFT_TABBAR = `${VIEW_CONTAINERS_PREFIX}-left-tabbar`;

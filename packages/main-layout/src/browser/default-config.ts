@@ -10,7 +10,7 @@ export const defaultConfig: LayoutConfig = {
   [SlotLocation.action]: {
     modules: ['@opensumi/ide-toolbar-action'],
   },
-  [SlotLocation.left]: {
+  [SlotLocation.view]: {
     modules: [
       '@opensumi/ide-explorer',
       '@opensumi/ide-search',
@@ -20,13 +20,13 @@ export const defaultConfig: LayoutConfig = {
       '@opensumi/ide-notebook',
     ],
   },
-  [SlotLocation.right]: {
+  [SlotLocation.extendView]: {
     modules: [DROP_RIGHT_CONTAINER],
   },
   [SlotLocation.main]: {
     modules: ['@opensumi/ide-editor'],
   },
-  [SlotLocation.bottom]: {
+  [SlotLocation.panel]: {
     modules: [
       DROP_BOTTOM_CONTAINER,
       '@opensumi/ide-terminal-next',

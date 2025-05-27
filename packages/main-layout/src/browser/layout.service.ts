@@ -45,16 +45,16 @@ import { TabbarService } from './tabbar/tabbar.service';
 import { TabBarHandler } from './tabbar-handler';
 
 const defaultLayoutState = {
-  [SlotLocation.left]: {
+  [SlotLocation.view]: {
     currentId: undefined,
     size: undefined,
   },
-  [SlotLocation.right]: {
+  [SlotLocation.extendView]: {
     // 依照下面的恢复逻辑，这里设置为 `''` 时，就不会恢复右侧的 TabBar 的状态（即选中相应的 viewContainer）
     currentId: '',
     size: undefined,
   },
-  [SlotLocation.bottom]: {
+  [SlotLocation.panel]: {
     currentId: undefined,
     size: undefined,
   },
@@ -382,7 +382,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         });
       const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId.get()), 100);
       service.addDispose(service.onSizeChange(debouncedStoreState));
-      if (location === SlotLocation.bottom) {
+      if (location === SlotLocation.panel) {
         // use this getter's side effect to set bottomExpanded contextKey
         const debouncedUpdate = debounce(() => void this.bottomExpanded, 100);
         service.addDispose(service.onSizeChange(() => debouncedUpdate));
@@ -640,7 +640,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   // TODO 这样很耦合，不能做到tab renderer自由拆分
   expandBottom(expand: boolean): void {
-    const tabbarService = this.getTabbarService(SlotLocation.bottom);
+    const tabbarService = this.getTabbarService(SlotLocation.panel);
     if (!tabbarService.currentContainerId.get()) {
       tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId.get() ||
@@ -653,7 +653,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   get bottomExpanded(): boolean {
-    const tabbarService = this.getTabbarService(SlotLocation.bottom);
+    const tabbarService = this.getTabbarService(SlotLocation.panel);
     this.contextKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
     return tabbarService.isExpanded;
   }

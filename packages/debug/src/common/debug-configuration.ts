@@ -36,6 +36,7 @@ export interface DebugConfiguration {
   __restart?: any;
 
   /**
+   * TODO: 适配改动 or 删除能力，支持原生拖放
    * 默认的调试工具栏视图位置
    * 默认值：default
    */
