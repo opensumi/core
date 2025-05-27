@@ -24,6 +24,7 @@ import {
   SlotLocation,
   SlotRendererContribution,
   SlotRendererRegistry,
+  TabbarConfig,
   getIcon,
   localize,
 } from '@opensumi/ide-core-browser';
@@ -813,8 +814,11 @@ export class AINativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    const tabbarConfig = {
+    const tabbarConfig: TabbarConfig = {
       isLatter: true,
+      supportedActions: {
+        accordion: true,
+      },
     };
     if (this.designLayoutConfig.supportExternalChatPanel) {
       registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRendererWithTab, tabbarConfig);
@@ -823,7 +827,13 @@ export class AINativeBrowserContribution
     }
 
     if (this.designLayoutConfig.useMergeRightWithLeftPanel) {
-      registry.registerSlotRenderer(SlotLocation.view, AILeftTabRenderer, tabbarConfig);
+      registry.registerSlotRenderer(
+        SlotLocation.view,
+        AILeftTabRenderer,
+        Object.assign({}, tabbarConfig, {
+          isLatter: false,
+        }),
+      );
       registry.registerSlotRenderer(SlotLocation.extendView, AIRightTabRenderer, tabbarConfig);
     }
   }

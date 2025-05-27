@@ -14,7 +14,6 @@ import {
   IScopedContextKeyService,
   KeybindingRegistry,
   ResizeEvent,
-  SlotLocation,
   ViewContextKeyRegistry,
   WithEventBus,
   createFormatLocalizedStr,
@@ -26,7 +25,6 @@ import {
   localize,
   toDisposable,
 } from '@opensumi/ide-core-browser';
-import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
@@ -38,9 +36,9 @@ import {
   IMenuRegistry,
   MenuId,
   generateCtxMenu,
-  getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { slotRendererRegistry } from '@opensumi/ide-core-browser/lib/react-providers';
 import {
   autorunDelta,
   derivedOpts,
@@ -49,10 +47,9 @@ import {
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
 
-import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent } from '../../common';
-import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
+import { IMainLayoutService, TabBarRegistrationEvent } from '../../common';
 
-import { BaseTabbarStrategy, TabbarStrategyFactory } from './strategies';
+import { ITabbarResizeOptions, TabbarBehaviorHandler } from './tabbar-behavior-handler';
 
 import type { ViewBadge } from 'vscode';
 
@@ -107,16 +104,9 @@ export class TabbarService extends WithEventBus {
   private state: Map<string, TabState> = new Map();
   private storedState: { [containerId: string]: TabState } = {};
 
-  private strategy: BaseTabbarStrategy;
-  resizeHandle?: {
-    setSize: (targetSize?: number) => void;
-    setRelativeSize: (prev: number, next: number) => void;
-    getSize: () => number;
-    getRelativeSize: () => number[];
-    lockSize: (lock: boolean | undefined) => void;
-    setMaxSize: (lock: boolean | undefined) => void;
-    hidePanel: (show?: boolean) => void;
-  };
+  private behaviorHandler: TabbarBehaviorHandler;
+
+  public resizeHandle?: ITabbarResizeOptions;
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
@@ -173,7 +163,10 @@ export class TabbarService extends WithEventBus {
 
   constructor(public location: string) {
     super();
-    this.strategy = TabbarStrategyFactory.createStrategy(location);
+    // 从插槽渲染器注册表获取配置，创建行为处理器
+    const tabbarConfig = slotRendererRegistry.getTabbarConfig(location);
+    this.behaviorHandler = new TabbarBehaviorHandler(location, tabbarConfig);
+
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithTab', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
@@ -186,13 +179,13 @@ export class TabbarService extends WithEventBus {
     });
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
 
-    // 使用策略注册特定位置的命令和菜单
-    this.strategy.registerLocationSpecificCommands({
+    // 使用行为处理器注册特定位置的命令和菜单
+    this.behaviorHandler.registerLocationSpecificCommands({
       commandRegistry: this.commandRegistry,
       layoutService: this.layoutService,
     });
 
-    this.commonTitleMenu = this.strategy.registerLocationSpecificMenus({
+    this.commonTitleMenu = this.behaviorHandler.registerLocationSpecificMenus({
       menuRegistry: this.menuRegistry,
       ctxMenuService: this.ctxMenuService,
     });
@@ -325,7 +318,7 @@ export class TabbarService extends WithEventBus {
   }
 
   registerResizeHandle(resizeHandle: ResizeHandle) {
-    this.resizeHandle = this.strategy.wrapResizeHandle(resizeHandle);
+    this.resizeHandle = this.behaviorHandler.wrapResizeHandle(resizeHandle);
     return this.listenCurrentChange();
   }
 
@@ -574,11 +567,11 @@ export class TabbarService extends WithEventBus {
   }
 
   doExpand(expand: boolean) {
-    this.strategy.doExpand(expand, this.resizeHandle);
+    this.behaviorHandler.doExpand(expand, this.resizeHandle);
   }
 
   get isExpanded(): boolean {
-    return this.strategy.isExpanded(this.resizeHandle);
+    return this.behaviorHandler.isExpanded(this.resizeHandle);
   }
 
   handleTabClick(e: React.MouseEvent, forbidCollapse?: boolean) {
@@ -714,7 +707,7 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: ({ forceShow }: { forceShow?: boolean } = {}) => {
-            this.strategy.handleActivateKeyBinding(
+            this.behaviorHandler.handleActivateKeyBinding(
               containerId,
               this.currentContainerId.get() || '',
               (id: string) => this.updateCurrentContainerId(id),
@@ -861,7 +854,7 @@ export class TabbarService extends WithEventBus {
     this.onCurrentChangeEmitter.fire({ previousId, currentId });
     const isCurrentExpanded = this.shouldExpand(currentId);
     if (this.shouldExpand(this.previousContainerId) || isCurrentExpanded) {
-      this.strategy.handleFullExpanded(currentId, isCurrentExpanded, this.resizeHandle, {
+      this.behaviorHandler.handleFullExpanded(currentId, isCurrentExpanded, this.resizeHandle, {
         barSize: this.barSize,
         panelSize: this.panelSize,
         prevSize: this.prevSize,
@@ -885,6 +878,6 @@ export class TabbarService extends WithEventBus {
   }
 
   protected tryRestoreAccordionSize(containerInfo: ComponentRegistryProvider) {
-    this.strategy.tryRestoreAccordionSize(containerInfo, this.layoutService);
+    this.behaviorHandler.tryRestoreAccordionSize(containerInfo, this.layoutService);
   }
 }

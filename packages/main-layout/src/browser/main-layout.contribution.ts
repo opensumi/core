@@ -217,9 +217,24 @@ export class MainLayoutModuleContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
-    registry.registerSlotRenderer(SlotLocation.extendView, RightTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.view, LeftTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.panel, BottomTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.extendView, RightTabRenderer, {
+      isLatter: true,
+      supportedActions: {
+        accordion: true,
+      },
+    });
+    registry.registerSlotRenderer(SlotLocation.view, LeftTabRenderer, {
+      supportedActions: {
+        accordion: true,
+      },
+    });
+    registry.registerSlotRenderer(SlotLocation.panel, BottomTabRenderer, {
+      isLatter: true,
+      supportedActions: {
+        expand: true,
+        toggle: true,
+      },
+    });
   }
 
   registerCommands(commands: CommandRegistry): void {

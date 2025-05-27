@@ -127,7 +127,7 @@ export type Renderer = React.ComponentType<RendererProps>;
 
 export interface TabbarConfig {
   /** 是否为后置位置（bar 在 panel 右侧或底下） */
-  isLatter: boolean;
+  isLatter?: boolean;
   /** 支持的操作类型 */
   supportedActions?: {
     expand?: boolean;

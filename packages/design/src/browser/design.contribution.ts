@@ -5,6 +5,7 @@ import {
   SlotLocation,
   SlotRendererContribution,
   SlotRendererRegistry,
+  TabbarConfig,
 } from '@opensumi/ide-core-browser';
 import { ConfigPriority, LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { Schemes } from '@opensumi/ide-core-common';
@@ -35,8 +36,23 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    registry.registerSlotRenderer(SlotLocation.view, DesignLeftTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.panel, DesignBottomTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.extendView, DesignRightTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.view, DesignLeftTabRenderer, {
+      supportedActions: {
+        accordion: true,
+      },
+    });
+    registry.registerSlotRenderer(SlotLocation.panel, DesignBottomTabRenderer, {
+      isLatter: true,
+      supportedActions: {
+        expand: true,
+        toggle: true,
+      },
+    });
+    registry.registerSlotRenderer(SlotLocation.extendView, DesignRightTabRenderer, {
+      isLatter: true,
+      supportedActions: {
+        accordion: true,
+      },
+    });
   }
 }
