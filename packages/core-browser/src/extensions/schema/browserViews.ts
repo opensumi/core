@@ -74,7 +74,7 @@ export namespace browserViews {
       },
     },
   };
-  // TDOO: 适配改动
+
   export const schema = {
     description: localize('sumiContributes.browserViews'),
     type: 'object',
