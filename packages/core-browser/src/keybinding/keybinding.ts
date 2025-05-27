@@ -10,6 +10,7 @@ import {
   ILogger,
   formatLocalize,
   isOSX,
+  isString,
   isUndefined,
 } from '@opensumi/ide-core-common';
 import {
@@ -761,7 +762,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public isEnabled(binding: Keybinding, event?: KeyboardEvent, enablement?: string): boolean {
     let { when } = binding;
 
-    const whenExpr = typeof when === 'string' ? ContextKeyExpr.deserialize(when) : when;
+    const whenExpr = isString(when) ? ContextKeyExpr.deserialize(when) : when;
     const enablementExpr = ContextKeyExpr.deserialize(enablement);
 
     if (enablementExpr) {
