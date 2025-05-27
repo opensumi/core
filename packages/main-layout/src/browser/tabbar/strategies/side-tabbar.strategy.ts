@@ -1,6 +1,7 @@
 import { ComponentRegistryProvider, DisposableCollection } from '@opensumi/ide-core-browser';
 import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
+import { TabbarConfig } from '@opensumi/ide-core-browser/lib/react-providers';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
 import { BaseTabbarStrategy, ITabbarResizeOptions } from './base-tabbar.strategy';
@@ -9,15 +10,10 @@ import { BaseTabbarStrategy, ITabbarResizeOptions } from './base-tabbar.strategy
  * 侧边 tabbar 策略（适用于 view 和 extendView 位置）
  */
 export class SideTabbarStrategy extends BaseTabbarStrategy {
-  private isLatter: boolean;
-
   private accordionRestored: Set<string> = new Set();
 
-  constructor(location: string) {
-    super(location);
-    // TODO: 该值与插槽渲染器的实现相关
-    // panel 和 bar 的相对位置，isLatter 表示 bar 在 panel 右侧或底下
-    this.isLatter = location === 'extendView';
+  constructor(location: string, tabbarConfig?: TabbarConfig) {
+    super(location, tabbarConfig);
   }
 
   registerLocationSpecificCommands(): DisposableCollection {
@@ -32,14 +28,15 @@ export class SideTabbarStrategy extends BaseTabbarStrategy {
 
   wrapResizeHandle(resizeHandle: ResizeHandle): ITabbarResizeOptions {
     const { setSize, setRelativeSize, getSize, getRelativeSize, lockSize, setMaxSize, hidePanel } = resizeHandle;
+    const isLatter = this.getIsLatter();
 
     return {
-      setSize: (size) => setSize(size, this.isLatter),
-      setRelativeSize: (prev: number, next: number) => setRelativeSize(prev, next, this.isLatter),
-      getSize: () => getSize(this.isLatter),
-      getRelativeSize: () => getRelativeSize(this.isLatter),
-      setMaxSize: (lock: boolean | undefined) => setMaxSize(lock, this.isLatter),
-      lockSize: (lock: boolean | undefined) => lockSize(lock, this.isLatter),
+      setSize: (size) => setSize(size, isLatter),
+      setRelativeSize: (prev: number, next: number) => setRelativeSize(prev, next, isLatter),
+      getSize: () => getSize(isLatter),
+      getRelativeSize: () => getRelativeSize(isLatter),
+      setMaxSize: (lock: boolean | undefined) => setMaxSize(lock, isLatter),
+      lockSize: (lock: boolean | undefined) => lockSize(lock, isLatter),
       hidePanel: (show) => hidePanel(show),
     };
   }

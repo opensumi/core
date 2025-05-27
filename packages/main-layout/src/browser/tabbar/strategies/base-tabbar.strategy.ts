@@ -1,6 +1,7 @@
 import { CommandRegistry, ComponentRegistryProvider, DisposableCollection } from '@opensumi/ide-core-browser';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import { AbstractContextMenuService, IContextMenu, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { TabbarConfig } from '@opensumi/ide-core-browser/lib/react-providers';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
 export interface ITabbarResizeOptions {
@@ -17,7 +18,18 @@ export interface ITabbarResizeOptions {
  * 抽象基类，定义不同 location 的 tabbar 行为策略
  */
 export abstract class BaseTabbarStrategy {
-  constructor(protected location: string) {}
+  constructor(protected location: string, protected tabbarConfig?: TabbarConfig) {}
+
+  /**
+   * 获取 isLatter 配置
+   */
+  protected getIsLatter(): boolean {
+    if (this.tabbarConfig?.isLatter !== undefined) {
+      return this.tabbarConfig.isLatter;
+    }
+    // 默认配置：扩展视图和底部面板为后置位置
+    return this.location === 'extendView' || this.location === 'panel';
+  }
 
   /**
    * 注册特定于该位置的命令

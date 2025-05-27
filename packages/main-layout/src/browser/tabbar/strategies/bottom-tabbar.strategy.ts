@@ -1,6 +1,7 @@
 import { CommandRegistry, DisposableCollection } from '@opensumi/ide-core-browser';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import { AbstractContextMenuService, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { TabbarConfig } from '@opensumi/ide-core-browser/lib/react-providers';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
 import { BaseTabbarStrategy, ITabbarResizeOptions } from './base-tabbar.strategy';
@@ -9,8 +10,8 @@ import { BaseTabbarStrategy, ITabbarResizeOptions } from './base-tabbar.strategy
  * 底部 tabbar 策略（适用于 panel 位置）
  */
 export class BottomTabbarStrategy extends BaseTabbarStrategy {
-  constructor() {
-    super('panel');
+  constructor(tabbarConfig?: TabbarConfig) {
+    super('panel', tabbarConfig);
   }
 
   registerLocationSpecificCommands(context: {
@@ -91,7 +92,7 @@ export class BottomTabbarStrategy extends BaseTabbarStrategy {
 
   wrapResizeHandle(resizeHandle: ResizeHandle): ITabbarResizeOptions {
     const { setSize, setRelativeSize, getSize, getRelativeSize, lockSize, setMaxSize, hidePanel } = resizeHandle;
-    const isLatter = true; // 底部面板总是后置位置
+    const isLatter = this.getIsLatter();
 
     return {
       setSize: (size) => setSize(size, isLatter),

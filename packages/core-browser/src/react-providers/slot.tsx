@@ -125,6 +125,17 @@ export interface RendererProps {
 }
 export type Renderer = React.ComponentType<RendererProps>;
 
+export interface TabbarConfig {
+  /** 是否为后置位置（bar 在 panel 右侧或底下） */
+  isLatter: boolean;
+  /** 支持的操作类型 */
+  supportedActions?: {
+    expand?: boolean;
+    toggle?: boolean;
+    accordion?: boolean;
+  };
+}
+
 export class SlotRendererRegistry {
   static DefaultRenderer({ components }: RendererProps) {
     return (
@@ -148,11 +159,15 @@ export class SlotRendererRegistry {
   }
 
   protected tabbarLocation = new Set<string>();
+  protected tabbarConfigs: Map<string, TabbarConfig> = new Map();
 
   protected rendererRegistry: Map<string, Renderer> = new Map();
 
-  registerSlotRenderer(slot: string, renderer: Renderer) {
+  registerSlotRenderer(slot: string, renderer: Renderer, tabbarConfig?: TabbarConfig) {
     this.rendererRegistry.set(slot, renderer);
+    if (tabbarConfig) {
+      this.tabbarConfigs.set(slot, tabbarConfig);
+    }
   }
 
   getSlotRenderer(slot: string): Renderer {
@@ -167,6 +182,10 @@ export class SlotRendererRegistry {
 
   isTabbar(slot: string) {
     return this.tabbarLocation.has(slot);
+  }
+
+  getTabbarConfig(slot: string): TabbarConfig | undefined {
+    return this.tabbarConfigs.get(slot);
   }
 }
 

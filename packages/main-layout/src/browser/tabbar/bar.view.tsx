@@ -17,7 +17,6 @@ import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { observableValue } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { IMainLayoutService } from '../../common';
 
@@ -424,9 +423,6 @@ export const ChatTabbarRenderer2: FC<{ barSize?: number; style?: CSSProperties }
   const { barSize = 32, style } = props;
   const { side } = useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  useEffect(() => {
-    tabbarService.setIsLatter(true);
-  }, [tabbarService]);
   const styles_right_tab_bar = useDesignStyles(styles.ai_right_tab_bar, 'ai_right_tab_bar');
   const styles_right_tab = useDesignStyles(styles.ai_right_tab, 'ai_right_tab');
 

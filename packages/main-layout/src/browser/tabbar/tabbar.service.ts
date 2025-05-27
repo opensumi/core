@@ -166,7 +166,6 @@ export class TabbarService extends WithEventBus {
   private disposableMap: Map<string, DisposableCollection> = new Map();
   private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
   private shouldWaitForViewRender = false;
-  private isLatter: boolean;
 
   private scopedCtxKeyService: IScopedContextKeyService;
   private onDidRegisterContainerEmitter = new Emitter<string>();
@@ -175,7 +174,6 @@ export class TabbarService extends WithEventBus {
   constructor(public location: string) {
     super();
     this.strategy = TabbarStrategyFactory.createStrategy(location);
-    this.setIsLatter(location === SlotLocation.extendView || location === SlotLocation.panel);
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithTab', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
@@ -206,10 +204,6 @@ export class TabbarService extends WithEventBus {
 
   get onDidRegisterContainer() {
     return this.onDidRegisterContainerEmitter.event;
-  }
-
-  public setIsLatter(v: boolean) {
-    this.isLatter = v;
   }
 
   updateNextContainerId(nextContainerId?: string) {

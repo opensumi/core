@@ -813,15 +813,18 @@ export class AINativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
+    const tabbarConfig = {
+      isLatter: true,
+    };
     if (this.designLayoutConfig.supportExternalChatPanel) {
-      registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRendererWithTab);
+      registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRendererWithTab, tabbarConfig);
     } else {
-      registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer);
+      registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer, tabbarConfig);
     }
 
     if (this.designLayoutConfig.useMergeRightWithLeftPanel) {
-      registry.registerSlotRenderer(SlotLocation.view, AILeftTabRenderer);
-      registry.registerSlotRenderer(SlotLocation.extendView, AIRightTabRenderer);
+      registry.registerSlotRenderer(SlotLocation.view, AILeftTabRenderer, tabbarConfig);
+      registry.registerSlotRenderer(SlotLocation.extendView, AIRightTabRenderer, tabbarConfig);
     }
   }
 
