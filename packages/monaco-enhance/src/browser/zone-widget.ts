@@ -161,17 +161,6 @@ class Arrow {
   }
 }
 
-const defaultColor = new Color(new RGBA(0, 122, 204));
-
-const defaultOptions: IOptions = {
-  showArrow: true,
-  showFrame: true,
-  className: '',
-  frameColor: defaultColor,
-  arrowColor: defaultColor,
-  keepEditorSelection: false,
-};
-
 /**
  * 构造函数负责 dom 结构，
  * show 负责 class 注入，

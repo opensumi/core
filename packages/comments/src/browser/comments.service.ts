@@ -1025,10 +1025,9 @@ export class CommentsService extends Disposable implements ICommentsService {
               if (thread.comments.get().length) {
                 // 存在评论内容 恢复之前的现场
                 thread.showWidgetsIfShowed();
+              } else {
+                thread.removePaddingShowedWidgets();
               }
-            } else {
-              // 临时隐藏，当切回来时会恢复
-              thread.hide();
             }
             return thread;
           })

@@ -258,15 +258,17 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
         if (!editor) {
           continue;
         }
-        Event.once(Event.any<any>(editor.onDidChangeDecorations))(() => {
-          modifiedEditor = modified ? this.multiDiffWidget.tryGetCodeEditor(modified.uri) : undefined;
-          originalEditor = original ? this.multiDiffWidget.tryGetCodeEditor(original.uri) : undefined;
-          this.createAndRegisterEditorParts(
-            modifiedEditor,
-            originalEditor,
-            (ref.object as any).modifiedInstance,
-            (ref.object as any).originalInstance,
-          );
+        Event.once(editor.onDidChangeAttached)(() => {
+          setTimeout(() => {
+            modifiedEditor = modified ? this.multiDiffWidget.tryGetCodeEditor(modified.uri) : undefined;
+            originalEditor = original ? this.multiDiffWidget.tryGetCodeEditor(original.uri) : undefined;
+            this.createAndRegisterEditorParts(
+              modifiedEditor,
+              originalEditor,
+              (ref.object as any).modifiedInstance,
+              (ref.object as any).originalInstance,
+            );
+          }, 0);
         });
         continue;
       }
