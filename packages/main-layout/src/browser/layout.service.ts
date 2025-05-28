@@ -209,6 +209,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
     // 如果配置了默认面板,则使用配置的面板
     if (defaultPanels && defaultPanel !== undefined) {
+      if (!defaultPanel) {
+        return '';
+      }
       if (service.containersMap.has(defaultPanel)) {
         return defaultPanel;
       }
