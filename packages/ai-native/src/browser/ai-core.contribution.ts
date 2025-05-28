@@ -24,7 +24,7 @@ import {
   SlotLocation,
   SlotRendererContribution,
   SlotRendererRegistry,
-  TabbarConfig,
+  TabbarBehaviorConfig,
   getIcon,
   localize,
 } from '@opensumi/ide-core-browser';
@@ -814,7 +814,7 @@ export class AINativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    const tabbarConfig: TabbarConfig = {
+    const tabbarConfig: TabbarBehaviorConfig = {
       isLatter: true,
       supportedActions: {
         accordion: true,

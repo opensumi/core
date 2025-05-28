@@ -5,7 +5,6 @@ import {
   SlotLocation,
   SlotRendererContribution,
   SlotRendererRegistry,
-  TabbarConfig,
 } from '@opensumi/ide-core-browser';
 import { ConfigPriority, LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { Schemes } from '@opensumi/ide-core-common';
