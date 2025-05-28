@@ -134,6 +134,8 @@ export interface IChatFeatureRegistry {
   registerImageUploadProvider(provider: IImageUploadProvider): void;
   registerWelcome(content: IChatWelcomeMessageContent | React.ReactNode, sampleQuestions?: ISampleQuestions[]): void;
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void;
+
+  registerMessageSummaryProvider(provider: IMessageSummaryProvider): void;
 }
 
 export type ChatWelcomeRender = (props: {
@@ -296,6 +298,13 @@ export interface IProblemFixProviderRegistry {
 
 export interface IImageUploadProvider {
   imageUpload(file: File): Promise<DataContent | URL>;
+}
+
+export interface IMessageSummaryProvider {
+  /**
+   * @param sessionId 会话 ID
+   */
+  getMessageSummary(sessionId: string): Promise<string | undefined>;
 }
 
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
