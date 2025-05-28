@@ -16,12 +16,13 @@ export const defaultConfig: LayoutConfig = {
       '@opensumi/ide-explorer',
       '@opensumi/ide-search',
       '@opensumi/ide-scm',
+      '@opensumi/ide-debug',
       '@opensumi/ide-extension-manager',
       '@opensumi/ide-notebook',
     ],
   },
   [SlotLocation.extendView]: {
-    modules: [DROP_EXTEND_VIEW_CONTAINER, '@opensumi/ide-debug'],
+    modules: [DROP_EXTEND_VIEW_CONTAINER],
   },
   [SlotLocation.main]: {
     modules: ['@opensumi/ide-editor'],
