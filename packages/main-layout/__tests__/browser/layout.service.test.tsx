@@ -191,9 +191,9 @@ describe('main layout test', () => {
       });
       service = injector.get(IMainLayoutService);
       // 测试环境下，readDom 的 render 回调的时候不知道为啥 render 还没执行到 tabbarRenderer，需要兼容下，先初始化好tababrService
-      service.getTabbarService('left');
-      service.getTabbarService('right');
-      service.getTabbarService('bottom');
+      service.getTabbarService(SlotLocation.view);
+      service.getTabbarService(SlotLocation.extendView);
+      service.getTabbarService(SlotLocation.panel);
     });
     await defered.promise;
   });
@@ -226,7 +226,7 @@ describe('main layout test', () => {
           containerId: 'container-before-render',
           title: 'test title',
         },
-        'bottom',
+        SlotLocation.panel,
       );
     });
     expect(service.getTabbarHandler('container-before-render')).toBeDefined();
@@ -338,7 +338,7 @@ describe('main layout test', () => {
             message: 'hello world',
           },
         },
-        'bottom',
+        SlotLocation.panel,
       );
     });
     const accordionService = service.getAccordionService('container-use-react');

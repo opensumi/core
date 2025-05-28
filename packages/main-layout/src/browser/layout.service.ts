@@ -275,23 +275,23 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   showDropAreaForContainer(containerId: string): void {
     const tabbarService = this.findTabbarServiceByContainerId(containerId);
-    const bottomService = this.tabbarServices.get('bottom');
-    const rightService = this.tabbarServices.get('right');
+    const bottomService = this.tabbarServices.get(SlotLocation.panel);
+    const rightService = this.tabbarServices.get(SlotLocation.extendView);
     if (!tabbarService) {
       this.logger.error(`cannot find container: ${containerId}`);
       return;
     }
-    if (tabbarService?.location === 'right') {
+    if (tabbarService?.location === SlotLocation.extendView) {
       bottomService?.updateCurrentContainerId(DROP_BOTTOM_CONTAINER);
     }
-    if (tabbarService?.location === 'bottom') {
+    if (tabbarService?.location === SlotLocation.panel) {
       rightService?.updateCurrentContainerId(DROP_RIGHT_CONTAINER);
     }
   }
 
   hideDropArea(): void {
-    const bottomService = this.tabbarServices.get('bottom');
-    const rightService = this.tabbarServices.get('right');
+    const bottomService = this.tabbarServices.get(SlotLocation.panel);
+    const rightService = this.tabbarServices.get(SlotLocation.extendView);
     if (bottomService?.currentContainerId.get() === DROP_BOTTOM_CONTAINER) {
       bottomService.updateCurrentContainerId(bottomService.previousContainerId || '');
     }
@@ -463,6 +463,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (Fc) {
       this.debug.warn('collectTabbarComponent api warning: Please move react component into options.component!');
     }
+    side = this.mapSideToLocation(side);
     if (options.hideIfEmpty && !views.length && !options.component) {
       this.holdTabbarComponent.set(options.containerId, { views, options, side });
       if (this.tabbarUpdateSet.has(options.containerId)) {
@@ -493,6 +494,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       this.viewToContainerMap.set(view.id, options.containerId);
     });
     return options.containerId;
+  }
+
+  private mapSideToLocation(side: string): SlotLocation {
+    switch (side) {
+      case 'left':
+        return SlotLocation.view;
+      case 'right':
+        return SlotLocation.extendView;
+      case 'bottom':
+        return SlotLocation.panel;
+      default:
+        return side;
+    }
   }
 
   getViewAccordionService(viewId: string) {
