@@ -28,9 +28,9 @@ export class MainLayoutModule extends BrowserModule {
     },
     {
       token: AccordionServiceFactory,
-      useFactory: (injector: Injector) => (containerId: string, noRestore?: boolean, alignment?: Layout.alignment) => {
+      useFactory: (injector: Injector) => (containerId: string, noRestore?: boolean) => {
         const manager: IMainLayoutService = injector.get(IMainLayoutService);
-        return manager.getAccordionService(containerId, noRestore, alignment);
+        return manager.getAccordionService(containerId, noRestore);
       },
     },
   ];

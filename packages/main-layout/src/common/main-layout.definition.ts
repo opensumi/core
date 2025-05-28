@@ -79,7 +79,7 @@ export interface IMainLayoutService {
   // force reveal a view ignoring its when clause
   revealView(viewId: string): void;
   getTabbarService(location: string): TabbarService;
-  getAccordionService(containerId: string, noRestore?: boolean, alignment?: Layout.alignment): AccordionService;
+  getAccordionService(containerId: string, noRestore?: boolean): AccordionService;
   getViewAccordionService(viewId: string): AccordionService | undefined;
   // 某一位置是否可见
   isVisible(location: string): boolean;

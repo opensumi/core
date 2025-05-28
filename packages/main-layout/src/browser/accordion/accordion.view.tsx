@@ -33,7 +33,8 @@ export const AccordionContainer = ({
 }: AccordionContainerProps) => {
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
-  const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore, alignment);
+  const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
+  accordionService.alignment = alignment;
   const visibleViews = useAutorun(accordionService.visibleViews);
 
   useAutorun(accordionService.stateObservable);

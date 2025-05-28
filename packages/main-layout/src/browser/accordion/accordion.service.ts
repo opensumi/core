@@ -152,7 +152,16 @@ export class AccordionService extends WithEventBus {
   private afterDisposeViewEmitter = this.registerDispose(new Emitter<string>());
   public onAfterDisposeViewEvent = this.afterDisposeViewEmitter.event;
 
-  constructor(public containerId: string, private noRestore?: boolean, private alignment?: Layout.alignment) {
+  private _alignment: Layout.alignment = 'vertical';
+
+  public set alignment(alignment: Layout.alignment) {
+    if (this._alignment !== alignment) {
+      this.doUpdateResize();
+    }
+    this._alignment = alignment;
+  }
+
+  constructor(public containerId: string, private noRestore?: boolean) {
     super();
     this.addDispose(recomputeInitiallyAndOnChange(this.visibleViews));
 
@@ -611,7 +620,7 @@ export class AccordionService extends WithEventBus {
     const viewState = this.getViewState(viewId);
     this.updateViewState(viewId, { ...viewState, collapsed });
 
-    const isHorizontal = this.alignment === 'horizontal';
+    const isHorizontal = this._alignment === 'horizontal';
 
     if (isHorizontal) {
       let sizeIncrement: number;

@@ -450,10 +450,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return this.accordionServices;
   }
 
-  getAccordionService(containerId: string, noRestore?: boolean, alignment?: Layout.alignment) {
+  getAccordionService(containerId: string, noRestore?: boolean) {
     let service = this.accordionServices.get(containerId);
     if (!service) {
-      service = this.injector.get(AccordionService, [containerId, noRestore, alignment]);
+      service = this.injector.get(AccordionService, [containerId, noRestore]);
       this.accordionServices.set(containerId, service!);
     }
     return service!;
