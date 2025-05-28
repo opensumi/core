@@ -353,7 +353,7 @@ export class MainLayoutModuleContribution
       command: TOGGLE_PANEL_COMMAND as MenuCommandDesc,
       group: '5_panel',
     });
-    // 为啥 tabbar 里又有一个？
+
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: EXPAND_PANEL_COMMAND as MenuCommandDesc,
       group: '5_panel',
