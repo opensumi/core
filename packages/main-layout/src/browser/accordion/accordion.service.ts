@@ -85,9 +85,6 @@ export class AccordionService extends WithEventBus {
   @Autowired()
   private viewContextKeyRegistry: ViewContextKeyRegistry;
 
-  @Autowired(IMainLayoutService)
-  private readonly mainLayoutService: IMainLayoutService;
-
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
@@ -156,9 +153,9 @@ export class AccordionService extends WithEventBus {
 
   public set alignment(alignment: Layout.alignment) {
     if (this._alignment !== alignment) {
+      this._alignment = alignment;
       this.doUpdateResize();
     }
-    this._alignment = alignment;
   }
 
   constructor(public containerId: string, private noRestore?: boolean) {
@@ -622,66 +619,21 @@ export class AccordionService extends WithEventBus {
 
     const isHorizontal = this._alignment === 'horizontal';
 
-    if (isHorizontal) {
-      let sizeIncrement: number;
-      if (collapsed) {
-        sizeIncrement = this.setSizeHorizontal(index, 0, false, noAnimation);
-      } else {
-        // 仅有一个视图展开时独占
-        sizeIncrement = this.setSizeHorizontal(
-          index,
-          this.expandedViews.length === 1 ? this.getAvailableSizeHorizontal() : viewState.size || this.minSize,
-          false,
-          noAnimation,
-        );
-      }
-      // 处理水平方向的尺寸调整：右侧视图优先调整
-      for (let i = this.visibleViews.get().length - 1; i > index; i--) {
-        if (this.getViewState(this.visibleViews.get()[i].id).collapsed !== true) {
-          sizeIncrement = this.setSizeHorizontal(i, sizeIncrement, true, noAnimation);
-        } else {
-          this.setSizeHorizontal(i, 0, false, noAnimation);
-        }
-      }
-      // 左侧视图调整
-      for (let i = index - 1; i >= 0; i--) {
-        if ((this.state[this.visibleViews.get()[i].id] || {}).collapsed !== true) {
-          sizeIncrement = this.setSizeHorizontal(i, sizeIncrement, true, noAnimation);
-        } else {
-          this.setSizeHorizontal(i, 0, false, noAnimation);
-        }
-      }
+    // 统一的尺寸计算和设置逻辑
+    let sizeIncrement: number;
+    if (collapsed) {
+      sizeIncrement = this.setSizeByAlignment(index, 0, false, noAnimation, isHorizontal);
     } else {
-      let sizeIncrement: number;
-      if (collapsed) {
-        sizeIncrement = this.setSize(index, 0, false, noAnimation);
-      } else {
-        // 仅有一个视图展开时独占
-        sizeIncrement = this.setSize(
-          index,
-          this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize,
-          false,
-          noAnimation,
-        );
-      }
-      // 下方视图被影响的情况下，上方视图不会同时变化，该情况会在sizeIncrement=0上体现
-      // 从视图下方最后一个展开的视图起依次减去对应的高度
-      for (let i = this.visibleViews.get().length - 1; i > index; i--) {
-        if (this.getViewState(this.visibleViews.get()[i].id).collapsed !== true) {
-          sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
-        } else {
-          this.setSize(i, 0, false, noAnimation);
-        }
-      }
-      // 找到视图上方首个展开的视图减去对应的高度
-      for (let i = index - 1; i >= 0; i--) {
-        if ((this.state[this.visibleViews.get()[i].id] || {}).collapsed !== true) {
-          sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
-        } else {
-          this.setSize(i, 0, false, noAnimation);
-        }
-      }
+      // 仅有一个视图展开时独占
+      const targetSize =
+        this.expandedViews.length === 1
+          ? this.getAvailableSizeByAlignment(isHorizontal)
+          : viewState.size || this.minSize;
+      sizeIncrement = this.setSizeByAlignment(index, targetSize, false, noAnimation, isHorizontal);
     }
+
+    // 统一的相邻视图调整逻辑
+    this.adjustAdjacentViews(index, sizeIncrement, noAnimation, isHorizontal);
 
     this.eventBus.fire(
       new ViewCollapseChangedEvent({
@@ -689,6 +641,49 @@ export class AccordionService extends WithEventBus {
         collapsed,
       }),
     );
+  }
+
+  private setSizeByAlignment(
+    index: number,
+    targetSize: number,
+    isIncrement?: boolean,
+    noAnimation?: boolean,
+    isHorizontal?: boolean,
+  ): number {
+    return isHorizontal
+      ? this.setSizeHorizontal(index, targetSize, isIncrement, noAnimation)
+      : this.setSize(index, targetSize, isIncrement, noAnimation);
+  }
+
+  private getAvailableSizeByAlignment(isHorizontal: boolean): number {
+    return isHorizontal ? this.getAvailableSizeHorizontal() : this.getAvailableSize();
+  }
+
+  private adjustAdjacentViews(
+    currentIndex: number,
+    sizeIncrement: number,
+    noAnimation?: boolean,
+    isHorizontal?: boolean,
+  ) {
+    const visibleViews = this.visibleViews.get();
+
+    // 处理当前视图后方的视图（右侧或下方）
+    for (let i = visibleViews.length - 1; i > currentIndex; i--) {
+      if (this.getViewState(visibleViews[i].id).collapsed !== true) {
+        sizeIncrement = this.setSizeByAlignment(i, sizeIncrement, true, noAnimation, isHorizontal);
+      } else {
+        this.setSizeByAlignment(i, 0, false, noAnimation, isHorizontal);
+      }
+    }
+
+    // 处理当前视图前方的视图（左侧或上方）
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      if ((this.state[visibleViews[i].id] || {}).collapsed !== true) {
+        sizeIncrement = this.setSizeByAlignment(i, sizeIncrement, true, noAnimation, isHorizontal);
+      } else {
+        this.setSizeByAlignment(i, 0, false, noAnimation, isHorizontal);
+      }
+    }
   }
 
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
