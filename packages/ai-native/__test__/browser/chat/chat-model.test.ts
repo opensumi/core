@@ -2,13 +2,22 @@ import { IChatContent } from '@opensumi/ide-core-common';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
+  ChatModel,
   ChatRequestModel,
+  ChatResponseModel,
   ChatSlashCommandItemModel,
   ChatWelcomeMessageModel,
 } from '../../../src/browser/chat/chat-model';
-import { ChatModel, ChatResponseModel } from '../../../src/browser/chat/chat-model';
+import { ChatFeatureRegistry } from '../../../src/browser/chat/chat.feature.registry';
 import { IChatSlashCommandItem } from '../../../src/browser/types';
 import { IChatModel, IChatRequestMessage } from '../../../src/common';
+
+// Mock ChatFeatureRegistry
+class MockChatFeatureRegistry extends ChatFeatureRegistry {
+  constructor() {
+    super();
+  }
+}
 
 describe('ChatResponseModel', () => {
   let chatResponseModel: ChatResponseModel;
@@ -92,9 +101,11 @@ describe('ChatResponseModel', () => {
 
 describe('ChatModel', () => {
   let chatModel: ChatModel;
+  let mockChatFeatureRegistry: ChatFeatureRegistry;
 
   beforeEach(() => {
-    chatModel = new ChatModel();
+    mockChatFeatureRegistry = new MockChatFeatureRegistry();
+    chatModel = new ChatModel(mockChatFeatureRegistry);
   });
 
   afterEach(() => {

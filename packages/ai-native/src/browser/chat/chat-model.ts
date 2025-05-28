@@ -28,7 +28,7 @@ import {
 import { MsgHistoryManager } from '../model/msg-history-manager';
 import { IChatSlashCommandItem } from '../types';
 
-import type { ImagePart, TextPart, ToolCallPart } from 'ai';
+import { ChatFeatureRegistry } from './chat.feature.registry';
 
 export type IChatProgressResponseContent =
   | IChatMarkdownContent
@@ -296,10 +296,13 @@ export class ChatRequestModel implements IChatRequestModel {
 export class ChatModel extends Disposable implements IChatModel {
   private requestIdPool = 0;
 
-  constructor(initParams?: { sessionId?: string; history?: MsgHistoryManager; modelId?: string }) {
+  constructor(
+    private chatFeatureRegistry: ChatFeatureRegistry,
+    initParams?: { sessionId?: string; history?: MsgHistoryManager; modelId?: string },
+  ) {
     super();
     this.#sessionId = initParams?.sessionId ?? uuid();
-    this.history = initParams?.history ?? new MsgHistoryManager();
+    this.history = initParams?.history ?? new MsgHistoryManager(this.chatFeatureRegistry);
     this.#modelId = initParams?.modelId;
   }
 
@@ -336,90 +339,145 @@ export class ChatModel extends Disposable implements IChatModel {
     this.#modelId = modelId;
   }
 
-  getMessageHistory(contextWindow?: number) {
+  private processMemorySummaries(): CoreMessage[] {
+    const memorySummaries = this.history.getMemorySummaries();
+    if (memorySummaries.length === 0) {
+      return [];
+    }
+
+    const processedSummaries = memorySummaries
+      .map((summary) => {
+        try {
+          const parsed = JSON.parse(summary.content);
+          return parsed.memory || parsed.content || summary.content;
+        } catch {
+          return summary.content;
+        }
+      })
+      .filter((content) => content && content !== 'no_memory_needed')
+      .filter((content, index, self) => self.indexOf(content) === index);
+
+    return processedSummaries.length > 0
+      ? [
+        {
+          role: 'system',
+          content: '以下是之前对话的总结：\n' + processedSummaries.join('\n\n'),
+        },
+      ]
+      : [];
+  }
+
+  private processToolCall(part: IChatToolContent, history: CoreMessage[]): void {
+    if (history[history.length - 1].role !== 'assistant') {
+      history.push({
+        role: 'assistant',
+        content: [],
+      });
+    }
+
+    const toolCallId = part.content.id;
+    const toolCallInfo = {
+      id: toolCallId,
+      name: part.content.function.name,
+      args: this.parseJsonSafely(part.content.function.arguments || '{}', 'tool call arguments'),
+      result: this.parseJsonSafely(part.content.result || '{}', 'tool result'),
+    };
+
+    this.history.addToolCall(toolCallInfo);
+    this.history.setMessageAdditional(part.content.id, { toolCallId });
+
+    const lastMessage = history[history.length - 1];
+    lastMessage.content = [
+      {
+        type: 'tool-call',
+        toolCallId: part.content.id,
+        toolName: part.content.function.name,
+        args: toolCallInfo.args,
+      },
+    ];
+
+    history.push({
+      role: 'tool',
+      content: [
+        {
+          type: 'tool-result',
+          toolCallId: part.content.id,
+          toolName: part.content.function.name,
+          result: toolCallInfo.result,
+        },
+      ],
+    });
+  }
+
+  private parseJsonSafely(jsonString: string, context: string): any {
+    try {
+      return JSON.parse(jsonString);
+    } catch (e) {
+      console.error(`[ChatModel] Failed to parse ${context}:`, e);
+      return {};
+    }
+  }
+
+  private processRecentMessages(): CoreMessage[] {
     const history: CoreMessage[] = [];
-    for (const request of this.requests) {
+    // 只处理未被总结的消息
+    const recentMessages = Array.from(this.requests)
+      .slice(-this.history.config.shortTermSize);
+
+    for (const request of recentMessages) {
       if (!request.response.isComplete) {
         continue;
       }
+
       history.push({
         role: 'user',
-        content: request.message.images?.length
-          ? [
-              { type: 'text', text: request.message.prompt },
-              ...request.message.images.map((image) => ({ type: 'image', image: new URL(image) } as ImagePart)),
-            ]
-          : request.message.prompt,
+        content: request.message.prompt,
       });
+
       for (const part of request.response.responseParts) {
-        // Remove reasoning_content from history
-        // https://api-docs.deepseek.com/zh-cn/guides/reasoning_model#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8B%BC%E6%8E%A5
         if (part.kind === 'treeData' || part.kind === 'component' || part.kind === 'reasoning') {
           continue;
         }
+
         if (part.kind !== 'toolCall') {
           history.push({
             role: 'assistant',
-            content: [
-              {
-                type: 'text',
-                text: part.kind === 'markdownContent' ? part.content.value : part.content,
-              },
-            ],
+            content: part.kind === 'markdownContent' ? part.content.value : part.content,
           });
         } else {
-          // 直接开始toolCall场景
-          if (history[history.length - 1].role !== 'assistant') {
-            history.push({
-              role: 'assistant',
-              content: [],
-            });
-          }
-          (history[history.length - 1].content as Array<TextPart | ToolCallPart>).push({
-            type: 'tool-call',
-            toolCallId: part.content.id,
-            toolName: part.content.function.name,
-            args: (() => {
-              try {
-                return JSON.parse(part.content.function.arguments || '{}');
-              } catch (e) {
-                console.error('Failed to parse tool call arguments:', e);
-                return {};
-              }
-            })(),
-          });
-          history.push({
-            role: 'tool',
-            content: [
-              {
-                type: 'tool-result',
-                toolCallId: part.content.id,
-                toolName: part.content.function.name,
-                result: (() => {
-                  try {
-                    return JSON.parse(part.content.result || '{}');
-                  } catch (e) {
-                    console.error('Failed to parse tool result:', e);
-                    return {};
-                  }
-                })(),
-              },
-            ],
-          });
+          this.processToolCall(part, history);
         }
       }
     }
-    if (contextWindow) {
-      while (this.#slicedMessageCount < history.length) {
-        // 简单的使用 JSON.stringify 计算 token 数量
-        const tokenCount = JSON.stringify(history.slice(this.#slicedMessageCount)).length / 3;
-        if (tokenCount <= contextWindow) {
-          break;
-        }
-        this.#slicedMessageCount++;
-      }
+
+    return history;
+  }
+
+  private limitTokens(history: CoreMessage[], contextWindow?: number): CoreMessage[] {
+    if (!contextWindow) {
+      return history;
     }
-    return history.slice(this.#slicedMessageCount);
+
+    let currentHistory = history;
+    let tokenCount = JSON.stringify(currentHistory).length / 3;
+
+    while (tokenCount > contextWindow && currentHistory.length > 1) {
+      if (currentHistory[0].role === 'system' && currentHistory.length > 2) {
+        currentHistory = [currentHistory[0], ...currentHistory.slice(2)];
+      } else {
+        currentHistory = currentHistory.slice(1);
+      }
+      tokenCount = JSON.stringify(currentHistory).length / 3;
+    }
+
+    return currentHistory;
+  }
+
+  getMessageHistory(contextWindow?: number): CoreMessage[] {
+    const memorySummaries = this.processMemorySummaries();
+    const recentMessages = this.processRecentMessages();
+    const history = [...memorySummaries, ...recentMessages];
+    return this.limitTokens(history, contextWindow);
   }
 
   addRequest(message: IChatRequestMessage): ChatRequestModel {

@@ -91,7 +91,7 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        execute: async (editor, selection, value, token) => {},
+        execute: async (editor, selection, value, token) => { },
         providePreviewStrategy: async (editor, selection, value, token) => {
           const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
@@ -193,7 +193,7 @@ export class AINativeContribution implements AINativeCoreContribution {
       },
       {
         triggerRules: 'selection',
-        execute: async (stdout: string) => {},
+        execute: async (stdout: string) => { },
       },
     );
 
