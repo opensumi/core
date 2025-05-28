@@ -654,7 +654,6 @@ export class TabbarService extends WithEventBus {
   removeContainer(containerId: string) {
     const disposable = this.disposableMap.get(containerId);
     disposable?.dispose();
-    this.updateCurrentContainerId('');
     this.onStateChangeEmitter.fire();
   }
 
