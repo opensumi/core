@@ -5,7 +5,7 @@ import { AbstractContextMenuService, IContextMenu, IMenuRegistry } from '@opensu
 import { TabbarConfig } from '@opensumi/ide-core-browser/lib/react-providers';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
-import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
+import { EXPAND_PANEL_COMMAND, RETRACT_PANEL_COMMAND, TOGGLE_PANEL_COMMAND } from '../command';
 
 export interface ITabbarResizeOptions {
   setSize: (targetSize?: number) => void;
@@ -68,7 +68,7 @@ export class TabbarBehaviorHandler {
     // 如果支持展开操作，注册相关命令
     if (supportedActions?.expand) {
       disposables.push(
-        context.commandRegistry.registerCommand(EXPAND_BOTTOM_PANEL, {
+        context.commandRegistry.registerCommand(EXPAND_PANEL_COMMAND, {
           execute: () => {
             context.layoutService.expandBottom(true);
           },
@@ -76,7 +76,7 @@ export class TabbarBehaviorHandler {
       );
 
       disposables.push(
-        context.commandRegistry.registerCommand(RETRACT_BOTTOM_PANEL, {
+        context.commandRegistry.registerCommand(RETRACT_PANEL_COMMAND, {
           execute: () => {
             context.layoutService.expandBottom(false);
           },
@@ -87,7 +87,7 @@ export class TabbarBehaviorHandler {
     // 如果支持 toggle 操作，注册相关命令
     if (supportedActions?.toggle) {
       disposables.push(
-        context.commandRegistry.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
+        context.commandRegistry.registerCommand(TOGGLE_PANEL_COMMAND, {
           execute: (show?: boolean, size?: number) => {
             context.layoutService.toggleSlot(this.location, show, size);
           },
@@ -111,13 +111,13 @@ export class TabbarBehaviorHandler {
     if (this.config?.supportedActions?.expand) {
       menuItems.push(
         {
-          command: EXPAND_BOTTOM_PANEL.id,
+          command: EXPAND_PANEL_COMMAND.id,
           group: 'navigation',
           when: '!bottomFullExpanded',
           order: 1,
         },
         {
-          command: RETRACT_BOTTOM_PANEL.id,
+          command: RETRACT_PANEL_COMMAND.id,
           group: 'navigation',
           when: 'bottomFullExpanded',
           order: 1,
@@ -127,7 +127,7 @@ export class TabbarBehaviorHandler {
 
     if (this.config?.supportedActions?.toggle) {
       menuItems.push({
-        command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+        command: TOGGLE_PANEL_COMMAND.id,
         group: 'navigation',
         order: 2,
       });
