@@ -1054,9 +1054,9 @@ export namespace LAYOUT_COMMANDS {
     id: 'layout.action.Maximizeeditor',
     category: CATEGORY,
   };
-  // TODO: 废弃
+
   export const TOGGLE_SIDEBAR_VISIBILITY = {
-    id: 'main-layout.left-panel.toggle',
+    id: 'main-layout.view.toggle',
     category: CATEGORY,
   };
 }
