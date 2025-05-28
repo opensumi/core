@@ -44,7 +44,7 @@ import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { RETRACT_BOTTOM_PANEL } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
+import { RETRACT_PANEL_COMMAND } from '@opensumi/ide-main-layout/lib/browser/command';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
@@ -821,7 +821,7 @@ export class FileTreeModelService {
         this.fileTreeService.openFile(item.uri);
         // 如果存在最大化面板，则将最大化的面板缩小
         if (this.mainlayoutService.bottomExpanded) {
-          this.commandService.executeCommand(RETRACT_BOTTOM_PANEL.id);
+          this.commandService.executeCommand(RETRACT_PANEL_COMMAND.id);
         }
       }
     }
