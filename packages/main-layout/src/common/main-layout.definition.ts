@@ -133,5 +133,6 @@ export class ViewCollapseChangedEvent extends BasicEvent<{
 
 export const SUPPORT_ACCORDION_LOCATION = new Set([SlotLocation.view, SlotLocation.extendView]);
 
-export const DROP_BOTTOM_CONTAINER = 'drop-bottom';
-export const DROP_RIGHT_CONTAINER = 'drop-right';
+export const DROP_PANEL_CONTAINER = 'drop-panel';
+export const DROP_EXTEND_VIEW_CONTAINER = 'drop-extend-view';
+export const DROP_VIEW_CONTAINER = 'drop-view';

@@ -83,7 +83,7 @@ export function ToolbarActionBasedLayout(
 export function fixLayout(layout: ILayoutConfigCache) {
   const newLayout = { ...layout };
   for (const key in layout) {
-    if (!layout[key]) {
+    if (!layout[key] || key === 'containerLocations') {
       continue;
     }
 

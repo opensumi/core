@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import { LayoutConfig, SlotLocation } from '@opensumi/ide-core-browser';
 
-import { DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER } from '../common';
+import { DROP_EXTEND_VIEW_CONTAINER, DROP_PANEL_CONTAINER, DROP_VIEW_CONTAINER } from '../common';
 
 export const defaultConfig: LayoutConfig = {
   [SlotLocation.top]: {
@@ -12,23 +12,23 @@ export const defaultConfig: LayoutConfig = {
   },
   [SlotLocation.view]: {
     modules: [
+      DROP_VIEW_CONTAINER,
       '@opensumi/ide-explorer',
       '@opensumi/ide-search',
       '@opensumi/ide-scm',
       '@opensumi/ide-extension-manager',
-      '@opensumi/ide-debug',
       '@opensumi/ide-notebook',
     ],
   },
   [SlotLocation.extendView]: {
-    modules: [DROP_RIGHT_CONTAINER],
+    modules: [DROP_EXTEND_VIEW_CONTAINER, '@opensumi/ide-debug'],
   },
   [SlotLocation.main]: {
     modules: ['@opensumi/ide-editor'],
   },
   [SlotLocation.panel]: {
     modules: [
-      DROP_BOTTOM_CONTAINER,
+      DROP_PANEL_CONTAINER,
       '@opensumi/ide-terminal-next',
       '@opensumi/ide-output',
       'debug-console',

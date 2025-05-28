@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { localize, useInjectable } from '@opensumi/ide-core-browser';
+import { SlotLocation, localize, useInjectable } from '@opensumi/ide-core-browser';
 
 import { IMainLayoutService } from '../../common';
 
@@ -18,6 +18,7 @@ const DropArea: React.FC<IDropAreaProps> = (props) => {
     (e: React.DragEvent) => {
       const containerId = e.dataTransfer?.getData('containerId');
       layoutService.moveContainerTo(containerId, location);
+      layoutService.hideDropArea();
     },
     [layoutService, location],
   );
@@ -35,6 +36,8 @@ const DropArea: React.FC<IDropAreaProps> = (props) => {
   );
 };
 
-export const RightDropArea = () => <DropArea location='right' />;
+export const ViewDropArea = () => <DropArea location={SlotLocation.view} />;
 
-export const BottomDropArea = () => <DropArea location='bottom' />;
+export const ExtendViewDropArea = () => <DropArea location={SlotLocation.extendView} />;
+
+export const PanelDropArea = () => <DropArea location={SlotLocation.panel} />;

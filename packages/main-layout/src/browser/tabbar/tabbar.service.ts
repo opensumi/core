@@ -40,6 +40,7 @@ import {
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { slotRendererRegistry } from '@opensumi/ide-core-browser/lib/react-providers';
 import {
+  ITransaction,
   autorunDelta,
   derivedOpts,
   observableFromEventOpts,
@@ -207,10 +208,14 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  updateCurrentContainerId(containerId: string) {
-    transaction((tx) => {
+  updateCurrentContainerId(containerId: string, tx?: ITransaction) {
+    if (tx) {
       this.containerIdObs.set(containerId, tx);
-    });
+    } else {
+      transaction((tx) => {
+        this.containerIdObs.set(containerId, tx);
+      });
+    }
   }
 
   updateBadge(containerId: string, value?: ViewBadge | string) {
@@ -650,13 +655,12 @@ export class TabbarService extends WithEventBus {
     const disposable = this.disposableMap.get(containerId);
     disposable?.dispose();
     this.updateCurrentContainerId('');
-    this.doChangeViewEmitter.fire();
+    this.onStateChangeEmitter.fire();
   }
 
   dynamicAddContainer(containerId: string, options: ComponentRegistryInfo) {
     this.registerContainer(containerId, options);
     this.updateCurrentContainerId(containerId);
-    this.doChangeViewEmitter.fire();
   }
 
   protected doInsertTab(containers: ComponentRegistryInfo[], sourceIndex: number, targetIndex: number) {

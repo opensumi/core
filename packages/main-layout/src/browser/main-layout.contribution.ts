@@ -41,7 +41,7 @@ import {
 import { ContributionProvider, Domain, IEventBus, WithEventBus, localize } from '@opensumi/ide-core-common';
 import { CommandContribution, CommandRegistry, CommandService } from '@opensumi/ide-core-common/lib/command';
 
-import { DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER, IMainLayoutService } from '../common';
+import { DROP_EXTEND_VIEW_CONTAINER, DROP_PANEL_CONTAINER, DROP_VIEW_CONTAINER, IMainLayoutService } from '../common';
 
 import {
   EXPAND_BOTTOM_PANEL,
@@ -63,7 +63,7 @@ import {
   WORKBENCH_ACTION_CLOSEPANEL,
   WORKBENCH_ACTION_CLOSESIDECAR,
 } from './command';
-import { BottomDropArea, RightDropArea } from './drop-area/drop-area';
+import { ExtendViewDropArea, PanelDropArea, ViewDropArea } from './drop-area/drop-area';
 import { ViewQuickOpenHandler } from './quick-open-view';
 import { BottomTabRenderer, LeftTabRenderer, RightTabRenderer } from './tabbar/renderer.view';
 
@@ -145,15 +145,20 @@ export class MainLayoutModuleContribution
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register(DROP_RIGHT_CONTAINER, [], {
-      component: RightDropArea,
+    registry.register(DROP_EXTEND_VIEW_CONTAINER, [], {
+      component: ExtendViewDropArea,
       hideTab: true,
-      containerId: DROP_RIGHT_CONTAINER,
+      containerId: DROP_EXTEND_VIEW_CONTAINER,
     });
-    registry.register(DROP_BOTTOM_CONTAINER, [], {
-      component: BottomDropArea,
+    registry.register(DROP_PANEL_CONTAINER, [], {
+      component: PanelDropArea,
       hideTab: true,
-      containerId: DROP_BOTTOM_CONTAINER,
+      containerId: DROP_PANEL_CONTAINER,
+    });
+    registry.register(DROP_VIEW_CONTAINER, [], {
+      component: ViewDropArea,
+      hideTab: true,
+      containerId: DROP_VIEW_CONTAINER,
     });
   }
 
@@ -353,7 +358,6 @@ export class MainLayoutModuleContribution
       command: TOGGLE_PANEL_COMMAND as MenuCommandDesc,
       group: '5_panel',
     });
-
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: EXPAND_PANEL_COMMAND as MenuCommandDesc,
       group: '5_panel',
@@ -379,6 +383,10 @@ export class MainLayoutModuleContribution
     this.keybindingRegistry.registerKeybinding({
       keybinding: 'ctrlcmd+b',
       command: TOGGLE_VIEW_COMMAND.id,
+    });
+    this.keybindingRegistry.registerKeybinding({
+      keybinding: 'ctrlcmd+alt+b',
+      command: TOGGLE_EXTEND_VIEW_COMMAND.id,
     });
     this.keybindingRegistry.registerKeybinding({
       keybinding: 'ctrlcmd+j',

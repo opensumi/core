@@ -5,6 +5,7 @@ import {
   TERMINAL_COMMANDS,
   TabBarToolbarContribution,
   ToolbarRegistry,
+  getIcon,
   localize,
 } from '@opensumi/ide-core-browser';
 import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
@@ -53,11 +54,11 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
       {
         title: localize('terminal.name'),
         priority: 1,
+        iconClass: getIcon('terminal'),
         activateKeyBinding: 'ctrl+`',
         containerId: TerminalRenderContribution.viewId,
         titleComponent: TerminalTabs,
         draggable: true,
-        hideLocationTab: ['right'],
       },
     );
   }
