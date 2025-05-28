@@ -21,7 +21,7 @@ import {
   isDefined,
   localize,
 } from '@opensumi/ide-core-browser';
-import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
+import { Layout, RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
 import {
   ISplitPanelService,
   SplitPanelManager,
@@ -152,7 +152,7 @@ export class AccordionService extends WithEventBus {
   private afterDisposeViewEmitter = this.registerDispose(new Emitter<string>());
   public onAfterDisposeViewEvent = this.afterDisposeViewEmitter.event;
 
-  constructor(public containerId: string, private noRestore?: boolean) {
+  constructor(public containerId: string, private noRestore?: boolean, private alignment?: Layout.alignment) {
     super();
     this.addDispose(recomputeInitiallyAndOnChange(this.visibleViews));
 
@@ -611,8 +611,38 @@ export class AccordionService extends WithEventBus {
     const viewState = this.getViewState(viewId);
     this.updateViewState(viewId, { ...viewState, collapsed });
 
-    const container = this.mainLayoutService.getContainer(this.containerId)!;
-    if (container?.options?.alignment !== 'horizontal') {
+    const isHorizontal = this.alignment === 'horizontal';
+
+    if (isHorizontal) {
+      let sizeIncrement: number;
+      if (collapsed) {
+        sizeIncrement = this.setSizeHorizontal(index, 0, false, noAnimation);
+      } else {
+        // 仅有一个视图展开时独占
+        sizeIncrement = this.setSizeHorizontal(
+          index,
+          this.expandedViews.length === 1 ? this.getAvailableSizeHorizontal() : viewState.size || this.minSize,
+          false,
+          noAnimation,
+        );
+      }
+      // 处理水平方向的尺寸调整：右侧视图优先调整
+      for (let i = this.visibleViews.get().length - 1; i > index; i--) {
+        if (this.getViewState(this.visibleViews.get()[i].id).collapsed !== true) {
+          sizeIncrement = this.setSizeHorizontal(i, sizeIncrement, true, noAnimation);
+        } else {
+          this.setSizeHorizontal(i, 0, false, noAnimation);
+        }
+      }
+      // 左侧视图调整
+      for (let i = index - 1; i >= 0; i--) {
+        if ((this.state[this.visibleViews.get()[i].id] || {}).collapsed !== true) {
+          sizeIncrement = this.setSizeHorizontal(i, sizeIncrement, true, noAnimation);
+        } else {
+          this.setSizeHorizontal(i, 0, false, noAnimation);
+        }
+      }
+    } else {
       let sizeIncrement: number;
       if (collapsed) {
         sizeIncrement = this.setSize(index, 0, false, noAnimation);
@@ -723,6 +753,89 @@ export class AccordionService extends WithEventBus {
   protected getAvailableSize() {
     const fullHeight = this.splitPanelService.rootNode?.clientHeight;
     return fullHeight ? fullHeight - (this.visibleViews.get().length - 1) * this.headerSize : 0;
+  }
+
+  protected setSizeHorizontal(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
+    const view = this.visibleViews.get()[index];
+    const fullWidth = this.splitPanelService.rootNode?.clientWidth;
+    const panel = this.splitPanelService.panels[index];
+
+    if (!panel) {
+      return 0;
+    }
+
+    if (!noAnimation) {
+      panel.classList.add('resize-ease-horizontal');
+    }
+
+    if (!targetSize && !isIncrement) {
+      targetSize = this.headerSize;
+      panel.classList.add(RESIZE_LOCK);
+    } else {
+      panel.classList.remove(RESIZE_LOCK);
+    }
+
+    // clientWidth会被上次展开的元素挤掉
+    const prevSize = panel.clientWidth;
+    const viewState = this.getViewState(view.id);
+    let calcTargetSize: number = targetSize;
+
+    if (isIncrement) {
+      calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
+    }
+
+    if (index === this.expandedViews.length - 1 && isDefined(fullWidth)) {
+      // 最后一个视图需要兼容最大宽度超出总视图宽度及最大宽度不足总视图宽度的情况
+      if (calcTargetSize + index * this.minSize > fullWidth) {
+        calcTargetSize -= calcTargetSize + index * this.minSize - fullWidth;
+      } else {
+        const restSize = this.getPanelFullWidthHorizontal(view.id);
+        if (calcTargetSize + restSize < fullWidth) {
+          calcTargetSize += fullWidth - (calcTargetSize + restSize);
+        }
+      }
+    }
+
+    if (this.rendered) {
+      let toSaveSize: number;
+      if (targetSize === this.headerSize) {
+        // 当前视图即将折叠且不是唯一展开的视图时，存储当前宽度
+        toSaveSize = prevSize;
+      } else {
+        toSaveSize = calcTargetSize;
+      }
+      if (toSaveSize !== this.headerSize) {
+        // 视图折叠宽度不做存储
+        viewState.size = toSaveSize;
+      }
+    }
+
+    this.storeState();
+    viewState.nextSize = calcTargetSize;
+
+    if (!noAnimation) {
+      setTimeout(() => {
+        // 动画 0.1s，保证结束后移除
+        panel.classList.remove('resize-ease-horizontal');
+      }, 200);
+    }
+
+    return isIncrement ? calcTargetSize - (prevSize - targetSize) : targetSize - prevSize;
+  }
+
+  protected getAvailableSizeHorizontal() {
+    const fullWidth = this.splitPanelService.rootNode?.clientWidth;
+    return fullWidth ? fullWidth - (this.visibleViews.get().length - 1) * this.headerSize : 0;
+  }
+
+  private getPanelFullWidthHorizontal(ignoreViewId?: string) {
+    return Object.keys(this.state)
+      .filter((viewId) => this.views.find((item) => item.id === viewId) && viewId !== ignoreViewId)
+      .reduce(
+        (acc, id) =>
+          acc + (this.state[id].collapsed ? this.headerSize : this.state[id].hidden ? 0 : this.state[id].size!),
+        0,
+      );
   }
 
   private handleContextKeyChange() {

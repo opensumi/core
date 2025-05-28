@@ -18,7 +18,7 @@ import {
   WithEventBus,
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
-import { fixLayout } from '@opensumi/ide-core-browser/lib/components';
+import { Layout, fixLayout } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import {
@@ -450,10 +450,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return this.accordionServices;
   }
 
-  getAccordionService(containerId: string, noRestore?: boolean) {
+  getAccordionService(containerId: string, noRestore?: boolean, alignment?: Layout.alignment) {
     let service = this.accordionServices.get(containerId);
     if (!service) {
-      service = this.injector.get(AccordionService, [containerId, noRestore]);
+      service = this.injector.get(AccordionService, [containerId, noRestore, alignment]);
       this.accordionServices.set(containerId, service!);
     }
     return service!;

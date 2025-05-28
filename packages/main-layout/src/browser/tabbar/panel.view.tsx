@@ -240,7 +240,7 @@ const BottomPanelView: React.FC<{
           <AccordionContainer
             views={component.views}
             alignment='horizontal'
-            minSize={component.options!.miniSize}
+            minSize={component.options!.miniSize || 200}
             containerId={component.options!.containerId}
           />
         )}

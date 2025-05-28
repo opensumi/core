@@ -1,5 +1,6 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
+import { Layout } from '@opensumi/ide-core-browser/lib/components';
 
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '../common';
 
@@ -27,9 +28,9 @@ export class MainLayoutModule extends BrowserModule {
     },
     {
       token: AccordionServiceFactory,
-      useFactory: (injector: Injector) => (containerId: string, noRestore?: boolean) => {
+      useFactory: (injector: Injector) => (containerId: string, noRestore?: boolean, alignment?: Layout.alignment) => {
         const manager: IMainLayoutService = injector.get(IMainLayoutService);
-        return manager.getAccordionService(containerId, noRestore);
+        return manager.getAccordionService(containerId, noRestore, alignment);
       },
     },
   ];

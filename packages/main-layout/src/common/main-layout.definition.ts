@@ -1,4 +1,5 @@
 import { BasicEvent, IDisposable, SlotLocation } from '@opensumi/ide-core-browser';
+import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { SideStateManager, View, ViewContainerOptions } from '@opensumi/ide-core-browser/lib/layout';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -78,7 +79,7 @@ export interface IMainLayoutService {
   // force reveal a view ignoring its when clause
   revealView(viewId: string): void;
   getTabbarService(location: string): TabbarService;
-  getAccordionService(containerId: string, noRestore?: boolean): AccordionService;
+  getAccordionService(containerId: string, noRestore?: boolean, alignment?: Layout.alignment): AccordionService;
   getViewAccordionService(viewId: string): AccordionService | undefined;
   // 某一位置是否可见
   isVisible(location: string): boolean;
