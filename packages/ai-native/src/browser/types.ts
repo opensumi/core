@@ -5,6 +5,7 @@ import { ZodSchema } from 'zod';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
   CancellationToken,
+  ChatMessageRole,
   ChatResponse,
   Deferred,
   IAICompletionOption,
@@ -301,10 +302,12 @@ export interface IImageUploadProvider {
 }
 
 export interface IMessageSummaryProvider {
-  /**
-   * @param sessionId 会话 ID
-   */
-  getMessageSummary(sessionId: string): Promise<string | undefined>;
+  getMessageSummary(
+    messages: Array<{
+      role: ChatMessageRole;
+      content: string;
+    }>,
+  ): Promise<string | undefined>;
 }
 
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');

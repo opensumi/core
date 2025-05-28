@@ -952,9 +952,12 @@ export function DefaultChatViewHeader({
       const currentTitle = latestUserMessage
         ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
         : '';
-
-      if (summaryProvider && aiChatService.sessionModel.sessionId) {
-        summaryProvider.getMessageSummary(aiChatService.sessionModel.sessionId).then((summary) => {
+      const messages = aiChatService.sessionModel.history.getMessages().map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+      if (messages.length > 2 && summaryProvider && aiChatService.sessionModel.sessionId) {
+        summaryProvider.getMessageSummary(messages).then((summary) => {
           if (summary) {
             setCurrentTitle(summary.slice(0, MAX_TITLE_LENGTH));
           } else {

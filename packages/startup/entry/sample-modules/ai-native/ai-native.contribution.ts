@@ -35,6 +35,7 @@ import {
   AIBackSerivcePath,
   CancelResponse,
   CancellationToken,
+  ChatMessageRole,
   ChatResponse,
   ChatServiceToken,
   ErrorResponse,
@@ -219,6 +220,15 @@ export class AINativeContribution implements AINativeCoreContribution {
     );
   }
 
+  private async getSummary(
+    messages: Array<{
+      role: ChatMessageRole;
+      content: string;
+    }>,
+  ): Promise<string> {
+    const latestUserMessage = messages.findLast((m) => m.role === ChatMessageRole.User);
+  }
+
   registerChatFeature(registry: IChatFeatureRegistry): void {
     registry.registerWelcome(
       new MarkdownString(`<img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
@@ -234,6 +244,41 @@ export class AINativeContribution implements AINativeCoreContribution {
 
     registry.registerImageUploadProvider({
       imageUpload: imageToBase64,
+    });
+
+    registry.registerMessageSummaryProvider({
+      getMessageSummary: async (
+        messages: Array<{
+          role: ChatMessageRole;
+          content: string;
+        }>,
+      ) => {
+        // 裁剪最近的10条消息，避免过长的消息导致请求失败
+        const sliceMessages = messages.slice(-10);
+        // TODO: summarize the messages
+        const prompt = `You are a helpful AI assistant. Summarize in ONE clear statement (12-15 words).
+Requirements:
+- Include what happened
+- No meta-descriptions
+- No interpretations
+
+Bad: "The discussion was about ENI limits"
+Good: "Instance network interfaces exceeded system limit"`;
+        const result = await this.aiBackService.request(prompt, {
+          type: '',
+          messages: sliceMessages,
+        });
+
+        if (result.isCancel) {
+          return '';
+        }
+
+        if (result.errorCode !== 0) {
+          return '';
+        }
+
+        return result.data || '';
+      },
     });
 
     // registry.registerSlashCommand(
