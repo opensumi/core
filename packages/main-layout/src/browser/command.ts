@@ -71,7 +71,7 @@ export const TOGGLE_EXTEND_VIEW_COMMAND: MenuCommandDesc = {
 export const TOGGLE_PANEL_COMMAND: Command = {
   id: 'main-layout.panel.toggle',
   iconClass: getIcon('minus'),
-  label: '%main-layout.panel.toggle %',
+  label: '%main-layout.panel.toggle%',
 };
 
 export const IS_VISIBLE_VIEW_COMMAND: Command = {
