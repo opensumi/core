@@ -81,6 +81,10 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
     commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
   }, [commandService]);
 
+  const handleShowRules = React.useCallback(() => {
+    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG_FILE.id);
+  }, [commandService]);
+
   useEffect(() => {
     if (props.value !== value) {
       setValue(props.value || '');
@@ -328,6 +332,13 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           icon: 'mcp',
           title: 'MCP Server',
           onClick: handleShowMCPConfig,
+          position: FooterButtonPosition.LEFT,
+        },
+        {
+          id: 'rules',
+          icon: 'rules',
+          title: 'Rules',
+          onClick: handleShowRules,
           position: FooterButtonPosition.LEFT,
         },
         {
