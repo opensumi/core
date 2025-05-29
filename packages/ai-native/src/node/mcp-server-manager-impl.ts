@@ -118,7 +118,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
             this.proxy?.$compressToolResult &&
             (compressedResult.content || []).some((item) => item.type === 'image')
           ) {
-            compressedResult = await this.proxy.$compressToolResult(res as any, {
+            compressedResult = await this.proxy.$compressToolResult(res as IMCPToolResult, {
               maxSizeKB: 100,
               maxWidth: 600,
               quality: 0.6,

@@ -23,10 +23,8 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
     return null;
   }
   const toolName = mcpServerFeatureRegistry.getMCPTool(value.function.name)?.label || value.function.name;
-  let [, , label] = toolName.split(TOOL_NAME_SEPARATOR);
-  if (!label) {
-    label = toolName;
-  }
+  const parts = toolName.split(TOOL_NAME_SEPARATOR);
+  const label = parts.length >= 3 ? parts[2] : toolName;
 
   const ToolComponent = mcpServerFeatureRegistry.getToolComponent(value.function.name);
 

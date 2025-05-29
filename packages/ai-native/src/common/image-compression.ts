@@ -1,6 +1,6 @@
 import { isObject } from '@opensumi/ide-utils';
 
-import { IMCPToolResult } from './types';
+import { IMCPToolResult, IMCPToolResultContent } from './types';
 
 export interface ImageCompressionOptions {
   maxSizeKB?: number;
@@ -160,13 +160,16 @@ export async function compressContentArrayResult(
 /**
  * 智能压缩工具结果，支持多种格式
  */
-export async function compressToolResultSmart(result: any, options: ImageCompressionOptions = {}): Promise<any> {
+export async function compressToolResultSmart(
+  result: IMCPToolResult,
+  options: ImageCompressionOptions = {},
+): Promise<any> {
   if (
     result &&
     isObject(result) &&
     result.content &&
     Array.isArray(result.content) &&
-    result.content.some((item: any) => item.type === 'image')
+    result.content.some((item: IMCPToolResultContent) => item.type === 'image')
   ) {
     return await compressContentArrayResult(result, options);
   }
