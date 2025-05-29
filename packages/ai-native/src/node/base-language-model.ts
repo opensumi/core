@@ -1,20 +1,12 @@
-import {
-  CoreMessage,
-  CoreUserMessage,
-  ImagePart,
-  TextPart,
-  ToolExecutionOptions,
-  jsonSchema,
-  streamText,
-  tool,
-} from 'ai';
+import { CoreMessage, ImagePart, TextPart, ToolExecutionOptions, jsonSchema, streamText, tool } from 'ai';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IAIBackServiceOption } from '@opensumi/ide-core-common';
-import { ChatReadableStream } from '@opensumi/ide-core-node';
+import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { CancellationToken } from '@opensumi/ide-utils';
 
 import { ModelInfo } from '../common';
+import { compressToolResultSmart, getBase64ImageSize } from '../common/image-compression';
 import {
   IToolInvocationRegistryManager,
   ToolInvocationRegistryManager,
@@ -27,6 +19,9 @@ export abstract class BaseLanguageModel {
 
   @Autowired(ToolInvocationRegistryManager)
   protected readonly toolInvocationRegistryManager: IToolInvocationRegistryManager;
+
+  @Autowired(INodeLogger)
+  protected readonly logger: INodeLogger;
 
   protected abstract initializeProvider(options: IAIBackServiceOption): any;
 
@@ -67,8 +62,11 @@ export abstract class BaseLanguageModel {
       description: toolRequest.description || '',
       // TODO 这里应该是 z.object 而不是 JSON Schema
       parameters: jsonSchema(toolRequest.parameters),
-      execute: async (args: any, options: ToolExecutionOptions) =>
-        await toolRequest.handler(JSON.stringify(args), options),
+      execute: async (args: any, options: ToolExecutionOptions) => {
+        // 执行原始工具
+        const result = await toolRequest.handler(JSON.stringify(args), options);
+        return result;
+      },
     });
   }
 
