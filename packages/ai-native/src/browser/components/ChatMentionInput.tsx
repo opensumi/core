@@ -317,7 +317,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const defaultMentionInputFooterOptions: FooterConfig = useMemo(
     () => ({
       modelOptions: [
-        { label: 'QWQ 32B', value: 'qwq-32b' },
+        { label: 'Claude 4 Sonnet', value: 'claude_sonnet4' },
         { label: 'DeepSeek R1', value: 'deepseek-r1' },
       ],
       defaultModel:
