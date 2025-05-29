@@ -58,6 +58,10 @@ export class AINativeContribution implements AINativeCoreContribution {
   @Autowired(AIBackSerivcePath)
   private readonly aiBackService: IAIBackService;
 
+  private lastMessageSummary: string = '';
+  private messageCountSinceLastSummary: number = 0;
+  private readonly SUMMARY_UPDATE_THRESHOLD = 10; // 每10条消息更新一次摘要
+
   @Autowired(TerminalDetectionPromptManager)
   terminalDetectionPromptManager: TerminalDetectionPromptManager;
 
@@ -220,15 +224,6 @@ export class AINativeContribution implements AINativeCoreContribution {
     );
   }
 
-  private async getSummary(
-    messages: Array<{
-      role: ChatMessageRole;
-      content: string;
-    }>,
-  ): Promise<string> {
-    const latestUserMessage = messages.findLast((m) => m.role === ChatMessageRole.User);
-  }
-
   registerChatFeature(registry: IChatFeatureRegistry): void {
     registry.registerWelcome(
       new MarkdownString(`<img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
@@ -253,9 +248,14 @@ export class AINativeContribution implements AINativeCoreContribution {
           content: string;
         }>,
       ) => {
+        // 如果消息数量未达到阈值且已有摘要，则返回上一次的摘要
+        this.messageCountSinceLastSummary++;
+        if (this.messageCountSinceLastSummary < this.SUMMARY_UPDATE_THRESHOLD && this.lastMessageSummary) {
+          return this.lastMessageSummary;
+        }
+
         // 裁剪最近的10条消息，避免过长的消息导致请求失败
         const sliceMessages = messages.slice(-10);
-        // TODO: summarize the messages
         const prompt = `You are a helpful AI assistant. Summarize in ONE clear statement (12-15 words).
 Requirements:
 - Include what happened
@@ -270,14 +270,17 @@ Good: "Instance network interfaces exceeded system limit"`;
         });
 
         if (result.isCancel) {
-          return '';
+          return this.lastMessageSummary || '';
         }
 
         if (result.errorCode !== 0) {
-          return '';
+          return this.lastMessageSummary || '';
         }
 
-        return result.data || '';
+        // 更新摘要和计数器
+        this.lastMessageSummary = result.data || '';
+        this.messageCountSinceLastSummary = 0;
+        return this.lastMessageSummary;
       },
     });
 
