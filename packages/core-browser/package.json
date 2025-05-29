@@ -21,6 +21,7 @@
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-connection": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/monaco-editor-core": "0.54.0-patch.2",
     "@opensumi/vscode-debugprotocol": "1.49.0-beta.1",
     "@vscode/codicons": "0.0.35",
     "ajv": "^6.10.0",
