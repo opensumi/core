@@ -216,8 +216,8 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
     // 渲染历史记录列表
     const renderHistory = useCallback(() => {
       const filteredList = historyList
+        .slice(-MAX_HISTORY_LIST)
         .reverse()
-        .slice(0, MAX_HISTORY_LIST)
         .filter((item) => item.title && item.title.includes(searchValue));
 
       const groupedHistoryList = formatHistory(filteredList);
