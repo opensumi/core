@@ -38,7 +38,7 @@ import styles from './layout.module.less';
 
 const ChatTabbarRenderer: React.FC = () => (
   <div style={{ width: 0 }}>
-    <TabbarViewBase tabSize={0} MoreTabView={IconElipses} TabView={IconTabView} barSize={0} panelBorderSize={1} />
+    <TabbarViewBase tabSize={0} MoreTabView={IconElipses} TabView={IconTabView} barSize={0} panelBorderSize={0} />
   </div>
 );
 

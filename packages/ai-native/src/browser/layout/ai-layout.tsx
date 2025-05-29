@@ -59,7 +59,7 @@ export const AILayout = () => {
         <SlotRenderer
           slot={AI_CHAT_VIEW_ID}
           isTabbar={true}
-          defaultSize={layout.AI_Chat?.currentId ? layout.AI_Chat?.size || 360 : 0}
+          defaultSize={layout['AI-Chat']?.currentId ? layout['AI-Chat']?.size || 360 : 0}
           maxResize={420}
           minResize={280}
           minSize={0}

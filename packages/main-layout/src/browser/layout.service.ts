@@ -115,6 +115,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     };
   } = {};
 
+  // 记录正在恢复状态的 location，防止恢复过程中存储中间状态
+  private isRestoring = new Set<string>();
+
   private customViews = new Map<string, View>();
 
   private debug = getDebugLogger();
@@ -154,6 +157,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   storeState(service: TabbarService, currentId?: string) {
+    // 如果正在恢复中，跳过存储，避免存储中间状态
+    if (this.isRestoring.has(service.location)) {
+      return;
+    }
+
     this.state[service.location] = {
       currentId,
       size: service.prevSize,
@@ -432,9 +440,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         }),
       );
       service.viewReady.promise
-        .then(() => service.restoreState())
+        .then(() => {
+          // 标记开始恢复，防止恢复过程中存储中间状态
+          this.isRestoring.add(service.location);
+          return service.restoreState();
+        })
         .then(() => this.restoreTabbarService(service))
+        .then(() => {
+          // 恢复完成，清除标记
+          this.isRestoring.delete(service.location);
+        })
         .catch((err) => {
+          // 出错时也要清除标记
+          this.isRestoring.delete(service.location);
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
       const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId.get()), 100);
