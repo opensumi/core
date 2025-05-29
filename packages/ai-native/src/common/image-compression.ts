@@ -40,62 +40,60 @@ export function getBase64ImageSize(base64String: string): number {
 export function compressBase64Image(base64String: string, options: ImageCompressionOptions = {}): Promise<string> {
   return new Promise((resolve) => {
     try {
+      // 输入验证
+      if (!base64String || typeof base64String !== 'string') {
+        resolve(base64String || '');
+        return;
+      }
       if (!base64String.startsWith('data:') && options.mimeType) {
         base64String = `data:${options.mimeType};base64,${base64String}`;
       }
-
       const opts = { ...DEFAULT_OPTIONS, ...options };
       const currentSize = getBase64ImageSize(base64String);
-
       // 如果图像已经小于目标大小，直接返回
       if (currentSize <= opts.maxSizeKB) {
         resolve(base64String);
         return;
       }
-
       // 创建图像对象
       const img = new Image();
       img.onload = () => {
         try {
           // 计算新的尺寸，保持宽高比
           let { width, height } = img;
+          // 处理极小图片
+          if (width <= 1 || height <= 1) {
+            resolve(base64String);
+            return;
+          }
           const aspectRatio = width / height;
-
           if (width > opts.maxWidth) {
             width = opts.maxWidth;
             height = width / aspectRatio;
           }
-
           if (height > opts.maxHeight) {
             height = opts.maxHeight;
             width = height * aspectRatio;
           }
-
-          // 创建 Canvas
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-
           if (!ctx) {
             resolve(base64String);
             return;
           }
-
           canvas.width = Math.round(width);
           canvas.height = Math.round(height);
-
-          // 绘制压缩后的图像
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          // 转换为 base64，使用 JPEG 格式以获得更好的压缩率
           let compressedBase64 = canvas.toDataURL(opts.mimeType, opts.quality);
           let compressedSize = getBase64ImageSize(compressedBase64);
-
-          // 如果压缩后仍然太大，进一步降低质量
           let currentQuality = opts.quality;
-          while (compressedSize > opts.maxSizeKB) {
+          let attempts = 0;
+          const maxAttempts = 5;
+          while (compressedSize > opts.maxSizeKB && attempts < maxAttempts) {
             currentQuality *= 0.6;
             compressedBase64 = canvas.toDataURL(opts.mimeType, currentQuality);
             compressedSize = getBase64ImageSize(compressedBase64);
+            attempts++;
           }
           const [, base64] = compressedBase64.split(',');
           resolve(base64);
@@ -104,12 +102,10 @@ export function compressBase64Image(base64String: string, options: ImageCompress
           resolve(base64String);
         }
       };
-
       img.onerror = () => {
         // 图像加载失败，返回原始字符串
         resolve(base64String);
       };
-
       img.src = base64String;
     } catch (error) {
       resolve(base64String);
