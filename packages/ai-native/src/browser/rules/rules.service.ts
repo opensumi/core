@@ -11,7 +11,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IMessageService } from '@opensumi/ide-overlay';
 import { QuickInputService } from '@opensumi/ide-quick-open/lib/browser/quick-input-service';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';

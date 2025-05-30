@@ -6,7 +6,6 @@ import { ChatReadableStream, INodeLogger } from '@opensumi/ide-core-node';
 import { CancellationToken } from '@opensumi/ide-utils';
 
 import { ModelInfo } from '../common';
-import { compressToolResultSmart, getBase64ImageSize } from '../common/image-compression';
 import {
   IToolInvocationRegistryManager,
   ToolInvocationRegistryManager,

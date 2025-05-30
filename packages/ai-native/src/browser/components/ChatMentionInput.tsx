@@ -10,7 +10,13 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { AINativeSettingSectionsId, ChatFeatureRegistryToken, URI, localize } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  ChatFeatureRegistryToken,
+  RulesServiceToken,
+  URI,
+  localize,
+} from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -26,6 +32,7 @@ import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { MCPConfigCommands } from '../mcp/config/mcp-config.commands';
 import { RulesCommands } from '../rules/rules.contribution';
+import { RulesService } from '../rules/rules.service';
 
 import styles from './components.module.less';
 import { MentionInput } from './mention-input/mention-input';
@@ -78,6 +85,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
   const prevOutlineItems = useRef<MentionItem[]>([]);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
+  const rulesService = useInjectable<RulesService>(RulesServiceToken);
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
   }, [commandService]);
@@ -339,6 +347,74 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
             return 0;
           });
         }
+      },
+    },
+    {
+      id: MentionType.RULE,
+      type: MentionType.RULE,
+      text: 'Rule',
+      icon: getIcon('rules'),
+      getHighestLevelItems: () => [],
+      getItems: async (searchText: string) => {
+        const rules = await rulesService.projectRules;
+        const mappedRules = rules.map((rule) => {
+          const uri = new URI(rule.path);
+          return {
+            id: uri.codeUri.fsPath,
+            type: MentionType.RULE,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            contextId: uri.codeUri.fsPath,
+            description: rule.description,
+            icon: getIcon('rules'),
+          };
+        });
+
+        if (!searchText) {
+          return mappedRules.slice(0, 10);
+        }
+
+        const lowerSearchText = searchText.toLocaleLowerCase();
+        return mappedRules
+          .filter((rule) => rule.text.toLocaleLowerCase().includes(lowerSearchText))
+          .sort((a, b) => {
+            const aTextLower = a.text.toLocaleLowerCase();
+            const bTextLower = b.text.toLocaleLowerCase();
+            const aDescLower = a.description?.toLocaleLowerCase() || '';
+            const bDescLower = b.description?.toLocaleLowerCase() || '';
+
+            // 优先级：文件名包含搜索文本 > 描述包含搜索文本
+            const aTextMatch = aTextLower.includes(lowerSearchText);
+            const bTextMatch = bTextLower.includes(lowerSearchText);
+            const aDescMatch = aDescLower.includes(lowerSearchText);
+            const bDescMatch = bDescLower.includes(lowerSearchText);
+
+            if (aTextMatch && bTextMatch) {
+              // 如果都匹配文件名，按文件名字母序排序
+              return aTextLower.localeCompare(bTextLower);
+            }
+            if (aTextMatch && !bTextMatch) {
+              return -1;
+            }
+            if (!aTextMatch && bTextMatch) {
+              return 1;
+            }
+
+            // 如果文件名都不匹配，比较描述
+            if (aDescMatch && bDescMatch) {
+              return aTextLower.localeCompare(bTextLower);
+            }
+            if (aDescMatch && !bDescMatch) {
+              return -1;
+            }
+            if (!aDescMatch && bDescMatch) {
+              return 1;
+            }
+
+            // 如果都不匹配，按文件名字母序排序
+            return aTextLower.localeCompare(bTextLower);
+          })
+          .slice(0, 10);
       },
     },
   ];

@@ -32,6 +32,7 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
       attachedFiles: context.attachedFiles,
       attachedFolders: context.attachedFolders,
       currentFile: currentFileInfo,
+      attachedRules: context.attachedRules,
       userMessage,
     });
   }
@@ -70,6 +71,7 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
     attachedFiles,
     attachedFolders,
     currentFile,
+    attachedRules,
     userMessage,
   }: {
     attachedFiles: AttachFileContext[];
@@ -81,6 +83,7 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
       currentLine?: number;
       lineContent?: string;
     } | null;
+    attachedRules: string[];
     userMessage: string;
   }) {
     const sections = [
@@ -89,6 +92,7 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
       'Below are some potentially helpful/relevant pieces of information for figuring out to respond',
       this.buildCurrentFileSection(currentFile),
       this.buildAttachedFilesSection(attachedFiles),
+      ...attachedRules,
       '</additional_data>',
       '<user_query>',
       userMessage,

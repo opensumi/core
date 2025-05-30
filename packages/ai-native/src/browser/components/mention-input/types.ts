@@ -57,6 +57,7 @@ export enum MentionType {
   FILE = 'file',
   FOLDER = 'folder',
   CODE = 'code',
+  RULE = 'rule',
 }
 
 interface FooterButton {

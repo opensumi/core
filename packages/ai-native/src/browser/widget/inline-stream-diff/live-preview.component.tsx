@@ -13,7 +13,6 @@ import {
   Position,
 } from '@opensumi/ide-monaco';
 import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
-import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ContentWidgetPositionPreference } from '@opensumi/ide-monaco/lib/browser/monaco-exports/editor';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { IScrollEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';

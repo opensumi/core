@@ -8,7 +8,6 @@ import {
   AppConfig,
   IAIReporter,
   IChatProgress,
-  IMarker,
   MarkerSeverity,
   OnEvent,
   WithEventBus,

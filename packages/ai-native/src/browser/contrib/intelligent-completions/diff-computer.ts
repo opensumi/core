@@ -267,7 +267,7 @@ export const computeMultiLineDiffChanges = (
   lineNumber: number,
   eol: string,
 ) => {
-  let rewriteDiffResult: IMultiLineDiffChangeResult[] =
+  const rewriteDiffResult: IMultiLineDiffChangeResult[] =
     rewriteDiffComputer.diff(originalContent, modifiedContent) || [];
   let multiLineDiffResult: IMultiLineDiffChangeResult[] =
     multiLineDiffComputer.diff(originalContent, modifiedContent) || [];

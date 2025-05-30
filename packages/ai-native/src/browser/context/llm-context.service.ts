@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
+import { RulesServiceToken } from '@opensumi/ide-core-common';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus/event-decorator';
 import { MarkerSeverity } from '@opensumi/ide-core-common/lib/types/markers/markers';
 import { Emitter, URI } from '@opensumi/ide-core-common/lib/utils';
@@ -15,6 +16,8 @@ import { IMarkerService } from '@opensumi/ide-markers/lib/common/types';
 import { Range } from '@opensumi/ide-monaco';
 
 import { AttachFileContext, FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
+import { ProjectRule } from '../../common/types';
+import { RulesService } from '../rules/rules.service';
 
 @Injectable()
 export class LLMContextServiceImpl extends WithEventBus implements LLMContextService {
@@ -30,6 +33,9 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   @Autowired(IFileServiceClient)
   protected readonly fileService: IFileServiceClient;
 
+  @Autowired(RulesServiceToken)
+  protected readonly rulesService: RulesService;
+
   private isAutoCollecting = false;
 
   private contextVersion = 0;
@@ -39,11 +45,13 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   private readonly maxViewFilesLimit = 20;
   private attachedFiles: FileContext[] = [];
   private attachedFolders: FileContext[] = [];
+  private attachedRules: ProjectRule[] = [];
   private readonly recentlyViewFiles: FileContext[] = [];
   private readonly onDidContextFilesChangeEmitter = new Emitter<{
     viewed: FileContext[];
     attached: FileContext[];
     attachedFolders: FileContext[];
+    attachedRules: ProjectRule[];
     version: number;
   }>();
   private hasUserManualReference = false;
@@ -76,6 +84,24 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     if (list.length > maxLimit) {
       list.shift();
     }
+  }
+
+  addRuleToContext(uri: URI): void {
+    if (!uri) {
+      return;
+    }
+
+    if (this.attachedRules.some((rule) => rule.path === uri.codeUri.fsPath)) {
+      return;
+    }
+
+    const rule = this.rulesService.projectRules.find((rule) => rule.path === uri.codeUri.fsPath);
+    if (!rule) {
+      return;
+    }
+
+    this.attachedRules.push(rule);
+    this.notifyContextChange();
   }
 
   addFileToContext(uri: URI, selection?: [number, number], isManual = false): void {
@@ -115,6 +141,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     this.attachedFiles = [];
     this.attachedFolders = [];
     this.hasUserManualReference = false;
+    this.attachedRules = [];
     this.notifyContextChange();
   }
 
@@ -123,6 +150,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       viewed: this.recentlyViewFiles,
       attached: this.attachedFiles,
       attachedFolders: this.attachedFolders,
+      attachedRules: this.attachedRules,
       version: this.contextVersion++,
     };
   }
@@ -216,6 +244,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       recentlyViewFiles: this.serializeRecentlyViewFiles(files.viewed, workspaceRoot),
       attachedFiles: this.serializeAttachedFiles(files.attached, workspaceRoot),
       attachedFolders: await this.serializeAttachedFolders(files.attachedFolders),
+      attachedRules: this.serializeAttachedRules(files.attachedRules),
     };
   }
 
@@ -315,5 +344,29 @@ ${folderStructure}`;
         severities: MarkerSeverity.Error,
       })
       .map((marker) => marker.message);
+  }
+
+  private serializeAttachedRules(rules: ProjectRule[]): string[] {
+    if (rules.length === 0) {
+      return [];
+    }
+
+    const header =
+      '\n<cursor_rules_context>\n\nCursor Rules are extra documentation provided by the user to help the AI understand the codebase.\nUse them if they seem useful to the users most recent query, but do not use them if they seem unrelated.\n\n';
+
+    const rulesSections = rules
+      .map((rule) => {
+        const ruleName =
+          rule.path
+            .split('/')
+            .pop()
+            ?.replace(/.md(c)?$/, '') || 'Unnamed Rule';
+        return `Rule Name: ${ruleName}\nDescription: \n${rule.description || rule.content}`;
+      })
+      .join('\n\n');
+
+    const footer = '\n</cursor_rules_context>\n';
+
+    return [header, rulesSections, footer];
   }
 }

@@ -1,6 +1,7 @@
 import cls from 'classnames';
 import * as React from 'react';
 
+import { ProjectRule } from '@opensumi/ide-ai-native/lib/common/types';
 import { formatLocalize, getSymbolIcon, localize } from '@opensumi/ide-core-browser';
 import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
@@ -67,9 +68,11 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   const [attachedFiles, setAttachedFiles] = React.useState<{
     files: FileContext[];
     folders: FileContext[];
+    rules: ProjectRule[];
   }>({
     files: [],
     folders: [],
+    rules: [],
   });
 
   const getCurrentItems = (): MentionItem[] => {
@@ -177,8 +180,8 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   }, [debouncedSecondLevelFilter, mentionState.level, mentionState.parentType]);
 
   React.useEffect(() => {
-    const disposable = contextService?.onDidContextFilesChangeEvent(({ attached, attachedFolders }) => {
-      setAttachedFiles({ files: attached, folders: attachedFolders });
+    const disposable = contextService?.onDidContextFilesChangeEvent(({ attached, attachedFolders, attachedRules }) => {
+      setAttachedFiles({ files: attached, folders: attachedFolders, rules: attachedRules });
     });
 
     return () => {
@@ -723,6 +726,11 @@ export const MentionInput: React.FC<MentionInputProps> = ({
               true,
             );
           }
+        } else if (item.type === MentionType.RULE) {
+          const iconSpan = document.createElement('span');
+          iconSpan.className = cls(styles.mention_icon, getIcon('rules'));
+          mentionTag.appendChild(iconSpan);
+          contextService?.addRuleToContext(new URI(item.contextId), true);
         }
         const workspace = workspaceService?.workspace;
         let relativePath = item.text;
@@ -1096,7 +1104,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
                 <div className={styles.context_description}>
                   {formatLocalize(
                     'aiNative.chat.context.description',
-                    attachedFiles.files.length + attachedFiles.folders.length,
+                    attachedFiles.files.length + attachedFiles.folders.length + attachedFiles.rules.length,
                   )}
                 </div>
               </div>

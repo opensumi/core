@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { Deferred, Domain } from '@opensumi/ide-core-common';
+import { Domain } from '@opensumi/ide-core-common';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next/lib/common/controller';
 
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';

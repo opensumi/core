@@ -1,4 +1,4 @@
-import { ICodeEditor, IModelDeltaDecoration, IRange, TrackedRangeStickiness } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, TrackedRangeStickiness } from '@opensumi/ide-monaco';
 
 import { EnhanceDecorationsCollection } from '../../../model/enhanceDecorationsCollection';
 import { REWRITE_DECORATION_INLINE_ADD } from '../../../widget/rewrite/rewrite-widget';

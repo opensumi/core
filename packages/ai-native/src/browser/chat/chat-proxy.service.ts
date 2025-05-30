@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,

@@ -738,6 +738,18 @@ export const AIChatView = () => {
           );
         }
       }
+      const rulePattern = /\{\{@rule:(.*?)\}\}/g;
+      const ruleMatches = processedContent.match(rulePattern);
+      if (ruleMatches) {
+        for (const match of ruleMatches) {
+          const ruleName = match.replace(/\{\{@rule:(.*?)\}\}/, '$1');
+          const ruleUri = new URI(ruleName);
+          processedContent = processedContent.replace(
+            match,
+            `\`${LLM_CONTEXT_KEY.AttachedFile}${ruleUri.displayName}\``,
+          );
+        }
+      }
       return handleAgentReply({ message: processedContent, images, agentId, command, reportExtra });
     },
     [handleAgentReply],
