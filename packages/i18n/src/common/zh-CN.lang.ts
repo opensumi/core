@@ -1369,6 +1369,11 @@ export const localizationBundle = {
     'ai.native.mcp.terminal.allow': '允许',
     'ai.native.mcp.terminal.deny': '拒绝',
 
+    // Rules Settings
+    'ai.native.rules.title': '规则',
+    'ai.native.rules.description': '规则允许你为 Agent 提供 System 级别的引导。',
+    'ai.native.rules.addRule.title': '添加规则',
+
     // Built-in tools
     'ai.native.terminal.autorun': '终端命令自动执行策略',
     'ai.native.terminal.autorun.description':

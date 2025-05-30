@@ -1,5 +1,3 @@
-import { DataContent } from 'ai';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus/event-decorator';
@@ -217,25 +215,33 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     return {
       recentlyViewFiles: this.serializeRecentlyViewFiles(files.viewed, workspaceRoot),
       attachedFiles: this.serializeAttachedFiles(files.attached, workspaceRoot),
-      attachedFolders: await this.serializeAttachedFolders(files.attachedFolders, workspaceRoot),
+      attachedFolders: await this.serializeAttachedFolders(files.attachedFolders),
     };
   }
 
-  private async serializeAttachedFolders(folders: FileContext[], workspaceRoot: URI): Promise<string[]> {
+  private async serializeAttachedFolders(folders: FileContext[]): Promise<string[]> {
     // 去重
     const folderPath = Array.from(new Set(folders.map((folder) => folder.uri.toString())));
-    return Promise.all(
+    const header = 'Here are some folder(s) I manually attached to my message:';
+    const folderSections = await Promise.all(
       folderPath.map(async (folder) => {
         const folderUri = new URI(folder);
-        const root = workspaceRoot.relative(folderUri)?.toString() || '/';
-        return `\`\`\`\n${root}\n${(await this.getPartiaFolderStructure(folderUri.codeUri.fsPath))
-          .map((line) => `- ${line}`)
-          .join('\n')}\n\`\`\`\n`;
+        const absolutePath = folderUri.codeUri.fsPath;
+        const folderStructure = await this.getFormattedFolderStructure(absolutePath);
+
+        return `Folder: ${absolutePath}
+Contents of directory:
+
+${folderStructure}`;
       }),
     );
+    if (folderSections.length > 0) {
+      return [header, ...folderSections, ''];
+    }
+    return [];
   }
 
-  private async getPartiaFolderStructure(folder: string, level = 2): Promise<string[]> {
+  private async getFormattedFolderStructure(folder: string): Promise<string> {
     const result: string[] = [];
     try {
       const stat = await this.fileService.getFileStat(folder);
@@ -247,28 +253,27 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
           // 处理软链接
           const target = await this.fileService.getFileStat(child.realUri || child.uri);
           if (target) {
-            result.push(`${relativePath} -> ${target} (symbolic link)`);
+            result.push(`[link] ${relativePath} -> ${target}`);
           } else {
-            result.push(`${relativePath} (broken symbolic link)`);
+            result.push(`[link] ${relativePath} (broken)`);
           }
           continue;
         }
 
         if (child.type === FileType.Directory) {
-          result.push(`${relativePath}/`);
-          if (level > 1) {
-            const subDirStructure = await this.getPartiaFolderStructure(child.uri, level - 1);
-            result.push(...subDirStructure.map((subEntry) => `${relativePath}/${subEntry}`));
-          }
+          // 计算目录下的项目数量
+          const childStat = await this.fileService.getFileStat(child.uri);
+          const itemCount = childStat?.children?.length || 0;
+          result.push(`[dir]  ${relativePath}/ (${itemCount} items)`);
         } else if (child.type === FileType.File) {
-          result.push(relativePath);
+          result.push(`[file] ${relativePath}`);
         }
       }
     } catch {
-      return result;
+      return '';
     }
 
-    return result;
+    return result.join('\n');
   }
 
   private serializeRecentlyViewFiles(files: FileContext[], workspaceRoot: URI): string[] {
@@ -295,6 +300,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         lineErrors: this.getFileErrors(file.uri),
         path: workspaceRoot.relative(file.uri)!.toString(),
         language: ref.instance.languageId!,
+        selection: file.selection,
       };
     } catch (e) {
       return null;

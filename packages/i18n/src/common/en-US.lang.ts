@@ -1606,6 +1606,11 @@ export const localizationBundle = {
     'ai.native.mcp.terminal.allow': 'Allow',
     'ai.native.mcp.terminal.deny': 'Reject',
 
+    // Rules Settings
+    'ai.native.rules.title': 'Rules',
+    'ai.native.rules.description': 'Rules allow you to provide system-level guidance to the Agent.',
+    'ai.native.rules.addRule.title': 'Add Rule',
+
     // Built-in tools
     'ai.native.terminal.autorun': 'Terminal auto execution policy',
     'ai.native.terminal.autorun.description':

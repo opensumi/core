@@ -1,0 +1,40 @@
+.container {
+  padding: 20px;
+  color: var(--foreground);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0;
+  color: var(--descriptionForeground);
+  font-size: 14px;
+}
+
+.actionButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: var(--button-primary-background);
+  color: var(--button-primary-foreground);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  .actionButtonIcon {
+    margin-right: 5px;
+  }
+
+  &:hover {
+    background-color: var(--button-primary-hover-background);
+  }
+}

@@ -25,6 +25,7 @@ import { LLMContextService } from '../../common/llm-context';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { MCPConfigCommands } from '../mcp/config/mcp-config.commands';
+import { RulesCommands } from '../rules/rules.contribution';
 
 import styles from './components.module.less';
 import { MentionInput } from './mention-input/mention-input';
@@ -82,7 +83,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   }, [commandService]);
 
   const handleShowRules = React.useCallback(() => {
-    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG_FILE.id);
+    commandService.executeCommand(RulesCommands.OPEN_RULES_FILE.id);
   }, [commandService]);
 
   useEffect(() => {
@@ -110,6 +111,55 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
     },
     [outlineTreeService],
   );
+
+  // 拆分目录路径为多个层级的辅助函数
+  const expandFolderPaths = async (folderPaths: string[], workspaceRootPath: string): Promise<MentionItem[]> => {
+    const expandedPaths = new Set<string>();
+    const workspaceUri = new URI(workspaceRootPath);
+
+    // 将所有路径展开为多层级
+    for (const folderPath of folderPaths) {
+      const uri = new URI(folderPath);
+      const relativePath = await workspaceService.asRelativePath(uri);
+
+      if (relativePath?.path) {
+        const pathSegments = relativePath.path.split('/').filter(Boolean);
+
+        // 为每个层级创建路径
+        for (let i = 0; i < pathSegments.length; i++) {
+          const segmentPath = pathSegments.slice(0, i + 1).join('/');
+          const fullPath = workspaceUri.resolve(segmentPath).codeUri.fsPath;
+
+          // 避免添加工作区本身或其上级目录
+          if (fullPath !== workspaceRootPath && !workspaceRootPath.startsWith(fullPath)) {
+            expandedPaths.add(fullPath);
+          }
+        }
+      } else {
+        // 如果无法获取相对路径，直接添加（但仍要过滤工作区路径）
+        if (folderPath !== workspaceRootPath && !workspaceRootPath.startsWith(folderPath)) {
+          expandedPaths.add(folderPath);
+        }
+      }
+    }
+
+    // 转换为 MentionItem 格式
+    return Promise.all(
+      Array.from(expandedPaths).map(async (folderPath) => {
+        const uri = new URI(folderPath);
+        const relativePath = await workspaceService.asRelativePath(uri);
+        return {
+          id: uri.codeUri.fsPath,
+          type: MentionType.FOLDER,
+          text: uri.displayName,
+          value: uri.codeUri.fsPath,
+          description: relativePath?.root ? relativePath.path : '',
+          contextId: uri.codeUri.fsPath,
+          icon: getIcon('folder'),
+        };
+      }),
+    );
+  };
 
   // 默认菜单项
   const defaultMenuItems: MentionItem[] = [
@@ -218,21 +268,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
                 .filter((folder) => folder !== workspaceService.workspace?.uri.toString() && folder !== '/'),
             ),
           );
-          folders = await Promise.all(
-            recentFolder.map(async (folder) => {
-              const uri = new URI(folder);
-              const relativePath = await workspaceService.asRelativePath(uri);
-              return {
-                id: uri.codeUri.fsPath,
-                type: MentionType.FOLDER,
-                text: uri.displayName,
-                value: uri.codeUri.fsPath,
-                description: relativePath?.root ? relativePath.path : '',
-                contextId: uri.codeUri.fsPath,
-                icon: getIcon('folder'),
-              };
-            }),
-          );
+          folders = await expandFolderPaths(recentFolder, workspaceService.workspace?.uri.toString() || '');
         } else {
           const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
           const files = await searchService.find(searchText, {
@@ -250,22 +286,11 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
                 .filter((folder) => folder !== workspaceService.workspace?.uri.toString()),
             ),
           );
-          return Promise.all(
-            folders.map(async (folder) => {
-              const uri = new URI(folder);
-              return {
-                id: uri.codeUri.fsPath,
-                type: MentionType.FOLDER,
-                text: uri.displayName,
-                value: uri.codeUri.fsPath,
-                description: (await workspaceService.asRelativePath(uri.parent))?.path || '',
-                contextId: uri.codeUri.fsPath,
-                icon: getIcon('folder'),
-              };
-            }),
-          );
+          return await expandFolderPaths(folders, workspaceService.workspace?.uri.toString() || '');
         }
-        return folders.filter((folder) => folder.id !== new URI(workspaceService.workspace?.uri).codeUri.fsPath);
+        return folders
+          .filter(Boolean)
+          .filter((folder) => folder.id !== new URI(workspaceService.workspace?.uri).codeUri.fsPath);
       },
     },
     {

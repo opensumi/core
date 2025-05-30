@@ -58,6 +58,7 @@ export interface AttachFileContext {
   lineErrors: string[];
   path: string;
   language: string;
+  selection?: [number, number];
 }
 
 export interface SerializedContext {

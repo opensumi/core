@@ -617,7 +617,12 @@ export const AIChatView = () => {
       const { message, images, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
-      const request = aiChatService.createRequest(message, agentId!, images, command);
+      const request = aiChatService.createRequest(
+        message.replaceAll(LLM_CONTEXT_KEY_REGEX, ''),
+        agentId!,
+        images,
+        command,
+      );
       if (!request) {
         return;
       }
@@ -641,7 +646,7 @@ export const AIChatView = () => {
         600 * 1000,
       );
       msgHistoryManager.addUserMessage({
-        content: message.replaceAll(LLM_CONTEXT_KEY_REGEX, ''),
+        content: message,
         images: images || [],
         agentId: agentId!,
         agentCommand: command!,
@@ -695,14 +700,9 @@ export const AIChatView = () => {
       let processedContent = message;
       const filePattern = /\{\{@file:(.*?)\}\}/g;
       const fileMatches = message.match(filePattern);
-      let isCleanContext = false;
       if (fileMatches) {
         for (const match of fileMatches) {
           const filePath = match.replace(/\{\{@file:(.*?)\}\}/, '$1');
-          if (filePath && !isCleanContext) {
-            isCleanContext = true;
-            llmContextService.cleanFileContext();
-          }
           const fileUri = new URI(filePath);
           const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
           processedContent = processedContent.replace(match, `\`${LLM_CONTEXT_KEY.AttachedFile}${relativePath}\``);

@@ -302,6 +302,7 @@ export const ProblemFixRegistryToken = Symbol('ProblemFixRegistryToken');
 export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 export const IntelligentCompletionsRegistryToken = Symbol('IntelligentCompletionsRegistryToken');
 export const MCPConfigServiceToken = Symbol('MCPConfigServiceToken');
+export const RulesServiceToken = Symbol('RulesServiceToken');
 export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 
