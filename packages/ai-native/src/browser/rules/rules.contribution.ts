@@ -1,7 +1,15 @@
 import { Autowired } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-components';
+import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { CommandContribution, CommandRegistry, Domain, URI, localize } from '@opensumi/ide-core-common';
+import {
+  CommandContribution,
+  CommandRegistry,
+  Domain,
+  RulesServiceToken,
+  URI,
+  localize,
+} from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
@@ -13,6 +21,7 @@ import {
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 
+import { RulesService } from './rules.service';
 import { RulesView } from './rules.view';
 
 export namespace RulesCommands {
@@ -27,8 +36,8 @@ export const RULES_COMPONENTS_SCHEME_ID = 'rules';
 
 export type IRulesResource = IResource<{ configType: string }>;
 
-@Domain(BrowserEditorContribution, CommandContribution)
-export class RulesContribution implements BrowserEditorContribution, CommandContribution {
+@Domain(BrowserEditorContribution, CommandContribution, ClientAppContribution)
+export class RulesContribution implements BrowserEditorContribution, CommandContribution, ClientAppContribution {
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
@@ -40,6 +49,13 @@ export class RulesContribution implements BrowserEditorContribution, CommandCont
 
   @Autowired()
   labelService: LabelService;
+
+  @Autowired(RulesServiceToken)
+  protected readonly rulesService: RulesService;
+
+  onStart() {
+    this.rulesService.initProjectRules();
+  }
 
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorComponent({

@@ -177,5 +177,10 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
       type: 'string',
       description: '%preference.ai.native.chat.system.prompt.description%',
     },
+    [AINativeSettingSectionsId.GlobalRules]: {
+      type: 'string',
+      default: '',
+      description: '%preference.ai.native.globalRules.description%',
+    },
   },
 };

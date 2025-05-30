@@ -135,3 +135,11 @@ export interface SSEClientTransportOptions {
    */
   requestInit?: RequestInit;
 }
+
+export interface ProjectRule {
+  path: string;
+  content: string;
+  description?: string;
+  globs?: string | string[];
+  alwaysApply?: boolean;
+}

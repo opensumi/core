@@ -1,6 +1,31 @@
 .container {
   padding: 20px;
   color: var(--foreground);
+  textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  input,
+  textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    background-color: var(--input-background);
+    color: var(--input-foreground);
+    font-size: 13px;
+    font-family: var(--monaco-monospace-font);
+
+    &:focus {
+      border-color: var(--focusBorder);
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--descriptionForeground);
+      opacity: 0.6;
+    }
+  }
 }
 
 .header {
@@ -20,6 +45,43 @@
   margin: 0;
   color: var(--descriptionForeground);
   font-size: 14px;
+  line-height: 1.5;
+}
+
+.user_rules {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  .user_rules_header {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.project_rules {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  h3 {
+    position: relative;
+  }
+  .actionButton {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+.project_rules_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.project_rules_header_left {
+  display: flex;
+  flex-direction: column;
 }
 
 .actionButton {
@@ -37,4 +99,76 @@
   &:hover {
     background-color: var(--button-primary-hover-background);
   }
+}
+
+.project_rules_list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rule_item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-background);
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.rule_item_left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.rule_item_right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.rule_filename {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.rule_description {
+  font-size: 12px;
+  color: var(--descriptionForeground);
+}
+
+.rule_warning {
+  font-size: 12px;
+  color: var(--editorWarning-foreground);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &::before {
+    content: '⚠';
+    color: var(--editorWarning-foreground);
+  }
+}
+
+.rule_applies_to {
+  font-size: 12px;
+  color: var(--descriptionForeground);
+  font-family: var(--monaco-monospace-font);
+}
+
+.empty_state {
+  text-align: center;
+  padding: 32px;
+  color: var(--descriptionForeground);
+  font-style: italic;
 }
