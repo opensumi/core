@@ -1146,9 +1146,9 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
-    'layout.tabbar.toggle': 'Toggle Bottom Panel',
-    'layout.tabbar.expand': 'Maximize Bottom Panel',
-    'layout.tabbar.retract': 'Retract Bottom Panel',
+    'layout.tabbar.toggle': 'Show/Hide Tab Panel',
+    'layout.tabbar.expand': 'Maximize Tab Panel',
+    'layout.tabbar.retract': 'Retract Tab Panel',
     'layout.view.hide': 'HIDE',
     'layout.action.openView': 'Open View ...',
     'layout.openView.containerTitle': 'SideBar / Panel',
@@ -1321,16 +1321,10 @@ export const localizationBundle = {
     'variable.list.all': 'Variables: List All',
     'variable.registered.variables': 'Registered variables',
 
-    'main-layout.left-panel.toggle': 'Toggle Left Side Bar',
-    'main-layout.left-panel.show': 'Show Left Side Bar',
-    'main-layout.left-panel.hide': 'Hide Left Side Bar',
+    'main-layout.view.toggle': 'Toggle Main Side Bar',
+    'main-layout.extend-view.toggle': 'Toggle Extend Side Bar',
+    'main-layout.panel.toggle': 'Toggle Panel',
     'main-layout.sidebar.hide': 'Hide Side Bar',
-    'main-layout.right-panel.toggle': 'Toggle Right Side Bar',
-    'main-layout.right-panel.show': 'Show Right Side Bar',
-    'main-layout.right-panel.hide': 'Hide Right Side Bar',
-    'main-layout.bottom-panel.toggle': 'Toggle Bottom Side Bar',
-    'main-layout.bottom-panel.show': 'Show Bottom Side Bar',
-    'main-layout.bottom-panel.hide': 'Hide Bottom Side Bar',
     'main-layout.drop-area.tip': 'drop here',
 
     'refactor-preview.title': 'REFACTOR PREVIEW',

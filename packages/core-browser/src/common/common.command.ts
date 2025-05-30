@@ -1054,8 +1054,9 @@ export namespace LAYOUT_COMMANDS {
     id: 'layout.action.Maximizeeditor',
     category: CATEGORY,
   };
+
   export const TOGGLE_SIDEBAR_VISIBILITY = {
-    id: 'main-layout.left-panel.toggle',
+    id: 'main-layout.view.toggle',
     category: CATEGORY,
   };
 }

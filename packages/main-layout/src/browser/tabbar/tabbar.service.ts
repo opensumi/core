@@ -14,7 +14,6 @@ import {
   IScopedContextKeyService,
   KeybindingRegistry,
   ResizeEvent,
-  SlotLocation,
   ViewContextKeyRegistry,
   WithEventBus,
   createFormatLocalizedStr,
@@ -26,7 +25,6 @@ import {
   localize,
   toDisposable,
 } from '@opensumi/ide-core-browser';
-import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
@@ -38,10 +36,11 @@ import {
   IMenuRegistry,
   MenuId,
   generateCtxMenu,
-  getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { slotRendererRegistry } from '@opensumi/ide-core-browser/lib/react-providers';
 import {
+  ITransaction,
   autorunDelta,
   derivedOpts,
   observableFromEventOpts,
@@ -49,8 +48,9 @@ import {
   transaction,
 } from '@opensumi/ide-monaco/lib/common/observable';
 
-import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent } from '../../common';
-import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
+import { IMainLayoutService, TabBarRegistrationEvent } from '../../common';
+
+import { ITabbarResizeOptions, TabbarBehaviorHandler } from './tabbar-behavior-handler';
 
 import type { ViewBadge } from 'vscode';
 
@@ -65,11 +65,6 @@ export interface TabState {
   // 排序位置，数字越小优先级越高
   priority: number;
 }
-const CONTAINER_NAME_MAP = {
-  left: 'view',
-  right: 'extendView',
-  bottom: 'panel',
-};
 
 const NONE_CONTAINER_ID = undefined;
 
@@ -104,21 +99,15 @@ export class TabbarService extends WithEventBus {
   public previousContainerId: string | undefined = undefined;
   public containersMap: Map<string, ComponentRegistryProvider> = new Map();
   public prevSize?: number;
-  public commonTitleMenu: IContextMenu;
+  public commonTitleMenu?: IContextMenu;
   public viewReady = new Deferred<void>();
 
   private state: Map<string, TabState> = new Map();
   private storedState: { [containerId: string]: TabState } = {};
 
-  resizeHandle?: {
-    setSize: (targetSize?: number) => void;
-    setRelativeSize: (prev: number, next: number) => void;
-    getSize: () => number;
-    getRelativeSize: () => number[];
-    lockSize: (lock: boolean | undefined) => void;
-    setMaxSize: (lock: boolean | undefined) => void;
-    hidePanel: (show?: boolean) => void;
-  };
+  private behaviorHandler: TabbarBehaviorHandler;
+
+  public resizeHandle?: ITabbarResizeOptions;
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
@@ -153,8 +142,6 @@ export class TabbarService extends WithEventBus {
   @Autowired(IProgressService)
   private progressService: IProgressService;
 
-  private accordionRestored: Set<string> = new Set();
-
   private readonly onCurrentChangeEmitter = new Emitter<{ previousId: string; currentId: string }>();
   readonly onCurrentChange: Event<{ previousId: string; currentId: string }> = this.onCurrentChangeEmitter.event;
 
@@ -170,7 +157,6 @@ export class TabbarService extends WithEventBus {
   private disposableMap: Map<string, DisposableCollection> = new Map();
   private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
   private shouldWaitForViewRender = false;
-  private isLatter: boolean;
 
   private scopedCtxKeyService: IScopedContextKeyService;
   private onDidRegisterContainerEmitter = new Emitter<string>();
@@ -178,7 +164,10 @@ export class TabbarService extends WithEventBus {
 
   constructor(public location: string) {
     super();
-    this.setIsLatter(location === SlotLocation.right || location === SlotLocation.bottom);
+    // 从插槽渲染器注册表获取配置，创建行为处理器
+    const tabbarConfig = slotRendererRegistry.getTabbarConfig(location);
+    this.behaviorHandler = new TabbarBehaviorHandler(location, tabbarConfig);
+
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithTab', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
@@ -190,10 +179,17 @@ export class TabbarService extends WithEventBus {
       when: 'triggerWithTab == true',
     });
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
-    if (this.location === 'bottom') {
-      this.registerPanelCommands();
-      this.registerPanelMenus();
-    }
+
+    // 使用行为处理器注册特定位置的命令和菜单
+    this.behaviorHandler.registerLocationSpecificCommands({
+      commandRegistry: this.commandRegistry,
+      layoutService: this.layoutService,
+    });
+
+    this.commonTitleMenu = this.behaviorHandler.registerLocationSpecificMenus({
+      menuRegistry: this.menuRegistry,
+      ctxMenuService: this.ctxMenuService,
+    });
 
     this.eventBus.onDirective(ResizeEvent.createDirective(this.location), () => {
       this.onResize();
@@ -204,10 +200,6 @@ export class TabbarService extends WithEventBus {
     return this.onDidRegisterContainerEmitter.event;
   }
 
-  public setIsLatter(v: boolean) {
-    this.isLatter = v;
-  }
-
   updateNextContainerId(nextContainerId?: string) {
     if (isUndefined(nextContainerId)) {
       this.useFirstContainerId = true;
@@ -216,10 +208,14 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  updateCurrentContainerId(containerId: string) {
-    transaction((tx) => {
+  updateCurrentContainerId(containerId: string, tx?: ITransaction) {
+    if (tx) {
       this.containerIdObs.set(containerId, tx);
-    });
+    } else {
+      transaction((tx) => {
+        this.containerIdObs.set(containerId, tx);
+      });
+    }
   }
 
   updateBadge(containerId: string, value?: ViewBadge | string) {
@@ -228,24 +224,6 @@ export class TabbarService extends WithEventBus {
       component.options.badge = value;
     }
     component?.fireChange(component);
-  }
-
-  registerPanelCommands(): void {
-    this.commandRegistry.registerCommand(EXPAND_BOTTOM_PANEL, {
-      execute: () => {
-        this.layoutService.expandBottom(true);
-      },
-    });
-    this.commandRegistry.registerCommand(RETRACT_BOTTOM_PANEL, {
-      execute: () => {
-        this.layoutService.expandBottom(false);
-      },
-    });
-    this.commandRegistry.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
-      execute: (show?: boolean, size?: number) => {
-        this.layoutService.toggleSlot(SlotLocation.bottom, show, size);
-      },
-    });
   }
 
   public getContainerState(containerId: string) {
@@ -345,16 +323,7 @@ export class TabbarService extends WithEventBus {
   }
 
   registerResizeHandle(resizeHandle: ResizeHandle) {
-    const { setSize, setRelativeSize, getSize, getRelativeSize, lockSize, setMaxSize, hidePanel } = resizeHandle;
-    this.resizeHandle = {
-      setSize: (size) => setSize(size, this.isLatter),
-      setRelativeSize: (prev: number, next: number) => setRelativeSize(prev, next, this.isLatter),
-      getSize: () => getSize(this.isLatter),
-      getRelativeSize: () => getRelativeSize(this.isLatter),
-      setMaxSize: (lock: boolean | undefined) => setMaxSize(lock, this.isLatter),
-      lockSize: (lock: boolean | undefined) => lockSize(lock, this.isLatter),
-      hidePanel: (show) => hidePanel(show),
-    };
+    this.resizeHandle = this.behaviorHandler.wrapResizeHandle(resizeHandle);
     return this.listenCurrentChange();
   }
 
@@ -441,7 +410,7 @@ export class TabbarService extends WithEventBus {
     disposables.push(this.registerActivateKeyBinding(componentInfo, componentInfo.options!.fromExtension));
     // 注册视图是否存在的contextKey
     const containerExistKey = this.contextKeyService.createKey<boolean>(
-      `workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${componentInfo.options!.containerId}`,
+      `workbench.${this.location}.${componentInfo.options!.containerId}`,
       true,
     );
     disposables.push({
@@ -603,28 +572,11 @@ export class TabbarService extends WithEventBus {
   }
 
   doExpand(expand: boolean) {
-    if (this.resizeHandle) {
-      const { setRelativeSize } = this.resizeHandle;
-      if (expand) {
-        if (!this.isLatter) {
-          setRelativeSize(1, 0);
-        } else {
-          setRelativeSize(0, 1);
-        }
-      } else {
-        // FIXME 底部需要额外的字段记录展开前的尺寸
-        setRelativeSize(2, 1);
-      }
-    }
+    this.behaviorHandler.doExpand(expand, this.resizeHandle);
   }
 
   get isExpanded(): boolean {
-    if (this.resizeHandle) {
-      const { getRelativeSize } = this.resizeHandle;
-      const relativeSizes = getRelativeSize().join(',');
-      return this.isLatter ? relativeSizes === '0,1' : relativeSizes === '1,0';
-    }
-    return false;
+    return this.behaviorHandler.isExpanded(this.resizeHandle);
   }
 
   handleTabClick(e: React.MouseEvent, forbidCollapse?: boolean) {
@@ -695,23 +647,19 @@ export class TabbarService extends WithEventBus {
       }
     }
     this.visibleContainers.forEach((container) => {
-      if (SUPPORT_ACCORDION_LOCATION.has(this.location)) {
-        this.tryRestoreAccordionSize(container.options!.containerId);
-      }
+      this.tryRestoreAccordionSize(container);
     });
   }
 
   removeContainer(containerId: string) {
     const disposable = this.disposableMap.get(containerId);
     disposable?.dispose();
-    this.updateCurrentContainerId('');
-    this.doChangeViewEmitter.fire();
+    this.onStateChangeEmitter.fire();
   }
 
   dynamicAddContainer(containerId: string, options: ComponentRegistryInfo) {
     this.registerContainer(containerId, options);
     this.updateCurrentContainerId(containerId);
-    this.doChangeViewEmitter.fire();
   }
 
   protected doInsertTab(containers: ComponentRegistryInfo[], sourceIndex: number, targetIndex: number) {
@@ -762,12 +710,12 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: ({ forceShow }: { forceShow?: boolean } = {}) => {
-            // 支持toggle
-            if (this.location === 'bottom' && !forceShow) {
-              this.updateCurrentContainerId(this.currentContainerId.get() === containerId ? '' : containerId);
-            } else {
-              this.updateCurrentContainerId(containerId);
-            }
+            this.behaviorHandler.handleActivateKeyBinding(
+              containerId,
+              this.currentContainerId.get() || '',
+              (id: string) => this.updateCurrentContainerId(id),
+              forceShow,
+            );
           },
         },
       ),
@@ -858,31 +806,6 @@ export class TabbarService extends WithEventBus {
     return `${containerId}.isInMore`;
   }
 
-  protected registerPanelMenus() {
-    this.menuRegistry.registerMenuItems(getTabbarCommonMenuId('bottom'), [
-      {
-        command: EXPAND_BOTTOM_PANEL.id,
-        group: 'navigation',
-        when: '!bottomFullExpanded',
-        order: 1,
-      },
-      {
-        command: RETRACT_BOTTOM_PANEL.id,
-        group: 'navigation',
-        when: 'bottomFullExpanded',
-        order: 1,
-      },
-      {
-        command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
-        group: 'navigation',
-        order: 2,
-      },
-    ]);
-    this.commonTitleMenu = this.ctxMenuService.createMenu({
-      id: 'tabbar/bottom/common',
-    });
-  }
-
   protected doToggleTab(containerId: string, forceShow?: boolean) {
     const state = this.getContainerState(containerId);
     if (forceShow === undefined) {
@@ -898,9 +821,9 @@ export class TabbarService extends WithEventBus {
     this.storeState();
   }
 
-  protected shouldExpand(containerId: string | undefined) {
+  protected shouldExpand(containerId: string | undefined): boolean {
     const info = this.getContainer(containerId);
-    return info && info.options && info.options.expanded;
+    return !!(info && info.options && info.options.expanded);
   }
 
   protected onResize() {
@@ -934,7 +857,11 @@ export class TabbarService extends WithEventBus {
     this.onCurrentChangeEmitter.fire({ previousId, currentId });
     const isCurrentExpanded = this.shouldExpand(currentId);
     if (this.shouldExpand(this.previousContainerId) || isCurrentExpanded) {
-      this.handleFullExpanded(currentId, isCurrentExpanded);
+      this.behaviorHandler.handleFullExpanded(currentId, isCurrentExpanded, this.resizeHandle, {
+        barSize: this.barSize,
+        panelSize: this.panelSize,
+        prevSize: this.prevSize,
+      });
     } else {
       if (currentId) {
         if (previousId && currentId !== previousId) {
@@ -953,43 +880,7 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  protected tryRestoreAccordionSize(containerId: string) {
-    if (this.accordionRestored.has(containerId)) {
-      return;
-    }
-    const containerInfo = this.containersMap.get(containerId);
-    // 使用自定义视图取代手风琴的面板不需要 restore
-    // scm 视图例外，因为在新版本 Gitlens 中可以将自己注册到 scm 中
-    // 暂时用这种方式使 scm 面板状态可以被持久化
-    if (
-      (!containerInfo || containerInfo.options?.component) &&
-      containerInfo?.options?.containerId !== SCM_CONTAINER_ID
-    ) {
-      return;
-    }
-    const accordionService = this.layoutService.getAccordionService(containerId);
-    // 需要保证此时tab切换已完成dom渲染
-    accordionService.restoreState();
-    this.accordionRestored.add(containerId);
-  }
-
-  protected handleFullExpanded(currentId: string, isCurrentExpanded?: boolean) {
-    if (!this.resizeHandle) {
-      return;
-    }
-    const { setRelativeSize, setSize } = this.resizeHandle;
-    if (currentId) {
-      if (isCurrentExpanded) {
-        if (!this.isLatter) {
-          setRelativeSize(1, 0);
-        } else {
-          setRelativeSize(0, 1);
-        }
-      } else {
-        setSize(this.prevSize || this.panelSize + this.barSize);
-      }
-    } else {
-      setSize(this.barSize);
-    }
+  protected tryRestoreAccordionSize(containerInfo: ComponentRegistryProvider) {
+    this.behaviorHandler.tryRestoreAccordionSize(containerInfo, this.layoutService);
   }
 }

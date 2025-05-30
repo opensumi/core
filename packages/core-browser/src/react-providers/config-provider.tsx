@@ -113,7 +113,7 @@ export interface AppConfig {
   panelSizes?: { [slotLocation: string]: number };
   /**
    * 定义各个区块的默认面板
-   * 如：{ [SlotLocation.bottom]: '@opensumi/ide-terminal-next' }
+   * 如：{ [SlotLocation.panel]: '@opensumi/ide-terminal-next' }
    * 定义了底部区块默认使用 `@opensumi/ide-terminal-next` 模块进行初始化
    */
   defaultPanels?: { [slotLocation: string]: string };
