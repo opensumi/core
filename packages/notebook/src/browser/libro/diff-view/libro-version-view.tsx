@@ -1,4 +1,3 @@
-import { LibroView } from '@difizen/libro-core';
 import {
   BaseView,
   ViewInstance,
@@ -9,7 +8,8 @@ import {
   transient,
   useInject,
   view,
-} from '@difizen/mana-app';
+} from '@difizen/libro-common/app';
+import { LibroView } from '@difizen/libro-core';
 import React, { forwardRef } from 'react';
 
 import type { LibroDiffView } from './';
