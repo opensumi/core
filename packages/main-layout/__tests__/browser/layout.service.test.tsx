@@ -207,7 +207,7 @@ describe('main layout test', () => {
 
   // main logic test
   it('containers in layout config should be registed', () => {
-    const rightTabbarService = service.getTabbarService('right');
+    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
     expect(rightTabbarService.visibleContainers.length).toEqual(1);
   });
 
@@ -267,11 +267,11 @@ describe('main layout test', () => {
           },
         ],
         options,
-        'left',
+        SlotLocation.view,
       );
     });
     const handler = service.getTabbarHandler(testContainerId2)!;
-    const tabbarService = service.getTabbarService('left');
+    const tabbarService = service.getTabbarService(SlotLocation.view);
     expect(handler).toBeDefined();
     const mockCb = jest.fn();
     handler.onActivate(mockCb);
@@ -357,7 +357,7 @@ describe('main layout test', () => {
           containerId: 'containerWithTab',
           component: MockView,
         },
-        'left',
+        SlotLocation.view,
       );
     });
     expect(document.getElementById('containerWithTab')).toBeDefined();
@@ -369,7 +369,7 @@ describe('main layout test', () => {
           component: MockView,
           hideTab: true,
         },
-        'left',
+        SlotLocation.view,
       );
     });
     expect(document.getElementById('containerWithoutTab')).toBeNull();
@@ -413,9 +413,9 @@ describe('main layout test', () => {
   it('shouldn`t register empty tabbar component with hideIfEmpty option until valid view collected', () => {
     const emptyContainerId = 'emptyContainerId';
     act(() => {
-      service.collectTabbarComponent([], { hideIfEmpty: true, containerId: emptyContainerId }, 'left');
+      service.collectTabbarComponent([], { hideIfEmpty: true, containerId: emptyContainerId }, SlotLocation.view);
     });
-    const tabbarService = service.getTabbarService('left');
+    const tabbarService = service.getTabbarService(SlotLocation.view);
     expect(tabbarService.getContainer(emptyContainerId)).toBeUndefined();
     act(() => {
       service.collectViewComponent({ id: 'testViewId', component: MockView }, emptyContainerId);
@@ -426,11 +426,11 @@ describe('main layout test', () => {
   // toggle / expand api test
 
   it('toggle slot should work', async () => {
-    const rightTabbarService = service.getTabbarService('right');
+    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
     // currentContainerId 空字符串表示当前未选中任何tab
     expect(rightTabbarService.currentContainerId.get()).toEqual('');
     act(() => {
-      service.toggleSlot('right');
+      service.toggleSlot(SlotLocation.extendView);
     });
     expect(rightTabbarService.currentContainerId.get()).toBeTruthy();
     // panel visible
@@ -438,10 +438,10 @@ describe('main layout test', () => {
   });
 
   it('should be able to judge whether a tab panel is visible', () => {
-    expect(service.isVisible('right')).toBeTruthy();
+    expect(service.isVisible(SlotLocation.extendView)).toBeTruthy();
     act(() => {
-      service.toggleSlot('right', false);
+      service.toggleSlot(SlotLocation.extendView, false);
     });
-    expect(service.isVisible('right')).toBeFalsy();
+    expect(service.isVisible(SlotLocation.extendView)).toBeFalsy();
   });
 });
