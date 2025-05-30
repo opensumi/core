@@ -34,7 +34,7 @@ export const AILayout = () => {
           <SlotRenderer
             slot={SlotLocation.view}
             isTabbar={true}
-            defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
+            defaultSize={layout[SlotLocation.view]?.currentId ? layout[SlotLocation.view]?.size || 310 : 49}
             minResize={280}
             minSize={49}
           />
@@ -42,7 +42,7 @@ export const AILayout = () => {
             <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
             <SlotRenderer
               flex={1}
-              defaultSize={layout.bottom?.currentId ? layout.bottom?.size : 24}
+              defaultSize={layout[SlotLocation.panel]?.currentId ? layout[SlotLocation.panel]?.size : 24}
               minResize={160}
               slot={SlotLocation.panel}
               isTabbar={true}
@@ -51,7 +51,11 @@ export const AILayout = () => {
           <SlotRenderer
             slot={SlotLocation.extendView}
             isTabbar={true}
-            defaultSize={layout.right?.currentId ? layout.right?.size || 360 : defaultRightSize}
+            defaultSize={
+              layout[SlotLocation.extendView]?.currentId
+                ? layout[SlotLocation.extendView]?.size || 360
+                : defaultRightSize
+            }
             minResize={280}
             minSize={defaultRightSize}
           />
