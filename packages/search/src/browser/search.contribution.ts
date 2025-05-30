@@ -307,14 +307,23 @@ export class SearchContribution
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@opensumi/ide-search', [], {
-      containerId: SEARCH_CONTAINER_ID,
-      iconClass: getIcon('search'),
-      title: localize('search.title'),
-      component: Search,
-      priority: 9,
-      activateKeyBinding: 'ctrlcmd+shift+f',
-    });
+    registry.register(
+      '@opensumi/ide-search',
+      [
+        {
+          id: SEARCH_CONTAINER_ID,
+          name: localize('search.title'),
+          component: Search,
+        },
+      ],
+      {
+        containerId: SEARCH_CONTAINER_ID,
+        iconClass: getIcon('search'),
+        title: '',
+        priority: 9,
+        activateKeyBinding: 'ctrlcmd+shift+f',
+      },
+    );
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {

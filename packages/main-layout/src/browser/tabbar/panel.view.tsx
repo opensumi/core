@@ -224,7 +224,7 @@ const BottomPanelView: React.FC<{
         </div>
         <div className={styles_panel_toolbar_container}>
           {titleMenu && <InlineActionBar menus={titleMenu} />}
-          <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
+          {tabbarService.commonTitleMenu && <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />}
         </div>
       </div>
       <div className={styles.container_wrap} ref={(ele) => (ref.current = ele)}>
@@ -240,7 +240,7 @@ const BottomPanelView: React.FC<{
           <AccordionContainer
             views={component.views}
             alignment='horizontal'
-            minSize={component.options!.miniSize}
+            minSize={component.options!.miniSize || 200}
             containerId={component.options!.containerId}
           />
         )}

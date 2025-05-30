@@ -37,7 +37,7 @@ import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk
 import { WatcherProcessManagerToken } from '@opensumi/ide-file-service/lib/node/watcher-process-manager';
 import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { RETRACT_BOTTOM_PANEL } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
+import { RETRACT_PANEL_COMMAND } from '@opensumi/ide-main-layout/lib/browser/command';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IThemeService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -325,7 +325,7 @@ describe('FileTree should be work while on single workspace model', () => {
       const { handleItemClick, decorations } = fileTreeModelService;
 
       const retracted = jest.fn();
-      injector.mockCommand(RETRACT_BOTTOM_PANEL.id, () => {
+      injector.mockCommand(RETRACT_PANEL_COMMAND.id, () => {
         mockMainLayoutService.bottomExpanded = false;
         retracted();
       });

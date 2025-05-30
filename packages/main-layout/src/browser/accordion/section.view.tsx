@@ -169,7 +169,11 @@ export const AccordionSection = ({
   }, [expanded, headerSize, alignment]);
 
   return (
-    <div className={styles_kt_split_panel} data-view-id={viewId} draggable={false}>
+    <div
+      className={cls(styles_kt_split_panel, { horizontal: alignment === 'horizontal' })}
+      data-view-id={viewId}
+      draggable={false}
+    >
       {!noHeader && (
         <div
           {...attrs}

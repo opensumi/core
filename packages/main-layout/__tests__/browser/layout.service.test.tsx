@@ -77,13 +77,13 @@ describe('main layout test', () => {
         [SlotLocation.top]: {
           modules: [testToken],
         },
-        [SlotLocation.left]: {
+        [SlotLocation.view]: {
           modules: [testToken],
         },
-        [SlotLocation.right]: {
+        [SlotLocation.extendView]: {
           modules: [uniqueToken],
         },
-        [SlotLocation.bottom]: {
+        [SlotLocation.panel]: {
           modules: [testToken],
         },
         [SlotLocation.statusBar]: {
@@ -191,9 +191,9 @@ describe('main layout test', () => {
       });
       service = injector.get(IMainLayoutService);
       // 测试环境下，readDom 的 render 回调的时候不知道为啥 render 还没执行到 tabbarRenderer，需要兼容下，先初始化好tababrService
-      service.getTabbarService('left');
-      service.getTabbarService('right');
-      service.getTabbarService('bottom');
+      service.getTabbarService(SlotLocation.view);
+      service.getTabbarService(SlotLocation.extendView);
+      service.getTabbarService(SlotLocation.panel);
     });
     await defered.promise;
   });
@@ -207,7 +207,7 @@ describe('main layout test', () => {
 
   // main logic test
   it('containers in layout config should be registed', () => {
-    const rightTabbarService = service.getTabbarService('right');
+    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
     expect(rightTabbarService.visibleContainers.length).toEqual(1);
   });
 
@@ -226,7 +226,7 @@ describe('main layout test', () => {
           containerId: 'container-before-render',
           title: 'test title',
         },
-        'bottom',
+        SlotLocation.panel,
       );
     });
     expect(service.getTabbarHandler('container-before-render')).toBeDefined();
@@ -267,11 +267,11 @@ describe('main layout test', () => {
           },
         ],
         options,
-        'left',
+        SlotLocation.view,
       );
     });
     const handler = service.getTabbarHandler(testContainerId2)!;
-    const tabbarService = service.getTabbarService('left');
+    const tabbarService = service.getTabbarService(SlotLocation.view);
     expect(handler).toBeDefined();
     const mockCb = jest.fn();
     handler.onActivate(mockCb);
@@ -338,7 +338,7 @@ describe('main layout test', () => {
             message: 'hello world',
           },
         },
-        'bottom',
+        SlotLocation.panel,
       );
     });
     const accordionService = service.getAccordionService('container-use-react');
@@ -357,7 +357,7 @@ describe('main layout test', () => {
           containerId: 'containerWithTab',
           component: MockView,
         },
-        'left',
+        SlotLocation.view,
       );
     });
     expect(document.getElementById('containerWithTab')).toBeDefined();
@@ -369,7 +369,7 @@ describe('main layout test', () => {
           component: MockView,
           hideTab: true,
         },
-        'left',
+        SlotLocation.view,
       );
     });
     expect(document.getElementById('containerWithoutTab')).toBeNull();
@@ -413,9 +413,9 @@ describe('main layout test', () => {
   it('shouldn`t register empty tabbar component with hideIfEmpty option until valid view collected', () => {
     const emptyContainerId = 'emptyContainerId';
     act(() => {
-      service.collectTabbarComponent([], { hideIfEmpty: true, containerId: emptyContainerId }, 'left');
+      service.collectTabbarComponent([], { hideIfEmpty: true, containerId: emptyContainerId }, SlotLocation.view);
     });
-    const tabbarService = service.getTabbarService('left');
+    const tabbarService = service.getTabbarService(SlotLocation.view);
     expect(tabbarService.getContainer(emptyContainerId)).toBeUndefined();
     act(() => {
       service.collectViewComponent({ id: 'testViewId', component: MockView }, emptyContainerId);
@@ -426,11 +426,11 @@ describe('main layout test', () => {
   // toggle / expand api test
 
   it('toggle slot should work', async () => {
-    const rightTabbarService = service.getTabbarService('right');
+    const rightTabbarService = service.getTabbarService(SlotLocation.extendView);
     // currentContainerId 空字符串表示当前未选中任何tab
     expect(rightTabbarService.currentContainerId.get()).toEqual('');
     act(() => {
-      service.toggleSlot('right');
+      service.toggleSlot(SlotLocation.extendView);
     });
     expect(rightTabbarService.currentContainerId.get()).toBeTruthy();
     // panel visible
@@ -438,10 +438,10 @@ describe('main layout test', () => {
   });
 
   it('should be able to judge whether a tab panel is visible', () => {
-    expect(service.isVisible('right')).toBeTruthy();
+    expect(service.isVisible(SlotLocation.extendView)).toBeTruthy();
     act(() => {
-      service.toggleSlot('right', false);
+      service.toggleSlot(SlotLocation.extendView, false);
     });
-    expect(service.isVisible('right')).toBeFalsy();
+    expect(service.isVisible(SlotLocation.extendView)).toBeFalsy();
   });
 });

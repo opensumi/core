@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import React, { useMemo } from 'react';
 
 import { View, useAutorun, useInjectable } from '@opensumi/ide-core-browser';
@@ -33,6 +34,7 @@ export const AccordionContainer = ({
   const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
+  accordionService.alignment = alignment;
   const visibleViews = useAutorun(accordionService.visibleViews);
 
   useAutorun(accordionService.stateObservable);
@@ -52,10 +54,10 @@ export const AccordionContainer = ({
   React.useEffect(() => {
     accordionService.initConfig({ headerSize: layoutHeaderSize, minSize });
   }, []);
-
+  // FIXME: accordion 的 resize event 失效了
   return (
     <SplitPanel
-      className={className}
+      className={cls(className, { horizontal: alignment === 'horizontal' })}
       style={style}
       headerSize={headerSize}
       dynamicTarget={true}
