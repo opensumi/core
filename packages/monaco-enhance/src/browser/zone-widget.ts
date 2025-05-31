@@ -161,17 +161,6 @@ class Arrow {
   }
 }
 
-const defaultColor = new Color(new RGBA(0, 122, 204));
-
-const defaultOptions: IOptions = {
-  showArrow: true,
-  showFrame: true,
-  className: '',
-  frameColor: defaultColor,
-  arrowColor: defaultColor,
-  keepEditorSelection: false,
-};
-
 /**
  * 构造函数负责 dom 结构，
  * show 负责 class 注入，
@@ -308,7 +297,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
 
   private _getWidth(info: monaco.editor.EditorLayoutInfo): number {
     // 增加部分与 Minimap 的边距，整体视觉效果更好
-    const minimapWidth = info.minimap ? info.minimap.minimapWidth + 5 : 0;
+    const minimapWidth = info.minimap && info.minimap.minimapWidth ? info.minimap.minimapWidth + 5 : 0;
     return info.width - minimapWidth - info.verticalScrollbarWidth;
   }
 

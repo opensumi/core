@@ -59,6 +59,9 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   private onDidChangeEmitter: Emitter<void> = new Emitter();
 
+  // 用于跟踪待执行的 setTimeout，避免快速滚动时的竞态条件
+  private pendingShowTimeouts = new Set<NodeJS.Timeout>();
+
   get onDidChange() {
     return this.onDidChangeEmitter.event;
   }
@@ -111,6 +114,18 @@ export class CommentsThread extends Disposable implements ICommentsThread {
         commentThreadIsEmptyContext.set(!length);
       }),
     );
+    const editors = this.getEditorsByUri(this.uri);
+    editors.forEach((editor) => {
+      let widget = this.widgets.get(editor);
+      // 说明是在新的 group 中打开
+      if (!widget) {
+        widget = this.addWidgetByEditor(editor);
+      }
+      // 如果标记之前是已经展示的 widget，则调用 show 方法
+      if (editor.currentUri?.isEqual(this.uri)) {
+        widget.show();
+      }
+    });
     this.addDispose(
       autorun((reader) => {
         const isCollapsed = this.isCollapsed.read(reader);
@@ -132,6 +147,9 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this.addDispose({
       dispose: () => {
         this.updateComments([]);
+        // 清理待执行的 timeout
+        this.pendingShowTimeouts.forEach((timeout) => clearTimeout(timeout));
+        this.pendingShowTimeouts.clear();
       },
     });
     this.onDidChangeEmitter.fire();
@@ -182,7 +200,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   private addWidgetByEditor(editor: IEditor) {
     const widget = this.injector.get(CommentsZoneWidget, [editor, this, { arrowColor: 'var(--peekView-border)' }]);
-    // 如果当前 widget 发生高度变化，通知同一个 同一个 editor 的其他 range 相同的 thread 也重新计算一下高度
+    // 如果当前 widget 发生高度变化，通知同一个 editor 的其他 range 相同的 thread 也重新计算一下高度
     this.addDispose(
       widget.onChangeZoneWidget(() => {
         const threads = this.commentsService.commentsThreads.filter((thread) => this.isEqual(thread));
@@ -243,7 +261,16 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     }
   }
 
+  public removePaddingShowedWidgets() {
+    this.pendingShowTimeouts.forEach((timeout) => clearTimeout(timeout));
+    this.pendingShowTimeouts.clear();
+  }
+
   public showWidgetsIfShowed() {
+    // 清除之前的待执行 timeout，避免竞态条件
+    this.pendingShowTimeouts.forEach((timeout) => clearTimeout(timeout));
+    this.pendingShowTimeouts.clear();
+
     for (const editor of this.getEditorsByUri(this.uri)) {
       let widget = this.widgets.get(editor);
       // 说明是在新的 group 中打开
@@ -252,9 +279,16 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       }
       // 如果标记之前是已经展示的 widget，则调用 show 方法
       if (editor.currentUri?.isEqual(this.uri)) {
-        setTimeout(() => {
-          widget?.show();
-        }, 0);
+        const timeout = setTimeout(() => {
+          // 在异步回调中再次检查编辑器的当前 URI 是否仍然匹配 thread 的 URI
+          // 防止用户快速滚动时 widget 渲染到错误的文件中
+          if (widget && editor.currentUri?.isEqual(this.uri)) {
+            widget.show();
+          }
+          // 执行完成后从跟踪集合中移除
+          this.pendingShowTimeouts.delete(timeout);
+        }, 100);
+        this.pendingShowTimeouts.add(timeout);
       }
     }
   }

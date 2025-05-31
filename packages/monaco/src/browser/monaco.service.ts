@@ -9,6 +9,7 @@ import {
   Uri,
 } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { KeyCodeChord } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/config/editorConfiguration';
 import {
@@ -17,6 +18,7 @@ import {
   isDiffEditor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { MultiDiffEditorWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidget';
+import { IResourceLabelOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/workbenchUIElementFactory';
 import { ShowLightbulbIconMode } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
@@ -52,6 +54,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   @Autowired(KeybindingService)
   protected readonly keybindingService: KeybindingService;
+
+  @Autowired(IWorkspaceService)
+  private readonly workspaceService: IWorkspaceService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -173,11 +178,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
         createResourceLabel: (element: HTMLElement) => {
           const resourceLabel = new ResourceLabel(element);
           return {
-            setUri: (uri: Uri) => {
+            setUri: (uri: Uri, options?: IResourceLabelOptions) => {
               if (!uri) {
                 resourceLabel.clear();
               } else {
-                resourceLabel.setUri(uri);
+                resourceLabel.setUri(uri, this.workspaceService, options);
               }
             },
             dispose: () => {},
