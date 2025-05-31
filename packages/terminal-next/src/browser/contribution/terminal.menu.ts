@@ -16,7 +16,8 @@ import {
   MenuId,
   getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { CommandService, Domain, isWindows } from '@opensumi/ide-core-common';
+import { CommandService, Domain, OperatingSystem, isWindows } from '@opensumi/ide-core-common';
+import { IApplicationService } from '@opensumi/ide-core-common/lib/types/application';
 
 import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService } from '../../common';
 
@@ -47,6 +48,9 @@ export class TerminalMenuContribution implements MenuContribution {
 
   @Autowired(PreferenceService)
   protected readonly preference: PreferenceService;
+
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
 
   registerMenus(menuRegistry: IMenuRegistry) {
     /** 终端 Tab 菜单 */
@@ -126,7 +130,7 @@ export class TerminalMenuContribution implements MenuContribution {
       when,
     });
 
-    if (isWindows) {
+    if (this.applicationService.backendOS === OperatingSystem.Windows) {
       menuRegistry.registerMenuItems(MenuId.TerminalDefaultTypeMenu, [
         {
           command: TERMINAL_COMMANDS.SELECT_CMD,
