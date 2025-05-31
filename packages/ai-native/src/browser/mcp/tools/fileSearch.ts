@@ -80,11 +80,14 @@ export class FileSearchTool implements MCPServerContribution {
     });
 
     const messages = this.chatInternalService.sessionModel.history.getMessages();
-    this.chatInternalService.sessionModel.history.setMessageAdditional(messages[messages.length - 1].id, {
-      [args.toolCallId]: {
-        files,
-      },
-    });
+    const messageId = messages[messages.length - 1]?.id;
+    if (messageId) {
+      this.chatInternalService.sessionModel.history.setMessageAdditional(messageId, {
+        [args.toolCallId]: {
+          files,
+        },
+      });
+    }
 
     logger.appendLine(`Found ${files.length} files matching "${args.query}"`);
 
