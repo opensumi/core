@@ -918,6 +918,7 @@ export function DefaultChatViewHeader({
 }) {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -947,9 +948,26 @@ export function DefaultChatViewHeader({
     const getHistoryList = () => {
       const currentMessages = aiChatService.sessionModel.history.getMessages();
       const latestUserMessage = currentMessages.findLast((m) => m.role === ChatMessageRole.User);
-      setCurrentTitle(
-        latestUserMessage ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH) : '',
-      );
+      const summaryProvider = chatFeatureRegistry.getMessageSummaryProvider();
+      const currentTitle = latestUserMessage
+        ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
+        : '';
+      const messages = aiChatService.sessionModel.history.getMessages().map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+      if (messages.length > 2 && summaryProvider && aiChatService.sessionModel.sessionId) {
+        summaryProvider.getMessageSummary(messages).then((summary) => {
+          if (summary) {
+            setCurrentTitle(summary.slice(0, MAX_TITLE_LENGTH));
+          } else {
+            setCurrentTitle(currentTitle);
+          }
+        });
+      } else {
+        setCurrentTitle(currentTitle);
+      }
+
       setHistoryList(
         aiChatService.getSessions().map((session) => {
           const history = session.history;

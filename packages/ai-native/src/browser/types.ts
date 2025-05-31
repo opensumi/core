@@ -5,6 +5,7 @@ import { ZodSchema } from 'zod';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
   CancellationToken,
+  ChatMessageRole,
   ChatResponse,
   Deferred,
   IAICompletionOption,
@@ -134,6 +135,8 @@ export interface IChatFeatureRegistry {
   registerImageUploadProvider(provider: IImageUploadProvider): void;
   registerWelcome(content: IChatWelcomeMessageContent | React.ReactNode, sampleQuestions?: ISampleQuestions[]): void;
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void;
+
+  registerMessageSummaryProvider(provider: IMessageSummaryProvider): void;
 }
 
 export type ChatWelcomeRender = (props: {
@@ -296,6 +299,15 @@ export interface IProblemFixProviderRegistry {
 
 export interface IImageUploadProvider {
   imageUpload(file: File): Promise<DataContent | URL>;
+}
+
+export interface IMessageSummaryProvider {
+  getMessageSummary(
+    messages: Array<{
+      role: ChatMessageRole;
+      content: string;
+    }>,
+  ): Promise<string | undefined>;
 }
 
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
