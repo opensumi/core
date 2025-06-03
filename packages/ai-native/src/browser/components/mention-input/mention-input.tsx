@@ -75,6 +75,15 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     rules: [],
   });
 
+  // 添加用于跟踪 mention_tag 的状态
+  const prevMentionTagsRef = React.useRef<
+    Array<{
+      id: string;
+      type: string;
+      contextId: string;
+    }>
+  >([]);
+
   const getCurrentItems = (): MentionItem[] => {
     if (mentionState.level === 0) {
       return mentionItems;
@@ -208,6 +217,45 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     if (isNavigatingHistory) {
       setIsNavigatingHistory(false);
       setHistoryIndex(-1);
+    }
+
+    // 检测 mention_tag 的删除
+    if (editorRef.current) {
+      const currentMentionTags = Array.from(editorRef.current.querySelectorAll(`.${styles.mention_tag}`)).map(
+        (tag) => ({
+          id: tag.getAttribute('data-id') || '',
+          type: tag.getAttribute('data-type') || '',
+          contextId: tag.getAttribute('data-context-id') || '',
+        }),
+      );
+
+      // 找出被删除的 mention_tag
+      const deletedTags = prevMentionTagsRef.current.filter(
+        (prevTag) =>
+          !currentMentionTags.some(
+            (currentTag) =>
+              currentTag.id === prevTag.id &&
+              currentTag.type === prevTag.type &&
+              currentTag.contextId === prevTag.contextId,
+          ),
+      );
+
+      // 清理被删除的 mention_tag 对应的 context
+      deletedTags.forEach((deletedTag) => {
+        if (deletedTag.contextId) {
+          const uri = new URI(deletedTag.contextId);
+          if (deletedTag.type === MentionType.FILE) {
+            removeContext(MentionType.FILE, uri);
+          } else if (deletedTag.type === MentionType.FOLDER) {
+            removeContext(MentionType.FOLDER, uri);
+          } else if (deletedTag.type === MentionType.RULE) {
+            removeContext(MentionType.RULE, uri);
+          }
+        }
+      });
+
+      // 更新 mention_tag 状态
+      prevMentionTagsRef.current = currentMentionTags;
     }
 
     const selection = window.getSelection();
@@ -493,7 +541,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     const imageFiles: File[] = [];
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < items.length; i++) {
-      if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+      if (items[i].kind === MentionType.FILE && items[i].type.startsWith('image/')) {
         const file = items[i].getAsFile();
         if (file) {
           imageFiles.push(file);
@@ -575,6 +623,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       if (placeholder && !editorRef.current.textContent) {
         editorRef.current.setAttribute('data-placeholder', placeholder);
       }
+
+      // 初始化 mention_tag 状态
+      const initialMentionTags = Array.from(editorRef.current.querySelectorAll(`.${styles.mention_tag}`)).map(
+        (tag) => ({
+          id: tag.getAttribute('data-id') || '',
+          type: tag.getAttribute('data-type') || '',
+          contextId: tag.getAttribute('data-context-id') || '',
+        }),
+      );
+      prevMentionTagsRef.current = initialMentionTags;
     }
   }, [placeholder]);
 
@@ -830,12 +888,12 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     mentionTag.contentEditable = 'false';
 
     // 为 file 和 folder 类型添加图标
-    if (item.type === 'file' || item.type === 'folder') {
+    if (item.type === MentionType.FILE || item.type === 'folder') {
       // 创建图标容器
       const iconSpan = document.createElement('span');
       iconSpan.className = cls(
         styles.mention_icon,
-        item.type === 'file' ? labelService?.getIcon(new URI(item.text)) : getIcon('folder'),
+        item.type === MentionType.FILE ? labelService?.getIcon(new URI(item.text)) : getIcon('folder'),
       );
       mentionTag.appendChild(iconSpan);
     }
@@ -1105,12 +1163,12 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   );
 
   const removeContext = React.useCallback(
-    (type: 'file' | 'folder' | 'rule', uri: URI) => {
-      if (type === 'file') {
-        contextService?.removeFileFromContext(uri);
-      } else if (type === 'folder') {
+    (type: MentionType, uri: URI) => {
+      if (type === MentionType.FILE) {
+        contextService?.removeFileFromContext(uri, true);
+      } else if (type === MentionType.FOLDER) {
         contextService?.removeFolderFromContext(uri);
-      } else if (type === 'rule') {
+      } else if (type === MentionType.RULE) {
         contextService?.removeRuleFromContext(uri);
       }
     },
@@ -1130,15 +1188,19 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           <div
             key={`file-${index}`}
             className={styles.context_preview_item}
-            data-type='file'
+            data-type={MentionType.FILE}
             onClick={() => contextService?.removeFileFromContext(file.uri, true)}
           >
             <Icon
-              iconClass={cls(labelService?.getIcon(file.uri) || 'file', styles.context_preview_item_icon, styles.icon)}
+              iconClass={cls(
+                labelService?.getIcon(file.uri) || MentionType.FILE,
+                styles.context_preview_item_icon,
+                styles.icon,
+              )}
             />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
-              onClick={() => removeContext('file', file.uri)}
+              onClick={() => removeContext(MentionType.FILE, file.uri)}
             />
             <span className={styles.context_preview_item_text}>
               {workspaceService?.workspace
@@ -1158,7 +1220,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
             <Icon iconClass={cls(getIcon('folder'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
-              onClick={() => removeContext('folder', folder.uri)}
+              onClick={() => removeContext(MentionType.FOLDER, folder.uri)}
             />
             <span className={styles.context_preview_item_text}>
               {workspaceService?.workspace
@@ -1189,7 +1251,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
             <Icon iconClass={cls(getIcon('rules'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
-              onClick={() => removeContext('rule', new URI(rule.path))}
+              onClick={() => removeContext(MentionType.RULE, new URI(rule.path))}
             />
             <span className={styles.context_preview_item_text}>
               {rule.path.split('/').pop()?.replace('.mdc', '') || 'Unknown Rule'}
@@ -1200,6 +1262,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     ),
     [
       handleClearContext,
+      hasContext,
       attachedFiles,
       workspaceService,
       labelService,
