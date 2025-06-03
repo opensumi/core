@@ -46,19 +46,17 @@ export interface MentionState {
 interface ModelOption {
   label: string;
   value: string;
-}
-
-export interface ExtendedModelOption {
-  label: string;
-  value: string;
   icon?: string;
   iconClass?: string;
   tags?: string[];
-  features?: string[];
   description?: string;
-  disabled?: boolean;
   badge?: string;
   badgeColor?: string;
+}
+
+export interface ExtendedModelOption extends ModelOption {
+  disabled?: boolean;
+  selected?: boolean; // 由外部控制选中状态
 }
 
 export enum FooterButtonPosition {
@@ -89,6 +87,9 @@ export interface FooterConfig {
   buttons?: FooterButton[];
   showModelSelector?: boolean;
   disableModelSelector?: boolean;
+  showThinking?: boolean;
+  thinkingEnabled?: boolean;
+  onThinkingChange?: (enabled: boolean) => void;
 }
 
 export interface MentionInputProps {

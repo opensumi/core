@@ -422,8 +422,20 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const defaultMentionInputFooterOptions: FooterConfig = useMemo(
     () => ({
       modelOptions: [
-        { label: 'Claude 4 Sonnet', value: 'claude_sonnet4' },
-        { label: 'DeepSeek R1', value: 'deepseek-r1' },
+        {
+          label: 'Claude 4 Sonnet',
+          value: 'claude_sonnet4',
+          icon: 'sparkle',
+          tags: ['多模态', '长上下文理解', '思考模式'],
+          description: '高性能模型，支持多模态输入',
+        },
+        {
+          label: 'DeepSeek R1',
+          value: 'deepseek-r1',
+          icon: 'sparkle',
+          tags: ['思考模式', '长上下文理解'],
+          description: '专业创作，支持多模态输入',
+        },
       ],
       defaultModel:
         props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',

@@ -2,7 +2,7 @@ import cls from 'classnames';
 import * as React from 'react';
 
 import { getSymbolIcon, localize } from '@opensumi/ide-core-browser';
-import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
 
@@ -11,6 +11,7 @@ import { ProjectRule } from '../../../common/types';
 
 import styles from './mention-input.module.less';
 import { MentionPanel } from './mention-panel';
+import { ExtendedModelOption, MentionSelect } from './mention-select';
 import {
   FooterButtonPosition,
   MENTION_KEYWORD,
@@ -1162,6 +1163,29 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [footerConfig.disableModelSelector],
   );
 
+  // 转换模型选项为扩展格式
+  const getExtendedModelOptions = React.useMemo((): ExtendedModelOption[] => {
+    // 如果有扩展模型选项，直接使用
+    if (footerConfig.extendedModelOptions) {
+      return footerConfig.extendedModelOptions.map((option) => ({
+        ...option,
+        selected: option.value === selectedModel,
+      }));
+    }
+
+    // 否则从基础模型选项转换
+    return (footerConfig.modelOptions || []).map((option): ExtendedModelOption => {
+      const extendedOption: ExtendedModelOption = {
+        ...option,
+      };
+
+      // 设置选中状态：如果当前模型匹配选中的模型，则标记为选中
+      extendedOption.selected = option.value === selectedModel;
+
+      return extendedOption;
+    });
+  }, [footerConfig.modelOptions, footerConfig.extendedModelOptions, selectedModel]);
+
   const removeContext = React.useCallback(
     (type: MentionType, uri: URI) => {
       if (type === MentionType.FILE) {
@@ -1304,13 +1328,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         <div className={styles.left_control}>
           {footerConfig.showModelSelector &&
             renderModelSelectorTip(
-              <Select
-                options={footerConfig.modelOptions || []}
+              <MentionSelect
+                options={getExtendedModelOptions}
                 value={selectedModel}
                 onChange={handleModelChange}
                 className={styles.model_selector}
                 size='small'
                 disabled={footerConfig.disableModelSelector}
+                showThinking={footerConfig.showThinking}
+                thinkingEnabled={footerConfig.thinkingEnabled}
+                onThinkingChange={footerConfig.onThinkingChange}
               />,
             )}
           {renderButtons(FooterButtonPosition.LEFT)}
