@@ -352,7 +352,9 @@ export class ChatModel extends Disposable implements IChatModel {
           : request.message.prompt,
       });
       for (const part of request.response.responseParts) {
-        if (part.kind === 'treeData' || part.kind === 'component') {
+        // Remove reasoning_content from history
+        // https://api-docs.deepseek.com/zh-cn/guides/reasoning_model#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%8B%BC%E6%8E%A5
+        if (part.kind === 'treeData' || part.kind === 'component' || part.kind === 'reasoning') {
           continue;
         }
         if (part.kind !== 'toolCall') {
