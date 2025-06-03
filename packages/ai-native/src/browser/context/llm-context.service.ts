@@ -413,20 +413,28 @@ ${globalRules}
     return [userInfoSection, rulesSection];
   }
 
-  private findApplicableRules(): ProjectRule[] {
-    const requestedByAgentRules = this.rulesService.projectRules.filter((rule) => rule.description);
-    const alwaysApplyRules = this.rulesService.projectRules.filter((rule) => rule.alwaysApply);
-    const requestedByFileRules = this.findFileMatchingRules();
+  private findApplicableRules(attachedRules: ProjectRule[]): ProjectRule[] {
+    const otherRules = this.rulesService.projectRules.filter(
+      (rule) => !attachedRules.some((attachedRule) => attachedRule.path === rule.path),
+    );
+    const requestedByAgentRules = otherRules.filter((rule) => rule.description);
+    const alwaysApplyRules = otherRules.filter((rule) => rule.alwaysApply);
+    const requestedByFileRules = this.findFileMatchingRules(otherRules);
 
     return [...requestedByFileRules, ...requestedByAgentRules, ...alwaysApplyRules];
   }
-  private findFileMatchingRules(): ProjectRule[] {
-    const requestedByFileRules = this.rulesService.projectRules.filter((rule) => rule.globs);
+  private findFileMatchingRules(otherRules: ProjectRule[]): ProjectRule[] {
+    const requestedByFileRules = otherRules.filter((rule) => rule.globs);
     const filePaths = this.attachedFiles.map((file) => file.uri.toString());
     const folderPaths = this.attachedFolders.map((folder) => folder.uri.toString());
 
     return requestedByFileRules.filter((rule) => {
-      const globs = this.normalizeGlobs(rule.globs || []);
+      let globs = rule.globs;
+      if (isString(globs)) {
+        globs = this.normalizeGlobs(globs.split(','));
+      } else {
+        globs = this.normalizeGlobs(globs || []);
+      }
       const patterns = globs.map((pattern) => parseGlob(pattern));
       return patterns.some((match) => filePaths.some((path) => match(path)) || folderPaths.some((path) => match(path)));
     });
@@ -440,8 +448,9 @@ ${globalRules}
   }
 
   private serializeAttachedRules(rules: ProjectRule[] = []): string[] {
+    rules = this.findApplicableRules(rules);
     if (rules.length === 0) {
-      rules = this.findApplicableRules();
+      return [];
     }
 
     const header =

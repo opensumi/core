@@ -48,6 +48,19 @@ interface ModelOption {
   value: string;
 }
 
+export interface ExtendedModelOption {
+  label: string;
+  value: string;
+  icon?: string;
+  iconClass?: string;
+  tags?: string[];
+  features?: string[];
+  description?: string;
+  disabled?: boolean;
+  badge?: string;
+  badgeColor?: string;
+}
+
 export enum FooterButtonPosition {
   LEFT = 'left',
   RIGHT = 'right',
@@ -71,6 +84,7 @@ interface FooterButton {
 
 export interface FooterConfig {
   modelOptions?: ModelOption[];
+  extendedModelOptions?: ExtendedModelOption[];
   defaultModel?: string;
   buttons?: FooterButton[];
   showModelSelector?: boolean;

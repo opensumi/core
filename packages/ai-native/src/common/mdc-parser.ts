@@ -118,9 +118,6 @@ function parseFrontmatterByLine(frontmatterStr: string): IMDCFrontmatter {
     if (value) {
       result[key] = parseYamlValue(value);
       isInArray = false;
-    } else {
-      isInArray = true;
-      arrayItems = [];
     }
   }
 
