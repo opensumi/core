@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { SlotRenderer, useInjectable } from '@opensumi/ide-core-browser';
+import { SlotLocation, SlotRenderer, useInjectable } from '@opensumi/ide-core-browser';
 import { BoxPanel, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 
@@ -32,9 +32,9 @@ export const AILayout = () => {
           resizeHandleClassName={'design-slot_resize_horizontal'}
         >
           <SlotRenderer
-            slot='left'
+            slot={SlotLocation.view}
             isTabbar={true}
-            defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
+            defaultSize={layout[SlotLocation.view]?.currentId ? layout[SlotLocation.view]?.size || 310 : 49}
             minResize={280}
             minSize={49}
           />
@@ -42,16 +42,20 @@ export const AILayout = () => {
             <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
             <SlotRenderer
               flex={1}
-              defaultSize={layout.bottom?.currentId ? layout.bottom?.size : 24}
+              defaultSize={layout[SlotLocation.panel]?.currentId ? layout[SlotLocation.panel]?.size : 24}
               minResize={160}
-              slot='bottom'
+              slot={SlotLocation.panel}
               isTabbar={true}
             />
           </SplitPanel>
           <SlotRenderer
-            slot='right'
+            slot={SlotLocation.extendView}
             isTabbar={true}
-            defaultSize={layout.right?.currentId ? layout.right?.size || 360 : defaultRightSize}
+            defaultSize={
+              layout[SlotLocation.extendView]?.currentId
+                ? layout[SlotLocation.extendView]?.size || 360
+                : defaultRightSize
+            }
             minResize={280}
             minSize={defaultRightSize}
           />
@@ -59,7 +63,7 @@ export const AILayout = () => {
         <SlotRenderer
           slot={AI_CHAT_VIEW_ID}
           isTabbar={true}
-          defaultSize={layout.AI_Chat?.currentId ? layout.AI_Chat?.size || 360 : 0}
+          defaultSize={layout['AI-Chat']?.currentId ? layout['AI-Chat']?.size || 360 : 0}
           maxResize={420}
           minResize={280}
           minSize={0}

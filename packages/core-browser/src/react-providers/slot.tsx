@@ -16,11 +16,11 @@ const logger = getDebugLogger();
 export type SlotLocation = string;
 export const SlotLocation = {
   top: 'top',
-  left: 'left',
-  right: 'right',
+  view: 'view',
+  extendView: 'extendView',
   main: 'main',
   statusBar: 'statusBar',
-  bottom: 'bottom',
+  panel: 'panel',
   extra: 'extra',
   float: 'float',
   action: 'action',
@@ -55,9 +55,9 @@ export enum TabbarContextKeys {
 
 export function getTabbarCtxKey(location: string): TabbarContextKeys {
   const standardTabbarCtxKeys = {
-    [SlotLocation.left]: TabbarContextKeys.activeViewlet,
-    [SlotLocation.right]: TabbarContextKeys.activeExtendViewlet,
-    [SlotLocation.bottom]: TabbarContextKeys.activePanel,
+    [SlotLocation.view]: TabbarContextKeys.activeViewlet,
+    [SlotLocation.extendView]: TabbarContextKeys.activeExtendViewlet,
+    [SlotLocation.panel]: TabbarContextKeys.activePanel,
   };
 
   return standardTabbarCtxKeys[location] || 'activeExtendViewlet';
@@ -125,6 +125,17 @@ export interface RendererProps {
 }
 export type Renderer = React.ComponentType<RendererProps>;
 
+export interface TabbarBehaviorConfig {
+  /** 是否为后置位置（bar 在 panel 右侧或底下） */
+  isLatter?: boolean;
+  /** 支持的操作类型 */
+  supportedActions?: {
+    expand?: boolean;
+    toggle?: boolean;
+    accordion?: boolean;
+  };
+}
+
 export class SlotRendererRegistry {
   static DefaultRenderer({ components }: RendererProps) {
     return (
@@ -148,11 +159,15 @@ export class SlotRendererRegistry {
   }
 
   protected tabbarLocation = new Set<string>();
+  protected tabbarConfigs: Map<string, TabbarBehaviorConfig> = new Map();
 
   protected rendererRegistry: Map<string, Renderer> = new Map();
 
-  registerSlotRenderer(slot: string, renderer: Renderer) {
+  registerSlotRenderer(slot: string, renderer: Renderer, tabbarConfig?: TabbarBehaviorConfig) {
     this.rendererRegistry.set(slot, renderer);
+    if (tabbarConfig) {
+      this.tabbarConfigs.set(slot, tabbarConfig);
+    }
   }
 
   getSlotRenderer(slot: string): Renderer {
@@ -167,6 +182,10 @@ export class SlotRendererRegistry {
 
   isTabbar(slot: string) {
     return this.tabbarLocation.has(slot);
+  }
+
+  getTabbarConfig(slot: string): TabbarBehaviorConfig | undefined {
+    return this.tabbarConfigs.get(slot);
   }
 }
 

@@ -1,4 +1,5 @@
 import { BasicEvent, IDisposable, SlotLocation } from '@opensumi/ide-core-browser';
+import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { SideStateManager, View, ViewContainerOptions } from '@opensumi/ide-core-browser/lib/layout';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -41,7 +42,7 @@ export interface IMainLayoutService {
    * 注册单个或多个视图到tabbar位置
    * @param views 使用手风琴能力时传入的多个子视图
    * @param options container相关选项
-   * @param side 注册的位置，支持left、right、bottom
+   * @param side 注册的位置，支持 view、extendView、panel，对应之前的 left、right、bottom
    */
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
 
@@ -131,7 +132,8 @@ export class ViewCollapseChangedEvent extends BasicEvent<{
   collapsed: boolean;
 }> {}
 
-export const SUPPORT_ACCORDION_LOCATION = new Set([SlotLocation.left, SlotLocation.right]);
+export const SUPPORT_ACCORDION_LOCATION = new Set([SlotLocation.view, SlotLocation.extendView]);
 
-export const DROP_BOTTOM_CONTAINER = 'drop-bottom';
-export const DROP_RIGHT_CONTAINER = 'drop-right';
+export const DROP_PANEL_CONTAINER = 'drop-panel';
+export const DROP_EXTEND_VIEW_CONTAINER = 'drop-extend-view';
+export const DROP_VIEW_CONTAINER = 'drop-view';

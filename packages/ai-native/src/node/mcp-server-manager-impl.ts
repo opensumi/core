@@ -3,14 +3,16 @@ import { ToolExecutionOptions } from 'ai';
 import { ILogger } from '@opensumi/ide-core-common';
 import { getShellPath } from '@opensumi/ide-core-node';
 
+import { ISumiMCPServerBackend } from '../common';
 import { IMCPServer, MCPServerDescription, MCPServerManager, MCPTool } from '../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolRequest } from '../common/tool-invocation-registry';
-import { MCP_SERVER_TYPE } from '../common/types';
+import { IMCPToolResult, MCP_SERVER_TYPE } from '../common/types';
 import { getToolName } from '../common/utils';
 
 import { BuiltinMCPServer } from './mcp/sumi-mcp-server';
 import { SSEMCPServer } from './mcp-server.sse';
 import { StdioMCPServer } from './mcp-server.stdio';
+
 // 这应该是 Browser Tab 维度的，每个 Tab 对应一个 MCPServerManagerImpl
 export class MCPServerManagerImpl implements MCPServerManager {
   protected servers: Map<string, IMCPServer> = new Map();
@@ -27,6 +29,7 @@ export class MCPServerManagerImpl implements MCPServerManager {
   constructor(
     private readonly toolInvocationRegistryManager: IToolInvocationRegistryManager,
     private readonly logger: ILogger,
+    private readonly proxy: ISumiMCPServerBackend,
   ) {}
 
   async updateShellPath() {
@@ -110,7 +113,19 @@ export class MCPServerManagerImpl implements MCPServerManager {
           const res = await this.callTool(serverName, tool.name, options?.toolCallId || '', arg_string);
           this.logger.debug(`[MCP: ${serverName}] ${tool.name} called with ${arg_string}`);
           this.logger.debug('Tool execution result:', res);
-          return JSON.stringify(res);
+          let compressedResult: IMCPToolResult = res as IMCPToolResult;
+          if (
+            this.proxy?.$compressToolResult &&
+            (compressedResult.content || []).some((item) => item.type === 'image')
+          ) {
+            compressedResult = await this.proxy.$compressToolResult(res as IMCPToolResult, {
+              maxSizeKB: 100,
+              maxWidth: 600,
+              quality: 0.6,
+            });
+          }
+          this.logger.debug('Compressed tool execution result:', compressedResult);
+          return JSON.stringify(compressedResult);
         } catch (error) {
           this.logger.error(`Error in tool handler for ${tool.name} on MCP server ${serverName}:`, error);
           throw error;
