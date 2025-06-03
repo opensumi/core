@@ -39,6 +39,7 @@
     "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-outline": "workspace:*",
     "@opensumi/ide-overlay": "workspace:*",
+    "@opensumi/ide-quick-open": "workspace:*",
     "@opensumi/ide-preferences": "workspace:*",
     "@opensumi/ide-search": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
