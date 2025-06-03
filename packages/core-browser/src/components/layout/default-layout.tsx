@@ -87,7 +87,7 @@ export function fixLayout(layout: ILayoutConfigCache) {
       continue;
     }
 
-    if (!layout[key].size) {
+    if (!layout[key].size && layout[key].currentId) {
       newLayout[key].currentId = '';
     }
   }

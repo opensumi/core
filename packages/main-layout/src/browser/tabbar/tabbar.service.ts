@@ -849,8 +849,8 @@ export class TabbarService extends WithEventBus {
   }
 
   private handleChange(currentId, previousId) {
-    // 这里的 handleChange 是会在 registerResizeHandle 后才会执行
-    if (!this.resizeHandle) {
+    // 这里的 handleChange 是会在 registerResizeHandle 后才会执行, currentId 为 undefined 只会在 autorun 首次注册时执行
+    if (!this.resizeHandle || currentId === undefined) {
       return;
     }
     const { getSize, setSize, lockSize } = this.resizeHandle;
