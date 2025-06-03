@@ -178,7 +178,7 @@ export const Scrollbars = ({
         return <div {...props} style={newStyle} className={cls(className, 'scrollbar-thumb-horizontal')} />;
       }}
     >
-      {!hiddenHorizontal && (
+      {!hiddenVertical && (
         <div
           ref={(ref) => {
             verticalShadowRef.current = ref;
@@ -186,7 +186,7 @@ export const Scrollbars = ({
           className={'scrollbar-decoration-vertical'}
         />
       )}
-      {!hiddenVertical && (
+      {!hiddenHorizontal && (
         <div
           ref={(ref) => {
             horizontalShadowRef.current = ref;

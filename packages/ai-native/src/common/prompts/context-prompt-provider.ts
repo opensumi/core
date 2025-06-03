@@ -54,9 +54,11 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
     const currentLine = selection ? selection.startLineNumber : undefined;
     let lineContent = '';
 
-    if (currentLine && currentModel) {
-      const lineText = currentModel.getText().split('\n')[currentLine - 1];
-      lineContent = lineText?.trim() || '';
+    if (currentLine && editor?.monacoEditor) {
+      const model = editor.monacoEditor.getModel();
+      if (model) {
+        lineContent = model.getLineContent(currentLine)?.trim() || '';
+      }
     }
 
     return {

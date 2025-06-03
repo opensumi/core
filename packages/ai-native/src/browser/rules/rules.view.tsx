@@ -118,7 +118,7 @@ export const RulesView: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className={styles.empty_state}>No project rules found</div>
+            <div className={styles.empty_state}>{localize('ai.native.rules.projectRules.empty')}</div>
           )}
         </div>
       </div>

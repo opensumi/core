@@ -1379,6 +1379,7 @@ export const localizationBundle = {
     'ai.native.rules.projectRules.noUsed': '该规则可能永远不会被使用，因为它没有描述或自动附件',
     'ai.native.rules.projectRules.newRule': '新建规则',
     'ai.native.rules.projectRules.newRule.placeholder': '请输入规则名称',
+    'ai.native.rules.projectRules.empty': '暂无发现任何规则',
 
     // Built-in tools
     'ai.native.terminal.autorun': '终端命令自动执行策略',

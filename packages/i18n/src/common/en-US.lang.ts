@@ -1622,6 +1622,7 @@ export const localizationBundle = {
     'ai.native.rules.projectRules.newRule.error.invalidFileName': 'Invalid file name',
     'ai.native.rules.projectRules.newRule.error.fileExists': 'File "{0}" already exists',
     'ai.native.rules.projectRules.newRule.error.notEmpty': 'Rule name cannot be empty',
+    'ai.native.rules.projectRules.empty': 'No project rules found',
 
     // Built-in tools
     'ai.native.terminal.autorun': 'Terminal auto execution policy',

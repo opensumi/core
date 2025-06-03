@@ -390,7 +390,10 @@ ${folderStructure}`;
         ? 'linux'
         : 'darwin';
     const shell = this.preferenceService.get<string>('terminal.type', 'zsh');
-    const shellName = shell === 'default' ? 'zsh' : shell;
+    let shellName = shell;
+    if (shell === 'default') {
+      shellName = this.applicationService.backendOS === OperatingSystem.Windows ? 'cmd' : 'zsh';
+    }
     const userInfoSection = `<user_info>
 The user's OS version is ${platform}. The absolute path of the user's workspace is ${this.appConfig.workspaceDir}. The user's shell is /bin/${shellName}.
 </user_info>`;
