@@ -181,6 +181,24 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     this.notifyContextChange();
   }
 
+  removeFolderFromContext(uri: URI): void {
+    const targetList = this.attachedFolders;
+    const index = targetList.findIndex((folder) => folder.uri.toString() === uri.toString());
+    if (index > -1) {
+      targetList.splice(index, 1);
+    }
+    this.notifyContextChange();
+  }
+
+  removeRuleFromContext(uri: URI): void {
+    const targetList = this.attachedRules;
+    const index = targetList.findIndex((rule) => rule.path === uri.toString());
+    if (index > -1) {
+      targetList.splice(index, 1);
+    }
+    this.notifyContextChange();
+  }
+
   startAutoCollection(): void {
     if (this.isAutoCollecting) {
       return;

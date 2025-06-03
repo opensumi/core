@@ -50,6 +50,18 @@ export interface LLMContextService {
    */
   removeFileFromContext(uri: URI, isManual?: boolean): void;
 
+  /**
+   * 从 context 中移除文件夹
+   * @param uri URI
+   */
+  removeFolderFromContext(uri: URI): void;
+
+  /**
+   * 从 context 中移除规则
+   * @param uri URI
+   */
+  removeRuleFromContext(uri: URI): void;
+
   /** 导出为可序列化格式 */
   serialize(): Promise<SerializedContext>;
 }

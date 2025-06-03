@@ -2,7 +2,7 @@ import cls from 'classnames';
 import * as React from 'react';
 
 import { ProjectRule } from '@opensumi/ide-ai-native/lib/common/types';
-import { formatLocalize, getSymbolIcon, localize } from '@opensumi/ide-core-browser';
+import { getSymbolIcon, localize } from '@opensumi/ide-core-browser';
 import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
@@ -1045,8 +1045,103 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [footerConfig.disableModelSelector],
   );
 
+  const removeContext = React.useCallback(
+    (type: 'file' | 'folder' | 'rule', uri: URI) => {
+      if (type === 'file') {
+        contextService?.removeFileFromContext(uri);
+      } else if (type === 'folder') {
+        contextService?.removeFolderFromContext(uri);
+      } else if (type === 'rule') {
+        contextService?.removeRuleFromContext(uri);
+      }
+    },
+    [contextService],
+  );
+
+  const renderContextPreview = React.useCallback(
+    () => (
+      <div className={styles.context_preview_container}>
+        <span className={cls(styles.context_preview_title, hasContext && styles.has_context)}>
+          {!hasContext ? localize('aiNative.chat.context.title') : ''}
+        </span>
+        {attachedFiles.files.map((file, index) => (
+          <div
+            key={`file-${index}`}
+            className={styles.context_preview_item}
+            data-type='file'
+            onClick={() => contextService?.removeFileFromContext(file.uri, true)}
+          >
+            <Icon
+              iconClass={cls(labelService?.getIcon(file.uri) || 'file', styles.context_preview_item_icon, styles.icon)}
+            />
+            <Icon
+              iconClass={cls(styles.close_icon, getIcon('close'))}
+              onClick={() => removeContext('file', file.uri)}
+            />
+            <span className={styles.context_preview_item_text}>
+              {workspaceService?.workspace
+                ? file.uri.toString().replace(workspaceService.workspace.uri.toString(), '').slice(1)
+                : file.uri.toString()}
+            </span>
+          </div>
+        ))}
+
+        {attachedFiles.folders.map((folder, index) => (
+          <div
+            key={`folder-${index}`}
+            className={styles.context_preview_item}
+            data-type='folder'
+            onClick={() => contextService?.removeFileFromContext(folder.uri, true)}
+          >
+            <Icon iconClass={cls(getIcon('folder'), styles.context_preview_item_icon, styles.icon)} />
+            <Icon
+              iconClass={cls(styles.close_icon, getIcon('close'))}
+              onClick={() => removeContext('folder', folder.uri)}
+            />
+            <span className={styles.context_preview_item_text}>
+              {workspaceService?.workspace
+                ? folder.uri.toString().replace(workspaceService.workspace.uri.toString(), '').slice(1)
+                : folder.uri.toString()}
+            </span>
+          </div>
+        ))}
+
+        {attachedFiles.rules.map((rule, index) => (
+          <div
+            key={`rule-${index}`}
+            className={styles.context_preview_item}
+            data-type='rule'
+            onClick={() => {
+              // 由于没有专门的删除规则方法，我们重新构建规则列表
+              contextService?.cleanFileContext();
+              // 重新添加除了当前要删除的规则之外的所有上下文
+              attachedFiles.files.forEach((file) => contextService?.addFileToContext(file.uri, file.selection, true));
+              attachedFiles.folders.forEach((folder) => contextService?.addFolderToContext(folder.uri, true));
+              attachedFiles.rules.forEach((r, i) => {
+                if (i !== index) {
+                  contextService?.addRuleToContext(new URI(r.path), true);
+                }
+              });
+            }}
+          >
+            <Icon iconClass={cls(getIcon('rules'), styles.context_preview_item_icon, styles.icon)} />
+            <Icon
+              iconClass={cls(styles.close_icon, getIcon('close'))}
+              onClick={() => removeContext('rule', new URI(rule.path))}
+            />
+            <span className={styles.context_preview_item_text}>
+              {rule.path.split('/').pop()?.replace('.mdc', '') || 'Unknown Rule'}
+            </span>
+          </div>
+        ))}
+      </div>
+    ),
+    [handleClearContext, attachedFiles, workspaceService, labelService, contextService],
+  );
+
   return (
     <div className={styles.input_container}>
+      {renderContextPreview()}
       {mentionState.active && (
         <div className={styles.mention_panel_container}>
           <MentionPanel
@@ -1089,27 +1184,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         </div>
         <div className={styles.right_control}>
           {renderButtons(FooterButtonPosition.RIGHT)}
-          {hasContext && (
-            <Popover
-              overlayClassName={styles.popover_icon}
-              id={'ai-chat-clear-context'}
-              position={PopoverPosition.top}
-              content={localize('aiNative.chat.context.clear')}
-            >
-              <div className={styles.context_container} onClick={handleClearContext}>
-                <div className={styles.context_icon}>
-                  <Icon icon='out-link' />
-                  <Icon icon='close' />
-                </div>
-                <div className={styles.context_description}>
-                  {formatLocalize(
-                    'aiNative.chat.context.description',
-                    attachedFiles.files.length + attachedFiles.folders.length + attachedFiles.rules.length,
-                  )}
-                </div>
-              </div>
-            </Popover>
-          )}
           <Popover
             overlayClassName={styles.popover_icon}
             id={'ai-chat-send'}
