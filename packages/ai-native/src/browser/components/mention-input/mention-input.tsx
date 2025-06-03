@@ -991,6 +991,65 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     contextService?.cleanFileContext();
   }, [contextService]);
 
+  const handleTitleClick = React.useCallback(() => {
+    if (!editorRef.current) {
+      return;
+    }
+
+    // 聚焦输入框
+    editorRef.current.focus();
+
+    // 获取当前光标位置
+    const selection = window.getSelection();
+    if (!selection) {
+      return;
+    }
+
+    // 在当前位置插入 @ 符号
+    const range = document.createRange();
+
+    // 如果编辑器为空，直接插入
+    if (!editorRef.current.textContent || editorRef.current.textContent.trim() === '') {
+      editorRef.current.innerHTML = '@';
+      range.setStart(editorRef.current.firstChild || editorRef.current, 1);
+      range.setEnd(editorRef.current.firstChild || editorRef.current, 1);
+    } else {
+      // 当输入框有内容时，总是在末尾插入 @ 符号
+      const textNode = document.createTextNode(' @');
+
+      // 移动到编辑器末尾
+      range.selectNodeContents(editorRef.current);
+      range.collapse(false); // 移动到末尾
+
+      // 在末尾插入空格和 @ 符号
+      range.insertNode(textNode);
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+    }
+
+    // 设置新的光标位置
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // 获取插入后的光标位置
+    const newCursorPos = getCursorPosition(editorRef.current);
+
+    // 激活菜单状态
+    setMentionState({
+      active: true,
+      startPos: newCursorPos,
+      filter: '@',
+      position: { top: 0, left: 0 },
+      activeIndex: 0,
+      level: 0,
+      parentType: null,
+      secondLevelFilter: '',
+      inlineSearchActive: false,
+      inlineSearchStartPos: null,
+      loading: false,
+    });
+  }, []);
+
   const handleStop = React.useCallback(() => {
     if (onStop) {
       onStop();
@@ -1061,7 +1120,10 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   const renderContextPreview = React.useCallback(
     () => (
       <div className={styles.context_preview_container}>
-        <span className={cls(styles.context_preview_title, hasContext && styles.has_context)}>
+        <span
+          className={cls(styles.context_preview_title, hasContext && styles.has_context)}
+          onClick={handleTitleClick}
+        >
           {!hasContext ? localize('aiNative.chat.context.title') : ''}
         </span>
         {attachedFiles.files.map((file, index) => (
@@ -1136,7 +1198,15 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         ))}
       </div>
     ),
-    [handleClearContext, attachedFiles, workspaceService, labelService, contextService],
+    [
+      handleClearContext,
+      attachedFiles,
+      workspaceService,
+      labelService,
+      contextService,
+      handleTitleClick,
+      removeContext,
+    ],
   );
 
   return (
