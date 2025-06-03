@@ -16,7 +16,7 @@ import { FileType, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMarkerService } from '@opensumi/ide-markers/lib/common/types';
 import { Range } from '@opensumi/ide-monaco';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
-import { isString } from '@opensumi/ide-utils';
+import { isString, match } from '@opensumi/ide-utils';
 
 import { AttachFileContext, FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
 import { ProjectRule } from '../../common/types';
@@ -413,47 +413,35 @@ ${globalRules}
     return [userInfoSection, rulesSection];
   }
 
+  private findApplicableRules(): ProjectRule[] {
+    const requestedByAgentRules = this.rulesService.projectRules.filter((rule) => rule.description);
+    const alwaysApplyRules = this.rulesService.projectRules.filter((rule) => rule.alwaysApply);
+    const requestedByFileRules = this.findFileMatchingRules();
+
+    return [...requestedByFileRules, ...requestedByAgentRules, ...alwaysApplyRules];
+  }
+  private findFileMatchingRules(): ProjectRule[] {
+    const requestedByFileRules = this.rulesService.projectRules.filter((rule) => rule.globs);
+    const filePaths = this.attachedFiles.map((file) => file.uri.toString());
+    const folderPaths = this.attachedFolders.map((folder) => folder.uri.toString());
+
+    return requestedByFileRules.filter((rule) => {
+      const globs = this.normalizeGlobs(rule.globs || []);
+      const patterns = globs.map((pattern) => parseGlob(pattern));
+      return patterns.some((match) => filePaths.some((path) => match(path)) || folderPaths.some((path) => match(path)));
+    });
+  }
+  private normalizeGlobs(globs: string | string[]): string[] {
+    const globArray = isString(globs) ? globs.split(',') : globs || [];
+    return globArray.map((glob) => {
+      const p = glob.trim();
+      return p.startsWith('**') ? p : `**/${p}`;
+    });
+  }
+
   private serializeAttachedRules(rules: ProjectRule[] = []): string[] {
     if (rules.length === 0) {
-      // 寻找 Agent Requested 规则
-      const requestedByAgentRules = this.rulesService.projectRules.filter((rule) => rule.description);
-      const alwaysApplyRules = this.rulesService.projectRules.filter((rule) => rule.alwaysApply);
-      const requestedByFileRules = this.rulesService.projectRules.filter((rule) => rule.globs);
-      const fielPaths = this.attachedFiles.map((file) => file.uri.toString());
-      const folderPaths = this.attachedFolders.map((folder) => folder.uri.toString());
-      if (requestedByFileRules.length > 0) {
-        for (const rule of requestedByFileRules) {
-          let globs: string[] = [];
-          if (isString(rule.globs)) {
-            globs = rule.globs.split(',');
-          } else {
-            globs = rule.globs || [];
-          }
-          globs = globs.map((glob) => {
-            const p = glob.trim();
-            if (!p.startsWith('**')) {
-              return `**/${p}`;
-            }
-            return p;
-          });
-          const patterns = [...globs.map((pattern) => parseGlob(pattern))];
-          const shouldAttach = patterns.some(
-            (match) => fielPaths.some((path) => match(path)) || folderPaths.some((path) => match(path)),
-          );
-          if (shouldAttach) {
-            rules.push(rule);
-          }
-        }
-      }
-      if (requestedByAgentRules.length > 0) {
-        rules.push(...requestedByAgentRules);
-      }
-      if (alwaysApplyRules.length > 0) {
-        rules.push(...alwaysApplyRules);
-      }
-      if (rules.length === 0) {
-        return [];
-      }
+      rules = this.findApplicableRules();
     }
 
     const header =
