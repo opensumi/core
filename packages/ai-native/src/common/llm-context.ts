@@ -74,6 +74,7 @@ export interface SerializedContext {
   attachedFiles: Array<AttachFileContext>;
   attachedFolders: string[];
   attachedRules: string[];
+  globalRules: string[];
 }
 
 export enum LLM_CONTEXT_KEY {

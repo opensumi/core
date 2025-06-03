@@ -187,7 +187,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     return () => {
       disposable?.dispose();
     };
-  }, [contextService]);
+  }, []);
 
   // 获取光标位置
   const getCursorPosition = (element: HTMLElement): number => {
@@ -1023,7 +1023,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   );
 
   const hasContext = React.useMemo(
-    () => attachedFiles.files.length > 0 || attachedFiles.folders.length > 0,
+    () => attachedFiles.files.length > 0 || attachedFiles.folders.length > 0 || attachedFiles.rules.length > 0,
     [attachedFiles],
   );
 

@@ -1,9 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
-import { RulesServiceToken } from '@opensumi/ide-core-common';
+import { AINativeSettingSectionsId, IApplicationService, RulesServiceToken } from '@opensumi/ide-core-common';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus/event-decorator';
 import { MarkerSeverity } from '@opensumi/ide-core-common/lib/types/markers/markers';
-import { Emitter, URI } from '@opensumi/ide-core-common/lib/utils';
+import { Emitter, OperatingSystem, URI, parseGlob } from '@opensumi/ide-core-common/lib/utils';
 import {
   EditorDocumentModelCreationEvent,
   EditorDocumentModelRemovalEvent,
@@ -14,6 +15,8 @@ import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser/typ
 import { FileType, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMarkerService } from '@opensumi/ide-markers/lib/common/types';
 import { Range } from '@opensumi/ide-monaco';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+import { isString } from '@opensumi/ide-utils';
 
 import { AttachFileContext, FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
 import { ProjectRule } from '../../common/types';
@@ -35,6 +38,15 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
 
   @Autowired(RulesServiceToken)
   protected readonly rulesService: RulesService;
+
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
+
+  @Autowired(ITerminalApiService)
+  protected readonly terminalService: ITerminalApiService;
+
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
 
   private isAutoCollecting = false;
 
@@ -91,11 +103,11 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       return;
     }
 
-    if (this.attachedRules.some((rule) => rule.path === uri.codeUri.fsPath)) {
+    if (this.attachedRules.some((rule) => rule.path === uri.toString())) {
       return;
     }
 
-    const rule = this.rulesService.projectRules.find((rule) => rule.path === uri.codeUri.fsPath);
+    const rule = this.rulesService.projectRules.find((rule) => rule.path === uri.toString());
     if (!rule) {
       return;
     }
@@ -245,6 +257,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       attachedFiles: this.serializeAttachedFiles(files.attached, workspaceRoot),
       attachedFolders: await this.serializeAttachedFolders(files.attachedFolders),
       attachedRules: this.serializeAttachedRules(files.attachedRules),
+      globalRules: this.serializeGlobalRules(),
     };
   }
 
@@ -346,13 +359,84 @@ ${folderStructure}`;
       .map((marker) => marker.message);
   }
 
-  private serializeAttachedRules(rules: ProjectRule[]): string[] {
-    if (rules.length === 0) {
+  private serializeGlobalRules(): string[] {
+    const globalRules = this.preferenceService.get<string>(AINativeSettingSectionsId.GlobalRules);
+    if (!globalRules) {
       return [];
     }
 
+    const platform =
+      this.applicationService.backendOS === OperatingSystem.Windows
+        ? 'windows'
+        : this.applicationService.backendOS === OperatingSystem.Linux
+        ? 'linux'
+        : 'darwin';
+    const shell = this.preferenceService.get<string>('terminal.type', 'zsh');
+    const shellName = shell === 'default' ? 'zsh' : shell;
+    const userInfoSection = `<user_info>
+The user's OS version is ${platform}. The absolute path of the user's workspace is ${this.appConfig.workspaceDir}. The user's shell is /bin/${shellName}.
+</user_info>`;
+
+    const rulesSection = `
+
+<rules>
+The rules section has a number of possible rules/memories/context that you should consider. In each subsection, we provide instructions about what information the subsection contains and how you should consider/follow the contents of the subsection.
+
+
+<user_specific_rule description="This is a rule set by the user that the agent must follow.">
+${globalRules}
+</user_specific_rule>
+
+</rules>`;
+
+    return [userInfoSection, rulesSection];
+  }
+
+  private serializeAttachedRules(rules: ProjectRule[] = []): string[] {
+    if (rules.length === 0) {
+      // 寻找 Agent Requested 规则
+      const requestedByAgentRules = this.rulesService.projectRules.filter((rule) => rule.description);
+      const alwaysApplyRules = this.rulesService.projectRules.filter((rule) => rule.alwaysApply);
+      const requestedByFileRules = this.rulesService.projectRules.filter((rule) => rule.globs);
+      const fielPaths = this.attachedFiles.map((file) => file.uri.toString());
+      const folderPaths = this.attachedFolders.map((folder) => folder.uri.toString());
+      if (requestedByFileRules.length > 0) {
+        for (const rule of requestedByFileRules) {
+          let globs: string[] = [];
+          if (isString(rule.globs)) {
+            globs = rule.globs.split(',');
+          } else {
+            globs = rule.globs || [];
+          }
+          globs = globs.map((glob) => {
+            const p = glob.trim();
+            if (!p.startsWith('**')) {
+              return `**/${p}`;
+            }
+            return p;
+          });
+          const patterns = [...globs.map((pattern) => parseGlob(pattern))];
+          const shouldAttach = patterns.some(
+            (match) => fielPaths.some((path) => match(path)) || folderPaths.some((path) => match(path)),
+          );
+          if (shouldAttach) {
+            rules.push(rule);
+          }
+        }
+      }
+      if (requestedByAgentRules.length > 0) {
+        rules.push(...requestedByAgentRules);
+      }
+      if (alwaysApplyRules.length > 0) {
+        rules.push(...alwaysApplyRules);
+      }
+      if (rules.length === 0) {
+        return [];
+      }
+    }
+
     const header =
-      '\n<cursor_rules_context>\n\nCursor Rules are extra documentation provided by the user to help the AI understand the codebase.\nUse them if they seem useful to the users most recent query, but do not use them if they seem unrelated.\n\n';
+      '\n<rules_context>\n\nRules are extra documentation provided by the user to help the AI understand the codebase.\nUse them if they seem useful to the users most recent query, but do not use them if they seem unrelated.\n\n';
 
     const rulesSections = rules
       .map((rule) => {
@@ -365,7 +449,7 @@ ${folderStructure}`;
       })
       .join('\n\n');
 
-    const footer = '\n</cursor_rules_context>\n';
+    const footer = '\n</rules_context>\n';
 
     return [header, rulesSections, footer];
   }
