@@ -114,8 +114,8 @@ export const getDefaultClientAppOpts = ({
       'editor.quickSuggestionsDelay': 100,
     },
     defaultPanels: {
-      bottom: '@opensumi/ide-terminal-next',
-      right: '',
+      [SlotLocation.panel]: '@opensumi/ide-terminal-next',
+      [SlotLocation.extendView]: '',
     },
     // 当 `.sumi` 下不存在配置文件时，默认采用 `.vscode` 下的配置
     useVSCodeWorkspaceConfiguration: true,

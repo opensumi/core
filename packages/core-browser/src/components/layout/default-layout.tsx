@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { SlotRenderer } from '../../react-providers/slot';
+import { SlotLocation, SlotRenderer } from '../../react-providers/slot';
 
 import { BoxPanel } from './box-panel';
 import { SplitPanel } from './split-panel';
@@ -45,7 +45,7 @@ export function ToolbarActionBasedLayout(
       <SlotRenderer id='top' defaultSize={props.topSlotDefaultSize || 0} slot='top' zIndex={props.topSlotZIndex} />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
-          slot='left'
+          slot={SlotLocation.view}
           isTabbar={true}
           defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
           minResize={280}
@@ -58,12 +58,12 @@ export function ToolbarActionBasedLayout(
             flex={1}
             defaultSize={layout.bottom?.currentId ? layout.bottom?.size : 24}
             minResize={160}
-            slot='bottom'
+            slot={SlotLocation.panel}
             isTabbar={true}
           />
         </SplitPanel>
         <SlotRenderer
-          slot='right'
+          slot={SlotLocation.extendView}
           isTabbar={true}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
           minResize={280}
@@ -83,11 +83,11 @@ export function ToolbarActionBasedLayout(
 export function fixLayout(layout: ILayoutConfigCache) {
   const newLayout = { ...layout };
   for (const key in layout) {
-    if (!layout[key]) {
+    if (!layout[key] || key === 'containerLocations') {
       continue;
     }
 
-    if (!layout[key].size) {
+    if (!layout[key].size && layout[key].currentId) {
       newLayout[key].currentId = '';
     }
   }

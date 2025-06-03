@@ -15,8 +15,9 @@ import {
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 import { IPosition, ITextModel, InlineCompletionContext } from '@opensumi/ide-monaco/lib/common';
 
+import { ImageCompressionOptions } from './image-compression';
 import { IMCPServer, MCPServerDescription } from './mcp-server-manager';
-import { IPartialEditEvent, MCPTool } from './types';
+import { IMCPToolResult, IPartialEditEvent, MCPTool } from './types';
 
 import type { CoreMessage } from 'ai';
 
@@ -152,6 +153,7 @@ export interface ISumiMCPServerBackend {
   $removeServer(name: string): void;
   $syncServer(name: string): Promise<void>;
   $getMCPServerByName(name: string): IMCPServer | undefined;
+  $compressToolResult(result: IMCPToolResult, options: ImageCompressionOptions): Promise<IMCPToolResult>;
 }
 
 export const SumiMCPServerProxyServicePath = 'SumiMCPServerProxyServicePath';
