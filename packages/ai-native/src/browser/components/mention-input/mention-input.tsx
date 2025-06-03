@@ -1,13 +1,13 @@
 import cls from 'classnames';
 import * as React from 'react';
 
-import { ProjectRule } from '@opensumi/ide-ai-native/lib/common/types';
 import { getSymbolIcon, localize } from '@opensumi/ide-core-browser';
 import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
 
 import { FileContext } from '../../../common/llm-context';
+import { ProjectRule } from '../../../common/types';
 
 import styles from './mention-input.module.less';
 import { MentionPanel } from './mention-panel';
