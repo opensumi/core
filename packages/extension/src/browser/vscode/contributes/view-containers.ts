@@ -38,16 +38,16 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
 
   private convertLocationToSide(
     location: LocationKey,
-  ): ['left' | 'bottom' | typeof AI_CHAT_VIEW_ID, 'vertical' | 'horizontal'] {
+  ): ['view' | 'panel' | typeof AI_CHAT_VIEW_ID, 'vertical' | 'horizontal'] {
     switch (location) {
       case 'activitybar': {
-        return ['left', 'vertical'];
+        return ['view', 'vertical'];
       }
       case 'ai-chat': {
         return [AI_CHAT_VIEW_ID, 'vertical'];
       }
       default:
-        return ['bottom', 'horizontal'];
+        return ['panel', 'horizontal'];
     }
   }
 

@@ -18,7 +18,7 @@ import {
   WithEventBus,
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
-import { fixLayout } from '@opensumi/ide-core-browser/lib/components';
+import { Layout, fixLayout } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import {
@@ -29,11 +29,13 @@ import {
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Deferred, getDebugLogger, isUndefined } from '@opensumi/ide-core-common';
+import { transaction } from '@opensumi/ide-monaco/lib/common/observable';
 import { ThemeChangedEvent } from '@opensumi/ide-theme';
 
 import {
-  DROP_BOTTOM_CONTAINER,
-  DROP_RIGHT_CONTAINER,
+  DROP_EXTEND_VIEW_CONTAINER,
+  DROP_PANEL_CONTAINER,
+  DROP_VIEW_CONTAINER,
   IMainLayoutService,
   MainLayoutContribution,
   SUPPORT_ACCORDION_LOCATION,
@@ -45,19 +47,21 @@ import { TabbarService } from './tabbar/tabbar.service';
 import { TabBarHandler } from './tabbar-handler';
 
 const defaultLayoutState = {
-  [SlotLocation.left]: {
+  [SlotLocation.view]: {
     currentId: undefined,
     size: undefined,
   },
-  [SlotLocation.right]: {
+  [SlotLocation.extendView]: {
     // 依照下面的恢复逻辑，这里设置为 `''` 时，就不会恢复右侧的 TabBar 的状态（即选中相应的 viewContainer）
     currentId: '',
     size: undefined,
   },
-  [SlotLocation.bottom]: {
+  [SlotLocation.panel]: {
     currentId: undefined,
     size: undefined,
   },
+  // 存储 Container 的移动信息：containerId -> location
+  containerLocations: {},
 };
 
 @Injectable()
@@ -111,6 +115,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     };
   } = {};
 
+  // 记录正在恢复状态的 location，防止恢复过程中存储中间状态
+  private isRestoring = new Set<string>();
+
   private customViews = new Map<string, View>();
 
   private debug = getDebugLogger();
@@ -150,10 +157,16 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   storeState(service: TabbarService, currentId?: string) {
+    // 如果正在恢复中，跳过存储，避免存储中间状态
+    if (this.isRestoring.has(service.location)) {
+      return;
+    }
+
     this.state[service.location] = {
       currentId,
       size: service.prevSize,
     };
+
     this.layoutState.setState(LAYOUT_STATE.MAIN, this.state);
   }
 
@@ -174,63 +187,89 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   restoreTabbarService = async (service: TabbarService) => {
     this.state = fixLayout(this.layoutState.getState(LAYOUT_STATE.MAIN, defaultLayoutState));
-
     const { currentId, size } = this.state[service.location] || {};
     service.prevSize = size;
-    let defaultContainer = service.visibleContainers[0] && service.visibleContainers[0].options!.containerId;
-    const defaultPanels = this.appConfig.defaultPanels;
-    const restorePanel = defaultPanels && defaultPanels[service.location];
-    if (defaultPanels && restorePanel !== undefined) {
-      if (restorePanel) {
-        if (service.containersMap.has(restorePanel)) {
-          defaultContainer = restorePanel;
-        } else {
-          const componentInfo = this.componentRegistry.getComponentRegistryInfo(restorePanel);
-          if (
-            componentInfo &&
-            this.appConfig.layoutConfig[service.location]?.modules &&
-            ~this.appConfig.layoutConfig[service.location].modules.indexOf(restorePanel)
-          ) {
-            defaultContainer = componentInfo.options!.containerId;
+
+    // 根据存储的容器位置信息恢复容器位置(drag & drop 移动过的)
+    if (this.state.containerLocations) {
+      for (const [containerId, targetLocation] of Object.entries(this.state.containerLocations)) {
+        if (targetLocation === service.location && !this.isDropContainer(containerId)) {
+          // 检查容器是否在其他 tabbar 中，如果是则移动到当前 tabbar
+          const expectTabbar = this.findTabbarServiceByContainerId(containerId);
+          if (expectTabbar && expectTabbar.location !== service.location) {
+            this.moveContainerTo(containerId, service.location);
           } else {
-            this.logger.warn(`[defaultPanels] No \`${restorePanel}\` view found!`);
+            // 清理无用的状态
+            delete this.state.containerLocations[containerId];
+            this.layoutState.setState(LAYOUT_STATE.MAIN, this.state);
           }
         }
-      } else {
-        defaultContainer = '';
       }
     }
-    /**
-     * ContainerId 存在三种值类型，对应的处理模式如下：
-     * 1. undefined: 采用首个注册的容器作为当前 containerId
-     * 2. string: 非 drop container 直接使用该 containerId 作为当前 containerId
-     * 3. '': 直接清空当前 containerId，不展开相应的 viewContainer
-     */
+
+    const defaultContainer = this.getDefaultContainer(service);
+    this.restoreContainerId(service, currentId, defaultContainer);
+  };
+
+  private getDefaultContainer(service: TabbarService): string | undefined {
+    const defaultPanels = this.appConfig.defaultPanels;
+    const defaultPanel = defaultPanels && defaultPanels[service.location];
+
+    // 如果配置了默认面板,则使用配置的面板
+    if (defaultPanels && defaultPanel !== undefined) {
+      if (!defaultPanel) {
+        return '';
+      }
+      if (service.containersMap.has(defaultPanel)) {
+        return defaultPanel;
+      }
+
+      const componentInfo = this.componentRegistry.getComponentRegistryInfo(defaultPanel);
+      const isValidModule =
+        componentInfo && this.appConfig.layoutConfig[service.location]?.modules?.includes(defaultPanel);
+
+      if (isValidModule) {
+        return componentInfo.options!.containerId;
+      }
+
+      this.logger.warn(`[defaultPanels] No \`${defaultPanel}\` view found!`);
+    }
+
+    // 获取第一个可见容器作为默认值
+    return service.visibleContainers[0]?.options?.containerId;
+  }
+
+  private restoreContainerId(
+    service: TabbarService,
+    currentId: string | undefined,
+    defaultContainer: string | undefined,
+  ) {
     if (isUndefined(currentId)) {
+      // 未指定 currentId 时,使用默认容器或第一个注册的容器
       if (isUndefined(defaultContainer)) {
-        // 默认采用首个注册的容器作为当前 containerId
         service.updateNextContainerId();
       } else {
         service.updateCurrentContainerId(defaultContainer);
       }
-    } else if (currentId && !this.isDropContainer(currentId)) {
+      return;
+    }
+
+    if (currentId && !this.isDropContainer(currentId)) {
       if (service.containersMap.has(currentId)) {
         service.updateCurrentContainerId(currentId);
-      } else {
-        // 如果在别的 tabbar 中存在该 containerId，则将其移动到当前 tabbar
-        if (this.findTabbarServiceByContainerId(currentId)) {
-          this.moveContainerTo(currentId, service.location);
-          service.updateCurrentContainerId(currentId);
-        } else {
-          service.updateCurrentContainerId(defaultContainer);
-          // 等待后续新容器注册时，更新当前的 containerId
-          service.updateNextContainerId(currentId);
-        }
+        return;
       }
-    } else if (currentId === '' || this.isDropContainer(currentId)) {
+
+      // 如果当前 containerId 不存在，则使用默认容器
+      service.updateCurrentContainerId(defaultContainer || '');
+      service.updateNextContainerId(currentId);
+      return;
+    }
+
+    if (currentId === '' || this.isDropContainer(currentId)) {
       service.updateCurrentContainerId('');
     }
-  };
+  }
 
   findTabbarServiceByContainerId(containerId: string): TabbarService | undefined {
     let tabbarService: undefined | TabbarService;
@@ -256,7 +295,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       this.logger.error(`cannot find container: ${containerId}`);
       return;
     }
-    if (!container.options?.draggable) {
+    if (container.options?.draggable === false) {
       this.logger.warn(`container: ${containerId} is not draggable`);
       return;
     }
@@ -271,33 +310,59 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     toTabbar.dynamicAddContainer(containerId, container);
     const newHandler = this.injector.get(TabBarHandler, [containerId, this.getTabbarService(toTabbar.location)]);
     this.handleMap.set(containerId, newHandler!);
+
+    // 更新容器位置信息
+    if (!this.state.containerLocations) {
+      this.state.containerLocations = {};
+    }
+    this.state.containerLocations[containerId] = to;
+    // this.layoutState.setState(LAYOUT_STATE.MAIN, this.state);
   }
 
   showDropAreaForContainer(containerId: string): void {
     const tabbarService = this.findTabbarServiceByContainerId(containerId);
-    const bottomService = this.tabbarServices.get('bottom');
-    const rightService = this.tabbarServices.get('right');
+    const panelService = this.tabbarServices.get(SlotLocation.panel);
+    const extendViewService = this.tabbarServices.get(SlotLocation.extendView);
+    const viewService = this.tabbarServices.get(SlotLocation.view);
     if (!tabbarService) {
       this.logger.error(`cannot find container: ${containerId}`);
       return;
     }
-    if (tabbarService?.location === 'right') {
-      bottomService?.updateCurrentContainerId(DROP_BOTTOM_CONTAINER);
-    }
-    if (tabbarService?.location === 'bottom') {
-      rightService?.updateCurrentContainerId(DROP_RIGHT_CONTAINER);
-    }
+    const otherServices = {
+      [SlotLocation.extendView]: [panelService, viewService],
+      [SlotLocation.panel]: [extendViewService, viewService],
+      [SlotLocation.view]: [panelService, extendViewService],
+    };
+
+    const dropContainers = {
+      [SlotLocation.panel]: DROP_PANEL_CONTAINER,
+      [SlotLocation.extendView]: DROP_EXTEND_VIEW_CONTAINER,
+      [SlotLocation.view]: DROP_VIEW_CONTAINER,
+    };
+
+    transaction((tx) => {
+      otherServices[tabbarService?.location]?.forEach((service) => {
+        service?.updateCurrentContainerId(dropContainers[service?.location], tx);
+      });
+    });
   }
 
   hideDropArea(): void {
-    const bottomService = this.tabbarServices.get('bottom');
-    const rightService = this.tabbarServices.get('right');
-    if (bottomService?.currentContainerId.get() === DROP_BOTTOM_CONTAINER) {
-      bottomService.updateCurrentContainerId(bottomService.previousContainerId || '');
-    }
-    if (rightService?.currentContainerId.get() === DROP_RIGHT_CONTAINER) {
-      rightService.updateCurrentContainerId(rightService.previousContainerId || '');
-    }
+    const panelService = this.tabbarServices.get(SlotLocation.panel);
+    const extendViewService = this.tabbarServices.get(SlotLocation.extendView);
+    const viewService = this.tabbarServices.get(SlotLocation.view);
+
+    transaction((tx) => {
+      if (panelService?.currentContainerId.get() === DROP_PANEL_CONTAINER) {
+        panelService.updateCurrentContainerId(panelService.previousContainerId || '', tx);
+      }
+      if (extendViewService?.currentContainerId.get() === DROP_EXTEND_VIEW_CONTAINER) {
+        extendViewService.updateCurrentContainerId(extendViewService.previousContainerId || '', tx);
+      }
+      if (viewService?.currentContainerId.get() === DROP_VIEW_CONTAINER) {
+        viewService.updateCurrentContainerId(viewService.previousContainerId || '', tx);
+      }
+    });
   }
 
   isVisible(location: string) {
@@ -336,7 +401,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   private isDropContainer(containerId: string): boolean {
-    return [DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER].includes(containerId);
+    return [DROP_PANEL_CONTAINER, DROP_EXTEND_VIEW_CONTAINER, DROP_VIEW_CONTAINER].includes(containerId);
   }
 
   private findNonDropContainerId(tabbarService: TabbarService): string {
@@ -375,14 +440,24 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         }),
       );
       service.viewReady.promise
-        .then(() => service.restoreState())
+        .then(() => {
+          // 标记开始恢复，防止恢复过程中存储中间状态
+          this.isRestoring.add(service.location);
+          return service.restoreState();
+        })
         .then(() => this.restoreTabbarService(service))
+        .then(() => {
+          // 恢复完成，清除标记
+          this.isRestoring.delete(service.location);
+        })
         .catch((err) => {
+          // 出错时也要清除标记
+          this.isRestoring.delete(service.location);
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
       const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId.get()), 100);
       service.addDispose(service.onSizeChange(debouncedStoreState));
-      if (location === SlotLocation.bottom) {
+      if (location === SlotLocation.panel) {
         // use this getter's side effect to set bottomExpanded contextKey
         const debouncedUpdate = debounce(() => void this.bottomExpanded, 100);
         service.addDispose(service.onSizeChange(() => debouncedUpdate));
@@ -463,6 +538,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (Fc) {
       this.debug.warn('collectTabbarComponent api warning: Please move react component into options.component!');
     }
+    side = this.mapSideToLocation(side);
     if (options.hideIfEmpty && !views.length && !options.component) {
       this.holdTabbarComponent.set(options.containerId, { views, options, side });
       if (this.tabbarUpdateSet.has(options.containerId)) {
@@ -493,6 +569,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       this.viewToContainerMap.set(view.id, options.containerId);
     });
     return options.containerId;
+  }
+
+  private mapSideToLocation(side: string): SlotLocation {
+    switch (side) {
+      case 'left':
+        return SlotLocation.view;
+      case 'right':
+        return SlotLocation.extendView;
+      case 'bottom':
+        return SlotLocation.panel;
+      default:
+        return side;
+    }
   }
 
   getViewAccordionService(viewId: string) {
@@ -640,7 +729,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   // TODO 这样很耦合，不能做到tab renderer自由拆分
   expandBottom(expand: boolean): void {
-    const tabbarService = this.getTabbarService(SlotLocation.bottom);
+    const tabbarService = this.getTabbarService(SlotLocation.panel);
     if (!tabbarService.currentContainerId.get()) {
       tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId.get() ||
@@ -653,7 +742,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   get bottomExpanded(): boolean {
-    const tabbarService = this.getTabbarService(SlotLocation.bottom);
+    const tabbarService = this.getTabbarService(SlotLocation.panel);
     this.contextKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
     return tabbarService.isExpanded;
   }

@@ -35,8 +35,23 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    registry.registerSlotRenderer(SlotLocation.left, DesignLeftTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.bottom, DesignBottomTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.right, DesignRightTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.view, DesignLeftTabRenderer, {
+      supportedActions: {
+        accordion: true,
+      },
+    });
+    registry.registerSlotRenderer(SlotLocation.panel, DesignBottomTabRenderer, {
+      isLatter: true,
+      supportedActions: {
+        expand: true,
+        toggle: true,
+      },
+    });
+    registry.registerSlotRenderer(SlotLocation.extendView, DesignRightTabRenderer, {
+      isLatter: true,
+      supportedActions: {
+        accordion: true,
+      },
+    });
   }
 }

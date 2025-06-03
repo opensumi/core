@@ -793,7 +793,7 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.toggle': '切换底部面板显示',
+    'layout.tabbar.toggle': '切换面板显示/隐藏',
     'layout.tabbar.expand': '最大化底部面板',
     'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
@@ -916,16 +916,10 @@ export const localizationBundle = {
     'fileOperation.copy': '执行文件拷贝关联操作中……',
     'fileOperation.move': '执行文件移动关联操作中……',
 
-    'main-layout.left-panel.toggle': '切换左侧面板',
-    'main-layout.left-panel.show': '显示左侧面板',
-    'main-layout.left-panel.hide': '隐藏左侧面板',
+    'main-layout.view.toggle': '切换主侧边栏',
+    'main-layout.extend-view.toggle': '切换辅助侧边栏',
+    'main-layout.panel.toggle': '切换面板',
     'main-layout.sidebar.hide': '隐藏左右面板',
-    'main-layout.right-panel.toggle': '切换右侧面板',
-    'main-layout.right-panel.show': '显示右侧面板',
-    'main-layout.right-panel.hide': '隐藏右侧面板',
-    'main-layout.bottom-panel.toggle': '切换底部面板',
-    'main-layout.bottom-panel.show': '显示底部面板',
-    'main-layout.bottom-panel.hide': '隐藏底部面板',
     'main-layout.drop-area.tip': '放置此处',
 
     'refactor-preview.title': '重构预览',

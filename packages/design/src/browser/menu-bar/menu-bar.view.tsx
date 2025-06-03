@@ -99,7 +99,7 @@ export const DesignMenuBarView = () => {
       setIsVisiablePanel(isVisiable());
     });
 
-    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.left);
+    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.view);
     const toDispose = tabbarService.onCurrentChange(({ previousId, currentId }) => {
       if (previousId && !currentId) {
         setIsVisiablePanel(false);
@@ -121,7 +121,7 @@ export const DesignMenuBarView = () => {
   }, []);
 
   const isVisiable = React.useCallback(() => {
-    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.left);
+    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.view);
     return !!tabbarService.currentContainerId.get();
   }, [mainLayoutService]);
 

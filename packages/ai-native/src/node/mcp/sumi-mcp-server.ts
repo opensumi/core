@@ -12,9 +12,10 @@ import { INodeLogger } from '@opensumi/ide-core-node';
 
 import pkg from '../../../package.json';
 import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend } from '../../common';
+import { ImageCompressionOptions } from '../../common/image-compression';
 import { IMCPServer, MCPServerDescription } from '../../common/mcp-server-manager';
 import { IToolInvocationRegistryManager, ToolInvocationRegistryManager } from '../../common/tool-invocation-registry';
-import { IMCPServerProxyService, MCPTool, MCP_SERVER_TYPE } from '../../common/types';
+import { IMCPServerProxyService, IMCPToolResult, MCPTool, MCP_SERVER_TYPE } from '../../common/types';
 import { MCPServerManagerImpl } from '../mcp-server-manager-impl';
 import { SSEMCPServer } from '../mcp-server.sse';
 import { StdioMCPServer } from '../mcp-server.stdio';
@@ -43,12 +44,19 @@ export class SumiMCPServerBackend extends RPCService<IMCPServerProxyService> imp
 
   constructor() {
     super();
-    this.mcpServerManager = new MCPServerManagerImpl(this.toolInvocationRegistryManager, this.logger);
+    this.mcpServerManager = new MCPServerManagerImpl(this.toolInvocationRegistryManager, this.logger, this);
   }
 
   public setConnectionClientId(clientId: string) {
     this.clientId = clientId;
     this.mcpServerManager.setClientId(clientId);
+  }
+
+  async $compressToolResult(result: IMCPToolResult, options: ImageCompressionOptions) {
+    if (!this.client) {
+      throw new Error('SUMI MCP RPC Client not initialized');
+    }
+    return this.client.$compressToolResult(result, options);
   }
 
   async $getMCPTools() {

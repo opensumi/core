@@ -22,7 +22,7 @@ const layoutConfig = {
   [SlotLocation.action]: {
     modules: [''],
   },
-  [SlotLocation.left]: {
+  [SlotLocation.view]: {
     modules: ['@opensumi/ide-explorer', 'test-view'],
   },
   [SlotLocation.main]: {
@@ -31,7 +31,7 @@ const layoutConfig = {
   [SlotLocation.statusBar]: {
     modules: ['@opensumi/ide-status-bar'],
   },
-  [SlotLocation.bottom]: {
+  [SlotLocation.panel]: {
     modules: ['@opensumi/ide-output'],
   },
   [SlotLocation.extra]: {

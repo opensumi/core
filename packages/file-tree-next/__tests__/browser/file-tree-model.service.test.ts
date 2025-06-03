@@ -19,7 +19,7 @@ import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
 import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/services/file-tree-model.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { RETRACT_BOTTOM_PANEL } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
+import { RETRACT_PANEL_COMMAND } from '@opensumi/ide-main-layout/lib/browser/command';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IThemeService } from '@opensumi/ide-theme';
 
@@ -210,7 +210,7 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService = injector.get(FileTreeModelService);
     fileTreeModelService.initTreeModel();
 
-    injector.mockCommand(RETRACT_BOTTOM_PANEL.id, () => {});
+    injector.mockCommand(RETRACT_PANEL_COMMAND.id, () => {});
 
     await fileTreeModelService.whenReady;
   });

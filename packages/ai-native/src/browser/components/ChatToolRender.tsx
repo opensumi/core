@@ -7,6 +7,7 @@ import { Loading } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { IChatToolContent, uuid } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 
+import { TOOL_NAME_SEPARATOR } from '../../common/utils';
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
 import { CodeEditorWithHighlight } from './ChatEditor';
@@ -21,7 +22,9 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
   if (!value || !value.function || !value.id) {
     return null;
   }
-  const label = mcpServerFeatureRegistry.getMCPTool(value.function.name)?.label || value.function.name;
+  const toolName = mcpServerFeatureRegistry.getMCPTool(value.function.name)?.label || value.function.name;
+  const parts = toolName.split(TOOL_NAME_SEPARATOR);
+  const label = parts.length >= 3 ? parts[2] : toolName;
 
   const ToolComponent = mcpServerFeatureRegistry.getToolComponent(value.function.name);
 
@@ -72,7 +75,12 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
         <div className={styles.tool_name}>
           <Icon iconClass={`codicon codicon-chevron-${isExpanded ? 'down' : 'right'}`} />
           <Icon size='small' iconClass={cls('codicon codicon-tools', styles.tool_icon)} />
-          <span className={styles.tool_label}>{label}</span>
+          <span className={styles.tool_label}>
+            <span className={styles.tool_prefix}>Called MCP Tool</span>
+            <span className={styles.tool_name} title={label}>
+              {label}
+            </span>
+          </span>
         </div>
         {value.state && (
           <div className={styles.tool_state}>
