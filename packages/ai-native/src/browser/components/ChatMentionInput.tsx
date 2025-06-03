@@ -24,6 +24,8 @@ import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-se
 import { OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
 import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { IconType } from '@opensumi/ide-theme';
+import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
@@ -80,6 +82,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const labelService = useInjectable<LabelService>(LabelService);
+  const iconService = useInjectable<IconService>(IconService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
@@ -418,21 +421,28 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       },
     },
   ];
-
   const defaultMentionInputFooterOptions: FooterConfig = useMemo(
     () => ({
       modelOptions: [
         {
           label: 'Claude 4 Sonnet',
           value: 'claude_sonnet4',
-          icon: 'sparkle',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01p0mziz1Nsl40lp1HO_!!6000000001626-55-tps-92-65.svg',
+            IconType.Background,
+          ),
           tags: ['多模态', '长上下文理解', '思考模式'],
           description: '高性能模型，支持多模态输入',
         },
         {
           label: 'DeepSeek R1',
           value: 'deepseek-r1',
-          icon: 'sparkle',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
+            IconType.Background,
+          ),
           tags: ['思考模式', '长上下文理解'],
           description: '专业创作，支持多模态输入',
         },
@@ -476,7 +486,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       showModelSelector: true,
       disableModelSelector: props.disableModelSelector,
     }),
-    [handleShowMCPConfig, props.disableModelSelector, props.sessionModelId],
+    [iconService, handleShowMCPConfig, handleShowRules, props.disableModelSelector, props.sessionModelId],
   );
 
   const handleStop = useCallback(() => {

@@ -52,7 +52,7 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
   options,
   value,
   onChange,
-  placeholder = '选择模型',
+  placeholder,
   disabled = false,
   className,
   size = 'small',
@@ -180,10 +180,6 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
           <div className={styles.select_content}>
             {selectedOption ? (
               <div className={styles.selected_option}>
-                {selectedOption.icon && <Icon icon={selectedOption.icon} className={styles.option_icon} />}
-                {selectedOption.iconClass && (
-                  <Icon iconClass={selectedOption.iconClass} className={styles.option_icon} />
-                )}
                 <span className={styles.option_label}>{selectedOption.label}</span>
                 {selectedOption.badge && (
                   <span className={styles.option_badge} style={{ backgroundColor: selectedOption.badgeColor }}>
@@ -196,7 +192,7 @@ export const MentionSelect: React.FC<MentionSelectProps> = ({
             )}
           </div>
           <Icon
-            iconClass={getIcon('chevron-down')}
+            iconClass={getIcon('down-arrow')}
             className={cls(styles.dropdown_arrow, {
               [styles.open]: isOpen,
             })}
