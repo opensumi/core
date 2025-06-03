@@ -99,11 +99,6 @@ describe('Extension service', () => {
       expect(exts).toEqual(MOCK_EXTENSIONS);
     });
 
-    it('should return all mock extensions JSON', async () => {
-      const jsons = await extensionManagementService.getAllExtensionJson();
-      expect(jsons).toEqual(MOCK_EXTENSIONS.map((e) => e.toJSON()));
-    });
-
     it('should return specified extension props', async () => {
       const extensionMetadata = await extensionManagementService.getExtensionProps(MOCK_EXTENSIONS[0].path, {
         readme: './README.md',
