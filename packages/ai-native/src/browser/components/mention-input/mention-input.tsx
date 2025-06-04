@@ -1211,12 +1211,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           {!hasContext ? localize('aiNative.chat.context.title') : ''}
         </span>
         {attachedFiles.files.map((file, index) => (
-          <div
-            key={`file-${index}`}
-            className={styles.context_preview_item}
-            data-type={MentionType.FILE}
-            onClick={() => contextService?.removeFileFromContext(file.uri, true)}
-          >
+          <div key={`file-${index}`} className={styles.context_preview_item} data-type={MentionType.FILE}>
             <Icon
               iconClass={cls(
                 labelService?.getIcon(file.uri) || MentionType.FILE,
@@ -1233,12 +1228,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         ))}
 
         {attachedFiles.folders.map((folder, index) => (
-          <div
-            key={`folder-${index}`}
-            className={styles.context_preview_item}
-            data-type='folder'
-            onClick={() => contextService?.removeFileFromContext(folder.uri, true)}
-          >
+          <div key={`folder-${index}`} className={styles.context_preview_item} data-type='folder'>
             <Icon iconClass={cls(getIcon('folder'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
@@ -1249,29 +1239,15 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         ))}
 
         {attachedFiles.rules.map((rule, index) => (
-          <div
-            key={`rule-${index}`}
-            className={styles.context_preview_item}
-            data-type='rule'
-            onClick={() => {
-              // 由于没有专门的删除规则方法，我们重新构建规则列表
-              contextService?.cleanFileContext();
-              // 重新添加除了当前要删除的规则之外的所有上下文
-              attachedFiles.files.forEach((file) => contextService?.addFileToContext(file.uri, file.selection, true));
-              attachedFiles.folders.forEach((folder) => contextService?.addFolderToContext(folder.uri, true));
-              attachedFiles.rules.forEach((r, i) => {
-                if (i !== index) {
-                  contextService?.addRuleToContext(new URI(r.path), true);
-                }
-              });
-            }}
-          >
+          <div key={`rule-${index}`} className={styles.context_preview_item} data-type='rule'>
             <Icon iconClass={cls(getIcon('rules'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
               onClick={() => removeContext(MentionType.RULE, new URI(rule.path))}
             />
-            <span className={styles.context_preview_item_text}>{getFileNameFromPath(rule.path)}</span>
+            <span className={styles.context_preview_item_text}>
+              {getFileNameFromPath(rule.path).replace('.mdc', '')}
+            </span>
           </div>
         ))}
       </div>
