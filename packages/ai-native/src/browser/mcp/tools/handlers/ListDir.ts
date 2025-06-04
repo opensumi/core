@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, Throttler, URI } from '@opensumi/ide-core-browser';
+import { AppConfig, URI } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 /**

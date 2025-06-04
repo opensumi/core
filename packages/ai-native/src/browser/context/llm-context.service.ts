@@ -1,10 +1,10 @@
-import { DataContent } from 'ai';
-
 import { Autowired, Injectable } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
+import { AINativeSettingSectionsId, IApplicationService, RulesServiceToken } from '@opensumi/ide-core-common';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus/event-decorator';
 import { MarkerSeverity } from '@opensumi/ide-core-common/lib/types/markers/markers';
-import { Emitter, URI } from '@opensumi/ide-core-common/lib/utils';
+import { Emitter, OperatingSystem, URI, parseGlob } from '@opensumi/ide-core-common/lib/utils';
 import {
   EditorDocumentModelCreationEvent,
   EditorDocumentModelRemovalEvent,
@@ -15,8 +15,12 @@ import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser/typ
 import { FileType, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMarkerService } from '@opensumi/ide-markers/lib/common/types';
 import { Range } from '@opensumi/ide-monaco';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+import { isString, match } from '@opensumi/ide-utils';
 
 import { AttachFileContext, FileContext, LLMContextService, SerializedContext } from '../../common/llm-context';
+import { ProjectRule } from '../../common/types';
+import { RulesService } from '../rules/rules.service';
 
 @Injectable()
 export class LLMContextServiceImpl extends WithEventBus implements LLMContextService {
@@ -32,6 +36,18 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   @Autowired(IFileServiceClient)
   protected readonly fileService: IFileServiceClient;
 
+  @Autowired(RulesServiceToken)
+  protected readonly rulesService: RulesService;
+
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
+
+  @Autowired(ITerminalApiService)
+  protected readonly terminalService: ITerminalApiService;
+
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
+
   private isAutoCollecting = false;
 
   private contextVersion = 0;
@@ -41,11 +57,13 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
   private readonly maxViewFilesLimit = 20;
   private attachedFiles: FileContext[] = [];
   private attachedFolders: FileContext[] = [];
+  private attachedRules: ProjectRule[] = [];
   private readonly recentlyViewFiles: FileContext[] = [];
   private readonly onDidContextFilesChangeEmitter = new Emitter<{
     viewed: FileContext[];
     attached: FileContext[];
     attachedFolders: FileContext[];
+    attachedRules: ProjectRule[];
     version: number;
   }>();
   private hasUserManualReference = false;
@@ -78,6 +96,24 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     if (list.length > maxLimit) {
       list.shift();
     }
+  }
+
+  addRuleToContext(uri: URI): void {
+    if (!uri) {
+      return;
+    }
+
+    if (this.attachedRules.some((rule) => rule.path === uri.toString())) {
+      return;
+    }
+
+    const rule = this.rulesService.projectRules.find((rule) => rule.path === uri.toString());
+    if (!rule) {
+      return;
+    }
+
+    this.attachedRules.push(rule);
+    this.notifyContextChange();
   }
 
   addFileToContext(uri: URI, selection?: [number, number], isManual = false): void {
@@ -117,6 +153,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     this.attachedFiles = [];
     this.attachedFolders = [];
     this.hasUserManualReference = false;
+    this.attachedRules = [];
     this.notifyContextChange();
   }
 
@@ -125,6 +162,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       viewed: this.recentlyViewFiles,
       attached: this.attachedFiles,
       attachedFolders: this.attachedFolders,
+      attachedRules: this.attachedRules,
       version: this.contextVersion++,
     };
   }
@@ -139,6 +177,24 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
       if (this.attachedFiles.length === 0) {
         this.hasUserManualReference = false;
       }
+    }
+    this.notifyContextChange();
+  }
+
+  removeFolderFromContext(uri: URI): void {
+    const targetList = this.attachedFolders;
+    const index = targetList.findIndex((folder) => folder.uri.toString() === uri.toString());
+    if (index > -1) {
+      targetList.splice(index, 1);
+    }
+    this.notifyContextChange();
+  }
+
+  removeRuleFromContext(uri: URI): void {
+    const targetList = this.attachedRules;
+    const index = targetList.findIndex((rule) => rule.path === uri.toString());
+    if (index > -1) {
+      targetList.splice(index, 1);
     }
     this.notifyContextChange();
   }
@@ -217,25 +273,35 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
     return {
       recentlyViewFiles: this.serializeRecentlyViewFiles(files.viewed, workspaceRoot),
       attachedFiles: this.serializeAttachedFiles(files.attached, workspaceRoot),
-      attachedFolders: await this.serializeAttachedFolders(files.attachedFolders, workspaceRoot),
+      attachedFolders: await this.serializeAttachedFolders(files.attachedFolders),
+      attachedRules: this.serializeAttachedRules(files.attachedRules),
+      globalRules: this.serializeGlobalRules(),
     };
   }
 
-  private async serializeAttachedFolders(folders: FileContext[], workspaceRoot: URI): Promise<string[]> {
+  private async serializeAttachedFolders(folders: FileContext[]): Promise<string[]> {
     // 去重
     const folderPath = Array.from(new Set(folders.map((folder) => folder.uri.toString())));
-    return Promise.all(
+    const header = 'Here are some folder(s) I manually attached to my message:';
+    const folderSections = await Promise.all(
       folderPath.map(async (folder) => {
         const folderUri = new URI(folder);
-        const root = workspaceRoot.relative(folderUri)?.toString() || '/';
-        return `\`\`\`\n${root}\n${(await this.getPartiaFolderStructure(folderUri.codeUri.fsPath))
-          .map((line) => `- ${line}`)
-          .join('\n')}\n\`\`\`\n`;
+        const absolutePath = folderUri.codeUri.fsPath;
+        const folderStructure = await this.getFormattedFolderStructure(absolutePath);
+
+        return `Folder: ${absolutePath}
+Contents of directory:
+
+${folderStructure}`;
       }),
     );
+    if (folderSections.length > 0) {
+      return [header, ...folderSections, ''];
+    }
+    return [];
   }
 
-  private async getPartiaFolderStructure(folder: string, level = 2): Promise<string[]> {
+  private async getFormattedFolderStructure(folder: string): Promise<string> {
     const result: string[] = [];
     try {
       const stat = await this.fileService.getFileStat(folder);
@@ -247,28 +313,27 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
           // 处理软链接
           const target = await this.fileService.getFileStat(child.realUri || child.uri);
           if (target) {
-            result.push(`${relativePath} -> ${target} (symbolic link)`);
+            result.push(`[link] ${relativePath} -> ${target}`);
           } else {
-            result.push(`${relativePath} (broken symbolic link)`);
+            result.push(`[link] ${relativePath} (broken)`);
           }
           continue;
         }
 
         if (child.type === FileType.Directory) {
-          result.push(`${relativePath}/`);
-          if (level > 1) {
-            const subDirStructure = await this.getPartiaFolderStructure(child.uri, level - 1);
-            result.push(...subDirStructure.map((subEntry) => `${relativePath}/${subEntry}`));
-          }
+          // 计算目录下的项目数量
+          const childStat = await this.fileService.getFileStat(child.uri);
+          const itemCount = childStat?.children?.length || 0;
+          result.push(`[dir]  ${relativePath}/ (${itemCount} items)`);
         } else if (child.type === FileType.File) {
-          result.push(relativePath);
+          result.push(`[file] ${relativePath}`);
         }
       }
     } catch {
-      return result;
+      return '';
     }
 
-    return result;
+    return result.join('\n');
   }
 
   private serializeRecentlyViewFiles(files: FileContext[], workspaceRoot: URI): string[] {
@@ -295,6 +360,7 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         lineErrors: this.getFileErrors(file.uri),
         path: workspaceRoot.relative(file.uri)!.toString(),
         language: ref.instance.languageId!,
+        selection: file.selection,
       };
     } catch (e) {
       return null;
@@ -309,5 +375,100 @@ export class LLMContextServiceImpl extends WithEventBus implements LLMContextSer
         severities: MarkerSeverity.Error,
       })
       .map((marker) => marker.message);
+  }
+
+  private serializeGlobalRules(): string[] {
+    const globalRules = this.preferenceService.get<string>(AINativeSettingSectionsId.GlobalRules);
+    if (!globalRules) {
+      return [];
+    }
+
+    const platform =
+      this.applicationService.backendOS === OperatingSystem.Windows
+        ? 'windows'
+        : this.applicationService.backendOS === OperatingSystem.Linux
+        ? 'linux'
+        : 'darwin';
+    const shell = this.preferenceService.get<string>('terminal.type', 'zsh');
+    let shellName = shell;
+    if (shell === 'default') {
+      shellName = this.applicationService.backendOS === OperatingSystem.Windows ? 'cmd' : 'zsh';
+    }
+    const userInfoSection = `<user_info>
+The user's OS version is ${platform}. The absolute path of the user's workspace is ${this.appConfig.workspaceDir}. The user's shell is /bin/${shellName}.
+</user_info>`;
+
+    const rulesSection = `
+
+<rules>
+The rules section has a number of possible rules/memories/context that you should consider. In each subsection, we provide instructions about what information the subsection contains and how you should consider/follow the contents of the subsection.
+
+
+<user_specific_rule description="This is a rule set by the user that the agent must follow.">
+${globalRules}
+</user_specific_rule>
+
+</rules>`;
+
+    return [userInfoSection, rulesSection];
+  }
+
+  private findApplicableRules(attachedRules: ProjectRule[]): ProjectRule[] {
+    const otherRules = this.rulesService.projectRules.filter(
+      (rule) => !attachedRules.some((attachedRule) => attachedRule.path === rule.path),
+    );
+    const requestedByAgentRules = otherRules.filter((rule) => rule.description);
+    const alwaysApplyRules = otherRules.filter((rule) => rule.alwaysApply);
+    const requestedByFileRules = this.findFileMatchingRules(otherRules);
+
+    return [...requestedByFileRules, ...requestedByAgentRules, ...alwaysApplyRules];
+  }
+  private findFileMatchingRules(otherRules: ProjectRule[]): ProjectRule[] {
+    const requestedByFileRules = otherRules.filter((rule) => rule.globs);
+    const filePaths = this.attachedFiles.map((file) => file.uri.toString());
+    const folderPaths = this.attachedFolders.map((folder) => folder.uri.toString());
+
+    return requestedByFileRules.filter((rule) => {
+      let globs = rule.globs;
+      if (isString(globs)) {
+        globs = this.normalizeGlobs(globs.split(','));
+      } else {
+        globs = this.normalizeGlobs(globs || []);
+      }
+      const patterns = globs.map((pattern) => parseGlob(pattern));
+      return patterns.some((match) => filePaths.some((path) => match(path)) || folderPaths.some((path) => match(path)));
+    });
+  }
+  private normalizeGlobs(globs: string | string[]): string[] {
+    const globArray = isString(globs) ? globs.split(',') : globs || [];
+    return globArray.map((glob) => {
+      const p = glob.trim();
+      return p.startsWith('**') ? p : `**/${p}`;
+    });
+  }
+
+  private serializeAttachedRules(rules: ProjectRule[] = []): string[] {
+    rules = this.findApplicableRules(rules);
+    if (rules.length === 0) {
+      return [];
+    }
+
+    const header =
+      '\n<rules_context>\n\nRules are extra documentation provided by the user to help the AI understand the codebase.\nUse them if they seem useful to the users most recent query, but do not use them if they seem unrelated.\n\n';
+
+    const rulesSections = rules
+      .map((rule) => {
+        const ruleName =
+          rule.path
+            .split('/')
+            .pop()
+            ?.replace(/.md(c)?$/, '') || 'Unnamed Rule';
+        return `Rule Name: ${ruleName}\nDescription: \n${rule.description || rule.content}`;
+      })
+      .join('\n\n');
+
+    const footer = '\n</rules_context>\n';
+
+    return [header, rulesSections, footer];
   }
 }

@@ -333,3 +333,6 @@ export interface IInlineDiffService {
 }
 
 export const InlineDiffServiceToken = Symbol('InlineDiffService');
+
+export * from './tool-invocation-registry';
+export * from './mdc-parser';

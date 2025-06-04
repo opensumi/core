@@ -1,5 +1,7 @@
 import { Event, URI } from '@opensumi/ide-core-common/lib/utils';
 
+import { ProjectRule } from './types';
+
 export interface LLMContextService {
   /**
    * 开始自动收集
@@ -22,6 +24,11 @@ export interface LLMContextService {
   addFolderToContext(uri: URI, isManual?: boolean): void;
 
   /**
+   * 添加规则到 context 中
+   */
+  addRuleToContext(uri: URI, isManual?: boolean): void;
+
+  /**
    * 清除上下文
    */
   cleanFileContext(): void;
@@ -33,6 +40,7 @@ export interface LLMContextService {
     viewed: FileContext[];
     attached: FileContext[];
     attachedFolders: FileContext[];
+    attachedRules: ProjectRule[];
     version: number;
   }>;
 
@@ -41,6 +49,18 @@ export interface LLMContextService {
    * @param uri URI
    */
   removeFileFromContext(uri: URI, isManual?: boolean): void;
+
+  /**
+   * 从 context 中移除文件夹
+   * @param uri URI
+   */
+  removeFolderFromContext(uri: URI): void;
+
+  /**
+   * 从 context 中移除规则
+   * @param uri URI
+   */
+  removeRuleFromContext(uri: URI): void;
 
   /** 导出为可序列化格式 */
   serialize(): Promise<SerializedContext>;
@@ -58,12 +78,15 @@ export interface AttachFileContext {
   lineErrors: string[];
   path: string;
   language: string;
+  selection?: [number, number];
 }
 
 export interface SerializedContext {
   recentlyViewFiles: string[];
   attachedFiles: Array<AttachFileContext>;
   attachedFolders: string[];
+  attachedRules: string[];
+  globalRules: string[];
 }
 
 export enum LLM_CONTEXT_KEY {

@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common/editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { SerializedContext } from '../llm-context';
+import { AttachFileContext, SerializedContext } from '../llm-context';
 
 export const ChatAgentPromptProvider = Symbol('ChatAgentPromptProvider');
 
@@ -23,14 +23,17 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
   protected readonly workspaceService: IWorkspaceService;
 
   async provideContextPrompt(context: SerializedContext, userMessage: string) {
-    const currentFileInfo =
-      context.attachedFiles.length > 0 || context.attachedFolders.length > 0 ? null : await this.getCurrentFileInfo();
+    let currentFileInfo = await this.getCurrentFileInfo();
+    if (context.attachedFiles.some((file) => file.path === currentFileInfo?.path)) {
+      currentFileInfo = null;
+    }
 
     return this.buildPromptTemplate({
-      recentFiles: this.buildRecentFilesSection(context.recentlyViewFiles),
-      attachedFiles: this.buildAttachedFilesSection(context.attachedFiles),
-      attachedFolders: this.buildAttachedFoldersSection(context.attachedFolders),
+      attachedFiles: context.attachedFiles,
+      attachedFolders: context.attachedFolders,
       currentFile: currentFileInfo,
+      attachedRules: context.attachedRules,
+      globalRules: context.globalRules,
       userMessage,
     });
   }
@@ -46,33 +49,56 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
     const currentPath =
       (await this.workspaceService.asRelativePath(currentModel.uri))?.path || currentModel.uri.codeUri.fsPath;
 
+    // 获取当前选中行信息
+    const selection = editor?.monacoEditor?.getSelection();
+    const currentLine = selection ? selection.startLineNumber : undefined;
+    let lineContent = '';
+
+    if (currentLine && editor?.monacoEditor) {
+      const model = editor.monacoEditor.getModel();
+      if (model) {
+        lineContent = model.getLineContent(currentLine)?.trim() || '';
+      }
+    }
+
     return {
       path: currentPath,
       languageId: currentModel.languageId,
       content: currentModel.getText(),
+      currentLine,
+      lineContent,
     };
   }
 
-  private buildPromptTemplate({
-    recentFiles,
+  private async buildPromptTemplate({
     attachedFiles,
     attachedFolders,
     currentFile,
+    attachedRules,
+    globalRules,
     userMessage,
   }: {
-    recentFiles: string;
-    attachedFiles: string;
-    attachedFolders: string;
-    currentFile: { path: string; languageId: string; content: string } | null;
+    attachedFiles: AttachFileContext[];
+    attachedFolders: string[];
+    currentFile: {
+      path: string;
+      languageId: string;
+      content: string;
+      currentLine?: number;
+      lineContent?: string;
+    } | null;
+    attachedRules: string[];
+    globalRules: string[];
     userMessage: string;
   }) {
     const sections = [
+      ...globalRules,
+      ...attachedFolders,
       '<additional_data>',
       'Below are some potentially helpful/relevant pieces of information for figuring out to respond',
-      recentFiles,
-      attachedFiles,
-      attachedFolders,
       this.buildCurrentFileSection(currentFile),
+      this.buildAttachedFilesSection(attachedFiles),
+      ...attachedRules,
       '</additional_data>',
       '<user_query>',
       userMessage,
@@ -82,17 +108,7 @@ export class DefaultChatAgentPromptProvider implements ChatAgentPromptProvider {
     return sections.join('\n');
   }
 
-  private buildRecentFilesSection(files: string[]): string {
-    if (!files.length) {
-      return '';
-    }
-
-    return `<recently_viewed_files>
-${files.map((file, idx) => `    ${idx + 1}: ${file}`).join('\n')}
-</recently_viewed_files>`;
-  }
-
-  private buildAttachedFilesSection(files: { path: string; content: string; lineErrors: string[] }[]): string {
+  private buildAttachedFilesSection(files: AttachFileContext[]): string {
     if (!files.length) {
       return '';
     }
@@ -112,9 +128,9 @@ ${files.map((file, idx) => `    ${idx + 1}: ${file}`).join('\n')}
     return `<attached_files>\n${fileContents}\n</attached_files>`;
   }
 
-  private buildFileContentSection(file: { path: string; content: string }): string {
+  private buildFileContentSection(file: AttachFileContext): string {
     return `<file_contents>
-\`\`\`${file.path}
+\`\`\`${file.path}${file.selection ? `, lines: ${file.selection?.[0]}-${file.selection?.[1]}` : ''}
 ${file.content}
 \`\`\`
 </file_contents>`;
@@ -128,23 +144,22 @@ ${file.content}
     return `<linter_errors>\n${errors.join('\n')}\n</linter_errors>`;
   }
 
-  private buildAttachedFoldersSection(folders: string[]): string {
-    if (!folders.length) {
-      return '';
-    }
-
-    return `<attached_folders>\n${folders.join('\n')}</attached_folders>`;
-  }
-
-  private buildCurrentFileSection(fileInfo: { path: string; languageId: string; content: string } | null): string {
+  private buildCurrentFileSection(
+    fileInfo: { path: string; languageId: string; content: string; currentLine?: number; lineContent?: string } | null,
+  ): string {
     if (!fileInfo) {
       return '';
     }
 
-    return `<current_opened_file>
-\`\`\`${fileInfo.languageId} ${fileInfo.path}
-${fileInfo.content}
-\`\`\`
-</current_opened_file>`;
+    let currentFileSection = `<current_file>\nPath: ${fileInfo.path}`;
+
+    if (fileInfo.currentLine && fileInfo.lineContent) {
+      currentFileSection += `\nCurrently selected line: ${fileInfo.currentLine}`;
+      currentFileSection += `\nLine ${fileInfo.currentLine} content: \`${fileInfo.lineContent}\``;
+    }
+
+    currentFileSection += '\n</current_file>';
+
+    return currentFileSection;
   }
 }

@@ -178,18 +178,22 @@ export const Scrollbars = ({
         return <div {...props} style={newStyle} className={cls(className, 'scrollbar-thumb-horizontal')} />;
       }}
     >
-      <div
-        ref={(ref) => {
-          verticalShadowRef.current = ref;
-        }}
-        className={'scrollbar-decoration-vertical'}
-      />
-      <div
-        ref={(ref) => {
-          horizontalShadowRef.current = ref;
-        }}
-        className={'scrollbar-decoration-horizontal'}
-      />
+      {!hiddenVertical && (
+        <div
+          ref={(ref) => {
+            verticalShadowRef.current = ref;
+          }}
+          className={'scrollbar-decoration-vertical'}
+        />
+      )}
+      {!hiddenHorizontal && (
+        <div
+          ref={(ref) => {
+            horizontalShadowRef.current = ref;
+          }}
+          className={'scrollbar-decoration-horizontal'}
+        />
+      )}
       {children}
     </CustomScrollbars>
   );

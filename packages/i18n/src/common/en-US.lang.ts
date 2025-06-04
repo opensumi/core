@@ -1463,6 +1463,8 @@ export const localizationBundle = {
     'aiNative.chat.clearContext': 'Clear Context',
     'aiNative.chat.context.description': 'Total {0} References',
     'aiNative.chat.context.clear': 'Clear References',
+    'aiNative.chat.context.title': 'Add Context',
+    'aiNative.chat.context.title.empty': 'No Context',
     'aiNative.chat.modelSelector.disableTip': 'Clear or create session to change model',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
@@ -1539,6 +1541,8 @@ export const localizationBundle = {
     'preference.ai.native.codeEdits.renderType': 'Code Edits Render Type',
 
     'preference.ai.native.chat.system.prompt': 'Default Chat System Prompt',
+
+    'preference.ai.native.globalRules.description': 'These rules will be sent to all chats and Agents.',
     // #endregion AI Native
 
     // #endregion merge editor
@@ -1599,6 +1603,26 @@ export const localizationBundle = {
     'ai.native.mcp.terminal.allow-question': 'Allow the terminal to run the command?',
     'ai.native.mcp.terminal.allow': 'Allow',
     'ai.native.mcp.terminal.deny': 'Reject',
+
+    // Rules Settings
+    'ai.native.rules.title': 'Rules',
+    'ai.native.rules.description': 'Rules allow you to provide system-level guidance to the Agent.',
+    'ai.native.rules.addRule.title': 'Add Rule',
+    'ai.native.rules.userRules.title': 'User Rules',
+    'ai.native.rules.userRules.description': 'User rules allow you to provide guidance to the Agent.',
+    'ai.native.rules.userRules.placeholder':
+      'e.g., "Always output answers in Portuguese, prefer terse answers, always use functional code"',
+    'ai.native.rules.projectRules.title': 'Project Rules',
+    'ai.native.rules.projectRules.description':
+      "Project-specific rules that help the AI understand your codebase and follow your project's conventions. They can be automatically included or fetched by an agent. These are synced with your codebase.",
+    'ai.native.rules.projectRules.noUsed':
+      'This rule may never be used since it has no description or auto attachments',
+    'ai.native.rules.projectRules.newRule': 'New Rule',
+    'ai.native.rules.projectRules.newRule.placeholder': 'Please enter the rule name',
+    'ai.native.rules.projectRules.newRule.error.invalidFileName': 'Invalid file name',
+    'ai.native.rules.projectRules.newRule.error.fileExists': 'File "{0}" already exists',
+    'ai.native.rules.projectRules.newRule.error.notEmpty': 'Rule name cannot be empty',
+    'ai.native.rules.projectRules.empty': 'No project rules found',
 
     // Built-in tools
     'ai.native.terminal.autorun': 'Terminal auto execution policy',
