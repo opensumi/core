@@ -35,6 +35,7 @@ import {
   AIBackSerivcePath,
   CancelResponse,
   CancellationToken,
+  ChatMessageRole,
   ChatResponse,
   ChatServiceToken,
   ErrorResponse,
@@ -56,6 +57,10 @@ export enum EInlineOperation {
 export class AINativeContribution implements AINativeCoreContribution {
   @Autowired(AIBackSerivcePath)
   private readonly aiBackService: IAIBackService;
+
+  private lastMessageSummary: string = '';
+  private messageCountSinceLastSummary: number = 0;
+  private readonly SUMMARY_UPDATE_THRESHOLD = 10; // 每10条消息更新一次摘要
 
   @Autowired(TerminalDetectionPromptManager)
   terminalDetectionPromptManager: TerminalDetectionPromptManager;
@@ -234,6 +239,49 @@ export class AINativeContribution implements AINativeCoreContribution {
 
     registry.registerImageUploadProvider({
       imageUpload: imageToBase64,
+    });
+
+    registry.registerMessageSummaryProvider({
+      getMessageSummary: async (
+        messages: Array<{
+          role: ChatMessageRole;
+          content: string;
+        }>,
+      ) => {
+        // 如果消息数量未达到阈值且已有摘要，则返回上一次的摘要
+        this.messageCountSinceLastSummary++;
+        if (this.messageCountSinceLastSummary < this.SUMMARY_UPDATE_THRESHOLD && this.lastMessageSummary) {
+          return this.lastMessageSummary;
+        }
+
+        // 裁剪最近的10条消息，避免过长的消息导致请求失败
+        const sliceMessages = messages.slice(-10);
+        const prompt = `You are a helpful AI assistant. Summarize in ONE clear statement (12-15 words).
+Requirements:
+- Include what happened
+- No meta-descriptions
+- No interpretations
+
+Bad: "The discussion was about ENI limits"
+Good: "Instance network interfaces exceeded system limit"`;
+        const result = await this.aiBackService.request(prompt, {
+          type: '',
+          messages: sliceMessages,
+        });
+
+        if (result.isCancel) {
+          return this.lastMessageSummary || '';
+        }
+
+        if (result.errorCode !== 0) {
+          return this.lastMessageSummary || '';
+        }
+
+        // 更新摘要和计数器
+        this.lastMessageSummary = result.data || '';
+        this.messageCountSinceLastSummary = 0;
+        return this.lastMessageSummary;
+      },
     });
 
     // registry.registerSlashCommand(
