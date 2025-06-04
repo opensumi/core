@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import merge from 'lodash/merge';
 import throttle from 'lodash/throttle';
 
@@ -55,7 +56,6 @@ import { EndOfLineSequence, RenderLineNumbersType } from '../../../common/vscode
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
 
 import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { debounce } from 'lodash';
 
 @Injectable({ multiple: true })
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -229,14 +229,14 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   protected propertiesChangeCache = new Map<string, IEditorStatusChangeDTO>();
 
-  triggerPropertiesChange = () => {
+  private triggerPropertiesChange() {
     const changes: IEditorStatusChangeDTO[] = [];
     this.propertiesChangeCache.forEach((change) => {
       changes.push(change);
     });
     this.propertiesChangeCache.clear();
     this.proxy.$acceptPropertiesChanges(changes);
-  };
+  }
 
   /**
    * 按 id 缓存 change, 每次 change 都会合并到缓存中
