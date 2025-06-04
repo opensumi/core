@@ -2,7 +2,7 @@ import cls from 'classnames';
 import * as React from 'react';
 
 import { getSymbolIcon, localize } from '@opensumi/ide-core-browser';
-import { Icon, Popover, PopoverPosition, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
 

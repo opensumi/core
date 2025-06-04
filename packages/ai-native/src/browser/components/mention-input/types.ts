@@ -59,6 +59,19 @@ export interface ExtendedModelOption extends ModelOption {
   selected?: boolean; // 由外部控制选中状态
 }
 
+export interface ExtendedModelOption {
+  label: string;
+  value: string;
+  icon?: string;
+  iconClass?: string;
+  tags?: string[];
+  features?: string[];
+  description?: string;
+  disabled?: boolean;
+  badge?: string;
+  badgeColor?: string;
+}
+
 export enum FooterButtonPosition {
   LEFT = 'left',
   RIGHT = 'right',
