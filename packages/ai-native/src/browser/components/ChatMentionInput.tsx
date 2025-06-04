@@ -425,6 +425,17 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
     () => ({
       modelOptions: [
         {
+          value: 'qwen-plus-latest',
+          label: 'Qwen 3',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01LFMrZj28YrnrzeebY_!!6000000007945-55-tps-16-16.svg',
+            IconType.Background,
+          ),
+          tags: ['思考链', '擅长代码'],
+          description: '高性能代码模型，支持思考链',
+        },
+        {
           label: 'Claude 4 Sonnet',
           value: 'claude_sonnet4',
           iconClass: iconService.fromIcon(
