@@ -55,6 +55,7 @@ import { EndOfLineSequence, RenderLineNumbersType } from '../../../common/vscode
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
 
 import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { debounce } from 'lodash';
 
 @Injectable({ multiple: true })
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -228,25 +229,17 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   protected propertiesChangeCache = new Map<string, IEditorStatusChangeDTO>();
 
-  triggerPropertiesChange = throttle(
-    () => {
-      const changes: IEditorStatusChangeDTO[] = [];
-      this.propertiesChangeCache.forEach((change) => {
-        changes.push(change);
-      });
-      this.propertiesChangeCache.clear();
-
-      this.proxy.$acceptPropertiesChanges(changes);
-    },
-    16,
-    {
-      leading: true,
-      trailing: true,
-    },
-  );
+  triggerPropertiesChange = () => {
+    const changes: IEditorStatusChangeDTO[] = [];
+    this.propertiesChangeCache.forEach((change) => {
+      changes.push(change);
+    });
+    this.propertiesChangeCache.clear();
+    this.proxy.$acceptPropertiesChanges(changes);
+  };
 
   /**
-   * 按 id 缓存 change, 每次 change 都会合并到缓存中，debounce 发送给插件进程
+   * 按 id 缓存 change, 每次 change 都会合并到缓存中
    */
   protected batchPropertiesChanges(change: Partial<IEditorStatusChangeDTO> & { id: string }) {
     const { id } = change;
@@ -376,6 +369,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         }
       }),
       this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+        console.log('editor selection change: ', e.payload.selections);
         const editorId = getTextEditorId(e.payload.group, e.payload.editorUri, e.payload.side);
 
         this.batchPropertiesChanges({
@@ -492,6 +486,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   $setSelections(id: string, selections: ISelection[]): Promise<void> {
+    console.log('$setSelections', id, selections);
     if (!this.getEditor(id)) {
       return Promise.reject(`No Such TextEditor: ${id}`);
     }
