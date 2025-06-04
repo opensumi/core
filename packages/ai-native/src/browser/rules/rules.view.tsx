@@ -37,7 +37,7 @@ export const RulesView: React.FC = () => {
     [rulesService],
   );
 
-  const getFileNameFromPath = (path: string) => path.split('/').pop() || path;
+  const getFileNameFromPath = (path: string) => decodeURIComponent(path.split('/').pop() || path);
 
   const hasWarning = (rule: ProjectRule) => !rule.description && !rule.alwaysApply && !rule.globs;
 

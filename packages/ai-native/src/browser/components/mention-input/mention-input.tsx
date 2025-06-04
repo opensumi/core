@@ -1199,6 +1199,8 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [contextService],
   );
 
+  const getFileNameFromPath = (path: string) => decodeURIComponent(path.split('/').pop() || 'Unknown Rule');
+
   const renderContextPreview = React.useCallback(
     () => (
       <div className={styles.context_preview_container}>
@@ -1226,11 +1228,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
               iconClass={cls(styles.close_icon, getIcon('close'))}
               onClick={() => removeContext(MentionType.FILE, file.uri)}
             />
-            <span className={styles.context_preview_item_text}>
-              {workspaceService?.workspace
-                ? file.uri.toString().replace(workspaceService.workspace.uri.toString(), '').slice(1)
-                : file.uri.toString()}
-            </span>
+            <span className={styles.context_preview_item_text}>{new URI(file.uri.toString()).displayName}</span>
           </div>
         ))}
 
@@ -1246,11 +1244,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
               iconClass={cls(styles.close_icon, getIcon('close'))}
               onClick={() => removeContext(MentionType.FOLDER, folder.uri)}
             />
-            <span className={styles.context_preview_item_text}>
-              {workspaceService?.workspace
-                ? folder.uri.toString().replace(workspaceService.workspace.uri.toString(), '').slice(1)
-                : folder.uri.toString()}
-            </span>
+            <span className={styles.context_preview_item_text}>{new URI(folder.uri.toString()).displayName}</span>
           </div>
         ))}
 
@@ -1277,23 +1271,12 @@ export const MentionInput: React.FC<MentionInputProps> = ({
               iconClass={cls(styles.close_icon, getIcon('close'))}
               onClick={() => removeContext(MentionType.RULE, new URI(rule.path))}
             />
-            <span className={styles.context_preview_item_text}>
-              {rule.path.split('/').pop()?.replace('.mdc', '') || 'Unknown Rule'}
-            </span>
+            <span className={styles.context_preview_item_text}>{getFileNameFromPath(rule.path)}</span>
           </div>
         ))}
       </div>
     ),
-    [
-      handleClearContext,
-      hasContext,
-      attachedFiles,
-      workspaceService,
-      labelService,
-      contextService,
-      handleTitleClick,
-      removeContext,
-    ],
+    [handleClearContext, hasContext, attachedFiles, labelService, contextService, handleTitleClick, removeContext],
   );
 
   return (
