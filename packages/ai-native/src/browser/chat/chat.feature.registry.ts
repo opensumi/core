@@ -2,7 +2,13 @@ import { Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event, getDebugLogger } from '@opensumi/ide-core-common';
 
 import { IChatWelcomeMessageContent, ISampleQuestions, SLASH_SYMBOL } from '../../common';
-import { IChatFeatureRegistry, IChatSlashCommandHandler, IChatSlashCommandItem, IImageUploadProvider } from '../types';
+import {
+  IChatFeatureRegistry,
+  IChatSlashCommandHandler,
+  IChatSlashCommandItem,
+  IImageUploadProvider,
+  IMessageSummaryProvider,
+} from '../types';
 
 import { ChatSlashCommandItemModel, ChatWelcomeMessageModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
@@ -14,12 +20,22 @@ export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegis
   private slashCommandsHandlerMap: Map<string, IChatSlashCommandHandler> = new Map();
   private imageUploadProvider: IImageUploadProvider | undefined;
 
+  private messageSummaryProvider?: IMessageSummaryProvider;
+
   public registerImageUploadProvider(provider: IImageUploadProvider): void {
     this.imageUploadProvider = provider;
   }
 
   public getImageUploadProvider(): IImageUploadProvider | undefined {
     return this.imageUploadProvider;
+  }
+
+  public registerMessageSummaryProvider(provider: IMessageSummaryProvider): void {
+    this.messageSummaryProvider = provider;
+  }
+
+  public getMessageSummaryProvider(): IMessageSummaryProvider | undefined {
+    return this.messageSummaryProvider;
   }
 
   public chatWelcomeMessageModel?: ChatWelcomeMessageModel;
