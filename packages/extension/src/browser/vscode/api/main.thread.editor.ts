@@ -228,25 +228,17 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   protected propertiesChangeCache = new Map<string, IEditorStatusChangeDTO>();
 
-  triggerPropertiesChange = throttle(
-    () => {
-      const changes: IEditorStatusChangeDTO[] = [];
-      this.propertiesChangeCache.forEach((change) => {
-        changes.push(change);
-      });
-      this.propertiesChangeCache.clear();
-
-      this.proxy.$acceptPropertiesChanges(changes);
-    },
-    16,
-    {
-      leading: true,
-      trailing: true,
-    },
-  );
+  private triggerPropertiesChange() {
+    const changes: IEditorStatusChangeDTO[] = [];
+    this.propertiesChangeCache.forEach((change) => {
+      changes.push(change);
+    });
+    this.propertiesChangeCache.clear();
+    this.proxy.$acceptPropertiesChanges(changes);
+  }
 
   /**
-   * 按 id 缓存 change, 每次 change 都会合并到缓存中，debounce 发送给插件进程
+   * 按 id 缓存 change, 每次 change 都会合并到缓存中
    */
   protected batchPropertiesChanges(change: Partial<IEditorStatusChangeDTO> & { id: string }) {
     const { id } = change;
