@@ -369,7 +369,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         }
       }),
       this.eventBus.on(EditorSelectionChangeEvent, (e) => {
-        console.log('editor selection change: ', e.payload.selections);
         const editorId = getTextEditorId(e.payload.group, e.payload.editorUri, e.payload.side);
 
         this.batchPropertiesChanges({
@@ -486,7 +485,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   $setSelections(id: string, selections: ISelection[]): Promise<void> {
-    console.log('$setSelections', id, selections);
     if (!this.getEditor(id)) {
       return Promise.reject(`No Such TextEditor: ${id}`);
     }
