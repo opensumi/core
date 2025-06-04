@@ -116,7 +116,7 @@ export abstract class BaseLanguageModel {
         messages,
         abortSignal: abortController.signal,
         experimental_toolCallStreaming: true,
-        maxSteps: 12,
+        maxSteps: modelInfo?.maxSteps ?? 25,
         maxTokens,
         system: systemPrompt,
         providerOptions,

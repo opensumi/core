@@ -437,7 +437,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         },
         {
           label: 'DeepSeek R1',
-          value: 'deepseek-r1',
+          value: 'DeepSeek-R1-0528',
           iconClass: iconService.fromIcon(
             '',
             'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
