@@ -3,9 +3,8 @@ import { URI, path } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { CodeBlockData } from '../../../../common/types';
 import { BaseApplyService } from '../../base-apply.service';
-
-import type { CodeBlockData } from '@opensumi/ide-ai-native/lib/common/types';
 
 /**
  * 创建新文件处理器
