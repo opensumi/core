@@ -71,7 +71,14 @@ export class MarkdownReactRenderer {
     return this.node('code', code, { className });
   }
 
+  mermaid(code: ReactNode) {
+    return this.node('pre', code, { 'data-mermaid': true, className: 'mermaid' });
+  }
+
   code(code: ReactNode | string, lang: string | undefined) {
+    if (lang === 'mermaid') {
+      return this.mermaid(code);
+    }
     return this.node('pre', this.codespan(code, lang));
   }
 

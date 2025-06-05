@@ -74,6 +74,11 @@ export class MarkdownReactParser extends marked.Renderer {
 
           case 'code': {
             const codeToken = token as Tokens.Code;
+            // 检查是否是 mermaid 代码块
+            if (codeToken.lang === 'mermaid') {
+              // 返回特殊的 mermaid 标记，在渲染器中处理
+              return this.renderer.mermaid?.(codeToken.text) || this.renderer.code(codeToken.text, codeToken.lang);
+            }
             return this.renderer.code(codeToken.text, codeToken.lang);
           }
 
