@@ -367,9 +367,11 @@ export abstract class EditorCollectionService {
   public abstract getEditorByUri(uri: URI): IEditor | undefined;
 
   public abstract listDiffEditors(): IDiffEditor[];
+  public abstract listMultiDiffEditors(): IMultiDiffEditor[];
 
   public abstract onCodeEditorCreate: Event<ICodeEditor>;
   public abstract onDiffEditorCreate: Event<IDiffEditor>;
+  public abstract onMultiDiffEditorCreate: Event<IMultiDiffEditor>;
 }
 
 export type IOpenResourceResult = { group: IEditorGroup; resource: IResource } | false;
