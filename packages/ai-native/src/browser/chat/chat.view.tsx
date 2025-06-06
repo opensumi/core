@@ -970,7 +970,6 @@ export function DefaultChatViewHeader({
           const summary = await summaryProvider.getMessageSummary(messages);
           return summary ? summary.slice(0, MAX_TITLE_LENGTH) : currentTitle;
         } catch (error) {
-          console.error('[ChatView] Failed to get message summary:', error);
           return currentTitle;
         }
       },
