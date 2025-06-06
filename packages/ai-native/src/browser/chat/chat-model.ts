@@ -359,11 +359,11 @@ export class ChatModel extends Disposable implements IChatModel {
 
     return processedSummaries.length > 0
       ? [
-          {
-            role: 'system',
-            content: '以下是之前对话的总结：\n' + processedSummaries.join('\n\n'),
-          },
-        ]
+        {
+          role: 'system',
+          content: '以下是之前对话的总结：\n' + processedSummaries.join('\n\n'),
+        },
+      ]
       : [];
   }
 
