@@ -206,4 +206,5 @@ export const defaultIconfont = {
   'window-close': 'window-close',
   'window-maximize': 'window-maximize',
   'zsh': 'zsh',
+  'diff': 'open-changes',
 };

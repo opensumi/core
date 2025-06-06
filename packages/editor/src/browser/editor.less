@@ -20,3 +20,34 @@
     }
   }
 }
+
+.monaco-component.multiDiffEditor {
+  & .multiDiffEntry {
+    & .header {
+      margin-top: 8px;
+      .header-content {
+        margin-top: 0;
+      }
+    }
+    .status {
+      &:empty {
+        &::before {
+          content: 'M';
+        }
+        color: var(--gitDecoration-modifiedResourceForeground);
+      }
+      &.added {
+        color: var(--gitDecoration-addedResourceForeground);
+      }
+      &.deleted {
+        color: var(--gitDecoration-deletedResourceForeground);
+      }
+      &.renamed {
+        color: var(--gitDecoration-renamedResourceForeground);
+      }
+      &.modified {
+        color: var(--gitDecoration-modifiedResourceForeground);
+      }
+    }
+  }
+}

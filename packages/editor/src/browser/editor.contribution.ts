@@ -1246,6 +1246,7 @@ export class EditorContribution
           title: string;
           multiDiffSourceUri: UriComponents;
           resources: { originalUri?: UriComponents; modifiedUri?: UriComponents }[];
+          editorOptions?: IResourceOpenOptions;
         }) => {
           const sources: MultiDiffEditorItem[] = [];
           for (const { originalUri, modifiedUri } of options.resources) {
@@ -1262,6 +1263,7 @@ export class EditorContribution
           this.multiDiffResolver.registerSources(multiDiffSourceUri, sources);
           await this.workbenchEditorService.open(multiDiffSourceUri, {
             label: options.title,
+            ...options.editorOptions,
           });
         },
       },

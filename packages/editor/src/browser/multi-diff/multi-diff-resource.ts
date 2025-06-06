@@ -40,7 +40,6 @@ export class MultiDiffResourceProvider extends WithEventBus implements IResource
     // Get icon from the first modified file
     const firstModifiedUri = parsedSources.length > 0 ? new URI(parsedSources[0].modifiedUri) : undefined;
     const icon = firstModifiedUri ? this.labelService.getIcon(firstModifiedUri) : undefined;
-
     return {
       name: `Multi-Diff: ${name || parsedSources.length + ' files'}`,
       icon: icon || getIcon('diff'),

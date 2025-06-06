@@ -14,7 +14,7 @@ import {
   IEditorDocumentModel,
   IEditorFeatureRegistry,
 } from '@opensumi/ide-editor/lib/browser';
-import { ISumiEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
+import { ISumiEditor } from '@opensumi/ide-editor/lib/browser/base-editor-wrapper';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 

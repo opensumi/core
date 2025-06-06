@@ -18,7 +18,7 @@ import {
   localize,
   memoize,
 } from '@opensumi/ide-core-browser';
-import { IEditor } from '@opensumi/ide-editor';
+import { EditorCollectionService, IEditor } from '@opensumi/ide-editor';
 import {
   IEditorDecorationCollectionService,
   IEditorDocumentModelService,
@@ -76,6 +76,9 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(EditorCollectionService)
+  private readonly editorCollectionService: EditorCollectionService;
 
   @Autowired(ResourceService)
   private readonly resourceService: ResourceService;
@@ -300,10 +303,18 @@ export class CommentsService extends Disposable implements ICommentsService {
     return this.editor;
   }
 
+  private editorDisposerMap = new Map<string, Disposable>();
+
   public handleOnCreateEditor(editor: IEditor) {
-    this.allEditors.push(editor);
-    this.editor = editor;
     const disposer = new Disposable();
+    if (this.allEditors.some((e) => e.monacoEditor === editor.monacoEditor)) {
+      this.editorDisposerMap.get(editor.monacoEditor.getId())?.dispose();
+      this.editorDisposerMap.set(editor.monacoEditor.getId(), disposer);
+    }
+    this.editorDisposerMap.set(editor.monacoEditor.getId(), disposer);
+    this.allEditors.push(editor);
+
+    this.editor = editor;
     let commentRangeDecorationIds: string[] = [];
     let hasHiddenArea = false;
 
@@ -696,7 +707,7 @@ export class CommentsService extends Disposable implements ICommentsService {
               startLineNumber: selection.startLineNumber,
               endLineNumber: contributionRange.endLineNumber,
               startColumn: selection.startColumn,
-              endColumn: contributionRange.endColumn,
+              endColumn: selection.endColumn,
             };
             const topCommentRange = {
               startLineNumber: contributionRange.startLineNumber,
@@ -1012,32 +1023,33 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   private registerDecorationProvider() {
-    // dispose 掉上一个 decorationProvider
     this.decorationProviderDisposer.dispose();
+    // 该逻辑仅在非平铺模式的 DiffEditor 中生效，当平铺模式时，会同时存在多个可见的 editor，所以需要单独处理
     this.decorationProviderDisposer = this.editorDecorationCollectionService.registerDecorationProvider({
       schemes: [...this.shouldShowCommentsSchemes.values()],
       key: 'comments',
       onDidDecorationChange: this.decorationChangeEmitter.event,
-      provideEditorDecoration: (uri: URI) =>
-        this.commentsThreads
-          .map((thread) => {
-            if (thread.uri.codeUri.path === uri.codeUri.path) {
-              if (thread.comments.get().length) {
-                // 存在评论内容 恢复之前的现场
-                thread.showWidgetsIfShowed();
-              }
-            } else {
-              // 临时隐藏，当切回来时会恢复
-              thread.hide();
-            }
-            return thread;
-          })
+      provideEditorDecoration: (uri: URI) => {
+        const relevantThreads: ICommentsThread[] = this.commentsThreads.filter(
+          (thread) => thread.uri.codeUri.path === uri.codeUri.path,
+        );
+        const currentEditors = this.editorCollectionService.listMultiDiffEditors();
+        const isMultiDiffEditor = currentEditors.length > 0;
+        if (isMultiDiffEditor) {
+          const currentEditor = currentEditors[0];
+          // eslint-disable-next-line no-console
+          console.log('currentEditor =>', currentEditor);
+        }
+        for (const thread of relevantThreads) {
+          thread.show();
+        }
+
+        return relevantThreads
           .filter((thread) => {
             const isCurrentThread = thread.uri.isEqual(uri);
-            if (this.filterThreadDecoration) {
-              return isCurrentThread && this.filterThreadDecoration(thread);
-            }
-            return isCurrentThread;
+            return this.filterThreadDecoration
+              ? isCurrentThread && this.filterThreadDecoration(thread)
+              : isCurrentThread;
           })
           .map((thread) => ({
             range: {
@@ -1047,7 +1059,8 @@ export class CommentsService extends Disposable implements ICommentsService {
               endColumn: thread.range.endColumn,
             },
             options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
-          })),
+          }));
+      },
     });
     this.addDispose(this.decorationProviderDisposer);
   }
