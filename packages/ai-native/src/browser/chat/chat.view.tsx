@@ -1,3 +1,4 @@
+import debounce from 'lodash/debounce';
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
@@ -956,28 +957,58 @@ export function DefaultChatViewHeader({
     [aiChatService],
   );
 
+  // 防抖函数，避免频繁触发摘要生成
+  const debouncedGetSummary = React.useCallback(
+    debounce(
+      async (messages: { role: ChatMessageRole; content: string }[], currentTitle: string): Promise<string> => {
+        const summaryProvider = chatFeatureRegistry.getMessageSummaryProvider();
+        if (!summaryProvider || !aiChatService.sessionModel.sessionId) {
+          return currentTitle;
+        }
+
+        try {
+          const summary = await summaryProvider.getMessageSummary(messages);
+          return summary ? summary.slice(0, MAX_TITLE_LENGTH) : currentTitle;
+        } catch (error) {
+          return currentTitle;
+        }
+      },
+      1000,
+      { leading: false, trailing: true },
+    ),
+    [chatFeatureRegistry, aiChatService.sessionModel.sessionId],
+  );
+
+  // 使用 ref 来跟踪最新的请求
+  const latestSummaryRequestRef = React.useRef<number>(0);
+
   React.useEffect(() => {
-    const getHistoryList = () => {
+    const getHistoryList = async () => {
       const currentMessages = aiChatService.sessionModel.history.getMessages();
-      const latestUserMessage = currentMessages.findLast((m) => m.role === ChatMessageRole.User);
-      const summaryProvider = chatFeatureRegistry.getMessageSummaryProvider();
+      const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
       const currentTitle = latestUserMessage
         ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
         : '';
-      const messages = aiChatService.sessionModel.history.getMessages().map((msg) => ({
+
+      // 设置初始标题
+      setCurrentTitle(currentTitle);
+
+      const messages = currentMessages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       }));
-      if (messages.length > 2 && summaryProvider && aiChatService.sessionModel.sessionId) {
-        summaryProvider.getMessageSummary(messages).then((summary) => {
-          if (summary) {
-            setCurrentTitle(summary.slice(0, MAX_TITLE_LENGTH));
-          } else {
-            setCurrentTitle(currentTitle);
-          }
-        });
-      } else {
-        setCurrentTitle(currentTitle);
+
+      // 只有当消息数量超过阈值时才生成摘要
+      if (messages.length > 2) {
+        const requestId = Date.now();
+        latestSummaryRequestRef.current = requestId;
+
+        const summary = await debouncedGetSummary(messages, currentTitle);
+
+        // 检查是否是最新请求
+        if (requestId === latestSummaryRequestRef.current && summary) {
+          setCurrentTitle(summary);
+        }
       }
 
       setHistoryList(

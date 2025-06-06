@@ -308,6 +308,12 @@ export interface IMessageSummaryProvider {
       content: string;
     }>,
   ): Promise<string | undefined>;
+  generateMemorizedMessage(
+    messages: Array<{
+      role: ChatMessageRole;
+      content: string;
+    }>,
+  ): Promise<string | undefined>;
 }
 
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');

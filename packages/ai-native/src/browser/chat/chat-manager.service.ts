@@ -15,12 +15,13 @@ import {
   StorageProvider,
   debounce,
 } from '@opensumi/ide-core-common';
-import { IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
+import { ChatFeatureRegistryToken, IHistoryChatMessage } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { IChatAgentService, IChatFollowup, IChatRequestMessage, IChatResponseErrorDetails } from '../../common';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 
 import { ChatModel, ChatRequestModel, ChatResponseModel, IChatProgressResponseContent } from './chat-model';
+import { ChatFeatureRegistry } from './chat.feature.registry';
 
 interface ISessionModel {
   sessionId: string;
@@ -78,17 +79,23 @@ export class ChatManagerService extends Disposable {
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
+  @Autowired(ChatFeatureRegistryToken)
+  private chatFeatureRegistry: ChatFeatureRegistry;
+
   private _chatStorage: IStorage;
 
   protected fromJSON(data: ISessionModel[]) {
     return data
       .filter((item) => item.history.messages.length > 0)
       .map((item) => {
-        const model = new ChatModel({
-          sessionId: item.sessionId,
-          history: new MsgHistoryManager(item.history),
-          modelId: item.modelId,
-        });
+        const model = new ChatModel(
+          this.chatFeatureRegistry,
+          {
+            sessionId: item.sessionId,
+            history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
+            modelId: item.modelId,
+          },
+        );
         const requests = item.requests.map(
           (request) =>
             new ChatRequestModel(
@@ -131,7 +138,9 @@ export class ChatManagerService extends Disposable {
   }
 
   startSession() {
-    const model = new ChatModel();
+    const model = new ChatModel(
+      this.chatFeatureRegistry,
+    );
     this.#sessionModels.set(model.sessionId, model);
     this.listenSession(model);
     return model;
