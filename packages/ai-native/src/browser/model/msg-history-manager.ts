@@ -23,6 +23,33 @@ interface IToolCallInfo {
   result: any;
 }
 
+export interface MessageBufferManager {
+  messages: IHistoryChatMessage[];
+  add(message: IHistoryChatMessage): void;
+  clear(): void;
+  size(): number;
+}
+
+class SimpleMessageBuffer implements MessageBufferManager {
+  private _messages: IHistoryChatMessage[] = [];
+
+  get messages(): IHistoryChatMessage[] {
+    return this._messages;
+  }
+
+  add(message: IHistoryChatMessage): void {
+    this._messages.push(message);
+  }
+
+  clear(): void {
+    this._messages = [];
+  }
+
+  size(): number {
+    return this._messages.length;
+  }
+}
+
 export class MsgHistoryManager extends Disposable {
   private messageMap: Map<string, IHistoryChatMessage> = new Map();
   private messageAdditionalMap: Map<string, Record<string, any>> = new Map();
@@ -36,14 +63,12 @@ export class MsgHistoryManager extends Disposable {
   private readonly _onMessageAdditionalChange = new Emitter<Record<string, any>>();
   public readonly onMessageAdditionalChange: Event<Record<string, any>> = this._onMessageAdditionalChange.event;
 
-  private memoryConfig: IMemoryConfig = {
-    shortTermSize: 10, // 保留最近10条消息
-    bufferSize: 5, // 缓冲区大小5条（作为最近10条中最早的5条）
-  };
+  private messageBuffer: MessageBufferManager;
 
-  public get config(): IMemoryConfig {
-    return { ...this.memoryConfig };
-  }
+  memoryConfig: IMemoryConfig = {
+    shortTermSize: 10,
+    bufferSize: 5,
+  };
 
   constructor(
     private chatFeatureRegistry: ChatFeatureRegistry,
@@ -55,6 +80,7 @@ export class MsgHistoryManager extends Disposable {
     },
   ) {
     super();
+    this.messageBuffer = new SimpleMessageBuffer();
     if (data) {
       this.messageMap = new Map(data.messages.map((item) => [item.id, item]));
       this.messageAdditionalMap = new Map(Object.entries(data.additional));
@@ -97,7 +123,7 @@ export class MsgHistoryManager extends Disposable {
     }
 
     const messages = this.messageList;
-    // 只有当消息总数超过10条时才进行压缩
+    // 只有当消息总数超过短期记忆限制时才进行压缩
     if (messages.length <= this.memoryConfig.shortTermSize) {
       return;
     }
@@ -105,13 +131,20 @@ export class MsgHistoryManager extends Disposable {
     try {
       this.isCompressing = true;
 
-      // 1. 计算超出10条限制的消息数量
-      const excessCount = messages.length - this.memoryConfig.shortTermSize;
+      // 1. 获取超出短期记忆限制的最新一条消息
+      const latestExcessMessage = messages[messages.length - this.memoryConfig.shortTermSize - 1];
 
-      // 当累积了5条或更多超出限制的消息时，进行总结
-      if (excessCount >= this.memoryConfig.bufferSize) {
-        // 2. 对最早的5条消息进行总结（取前5条，因为 messageList 是按从旧到新排序）
-        const messagesToSummarize = messages.slice(0, this.memoryConfig.bufferSize);
+      // 如果这条消息已经被总结过，就不需要再处理
+      if (latestExcessMessage.isSummarized) {
+        return;
+      }
+
+      // 2. 将这条消息添加到缓冲区
+      this.messageBuffer.add(latestExcessMessage);
+
+      // 3. 当缓冲区达到指定大小时，进行总结
+      if (this.messageBuffer.size() >= this.memoryConfig.bufferSize) {
+        const messagesToSummarize = this.messageBuffer.messages;
 
         const summaryProvider = this.chatFeatureRegistry.getMessageSummaryProvider?.();
         if (summaryProvider) {
@@ -120,11 +153,11 @@ export class MsgHistoryManager extends Disposable {
             content: msg.content,
           }));
 
-          const summary = await summaryProvider.generateMemorizedMessage(messageContents);
-          if (summary) {
+          const memorize = await summaryProvider.generateMemorizedMessage(messageContents);
+          if (memorize) {
             // 添加新的记忆总结
             this.memorySummaries.push({
-              content: summary,
+              content: memorize,
               timestamp: Date.now(),
               messageIds: messagesToSummarize.map((msg) => msg.id),
             });
@@ -139,6 +172,9 @@ export class MsgHistoryManager extends Disposable {
                 });
               }
             }
+
+            // 清空缓冲区
+            this.messageBuffer.clear();
           }
         }
       }

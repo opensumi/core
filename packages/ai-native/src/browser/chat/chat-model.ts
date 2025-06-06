@@ -359,11 +359,11 @@ export class ChatModel extends Disposable implements IChatModel {
 
     return processedSummaries.length > 0
       ? [
-        {
-          role: 'system',
-          content: '以下是之前对话的总结：\n' + processedSummaries.join('\n\n'),
-        },
-      ]
+          {
+            role: 'system',
+            content: '以下是之前对话的总结：\n' + processedSummaries.join('\n\n'),
+          },
+        ]
       : [];
   }
 
@@ -420,32 +420,29 @@ export class ChatModel extends Disposable implements IChatModel {
 
   private processRecentMessages(): CoreMessage[] {
     const history: CoreMessage[] = [];
-    // 只处理未被总结的消息
-    const recentMessages = Array.from(this.requests)
-      .slice(-this.history.config.shortTermSize);
+    // 从 MsgHistoryManager 获取消息，并过滤掉已总结的消息
+    const recentMessages = this.history
+      .getMessages()
+      .filter((msg) => !msg.isSummarized)
+      .slice(-this.history.memoryConfig.shortTermSize);
 
-    for (const request of recentMessages) {
-      if (!request.response.isComplete) {
-        continue;
-      }
-
+    for (const message of recentMessages) {
       history.push({
         role: 'user',
-        content: request.message.prompt,
+        content: message.content,
       });
 
-      for (const part of request.response.responseParts) {
-        if (part.kind === 'treeData' || part.kind === 'component' || part.kind === 'reasoning') {
-          continue;
-        }
-
-        if (part.kind !== 'toolCall') {
+      // 如果有响应内容，添加响应
+      const additional = this.history.getMessageAdditional(message.id);
+      if (additional?.response) {
+        const response = additional.response;
+        if (response.kind === 'toolCall') {
+          this.processToolCall(response, history);
+        } else {
           history.push({
             role: 'assistant',
-            content: part.kind === 'markdownContent' ? part.content.value : part.content,
+            content: response.kind === 'markdownContent' ? response.content.value : response.content,
           });
-        } else {
-          this.processToolCall(part, history);
         }
       }
     }
