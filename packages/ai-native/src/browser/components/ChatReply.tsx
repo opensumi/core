@@ -342,10 +342,10 @@ export const ChatReply = (props: IChatReplyProps) => {
                 }}
               >
                 <Icon iconClass='codicon codicon-sparkle' />
-                {localize('aiNative.chat.thinking')}
-                {isThinking ? (
-                  <Loading />
-                ) : collapseThinkingIndexSet.has(index) ? (
+                <span style={{ marginLeft: 4 }} className={isThinking ? styles.shiny_text : ''}>
+                  {localize('aiNative.chat.thinking')}
+                </span>
+                {isThinking ? null : collapseThinkingIndexSet.has(index) ? (
                   <Icon iconClass='codicon codicon-chevron-right' />
                 ) : (
                   <Icon iconClass='codicon codicon-chevron-down' />

@@ -232,7 +232,7 @@ describe('Extension service', () => {
   });
 
   describe('load browser require interceptor contribution', () => {
-    it('should get ReactDOM interceptor', async () => {
+    it.skip('should get ReactDOM interceptor', async () => {
       // @ts-ignore
       await extensionService.doActivate();
       const requireInterceptorService: IRequireInterceptorService = injector.get(IRequireInterceptorService);

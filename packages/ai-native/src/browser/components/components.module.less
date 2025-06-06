@@ -524,7 +524,6 @@
     display: flex;
     font-size: 11px;
     align-items: center;
-    min-width: 150px;
   }
 
   .mcp_desc {
@@ -585,7 +584,6 @@
   .reasoning_content {
     padding: 8px 12px;
     margin-top: 4px;
-    border-left: 2px solid var(--descriptionForeground);
     color: var(--descriptionForeground);
     background: var(--design-block-background);
     border-radius: 4px;
@@ -597,8 +595,8 @@
   align-items: center;
   padding: 0 4px;
   margin: 0 2px;
-  background: var(--badge-background);
-  color: var(--badge-foreground);
+  background-color: var(--chat-slashCommandBackground);
+  color: var(--chat-slashCommandForeground);
   border-radius: 3px;
   vertical-align: middle;
   font-size: 12px;
@@ -608,10 +606,6 @@
       font-size: 12px;
       margin-right: 3px;
     }
-  }
-  &:hover {
-    background-color: var(--chat-slashCommandBackground);
-    color: var(--chat-slashCommandForeground);
   }
 }
 
@@ -678,4 +672,32 @@
   display: inline-block;
   border-radius: 3px;
   overflow: hidden;
+}
+
+.shiny_text {
+  color: #b5b5b5a4; /* Adjust this color to change intensity/style */
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  display: inline-block;
+  animation: shine 5s linear infinite;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 100%;
+  }
+  100% {
+    background-position: -100%;
+  }
+}
+
+.shiny_text.disabled {
+  animation: none;
 }

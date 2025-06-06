@@ -11,6 +11,7 @@ import { ProjectRule } from '../../../common/types';
 
 import styles from './mention-input.module.less';
 import { MentionPanel } from './mention-panel';
+import { ExtendedModelOption, MentionSelect } from './mention-select';
 import {
   FooterButtonPosition,
   MENTION_KEYWORD,
@@ -1162,6 +1163,29 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [footerConfig.disableModelSelector],
   );
 
+  // 转换模型选项为扩展格式
+  const getExtendedModelOptions = React.useMemo((): ExtendedModelOption[] => {
+    // 如果有扩展模型选项，直接使用
+    if (footerConfig.extendedModelOptions) {
+      return footerConfig.extendedModelOptions.map((option) => ({
+        ...option,
+        selected: option.value === selectedModel,
+      }));
+    }
+
+    // 否则从基础模型选项转换
+    return (footerConfig.modelOptions || []).map((option): ExtendedModelOption => {
+      const extendedOption: ExtendedModelOption = {
+        ...option,
+      };
+
+      // 设置选中状态：如果当前模型匹配选中的模型，则标记为选中
+      extendedOption.selected = option.value === selectedModel;
+
+      return extendedOption;
+    });
+  }, [footerConfig.modelOptions, footerConfig.extendedModelOptions, selectedModel]);
+
   const removeContext = React.useCallback(
     (type: MentionType, uri: URI) => {
       if (type === MentionType.FILE) {
@@ -1175,6 +1199,8 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [contextService],
   );
 
+  const getFileNameFromPath = (path: string) => decodeURIComponent(path.split('/').pop() || 'Unknown Rule');
+
   const renderContextPreview = React.useCallback(
     () => (
       <div className={styles.context_preview_container}>
@@ -1185,12 +1211,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
           {!hasContext ? localize('aiNative.chat.context.title') : ''}
         </span>
         {attachedFiles.files.map((file, index) => (
-          <div
-            key={`file-${index}`}
-            className={styles.context_preview_item}
-            data-type={MentionType.FILE}
-            onClick={() => contextService?.removeFileFromContext(file.uri, true)}
-          >
+          <div key={`file-${index}`} className={styles.context_preview_item} data-type={MentionType.FILE}>
             <Icon
               iconClass={cls(
                 labelService?.getIcon(file.uri) || MentionType.FILE,
@@ -1202,74 +1223,36 @@ export const MentionInput: React.FC<MentionInputProps> = ({
               iconClass={cls(styles.close_icon, getIcon('close'))}
               onClick={() => removeContext(MentionType.FILE, file.uri)}
             />
-            <span className={styles.context_preview_item_text}>
-              {workspaceService?.workspace
-                ? file.uri.toString().replace(workspaceService.workspace.uri.toString(), '').slice(1)
-                : file.uri.toString()}
-            </span>
+            <span className={styles.context_preview_item_text}>{new URI(file.uri.toString()).displayName}</span>
           </div>
         ))}
 
         {attachedFiles.folders.map((folder, index) => (
-          <div
-            key={`folder-${index}`}
-            className={styles.context_preview_item}
-            data-type='folder'
-            onClick={() => contextService?.removeFileFromContext(folder.uri, true)}
-          >
+          <div key={`folder-${index}`} className={styles.context_preview_item} data-type='folder'>
             <Icon iconClass={cls(getIcon('folder'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
               onClick={() => removeContext(MentionType.FOLDER, folder.uri)}
             />
-            <span className={styles.context_preview_item_text}>
-              {workspaceService?.workspace
-                ? folder.uri.toString().replace(workspaceService.workspace.uri.toString(), '').slice(1)
-                : folder.uri.toString()}
-            </span>
+            <span className={styles.context_preview_item_text}>{new URI(folder.uri.toString()).displayName}</span>
           </div>
         ))}
 
         {attachedFiles.rules.map((rule, index) => (
-          <div
-            key={`rule-${index}`}
-            className={styles.context_preview_item}
-            data-type='rule'
-            onClick={() => {
-              // 由于没有专门的删除规则方法，我们重新构建规则列表
-              contextService?.cleanFileContext();
-              // 重新添加除了当前要删除的规则之外的所有上下文
-              attachedFiles.files.forEach((file) => contextService?.addFileToContext(file.uri, file.selection, true));
-              attachedFiles.folders.forEach((folder) => contextService?.addFolderToContext(folder.uri, true));
-              attachedFiles.rules.forEach((r, i) => {
-                if (i !== index) {
-                  contextService?.addRuleToContext(new URI(r.path), true);
-                }
-              });
-            }}
-          >
+          <div key={`rule-${index}`} className={styles.context_preview_item} data-type='rule'>
             <Icon iconClass={cls(getIcon('rules'), styles.context_preview_item_icon, styles.icon)} />
             <Icon
               iconClass={cls(styles.close_icon, getIcon('close'))}
               onClick={() => removeContext(MentionType.RULE, new URI(rule.path))}
             />
             <span className={styles.context_preview_item_text}>
-              {rule.path.split('/').pop()?.replace('.mdc', '') || 'Unknown Rule'}
+              {getFileNameFromPath(rule.path).replace('.mdc', '')}
             </span>
           </div>
         ))}
       </div>
     ),
-    [
-      handleClearContext,
-      hasContext,
-      attachedFiles,
-      workspaceService,
-      labelService,
-      contextService,
-      handleTitleClick,
-      removeContext,
-    ],
+    [handleClearContext, hasContext, attachedFiles, labelService, contextService, handleTitleClick, removeContext],
   );
 
   return (
@@ -1304,13 +1287,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         <div className={styles.left_control}>
           {footerConfig.showModelSelector &&
             renderModelSelectorTip(
-              <Select
-                options={footerConfig.modelOptions || []}
+              <MentionSelect
+                options={getExtendedModelOptions}
                 value={selectedModel}
                 onChange={handleModelChange}
                 className={styles.model_selector}
                 size='small'
                 disabled={footerConfig.disableModelSelector}
+                showThinking={footerConfig.showThinking}
+                thinkingEnabled={footerConfig.thinkingEnabled}
+                onThinkingChange={footerConfig.onThinkingChange}
               />,
             )}
           {renderButtons(FooterButtonPosition.LEFT)}
