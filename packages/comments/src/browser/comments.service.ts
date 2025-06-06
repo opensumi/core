@@ -303,10 +303,18 @@ export class CommentsService extends Disposable implements ICommentsService {
     return this.editor;
   }
 
+  private editorDisposerMap = new Map<string, Disposable>();
+
   public handleOnCreateEditor(editor: IEditor) {
-    this.allEditors.push(editor);
-    this.editor = editor;
     const disposer = new Disposable();
+    if (this.allEditors.some((e) => e.monacoEditor === editor.monacoEditor)) {
+      this.editorDisposerMap.get(editor.monacoEditor.getId())?.dispose();
+      this.editorDisposerMap.set(editor.monacoEditor.getId(), disposer);
+    }
+    this.editorDisposerMap.set(editor.monacoEditor.getId(), disposer);
+    this.allEditors.push(editor);
+
+    this.editor = editor;
     let commentRangeDecorationIds: string[] = [];
     let hasHiddenArea = false;
 
@@ -1022,23 +1030,18 @@ export class CommentsService extends Disposable implements ICommentsService {
       key: 'comments',
       onDidDecorationChange: this.decorationChangeEmitter.event,
       provideEditorDecoration: (uri: URI) => {
-        let relevantThreads: ICommentsThread[] = [];
+        const relevantThreads: ICommentsThread[] = this.commentsThreads.filter(
+          (thread) => thread.uri.codeUri.path === uri.codeUri.path,
+        );
         const currentEditors = this.editorCollectionService.listMultiDiffEditors();
         const isMultiDiffEditor = currentEditors.length > 0;
         if (isMultiDiffEditor) {
           const currentEditor = currentEditors[0];
-          relevantThreads = this.commentsThreads.filter(
-            (thread) => !!currentEditor.multiDiffWidget.tryGetCodeEditor(thread.uri.codeUri),
-          );
-        } else {
-          relevantThreads = this.commentsThreads.filter((thread) => thread.uri.codeUri.path === uri.codeUri.path);
+          // eslint-disable-next-line no-console
+          console.log('currentEditor =>', currentEditor);
         }
         for (const thread of relevantThreads) {
-          if (thread.comments.get().length) {
-            thread.show();
-          } else {
-            thread.hide();
-          }
+          thread.show();
         }
 
         return relevantThreads

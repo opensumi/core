@@ -30,6 +30,12 @@
       }
     }
     .status {
+      &:empty {
+        &::before {
+          content: 'M';
+        }
+        color: var(--gitDecoration-modifiedResourceForeground);
+      }
       &.added {
         color: var(--gitDecoration-addedResourceForeground);
       }
