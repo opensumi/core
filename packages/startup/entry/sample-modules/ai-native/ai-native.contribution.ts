@@ -91,7 +91,7 @@ export class AINativeContribution implements AINativeCoreContribution {
         },
       },
       {
-        execute: async (editor, selection, value, token) => { },
+        execute: async (editor, selection, value, token) => {},
         providePreviewStrategy: async (editor, selection, value, token) => {
           const crossCode = editor.getModel()?.getValueInRange(Selection.liftSelection(selection));
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
@@ -193,7 +193,7 @@ export class AINativeContribution implements AINativeCoreContribution {
       },
       {
         triggerRules: 'selection',
-        execute: async (stdout: string) => { },
+        execute: async (stdout: string) => {},
       },
     );
 
@@ -281,6 +281,13 @@ Good: "Instance network interfaces exceeded system limit"`;
         this.lastMessageSummary = result.data || '';
         this.messageCountSinceLastSummary = 0;
         return this.lastMessageSummary;
+      },
+      generateMemorizedMessage(messages: Array<{ role: ChatMessageRole; content: string }>) {
+        // TODO: Implement a more sophisticated memorization logic if needed.
+        // For now, just return a simple concatenation of messages.
+        return Promise.resolve(
+          `This is a memorized message: ${messages.map((msg) => `${msg.role}: ${msg.content}`).join('\n')}`,
+        );
       },
     });
 
