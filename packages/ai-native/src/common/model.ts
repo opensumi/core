@@ -5,6 +5,7 @@ export interface ModelInfo {
   temperature?: number;
   topP?: number;
   topK?: number;
+  maxSteps?: number;
 }
 
 export const deepSeekModels = {
