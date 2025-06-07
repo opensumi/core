@@ -1,6 +1,6 @@
+import { getOrigin, inject, singleton } from '@difizen/libro-common/app';
 import { ContentContribution } from '@difizen/libro-core';
 import { IContentsModel, INotebookContent, LibroJupyterModel, NotebookOption } from '@difizen/libro-jupyter/noeditor';
-import { getOrigin, inject, singleton } from '@difizen/mana-app';
 
 import { Injector } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-browser';

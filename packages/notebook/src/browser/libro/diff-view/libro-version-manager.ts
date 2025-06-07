@@ -1,5 +1,5 @@
+import { ViewManager, getOrigin, inject, singleton } from '@difizen/libro-common/app';
 import { LibroService } from '@difizen/libro-core';
-import { ViewManager, getOrigin, inject, singleton } from '@difizen/mana-app';
 
 import { Injector } from '@opensumi/di';
 import { Event, MonacoService } from '@opensumi/ide-core-browser';

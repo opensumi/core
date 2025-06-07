@@ -1,6 +1,5 @@
 import { defaultConfig } from '@difizen/libro-code-editor';
 import { MIME } from '@difizen/libro-common';
-import { EditorStateFactory, IEditorStateOptions } from '@difizen/libro-jupyter/noeditor';
 import {
   CommandRegistry,
   Deferred,
@@ -12,7 +11,8 @@ import {
   inject,
   transient,
   watch,
-} from '@difizen/mana-app';
+} from '@difizen/libro-common/app';
+import { EditorStateFactory, IEditorStateOptions } from '@difizen/libro-jupyter/noeditor';
 
 import { Injector } from '@opensumi/di';
 import { IEventBus, URI, uuid } from '@opensumi/ide-core-common';
