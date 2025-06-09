@@ -282,6 +282,13 @@ Good: "Instance network interfaces exceeded system limit"`;
         this.messageCountSinceLastSummary = 0;
         return this.lastMessageSummary;
       },
+      generateMemorizedMessage(messages: Array<{ role: ChatMessageRole; content: string }>) {
+        // TODO: Implement a more sophisticated memorization logic if needed.
+        // For now, just return a simple concatenation of messages.
+        return Promise.resolve(
+          `This is a memorized message: ${messages.map((msg) => `${msg.role}: ${msg.content}`).join('\n')}`,
+        );
+      },
     });
 
     // registry.registerSlashCommand(
