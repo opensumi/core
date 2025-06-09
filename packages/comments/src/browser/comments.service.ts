@@ -518,7 +518,14 @@ export class CommentsService extends Disposable implements ICommentsService {
     this.tryUpdateReservedSpace(editor);
 
     disposer.addDispose(
-      editor.monacoEditor.onDidChangeModel(() => {
+      editor.monacoEditor.onDidChangeModel((event) => {
+        const { newModelUrl } = event;
+        if (newModelUrl) {
+          const currentMultiDiffEditor = this.editorCollectionService.listMultiDiffEditors()[0];
+          if (currentMultiDiffEditor) {
+            editor.updateDocumentModel?.(URI.from(newModelUrl));
+          }
+        }
         this.renderCommentRange(editor);
         this.tryUpdateReservedSpace(editor);
       }),

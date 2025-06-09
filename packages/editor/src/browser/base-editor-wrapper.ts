@@ -2,6 +2,9 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IRange } from '@opensumi/ide-core-browser';
 import { Disposable, ISelection, URI, WithEventBus, isEmptyObject, objects } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
+import { ISettableObservable } from '@opensumi/ide-monaco/lib/common/observable';
+import { RefCounted } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/diffEditor/utils';
+import { IDocumentDiffItem } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/model';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { EditorType, IDecorationApplyOptions, IEditor, IUndoStopOptions } from '../common';
@@ -241,13 +244,33 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
 @Injectable({ multiple: true })
 export class DiffEditorPart extends BaseMonacoEditorWrapper implements IEditor {
   get currentDocumentModel() {
-    return this.getDocumentModel();
+    return this._getDocumentModel();
+  }
+
+  public updateDocumentModel(uri: URI) {
+    const document = this.documents.get();
+    if (document === 'loading') {
+      return;
+    }
+    for (const item of document) {
+      if (item.object.modified) {
+        if (URI.from(item.object.modified.uri).isEqual(uri)) {
+          this._getDocumentModel = () => (item.object as any).modifiedInstance;
+        }
+      }
+      if (item.object.original) {
+        if (URI.from(item.object.original.uri).isEqual(uri)) {
+          this._getDocumentModel = () => (item.object as any).originalInstance;
+        }
+      }
+    }
   }
 
   constructor(
     monacoEditor: IMonacoCodeEditor,
-    private getDocumentModel: () => IEditorDocumentModel | null,
+    public _getDocumentModel: () => IEditorDocumentModel | null,
     type: EditorType,
+    private documents: ISettableObservable<readonly RefCounted<IDocumentDiffItem>[] | 'loading', void>,
   ) {
     super(monacoEditor, type);
   }

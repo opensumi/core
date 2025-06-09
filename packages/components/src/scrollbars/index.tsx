@@ -132,7 +132,7 @@ export const Scrollbars = ({
     };
 
     if (tabBarMode && scrollerRef.current) {
-      scrollerRef.current.addEventListener('wheel', onMouseWheel);
+      scrollerRef.current.addEventListener('wheel', onMouseWheel, { passive: true });
     }
     return () => {
       scrollerRef.current?.removeEventListener('wheel', onMouseWheel);

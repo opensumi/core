@@ -275,6 +275,8 @@ export interface IEditor {
   onFocus: Event<void>;
 
   onBlur: Event<void>;
+
+  updateDocumentModel?: (uri: URI) => void;
 }
 
 export interface IUndoStopOptions {

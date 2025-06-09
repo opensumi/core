@@ -12,6 +12,7 @@ import {
   isString,
 } from '@opensumi/ide-core-common';
 import {
+  ISettableObservable,
   ValueWithChangeEventFromObservable,
   constObservable,
   derived,
@@ -132,6 +133,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     originalEditor: { editor: ICodeEditor } | undefined,
     modifiedInstance: any,
     originalInstance: any,
+    documents: ISettableObservable<readonly RefCounted<IDocumentDiffItem>[] | 'loading', void>,
   ): void {
     const editors: DiffEditorPart[] = [];
     if (modifiedEditor) {
@@ -139,6 +141,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
         modifiedEditor.editor,
         () => modifiedInstance,
         EditorType.MODIFIED_DIFF,
+        documents,
       ]);
       editors.push(modifiedDiffEditorPart);
     }
@@ -147,6 +150,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
         originalEditor.editor,
         () => originalInstance,
         EditorType.ORIGINAL_DIFF,
+        documents,
       ]);
       editors.push(originalDiffEditorPart);
     }
@@ -258,7 +262,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
         if (!editor) {
           continue;
         }
-        Event.once(editor.onDidChangeAttached)(() => {
+        Event.once(editor.onDidChangeDecorations)(() => {
           setTimeout(() => {
             modifiedEditor = modified ? this.multiDiffWidget.tryGetCodeEditor(modified.uri) : undefined;
             originalEditor = original ? this.multiDiffWidget.tryGetCodeEditor(original.uri) : undefined;
@@ -267,6 +271,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
               originalEditor,
               (ref.object as any).modifiedInstance,
               (ref.object as any).originalInstance,
+              documents,
             );
           }, 0);
         });
@@ -277,6 +282,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
         originalEditor,
         (ref.object as any).modifiedInstance,
         (ref.object as any).originalInstance,
+        documents,
       );
     }
     this.multiDiffModelChangeEmitter.fire(this.multiDiffModel);
