@@ -12,6 +12,7 @@ import { IResource } from './resource';
 
 import type { MultiDiffEditorWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidget';
 import type { IMultiDiffResourceId } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidgetImpl';
+import type { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 export const MULTI_DIFF_SCHEME = 'multi-diff-editor';
 
