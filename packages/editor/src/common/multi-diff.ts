@@ -11,6 +11,7 @@ import { IResourceOpenOptions } from './editor';
 import { IResource } from './resource';
 
 import type { MultiDiffEditorWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidget';
+import type { IMultiDiffResourceId } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidgetImpl';
 
 export const MULTI_DIFF_SCHEME = 'multi-diff-editor';
 
@@ -101,4 +102,9 @@ export interface IMultiDiffEditor extends IDisposable {
    * Get the multi-diff editor widget
    */
   multiDiffWidget: MultiDiffEditorWidget;
+
+  /**
+   * Reveal the editor
+   */
+  reveal(resource: IMultiDiffResourceId, options?: { range?: Range; highlight: boolean }): void;
 }

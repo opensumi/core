@@ -78,7 +78,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     private editorCollectionService: EditorCollectionServiceImpl,
   ) {
     super();
-    this.editorCollectionService.addMultiDiffEditors([this]);
+    this.editorCollectionService.addMultiDiffEditors([this as IMultiDiffEditor]);
   }
 
   @OnEvent(EditorDocumentModelContentChangedEvent)

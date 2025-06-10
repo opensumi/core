@@ -102,10 +102,10 @@ export const Scrollbars = ({
       const shadowTopOpacity = (1 / 20) * Math.min(scrollTop, 20);
       const shadowLeftOpacity = (1 / 20) * Math.min(scrollLeft, 20);
       if (verticalShadowRef.current) {
-        verticalShadowRef.current.style.opacity = String(shadowTopOpacity);
+        verticalShadowRef.current.style.opacity = String(shadowLeftOpacity);
       }
       if (horizontalShadowRef.current) {
-        horizontalShadowRef.current.style.opacity = String(shadowLeftOpacity);
+        horizontalShadowRef.current.style.opacity = String(shadowTopOpacity);
       }
       handleReachBottom(values);
       onUpdate && onUpdate(values);
