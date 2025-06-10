@@ -957,26 +957,25 @@ export function DefaultChatViewHeader({
     [aiChatService],
   );
 
-  // 防抖函数，避免频繁触发摘要生成
-  const debouncedGetSummary = React.useCallback(
-    debounce(
-      async (messages: { role: ChatMessageRole; content: string }[], currentTitle: string): Promise<string> => {
-        const summaryProvider = chatFeatureRegistry.getMessageSummaryProvider();
-        if (!summaryProvider || !aiChatService.sessionModel.sessionId) {
-          return currentTitle;
-        }
+  // 生成摘要
+  const getSummary = React.useCallback(
+    async (
+      messages: { role: ChatMessageRole; content: string }[],
+      currentTitle: string,
+      summaryProvider: any,
+    ): Promise<string> => {
+      if (!summaryProvider) {
+        return currentTitle;
+      }
 
-        try {
-          const summary = await summaryProvider.getMessageSummary(messages);
-          return summary ? summary.slice(0, MAX_TITLE_LENGTH) : currentTitle;
-        } catch (error) {
-          return currentTitle;
-        }
-      },
-      1000,
-      { leading: false, trailing: true },
-    ),
-    [chatFeatureRegistry, aiChatService.sessionModel.sessionId],
+      try {
+        const summary = await summaryProvider.getMessageSummary(messages);
+        return summary ? summary.slice(0, MAX_TITLE_LENGTH) : currentTitle;
+      } catch (error) {
+        return currentTitle;
+      }
+    },
+    [],
   );
 
   // 使用 ref 来跟踪最新的请求
@@ -1003,7 +1002,8 @@ export function DefaultChatViewHeader({
         const requestId = Date.now();
         latestSummaryRequestRef.current = requestId;
 
-        const summary = await debouncedGetSummary(messages, currentTitle);
+        const summaryProvider = chatFeatureRegistry.getMessageSummaryProvider();
+        const summary = await getSummary(messages, currentTitle, summaryProvider);
 
         // 检查是否是最新请求
         if (requestId === latestSummaryRequestRef.current && summary) {
