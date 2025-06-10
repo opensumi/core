@@ -119,7 +119,20 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   public addEditors(editors: ISumiEditor[]) {
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
-      if (!this._editors.has(editor)) {
+      let exist = false;
+      // 查找是否存在相同 URI 的 editor
+      const existingEditor = Array.from(this._editors).find(
+        (e) => e.currentUri && editor.currentUri && e.currentUri.isEqual(editor.currentUri),
+      );
+
+      // 如果存在相同 URI 的 editor，先移除它
+      if (existingEditor) {
+        if (existingEditor.monacoEditor.getId() === editor.monacoEditor.getId()) {
+          exist = true;
+        }
+      }
+
+      if (!exist) {
         this._editors.add(editor);
         this.editorFeatureRegistry.runContributions(editor);
         editor.monacoEditor.onDidFocusEditorWidget(() => {
@@ -128,6 +141,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
         editor.monacoEditor.onContextMenu(() => {
           this._currentEditor = editor;
         });
+      } else {
+        editor.decorationApplier.clearDecorations();
+        editor.decorationApplier.applyDecorationFromProvider();
       }
     });
     if (this._editors.size !== beforeSize) {

@@ -79,7 +79,7 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
   @Autowired(IConfigurationService)
   protected readonly configurationService: IConfigurationService;
 
-  protected readonly decorationApplier: MonacoEditorDecorationApplier;
+  public readonly decorationApplier: MonacoEditorDecorationApplier;
 
   private _disableSelectionEmitter = false;
 
@@ -264,6 +264,8 @@ export class DiffEditorPart extends BaseMonacoEditorWrapper implements IEditor {
         }
       }
     }
+    this.decorationApplier.clearDecorations();
+    this.decorationApplier.applyDecorationFromProvider();
   }
 
   constructor(

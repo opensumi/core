@@ -34,14 +34,17 @@ export class MonacoEditorDecorationApplier extends Disposable {
   constructor(private editor: IMonacoCodeEditor) {
     super();
     this.applyDecorationFromProvider();
-
-    this.editor.onDidChangeModel(() => {
-      this.clearDecorations();
-      this.applyDecorationFromProvider();
-    });
-    this.editor.onDidDispose(() => {
-      this.dispose();
-    });
+    this.addDispose(
+      this.editor.onDidChangeModel(() => {
+        this.clearDecorations();
+        this.applyDecorationFromProvider();
+      }),
+    );
+    this.addDispose(
+      this.editor.onDidDispose(() => {
+        this.dispose();
+      }),
+    );
     this.addDispose(
       this.eventBus.on(EditorDecorationChangeEvent, (e) => {
         const currentUri = this.getEditorUri();
@@ -66,7 +69,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
     }
   }
 
-  private async applyDecorationFromProvider(key?: string) {
+  public async applyDecorationFromProvider(key?: string) {
     if (this.editor.getModel()) {
       const uri = new URI(this.editor.getModel()!.uri.toString());
       const decs = await this.decorationService.getDecorationFromProvider(uri, key);

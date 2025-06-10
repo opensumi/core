@@ -116,14 +116,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     );
     const editors = this.getEditorsByUri(this.uri);
     editors.forEach((editor) => {
-      let widget = this.widgets.get(editor);
+      const widget = this.widgets.get(editor);
       // 说明是在新的 group 中打开
       if (!widget) {
-        widget = this.addWidgetByEditor(editor);
-      }
-      // 如果标记之前是已经展示的 widget，则调用 show 方法
-      if (editor.currentUri?.isEqual(this.uri)) {
-        widget.show();
+        this.addWidgetByEditor(editor);
       }
     });
     this.addDispose(
@@ -254,7 +250,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
           widget = this.addWidgetByEditor(editor);
         }
         // 如果标记之前是已经展示的 widget，则调用 show 方法
-        if (editor.currentUri?.isEqual(this.uri)) {
+        if (widget && editor.currentUri?.isEqual(this.uri)) {
           widget.show();
         }
       });
