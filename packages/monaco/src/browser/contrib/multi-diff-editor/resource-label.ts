@@ -25,7 +25,7 @@ export class ResourceLabel {
       this.element.innerHTML = `<span class="${styles.resourceLabel}${
         options?.strikethrough ? ` ${styles.strikethrough}` : ''
       } multi-diff-editor-resource-label" data-uri="${
-        relativePath ? relativePath.toString() : uri.toString()
+        relativePath ? relativePath.path?.toString() : uri.toString()
       }"><span class="${icon.iconClass}"></span>${uri.displayName}${relativePathElement}</span>`;
     });
   }
