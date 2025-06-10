@@ -1076,27 +1076,21 @@ export class CommentsService extends Disposable implements ICommentsService {
       schemes: [...this.shouldShowCommentsSchemes.values()],
       key: 'comments',
       onDidDecorationChange: this.decorationChangeEmitter.event,
-      provideEditorDecoration: (uri: URI) => {
-        const relevantThreads: ICommentsThread[] = this.commentsThreads.filter(
-          (thread) => thread.uri.codeUri.path === uri.codeUri.path,
-        );
-        const currentEditors = this.editorCollectionService.listMultiDiffEditors();
-        const isMultiDiffEditor = currentEditors.length > 0;
-        if (isMultiDiffEditor) {
-          const currentEditor = currentEditors[0];
-          // eslint-disable-next-line no-console
-          console.log('currentEditor =>', currentEditor);
-        }
-        for (const thread of relevantThreads) {
-          const editor = this.editorCollectionService.getEditorByUri(thread.uri);
-          if (editor) {
-            thread.show(editor);
-          } else {
-            thread.hide();
-          }
-        }
-
-        return relevantThreads
+      provideEditorDecoration: (uri: URI) =>
+        this.commentsThreads
+          .map((thread) => {
+            if (thread.uri.isEqual(uri)) {
+              const editor = this.editorCollectionService.getEditorByUri(thread.uri);
+              if (editor) {
+                thread.show(editor);
+              } else {
+                thread.hide();
+              }
+            } else {
+              thread.hide();
+            }
+            return thread;
+          })
           .filter((thread) => {
             const isCurrentThread = thread.uri.isEqual(uri);
             return this.filterThreadDecoration
@@ -1111,8 +1105,7 @@ export class CommentsService extends Disposable implements ICommentsService {
               endColumn: thread.range.endColumn,
             },
             options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
-          }));
-      },
+          })),
     });
     this.addDispose(this.decorationProviderDisposer);
   }
