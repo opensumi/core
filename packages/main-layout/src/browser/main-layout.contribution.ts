@@ -39,84 +39,33 @@ import {
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ContributionProvider, Domain, IEventBus, WithEventBus, localize } from '@opensumi/ide-core-common';
-import { Command, CommandContribution, CommandRegistry, CommandService } from '@opensumi/ide-core-common/lib/command';
+import { CommandContribution, CommandRegistry, CommandService } from '@opensumi/ide-core-common/lib/command';
 
-import { DROP_BOTTOM_CONTAINER, DROP_RIGHT_CONTAINER, IMainLayoutService } from '../common';
+import { DROP_EXTEND_VIEW_CONTAINER, DROP_PANEL_CONTAINER, DROP_VIEW_CONTAINER, IMainLayoutService } from '../common';
 
-import { BottomDropArea, RightDropArea } from './drop-area/drop-area';
+import {
+  EXPAND_BOTTOM_PANEL,
+  EXPAND_PANEL_COMMAND,
+  IS_VISIBLE_BOTTOM_PANEL_COMMAND,
+  IS_VISIBLE_EXTEND_VIEW_COMMAND,
+  IS_VISIBLE_LEFT_PANEL_COMMAND,
+  IS_VISIBLE_PANEL_COMMAND,
+  IS_VISIBLE_RIGHT_PANEL_COMMAND,
+  IS_VISIBLE_VIEW_COMMAND,
+  RETRACT_BOTTOM_PANEL,
+  RETRACT_PANEL_COMMAND,
+  TOGGLE_BOTTOM_PANEL_COMMAND,
+  TOGGLE_EXTEND_VIEW_COMMAND,
+  TOGGLE_LEFT_PANEL_COMMAND,
+  TOGGLE_PANEL_COMMAND,
+  TOGGLE_RIGHT_PANEL_COMMAND,
+  TOGGLE_VIEW_COMMAND,
+  WORKBENCH_ACTION_CLOSEPANEL,
+  WORKBENCH_ACTION_CLOSESIDECAR,
+} from './command';
+import { ExtendViewDropArea, PanelDropArea, ViewDropArea } from './drop-area/drop-area';
 import { ViewQuickOpenHandler } from './quick-open-view';
 import { BottomTabRenderer, LeftTabRenderer, RightTabRenderer } from './tabbar/renderer.view';
-
-// NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
-export const HIDE_LEFT_PANEL_COMMAND: Command = {
-  id: 'main-layout.left-panel.hide',
-  label: '%main-layout.left-panel.hide%',
-};
-
-export const WORKBENCH_ACTION_CLOSESIDECAR: Command = {
-  id: 'workbench.action.closeSidebar',
-  label: '%main-layout.sidebar.hide%',
-};
-
-export const SHOW_LEFT_PANEL_COMMAND: Command = {
-  id: 'main-layout.left-panel.show',
-  label: '%main-layout.left-panel.show%',
-};
-export const TOGGLE_LEFT_PANEL_COMMAND: MenuCommandDesc = {
-  id: 'main-layout.left-panel.toggle',
-  label: '%main-layout.left-panel.toggle%',
-};
-export const HIDE_RIGHT_PANEL_COMMAND: Command = {
-  id: 'main-layout.right-panel.hide',
-  label: '%main-layout.right-panel.hide%',
-};
-export const SHOW_RIGHT_PANEL_COMMAND: Command = {
-  id: 'main-layout.right-panel.show',
-  label: '%main-layout.right-panel.show%',
-};
-export const TOGGLE_RIGHT_PANEL_COMMAND: MenuCommandDesc = {
-  id: 'main-layout.right-panel.toggle',
-  label: '%main-layout.right-panel.toggle%',
-};
-
-export const HIDE_BOTTOM_PANEL_COMMAND: Command = {
-  id: 'main-layout.bottom-panel.hide',
-  label: '%main-layout.bottom-panel.hide%',
-};
-
-export const WORKBENCH_ACTION_CLOSEPANEL: Command = {
-  id: 'workbench.action.closePanel',
-  delegate: HIDE_BOTTOM_PANEL_COMMAND.id,
-};
-
-export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
-  id: 'main-layout.bottom-panel.show',
-  label: '%main-layout.bottom-panel.show%',
-};
-export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
-  id: 'main-layout.bottom-panel.toggle',
-  iconClass: getIcon('minus'),
-  label: '%layout.tabbar.toggle%',
-};
-export const IS_VISIBLE_BOTTOM_PANEL_COMMAND: Command = {
-  id: 'main-layout.bottom-panel.is-visible',
-};
-export const IS_VISIBLE_LEFT_PANEL_COMMAND: Command = {
-  id: 'main-layout.left-panel.is-visible',
-};
-export const IS_VISIBLE_RIGHT_PANEL_COMMAND: Command = {
-  id: 'main-layout.right-panel.is-visible',
-};
-export const EXPAND_BOTTOM_PANEL: Command = {
-  id: 'main-layout.bottom-panel.expand',
-  label: '%layout.tabbar.expand%',
-  iconClass: getIcon('expand'),
-};
-export const RETRACT_BOTTOM_PANEL: Command = {
-  id: 'main-layout.bottom-panel.retract',
-  label: '%layout.tabbar.retract%',
-  iconClass: getIcon('shrink'),
-};
 
 @Domain(
   CommandContribution,
@@ -196,15 +145,20 @@ export class MainLayoutModuleContribution
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register(DROP_RIGHT_CONTAINER, [], {
-      component: RightDropArea,
+    registry.register(DROP_EXTEND_VIEW_CONTAINER, [], {
+      component: ExtendViewDropArea,
       hideTab: true,
-      containerId: DROP_RIGHT_CONTAINER,
+      containerId: DROP_EXTEND_VIEW_CONTAINER,
     });
-    registry.register(DROP_BOTTOM_CONTAINER, [], {
-      component: BottomDropArea,
+    registry.register(DROP_PANEL_CONTAINER, [], {
+      component: PanelDropArea,
       hideTab: true,
-      containerId: DROP_BOTTOM_CONTAINER,
+      containerId: DROP_PANEL_CONTAINER,
+    });
+    registry.register(DROP_VIEW_CONTAINER, [], {
+      component: ViewDropArea,
+      hideTab: true,
+      containerId: DROP_VIEW_CONTAINER,
     });
   }
 
@@ -217,76 +171,73 @@ export class MainLayoutModuleContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
-    registry.registerSlotRenderer(SlotLocation.right, RightTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.left, LeftTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.bottom, BottomTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.extendView, RightTabRenderer, {
+      isLatter: true,
+      supportedActions: {
+        accordion: true,
+      },
+    });
+    registry.registerSlotRenderer(SlotLocation.view, LeftTabRenderer, {
+      supportedActions: {
+        accordion: true,
+      },
+    });
+    registry.registerSlotRenderer(SlotLocation.panel, BottomTabRenderer, {
+      isLatter: true,
+      supportedActions: {
+        expand: true,
+        toggle: true,
+      },
+    });
   }
 
   registerCommands(commands: CommandRegistry): void {
-    // @deprecated
-    commands.registerCommand(HIDE_LEFT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, false);
-      },
-    });
-    // @deprecated
-    commands.registerCommand(SHOW_LEFT_PANEL_COMMAND, {
-      execute: (size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, true, size);
-      },
-    });
-    commands.registerCommand(TOGGLE_LEFT_PANEL_COMMAND, {
+    commands.registerCommand(TOGGLE_VIEW_COMMAND, {
       execute: (show?: boolean, size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, show, size);
+        this.mainLayoutService.toggleSlot(SlotLocation.view, show, size);
       },
     });
-
-    // @deprecated
-    commands.registerCommand(HIDE_RIGHT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, false);
-      },
-    });
-    // @deprecated
-    commands.registerCommand(SHOW_RIGHT_PANEL_COMMAND, {
-      execute: (size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, true, size);
-      },
-    });
-    commands.registerCommand(TOGGLE_RIGHT_PANEL_COMMAND, {
+    commands.registerCommand(TOGGLE_EXTEND_VIEW_COMMAND, {
       execute: (show?: boolean, size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, show, size);
+        this.mainLayoutService.toggleSlot(SlotLocation.extendView, show, size);
       },
     });
+    commands.registerCommand(TOGGLE_PANEL_COMMAND, {
+      execute: (show?: boolean, size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.panel, show, size);
+      },
+    });
+    commands.registerCommand(IS_VISIBLE_VIEW_COMMAND, {
+      execute: () => this.mainLayoutService.isVisible(SlotLocation.view),
+    });
+    commands.registerCommand(IS_VISIBLE_EXTEND_VIEW_COMMAND, {
+      execute: () => this.mainLayoutService.isVisible(SlotLocation.extendView),
+    });
+    commands.registerCommand(IS_VISIBLE_PANEL_COMMAND, {
+      execute: () => this.mainLayoutService.isVisible(SlotLocation.panel),
+    });
+    // TODO: 下个版本废弃掉
+    commands.registerCommand(TOGGLE_LEFT_PANEL_COMMAND);
+    commands.registerCommand(TOGGLE_RIGHT_PANEL_COMMAND);
+    commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND);
+    commands.registerCommand(EXPAND_BOTTOM_PANEL);
+    commands.registerCommand(RETRACT_BOTTOM_PANEL);
+    commands.registerCommand(IS_VISIBLE_LEFT_PANEL_COMMAND);
+    commands.registerCommand(IS_VISIBLE_RIGHT_PANEL_COMMAND);
+    commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND);
 
     commands.registerCommand(WORKBENCH_ACTION_CLOSESIDECAR, {
       execute: () =>
         Promise.all([
-          this.mainLayoutService.toggleSlot(SlotLocation.left, false),
-          this.mainLayoutService.toggleSlot(SlotLocation.right, false),
+          this.mainLayoutService.toggleSlot(SlotLocation.view, false),
+          this.mainLayoutService.toggleSlot(SlotLocation.extendView, false),
         ]),
     });
 
-    commands.registerCommand(SHOW_BOTTOM_PANEL_COMMAND, {
+    commands.registerCommand(WORKBENCH_ACTION_CLOSEPANEL, {
       execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.bottom, true);
+        this.mainLayoutService.toggleSlot(SlotLocation.panel, false);
       },
-    });
-
-    commands.registerCommand(HIDE_BOTTOM_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.bottom, false);
-      },
-    });
-    commands.registerCommand(WORKBENCH_ACTION_CLOSEPANEL);
-    commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND, {
-      execute: () => this.mainLayoutService.getTabbarService('bottom').currentContainerId.get() !== '',
-    });
-    commands.registerCommand(IS_VISIBLE_LEFT_PANEL_COMMAND, {
-      execute: () => this.mainLayoutService.isVisible(SlotLocation.left),
-    });
-    commands.registerCommand(IS_VISIBLE_RIGHT_PANEL_COMMAND, {
-      execute: () => this.mainLayoutService.isVisible(SlotLocation.left),
     });
 
     commands.registerCommand(
@@ -359,14 +310,14 @@ export class MainLayoutModuleContribution
     });
 
     Object.entries({
-      [SlotLocation.left]: [
+      [SlotLocation.view]: [
         EXPLORER_CONTAINER_ID,
         SEARCH_CONTAINER_ID,
         SCM_CONTAINER_ID,
         DEBUG_CONTAINER_ID,
         EXTENSION_CONTAINER_ID,
       ],
-      [SlotLocation.bottom]: [
+      [SlotLocation.panel]: [
         MARKER_CONTAINER_ID,
         OUTPUT_CONTAINER_ID,
         DEBUG_CONSOLE_CONTAINER_ID,
@@ -396,24 +347,24 @@ export class MainLayoutModuleContribution
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: TOGGLE_LEFT_PANEL_COMMAND,
+      command: TOGGLE_VIEW_COMMAND,
       group: '5_panel',
     });
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: TOGGLE_RIGHT_PANEL_COMMAND,
+      command: TOGGLE_EXTEND_VIEW_COMMAND,
       group: '5_panel',
     });
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: TOGGLE_BOTTOM_PANEL_COMMAND as MenuCommandDesc,
+      command: TOGGLE_PANEL_COMMAND as MenuCommandDesc,
       group: '5_panel',
     });
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: EXPAND_BOTTOM_PANEL as MenuCommandDesc,
+      command: EXPAND_PANEL_COMMAND as MenuCommandDesc,
       group: '5_panel',
       when: '!bottomFullExpanded',
     });
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: RETRACT_BOTTOM_PANEL as MenuCommandDesc,
+      command: RETRACT_PANEL_COMMAND as MenuCommandDesc,
       group: '5_panel',
       when: 'bottomFullExpanded',
     });
@@ -431,20 +382,24 @@ export class MainLayoutModuleContribution
   protected registerSideToggleKey() {
     this.keybindingRegistry.registerKeybinding({
       keybinding: 'ctrlcmd+b',
-      command: TOGGLE_LEFT_PANEL_COMMAND.id,
+      command: TOGGLE_VIEW_COMMAND.id,
+    });
+    this.keybindingRegistry.registerKeybinding({
+      keybinding: 'ctrlcmd+alt+b',
+      command: TOGGLE_EXTEND_VIEW_COMMAND.id,
     });
     this.keybindingRegistry.registerKeybinding({
       keybinding: 'ctrlcmd+j',
-      command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+      command: TOGGLE_PANEL_COMMAND.id,
     });
     this.keybindingRegistry.registerKeybinding({
       keybinding: 'ctrlcmd+shift+j',
-      command: EXPAND_BOTTOM_PANEL.id,
+      command: EXPAND_PANEL_COMMAND.id,
       when: '!bottomFullExpanded',
     });
     this.keybindingRegistry.registerKeybinding({
       keybinding: 'ctrlcmd+shift+j',
-      command: RETRACT_BOTTOM_PANEL.id,
+      command: RETRACT_PANEL_COMMAND.id,
       when: 'bottomFullExpanded',
     });
   }

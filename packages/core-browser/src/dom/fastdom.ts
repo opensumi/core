@@ -1,5 +1,8 @@
 import { Heap, IDisposable, onUnexpectedError } from '@opensumi/ide-utils';
 
+/**
+ * DOM操作类,用于封装DOM读写操作
+ */
 class DomOperation {
   private _disposed = false;
 
@@ -22,6 +25,7 @@ class DomOperation {
   }
 }
 
+// 两个优先级队列,用于交替存储DOM操作
 const aQueue = new Heap<DomOperation>({
   comparator: (a, b) => b.priority - a.priority,
 });
@@ -30,9 +34,13 @@ const bQueue = new Heap<DomOperation>({
   comparator: (a, b) => b.priority - a.priority,
 });
 
+// 当前正在执行的队列和下一帧要执行的队列
 let runningQueue = aQueue;
 let nextQueue = bQueue;
 
+/**
+ * 交换两个队列
+ */
 function swapQueue() {
   if (runningQueue === aQueue) {
     runningQueue = bQueue;
@@ -43,9 +51,14 @@ function swapQueue() {
   }
 }
 
+// 当前动画帧的句柄
 let currentFlushHandle: number | undefined;
+// 是否在动画帧中
 let inAnimationFrame = false;
 
+/**
+ * 执行当前队列中的所有DOM操作
+ */
 function flush() {
   currentFlushHandle = undefined;
 
@@ -61,6 +74,9 @@ function flush() {
   inAnimationFrame = false;
 }
 
+/**
+ * 调度下一帧的执行
+ */
 function schedule() {
   if (currentFlushHandle) {
     return;
@@ -80,6 +96,11 @@ function runAtThisOrScheduleAtNext(op: DomOperation) {
   }
 }
 
+/**
+ * 添加一个DOM读操作到队列中
+ * @param fn DOM读操作函数
+ * @returns 可取消的操作句柄
+ */
 function measure(fn: () => void): IDisposable {
   const op = new DomOperation(fn, 10000);
   runAtThisOrScheduleAtNext(op);
@@ -87,6 +108,11 @@ function measure(fn: () => void): IDisposable {
   return op;
 }
 
+/**
+ * 添加一个DOM写操作到队列中
+ * @param fn DOM写操作函数
+ * @returns 可取消的操作句柄
+ */
 function mutate(fn: () => void): IDisposable {
   const op = new DomOperation(fn, -10000);
   runAtThisOrScheduleAtNext(op);
@@ -94,6 +120,11 @@ function mutate(fn: () => void): IDisposable {
   return op;
 }
 
+/**
+ * 添加一个DOM读操作到下一帧队列中
+ * @param fn DOM读操作函数
+ * @returns 可取消的操作句柄
+ */
 function measureAtNextFrame(fn: () => void): IDisposable {
   const op = new DomOperation(fn, 10000);
   nextQueue.add(op);
@@ -101,6 +132,9 @@ function measureAtNextFrame(fn: () => void): IDisposable {
   return op;
 }
 
+/**
+ * fastdom工具对象,用于管理DOM读写操作
+ */
 const fastdom = {
   measure,
   measureAtNextFrame,

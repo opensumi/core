@@ -1,6 +1,8 @@
 import { IMarker } from '@opensumi/ide-core-browser';
 import { Uri } from '@opensumi/monaco-editor-core';
 
+import { ImageCompressionOptions } from './image-compression';
+
 export enum NearestCodeBlockType {
   Block = 'block',
   Line = 'line',
@@ -22,6 +24,12 @@ export interface INearestCodeBlock {
   type?: NearestCodeBlockType;
 }
 
+export type IMCPToolResultContent = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType?: string };
+export interface IMCPToolResult {
+  content: IMCPToolResultContent[];
+  isError?: boolean;
+}
+
 // SUMI MCP Server 网页部分暴露给 Node.js 部分的能力
 export interface IMCPServerProxyService {
   $callMCPTool(
@@ -41,6 +49,8 @@ export interface IMCPServerProxyService {
   $startServer(serverName: string): Promise<void>;
   // 停止指定的 MCP 服务器
   $stopServer(serverName: string): Promise<void>;
+  // 压缩工具结果
+  $compressToolResult(result: IMCPToolResult, options: ImageCompressionOptions): Promise<IMCPToolResult>;
 }
 
 export interface MCPServer {
@@ -124,4 +134,12 @@ export interface SSEClientTransportOptions {
    * Customizes recurring POST requests to the server.
    */
   requestInit?: RequestInit;
+}
+
+export interface ProjectRule {
+  path: string;
+  content: string;
+  description?: string;
+  globs?: string | string[];
+  alwaysApply?: boolean;
 }

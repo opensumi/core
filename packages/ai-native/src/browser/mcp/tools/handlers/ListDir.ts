@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, Throttler, URI } from '@opensumi/ide-core-browser';
+import { AppConfig, URI, path } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 /**
@@ -67,7 +67,7 @@ export class ListDirHandler {
     }
 
     // 解析相对路径
-    const absolutePath = `${this.appConfig.workspaceDir}/${relativeWorkspacePath}`;
+    const absolutePath = path.join(this.appConfig.workspaceDir, relativeWorkspacePath);
     const fileStat = await this.fileSystemService.getFileStat(absolutePath, true);
     // 验证路径有效性
     if (!fileStat || !fileStat.isDirectory) {

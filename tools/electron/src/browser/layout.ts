@@ -7,7 +7,7 @@ export const customLayoutConfig: LayoutConfig = {
   [SlotLocation.action]: {
     modules: ['@opensumi/ide-toolbar-action'],
   },
-  [SlotLocation.left]: {
+  [SlotLocation.view]: {
     modules: [
       '@opensumi/ide-explorer',
       '@opensumi/ide-search',
@@ -16,13 +16,13 @@ export const customLayoutConfig: LayoutConfig = {
       '@opensumi/ide-debug',
     ],
   },
-  [SlotLocation.right]: {
+  [SlotLocation.extendView]: {
     modules: [],
   },
   [SlotLocation.main]: {
     modules: ['@opensumi/ide-editor'],
   },
-  [SlotLocation.bottom]: {
+  [SlotLocation.panel]: {
     modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-output', 'debug-console', '@opensumi/ide-markers'],
   },
   [SlotLocation.statusBar]: {

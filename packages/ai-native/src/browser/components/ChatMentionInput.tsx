@@ -10,7 +10,13 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { AINativeSettingSectionsId, ChatFeatureRegistryToken, URI, localize } from '@opensumi/ide-core-common';
+import {
+  AINativeSettingSectionsId,
+  ChatFeatureRegistryToken,
+  RulesServiceToken,
+  URI,
+  localize,
+} from '@opensumi/ide-core-common';
 import { CommandService } from '@opensumi/ide-core-common/lib/command';
 import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -18,6 +24,8 @@ import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-se
 import { OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
 import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { IconType } from '@opensumi/ide-theme';
+import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IChatInternalService } from '../../common';
@@ -25,6 +33,8 @@ import { LLMContextService } from '../../common/llm-context';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { MCPConfigCommands } from '../mcp/config/mcp-config.commands';
+import { RulesCommands } from '../rules/rules.contribution';
+import { RulesService } from '../rules/rules.service';
 
 import styles from './components.module.less';
 import { MentionInput } from './mention-input/mention-input';
@@ -72,13 +82,19 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const labelService = useInjectable<LabelService>(LabelService);
+  const iconService = useInjectable<IconService>(IconService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
   const prevOutlineItems = useRef<MentionItem[]>([]);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
+  const rulesService = useInjectable<RulesService>(RulesServiceToken);
   const handleShowMCPConfig = React.useCallback(() => {
     commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
+  }, [commandService]);
+
+  const handleShowRules = React.useCallback(() => {
+    commandService.executeCommand(RulesCommands.OPEN_RULES_FILE.id);
   }, [commandService]);
 
   useEffect(() => {
@@ -106,6 +122,55 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
     },
     [outlineTreeService],
   );
+
+  // 拆分目录路径为多个层级的辅助函数
+  const expandFolderPaths = async (folderPaths: string[], workspaceRootPath: string): Promise<MentionItem[]> => {
+    const expandedPaths = new Set<string>();
+    const workspaceUri = new URI(workspaceRootPath);
+
+    // 将所有路径展开为多层级
+    for (const folderPath of folderPaths) {
+      const uri = new URI(folderPath);
+      const relativePath = await workspaceService.asRelativePath(uri);
+
+      if (relativePath?.path) {
+        const pathSegments = relativePath.path.split('/').filter(Boolean);
+
+        // 为每个层级创建路径
+        for (let i = 0; i < pathSegments.length; i++) {
+          const segmentPath = pathSegments.slice(0, i + 1).join('/');
+          const fullPath = workspaceUri.resolve(segmentPath).codeUri.fsPath;
+
+          // 避免添加工作区本身或其上级目录
+          if (fullPath !== workspaceRootPath && !workspaceRootPath.startsWith(fullPath)) {
+            expandedPaths.add(fullPath);
+          }
+        }
+      } else {
+        // 如果无法获取相对路径，直接添加（但仍要过滤工作区路径）
+        if (folderPath !== workspaceRootPath && !workspaceRootPath.startsWith(folderPath)) {
+          expandedPaths.add(folderPath);
+        }
+      }
+    }
+
+    // 转换为 MentionItem 格式
+    return Promise.all(
+      Array.from(expandedPaths).map(async (folderPath) => {
+        const uri = new URI(folderPath);
+        const relativePath = await workspaceService.asRelativePath(uri);
+        return {
+          id: uri.codeUri.fsPath,
+          type: MentionType.FOLDER,
+          text: uri.displayName,
+          value: uri.codeUri.fsPath,
+          description: relativePath?.root ? relativePath.path : '',
+          contextId: uri.codeUri.fsPath,
+          icon: getIcon('folder'),
+        };
+      }),
+    );
+  };
 
   // 默认菜单项
   const defaultMenuItems: MentionItem[] = [
@@ -214,21 +279,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
                 .filter((folder) => folder !== workspaceService.workspace?.uri.toString() && folder !== '/'),
             ),
           );
-          folders = await Promise.all(
-            recentFolder.map(async (folder) => {
-              const uri = new URI(folder);
-              const relativePath = await workspaceService.asRelativePath(uri);
-              return {
-                id: uri.codeUri.fsPath,
-                type: MentionType.FOLDER,
-                text: uri.displayName,
-                value: uri.codeUri.fsPath,
-                description: relativePath?.root ? relativePath.path : '',
-                contextId: uri.codeUri.fsPath,
-                icon: getIcon('folder'),
-              };
-            }),
-          );
+          folders = await expandFolderPaths(recentFolder, workspaceService.workspace?.uri.toString() || '');
         } else {
           const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
           const files = await searchService.find(searchText, {
@@ -246,22 +297,11 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
                 .filter((folder) => folder !== workspaceService.workspace?.uri.toString()),
             ),
           );
-          return Promise.all(
-            folders.map(async (folder) => {
-              const uri = new URI(folder);
-              return {
-                id: uri.codeUri.fsPath,
-                type: MentionType.FOLDER,
-                text: uri.displayName,
-                value: uri.codeUri.fsPath,
-                description: (await workspaceService.asRelativePath(uri.parent))?.path || '',
-                contextId: uri.codeUri.fsPath,
-                icon: getIcon('folder'),
-              };
-            }),
-          );
+          return await expandFolderPaths(folders, workspaceService.workspace?.uri.toString() || '');
         }
-        return folders.filter((folder) => folder.id !== new URI(workspaceService.workspace?.uri).codeUri.fsPath);
+        return folders
+          .filter(Boolean)
+          .filter((folder) => folder.id !== new URI(workspaceService.workspace?.uri).codeUri.fsPath);
       },
     },
     {
@@ -312,13 +352,111 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
         }
       },
     },
-  ];
+    {
+      id: MentionType.RULE,
+      type: MentionType.RULE,
+      text: 'Rule',
+      icon: getIcon('rules'),
+      getHighestLevelItems: () => [],
+      getItems: async (searchText: string) => {
+        const rules = await rulesService.projectRules;
+        const mappedRules = rules.map((rule) => {
+          const uri = new URI(rule.path);
+          return {
+            id: uri.codeUri.fsPath,
+            type: MentionType.RULE,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            contextId: uri.codeUri.fsPath,
+            description: rule.description,
+            icon: getIcon('rules'),
+          };
+        });
 
+        if (!searchText) {
+          return mappedRules.slice(0, 10);
+        }
+
+        const lowerSearchText = searchText.toLocaleLowerCase();
+        return mappedRules
+          .filter((rule) => rule.text.toLocaleLowerCase().includes(lowerSearchText))
+          .sort((a, b) => {
+            const aTextLower = a.text.toLocaleLowerCase();
+            const bTextLower = b.text.toLocaleLowerCase();
+            const aDescLower = a.description?.toLocaleLowerCase() || '';
+            const bDescLower = b.description?.toLocaleLowerCase() || '';
+
+            // 优先级：文件名包含搜索文本 > 描述包含搜索文本
+            const aTextMatch = aTextLower.includes(lowerSearchText);
+            const bTextMatch = bTextLower.includes(lowerSearchText);
+            const aDescMatch = aDescLower.includes(lowerSearchText);
+            const bDescMatch = bDescLower.includes(lowerSearchText);
+
+            if (aTextMatch && bTextMatch) {
+              // 如果都匹配文件名，按文件名字母序排序
+              return aTextLower.localeCompare(bTextLower);
+            }
+            if (aTextMatch && !bTextMatch) {
+              return -1;
+            }
+            if (!aTextMatch && bTextMatch) {
+              return 1;
+            }
+
+            // 如果文件名都不匹配，比较描述
+            if (aDescMatch && bDescMatch) {
+              return aTextLower.localeCompare(bTextLower);
+            }
+            if (aDescMatch && !bDescMatch) {
+              return -1;
+            }
+            if (!aDescMatch && bDescMatch) {
+              return 1;
+            }
+
+            // 如果都不匹配，按文件名字母序排序
+            return aTextLower.localeCompare(bTextLower);
+          })
+          .slice(0, 10);
+      },
+    },
+  ];
   const defaultMentionInputFooterOptions: FooterConfig = useMemo(
     () => ({
       modelOptions: [
-        { label: 'QWQ 32B', value: 'qwq-32b' },
-        { label: 'DeepSeek R1', value: 'deepseek-r1' },
+        {
+          value: 'qwen-plus-latest',
+          label: 'Qwen 3',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01LFMrZj28YrnrzeebY_!!6000000007945-55-tps-16-16.svg',
+            IconType.Background,
+          ),
+          tags: ['思考链', '擅长代码'],
+          description: '高性能代码模型，支持思考链',
+        },
+        {
+          label: 'Claude 4 Sonnet',
+          value: 'claude_sonnet4',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01p0mziz1Nsl40lp1HO_!!6000000001626-55-tps-92-65.svg',
+            IconType.Background,
+          ),
+          tags: ['多模态', '长上下文理解', '思考模式'],
+          description: '高性能模型，支持多模态输入',
+        },
+        {
+          label: 'DeepSeek R1',
+          value: 'DeepSeek-R1-0528',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
+            IconType.Background,
+          ),
+          tags: ['思考模式', '长上下文理解'],
+          description: '专业创作，支持多模态输入',
+        },
       ],
       defaultModel:
         props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
@@ -328,6 +466,13 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
           icon: 'mcp',
           title: 'MCP Server',
           onClick: handleShowMCPConfig,
+          position: FooterButtonPosition.LEFT,
+        },
+        {
+          id: 'rules',
+          icon: 'rules',
+          title: 'Rules',
+          onClick: handleShowRules,
           position: FooterButtonPosition.LEFT,
         },
         {
@@ -352,7 +497,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       showModelSelector: true,
       disableModelSelector: props.disableModelSelector,
     }),
-    [handleShowMCPConfig, props.disableModelSelector, props.sessionModelId],
+    [iconService, handleShowMCPConfig, handleShowRules, props.disableModelSelector, props.sessionModelId],
   );
 
   const handleStop = useCallback(() => {

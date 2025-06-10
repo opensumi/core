@@ -34,7 +34,7 @@ export const TabbarConfig = createContext<{
   direction: Layout.direction;
   fullSize: number;
 }>({
-  side: SlotLocation.left,
+  side: SlotLocation.view,
   direction: EDirection.LeftToRight,
   fullSize: 0,
 });
@@ -114,7 +114,7 @@ export const RightTabRenderer = ({
   tabpanelView?: FC<{}>;
 }) => (
   <TabRendererBase
-    side={SlotLocation.right}
+    side={SlotLocation.extendView}
     direction={EDirection.RightToLeft}
     id={VIEW_CONTAINERS.RIGHT_TABBAR_PANEL}
     className={cls(className, 'right-slot')}
@@ -134,7 +134,7 @@ export const LeftTabRenderer = ({
   tabbarView?: FC<{}>;
 }) => (
   <TabRendererBase
-    side={SlotLocation.left}
+    side={SlotLocation.view}
     direction={EDirection.LeftToRight}
     id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL}
     className={cls(className, 'left-slot')}
@@ -154,7 +154,7 @@ export const BottomTabRenderer = ({
   tabbarView?: FC<{}>;
 }) => (
   <TabRendererBase
-    side={SlotLocation.bottom}
+    side={SlotLocation.panel}
     id={VIEW_CONTAINERS.BOTTOM_TABBAR_PANEL}
     direction={EDirection.BottomToTop}
     className={cls(className, 'bottom-slot')}

@@ -254,7 +254,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   };
 
   const setAbsoluteSize = (size: number, isLatter?: boolean) => {
-    fastdom.measure(() => {
+    fastdom.mutate(() => {
       const currentPrev = prevElement.current!.clientWidth;
       const currentNext = nextElement.current!.clientWidth;
 

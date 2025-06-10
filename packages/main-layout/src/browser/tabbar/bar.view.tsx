@@ -5,6 +5,7 @@ import { Badge, Icon } from '@opensumi/ide-components';
 import {
   ComponentRegistryInfo,
   ComponentRegistryProvider,
+  Event,
   KeybindingRegistry,
   addClassName,
   getIcon,
@@ -109,20 +110,20 @@ export const TabbarViewBase: FC<ITabbarViewProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    setContainers(
-      splitVisibleTabs(
-        tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
-        visibleCount,
-      ),
-    );
-    const disposable = tabbarService.onStateChange(() => {
+    const updateContainers = () => {
       setContainers(
         splitVisibleTabs(
           tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
           visibleCount,
         ),
       );
-    });
+    };
+
+    updateContainers();
+    const disposable = Event.any<any>(
+      tabbarService.onDidRegisterContainer,
+      tabbarService.onStateChange,
+    )(updateContainers);
     return () => {
       disposable.dispose();
     };
@@ -151,9 +152,6 @@ export const TabbarViewBase: FC<ITabbarViewProps> = (props) => {
     (component: ComponentRegistryInfo, tabbarService: TabbarService, currentContainerId?: string, side?: string) => {
       const containerId = component.options?.containerId;
       if (!containerId) {
-        return null;
-      }
-      if (side && component.options?.hideLocationTab?.includes(side)) {
         return null;
       }
 
@@ -423,9 +421,6 @@ export const ChatTabbarRenderer2: FC<{ barSize?: number; style?: CSSProperties }
   const { barSize = 32, style } = props;
   const { side } = useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  useEffect(() => {
-    tabbarService.setIsLatter(true);
-  }, [tabbarService]);
   const styles_right_tab_bar = useDesignStyles(styles.ai_right_tab_bar, 'ai_right_tab_bar');
   const styles_right_tab = useDesignStyles(styles.ai_right_tab, 'ai_right_tab');
 

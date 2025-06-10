@@ -793,7 +793,7 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.toggle': '切换底部面板显示',
+    'layout.tabbar.toggle': '切换面板显示/隐藏',
     'layout.tabbar.expand': '最大化底部面板',
     'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
@@ -916,16 +916,10 @@ export const localizationBundle = {
     'fileOperation.copy': '执行文件拷贝关联操作中……',
     'fileOperation.move': '执行文件移动关联操作中……',
 
-    'main-layout.left-panel.toggle': '切换左侧面板',
-    'main-layout.left-panel.show': '显示左侧面板',
-    'main-layout.left-panel.hide': '隐藏左侧面板',
+    'main-layout.view.toggle': '切换主侧边栏',
+    'main-layout.extend-view.toggle': '切换辅助侧边栏',
+    'main-layout.panel.toggle': '切换面板',
     'main-layout.sidebar.hide': '隐藏左右面板',
-    'main-layout.right-panel.toggle': '切换右侧面板',
-    'main-layout.right-panel.show': '显示右侧面板',
-    'main-layout.right-panel.hide': '隐藏右侧面板',
-    'main-layout.bottom-panel.toggle': '切换底部面板',
-    'main-layout.bottom-panel.show': '显示底部面板',
-    'main-layout.bottom-panel.hide': '隐藏底部面板',
     'main-layout.drop-area.tip': '放置此处',
 
     'refactor-preview.title': '重构预览',
@@ -1237,6 +1231,8 @@ export const localizationBundle = {
     'aiNative.chat.clearContext': '清空上下文',
     'aiNative.chat.context.description': '共 {0} 个引用',
     'aiNative.chat.context.clear': '点击清空引用',
+    'aiNative.chat.context.title': '上下文',
+    'aiNative.chat.context.title.empty': '暂无上下文',
     'aiNative.chat.modelSelector.disableTip': '如需切换模型，请新建或清空会话',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
@@ -1310,6 +1306,8 @@ export const localizationBundle = {
     'preference.ai.native.codeEdits.typing': '是否在内容发生变化时触发智能改写',
     'preference.ai.native.codeEdits.renderType': '智能改写渲染方式',
 
+    'preference.ai.native.globalRules.description': '这些规则将发送到所有聊天、Agent 中。',
+
     'preference.ai.native.chat.system.prompt': '默认聊天系统提示词',
     // #endregion AI Native
 
@@ -1368,6 +1366,20 @@ export const localizationBundle = {
     'ai.native.mcp.terminal.allow-question': '是否允许运行命令?',
     'ai.native.mcp.terminal.allow': '允许',
     'ai.native.mcp.terminal.deny': '拒绝',
+
+    // Rules Settings
+    'ai.native.rules.title': '规则',
+    'ai.native.rules.description': '规则允许你为 Agent 提供 System 级别的引导。',
+    'ai.native.rules.addRule.title': '添加规则',
+    'ai.native.rules.userRules.title': '用户规则',
+    'ai.native.rules.userRules.description': '用户规则允许你为 Agent 提供引导。',
+    'ai.native.rules.userRules.placeholder': '如，始终使用中文回答...',
+    'ai.native.rules.projectRules.title': '项目规则',
+    'ai.native.rules.projectRules.description': '项目规则允许你为 Agent 提供引导。',
+    'ai.native.rules.projectRules.noUsed': '该规则可能永远不会被使用，因为它没有描述或自动附件',
+    'ai.native.rules.projectRules.newRule': '新建规则',
+    'ai.native.rules.projectRules.newRule.placeholder': '请输入规则名称',
+    'ai.native.rules.projectRules.empty': '暂无发现任何规则',
 
     // Built-in tools
     'ai.native.terminal.autorun': '终端命令自动执行策略',

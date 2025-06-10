@@ -12,19 +12,27 @@ import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition
 
 import { GrepSearchToolComponent } from './components/ExpandableFileList';
 
-const inputSchema = z.object({
-  query: z.string().describe('The regex pattern to search for'),
-  case_sensitive: z.boolean().optional().describe('Whether the search should be case sensitive'),
-  include_pattern: z
-    .string()
-    .optional()
-    .describe('Glob pattern for files to include (e.g. "*.ts" for TypeScript files)'),
-  exclude_pattern: z.string().optional().describe('Glob pattern for files to exclude'),
-  explanation: z
-    .string()
-    .optional()
-    .describe('One sentence explanation as to why this tool is being used, and how it contributes to the goal.'),
-});
+const inputSchema = z
+  .object({
+    query: z.string().describe('The regex pattern to search for'),
+    case_sensitive: z.boolean().optional().describe('Whether the search should be case sensitive'),
+    include_pattern: z
+      .string()
+      .optional()
+      .describe('Glob pattern for files to include (e.g. "*.ts" for TypeScript files)'),
+    exclude_pattern: z.string().optional().describe('Glob pattern for files to exclude'),
+    explanation: z
+      .string()
+      .optional()
+      .describe('One sentence explanation as to why this tool is being used, and how it contributes to the goal.'),
+  })
+  .transform((data) => ({
+    query: data.query,
+    caseSensitive: data.case_sensitive,
+    includePattern: data.include_pattern,
+    excludePattern: data.exclude_pattern,
+    explanation: data.explanation,
+  }));
 
 const MAX_RESULTS = 50;
 
@@ -72,9 +80,9 @@ export class GrepSearchTool implements MCPServerContribution {
     await this.searchService.doSearch(
       searchPattern,
       {
-        isMatchCase: !!args.case_sensitive,
-        include: args.include_pattern?.split(','),
-        exclude: args.exclude_pattern?.split(','),
+        isMatchCase: !!args.caseSensitive,
+        include: args.includePattern?.split(','),
+        exclude: args.excludePattern?.split(','),
         maxResults: MAX_RESULTS,
         isUseRegexp: true,
         isToggleOpen: false,
@@ -111,11 +119,14 @@ export class GrepSearchTool implements MCPServerContribution {
       }
       deferred.resolve(results.join('\n\n'));
       const messages = this.chatInternalService.sessionModel.history.getMessages();
-      this.chatInternalService.sessionModel.history.setMessageAdditional(messages[messages.length - 1].id, {
-        [args.toolCallId]: {
-          files,
-        },
-      });
+      const messageId = messages[messages.length - 1]?.id;
+      if (messageId) {
+        this.chatInternalService.sessionModel.history.setMessageAdditional(messageId, {
+          [args.toolCallId]: {
+            files,
+          },
+        });
+      }
     });
     const text = await deferred.promise;
     return {

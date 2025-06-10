@@ -2,7 +2,7 @@ import * as path from 'path';
 
 import { z } from 'zod';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired } from '@opensumi/di';
 import { Domain, URI } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

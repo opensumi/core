@@ -1,15 +1,17 @@
 import cls from 'classnames';
 import * as React from 'react';
 
-import { formatLocalize, getSymbolIcon, localize } from '@opensumi/ide-core-browser';
+import { getSymbolIcon, localize } from '@opensumi/ide-core-browser';
 import { Icon, Popover, PopoverPosition, Select, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { URI } from '@opensumi/ide-utils';
 
 import { FileContext } from '../../../common/llm-context';
+import { ProjectRule } from '../../../common/types';
 
 import styles from './mention-input.module.less';
 import { MentionPanel } from './mention-panel';
+import { ExtendedModelOption, MentionSelect } from './mention-select';
 import {
   FooterButtonPosition,
   MENTION_KEYWORD,
@@ -67,10 +69,21 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   const [attachedFiles, setAttachedFiles] = React.useState<{
     files: FileContext[];
     folders: FileContext[];
+    rules: ProjectRule[];
   }>({
     files: [],
     folders: [],
+    rules: [],
   });
+
+  // 添加用于跟踪 mention_tag 的状态
+  const prevMentionTagsRef = React.useRef<
+    Array<{
+      id: string;
+      type: string;
+      contextId: string;
+    }>
+  >([]);
 
   const getCurrentItems = (): MentionItem[] => {
     if (mentionState.level === 0) {
@@ -177,14 +190,14 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   }, [debouncedSecondLevelFilter, mentionState.level, mentionState.parentType]);
 
   React.useEffect(() => {
-    const disposable = contextService?.onDidContextFilesChangeEvent(({ attached, attachedFolders }) => {
-      setAttachedFiles({ files: attached, folders: attachedFolders });
+    const disposable = contextService?.onDidContextFilesChangeEvent(({ attached, attachedFolders, attachedRules }) => {
+      setAttachedFiles({ files: attached, folders: attachedFolders, rules: attachedRules });
     });
 
     return () => {
       disposable?.dispose();
     };
-  }, [contextService]);
+  }, []);
 
   // 获取光标位置
   const getCursorPosition = (element: HTMLElement): number => {
@@ -205,6 +218,45 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     if (isNavigatingHistory) {
       setIsNavigatingHistory(false);
       setHistoryIndex(-1);
+    }
+
+    // 检测 mention_tag 的删除
+    if (editorRef.current) {
+      const currentMentionTags = Array.from(editorRef.current.querySelectorAll(`.${styles.mention_tag}`)).map(
+        (tag) => ({
+          id: tag.getAttribute('data-id') || '',
+          type: tag.getAttribute('data-type') || '',
+          contextId: tag.getAttribute('data-context-id') || '',
+        }),
+      );
+
+      // 找出被删除的 mention_tag
+      const deletedTags = prevMentionTagsRef.current.filter(
+        (prevTag) =>
+          !currentMentionTags.some(
+            (currentTag) =>
+              currentTag.id === prevTag.id &&
+              currentTag.type === prevTag.type &&
+              currentTag.contextId === prevTag.contextId,
+          ),
+      );
+
+      // 清理被删除的 mention_tag 对应的 context
+      deletedTags.forEach((deletedTag) => {
+        if (deletedTag.contextId) {
+          const uri = new URI(deletedTag.contextId);
+          if (deletedTag.type === MentionType.FILE) {
+            removeContext(MentionType.FILE, uri);
+          } else if (deletedTag.type === MentionType.FOLDER) {
+            removeContext(MentionType.FOLDER, uri);
+          } else if (deletedTag.type === MentionType.RULE) {
+            removeContext(MentionType.RULE, uri);
+          }
+        }
+      });
+
+      // 更新 mention_tag 状态
+      prevMentionTagsRef.current = currentMentionTags;
     }
 
     const selection = window.getSelection();
@@ -490,7 +542,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     const imageFiles: File[] = [];
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < items.length; i++) {
-      if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+      if (items[i].kind === MentionType.FILE && items[i].type.startsWith('image/')) {
         const file = items[i].getAsFile();
         if (file) {
           imageFiles.push(file);
@@ -572,6 +624,16 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       if (placeholder && !editorRef.current.textContent) {
         editorRef.current.setAttribute('data-placeholder', placeholder);
       }
+
+      // 初始化 mention_tag 状态
+      const initialMentionTags = Array.from(editorRef.current.querySelectorAll(`.${styles.mention_tag}`)).map(
+        (tag) => ({
+          id: tag.getAttribute('data-id') || '',
+          type: tag.getAttribute('data-type') || '',
+          contextId: tag.getAttribute('data-context-id') || '',
+        }),
+      );
+      prevMentionTagsRef.current = initialMentionTags;
     }
   }, [placeholder]);
 
@@ -723,6 +785,11 @@ export const MentionInput: React.FC<MentionInputProps> = ({
               true,
             );
           }
+        } else if (item.type === MentionType.RULE) {
+          const iconSpan = document.createElement('span');
+          iconSpan.className = cls(styles.mention_icon, getIcon('rules'));
+          mentionTag.appendChild(iconSpan);
+          contextService?.addRuleToContext(new URI(item.contextId), true);
         }
         const workspace = workspaceService?.workspace;
         let relativePath = item.text;
@@ -822,12 +889,12 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     mentionTag.contentEditable = 'false';
 
     // 为 file 和 folder 类型添加图标
-    if (item.type === 'file' || item.type === 'folder') {
+    if (item.type === MentionType.FILE || item.type === 'folder') {
       // 创建图标容器
       const iconSpan = document.createElement('span');
       iconSpan.className = cls(
         styles.mention_icon,
-        item.type === 'file' ? labelService?.getIcon(new URI(item.text)) : getIcon('folder'),
+        item.type === MentionType.FILE ? labelService?.getIcon(new URI(item.text)) : getIcon('folder'),
       );
       mentionTag.appendChild(iconSpan);
     }
@@ -983,6 +1050,65 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     contextService?.cleanFileContext();
   }, [contextService]);
 
+  const handleTitleClick = React.useCallback(() => {
+    if (!editorRef.current) {
+      return;
+    }
+
+    // 聚焦输入框
+    editorRef.current.focus();
+
+    // 获取当前光标位置
+    const selection = window.getSelection();
+    if (!selection) {
+      return;
+    }
+
+    // 在当前位置插入 @ 符号
+    const range = document.createRange();
+
+    // 如果编辑器为空，直接插入
+    if (!editorRef.current.textContent || editorRef.current.textContent.trim() === '') {
+      editorRef.current.innerHTML = '@';
+      range.setStart(editorRef.current.firstChild || editorRef.current, 1);
+      range.setEnd(editorRef.current.firstChild || editorRef.current, 1);
+    } else {
+      // 当输入框有内容时，总是在末尾插入 @ 符号
+      const textNode = document.createTextNode(' @');
+
+      // 移动到编辑器末尾
+      range.selectNodeContents(editorRef.current);
+      range.collapse(false); // 移动到末尾
+
+      // 在末尾插入空格和 @ 符号
+      range.insertNode(textNode);
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+    }
+
+    // 设置新的光标位置
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // 获取插入后的光标位置
+    const newCursorPos = getCursorPosition(editorRef.current);
+
+    // 激活菜单状态
+    setMentionState({
+      active: true,
+      startPos: newCursorPos,
+      filter: '@',
+      position: { top: 0, left: 0 },
+      activeIndex: 0,
+      level: 0,
+      parentType: null,
+      secondLevelFilter: '',
+      inlineSearchActive: false,
+      inlineSearchStartPos: null,
+      loading: false,
+    });
+  }, []);
+
   const handleStop = React.useCallback(() => {
     if (onStop) {
       onStop();
@@ -1015,7 +1141,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   );
 
   const hasContext = React.useMemo(
-    () => attachedFiles.files.length > 0 || attachedFiles.folders.length > 0,
+    () => attachedFiles.files.length > 0 || attachedFiles.folders.length > 0 || attachedFiles.rules.length > 0,
     [attachedFiles],
   );
 
@@ -1037,8 +1163,101 @@ export const MentionInput: React.FC<MentionInputProps> = ({
     [footerConfig.disableModelSelector],
   );
 
+  // 转换模型选项为扩展格式
+  const getExtendedModelOptions = React.useMemo((): ExtendedModelOption[] => {
+    // 如果有扩展模型选项，直接使用
+    if (footerConfig.extendedModelOptions) {
+      return footerConfig.extendedModelOptions.map((option) => ({
+        ...option,
+        selected: option.value === selectedModel,
+      }));
+    }
+
+    // 否则从基础模型选项转换
+    return (footerConfig.modelOptions || []).map((option): ExtendedModelOption => {
+      const extendedOption: ExtendedModelOption = {
+        ...option,
+      };
+
+      // 设置选中状态：如果当前模型匹配选中的模型，则标记为选中
+      extendedOption.selected = option.value === selectedModel;
+
+      return extendedOption;
+    });
+  }, [footerConfig.modelOptions, footerConfig.extendedModelOptions, selectedModel]);
+
+  const removeContext = React.useCallback(
+    (type: MentionType, uri: URI) => {
+      if (type === MentionType.FILE) {
+        contextService?.removeFileFromContext(uri, true);
+      } else if (type === MentionType.FOLDER) {
+        contextService?.removeFolderFromContext(uri);
+      } else if (type === MentionType.RULE) {
+        contextService?.removeRuleFromContext(uri);
+      }
+    },
+    [contextService],
+  );
+
+  const getFileNameFromPath = (path: string) => decodeURIComponent(path.split('/').pop() || 'Unknown Rule');
+
+  const renderContextPreview = React.useCallback(
+    () => (
+      <div className={styles.context_preview_container}>
+        <span
+          className={cls(styles.context_preview_title, hasContext && styles.has_context)}
+          onClick={handleTitleClick}
+        >
+          {!hasContext ? localize('aiNative.chat.context.title') : ''}
+        </span>
+        {attachedFiles.files.map((file, index) => (
+          <div key={`file-${index}`} className={styles.context_preview_item} data-type={MentionType.FILE}>
+            <Icon
+              iconClass={cls(
+                labelService?.getIcon(file.uri) || MentionType.FILE,
+                styles.context_preview_item_icon,
+                styles.icon,
+              )}
+            />
+            <Icon
+              iconClass={cls(styles.close_icon, getIcon('close'))}
+              onClick={() => removeContext(MentionType.FILE, file.uri)}
+            />
+            <span className={styles.context_preview_item_text}>{new URI(file.uri.toString()).displayName}</span>
+          </div>
+        ))}
+
+        {attachedFiles.folders.map((folder, index) => (
+          <div key={`folder-${index}`} className={styles.context_preview_item} data-type='folder'>
+            <Icon iconClass={cls(getIcon('folder'), styles.context_preview_item_icon, styles.icon)} />
+            <Icon
+              iconClass={cls(styles.close_icon, getIcon('close'))}
+              onClick={() => removeContext(MentionType.FOLDER, folder.uri)}
+            />
+            <span className={styles.context_preview_item_text}>{new URI(folder.uri.toString()).displayName}</span>
+          </div>
+        ))}
+
+        {attachedFiles.rules.map((rule, index) => (
+          <div key={`rule-${index}`} className={styles.context_preview_item} data-type='rule'>
+            <Icon iconClass={cls(getIcon('rules'), styles.context_preview_item_icon, styles.icon)} />
+            <Icon
+              iconClass={cls(styles.close_icon, getIcon('close'))}
+              onClick={() => removeContext(MentionType.RULE, new URI(rule.path))}
+            />
+            <span className={styles.context_preview_item_text}>
+              {getFileNameFromPath(rule.path).replace('.mdc', '')}
+            </span>
+          </div>
+        ))}
+      </div>
+    ),
+    [handleClearContext, hasContext, attachedFiles, labelService, contextService, handleTitleClick, removeContext],
+  );
+
   return (
     <div className={styles.input_container}>
+      {renderContextPreview()}
       {mentionState.active && (
         <div className={styles.mention_panel_container}>
           <MentionPanel
@@ -1068,40 +1287,22 @@ export const MentionInput: React.FC<MentionInputProps> = ({
         <div className={styles.left_control}>
           {footerConfig.showModelSelector &&
             renderModelSelectorTip(
-              <Select
-                options={footerConfig.modelOptions || []}
+              <MentionSelect
+                options={getExtendedModelOptions}
                 value={selectedModel}
                 onChange={handleModelChange}
                 className={styles.model_selector}
                 size='small'
                 disabled={footerConfig.disableModelSelector}
+                showThinking={footerConfig.showThinking}
+                thinkingEnabled={footerConfig.thinkingEnabled}
+                onThinkingChange={footerConfig.onThinkingChange}
               />,
             )}
           {renderButtons(FooterButtonPosition.LEFT)}
         </div>
         <div className={styles.right_control}>
           {renderButtons(FooterButtonPosition.RIGHT)}
-          {hasContext && (
-            <Popover
-              overlayClassName={styles.popover_icon}
-              id={'ai-chat-clear-context'}
-              position={PopoverPosition.top}
-              content={localize('aiNative.chat.context.clear')}
-            >
-              <div className={styles.context_container} onClick={handleClearContext}>
-                <div className={styles.context_icon}>
-                  <Icon icon='out-link' />
-                  <Icon icon='close' />
-                </div>
-                <div className={styles.context_description}>
-                  {formatLocalize(
-                    'aiNative.chat.context.description',
-                    attachedFiles.files.length + attachedFiles.folders.length,
-                  )}
-                </div>
-              </div>
-            </Popover>
-          )}
           <Popover
             overlayClassName={styles.popover_icon}
             id={'ai-chat-send'}

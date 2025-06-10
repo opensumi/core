@@ -5,7 +5,8 @@ import { ILogger } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 
 import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../common';
-import { IMCPServerProxyService } from '../../common/types';
+import { ImageCompressionOptions, compressToolResultSmart } from '../../common/image-compression';
+import { IMCPServerProxyService, IMCPToolResult } from '../../common/types';
 import { IMCPServerRegistry, TokenMCPServerRegistry } from '../types';
 
 @Injectable()
@@ -63,5 +64,9 @@ export class MCPServerProxyService implements IMCPServerProxyService {
 
   async $stopServer(serverName: string) {
     await this.sumiMCPServerProxyService.$stopServer(serverName);
+  }
+
+  async $compressToolResult(result: IMCPToolResult, options: ImageCompressionOptions) {
+    return compressToolResultSmart(result, options);
   }
 }

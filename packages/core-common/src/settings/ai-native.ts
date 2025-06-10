@@ -45,6 +45,11 @@ export enum AINativeSettingSectionsId {
   TerminalAutoRun = 'ai.native.terminal.autorun',
 
   /**
+   * Rules settings
+   */
+  GlobalRules = 'ai.native.globalRules',
+
+  /**
    * System prompt
    */
   SystemPrompt = 'ai.native.chat.system.prompt',

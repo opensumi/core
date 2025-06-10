@@ -302,6 +302,7 @@ export const ProblemFixRegistryToken = Symbol('ProblemFixRegistryToken');
 export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 export const IntelligentCompletionsRegistryToken = Symbol('IntelligentCompletionsRegistryToken');
 export const MCPConfigServiceToken = Symbol('MCPConfigServiceToken');
+export const RulesServiceToken = Symbol('RulesServiceToken');
 export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 
@@ -439,6 +440,7 @@ export const CoreMessgaeRoleMap = {
 export interface IHistoryChatMessage extends IChatMessage {
   id: string;
   order: number;
+  isSummarized?: boolean;  // 添加这个属性，表示消息是否已被总结
 
   type?: 'string' | 'component';
   images?: string[];

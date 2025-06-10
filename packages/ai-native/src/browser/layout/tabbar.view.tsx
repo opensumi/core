@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import {
   ComponentRegistryInfo,
@@ -29,25 +29,18 @@ import {
   TabbarViewBase,
 } from '@opensumi/ide-main-layout/lib/browser/tabbar/bar.view';
 import { BaseTabPanelView, ContainerView } from '@opensumi/ide-main-layout/lib/browser/tabbar/panel.view';
-import { TabRendererBase, TabbarConfig } from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
+import { TabRendererBase } from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
 import { TabbarService, TabbarServiceFactory } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
 
 import { AI_CHAT_VIEW_ID } from '../../common';
 
 import styles from './layout.module.less';
 
-const ChatTabbarRenderer: React.FC = () => {
-  const { side } = React.useContext(TabbarConfig);
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  useEffect(() => {
-    tabbarService.setIsLatter(true);
-  }, [tabbarService]);
-  return (
-    <div style={{ width: 0 }}>
-      <TabbarViewBase tabSize={0} MoreTabView={IconElipses} TabView={IconTabView} barSize={0} panelBorderSize={1} />
-    </div>
-  );
-};
+const ChatTabbarRenderer: React.FC = () => (
+  <div style={{ width: 0 }}>
+    <TabbarViewBase tabSize={0} MoreTabView={IconElipses} TabView={IconTabView} barSize={0} panelBorderSize={0} />
+  </div>
+);
 
 export const AIChatTabRenderer = ({
   className,
@@ -110,7 +103,7 @@ export const AILeftTabRenderer = ({
 const AILeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.extendView);
   const currentContainerId = useAutorun(tabbarService.currentContainerId);
 
   const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
@@ -154,14 +147,8 @@ const AILeftTabbarRenderer: React.FC = () => {
   );
 };
 
-export const AIRightTabRenderer = ({
-  className,
-  components,
-}: {
-  className: string;
-  components: ComponentRegistryInfo[];
-}) => {
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
+export const AIRightTabRenderer = ({ components }: { className: string; components: ComponentRegistryInfo[] }) => {
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.extendView);
   const designLayoutConfig = useInjectable<DesignLayoutConfig>(DesignLayoutConfig);
 
   const handleClose = useCallback(() => {

@@ -23,6 +23,7 @@
     display: flex;
     align-items: center;
     font-weight: 500;
+    width: calc(100% - 20px);
     color: var(--design-text-foreground);
   }
 
@@ -34,6 +35,30 @@
     margin-left: 5px;
     font-size: 11px;
     color: var(--descriptionForeground);
+    width: calc(100% - 36px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    .tool_prefix {
+      color: var(--design-text-placeholderForeground);
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .tool_name {
+      opacity: 0.8;
+      font-size: 9px;
+      flex: 1;
+      text-overflow: ellipsis;
+      direction: rtl;
+      unicode-bidi: plaintext;
+      overflow: hidden;
+      white-space: nowrap;
+      display: inline-block;
+      margin-right: 10px;
+      text-align: left;
+    }
   }
 
   .expand_icon {

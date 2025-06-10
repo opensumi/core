@@ -17,6 +17,7 @@ import {
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
   ProblemFixRegistryToken,
+  RulesServiceToken,
   TerminalRegistryToken,
 } from '@opensumi/ide-core-common';
 import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
@@ -77,6 +78,8 @@ import { ListDirTool } from './mcp/tools/listDir';
 import { ReadFileTool } from './mcp/tools/readFile';
 import { RunTerminalCommandTool } from './mcp/tools/runTerminalCmd';
 import { AINativePreferencesContribution } from './preferences';
+import { RulesContribution } from './rules/rules.contribution';
+import { RulesService } from './rules/rules.service';
 import { AINativeCoreContribution, MCPServerContribution, TokenMCPServerRegistry } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { InlineChatService } from './widget/inline-chat/inline-chat.service';
@@ -119,6 +122,7 @@ export class AINativeModule extends BrowserModule {
 
     // Context Service
     LlmContextContribution,
+    RulesContribution,
     {
       token: LLMContextServiceToken,
       useClass: LLMContextServiceImpl,
@@ -215,6 +219,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: MCPConfigServiceToken,
       useClass: MCPConfigService,
+    },
+    {
+      token: RulesServiceToken,
+      useClass: RulesService,
     },
     {
       token: FolderFilePreferenceProvider,

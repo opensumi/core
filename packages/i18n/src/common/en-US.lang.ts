@@ -1146,9 +1146,9 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
-    'layout.tabbar.toggle': 'Toggle Bottom Panel',
-    'layout.tabbar.expand': 'Maximize Bottom Panel',
-    'layout.tabbar.retract': 'Retract Bottom Panel',
+    'layout.tabbar.toggle': 'Show/Hide Tab Panel',
+    'layout.tabbar.expand': 'Maximize Tab Panel',
+    'layout.tabbar.retract': 'Retract Tab Panel',
     'layout.view.hide': 'HIDE',
     'layout.action.openView': 'Open View ...',
     'layout.openView.containerTitle': 'SideBar / Panel',
@@ -1321,16 +1321,10 @@ export const localizationBundle = {
     'variable.list.all': 'Variables: List All',
     'variable.registered.variables': 'Registered variables',
 
-    'main-layout.left-panel.toggle': 'Toggle Left Side Bar',
-    'main-layout.left-panel.show': 'Show Left Side Bar',
-    'main-layout.left-panel.hide': 'Hide Left Side Bar',
+    'main-layout.view.toggle': 'Toggle Main Side Bar',
+    'main-layout.extend-view.toggle': 'Toggle Extend Side Bar',
+    'main-layout.panel.toggle': 'Toggle Panel',
     'main-layout.sidebar.hide': 'Hide Side Bar',
-    'main-layout.right-panel.toggle': 'Toggle Right Side Bar',
-    'main-layout.right-panel.show': 'Show Right Side Bar',
-    'main-layout.right-panel.hide': 'Hide Right Side Bar',
-    'main-layout.bottom-panel.toggle': 'Toggle Bottom Side Bar',
-    'main-layout.bottom-panel.show': 'Show Bottom Side Bar',
-    'main-layout.bottom-panel.hide': 'Hide Bottom Side Bar',
     'main-layout.drop-area.tip': 'drop here',
 
     'refactor-preview.title': 'REFACTOR PREVIEW',
@@ -1469,6 +1463,8 @@ export const localizationBundle = {
     'aiNative.chat.clearContext': 'Clear Context',
     'aiNative.chat.context.description': 'Total {0} References',
     'aiNative.chat.context.clear': 'Clear References',
+    'aiNative.chat.context.title': 'Add Context',
+    'aiNative.chat.context.title.empty': 'No Context',
     'aiNative.chat.modelSelector.disableTip': 'Clear or create session to change model',
 
     'aiNative.inline.chat.operate.chat.title': 'Chat({0})',
@@ -1545,6 +1541,8 @@ export const localizationBundle = {
     'preference.ai.native.codeEdits.renderType': 'Code Edits Render Type',
 
     'preference.ai.native.chat.system.prompt': 'Default Chat System Prompt',
+
+    'preference.ai.native.globalRules.description': 'These rules will be sent to all chats and Agents.',
     // #endregion AI Native
 
     // #endregion merge editor
@@ -1605,6 +1603,26 @@ export const localizationBundle = {
     'ai.native.mcp.terminal.allow-question': 'Allow the terminal to run the command?',
     'ai.native.mcp.terminal.allow': 'Allow',
     'ai.native.mcp.terminal.deny': 'Reject',
+
+    // Rules Settings
+    'ai.native.rules.title': 'Rules',
+    'ai.native.rules.description': 'Rules allow you to provide system-level guidance to the Agent.',
+    'ai.native.rules.addRule.title': 'Add Rule',
+    'ai.native.rules.userRules.title': 'User Rules',
+    'ai.native.rules.userRules.description': 'User rules allow you to provide guidance to the Agent.',
+    'ai.native.rules.userRules.placeholder':
+      'e.g., "Always output answers in Portuguese, prefer terse answers, always use functional code"',
+    'ai.native.rules.projectRules.title': 'Project Rules',
+    'ai.native.rules.projectRules.description':
+      "Project-specific rules that help the AI understand your codebase and follow your project's conventions. They can be automatically included or fetched by an agent. These are synced with your codebase.",
+    'ai.native.rules.projectRules.noUsed':
+      'This rule may never be used since it has no description or auto attachments',
+    'ai.native.rules.projectRules.newRule': 'New Rule',
+    'ai.native.rules.projectRules.newRule.placeholder': 'Please enter the rule name',
+    'ai.native.rules.projectRules.newRule.error.invalidFileName': 'Invalid file name',
+    'ai.native.rules.projectRules.newRule.error.fileExists': 'File "{0}" already exists',
+    'ai.native.rules.projectRules.newRule.error.notEmpty': 'Rule name cannot be empty',
+    'ai.native.rules.projectRules.empty': 'No project rules found',
 
     // Built-in tools
     'ai.native.terminal.autorun': 'Terminal auto execution policy',

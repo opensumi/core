@@ -1,3 +1,4 @@
+import debounce from 'lodash/debounce';
 import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
@@ -617,7 +618,12 @@ export const AIChatView = () => {
       const { message, images, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
 
-      const request = aiChatService.createRequest(message, agentId!, images, command);
+      const request = aiChatService.createRequest(
+        message.replaceAll(LLM_CONTEXT_KEY_REGEX, ''),
+        agentId!,
+        images,
+        command,
+      );
       if (!request) {
         return;
       }
@@ -641,7 +647,7 @@ export const AIChatView = () => {
         600 * 1000,
       );
       msgHistoryManager.addUserMessage({
-        content: message.replaceAll(LLM_CONTEXT_KEY_REGEX, ''),
+        content: message,
         images: images || [],
         agentId: agentId!,
         agentCommand: command!,
@@ -695,14 +701,9 @@ export const AIChatView = () => {
       let processedContent = message;
       const filePattern = /\{\{@file:(.*?)\}\}/g;
       const fileMatches = message.match(filePattern);
-      let isCleanContext = false;
       if (fileMatches) {
         for (const match of fileMatches) {
           const filePath = match.replace(/\{\{@file:(.*?)\}\}/, '$1');
-          if (filePath && !isCleanContext) {
-            isCleanContext = true;
-            llmContextService.cleanFileContext();
-          }
           const fileUri = new URI(filePath);
           const relativePath = (await workspaceService.asRelativePath(fileUri))?.path || fileUri.displayName;
           processedContent = processedContent.replace(match, `\`${LLM_CONTEXT_KEY.AttachedFile}${relativePath}\``);
@@ -735,6 +736,18 @@ export const AIChatView = () => {
           processedContent = processedContent.replace(
             match,
             `\`${LLM_CONTEXT_KEY.AttachedFile}${relativePath}:L${range[0]}-${range[1]}\``,
+          );
+        }
+      }
+      const rulePattern = /\{\{@rule:(.*?)\}\}/g;
+      const ruleMatches = processedContent.match(rulePattern);
+      if (ruleMatches) {
+        for (const match of ruleMatches) {
+          const ruleName = match.replace(/\{\{@rule:(.*?)\}\}/, '$1');
+          const ruleUri = new URI(ruleName);
+          processedContent = processedContent.replace(
+            match,
+            `\`${LLM_CONTEXT_KEY.AttachedFile}${ruleUri.displayName}\``,
           );
         }
       }
@@ -918,6 +931,7 @@ export function DefaultChatViewHeader({
 }) {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
@@ -943,13 +957,60 @@ export function DefaultChatViewHeader({
     [aiChatService],
   );
 
+  // 防抖函数，避免频繁触发摘要生成
+  const debouncedGetSummary = React.useCallback(
+    debounce(
+      async (messages: { role: ChatMessageRole; content: string }[], currentTitle: string): Promise<string> => {
+        const summaryProvider = chatFeatureRegistry.getMessageSummaryProvider();
+        if (!summaryProvider || !aiChatService.sessionModel.sessionId) {
+          return currentTitle;
+        }
+
+        try {
+          const summary = await summaryProvider.getMessageSummary(messages);
+          return summary ? summary.slice(0, MAX_TITLE_LENGTH) : currentTitle;
+        } catch (error) {
+          return currentTitle;
+        }
+      },
+      1000,
+      { leading: false, trailing: true },
+    ),
+    [chatFeatureRegistry, aiChatService.sessionModel.sessionId],
+  );
+
+  // 使用 ref 来跟踪最新的请求
+  const latestSummaryRequestRef = React.useRef<number>(0);
+
   React.useEffect(() => {
-    const getHistoryList = () => {
+    const getHistoryList = async () => {
       const currentMessages = aiChatService.sessionModel.history.getMessages();
-      const latestUserMessage = currentMessages.findLast((m) => m.role === ChatMessageRole.User);
-      setCurrentTitle(
-        latestUserMessage ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH) : '',
-      );
+      const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
+      const currentTitle = latestUserMessage
+        ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
+        : '';
+
+      // 设置初始标题
+      setCurrentTitle(currentTitle);
+
+      const messages = currentMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+
+      // 只有当消息数量超过阈值时才生成摘要
+      if (messages.length > 2) {
+        const requestId = Date.now();
+        latestSummaryRequestRef.current = requestId;
+
+        const summary = await debouncedGetSummary(messages, currentTitle);
+
+        // 检查是否是最新请求
+        if (requestId === latestSummaryRequestRef.current && summary) {
+          setCurrentTitle(summary);
+        }
+      }
+
       setHistoryList(
         aiChatService.getSessions().map((session) => {
           const history = session.history;
