@@ -6,7 +6,7 @@ import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Deferred, Disposable, IEventBus, URI, Uri, sleep } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { EditorCollectionService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { MainThreadComments } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.comments';
 import {
@@ -64,6 +64,12 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
       {
         token: WorkbenchEditorService,
         useClass: WorkbenchEditorServiceImpl,
+      },
+      {
+        token: EditorCollectionService,
+        useValue: mockService({
+          listEditors: () => [],
+        }),
       },
     );
     const extCommands = mockService({});
