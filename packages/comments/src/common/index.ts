@@ -543,7 +543,7 @@ export interface ICommentsThread extends IDisposable {
   /**
    * 移除即将显示的 widget，避免竞态条件
    */
-  removePaddingShowedWidgets(): void;
+  removePendingShowedWidgets(): void;
   /**
    * 临时隐藏 wiget，restoreShow 时恢复
    */

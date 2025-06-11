@@ -257,7 +257,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     }
   }
 
-  public removePaddingShowedWidgets() {
+  public removePendingShowedWidgets() {
     this.pendingShowTimeouts.forEach((timeout) => clearTimeout(timeout));
     this.pendingShowTimeouts.clear();
   }
