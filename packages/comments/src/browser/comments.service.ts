@@ -8,6 +8,7 @@ import {
   Disposable,
   Emitter,
   Event,
+  FRAME_THREE,
   IDisposable,
   IRange,
   LRUCache,
@@ -1082,7 +1083,9 @@ export class CommentsService extends Disposable implements ICommentsService {
             if (thread.uri.isEqual(uri)) {
               const editor = this.editorCollectionService.getEditorByUri(thread.uri);
               if (editor) {
-                thread.show(editor);
+                setTimeout(() => {
+                  thread.show(editor);
+                }, FRAME_THREE);
               } else {
                 thread.hide();
               }
