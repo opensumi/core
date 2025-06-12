@@ -203,13 +203,15 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
           contextKeys: r.contextKeys,
           options: {
             readOnly: (modified || original)?.instance.readonly,
-            // TODO: codelens，wordWrap options
+            ...options,
             ...this.convertedOptions.diffOptions,
           },
-          // TODO: 监听配置变化验证
           onOptionsDidChange: (h) =>
             this.preferenceService.onPreferenceChanged((e) => {
-              if (e.affects(uri.toString()) && e.preferenceName.includes('editor')) {
+              if (
+                e.affects(uri.toString()) &&
+                (e.preferenceName.startsWith('editor') || e.preferenceName.startsWith('diffEditor'))
+              ) {
                 h();
               }
             }),
@@ -220,7 +222,6 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     );
 
     const documents = observableValue<readonly RefCounted<IDocumentDiffItem>[] | 'loading'>('documents', 'loading');
-
     const updateDocuments = derived(async (reader) => {
       const docsPromises = documentsWithPromises.read(reader);
       const docs = await Promise.all(docsPromises);

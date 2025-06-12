@@ -371,6 +371,32 @@ export class CommentsService extends Disposable implements ICommentsService {
     );
 
     disposer.addDispose(
+      editor.monacoEditor.onDidChangeModel((event) => {
+        const { newModelUrl } = event;
+        if (newModelUrl) {
+          const currentMultiDiffEditor = this.editorCollectionService.listMultiDiffEditors()[0];
+          if (currentMultiDiffEditor) {
+            editor.updateDocumentModel?.(URI.from(newModelUrl));
+            const threads = this.commentsThreads.filter(
+              (thread) => editor.currentUri && thread.uri.isEqual(editor.currentUri),
+            );
+            if (threads.length) {
+              const isShowWidget = threads.some((thread) => thread.isShowWidget(editor));
+              if (isShowWidget) {
+                threads.forEach((thread) => thread.hide(editor));
+              } else {
+                threads.forEach((thread) => thread.show(editor));
+              }
+            }
+          }
+        }
+        this.renderCommentRange(editor).then(() => {
+          this.tryUpdateReservedSpace(editor);
+        });
+      }),
+    );
+
+    disposer.addDispose(
       editor.monacoEditor.onMouseUp(async (event) => {
         if (this.startCommentRange) {
           if (hasHiddenArea) {
@@ -526,22 +552,9 @@ export class CommentsService extends Disposable implements ICommentsService {
       }),
     );
 
-    this.tryUpdateReservedSpace(editor);
-
-    disposer.addDispose(
-      editor.monacoEditor.onDidChangeModel((event) => {
-        const { newModelUrl } = event;
-        if (newModelUrl) {
-          const currentMultiDiffEditor = this.editorCollectionService.listMultiDiffEditors()[0];
-          if (currentMultiDiffEditor) {
-            editor.updateDocumentModel?.(URI.from(newModelUrl));
-          }
-        }
-        this.renderCommentRange(editor).then(() => {
-          this.tryUpdateReservedSpace(editor);
-        });
-      }),
-    );
+    this.onCommentRangeProviderChange(() => {
+      this.renderCommentRange(editor);
+    });
     return disposer;
   }
 
