@@ -417,7 +417,7 @@ ${globalRules}
     const otherRules = this.rulesService.projectRules.filter(
       (rule) => !attachedRules.some((attachedRule) => attachedRule.path === rule.path),
     );
-    const requestedByAgentRules = otherRules.filter((rule) => rule.description);
+    const requestedByAgentRules = otherRules.filter((rule) => rule.description && !rule.alwaysApply);
     const alwaysApplyRules = otherRules.filter((rule) => rule.alwaysApply);
     const requestedByFileRules = this.findFileMatchingRules(otherRules);
 
