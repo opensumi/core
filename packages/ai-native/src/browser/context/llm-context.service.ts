@@ -463,7 +463,9 @@ ${globalRules}
             .split('/')
             .pop()
             ?.replace(/.md(c)?$/, '') || 'Unnamed Rule';
-        return `Rule Name: ${ruleName}\nDescription: \n${rule.description || rule.content}`;
+        return `Rule Name: ${ruleName}\nDescription: \n${
+          rule.alwaysApply ? rule.content : rule.description || rule.content
+        }`;
       })
       .join('\n\n');
 
