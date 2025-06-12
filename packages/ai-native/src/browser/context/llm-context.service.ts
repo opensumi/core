@@ -424,7 +424,7 @@ ${globalRules}
     return [...requestedByFileRules, ...requestedByAgentRules, ...alwaysApplyRules];
   }
   private findFileMatchingRules(otherRules: ProjectRule[]): ProjectRule[] {
-    const requestedByFileRules = otherRules.filter((rule) => rule.globs);
+    const requestedByFileRules = otherRules.filter((rule) => rule.globs && !rule.alwaysApply);
     const filePaths = this.attachedFiles.map((file) => file.uri.toString());
     const folderPaths = this.attachedFolders.map((folder) => folder.uri.toString());
 
