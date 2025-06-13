@@ -1,7 +1,18 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { DisposableStore, Emitter, IDisposable, ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
 import {
+  DisposableStore,
+  Emitter,
+  Event,
+  IDisposable,
+  ILogger,
+  OnEvent,
+  URI,
+  WithEventBus,
+  isString,
+} from '@opensumi/ide-core-common';
+import {
+  ISettableObservable,
   ValueWithChangeEventFromObservable,
   constObservable,
   derived,
@@ -25,10 +36,13 @@ import { IMultiDiffResourceId } from '@opensumi/monaco-editor-core/esm/vs/editor
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
-import { IEditorDocumentModelRef, IResourceOpenOptions } from '../../common/editor';
+import { EditorType, IEditorDocumentModelRef, IResourceOpenOptions } from '../../common/editor';
 import { IMultiDiffEditor, IMultiDiffSourceResolverService, IResolvedMultiDiffSource } from '../../common/multi-diff';
+import { DiffEditorPart } from '../base-editor-wrapper';
 import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from '../doc-model/types';
 import { IConvertedMonacoOptions, IResource, ResourceDecorationNeedChangeEvent } from '../types';
+
+import type { EditorCollectionServiceImpl } from '../editor-collection.service';
 
 @Injectable({ multiple: true })
 export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEditor {
@@ -39,7 +53,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
   private readonly messageService: IMessageService;
 
   @Autowired(IEditorDocumentModelService)
-  documentModelManager: IEditorDocumentModelService;
+  private readonly documentModelManager: IEditorDocumentModelService;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -58,8 +72,13 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
 
   private multiDiffModel: IMultiDiffEditorModel & IDisposable;
 
-  constructor(private multiDiffWidget: MultiDiffEditorWidget, private convertedOptions: IConvertedMonacoOptions) {
+  constructor(
+    public readonly multiDiffWidget: MultiDiffEditorWidget,
+    private convertedOptions: IConvertedMonacoOptions,
+    private editorCollectionService: EditorCollectionServiceImpl,
+  ) {
     super();
+    this.editorCollectionService.addMultiDiffEditors([this as IMultiDiffEditor]);
   }
 
   @OnEvent(EditorDocumentModelContentChangedEvent)
@@ -109,7 +128,36 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     }
   }
 
-  async compareMultiple(resource: IResource, options?: IResourceOpenOptions): Promise<void> {
+  private createAndRegisterEditorParts(
+    modifiedEditor: { editor: ICodeEditor } | undefined,
+    originalEditor: { editor: ICodeEditor } | undefined,
+    modifiedInstance: any,
+    originalInstance: any,
+    documents: ISettableObservable<readonly RefCounted<IDocumentDiffItem>[] | 'loading', void>,
+  ): void {
+    const editors: DiffEditorPart[] = [];
+    if (modifiedEditor) {
+      const modifiedDiffEditorPart = this.injector.get(DiffEditorPart, [
+        modifiedEditor.editor,
+        () => modifiedInstance,
+        EditorType.MODIFIED_DIFF,
+        documents,
+      ]);
+      editors.push(modifiedDiffEditorPart);
+    }
+    if (originalEditor) {
+      const originalDiffEditorPart = this.injector.get(DiffEditorPart, [
+        originalEditor.editor,
+        () => originalInstance,
+        EditorType.ORIGINAL_DIFF,
+        documents,
+      ]);
+      editors.push(originalDiffEditorPart);
+    }
+    this.editorCollectionService.addEditors(editors);
+  }
+
+  async compareMultiple(editor: IMultiDiffEditor, resource: IResource, options?: IResourceOpenOptions): Promise<void> {
     // Save current view state before changing
     if (this.currentUri) {
       this.saveViewState(this.currentUri);
@@ -124,12 +172,10 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
       this,
       resources,
       async (r, store) => {
-        /** @description documentsWithPromises */
         let original: IEditorDocumentModelRef | undefined;
         let modified: IEditorDocumentModelRef | undefined;
 
         const multiDiffItemStore = new DisposableStore();
-
         try {
           [original, modified] = await Promise.all([
             r.originalUri ? this.documentModelManager.createModelReference(r.originalUri) : undefined,
@@ -152,16 +198,20 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
           multiDiffEditorItem: r,
           original: original?.instance.getMonacoModel(),
           modified: modified?.instance.getMonacoModel(),
+          originalInstance: original?.instance,
+          modifiedInstance: modified?.instance,
           contextKeys: r.contextKeys,
           options: {
-            readOnly: modified?.instance.readonly,
-            // TODO: codelens，wordWrap options
+            readOnly: (modified || original)?.instance.readonly,
+            ...options,
             ...this.convertedOptions.diffOptions,
           },
-          // TODO: 监听配置变化验证
           onOptionsDidChange: (h) =>
             this.preferenceService.onPreferenceChanged((e) => {
-              if (e.affects(uri.toString()) && e.preferenceName.includes('editor')) {
+              if (
+                e.affects(uri.toString()) &&
+                (e.preferenceName.startsWith('editor') || e.preferenceName.startsWith('diffEditor'))
+              ) {
                 h();
               }
             }),
@@ -172,9 +222,7 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     );
 
     const documents = observableValue<readonly RefCounted<IDocumentDiffItem>[] | 'loading'>('documents', 'loading');
-
     const updateDocuments = derived(async (reader) => {
-      /** @description Update documents */
       const docsPromises = documentsWithPromises.read(reader);
       const docs = await Promise.all(docsPromises);
       const newDocuments = docs.filter((item) => item !== undefined);
@@ -193,11 +241,51 @@ export class BrowserMultiDiffEditor extends WithEventBus implements IMultiDiffEd
     const viewModel = this.multiDiffWidget.createViewModel(this.multiDiffModel);
     await viewModel.waitForDiffs();
     this.multiDiffWidget.setViewModel(viewModel);
+    this.multiDiffWidget.getActiveControl();
 
     // Update current URI and restore view state
     this.currentUri = resource.uri;
     this.restoreViewState(resource.uri);
-
+    const documentRefs = documents.get();
+    for (const ref of documentRefs) {
+      if (isString(ref)) {
+        continue;
+      }
+      const modified = ref.object.modified;
+      const original = ref.object.original;
+      if (!modified && !original) {
+        continue;
+      }
+      let modifiedEditor = modified ? this.multiDiffWidget.tryGetCodeEditor(modified.uri) : undefined;
+      let originalEditor = original ? this.multiDiffWidget.tryGetCodeEditor(original.uri) : undefined;
+      if (!modifiedEditor && !originalEditor) {
+        const editor = modified || original;
+        if (!editor) {
+          continue;
+        }
+        Event.once(editor.onDidChangeAttached)(() => {
+          setTimeout(() => {
+            modifiedEditor = modified ? this.multiDiffWidget.tryGetCodeEditor(modified.uri) : undefined;
+            originalEditor = original ? this.multiDiffWidget.tryGetCodeEditor(original.uri) : undefined;
+            this.createAndRegisterEditorParts(
+              modifiedEditor,
+              originalEditor,
+              (ref.object as any).modifiedInstance,
+              (ref.object as any).originalInstance,
+              documents,
+            );
+          }, 0);
+        });
+        continue;
+      }
+      this.createAndRegisterEditorParts(
+        modifiedEditor,
+        originalEditor,
+        (ref.object as any).modifiedInstance,
+        (ref.object as any).originalInstance,
+        documents,
+      );
+    }
     this.multiDiffModelChangeEmitter.fire(this.multiDiffModel);
   }
 

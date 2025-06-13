@@ -25,7 +25,7 @@ import {
   localize,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
-import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
+import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/base-editor-wrapper';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';

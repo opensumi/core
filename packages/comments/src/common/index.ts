@@ -541,6 +541,10 @@ export interface ICommentsThread extends IDisposable {
    */
   showWidgetsIfShowed(): void;
   /**
+   * 移除即将显示的 widget，避免竞态条件
+   */
+  removePendingShowedWidgets(): void;
+  /**
    * 临时隐藏 wiget，restoreShow 时恢复
    */
   hideWidgetsByDispose(): void;

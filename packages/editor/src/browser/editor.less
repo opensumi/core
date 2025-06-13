@@ -20,3 +20,34 @@
     }
   }
 }
+
+.monaco-component.multiDiffEditor {
+  & .multiDiffEntry {
+    & .header {
+      margin-top: 8px;
+      .header-content {
+        margin-top: 0;
+      }
+    }
+    .status {
+      &:empty {
+        &::before {
+          content: 'M';
+        }
+        color: var(--kt-decoration-modifiedResourceForeground);
+      }
+      &.added {
+        color: var(--kt-decoration-addedResourceForeground);
+      }
+      &.deleted {
+        color: var(--kt-decoration-deletedResourceForeground);
+      }
+      &.renamed {
+        color: var(--kt-decoration-deletedResourceForeground);
+      }
+      &.modified {
+        color: var(--kt-decoration-modifiedResourceForeground);
+      }
+    }
+  }
+}

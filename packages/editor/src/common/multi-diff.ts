@@ -10,6 +10,10 @@ import {
 import { IResourceOpenOptions } from './editor';
 import { IResource } from './resource';
 
+import type { MultiDiffEditorWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidget';
+import type { IMultiDiffResourceId } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidgetImpl';
+import type { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+
 export const MULTI_DIFF_SCHEME = 'multi-diff-editor';
 
 export const IMultiDiffSourceResolverService = Symbol('IMultiDiffSourceResolverService');
@@ -58,7 +62,7 @@ export interface IMultiDiffEditor extends IDisposable {
   /**
    * Compare multiple file pairs
    */
-  compareMultiple(resource: IResource, options?: IResourceOpenOptions): Promise<void>;
+  compareMultiple(editor: IMultiDiffEditor, resource: IResource, options?: IResourceOpenOptions): Promise<void>;
 
   /**
    * Get all file pairs currently being compared
@@ -94,4 +98,14 @@ export interface IMultiDiffEditor extends IDisposable {
    * Expand all files
    */
   expandAll(): void;
+
+  /**
+   * Get the multi-diff editor widget
+   */
+  multiDiffWidget: MultiDiffEditorWidget;
+
+  /**
+   * Reveal the editor
+   */
+  reveal(resource: IMultiDiffResourceId, options?: { range?: Range; highlight: boolean }): void;
 }

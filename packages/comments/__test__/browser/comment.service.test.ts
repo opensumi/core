@@ -76,6 +76,7 @@ describe('comment service test', () => {
     currentEditor = mockService({
       monacoEditor,
       updateOptions: updateEditorLayoutOptions,
+      currentUri: URI.file('/test'),
     });
     injector = createBrowserInjector(
       [CommentsModule],
@@ -95,7 +96,7 @@ describe('comment service test', () => {
         {
           token: EditorCollectionService,
           useValue: mockService({
-            listEditors: () => [currentEditor],
+            listEditors: () => [],
           }),
         },
         {
@@ -293,7 +294,7 @@ describe('comment service test', () => {
     const thread = createTestThreads(URI.file('/test'))[0];
     jest.clearAllMocks();
     commentsService.setCurrentCommentThread(thread);
-    expect(currentEditor.monacoEditor.deltaDecorations).toHaveBeenCalledTimes(9);
+    expect(currentEditor.monacoEditor.deltaDecorations).toHaveBeenCalledTimes(1);
   });
 
   function createTestThreads(uri: URI) {

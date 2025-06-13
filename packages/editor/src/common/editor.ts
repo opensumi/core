@@ -209,6 +209,11 @@ export enum EditorType {
   MERGE_EDITOR_DIFF = 'MERGE_EDITOR_DIFF',
 }
 
+export interface IEditorDecorationApplier {
+  clearDecorations(): void;
+  applyDecorationFromProvider(): void;
+}
+
 /**
  * 一个 IEditor 代表了一个最小的编辑器单元，可以是 CodeEditor 中的一个，也可以是 DiffEditor 中的两个
  */
@@ -233,6 +238,11 @@ export interface IEditor {
    * 当前的uri
    */
   currentUri: URI | null;
+
+  /**
+   * 装饰器应用器
+   */
+  decorationApplier: IEditorDecorationApplier;
 
   /**
    * 插入代码片段
@@ -275,6 +285,8 @@ export interface IEditor {
   onFocus: Event<void>;
 
   onBlur: Event<void>;
+
+  updateDocumentModel?: (uri: URI) => void;
 }
 
 export interface IUndoStopOptions {
@@ -367,9 +379,11 @@ export abstract class EditorCollectionService {
   public abstract getEditorByUri(uri: URI): IEditor | undefined;
 
   public abstract listDiffEditors(): IDiffEditor[];
+  public abstract listMultiDiffEditors(): IMultiDiffEditor[];
 
   public abstract onCodeEditorCreate: Event<ICodeEditor>;
   public abstract onDiffEditorCreate: Event<IDiffEditor>;
+  public abstract onMultiDiffEditorCreate: Event<IMultiDiffEditor>;
 }
 
 export type IOpenResourceResult = { group: IEditorGroup; resource: IResource } | false;

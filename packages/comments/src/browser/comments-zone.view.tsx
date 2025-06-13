@@ -206,10 +206,15 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
       </ConfigProvider>,
     );
 
+    const disposer = editor.monacoEditor.onDidChangeModel(() => {
+      thread.hide();
+    });
+
     this.addDispose({
       dispose: () => {
         this.wrapperRoot?.unmount();
         this.wrapperRoot = undefined;
+        disposer.dispose();
       },
     });
   }
