@@ -2498,7 +2498,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       });
     }
 
-    await this.multiDiffEditor.compareMultiple(resource, options);
+    await this.multiDiffEditor.compareMultiple(this.multiDiffEditor, resource, options);
   }
 }
 

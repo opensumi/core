@@ -2,7 +2,8 @@ import { Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { EditorCollectionService } from '@opensumi/ide-editor';
 import { positionToRange } from '@opensumi/ide-monaco';
 import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
 import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
@@ -27,6 +28,12 @@ describe('comment service test', () => {
         {
           token: IIconService,
           useClass: IconService,
+        },
+        {
+          token: EditorCollectionService,
+          useValue: mockService({
+            listEditors: () => [],
+          }),
         },
       ]),
     );
