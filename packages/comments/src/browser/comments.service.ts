@@ -373,7 +373,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     disposer.addDispose(
       editor.monacoEditor.onDidChangeModel((event) => {
         const { newModelUrl } = event;
-        if (newModelUrl) {
+        if (newModelUrl && newModelUrl.fsPath !== editor.currentUri?.codeUri.fsPath) {
           const currentMultiDiffEditor = this.editorCollectionService.listMultiDiffEditors()[0];
           if (currentMultiDiffEditor) {
             editor.updateDocumentModel?.(URI.from(newModelUrl));
@@ -400,7 +400,9 @@ export class CommentsService extends Disposable implements ICommentsService {
       editor.monacoEditor.onMouseUp(async (event) => {
         if (this.startCommentRange) {
           if (hasHiddenArea) {
-            this.renderCommentRange(editor);
+            this.renderCommentRange(editor).then(() => {
+              this.tryUpdateReservedSpace(editor);
+            });
             hasHiddenArea = false;
             this.startCommentRange = null;
             this.endCommentRange = null;
@@ -492,7 +494,9 @@ export class CommentsService extends Disposable implements ICommentsService {
                 endColumn: this.startCommentRange.endColumn,
               };
             }
-            this.renderCommentRange(editor, selection);
+            this.renderCommentRange(editor, selection).then(() => {
+              this.tryUpdateReservedSpace(editor);
+            });
             this.endCommentRange = range;
           }
         } else {
@@ -528,7 +532,9 @@ export class CommentsService extends Disposable implements ICommentsService {
 
     disposer.addDispose(
       this.onCommentRangeProviderChange(() => {
-        this.renderCommentRange(editor);
+        this.renderCommentRange(editor).then(() => {
+          this.tryUpdateReservedSpace(editor);
+        });
       }),
     );
 
@@ -540,7 +546,9 @@ export class CommentsService extends Disposable implements ICommentsService {
       )((thread) => {
         const editor = this.getCurrentEditor(thread.uri);
         if (editor) {
-          this.renderCommentRange(editor);
+          this.renderCommentRange(editor).then(() => {
+            this.tryUpdateReservedSpace(editor);
+          });
         }
         this.updateActiveThreadDecoration(undefined);
       }),
@@ -553,7 +561,12 @@ export class CommentsService extends Disposable implements ICommentsService {
     );
 
     this.onCommentRangeProviderChange(() => {
-      this.renderCommentRange(editor);
+      this.renderCommentRange(editor).then(() => {
+        this.tryUpdateReservedSpace(editor);
+      });
+    });
+    this.renderCommentRange(editor).then(() => {
+      this.tryUpdateReservedSpace(editor);
     });
     return disposer;
   }
