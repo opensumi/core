@@ -1,5 +1,5 @@
+import { Container, URI as ManaURI, getOrigin } from '@difizen/libro-common/app';
 import { CellUri, CellView, LanguageSpecRegistry, LibroService, LibroView } from '@difizen/libro-jupyter/noeditor';
-import { Container, URI as ManaURI, getOrigin } from '@difizen/mana-app';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI, WithEventBus, path } from '@opensumi/ide-core-browser';

@@ -1,5 +1,5 @@
 import { CodeEditorModule } from '@difizen/libro-code-editor';
-import { ManaModule } from '@difizen/mana-app';
+import { ManaModule } from '@difizen/libro-common/app';
 
 import { LibroE2EditorContribution } from './editor-contribution';
 import {
@@ -15,16 +15,16 @@ export const LibroOpensumiEditorModule = ManaModule.create()
   .register(LibroE2EditorContribution, LibroOpensumiEditor, {
     token: LibroOpensumiEditorFactory,
     useFactory: (ctx) => (options: IEditorOptions, editorState: EditorState) => {
-        const child = ctx.container.createChild();
-        child.register({
-          token: LibroOpensumiEditorOptions,
-          useValue: options,
-        });
-        child.register({
-          token: LibroOpensumiEditorState,
-          useValue: editorState,
-        });
-        return child.get(LibroOpensumiEditor);
-      },
+      const child = ctx.container.createChild();
+      child.register({
+        token: LibroOpensumiEditorOptions,
+        useValue: options,
+      });
+      child.register({
+        token: LibroOpensumiEditorState,
+        useValue: editorState,
+      });
+      return child.get(LibroOpensumiEditor);
+    },
   })
   .dependOn(CodeEditorModule);

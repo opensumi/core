@@ -1,4 +1,4 @@
-import { ManaModule } from '@difizen/mana-app';
+import { ManaModule } from '@difizen/libro-common/app';
 
 import { LibroOpensumiEditorModule } from './editor/module';
 import { LibroOpensumiContentContribution } from './libro-opensumi-content-contribution';

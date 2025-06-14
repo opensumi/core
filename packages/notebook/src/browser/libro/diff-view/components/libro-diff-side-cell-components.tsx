@@ -1,4 +1,4 @@
-import { Container } from '@difizen/mana-app';
+import { Container } from '@difizen/libro-common/app';
 import React, { memo, useEffect, useRef, useState } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
