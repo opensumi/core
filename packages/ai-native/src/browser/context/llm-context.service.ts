@@ -417,14 +417,14 @@ ${globalRules}
     const otherRules = this.rulesService.projectRules.filter(
       (rule) => !attachedRules.some((attachedRule) => attachedRule.path === rule.path),
     );
-    const requestedByAgentRules = otherRules.filter((rule) => rule.description);
+    const requestedByAgentRules = otherRules.filter((rule) => rule.description && !rule.alwaysApply);
     const alwaysApplyRules = otherRules.filter((rule) => rule.alwaysApply);
     const requestedByFileRules = this.findFileMatchingRules(otherRules);
 
     return [...requestedByFileRules, ...requestedByAgentRules, ...alwaysApplyRules];
   }
   private findFileMatchingRules(otherRules: ProjectRule[]): ProjectRule[] {
-    const requestedByFileRules = otherRules.filter((rule) => rule.globs);
+    const requestedByFileRules = otherRules.filter((rule) => rule.globs && !rule.alwaysApply);
     const filePaths = this.attachedFiles.map((file) => file.uri.toString());
     const folderPaths = this.attachedFolders.map((folder) => folder.uri.toString());
 
@@ -463,7 +463,9 @@ ${globalRules}
             .split('/')
             .pop()
             ?.replace(/.md(c)?$/, '') || 'Unnamed Rule';
-        return `Rule Name: ${ruleName}\nDescription: \n${rule.description || rule.content}`;
+        return `Rule Name: ${ruleName}\nDescription: \n${
+          rule.alwaysApply ? rule.content : rule.description || rule.content
+        }`;
       })
       .join('\n\n');
 
