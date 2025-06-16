@@ -4530,7 +4530,7 @@ __metadata:
   resolution: "@opensumi/playwright@workspace:tools/playwright"
   dependencies:
     "@opensumi/ide-utils": "workspace:*"
-    "@playwright/test": "npm:1.43.0"
+    "@playwright/test": "npm:1.53.0"
     allure-commandline: "npm:^2.25.0"
     allure-playwright: "npm:^2.10.0"
     typescript: "npm:^5.6.3"
@@ -4649,14 +4649,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.43.0":
-  version: 1.43.0
-  resolution: "@playwright/test@npm:1.43.0"
+"@playwright/test@npm:1.53.0":
+  version: 1.53.0
+  resolution: "@playwright/test@npm:1.53.0"
   dependencies:
-    playwright: "npm:1.43.0"
+    playwright: "npm:1.53.0"
   bin:
     playwright: cli.js
-  checksum: 10/a30b5a9f51ae35c16a6c56d239a1e3abfbc5b8d84abf709914b9f3b02fa3afd5590cb7e01e479adafcb8282a8325c8b8afa4d70ca992502053490889f3dc714b
+  checksum: 10/968df4fba133dd18b8c65504c3cc5a3a6071e49f0706c6524711cdfab321a51debfeb506b9ff0a8f7dd8ce3015921d82fa51429d8f11d392cc68de1938703c33
   languageName: node
   linkType: hard
 
@@ -19495,27 +19495,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.43.0":
-  version: 1.43.0
-  resolution: "playwright-core@npm:1.43.0"
+"playwright-core@npm:1.53.0":
+  version: 1.53.0
+  resolution: "playwright-core@npm:1.53.0"
   bin:
     playwright-core: cli.js
-  checksum: 10/f34c8c5b94c7ddd59b462b8f5dd0f9a8204ed14f470a151d46384c6854c78f5624d80a80a7873a335e2b0c15d54d0d92da2f97422ee708bf5e5693b81bb33a09
+  checksum: 10/881f27a9b7edd9954700489a5a4212cb91bcada226fd1d79a239b2eab0f333df1e2e41e275e6fa846d7f57c6a92afe14dca33ca7a2ce303dfb687d02511b7c69
   languageName: node
   linkType: hard
 
-"playwright@npm:1.43.0":
-  version: 1.43.0
-  resolution: "playwright@npm:1.43.0"
+"playwright@npm:1.53.0":
+  version: 1.53.0
+  resolution: "playwright@npm:1.53.0"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.43.0"
+    playwright-core: "npm:1.53.0"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10/481b0d13bc990b8118a02396f03577748a3d64c2ca7635a238688ffbe399e3d6c92e05bdd074ad095f5d2d56e6648b213b5debe84815820a55b13c9a6fdf2108
+  checksum: 10/0b0258630f39b4d6ff1555d008ee4d591fe45cbe1e0f643a612397e3e6b1f7a99a2037a957eaa7351edd907ba10966ba105b2d244eafd1b247378910b660f086
   languageName: node
   linkType: hard
 
