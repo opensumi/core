@@ -1,5 +1,5 @@
+import { CommandRegistry, Container, Disposable, ViewRender } from '@difizen/libro-common/app';
 import { DocumentCommands, LibroView } from '@difizen/libro-jupyter/noeditor';
-import { CommandRegistry, Container, Disposable, ViewRender } from '@difizen/mana-app';
 import * as React from 'react';
 
 import { message } from '@opensumi/ide-components';
