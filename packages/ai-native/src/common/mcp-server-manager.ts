@@ -100,4 +100,4 @@ export type MCPServerDescription =
 export const MCPServerManager = Symbol('MCPServerManager');
 export const MCPServerManagerPath = 'ServicesMCPServerManager';
 
-export const MCPServersEnabledKey = 'mcp_servers_enabled';
+export const MCPServersDisabledKey = 'mcp_servers_disabled';

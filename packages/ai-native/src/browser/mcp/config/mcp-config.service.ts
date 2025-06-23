@@ -17,7 +17,7 @@ import { IMessageService } from '@opensumi/ide-overlay';
 import { BUILTIN_MCP_SERVER_NAME, ISumiMCPServerBackend, SumiMCPServerProxyServicePath } from '../../../common';
 import {
   MCPServerDescription,
-  MCPServersEnabledKey,
+  MCPServersDisabledKey,
   SSEMCPServerDescription,
   StdioMCPServerDescription,
 } from '../../../common/mcp-server-manager';
@@ -161,15 +161,17 @@ export class MCPConfigService extends Disposable {
         await this.mcpServerProxyService.$stopServer(serverName);
       }
 
-      const enabledMCPServers = this.chatStorage.get<string[]>(MCPServersEnabledKey, [BUILTIN_MCP_SERVER_NAME]);
-      const enabledMCPServersSet = new Set(enabledMCPServers);
+      const disabledMCPServers = this.chatStorage.get<string[]>(MCPServersDisabledKey, []);
+      const disabledMCPServersSet = new Set(disabledMCPServers);
 
       if (start) {
-        enabledMCPServersSet.add(serverName);
+        // 启动时从禁用列表中移除
+        disabledMCPServersSet.delete(serverName);
       } else {
-        enabledMCPServersSet.delete(serverName);
+        // 停止时添加到禁用列表
+        disabledMCPServersSet.add(serverName);
       }
-      this.chatStorage.set(MCPServersEnabledKey, Array.from(enabledMCPServersSet));
+      this.chatStorage.set(MCPServersDisabledKey, Array.from(disabledMCPServersSet));
     } catch (error) {
       const msg = error.message || error;
       this.logger.error(`Failed to ${start ? 'start' : 'stop'} server ${serverName}:`, msg);
@@ -241,7 +243,7 @@ export class MCPConfigService extends Disposable {
       undefined,
     );
     await this.whenReady;
-    const enabledMCPServers = this.chatStorage.get<string[]>(MCPServersEnabledKey, [BUILTIN_MCP_SERVER_NAME]);
+    const disabledMCPServers = this.chatStorage.get<string[]>(MCPServersDisabledKey, []);
     const server = mcpConfig!.mcpServers[serverName];
     if (server) {
       if (server.url) {
@@ -249,7 +251,7 @@ export class MCPConfigService extends Disposable {
           name: serverName,
           type: MCP_SERVER_TYPE.SSE,
           url: server.url,
-          enabled: enabledMCPServers.includes(serverName),
+          enabled: !disabledMCPServers.includes(serverName),
         };
       } else {
         return {
@@ -258,7 +260,7 @@ export class MCPConfigService extends Disposable {
           command: server.command,
           args: server.args,
           env: server.env,
-          enabled: enabledMCPServers.includes(serverName),
+          enabled: !disabledMCPServers.includes(serverName),
         };
       }
     }

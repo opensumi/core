@@ -97,7 +97,7 @@ import {
   deepSeekModels,
   openAiNativeModels,
 } from '../common';
-import { MCPServerDescription, MCPServersEnabledKey } from '../common/mcp-server-manager';
+import { MCPServerDescription, MCPServersDisabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
 import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
@@ -447,7 +447,7 @@ export class AINativeBrowserContribution
 
   private async initMCPServers() {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.CHAT);
-    let enabledMCPServers = storage.get<string[]>(MCPServersEnabledKey, [BUILTIN_MCP_SERVER_NAME]);
+    let disabledMCPServers = storage.get<string[]>(MCPServersDisabledKey, []);
 
     const oldMCPServers = this.preferenceService.get<MCPServerDescription[]>(AINativeSettingSectionsId.MCPServers, []);
     let mcpServerFromWorkspace = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
@@ -462,7 +462,7 @@ export class AINativeBrowserContribution
       const newMCPServers = {
         mcpServers: {},
       };
-      const mcpServersEnabled = new Set<string>([BUILTIN_MCP_SERVER_NAME]);
+      const mcpServersDisabled = new Set<string>();
       oldMCPServers.forEach((server) => {
         if (server.type === MCP_SERVER_TYPE.SSE) {
           newMCPServers.mcpServers[server.name] = {
@@ -475,10 +475,15 @@ export class AINativeBrowserContribution
             env: server.env,
           };
         }
-        if (server.enabled) {
-          mcpServersEnabled.add(server.name);
+        // 如果旧配置中服务器被禁用，添加到禁用列表
+        if (!server.enabled) {
+          mcpServersDisabled.add(server.name);
         }
       });
+      // 如果内置服务器在旧配置中没有启用，则禁用它
+      if (!oldMCPServers.find((s) => s.name === BUILTIN_MCP_SERVER_NAME)?.enabled) {
+        mcpServersDisabled.add(BUILTIN_MCP_SERVER_NAME);
+      }
       await this.preferenceService.set('mcp', newMCPServers, PreferenceScope.Workspace);
       mcpServerFromWorkspace = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
         'mcp',
@@ -487,12 +492,12 @@ export class AINativeBrowserContribution
         },
         undefined,
       );
-      enabledMCPServers = Array.from(mcpServersEnabled);
-      storage.set(MCPServersEnabledKey, enabledMCPServers);
+      disabledMCPServers = Array.from(mcpServersDisabled);
+      storage.set(MCPServersDisabledKey, disabledMCPServers);
     }
     const userServers = mcpServerFromWorkspace.value?.mcpServers;
-    // 总是初始化内置服务器，根据配置决定是否启用
-    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(enabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME));
+    // 总是初始化内置服务器，根据禁用列表决定是否启用
+    this.sumiMCPServerBackendProxy.$initBuiltinMCPServer(!disabledMCPServers.includes(BUILTIN_MCP_SERVER_NAME));
 
     if (userServers && Object.keys(userServers).length > 0) {
       const mcpServers = (
