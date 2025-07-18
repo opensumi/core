@@ -161,14 +161,15 @@ export class MCPServerManagerImpl implements MCPServerManager {
     const existingServer = this.servers.get(description.name);
     if (description.type === MCP_SERVER_TYPE.STDIO) {
       const { name, command, args, env } = description;
-      const envs = {
+      const envs: any = {
         ...env,
         PATH: this.shellPath || process.env.PATH || '',
       };
       if (existingServer) {
         existingServer.update(command, args, envs);
       } else {
-        const newServer = new StdioMCPServer(name, command, args, envs, this.logger);
+        // cwd 默认从前端透传过来
+        const newServer = new StdioMCPServer(name, command, args, envs, envs.cwd, this.logger);
         this.servers.set(name, newServer);
       }
     } else if (description.type === MCP_SERVER_TYPE.SSE) {
