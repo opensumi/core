@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { ILogger } from '@opensumi/ide-core-browser';
+import { AppConfig, ILogger } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
 import {
   Deferred,
@@ -45,6 +45,9 @@ export class MCPConfigService extends Disposable {
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -259,7 +262,7 @@ export class MCPConfigService extends Disposable {
           type: MCP_SERVER_TYPE.STDIO,
           command: server.command,
           args: server.args,
-          env: server.env,
+          env: Object.assign({ cwd: this.appConfig.workspaceDir }, server.env),
           enabled: !disabledMCPServers.includes(serverName),
         };
       }

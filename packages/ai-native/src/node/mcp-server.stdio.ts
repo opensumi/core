@@ -14,6 +14,7 @@ export class StdioMCPServer implements IMCPServer {
   public args?: string[];
   private client: Client;
   private env?: { [key: string]: string };
+  private cwd?: string;
   private started: boolean = false;
   private toolNameMap: Map<string, string> = new Map(); // Map sanitized tool names to original names
 
@@ -22,12 +23,14 @@ export class StdioMCPServer implements IMCPServer {
     command: string,
     args?: string[],
     env?: Record<string, string>,
+    cwd?: string,
     private readonly logger?: ILogger,
   ) {
     this.name = name;
     this.command = command === 'node' ? process.env.NODE_BINARY_PATH || 'node' : command;
     this.args = args;
     this.env = env;
+    this.cwd = cwd;
   }
 
   isStarted(): boolean {
@@ -49,7 +52,7 @@ export class StdioMCPServer implements IMCPServer {
     this.logger?.log(
       `Starting server "${this.name}" with command: ${this.command} and args: ${this.args?.join(
         ' ',
-      )} and env: ${JSON.stringify(this.env)}`,
+      )} and env: ${JSON.stringify(this.env)} and cwd: ${this.cwd}`,
     );
     // Filter process.env to exclude undefined values
     const sanitizedEnv: Record<string, string> = Object.fromEntries(
@@ -60,10 +63,12 @@ export class StdioMCPServer implements IMCPServer {
       ...sanitizedEnv,
       ...(this.env || {}),
     };
+    delete mergedEnv.cwd;
     const transport = new StdioClientTransport({
       command: this.command,
       args: this.args,
       env: mergedEnv,
+      cwd: this.cwd,
     });
     transport.onerror = (error) => {
       this.logger?.error('Transport Error:', error);
