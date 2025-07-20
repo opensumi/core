@@ -20,14 +20,21 @@ export const MCPConfigView: React.FC = () => {
   const [editingServer, setEditingServer] = React.useState<MCPServerDescription | undefined>();
   const [loadingServer, setLoadingServer] = React.useState<string | undefined>();
   const [isReady, setIsReady] = React.useState(mcpConfigService.isInitialized);
+  const [disabledTools, setDisabledTools] = React.useState<string[]>([]);
 
   const loadServers = useCallback(async () => {
     const allServers = await mcpConfigService.getServers();
     setServers(allServers);
   }, [mcpConfigService]);
 
+  const loadDisabledTools = useCallback(async () => {
+    const disabled = await mcpConfigService.getDisabledTools();
+    setDisabledTools(disabled);
+  }, [mcpConfigService]);
+
   React.useEffect(() => {
     loadServers();
+    loadDisabledTools();
     const disposer = mcpConfigService.onMCPServersChange((isReady) => {
       if (isReady) {
         setIsReady(true);
@@ -38,7 +45,7 @@ export const MCPConfigView: React.FC = () => {
     return () => {
       disposer.dispose();
     };
-  }, [loadServers]);
+  }, [loadServers, loadDisabledTools]);
 
   const handleServerControl = useCallback(
     async (serverName: string, start: boolean) => {
@@ -100,6 +107,22 @@ export const MCPConfigView: React.FC = () => {
       setLoadingServer(undefined);
     },
     [mcpConfigService, loadServers],
+  );
+
+  const handleToggleTool = useCallback(
+    async (toolName: string) => {
+      await mcpConfigService.toggleToolEnabled(toolName);
+      // 直接更新本地状态，避免重新从 service 加载
+      setDisabledTools((prev) => {
+        const isCurrentlyDisabled = prev.includes(toolName);
+        if (isCurrentlyDisabled) {
+          return prev.filter((name) => name !== toolName);
+        } else {
+          return [...prev, toolName];
+        }
+      });
+    },
+    [mcpConfigService],
   );
 
   return (
@@ -196,11 +219,21 @@ export const MCPConfigView: React.FC = () => {
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Tools:</span>
                   <span className={styles.detailContent}>
-                    {server.tools.map((tool, index) => (
-                      <Badge key={index} className={styles.toolTag} title={tool.description}>
-                        {tool.name}
-                      </Badge>
-                    ))}
+                    {server.tools.map((tool, index) => {
+                      const isDisabled = disabledTools.includes(tool.name);
+                      return (
+                        <Badge
+                          key={index}
+                          className={cls(styles.toolTag, isDisabled && styles.disabledTool)}
+                          title={`${tool.description}${isDisabled ? ' (已禁用)' : ''}`}
+                          onClick={() => handleToggleTool(tool.name)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {tool.name}
+                          {isDisabled && <span style={{ marginLeft: '4px', opacity: 0.6 }}>✕</span>}
+                        </Badge>
+                      );
+                    })}
                   </span>
                 </div>
               </div>

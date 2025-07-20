@@ -53,9 +53,12 @@ export class MCPConfigService extends Disposable {
   private readonly logger: ILogger;
 
   private chatStorage: IStorage;
+  private mcpConfigStorage: IStorage;
   private whenReadyDeferred = new Deferred<void>();
 
   private _isInitialized = false;
+  private disabledToolsCache: Set<string> = new Set();
+  private disabledToolsCacheInitialized = false;
 
   private readonly mcpServersChangeEventEmitter = new Emitter<boolean>();
 
@@ -78,6 +81,8 @@ export class MCPConfigService extends Disposable {
 
   private async init() {
     this.chatStorage = await this.storageProvider(STORAGE_NAMESPACE.CHAT);
+    this.mcpConfigStorage = await this.storageProvider(STORAGE_NAMESPACE.MCP);
+    await this.loadDisabledToolsCache();
     this.whenReadyDeferred.resolve();
   }
 
@@ -283,6 +288,37 @@ export class MCPConfigService extends Disposable {
     }
   }
 
+  async getDisabledTools(): Promise<string[]> {
+    await this.whenReady;
+    if (!this.disabledToolsCacheInitialized) {
+      await this.loadDisabledToolsCache();
+    }
+    return Array.from(this.disabledToolsCache);
+  }
+
+  async toggleToolEnabled(toolName: string): Promise<void> {
+    await this.whenReady;
+    if (!this.disabledToolsCacheInitialized) {
+      await this.loadDisabledToolsCache();
+    }
+
+    if (this.disabledToolsCache.has(toolName)) {
+      this.disabledToolsCache.delete(toolName);
+    } else {
+      this.disabledToolsCache.add(toolName);
+    }
+
+    await this.mcpConfigStorage.set('disabledMCPTools', Array.from(this.disabledToolsCache));
+  }
+
+  async isToolEnabled(toolName: string): Promise<boolean> {
+    await this.whenReady;
+    if (!this.disabledToolsCacheInitialized) {
+      await this.loadDisabledToolsCache();
+    }
+    return !this.disabledToolsCache.has(toolName);
+  }
+
   async openConfigFile(): Promise<void> {
     let config = this.preferenceService.resolve<{ mcpServers: Record<string, any> }>(
       'mcp',
@@ -303,5 +339,11 @@ export class MCPConfigService extends Disposable {
         preview: false,
       });
     }
+  }
+
+  private async loadDisabledToolsCache(): Promise<void> {
+    const disabledTools = this.mcpConfigStorage.get<string[]>('disabledMCPTools', []);
+    this.disabledToolsCache = new Set(disabledTools);
+    this.disabledToolsCacheInitialized = true;
   }
 }

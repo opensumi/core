@@ -102,7 +102,7 @@ export class ApplyService extends BaseApplyService {
     Provide the complete updated code.
 `,
       {
-        ...this.chatProxyService.getRequestOptions(),
+        ...(await this.chatProxyService.getRequestOptions()),
         trimTexts: ['<updated-code>', '</updated-code>'],
         system:
           'You are a coding assistant that helps merge code updates, ensuring every modification is fully integrated.',

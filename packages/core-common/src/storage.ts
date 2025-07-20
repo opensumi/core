@@ -54,6 +54,7 @@ export const STORAGE_NAMESPACE = {
   DEBUG: new URI('debug').withScheme(STORAGE_SCHEMA.SCOPE),
   OUTLINE: new URI('outline').withScheme(STORAGE_SCHEMA.SCOPE),
   CHAT: new URI('chat').withScheme(STORAGE_SCHEMA.SCOPE),
+  MCP: new URI('mcp').withScheme(STORAGE_SCHEMA.SCOPE),
   // global database
   GLOBAL_LAYOUT: new URI('layout-global').withScheme(STORAGE_SCHEMA.GLOBAL),
   GLOBAL_EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.GLOBAL),
