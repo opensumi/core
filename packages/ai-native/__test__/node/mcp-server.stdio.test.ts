@@ -24,7 +24,14 @@ describe('StdioMCPServer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    server = new StdioMCPServer('test-server', 'test-command', ['arg1', 'arg2'], { ENV: 'test' }, mockLogger);
+    server = new StdioMCPServer(
+      'test-server',
+      'test-command',
+      ['arg1', 'arg2'],
+      { ENV: 'test' },
+      undefined,
+      mockLogger,
+    );
   });
 
   describe('constructor', () => {
