@@ -38,6 +38,12 @@ export abstract class BaseLanguageModel {
     if (clientId) {
       const registry = this.toolInvocationRegistryManager.getRegistry(clientId);
       allFunctions = options.noTool ? [] : registry.getAllFunctions();
+
+      // 过滤禁用的工具
+      if (options.disabledTools && options.disabledTools.length > 0) {
+        const disabledToolsSet = new Set(options.disabledTools);
+        allFunctions = allFunctions.filter((tool) => !disabledToolsSet.has(tool.name));
+      }
     }
 
     return this.handleStreamingRequest(

@@ -187,6 +187,7 @@ export interface IAIBackServiceOption {
   noTool?: boolean;
   /** 响应首尾是否有需要trim的内容 */
   trimTexts?: [string, string];
+  disabledTools?: string[];
 }
 
 /**
@@ -440,7 +441,7 @@ export const CoreMessgaeRoleMap = {
 export interface IHistoryChatMessage extends IChatMessage {
   id: string;
   order: number;
-  isSummarized?: boolean;  // 添加这个属性，表示消息是否已被总结
+  isSummarized?: boolean; // 添加这个属性，表示消息是否已被总结
 
   type?: 'string' | 'component';
   images?: string[];

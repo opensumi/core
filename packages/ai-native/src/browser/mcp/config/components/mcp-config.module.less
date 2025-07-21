@@ -222,4 +222,16 @@
   font-weight: 500;
   transition: all 0.2s ease;
   cursor: pointer;
+
+  &.disabledTool {
+    opacity: 0.5;
+    background-color: var(--notification-warning-background);
+    color: var(--notification-warning-foreground);
+    text-decoration: line-through;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 }

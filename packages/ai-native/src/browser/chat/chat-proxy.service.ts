@@ -11,6 +11,7 @@ import {
   IAIReporter,
   IApplicationService,
   IChatProgress,
+  MCPConfigServiceToken,
 } from '@opensumi/ide-core-common';
 import { AINativeSettingSectionsId } from '@opensumi/ide-core-common/lib/settings/ai-native';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
@@ -27,6 +28,7 @@ import {
 } from '../../common';
 import { DEFAULT_SYSTEM_PROMPT } from '../../common/prompts/system-prompt';
 import { ChatToolRender } from '../components/ChatToolRender';
+import { MCPConfigService } from '../mcp/config/mcp-config.service';
 import { IChatAgentViewService } from '../types';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
@@ -66,9 +68,12 @@ export class ChatProxyService extends Disposable {
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
 
+  @Autowired(MCPConfigServiceToken)
+  private readonly mcpConfigService: MCPConfigService;
+
   private chatDeferred: Deferred<void> = new Deferred<void>();
 
-  public getRequestOptions() {
+  public async getRequestOptions() {
     const model = this.preferenceService.get<string>(AINativeSettingSectionsId.LLMModelSelection);
     const modelId = this.preferenceService.get<string>(AINativeSettingSectionsId.ModelID);
     let apiKey: string = '';
@@ -86,6 +91,7 @@ export class ChatProxyService extends Disposable {
     }
     const maxTokens = this.preferenceService.get<number>(AINativeSettingSectionsId.MaxTokens);
     const agent = this.chatAgentService.getAgent(ChatProxyService.AGENT_ID);
+    const disabledTools = await this.mcpConfigService.getDisabledTools();
     return {
       clientId: this.applicationService.clientId,
       model,
@@ -94,6 +100,7 @@ export class ChatProxyService extends Disposable {
       baseURL,
       maxTokens,
       system: agent?.metadata.systemPrompt,
+      disabledTools,
     };
   }
 
@@ -139,7 +146,7 @@ export class ChatProxyService extends Disposable {
                 sessionId: request.sessionId,
                 history,
                 images: request.images,
-                ...this.getRequestOptions(),
+                ...(await this.getRequestOptions()),
               },
               token,
             );
