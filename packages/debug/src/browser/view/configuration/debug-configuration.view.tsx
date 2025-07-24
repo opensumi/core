@@ -313,7 +313,7 @@ export const DebugControllerView = (props: DebugControllerViewProps) => {
     } else {
       value = event;
     }
-    if (value.startsWith(DEFAULT_ADD_CONFIGURATION_KEY)) {
+    if (value.startsWith(DEFAULT_ADD_CONFIGURATION_KEY) || value === DEFAULT_NO_CONFIGURATION_KEY) {
       const index = value.slice(DEFAULT_ADD_CONFIGURATION_KEY.length);
       if (index) {
         addConfiguration(workspaceRoots[index]);
