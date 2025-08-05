@@ -120,7 +120,7 @@
     "@opensumi/ide-dev-tool": "workspace:*",
     "browserfs": "^1.4.3",
     "css-loader": "^6.9.1",
-    "electron": "^22.3.21",
+    "electron": "^37.2.5",
     "less-loader": "^12.1.0",
     "nodemon": "^2.0.15",
     "npm-run": "^5.0.1",
