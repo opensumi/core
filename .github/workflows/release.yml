@@ -39,7 +39,7 @@ jobs:
           flag: ${{ secrets.BOT_FLAG }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ env.GITHUB_TOKEN }}
 
