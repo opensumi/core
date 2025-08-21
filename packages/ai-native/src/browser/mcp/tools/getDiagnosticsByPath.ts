@@ -86,6 +86,7 @@ export class GetDiagnosticsTool implements MCPServerContribution {
     }
 
     return fullPathUri;
+  }
 
   // 确保model已创建
   protected async ensureModelCreated(uri: URI) {
