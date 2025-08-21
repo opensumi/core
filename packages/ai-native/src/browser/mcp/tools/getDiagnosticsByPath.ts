@@ -93,16 +93,19 @@ export class GetDiagnosticsTool implements MCPServerContribution {
       const markerChangeDeferred = new Deferred<void>();
       // TODO: 诊断信息更新延迟问题如何彻底解决？现在事件都是从插件单向通知上来的
       // 首次打开文件时最大4s, 如果4s内marker没有变化，则认为marker本身就是空的
-      this.markerService.getManager().onMarkerChanged((e) => {
+      const disposable = this.markerService.getManager().onMarkerChanged((e) => {
         if (e.some((uriStr) => uriStr === uri.toString())) {
           markerChangeDeferred.resolve();
         }
       });
       await this.modelService.createModelReference(uri);
-      await new Promise((resolve) => setTimeout(resolve, 4000)).then(() => {
+      const timeoutId = setTimeout(() => {
         markerChangeDeferred.resolve();
+      }, 4000);
+      await markerChangeDeferred.promise.finally(() => {
+        disposable.dispose();
+        clearTimeout(timeoutId);
       });
-      await markerChangeDeferred.promise;
     }
   }
 
