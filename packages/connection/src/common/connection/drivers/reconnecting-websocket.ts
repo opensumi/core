@@ -14,7 +14,11 @@ import type { ErrorEvent } from '@opensumi/reconnecting-websocket';
 
 export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();
+  private static readonly MAX_QUEUE_SIZE = 500;
+  private static readonly MAX_PENDING_SIZE = 100 * 1024 * 1024;
+
   private sendQueue: Array<{ data: Uint8Array; resolve: () => void; reject: (error: Error) => void }> = [];
+  private pendingSize = 0;
   private sending = false;
 
   protected constructor(private socket: ReconnectingWebSocket) {
@@ -57,6 +61,7 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
         if (handle) {
           handle.dispose();
         }
+        this.pendingSize -= this.sendQueue[0].data.byteLength;
       }
       this.sendQueue.shift();
     }
@@ -66,6 +71,19 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
 
   send(data: Uint8Array): Promise<void> {
     return new Promise((resolve, reject) => {
+      // 检查队列大小限制
+      if (this.sendQueue.length >= ReconnectingWebSocketConnection.MAX_QUEUE_SIZE) {
+        reject(new Error('Send queue full'));
+        return;
+      }
+
+      // 检查总内存大小限制
+      if (this.pendingSize + data.byteLength > ReconnectingWebSocketConnection.MAX_PENDING_SIZE) {
+        reject(new Error('Pending data size limit exceeded'));
+        return;
+      }
+
+      this.pendingSize += data.byteLength;
       this.sendQueue.push({ data, resolve, reject });
       this.processSendQueue();
     });
