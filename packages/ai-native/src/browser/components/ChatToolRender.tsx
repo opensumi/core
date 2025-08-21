@@ -44,15 +44,54 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
 
   const getParsedArgs = () => {
     try {
-      // TODO: 流式输出中function_call的参数还不完整，需要等待complete状态
-      if (value.state !== 'complete' && value.state !== 'result') {
-        return {};
+      // 在流式状态中也尝试解析已有的参数
+      const argsString = value.function?.arguments || '{}';
+
+      // 如果是流式状态且参数字符串不完整，直接返回原始字符串用于显示
+      if ((value.state === 'streaming-start' || value.state === 'streaming') && !argsString.endsWith('}')) {
+        return argsString;
       }
-      return JSON.parse(value.function?.arguments || '{}');
+
+      return JSON.parse(argsString);
     } catch (error) {
-      return {};
+      // 解析失败时返回原始字符串，让用户看到当前的参数内容
+      return value.function?.arguments || '{}';
     }
   };
+
+  const getFormattedArgs = () => {
+    try {
+      const argsString = value.function?.arguments || '{}';
+
+      // 如果是流式状态且参数字符串不完整，处理转义字符后直接返回
+      if ((value.state === 'streaming-start' || value.state === 'streaming') && !argsString.endsWith('}')) {
+        return unescapeJsonString(argsString);
+      }
+
+      // 尝试解析并格式化 JSON
+      const parsed = JSON.parse(argsString);
+      return JSON.stringify(parsed, null, 2);
+    } catch (error) {
+      // 解析失败时，处理转义字符后返回原始字符串
+      const argsString = value.function?.arguments || '{}';
+      return unescapeJsonString(argsString);
+    }
+  };
+
+  // 处理 JSON 字符串中的转义字符
+  const unescapeJsonString = (str: string): string =>
+     str
+      .replace(/\\n/g, '\n') // 换行符
+      .replace(/\\t/g, '\t') // 制表符
+      .replace(/\\r/g, '\r') // 回车符
+      .replace(/\\\\/g, '\\') // 反斜杠
+      .replace(/\\"/g, '"') // 双引号
+      .replace(/\\'/g, "'") // 单引号
+      .replace(/\\f/g, '\f') // 换页符
+      .replace(/\\b/g, '\b') // 退格符
+      .replace(/\\v/g, '\v') // 垂直制表符
+      .replace(/\\0/g, '\0') // 空字符
+  ;
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -92,7 +131,7 @@ export const ChatToolRender = (props: { value: IChatToolContent['content']; mess
         {value?.function?.arguments && (
           <div className={styles.tool_arguments}>
             <div className={styles.section_label}>{localize('ai.native.mcp.tool.arguments')}:</div>
-            <CodeEditorWithHighlight input={value?.function?.arguments} language={'json'} relationId={uuid(4)} />
+            <CodeEditorWithHighlight input={getFormattedArgs()} language={'json'} relationId={uuid(4)} />
           </div>
         )}
         {value?.result && (

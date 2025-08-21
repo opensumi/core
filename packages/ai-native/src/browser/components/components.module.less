@@ -249,12 +249,15 @@
   min-width: 130px;
   > pre {
     margin-bottom: 10px;
+    max-height: 400px;
+    overflow-y: auto;
   }
   .highlight_editor {
     border-radius: 8px;
     font-size: 12px;
     padding: 28px 8px 8px 8px;
     line-height: 18px;
+    white-space: pre-wrap;
     &::-webkit-scrollbar {
       width: auto;
       height: 4px;

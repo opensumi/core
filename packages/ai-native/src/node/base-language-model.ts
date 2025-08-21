@@ -196,16 +196,17 @@ export abstract class BaseLanguageModel {
           const existing = ongoingToolCalls.get(chunk.toolCallId);
           if (existing) {
             existing.args = (existing.args || '') + chunk.argsTextDelta;
+            // 发送累积的完整参数，而不是仅仅增量片段
+            chatReadableStream.emitData({
+              kind: 'toolCall',
+              content: {
+                id: chunk.toolCallId,
+                type: 'function',
+                function: { name: chunk.toolName, arguments: existing.args },
+                state: 'streaming',
+              },
+            });
           }
-          chatReadableStream.emitData({
-            kind: 'toolCall',
-            content: {
-              id: chunk.toolCallId,
-              type: 'function',
-              function: { name: chunk.toolName, arguments: chunk.argsTextDelta },
-              state: 'streaming',
-            },
-          });
         } else if (chunk.type === 'tool-result') {
           // 移除已完成的工具调用
           ongoingToolCalls.delete(chunk.toolCallId);

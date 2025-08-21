@@ -173,7 +173,7 @@ const ToolCallRender = (props: { toolCall: IChatToolContent['content']; messageI
     deferred.promise.then(({ component: Component, initialProps }) => {
       setNode(<Component {...initialProps} value={toolCall} messageId={messageId} />);
     });
-  }, [toolCall.state]);
+  }, [toolCall]);
 
   return node;
 };
