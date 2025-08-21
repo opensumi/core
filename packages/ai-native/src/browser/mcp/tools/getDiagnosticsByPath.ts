@@ -87,12 +87,9 @@ export class GetDiagnosticsTool implements MCPServerContribution {
   }
 
   // 确保model已创建
-  protected async ensureModelCreated(uri: URI, isDiagnostic: boolean = false) {
+  protected async ensureModelCreated(uri: URI) {
     const models = this.modelService.getAllModels();
     if (!models.some((model) => model.uri.isEqual(uri))) {
-      if (!isDiagnostic) {
-        return await this.modelService.createModelReference(uri);
-      }
       const markerChangeDeferred = new Deferred<void>();
       // TODO: 诊断信息更新延迟问题如何彻底解决？现在事件都是从插件单向通知上来的
       // 首次打开文件时最大4s, 如果4s内marker没有变化，则认为marker本身就是空的
@@ -112,7 +109,7 @@ export class GetDiagnosticsTool implements MCPServerContribution {
   private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
     try {
       const uri = await this.checkFilePath(args.filePathInProject, logger);
-      await this.ensureModelCreated(uri, true);
+      await this.ensureModelCreated(uri);
 
       // 获取文件的诊断信息
       const markers = this.markerService.getManager().getMarkers({ resource: uri.toString() });
