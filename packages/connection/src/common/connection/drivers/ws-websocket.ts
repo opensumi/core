@@ -16,7 +16,8 @@ interface SendQueueItem {
 
 export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();
-  private static readonly MAX_QUEUE_SIZE = 1000; // 限制队列长度
+  private static readonly MAX_QUEUE_SIZE = 500;
+  private static readonly MAX_PENDING_SIZE = 100 * 1024 * 1024;
 
   private sendQueue: SendQueueItem[] = [];
   private pendingSize = 0;
@@ -84,6 +85,12 @@ export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
       // 检查队列大小限制
       if (this.sendQueue.length >= WSWebSocketConnection.MAX_QUEUE_SIZE) {
         reject(new Error('Send queue full'));
+        return;
+      }
+
+      // 检查总内存大小限制
+      if (this.pendingSize + data.byteLength > WSWebSocketConnection.MAX_PENDING_SIZE) {
+        reject(new Error('Pending data size limit exceeded'));
         return;
       }
 
