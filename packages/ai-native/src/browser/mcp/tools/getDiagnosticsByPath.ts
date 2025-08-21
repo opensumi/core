@@ -1,12 +1,11 @@
-import * as path from 'path';
-
 import { z } from 'zod';
 
 import { Autowired } from '@opensumi/di';
-import { Domain, URI } from '@opensumi/ide-core-common';
+import { Deferred, Domain, MarkerSeverity, URI, path } from '@opensumi/ide-core-common';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IMarkerService } from '@opensumi/ide-markers';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { URI as MonacoURI } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
-import { IMarkerService, MarkerSeverity } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 import { IMCPServerRegistry, MCPLogger, MCPServerContribution, MCPToolDefinition } from '../../types';
 
@@ -15,12 +14,18 @@ const inputSchema = z.object({
 });
 
 @Domain(MCPServerContribution)
-export class GetDiagnosticsByPathTool implements MCPServerContribution {
+export class GetDiagnosticsTool implements MCPServerContribution {
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
 
+  @Autowired(IFileServiceClient)
+  private readonly fileServiceClient: IFileServiceClient;
+
+  @Autowired(IEditorDocumentModelService)
+  private readonly modelService: IEditorDocumentModelService;
+
   @Autowired(IMarkerService)
-  private readonly markerService: IMarkerService;
+  protected readonly markerService: IMarkerService;
 
   registerMCPServer(registry: IMCPServerRegistry): void {
     registry.registerMCPTool(this.getToolDefinition());
@@ -53,35 +58,66 @@ export class GetDiagnosticsByPathTool implements MCPServerContribution {
     };
   }
 
+  protected async checkFilePath(filePathInProject: string, logger: MCPLogger) {
+    // Get workspace roots
+    const workspaceRoots = this.workspaceService.tryGetRoots();
+    if (!workspaceRoots || workspaceRoots.length === 0) {
+      logger.appendLine('Error: Cannot determine project directory');
+      throw new Error('Cannot determine project directory');
+    }
+
+    // Construct and validate full file path securely (prevent path traversal)
+    const rootUri = URI.parse(workspaceRoots[0].uri);
+    const rootFsPath = rootUri.codeUri.fsPath;
+    const resolvedFsPath = path.resolve(rootFsPath, filePathInProject);
+    const rel = path.relative(rootFsPath, resolvedFsPath);
+    // rel starts with '..' or is an absolute path ⇒ outside workspace
+    if (rel.startsWith('..') || path.isAbsolute(rel)) {
+      logger.appendLine('Error: File is outside of project scope');
+      throw new Error('File is outside of project scope');
+    }
+    const fullPathUri = URI.file(resolvedFsPath);
+
+    // Check if file exists
+    const fileExists = await this.fileServiceClient.access(fullPathUri.toString());
+    if (!fileExists) {
+      logger.appendLine(`Error: File does not exist: ${fullPathUri.toString()}`);
+      throw new Error('File does not exist');
+    }
+
+    return fullPathUri;
+  }
+
+  // 确保model已创建
+  protected async ensureModelCreated(uri: URI) {
+    const models = this.modelService.getAllModels();
+    if (!models.some((model) => model.uri.isEqual(uri))) {
+      const markerChangeDeferred = new Deferred<void>();
+      // TODO: 诊断信息更新延迟问题如何彻底解决？现在事件都是从插件单向通知上来的
+      // 首次打开文件时最大4s, 如果4s内marker没有变化，则认为marker本身就是空的
+      const disposable = this.markerService.getManager().onMarkerChanged((e) => {
+        if (e.some((uriStr) => uriStr === uri.toString())) {
+          markerChangeDeferred.resolve();
+        }
+      });
+      await this.modelService.createModelReference(uri);
+      const timeoutId = setTimeout(() => {
+        markerChangeDeferred.resolve();
+      }, 4000);
+      await markerChangeDeferred.promise.finally(() => {
+        disposable.dispose();
+        clearTimeout(timeoutId);
+      });
+    }
+  }
+
   private async handler(args: z.infer<typeof inputSchema>, logger: MCPLogger) {
     try {
-      // 获取工作区根目录
-      const workspaceRoots = this.workspaceService.tryGetRoots();
-      if (!workspaceRoots || workspaceRoots.length === 0) {
-        logger.appendLine('Error: Cannot determine project directory');
-        return {
-          content: [{ type: 'text', text: '[]' }],
-          isError: true,
-        };
-      }
-
-      // 构建完整的文件路径
-      const rootUri = URI.parse(workspaceRoots[0].uri);
-      const fullPath = path.join(rootUri.codeUri.fsPath, args.filePathInProject);
-      const uri = MonacoURI.file(fullPath);
-
-      // 检查文件是否在项目目录内
-      const relativePath = path.relative(rootUri.codeUri.fsPath, fullPath);
-      if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
-        logger.appendLine('Error: File is outside of project scope');
-        return {
-          content: [{ type: 'text', text: '[]' }],
-          isError: true,
-        };
-      }
+      const uri = await this.checkFilePath(args.filePathInProject, logger);
+      await this.ensureModelCreated(uri);
 
       // 获取文件的诊断信息
-      const markers = this.markerService.read({ resource: uri });
+      const markers = this.markerService.getManager().getMarkers({ resource: uri.toString() });
 
       // 转换诊断信息
       const diagnosticInfos = markers.map((marker) => ({

@@ -167,13 +167,15 @@ export class ChatResponseModel extends Disposable {
       this.#responseParts.push(progress);
       this.#updateResponseText(quiet);
     } else if (progress.kind === 'toolCall') {
-      const find = this.#responseParts.find(
+      const findIndex = this.#responseParts.findIndex(
         (item) => item.kind === 'toolCall' && item.content.id === progress.content.id,
       );
-      if (find) {
-        // @ts-ignore
-        find.content = progress.content;
-        // this.#responseParts[responsePartLength] = find;
+      if (findIndex !== -1) {
+        // 创建新的对象引用以确保变化检测生效
+        this.#responseParts[findIndex] = {
+          kind: 'toolCall',
+          content: { ...progress.content },
+        };
       } else {
         this.#responseParts.push(progress);
       }
@@ -359,11 +361,11 @@ export class ChatModel extends Disposable implements IChatModel {
 
     return processedSummaries.length > 0
       ? [
-        {
-          role: 'system',
-          content: '以下是之前对话的总结：\n' + processedSummaries.join('\n\n'),
-        },
-      ]
+          {
+            role: 'system',
+            content: '以下是之前对话的总结：\n' + processedSummaries.join('\n\n'),
+          },
+        ]
       : [];
   }
 

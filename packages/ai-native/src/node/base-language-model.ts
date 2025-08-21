@@ -135,6 +135,8 @@ export abstract class BaseLanguageModel {
       let isFirstChunk = true;
       let bufferedText = '';
       const pendingLines: string[] = [];
+      // 跟踪正在进行的工具调用状态
+      const ongoingToolCalls = new Map<string, { name: string; args?: string }>();
       for await (const chunk of stream.fullStream) {
         if (chunk.type === 'text-delta') {
           if (trimTexts?.length) {
@@ -178,6 +180,8 @@ export abstract class BaseLanguageModel {
             },
           });
         } else if (chunk.type === 'tool-call-streaming-start') {
+          // 记录开始的工具调用
+          ongoingToolCalls.set(chunk.toolCallId, { name: chunk.toolName });
           chatReadableStream.emitData({
             kind: 'toolCall',
             content: {
@@ -188,16 +192,24 @@ export abstract class BaseLanguageModel {
             },
           });
         } else if (chunk.type === 'tool-call-delta') {
-          chatReadableStream.emitData({
-            kind: 'toolCall',
-            content: {
-              id: chunk.toolCallId,
-              type: 'function',
-              function: { name: chunk.toolName, arguments: chunk.argsTextDelta },
-              state: 'streaming',
-            },
-          });
+          // 更新工具调用状态
+          const existing = ongoingToolCalls.get(chunk.toolCallId);
+          if (existing) {
+            existing.args = (existing.args || '') + chunk.argsTextDelta;
+            // 发送累积的完整参数，而不是仅仅增量片段
+            chatReadableStream.emitData({
+              kind: 'toolCall',
+              content: {
+                id: chunk.toolCallId,
+                type: 'function',
+                function: { name: chunk.toolName, arguments: existing.args },
+                state: 'streaming',
+              },
+            });
+          }
         } else if (chunk.type === 'tool-result') {
+          // 移除已完成的工具调用
+          ongoingToolCalls.delete(chunk.toolCallId);
           chatReadableStream.emitData({
             kind: 'toolCall',
             content: {
@@ -217,6 +229,29 @@ export abstract class BaseLanguageModel {
           });
         }
       }
+
+      // 处理未完成的工具调用 - 将它们标记为完成状态
+      for (const [toolCallId, toolCall] of ongoingToolCalls) {
+        try {
+          chatReadableStream.emitData({
+            kind: 'toolCall',
+            content: {
+              id: toolCallId,
+              type: 'function',
+              function: {
+                name: toolCall.name,
+                arguments: toolCall.args || '{}',
+              },
+              state: 'complete',
+            },
+          });
+        } catch (error) {
+          // 记录错误但不阻止流的结束
+          this.logger?.error(`Failed to finalize tool call ${toolCallId}:`, error);
+        }
+      }
+      // 清空正在进行的工具调用
+      ongoingToolCalls.clear();
 
       if (trimTexts?.[1]) {
         // 完成处理所有块后，检查并发送剩余文本

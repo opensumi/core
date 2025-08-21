@@ -71,8 +71,7 @@ import { MCPServerRegistry } from './mcp/mcp-server.feature.registry';
 import { CreateNewFileWithTextTool } from './mcp/tools/createNewFileWithText';
 import { EditFileTool } from './mcp/tools/editFile';
 import { FileSearchTool } from './mcp/tools/fileSearch';
-import { GetDiagnosticsByPathTool } from './mcp/tools/getDiagnosticsByPath';
-import { GetOpenEditorFileDiagnosticsTool } from './mcp/tools/getOpenEditorFileDiagnostics';
+import { GetDiagnosticsTool } from './mcp/tools/getDiagnosticsByPath';
 import { GrepSearchTool } from './mcp/tools/grepSearch';
 import { ListDirTool } from './mcp/tools/listDir';
 import { ReadFileTool } from './mcp/tools/readFile';
@@ -113,10 +112,9 @@ export class AINativeModule extends BrowserModule {
     ReadFileTool,
     EditFileTool,
     CreateNewFileWithTextTool,
-    GetOpenEditorFileDiagnosticsTool,
     FileSearchTool,
     GrepSearchTool,
-    GetDiagnosticsByPathTool,
+    GetDiagnosticsTool,
     RunTerminalCommandTool,
     // MCP Server Contributions END
 
