@@ -246,12 +246,15 @@ export const IconTabView: FC<{ component: ComponentRegistryProvider }> = ({ comp
   const inProgress = indicator ? useAutorun(indicator.progressModel.show) : false;
 
   const title = useMemo(() => {
+    if (!component) {
+      return '';
+    }
     const options = component.options;
     if (options?.activateKeyBinding) {
       return `${options?.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
     }
     return options?.title;
-  }, [component]);
+  }, [component, keybindingRegistry]);
 
   useEffect(() => {
     const dispose = component.onChange((newComponent) => {
