@@ -11,6 +11,7 @@ import { EditorType, IDecorationApplyOptions, IEditor, IUndoStopOptions } from '
 import { IEditorDocumentModel } from '../common/editor';
 
 import { MonacoEditorDecorationApplier } from './decoration-applier';
+import { getLargeFileOptimizedEditorOptions, shouldOptimizeForLargeFile } from './doc-model/large-file-optimizer';
 import { getConvertedMonacoOptions, isEditorOption } from './preference/converter';
 import { IEditorFeatureRegistry } from './types';
 
@@ -177,6 +178,32 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
         ...editorOptions,
         ...options.diffOptions,
       };
+    }
+
+    // 大文件优化逻辑
+    if (this.currentDocumentModel && this.currentUri) {
+      const content = this.currentDocumentModel.getText();
+      const contentLength = content.length;
+
+      // 检查是否需要优化
+      const needsOptimization = shouldOptimizeForLargeFile(contentLength, content);
+
+      // 检查是否有明确的优化配置（从资源元数据）
+      // 注意：这里无法直接访问resource metadata，所以主要依赖自动检测
+
+      if (needsOptimization) {
+        const optimizedEditorOptions = getLargeFileOptimizedEditorOptions(editorOptions, {
+          optimizedMode: true,
+          disableSemanticHighlighting: true,
+          disableWordWrap: true,
+          disableMinimap: true,
+          disableHover: contentLength > 20 * 1024 * 1024, // 20MB以上禁用hover
+          disableCodeLens: true,
+          disableQuickSuggestions: contentLength > 30 * 1024 * 1024, // 30MB以上禁用建议
+        });
+
+        editorOptions = optimizedEditorOptions;
+      }
     }
 
     return {

@@ -87,7 +87,7 @@ export class LengthFieldBasedFrameDecoder {
       if (this.buffers.byteLength > 0) {
         hasMoreData = true;
         // 异步继续处理，避免阻塞
-        await new Promise((resolve) => setImmediate(resolve));
+        await new Promise((resolve) => setTimeout(resolve, 0));
         iterations = 0; // 重置迭代计数器
       }
     } while (hasMoreData);
