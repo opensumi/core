@@ -66,15 +66,17 @@ export class GetDiagnosticsTool implements MCPServerContribution {
       throw new Error('Cannot determine project directory');
     }
 
-    // Validate file path
-    if (filePathInProject.startsWith('..') || filePathInProject.startsWith('/')) {
+    // Construct and validate full file path securely (prevent path traversal)
+    const rootUri = URI.parse(workspaceRoots[0].uri);
+    const rootFsPath = rootUri.codeUri.fsPath;
+    const resolvedFsPath = path.resolve(rootFsPath, filePathInProject);
+    const rel = path.relative(rootFsPath, resolvedFsPath);
+    // rel starts with '..' or is an absolute path ⇒ outside workspace
+    if (rel.startsWith('..') || path.isAbsolute(rel)) {
       logger.appendLine('Error: File is outside of project scope');
       throw new Error('File is outside of project scope');
     }
-
-    // Construct full file path
-    const rootUri = URI.parse(workspaceRoots[0].uri);
-    const fullPathUri = URI.file(path.join(rootUri.codeUri.fsPath, filePathInProject));
+    const fullPathUri = URI.file(resolvedFsPath);
 
     // Check if file exists
     const fileExists = await this.fileServiceClient.access(fullPathUri.toString());
@@ -84,7 +86,6 @@ export class GetDiagnosticsTool implements MCPServerContribution {
     }
 
     return fullPathUri;
-  }
 
   // 确保model已创建
   protected async ensureModelCreated(uri: URI) {
