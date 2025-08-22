@@ -64,10 +64,6 @@ export function getLargeFileOptimizedEditorOptions(
     optimizedOptions.suggestOnTriggerCharacters = false;
   }
 
-  if (optimizations.disableSemanticHighlighting) {
-    optimizedOptions.semanticHighlighting = { enabled: false };
-  }
-
   return optimizedOptions;
 }
 
