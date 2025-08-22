@@ -21,7 +21,7 @@ jobs:
         with:
           token-server: ${{ secrets.BOT_TOKEN_SERVER }}
           flag: ${{ secrets.BOT_FLAG }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
