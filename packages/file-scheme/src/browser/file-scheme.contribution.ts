@@ -148,13 +148,24 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
             const stat = await this.fileServiceClient.getFileStat(uri.toString());
             await this.preference.ready;
             const maxSize = this.preference.getValid<number>('editor.largeFile', 4 * 1024 * 1024 * 1024);
+            const warningSize = 50 * 1024 * 1024; // 50MB 警告阈值
 
-            if (stat && (stat.size || 0) > maxSize && !metadata.skipPreventTooLarge) {
+            // 如果文件超过警告阈值，且没有明确要求跳过警告，显示警告页面
+            if (stat && (stat.size || 0) > warningSize && !metadata.skipPreventTooLarge) {
               results.push({
                 type: EditorOpenType.component,
                 componentId: LARGE_FILE_PREVENT_COMPONENT_ID,
               });
-            } else {
+            }
+            // 如果文件超过最大限制，且没有明确要求跳过警告，显示警告页面
+            else if (stat && (stat.size || 0) > maxSize && !metadata.skipPreventTooLarge) {
+              results.push({
+                type: EditorOpenType.component,
+                componentId: LARGE_FILE_PREVENT_COMPONENT_ID,
+              });
+            }
+            // 其他情况正常打开
+            else {
               results.push({
                 type: EditorOpenType.code,
                 title: localize('editorOpenType.code'),
