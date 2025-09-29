@@ -26,7 +26,7 @@
     "ui-tests-report": "yarn run build ui-tests-report-generate && allure open allure-results/allure-report"
   },
   "dependencies": {
-    "@playwright/test": "1.43.0"
+    "@playwright/test": "1.55.1"
   },
   "devDependencies": {
     "@opensumi/ide-utils": "workspace:*",
