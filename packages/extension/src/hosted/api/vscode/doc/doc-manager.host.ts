@@ -237,8 +237,10 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     const document = this._documents.get(uri.toString());
 
     if (document) {
+      const textDocument = document.document;
+      document.dispose();
       this._documents.delete(uri);
-      this._onDidCloseTextDocument.fire(document.document);
+      this._onDidCloseTextDocument.fire(textDocument);
     }
   }
 
