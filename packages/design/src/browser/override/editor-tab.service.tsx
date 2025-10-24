@@ -2,6 +2,7 @@ import cls from 'classnames';
 import React, { ReactNode, useCallback, useMemo } from 'react';
 
 import { Autowired, Injectable } from '@opensumi/di';
+import { KeybindingRegistry, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { formatLocalize, isMacintosh, uuid } from '@opensumi/ide-core-common';
@@ -19,12 +20,16 @@ const EditorTabCloseComponent = (props) => {
     setDisplay(false);
   }, []);
 
-  const title = useMemo(() => formatLocalize('editor.closeTab.title', isMacintosh ? '⌘W' : 'Ctrl+W'), []);
+  const keybindingRegistry = useInjectable(KeybindingRegistry);
+  const keyBinds = keybindingRegistry.getKeybindingsForCommand('editor.close');
+  const keyBinding = keyBinds && keyBinds[0];
+  const shortCut = keyBinding ? keybindingRegistry.acceleratorFor(keyBinding, ' ') : isMacintosh ? '⌘W' : 'Ctrl+W';
+  const title = useMemo(() => formatLocalize('editor.closeTab.title', shortCut), []);
 
   return (
     <Popover
       delay={1000}
-      position={PopoverPosition.bottom}
+      position={PopoverPosition.top}
       id={uid}
       title={title}
       onClickAction={handleClick}
