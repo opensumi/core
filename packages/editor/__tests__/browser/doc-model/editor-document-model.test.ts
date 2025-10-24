@@ -175,4 +175,38 @@ describe('EditorDocumentModel', () => {
       expect(chagneFn).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('dispose', () => {
+    let uri: URI;
+    let content: string;
+
+    beforeEach(() => {
+      uri = new URI(`test://dispose/${Math.random()}`);
+      content = uniqueId('dispose-content');
+    });
+
+    it('should release internal resources on dispose', () => {
+      const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
+      const autoSave = docModel.tryAutoSaveAfterDelay;
+      const cancelSpy = jest.spyOn(autoSave, 'cancel');
+
+      const docModelAny = docModel as any;
+      docModelAny.savingTasks = [{ dispose: jest.fn() }, { dispose: jest.fn() }];
+      docModelAny.dirtyChanges = [{ fromVersionId: 1, toVersionId: 2, changes: [] }];
+      const tasksSnapshot = [...docModelAny.savingTasks];
+
+      // Prime MD5 cache to ensure it gets cleared.
+      docModel.getBaseContentMd5();
+
+      docModel.dispose();
+
+      expect(cancelSpy).toHaveBeenCalled();
+      tasksSnapshot.forEach((task) => expect(task.dispose).toHaveBeenCalled());
+      expect(docModelAny.savingTasks).toHaveLength(0);
+      expect(docModelAny.dirtyChanges).toHaveLength(0);
+      expect(docModel.baseContent).toBe('');
+      expect(docModelAny._baseContentMd5).toBeNull();
+      expect(docModelAny._tryAutoSaveAfterDelay).toBeUndefined();
+    });
+  });
 });

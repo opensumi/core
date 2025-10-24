@@ -752,4 +752,30 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       }
     }
   }
+
+  dispose() {
+    const debouncedAutoSave = this._tryAutoSaveAfterDelay as typeof this._tryAutoSaveAfterDelay & {
+      cancel?: () => void;
+    };
+    debouncedAutoSave?.cancel?.();
+    this._tryAutoSaveAfterDelay = undefined;
+
+    for (const task of this.savingTasks) {
+      try {
+        task.dispose();
+      } catch (err) {}
+    }
+    this.savingTasks = [];
+    this.dirtyChanges = [];
+    this._baseContent = '';
+    this._baseContentMd5 = null;
+
+    if (this.monacoModel && !this.monacoModel.isDisposed()) {
+      this.monacoModel.dispose();
+    }
+    // this.monacoModel的引用需要主动释放，否则内存依然存在占用，不能只靠dispose
+    this.monacoModel = undefined as any;
+
+    super.dispose();
+  }
 }
