@@ -40,7 +40,7 @@ export class ChatEditSchemeDocumentProvider implements IEditorDocumentModelConte
     // Get the content from the base apply service based on the uri query parameters
     const { id, side } = uri.getParsedQuery();
     const codeBlocks = this.baseApplyService.getSessionCodeBlocks();
-    const codeBlock = codeBlocks.find((block) => block.toolCallId === id);
+    const codeBlock = codeBlocks?.find((block) => block.toolCallId === id);
     const content = side === 'left' ? codeBlock?.originalCode : codeBlock?.updatedCode;
     return content || '';
   }
