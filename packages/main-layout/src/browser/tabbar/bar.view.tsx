@@ -18,6 +18,7 @@ import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { observableValue } from '@opensumi/ide-monaco/lib/common/observable';
 
 import { IMainLayoutService } from '../../common';
 
@@ -242,8 +243,8 @@ export const IconTabView: FC<{ component: ComponentRegistryProvider }> = ({ comp
   const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
   const [component, setComponent] = useState<ComponentRegistryProvider>(defaultComponent);
   const indicator = progressService.getIndicator(component.options?.containerId || '');
-
-  const inProgress = indicator ? useAutorun(indicator.progressModel.show) : false;
+  const fallbackShowObservable = useMemo(() => observableValue('IconTabView.fallbackShow', false), []);
+  const inProgress = useAutorun(indicator?.progressModel.show ?? fallbackShowObservable);
 
   const title = useMemo(() => {
     const options = component.options;
