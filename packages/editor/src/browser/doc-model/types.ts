@@ -209,6 +209,11 @@ export class EditorDocumentModelRemovalEvent extends BasicEvent<URI> {}
 
 export class EditorDocumentModelSavedEvent extends BasicEvent<URI> {}
 
+export class EditorDocumentModelSaveErrorEvent extends BasicEvent<{
+  uri: URI;
+  errorMessage?: string;
+}> {}
+
 export class EditorDocumentModelWillSaveEvent extends BasicEvent<{
   uri: URI;
   reason: SaveReason;

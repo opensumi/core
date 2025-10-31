@@ -56,6 +56,7 @@ import {
   EditorDocumentModelContentChangedEvent,
   EditorDocumentModelOptionChangedEvent,
   EditorDocumentModelRemovalEvent,
+  EditorDocumentModelSaveErrorEvent,
   EditorDocumentModelSavedEvent,
   EditorDocumentModelWillSaveEvent,
   IDocModelUpdateOptions,
@@ -498,6 +499,14 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         this.eventBus.fire(new EditorDocumentModelSavedEvent(this.uri));
         this.setPersist(this.savingTasks[0].alternativeVersionId);
       } else {
+        if (res.state === 'error') {
+          this.eventBus.fire(
+            new EditorDocumentModelSaveErrorEvent({
+              uri: this.uri,
+              errorMessage: res.errorMessage,
+            }),
+          );
+        }
         // 回滚 changes
         this.dirtyChanges.unshift(...changes);
       }
