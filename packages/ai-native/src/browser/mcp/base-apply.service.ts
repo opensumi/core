@@ -81,7 +81,7 @@ export abstract class BaseApplyService extends WithEventBus {
         });
       }),
     );
-    this.currentSessionId = this.chatInternalService.sessionModel.sessionId;
+    this.currentSessionId = this.chatInternalService.sessionModel?.sessionId;
     this.addDispose(
       this.chatInternalService.onChangeSession((sessionId) => {
         if (sessionId !== this.currentSessionId) {
@@ -92,7 +92,7 @@ export abstract class BaseApplyService extends WithEventBus {
     );
     this.addDispose(
       this.chatInternalService.onRegenerateRequest(() => {
-        const messages = this.chatInternalService.sessionModel.history.getMessages();
+        const messages = this.chatInternalService.sessionModel?.history.getMessages();
         const messageId = messages[messages.length - 1].id;
         const codeBlockMap = this.getMessageCodeBlocks(messageId);
         if (!codeBlockMap) {
@@ -145,7 +145,7 @@ export abstract class BaseApplyService extends WithEventBus {
     if (
       this.duringApply ||
       this.activePreviewerMap.has(relativePath) ||
-      !this.chatInternalService.sessionModel.history.getMessages().length
+      !this.chatInternalService.sessionModel?.history.getMessages().length
     ) {
       return;
     }
@@ -170,7 +170,7 @@ export abstract class BaseApplyService extends WithEventBus {
    * 获取指定uri的 code block，按version降序排序
    */
   getUriCodeBlocks(uri: URI): CodeBlockData[] | undefined {
-    const sessionCodeBlocks = this.getSessionCodeBlocks();
+    const sessionCodeBlocks = this.getSessionCodeBlocks() || [];
     const relativePath = path.relative(this.appConfig.workspaceDir, uri.path.toString());
     return sessionCodeBlocks
       .filter((block) => block.relativePath === relativePath)
@@ -187,7 +187,7 @@ export abstract class BaseApplyService extends WithEventBus {
       ? this.chatInternalService.getSession(sessionId)
       : this.chatInternalService.sessionModel;
     if (!sessionModel) {
-      throw new Error(`Session ${sessionId} not found`);
+      return [];
     }
     const sessionAdditionals = sessionModel.history.sessionAdditionals;
     return Array.from(sessionAdditionals.values())
@@ -482,7 +482,7 @@ export abstract class BaseApplyService extends WithEventBus {
   }
 
   cancelAllApply(sessionId?: string): void {
-    const sessionCodeBlocks = this.getSessionCodeBlocks(sessionId);
+    const sessionCodeBlocks = this.getSessionCodeBlocks(sessionId) || [];
     sessionCodeBlocks.forEach((blockData) => {
       this.cancelApply(blockData);
     });
@@ -508,7 +508,7 @@ export abstract class BaseApplyService extends WithEventBus {
   async processAll(type: 'accept' | 'reject', uri?: URI): Promise<void> {
     const codeBlocks = uri
       ? this.getUriCodeBlocks(uri)?.filter((block) => block.status === 'pending')
-      : this.getSessionCodeBlocks().filter((block) => block.status === 'pending');
+      : this.getSessionCodeBlocks()?.filter((block) => block.status === 'pending');
     if (!codeBlocks?.length) {
       throw new Error('No pending code block found');
     }
