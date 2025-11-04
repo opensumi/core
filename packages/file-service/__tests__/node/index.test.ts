@@ -666,6 +666,7 @@ describe('FileService', () => {
 
     it('Should forward watcher overflow events', () => {
       const diskProvider = injector.get(IDiskFileProvider) as any;
+      const originalRpcClient = diskProvider['rpcClient'];
       const overflowEvents: FileWatcherOverflowParams[] = [];
       const disposable = diskProvider.onDidWatcherOverflow((event: FileWatcherOverflowParams) => {
         overflowEvents.push(event);
@@ -695,10 +696,12 @@ describe('FileService', () => {
       expect(rpcClient.onWatcherOverflow).toHaveBeenCalledWith(event);
 
       disposable.dispose();
+      diskProvider['rpcClient'] = originalRpcClient;
     });
 
     it('Should forward watcher failure events', () => {
       const diskProvider = injector.get(IDiskFileProvider) as any;
+      const originalRpcClient = diskProvider['rpcClient'];
       const failureEvents: FileWatcherFailureParams[] = [];
       const disposable = diskProvider.onDidWatcherFailed((event: FileWatcherFailureParams) => {
         failureEvents.push(event);
@@ -728,6 +731,7 @@ describe('FileService', () => {
       expect(rpcClient.onWatcherFailed).toHaveBeenCalledWith(event);
 
       disposable.dispose();
+      diskProvider['rpcClient'] = originalRpcClient;
     });
   });
 
