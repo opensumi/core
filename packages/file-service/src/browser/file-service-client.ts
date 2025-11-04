@@ -10,6 +10,8 @@ import {
   Event,
   ExtensionActivateEvent,
   FileUri,
+  FileWatcherFailureEvent,
+  FileWatcherOverflowEvent,
   FilesChangeEvent,
   IDisposable,
   ParsedPattern,
@@ -36,6 +38,8 @@ import {
   FileStat,
   FileSystemError,
   FileSystemProvider,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
   IBrowserFileSystemRegistry,
   IDiskFileProvider,
   IFileServiceClient,
@@ -73,6 +77,12 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
   protected readonly _onFilesChanged = new Emitter<FileChangeEvent>();
   readonly onFilesChanged: Event<FileChangeEvent> = this._onFilesChanged.event;
+
+  protected readonly _onWatcherOverflow = new Emitter<FileWatcherOverflowParams>();
+  readonly onWatcherOverflow: Event<FileWatcherOverflowParams> = this._onWatcherOverflow.event;
+
+  protected readonly _onWatcherFailed = new Emitter<FileWatcherFailureParams>();
+  readonly onWatcherFailed: Event<FileWatcherFailureParams> = this._onWatcherFailed.event;
 
   protected readonly _onFileProviderChanged = new Emitter<string[]>();
   readonly onFileProviderChanged: Event<string[]> = this._onFileProviderChanged.event;
@@ -352,6 +362,16 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     this.eventBus.fire(new FilesChangeEvent(changes));
   }
 
+  fireWatcherOverflow(event: FileWatcherOverflowParams): void {
+    this._onWatcherOverflow.fire(event);
+    this.eventBus.fire(new FileWatcherOverflowEvent(event));
+  }
+
+  fireWatcherFailed(event: FileWatcherFailureParams): void {
+    this._onWatcherFailed.fire(event);
+    this.eventBus.fire(new FileWatcherFailureEvent(event));
+  }
+
   private uriWatcherMap: Map<
     string,
     {
@@ -495,6 +515,12 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
     if (provider.onDidChangeFile) {
       disposables.push(provider.onDidChangeFile((e) => this.fireFilesChange({ changes: e })));
+    }
+    if (provider.onDidWatcherOverflow) {
+      disposables.push(provider.onDidWatcherOverflow((e) => this.fireWatcherOverflow(e)));
+    }
+    if (provider.onDidWatcherFailed) {
+      disposables.push(provider.onDidWatcherFailed((e) => this.fireWatcherFailed(e)));
     }
     this.toDisposable.push(
       provider.onDidChangeCapabilities(() =>

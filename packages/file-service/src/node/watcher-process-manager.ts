@@ -10,6 +10,8 @@ import { ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-comm
 import {
   DidFilesChangedParams,
   FileSystemWatcherClient,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
   RecursiveWatcherBackend,
 } from '@opensumi/ide-core-common/lib/types/file-watch';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
@@ -57,6 +59,14 @@ export class WatcherProcessManagerImpl implements IWatcherProcessManager {
 
   $onDidFilesChanged(changes: DidFilesChangedParams) {
     this.watcherClient.onDidFilesChanged(changes);
+  }
+
+  $onWatcherOverflow(event: FileWatcherOverflowParams) {
+    this.watcherClient.onWatcherOverflow?.(event);
+  }
+
+  $onWatcherFailed(event: FileWatcherFailureParams) {
+    this.watcherClient.onWatcherFailed?.(event);
   }
 
   get whenReady() {

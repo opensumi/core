@@ -8,6 +8,7 @@ import { EditorEmptyComponentContribution } from './editor-empty-component.contr
 import { MenuBarContribution } from './menu-bar/menu-bar.contribution';
 import { OverrideExtensionNodeService } from './overrides/extension/extension-node.service';
 import { StatusBarContribution } from './status-bar.contribution';
+import { WatcherDebugContribution } from './watcher-debug.contribution';
 
 @Injectable()
 export class SampleModule extends BrowserModule {
@@ -17,6 +18,7 @@ export class SampleModule extends BrowserModule {
     StatusBarContribution,
     AINativeContribution,
     DebugConfigurationContribution,
+    WatcherDebugContribution,
     {
       token: AbstractNodeExtProcessService,
       useClass: OverrideExtensionNodeService,
