@@ -10,7 +10,14 @@ import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { RecursiveFileSystemWatcher } from '../../lib/node/hosted/recursive/file-service-watcher';
-import { FileChangeType, IDiskFileProvider, IFileService } from '../../src/common';
+import {
+  FileChangeType,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
+  IDiskFileProvider,
+  IFileService,
+  RecursiveWatcherBackend,
+} from '../../src/common';
 import { FileService, FileServiceModule } from '../../src/node';
 
 describe('FileService', () => {
@@ -655,6 +662,72 @@ describe('FileService', () => {
 
       fileService.setFilesExcludes(['test'], ['/root']);
       expect(fileService.getFilesExcludes()).toEqual(['test']);
+    });
+
+    it('Should forward watcher overflow events', () => {
+      const diskProvider = injector.get(IDiskFileProvider) as any;
+      const overflowEvents: FileWatcherOverflowParams[] = [];
+      const disposable = diskProvider.onDidWatcherOverflow((event: FileWatcherOverflowParams) => {
+        overflowEvents.push(event);
+      });
+
+      const rpcClient = {
+        onDidFilesChanged: jest.fn(),
+        onWatcherOverflow: jest.fn(),
+        onWatcherFailed: jest.fn(),
+      };
+      diskProvider['rpcClient'] = [rpcClient];
+
+      const manager = diskProvider['watcherProcessManager'] as any;
+      const event: FileWatcherOverflowParams = {
+        resolvedUri: '/tmp/example',
+        backend: RecursiveWatcherBackend.PARCEL,
+        eventCount: 6001,
+        limit: 5000,
+        timestamp: 1699999999999,
+      };
+
+      manager.$onWatcherOverflow(event);
+
+      expect(overflowEvents).toHaveLength(1);
+      expect(overflowEvents[0]).toBe(event);
+      expect(rpcClient.onWatcherOverflow).toHaveBeenCalledTimes(1);
+      expect(rpcClient.onWatcherOverflow).toHaveBeenCalledWith(event);
+
+      disposable.dispose();
+    });
+
+    it('Should forward watcher failure events', () => {
+      const diskProvider = injector.get(IDiskFileProvider) as any;
+      const failureEvents: FileWatcherFailureParams[] = [];
+      const disposable = diskProvider.onDidWatcherFailed((event: FileWatcherFailureParams) => {
+        failureEvents.push(event);
+      });
+
+      const rpcClient = {
+        onDidFilesChanged: jest.fn(),
+        onWatcherOverflow: jest.fn(),
+        onWatcherFailed: jest.fn(),
+      };
+      diskProvider['rpcClient'] = [rpcClient];
+
+      const manager = diskProvider['watcherProcessManager'] as any;
+      const event: FileWatcherFailureParams = {
+        resolvedUri: '/tmp/failure',
+        backend: RecursiveWatcherBackend.NSFW,
+        message: 'Failed to start watcher',
+        attempts: 3,
+        timestamp: 1699999999999,
+      };
+
+      manager.$onWatcherFailed(event);
+
+      expect(failureEvents).toHaveLength(1);
+      expect(failureEvents[0]).toBe(event);
+      expect(rpcClient.onWatcherFailed).toHaveBeenCalledTimes(1);
+      expect(rpcClient.onWatcherFailed).toHaveBeenCalledWith(event);
+
+      disposable.dispose();
     });
   });
 
