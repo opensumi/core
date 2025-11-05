@@ -58,7 +58,9 @@ export const ImagePreview: ReactEditorComponent<null> = (props) => {
   React.useEffect(() => {
     const disposer = new Disposable();
     if (imgRef.current) {
-      imgRef.current.src = src;
+      const url = new URL(src);
+      url.searchParams.set('_t', fileChanged.toString());
+      imgRef.current.src = url.href;
     }
     return () => {
       disposer.dispose();
