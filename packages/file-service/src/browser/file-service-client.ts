@@ -47,6 +47,7 @@ import {
   TextDocumentContentChangeEvent,
   containsExtraFileMethod,
 } from '../common';
+import { EXT_LIST_IMAGE } from '../common/file-ext';
 
 import { FileSystemWatcher } from './watcher';
 
@@ -73,6 +74,9 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
 
   protected readonly _onFilesChanged = new Emitter<FileChangeEvent>();
   readonly onFilesChanged: Event<FileChangeEvent> = this._onFilesChanged.event;
+
+  protected readonly _onImageFilesChanged = new Emitter<FileChangeEvent>();
+  readonly onImageFilesChanged: Event<FileChangeEvent> = this._onImageFilesChanged.event;
 
   protected readonly _onFileProviderChanged = new Emitter<string[]>();
   readonly onFileProviderChanged: Event<string[]> = this._onFileProviderChanged.event;
@@ -348,8 +352,21 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
           type: change.type,
         } as FileChange),
     );
+
+    // 触发所有文件变化事件
     this._onFilesChanged.fire(changes);
     this.eventBus.fire(new FilesChangeEvent(changes));
+
+    // 过滤图片文件变化并触发专门的事件
+    const imageChanges = changes.filter((change) => {
+      const uri = new URI(change.uri);
+      const ext = uri.path.ext?.toLowerCase().replace('.', '');
+      return ext && EXT_LIST_IMAGE.has(ext);
+    });
+
+    if (imageChanges.length > 0) {
+      this._onImageFilesChanged.fire(imageChanges);
+    }
   }
 
   private uriWatcherMap: Map<

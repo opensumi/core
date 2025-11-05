@@ -32,6 +32,8 @@ export interface IFileServiceClient {
 
   onFilesChanged: Event<FileChangeEvent>;
 
+  onImageFilesChanged: Event<FileChangeEvent>;
+
   onFileProviderChanged: Event<string[]>;
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable;
