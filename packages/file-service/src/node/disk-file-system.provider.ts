@@ -36,6 +36,8 @@ import {
   FileSystemError,
   FileSystemProviderCapabilities,
   FileType,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
   IDiskFileProvider,
   IWatcherProcessManager,
   RecursiveWatcherBackend,
@@ -52,6 +54,8 @@ const DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**';
 
 export interface IRPCDiskFileSystemProvider {
   onDidFilesChanged(event: DidFilesChangedParams): void;
+  onWatcherOverflow(event: FileWatcherOverflowParams): void;
+  onWatcherFailed(event: FileWatcherFailureParams): void;
 }
 
 export interface IWatcher {
@@ -66,8 +70,14 @@ export interface IWatcher {
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
-
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
+
+  private watcherOverflowEmitter = new Emitter<FileWatcherOverflowParams>();
+  readonly onDidWatcherOverflow: Event<FileWatcherOverflowParams> = this.watcherOverflowEmitter.event;
+
+  private watcherFailedEmitter = new Emitter<FileWatcherFailureParams>();
+  readonly onDidWatcherFailed: Event<FileWatcherFailureParams> = this.watcherFailedEmitter.event;
+
   protected watcherServerDisposeCollection: DisposableCollection;
 
   protected watchFileExcludes: string[] = [];
@@ -101,6 +111,18 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
               });
             });
           }
+        }
+      },
+      onWatcherOverflow: (event: FileWatcherOverflowParams) => {
+        this.watcherOverflowEmitter.fire(event);
+        if (Array.isArray(this.rpcClient)) {
+          this.rpcClient.forEach((client) => client.onWatcherOverflow?.(event));
+        }
+      },
+      onWatcherFailed: (event: FileWatcherFailureParams) => {
+        this.watcherFailedEmitter.fire(event);
+        if (Array.isArray(this.rpcClient)) {
+          this.rpcClient.forEach((client) => client.onWatcherFailed?.(event));
         }
       },
     });

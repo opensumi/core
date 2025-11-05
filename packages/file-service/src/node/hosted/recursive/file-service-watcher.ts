@@ -48,6 +48,7 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private static DEFAULT_POLLING_INTERVAL = 100;
+  private static MAX_NATIVE_EVENT_BATCH = 5000;
 
   private WATCHER_HANDLERS = new Map<
     string,
@@ -227,6 +228,11 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       {
         errorCallback: (err) => {
           this.logger.error('[Recursive] NSFW watcher encountered an error and will stop watching.', err);
+          this.notifyWatcherFailed({
+            resolvedUri: realPath,
+            backend: RecursiveWatcherBackend.NSFW,
+            message: err instanceof Error ? err.message : String(err || 'watcher error'),
+          });
           // see https://github.com/atom/github/issues/342
           this.unwatchFileChanges(realPath);
         },
@@ -261,12 +267,22 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
             (err, events: ParcelWatcher.Event[]) => {
               if (err) {
                 this.logger.error(`[Recursive] Watcher error for ${realPath}:`, err);
+                this.notifyWatcherFailed({
+                  resolvedUri: realPath,
+                  backend: RecursiveWatcherBackend.PARCEL,
+                  message: err?.message || 'watcher error',
+                });
                 return;
               }
 
               // 对于超过 5000 数量的 events 做屏蔽优化，避免潜在的卡死问题
-              if (events.length > 5000) {
-                this.logger.warn(`[Recursive] Too many events (${events.length}) for ${realPath}, skipping...`);
+              if (events.length > RecursiveFileSystemWatcher.MAX_NATIVE_EVENT_BATCH) {
+                this.logger.warn(`[Recursive] Too many parcel events (${events.length}) for ${realPath}, skipping...`);
+                this.notifyOverflow({
+                  resolvedUri: realPath,
+                  backend: RecursiveWatcherBackend.PARCEL,
+                  eventCount: events.length,
+                });
                 return;
               }
 
@@ -305,6 +321,12 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
 
       // 经过若干次的尝试后，Parcel Watcher 依然启动失败，此时就不再尝试重试
       this.logger.error(`[Recursive] watcher subscribe finally failed after ${maxRetries} times for ${realPath}`);
+      this.notifyWatcherFailed({
+        resolvedUri: realPath,
+        backend: RecursiveWatcherBackend.PARCEL,
+        message: `Failed to subscribe watcher after ${maxRetries} retries`,
+        attempts: maxRetries,
+      });
       return undefined;
     };
 
@@ -324,6 +346,11 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       }
     } catch (error) {
       this.logger.error(`[Recursive] Error setting up watcher for ${realPath}:`, error);
+      this.notifyWatcherFailed({
+        resolvedUri: realPath,
+        backend: RecursiveWatcherBackend.PARCEL,
+        message: error instanceof Error ? error.message : String(error),
+      });
     }
 
     return disposables;
@@ -346,6 +373,16 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
 
         if (!handlers) {
           this.logger.log('[Recursive] No handler found for watcher', realPath);
+          return;
+        }
+
+        if (parcelEvents.length > RecursiveFileSystemWatcher.MAX_NATIVE_EVENT_BATCH) {
+          this.logger.warn(`[Recursive] Too many polling events (${parcelEvents.length}) for ${realPath}, skipping...`);
+          this.notifyOverflow({
+            resolvedUri: realPath,
+            backend: 'polling',
+            eventCount: parcelEvents.length,
+          });
           return;
         }
 
@@ -396,6 +433,43 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     this.client = client;
   }
 
+  private notifyOverflow(params: {
+    resolvedUri?: string;
+    backend?: RecursiveWatcherBackend | 'polling';
+    eventCount: number;
+  }) {
+    if (!this.client || !this.client.onWatcherOverflow) {
+      return;
+    }
+
+    this.client.onWatcherOverflow({
+      resolvedUri: params.resolvedUri,
+      backend: params.backend,
+      eventCount: params.eventCount,
+      limit: RecursiveFileSystemWatcher.MAX_NATIVE_EVENT_BATCH,
+      timestamp: Date.now(),
+    });
+  }
+
+  private notifyWatcherFailed(params: {
+    resolvedUri?: string;
+    backend?: RecursiveWatcherBackend | 'polling';
+    message: string;
+    attempts?: number;
+  }) {
+    if (!this.client || !this.client.onWatcherFailed) {
+      return;
+    }
+
+    this.client.onWatcherFailed({
+      resolvedUri: params.resolvedUri,
+      backend: params.backend,
+      message: params.message,
+      attempts: params.attempts,
+      timestamp: Date.now(),
+    });
+  }
+
   /**
    * 由于 parcel/watcher 在 Linux 下存在内存越界访问问题触发了 sigsegv 导致 crash，所以在 Linux 下仍旧使用 nsfw
    * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
@@ -405,7 +479,13 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
   }
 
   private async handleNSFWEvents(events: INsfw.ChangeEvent[], realPath: string): Promise<void> {
-    if (events.length > 5000) {
+    if (events.length > RecursiveFileSystemWatcher.MAX_NATIVE_EVENT_BATCH) {
+      this.logger.warn(`[Recursive] Too many NSFW events (${events.length}) for ${realPath}, skipping...`);
+      this.notifyOverflow({
+        resolvedUri: realPath,
+        backend: RecursiveWatcherBackend.NSFW,
+        eventCount: events.length,
+      });
       return;
     }
 

@@ -4,6 +4,8 @@ import {
   Disposable,
   DisposableCollection,
   FileUri,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
   IDisposable,
   RecursiveWatcherBackend,
 } from '@opensumi/ide-core-common';
@@ -92,6 +94,16 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
         this.logger.log('onDidFilesChanged: ', events);
         const proxy = this.rpcProtocol.getProxy(WatcherProcessManagerProxy);
         proxy.$onDidFilesChanged(events);
+      },
+      onWatcherOverflow: (event: FileWatcherOverflowParams) => {
+        this.logger.log('onWatcherOverflow: ', event);
+        const proxy = this.rpcProtocol.getProxy(WatcherProcessManagerProxy);
+        proxy.$onWatcherOverflow?.(event);
+      },
+      onWatcherFailed: (event: FileWatcherFailureParams) => {
+        this.logger.error('onWatcherFailed: ', event);
+        const proxy = this.rpcProtocol.getProxy(WatcherProcessManagerProxy);
+        proxy.$onWatcherFailed?.(event);
       },
     };
 

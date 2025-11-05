@@ -1,6 +1,15 @@
-import { BasicEvent, FileChange, FileSystemProvider, IDisposable } from '@opensumi/ide-core-common';
+import {
+  BasicEvent,
+  FileChange,
+  FileSystemProvider,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
+  IDisposable,
+} from '@opensumi/ide-core-common';
 
 export class FilesChangeEvent extends BasicEvent<FileChange[]> {}
+export class FileWatcherOverflowEvent extends BasicEvent<FileWatcherOverflowParams> {}
+export class FileWatcherFailureEvent extends BasicEvent<FileWatcherFailureParams> {}
 
 export interface FsProviderContribution {
   registerProvider?(registry: {

@@ -17,6 +17,8 @@ import {
   FileChange,
   FileChangeEvent,
   FileSystemProvider,
+  FileWatcherFailureParams,
+  FileWatcherOverflowParams,
   IDiskFileProvider,
 } from '../common';
 
@@ -31,6 +33,20 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
 
   protected readonly onDidChangeFileEmitter = new Emitter<FileChangeEvent>();
   onDidChangeFile: Event<FileChangeEvent> = this.onDidChangeFileEmitter.event;
+
+  protected readonly watcherOverflowEmitter = new Emitter<FileWatcherOverflowParams>();
+  onDidWatcherOverflow: Event<FileWatcherOverflowParams> = this.watcherOverflowEmitter.event;
+
+  protected readonly watcherFailedEmitter = new Emitter<FileWatcherFailureParams>();
+  onDidWatcherFailed: Event<FileWatcherFailureParams> = this.watcherFailedEmitter.event;
+
+  onWatcherOverflow(event: FileWatcherOverflowParams): void {
+    this.watcherOverflowEmitter.fire(event);
+  }
+
+  onWatcherFailed(event: FileWatcherFailureParams): void {
+    this.watcherFailedEmitter.fire(event);
+  }
 
   watch(uri: Uri, options: { recursive: boolean; excludes: string[] }) {
     return this.fileServiceProvider.watch(uri, options);
