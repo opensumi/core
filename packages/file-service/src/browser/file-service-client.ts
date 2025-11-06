@@ -175,6 +175,7 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
   }
 
   public dispose() {
+    this._onImageFilesChanged.dispose();
     return this.toDisposable.dispose();
   }
 

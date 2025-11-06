@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 
-import { Disposable, useInjectable } from '@opensumi/ide-core-browser';
+import { Disposable, URI, useInjectable } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { IResource, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -17,7 +17,10 @@ const useResourceChange = (resource: IResource): UseResourceChangeResult => {
 
   React.useEffect(() => {
     const disposable = fileServiceClient.onImageFilesChanged((events) => {
-      const hasResourceChanged = events.some((event) => event.uri.toString() === resource.uri.toString());
+      const hasResourceChanged = events.some((event) => {
+        const eventUri = typeof event.uri === 'string' ? new URI(event.uri) : event.uri;
+        return eventUri.isEqual(resource.uri);
+      });
 
       if (hasResourceChanged) {
         setFileChanged((prev) => prev + 1);
@@ -58,14 +61,19 @@ export const ImagePreview: ReactEditorComponent<null> = (props) => {
   React.useEffect(() => {
     const disposer = new Disposable();
     if (imgRef.current) {
-      const url = new URL(src);
-      url.searchParams.set('_t', fileChanged.toString());
-      imgRef.current.src = url.href;
+      try {
+        const url = new URL(src);
+        url.searchParams.set('_t', fileChanged.toString());
+        imgRef.current.src = url.href;
+      } catch (error) {
+        // 如果 src 不是有效的 URL，直接使用原始 src
+        imgRef.current.src = src;
+      }
     }
     return () => {
       disposer.dispose();
     };
-  }, [props.resource, fileChanged]);
+  }, [src, fileChanged]);
 
   return (
     <div className={styles.kt_image_preview}>
