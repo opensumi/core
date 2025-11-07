@@ -21,7 +21,7 @@
     "@opensumi/di": "^1.8.0",
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-utils": "workspace:*",
-    "ai": "^4.3.16"
+    "ai": "^5.0.52"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*"
