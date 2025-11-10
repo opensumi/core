@@ -15,14 +15,15 @@ import {
   FilesChangeEvent,
   IDisposable,
   ParsedPattern,
+  PreferenceService,
   URI,
   Uri,
   parseGlob,
 } from '@opensumi/ide-core-browser';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { FileSystemProviderCapabilities, IEventBus, ILogger, Schemes, isUndefined } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { IApplicationService } from '@opensumi/ide-core-common/lib/types/application';
+import { IReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import {
@@ -168,7 +169,8 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     this.userHomeDeferred.resolve(userHome);
   }
 
-  corePreferences: CorePreferences;
+  @Autowired(PreferenceService)
+  private readonly preference: PreferenceService;
 
   handlesScheme(scheme: string) {
     return this.registry.providers.has(scheme) || this.fsProviders.has(scheme);
@@ -189,16 +191,16 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     const provider = await this.getProvider(_uri.scheme);
     const rawContent = await provider.readFile(_uri.codeUri);
     const data = (rawContent as any).data || rawContent;
-    const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
+    const buffer = BinaryBuffer.wrap(data instanceof Uint8Array ? data : Uint8Array.from(data));
     return { content: buffer.toString(options?.encoding) };
   }
 
   async readFile(uri: string) {
     const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
-    const rawContent = await provider.readFile(_uri.codeUri);
+    const rawContent = await this.doReadFile(provider, _uri.codeUri);
     const data = (rawContent as any).data || rawContent;
-    const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
+    const buffer = BinaryBuffer.wrap(data instanceof Uint8Array ? data : Uint8Array.from(data));
     return { content: buffer };
   }
 
@@ -620,6 +622,93 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
     }
 
     return _uri;
+  }
+
+  private async doReadFile(provider: FileSystemProvider, uri: Uri) {
+    const shouldStream = await this.shouldUseReadStream(provider, uri);
+    if (shouldStream && provider.readFileStream) {
+      try {
+        const stream = await provider.readFileStream(uri);
+        return await this.collectReadableStream(stream);
+      } catch (error) {
+        this.logger?.warn('[FileServiceClient] readFileStream failed, fallback to readFile.', error);
+      }
+    }
+
+    return await provider.readFile(uri);
+  }
+
+  private async shouldUseReadStream(provider: FileSystemProvider, uri: Uri): Promise<boolean> {
+    if (!provider.readFileStream || !this.isLargeFileStreamEnabled()) {
+      return false;
+    }
+
+    const threshold = this.getLargeFileStreamThreshold();
+    if (!threshold) {
+      return false;
+    }
+
+    try {
+      const stat = await provider.stat(uri);
+      if (stat && typeof stat.size === 'number' && stat.size >= threshold) {
+        return true;
+      }
+    } catch (error) {
+      this.logger?.warn(
+        '[FileServiceClient] stat failed when deciding readFile strategy, fallback to readFile.',
+        error,
+      );
+    }
+
+    return false;
+  }
+
+  private collectReadableStream(stream: IReadableStream<Uint8Array>): Promise<Uint8Array> {
+    return new Promise((resolve, reject) => {
+      const chunks: Uint8Array[] = [];
+      let totalLength = 0;
+
+      listenReadable(stream, {
+        onData: (chunk) => {
+          const data = chunk instanceof Uint8Array ? chunk : Uint8Array.from(chunk as any);
+          chunks.push(data);
+          totalLength += data.byteLength;
+        },
+        onError: (error) => reject(error),
+        onEnd: () => {
+          if (chunks.length === 0) {
+            resolve(new Uint8Array(0));
+            return;
+          }
+
+          if (chunks.length === 1) {
+            resolve(chunks[0]);
+            return;
+          }
+
+          const merged = new Uint8Array(totalLength);
+          let offset = 0;
+          for (const chunk of chunks) {
+            merged.set(chunk, offset);
+            offset += chunk.byteLength;
+          }
+          resolve(merged);
+        },
+      });
+    });
+  }
+
+  private getLargeFileStreamThreshold(): number | undefined {
+    const threshold = this.preference?.getValid<number>('editor.largeFile', 4 * 1024 * 1024 * 1024);
+    if (typeof threshold === 'number' && threshold > 0) {
+      return threshold;
+    }
+    return undefined;
+  }
+
+  private isLargeFileStreamEnabled(): boolean {
+    const enabled = this.preference?.getValid<boolean>('editor.streamLargeFile', true);
+    return typeof enabled === 'undefined' ? true : enabled;
   }
 
   private updateExcludeMatcher() {
