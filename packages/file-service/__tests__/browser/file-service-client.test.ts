@@ -321,6 +321,19 @@ describe('FileServiceClient should be work', () => {
       expect(streamProvider.readFile).not.toHaveBeenCalled();
     });
 
+    it('reads via stream when size equals threshold', async () => {
+      configureStreamPreferences(10, true);
+      streamProvider.stat.mockResolvedValue(createStreamStat(streamResourceUri, 10));
+      const chunk = new Uint8Array([11]);
+      streamProvider.readFileStream.mockImplementation(async () => createReadableStream([chunk]));
+
+      const result = await fileServiceClient.readFile(streamResourceUri);
+
+      expect(streamProvider.readFileStream).toHaveBeenCalledTimes(1);
+      expect(streamProvider.readFile).not.toHaveBeenCalled();
+      expect(Array.from(result.content.buffer)).toEqual([11]);
+    });
+
     it('falls back to readFile when stream reading fails', async () => {
       configureStreamPreferences(10, true);
       streamProvider.stat.mockResolvedValue(createStreamStat(streamResourceUri, 50));
@@ -348,6 +361,19 @@ describe('FileServiceClient should be work', () => {
       expect(streamProvider.readFileStream).not.toHaveBeenCalled();
       expect(streamProvider.readFile).toHaveBeenCalledTimes(1);
       expect(Array.from(result.content.buffer)).toEqual([5, 6]);
+    });
+
+    it('uses readFile when size is below threshold even if streaming enabled', async () => {
+      configureStreamPreferences(10, true);
+      streamProvider.stat.mockResolvedValue(createStreamStat(streamResourceUri, 5));
+      const smallContent = new Uint8Array([8, 9]);
+      streamProvider.readFile.mockResolvedValue(smallContent);
+
+      const result = await fileServiceClient.readFile(streamResourceUri);
+
+      expect(streamProvider.readFileStream).not.toHaveBeenCalled();
+      expect(streamProvider.readFile).toHaveBeenCalledTimes(1);
+      expect(Array.from(result.content.buffer)).toEqual([8, 9]);
     });
   });
 });
