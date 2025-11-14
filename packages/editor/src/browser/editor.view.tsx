@@ -571,7 +571,7 @@ export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
         [styles.kt_hidden]: hidden,
       })}
     >
-      <Scrollbars hiddenHorizontal={true}>
+      <Scrollbars hiddenHorizontal={true} hiddenVertical={true}>
         <ErrorBoundary>
           <div
             ref={(el) => {
