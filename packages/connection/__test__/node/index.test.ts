@@ -8,7 +8,7 @@ import { SumiConnection } from '@opensumi/ide-connection/src/common/rpc/connecti
 import { Deferred } from '@opensumi/ide-core-common';
 
 import { RPCService } from '../../src';
-import { RPCServiceCenter, initRPCService } from '../../src/common';
+import { ChannelMessage, RPCServiceCenter, initRPCService } from '../../src/common';
 import { CommonChannelPathHandler } from '../../src/common/server-handler';
 import { WSChannel } from '../../src/common/ws-channel';
 import { CommonChannelHandler, WebSocketServerRoute } from '../../src/node';
@@ -62,14 +62,16 @@ describe('connection', () => {
     });
     const clientId = 'TEST_CLIENT';
     const wsConnection = new WSWebSocketConnection(connection);
+    const wrappedConnection = wrapSerializer(wsConnection, furySerializer);
+
     const channel = new WSChannel(wrapSerializer(wsConnection, furySerializer), {
       id: 'TEST_CHANNEL_ID',
     });
-    connection.on('message', (msg: Uint8Array) => {
-      const msgObj = furySerializer.deserialize(msg);
-      if (msgObj.kind === 'server-ready') {
-        if (msgObj.id === 'TEST_CHANNEL_ID') {
-          channel.dispatch(msgObj);
+
+    wrappedConnection.onMessage((msg: ChannelMessage) => {
+      if (msg.kind === 'server-ready') {
+        if (msg.id === 'TEST_CHANNEL_ID') {
+          channel.dispatch(msg);
         }
       }
     });
