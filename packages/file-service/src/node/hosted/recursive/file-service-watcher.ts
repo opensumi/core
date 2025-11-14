@@ -55,11 +55,15 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     { path: string; handlers: ParcelWatcher.SubscribeCallback[]; disposable: IDisposable }
   >();
 
+  private readonly watchPathMap = new Map<string, string>();
+
   protected watcherOptions = new Map<string, WatcherOptions>();
 
   protected client: FileSystemWatcherClient | undefined;
 
   protected changes = new FileChangeCollection();
+
+  private parcelWatcherAvailableOnLinux: boolean | undefined;
 
   constructor(
     private excludes: string[] = [],
@@ -124,12 +128,16 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       return;
     }
 
+    // 记录原始请求与真实监听目录的映射，方便后续释放
+    this.watchPathMap.set(basePath, watchPath);
+
     // 先检查并清理已存在的 handler（使用 watchPath 确保目录级别的去重）
     if (this.WATCHER_HANDLERS.has(watchPath!)) {
       this.logger.debug(`[Recursive] Cleaning up existing watcher for directory: ${watchPath}`);
       const handler = this.WATCHER_HANDLERS.get(watchPath!);
       handler?.disposable.dispose();
       this.WATCHER_HANDLERS.delete(watchPath!);
+      this.cleanupWatchPathMap(watchPath);
     }
 
     const handler = (err, events: ParcelWatcher.Event[]) => {
@@ -205,18 +213,19 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     }
 
     const realPath = await fs.realpath(basePath);
+    const shouldUseNSFW = await this.shouldUseNSFW();
 
-    if (this.isEnableNSFW()) {
+    if (shouldUseNSFW) {
       return this.watchWithNsfw(realPath, rawOptions);
-    } else {
-      // polling
-      if (rawOptions?.pollingWatch) {
-        this.logger.log('[Recursive] Start polling watch:', realPath);
-        return this.pollingWatch(realPath, rawOptions);
-      }
-
-      return this.watchWithParcel(realPath, rawOptions);
     }
+
+    // polling
+    if (rawOptions?.pollingWatch) {
+      this.logger.log('[Recursive] Start polling watch:', realPath);
+      return this.pollingWatch(realPath, rawOptions);
+    }
+
+    return this.watchWithParcel(realPath, rawOptions);
   }
 
   private async watchWithNsfw(realPath: string, rawOptions?: WatchOptions | undefined) {
@@ -416,6 +425,7 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
         this.logger.error(`Dispose watcher failed for ${path}`, err);
       } finally {
         this.WATCHER_HANDLERS.delete(path);
+        this.cleanupWatchPathMap(path);
       }
     }
   }
@@ -423,7 +433,17 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
   unwatchFileChanges(uri: string): void {
     this.logger.log('[Recursive] Un watch: ', uri);
     const basePath = FileUri.fsPath(uri);
-    this.disposeWatcher(basePath);
+    const watchPath = this.watchPathMap.get(basePath) ?? basePath;
+    this.watchPathMap.delete(basePath);
+    this.disposeWatcher(watchPath);
+  }
+
+  private cleanupWatchPathMap(watchPath: string) {
+    for (const [basePath, mappedPath] of this.watchPathMap) {
+      if (mappedPath === watchPath) {
+        this.watchPathMap.delete(basePath);
+      }
+    }
   }
 
   setClient(client: FileSystemWatcherClient | undefined) {
@@ -471,11 +491,61 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
   }
 
   /**
-   * 由于 parcel/watcher 在 Linux 下存在内存越界访问问题触发了 sigsegv 导致 crash，所以在 Linux 下仍旧使用 nsfw
-   * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
+   * parcel/watcher 曾在 Linux 下触发过 sigsegv（https://github.com/parcel-bundler/watcher/issues/49）。
+   * 在 Linux 上先探测 parcel 是否可用，如果不可用则回退到 nsfw，避免直接崩溃。
    */
-  private isEnableNSFW(): boolean {
-    return this.backend === RecursiveWatcherBackend.NSFW && isLinux;
+  private async shouldUseNSFW(): Promise<boolean> {
+    if (this.backend !== RecursiveWatcherBackend.NSFW || !isLinux) {
+      return false;
+    }
+
+    const canUseParcel = await this.canUseParcelWatcherOnLinux();
+    if (canUseParcel) {
+      return false;
+    }
+
+    this.logger.warn('[Recursive] parcel/watcher unavailable on linux, fallback to nsfw backend.');
+    return true;
+  }
+
+  private async canUseParcelWatcherOnLinux(): Promise<boolean> {
+    if (!isLinux) {
+      return true;
+    }
+
+    if (typeof this.parcelWatcherAvailableOnLinux !== 'undefined') {
+      return this.parcelWatcherAvailableOnLinux;
+    }
+
+    this.parcelWatcherAvailableOnLinux = await this.detectParcelWatcherAvailabilityOnLinux();
+
+    return this.parcelWatcherAvailableOnLinux;
+  }
+
+  private async detectParcelWatcherAvailabilityOnLinux(): Promise<boolean> {
+    let tempDir: string | undefined;
+
+    try {
+      const tempDirPrefix = join(tmpdir(), 'opensumi-parcel-watch-');
+      tempDir = await fs.mkdtemp(tempDirPrefix);
+      const snapshotPath = join(tempDir, 'snapshot');
+      await ParcelWatcher.writeSnapshot(tempDir, snapshotPath, {
+        backend: RecursiveFileSystemWatcher.PARCEL_WATCHER_BACKEND,
+      });
+      this.logger.log('[Recursive] parcel/watcher backend available on linux, prefer parcel watcher.');
+      return true;
+    } catch (error) {
+      this.logger.warn('[Recursive] parcel/watcher backend probe failed on linux.', error);
+      return false;
+    } finally {
+      if (tempDir) {
+        await fs
+          .remove(tempDir)
+          .catch((cleanupError) =>
+            this.logger.debug('[Recursive] Failed to cleanup parcel watcher probe dir:', cleanupError),
+          );
+      }
+    }
   }
 
   private async handleNSFWEvents(events: INsfw.ChangeEvent[], realPath: string): Promise<void> {

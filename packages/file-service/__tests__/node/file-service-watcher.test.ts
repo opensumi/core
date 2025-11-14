@@ -160,7 +160,7 @@ const sleepTime = 1000;
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('nfsw-test')));
     const watcherServer = new RecursiveFileSystemWatcher([], injector.get(ILogServiceManager).getLogger());
-    watcherServer['isEnableNSFW'] = () => false;
+    watcherServer['shouldUseNSFW'] = () => Promise.resolve(false);
 
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');

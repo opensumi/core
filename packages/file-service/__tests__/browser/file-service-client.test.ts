@@ -50,7 +50,7 @@ describe('FileServiceClient should be work', () => {
 
   beforeAll(() => {
     // @ts-ignore
-    injector.mock(RecursiveFileSystemWatcher, 'isEnableNSFW', () => false);
+    injector.mock(RecursiveFileSystemWatcher, 'shouldUseNSFW', () => Promise.resolve(false));
     fileServiceClient = injector.get(IFileServiceClient);
     toDispose.push(fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider)));
   });

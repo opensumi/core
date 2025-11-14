@@ -124,11 +124,12 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
   ): Promise<number> {
     this.initWatcherServer();
-    const basePath = FileUri.fsPath(uri.toString());
+    const uriString = uri.toString();
+    const basePath = FileUri.fsPath(uriString);
     let watcherId = this.checkIsAlreadyWatched(basePath);
 
     if (watcherId) {
-      this.logger.log(uri.toString(), 'is already watched');
+      this.logger.log(uriString, 'is already watched');
       return watcherId;
     }
 
@@ -139,48 +140,65 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       path: basePath,
     });
 
-    this.logger.log('watch file changes: ', uri.toString(), ' recursive: ', options?.recursive);
+    this.logger.log('watch file changes: ', uriString, ' recursive: ', options?.recursive);
 
     const mergedExcludes = new Set([...(options?.excludes ?? []), ...this.defaultExcludes]);
 
     const disposables = new DisposableCollection();
+    const startWatchers: Promise<void>[] = [];
+    let unrecursiveWatchStarted = false;
+    let recursiveWatchStarted = false;
 
-    await this.unrecursiveFileSystemWatcher!.watchFileChanges(uri.toString());
-
-    disposables.push(
-      Disposable.create(async () => {
-        this.unrecursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
-        this.logger.log('dispose unrecursive watcher: ', uri.toString());
-        this.watchedDirs.delete(uri.toString());
-        this.WATCHER_HANDLERS.delete(watcherId);
+    startWatchers.push(
+      this.unrecursiveFileSystemWatcher!.watchFileChanges(uriString).then(() => {
+        unrecursiveWatchStarted = true;
       }),
     );
 
     if (options?.recursive) {
-      this.logger.log('use recursive watcher for: ', uri.toString());
-      try {
-        await this.recursiveFileSystemWatcher!.watchFileChanges(uri.toString(), {
+      this.logger.log('use recursive watcher for: ', uriString);
+      startWatchers.push(
+        this.recursiveFileSystemWatcher!.watchFileChanges(uriString, {
           excludes: Array.from(mergedExcludes),
           pollingWatch: options?.pollingWatch,
-        });
-
-        disposables.push(
-          Disposable.create(async () => {
-            this.logger.log('dispose recursive watcher: ', uri.toString());
-            this.recursiveFileSystemWatcher!.unwatchFileChanges(uri.toString());
-            this.watchedDirs.delete(uri.toString());
-            this.WATCHER_HANDLERS.delete(watcherId);
+        })
+          .then(() => {
+            recursiveWatchStarted = true;
+          })
+          .catch((error) => {
+            // watch error or timeout
+            this.logger.error('watch error: ', error);
           }),
-        );
-      } catch (error) {
-        // watch error or timeout
-        this.logger.error('watch error: ', error);
-      }
+      );
     }
 
-    this.watcherCollection.set(uri.toString(), { id: watcherId, options, disposable: disposables });
+    await Promise.all(startWatchers);
 
-    this.watchedDirs.add(uri.toString());
+    if (unrecursiveWatchStarted) {
+      disposables.push(
+        Disposable.create(async () => {
+          this.unrecursiveFileSystemWatcher!.unwatchFileChanges(uriString);
+          this.logger.log('dispose unrecursive watcher: ', uriString);
+          this.watchedDirs.delete(uriString);
+          this.WATCHER_HANDLERS.delete(watcherId);
+        }),
+      );
+    }
+
+    if (recursiveWatchStarted) {
+      disposables.push(
+        Disposable.create(async () => {
+          this.logger.log('dispose recursive watcher: ', uriString);
+          this.recursiveFileSystemWatcher!.unwatchFileChanges(uriString);
+          this.watchedDirs.delete(uriString);
+          this.WATCHER_HANDLERS.delete(watcherId);
+        }),
+      );
+    }
+
+    this.watcherCollection.set(uriString, { id: watcherId, options, disposable: disposables });
+
+    this.watchedDirs.add(uriString);
 
     return watcherId;
   }
