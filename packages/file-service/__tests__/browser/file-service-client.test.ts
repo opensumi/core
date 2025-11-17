@@ -2,15 +2,55 @@ import fs from 'fs-extra';
 import temp from 'temp';
 
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { DisposableCollection, FileChangeType, FileUri, UTF8 } from '@opensumi/ide-core-common';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import {
+  DisposableCollection,
+  Event,
+  FileChangeType,
+  FileSystemProviderCapabilities,
+  FileUri,
+  UTF8,
+} from '@opensumi/ide-core-common';
+import { FileStat } from '@opensumi/ide-core-common/lib/types/file';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { WatcherProcessManagerToken } from '@opensumi/ide-file-service/lib/node/watcher-process-manager';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileServicePath, IDiskFileProvider, IFileServiceClient } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
 import { RecursiveFileSystemWatcher } from '../../src/node/hosted/recursive/file-service-watcher';
+
+function createMockStreamProvider() {
+  return {
+    capabilities: FileSystemProviderCapabilities.FileReadWrite,
+    onDidChangeCapabilities: Event.None,
+    onDidChangeFile: Event.None,
+    watch: jest.fn(() => 1),
+    stat: jest.fn(),
+    readFile: jest.fn(),
+    readFileStream: jest.fn(),
+  };
+}
+
+function createReadableStream(chunks: Uint8Array[]) {
+  const stream = new SumiReadableStream<Uint8Array>();
+  setTimeout(() => {
+    chunks.forEach((chunk) => stream.emitData(chunk));
+    stream.end();
+  }, 0);
+  return stream;
+}
+
+function createStreamStat(uri: string, size: number): FileStat {
+  return {
+    uri,
+    lastModification: Date.now(),
+    isDirectory: false,
+    size,
+  };
+}
 
 describe('FileServiceClient should be work', () => {
   jest.setTimeout(10000);
@@ -18,8 +58,13 @@ describe('FileServiceClient should be work', () => {
   const injector = createBrowserInjector([FileServiceClientModule]);
   const toDispose = new DisposableCollection();
   let fileServiceClient: IFileServiceClient;
+  let streamProvider: ReturnType<typeof createMockStreamProvider>;
   const track = temp.track();
   const tempDir = FileUri.create(fs.realpathSync(temp.mkdirSync('file-service-client-test')));
+  const preferenceGetValidMock = jest.fn();
+  const preferenceServiceMock = {
+    getValid: preferenceGetValidMock,
+  };
 
   injector.overrideProviders(
     {
@@ -46,6 +91,10 @@ describe('FileServiceClient should be work', () => {
         setWatcherFileExcludes: () => void 0,
       },
     },
+    {
+      token: PreferenceService,
+      useValue: preferenceServiceMock,
+    },
   );
 
   beforeAll(() => {
@@ -53,6 +102,8 @@ describe('FileServiceClient should be work', () => {
     injector.mock(RecursiveFileSystemWatcher, 'shouldUseNSFW', () => Promise.resolve(false));
     fileServiceClient = injector.get(IFileServiceClient);
     toDispose.push(fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider)));
+    streamProvider = createMockStreamProvider();
+    toDispose.push(fileServiceClient.registerProvider('stream', streamProvider as any));
   });
 
   afterAll(async () => {
@@ -231,5 +282,98 @@ describe('FileServiceClient should be work', () => {
     // always utf8;
     const encoding = await fileServiceClient.getEncoding(tempDir.toString());
     expect(encoding).toBe(UTF8);
+  });
+
+  describe('large file stream reading', () => {
+    const streamResourceUri = 'stream://test/large-file.txt';
+
+    const configureStreamPreferences = (threshold: number, enabled: boolean) => {
+      preferenceGetValidMock.mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'editor.largeFile') {
+          return threshold;
+        }
+        if (key === 'editor.streamLargeFile') {
+          return enabled;
+        }
+        return defaultValue;
+      });
+    };
+
+    beforeEach(() => {
+      preferenceGetValidMock.mockReset();
+      streamProvider.stat.mockReset();
+      streamProvider.readFile.mockReset();
+      streamProvider.readFileStream.mockReset();
+    });
+
+    it('reads via stream when preference enabled and size exceeds threshold', async () => {
+      configureStreamPreferences(10, true);
+      streamProvider.stat.mockResolvedValue(createStreamStat(streamResourceUri, 20));
+      const chunkOne = new Uint8Array([1, 2]);
+      const chunkTwo = new Uint8Array([3, 4]);
+      streamProvider.readFileStream.mockImplementation(async () => createReadableStream([chunkOne, chunkTwo]));
+      streamProvider.readFile.mockResolvedValue(new Uint8Array([9]));
+
+      const result = await fileServiceClient.readFile(streamResourceUri);
+
+      expect(Array.from(result.content.buffer)).toEqual([1, 2, 3, 4]);
+      expect(streamProvider.readFileStream).toHaveBeenCalledTimes(1);
+      expect(streamProvider.readFile).not.toHaveBeenCalled();
+    });
+
+    it('reads via stream when size equals threshold', async () => {
+      configureStreamPreferences(10, true);
+      streamProvider.stat.mockResolvedValue(createStreamStat(streamResourceUri, 10));
+      const chunk = new Uint8Array([11]);
+      streamProvider.readFileStream.mockImplementation(async () => createReadableStream([chunk]));
+
+      const result = await fileServiceClient.readFile(streamResourceUri);
+
+      expect(streamProvider.readFileStream).toHaveBeenCalledTimes(1);
+      expect(streamProvider.readFile).not.toHaveBeenCalled();
+      expect(Array.from(result.content.buffer)).toEqual([11]);
+    });
+
+    it('falls back to readFile when stream reading fails', async () => {
+      configureStreamPreferences(10, true);
+      streamProvider.stat.mockResolvedValue(createStreamStat(streamResourceUri, 50));
+      streamProvider.readFileStream.mockImplementation(async () => {
+        throw new Error('stream error');
+      });
+      const fallbackContent = new Uint8Array([7]);
+      streamProvider.readFile.mockResolvedValue(fallbackContent);
+
+      const result = await fileServiceClient.readFile(streamResourceUri);
+
+      expect(streamProvider.readFileStream).toHaveBeenCalledTimes(1);
+      expect(streamProvider.readFile).toHaveBeenCalledTimes(1);
+      expect(Array.from(result.content.buffer)).toEqual([7]);
+    });
+
+    it('skips stream path when preference disables it', async () => {
+      configureStreamPreferences(10, false);
+      streamProvider.stat.mockResolvedValue(createStreamStat(streamResourceUri, 20));
+      const fallbackContent = new Uint8Array([5, 6]);
+      streamProvider.readFile.mockResolvedValue(fallbackContent);
+
+      const result = await fileServiceClient.readFile(streamResourceUri);
+
+      expect(streamProvider.readFileStream).not.toHaveBeenCalled();
+      expect(streamProvider.readFile).toHaveBeenCalledTimes(1);
+      expect(Array.from(result.content.buffer)).toEqual([5, 6]);
+    });
+
+    it('uses readFile when size is below threshold even if streaming enabled', async () => {
+      configureStreamPreferences(10, true);
+      streamProvider.stat.mockResolvedValue(createStreamStat(streamResourceUri, 5));
+      const smallContent = new Uint8Array([8, 9]);
+      streamProvider.readFile.mockResolvedValue(smallContent);
+
+      const result = await fileServiceClient.readFile(streamResourceUri);
+
+      expect(streamProvider.readFileStream).not.toHaveBeenCalled();
+      expect(streamProvider.readFile).toHaveBeenCalledTimes(1);
+      expect(Array.from(result.content.buffer)).toEqual([8, 9]);
+    });
   });
 });
