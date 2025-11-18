@@ -44,6 +44,7 @@ import { LibroOpensumiModule } from './libro';
 import { LibroDiffModule } from './libro/diff-view';
 import { LibroOpener } from './libro-opener';
 import { LibroVersionPreview } from './libro-preview.view';
+import { LibroStateModule } from './libro-state';
 import { initLibroColorToken } from './libro.color.tokens';
 import { LIBRO_COMPONENTS_SCHEME_ID, LIBRO_COMPONENT_ID, LIBRO_PREVIEW_COMPONENT_ID } from './libro.protocol';
 import { OpensumiLibroView } from './libro.view';
@@ -132,6 +133,8 @@ export class LibroContribution
 
   initialize(app: IClientApp) {
     initLibroOpensumi(app.injector, manaContainer);
+    // 注册状态管理模块
+    app.injector.addProviders(...LibroStateModule);
   }
 
   registerComponent(registry: ComponentRegistry) {
