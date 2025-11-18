@@ -565,6 +565,7 @@ export const localizationBundle = {
     'preference.editor.maxTokenizationLineLength': 'Max Tokenization Line Length',
     'preference.editor.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 10 (ms)',
     'preference.editor.largeFile': 'Large File Size',
+    'preference.editor.streamLargeFile': 'Use Stream For Large File',
     'preference.editor.formatOnPaste': 'Format On Paste',
     'preference.files.eol': 'EOL',
     'preference.files.trimFinalNewlines': 'Trim Final Newlines',
@@ -607,6 +608,8 @@ export const localizationBundle = {
       "Controls the delay in ms after which a dirty file is saved automatically. Only applies when `#editor.formatOnSave#` is set to 'Save After Delay'.",
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
     'editor.configuration.largeFileSize': 'Custom size of the large file (B)',
+    'editor.configuration.streamLargeFile':
+      'Read large files via stream when file size exceeds the configured threshold.',
     'editor.configuration.fontFamily': 'Controls the font family.',
     'editor.configuration.fontWeight':
       'Controls the font weight. Accepts "normal" and "bold" keywords or numbers between 1 and 1000.',

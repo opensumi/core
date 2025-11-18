@@ -34,7 +34,7 @@ describe('FileService', () => {
 
     injector = createNodeInjector([FileServiceModule]);
     // @ts-ignore
-    injector.mock(RecursiveFileSystemWatcher, 'isEnableNSFW', () => false);
+    injector.mock(RecursiveFileSystemWatcher, 'shouldUseNSFW', () => Promise.resolve(false));
     fileService = injector.get(IFileService);
   });
 
