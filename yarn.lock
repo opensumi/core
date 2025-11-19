@@ -4301,6 +4301,7 @@ __metadata:
     "@opensumi/ide-workspace-edit": "workspace:*"
     "@opensumi/textmate-languages": "npm:^2.6.1"
     browserfs: "npm:^1.4.3"
+    cross-env: "npm:^7.0.3"
     css-loader: "npm:^6.9.1"
     electron: "npm:^22.3.21"
     less-loader: "npm:^12.1.0"
