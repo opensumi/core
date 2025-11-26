@@ -25569,14 +25569,14 @@ __metadata:
   linkType: hard
 
 "webpack-manifest-plugin@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "webpack-manifest-plugin@npm:5.0.0"
+  version: 5.0.1
+  resolution: "webpack-manifest-plugin@npm:5.0.1"
   dependencies:
     tapable: "npm:^2.0.0"
     webpack-sources: "npm:^2.2.0"
   peerDependencies:
-    webpack: ^5.47.0
-  checksum: 10/466ade444c23d4a8ec3d1a108ec2142468cb260570533acf2cf68806065ccdef649dbac0fa6b0700f4c6d2497535ae950a20e83b26edb25ccfa9bb51538fa607
+    webpack: ^5.75.0
+  checksum: 10/590355d177e58d5ea2fd1c3abbc6fb66cac3a52df2a499a197cde8a3493d37fcce64e6e2e755e084f04e8f618a5e42b2618a81756063fa8b2f7d7527e5dcdad1
   languageName: node
   linkType: hard
 
