@@ -83,7 +83,7 @@ export const OpensumiLibroView: ReactEditorComponent = (...params) => {
       const libroViewContainer = libro.container?.current;
 
       if (libroViewContainer) {
-        const libroViewContent = libroViewContainer.querySelector(LibroStateManager.LIBRO_SCROLL_ELEMENT);
+        const libroViewContent = libroViewContainer.querySelector(LibroStateManager.LIBRO_SCROLLER_SELECTOR);
         libroViewContent?.addEventListener('scroll', handleScroll);
       }
     });
@@ -92,7 +92,7 @@ export const OpensumiLibroView: ReactEditorComponent = (...params) => {
       modelChangeDisposer?.dispose();
       window.clearTimeout(autoSaveHandle);
       libroView?.container?.current
-        ?.querySelector(LibroStateManager.LIBRO_SCROLL_ELEMENT)
+        ?.querySelector(LibroStateManager.LIBRO_SCROLLER_SELECTOR)
         ?.removeEventListener('scroll', handleScroll);
     };
   }, [libroOpensumiService, uri, commandRegistry, stateManager, saveNotebookState, restoreNotebookState]);

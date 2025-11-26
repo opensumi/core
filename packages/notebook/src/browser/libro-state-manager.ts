@@ -19,7 +19,7 @@ export interface INotebookStateManager {
 @Injectable()
 export class LibroStateManager implements INotebookStateManager {
   private static readonly STORAGE_KEY = 'libro-notebook-states';
-  public static readonly LIBRO_SCROLL_ELEMENT = '.libro-view-content';
+  public static readonly LIBRO_SCROLLER_SELECTOR = '.libro-view-content .ReactVirtualized__Grid, .libro-view-content'; // 虚拟滚动下滚动容器为 .ReactVirtualized__Grid，非虚拟滚动下滚动容器为 .libro-view-content
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
@@ -71,7 +71,7 @@ export class LibroStateManager implements INotebookStateManager {
     }
 
     try {
-      const libroViewContent = libroView.container.current?.querySelector(LibroStateManager.LIBRO_SCROLL_ELEMENT);
+      const libroViewContent = libroView.container.current?.querySelector(LibroStateManager.LIBRO_SCROLLER_SELECTOR);
       const state: INotebookViewState = {
         uri: uri.toString(),
         scrollTop: libroViewContent?.scrollTop || 0,
@@ -93,7 +93,7 @@ export class LibroStateManager implements INotebookStateManager {
     }
 
     try {
-      const libroViewContent = libroView.container?.current?.querySelector(LibroStateManager.LIBRO_SCROLL_ELEMENT);
+      const libroViewContent = libroView.container?.current?.querySelector(LibroStateManager.LIBRO_SCROLLER_SELECTOR);
       // 恢复 notebook 的滚动位置
       if (libroViewContent) {
         libroViewContent.scrollTop = state.scrollTop;
