@@ -8,6 +8,7 @@ import { EditorEmptyComponentContribution } from './editor-empty-component.contr
 import { MenuBarContribution } from './menu-bar/menu-bar.contribution';
 import { OverrideExtensionNodeService } from './overrides/extension/extension-node.service';
 import { StatusBarContribution } from './status-bar.contribution';
+import { TerminalReconnectNotifyContribution } from './terminal-reconnect-notify.contribution';
 import { WatcherDebugContribution } from './watcher-debug.contribution';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class SampleModule extends BrowserModule {
     AINativeContribution,
     DebugConfigurationContribution,
     WatcherDebugContribution,
+    TerminalReconnectNotifyContribution,
     {
       token: AbstractNodeExtProcessService,
       useClass: OverrideExtensionNodeService,

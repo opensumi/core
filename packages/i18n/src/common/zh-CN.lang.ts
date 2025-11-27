@@ -702,6 +702,7 @@ export const localizationBundle = {
     'terminal.menu.paste': '粘贴',
     'terminal.menu.clear': '清空',
     'terminal.menu.stop': '终止',
+    'terminal.reconnected.message': '终端已重新连接，新的会话已启动。',
     'terminal.menu.stopGroup': '终止终端',
     'terminal.menu.clearCurrentContent': '清空当前终端日志',
     'terminal.menu.selectCurrentContent': '选中当前终端日志',

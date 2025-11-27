@@ -345,6 +345,8 @@ export interface ITerminalServiceClient {
     signal?: number,
   ): void;
   processChange(clientId: string, processName: string): void;
+  reconnected(sessionId: string): void;
+  disconnected(sessionId: string): void;
   setConnectionClientId(clientId: string): void;
   dispose(): void;
   getShellName(id: string): string;

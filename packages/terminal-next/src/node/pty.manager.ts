@@ -1,6 +1,7 @@
 import * as pty from 'node-pty';
 
 import { Autowired, Injectable } from '@opensumi/di';
+import { Event } from '@opensumi/ide-core-common';
 import { Deferred, INodeLogger } from '@opensumi/ide-core-node';
 
 import { IPtyProcessProxy, IPtyProxyRPCService, IPtySpawnOptions, IShellLaunchConfig } from '../common';
@@ -34,6 +35,8 @@ export interface IPtyServiceManager {
   getProcess(pid: number): Promise<string>;
   getCwd(pid: number): Promise<string | undefined>;
   checkSession(sessionId: string): Promise<boolean>;
+  onDidReconnect?: Event<void>;
+  onDidDisconnect?: Event<void>;
 }
 
 // 记录终端输入到输出的时间戳，主要是用于统计 Pty 处理 + IDE <--> Pty 的IPC 耗时

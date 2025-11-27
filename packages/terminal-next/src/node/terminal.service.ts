@@ -1,5 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AppConfig, INodeLogger, Sequencer, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
+import { IDisposable, localize } from '@opensumi/ide-core-common';
+import { AppConfig, INodeLogger, isDevelopment, isElectronNode, pSeries } from '@opensumi/ide-core-node';
 import { getChunks } from '@opensumi/ide-utils/lib/strings';
 
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient, TERMINAL_ID_SEPARATOR } from '../common';
@@ -31,6 +32,12 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   private batchedPtyDataMap: Map<string, string> = new Map();
   private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
+  private sessionLaunchConfigCache: Map<string, { launchConfig: IShellLaunchConfig; cols: number; rows: number }> =
+    new Map();
+  private reconnectDisposables: IDisposable[] = [];
+  private reconnectListenerBound = false;
+  private reconnecting = false;
+  private hasEmittedDisconnect = false;
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -95,6 +102,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     if (terminalMap) {
       terminalMap.forEach((t, id) => {
         this.terminalProcessMap.delete(id);
+        this.cleanupSessionState(id);
 
         if (
           t.shellLaunchConfig.disablePersistence ||
@@ -137,10 +145,12 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   ): Promise<IPtyProcessProxy | undefined> {
     const clientId = sessionId.split(TERMINAL_ID_SEPARATOR)[0];
     let ptyService: PtyService | undefined;
+    this.ensureReconnectListeners();
 
     try {
       ptyService = this.injector.get(PtyService, [sessionId, launchConfig, cols, rows]);
       this.terminalProcessMap.set(sessionId, ptyService);
+      this.sessionLaunchConfigCache.set(sessionId, { launchConfig, cols, rows });
 
       // ref: https://hyper.is/blog
       // 合并 pty 输出的数据，16ms 后发送给客户端，如
@@ -170,6 +180,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
       ptyService.onExit(({ exitCode, signal }) => {
         this.logger.debug(`Terminal process ${sessionId} exit with code ${exitCode}`);
+        this.cleanupSessionState(sessionId);
+        this.clientTerminalMap.get(clientId)?.delete(sessionId);
+        this.terminalProcessMap.delete(sessionId);
         if (this.serviceClientMap.has(clientId)) {
           this.flushPtyData(clientId, sessionId);
           const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
@@ -206,6 +219,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       this.logger.error(
         `${sessionId} create terminal error: ${JSON.stringify(error)}, options: ${JSON.stringify(launchConfig)}`,
       );
+      this.cleanupSessionState(sessionId);
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.closeClient(sessionId, {
@@ -236,6 +250,10 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     if (!terminal) {
       return;
     }
+    const cached = this.sessionLaunchConfigCache.get(id);
+    if (cached) {
+      this.sessionLaunchConfigCache.set(id, { ...cached, rows, cols });
+    }
     terminal.resize(rows, cols);
   }
 
@@ -265,6 +283,8 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   }
 
   dispose() {
+    this.reconnectDisposables.forEach((d) => d.dispose());
+    this.reconnectDisposables = [];
     // TODO 后续需要一个合理的 Dispose 逻辑，暂时不要 Dispose，避免重连时终端不可用
     // this.serviceClientMap.forEach((client) => {
     //   client.dispose();
@@ -282,5 +302,84 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     }
 
     return await ptyService.getCwd();
+  }
+
+  private ensureReconnectListeners() {
+    if (this.reconnectListenerBound) {
+      return;
+    }
+
+    const reconnectDisposable = this.ptyServiceManager.onDidReconnect?.(() => this.handleProxyReconnect());
+    if (reconnectDisposable) {
+      this.reconnectDisposables.push(reconnectDisposable);
+      this.reconnectListenerBound = true;
+    }
+
+    const disconnectDisposable = this.ptyServiceManager.onDidDisconnect?.(() => {
+      this.reconnecting = false;
+      this.handleProxyDisconnect();
+    });
+    if (disconnectDisposable) {
+      this.reconnectDisposables.push(disconnectDisposable);
+    }
+  }
+
+  private cleanupSessionState(sessionId: string) {
+    this.sessionLaunchConfigCache.delete(sessionId);
+    if (this.batchedPtyDataTimer.has(sessionId)) {
+      clearTimeout(this.batchedPtyDataTimer.get(sessionId)!);
+      this.batchedPtyDataTimer.delete(sessionId);
+    }
+    this.batchedPtyDataMap.delete(sessionId);
+  }
+
+  private async handleProxyReconnect() {
+    if (this.reconnecting) {
+      return;
+    }
+    this.reconnecting = true;
+    this.hasEmittedDisconnect = false;
+    const sessions = Array.from(this.sessionLaunchConfigCache.entries());
+    for (const [sessionId, info] of sessions) {
+      const clientId = sessionId.split(TERMINAL_ID_SEPARATOR)[0];
+      const serviceClient = this.serviceClientMap.get(clientId);
+      if (!serviceClient) {
+        this.logger.warn(`terminal: skip recreate ${sessionId}, client ${clientId} not registered`);
+        continue;
+      }
+      try {
+        await this.create2(sessionId, info.cols, info.rows, info.launchConfig);
+        // Clear screen and notify user the session restarted.
+        const reconnectMessage = localize('terminal.reconnected.message', 'Terminal reconnected; session restarted.');
+        serviceClient.clientMessage(sessionId, `\u001bc\r\n${reconnectMessage}\r\n`);
+        serviceClient.reconnected(sessionId);
+      } catch (error) {
+        this.logger.error(`terminal: recreate ${sessionId} failed after proxy reconnect`, error);
+        serviceClient.closeClient(sessionId, {
+          id: sessionId,
+          message: 'Failed to recreate terminal after proxy reconnect',
+          type: ETerminalErrorType.CREATE_FAIL,
+          stopped: true,
+          launchConfig: info.launchConfig,
+        });
+      }
+    }
+    this.reconnecting = false;
+  }
+
+  private handleProxyDisconnect() {
+    if (this.hasEmittedDisconnect) {
+      return;
+    }
+    this.hasEmittedDisconnect = true;
+    const sessions = Array.from(this.sessionLaunchConfigCache.keys());
+    for (const sessionId of sessions) {
+      const clientId = sessionId.split(TERMINAL_ID_SEPARATOR)[0];
+      const serviceClient = this.serviceClientMap.get(clientId);
+      if (!serviceClient) {
+        continue;
+      }
+      serviceClient.disconnected(sessionId);
+    }
   }
 }

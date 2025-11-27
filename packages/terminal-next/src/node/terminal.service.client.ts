@@ -23,6 +23,8 @@ interface IRPCTerminalService {
   closeClient(id: string, data: ITerminalError | { code?: number; signal?: number } | number, signal?: number): void;
   $processChange(id: string, processName: string): void;
   onMessage(id: string, msg: string): void;
+  reconnected(id: string): void;
+  disconnected(id: string): void;
 }
 
 /**
@@ -168,6 +170,22 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   disposeById(id: string) {
     this.terminalService.disposeById(id);
+  }
+
+  reconnected(id: string) {
+    if (this.client) {
+      this.client.reconnected(id);
+    } else {
+      this.logger.warn(`reconnected ${id} rpcClient not found`);
+    }
+  }
+
+  disconnected(id: string) {
+    if (this.client) {
+      this.client.disconnected(id);
+    } else {
+      this.logger.warn(`disconnected ${id} rpcClient not found`);
+    }
   }
 
   getProcessId(id: string): number {

@@ -149,4 +149,25 @@ describe('terminal service test cases', () => {
     });
     terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig, {} as any);
   });
+
+  it('should emit reconnect event', (done) => {
+    const svc = terminalService as NodePtyTerminalService;
+    const disposable = svc.onReconnected((id) => {
+      expect(id).toBe(sessionId);
+      disposable.dispose();
+      done();
+    });
+    svc.reconnected(sessionId);
+  });
+
+  it('should emit disconnect event', (done) => {
+    const svc = terminalService as NodePtyTerminalService;
+    const disposable = svc.onDisconnect?.((id) => {
+      expect(id).toBe(sessionId);
+      disposable.dispose();
+      done();
+    });
+    expect(disposable).toBeDefined();
+    svc.disconnected(sessionId);
+  });
 });
