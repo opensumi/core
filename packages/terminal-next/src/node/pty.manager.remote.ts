@@ -124,8 +124,8 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
       }
-      this.disposer.addDispose(this.initRPCService(socket));
       this.isRemoteConnected = true;
+      this.disposer.addDispose(this.initRPCService(socket));
       if (this.hasConnectedBefore) {
         this.onDidReconnectEmitter.fire();
       }
