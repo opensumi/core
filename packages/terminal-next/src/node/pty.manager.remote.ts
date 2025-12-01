@@ -35,7 +35,8 @@ export const PtyServiceManagerRemoteOptions = Symbol('PtyServiceManagerRemoteOpt
 @Injectable()
 export class PtyServiceManagerRemote extends PtyServiceManager {
   private disposer: Disposable;
-  private hasConnected = false;
+  private isRemoteConnected = false;
+  private hasConnectedBefore = false;
   private readonly onDidReconnectEmitter = new Emitter<void>();
   private readonly onDidDisconnectEmitter = new Emitter<void>();
 
@@ -124,19 +125,20 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
         reconnectTimer = null;
       }
       this.disposer.addDispose(this.initRPCService(socket));
-      const wasReconnected = this.hasConnected;
-      this.hasConnected = true;
-      if (wasReconnected) {
+      this.isRemoteConnected = true;
+      if (this.hasConnectedBefore) {
         this.onDidReconnectEmitter.fire();
       }
+      this.hasConnectedBefore = true;
     });
 
     // UNIX Socket 连接失败或者断开，此时需要等待 1.5s 后重新连接
     socket.on('close', (hadError) => {
       this.logger.log('PtyServiceManagerRemote socket close, hadError:', hadError);
-      if (this.hasConnected) {
+      if (this.isRemoteConnected) {
         this.onDidDisconnectEmitter.fire();
       }
+      this.isRemoteConnected = false;
       reconnect();
     });
 
