@@ -52,6 +52,12 @@ export class NodePtyTerminalService extends Disposable implements ITerminalServi
   private _onExit = this.registerDispose(new Emitter<IPtyExitEvent>());
   public onExit: Event<IPtyExitEvent> = this._onExit.event;
 
+  private _onReconnected = this.registerDispose(new Emitter<string>());
+  public onReconnected: Event<string> = this._onReconnected.event;
+
+  private _onDisconnect = this.registerDispose(new Emitter<string>());
+  public onDisconnect: Event<string> = this._onDisconnect.event;
+
   private _onProcessChange = this.registerDispose(new Emitter<IPtyProcessChangeEvent>());
   public onProcessChange = this._onProcessChange.event;
 
@@ -183,6 +189,14 @@ export class NodePtyTerminalService extends Disposable implements ITerminalServi
 
   $processChange(sessionId: string, processName: string) {
     this._onProcessChange.fire({ sessionId, processName });
+  }
+
+  reconnected(sessionId: string) {
+    this._onReconnected.fire(sessionId);
+  }
+
+  disconnected(sessionId: string) {
+    this._onDisconnect.fire(sessionId);
   }
 
   async getOS() {

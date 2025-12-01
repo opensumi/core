@@ -1053,6 +1053,7 @@ export const localizationBundle = {
     'terminal.menu.paste': 'Paste',
     'terminal.menu.clear': 'Clear',
     'terminal.menu.stop': 'Stop',
+    'terminal.reconnected.message': 'Terminal reconnected; session restarted.',
     'terminal.menu.stopGroup': 'Stop Group',
     'terminal.menu.clearGroups': 'Clear All Terminals',
     'terminal.menu.selectType': 'Default Terminal Type',
