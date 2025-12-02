@@ -34,7 +34,10 @@ import { EditorGroup } from './workbench-editor.service';
 
 export * from '../common';
 
-export type ReactEditorComponent<MetaData = any> = React.ComponentType<{ resource: IResource<MetaData> }>;
+export type ReactEditorComponent<MetaData = any> = React.ComponentType<{
+  resource: IResource<MetaData>;
+  group: EditorGroup;
+}>;
 
 export interface IEditorComponent<MetaData = any> {
   // 唯一id
