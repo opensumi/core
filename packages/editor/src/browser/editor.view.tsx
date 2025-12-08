@@ -468,7 +468,9 @@ export const EditorGroupBody = ({ group }: { group: EditorGroup }) => {
           }
         }}
       >
-        {group.currentResource && <EditorSideView side={'top'} resource={group.currentResource}></EditorSideView>}
+        {group.currentResource && (
+          <EditorSideView side={'top'} resource={group.currentResource} group={group}></EditorSideView>
+        )}
         {!editorHasNoTab && <NavigationBar editorGroup={group} />}
         <div className={styles.kt_editor_components}>
           <div
@@ -506,7 +508,9 @@ export const EditorGroupBody = ({ group }: { group: EditorGroup }) => {
             ref={mergeEditorRef}
           />
         </div>
-        {group.currentResource && <EditorSideView side={'bottom'} resource={group.currentResource}></EditorSideView>}
+        {group.currentResource && (
+          <EditorSideView side={'bottom'} resource={group.currentResource} group={group}></EditorSideView>
+        )}
       </div>
     </EditorContext.Provider>
   );
@@ -637,7 +641,7 @@ function removeDecorationDragOverElement(element: HTMLElement) {
   });
 }
 
-const EditorSideView = ({ side, resource }: { side: EditorSide; resource: IResource }) => {
+const EditorSideView = ({ side, resource, group }: { side: EditorSide; resource: IResource; group: EditorGroup }) => {
   const componentRegistry: EditorComponentRegistry = useInjectable(EditorComponentRegistry);
   const eventBus = useInjectable(IEventBus) as IEventBus;
   const widgets = componentRegistry.getSideWidgets(side, resource);
@@ -650,7 +654,7 @@ const EditorSideView = ({ side, resource }: { side: EditorSide; resource: IResou
     <div className={cls(styles['kt_editor_side_widgets'], styles['kt_editor_side_widgets_' + side])}>
       {widgets.map((widget) => {
         const C = widget.component;
-        return <C resource={resource} key={widget.id} {...(widget.initialProps || {})}></C>;
+        return <C resource={resource} group={group} key={widget.id} {...(widget.initialProps || {})}></C>;
       })}
     </div>
   );

@@ -11,6 +11,7 @@ import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
   IEditorFeatureRegistry,
+  ResourceOpenTypeChangedEvent,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import { isEOLStack, isEditStack } from '@opensumi/ide-editor/lib/browser/doc-model/editor-is-fn';
@@ -239,6 +240,68 @@ describe('workbench editor service tests', () => {
     await editorService.open(testLoadingCodeUri);
     expect(listener).toHaveBeenCalledTimes(1);
     await defered.promise;
+  });
+
+  it('should keep resource status and emit loading when reopening with new type takes time', async () => {
+    jest.useFakeTimers();
+    const testCodeUri = new URI('test://testUri1');
+    await editorService.open(testCodeUri, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+
+    const displayDeferred = new Deferred<void>();
+    const displaySpy = jest
+      .spyOn(group as any, 'displayResourceComponent')
+      .mockImplementation(async () => displayDeferred.promise);
+    const loadingSpy = jest.spyOn(group as any, 'notifyTabLoading');
+
+    try {
+      eventBus.fire(new ResourceOpenTypeChangedEvent(testCodeUri));
+      await Promise.resolve();
+
+      const status = group.resourceStatus.get(group.currentResource!);
+      expect(status).toBeInstanceOf(Promise);
+
+      jest.advanceTimersByTime(80);
+      expect(loadingSpy).toHaveBeenCalledTimes(1);
+
+      displayDeferred.resolve();
+      await status;
+
+      expect(displaySpy).toHaveBeenCalled();
+    } finally {
+      displaySpy.mockRestore();
+      loadingSpy.mockRestore();
+      jest.useRealTimers();
+      await editorService.closeAll();
+    }
+  });
+
+  it('should clear delayed loading when open type change resolves quickly', async () => {
+    jest.useFakeTimers();
+    const testCodeUri = new URI('test://testUri1');
+    await editorService.open(testCodeUri, { preview: false });
+    const group = editorService.currentEditorGroup as EditorGroup;
+
+    const displaySpy = jest
+      .spyOn(group as any, 'displayResourceComponent')
+      .mockImplementation(async () => Promise.resolve());
+    const loadingSpy = jest.spyOn(group as any, 'notifyTabLoading');
+
+    try {
+      eventBus.fire(new ResourceOpenTypeChangedEvent(testCodeUri));
+      await Promise.resolve();
+
+      const status = group.resourceStatus.get(group.currentResource!);
+      await status;
+
+      jest.runOnlyPendingTimers();
+      expect(loadingSpy).not.toHaveBeenCalled();
+    } finally {
+      displaySpy.mockRestore();
+      loadingSpy.mockRestore();
+      jest.useRealTimers();
+      await editorService.closeAll();
+    }
   });
 
   it('should be able to open component', async () => {
