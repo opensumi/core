@@ -158,6 +158,7 @@ export interface ArgsProps {
   bottom?: number;
   getContainer?: () => HTMLElement;
   closeIcon?: React.ReactNode;
+  closable?: boolean;
 }
 
 function notice(args: ArgsProps) {
@@ -195,7 +196,7 @@ function notice(args: ArgsProps) {
           </div>
         ),
         duration,
-        closable: true,
+        closable: args.closable ?? true,
         onClose: args.onClose,
         onClick: args.onClick,
         key: args.key,
