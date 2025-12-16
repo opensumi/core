@@ -20,5 +20,7 @@ export class WatcherDebugContribution implements ClientAppContribution {
     this.fileServiceClient.onWatcherOverflow?.((event) => {
       this.logger.warn('[WatcherDebugContribution] Watcher overflow', event);
     });
+
+    this.logger.log('[WatcherDebugContribution] Watcher debug contribution');
   }
 }
