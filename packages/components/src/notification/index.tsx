@@ -76,13 +76,9 @@ export function open<T = string>(
           : null,
         message,
         description,
+        closable,
       };
       cachedArgs.set(key, [type, args]);
-
-      // closable 为 false 时，不展示 closeIcon
-      if (!closable) {
-        args.closeIcon = <span />;
-      }
 
       doOpenNotification(type, args);
     });
