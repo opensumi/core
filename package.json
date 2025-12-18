@@ -146,8 +146,11 @@
     "webpack": "^5.90.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
-  "packageManager": "yarn@4.4.1",
+  "packageManager": "yarn@4.12.0",
   "engines": {
     "node": ">=18.12.0"
+  },
+  "publishConfig": {
+    "provenance": false
   }
 }
