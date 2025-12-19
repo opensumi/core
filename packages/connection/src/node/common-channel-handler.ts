@@ -26,7 +26,9 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
     logger: ILogger = console,
     private options: CommonChannelHandlerOptions = {},
   ) {
-    super('node-channel-handler', commonChannelPathHandler, logger);
+    // 根据routePath创建多个CommonChannelHandler
+    const handlerId = 'node-channel-handler' + routePath;
+    super(handlerId, commonChannelPathHandler, logger);
     this.handlerRoute = match(routePath, options.pathMatchOptions);
     this.initWSServer();
   }

@@ -26,6 +26,7 @@ import {
   StorageProvider,
   StorageResolverContribution,
   URI,
+  UrlProvider,
   asExtensionCandidate,
   createContributionProvider,
   getDebugLogger,
@@ -44,7 +45,9 @@ import { ClientAppStateService } from '../application';
 import { ConnectionHelperFactory, ESupportRuntime } from '../application/runtime';
 import { BaseConnectionHelper } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
+import { WebConnectionHelper } from '../application/runtime/browser/socket';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
+import { ElectronConnectionHelper } from '../application/runtime/electron-renderer/socket';
 import { RendererRuntime } from '../application/runtime/types';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
@@ -140,7 +143,18 @@ export class ClientApp implements IClientApp, IDisposable {
       rpcMessageTimeout: opts.rpcMessageTimeout || -1,
     };
 
-    this.config.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
+    this.config.connectionPath = opts.connectionPath || this.buildWebSocketPath('/service');
+
+    // 支持多个WebSocket连接路径
+    if (opts.connectionPaths && opts.connectionPaths.length > 0) {
+      this.config.connectionPaths = [
+        this.config.connectionPath,
+        ...opts.connectionPaths.map((p) => this.buildWebSocketPath(p)),
+      ];
+    } else {
+      // 默认路径，保持向后兼容
+      this.config.connectionPaths = [this.config.connectionPath];
+    }
 
     const layoutViewSizeConfig = this.injector.get(LayoutViewSizeConfig);
     layoutViewSizeConfig.init(opts.layoutViewSize);
@@ -183,6 +197,14 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   private _inComposition = false;
+
+  private buildWebSocketPath(path: string) {
+    return `${this.config.wsPath}${path}`;
+  }
+
+  private extractWebSocketPath(path: string) {
+    return path.replace(this.resolveUrlProvider(this.config.wsPath), '');
+  }
 
   /**
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
@@ -251,12 +273,124 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected async createConnection(type: `${ESupportRuntime}`) {
-    const factory = this.injector.get(ConnectionHelperFactory) as ConnectionHelperFactory;
-    const connectionHelper: BaseConnectionHelper = factory(type);
-    const channel = await connectionHelper.createRPCServiceChannel(this.modules);
-    channel.onReopen(() => {
-      this.onReconnectContributions();
-    });
+    // 检查是否配置了多个连接路径
+    if (this.config.connectionPaths && this.config.connectionPaths.length > 1) {
+      await this.createMultipleConnections(type);
+    } else {
+      // 向后兼容：单一连接
+      const factory = this.injector.get(ConnectionHelperFactory) as ConnectionHelperFactory;
+      const connectionHelper: BaseConnectionHelper = factory(type);
+      const channel = await connectionHelper.createRPCServiceChannel(this.modules);
+      channel.onReopen(() => {
+        this.onReconnectContributions();
+      });
+    }
+  }
+
+  protected async createMultipleConnections(type: `${ESupportRuntime}`) {
+    const connectionPaths = this.config.connectionPaths || [];
+
+    // 获取WebSocket路径和模块的匹配配置
+    const wsPathModuleMapping = this.opts.wsPathModuleMapping || {};
+
+    // 获取所有路径的模块分配，确保模块不会被多个路径共享
+    const pathModuleAssignments = this.getPathModuleAssignments(connectionPaths, wsPathModuleMapping);
+    // 为每个路径创建连接
+    for (const connectionPath of connectionPaths) {
+      if (connectionPath) {
+        const connectionHelper = this.createConnectionHelperForPath(type, connectionPath);
+        // 获取该路径分配的模块
+        const pathKey = this.resolveUrlProvider(connectionPath);
+        const modules = pathModuleAssignments[pathKey] || [];
+        const channel = await connectionHelper.createRPCServiceChannel(modules);
+        channel.onReopen(() => {
+          this.onReconnectContributions();
+        });
+      }
+    }
+  }
+
+  /**
+   * 同步解析UrlProvider为字符串（如果可能）
+   * @param urlProvider UrlProvider实例
+   * @returns 解析后的字符串路径
+   */
+  private resolveUrlProvider(urlProvider: UrlProvider): string {
+    if (typeof urlProvider === 'function') {
+      const result = urlProvider();
+      if (typeof result === 'string') {
+        return result;
+      } else {
+        // 如果是Promise，我们无法同步获取结果，返回一个占位符
+        // 在实际使用中，这种情况应该避免或者使用异步版本
+        return 'async-path-placeholder';
+      }
+    }
+    return urlProvider;
+  }
+
+  /**
+   * 为所有路径分配模块，确保每个模块只分配给一个路径，避免不同路径有相同的模块
+   * @param connectionPaths 连接路径列表
+   * @param wsPathModuleMapping WebSocket路径和模块的映射配置
+   * @returns 路径到模块列表的映射
+   */
+  private getPathModuleAssignments(
+    connectionPaths: UrlProvider[],
+    wsPathModuleMapping: Record<string, ModuleConstructor[]>,
+  ): Record<string, ModuleConstructor[]> {
+    const assignments: Record<string, ModuleConstructor[]> = {};
+    const usedModules = new Set<ModuleConstructor>();
+
+    // 首先处理有明确配置的路径
+    for (const path of connectionPaths) {
+      if (path) {
+        const pathKey = this.extractWebSocketPath(this.resolveUrlProvider(path));
+        let matchedModules: ModuleConstructor[] = [];
+        if (wsPathModuleMapping[pathKey]) {
+          const mapping = wsPathModuleMapping[pathKey];
+          if (Array.isArray(mapping)) {
+            const moduleNames = new Set(mapping);
+            matchedModules = this.modules.filter((module) => moduleNames.has(module));
+          }
+        }
+
+        // 过滤掉已经被其他路径使用的模块
+        matchedModules = matchedModules.filter((module) => !usedModules.has(module));
+
+        // 记录分配
+        const wsPathKey = this.buildWebSocketPath(pathKey);
+        assignments[wsPathKey] = matchedModules;
+        matchedModules.forEach((module) => usedModules.add(module));
+      }
+    }
+
+    // 收集所有未分配的模块
+    const unassignedModules = this.modules.filter((module) => !usedModules.has(module));
+
+    const defaultPath = this.resolveUrlProvider(this.config.connectionPath!);
+    assignments[defaultPath] = unassignedModules;
+
+    return assignments;
+  }
+
+  private createConnectionHelperForPath(type: `${ESupportRuntime}`, path: UrlProvider) {
+    switch (type) {
+      case ESupportRuntime.Web: {
+        return this.injector.get(WebConnectionHelper, [
+          {
+            connectionPath: path,
+            connectionProtocols: this.injector.get(AppConfig).connectionProtocols,
+          },
+        ]);
+      }
+      case ESupportRuntime.Electron: {
+        return this.injector.get(ElectronConnectionHelper);
+      }
+      default: {
+        throw new Error(`Unknown backend type: ${type}`);
+      }
+    }
   }
 
   private onReconnectContributions() {
@@ -550,7 +684,7 @@ export class ClientApp implements IClientApp, IDisposable {
    */
   fireOnReload(forcedReload = false) {
     // 默认调用 location reload
-    // @ts-ignore
+    // @ts-expect-error: window.location.reload accepts boolean parameter but TypeScript doesn't recognize it
     window.location.reload(forcedReload);
   }
 
