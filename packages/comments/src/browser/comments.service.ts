@@ -1021,14 +1021,14 @@ export class CommentsService extends Disposable implements ICommentsService {
       provideEditorDecoration: (uri: URI) =>
         this.commentsThreads
           .map((thread) => {
-            if (thread.uri.isEqual(uri)) {
+            if (thread.uri.codeUri.path === uri.codeUri.path) {
               if (thread.comments.get().length) {
                 // 存在评论内容 恢复之前的现场
                 thread.showWidgetsIfShowed();
               }
             } else {
               // 临时隐藏，当切回来时会恢复
-              thread.hideWidgetsByDispose();
+              thread.hide();
             }
             return thread;
           })
