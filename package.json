@@ -121,7 +121,7 @@
     "jest-fetch-mock": "^3.0.3",
     "jsdom": "^20.0.0",
     "jsdom-worker": "^0.3.0",
-    "lerna": "^9.0.3",
+    "lerna": "^8.0.2",
     "lint-staged": "^15.2.2",
     "lodash": "^4.17.21",
     "mri": "^1.2.0",
@@ -144,7 +144,7 @@
     "webpack": "^5.90.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.4.1",
   "engines": {
     "node": ">=18.12.0"
   },
