@@ -165,12 +165,28 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
       readOnly: this.currentDocumentModel?.readonly || false,
     };
 
-    let editorOptions = {
+    let editorOptions: Partial<monaco.editor.IEditorOptions> = {
       ...basicEditorOptions,
       ...options.editorOptions,
       ...this._editorOptionsFromContribution,
       ...this._specialEditorOptions,
     };
+
+    if (this.currentDocumentModel && this.currentDocumentModel.isLargeFile) {
+      /**
+       * 大文件时禁用一些耗性能内存的功能
+       */
+      const largeFileOptions: Partial<monaco.editor.IEditorOptions> = {
+        folding: false,
+        codeLens: false,
+        wordWrap: 'off',
+        minimap: { enabled: false },
+        stickyScroll: { enabled: false },
+        matchBrackets: 'never',
+      };
+
+      Object.assign(editorOptions, largeFileOptions);
+    }
 
     if (this.type !== EditorType.CODE) {
       editorOptions = {

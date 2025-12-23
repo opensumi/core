@@ -153,6 +153,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _isInitOption = true;
 
+  public isLargeFile = false;
+
   private readonly _onDidChangeEncoding = new Emitter<void>();
   readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
 
@@ -173,6 +175,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
     this.monacoModel = monaco.editor.createModel(content, options.languageId, MonacoURI.parse(uri.toString()));
     this.editorPreferences = createEditorPreferenceProxy(this.preferences, this.uri.toString(), this.languageId);
+
+    const largeFileSize = this.editorPreferences['editor.largeFile'];
+    const largeFileOptimizations = this.editorPreferences['editor.largeFileOptimizations'];
+    if (largeFileOptimizations !== false && content.length >= largeFileSize) {
+      this.isLargeFile = true;
+    }
+
     this.updateOptions({});
     if (options.eol) {
       this.eol = options.eol;

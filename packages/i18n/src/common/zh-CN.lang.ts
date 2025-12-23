@@ -1099,6 +1099,7 @@ export const localizationBundle = {
       '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',
     'editor.configuration.fontWeight': '控制字体粗细，接收 "normal" 和 "bold" 关键词或者 1 到 1000 数值。',
     'editor.configuration.largeFileSize': '控制超大文件的自定义体积。(单位：B)',
+    'editor.configuration.largeFileOptimizations': '针对大文件的特殊处理，禁用某些内存密集型功能。',
     'editor.configuration.streamLargeFile': '当文件超过阈值时，使用流式读取以降低一次性内存占用。',
     'editor.configuration.preferredFormatter': '配置优先使用的格式化器。',
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
