@@ -74,6 +74,7 @@ export interface EditorDocumentModelConstructionOptions {
   alwaysDirty?: boolean;
   closeAutoSave?: boolean;
   disposeEvenDirty?: boolean;
+  byteSize?: number;
 }
 
 export interface IDirtyChange {
@@ -178,7 +179,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
     const largeFileSize = this.editorPreferences['editor.largeFile'];
     const largeFileOptimizations = this.editorPreferences['editor.largeFileOptimizations'];
-    if (largeFileOptimizations !== false && content.length >= largeFileSize) {
+    if (largeFileOptimizations !== false && typeof options.byteSize === 'number' && options.byteSize >= largeFileSize) {
       this.isLargeFile = true;
     }
 
