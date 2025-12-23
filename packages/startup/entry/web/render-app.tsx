@@ -112,7 +112,7 @@ export const getDefaultClientAppOpts = ({
       'general.productIconTheme': 'opensumi-icons',
       'application.confirmExit': 'never',
       'editor.quickSuggestionsDelay': 100,
-      'editor.largeFile': 1048576, // 1MB for invalidcation
+      'editor.largeFile': 10 * 1024 * 1024,
       'editor.largeFileOptimizations': true,
     },
     defaultPanels: {
