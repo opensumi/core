@@ -175,7 +175,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   @Autowired(ICommentsFeatureRegistry)
   private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
 
-  private wrapperRoot: ReactDOM.Root;
+  private wrapperRoot: ReactDOM.Root | undefined;
 
   private _editor: IEditor;
 
@@ -185,15 +185,15 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   private _onHide = new Emitter<void>();
   public onHide: Event<void> = this._onHide.event;
 
-  constructor(editor: IEditor, thread: ICommentsThread, options?: IOptions) {
+  constructor(editor: IEditor, public readonly thread: ICommentsThread, options?: IOptions) {
     super(editor.monacoEditor, thread.range, {
       ...options,
       showInHiddenAreas: true,
     });
     this._editor = editor;
 
-    const _wrapper = document.createElement('div');
     this._isShow = !thread.isCollapsed.get();
+    const _wrapper = document.createElement('div');
     this._container.appendChild(_wrapper);
     this.observeContainer(_wrapper);
     const customRender = this.commentsFeatureRegistry.getZoneWidgetRender();
@@ -201,13 +201,14 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
     this.wrapperRoot = ReactDOM.createRoot(_wrapper);
     this.wrapperRoot.render(
       <ConfigProvider value={this.appConfig}>
-        {customRender ? customRender(thread, this) : <CommentsZone thread={thread} widget={this} />}
+        {customRender ? customRender(this.thread, this) : <CommentsZone thread={this.thread} widget={this} />}
       </ConfigProvider>,
     );
 
     this.addDispose({
       dispose: () => {
-        this.wrapperRoot.unmount();
+        this.wrapperRoot?.unmount();
+        this.wrapperRoot = undefined;
       },
     });
   }
@@ -227,7 +228,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   }
 
   public hide() {
-    super.dispose();
+    super.hide();
     this._isShow = false;
     this._onHide.fire();
   }
