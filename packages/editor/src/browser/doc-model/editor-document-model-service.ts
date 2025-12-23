@@ -319,7 +319,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     let byteSize: number | undefined;
 
     if (provider.provideEditorDocumentModelContentSize) {
-      byteSize = await provider.provideEditorDocumentModelContentSize(uri, encoding);
+      byteSize = await provider.provideEditorDocumentModelContentSize(uri);
     }
 
     // 优先使用 preferred encoding，然后用 detected encoding

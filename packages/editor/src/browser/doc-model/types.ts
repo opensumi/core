@@ -38,9 +38,8 @@ export interface IEditorDocumentModelContentProvider {
   /**
    * 提供文档内容的字节长度（可选）
    * @param uri
-   * @param encoding
    */
-  provideEditorDocumentModelContentSize?(uri: URI, encoding?: string): MaybePromise<number | undefined>;
+  provideEditorDocumentModelContentSize?(uri: URI): MaybePromise<number | undefined>;
 
   /**
    * 这个文档是否只读（注意只读和无法保存的区别）
