@@ -168,11 +168,62 @@ describe('DebugSessionManager', () => {
     expect(mockTaskService.run).toHaveBeenCalledTimes(1);
   });
 
-  it('destroy debug session', (done) => {
-    debugSessionManager.onDidDestroyDebugSession(() => {
-      done();
+  it('destroy session when start fails', async () => {
+    const configuration = {
+      type: 'node',
+      request: 'launch',
+      name: 'Failing Session',
+    };
+    const onDidChangeEmitter = new Emitter<void>();
+    const onDidCustomEventEmitter = new Emitter<any>();
+    const failingSession = {
+      id: sessionId,
+      configuration,
+      capabilities: {},
+      state: 0,
+      terminated: false,
+      onDidChange: onDidChangeEmitter.event,
+      onDidCustomEvent: onDidCustomEventEmitter.event,
+      on: jest.fn(() => ({ dispose: jest.fn() })),
+      onCurrentThreadChange: jest.fn(() => ({ dispose: jest.fn() })),
+      start: jest.fn(async () => {
+        throw new Error('start failed');
+      }),
+      dispose: jest.fn(),
+    } as any;
+    const originalGet = mockDebugSessionContributionRegistry.get;
+    mockDebugSessionContributionRegistry.get = () => ({
+      debugSessionFactory: () => ({
+        get: () => failingSession,
+      }),
+    });
+    mockDebugServer.terminateDebugSession.mockClear();
+
+    await debugSessionManager.start({ configuration });
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(mockDebugServer.terminateDebugSession).toHaveBeenCalledTimes(1);
+    expect(mockDebugServer.terminateDebugSession).toHaveBeenCalledWith(sessionId);
+
+    mockDebugSessionContributionRegistry.get = originalGet;
+  });
+
+  it('destroy debug session', async () => {
+    mockDebugServer.terminateDebugSession.mockClear();
+    const configuration = {
+      type: 'node',
+      request: 'launch',
+      name: 'Destroy Session',
+    };
+    await debugSessionManager.start({ configuration });
+
+    const destroyPromise = new Promise<void>((resolve) => {
+      debugSessionManager.onDidDestroyDebugSession(() => {
+        resolve();
+      });
     });
     debugSessionManager.destroy(sessionId);
+    await destroyPromise;
     expect(mockDebugServer.terminateDebugSession).toHaveBeenCalledTimes(1);
   });
 });
