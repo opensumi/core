@@ -106,14 +106,15 @@ describe('editor collection service test', () => {
     @Injectable({ multiple: true })
     class SimpleTestEditor extends BaseMonacoEditorWrapper {
       get currentDocumentModel() {
-        return (
-          this.monacoEditor.getModel()
-            ? {
-                uri: new URI(this.monacoEditor.getModel()!.uri.toString()),
-                readonly: this.monacoEditor.getModel()!.uri.toString().endsWith('test2.js'),
-              }
-            : null
-        ) as any;
+        if (!this.monacoEditor.getModel()) {
+          return null as any;
+        }
+        const uriString = this.monacoEditor.getModel()!.uri.toString();
+        return {
+          uri: new URI(uriString),
+          readonly: uriString.endsWith('test2.js'),
+          isLargeFile: uriString.endsWith('large.js'),
+        } as any;
       }
     }
 
@@ -179,5 +180,11 @@ describe('editor collection service test', () => {
 
     setPref('editor.forceReadOnly', true);
     expect(options['readOnly']).toBeTruthy();
+
+    open(new URI('file:///test/large.js'));
+    testEditor.updateOptions({});
+    expect(options['folding']).toBeFalsy();
+    expect(options['minimap']).toEqual({ enabled: false });
+    expect(options['wordWrap']).toBe('off');
   });
 });

@@ -91,6 +91,18 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
     this._disableSelectionEmitter = false;
   }
 
+  /**
+   * 大文件时禁用一些耗性能内存的 monaco 编辑器功能选项
+   */
+  protected monacoLargeFileOptions: Partial<monaco.editor.IEditorOptions> = {
+    folding: false,
+    codeLens: false,
+    wordWrap: 'off',
+    minimap: { enabled: false },
+    stickyScroll: { enabled: false },
+    matchBrackets: 'never',
+  };
+
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
@@ -165,12 +177,17 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
       readOnly: this.currentDocumentModel?.readonly || false,
     };
 
-    let editorOptions = {
+    let editorOptions: Partial<monaco.editor.IEditorOptions> = {
       ...basicEditorOptions,
       ...options.editorOptions,
       ...this._editorOptionsFromContribution,
       ...this._specialEditorOptions,
     };
+
+    if (this.currentDocumentModel && this.currentDocumentModel.isLargeFile) {
+      // 合并大文件禁用功能选项
+      Object.assign(editorOptions, this.monacoLargeFileOptions);
+    }
 
     if (this.type !== EditorType.CODE) {
       editorOptions = {

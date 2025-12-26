@@ -316,6 +316,12 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       provider.disposeEvenDirty ? provider.disposeEvenDirty(uri) : false,
     ] as const);
 
+    let byteSize: number | undefined;
+
+    if (provider.provideEditorDocumentModelContentSize) {
+      byteSize = await provider.provideEditorDocumentModelContentSize(uri);
+    }
+
     // 优先使用 preferred encoding，然后用 detected encoding
     if (!encoding && provider.provideEncoding) {
       encoding = await provider.provideEncoding(uri);
@@ -337,6 +343,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         alwaysDirty,
         closeAutoSave,
         disposeEvenDirty,
+        byteSize,
       },
     ]);
 
