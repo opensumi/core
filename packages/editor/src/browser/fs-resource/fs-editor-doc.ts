@@ -46,6 +46,7 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
   public onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
 
   protected _fileContentMd5OnBrowserFs: Set<string> = new Set();
+  protected _contentByteSizeMap: Map<string, number> = new Map();
 
   private _detectedEncodingMap = new Map<string, string>();
   private _detectedEolMap = new Map<string, EOL>();
@@ -96,6 +97,7 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
 
   async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string; content: string; eol: EOL }> {
     const { content: buffer } = await this.fileServiceClient.readFile(uri.toString());
+    this._contentByteSizeMap.set(uri.toString(), buffer.byteLength);
 
     const guessEncoding =
       options.autoGuessEncoding ||
@@ -178,6 +180,10 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     return (await this.read(uri, { encoding })).content;
   }
 
+  async provideEditorDocumentModelContentSize(uri: URI): Promise<number | undefined> {
+    return this._contentByteSizeMap.get(uri.toString());
+  }
+
   async isReadonly(uri: URI): Promise<boolean> {
     const readonlyFiles: string[] = this.editorPreferences['editor.readonlyFiles'];
     if (readonlyFiles && readonlyFiles.length) {
@@ -223,6 +229,7 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
 
   onDidDisposeModel(uri: URI) {
     this._fileContentMd5OnBrowserFs.delete(uri.toString());
+    this._contentByteSizeMap.delete(uri.toString());
   }
 
   async guessEncoding(uri: URI) {
