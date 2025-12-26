@@ -41,6 +41,19 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   useCdnIcon?: boolean;
   // 插件开发模式下指定的插件路径
   extensionDevelopmentPath?: string | string[];
+  /**
+   * WebSocket路径和模块的映射配置，用于根据连接路径动态选择加载的模块,没有指定的模块就会走/service
+   * 仅支持全匹配
+   * 例如：
+   * {
+   *   "/terminal": ["TerminalModule"],
+   * }
+   */
+  wsPathModuleMapping?: Record<string, ModuleConstructor[]>;
+  /**
+   * 自定义多个前后端通信路径，用于支持多个WebSocket连接
+   */
+  connectionPaths?: string[];
 }
 
 export interface LayoutConfig {

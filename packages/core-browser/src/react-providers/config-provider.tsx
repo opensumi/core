@@ -287,6 +287,10 @@ export interface AppConfig {
    */
   connectionPath?: UrlProvider;
   /**
+   * 自定义多个前后端通信路径，用于支持多个WebSocket连接
+   */
+  connectionPaths?: UrlProvider[];
+  /**
    * 支持的通信协议类型
    */
   connectionProtocols?: string[];

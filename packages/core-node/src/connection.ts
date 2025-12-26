@@ -50,12 +50,24 @@ export function createServerConnection2(
   handlerArr: WebSocketHandler[],
   serverAppOpts: IServerAppOpts,
 ) {
+  const defaultConnectPath = '/service';
+  const wsConfigs = serverAppOpts?.connectionPaths
+    ? [defaultConnectPath, ...serverAppOpts.connectionPaths]
+    : [defaultConnectPath];
+
   const logger = injector.get(INodeLogger);
   const commonChannelPathHandler = injector.get(CommonChannelPathHandler);
   const socketRoute = new WebSocketServerRoute(server, logger);
-  const channelHandler = new CommonChannelHandler('/service', commonChannelPathHandler, logger, {
-    pathMatchOptions: serverAppOpts.pathMatchOptions,
-    wsServerOptions: serverAppOpts.wsServerOptions,
+
+  // 根据路径，动态创建多个 WebSocket 处理器
+  const channelHandlers = wsConfigs.map((config) => {
+    const path = config;
+    const options = {
+      pathMatchOptions: serverAppOpts.pathMatchOptions,
+      wsServerOptions: serverAppOpts.wsServerOptions,
+    };
+
+    return new CommonChannelHandler(path, commonChannelPathHandler, logger, options);
   });
 
   // 事件由 connection 的时机来触发
@@ -66,7 +78,9 @@ export function createServerConnection2(
     dispose: () => {},
   });
 
-  socketRoute.registerHandler(channelHandler);
+  // 注册所有处理器
+  channelHandlers.forEach((handler) => socketRoute.registerHandler(handler));
+
   if (handlerArr) {
     for (const handler of handlerArr) {
       socketRoute.registerHandler(handler);
