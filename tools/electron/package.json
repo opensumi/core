@@ -53,7 +53,7 @@
     "fs-extra": "^10.1.0",
     "glob-to-regexp": "0.4.1",
     "html-webpack-plugin": "^5.6.0",
-    "koa": "^2.15.0",
+    "koa": "^3.0.1",
     "koa-bodyparser": "^4.3.0",
     "less": "^3.9.0",
     "less-loader": "^12.1.0",
