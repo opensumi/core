@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install libsecret-1
         run: sudo apt-get update && sudo apt-get install -y libsecret-1-dev
