@@ -288,6 +288,7 @@ export const FileDialog = ({
           searchPlaceholder={selectPath}
           value={selectPath}
           showSearch={showFilePathSearch}
+          externalSearchBehavior={true}
         >
           {directoryList.map((item, idx) => (
             <Option value={item} key={`${idx} - ${item}`}>
