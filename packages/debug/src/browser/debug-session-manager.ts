@@ -463,7 +463,13 @@ export class DebugSessionManager implements IDebugSessionManager {
       }
     });
     session.on('exited', () => this.destroy(session.id));
-    session.start().then(() => this.onDidStartDebugSessionEmitter.fire(session));
+    session
+      .start()
+      .then(() => this.onDidStartDebugSessionEmitter.fire(session))
+      .catch(() => {
+        // 启动失败的时候清空，避免留下阻塞的session
+        this.destroy(session.id);
+      });
     session.onDidCustomEvent(({ event, body }) =>
       this.onDidReceiveDebugSessionCustomEventEmitter.fire({ event, body, session }),
     );
