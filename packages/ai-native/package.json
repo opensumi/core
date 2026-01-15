@@ -50,7 +50,7 @@
     "ai": "^4.3.16",
     "ansi-regex": "^2.0.0",
     "ansi_up": "^5.1.0",
-    "diff": "^7.0.0",
+    "diff": "^8.0.3",
     "dom-align": "^1.7.0",
     "eventsource": "^3.0.5",
     "rc-collapse": "^4.0.0",
