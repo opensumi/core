@@ -27,7 +27,7 @@
     "@xterm/addon-search": "0.15.0",
     "@xterm/addon-webgl": "0.18.0",
     "@xterm/xterm": "5.5.0",
-    "node-pty": "1.0.0",
+    "node-pty": "1.1.0",
     "os-locale": "^4.0.0"
   },
   "devDependencies": {

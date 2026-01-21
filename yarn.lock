@@ -4399,7 +4399,7 @@ __metadata:
     "@xterm/addon-webgl": "npm:0.18.0"
     "@xterm/xterm": "npm:5.5.0"
     http-proxy: "npm:^1.18.0"
-    node-pty: "npm:1.0.0"
+    node-pty: "npm:1.1.0"
     os-locale: "npm:^4.0.0"
   languageName: unknown
   linkType: soft
@@ -17797,7 +17797,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nan@npm:^2.14.0, nan@npm:^2.17.0":
+"nan@npm:^2.14.0":
   version: 2.19.0
   resolution: "nan@npm:2.19.0"
   dependencies:
@@ -17958,7 +17958,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-addon-api@npm:^7.0.0":
+"node-addon-api@npm:^7.0.0, node-addon-api@npm:^7.1.0":
   version: 7.1.1
   resolution: "node-addon-api@npm:7.1.1"
   dependencies:
@@ -18102,13 +18102,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-pty@npm:1.0.0":
-  version: 1.0.0
-  resolution: "node-pty@npm:1.0.0"
+"node-pty@npm:1.1.0":
+  version: 1.1.0
+  resolution: "node-pty@npm:1.1.0"
   dependencies:
-    nan: "npm:^2.17.0"
+    node-addon-api: "npm:^7.1.0"
     node-gyp: "npm:latest"
-  checksum: 10/f1803531bfee71fdc8fb97fc544364e64de6bad91d6221b79b6a8e3518032768bff8738960d15f29e5a14aa16b9eb550e1a26ba1ad8c66f86424b9f56fd0ccad
+  checksum: 10/faa869e24ce5d5e40597c9a081dfade09830e7c4404b01fc81bf915b0d1e3c46530276adad234ea018027e923bb5aa4b57e84031312431a2d4d740e7bbc35146
   languageName: node
   linkType: hard
 
