@@ -138,6 +138,13 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
 
     const realWatchPath = await this.resolveWatchPath(watchPath);
 
+    const prevWatchPath = this.watchPathMap.get(basePath);
+
+    if (prevWatchPath && prevWatchPath !== realWatchPath) {
+      this.logger.warn(`[Recursive] Watch path changed from ${prevWatchPath} to ${realWatchPath}`);
+      this.disposeWatcher(prevWatchPath);
+    }
+
     // 先检查并清理已存在的 handler（使用 watchPath 确保目录级别的去重）
     if (this.WATCHER_HANDLERS.has(realWatchPath)) {
       this.logger.debug(`[Recursive] Cleaning up existing watcher for directory: ${realWatchPath}`);
