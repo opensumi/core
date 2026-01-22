@@ -104,6 +104,14 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     });
   }
 
+  private async resolveWatchPath(basePath: string): Promise<string> {
+    try {
+      return await fs.realpath(basePath);
+    } catch (e) {
+      return basePath;
+    }
+  }
+
   private async doWatchFileChange(uri: string, options?: WatchOptions) {
     const basePath = FileUri.fsPath(uri);
     this.logger.log('[Recursive] watch file changes: ', uri, 'basePath:', basePath);
@@ -128,17 +136,19 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       return;
     }
 
-    // 记录原始请求与真实监听目录的映射，方便后续释放
-    this.watchPathMap.set(basePath, watchPath);
+    const realWatchPath = await this.resolveWatchPath(watchPath);
 
     // 先检查并清理已存在的 handler（使用 watchPath 确保目录级别的去重）
-    if (this.WATCHER_HANDLERS.has(watchPath!)) {
-      this.logger.debug(`[Recursive] Cleaning up existing watcher for directory: ${watchPath}`);
-      const handler = this.WATCHER_HANDLERS.get(watchPath!);
+    if (this.WATCHER_HANDLERS.has(realWatchPath)) {
+      this.logger.debug(`[Recursive] Cleaning up existing watcher for directory: ${realWatchPath}`);
+      const handler = this.WATCHER_HANDLERS.get(realWatchPath);
       handler?.disposable.dispose();
-      this.WATCHER_HANDLERS.delete(watchPath!);
-      this.cleanupWatchPathMap(watchPath);
+      this.WATCHER_HANDLERS.delete(realWatchPath);
+      this.cleanupWatchPathMap(realWatchPath);
     }
+
+    // 记录原始请求与真实监听目录的映射，方便后续释放
+    this.watchPathMap.set(basePath, realWatchPath);
 
     const handler = (err, events: ParcelWatcher.Event[]) => {
       if (err) {
@@ -161,13 +171,13 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       }
     };
 
-    this.WATCHER_HANDLERS.set(watchPath, {
-      path: watchPath,
+    this.WATCHER_HANDLERS.set(realWatchPath, {
+      path: realWatchPath,
       disposable: toDisposeWatcher,
       handlers: [handler],
     });
 
-    toDisposeWatcher.push(await this.start(watchPath, options));
+    toDisposeWatcher.push(await this.start(realWatchPath, options));
     this.addDispose(toDisposeWatcher);
   }
 
@@ -212,7 +222,7 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       return new DisposableCollection();
     }
 
-    const realPath = await fs.realpath(basePath);
+    const realPath = await this.resolveWatchPath(basePath);
     const shouldUseNSFW = await this.shouldUseNSFW();
 
     if (shouldUseNSFW) {
