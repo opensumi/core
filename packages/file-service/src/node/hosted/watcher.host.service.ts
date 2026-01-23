@@ -77,7 +77,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     this.rpcProtocol.set(WatcherServiceProxy, this);
     this.defaultExcludes = flattenExcludes(defaultFilesWatcherExcludes);
     this.defaultExcludesKey = this.normalizeExcludes(this.defaultExcludes);
-    this.initWatcherServer(this.defaultExcludes);
+    void this.initWatcherServer(this.defaultExcludes);
     this.logger.log('init watcher host service');
   }
 
@@ -85,7 +85,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     return (excludes ?? []).slice().sort().join('|');
   }
 
-  initWatcherServer(excludes?: string[], force = false) {
+  async initWatcherServer(excludes?: string[], force = false): Promise<void> {
     this.logger.log('init watcher server with: ', JSON.stringify(excludes), ' force: ', force);
 
     if (this.recursiveFileSystemWatcher && this.unrecursiveFileSystemWatcher && !force) {
@@ -146,10 +146,18 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
     if (force) {
       // rewatch after new watcher instances are ready
+      const rewatchTasks: Promise<void>[] = [];
       for (const [_uri, { options }] of rewatchTargets) {
         this.logger.log('rewatch file changes: ', _uri, ' recursive: ', options?.recursive);
-        this.doWatch(Uri.parse(_uri), options);
+        rewatchTasks.push(
+          this.doWatch(Uri.parse(_uri), options)
+            .then(() => undefined)
+            .catch((error) => {
+              this.logger.error('rewatch failed: ', _uri, error);
+            }),
+        );
       }
+      await Promise.all(rewatchTasks);
     }
   }
 
@@ -182,7 +190,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
     retry = 0,
   ): Promise<number> {
-    this.initWatcherServer();
+    await this.initWatcherServer();
     const uriString = uri.toString();
     const basePath = FileUri.fsPath(uriString);
     const watcherVersion = this.watcherServerVersion;
@@ -246,7 +254,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
         if (deferred.key !== this.defaultExcludesKey) {
           this.defaultExcludes = deferred.excludes;
           this.defaultExcludesKey = deferred.key;
-          this.initWatcherServer(deferred.excludes, true);
+          await this.initWatcherServer(deferred.excludes, true);
         }
       }
     }
@@ -331,7 +339,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     }
     this.defaultExcludes = excludes;
     this.defaultExcludesKey = nextKey;
-    this.initWatcherServer(excludes, true);
+    await this.initWatcherServer(excludes, true);
   }
 
   async $dispose(): Promise<void> {

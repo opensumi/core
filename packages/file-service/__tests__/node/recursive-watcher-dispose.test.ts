@@ -56,7 +56,7 @@ describe('RecursiveFileSystemWatcher dispose', () => {
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('recursive-dispose-test')));
     const watcher = new TestRecursiveFileSystemWatcher([], createLogger());
 
-    const watchPromise = watcher.watchFileChanges(root.path.toString());
+    const watchPromise = watcher.watchFileChanges(root.toString());
 
     watcher.dispose();
     watcher.startDeferred.resolve(new DisposableCollection());
