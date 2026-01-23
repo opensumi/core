@@ -65,6 +65,8 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
 
   private parcelWatcherAvailableOnLinux: boolean | undefined;
 
+  private isDisposed = false;
+
   constructor(
     private excludes: string[] = [],
     private readonly logger: ILogService,
@@ -78,6 +80,14 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     );
   }
 
+  dispose(): void {
+    if (this.isDisposed) {
+      return;
+    }
+    this.isDisposed = true;
+    super.dispose();
+  }
+
   /**
    * 如果监听路径不存在，则会监听父目录
    * @param uri 要监听的路径
@@ -85,6 +95,10 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
    * @returns
    */
   async watchFileChanges(uri: string, options?: WatchOptions) {
+    if (this.isDisposed) {
+      this.logger.warn('[Recursive] Watch requested after dispose, skip:', uri);
+      throw new Error(`Recursive watcher disposed: ${uri}`);
+    }
     return new Promise<void>((resolve, rej) => {
       const timer = setTimeout(() => {
         rej(`Watch ${uri} Timeout`);
@@ -95,12 +109,19 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
         this.updateWatcherFileExcludes(options.excludes);
       }
 
-      this.doWatchFileChange(uri, options).then(() => {
-        resolve(void 0);
-        if (timer) {
-          clearTimeout(timer);
-        }
-      });
+      this.doWatchFileChange(uri, options)
+        .then(() => {
+          resolve(void 0);
+          if (timer) {
+            clearTimeout(timer);
+          }
+        })
+        .catch((error) => {
+          if (timer) {
+            clearTimeout(timer);
+          }
+          rej(error);
+        });
     });
   }
 
@@ -113,6 +134,9 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
   }
 
   private async doWatchFileChange(uri: string, options?: WatchOptions) {
+    if (this.isDisposed) {
+      throw new Error(`Recursive watcher disposed: ${uri}`);
+    }
     const basePath = FileUri.fsPath(uri);
     this.logger.log('[Recursive] watch file changes: ', uri, 'basePath:', basePath);
 
@@ -185,6 +209,13 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     });
 
     toDisposeWatcher.push(await this.start(realWatchPath, options));
+    if (this.isDisposed) {
+      this.logger.warn('[Recursive] Watcher disposed while starting, cleanup:', uri);
+      this.WATCHER_HANDLERS.delete(realWatchPath);
+      this.watchPathMap.delete(basePath);
+      await toDisposeWatcher.dispose();
+      throw new Error(`Recursive watcher disposed while starting: ${uri}`);
+    }
     this.addDispose(toDisposeWatcher);
   }
 

@@ -51,8 +51,23 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
   protected readonly watcherCollection = new Map<string, IWatcher>();
 
   private defaultExcludes: string[] = [];
+  private defaultExcludesKey = '';
 
   private watchedDirs: Set<string> = new Set();
+
+  private watcherServerVersion = 0;
+
+  private pendingWatchers = new Map<
+    string,
+    {
+      id: number;
+      uriString: string;
+      options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean };
+      version: number;
+    }
+  >();
+
+  private deferredExcludes?: { excludes: string[]; key: string };
 
   constructor(
     private rpcProtocol: SumiConnectionMultiplexer,
@@ -61,8 +76,13 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
   ) {
     this.rpcProtocol.set(WatcherServiceProxy, this);
     this.defaultExcludes = flattenExcludes(defaultFilesWatcherExcludes);
+    this.defaultExcludesKey = this.normalizeExcludes(this.defaultExcludes);
     this.initWatcherServer(this.defaultExcludes);
     this.logger.log('init watcher host service');
+  }
+
+  private normalizeExcludes(excludes: string[] | undefined): string {
+    return (excludes ?? []).slice().sort().join('|');
   }
 
   initWatcherServer(excludes?: string[], force = false) {
@@ -72,18 +92,32 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       return;
     }
 
+    let rewatchTargets: Array<
+      [
+        string,
+        { options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean }; disposable: IDisposable },
+      ]
+    > = [];
+
     if (force) {
       this.logger.log('force to init watcher server, dispose old watcher server');
-      this.recursiveFileSystemWatcher?.dispose();
-      this.unrecursiveFileSystemWatcher?.dispose();
+      this.watcherServerVersion += 1;
+      if (this.pendingWatchers.size > 0) {
+        for (const [watchPath, pending] of this.pendingWatchers) {
+          this.logger.warn('force reinit with pending watcher, cleaning:', watchPath);
+          this.WATCHER_HANDLERS.delete(pending.id);
+        }
+        this.pendingWatchers.clear();
+      }
+      rewatchTargets = Array.from(this.watcherCollection.entries());
 
-      // rewatch
-      for (const [_uri, { options, disposable }] of this.watcherCollection) {
-        this.logger.log('rewatch file changes: ', _uri, ' recursive: ', options?.recursive);
+      for (const [_uri, { disposable }] of rewatchTargets) {
         disposable.dispose();
         this.watcherCollection.delete(_uri);
-        this.doWatch(Uri.parse(_uri), options);
       }
+
+      this.recursiveFileSystemWatcher?.dispose();
+      this.unrecursiveFileSystemWatcher?.dispose();
     }
 
     this.recursiveFileSystemWatcher = new RecursiveFileSystemWatcher(excludes, this.logger, this.backend);
@@ -109,11 +143,35 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
     this.recursiveFileSystemWatcher.setClient(watcherClient);
     this.unrecursiveFileSystemWatcher.setClient(watcherClient);
+
+    if (force) {
+      // rewatch after new watcher instances are ready
+      for (const [_uri, { options }] of rewatchTargets) {
+        this.logger.log('rewatch file changes: ', _uri, ' recursive: ', options?.recursive);
+        this.doWatch(Uri.parse(_uri), options);
+      }
+    }
   }
 
   checkIsAlreadyWatched(watcherPath: string): number | undefined {
+    const pending = this.pendingWatchers.get(watcherPath);
+    if (pending) {
+      if (pending.version === this.watcherServerVersion) {
+        return pending.id;
+      }
+      this.pendingWatchers.delete(watcherPath);
+      this.WATCHER_HANDLERS.delete(pending.id);
+    }
     for (const [watcherId, watcher] of this.WATCHER_HANDLERS) {
       if (watcherPath === watcher.path) {
+        const hasCollection = Array.from(this.watcherCollection.keys()).some(
+          (uriString) => FileUri.fsPath(uriString) === watcherPath,
+        );
+        if (!hasCollection) {
+          this.logger.warn('stale watcher handler found, cleaning:', watcherPath);
+          this.WATCHER_HANDLERS.delete(watcherId);
+          return undefined;
+        }
         return watcherId;
       }
     }
@@ -122,10 +180,14 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
   private async doWatch(
     uri: Uri,
     options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
+    retry = 0,
   ): Promise<number> {
     this.initWatcherServer();
     const uriString = uri.toString();
     const basePath = FileUri.fsPath(uriString);
+    const watcherVersion = this.watcherServerVersion;
+    const recursiveWatcher = this.recursiveFileSystemWatcher!;
+    const unrecursiveWatcher = this.unrecursiveFileSystemWatcher!;
     let watcherId = this.checkIsAlreadyWatched(basePath);
 
     if (watcherId) {
@@ -139,6 +201,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       ...watcherPlaceHolder,
       path: basePath,
     });
+    this.pendingWatchers.set(basePath, { id: watcherId, uriString, options, version: watcherVersion });
 
     this.logger.log('watch file changes: ', uriString, ' recursive: ', options?.recursive);
 
@@ -150,7 +213,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     let recursiveWatchStarted = false;
 
     startWatchers.push(
-      this.unrecursiveFileSystemWatcher!.watchFileChanges(uriString).then(() => {
+      unrecursiveWatcher.watchFileChanges(uriString).then(() => {
         unrecursiveWatchStarted = true;
       }),
     );
@@ -158,10 +221,11 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     if (options?.recursive) {
       this.logger.log('use recursive watcher for: ', uriString);
       startWatchers.push(
-        this.recursiveFileSystemWatcher!.watchFileChanges(uriString, {
-          excludes: Array.from(mergedExcludes),
-          pollingWatch: options?.pollingWatch,
-        })
+        recursiveWatcher
+          .watchFileChanges(uriString, {
+            excludes: Array.from(mergedExcludes),
+            pollingWatch: options?.pollingWatch,
+          })
           .then(() => {
             recursiveWatchStarted = true;
           })
@@ -172,12 +236,43 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       );
     }
 
-    await Promise.all(startWatchers);
+    try {
+      await Promise.all(startWatchers);
+    } finally {
+      this.pendingWatchers.delete(basePath);
+      if (this.pendingWatchers.size === 0 && this.deferredExcludes) {
+        const deferred = this.deferredExcludes;
+        this.deferredExcludes = undefined;
+        if (deferred.key !== this.defaultExcludesKey) {
+          this.defaultExcludes = deferred.excludes;
+          this.defaultExcludesKey = deferred.key;
+          this.initWatcherServer(deferred.excludes, true);
+        }
+      }
+    }
+
+    if (watcherVersion !== this.watcherServerVersion) {
+      this.logger.warn('watcher server reset while starting watch, retrying:', uriString);
+      try {
+        unrecursiveWatcher.unwatchFileChanges(uriString);
+      } catch (error) {
+        this.logger.error('failed to cleanup unrecursive watcher after reset:', error);
+      }
+      try {
+        recursiveWatcher.unwatchFileChanges(uriString);
+      } catch (error) {
+        this.logger.error('failed to cleanup recursive watcher after reset:', error);
+      }
+      this.WATCHER_HANDLERS.delete(watcherId);
+      if (retry < 1) {
+        return this.doWatch(uri, options, retry + 1);
+      }
+    }
 
     if (unrecursiveWatchStarted) {
       disposables.push(
         Disposable.create(async () => {
-          this.unrecursiveFileSystemWatcher!.unwatchFileChanges(uriString);
+          unrecursiveWatcher.unwatchFileChanges(uriString);
           this.logger.log('dispose unrecursive watcher: ', uriString);
           this.watchedDirs.delete(uriString);
           this.WATCHER_HANDLERS.delete(watcherId);
@@ -189,7 +284,7 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       disposables.push(
         Disposable.create(async () => {
           this.logger.log('dispose recursive watcher: ', uriString);
-          this.recursiveFileSystemWatcher!.unwatchFileChanges(uriString);
+          recursiveWatcher.unwatchFileChanges(uriString);
           this.watchedDirs.delete(uriString);
           this.WATCHER_HANDLERS.delete(watcherId);
         }),
@@ -224,6 +319,18 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
 
   async $setWatcherFileExcludes(excludes: string[]): Promise<void> {
     this.logger.log('set watcher file excludes: ', excludes);
+    const nextKey = this.normalizeExcludes(excludes);
+    if (nextKey === this.defaultExcludesKey && this.recursiveFileSystemWatcher && this.unrecursiveFileSystemWatcher) {
+      this.logger.log('watcher excludes unchanged, skip reinit');
+      return;
+    }
+    if (this.pendingWatchers.size > 0) {
+      this.logger.log('watchers pending, defer reinit until ready');
+      this.deferredExcludes = { excludes, key: nextKey };
+      return;
+    }
+    this.defaultExcludes = excludes;
+    this.defaultExcludesKey = nextKey;
     this.initWatcherServer(excludes, true);
   }
 
