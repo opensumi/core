@@ -304,3 +304,149 @@ describe('Delete and update monitored files', () => {
     watcherServerList.push(watcherServer);
   });
 });
+
+describe('UnRecursiveFileSystemWatcher resource management', () => {
+  const track = temp.track();
+
+  async function generateWatcher() {
+    const injector = createNodeInjector([]);
+    const root = FileUri.create(fse.realpathSync(await temp.mkdir('unRecursive-resource-test')));
+    const watcherServer = new UnRecursiveFileSystemWatcher(injector.get(ILogServiceManager).getLogger());
+    fse.writeFileSync(FileUri.fsPath(root.resolve('test_file')), 'content');
+    return { root, watcherServer };
+  }
+
+  afterAll(async () => {
+    track.cleanupSync();
+  });
+
+  it('should add watcher to collections when watching', async () => {
+    const { root, watcherServer } = await generateWatcher();
+
+    await watcherServer.watchFileChanges(root.path.toString());
+
+    // Access private property for testing
+    const collections = watcherServer['watcherCollections'] as Map<string, fse.FSWatcher>;
+    expect(collections.size).toBeGreaterThan(0);
+
+    watcherServer.dispose();
+  });
+
+  it('should clear watcherCollections on dispose', async () => {
+    const { root, watcherServer } = await generateWatcher();
+
+    await watcherServer.watchFileChanges(root.path.toString());
+
+    const collections = watcherServer['watcherCollections'] as Map<string, fse.FSWatcher>;
+    expect(collections.size).toBeGreaterThan(0);
+
+    watcherServer.dispose();
+
+    expect(collections.size).toBe(0);
+  });
+
+  it('should remove watcher from collections on unwatchFileChanges', async () => {
+    const { root, watcherServer } = await generateWatcher();
+
+    await watcherServer.watchFileChanges(root.path.toString());
+
+    const collections = watcherServer['watcherCollections'] as Map<string, fse.FSWatcher>;
+    const sizeBefore = collections.size;
+    expect(sizeBefore).toBeGreaterThan(0);
+
+    watcherServer.unwatchFileChanges(root.path.toString());
+
+    expect(collections.size).toBeLessThan(sizeBefore);
+
+    watcherServer.dispose();
+  });
+
+  it('should handle symlink paths correctly in unwatchFileChanges', async () => {
+    const { root, watcherServer } = await generateWatcher();
+
+    // Create a symlink
+    const realDir = FileUri.fsPath(root.resolve('real_dir'));
+    const symlinkDir = FileUri.fsPath(root.resolve('symlink_dir'));
+
+    fse.mkdirSync(realDir);
+    fse.writeFileSync(`${realDir}/file.txt`, 'content');
+
+    try {
+      fse.symlinkSync(realDir, symlinkDir);
+    } catch {
+      // Skip test if symlinks are not supported
+      watcherServer.dispose();
+      return;
+    }
+
+    // Watch using symlink path
+    await watcherServer.watchFileChanges(symlinkDir);
+
+    const collections = watcherServer['watcherCollections'] as Map<string, fse.FSWatcher>;
+    expect(collections.size).toBeGreaterThan(0);
+
+    // Unwatch using symlink path - should still work
+    watcherServer.unwatchFileChanges(symlinkDir);
+
+    watcherServer.dispose();
+  });
+
+  it('should not trigger callbacks after dispose', async () => {
+    const { root, watcherServer } = await generateWatcher();
+    const receivedEvents: DidFilesChangedParams[] = [];
+
+    const watcherClient = {
+      onDidFilesChanged(event: DidFilesChangedParams) {
+        receivedEvents.push(event);
+      },
+    };
+
+    await watcherServer.watchFileChanges(root.path.toString());
+    watcherServer.setClient(watcherClient);
+
+    // Dispose immediately
+    watcherServer.dispose();
+
+    // Make file changes after dispose
+    fse.writeFileSync(FileUri.fsPath(root.resolve('new_file')), 'new content');
+
+    // Wait for potential delayed callbacks (FILE_DELETE_HANDLER_DELAY is 500ms)
+    await sleep(1000);
+
+    // Should not receive any events after dispose
+    expect(receivedEvents.length).toBe(0);
+  });
+
+  it('should properly clean up via disposable from start method', async () => {
+    const { root, watcherServer } = await generateWatcher();
+
+    await watcherServer.watchFileChanges(root.path.toString());
+
+    const collections = watcherServer['watcherCollections'] as Map<string, fse.FSWatcher>;
+    expect(collections.size).toBeGreaterThan(0);
+
+    // Dispose via toDispose (which contains the disposable from start)
+    const toDispose = watcherServer['toDispose'];
+    toDispose.dispose();
+
+    // Collections should be cleared
+    expect(collections.size).toBe(0);
+  });
+
+  it('should not watch duplicate paths', async () => {
+    const { root, watcherServer } = await generateWatcher();
+
+    await watcherServer.watchFileChanges(root.path.toString());
+    const collections = watcherServer['watcherCollections'] as Map<string, fse.FSWatcher>;
+    const sizeAfterFirst = collections.size;
+
+    // Watch the same path again
+    await watcherServer.watchFileChanges(root.path.toString());
+    const sizeAfterSecond = collections.size;
+
+    // Should not create duplicate watchers
+    expect(sizeAfterSecond).toBe(sizeAfterFirst);
+
+    watcherServer.dispose();
+  });
+});

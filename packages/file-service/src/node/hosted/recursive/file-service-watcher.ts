@@ -242,6 +242,16 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       return this.pollingWatch(realPath, rawOptions);
     }
 
+    // Linux 上 parcel watcher 可能失败，需要回退到 NSFW
+    if (isLinux) {
+      try {
+        return await this.watchWithParcel(realPath, rawOptions);
+      } catch (error) {
+        this.logger.warn(`[Recursive] parcel watcher failed for ${realPath}, falling back to nsfw.`, error);
+        return this.watchWithNsfw(realPath, rawOptions);
+      }
+    }
+
     return this.watchWithParcel(realPath, rawOptions);
   }
 
@@ -369,6 +379,9 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
             }
           }),
         );
+      } else if (isLinux) {
+        // Linux 上订阅失败，抛出错误以便 start 方法可以回退到 NSFW
+        throw new Error(`Parcel watcher subscribe failed for ${realPath}`);
       }
     } catch (error) {
       this.logger.error(`[Recursive] Error setting up watcher for ${realPath}:`, error);
@@ -377,6 +390,10 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
         backend: RecursiveWatcherBackend.PARCEL,
         message: error instanceof Error ? error.message : String(error),
       });
+      // Linux 上重新抛出错误以便回退到 NSFW
+      if (isLinux) {
+        throw error;
+      }
     }
 
     return disposables;
@@ -539,22 +556,87 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     return this.parcelWatcherAvailableOnLinux;
   }
 
+  /**
+   * 通过实际订阅并触发文件变更来检测 parcel/watcher 是否真正可用。
+   * 某些 Linux 系统上 parcel 的 snapshot 功能正常，但 subscribe 监听不生效，
+   * 因此需要通过实际触发事件来验证。
+   */
   private async detectParcelWatcherAvailabilityOnLinux(): Promise<boolean> {
     let tempDir: string | undefined;
+    let subscription: ParcelWatcher.AsyncSubscription | undefined;
+
+    const PROBE_TIMEOUT_MS = 3000;
 
     try {
       const tempDirPrefix = join(tmpdir(), 'opensumi-parcel-watch-');
       tempDir = await fs.mkdtemp(tempDirPrefix);
-      const snapshotPath = join(tempDir, 'snapshot');
-      await ParcelWatcher.writeSnapshot(tempDir, snapshotPath, {
-        backend: RecursiveFileSystemWatcher.PARCEL_WATCHER_BACKEND,
+      const testFile = join(tempDir, 'probe-test-file');
+
+      // 创建一个 Promise 来等待事件
+      const eventPromise = new Promise<boolean>((resolve) => {
+        const timeout = setTimeout(() => {
+          resolve(false);
+        }, PROBE_TIMEOUT_MS);
+
+        ParcelWatcher.subscribe(
+          tempDir!,
+          (err, events) => {
+            if (err) {
+              this.logger.warn('[Recursive] parcel/watcher probe received error:', err);
+              return;
+            }
+            // 检查是否收到了我们创建的测试文件的事件
+            const hasTestFileEvent = events.some((event) => event.path === testFile);
+            if (hasTestFileEvent) {
+              clearTimeout(timeout);
+              resolve(true);
+            }
+          },
+          {
+            backend: RecursiveFileSystemWatcher.PARCEL_WATCHER_BACKEND,
+          },
+        )
+          .then((sub) => {
+            subscription = sub;
+          })
+          .catch((subError) => {
+            this.logger.warn('[Recursive] parcel/watcher subscribe failed during probe:', subError);
+            clearTimeout(timeout);
+            resolve(false);
+          });
       });
-      this.logger.log('[Recursive] parcel/watcher backend available on linux, prefer parcel watcher.');
-      return true;
+
+      // 等待订阅建立后再触发文件变更
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // 触发文件变更事件
+      await fs.writeFile(testFile, 'probe');
+
+      // 等待事件或超时
+      const result = await eventPromise;
+
+      if (result) {
+        this.logger.log('[Recursive] parcel/watcher backend verified working on linux, prefer parcel watcher.');
+      } else {
+        this.logger.warn(
+          '[Recursive] parcel/watcher backend did not receive events on linux within timeout, will fallback to nsfw.',
+        );
+      }
+
+      return result;
     } catch (error) {
       this.logger.warn('[Recursive] parcel/watcher backend probe failed on linux.', error);
       return false;
     } finally {
+      // 清理订阅
+      if (subscription) {
+        try {
+          await subscription.unsubscribe();
+        } catch (unsubError) {
+          this.logger.debug('[Recursive] Failed to unsubscribe parcel watcher probe:', unsubError);
+        }
+      }
+      // 清理临时目录
       if (tempDir) {
         await fs
           .remove(tempDir)
