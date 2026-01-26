@@ -190,12 +190,9 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
     options?: { excludes?: string[]; recursive?: boolean; pollingWatch?: boolean },
     retry = 0,
   ): Promise<number> {
-    await this.initWatcherServer();
     const uriString = uri.toString();
     const basePath = FileUri.fsPath(uriString);
     const watcherVersion = this.watcherServerVersion;
-    const recursiveWatcher = this.recursiveFileSystemWatcher!;
-    const unrecursiveWatcher = this.unrecursiveFileSystemWatcher!;
     let watcherId = this.checkIsAlreadyWatched(basePath);
 
     if (watcherId) {
@@ -210,6 +207,17 @@ export class WatcherHostServiceImpl implements IWatcherHostService {
       path: basePath,
     });
     this.pendingWatchers.set(basePath, { id: watcherId, uriString, options, version: watcherVersion });
+
+    try {
+      await this.initWatcherServer();
+    } catch (error) {
+      this.pendingWatchers.delete(basePath);
+      this.WATCHER_HANDLERS.delete(watcherId);
+      throw error;
+    }
+
+    const recursiveWatcher = this.recursiveFileSystemWatcher!;
+    const unrecursiveWatcher = this.unrecursiveFileSystemWatcher!;
 
     this.logger.log('watch file changes: ', uriString, ' recursive: ', options?.recursive);
 
