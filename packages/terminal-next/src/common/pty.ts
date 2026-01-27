@@ -328,6 +328,7 @@ export interface ITerminalServiceClient {
     rows: number,
     launchConfig: IShellLaunchConfig,
   ): Promise<INodePtyInstance | undefined>;
+  input(id: string, data: string): void;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   disposeById(id: string): void;

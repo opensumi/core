@@ -27,8 +27,6 @@ export interface EventMessage {
 }
 @Injectable()
 export class NodePtyTerminalService extends Disposable implements ITerminalService {
-  static countId = 1;
-
   private backendOs: OperatingSystem | undefined;
 
   @Autowired(INJECTOR_TOKEN)
@@ -117,29 +115,12 @@ export class NodePtyTerminalService extends Disposable implements ITerminalServi
     this.logger.error(`${sessionId} cannot create ptyInstance`, ptyInstance);
   }
 
-  private _sendMessage(sessionId: string, json: any, requestId?: number) {
-    const id = requestId || NodePtyTerminalService.countId++;
-
-    this.serviceClientRPC.onMessage(
-      sessionId,
-      JSON.stringify({
-        id,
-        ...json,
-      }),
-    );
-  }
-
   async sendText(sessionId: string, message: string) {
-    this._sendMessage(sessionId, {
-      data: message,
-    });
+    this.serviceClientRPC.input(sessionId, message);
   }
 
   async resize(sessionId: string, cols: number, rows: number) {
-    this._sendMessage(sessionId, {
-      method: 'resize',
-      params: { cols, rows },
-    });
+    this.serviceClientRPC.resize(sessionId, rows, cols);
   }
 
   async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {

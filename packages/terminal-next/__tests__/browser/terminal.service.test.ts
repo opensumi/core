@@ -90,6 +90,12 @@ describe('terminal service test cases', () => {
             (terminalService as any)?.$processChange(sessionId, 'zsh');
           });
         },
+        input() {
+          // no-op for tests
+        },
+        resize() {
+          // no-op for tests
+        },
         $resolveUnixShellPath(p) {
           return p;
         },

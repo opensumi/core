@@ -155,13 +155,22 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   }
 
   onMessage(id: string, msg: string): void {
-    const { data, params, method } = JSON.parse(msg);
+    try {
+      const { data, params, method } = JSON.parse(msg);
 
-    if (method === 'resize') {
-      this.resize(id, params.rows, params.cols);
-    } else {
-      this.terminalService.onMessage(id, data);
+      if (method === 'resize') {
+        this.resize(id, params.rows, params.cols);
+      } else {
+        this.terminalService.onMessage(id, data);
+      }
+    } catch {
+      // Fallback for legacy/raw messages.
+      this.terminalService.onMessage(id, msg);
     }
+  }
+
+  input(id: string, data: string): void {
+    this.terminalService.onMessage(id, data);
   }
 
   resize(id: string, rows: number, cols: number) {

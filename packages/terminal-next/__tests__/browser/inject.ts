@@ -194,6 +194,12 @@ export const injector = new MockInjector([
         pid: 0,
         name: '123',
       }),
+      input() {
+        // no-op for tests
+      },
+      resize() {
+        // no-op for tests
+      },
       $resolveUnixShellPath(p) {
         return p;
       },
