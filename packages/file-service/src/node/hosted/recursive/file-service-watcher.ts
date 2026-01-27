@@ -65,6 +65,8 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
 
   private parcelWatcherAvailableOnLinux: boolean | undefined;
 
+  private isDisposed = false;
+
   constructor(
     private excludes: string[] = [],
     private readonly logger: ILogService,
@@ -78,6 +80,14 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     );
   }
 
+  dispose(): void {
+    if (this.isDisposed) {
+      return;
+    }
+    this.isDisposed = true;
+    super.dispose();
+  }
+
   /**
    * 如果监听路径不存在，则会监听父目录
    * @param uri 要监听的路径
@@ -85,6 +95,10 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
    * @returns
    */
   async watchFileChanges(uri: string, options?: WatchOptions) {
+    if (this.isDisposed) {
+      this.logger.warn('[Recursive] Watch requested after dispose, skip:', uri);
+      throw new Error(`Recursive watcher disposed: ${uri}`);
+    }
     return new Promise<void>((resolve, rej) => {
       const timer = setTimeout(() => {
         rej(`Watch ${uri} Timeout`);
@@ -95,16 +109,34 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
         this.updateWatcherFileExcludes(options.excludes);
       }
 
-      this.doWatchFileChange(uri, options).then(() => {
-        resolve(void 0);
-        if (timer) {
-          clearTimeout(timer);
-        }
-      });
+      this.doWatchFileChange(uri, options)
+        .then(() => {
+          resolve(void 0);
+          if (timer) {
+            clearTimeout(timer);
+          }
+        })
+        .catch((error) => {
+          if (timer) {
+            clearTimeout(timer);
+          }
+          rej(error);
+        });
     });
   }
 
+  private async resolveWatchPath(basePath: string): Promise<string> {
+    try {
+      return await fs.realpath(basePath);
+    } catch (e) {
+      return basePath;
+    }
+  }
+
   private async doWatchFileChange(uri: string, options?: WatchOptions) {
+    if (this.isDisposed) {
+      throw new Error(`Recursive watcher disposed: ${uri}`);
+    }
     const basePath = FileUri.fsPath(uri);
     this.logger.log('[Recursive] watch file changes: ', uri, 'basePath:', basePath);
 
@@ -128,17 +160,26 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       return;
     }
 
-    // 记录原始请求与真实监听目录的映射，方便后续释放
-    this.watchPathMap.set(basePath, watchPath);
+    const realWatchPath = await this.resolveWatchPath(watchPath);
+
+    const prevWatchPath = this.watchPathMap.get(basePath);
+
+    if (prevWatchPath && prevWatchPath !== realWatchPath) {
+      this.logger.warn(`[Recursive] Watch path changed from ${prevWatchPath} to ${realWatchPath}`);
+      this.disposeWatcher(prevWatchPath);
+    }
 
     // 先检查并清理已存在的 handler（使用 watchPath 确保目录级别的去重）
-    if (this.WATCHER_HANDLERS.has(watchPath!)) {
-      this.logger.debug(`[Recursive] Cleaning up existing watcher for directory: ${watchPath}`);
-      const handler = this.WATCHER_HANDLERS.get(watchPath!);
+    if (this.WATCHER_HANDLERS.has(realWatchPath)) {
+      this.logger.debug(`[Recursive] Cleaning up existing watcher for directory: ${realWatchPath}`);
+      const handler = this.WATCHER_HANDLERS.get(realWatchPath);
       handler?.disposable.dispose();
-      this.WATCHER_HANDLERS.delete(watchPath!);
-      this.cleanupWatchPathMap(watchPath);
+      this.WATCHER_HANDLERS.delete(realWatchPath);
+      this.cleanupWatchPathMap(realWatchPath);
     }
+
+    // 记录原始请求与真实监听目录的映射，方便后续释放
+    this.watchPathMap.set(basePath, realWatchPath);
 
     const handler = (err, events: ParcelWatcher.Event[]) => {
       if (err) {
@@ -161,13 +202,20 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       }
     };
 
-    this.WATCHER_HANDLERS.set(watchPath, {
-      path: watchPath,
+    this.WATCHER_HANDLERS.set(realWatchPath, {
+      path: realWatchPath,
       disposable: toDisposeWatcher,
       handlers: [handler],
     });
 
-    toDisposeWatcher.push(await this.start(watchPath, options));
+    toDisposeWatcher.push(await this.start(realWatchPath, options));
+    if (this.isDisposed) {
+      this.logger.warn('[Recursive] Watcher disposed while starting, cleanup:', uri);
+      this.WATCHER_HANDLERS.delete(realWatchPath);
+      this.watchPathMap.delete(basePath);
+      await toDisposeWatcher.dispose();
+      throw new Error(`Recursive watcher disposed while starting: ${uri}`);
+    }
     this.addDispose(toDisposeWatcher);
   }
 
@@ -212,7 +260,7 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
       return new DisposableCollection();
     }
 
-    const realPath = await fs.realpath(basePath);
+    const realPath = await this.resolveWatchPath(basePath);
     const shouldUseNSFW = await this.shouldUseNSFW();
 
     if (shouldUseNSFW) {
@@ -223,6 +271,16 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     if (rawOptions?.pollingWatch) {
       this.logger.log('[Recursive] Start polling watch:', realPath);
       return this.pollingWatch(realPath, rawOptions);
+    }
+
+    // Linux 上 parcel watcher 可能失败，需要回退到 NSFW
+    if (isLinux) {
+      try {
+        return await this.watchWithParcel(realPath, rawOptions);
+      } catch (error) {
+        this.logger.warn(`[Recursive] parcel watcher failed for ${realPath}, falling back to nsfw.`, error);
+        return this.watchWithNsfw(realPath, rawOptions);
+      }
     }
 
     return this.watchWithParcel(realPath, rawOptions);
@@ -352,6 +410,9 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
             }
           }),
         );
+      } else if (isLinux) {
+        // Linux 上订阅失败，抛出错误以便 start 方法可以回退到 NSFW
+        throw new Error(`Parcel watcher subscribe failed for ${realPath}`);
       }
     } catch (error) {
       this.logger.error(`[Recursive] Error setting up watcher for ${realPath}:`, error);
@@ -360,6 +421,10 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
         backend: RecursiveWatcherBackend.PARCEL,
         message: error instanceof Error ? error.message : String(error),
       });
+      // Linux 上重新抛出错误以便回退到 NSFW
+      if (isLinux) {
+        throw error;
+      }
     }
 
     return disposables;
@@ -522,22 +587,87 @@ export class RecursiveFileSystemWatcher extends Disposable implements IWatcher {
     return this.parcelWatcherAvailableOnLinux;
   }
 
+  /**
+   * 通过实际订阅并触发文件变更来检测 parcel/watcher 是否真正可用。
+   * 某些 Linux 系统上 parcel 的 snapshot 功能正常，但 subscribe 监听不生效，
+   * 因此需要通过实际触发事件来验证。
+   */
   private async detectParcelWatcherAvailabilityOnLinux(): Promise<boolean> {
     let tempDir: string | undefined;
+    let subscription: ParcelWatcher.AsyncSubscription | undefined;
+
+    const PROBE_TIMEOUT_MS = 3000;
 
     try {
       const tempDirPrefix = join(tmpdir(), 'opensumi-parcel-watch-');
       tempDir = await fs.mkdtemp(tempDirPrefix);
-      const snapshotPath = join(tempDir, 'snapshot');
-      await ParcelWatcher.writeSnapshot(tempDir, snapshotPath, {
-        backend: RecursiveFileSystemWatcher.PARCEL_WATCHER_BACKEND,
+      const testFile = join(tempDir, 'probe-test-file');
+
+      // 创建一个 Promise 来等待事件
+      const eventPromise = new Promise<boolean>((resolve) => {
+        const timeout = setTimeout(() => {
+          resolve(false);
+        }, PROBE_TIMEOUT_MS);
+
+        ParcelWatcher.subscribe(
+          tempDir!,
+          (err, events) => {
+            if (err) {
+              this.logger.warn('[Recursive] parcel/watcher probe received error:', err);
+              return;
+            }
+            // 检查是否收到了我们创建的测试文件的事件
+            const hasTestFileEvent = events.some((event) => event.path === testFile);
+            if (hasTestFileEvent) {
+              clearTimeout(timeout);
+              resolve(true);
+            }
+          },
+          {
+            backend: RecursiveFileSystemWatcher.PARCEL_WATCHER_BACKEND,
+          },
+        )
+          .then((sub) => {
+            subscription = sub;
+          })
+          .catch((subError) => {
+            this.logger.warn('[Recursive] parcel/watcher subscribe failed during probe:', subError);
+            clearTimeout(timeout);
+            resolve(false);
+          });
       });
-      this.logger.log('[Recursive] parcel/watcher backend available on linux, prefer parcel watcher.');
-      return true;
+
+      // 等待订阅建立后再触发文件变更
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // 触发文件变更事件
+      await fs.writeFile(testFile, 'probe');
+
+      // 等待事件或超时
+      const result = await eventPromise;
+
+      if (result) {
+        this.logger.log('[Recursive] parcel/watcher backend verified working on linux, prefer parcel watcher.');
+      } else {
+        this.logger.warn(
+          '[Recursive] parcel/watcher backend did not receive events on linux within timeout, will fallback to nsfw.',
+        );
+      }
+
+      return result;
     } catch (error) {
       this.logger.warn('[Recursive] parcel/watcher backend probe failed on linux.', error);
       return false;
     } finally {
+      // 清理订阅
+      if (subscription) {
+        try {
+          await subscription.unsubscribe();
+        } catch (unsubError) {
+          this.logger.debug('[Recursive] Failed to unsubscribe parcel watcher probe:', unsubError);
+        }
+      }
+      // 清理临时目录
       if (tempDir) {
         await fs
           .remove(tempDir)
