@@ -92,6 +92,7 @@ class MockTerminalClient implements ITerminalServiceClient {
   reconnectedIds: string[] = [];
   disconnectedIds: string[] = [];
   setConnectionClientId(): void {}
+  input(): void {}
   onMessage(): void {}
   resize(): void {}
   disposeById(): void {}
