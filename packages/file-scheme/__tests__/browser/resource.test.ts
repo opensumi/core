@@ -1,7 +1,14 @@
 import { IApplicationService, IJSONSchemaRegistry, ISchemaStore, localize } from '@opensumi/ide-core-browser';
 import { DefaultUriLabelProvider } from '@opensumi/ide-core-browser/lib/services';
 import { CommonServerPath } from '@opensumi/ide-core-common';
-import { BinaryBuffer, Disposable, OperatingSystem, URI } from '@opensumi/ide-core-common';
+import {
+  BinaryBuffer,
+  Disposable,
+  OperatingSystem,
+  SaveTaskErrorCause,
+  SaveTaskResponseState,
+  URI,
+} from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
@@ -181,5 +188,33 @@ describe('file scheme tests', () => {
         testSchemaKey: 'string',
       }),
     );
+  });
+
+  it('should fallback to saveByContent when saveByChange returns USE_BY_CONTENT', async () => {
+    const documentProvider = injector.get(FileSchemeDocumentProvider);
+
+    const saveByContent = jest.fn(() => ({ state: SaveTaskResponseState.SUCCESS }));
+    injector.mock(FileSchemeDocNodeServicePath, '$saveByContent', saveByContent);
+
+    const saveByChange = jest.fn(() => ({
+      state: SaveTaskResponseState.ERROR,
+      errorMessage: SaveTaskErrorCause.USE_BY_CONTENT,
+    }));
+    injector.mock(FileSchemeDocNodeServicePath, '$saveByChange', saveByChange);
+
+    // Content exceeding FILE_SAVE_BY_CHANGE_THRESHOLD (100KB) to trigger saveByChange path
+    const largeContent = 'x'.repeat(100001);
+
+    const result = await documentProvider.saveDocumentModel(
+      new URI('file:///test-fallback.ts'),
+      largeContent,
+      'baseContent',
+      [],
+      'utf8',
+    );
+
+    expect(saveByChange).toHaveBeenCalledTimes(1);
+    expect(saveByContent).toHaveBeenCalledTimes(1);
+    expect(result.state).toBe(SaveTaskResponseState.SUCCESS);
   });
 });
