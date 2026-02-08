@@ -133,6 +133,7 @@ export interface IServerAppOpts extends Partial<Config> {
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
   wsServerOptions?: ws.ServerOptions;
+  connectionPaths?: string[];
   pathMatchOptions?: {
     // When true the regexp will match to the end of the string.
     end?: boolean;
