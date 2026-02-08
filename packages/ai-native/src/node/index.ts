@@ -3,9 +3,10 @@ import { AIBackSerivcePath, AIBackSerivceToken } from '@opensumi/ide-core-common
 import { NodeModule } from '@opensumi/ide-core-node';
 import { BaseAIBackService } from '@opensumi/ide-core-node/lib/ai-native/base-back.service';
 
-import { SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
+import { CheckpointTrackerServiceToken, SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
 import { ToolInvocationRegistryManager, ToolInvocationRegistryManagerImpl } from '../common/tool-invocation-registry';
 
+import { CheckpointTrackerService } from './check-point/CheckpointTrackerService';
 import { SumiMCPServerBackend } from './mcp/sumi-mcp-server';
 
 @Injectable()
@@ -22,6 +23,10 @@ export class AINativeModule extends NodeModule {
     {
       token: TokenMCPServerProxyService,
       useClass: SumiMCPServerBackend,
+    },
+    {
+      token: CheckpointTrackerServiceToken,
+      useClass: CheckpointTrackerService,
     },
   ];
 
