@@ -1,3 +1,19 @@
+/**
+ * ChatFeatureRegistry - 聊天功能注册器
+ *
+ * 负责管理聊天功能的注册和查询：
+ * - 注册和管理斜杠命令及其处理器
+ * - 注册欢迎内容和示例问题
+ * - 注册图片上传提供者和消息总结提供者
+ * - 解析斜杠命令
+ *
+ * 被以下类调用:
+ * - ChatModel: 创建欢迎消息和命令项模型
+ * - ChatManagerService: 依赖注入使用
+ * - ChatAgentService: 依赖注入使用
+ * - ChatProxyService: 注册斜杠命令
+ * - ChatAgentViewService: 注册欢迎消息
+ */
 import { Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event, getDebugLogger } from '@opensumi/ide-core-common';
 

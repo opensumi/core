@@ -1,3 +1,16 @@
+/**
+ * ChatProxyService - 聊天代理服务
+ *
+ * 负责注册默认的聊天 Agent，作为 AI 后端服务和聊天界面之间的代理：
+ * - 注册默认 Agent 处理聊天请求
+ * - 调用 AI 后端服务进行流式请求
+ * - 管理请求配置（模型、API Key、系统提示等）
+ *
+ * 被以下类调用:
+ * - ChatFeatureRegistry: 使用 AGENT_ID 注册斜杠命令
+ * - ChatAgentViewService: 过滤渲染 Agent 时排除默认 Agent
+ * - ApplyService: 依赖注入使用，获取请求配置
+ */
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import {

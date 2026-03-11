@@ -1,3 +1,15 @@
+/**
+ * ChatAgentViewService - 聊天 Agent 视图服务
+ *
+ * 负责管理聊天视图中的组件渲染和 Agent 展示：
+ * - 注册和管理聊天组件配置
+ * - 提供组件配置的延迟加载支持
+ * - 获取可渲染的 Agent 列表
+ *
+ * 被以下类调用:
+ * - ChatProxyService: 注册聊天组件
+ * - ChatView (chat.view.tsx): 获取组件配置和渲染 Agent
+ */
 import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, IDisposable } from '@opensumi/ide-core-common';
 

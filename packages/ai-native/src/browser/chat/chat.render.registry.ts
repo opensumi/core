@@ -1,3 +1,18 @@
+/**
+ * ChatRenderRegistry - 聊天渲染注册器
+ *
+ * 负责管理聊天视图各部分的渲染组件注册：
+ * - 欢迎页面渲染
+ * - AI 角色消息渲染
+ * - 用户角色消息渲染
+ * - 思考状态渲染
+ * - 输入框渲染
+ * - 思考结果渲染
+ * - 视图头部渲染
+ *
+ * 被以下类调用:
+ * - ChatView (chat.view.tsx): 获取注册的渲染组件
+ */
 import { Injectable } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 

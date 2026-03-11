@@ -1,3 +1,17 @@
+/**
+ * ChatInternalService - 聊天内部服务
+ *
+ * 负责聊天功能的内部状态管理和事件控制：
+ * - 管理当前会话模型
+ * - 创建和管理请求
+ * - 发送和取消请求
+ * - 管理会话生命周期（创建、清除、激活）
+ * - 提供事件通知（Request 变化、Session 变化、取消、重新生成等）
+ *
+ * 被以下类调用:
+ * - ChatService: 依赖注入使用，用于访问 sessionModel
+ * - ChatView (chat.view.tsx): 依赖注入使用，用于会话管理和事件订阅
+ */
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AIBackSerivcePath, Disposable, Emitter, Event, IAIBackService } from '@opensumi/ide-core-common';

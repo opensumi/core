@@ -1,3 +1,14 @@
+/**
+ * ChatEditSchemeDocumentProvider - 聊天编辑方案文档提供者
+ *
+ * 负责提供聊天编辑功能的文档内容：
+ * - 处理特定 scheme 的文档内容请求
+ * - 从 BaseApplyService 获取代码块的原始或更新后内容
+ * - 提供只读文档模型
+ *
+ * 被以下类调用:
+ * - 由 IDE 编辑器系统通过 IEditorDocumentModelContentProvider 接口调用
+ */
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, Emitter, Event, IApplicationService, PreferenceService, URI } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';

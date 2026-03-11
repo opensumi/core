@@ -1,3 +1,14 @@
+/**
+ * ChatManagerService - 聊天会话管理器服务
+ *
+ * 负责管理 AI 聊天的会话生命周期，包括：
+ * - 创建、获取、清除聊天会话
+ * - 管理聊天请求的发送和取消
+ * - 持久化会话历史到存储
+ *
+ * 被以下类调用:
+ * - ChatInternalService: 依赖注入使用，用于会话管理操作
+ */
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
@@ -88,14 +99,11 @@ export class ChatManagerService extends Disposable {
     return data
       .filter((item) => item.history.messages.length > 0)
       .map((item) => {
-        const model = new ChatModel(
-          this.chatFeatureRegistry,
-          {
-            sessionId: item.sessionId,
-            history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
-            modelId: item.modelId,
-          },
-        );
+        const model = new ChatModel(this.chatFeatureRegistry, {
+          sessionId: item.sessionId,
+          history: new MsgHistoryManager(this.chatFeatureRegistry, item.history),
+          modelId: item.modelId,
+        });
         const requests = item.requests.map(
           (request) =>
             new ChatRequestModel(
@@ -138,9 +146,7 @@ export class ChatManagerService extends Disposable {
   }
 
   startSession() {
-    const model = new ChatModel(
-      this.chatFeatureRegistry,
-    );
+    const model = new ChatModel(this.chatFeatureRegistry);
     this.#sessionModels.set(model.sessionId, model);
     this.listenSession(model);
     return model;

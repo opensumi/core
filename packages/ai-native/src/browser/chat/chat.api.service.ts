@@ -1,3 +1,16 @@
+/**
+ * ChatService - 聊天 API 服务
+ *
+ * 提供聊天功能的外部调用接口，负责消息发送和视图控制：
+ * - 显示聊天视图
+ * - 发送用户消息和 AI 回复消息
+ * - 管理消息列表和滚动行为
+ * - 清除历史消息
+ *
+ * 被以下类调用:
+ * - ChatAgentService: 填充聊天输入
+ * - 外部模块：通过 ChatServiceToken 注入使用
+ */
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { IChatComponent, IChatContent } from '@opensumi/ide-core-common/lib/types/ai-native';

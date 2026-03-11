@@ -1,3 +1,18 @@
+/**
+ * ChatModel - 聊天数据模型
+ *
+ * 定义了聊天会话、请求、响应的数据模型：
+ * - ChatModel: 表示一个聊天会话，管理会话 ID、历史消息和请求列表
+ * - ChatRequestModel: 表示一次聊天请求，包含请求消息和响应
+ * - ChatResponseModel: 表示聊天响应，管理响应内容、状态和错误信息
+ * - ChatWelcomeMessageModel: 表示欢迎消息和示例问题
+ * - ChatSlashCommandItemModel: 表示斜杠命令项
+ *
+ * 被以下类调用:
+ * - ChatManagerService: 创建和管理会话模型
+ * - ChatFeatureRegistry: 创建欢迎消息和命令项模型
+ * - ChatInternalService: 使用会话模型进行会话管理
+ */
 /* eslint-disable no-console */
 import { Injectable } from '@opensumi/di';
 import {
