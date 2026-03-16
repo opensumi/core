@@ -212,7 +212,7 @@ export class DebugLog implements IDebugLog {
 
   constructor(namespace?: string) {
     if (typeof process !== 'undefined' && process.env && process.env.KTLOG_SHOW_DEBUG) {
-      this.isEnable = true;
+      // this.isEnable = true;
     }
 
     this.namespace = namespace || '';
@@ -296,7 +296,7 @@ export class DebugLog implements IDebugLog {
     return console.info(this.getPre('log', 'green'), ...args);
   };
 
-  destroy() { }
+  destroy() {}
 }
 
 /**
@@ -338,6 +338,6 @@ export function getDebugLogger(namespace?: string): IDebugLog {
       showWarn();
       return debugLog.warn;
     },
-    destroy() { },
+    destroy() {},
   };
 }

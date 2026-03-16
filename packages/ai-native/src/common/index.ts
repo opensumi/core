@@ -129,6 +129,7 @@ export interface ChatCompletionRequestMessage {
 export const IChatInternalService = Symbol('IChatInternalService');
 export const IChatManagerService = Symbol('IChatManagerService');
 export const IChatAgentService = Symbol('IChatAgentService');
+export const DefaultChatAgentToken = Symbol('DefaultChatAgentToken');
 
 export const ChatProxyServiceToken = Symbol('ChatProxyServiceToken');
 
@@ -336,3 +337,23 @@ export const InlineDiffServiceToken = Symbol('InlineDiffService');
 
 export * from './tool-invocation-registry';
 export * from './mdc-parser';
+export {
+  AcpPermissionDecision,
+  AcpPermissionDialogParams,
+  AcpPermissionServicePath,
+  IAcpPermissionService,
+  IAcpPermissionCaller,
+  AcpPermissionServiceToken,
+} from './acp-types';
+
+export {
+  ACPAgentType,
+  ACPAgentTypeEnum,
+  AgentConfig,
+  AgentProcessConfig,
+  DEFAULT_AGENT_TYPE,
+  AGENT_CONFIGS,
+  getAgentConfig,
+  isSupportedAgentType,
+  getSupportedAgentTypes,
+} from './agent-types';

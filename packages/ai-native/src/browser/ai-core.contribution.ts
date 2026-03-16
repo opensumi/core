@@ -306,7 +306,7 @@ export class AINativeBrowserContribution
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, DESIGN_MENU_BAR_RIGHT, AI_CHAT_LOGO_AVATAR_ID);
       this.chatProxyService.registerDefaultAgent();
       this.chatInternalService.init();
-      await this.chatManagerService.init();
+      this.chatManagerService.init();
     }
   }
 

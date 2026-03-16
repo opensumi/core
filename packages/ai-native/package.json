@@ -19,6 +19,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
+    "@agentclientprotocol/sdk": "^0.16.1",
     "@ai-sdk/anthropic": "^1.1.9",
     "@ai-sdk/deepseek": "^0.1.11",
     "@ai-sdk/openai": "^1.1.9",

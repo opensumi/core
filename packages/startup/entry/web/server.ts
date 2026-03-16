@@ -15,10 +15,10 @@ import { CommonNodeModules } from '../../src/node/common-modules';
 import { AIBackService } from '../sample-modules/ai-native/ai.back.service';
 
 const injectorProviders: Provider[] = [
-  {
-    token: AIBackSerivceToken,
-    useClass: AIBackService,
-  },
+  // {
+  //   token: AIBackSerivceToken,
+  //   useClass: AIBackService,
+  // },
 ];
 
 // Only override terminal pty manager to use remote proxy when env is provided.

@@ -23,7 +23,10 @@ import {
 import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
 import {
+  AcpPermissionServicePath,
+  AcpPermissionServiceToken,
   ChatProxyServiceToken,
+  DefaultChatAgentToken,
   IAIInlineCompletionsProvider,
   IChatAgentService,
   IChatInternalService,
@@ -35,8 +38,13 @@ import {
 import { LLMContextServiceToken } from '../common/llm-context';
 import { MCPServerManager, MCPServerManagerPath } from '../common/mcp-server-manager';
 import { ChatAgentPromptProvider, DefaultChatAgentPromptProvider } from '../common/prompts/context-prompt-provider';
+import { ACPChatAgentPromptProvider } from '../common/prompts/empty-prompt-provider';
 
+import { AcpPermissionBridgeService, AcpPermissionRpcService } from './acp';
+import { AcpPermissionDialogContribution, PermissionDialogManager } from './acp/permission-dialog-container';
 import { AINativeBrowserContribution } from './ai-core.contribution';
+import { AcpChatAgent } from './chat/acp-chat-agent';
+import { ACPSessionProvider } from './chat/acp-session-provider';
 import { ApplyService } from './chat/apply.service';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
@@ -46,6 +54,8 @@ import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
+import { LocalStorageProvider } from './chat/local-storage-provider';
+import { ISessionProviderRegistry, SessionProviderRegistry } from './chat/session-provider-registry';
 import { LlmContextContribution } from './context/llm-context.contribution';
 import { LLMContextServiceImpl } from './context/llm-context.service';
 import { AICodeActionContribution } from './contrib/code-action/code-action.contribution';
@@ -106,6 +116,18 @@ export class AINativeModule extends BrowserModule {
     MCPConfigContribution,
     MCPConfigCommandContribution,
     MCPPreferencesContribution,
+    AINativeBrowserContribution,
+    AcpPermissionDialogContribution,
+    PermissionDialogManager,
+    AcpPermissionBridgeService,
+
+    {
+      token: ISessionProviderRegistry,
+      useClass: SessionProviderRegistry,
+    },
+    // Session Providers
+    LocalStorageProvider,
+    ACPSessionProvider,
 
     // MCP Server Contributions START
     ListDirTool,
@@ -179,6 +201,10 @@ export class AINativeModule extends BrowserModule {
       useClass: ChatProxyService,
     },
     {
+      token: DefaultChatAgentToken,
+      useClass: AcpChatAgent,
+    },
+    {
       token: ChatServiceToken,
       useClass: ChatService,
     },
@@ -204,7 +230,13 @@ export class AINativeModule extends BrowserModule {
     },
     {
       token: ChatAgentPromptProvider,
-      useClass: DefaultChatAgentPromptProvider,
+      useFactory(injector) {
+        const config = injector.get(AINativeConfigService);
+        if (config.capabilities.supportsAgentMode) {
+          return new ACPChatAgentPromptProvider();
+        }
+        return new DefaultChatAgentPromptProvider();
+      },
     },
     {
       token: InlineDiffServiceToken,
@@ -228,6 +260,10 @@ export class AINativeModule extends BrowserModule {
       dropdownForTag: true,
       tag: 'mcp',
     },
+    {
+      token: AcpPermissionServiceToken,
+      useClass: AcpPermissionRpcService,
+    },
   ];
 
   backServices = [
@@ -243,6 +279,10 @@ export class AINativeModule extends BrowserModule {
     {
       clientToken: TokenMCPServerProxyService,
       servicePath: SumiMCPServerProxyServicePath,
+    },
+    {
+      servicePath: AcpPermissionServicePath,
+      clientToken: AcpPermissionServiceToken,
     },
   ];
 }

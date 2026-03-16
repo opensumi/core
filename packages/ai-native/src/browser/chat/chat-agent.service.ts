@@ -159,7 +159,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   ): Promise<IChatAgentResult> {
     const data = this.agents.get(id);
     if (!data) {
-      throw new Error(`No agent with id ${id}`);
+      throw new Error(`No agent with id ${id},this.agents ${this.agents}`);
     }
 
     // 发送第一条消息时携带初始 context

@@ -50,6 +50,14 @@ export class ChatInternalService extends Disposable {
   private readonly _onRegenerateRequest = new Emitter<void>();
   public readonly onRegenerateRequest: Event<void> = this._onRegenerateRequest.event;
 
+  /** 当 Agent 模式切换成功时触发，payload 为新的 modeId */
+  private readonly _onModeChange = new Emitter<string>();
+  public readonly onModeChange: Event<string> = this._onModeChange.event;
+
+  /** 会话切换loading状态变化事件 */
+  private readonly _onSessionLoadingChange = new Emitter<boolean>();
+  public readonly onSessionLoadingChange: Event<boolean> = this._onSessionLoadingChange.event;
+
   private _latestRequestId: string;
   public get latestRequestId(): string {
     return this._latestRequestId;
@@ -61,14 +69,29 @@ export class ChatInternalService extends Disposable {
   }
 
   init() {
-    this.chatManagerService.onStorageInit(() => {
+    this.chatManagerService.onStorageInit(async () => {
       const sessions = this.chatManagerService.getSessions();
       if (sessions.length > 0) {
-        this.activateSession(sessions[sessions.length - 1].sessionId);
+        await this.activateSession(sessions[sessions.length - 1].sessionId);
       } else {
         this.createSessionModel();
       }
     });
+  }
+
+  /**
+   * 设置当前会话的模式
+   * @param modeId 模式 ID
+   */
+  async setSessionMode(modeId: string): Promise<void> {
+    const sessionId = this.#sessionModel?.sessionId;
+    if (!sessionId) {
+      throw new Error('No active session');
+    }
+
+    await this.aiBackService.setSessionMode?.(sessionId, modeId);
+    // 切换成功后通知前端 UI 同步更新当前模式
+    this._onModeChange.fire(modeId);
   }
 
   public setLatestRequestId(id: string): void {
@@ -93,36 +116,51 @@ export class ChatInternalService extends Disposable {
     this._onCancelRequest.fire();
   }
 
-  createSessionModel() {
-    this.#sessionModel = this.chatManagerService.startSession();
+  async createSessionModel() {
+    // this.__isSessionLoading =  true;
+    this._onSessionLoadingChange.fire(true);
+    this.#sessionModel = await this.chatManagerService.startSession();
     this._onChangeSession.fire(this.#sessionModel.sessionId);
+    // this.__isSessionLoading =  false;
+    this._onSessionLoadingChange.fire(false);
   }
 
-  clearSessionModel(sessionId?: string) {
+  async clearSessionModel(sessionId?: string) {
     sessionId = sessionId || this.#sessionModel.sessionId;
     this._onWillClearSession.fire(sessionId);
     this.chatManagerService.clearSession(sessionId);
     if (sessionId === this.#sessionModel.sessionId) {
-      this.#sessionModel = this.chatManagerService.startSession();
+      this.#sessionModel = await this.chatManagerService.startSession();
     }
     this._onChangeSession.fire(this.#sessionModel.sessionId);
   }
 
   getSessions() {
-    return this.chatManagerService.getSessions();
+    const sessions = this.chatManagerService.getSessions();
+
+    return sessions;
   }
 
   getSession(sessionId: string) {
     return this.chatManagerService.getSession(sessionId);
   }
 
-  activateSession(sessionId: string) {
-    const targetSession = this.chatManagerService.getSession(sessionId);
-    if (!targetSession) {
-      throw new Error(`There is no session with session id ${sessionId}`);
+  async activateSession(sessionId: string) {
+    // 设置会话loading状态
+    // this.__isSessionLoading = true;
+    this._onSessionLoadingChange.fire(true);
+    try {
+      const targetSession = await this.chatManagerService.getSession(sessionId);
+      if (!targetSession) {
+        throw new Error(`There is no session with session id ${sessionId}`);
+      }
+      this.#sessionModel = targetSession;
+      this._onChangeSession.fire(this.#sessionModel.sessionId);
+    } finally {
+      // 会话加载完成，关闭loading状态
+      // this.__isSessionLoading = false;
+      this._onSessionLoadingChange.fire(false);
     }
-    this.#sessionModel = targetSession;
-    this._onChangeSession.fire(this.#sessionModel.sessionId);
   }
 
   override dispose(): void {

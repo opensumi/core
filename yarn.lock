@@ -12,6 +12,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@agentclientprotocol/sdk@npm:^0.16.1":
+  version: 0.16.1
+  resolution: "@agentclientprotocol/sdk@npm:0.16.1"
+  peerDependencies:
+    zod: ^3.25.0 || ^4.0.0
+  checksum: 10/565495a1024712423ddac966a944ae03ee1e54592504be74cc538250979e907f91550f7ba9fef080aac4cc15de430ee44bdd3bda32009a2735513d4024cec1f5
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/anthropic@npm:^1.1.9":
   version: 1.1.9
   resolution: "@ai-sdk/anthropic@npm:1.1.9"
@@ -3414,6 +3423,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-ai-native@workspace:packages/ai-native"
   dependencies:
+    "@agentclientprotocol/sdk": "npm:^0.16.1"
     "@ai-sdk/anthropic": "npm:^1.1.9"
     "@ai-sdk/deepseek": "npm:^0.1.11"
     "@ai-sdk/openai": "npm:^1.1.9"

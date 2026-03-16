@@ -557,12 +557,7 @@ Good: "Instance network interfaces exceeded system limit"`;
     });
   }
 
-  registerChatAgentPromptProvider(): void {
-    this.injector.overrideProviders({
-      token: ChatAgentPromptProvider,
-      useClass: DefaultChatAgentPromptProvider,
-    });
-  }
+  registerChatAgentPromptProvider(): void {}
 }
 
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024;

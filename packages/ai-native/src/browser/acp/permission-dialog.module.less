@@ -1,0 +1,121 @@
+.permissionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.permissionDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--kt-panel-background);
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--kt-panel-border);
+}
+
+.detailRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 12px;
+  color: var(--kt-text-subtoken);
+  font-weight: 500;
+}
+
+.detailValue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.commandCode {
+  background: var(--kt-code-background);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--kt-text-highlight);
+  word-break: break-all;
+  margin: 0;
+}
+
+.locationList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.locationItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--kt-badge-background);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--kt-text-secondary);
+}
+
+.contentPreview {
+  background: var(--kt-code-background);
+  padding: 8px;
+  border-radius: 4px;
+  max-height: 150px;
+  overflow: auto;
+
+  pre {
+    margin: 0;
+    font-size: 12px;
+    font-family: var(--kt-code-font-family);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}
+
+.timeoutSection {
+  background: var(--kt-panel-background);
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.timeoutHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--kt-text-subtoken);
+}
+
+.timeoutValue {
+  font-weight: 600;
+  color: var(--kt-text-highlight);
+  min-width: 40px;
+  text-align: right;
+}
+
+.warningMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--kt-noticeInfo-background);
+  border-left: 3px solid var(--kt-noticeInfo-foreground);
+  border-radius: 0 4px 4px 0;
+  font-size: 12px;
+  color: var(--kt-text-secondary);
+
+  span {
+    line-height: 1.4;
+  }
+}
+
+.dialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

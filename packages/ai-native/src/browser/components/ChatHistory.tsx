@@ -233,7 +233,7 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
           <div className={styles.chat_history_list}>
             {groupedHistoryList.map((group) => (
               <div key={group.key} style={{ padding: '4px' }}>
-                <div className={styles.chat_history_time}>{group.key}</div>
+                {/* <div className={styles.chat_history_time}>{group.key}</div> */}
                 {group.items.map(renderHistoryItem)}
               </div>
             ))}
