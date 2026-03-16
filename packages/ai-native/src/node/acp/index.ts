@@ -1,4 +1,4 @@
-export { AcpCliClientService, AcpCliClientServiceToken, IAcpCliClientService } from './acp-cli-client.service';
+export { AcpCliClientService } from './acp-cli-client.service';
 export {
   CliAgentProcessManager,
   CliAgentProcessManagerToken,
@@ -9,9 +9,4 @@ export { AcpFileSystemHandler } from './handlers/file-system.handler';
 export { AcpTerminalHandler } from './handlers/terminal.handler';
 export { AcpAgentRequestHandler } from './handlers/agent-request.handler';
 export { AcpAgentService, AcpAgentServiceToken, IAcpAgentService } from './acp-agent.service';
-export {
-  AcpPermissionCallerManager,
-  AcpPermissionCallerManagerToken,
-  AcpPermissionCallerManagerPath,
-  AcpPermissionServicePath,
-} from './acp-permission-caller.service';
+export { AcpPermissionCallerManager, AcpPermissionCallerManagerToken } from './acp-permission-caller.service';

@@ -21,31 +21,14 @@ export class ACPSessionProvider implements ISessionProvider {
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
-  /**
-   * 缓存已加载的 Session，避免重复加载
-   */
   private loadedSessionMap: Map<string, ISessionModel> = new Map();
 
-  /**
-   * 缓存已加载的 Sessions，避免重复加载
-   */
   private loadedSessionsResult: ISessionModel[] | null = null;
 
-  /**
-   * 判断是否支持处理该来源
-   * 支持：'acp' 前缀
-   */
   canHandle(mode: string): boolean {
-    const canHandle = mode.startsWith('acp');
-
-    return canHandle;
+    return mode.startsWith('acp');
   }
 
-  /**
-   * 创建新会话
-   * 通过 RPC 调用 Node 层创建 ACP Agent Session
-   * @param title 可选的会话标题（ACP 模式暂不支持）
-   */
   async createSession(title?: string): Promise<ISessionModel> {
     if (!this.aiBackService?.createSession) {
       throw new Error('aiBackService.createSession is not available');
@@ -81,11 +64,6 @@ export class ACPSessionProvider implements ISessionProvider {
     return sessionModel;
   }
 
-  /**
-   * 加载所有 ACP Session
-   * 通过 RPC 调用 Node 层 listSessions 方法获取会话列表元数据
-   * 注意：这里只返回空壳会话，完整数据在 getSession 时按需加载
-   */
   async loadSessions(): Promise<ISessionModel[]> {
     if (this.loadedSessionsResult) {
       return this.loadedSessionsResult;
@@ -121,15 +99,11 @@ export class ACPSessionProvider implements ISessionProvider {
         title: sessionMeta.title,
       }));
 
-    this.loadedSessionsResult = sessionModels;
+    this.loadedSessionsResult = sessionModels as unknown as ISessionModel[];
 
-    return sessionModels;
+    return this.loadedSessionsResult;
   }
 
-  /**
-   * 从 ACP Agent 加载指定 Session
-   * @param sessionId 本地 Session ID（格式：acp:{agentSessionId}）
-   */
   async loadSession(sessionId: string): Promise<ISessionModel | undefined> {
     if (!sessionId) {
       return undefined;
@@ -169,15 +143,10 @@ export class ACPSessionProvider implements ISessionProvider {
 
       return sessionModel;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('❌ [ACPSessionProvider] 加载会话失败:', error);
       return undefined;
     }
   }
 
-  /**
-   * 将 Agent Session 转换为 ISessionModel
-   */
   private convertAgentSessionToModel(
     sessionId: string,
     agentSession: {
@@ -217,7 +186,7 @@ export class ACPSessionProvider implements ISessionProvider {
         additional: {},
         messages,
       },
-      requests: [], // ACP 模式下 requests 可能不需要，或者需要从 messages 重建
+      requests: [],
     };
 
     return result;

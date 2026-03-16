@@ -1,3 +1,4 @@
+import { ListSessionsResponse } from '@opensumi/ide-ai-native/lib/common/acp-types';
 import { AgentProcessConfig } from '@opensumi/ide-ai-native/lib/common/agent-types';
 import { CancellationToken, MaybePromise, Uri } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
@@ -266,19 +267,7 @@ export interface IAIBackService<
     }>;
   }>;
 
-  listSessions?(config: AgentProcessConfig): Promise<{
-    sessions: Array<{
-      sessionId: string;
-      cwd: string;
-      title?: string;
-      updatedAt?: string;
-      _meta?: {
-        messageCount?: number;
-        hasErrors?: boolean;
-      };
-    }>;
-    nextCursor?: string;
-  }>;
+  listSessions?(config: AgentProcessConfig): Promise<ListSessionsResponse>;
 
   createSession?(config: AgentProcessConfig): Promise<{
     sessionId: string;

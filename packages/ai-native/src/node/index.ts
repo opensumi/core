@@ -3,6 +3,7 @@ import { AIBackSerivcePath, AIBackSerivceToken } from '@opensumi/ide-core-common
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import { AcpPermissionServicePath, SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
+import { AcpCliClientServiceToken } from '../common/acp-types';
 import { ToolInvocationRegistryManager, ToolInvocationRegistryManagerImpl } from '../common/tool-invocation-registry';
 
 import {
@@ -17,7 +18,7 @@ import {
   CliAgentProcessManagerToken,
 } from './acp';
 import { AcpCliBackService, AcpCliBackServiceToken } from './acp/acp-cli-back.service';
-import { AcpCliClientService, AcpCliClientServiceToken } from './acp/acp-cli-client.service';
+import { AcpCliClientService } from './acp/acp-cli-client.service';
 import { SumiMCPServerBackend } from './mcp/sumi-mcp-server';
 
 @Injectable()

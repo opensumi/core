@@ -15,6 +15,18 @@ import { INodeLogger } from '@opensumi/ide-core-node';
 export const CliAgentProcessManagerToken = Symbol('CliAgentProcessManagerToken');
 
 /**
+ * 进程配置常量
+ */
+const PROCESS_CONFIG = {
+  /** 优雅关闭超时时间（毫秒） */
+  GRACEFUL_SHUTDOWN_TIMEOUT_MS: 5000,
+  /** 强制杀死超时时间（毫秒） */
+  FORCE_KILL_TIMEOUT_MS: 3000,
+  /** 启动超时时间（毫秒） */
+  STARTUP_TIMEOUT_MS: 100,
+} as const;
+
+/**
  * 单一实例模式的 CLI Agent 进程管理器
  * 整个应用生命周期内只维护一个 Agent 进程实例
  */
@@ -61,11 +73,6 @@ export interface ICliAgentProcessManager {
    * 单一实例模式下，等同于 killAgent
    */
   killAllAgents(): Promise<void>;
-  /**
-   * 订阅进程退出事件
-   * @param callback - 进程退出时的回调函数
-   * @returns 取消订阅的函数
-   */
 }
 
 /**
@@ -87,8 +94,6 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
   // 固定进程 ID（单一实例模式使用常量）
   private readonly SINGLETON_PROCESS_ID = 'singleton-agent-process';
 
-  // Configuration
-  private gracefulShutdownTimeoutMs = 5000;
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
@@ -231,7 +236,7 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
         } else {
           reject(new Error(`Failed to get PID for agent process: ${command}`));
         }
-      }, 100);
+      }, PROCESS_CONFIG.STARTUP_TIMEOUT_MS);
     });
   }
 
@@ -244,6 +249,33 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
     // 进程退出后自动清空引用
     this.currentProcess = null;
     this.currentCwd = null;
+  }
+
+  /**
+   * 杀死进程组
+   * 尝试用 -pid kill 进程组，失败后 fallback 到单个进程 kill
+   * @param pid - 进程 ID
+   * @param signal - 信号类型
+   * @returns 是否成功
+   */
+  private killProcessGroup(pid: number, signal: NodeJS.Signals): boolean {
+    try {
+      // 尝试发送信号到进程组
+      process.kill(-pid, signal);
+      this.logger?.log(`[CliAgentProcessManager] Sent ${signal} to process group -${pid}`);
+      return true;
+    } catch (err) {
+      // 如果进程组 kill 失败，尝试直接 kill 单个进程
+      this.logger?.log(`[CliAgentProcessManager] Process group kill failed, trying single process kill for ${pid}`);
+      try {
+        process.kill(pid, signal);
+        this.logger?.log(`[CliAgentProcessManager] Sent ${signal} to process ${pid}`);
+        return true;
+      } catch (err2) {
+        this.logger?.warn(`[CliAgentProcessManager] Error sending ${signal}:`, err2);
+        return false;
+      }
+    }
   }
 
   /**
@@ -262,46 +294,21 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
       }
 
       // 1. 先发送 SIGTERM，让进程优雅关闭
-      try {
-        if (this.currentProcess.pid) {
-          // 尝试发送 SIGTERM 到进程组
-          process.kill(-this.currentProcess.pid, 'SIGTERM');
-          this.logger?.log('[CliAgentProcessManager] Sent SIGTERM to process group');
-        }
-      } catch (err) {
-        // 如果进程组 kill 失败，尝试直接 kill 单个进程
-        this.logger?.log('[CliAgentProcessManager] Process group kill failed, trying single process kill');
-        try {
-          if (this.currentProcess.pid) {
-            this.currentProcess.kill('SIGTERM');
-            this.logger?.log('[CliAgentProcessManager] Sent SIGTERM to process');
-          }
-        } catch (err2) {
-          this.logger?.warn('[CliAgentProcessManager] Error sending SIGTERM:', err2);
-        }
+      const pid = this.currentProcess.pid;
+      if (pid) {
+        this.killProcessGroup(pid, 'SIGTERM');
       }
 
       // 2. 设置超时，超时后强制杀死
       const forceKillTimeout = setTimeout(() => {
         if (this.currentProcess && !this.currentProcess.killed) {
           this.logger?.warn('[CliAgentProcessManager] Agent did not exit gracefully, forcing kill');
-          try {
-            if (this.currentProcess.pid) {
-              process.kill(-this.currentProcess.pid, 9); // SIGKILL
-            }
-          } catch (err) {
-            // 如果进程组 kill 失败，尝试直接 kill 单个进程
-            try {
-              if (this.currentProcess.pid) {
-                this.currentProcess.kill('SIGKILL');
-              }
-            } catch (err2) {
-              this.logger?.warn('[CliAgentProcessManager] Error force killing:', err2);
-            }
+          if (this.currentProcess.pid) {
+            this.killProcessGroup(this.currentProcess.pid, 'SIGKILL');
           }
         }
         resolve();
-      }, this.gracefulShutdownTimeoutMs);
+      }, PROCESS_CONFIG.GRACEFUL_SHUTDOWN_TIMEOUT_MS);
 
       // 3. 监听进程退出，提前 resolve
       this.currentProcess.once('exit', () => {
@@ -347,20 +354,9 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
     const stackTrace = new Error('forceKillInternal called').stack;
     this.logger?.debug(`[CliAgentProcessManager] forceKillInternal called for PID ${pid}`, stackTrace);
 
-    try {
-      // 使用负数 PID 杀死整个进程组（包括子进程）
-      // 注意：需要使用 process.kill(-pid, signal) 而不是 this.currentProcess.kill(signal)
-      process.kill(-pid, 9);
-      this.logger?.log(`[CliAgentProcessManager] Sent SIGKILL to process group -${pid}`);
-    } catch (err) {
-      // 如果进程组 kill 失败，尝试直接 kill 单个进程
-      try {
-        process.kill(pid, 9);
-        this.logger?.log(`[CliAgentProcessManager] Sent SIGKILL to process ${pid}`);
-      } catch (err2) {
-        this.logger?.warn('[CliAgentProcessManager] Error force killing agent:', err2);
-      }
-    }
+    // 使用负数 PID 杀死整个进程组（包括子进程）
+    // 注意：需要使用 process.kill(-pid, signal) 而不是 this.currentProcess.kill(signal)
+    this.killProcessGroup(pid, 'SIGKILL');
 
     // 等待进程退出或超时
     return new Promise((resolve) => {
@@ -369,7 +365,7 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
         this.currentProcess = null;
         this.currentCwd = null;
         resolve();
-      }, 3000);
+      }, PROCESS_CONFIG.FORCE_KILL_TIMEOUT_MS);
 
       // 统一使用 exit 事件监听，超时机制确保引用最终被清理
       this.currentProcess!.once('exit', () => {
@@ -412,13 +408,6 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
   async killAllAgents(): Promise<void> {
     this.logger?.log('[CliAgentProcessManager] Killing all agent processes');
     await this.forceKillInternal();
-  }
-
-  /**
-   * 设置 graceful shutdown timeout
-   */
-  setGracefulShutdownTimeout(timeoutMs: number): void {
-    this.gracefulShutdownTimeoutMs = timeoutMs;
   }
 
   private wrapError(err: Error, command: string): Error {

@@ -1,45 +1,28 @@
-/**
- * ACP Agent 服务（Node 端核心）
- *
- * 负责管理 CLI Agent 进程的完整生命周期：
- * - 启动 / 停止 Agent 子进程
- * - 初始化 ACP 连接并创建 / 加载 Session
- * - 向 Agent 发送 prompt，以流式方式返回 AgentUpdate（思考、消息、工具调用等）
- * - 在 tool_call 时请求用户权限确认，并根据结果决定是否继续或取消请求
- *
- * 设计原则：
- * - 单一 Agent 进程实例（全局唯一）
- * - 无状态请求：每次 sendMessage 传入完整 prompt + history
- * - 通过 AcpCliClientService 与 Agent 进行 JSON-RPC 通信
- */
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { AgentProcessConfig, DEFAULT_AGENT_TYPE, getAgentConfig } from '../../common';
+import {
+  AcpCliClientServiceToken,
+  type CancelNotification,
+  type ContentBlock,
+  IAcpCliClientService,
+  type ListSessionsRequest,
+  type ListSessionsResponse,
+  type LoadSessionRequest,
+  type NewSessionRequest,
+  type RequestPermissionRequest,
+  type SessionMode,
+  type SessionModeState,
+  type SessionNotification,
+  type SetSessionModeRequest,
+  type ToolCallUpdate,
+} from '../../common/acp-types';
 
-import { AcpCliClientServiceToken, IAcpCliClientService } from './acp-cli-client.service';
 import { CliAgentProcessManagerToken, ICliAgentProcessManager } from './cli-agent-process-manager';
 import { AcpAgentRequestHandler } from './handlers/agent-request.handler';
 
-import type {
-  CancelNotification,
-  ContentBlock,
-  ListSessionsRequest,
-  ListSessionsResponse,
-  LoadSessionRequest,
-  NewSessionRequest,
-  RequestPermissionRequest,
-  SessionMode,
-  SessionModeState,
-  SessionNotification,
-  SetSessionModeRequest,
-  ToolCallUpdate,
-} from '../../common/acp-types';
-
-/**
- * Session 加载结果
- */
 export interface SessionLoadResult {
   sessionId: string;
   processId: string;
@@ -94,7 +77,7 @@ export interface PermissionResult {
 }
 
 /**
- * Agent 请求参数（无状态，每次请求都传入完整参数）
+ * Agent 请求参数
  */
 export interface AgentRequest {
   prompt: string;
@@ -224,7 +207,6 @@ export class AcpAgentService implements IAcpAgentService {
       return this.currentProcessId;
     }
 
-    // 进程未运行时，先清理旧状态
     if (this.currentProcessId && !this.processManager.isRunning()) {
       this.logger?.warn('[ensureConnected] Process not running, clearing old state');
       this.currentProcessId = null;
@@ -238,7 +220,6 @@ export class AcpAgentService implements IAcpAgentService {
       config.workspaceDir,
     );
 
-    // 关键：在 setTransport 之前记录日志
     this.logger?.log(`[ensureConnected] Setting up transport for process ${processId}`);
     this.clientService.setTransport(stdout, stdin);
     await this.clientService.initialize();
@@ -270,7 +251,6 @@ export class AcpAgentService implements IAcpAgentService {
     this.initializingPromise = (async () => {
       const processId = await this.ensureConnected(config);
 
-      // Create ACP session
       const newSessionRequest: NewSessionRequest = {
         cwd: config.workspaceDir,
         mcpServers: [],
@@ -294,7 +274,6 @@ export class AcpAgentService implements IAcpAgentService {
       const result = await this.initializingPromise;
       return result;
     } catch (error) {
-      // 初始化失败，清理 promise 以便下次重试
       this.initializingPromise = null;
       throw error;
     }
@@ -306,7 +285,6 @@ export class AcpAgentService implements IAcpAgentService {
   async loadSession(sessionId: string, config: AgentProcessConfig): Promise<SessionLoadResult> {
     const processId = await this.ensureConnected(config);
 
-    // 准备收集 updates
     const historyUpdates: SessionNotification[] = [];
 
     // 设置临时通知处理器来收集 session/update
@@ -319,7 +297,6 @@ export class AcpAgentService implements IAcpAgentService {
     // 订阅临时通知处理器
     const unsubscribe = this.clientService.onNotification(tempHandler);
 
-    // 使用 Promise 包装加载过程
     const loadPromise = new Promise<void>(async (resolve, reject) => {
       const timeout = setTimeout(() => {
         unsubscribe();
@@ -351,7 +328,6 @@ export class AcpAgentService implements IAcpAgentService {
 
     await loadPromise;
 
-    // 从 updates 中提取 modes 信息
     const modes: SessionMode[] = [];
     for (const notification of historyUpdates) {
       const update = notification.update as any;
@@ -429,7 +405,6 @@ export class AcpAgentService implements IAcpAgentService {
       pendingToolCalls,
     };
 
-    // 异步发送 prompt，不阻塞 stream 返回
     this.sendPrompt(promptRequest, stream, pendingToolCalls);
 
     return stream;
@@ -445,7 +420,6 @@ export class AcpAgentService implements IAcpAgentService {
   ): Promise<void> {
     try {
       await this.clientService.prompt(promptRequest);
-      // 等待所有 pending tool calls 完成后再发送 done 信号
       await this.waitForPendingToolCalls(stream, pendingToolCalls);
     } catch (error) {
       stream.emitError(error instanceof Error ? error : new Error(String(error)));
@@ -469,7 +443,6 @@ export class AcpAgentService implements IAcpAgentService {
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
-    // 发送 'done' 信号并结束 stream，触发 onEnd 回调清理监听器
     stream.emitData({ type: 'done', content: '' });
     stream.end();
   }
@@ -607,13 +580,10 @@ export class AcpAgentService implements IAcpAgentService {
       return;
     }
 
-    // Stop the agent process
     await this.processManager.stopAgent();
 
-    // Close client connection
     await this.clientService.close();
 
-    // 清理状态
     this.sessionInfo = null;
     this.currentProcessId = null;
   }
@@ -622,11 +592,9 @@ export class AcpAgentService implements IAcpAgentService {
    * 清理所有资源
    */
   async dispose(): Promise<void> {
-    // 记录调用堆栈，便于追踪是谁触发了 dispose
     const stackTrace = new Error('dispose called').stack;
     this.logger?.error('[AcpAgentService] dispose called', stackTrace);
 
-    // Cancel current notification handler
     if (this.currentNotificationHandler) {
       for (const [, pending] of this.currentNotificationHandler.pendingToolCalls) {
         pending.reject(new Error('Service disposed'));
@@ -636,16 +604,12 @@ export class AcpAgentService implements IAcpAgentService {
       this.currentNotificationHandler = null;
     }
 
-    // Stop agent process
     await this.stopAgent();
 
-    // Close client connection
     await this.clientService.close();
 
-    // Kill any remaining processes
     await this.processManager.killAllAgents();
 
-    // 清理初始化状态（重要！防止 dispose 后返回旧的 promise）
     this.initializingPromise = null;
     this.sessionInfo = null;
     this.currentProcessId = null;
@@ -682,16 +646,13 @@ export class AcpAgentService implements IAcpAgentService {
   ): Promise<void> {
     const toolCallId = toolCallUpdate.toolCallId;
 
-    // 跨所有监听器去重：若同一 toolCallId 已在处理中，直接跳过
     if (this.inFlightPermissions.has(toolCallId)) {
       return;
     }
     this.inFlightPermissions.add(toolCallId);
 
-    // 注册 pending tool call
     pendingToolCalls.set(toolCallId, { resolve: () => {}, reject: () => {} });
 
-    // 发送 tool_call 通知给前端
     stream.emitData({
       type: 'tool_call',
       content: toolCallUpdate.title || '',
@@ -713,7 +674,6 @@ export class AcpAgentService implements IAcpAgentService {
         }
       }
 
-      // 完成 pending
       const pending = pendingToolCalls.get(toolCallId);
       if (pending) {
         pending.resolve(result.approved);
