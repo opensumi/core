@@ -119,6 +119,7 @@ export class DefaultChatAgent implements IChatAgent {
           success: false,
           command,
         });
+        chatDeferred.reject(error);
       },
     });
 

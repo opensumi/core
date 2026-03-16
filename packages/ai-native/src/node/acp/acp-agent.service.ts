@@ -1,8 +1,4 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
-import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
-
-import { AgentProcessConfig, DEFAULT_AGENT_TYPE, getAgentConfig } from '../../common';
 import {
   AcpCliClientServiceToken,
   type CancelNotification,
@@ -18,7 +14,14 @@ import {
   type SessionNotification,
   type SetSessionModeRequest,
   type ToolCallUpdate,
-} from '../../common/acp-types';
+} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+import {
+  AgentProcessConfig,
+  DEFAULT_AGENT_TYPE,
+  getAgentConfig,
+} from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
+import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { CliAgentProcessManagerToken, ICliAgentProcessManager } from './cli-agent-process-manager';
 import { AcpAgentRequestHandler } from './handlers/agent-request.handler';
@@ -273,9 +276,8 @@ export class AcpAgentService implements IAcpAgentService {
     try {
       const result = await this.initializingPromise;
       return result;
-    } catch (error) {
+    } finally {
       this.initializingPromise = null;
-      throw error;
     }
   }
 
@@ -586,6 +588,7 @@ export class AcpAgentService implements IAcpAgentService {
 
     this.sessionInfo = null;
     this.currentProcessId = null;
+    this.initializingPromise = null;
   }
 
   /**

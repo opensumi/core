@@ -1,4 +1,29 @@
 // @ts-nocheck
+import type {
+  AgentCapabilities,
+  AuthMethod,
+  AuthenticateRequest,
+  AuthenticateResponse,
+  CancelNotification,
+  Implementation,
+  InitializeRequest,
+  InitializeResponse,
+  ListSessionsRequest,
+  ListSessionsResponse,
+  LoadSessionRequest,
+  LoadSessionResponse,
+  NewSessionRequest,
+  NewSessionResponse,
+  PermissionOption,
+  PromptRequest,
+  PromptResponse,
+  RequestPermissionRequest,
+  RequestPermissionResponse,
+  SessionModeState,
+  SessionNotification,
+  SetSessionModeRequest,
+  SetSessionModeResponse,
+} from '@agentclientprotocol/sdk';
 /**
  * CJS-compatible re-export bridge for @agentclientprotocol/sdk types.
  *
@@ -18,12 +43,9 @@ export type {
   ContentBlock,
   CreateTerminalRequest,
   CreateTerminalResponse,
-  FileSystemCapability,
   Implementation,
   InitializeRequest,
   InitializeResponse,
-  KillTerminalCommandRequest,
-  KillTerminalCommandResponse,
   ListSessionsRequest,
   ListSessionsResponse,
   LoadSessionRequest,
@@ -57,6 +79,8 @@ export type {
   WaitForTerminalExitResponse,
   WriteTextFileRequest,
   WriteTextFileResponse,
+  KillTerminalCommandResponse,
+  KillTerminalCommandRequest,
   ToolKind,
 } from '@agentclientprotocol/sdk';
 

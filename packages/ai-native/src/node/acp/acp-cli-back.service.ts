@@ -7,11 +7,14 @@ import {
   IChatContent,
   IChatProgress,
   IChatReasoning,
+  ListSessionsRequest,
+  ListSessionsResponse,
+  SessionNotification,
+  SetSessionModeRequest,
 } from '@opensumi/ide-core-common';
+import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
-
-import { AgentProcessConfig } from '../../common';
 
 import {
   AcpAgentServiceToken,
@@ -23,12 +26,6 @@ import {
 } from './acp-agent.service';
 import { AcpTerminalHandler } from './handlers/terminal.handler';
 
-import type {
-  ListSessionsRequest,
-  ListSessionsResponse,
-  SessionNotification,
-  SetSessionModeRequest,
-} from '../../common/acp-types';
 import type { CoreMessage } from 'ai';
 
 export const AcpCliBackServiceToken = Symbol('AcpCliBackServiceToken');

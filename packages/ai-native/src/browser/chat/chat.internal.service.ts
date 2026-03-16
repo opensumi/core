@@ -150,7 +150,8 @@ export class ChatInternalService extends Disposable {
     // this.__isSessionLoading = true;
     this._onSessionLoadingChange.fire(true);
     try {
-      const targetSession = await this.chatManagerService.getSession(sessionId);
+      const targetSession = this.chatManagerService.getSession(sessionId);
+      await this.chatManagerService.loadSession(sessionId);
       if (!targetSession) {
         throw new Error(`There is no session with session id ${sessionId}`);
       }

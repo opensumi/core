@@ -1,9 +1,13 @@
 import { Injectable, Provider } from '@opensumi/di';
-import { AIBackSerivcePath, AIBackSerivceToken } from '@opensumi/ide-core-common';
+import {
+  AIBackSerivcePath,
+  AIBackSerivceToken,
+  AcpCliClientServiceToken,
+  AcpPermissionServicePath,
+} from '@opensumi/ide-core-common';
 import { NodeModule } from '@opensumi/ide-core-node';
 
-import { AcpPermissionServicePath, SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
-import { AcpCliClientServiceToken } from '../common/acp-types';
+import { SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
 import { ToolInvocationRegistryManager, ToolInvocationRegistryManagerImpl } from '../common/tool-invocation-registry';
 
 import {

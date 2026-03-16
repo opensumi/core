@@ -11,15 +11,7 @@
  * - 权限对话框通过 AcpPermissionCallerManager 静态变量路由到当前活跃 Browser Tab
  */
 import { Autowired, Injectable } from '@opensumi/di';
-import { INodeLogger } from '@opensumi/ide-core-node';
-
-import { AcpPermissionCallerManagerToken } from '../../acp';
-import { AcpPermissionCallerManager } from '../acp-permission-caller.service';
-
-import { AcpFileSystemHandler } from './file-system.handler';
-import { AcpTerminalHandler } from './terminal.handler';
-
-import type {
+import {
   CreateTerminalRequest,
   CreateTerminalResponse,
   KillTerminalCommandRequest,
@@ -36,7 +28,14 @@ import type {
   WaitForTerminalExitResponse,
   WriteTextFileRequest,
   WriteTextFileResponse,
-} from '../../../common/acp-types';
+} from '@opensumi/ide-core-common/lib/types/ai-native';
+import { INodeLogger } from '@opensumi/ide-core-node';
+
+import { AcpPermissionCallerManagerToken } from '../../acp';
+import { AcpPermissionCallerManager } from '../acp-permission-caller.service';
+
+import { AcpFileSystemHandler } from './file-system.handler';
+import { AcpTerminalHandler } from './terminal.handler';
 
 /**
  * ACP Agent Request Handler - 处理来自 CLI Agent 的请求
@@ -166,7 +165,10 @@ export class AcpAgentRequestHandler {
         ],
       });
 
-      if (permissionResponse.outcome.outcome !== 'selected') {
+      if (
+        permissionResponse.outcome.outcome !== 'selected' ||
+        !permissionResponse.outcome.optionId?.startsWith('allow_')
+      ) {
         this.logger.warn(`[ACP] Write permission denied for: ${request.path}`);
         const err = new Error('Write permission denied');
         (err as any).code = -32003; // FORBIDDEN
@@ -217,7 +219,10 @@ export class AcpAgentRequestHandler {
         ],
       });
 
-      if (permissionResponse.outcome.outcome !== 'selected') {
+      if (
+        permissionResponse.outcome.outcome !== 'selected' ||
+        !permissionResponse.outcome.optionId?.startsWith('allow_')
+      ) {
         this.logger.warn(`[ACP] Command execution permission denied: ${commandStr}`);
         const err = new Error('Command execution permission denied');
         (err as any).code = -32003; // FORBIDDEN

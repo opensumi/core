@@ -4,7 +4,7 @@ import { Button, Dialog, Icon } from '@opensumi/ide-components';
 
 import styles from './permission-dialog.module.less';
 
-import type { PermissionOptionKind, ToolCallLocation } from '../../common/acp-types';
+import type { PermissionOptionKind, ToolCallLocation } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 export interface PermissionDialogProps {
   visible: boolean;

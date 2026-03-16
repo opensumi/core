@@ -201,29 +201,37 @@ export class ChatManagerService extends Disposable {
     return model;
   }
 
-  async getSession(sessionId: string): Promise<ChatModel | undefined> {
+  getSession(sessionId: string): ChatModel | undefined {
+    return this.#sessionModels.get(sessionId);
+  }
+
+  /**
+   * 加载指定会话
+   * @param sessionId 本地 Session ID
+   * @returns Session 数据，不存在时返回 undefined
+   */
+  async loadSession(sessionId: string) {
     if (this.aiNativeConfig.capabilities.supportsAgentMode) {
       // 如果是acp模式，会从provider的loadSession(sessionId)加载指定的会话
       const existingSession = this.#sessionModels.get(sessionId);
       if (existingSession?.history?.getMessages()?.length) {
-        return existingSession;
+        return;
       }
 
       // 从provider加载指定会话
       if (this.mainProvider?.loadSession && sessionId) {
-        const sessionData = await this.mainProvider.loadSession(sessionId);
-        if (sessionData) {
-          const sessions = this.fromJSON([sessionData]);
-          if (sessions.length > 0) {
-            const session = sessions[0];
-            this.#sessionModels.set(sessionId, session);
-            this.listenSession(session);
-            return session;
+        return this.mainProvider.loadSession(sessionId).then((sessionData) => {
+          if (sessionData) {
+            const sessions = this.fromJSON([sessionData]);
+            if (sessions.length > 0) {
+              const session = sessions[0];
+              this.#sessionModels.set(sessionId, session);
+              this.listenSession(session);
+            }
           }
-        }
+        });
       }
     }
-    return this.#sessionModels.get(sessionId);
   }
 
   clearSession(sessionId: string) {
@@ -237,8 +245,8 @@ export class ChatManagerService extends Disposable {
     this.saveSessions();
   }
 
-  async createRequest(sessionId: string, message: string, agentId: string, command?: string, images?: string[]) {
-    const model = await this.getSession(sessionId);
+  createRequest(sessionId: string, message: string, agentId: string, command?: string, images?: string[]) {
+    const model = this.getSession(sessionId);
     if (!model) {
       throw new Error(`Unknown session: ${sessionId}`);
     }
@@ -251,7 +259,7 @@ export class ChatManagerService extends Disposable {
   }
 
   async sendRequest(sessionId: string, request: ChatRequestModel, regenerate: boolean) {
-    const model = await this.getSession(sessionId);
+    const model = this.getSession(sessionId);
     if (!model) {
       throw new Error(`Unknown session: ${sessionId}`);
     }

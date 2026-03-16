@@ -7,7 +7,7 @@ import type {
   PermissionOptionKind,
   RequestPermissionResponse,
   ToolCallUpdate,
-} from '../../common/acp-types';
+} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 export interface PermissionRequest {
   sessionId: string;

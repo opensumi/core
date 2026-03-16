@@ -1,11 +1,11 @@
-import { ListSessionsResponse } from '@opensumi/ide-ai-native/lib/common/acp-types';
-import { AgentProcessConfig } from '@opensumi/ide-ai-native/lib/common/agent-types';
 import { CancellationToken, MaybePromise, Uri } from '@opensumi/ide-utils';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
+import { ListSessionsResponse } from './acp-types';
+import { AgentProcessConfig } from './agent-types';
 import { IAIReportCompletionOption } from './reporter';
 
 import type { CoreMessage } from 'ai';
@@ -494,3 +494,6 @@ export enum ECodeEditsSourceTyping {
   Trigger = 'trigger',
 }
 // ## Code Edits ends ##
+
+export * from './acp-types';
+export * from './agent-types';

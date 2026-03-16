@@ -1,8 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection/lib/common/rpc-service';
-import { ILogger } from '@opensumi/ide-core-common';
-
-import { AcpPermissionDecision, AcpPermissionDialogParams, IAcpPermissionService } from '../../common';
+import {
+  AcpPermissionDecision,
+  AcpPermissionDialogParams,
+  IAcpPermissionService,
+  ILogger,
+} from '@opensumi/ide-core-common';
 
 import { AcpPermissionBridgeService } from './permission-bridge.service';
 

@@ -3,6 +3,7 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,
+  DEFAULT_AGENT_TYPE,
   Deferred,
   IAIBackService,
   IAIReporter,
@@ -19,7 +20,6 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
   CoreMessage,
-  DEFAULT_AGENT_TYPE,
   IChatAgent,
   IChatAgentCommand,
   IChatAgentMetadata,
@@ -27,7 +27,7 @@ import {
   IChatAgentResult,
   IChatAgentService,
   IChatAgentWelcomeMessage,
-} from '../../common';
+} from '../../common/index';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
@@ -68,8 +68,6 @@ export class AcpChatAgent implements IChatAgent {
 
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
-
-  private chatDeferred: Deferred<void> = new Deferred<void>();
 
   public id = AcpChatAgent.AGENT_ID;
 
@@ -121,7 +119,7 @@ export class AcpChatAgent implements IChatAgent {
     history: CoreMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult> {
-    this.chatDeferred = new Deferred<void>();
+    const chatDeferred = new Deferred<void>();
     const { message, command } = request;
     let prompt: string = message;
     if (command) {
@@ -165,7 +163,7 @@ export class AcpChatAgent implements IChatAgent {
         progress(data);
       },
       onEnd: () => {
-        this.chatDeferred.resolve();
+        chatDeferred.resolve();
       },
       onError: (error) => {
         this.messageService.error(error.message);
@@ -174,10 +172,11 @@ export class AcpChatAgent implements IChatAgent {
           success: false,
           command,
         });
+        chatDeferred.reject(error);
       },
     });
 
-    await this.chatDeferred.promise;
+    await chatDeferred.promise;
     return {};
   }
 

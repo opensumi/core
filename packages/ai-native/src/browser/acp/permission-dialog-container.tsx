@@ -6,6 +6,8 @@ import { getIcon } from '@opensumi/ide-core-browser/lib/components';
 
 import { AcpPermissionBridgeService, ShowPermissionDialogParams } from './permission-bridge.service';
 
+import type { PermissionOptionKind } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
+
 // Module load logging for debugging
 
 // 默认权限选项（仅作为类型参考，实际选项由后端传入）
@@ -142,6 +144,7 @@ const AcpPermissionDialogContainer: React.FC = () => {
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   const functionComponentDialogManager = useInjectable<PermissionDialogManager>(PermissionDialogManager);
+  const permissionBridgeService = useInjectable<AcpPermissionBridgeService>(AcpPermissionBridgeService);
 
   // Ref 管理
   const containerRef = useRef<HTMLDivElement>(null);
@@ -229,10 +232,24 @@ const AcpPermissionDialogContainer: React.FC = () => {
         return;
       }
       const requestId = dialogs[0].requestId;
-      // 关闭对话框
+      const params = dialogs[0].params;
+
+      // Find the selected option to get its kind
+      const selectedOption = params.options.find((opt) => opt.optionId === _optionId);
+      if (!selectedOption) {
+        return;
+      }
+
+      // PermissionOption has 'kind' field which is PermissionOptionKind
+      const optionKind: PermissionOptionKind = selectedOption.kind || 'allow_once';
+
+      // Notify the permission bridge service with the decision
+      permissionBridgeService.handleUserDecision(requestId, _optionId, optionKind);
+
+      // Close dialog
       functionComponentDialogManager.removeDialog(requestId);
     },
-    [dialogs],
+    [dialogs, permissionBridgeService],
   );
 
   // 处理对话框关闭
@@ -241,8 +258,11 @@ const AcpPermissionDialogContainer: React.FC = () => {
       return;
     }
     const requestId = dialogs[0].requestId;
+    // Notify the permission bridge service that the dialog was cancelled
+    permissionBridgeService.handleDialogClose(requestId);
+    // Close dialog
     functionComponentDialogManager.removeDialog(requestId);
-  }, [dialogs]);
+  }, [dialogs, permissionBridgeService]);
 
   // 如果没有对话框，返回null
   if (dialogs.length === 0) {

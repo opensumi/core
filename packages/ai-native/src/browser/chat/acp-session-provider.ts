@@ -1,8 +1,13 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AIBackSerivcePath, Domain, IAIBackService, URI } from '@opensumi/ide-core-common';
+import {
+  AIBackSerivcePath,
+  AgentProcessConfig,
+  DEFAULT_AGENT_TYPE,
+  Domain,
+  IAIBackService,
+  URI,
+} from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-
-import { AgentProcessConfig, DEFAULT_AGENT_TYPE } from '../../common';
 
 import { ISessionModel, ISessionProvider, SessionProviderDomain } from './session-provider';
 

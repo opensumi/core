@@ -2,15 +2,16 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { AcpPermissionDecision, AcpPermissionDialogParams, IAcpPermissionService } from '../../common';
-
 import type {
+  AcpPermissionDecision,
+  AcpPermissionDialogParams,
   IAcpPermissionCaller,
+  IAcpPermissionService,
   PermissionOption,
   PermissionOptionKind,
   RequestPermissionRequest,
   RequestPermissionResponse,
-} from '../../common/acp-types';
+} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 export const AcpPermissionCallerManagerToken = Symbol('AcpPermissionCallerManagerToken');
 

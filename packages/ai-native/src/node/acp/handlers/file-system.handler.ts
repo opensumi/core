@@ -10,6 +10,7 @@
  *
  * 安全机制：所有路径均经过 resolvePath 校验，拒绝工作区外的绝对路径和路径穿越攻击。
  */
+import * as fs from 'fs';
 import * as path from 'path';
 
 import { Autowired, Injectable } from '@opensumi/di';
@@ -209,6 +210,8 @@ export class AcpFileSystemHandler {
       const filestat = await this.fileService.getFileStat(uri.toString());
       if (filestat) {
         await this.fileService.setContent(filestat, buffer.toString());
+      } else {
+        await this.fileService.createFile(uri.toString(), { content: buffer.toString() });
       }
 
       this.logger?.log(`File written: ${filePath}`);
@@ -355,6 +358,27 @@ export class AcpFileSystemHandler {
       };
     }
 
+    // Check permission for write operation if callback is set
+    if (this.permissionCallback) {
+      const permitted = await this.permissionCallback(request.sessionId, 'write', {
+        path: dirPath,
+        title: `Create directory: ${path.basename(dirPath)}`,
+        kind: 'createDirectory',
+        locations: [{ path: dirPath }],
+      });
+
+      if (!permitted) {
+        this.logger?.warn(`Create directory permission denied for: ${dirPath}`);
+        return {
+          error: {
+            code: ACPErrorCode.FORBIDDEN,
+            message: 'Create directory permission denied',
+            data: { path: dirPath },
+          },
+        };
+      }
+    }
+
     try {
       const uri = URI.file(dirPath);
       await this.fileService.createFolder(uri.toString());
@@ -378,31 +402,46 @@ export class AcpFileSystemHandler {
    * Resolve a path relative to workspace, validating it stays within workspace bounds
    */
   private resolvePath(inputPath: string): string | null {
-    // Normalize the path
-    let normalizedPath: string;
-
-    if (path.isAbsolute(inputPath)) {
-      // If absolute, must be within workspace
-      if (!inputPath.startsWith(this.workspaceDir)) {
-        this.logger?.warn(`Path outside workspace rejected: ${inputPath}`);
-        return null;
-      }
-      normalizedPath = path.normalize(inputPath);
-    } else {
-      // Relative path - resolve against workspace
-      normalizedPath = path.resolve(this.workspaceDir, inputPath);
-    }
-
-    // Prevent path traversal attacks
-    const resolvedPath = path.resolve(normalizedPath);
-    const resolvedWorkspace = path.resolve(this.workspaceDir);
-
-    if (!resolvedPath.startsWith(resolvedWorkspace)) {
-      this.logger?.warn(`Path traversal attempt rejected: ${inputPath}`);
+    // Reject immediately if workspaceDir is not set
+    if (!this.workspaceDir) {
+      this.logger?.warn('Workspace directory not configured');
       return null;
     }
 
-    return resolvedPath;
+    // Resolve the input path (handles both absolute and relative paths)
+    let resolvedPath: string;
+    if (path.isAbsolute(inputPath)) {
+      resolvedPath = path.resolve(inputPath);
+    } else {
+      resolvedPath = path.resolve(this.workspaceDir, inputPath);
+    }
+
+    // Resolve symlinks for both the resolved path and workspace directory
+    let realResolvedPath: string;
+    let realWorkspaceDir: string;
+    try {
+      realResolvedPath = fs.realpathSync(resolvedPath);
+    } catch (error) {
+      // If the path doesn't exist yet (e.g., new file for write), use the resolved path as-is
+      realResolvedPath = resolvedPath;
+    }
+    try {
+      realWorkspaceDir = fs.realpathSync(this.workspaceDir);
+    } catch (error) {
+      this.logger?.warn(`Cannot resolve workspace directory: ${this.workspaceDir}`);
+      return null;
+    }
+
+    // Compute the relative path and ensure it does not escape workspace
+    const relativePath = path.relative(realWorkspaceDir, realResolvedPath);
+
+    // Reject if relative path equals '..' or starts with '..' + separator
+    if (relativePath === '..' || relativePath.startsWith(`..${path.sep}`)) {
+      this.logger?.warn(`Path outside workspace rejected: ${inputPath}`);
+      return null;
+    }
+
+    return realResolvedPath;
   }
 
   /**

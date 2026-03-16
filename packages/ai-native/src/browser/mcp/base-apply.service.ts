@@ -189,7 +189,7 @@ export abstract class BaseApplyService extends WithEventBus {
     if (!sessionModel) {
       return [];
     }
-    const sessionAdditionals = sessionModel.history.sessionAdditionals;
+    const sessionAdditionals = sessionModel?.history?.sessionAdditionals;
     return Array.from(sessionAdditionals.values())
       .map((additional) => (additional.codeBlockMap || {}) as { [toolCallId: string]: CodeBlockData })
       .reduce((acc, cur) => {

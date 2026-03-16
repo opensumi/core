@@ -2,7 +2,8 @@
  * ACP CLI 客户端服务 - 基于 NDJSON 格式的 JSON-RPC 2.0 传输层实现
  */
 import { Autowired, Injectable } from '@opensumi/di';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { IAcpCliClientService } from '@opensumi/ide-core-common';
+import { INodeLogger, Implementation } from '@opensumi/ide-core-node';
 
 import { AcpAgentRequestHandler } from './handlers/agent-request.handler';
 
@@ -12,12 +13,8 @@ import type {
   AuthenticateRequest,
   AuthenticateResponse,
   CancelNotification,
-  ConnectionState,
   ExtendedInitializeResponse,
-  IAcpCliClientService,
-  Implementation,
   InitializeRequest,
-  InitializeResponse,
   ListSessionsRequest,
   ListSessionsResponse,
   LoadSessionRequest,
@@ -30,7 +27,7 @@ import type {
   SessionNotification,
   SetSessionModeRequest,
   SetSessionModeResponse,
-} from '../../common/acp-types';
+} from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 
 export const ACP_PROTOCOL_VERSION = 1;
 

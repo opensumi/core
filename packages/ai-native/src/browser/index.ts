@@ -14,6 +14,8 @@ import {
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-browser';
 import {
+  AcpPermissionServicePath,
+  AcpPermissionServiceToken,
   IntelligentCompletionsRegistryToken,
   MCPConfigServiceToken,
   ProblemFixRegistryToken,
@@ -23,8 +25,6 @@ import {
 import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
 import {
-  AcpPermissionServicePath,
-  AcpPermissionServiceToken,
   ChatProxyServiceToken,
   DefaultChatAgentToken,
   IAIInlineCompletionsProvider,

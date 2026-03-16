@@ -61,9 +61,6 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   // 添加模型选择状态
   const [selectedModel, setSelectedModel] = React.useState<string>(footerConfig.defaultModel || '');
 
-  // 添加 Mention 选择状态
-  const [selectedMention, setSelectedMention] = React.useState<string>(footerConfig.defaultMention || '');
-
   // 添加 Mode 选择状态
   const [selectedMode, setSelectedMode] = React.useState<string>(footerConfig.defaultMode || '');
 
@@ -1008,13 +1005,13 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   };
 
   // 处理模型选择变更
-  // const handleModelChange = React.useCallback(
-  //   (value: string) => {
-  //     setSelectedModel(value);
-  //     onSelectionChange?.(value);
-  //   },
-  //   [selectedModel, onSelectionChange],
-  // );
+  const handleModelChange = React.useCallback(
+    (value: string) => {
+      setSelectedModel(value);
+      onSelectionChange?.(value);
+    },
+    [selectedModel, onSelectionChange],
+  );
 
   // 处理 Mode 选择变更
   const handleModeChange = React.useCallback(
@@ -1322,20 +1319,38 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       </div>
       <div className={styles.footer}>
         <div className={styles.left_control}>
-          {footerConfig.showModeSelector && footerConfig.modeOptions && footerConfig.modeOptions.length > 0 && (
-            <MentionSelect
-              options={footerConfig.modeOptions.map((opt) => ({
-                label: opt.name,
-                value: opt.id,
-                description: opt.description,
-              }))}
-              value={selectedMode}
-              onChange={handleModeChange}
-              className={styles.mode_selector}
-              size='small'
-              disabled={footerConfig.disableModeSelector}
-            />
-          )}
+          {footerConfig.showModelSelector &&
+            renderModelSelectorTip(
+              <MentionSelect
+                options={getExtendedModelOptions}
+                value={selectedModel}
+                onChange={handleModelChange}
+                className={styles.model_selector}
+                size='small'
+                disabled={footerConfig.disableModelSelector}
+                showThinking={footerConfig.showThinking}
+                thinkingEnabled={footerConfig.thinkingEnabled}
+                onThinkingChange={footerConfig.onThinkingChange}
+              />,
+            )}
+
+          {footerConfig.showModeSelector &&
+            footerConfig.modeOptions &&
+            footerConfig.modeOptions.length > 0 &&
+            renderModelSelectorTip(
+              <MentionSelect
+                options={footerConfig.modeOptions.map((opt) => ({
+                  label: opt.name,
+                  value: opt.id,
+                  description: opt.description,
+                }))}
+                value={selectedMode}
+                onChange={handleModeChange}
+                className={styles.mode_selector}
+                size='small'
+                disabled={footerConfig.disableModeSelector}
+              />,
+            )}
 
           {renderButtons(FooterButtonPosition.LEFT)}
         </div>

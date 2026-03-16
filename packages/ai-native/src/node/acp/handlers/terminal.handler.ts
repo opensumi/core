@@ -318,8 +318,6 @@ export class AcpTerminalHandler {
 
       // If not exited, use force kill
       if (!terminalSession.exited) {
-        // Dispose the terminal connection to release resources
-        // terminalSession.connection.dispose();
         terminalSession.exited = true;
       }
 
@@ -355,12 +353,6 @@ export class AcpTerminalHandler {
 
     try {
       this.logger?.log(`Releasing terminal ${request.terminalId}`);
-
-      // Kill if still running
-      if (!terminalSession.exited) {
-        // Dispose the terminal connection to release resources
-        // terminalSession.connection.dispose();
-      }
 
       // Remove from tracking
       this.terminals.delete(request.terminalId || '');
