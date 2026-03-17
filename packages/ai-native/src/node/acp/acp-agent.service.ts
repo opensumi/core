@@ -628,15 +628,27 @@ export class AcpAgentService implements IAcpAgentService {
 
     if (images && images.length > 0) {
       for (const imageData of images) {
+        const { mimeType, base64Data } = this.parseDataUrl(imageData);
         blocks.push({
           type: 'image',
-          data: imageData,
-          mimeType: 'image/jpeg',
+          data: base64Data,
+          mimeType,
         });
       }
     }
 
     return blocks;
+  }
+
+  private parseDataUrl(dataUrl: string): { mimeType: string; base64Data: string } {
+    if (dataUrl.startsWith('data:')) {
+      const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (matches) {
+        return { mimeType: matches[1], base64Data: matches[2] };
+      }
+    }
+    // 默认返回
+    return { mimeType: 'image/jpeg', base64Data: dataUrl };
   }
 
   /**
