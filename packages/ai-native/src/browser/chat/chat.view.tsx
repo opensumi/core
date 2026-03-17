@@ -223,6 +223,9 @@ export const AIChatView = () => {
     if (chatRenderRegistry.chatInputRender) {
       return chatRenderRegistry.chatInputRender;
     }
+    if (aiNativeConfigService.capabilities.supportsChatAssistant) {
+      return ChatMentionInput;
+    }
     if (aiNativeConfigService.capabilities.supportsMCP) {
       return ChatMentionInput;
     }

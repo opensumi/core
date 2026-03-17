@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Image } from '@opensumi/ide-components/lib/image';
 import {
+  AINativeConfigService,
   LabelService,
   PreferenceService,
   RecentFilesManager,
@@ -78,6 +79,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
   const [images, setImages] = useState(props.images || []);
   const [currentMode, setCurrentMode] = useState<string>(props.agentModes?.[0]?.id || 'default');
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
   const searchService = useInjectable<IFileSearchService>(FileSearchServicePath);
   const recentFilesManager = useInjectable<RecentFilesManager>(RecentFilesManager);
@@ -490,41 +492,62 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       ],
       defaultModel:
         props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
-      buttons: [
-        {
-          id: 'mcp-server',
-          icon: 'mcp',
-          title: 'MCP Server',
-          onClick: handleShowMCPConfig,
-          position: FooterButtonPosition.LEFT,
-        },
-        {
-          id: 'rules',
-          icon: 'rules',
-          title: 'Rules',
-          onClick: handleShowRules,
-          position: FooterButtonPosition.LEFT,
-        },
-        {
-          id: 'upload-image',
-          icon: 'image',
-          title: localize('aiNative.chat.imageUpload'),
-          onClick: () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = (e) => {
-              const files = (e.target as HTMLInputElement).files;
-              if (files?.length) {
-                handleImageUpload(Array.from(files));
-              }
-            };
-            input.click();
-          },
-          position: FooterButtonPosition.LEFT,
-        },
-      ],
-      showModelSelector: true,
+      buttons: aiNativeConfigService.capabilities.supportsAgentMode
+        ? [
+            {
+              id: 'upload-image',
+              icon: 'image',
+              title: localize('aiNative.chat.imageUpload'),
+              onClick: () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                  const files = (e.target as HTMLInputElement).files;
+                  if (files?.length) {
+                    handleImageUpload(Array.from(files));
+                  }
+                };
+                input.click();
+              },
+              position: FooterButtonPosition.LEFT,
+            },
+          ]
+        : [
+            {
+              id: 'mcp-server',
+              icon: 'mcp',
+              title: 'MCP Server',
+              onClick: handleShowMCPConfig,
+              position: FooterButtonPosition.LEFT,
+            },
+            {
+              id: 'rules',
+              icon: 'rules',
+              title: 'Rules',
+              onClick: handleShowRules,
+              position: FooterButtonPosition.LEFT,
+            },
+            {
+              id: 'upload-image',
+              icon: 'image',
+              title: localize('aiNative.chat.imageUpload'),
+              onClick: () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                  const files = (e.target as HTMLInputElement).files;
+                  if (files?.length) {
+                    handleImageUpload(Array.from(files));
+                  }
+                };
+                input.click();
+              },
+              position: FooterButtonPosition.LEFT,
+            },
+          ],
+      showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? false : true, // agnet 模式不支持选择模型
       disableModelSelector: props.disableModelSelector,
     }),
     [iconService, handleShowMCPConfig, handleShowRules, props.disableModelSelector, props.sessionModelId],

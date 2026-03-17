@@ -99,19 +99,19 @@ export class AcpCliBackService implements IAIBackService {
 
   private isDisposing = false;
 
-  private registerProcessExitHandlers(): void {
-    process.once('SIGTERM', () => {
-      this.dispose().then(() => {
-        process.exit(0);
-      });
-    });
+  // private registerProcessExitHandlers(): void {
+  //   process.once('SIGTERM', () => {
+  //     this.dispose().then(() => {
+  //       process.exit(0);
+  //     });
+  //   });
 
-    process.once('SIGINT', () => {
-      this.dispose().then(() => {
-        process.exit(0);
-      });
-    });
-  }
+  //   process.once('SIGINT', () => {
+  //     this.dispose().then(() => {
+  //       process.exit(0);
+  //     });
+  //   });
+  // }
 
   async createSession(config: AgentProcessConfig): Promise<{ sessionId: string }> {
     await this.ensureAgentInitialized(config);
@@ -340,6 +340,7 @@ export class AcpCliBackService implements IAIBackService {
   }
 
   async dispose(): Promise<void> {
+    this.logger?.log('[AcpCliBackService] Already disposin');
     if (this.isDisposing) {
       this.logger?.log('[AcpCliBackService] Already disposing, skipping...');
       return;

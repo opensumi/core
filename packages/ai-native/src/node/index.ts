@@ -21,7 +21,7 @@ import {
   CliAgentProcessManager,
   CliAgentProcessManagerToken,
 } from './acp';
-import { AcpCliBackService, AcpCliBackServiceToken } from './acp/acp-cli-back.service';
+import { AcpCliBackService } from './acp/acp-cli-back.service';
 import { AcpCliClientService } from './acp/acp-cli-client.service';
 import { SumiMCPServerBackend } from './mcp/sumi-mcp-server';
 
@@ -30,10 +30,6 @@ export class AINativeModule extends NodeModule {
   providers: Provider[] = [
     {
       token: AIBackSerivceToken,
-      useClass: AcpCliBackService,
-    },
-    {
-      token: AcpCliBackServiceToken,
       useClass: AcpCliBackService,
     },
     {
@@ -51,10 +47,6 @@ export class AINativeModule extends NodeModule {
     {
       token: AcpPermissionCallerManagerToken,
       useClass: AcpPermissionCallerManager,
-    },
-    {
-      token: AIBackSerivceToken,
-      useClass: AcpCliBackService,
     },
     {
       token: ToolInvocationRegistryManager,

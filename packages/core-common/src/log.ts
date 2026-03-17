@@ -212,7 +212,7 @@ export class DebugLog implements IDebugLog {
 
   constructor(namespace?: string) {
     if (typeof process !== 'undefined' && process.env && process.env.KTLOG_SHOW_DEBUG) {
-      // this.isEnable = true;
+      this.isEnable = true;
     }
 
     this.namespace = namespace || '';
