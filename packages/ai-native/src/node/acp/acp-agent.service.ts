@@ -25,6 +25,7 @@ import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { CliAgentProcessManagerToken, ICliAgentProcessManager } from './cli-agent-process-manager';
 import { AcpAgentRequestHandler } from './handlers/agent-request.handler';
+import { AcpTerminalHandler } from './handlers/terminal.handler';
 
 export interface SessionLoadResult {
   sessionId: string;
@@ -148,9 +149,14 @@ export interface IAcpAgentService {
   setSessionMode(params: SetSessionModeRequest): Promise<void>;
 
   /**
+   * 释放指定 Session 的资源（包括终端等）
+   */
+  disposeSession(sessionId: string): Promise<void>;
+
+  /**
    * 获取 initialize 协商时存储的 Session 模式
    */
-  getAvailableModes(): SessionModeState | null;
+  getAvailableModes(): Promise<SessionModeState | null>;
 }
 
 /**
@@ -167,6 +173,9 @@ export class AcpAgentService implements IAcpAgentService {
 
   @Autowired(CliAgentProcessManagerToken)
   private processManager: ICliAgentProcessManager;
+
+  @Autowired(AcpTerminalHandler)
+  private terminalHandler: AcpTerminalHandler;
 
   @Autowired(AcpAgentRequestHandler)
   private agentRequestHandler: AcpAgentRequestHandler;
@@ -570,7 +579,11 @@ export class AcpAgentService implements IAcpAgentService {
     await this.clientService.setSessionMode(params);
   }
 
-  getAvailableModes(): SessionModeState | null {
+  async disposeSession(sessionId: string): Promise<void> {
+    await this.terminalHandler.releaseSessionTerminals(sessionId);
+  }
+
+  async getAvailableModes() {
     return this.clientService.getSessionModes();
   }
 

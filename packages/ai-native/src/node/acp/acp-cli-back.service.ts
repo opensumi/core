@@ -24,7 +24,6 @@ import {
   IAcpAgentService,
   SimpleMessage,
 } from './acp-agent.service';
-import { AcpTerminalHandler } from './handlers/terminal.handler';
 
 import type { CoreMessage } from 'ai';
 
@@ -90,9 +89,6 @@ function convertMessageHistory(history?: CoreMessage[]): SimpleMessage[] | undef
 export class AcpCliBackService implements IAIBackService {
   @Autowired(AcpAgentServiceToken)
   private agentService: IAcpAgentService;
-
-  @Autowired(AcpTerminalHandler)
-  private terminalHandler: AcpTerminalHandler;
 
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
@@ -298,7 +294,7 @@ export class AcpCliBackService implements IAIBackService {
   async disposeSession(sessionId: string): Promise<void> {
     await this.cancelSession(sessionId);
     try {
-      await this.terminalHandler.releaseSessionTerminals(sessionId);
+      await this.agentService.disposeSession(sessionId);
     } catch (error) {
       this.logger.error(`Failed to release terminals for session ${sessionId}:`, error);
     }
