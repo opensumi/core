@@ -14,7 +14,6 @@ describe('CliAgentProcessManager', () => {
     };
 
     processManager = new CliAgentProcessManager();
-    processManager.setLogger(mockLogger as any);
   });
 
   afterEach(async () => {
