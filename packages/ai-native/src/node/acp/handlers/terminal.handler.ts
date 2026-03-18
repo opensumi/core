@@ -9,10 +9,11 @@
  * - killTerminal：强制终止终端进程
  * - releaseTerminal / releaseSessionTerminals：释放终端资源，支持按 Session 批量释放
  */
+import * as pty from 'node-pty';
+
 import { Autowired, Injectable } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
-import { ITerminalConnection, ITerminalService } from '@opensumi/ide-terminal-next';
 
 import { ACPErrorCode } from './constants';
 
@@ -56,7 +57,7 @@ export interface TerminalResponse {
 interface TerminalSession {
   terminalId: string;
   sessionId: string;
-  connection: ITerminalConnection;
+  ptyProcess: pty.IPty;
   outputBuffer: string;
   outputByteLimit: number;
   exited: boolean;
@@ -67,9 +68,6 @@ interface TerminalSession {
 
 @Injectable()
 export class AcpTerminalHandler {
-  @Autowired(ITerminalService)
-  private terminalService: ITerminalService;
-
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
@@ -91,12 +89,22 @@ export class AcpTerminalHandler {
   }
 
   async createTerminal(request: TerminalRequest): Promise<TerminalResponse> {
+    const startTime = Date.now();
+    this.logger?.log(
+      `[AcpTerminalHandler] createTerminal called, sessionId=${request.sessionId}, command=${
+        request.command
+      }, args=${JSON.stringify(request.args)}`,
+    );
+
     try {
       const terminalId = uuid();
+      this.logger?.log(`[AcpTerminalHandler] Generated terminalId: ${terminalId}`);
 
       // Check permission for command execution if callback is set
       if (this.permissionCallback) {
         const commandStr = [request.command, ...(request.args || [])].join(' ');
+        this.logger?.log(`[AcpTerminalHandler] Checking permission for command: ${commandStr}`);
+
         const permitted = await this.permissionCallback(request.sessionId, 'command', {
           command: commandStr,
           args: request.args,
@@ -106,7 +114,7 @@ export class AcpTerminalHandler {
         });
 
         if (!permitted) {
-          this.logger?.warn(`Command execution permission denied: ${commandStr}`);
+          this.logger?.warn(`[AcpTerminalHandler] Command execution permission denied: ${commandStr}`);
           return {
             error: {
               code: ACPErrorCode.FORBIDDEN,
@@ -114,6 +122,7 @@ export class AcpTerminalHandler {
             },
           };
         }
+        this.logger?.log(`[AcpTerminalHandler] Permission granted for command: ${commandStr}`);
       }
 
       // Merge environment variables
@@ -121,24 +130,27 @@ export class AcpTerminalHandler {
         ...process.env,
         ...request.env,
       };
-
-      // Create terminal connection
-      // @ts-expect-error
-      const connection = await this.terminalService.createConnection(
-        {
-          name: `ACP Terminal ${terminalId.substring(0, 8)}`,
-          cwd: request.cwd,
-          executable: request.command,
-          args: request.args,
-          env,
-        },
-        terminalId,
+      this.logger?.log(
+        `[AcpTerminalHandler] Spawning PTY process: command=${request.command || '/bin/sh'}, cwd=${
+          request.cwd || process.cwd()
+        }`,
       );
+
+      // Create PTY process using node-pty
+      const ptyProcess = pty.spawn(request.command || '/bin/sh', request.args || [], {
+        name: 'xterm-256color',
+        cwd: request.cwd || process.cwd(),
+        env,
+        cols: 80,
+        rows: 24,
+      });
+
+      this.logger?.log(`[AcpTerminalHandler] PTY process spawned successfully, pid=${ptyProcess.pid}`);
 
       const terminalSession: TerminalSession = {
         terminalId,
         sessionId: request.sessionId,
-        connection,
+        ptyProcess,
         outputBuffer: '',
         outputByteLimit: request.outputByteLimit ?? this.defaultOutputLimit,
         exited: false,
@@ -147,7 +159,7 @@ export class AcpTerminalHandler {
       };
 
       // Listen to terminal output
-      connection.onData((data) => {
+      ptyProcess.onData((data) => {
         if (!terminalSession.killed) {
           terminalSession.outputBuffer += data;
 
@@ -157,26 +169,31 @@ export class AcpTerminalHandler {
             // Keep recent output, drop old data
             const keepSize = Math.floor(terminalSession.outputByteLimit * 0.8);
             terminalSession.outputBuffer = terminalSession.outputBuffer.slice(-keepSize);
+            this.logger?.debug(`[AcpTerminalHandler] Terminal output buffer trimmed, kept ${keepSize} bytes`);
           }
         }
       });
 
       // Listen to exit
-      connection.onExit((code) => {
+      ptyProcess.onExit((e) => {
         terminalSession.exited = true;
-        terminalSession.exitCode = code;
-        this.logger?.log(`Terminal ${terminalId} exited with code ${code}`);
+        terminalSession.exitCode = e.exitCode;
+        const duration = Date.now() - startTime;
+        this.logger?.log(
+          `[AcpTerminalHandler] Terminal ${terminalId} exited with code ${e.exitCode}, duration=${duration}ms`,
+        );
       });
 
       this.terminals.set(terminalId, terminalSession);
-
-      this.logger?.log(`Terminal created: ${terminalId}`);
+      this.logger?.log(
+        `[AcpTerminalHandler] Terminal created successfully: ${terminalId}, total terminals: ${this.terminals.size}`,
+      );
 
       return {
         terminalId,
       };
     } catch (error) {
-      this.logger?.error('Error creating terminal:', error);
+      this.logger?.error('[AcpTerminalHandler] Error creating terminal:', error);
       return {
         error: {
           code: ACPErrorCode.SERVER_ERROR,
@@ -187,8 +204,11 @@ export class AcpTerminalHandler {
   }
 
   async getTerminalOutput(request: TerminalRequest): Promise<TerminalResponse> {
+    this.logger?.debug(`[AcpTerminalHandler] getTerminalOutput called, terminalId=${request.terminalId}`);
+
     const terminalSession = this.terminals.get(request.terminalId || '');
     if (!terminalSession) {
+      this.logger?.warn(`[AcpTerminalHandler] Terminal not found: ${request.terminalId}`);
       return {
         error: {
           code: ACPErrorCode.RESOURCE_NOT_FOUND,
@@ -198,6 +218,9 @@ export class AcpTerminalHandler {
     }
 
     if (terminalSession.sessionId !== request.sessionId) {
+      this.logger?.warn(
+        `[AcpTerminalHandler] Session mismatch: expected ${terminalSession.sessionId}, got ${request.sessionId}`,
+      );
       return {
         error: {
           code: ACPErrorCode.SERVER_ERROR,
@@ -210,6 +233,10 @@ export class AcpTerminalHandler {
     const bufferSize = Buffer.byteLength(output, 'utf8');
     const truncated = bufferSize > terminalSession.outputByteLimit;
 
+    this.logger?.debug(
+      `[AcpTerminalHandler] getTerminalOutput: bufferSize=${bufferSize}, truncated=${truncated}, exited=${terminalSession.exited}`,
+    );
+
     return {
       output,
       truncated,
@@ -218,8 +245,15 @@ export class AcpTerminalHandler {
   }
 
   async waitForTerminalExit(request: TerminalRequest): Promise<TerminalResponse> {
+    this.logger?.debug(
+      `[AcpTerminalHandler] waitForTerminalExit called, terminalId=${request.terminalId}, timeout=${
+        request.timeout ?? 30000
+      }ms`,
+    );
+
     const terminalSession = this.terminals.get(request.terminalId || '');
     if (!terminalSession) {
+      this.logger?.warn(`[AcpTerminalHandler] Terminal not found: ${request.terminalId}`);
       return {
         error: {
           code: ACPErrorCode.RESOURCE_NOT_FOUND,
@@ -229,6 +263,9 @@ export class AcpTerminalHandler {
     }
 
     if (terminalSession.sessionId !== request.sessionId) {
+      this.logger?.warn(
+        `[AcpTerminalHandler] Session mismatch: expected ${terminalSession.sessionId}, got ${request.sessionId}`,
+      );
       return {
         error: {
           code: ACPErrorCode.SERVER_ERROR,
@@ -239,19 +276,29 @@ export class AcpTerminalHandler {
 
     // If already exited, return immediately
     if (terminalSession.exited) {
+      this.logger?.log(
+        `[AcpTerminalHandler] Terminal ${request.terminalId} already exited, code=${terminalSession.exitCode}`,
+      );
       return {
         exitCode: terminalSession.exitCode,
       };
     }
 
+    this.logger?.log(`[AcpTerminalHandler] Waiting for terminal ${request.terminalId} to exit...`);
+
     // Wait for exit with timeout
     const timeout = request.timeout ?? 30000; // 30s default
+    const waitStartTime = Date.now();
 
     return new Promise((resolve) => {
       const checkInterval = setInterval(() => {
         if (terminalSession.exited) {
           clearInterval(checkInterval);
           clearTimeout(timeoutId);
+          const waitDuration = Date.now() - waitStartTime;
+          this.logger?.log(
+            `[AcpTerminalHandler] Terminal ${request.terminalId} exited after ${waitDuration}ms, code=${terminalSession.exitCode}`,
+          );
           resolve({
             exitCode: terminalSession.exitCode,
           });
@@ -260,6 +307,10 @@ export class AcpTerminalHandler {
 
       const timeoutId = setTimeout(() => {
         clearInterval(checkInterval);
+        const waitDuration = Date.now() - waitStartTime;
+        this.logger?.warn(
+          `[AcpTerminalHandler] waitForTerminalExit timeout after ${waitDuration}ms for terminal ${request.terminalId}`,
+        );
         // Return null exitStatus to indicate still running
         resolve({
           exitStatus: null,
@@ -300,6 +351,9 @@ export class AcpTerminalHandler {
 
       terminalSession.killed = true;
 
+      // Kill the PTY process
+      terminalSession.ptyProcess.kill();
+
       // Wait for graceful exit
       await new Promise<void>((resolve) => {
         const checkInterval = setInterval(() => {
@@ -316,7 +370,7 @@ export class AcpTerminalHandler {
         }, 2000);
       });
 
-      // If not exited, use force kill
+      // If not exited, mark as exited
       if (!terminalSession.exited) {
         terminalSession.exited = true;
       }
@@ -353,6 +407,15 @@ export class AcpTerminalHandler {
 
     try {
       this.logger?.log(`Releasing terminal ${request.terminalId}`);
+
+      // Kill the PTY process if not already exited
+      if (!terminalSession.exited) {
+        try {
+          terminalSession.ptyProcess.kill();
+        } catch (e) {
+          this.logger?.warn(`Failed to kill pty process ${request.terminalId}:`, e);
+        }
+      }
 
       // Remove from tracking
       this.terminals.delete(request.terminalId || '');

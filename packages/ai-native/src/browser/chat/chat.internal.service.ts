@@ -152,10 +152,12 @@ export class ChatInternalService extends Disposable {
     try {
       const targetSession = this.chatManagerService.getSession(sessionId);
       await this.chatManagerService.loadSession(sessionId);
-      if (!targetSession) {
+      // 重新获取 targetSession，因为 loadSession 可能更新了 session 对象
+      const updatedSession = this.chatManagerService.getSession(sessionId);
+      if (!updatedSession) {
         throw new Error(`There is no session with session id ${sessionId}`);
       }
-      this.#sessionModel = targetSession;
+      this.#sessionModel = updatedSession;
       this._onChangeSession.fire(this.#sessionModel.sessionId);
     } finally {
       // 会话加载完成，关闭loading状态

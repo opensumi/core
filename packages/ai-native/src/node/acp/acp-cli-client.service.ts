@@ -292,7 +292,7 @@ export class AcpCliClientService implements IAcpCliClientService {
 
       try {
         const message = JSON.parse(trimmedLine);
-        this.logger?.debug('[ACP] Parsed message:', JSON.stringify(message).substring(0, 200));
+        this.logger?.debug('[ACP] Parsed message:', JSON.stringify(message).substring(0, 400));
         this.handleMessage(message);
       } catch (error) {
         this.logger?.error('Failed to parse ACP JSON-RPC message:', {

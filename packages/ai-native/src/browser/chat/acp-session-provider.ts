@@ -163,12 +163,8 @@ export class ACPSessionProvider implements ISessionProvider {
       }>;
     },
   ): ISessionModel {
-    // 过滤掉前两条包含 <command-name> 或 <local-command-stdout> 的系统消息
+    // 过滤掉包含 <command-name> 或 <local-command-stdout> 的系统消息
     const filteredMessages = agentSession.messages.filter((msg, index) => {
-      // 只检查前两条消息
-      if (index >= 2) {
-        return true;
-      }
       // 如果内容包含系统命令的 XML 标签，则过滤掉
       if (msg.content.includes('<command-name>') || msg.content.includes('<local-command-stdout>')) {
         return false;

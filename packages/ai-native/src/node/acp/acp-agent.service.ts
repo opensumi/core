@@ -197,7 +197,7 @@ export class AcpAgentService implements IAcpAgentService {
     unsubscribe: () => void;
     stream: SumiReadableStream<AgentUpdate>;
     sessionId: string;
-    pendingToolCalls: Map<string, { resolve: (result: boolean) => void; reject: (error: Error) => void }>;
+    pendingToolCalls: Map<string, Promise<boolean>>;
   } | null = null;
 
   // 确保初始化只执行一次
@@ -388,7 +388,7 @@ export class AcpAgentService implements IAcpAgentService {
       prompt: promptBlocks,
     };
 
-    const pendingToolCalls = new Map<string, { resolve: (result: boolean) => void; reject: (error: Error) => void }>();
+    const pendingToolCalls = new Map<string, Promise<boolean>>();
 
     const unsubscribe = this.clientService.onNotification((notification: SessionNotification) => {
       if (notification.sessionId !== request.sessionId) {
@@ -427,7 +427,7 @@ export class AcpAgentService implements IAcpAgentService {
   private async sendPrompt(
     promptRequest: { sessionId: string; prompt: ContentBlock[] },
     stream: SumiReadableStream<AgentUpdate>,
-    pendingToolCalls: Map<string, { resolve: (result: boolean) => void; reject: (error: Error) => void }>,
+    pendingToolCalls: Map<string, Promise<boolean>>,
   ): Promise<void> {
     try {
       await this.clientService.prompt(promptRequest);
@@ -442,13 +442,15 @@ export class AcpAgentService implements IAcpAgentService {
    */
   private async waitForPendingToolCalls(
     stream: SumiReadableStream<AgentUpdate>,
-    pendingToolCalls: Map<string, { resolve: (result: boolean) => void; reject: (error: Error) => void }>,
+    pendingToolCalls: Map<string, Promise<boolean>>,
   ): Promise<void> {
-    const timeout = 5000;
+    const timeout = 60000; // 60 秒，与权限对话框 timeout 一致
     const startTime = Date.now();
 
+    // 等待所有 pending tool calls 完成或超时
     while (pendingToolCalls.size > 0) {
       if (Date.now() - startTime > timeout) {
+        this.logger?.warn(`waitForPendingToolCalls timeout after ${timeout}ms`);
         break;
       }
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -464,7 +466,7 @@ export class AcpAgentService implements IAcpAgentService {
   private handleNotification(
     notification: SessionNotification,
     stream: SumiReadableStream<AgentUpdate>,
-    pendingToolCalls: Map<string, { resolve: (result: boolean) => void; reject: (error: Error) => void }>,
+    pendingToolCalls: Map<string, Promise<boolean>>,
   ): void {
     const update = notification.update;
 
@@ -492,6 +494,7 @@ export class AcpAgentService implements IAcpAgentService {
       }
 
       case 'tool_call': {
+        // 异步处理 tool call，保存 Promise 供 sendPrompt 等待
         this.handleToolCallWithPermission(update, stream, pendingToolCalls);
         break;
       }
@@ -612,9 +615,8 @@ export class AcpAgentService implements IAcpAgentService {
     this.logger?.error('[AcpAgentService] dispose called', stackTrace);
 
     if (this.currentNotificationHandler) {
-      for (const [, pending] of this.currentNotificationHandler.pendingToolCalls) {
-        pending.reject(new Error('Service disposed'));
-      }
+      // 不需要手动 reject Promise，因为 Promise 已经创建完成
+      // 只需清理通知处理器和 stream
       this.currentNotificationHandler.stream.end();
       this.currentNotificationHandler.unsubscribe();
       this.currentNotificationHandler = null;
@@ -670,7 +672,7 @@ export class AcpAgentService implements IAcpAgentService {
   private async handleToolCallWithPermission(
     toolCallUpdate: ToolCallUpdate,
     stream: SumiReadableStream<AgentUpdate>,
-    pendingToolCalls: Map<string, { resolve: (result: boolean) => void; reject: (error: Error) => void }>,
+    pendingToolCalls: Map<string, Promise<boolean>>,
   ): Promise<void> {
     const toolCallId = toolCallUpdate.toolCallId;
 
@@ -679,7 +681,26 @@ export class AcpAgentService implements IAcpAgentService {
     }
     this.inFlightPermissions.add(toolCallId);
 
-    pendingToolCalls.set(toolCallId, { resolve: () => {}, reject: () => {} });
+    // 创建 Promise 并存储，供 sendPrompt 中的 waitForPendingToolCalls 等待
+    const permissionPromise = this.requestPermission(toolCallUpdate).then(
+      (result) => {
+        if (result.approved) {
+          this.logger?.log(`Tool call "${toolCallUpdate.title}" approved`);
+        } else {
+          this.logger?.log(`Tool call "${toolCallUpdate.title}" denied`);
+          if (this.sessionInfo) {
+            this.cancelRequest(this.sessionInfo.sessionId).catch(() => {});
+          }
+        }
+        return result.approved;
+      },
+      (error) => {
+        this.logger?.error(`Failed to get permission for tool call: ${toolCallUpdate.title}`, error);
+        throw error;
+      },
+    );
+
+    pendingToolCalls.set(toolCallId, permissionPromise);
 
     stream.emitData({
       type: 'tool_call',
@@ -691,29 +712,12 @@ export class AcpAgentService implements IAcpAgentService {
     });
 
     try {
-      const result = await this.requestPermission(toolCallUpdate);
-
-      if (result.approved) {
-        this.logger?.log(`Tool call "${toolCallUpdate.title}" approved`);
-      } else {
-        this.logger?.log(`Tool call "${toolCallUpdate.title}" denied`);
-        if (this.sessionInfo) {
-          await this.cancelRequest(this.sessionInfo.sessionId);
-        }
-      }
-
-      const pending = pendingToolCalls.get(toolCallId);
-      if (pending) {
-        pending.resolve(result.approved);
-        pendingToolCalls.delete(toolCallId);
-      }
+      await permissionPromise;
+      // 完成后从 Map 中移除
+      pendingToolCalls.delete(toolCallId);
     } catch (error) {
-      this.logger?.error(`Failed to get permission for tool call: ${toolCallUpdate.title}`, error);
-      const pending = pendingToolCalls.get(toolCallId);
-      if (pending) {
-        pending.reject(error as Error);
-        pendingToolCalls.delete(toolCallId);
-      }
+      // 错误时也从 Map 中移除
+      pendingToolCalls.delete(toolCallId);
     } finally {
       this.inFlightPermissions.delete(toolCallId);
     }

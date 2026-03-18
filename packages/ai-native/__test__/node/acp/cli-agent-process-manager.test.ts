@@ -2,17 +2,8 @@ import { CliAgentProcessManager, ICliAgentProcessManager } from '../../../src/no
 
 describe('CliAgentProcessManager', () => {
   let processManager: ICliAgentProcessManager;
-  let mockLogger: jest.Mocked<any>;
 
   beforeEach(() => {
-    mockLogger = {
-      log: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-      debug: jest.fn(),
-      verbose: jest.fn(),
-    };
-
     processManager = new CliAgentProcessManager();
   });
 

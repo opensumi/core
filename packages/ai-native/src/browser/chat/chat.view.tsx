@@ -525,7 +525,13 @@ export const AIChatView = () => {
 
       handleDispatchMessage({ type: 'add', payload: [userMessage] });
     },
-    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager, scrollToBottom],
+    [
+      chatRenderRegistry,
+      chatRenderRegistry.chatUserRoleRender,
+      msgHistoryManager,
+      scrollToBottom,
+      handleDispatchMessage,
+    ],
   );
 
   const renderReply = React.useCallback(
@@ -587,7 +593,7 @@ export const AIChatView = () => {
       });
       handleDispatchMessage({ type: 'add', payload: [aiMessage] });
     },
-    [chatRenderRegistry, msgHistoryManager, scrollToBottom],
+    [chatRenderRegistry, msgHistoryManager, scrollToBottom, handleDispatchMessage, handleSlashCustomRender],
   );
 
   const renderSimpleMarkdownReply = React.useCallback(
@@ -609,7 +615,7 @@ export const AIChatView = () => {
 
       handleDispatchMessage({ type: 'add', payload: [aiMessage] });
     },
-    [chatRenderRegistry, msgHistoryManager, scrollToBottom],
+    [chatRenderRegistry, msgHistoryManager, scrollToBottom, handleDispatchMessage, agentId, command],
   );
 
   const renderCustomComponent = React.useCallback(
@@ -626,7 +632,7 @@ export const AIChatView = () => {
       );
       handleDispatchMessage({ type: 'add', payload: [aiMessage] });
     },
-    [chatRenderRegistry, msgHistoryManager, scrollToBottom],
+    [chatRenderRegistry, msgHistoryManager, scrollToBottom, handleDispatchMessage],
   );
 
   const handleAgentReply = React.useCallback(
@@ -800,10 +806,13 @@ export const AIChatView = () => {
 
   const recover = React.useCallback(
     async (cancellationToken: CancellationToken) => {
-      if (!msgHistoryManager) {
+      // 动态获取最新的 msgHistoryManager，而不是使用闭包中的旧引用
+      const currentMsgHistoryManager = aiChatService.sessionModel?.history;
+      if (!currentMsgHistoryManager) {
         return;
       }
-      for (const msg of msgHistoryManager.getMessages()) {
+      const messages = currentMsgHistoryManager.getMessages();
+      for (const msg of currentMsgHistoryManager.getMessages()) {
         if (cancellationToken.isCancellationRequested) {
           return;
         }
@@ -847,7 +856,7 @@ export const AIChatView = () => {
         }
       }
     },
-    [msgHistoryManager, renderReply],
+    [aiChatService.sessionModel, renderReply, renderUserMessage, renderSimpleMarkdownReply, renderCustomComponent],
   );
 
   React.useEffect(() => {
