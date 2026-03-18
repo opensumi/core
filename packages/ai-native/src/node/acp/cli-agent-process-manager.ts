@@ -199,11 +199,32 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
     env: Record<string, string>,
     cwd: string,
   ): Promise<ChildProcess> {
+    // 从环境变量读取 Node 路径，默认使用当前进程的 execPath
+    // 通过设置 SUMI_ACP_NODE_PATH 环境变量，可以指定 ACP Agent 使用特定版本的 Node.js
+    // 例如：export SUMI_ACP_NODE_PATH=/Users/lujunsheng/.nvm/versions/node/v22.22.0/bin/node
+    const nodePath = process.env.SUMI_ACP_NODE_PATH || process.execPath;
+
+    // 从 nodePath 推导出 bin 目录，用于设置 PATH
+    // 例如：/Users/lujunsheng/.nvm/versions/node/v22.22.0/bin
+    const nodeBinDir = nodePath.substring(0, nodePath.lastIndexOf('/'));
+
+    this.logger?.log(`[CliAgentProcessManager] Using Node.js path: ${nodePath}`);
+    this.logger?.log(`[CliAgentProcessManager] Using Node bin directory: ${nodeBinDir}`);
+    this.logger?.log(`[CliAgentProcessManager] Spawning ACP Agent: ${command} ${args.join(' ')}`);
+
+    // 将 node bin 目录添加到 PATH 开头，确保优先使用指定版本的 node 和相关命令
+    const newEnv = {
+      ...env,
+      NODE: nodePath,
+      PATH: `${nodeBinDir}:${process.env.PATH || ''}`,
+    };
+
     const childProcess = spawn(command, args, {
       cwd,
       stdio: ['pipe', 'pipe', 'pipe'],
-      detached: false, // 不使用 detached，因为我们需要等待子进程退出
-      shell: false, // 不使用 shell，避免产生额外的中间进程
+      detached: false,
+      shell: false,
+      env: newEnv,
     });
 
     return new Promise((resolve, reject) => {
