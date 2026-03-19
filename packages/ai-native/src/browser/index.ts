@@ -116,7 +116,6 @@ export class AINativeModule extends BrowserModule {
     MCPConfigContribution,
     MCPConfigCommandContribution,
     MCPPreferencesContribution,
-    AINativeBrowserContribution,
     AcpPermissionDialogContribution,
     PermissionDialogManager,
     AcpPermissionBridgeService,

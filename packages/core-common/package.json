@@ -22,6 +22,7 @@
     "@opensumi/di": "^1.8.0",
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-utils": "workspace:*",
+    "electron": "^22.3.21",
     "ai": "^4.3.16"
   },
   "devDependencies": {

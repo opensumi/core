@@ -25,6 +25,7 @@
     "@ai-sdk/openai": "^1.1.9",
     "@ai-sdk/openai-compatible": "^0.1.11",
     "@modelcontextprotocol/sdk": "^1.11.4",
+    "@opensumi/ide-terminal-next": "workspace:*",
     "@opensumi/ide-addons": "workspace:*",
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-connection": "workspace:*",
