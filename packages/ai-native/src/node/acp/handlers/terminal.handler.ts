@@ -18,6 +18,8 @@ import { INodeLogger } from '@opensumi/ide-core-node';
 import { ACPErrorCode } from './constants';
 
 // Re-export the permission callback type for convenience
+export const AcpTerminalHandlerToken = Symbol('AcpTerminalHandlerToken');
+
 export type TerminalPermissionCallback = (
   sessionId: string,
   operation: 'command',

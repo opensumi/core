@@ -1504,6 +1504,7 @@ export const localizationBundle = {
     'aiNative.operate.chatHistory.delete': 'Delete',
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
+    'aiNative.chat.acp.initializing.text': 'Initializing ACP service...',
     'aiNative.chat.ai.assistant.limit.message': '{0} earliest messages are dropped due to the input token limit',
     'aiNative.inlineDiff.acceptAll': 'Accept All',
     'aiNative.inlineDiff.rejectAll': 'Reject All',
@@ -1547,6 +1548,18 @@ export const localizationBundle = {
     'preference.ai.native.chat.system.prompt': 'Default Chat System Prompt',
 
     'preference.ai.native.globalRules.description': 'These rules will be sent to all chats and Agents.',
+
+    'preference.ai.native.agent.configs.title': 'Agent Configurations',
+    'preference.ai.native.agent.configs': 'Agent Configs',
+    'preference.ai.native.agent.configs.description':
+      'Agent configurations for setting up different Agent commands and arguments',
+    'preference.ai.native.agent.configs.markdownDescription':
+      'Configure AI Agents with their command and arguments. Example:\n```json\n{\n  "qwen": {\n    "command": "qwen",\n    "args": ["--acp", "--channel=ACP"],\n    "streaming": true,\n    "description": "Qwen CLI Agent"\n  },\n  "claude-agent-acp": {\n    "command": "claude-agent-acp",\n    "args": [],\n    "streaming": true,\n    "description": "Claude Code ACP Agent"\n  }\n}\n```',
+    'preference.ai.native.agent.configs.command.description': 'Command to start the Agent',
+    'preference.ai.native.agent.configs.args.description': 'Arguments passed to the Agent',
+    'preference.ai.native.agent.configs.streaming.description': 'Whether streaming output is supported',
+    'preference.ai.native.agent.configs.description.description': 'Agent description information',
+    'preference.ai.native.agent.defaultType.description': 'Default Agent Type to use for AI chat and commands',
     // #endregion AI Native
 
     // #endregion merge editor

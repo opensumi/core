@@ -42,6 +42,16 @@ export enum AINativeSettingSectionsId {
    */
   MCPServers = 'ai.native.mcp.servers',
 
+  /**
+   * Agent configurations
+   */
+  AgentConfigs = 'ai.native.agent.configs',
+
+  /**
+   * Default Agent Type
+   */
+  DefaultAgentType = 'ai.native.agent.defaultType',
+
   TerminalAutoRun = 'ai.native.terminal.autorun',
 
   /**

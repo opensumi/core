@@ -3,7 +3,6 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,
-  DEFAULT_AGENT_TYPE,
   Deferred,
   IAIBackService,
   IAIReporter,
@@ -31,6 +30,7 @@ import {
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
+import { getDefaultAgentType } from './get-default-agent-type';
 
 /**
  * ACP Chat Agent - 实现默认的聊天代理
@@ -151,7 +151,7 @@ export class AcpChatAgent implements IChatAgent {
         images: request.images,
         ...(await this.getRequestOptions()),
         agentSessionConfig: {
-          agentType: DEFAULT_AGENT_TYPE,
+          agentType: getDefaultAgentType(this.preferenceService),
           workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
         },
       },

@@ -6,7 +6,7 @@
 // ACP Agent 类型
 export type ACPAgentType = 'qwen' | 'claude-agent-acp';
 
-// Default agent type
+// Default agent type (fallback when no preference is set)
 export const DEFAULT_AGENT_TYPE: ACPAgentType = 'claude-agent-acp';
 
 // Supported agent types
@@ -38,8 +38,8 @@ export interface AgentConfig {
   description?: string;
 }
 
-// Agent configuration presets
-export const AGENT_CONFIGS: Record<ACPAgentType, AgentConfig> = {
+// Default agent configurations
+const DEFAULT_AGENT_CONFIGS: Record<ACPAgentType, AgentConfig> = {
   qwen: {
     command: 'qwen',
     args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
@@ -56,23 +56,47 @@ export const AGENT_CONFIGS: Record<ACPAgentType, AgentConfig> = {
 
 /**
  * Get agent configuration for a given type
+ * @param agentType - The agent type to get configuration for
+ * @param preferenceService - Optional preference service to read custom configs
  */
-export function getAgentConfig(agentType: ACPAgentType): AgentConfig {
-  return AGENT_CONFIGS[agentType] || AGENT_CONFIGS[DEFAULT_AGENT_TYPE];
+export function getAgentConfig(
+  agentType: ACPAgentType,
+  preferenceService?: { get<T>(key: string, defaultValue?: T): T | undefined },
+): AgentConfig {
+  // Try to get custom config from preferences
+  const customConfigs = preferenceService?.get<Partial<Record<ACPAgentType, AgentConfig>>>(
+    'ai.native.agent.configs',
+    {},
+  );
+
+  if (customConfigs && agentType in customConfigs) {
+    const customConfig = customConfigs[agentType];
+    // Merge with default config to ensure all fields exist
+    const defaultConfig = DEFAULT_AGENT_CONFIGS[agentType];
+    if (defaultConfig && customConfig) {
+      return { ...defaultConfig, ...customConfig };
+    }
+    if (customConfig) {
+      return customConfig as AgentConfig;
+    }
+  }
+
+  // Return default config for the agent type
+  return DEFAULT_AGENT_CONFIGS[agentType];
 }
 
 /**
  * Check if an agent type is supported
  */
 export function isSupportedAgentType(type: string): type is ACPAgentType {
-  return type in AGENT_CONFIGS;
+  return type === 'qwen' || type === 'claude-agent-acp';
 }
 
 /**
  * Get list of all supported agent types
  */
 export function getSupportedAgentTypes(): ACPAgentType[] {
-  return Object.keys(AGENT_CONFIGS) as ACPAgentType[];
+  return ['qwen', 'claude-agent-acp'];
 }
 
 /**

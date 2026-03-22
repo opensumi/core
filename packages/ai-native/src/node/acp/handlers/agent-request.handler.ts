@@ -37,6 +37,8 @@ import { AcpPermissionCallerManager } from '../acp-permission-caller.service';
 import { AcpFileSystemHandler } from './file-system.handler';
 import { AcpTerminalHandler } from './terminal.handler';
 
+export const AcpAgentRequestHandlerToken = Symbol('AcpAgentRequestHandlerToken');
+
 /**
  * ACP Agent Request Handler - 处理来自 CLI Agent 的请求
  *

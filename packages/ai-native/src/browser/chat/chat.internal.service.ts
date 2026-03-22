@@ -117,11 +117,9 @@ export class ChatInternalService extends Disposable {
   }
 
   async createSessionModel() {
-    // this.__isSessionLoading =  true;
     this._onSessionLoadingChange.fire(true);
     this.#sessionModel = await this.chatManagerService.startSession();
     this._onChangeSession.fire(this.#sessionModel.sessionId);
-    // this.__isSessionLoading =  false;
     this._onSessionLoadingChange.fire(false);
   }
 
@@ -141,6 +139,11 @@ export class ChatInternalService extends Disposable {
     return sessions;
   }
 
+  async getSessionsByAcp() {
+    await this.chatManagerService.loadSessionList();
+    return this.chatManagerService.getSessions();
+  }
+
   getSession(sessionId: string) {
     return this.chatManagerService.getSession(sessionId);
   }
@@ -150,7 +153,6 @@ export class ChatInternalService extends Disposable {
     // this.__isSessionLoading = true;
     this._onSessionLoadingChange.fire(true);
     try {
-      const targetSession = this.chatManagerService.getSession(sessionId);
       await this.chatManagerService.loadSession(sessionId);
       // 重新获取 targetSession，因为 loadSession 可能更新了 session 对象
       const updatedSession = this.chatManagerService.getSession(sessionId);

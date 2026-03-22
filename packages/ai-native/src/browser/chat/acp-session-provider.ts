@@ -1,14 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import {
-  AIBackSerivcePath,
-  AgentProcessConfig,
-  DEFAULT_AGENT_TYPE,
-  Domain,
-  IAIBackService,
-  URI,
-} from '@opensumi/ide-core-common';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { AIBackSerivcePath, AgentProcessConfig, Domain, IAIBackService, URI } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { getDefaultAgentType } from './get-default-agent-type';
 import { ISessionModel, ISessionProvider, SessionProviderDomain } from './session-provider';
 
 /**
@@ -26,6 +21,9 @@ export class ACPSessionProvider implements ISessionProvider {
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
   private loadedSessionMap: Map<string, ISessionModel> = new Map();
 
   private loadedSessionsResult: ISessionModel[] | null = null;
@@ -40,9 +38,10 @@ export class ACPSessionProvider implements ISessionProvider {
     }
 
     await this.workspaceService.whenReady;
+    const agentType = getDefaultAgentType(this.preferenceService);
     const result = await this.aiBackService.createSession({
       workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
-      agentType: DEFAULT_AGENT_TYPE,
+      agentType,
     });
 
     if (!result?.sessionId) {
@@ -79,9 +78,10 @@ export class ACPSessionProvider implements ISessionProvider {
     }
 
     await this.workspaceService.whenReady;
+    const agentType = getDefaultAgentType(this.preferenceService);
     const result = await this.aiBackService.listSessions({
       workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
-      agentType: DEFAULT_AGENT_TYPE,
+      agentType,
     });
 
     if (!result?.sessions?.length) {
@@ -129,8 +129,9 @@ export class ACPSessionProvider implements ISessionProvider {
 
     try {
       // 构造 AgentProcessConfig
+      const agentType = getDefaultAgentType(this.preferenceService);
       const config: AgentProcessConfig = {
-        agentType: DEFAULT_AGENT_TYPE,
+        agentType,
         workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
       };
 

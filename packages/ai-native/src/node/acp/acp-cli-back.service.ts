@@ -345,4 +345,11 @@ export class AcpCliBackService implements IAIBackService {
     await this.agentService.dispose();
     this.logger?.log('[AcpCliBackService] Disposed successfully');
   }
+
+  /**
+   * 检查默认 rpc 是否就绪，直接返回true
+   */
+  async ready(): Promise<boolean> {
+    return true;
+  }
 }

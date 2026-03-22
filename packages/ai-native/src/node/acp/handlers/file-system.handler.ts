@@ -28,6 +28,8 @@ export interface FileSystemRequest {
   recursive?: boolean;
 }
 
+export const AcpFileSystemHandlerToken = Symbol('AcpFileSystemHandlerToken');
+
 export interface FileSystemResponse {
   error?: {
     code: number;

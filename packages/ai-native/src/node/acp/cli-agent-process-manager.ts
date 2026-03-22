@@ -151,7 +151,7 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
     cwd: string,
   ): Promise<{ processId: string; stdout: NodeJS.ReadableStream; stdin: NodeJS.WritableStream }> {
     this.logger?.log(`[CliAgentProcessManager] startAgent called: command=${command}, cwd=${cwd}`);
-
+    // todo 避免多次创建，需要加一个创建中拦截
     // 检查是否已有进程且仍在运行
     if (this.currentProcess && this.isProcessRunning()) {
       // 检查配置是否相同
@@ -199,27 +199,21 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
     env: Record<string, string>,
     cwd: string,
   ): Promise<ChildProcess> {
-    // 从环境变量读取 Node 路径，默认使用当前进程的 execPath
-    // 通过设置 SUMI_ACP_NODE_PATH 环境变量，可以指定 ACP Agent 使用特定版本的 Node.js
-    // 例如：export SUMI_ACP_NODE_PATH=/Users/lujunsheng/.nvm/versions/node/v22.22.0/bin/node
-    const nodePath = process.env.SUMI_ACP_NODE_PATH || process.execPath;
+    // 从环境变量读取 Agent 命令路径，默认使用 command 参数
+    // 通过设置 SUMI_ACP_AGENT_PATH 环境变量，可以指定 ACP Agent 的完整路径
+    // 例如：export SUMI_ACP_AGENT_PATH=/usr/local/bin/claude-agent-acp
+    // 注意：如果设置了此环境变量，将覆盖 command 参数
+    const agentPath = process.env.SUMI_ACP_AGENT_PATH || command;
 
-    // 从 nodePath 推导出 bin 目录，用于设置 PATH
-    // 例如：/Users/lujunsheng/.nvm/versions/node/v22.22.0/bin
-    const nodeBinDir = nodePath.substring(0, nodePath.lastIndexOf('/'));
+    this.logger?.log(`[CliAgentProcessManager] Using Agent path: ${agentPath}`);
+    this.logger?.log(`[CliAgentProcessManager] Spawning ACP Agent: ${agentPath} ${args.join(' ')}`);
 
-    this.logger?.log(`[CliAgentProcessManager] Using Node.js path: ${nodePath}`);
-    this.logger?.log(`[CliAgentProcessManager] Using Node bin directory: ${nodeBinDir}`);
-    this.logger?.log(`[CliAgentProcessManager] Spawning ACP Agent: ${command} ${args.join(' ')}`);
-
-    // 将 node bin 目录添加到 PATH 开头，确保优先使用指定版本的 node 和相关命令
     const newEnv = {
+      ...process.env,
       ...env,
-      NODE: nodePath,
-      PATH: `${nodeBinDir}:${process.env.PATH || ''}`,
     };
 
-    const childProcess = spawn(command, args, {
+    const childProcess = spawn(agentPath, args, {
       cwd,
       stdio: ['pipe', 'pipe', 'pipe'],
       detached: false,

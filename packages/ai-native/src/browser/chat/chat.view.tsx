@@ -2,8 +2,10 @@ import * as React from 'react';
 import { MessageList } from 'react-chat-elements';
 
 import {
+  AIBackSerivcePath,
   AINativeConfigService,
   AppConfig,
+  IAIBackService,
   LabelService,
   getIcon,
   useInjectable,
@@ -63,6 +65,7 @@ import { WelcomeMessage } from '../components/WelcomeMsg';
 import { BaseApplyService } from '../mcp/base-apply.service';
 import { ChatViewHeaderRender, IMCPServerRegistry, TSlashCommandCustomRender, TokenMCPServerRegistry } from '../types';
 
+import { ChatManagerService } from './chat-manager.service';
 import { ChatRequestModel, ChatSlashCommandItemModel } from './chat-model';
 import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
@@ -116,6 +119,7 @@ const getFileChanges = (codeBlocks: CodeBlockData[]) =>
 
 export const AIChatView = () => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const chatManagerService = useInjectable<ChatManagerService>(ChatManagerService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
@@ -124,6 +128,16 @@ export const AIChatView = () => {
   const mcpServerRegistry = useInjectable<IMCPServerRegistry>(TokenMCPServerRegistry);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const llmContextService = useInjectable<LLMContextService>(LLMContextServiceToken);
+  const aiBackService = useInjectable<IAIBackService>(AIBackSerivcePath);
+
+  // ACP 模式初始化状态
+  const [initState, setInitState] = React.useState<{
+    initialized: boolean;
+    error: string | null;
+  }>({
+    initialized: false,
+    error: null,
+  });
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = aiChatService.sessionModel?.history;
@@ -167,14 +181,64 @@ export const AIChatView = () => {
     const disposer = aiChatService.onSessionLoadingChange((v) => {
       setSessionLoading(v);
     });
-    // 默认创建一个新会话
-    aiChatService.createSessionModel();
     return () => disposer.dispose();
   }, []);
   // 切换session或Agent输出状态变化时
   React.useEffect(() => {
     setSessionModelId(aiChatService.sessionModel?.modelId);
   }, [loading, aiChatService.sessionModel]);
+
+  // ACP 模式：只在第一次渲染时触发初始化
+  React.useEffect(() => {
+    // 非 ACP 模式不需要延迟初始化
+    if (!aiNativeConfigService.capabilities.supportsAgentMode) {
+      setInitState({ initialized: true, error: null });
+      return;
+    }
+
+    if (initState.initialized) {
+      return;
+    }
+
+    const initializeACP = async () => {
+      try {
+        // 等待 acp-cli-back 的 default agent 初始化完成
+        let ready = false;
+        let retries = 0;
+        const maxRetries = 12; // 最多重试 12 次，每次 5s，总共 60 秒
+
+        while (!ready && retries < maxRetries) {
+          const isReady = await aiBackService.ready?.();
+          ready = !!isReady;
+
+          if (!ready) {
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+            retries++;
+          }
+        }
+
+        if (!ready) {
+          setInitState({
+            initialized: true,
+            error: '等待 Agent 初始化超时，请检查 ACP Agent 是否正常运行',
+          });
+          return; // 超时后不再继续执行
+        }
+
+        // ACP 模式：先初始化 manager，再初始化 internal
+        aiChatService.init();
+        await chatManagerService.init();
+        setInitState({ initialized: true, error: null });
+      } catch (error) {
+        setInitState({
+          initialized: true,
+          error: error instanceof Error ? error.message : String(error) || 'ACP 服务初始化失败',
+        });
+      }
+    };
+
+    initializeACP();
+  }, []);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -870,84 +934,104 @@ export const AIChatView = () => {
     };
   }, [aiChatService.sessionModel]);
 
+  const containerView = () => {
+    if (aiNativeConfigService.capabilities.supportsAgentMode && !initState.initialized) {
+      return (
+        <div className={styles.loading_container}>
+          <Progress loading={true} style={{ width: '10%' }} />
+          <div>{localize('aiNative.chat.acp.initializing.text', 'Initializing ACP service...')}</div>
+        </div>
+      );
+    }
+
+    if (aiNativeConfigService.capabilities.supportsAgentMode && initState.initialized && initState.error) {
+      return <ACPErrorView error={initState.error} />;
+    }
+
+    return (
+      <>
+        <div className={styles.body_container}>
+          <div className={styles.left_bar} id='ai_chat_left_container'>
+            <div className={styles.chat_container} ref={containerRef}>
+              {sessionLoading && <Progress loading={sessionLoading} />}
+              <MessageList
+                className={styles.message_list}
+                lockable={true}
+                toBottomHeight={'100%'}
+                // @ts-ignore
+                dataSource={messageListData}
+              />
+            </div>
+            {aiChatService.sessionModel?.slicedMessageCount ? (
+              <div className={styles.chat_tips_text}>
+                <div className={styles.chat_tips_container}>
+                  {formatLocalize(
+                    'aiNative.chat.ai.assistant.limit.message',
+                    aiChatService.sessionModel?.slicedMessageCount,
+                  )}
+                </div>
+              </div>
+            ) : null}
+            <div className={styles.chat_input_wrap}>
+              <div className={styles.header_operate}>
+                <div className={styles.header_operate_left}>
+                  {shortcutCommands.map((command) => (
+                    <Popover
+                      id={`ai-chat-shortcut-${command.name}`}
+                      key={`ai-chat-shortcut-${command.name}`}
+                      title={command.tooltip || command.name}
+                    >
+                      <div className={styles.tag} onClick={() => handleShortcutCommandClick(command)}>
+                        {command.name}
+                      </div>
+                    </Popover>
+                  ))}
+                </div>
+              </div>
+              {changeList.length > 0 && (
+                <FileListDisplay
+                  files={changeList}
+                  hideActions={loading}
+                  onFileClick={(filePath) => {
+                    editorService.open(URI.file(path.join(appConfig.workspaceDir, filePath)));
+                  }}
+                  onRejectAll={() => {
+                    applyService.processAll('reject');
+                  }}
+                  onAcceptAll={() => {
+                    applyService.processAll('accept');
+                  }}
+                />
+              )}
+              <ChatInputWrapperRender
+                onSend={handleSend}
+                disabled={loading || sessionLoading}
+                enableOptions={true}
+                theme={theme}
+                setTheme={setTheme}
+                agentId={agentId}
+                setAgentId={setAgentId}
+                defaultAgentId={defaultAgentId}
+                command={command}
+                setCommand={setCommand}
+                contextService={llmContextService}
+                ref={chatInputRef}
+                disableModelSelector={sessionModelId !== undefined || loading}
+                sessionModelId={sessionModelId}
+              />
+            </div>
+          </div>
+        </div>
+        <AcpPermissionDialogContainer />
+      </>
+    );
+  };
   return (
     <div id={styles.ai_chat_view}>
       <div className={styles.header_container}>
         <HeaderRender handleClear={handleClear} handleCloseChatView={handleCloseChatView}></HeaderRender>
       </div>
-      <div className={styles.body_container}>
-        <div className={styles.left_bar} id='ai_chat_left_container'>
-          <div className={styles.chat_container} ref={containerRef}>
-            {sessionLoading && <Progress loading={sessionLoading} />}
-            <MessageList
-              className={styles.message_list}
-              lockable={true}
-              toBottomHeight={'100%'}
-              // @ts-ignore
-              dataSource={messageListData}
-            />
-          </div>
-          {aiChatService.sessionModel?.slicedMessageCount ? (
-            <div className={styles.chat_tips_text}>
-              <div className={styles.chat_tips_container}>
-                {formatLocalize(
-                  'aiNative.chat.ai.assistant.limit.message',
-                  aiChatService.sessionModel?.slicedMessageCount,
-                )}
-              </div>
-            </div>
-          ) : null}
-          <div className={styles.chat_input_wrap}>
-            <div className={styles.header_operate}>
-              <div className={styles.header_operate_left}>
-                {shortcutCommands.map((command) => (
-                  <Popover
-                    id={`ai-chat-shortcut-${command.name}`}
-                    key={`ai-chat-shortcut-${command.name}`}
-                    title={command.tooltip || command.name}
-                  >
-                    <div className={styles.tag} onClick={() => handleShortcutCommandClick(command)}>
-                      {command.name}
-                    </div>
-                  </Popover>
-                ))}
-              </div>
-            </div>
-            {changeList.length > 0 && (
-              <FileListDisplay
-                files={changeList}
-                hideActions={loading}
-                onFileClick={(filePath) => {
-                  editorService.open(URI.file(path.join(appConfig.workspaceDir, filePath)));
-                }}
-                onRejectAll={() => {
-                  applyService.processAll('reject');
-                }}
-                onAcceptAll={() => {
-                  applyService.processAll('accept');
-                }}
-              />
-            )}
-            <ChatInputWrapperRender
-              onSend={handleSend}
-              disabled={loading || sessionLoading}
-              enableOptions={true}
-              theme={theme}
-              setTheme={setTheme}
-              agentId={agentId}
-              setAgentId={setAgentId}
-              defaultAgentId={defaultAgentId}
-              command={command}
-              setCommand={setCommand}
-              contextService={llmContextService}
-              ref={chatInputRef}
-              disableModelSelector={sessionModelId !== undefined || loading}
-              sessionModelId={sessionModelId}
-            />
-          </div>
-        </div>
-      </div>
-      <AcpPermissionDialogContainer />
+      {containerView()}
     </div>
   );
 };
@@ -959,20 +1043,15 @@ export function DefaultChatViewHeader({
   handleClear: () => any;
   handleCloseChatView: () => any;
 }) {
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
 
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = React.useState(false);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const handleNewChat = React.useCallback(() => {
-    // if (aiChatService.sessionModel?.history.getMessages().length > 0) {
-    //   try {
-    //     aiChatService.createSessionModel();
-    //   } catch (error) {
-    //     messageService.error(error.message);
-    //   }
-    // }
     aiChatService.createSessionModel();
   }, [aiChatService]);
   const handleHistoryItemSelect = React.useCallback(
@@ -1012,8 +1091,19 @@ export function DefaultChatViewHeader({
   // 使用 ref 来跟踪最新的请求
   const latestSummaryRequestRef = React.useRef<number>(0);
 
-  React.useEffect(() => {
-    const getHistoryList = async () => {
+  // 提取 getHistoryList 为独立函数，供 Popover 打开时调用
+  const getHistoryList = async () => {
+    if (historyList.length > 0) {
+      return;
+    }
+    if (historyLoading) {
+      return;
+    }
+    // 开始加载时设置 loading 状态
+    setHistoryLoading(true);
+    try {
+      await aiChatService.getSessionsByAcp();
+
       if (!aiChatService.sessionModel) {
         return;
       }
@@ -1083,29 +1173,33 @@ export function DefaultChatViewHeader({
       });
 
       setHistoryList(historyListData);
-    };
-    getHistoryList();
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // 只在 session 切换时更新当前标题，不再自动获取历史列表
+  React.useEffect(() => {
     const toDispose = new DisposableCollection();
-    const sessionListenIds = new Set<string>();
+
     toDispose.push(
       aiChatService.onChangeSession((sessionId) => {
-        getHistoryList();
-        if (sessionListenIds.has(sessionId)) {
+        // session 切换时，只更新当前标题，不获取完整历史列表
+        if (!aiChatService.sessionModel) {
           return;
         }
-        sessionListenIds.add(sessionId);
-        toDispose.push(
-          aiChatService.sessionModel?.history.onMessageChange(() => {
-            getHistoryList();
-          }),
-        );
+        const currentMessages = aiChatService.sessionModel?.history.getMessages();
+        const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
+        const currentTitle = latestUserMessage
+          ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
+          : '';
+        setCurrentTitle(currentTitle);
+
+        // 清空历史列表，等待下次 Popover 打开时再获取
+        setHistoryList([]);
       }),
     );
-    toDispose.push(
-      aiChatService.sessionModel?.history.onMessageChange(() => {
-        getHistoryList();
-      }) || { dispose: () => {} },
-    );
+
     return () => {
       toDispose.dispose();
     };
@@ -1119,25 +1213,33 @@ export function DefaultChatViewHeader({
         currentId={aiChatService.sessionModel?.sessionId}
         title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
         historyList={historyList}
+        historyLoading={historyLoading}
         onNewChat={handleNewChat}
         onHistoryItemSelect={handleHistoryItemSelect}
         onHistoryItemDelete={handleHistoryItemDelete}
         onHistoryItemChange={() => {}}
+        onHistoryPopoverVisibleChange={(visible) => {
+          if (visible) {
+            getHistoryList();
+          }
+        }}
       />
-      <Popover
-        overlayClassName={styles.popover_icon}
-        id={'ai-chat-header-clear'}
-        title={localize('aiNative.operate.clear.title')}
-      >
-        <EnhanceIcon
-          wrapperClassName={styles.action_btn}
-          className={getIcon('clear')}
-          onClick={handleClear}
-          tabIndex={0}
-          role='button'
-          ariaLabel={localize('aiNative.operate.clear.title')}
-        />
-      </Popover>
+      {!aiNativeConfigService.capabilities.supportsAgentMode && (
+        <Popover
+          overlayClassName={styles.popover_icon}
+          id={'ai-chat-header-clear'}
+          title={localize('aiNative.operate.clear.title')}
+        >
+          <EnhanceIcon
+            wrapperClassName={styles.action_btn}
+            className={getIcon('clear')}
+            onClick={handleClear}
+            tabIndex={0}
+            role='button'
+            ariaLabel={localize('aiNative.operate.clear.title')}
+          />
+        </Popover>
+      )}
       <Popover
         overlayClassName={styles.popover_icon}
         id={'ai-chat-header-close'}
@@ -1153,6 +1255,17 @@ export function DefaultChatViewHeader({
           ariaLabel={localize('aiNative.operate.close.title')}
         />
       </Popover>
+    </div>
+  );
+}
+
+function ACPErrorView({ error }: { error: string }) {
+  return (
+    <div className={styles.acp_error_container}>
+      <div className={styles.acp_error_icon}>⚠️</div>
+      <div className={styles.acp_error_title}>ACP 服务初始化失败</div>
+      <div className={styles.acp_error_message}>{error}</div>
+      <div className={styles.acp_error_hint}>请检查服务端是否已启动，然后关闭面板后重新打开</div>
     </div>
   );
 }

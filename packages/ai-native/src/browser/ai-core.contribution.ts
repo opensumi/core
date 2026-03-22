@@ -299,14 +299,19 @@ export class AINativeBrowserContribution
   }
 
   async initialize() {
-    const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
+    const { supportsChatAssistant, supportsAgentMode } = this.aiNativeConfigService.capabilities;
 
     if (supportsChatAssistant) {
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, AI_CHAT_VIEW_ID, AI_CHAT_CONTAINER_ID);
       ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, DESIGN_MENU_BAR_RIGHT, AI_CHAT_LOGO_AVATAR_ID);
       this.chatProxyService.registerDefaultAgent();
-      this.chatInternalService.init();
-      this.chatManagerService.init();
+
+      // Local 模式：立即初始化
+      // ACP 模式：延迟到面板打开时初始化
+      if (!supportsAgentMode) {
+        this.chatInternalService.init();
+        this.chatManagerService.init();
+      }
     }
   }
 
@@ -671,6 +676,23 @@ export class AINativeBrowserContribution
           {
             id: AINativeSettingSectionsId.TerminalAutoRun,
             localized: 'ai.native.terminal.autorun',
+          },
+        ],
+      });
+    }
+
+    // Register Agent configs settings
+    if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+        title: localize('preference.ai.native.agent.configs.title'),
+        preferences: [
+          {
+            id: AINativeSettingSectionsId.AgentConfigs,
+            localized: 'preference.ai.native.agent.configs',
+          },
+          {
+            id: AINativeSettingSectionsId.DefaultAgentType,
+            localized: 'preference.ai.native.agent.defaultType',
           },
         ],
       });

@@ -274,6 +274,8 @@ export interface IAIBackService<
   }>;
 
   setSessionMode?(sessionId: string, modeId: string): Promise<void>;
+
+  ready?(): Promise<boolean>;
 }
 
 export class ReplyResponse {

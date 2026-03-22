@@ -19,10 +19,12 @@ export interface IChatHistoryProps {
   historyList: IChatHistoryItem[];
   currentId?: string;
   className?: string;
+  historyLoading?: boolean;
   onNewChat: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
   onHistoryItemDelete: (item: IChatHistoryItem) => void;
   onHistoryItemChange: (item: IChatHistoryItem, title: string) => void;
+  onHistoryPopoverVisibleChange?: (visible: boolean) => void;
 }
 
 // 最大历史记录数
@@ -37,6 +39,8 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
     onHistoryItemSelect,
     onHistoryItemChange,
     onHistoryItemDelete,
+    onHistoryPopoverVisibleChange,
+    historyLoading,
     className,
   }) => {
     const [historyTitleEditable, setHistoryTitleEditable] = useState<{
@@ -231,16 +235,21 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
             onChange={handleSearchChange}
           />
           <div className={styles.chat_history_list}>
-            {groupedHistoryList.map((group) => (
-              <div key={group.key} style={{ padding: '4px' }}>
-                {/* <div className={styles.chat_history_time}>{group.key}</div> */}
-                {group.items.map(renderHistoryItem)}
+            {historyLoading ? (
+              <div className={styles.chat_history_loading}>
+                <Loading />
               </div>
-            ))}
+            ) : (
+              groupedHistoryList.map((group) => (
+                <div key={group.key} style={{ padding: '4px' }}>
+                  {group.items.map(renderHistoryItem)}
+                </div>
+              ))
+            )}
           </div>
         </div>
       );
-    }, [historyList, searchValue, formatHistory, handleSearchChange, renderHistoryItem]);
+    }, [historyList, searchValue, formatHistory, handleSearchChange, renderHistoryItem, historyLoading]);
 
     // getPopupContainer 处理函数
     const getPopupContainer = useCallback((triggerNode: HTMLElement) => triggerNode.parentElement!, []);
@@ -258,6 +267,7 @@ const ChatHistory: FC<IChatHistoryProps> = memo(
             position={PopoverPosition.bottomRight}
             title={localize('aiNative.operate.chatHistory.title')}
             getPopupContainer={getPopupContainer}
+            onVisibleChange={onHistoryPopoverVisibleChange}
           >
             <div
               className={styles.chat_history_header_actions_history}

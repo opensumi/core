@@ -146,12 +146,22 @@ export class ChatManagerService extends Disposable {
   }
 
   async init() {
+    await this.loadSessionList();
+  }
+
+  /**
+   * 加载 ACP 会话列表
+   * - 只拉取会话列表（元数据），具体的 Session 完整数据通过 loadSession 按需加载
+   * - 加载失败时清空会话列表，但不会抛出错误
+   */
+  async loadSessionList() {
+    if (!this.mainProvider) {
+      await this.storageInitEmitter.fireAndAwait();
+      return;
+    }
+
     try {
-      if (!this.mainProvider) {
-        await this.storageInitEmitter.fireAndAwait();
-        return;
-      }
-      // acp模式只会先拉取列表，具体的Session需要单独的load
+      // acp 模式只会先拉取列表，具体的 Session 需要单独的 load
       const sessionsModelData = await this.mainProvider.loadSessions();
 
       // 只保留最新的 20 个会话
@@ -162,11 +172,12 @@ export class ChatManagerService extends Disposable {
       savedSessions.forEach((session) => {
         this.#sessionModels.set(session.sessionId, session);
       });
-
-      await this.storageInitEmitter.fireAndAwait();
     } catch (error) {
-      await this.storageInitEmitter.fireAndAwait();
+      // 加载失败时清空会话列表，但不抛出错误，让应用可以继续使用空列表
+      this.#sessionModels.clear();
     }
+
+    await this.storageInitEmitter.fireAndAwait();
   }
 
   getSessions() {

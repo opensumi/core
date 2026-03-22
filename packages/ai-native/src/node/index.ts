@@ -10,14 +10,21 @@ import { NodeModule } from '@opensumi/ide-core-node';
 import { SumiMCPServerProxyServicePath, TokenMCPServerProxyService } from '../common';
 import { ToolInvocationRegistryManager, ToolInvocationRegistryManagerImpl } from '../common/tool-invocation-registry';
 
+// @ts-ignore
 import {
   AcpAgentRequestHandler,
+  // @ts-ignore
+  AcpAgentRequestHandlerToken,
   AcpAgentService,
   AcpAgentServiceToken,
   AcpFileSystemHandler,
+  // @ts-ignore
+  AcpFileSystemHandlerToken,
   AcpPermissionCallerManager,
   AcpPermissionCallerManagerToken,
   AcpTerminalHandler,
+  // @ts-ignore
+  AcpTerminalHandlerToken,
   CliAgentProcessManager,
   CliAgentProcessManagerToken,
 } from './acp';
@@ -56,9 +63,18 @@ export class AINativeModule extends NodeModule {
       token: TokenMCPServerProxyService,
       useClass: SumiMCPServerBackend,
     },
-    AcpFileSystemHandler,
-    AcpTerminalHandler,
-    AcpAgentRequestHandler,
+    // {
+    //   token: AcpFileSystemHandlerToken,
+    //   useClass: AcpFileSystemHandler,
+    // },
+    // {
+    //   token: AcpTerminalHandlerToken,
+    //   useClass: AcpTerminalHandler,
+    // },
+    // {
+    //   token: AcpAgentRequestHandlerToken,
+    //   useClass: AcpAgentRequestHandler,
+    // },
   ];
 
   backServices = [
