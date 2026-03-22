@@ -24,8 +24,8 @@ import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { CliAgentProcessManagerToken, ICliAgentProcessManager } from './cli-agent-process-manager';
-import { AcpAgentRequestHandler } from './handlers/agent-request.handler';
-import { AcpTerminalHandler } from './handlers/terminal.handler';
+import { AcpAgentRequestHandler, AcpAgentRequestHandlerToken } from './handlers/agent-request.handler';
+import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 
 export interface SessionLoadResult {
   sessionId: string;
@@ -174,10 +174,10 @@ export class AcpAgentService implements IAcpAgentService {
   @Autowired(CliAgentProcessManagerToken)
   private processManager: ICliAgentProcessManager;
 
-  @Autowired(AcpTerminalHandler)
+  @Autowired(AcpTerminalHandlerToken)
   private terminalHandler: AcpTerminalHandler;
 
-  @Autowired(AcpAgentRequestHandler)
+  @Autowired(AcpAgentRequestHandlerToken)
   private agentRequestHandler: AcpAgentRequestHandler;
 
   @Autowired(AppConfig)
@@ -231,11 +231,17 @@ export class AcpAgentService implements IAcpAgentService {
       config.env ?? {},
       config.workspaceDir,
     );
+    try {
+      this.logger?.log(`[ensureConnected] Setting up transport for process ${processId}`);
+      this.clientService.setTransport(stdout, stdin);
+      await this.clientService.initialize();
+      this.currentProcessId = processId;
+    } catch (e) {
+      this.logger?.log(`[ensureConnected] error ${e}`);
+      this.clientService.setTransport(stdout, stdin);
+      await this.clientService.initialize();
+    }
 
-    this.logger?.log(`[ensureConnected] Setting up transport for process ${processId}`);
-    this.clientService.setTransport(stdout, stdin);
-    await this.clientService.initialize();
-    this.currentProcessId = processId;
     return processId;
   }
 

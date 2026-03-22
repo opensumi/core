@@ -16,12 +16,6 @@ import type {
 export const AcpPermissionCallerManagerToken = Symbol('AcpPermissionCallerManagerToken');
 
 /**
- * 临时开关：是否跳过权限确认，直接返回"允许"
- * 默认为 false，保持原有逻辑
- */
-const SKIP_PERMISSION_CHECK = true;
-
-/**
  * ACP Permission Caller Manager
  *
  */
@@ -65,8 +59,11 @@ export class AcpPermissionCallerManager extends RPCService<IAcpPermissionService
    * Request permission from the user via browser dialog
    */
   async requestPermission(request: RequestPermissionRequest): Promise<RequestPermissionResponse> {
-    // 临时开关：跳过权限确认，直接返回"允许"
-    if (SKIP_PERMISSION_CHECK) {
+    // Check environment variable to skip permission confirmation
+    // Set SKIP_PERMISSION_CHECK=true to always allow without dialog
+    const skipPermissionCheck = process.env.SKIP_PERMISSION_CHECK === 'true';
+
+    if (skipPermissionCheck) {
       const allowOptionId = this.findAllowOptionId(request.options);
       return {
         outcome: {

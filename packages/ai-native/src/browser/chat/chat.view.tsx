@@ -140,7 +140,7 @@ export const AIChatView = () => {
   });
 
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  const msgHistoryManager = aiChatService.sessionModel?.history;
+  let msgHistoryManager = aiChatService.sessionModel?.history;
   const containerRef = React.useRef<HTMLDivElement>(null);
   const autoScroll = React.useRef<boolean>(true);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
@@ -703,7 +703,11 @@ export const AIChatView = () => {
     async (value: IChatMessageStructure) => {
       const { message, images, agentId, command, reportExtra } = value;
       const { actionType, actionSource } = reportExtra || {};
+      if (!aiChatService.sessionModel?.sessionId) {
+        await aiChatService.createSessionModel();
 
+        msgHistoryManager = aiChatService.sessionModel?.history;
+      }
       const request = await aiChatService.createRequest(
         message.replaceAll(LLM_CONTEXT_KEY_REGEX, ''),
         agentId!,
@@ -1102,13 +1106,11 @@ export function DefaultChatViewHeader({
     // 开始加载时设置 loading 状态
     setHistoryLoading(true);
     try {
-      await aiChatService.getSessionsByAcp();
-
+      const sessions = await aiChatService.getSessionsByAcp();
+      aiChatService.activateSession(sessions[sessions.length - 1].sessionId);
       if (!aiChatService.sessionModel) {
         return;
       }
-
-      const sessions = aiChatService.getSessions();
 
       const currentMessages = aiChatService.sessionModel?.history.getMessages();
       const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);

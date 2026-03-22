@@ -71,6 +71,7 @@ export class ChatInternalService extends Disposable {
   init() {
     this.chatManagerService.onStorageInit(async () => {
       const sessions = this.chatManagerService.getSessions();
+
       if (sessions.length > 0) {
         await this.activateSession(sessions[sessions.length - 1].sessionId);
       } else {
@@ -141,6 +142,15 @@ export class ChatInternalService extends Disposable {
 
   async getSessionsByAcp() {
     await this.chatManagerService.loadSessionList();
+    // hack 尝试重获一次
+    if (this.chatManagerService.getSessions().length === 0) {
+      await new Promise((resolve) =>
+        setTimeout(() => {
+          resolve(null);
+        }, 1000 * 3),
+      );
+      await this.chatManagerService.loadSessionList();
+    }
     return this.chatManagerService.getSessions();
   }
 

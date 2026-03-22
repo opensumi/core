@@ -204,13 +204,17 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
     // 例如：export SUMI_ACP_AGENT_PATH=/usr/local/bin/claude-agent-acp
     // 注意：如果设置了此环境变量，将覆盖 command 参数
     const agentPath = process.env.SUMI_ACP_AGENT_PATH || command;
-
+    const nodePath = process.env.SUMI_ACP_NODE_PATH || command;
+    const nodeBinDir = nodePath.substring(0, nodePath.lastIndexOf('/'));
     this.logger?.log(`[CliAgentProcessManager] Using Agent path: ${agentPath}`);
     this.logger?.log(`[CliAgentProcessManager] Spawning ACP Agent: ${agentPath} ${args.join(' ')}`);
+    this.logger?.log(`[CliAgentProcessManager] Spawning node path: ${nodePath} ${args.join(' ')}`);
 
     const newEnv = {
       ...process.env,
       ...env,
+      NODE: `${nodeBinDir}/node`,
+      PATH: `${nodeBinDir}:${process.env.PATH || ''}`,
     };
 
     const childProcess = spawn(agentPath, args, {

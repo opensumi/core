@@ -34,8 +34,8 @@ import { INodeLogger } from '@opensumi/ide-core-node';
 import { AcpPermissionCallerManagerToken } from '../../acp';
 import { AcpPermissionCallerManager } from '../acp-permission-caller.service';
 
-import { AcpFileSystemHandler } from './file-system.handler';
-import { AcpTerminalHandler } from './terminal.handler';
+import { AcpFileSystemHandler, AcpFileSystemHandlerToken } from './file-system.handler';
+import { AcpTerminalHandler, AcpTerminalHandlerToken } from './terminal.handler';
 
 export const AcpAgentRequestHandlerToken = Symbol('AcpAgentRequestHandlerToken');
 
@@ -63,10 +63,10 @@ export const AcpAgentRequestHandlerToken = Symbol('AcpAgentRequestHandlerToken')
  */
 @Injectable()
 export class AcpAgentRequestHandler {
-  @Autowired(AcpFileSystemHandler)
+  @Autowired(AcpFileSystemHandlerToken)
   private fileSystemHandler: AcpFileSystemHandler;
 
-  @Autowired(AcpTerminalHandler)
+  @Autowired(AcpTerminalHandlerToken)
   private terminalHandler: AcpTerminalHandler;
 
   @Autowired(AcpPermissionCallerManagerToken)

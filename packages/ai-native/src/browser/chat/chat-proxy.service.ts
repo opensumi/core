@@ -2,6 +2,7 @@
  * ChatProxyService - 聊天代理服务
  *
  * 负责注册默认的聊天 Agent，作为 AI 后端服务和聊天界面之间的代理：
+ * - 根据配置动态注册 ACP Agent 或 Local Agent
  * - 注册默认 Agent 处理聊天请求
  * - 调用 AI 后端服务进行流式请求
  * - 管理请求配置（模型、API Key、系统提示等）
@@ -12,7 +13,7 @@
  * - ApplyService: 依赖注入使用，获取请求配置
  */
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   ChatAgentViewServiceToken,
   Disposable,
@@ -26,6 +27,7 @@ import { ChatToolRender } from '../components/ChatToolRender';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 import { IChatAgentViewService } from '../types';
 
+import { AcpChatAgent } from './acp-chat-agent';
 import { DefaultChatAgent } from './default-chat-agent';
 
 /**
@@ -44,6 +46,9 @@ export class ChatProxyService extends Disposable {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
+
   @Autowired(IApplicationService)
   private readonly applicationService: IApplicationService;
 
@@ -53,6 +58,9 @@ export class ChatProxyService extends Disposable {
   @Autowired(DefaultChatAgentToken)
   private readonly defaultChatAgent: DefaultChatAgent;
 
+  @Autowired(AcpChatAgent)
+  private readonly acpChatAgent: AcpChatAgent;
+
   public registerDefaultAgent() {
     this.chatAgentViewService.registerChatComponent({
       id: 'toolCall',
@@ -61,7 +69,12 @@ export class ChatProxyService extends Disposable {
     });
 
     this.applicationService.getBackendOS().then(() => {
-      this.addDispose(this.chatAgentService.registerAgent(this.defaultChatAgent));
+      // 根据配置动态选择 Agent：ACP 模式使用 AcpChatAgent，否则使用 DefaultChatAgent
+      const agentToRegister = this.aiNativeConfigService.capabilities.supportsAgentMode
+        ? this.acpChatAgent
+        : this.defaultChatAgent;
+
+      this.addDispose(this.chatAgentService.registerAgent(agentToRegister));
       queueMicrotask(() => {
         this.chatAgentService.updateAgent(ChatProxyService.AGENT_ID, {});
       });

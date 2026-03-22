@@ -26,7 +26,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { INodeLogger, Implementation } from '@opensumi/ide-core-node';
 
-import { AcpAgentRequestHandler } from './handlers/agent-request.handler';
+import { AcpAgentRequestHandler, AcpAgentRequestHandlerToken } from './handlers/agent-request.handler';
 
 export const ACP_PROTOCOL_VERSION = 1;
 
@@ -51,7 +51,7 @@ export class AcpCliClientService implements IAcpCliClientService {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
-  @Autowired(AcpAgentRequestHandler)
+  @Autowired(AcpAgentRequestHandlerToken)
   private agentRequestHandler: AcpAgentRequestHandler;
 
   setTransport(stdout: NodeJS.ReadableStream, stdin: NodeJS.WritableStream): void {

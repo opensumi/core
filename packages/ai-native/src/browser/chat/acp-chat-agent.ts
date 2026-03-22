@@ -3,6 +3,7 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancellationToken,
+  ChatFeatureRegistryToken,
   Deferred,
   IAIBackService,
   IAIReporter,
@@ -27,6 +28,7 @@ import {
   IChatAgentService,
   IChatAgentWelcomeMessage,
 } from '../../common/index';
+import { DEFAULT_SYSTEM_PROMPT } from '../../common/prompts/system-prompt';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
@@ -54,7 +56,7 @@ export class AcpChatAgent implements IChatAgent {
   @Autowired(MonacoCommandRegistry)
   private readonly monacoCommandRegistry: MonacoCommandRegistry;
 
-  @Autowired(ChatFeatureRegistry)
+  @Autowired(ChatFeatureRegistryToken)
   private readonly chatFeatureRegistry: ChatFeatureRegistry;
 
   @Autowired(IAIReporter)
@@ -73,7 +75,7 @@ export class AcpChatAgent implements IChatAgent {
 
   public get metadata(): IChatAgentMetadata {
     return {
-      systemPrompt: this.preferenceService.get<string>(AINativeSettingSectionsId.SystemPrompt),
+      systemPrompt: this.preferenceService.get<string>(AINativeSettingSectionsId.SystemPrompt, ''),
     };
   }
 

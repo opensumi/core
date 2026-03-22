@@ -54,6 +54,7 @@ import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
+import { DefaultChatAgent } from './chat/default-chat-agent';
 import { LocalStorageProvider } from './chat/local-storage-provider';
 import { ISessionProviderRegistry, SessionProviderRegistry } from './chat/session-provider-registry';
 import { LlmContextContribution } from './context/llm-context.contribution';
@@ -201,8 +202,10 @@ export class AINativeModule extends BrowserModule {
     },
     {
       token: DefaultChatAgentToken,
-      useClass: AcpChatAgent,
+      useClass: DefaultChatAgent,
     },
+    // ACP Agent - 用于 ACP 模式
+    AcpChatAgent,
     {
       token: ChatServiceToken,
       useClass: ChatService,
