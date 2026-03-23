@@ -15,6 +15,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AIBackSerivcePath, Disposable, Emitter, Event, IAIBackService } from '@opensumi/ide-core-common';
+import { IMessageService } from '@opensumi/ide-overlay';
 
 import { IChatManagerService } from '../../common';
 
@@ -31,6 +32,9 @@ export class ChatInternalService extends Disposable {
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
+
+  @Autowired(IMessageService)
+  private messageService: IMessageService;
 
   @Autowired(IChatManagerService)
   private chatManagerService: ChatManagerService;
@@ -90,9 +94,13 @@ export class ChatInternalService extends Disposable {
       throw new Error('No active session');
     }
 
-    await this.aiBackService.setSessionMode?.(sessionId, modeId);
-    // 切换成功后通知前端 UI 同步更新当前模式
-    this._onModeChange.fire(modeId);
+    try {
+      await this.aiBackService.setSessionMode?.(sessionId, modeId);
+      // 切换成功后通知前端 UI 同步更新当前模式
+      this._onModeChange.fire(modeId);
+    } catch (e) {
+      this.messageService.error(e.message);
+    }
   }
 
   public setLatestRequestId(id: string): void {

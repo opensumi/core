@@ -88,7 +88,8 @@ export interface ICliAgentProcessManager {
 export class CliAgentProcessManager implements ICliAgentProcessManager {
   // 直接持有 ChildProcess 对象，不需要包装
   private currentProcess: ChildProcess | null = null;
-  // 单独跟踪 cwd，因为 ChildProcess 没有 cwd 属性
+  // 单独跟踪 command 和 cwd，因为 ChildProcess 没有这些属性
+  private currentCommand: string | null = null;
   private currentCwd: string | null = null;
 
   // 固定进程 ID（单一实例模式使用常量）
@@ -129,11 +130,10 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
   }
 
   /**
-   * 比较配置是否相同（只关心 cwd，因为 cwd 决定了工作目录）
+   * 比较配置是否相同（检查 command 和 cwd）
    */
   private isConfigSame(command: string, args: string[], env: Record<string, string>, cwd: string): boolean {
-    // 简化：只检查 cwd 是否相同
-    return cwd === this.currentCwd;
+    return command === this.currentCommand && cwd === this.currentCwd;
   }
 
   /**
@@ -172,6 +172,7 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
       // 进程已退出，自动清理（exit 事件应该已经处理了）
       this.logger?.log('[CliAgentProcessManager] Previous process exited, cleaning up');
       this.currentProcess = null;
+      this.currentCommand = null;
       this.currentCwd = null;
     }
 
@@ -179,6 +180,7 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
     this.logger?.log('[CliAgentProcessManager] Creating new agent process');
     const childProcess = await this.createAgentProcess(command, args, env, cwd);
     this.currentProcess = childProcess;
+    this.currentCommand = command;
     this.currentCwd = cwd;
 
     this.logger?.log(`[CliAgentProcessManager] Agent process started with PID: ${childProcess.pid}`);
@@ -267,6 +269,7 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
 
     // 进程退出后自动清空引用
     this.currentProcess = null;
+    this.currentCommand = null;
     this.currentCwd = null;
   }
 
@@ -382,6 +385,7 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
       const timeout = setTimeout(() => {
         this.logger?.warn(`[CliAgentProcessManager] Force kill timeout for PID ${pid}, clearing reference`);
         this.currentProcess = null;
+        this.currentCommand = null;
         this.currentCwd = null;
         resolve();
       }, PROCESS_CONFIG.FORCE_KILL_TIMEOUT_MS);
@@ -391,6 +395,7 @@ export class CliAgentProcessManager implements ICliAgentProcessManager {
         clearTimeout(timeout);
         this.logger?.log(`[CliAgentProcessManager] Process ${pid} exited, clearing reference`);
         this.currentProcess = null;
+        this.currentCommand = null;
         this.currentCwd = null;
         resolve();
       });

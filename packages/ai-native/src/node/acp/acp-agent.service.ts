@@ -15,11 +15,7 @@ import {
   type SetSessionModeRequest,
   type ToolCallUpdate,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
-import {
-  AgentProcessConfig,
-  DEFAULT_AGENT_TYPE,
-  getAgentConfig,
-} from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
+import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
@@ -224,10 +220,9 @@ export class AcpAgentService implements IAcpAgentService {
       this.currentProcessId = null;
     }
 
-    const agentConfig = getAgentConfig(config.agentType || DEFAULT_AGENT_TYPE);
     const { processId, stdout, stdin } = await this.processManager.startAgent(
-      agentConfig.command,
-      agentConfig.args,
+      config.command,
+      config.args,
       config.env ?? {},
       config.workspaceDir,
     );

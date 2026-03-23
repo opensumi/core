@@ -28,11 +28,10 @@ import {
   IChatAgentService,
   IChatAgentWelcomeMessage,
 } from '../../common/index';
-import { DEFAULT_SYSTEM_PROMPT } from '../../common/prompts/system-prompt';
 import { MCPConfigService } from '../mcp/config/mcp-config.service';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
-import { getDefaultAgentType } from './get-default-agent-type';
+import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
 
 /**
  * ACP Chat Agent - 实现默认的聊天代理
@@ -143,42 +142,51 @@ export class AcpChatAgent implements IChatAgent {
     // agent 模式只需要发送最后一条数据
     const lastmessage = history[history.length - 1];
 
-    await this.workspaceService.whenReady;
-    const stream = await this.aiBackService.requestStream(
-      prompt,
-      {
-        requestId: request.requestId,
-        sessionId,
-        history: [lastmessage],
-        images: request.images,
-        ...(await this.getRequestOptions()),
-        agentSessionConfig: {
-          agentType: getDefaultAgentType(this.preferenceService),
-          workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
+    try {
+      await this.workspaceService.whenReady;
+      const stream = await this.aiBackService.requestStream(
+        prompt,
+        {
+          requestId: request.requestId,
+          sessionId,
+          history: [lastmessage],
+          images: request.images,
+          ...(await this.getRequestOptions()),
+          agentSessionConfig: (() => {
+            const agentType = getDefaultAgentType(this.preferenceService);
+            const agentConfig = getAgentConfig(this.preferenceService, agentType);
+            return {
+              ...agentConfig,
+              workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
+            };
+          })(),
         },
-      },
-      token,
-    );
+        token,
+      );
 
-    listenReadable<IChatProgress>(stream, {
-      onData: (data) => {
-        progress(data);
-      },
-      onEnd: () => {
-        chatDeferred.resolve();
-      },
-      onError: (error) => {
-        this.messageService.error(error.message);
-        this.aiReporter.end(sessionId + '_' + request.requestId, {
-          message: error.message,
-          success: false,
-          command,
-        });
-        chatDeferred.reject(error);
-      },
-    });
+      listenReadable<IChatProgress>(stream, {
+        onData: (data) => {
+          progress(data);
+        },
+        onEnd: () => {
+          chatDeferred.resolve();
+        },
+        onError: (error) => {
+          this.messageService.error(error.message);
+          this.aiReporter.end(sessionId + '_' + request.requestId, {
+            message: error.message,
+            success: false,
+            command,
+          });
+          chatDeferred.reject(error);
+        },
+      });
 
-    await chatDeferred.promise;
+      await chatDeferred.promise;
+    } catch (e) {
+      this.messageService.error(e.message);
+      chatDeferred.reject(e);
+    }
     return {};
   }
 

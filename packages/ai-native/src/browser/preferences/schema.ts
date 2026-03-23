@@ -165,20 +165,6 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     },
     [AINativeSettingSectionsId.AgentConfigs]: {
       type: 'object',
-      default: {
-        qwen: {
-          command: 'qwen',
-          args: ['--acp', '--channel=ACP', '--input-format=stream-json', '--output-format=stream-json'],
-          streaming: true,
-          description: 'Qwen CLI Agent',
-        },
-        'claude-agent-acp': {
-          command: 'claude-agent-acp',
-          args: [],
-          streaming: true,
-          description: 'Claude Code ACP Agent',
-        },
-      },
       description: '%preference.ai.native.agent.configs.description%',
       markdownDescription: '%preference.ai.native.agent.configs.markdownDescription%',
       additionalProperties: {

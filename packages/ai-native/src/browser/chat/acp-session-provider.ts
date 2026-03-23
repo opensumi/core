@@ -1,9 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AIBackSerivcePath, AgentProcessConfig, Domain, IAIBackService, URI } from '@opensumi/ide-core-common';
+import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { getDefaultAgentType } from './get-default-agent-type';
+import { getAgentConfig, getDefaultAgentType } from './get-default-agent-type';
 import { ISessionModel, ISessionProvider, SessionProviderDomain } from './session-provider';
 
 /**
@@ -28,6 +29,9 @@ export class ACPSessionProvider implements ISessionProvider {
 
   private loadedSessionsResult: ISessionModel[] | null = null;
 
+  @Autowired(MessageService)
+  protected messageService: MessageService;
+
   canHandle(mode: string): boolean {
     return mode.startsWith('acp');
   }
@@ -37,35 +41,41 @@ export class ACPSessionProvider implements ISessionProvider {
       throw new Error('aiBackService.createSession is not available');
     }
 
-    await this.workspaceService.whenReady;
-    const agentType = getDefaultAgentType(this.preferenceService);
-    const result = await this.aiBackService.createSession({
-      workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
-      agentType,
-    });
+    try {
+      await this.workspaceService.whenReady;
+      const agentType = getDefaultAgentType(this.preferenceService);
+      const agentConfig = getAgentConfig(this.preferenceService, agentType);
+      const result = await this.aiBackService.createSession({
+        workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
+        ...agentConfig,
+      });
 
-    if (!result?.sessionId) {
-      throw new Error('createSession did not return a valid sessionId');
+      if (!result?.sessionId) {
+        throw new Error('createSession did not return a valid sessionId');
+      }
+
+      // 构造本地 Session ID（添加 acp: 前缀）
+      const sessionId = `acp:${result.sessionId}`;
+
+      // 构造空壳会话模型
+      const sessionModel: ISessionModel = {
+        sessionId,
+        history: {
+          additional: {},
+          messages: [],
+        },
+        requests: [],
+        title: title || '',
+      };
+
+      // 新创建的 Session 不需要 load，直接加入缓存
+      this.loadedSessionMap.set(sessionId, sessionModel);
+
+      return sessionModel;
+    } catch (e) {
+      this.messageService.error(e.message);
+      throw e;
     }
-
-    // 构造本地 Session ID（添加 acp: 前缀）
-    const sessionId = `acp:${result.sessionId}`;
-
-    // 构造空壳会话模型
-    const sessionModel: ISessionModel = {
-      sessionId,
-      history: {
-        additional: {},
-        messages: [],
-      },
-      requests: [],
-      title: title || '',
-    };
-
-    // 新创建的 Session 不需要 load，直接加入缓存
-    this.loadedSessionMap.set(sessionId, sessionModel);
-
-    return sessionModel;
   }
 
   async loadSessions(): Promise<ISessionModel[]> {
@@ -77,39 +87,46 @@ export class ACPSessionProvider implements ISessionProvider {
       return [];
     }
 
-    await this.workspaceService.whenReady;
-    const agentType = getDefaultAgentType(this.preferenceService);
-    const result = await this.aiBackService.listSessions({
-      workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
-      agentType,
-    });
+    try {
+      await this.workspaceService.whenReady;
+      const agentType = getDefaultAgentType(this.preferenceService);
+      const agentConfig = getAgentConfig(this.preferenceService, agentType);
 
-    if (!result?.sessions?.length) {
+      const result = await this.aiBackService.listSessions({
+        workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
+        ...agentConfig,
+      });
+
+      if (!result?.sessions?.length) {
+        return [];
+      }
+
+      // 只返回会话列表的元数据，不加载完整数据
+      // 完整数据在 getSession 时通过 loadSession 按需加载
+      const sessionModels = result.sessions
+        .slice(0, 20)
+        .reverse()
+        .map((sessionMeta) => ({
+          ...sessionMeta,
+          sessionId: `acp:${sessionMeta.sessionId}`,
+          history: {
+            additional: {},
+            messages: [],
+          },
+          requests: [],
+          title: sessionMeta.title,
+        }));
+
+      if (sessionModels.length === 0) {
+        return [];
+      }
+      this.loadedSessionsResult = sessionModels as unknown as ISessionModel[];
+
+      return this.loadedSessionsResult;
+    } catch (e) {
+      this.messageService.error(e.message);
       return [];
     }
-
-    // 只返回会话列表的元数据，不加载完整数据
-    // 完整数据在 getSession 时通过 loadSession 按需加载
-    const sessionModels = result.sessions
-      .slice(0, 20)
-      .reverse()
-      .map((sessionMeta) => ({
-        ...sessionMeta,
-        sessionId: `acp:${sessionMeta.sessionId}`,
-        history: {
-          additional: {},
-          messages: [],
-        },
-        requests: [],
-        title: sessionMeta.title,
-      }));
-
-    if (sessionModels.length === 0) {
-      return [];
-    }
-    this.loadedSessionsResult = sessionModels as unknown as ISessionModel[];
-
-    return this.loadedSessionsResult;
   }
 
   async loadSession(sessionId: string): Promise<ISessionModel | undefined> {
@@ -133,8 +150,9 @@ export class ACPSessionProvider implements ISessionProvider {
     try {
       // 构造 AgentProcessConfig
       const agentType = getDefaultAgentType(this.preferenceService);
+      const agentConfig = getAgentConfig(this.preferenceService, agentType);
       const config: AgentProcessConfig = {
-        agentType,
+        ...agentConfig,
         workspaceDir: new URI(this.workspaceService.workspace?.uri).codeUri.fsPath,
       };
 
@@ -152,6 +170,7 @@ export class ACPSessionProvider implements ISessionProvider {
 
       return sessionModel;
     } catch (error) {
+      this.messageService.error(error.message);
       return undefined;
     }
   }
