@@ -104,6 +104,9 @@ export class ACPSessionProvider implements ISessionProvider {
         title: sessionMeta.title,
       }));
 
+    if (sessionModels.length === 0) {
+      return [];
+    }
     this.loadedSessionsResult = sessionModels as unknown as ISessionModel[];
 
     return this.loadedSessionsResult;
@@ -114,11 +117,11 @@ export class ACPSessionProvider implements ISessionProvider {
       return undefined;
     }
 
-    // 检查缓存，避免重复加载
-    const cachedSession = this.loadedSessionMap.get(sessionId);
-    if (cachedSession) {
-      return cachedSession;
-    }
+    // // 检查缓存，避免重复加载
+    // const cachedSession = this.loadedSessionMap.get(sessionId);
+    // if (cachedSession) {
+    //   return cachedSession;
+    // }
 
     if (!this.aiBackService?.loadAgentSession) {
       return undefined;
