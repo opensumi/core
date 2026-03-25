@@ -77,7 +77,8 @@ export class ChatInternalService extends Disposable {
       const sessions = this.chatManagerService.getSessions();
 
       if (sessions.length > 0) {
-        await this.activateSession(sessions[sessions.length - 1].sessionId);
+        // acp模式不需要恢复第一条数据
+        // await this.activateSession(sessions[sessions.length - 1].sessionId);
       } else {
         this.createSessionModel();
       }

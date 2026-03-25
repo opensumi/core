@@ -225,7 +225,6 @@ export const AIChatView = () => {
           return; // 超时后不再继续执行
         }
 
-        // ACP 模式：先初始化 manager，再初始化 internal
         aiChatService.init();
         await chatManagerService.init();
         setInitState({ initialized: true, error: null });
@@ -1093,7 +1092,7 @@ export function DefaultChatViewHeader({
   );
 
   // 使用 ref 来跟踪最新的请求
-  const latestSummaryRequestRef = React.useRef<number>(0);
+  // const latestSummaryRequestRef = React.useRef<number>(0);
 
   // 提取 getHistoryList 为独立函数，供 Popover 打开时调用
   const getHistoryList = async () => {
@@ -1107,38 +1106,6 @@ export function DefaultChatViewHeader({
     setHistoryLoading(true);
     try {
       const sessions = await aiChatService.getSessionsByAcp();
-      aiChatService.activateSession(sessions[sessions.length - 1].sessionId);
-      if (!aiChatService.sessionModel) {
-        return;
-      }
-
-      const currentMessages = aiChatService.sessionModel?.history.getMessages();
-      const latestUserMessage = [...currentMessages].find((m) => m.role === ChatMessageRole.User);
-      const currentTitle = latestUserMessage
-        ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
-        : '';
-
-      // 设置初始标题
-      setCurrentTitle(currentTitle);
-
-      const messages = currentMessages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
-
-      // 只有当消息数量超过阈值时才生成摘要
-      if (messages.length > 2) {
-        const requestId = Date.now();
-        latestSummaryRequestRef.current = requestId;
-
-        const summaryProvider = chatFeatureRegistry.getMessageSummaryProvider();
-        const summary = await getSummary(messages, currentTitle, summaryProvider);
-
-        // 检查是否是最新请求
-        if (requestId === latestSummaryRequestRef.current && summary) {
-          setCurrentTitle(summary);
-        }
-      }
 
       const historyListData = sessions.map((session, index) => {
         try {
@@ -1196,9 +1163,6 @@ export function DefaultChatViewHeader({
           ? cleanAttachedTextWrapper(latestUserMessage.content).slice(0, MAX_TITLE_LENGTH)
           : '';
         setCurrentTitle(currentTitle);
-
-        // 清空历史列表，等待下次 Popover 打开时再获取
-        setHistoryList([]);
       }),
     );
 
