@@ -30,15 +30,17 @@ import { AcpAgentRequestHandler, AcpAgentRequestHandlerToken } from './handlers/
 
 export const ACP_PROTOCOL_VERSION = 1;
 
+const ACP_NOT_CONNECTED_ERROR = 'Not connected to agent process';
+
+type TransportState = 'disconnected' | 'connecting' | 'connected';
+
 @Injectable()
 export class AcpCliClientService implements IAcpCliClientService {
   private stdout: NodeJS.ReadableStream | null = null;
   private stdin: NodeJS.WritableStream | null = null;
-  private connected = false;
+  private transportState: TransportState = 'disconnected';
   private requestId = 0;
   private buffer = '';
-  private streamEnded = false; // 标记 stdin 流是否已结束
-  private isSettingTransport = false; // 标记是否正在设置传输
 
   private notificationHandlers: ((notification: SessionNotification) => void)[] = [];
 
@@ -48,29 +50,40 @@ export class AcpCliClientService implements IAcpCliClientService {
   private authMethods: AuthMethod[] = [];
   private sessionModes: SessionModeState | null = null;
 
+  private disconnectHandlers: (() => void)[] = [];
+
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
   @Autowired(AcpAgentRequestHandlerToken)
   private agentRequestHandler: AcpAgentRequestHandler;
 
+  /**
+   * 统一的可写性检查，替代分散在各处的连接状态判断
+   */
+  private ensureWritable(): void {
+    if (this.transportState !== 'connected' || !this.stdin) {
+      throw new Error(ACP_NOT_CONNECTED_ERROR);
+    }
+  }
+
+  /**
+   * 订阅断开事件，供上层（如 AcpAgentService）监听并清理状态
+   */
+  onDisconnect(handler: () => void): () => void {
+    this.disconnectHandlers.push(handler);
+    return () => {
+      const index = this.disconnectHandlers.indexOf(handler);
+      if (index > -1) {
+        this.disconnectHandlers.splice(index, 1);
+      }
+    };
+  }
+
   setTransport(stdout: NodeJS.ReadableStream, stdin: NodeJS.WritableStream): void {
-    this.isSettingTransport = true;
     this.logger?.log('[ACP] Setting up transport streams');
 
-    // 拒绝 pending 请求
-    for (const [, pending] of this.pendingRequests) {
-      pending.reject(new Error('Transport reset'));
-    }
-    this.pendingRequests.clear();
-
-    // 清空请求队列并拒绝所有待处理请求
-    for (const request of this.requestQueue) {
-      request.reject(new Error('Transport reset'));
-    }
-
-    this.requestQueue = [];
-
+    // 先移除旧监听器，防止旧 stdout 的 end/error 事件触发 handleDisconnect
     if (this.stdout) {
       this.logger?.log('[ACP] Removing old stdout listeners');
       this.stdout.removeAllListeners();
@@ -83,6 +96,21 @@ export class AcpCliClientService implements IAcpCliClientService {
       } catch (_) {}
     }
 
+    this.transportState = 'connecting';
+
+    // 拒绝 pending 请求
+    for (const [, pending] of this.pendingRequests) {
+      pending.reject(new Error(ACP_NOT_CONNECTED_ERROR));
+    }
+    this.pendingRequests.clear();
+
+    // 清空请求队列并拒绝所有待处理请求
+    for (const request of this.requestQueue) {
+      request.reject(new Error(ACP_NOT_CONNECTED_ERROR));
+    }
+
+    this.requestQueue = [];
+
     this.negotiatedProtocolVersion = null;
     this.agentCapabilities = null;
     this.agentInfo = null;
@@ -91,15 +119,12 @@ export class AcpCliClientService implements IAcpCliClientService {
 
     this.stdout = stdout;
     this.stdin = stdin;
-    this.connected = false;
-    this.streamEnded = false; // 重置流结束标志
 
     this.logger?.log('[ACP] Registering stdout listeners');
 
-    const dataHandler = (data: Buffer) => {
+    this.stdout.on('data', (data: Buffer) => {
       this.handleData(data.toString('utf8'));
-    };
-    this.stdout.on('data', dataHandler);
+    });
 
     this.stdout.on('end', () => {
       this.logger?.error('[ACP] stdout ended - connection lost');
@@ -113,16 +138,12 @@ export class AcpCliClientService implements IAcpCliClientService {
 
     this.buffer = '';
 
-    this.connected = true;
-    this.isSettingTransport = false;
-    this.logger?.log('[ACP] Transport setup complete, connected=true');
+    this.transportState = 'connected';
+    this.logger?.log('[ACP] Transport setup complete');
   }
 
   async initialize(params?: InitializeRequest): Promise<ExtendedInitializeResponse> {
-    //    console.log('[ACP] initialize 被调用', { connected: this.connected, stdin: !!this.stdin });
-    if (!this.stdin || !this.stdout) {
-      throw new Error('Transport not set up');
-    }
+    this.ensureWritable();
 
     const initParams: InitializeRequest = params || {
       protocolVersion: ACP_PROTOCOL_VERSION,
@@ -224,27 +245,20 @@ export class AcpCliClientService implements IAcpCliClientService {
   }
 
   async close(): Promise<void> {
-    this.connected = false;
-
-    this.negotiatedProtocolVersion = null;
-    this.agentCapabilities = null;
-    this.agentInfo = null;
-    this.authMethods = [];
-    this.sessionModes = null;
+    this.handleDisconnect();
 
     this.notificationHandlers = [];
+    this.disconnectHandlers = [];
 
     if (this.stdout) {
       this.stdout.removeAllListeners();
     }
 
-    // 清空请求队列并拒绝所有待处理请求
-    for (const request of this.requestQueue) {
-      request.reject(new Error('Connection closed'));
+    if (this.stdin) {
+      try {
+        this.stdin.end();
+      } catch (_) {}
     }
-
-    this.requestQueue = [];
-    this.streamEnded = true;
 
     this.stdout = null;
     this.stdin = null;
@@ -252,7 +266,7 @@ export class AcpCliClientService implements IAcpCliClientService {
   }
 
   isConnected(): boolean {
-    return this.connected;
+    return this.transportState === 'connected';
   }
 
   private pendingRequests = new Map<
@@ -262,8 +276,6 @@ export class AcpCliClientService implements IAcpCliClientService {
       reject: (error: Error) => void;
     }
   >();
-
-  private requestTimeoutMs = 120000;
 
   // 请求队列，确保按顺序发送请求
   private requestQueue: Array<{
@@ -275,12 +287,7 @@ export class AcpCliClientService implements IAcpCliClientService {
   private isProcessingRequest = false;
 
   private async sendRequest<T>(method: string, params: unknown): Promise<T> {
-    if (!this.stdin || !this.connected) {
-      throw new Error('Not connected');
-    }
-    if (this.isSettingTransport) {
-      throw new Error('Transport is being set up');
-    }
+    this.ensureWritable();
 
     return new Promise<T>((resolve, reject) => {
       // 将请求加入队列
@@ -290,10 +297,6 @@ export class AcpCliClientService implements IAcpCliClientService {
         resolve,
         reject,
       });
-
-      // 打印入队信息
-      // console.log(`[ACP] 请求入队：${method}, 当前队列长度：${this.requestQueue.length}`);
-      // console.log(`[ACP] 队列内容：${this.requestQueue.map((r) => r.method).join(' -> ')}`);
 
       // 处理队列
       this.processRequestQueue();
@@ -307,14 +310,11 @@ export class AcpCliClientService implements IAcpCliClientService {
     }
 
     // 检查连接状态
-    if (!this.stdin || !this.connected || this.streamEnded) {
-      // 连接不可用，拒绝所有队列中的请求
-      // console.log(`[ACP] 连接不可用，清空请求队列，丢弃请求数：${this.requestQueue.length}`);
-      // console.log(`[ACP] 丢弃的队列内容：${this.requestQueue.map((r) => r.method).join(' -> ') || '(空)'}`);
+    if (this.transportState !== 'connected' || !this.stdin) {
       while (this.requestQueue.length > 0) {
         const request = this.requestQueue.shift();
         if (request) {
-          request.reject(new Error('Not connected'));
+          request.reject(new Error(ACP_NOT_CONNECTED_ERROR));
         }
       }
       return;
@@ -324,10 +324,6 @@ export class AcpCliClientService implements IAcpCliClientService {
 
     // 取出队列中的第一个请求
     const request = this.requestQueue.shift();
-
-    // 打印出队信息
-    //    console.log(`[ACP] 请求出队：${request?.method}, 剩余队列长度：${this.requestQueue.length}`);
-    //    console.log(`[ACP] 剩余队列内容：${this.requestQueue.map((r) => r.method).join(' -> ') || '(空)'}`);
 
     if (!request) {
       this.isProcessingRequest = false;
@@ -358,10 +354,10 @@ export class AcpCliClientService implements IAcpCliClientService {
       const json = JSON.stringify(message);
 
       // 在写入前再次检查流的状态
-      if (!this.stdin || this.streamEnded || !(this.stdin as NodeJS.WritableStream).writable) {
+      if (this.transportState !== 'connected' || !this.stdin || !(this.stdin as NodeJS.WritableStream).writable) {
         this.pendingRequests.delete(id);
         this.isProcessingRequest = false;
-        request.reject(new Error('Stream ended or not writable'));
+        request.reject(new Error(ACP_NOT_CONNECTED_ERROR));
         this.processRequestQueue();
         return;
       }
@@ -369,19 +365,13 @@ export class AcpCliClientService implements IAcpCliClientService {
       this.stdin.write(json + '\n');
       this.logger?.debug(`[ACP] Sent JSON: ${json}`);
     } catch (error) {
-      // 写入失败时，标记流已结束并清理 pending 请求
-      this.streamEnded = true;
-      this.pendingRequests.delete(id);
-      this.isProcessingRequest = false;
-      request.reject(new Error(`Failed to write to stdin: ${error}`));
-      // 继续处理下一个请求
-      this.processRequestQueue();
+      // 写入失败时，handleDisconnect 会 reject 所有 pending 请求并清空队列
+      this.handleDisconnect();
     }
   }
 
   private sendNotification(method: string, params?: unknown): void {
-    if (!this.stdin || !this.connected || this.streamEnded) {
-      // console.log(`[ACP] 跳过发送通知（未连接或流已结束）：${method}`);
+    if (this.transportState !== 'connected' || !this.stdin) {
       return;
     }
 
@@ -390,9 +380,8 @@ export class AcpCliClientService implements IAcpCliClientService {
 
     try {
       this.stdin.write(json + '\n');
-      // console.log(`[ACP] 发送通知：${method}`);
     } catch (error) {
-      // console.log(`[ACP] 发送通知失败：${method}, 错误：${error}`);
+      this.logger?.warn(`[ACP] Failed to send notification: ${method}`, error);
     }
   }
 
@@ -429,7 +418,7 @@ export class AcpCliClientService implements IAcpCliClientService {
     } else if ('method' in message && !('id' in message)) {
       this.handleIncomingNotification(message);
     } else {
-      throw new Error(`Invalid ACP JSON-RPC message: ${JSON.stringify(message)}`);
+      this.logger?.warn(`Invalid ACP JSON-RPC message: ${JSON.stringify(message)}`);
     }
   }
 
@@ -502,11 +491,15 @@ export class AcpCliClientService implements IAcpCliClientService {
       }
       this.sendMessage({ jsonrpc: '2.0', id: message.id, result });
     } catch (err: any) {
-      this.sendMessage({
-        jsonrpc: '2.0',
-        id: message.id,
-        error: { code: err.code || -32603, message: err.message || 'Internal error' + JSON.stringify(message) },
-      });
+      try {
+        this.sendMessage({
+          jsonrpc: '2.0',
+          id: message.id,
+          error: { code: err.code || -32603, message: err.message || `Internal error: ${JSON.stringify(message)}` },
+        });
+      } catch (_) {
+        this.logger?.warn(`[ACP] Failed to send error response for ${message.method}: disconnected`);
+      }
     }
   }
 
@@ -522,7 +515,7 @@ export class AcpCliClientService implements IAcpCliClientService {
         }
       }
 
-      for (const handler of this.notificationHandlers) {
+      for (const handler of [...this.notificationHandlers]) {
         handler(notification);
       }
     }
@@ -536,23 +529,18 @@ export class AcpCliClientService implements IAcpCliClientService {
     result?: unknown;
     error?: { code: number; message: string; data?: unknown };
   }): void {
-    if (!this.stdin) {
-      throw new Error('Not connected');
-    }
-
-    const json = JSON.stringify(message);
-
-    this.stdin.write(json + '\n');
+    this.ensureWritable();
+    this.stdin!.write(JSON.stringify(message) + '\n');
   }
 
   public handleDisconnect(): void {
-    if (!this.connected) {
+    if (this.transportState === 'disconnected') {
       return;
     }
 
     this.logger?.log('[ACP] Handling disconnect');
 
-    this.connected = false;
+    this.transportState = 'disconnected';
 
     this.negotiatedProtocolVersion = null;
     this.agentCapabilities = null;
@@ -561,19 +549,26 @@ export class AcpCliClientService implements IAcpCliClientService {
     this.sessionModes = null;
 
     for (const [, pending] of this.pendingRequests) {
-      pending.reject(new Error('Connection lost'));
+      pending.reject(new Error(ACP_NOT_CONNECTED_ERROR));
     }
     this.pendingRequests.clear();
 
-    // 清空请求队列并拒绝所有待处理请求
     for (const request of this.requestQueue) {
-      request.reject(new Error('Connection lost'));
+      request.reject(new Error(ACP_NOT_CONNECTED_ERROR));
+    }
+    this.requestQueue = [];
+    this.isProcessingRequest = false;
+
+    // 通知上层（如 AcpAgentService）连接已断开
+    for (const handler of [...this.disconnectHandlers]) {
+      try {
+        handler();
+      } catch (e) {
+        this.logger?.error('[ACP] Disconnect handler error:', e);
+      }
     }
 
-    this.requestQueue = [];
-    this.streamEnded = true;
-
-    this.logger?.warn('[ACP] ACP 连接 lost');
+    this.logger?.warn('[ACP] Connection lost');
   }
 
   private createError(error: { code: number; message: string; data?: unknown }): Error {

@@ -137,7 +137,7 @@ export interface IAcpPermissionCaller {
  * Connection state for ACP CLI client
  * Represents the lifecycle states of the JSON-RPC connection
  */
-export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'disconnecting';
+export type ConnectionState = 'disconnected' | 'connecting' | 'connected';
 
 /**
  * ACP CLI 客户端服务接口 - 基于 JSON-RPC 2.0 协议的传输层
@@ -210,6 +210,12 @@ export interface IAcpCliClientService {
    * Handle unexpected disconnect
    */
   handleDisconnect(): void;
+
+  /**
+   * Register a disconnect handler, called when the connection is lost
+   * @returns Unsubscribe function
+   */
+  onDisconnect(handler: () => void): () => void;
 
   /**
    * Get the negotiated protocol version

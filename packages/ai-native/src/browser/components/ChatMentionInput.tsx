@@ -493,26 +493,7 @@ export const ChatMentionInput = (props: IChatMentionInputProps) => {
       defaultModel:
         props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
       buttons: aiNativeConfigService.capabilities.supportsAgentMode
-        ? [
-            {
-              id: 'upload-image',
-              icon: 'image',
-              title: localize('aiNative.chat.imageUpload'),
-              onClick: () => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = (e) => {
-                  const files = (e.target as HTMLInputElement).files;
-                  if (files?.length) {
-                    handleImageUpload(Array.from(files));
-                  }
-                };
-                input.click();
-              },
-              position: FooterButtonPosition.LEFT,
-            },
-          ]
+        ? []
         : [
             {
               id: 'mcp-server',

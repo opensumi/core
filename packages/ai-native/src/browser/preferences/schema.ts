@@ -197,7 +197,7 @@ export const aiNativePreferenceSchema: PreferenceSchema = {
     [AINativeSettingSectionsId.DefaultAgentType]: {
       type: 'string',
       enum: ['qwen', 'claude-agent-acp'],
-      default: 'qwen',
+      default: 'claude-agent-acp',
       description: '%preference.ai.native.agent.defaultType.description%',
     },
     [AINativeSettingSectionsId.TerminalAutoRun]: {

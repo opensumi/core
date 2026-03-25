@@ -44,6 +44,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
   onModeChange,
 }) => {
   const editorRef = React.useRef<HTMLDivElement>(null);
+  const mentionPanelContainerRef = React.useRef<HTMLDivElement>(null);
   const [mentionState, setMentionState] = React.useState<MentionState>({
     active: false,
     startPos: null,
@@ -663,7 +664,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
 
   // 处理点击事件
   const handleDocumentClick = (e: MouseEvent) => {
-    if (mentionState.active && !document.querySelector(`.${styles.mention_panel}`)?.contains(e.target as Node)) {
+    if (mentionState.active && !mentionPanelContainerRef.current?.contains(e.target as Node)) {
       setMentionState((prev) => ({
         ...prev,
         active: false,
@@ -1293,7 +1294,7 @@ export const MentionInput: React.FC<MentionInputProps> = ({
       <PermissionDialogWidget dialogManager={permissionDialogManager} bottom={optionsBottomPosition} />
       {renderContextPreview()}
       {mentionState.active && (
-        <div className={styles.mention_panel_container}>
+        <div ref={mentionPanelContainerRef} className={styles.mention_panel_container}>
           <MentionPanel
             items={getCurrentItems()}
             activeIndex={mentionState.activeIndex}

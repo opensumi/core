@@ -202,6 +202,9 @@ export class AcpAgentService implements IAcpAgentService {
   // 跨所有监听器追踪正在进行权限请求的 toolCallId，防止重复弹窗
   private inFlightPermissions = new Set<string>();
 
+  // 断开事件订阅的取消函数
+  private disconnectUnsubscribe: (() => void) | null = null;
+
   async createSession(config: AgentProcessConfig): Promise<{ sessionId: string }> {
     await this.ensureConnected(config);
     const res = await this.clientService.newSession({ cwd: config.workspaceDir, mcpServers: [] });
@@ -211,13 +214,8 @@ export class AcpAgentService implements IAcpAgentService {
    * 确保 Agent 进程已连接并初始化，复用现有连接或启动新进程
    */
   private async ensureConnected(config: AgentProcessConfig): Promise<string> {
-    if (this.currentProcessId && this.processManager.isRunning()) {
+    if (this.currentProcessId) {
       return this.currentProcessId;
-    }
-
-    if (this.currentProcessId && !this.processManager.isRunning()) {
-      this.logger?.warn('[ensureConnected] Process not running, clearing old state');
-      this.currentProcessId = null;
     }
 
     const { processId, stdout, stdin } = await this.processManager.startAgent(
@@ -226,16 +224,22 @@ export class AcpAgentService implements IAcpAgentService {
       config.env ?? {},
       config.workspaceDir,
     );
-    try {
-      this.logger?.log(`[ensureConnected] Setting up transport for process ${processId}`);
-      this.clientService.setTransport(stdout, stdin);
-      await this.clientService.initialize();
-      this.currentProcessId = processId;
-    } catch (e) {
-      this.logger?.log(`[ensureConnected] error ${e}`);
-      this.clientService.setTransport(stdout, stdin);
-      await this.clientService.initialize();
+
+    this.clientService.setTransport(stdout, stdin);
+    await this.clientService.initialize();
+    this.currentProcessId = processId;
+
+    // 订阅断开事件，自动清理上层状态
+    if (this.disconnectUnsubscribe) {
+      this.disconnectUnsubscribe();
     }
+    this.disconnectUnsubscribe = this.clientService.onDisconnect(() => {
+      this.logger?.warn('[AcpAgentService] Connection lost, clearing state');
+      this.currentProcessId = null;
+      this.sessionInfo = null;
+      this.initializingPromise = null;
+      this.inFlightPermissions.clear();
+    });
 
     return processId;
   }
@@ -248,13 +252,8 @@ export class AcpAgentService implements IAcpAgentService {
   }
 
   async initializeAgent(config: AgentProcessConfig): Promise<AgentSessionInfo> {
-    if (this.sessionInfo && this.currentProcessId && this.processManager.isRunning()) {
+    if (this.sessionInfo && this.currentProcessId) {
       return this.sessionInfo;
-    }
-
-    if (this.sessionInfo && !this.currentProcessId) {
-      this.sessionInfo = null;
-      this.initializingPromise = null;
     }
 
     if (this.initializingPromise) {
@@ -309,36 +308,25 @@ export class AcpAgentService implements IAcpAgentService {
     // 订阅临时通知处理器
     const unsubscribe = this.clientService.onNotification(tempHandler);
 
-    const loadPromise = new Promise<void>(async (resolve, reject) => {
-      const timeout = setTimeout(() => {
-        unsubscribe();
-        reject(new Error(`Session load timeout for ${sessionId}`));
-      }, 60000);
+    const loadRequest: LoadSessionRequest = {
+      sessionId,
+      cwd: config.workspaceDir,
+      mcpServers: [],
+    };
 
-      try {
-        const loadRequest: LoadSessionRequest = {
-          sessionId,
-          cwd: config.workspaceDir,
-          mcpServers: [],
-        };
+    try {
+      await Promise.race([
+        this.clientService.loadSession(loadRequest),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Session load timeout for ${sessionId}`)), 60000),
+        ),
+      ]);
 
-        await this.clientService.loadSession(loadRequest);
-
-        // 等待延迟的 session/update 通知
-        await new Promise((delayResolve) => setTimeout(delayResolve, 500));
-
-        clearTimeout(timeout);
-        unsubscribe();
-        resolve();
-      } catch (error) {
-        clearTimeout(timeout);
-        unsubscribe();
-        reject(error);
-        resolve();
-      }
-    });
-
-    await loadPromise;
+      // 等待延迟的 session/update 通知
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    } finally {
+      unsubscribe();
+    }
 
     const modes: SessionMode[] = [];
     for (const notification of historyUpdates) {
@@ -612,20 +600,21 @@ export class AcpAgentService implements IAcpAgentService {
    * 清理所有资源
    */
   async dispose(): Promise<void> {
-    const stackTrace = new Error('dispose called').stack;
-    this.logger?.error('[AcpAgentService] dispose called', stackTrace);
+    this.logger?.warn('[AcpAgentService] dispose called');
+
+    // 先取消断开事件订阅，防止后续清理操作触发 handler
+    if (this.disconnectUnsubscribe) {
+      this.disconnectUnsubscribe();
+      this.disconnectUnsubscribe = null;
+    }
 
     if (this.currentNotificationHandler) {
-      // 不需要手动 reject Promise，因为 Promise 已经创建完成
-      // 只需清理通知处理器和 stream
       this.currentNotificationHandler.stream.end();
       this.currentNotificationHandler.unsubscribe();
       this.currentNotificationHandler = null;
     }
 
     await this.stopAgent();
-
-    await this.clientService.close();
 
     await this.processManager.killAllAgents();
 
@@ -697,7 +686,7 @@ export class AcpAgentService implements IAcpAgentService {
       },
       (error) => {
         this.logger?.error(`Failed to get permission for tool call: ${toolCallUpdate.title}`, error);
-        throw error;
+        return false;
       },
     );
 
