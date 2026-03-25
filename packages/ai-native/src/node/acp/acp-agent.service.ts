@@ -8,19 +8,16 @@ import {
   type ListSessionsResponse,
   type LoadSessionRequest,
   type NewSessionRequest,
-  type RequestPermissionRequest,
   type SessionMode,
   type SessionModeState,
   type SessionNotification,
   type SetSessionModeRequest,
-  type ToolCallUpdate,
 } from '@opensumi/ide-core-common/lib/types/ai-native/acp-types';
 import { AgentProcessConfig } from '@opensumi/ide-core-common/lib/types/ai-native/agent-types';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { CliAgentProcessManagerToken, ICliAgentProcessManager } from './cli-agent-process-manager';
-import { AcpAgentRequestHandler, AcpAgentRequestHandlerToken } from './handlers/agent-request.handler';
 import { AcpTerminalHandler, AcpTerminalHandlerToken } from './handlers/terminal.handler';
 
 export interface SessionLoadResult {
@@ -71,11 +68,6 @@ export interface SimpleToolCall {
   input: Record<string, unknown>;
 }
 
-export interface PermissionResult {
-  approved: boolean;
-  input?: Record<string, unknown>;
-}
-
 /**
  * Agent 请求参数
  */
@@ -106,11 +98,6 @@ export interface IAcpAgentService {
    * 发送消息到 Agent（无状态）
    */
   sendMessage(request: AgentRequest, config: AgentProcessConfig): SumiReadableStream<AgentUpdate>;
-
-  /**
-   * 请求权限确认
-   */
-  requestPermission(toolCallUpdate: ToolCallUpdate): Promise<PermissionResult>;
 
   /**
    * 取消请求
@@ -173,9 +160,6 @@ export class AcpAgentService implements IAcpAgentService {
   @Autowired(AcpTerminalHandlerToken)
   private terminalHandler: AcpTerminalHandler;
 
-  @Autowired(AcpAgentRequestHandlerToken)
-  private agentRequestHandler: AcpAgentRequestHandler;
-
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -193,14 +177,10 @@ export class AcpAgentService implements IAcpAgentService {
     unsubscribe: () => void;
     stream: SumiReadableStream<AgentUpdate>;
     sessionId: string;
-    pendingToolCalls: Map<string, Promise<boolean>>;
   } | null = null;
 
   // 确保初始化只执行一次
   private initializingPromise: Promise<AgentSessionInfo> | null = null;
-
-  // 跨所有监听器追踪正在进行权限请求的 toolCallId，防止重复弹窗
-  private inFlightPermissions = new Set<string>();
 
   // 断开事件订阅的取消函数
   private disconnectUnsubscribe: (() => void) | null = null;
@@ -238,7 +218,6 @@ export class AcpAgentService implements IAcpAgentService {
       this.currentProcessId = null;
       this.sessionInfo = null;
       this.initializingPromise = null;
-      this.inFlightPermissions.clear();
     });
 
     return processId;
@@ -377,14 +356,12 @@ export class AcpAgentService implements IAcpAgentService {
       prompt: promptBlocks,
     };
 
-    const pendingToolCalls = new Map<string, Promise<boolean>>();
-
     const unsubscribe = this.clientService.onNotification((notification: SessionNotification) => {
       if (notification.sessionId !== request.sessionId) {
         return;
       }
 
-      this.handleNotification(notification, stream, pendingToolCalls);
+      this.handleNotification(notification, stream);
     });
 
     // 流结束时清理
@@ -402,10 +379,9 @@ export class AcpAgentService implements IAcpAgentService {
       unsubscribe,
       stream,
       sessionId: request.sessionId,
-      pendingToolCalls,
     };
 
-    this.sendPrompt(promptRequest, stream, pendingToolCalls);
+    this.sendPrompt(promptRequest, stream);
 
     return stream;
   }
@@ -416,47 +392,24 @@ export class AcpAgentService implements IAcpAgentService {
   private async sendPrompt(
     promptRequest: { sessionId: string; prompt: ContentBlock[] },
     stream: SumiReadableStream<AgentUpdate>,
-    pendingToolCalls: Map<string, Promise<boolean>>,
   ): Promise<void> {
     try {
       await this.clientService.prompt(promptRequest);
-      await this.waitForPendingToolCalls(stream, pendingToolCalls);
+      stream.emitData({ type: 'done', content: '' });
+      stream.end();
     } catch (error) {
       stream.emitError(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
   /**
-   * 等待所有 pending tool calls 完成
-   */
-  private async waitForPendingToolCalls(
-    stream: SumiReadableStream<AgentUpdate>,
-    pendingToolCalls: Map<string, Promise<boolean>>,
-  ): Promise<void> {
-    const timeout = 60000; // 60 秒，与权限对话框 timeout 一致
-    const startTime = Date.now();
-
-    // 等待所有 pending tool calls 完成或超时
-    while (pendingToolCalls.size > 0) {
-      if (Date.now() - startTime > timeout) {
-        this.logger?.warn(`waitForPendingToolCalls timeout after ${timeout}ms`);
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-
-    stream.emitData({ type: 'done', content: '' });
-    stream.end();
-  }
-
-  /**
    * 处理通知
+   *
+   * tool_call 通知仅用于 UI 展示，不触发权限弹窗。
+   * 权限确认完全依赖 agent 发送的 session/request_permission JSON-RPC 请求（阻塞式），
+   * 由 AcpCliClientService.handleIncomingRequest → agentRequestHandler.handlePermissionRequest 处理。
    */
-  private handleNotification(
-    notification: SessionNotification,
-    stream: SumiReadableStream<AgentUpdate>,
-    pendingToolCalls: Map<string, Promise<boolean>>,
-  ): void {
+  private handleNotification(notification: SessionNotification, stream: SumiReadableStream<AgentUpdate>): void {
     const update = notification.update;
 
     switch (update.sessionUpdate) {
@@ -483,8 +436,16 @@ export class AcpAgentService implements IAcpAgentService {
       }
 
       case 'tool_call': {
-        // 异步处理 tool call，保存 Promise 供 sendPrompt 等待
-        this.handleToolCallWithPermission(update, stream, pendingToolCalls);
+        // tool_call 通知仅用于 UI 展示，不触发权限弹窗
+        // 权限由 agent 通过 session/request_permission 请求阻塞式处理
+        stream.emitData({
+          type: 'tool_call',
+          content: update.title || '',
+          toolCall: {
+            name: update.title || '',
+            input: (update.rawInput as Record<string, unknown>) || {},
+          },
+        });
         break;
       }
 
@@ -505,43 +466,6 @@ export class AcpAgentService implements IAcpAgentService {
       default:
         this.logger?.log(`Unhandled session update type: ${update.sessionUpdate}`);
         break;
-    }
-  }
-
-  /**
-   * 请求权限确认
-   */
-  async requestPermission(toolCallUpdate: ToolCallUpdate): Promise<PermissionResult> {
-    const request: RequestPermissionRequest = {
-      sessionId: this.sessionInfo?.sessionId || '',
-      toolCall: {
-        toolCallId: toolCallUpdate.toolCallId,
-        title: toolCallUpdate.title,
-        kind: toolCallUpdate.kind,
-        status: 'pending',
-        rawInput: toolCallUpdate.rawInput,
-        locations: toolCallUpdate.locations,
-      },
-      options: [
-        { optionId: 'allow_once', name: 'Allow Once', kind: 'allow_once' },
-        { optionId: 'allow_always', name: 'Allow Always', kind: 'allow_always' },
-        { optionId: 'reject_once', name: 'Reject Once', kind: 'reject_once' },
-      ],
-    };
-
-    try {
-      const response = await this.agentRequestHandler.handlePermissionRequest(request);
-
-      if (response.outcome.outcome === 'selected') {
-        const optionId = response.outcome.optionId;
-        const approved = optionId.includes('allow');
-        return { approved, input: { optionId } };
-      } else {
-        return { approved: false };
-      }
-    } catch (error) {
-      this.logger?.error('Permission request failed:', error);
-      return { approved: false };
     }
   }
 
@@ -654,62 +578,5 @@ export class AcpAgentService implements IAcpAgentService {
     }
     // 默认返回
     return { mimeType: 'image/jpeg', base64Data: dataUrl };
-  }
-
-  /**
-   * 处理 tool_call 并请求权限确认
-   */
-  private async handleToolCallWithPermission(
-    toolCallUpdate: ToolCallUpdate,
-    stream: SumiReadableStream<AgentUpdate>,
-    pendingToolCalls: Map<string, Promise<boolean>>,
-  ): Promise<void> {
-    const toolCallId = toolCallUpdate.toolCallId;
-
-    if (this.inFlightPermissions.has(toolCallId)) {
-      return;
-    }
-    this.inFlightPermissions.add(toolCallId);
-
-    // 创建 Promise 并存储，供 sendPrompt 中的 waitForPendingToolCalls 等待
-    const permissionPromise = this.requestPermission(toolCallUpdate).then(
-      (result) => {
-        if (result.approved) {
-          this.logger?.log(`Tool call "${toolCallUpdate.title}" approved`);
-        } else {
-          this.logger?.log(`Tool call "${toolCallUpdate.title}" denied`);
-          if (this.sessionInfo) {
-            this.cancelRequest(this.sessionInfo.sessionId).catch(() => {});
-          }
-        }
-        return result.approved;
-      },
-      (error) => {
-        this.logger?.error(`Failed to get permission for tool call: ${toolCallUpdate.title}`, error);
-        return false;
-      },
-    );
-
-    pendingToolCalls.set(toolCallId, permissionPromise);
-
-    stream.emitData({
-      type: 'tool_call',
-      content: toolCallUpdate.title || '',
-      toolCall: {
-        name: toolCallUpdate.title || '',
-        input: (toolCallUpdate.rawInput as Record<string, unknown>) || {},
-      },
-    });
-
-    try {
-      await permissionPromise;
-      // 完成后从 Map 中移除
-      pendingToolCalls.delete(toolCallId);
-    } catch (error) {
-      // 错误时也从 Map 中移除
-      pendingToolCalls.delete(toolCallId);
-    } finally {
-      this.inFlightPermissions.delete(toolCallId);
-    }
   }
 }

@@ -235,9 +235,9 @@ export class AINativeModule extends BrowserModule {
       useFactory(injector) {
         const config = injector.get(AINativeConfigService);
         if (config.capabilities.supportsAgentMode) {
-          return new ACPChatAgentPromptProvider();
+          return injector.get(ACPChatAgentPromptProvider);
         }
-        return new DefaultChatAgentPromptProvider();
+        return injector.get(DefaultChatAgentPromptProvider);
       },
     },
     {

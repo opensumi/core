@@ -50,6 +50,7 @@ import {
   AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
+  ChatServiceToken,
   CommandService,
   IDisposable,
   InlineChatFeatureRegistryToken,
@@ -62,6 +63,7 @@ import {
   STORAGE_NAMESPACE,
   StorageProvider,
   TerminalRegistryToken,
+  URI,
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
@@ -97,6 +99,7 @@ import {
   deepSeekModels,
   openAiNativeModels,
 } from '../common';
+import { LLMContextService, LLMContextServiceToken } from '../common/llm-context';
 import { MCPServerDescription, MCPServersDisabledKey } from '../common/mcp-server-manager';
 import { MCP_SERVER_TYPE } from '../common/types';
 
@@ -104,6 +107,7 @@ import { ChatEditSchemeDocumentProvider } from './chat/chat-edit-resource';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatMultiDiffResolver } from './chat/chat-multi-diff-source';
 import { ChatProxyService } from './chat/chat-proxy.service';
+import { ChatService } from './chat/chat.api.service';
 import { ChatInternalService } from './chat/chat.internal.service';
 import { AIChatView } from './chat/chat.view';
 import { CodeActionSingleHandler } from './contrib/code-action/code-action.handler';
@@ -279,6 +283,12 @@ export class AINativeBrowserContribution
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
+
+  @Autowired(ChatServiceToken)
+  private readonly chatService: ChatService;
+
+  @Autowired(LLMContextServiceToken)
+  private readonly llmContextService: LLMContextService;
 
   @Autowired()
   private readonly chatEditResourceProvider: ChatEditSchemeDocumentProvider;
@@ -540,6 +550,33 @@ export class AINativeBrowserContribution
       contribution.registerProblemFixFeature?.(this.problemFixProviderRegistry);
       contribution.registerChatAgentPromptProvider?.();
     });
+
+    // 注册内置的 "Chat" 按钮，将选中代码添加到 Chat 面板的 context 中
+    if (this.aiNativeConfigService.capabilities.supportsChatAssistant) {
+      this.inlineChatFeatureRegistry.registerEditorInlineChat(
+        {
+          id: 'ai-chat',
+          name: 'Chat',
+          title: 'Add to Chat',
+          renderType: 'button',
+        },
+        {
+          execute: async (editor, selection) => {
+            const model = editor.getModel();
+            if (!model) {
+              return;
+            }
+            const uri = model.uri;
+            const [startLine, endLine] = [selection.selectionStartLineNumber, selection.positionLineNumber].sort(
+              (a, b) => a - b,
+            );
+
+            this.llmContextService.addFileToContext(new URI(uri.toString()), [startLine, endLine], true);
+            this.chatService.sendMessage({ message: '', immediate: false });
+          },
+        },
+      );
+    }
 
     // 注册 Opensumi 框架提供的 MCP Server Tools 能力 (此时的 Opensumi 作为 MCP Server)
     this.mcpServerContributions.getContributions().forEach((contribution) => {

@@ -1,15 +1,9 @@
 import { Injectable } from '@opensumi/di';
 
-import { SerializedContext } from '../llm-context';
-
-import { ChatAgentPromptProvider } from './context-prompt-provider';
+import { DefaultChatAgentPromptProvider } from './context-prompt-provider';
 
 /**
- * 用于acp agent 不做任何处理
+ * 用于 acp agent，复用 DefaultChatAgentPromptProvider 的 context 拼接逻辑
  */
 @Injectable()
-export class ACPChatAgentPromptProvider implements ChatAgentPromptProvider {
-  async provideContextPrompt(context: SerializedContext, userMessage: string) {
-    return userMessage;
-  }
-}
+export class ACPChatAgentPromptProvider extends DefaultChatAgentPromptProvider {}
