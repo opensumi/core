@@ -166,6 +166,7 @@ const AIChatViewContent = () => {
   }, []);
 
   const [loading, setLoading] = React.useState(false);
+  const [sessionLoading, setSessionLoading] = React.useState(false);
   const [agentId, setAgentId] = React.useState('');
   const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
@@ -174,6 +175,13 @@ const AIChatViewContent = () => {
   React.useEffect(() => {
     setSessionModelId(aiChatService.sessionModel.modelId);
   }, [loading, aiChatService.sessionModel]);
+
+  React.useEffect(() => {
+    const dispose = aiChatService.onSessionLoadingChange((isLoading) => {
+      setSessionLoading(isLoading);
+    });
+    return () => dispose.dispose();
+  }, [aiChatService]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -915,7 +923,7 @@ const AIChatViewContent = () => {
             )}
             <ChatInputWrapperRender
               onSend={handleSend}
-              disabled={loading}
+              disabled={loading || sessionLoading}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
