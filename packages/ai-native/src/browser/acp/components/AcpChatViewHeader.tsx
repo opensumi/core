@@ -34,8 +34,19 @@ export function AcpChatViewHeader({
   const [historyList, setHistoryList] = React.useState<IChatHistoryItem[]>([]);
   const [currentTitle, setCurrentTitle] = React.useState<string>('');
   const [historyLoading, setHistoryLoading] = React.useState(false);
+  const [sessionSwitching, setSessionSwitching] = React.useState(false);
+
+  React.useEffect(() => {
+    const dispose = aiChatService.onSessionLoadingChange((loading) => {
+      setSessionSwitching(loading);
+    });
+    return () => dispose.dispose();
+  }, [aiChatService]);
 
   const handleNewChat = React.useCallback(() => {
+    if (sessionSwitching) {
+      return;
+    }
     if (aiChatService.sessionModel && aiChatService.sessionModel.history.getMessages().length > 0) {
       try {
         aiChatService.createSessionModel();
@@ -43,13 +54,16 @@ export function AcpChatViewHeader({
         messageService.error(error.message);
       }
     }
-  }, [aiChatService]);
+  }, [aiChatService, sessionSwitching]);
 
   const handleHistoryItemSelect = React.useCallback(
     (item: IChatHistoryItem) => {
+      if (sessionSwitching) {
+        return;
+      }
       aiChatService.activateSession(item.id);
     },
-    [aiChatService],
+    [aiChatService, sessionSwitching],
   );
 
   const handleHistoryItemChange = React.useCallback(() => {}, []);
@@ -153,6 +167,7 @@ export function AcpChatViewHeader({
         title={currentTitle || localize('aiNative.chat.ai.assistant.name')}
         historyList={historyList}
         historyLoading={historyLoading}
+        disabled={sessionSwitching}
         onNewChat={handleNewChat}
         onHistoryItemSelect={handleHistoryItemSelect}
         onHistoryItemDelete={() => {}}
