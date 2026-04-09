@@ -120,7 +120,6 @@ export class AINativeModule extends BrowserModule {
     AcpPermissionDialogContribution,
     PermissionDialogManager,
     AcpPermissionBridgeService,
-
     {
       token: ISessionProviderRegistry,
       useClass: SessionProviderRegistry,

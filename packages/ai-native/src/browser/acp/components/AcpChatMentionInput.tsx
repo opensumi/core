@@ -1,0 +1,741 @@
+import { DataContent } from 'ai';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { Image } from '@opensumi/ide-components/lib/image';
+import {
+  AINativeConfigService,
+  LabelService,
+  PreferenceService,
+  getSymbolIcon,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
+import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import {
+  AINativeSettingSectionsId,
+  ChatFeatureRegistryToken,
+  RulesServiceToken,
+  URI,
+  localize,
+} from '@opensumi/ide-core-common';
+import { CommandService } from '@opensumi/ide-core-common/lib/command';
+import { defaultFilesWatcherExcludes } from '@opensumi/ide-core-common/lib/preferences/file-watch';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { OutlineCompositeTreeNode, OutlineTreeNode } from '@opensumi/ide-outline/lib/browser/outline-node.define';
+import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { IconType } from '@opensumi/ide-theme';
+import { IconService } from '@opensumi/ide-theme/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import { IChatInternalService, SLASH_SYMBOL } from '../../../common';
+import { LLMContextService } from '../../../common/llm-context';
+import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
+import { ChatInternalService } from '../../chat/chat.internal.service';
+import styles from '../../components/components.module.less';
+import { MentionInput } from '../../components/mention-input/mention-input';
+import {
+  FooterButtonPosition,
+  FooterConfig,
+  MentionItem,
+  MentionType,
+  ModeOption,
+} from '../../components/mention-input/types';
+import { MCPConfigCommands } from '../../mcp/config/mcp-config.commands';
+import { RulesCommands } from '../../rules/rules.contribution';
+import { RulesService } from '../../rules/rules.service';
+
+export interface IChatMentionInputProps {
+  onSend: (
+    value: string,
+    images?: string[],
+    agentId?: string,
+    command?: string,
+    option?: { model: string; [key: string]: any },
+  ) => void;
+  onValueChange?: (value: string) => void;
+  onExpand?: (value: boolean) => void;
+  placeholder?: string;
+  enableOptions?: boolean;
+  disabled?: boolean;
+  sendBtnClassName?: string;
+  defaultHeight?: number;
+  value?: string;
+  images?: Array<DataContent | URL>;
+  autoFocus?: boolean;
+  theme?: string | null;
+  setTheme: (theme: string | null) => void;
+  agentId: string;
+  setAgentId: (id: string) => void;
+  defaultAgentId?: string;
+  command: string;
+  setCommand: (command: string) => void;
+  disableModelSelector?: boolean;
+  sessionModelId?: string;
+  contextService?: LLMContextService;
+  agentModes?: Array<{ id: string; name: string; description?: string }>;
+}
+
+/**
+ * ACP 专属的 ChatMentionInput 组件
+ * 与原版区别：
+ * - 文件选择器：无搜索词时递归加载工作区文件（限制 50 个）
+ * - 文件夹选择器：无搜索词时加载工作区根目录下的文件夹
+ */
+export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
+  const { onSend, disabled = false, contextService } = props;
+
+  const [value, setValue] = useState(props.value || '');
+  const [images, setImages] = useState(props.images || []);
+  const [currentMode, setCurrentMode] = useState<string>(props.agentModes?.[0]?.id || 'default');
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const commandService = useInjectable<CommandService>(CommandService);
+  const searchService = useInjectable<IFileSearchService>(FileSearchServicePath);
+  const fileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
+  const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
+  const labelService = useInjectable<LabelService>(LabelService);
+  const iconService = useInjectable<IconService>(IconService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
+  const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
+  const prevOutlineItems = useRef<MentionItem[]>([]);
+  const [placeholder, setPlaceholder] = useState(localize('aiNative.chat.input.placeholder.default'));
+  const preferenceService = useInjectable<PreferenceService>(PreferenceService);
+  const rulesService = useInjectable<RulesService>(RulesServiceToken);
+  const handleShowMCPConfig = React.useCallback(() => {
+    commandService.executeCommand(MCPConfigCommands.OPEN_MCP_CONFIG.id);
+  }, [commandService]);
+
+  const handleShowRules = React.useCallback(() => {
+    commandService.executeCommand(RulesCommands.OPEN_RULES_FILE.id);
+  }, [commandService]);
+
+  // 监听 ACP Agent 模式切换成功事件，同步更新 UI
+  useEffect(() => {
+    const disposable = aiChatService.onModeChange((modeId) => {
+      setCurrentMode(modeId);
+    });
+    return () => disposable.dispose();
+  }, [aiChatService]);
+
+  // 当 agentModes 变化时，更新 currentMode 为第一个 mode
+  useEffect(() => {
+    if (props.agentModes?.length && !props.agentModes.find((m) => m.id === currentMode)) {
+      setCurrentMode(props.agentModes[0].id);
+    }
+  }, [props.agentModes]);
+
+  // 当 slash command 变化时，更新 placeholder
+  useEffect(() => {
+    const defaultPlaceholder = localize('aiNative.chat.input.placeholder.default');
+    const findCommandHandler = chatFeatureRegistry.getSlashCommandHandler(props.command);
+    if (findCommandHandler && findCommandHandler.providerInputPlaceholder) {
+      const editor = monacoCommandRegistry.getActiveCodeEditor();
+      const customPlaceholder = findCommandHandler.providerInputPlaceholder(value, editor);
+      setPlaceholder(customPlaceholder || defaultPlaceholder);
+    } else {
+      setPlaceholder(defaultPlaceholder);
+    }
+  }, [chatFeatureRegistry, props.command]);
+
+  useEffect(() => {
+    if (props.value !== value) {
+      setValue(props.value || '');
+    }
+  }, [props.value]);
+
+  const resolveSymbols = useCallback(
+    async (parent?: OutlineCompositeTreeNode, symbols: (OutlineTreeNode | OutlineCompositeTreeNode)[] = []) => {
+      if (!parent) {
+        parent = (await outlineTreeService.resolveChildren())[0] as OutlineCompositeTreeNode;
+      }
+      const children = (await outlineTreeService.resolveChildren(parent)) as (
+        | OutlineTreeNode
+        | OutlineCompositeTreeNode
+      )[];
+      for (const child of children) {
+        symbols.push(child);
+        if (OutlineCompositeTreeNode.is(child)) {
+          await resolveSymbols(child, symbols);
+        }
+      }
+      return symbols;
+    },
+    [outlineTreeService],
+  );
+
+  // 拆分目录路径为多个层级的辅助函数
+  const expandFolderPaths = async (folderPaths: string[], workspaceRootPath: string): Promise<MentionItem[]> => {
+    const expandedPaths = new Set<string>();
+    const workspaceUri = new URI(workspaceRootPath);
+
+    // 将所有路径展开为多层级
+    for (const folderPath of folderPaths) {
+      const uri = new URI(folderPath);
+      const relativePath = await workspaceService.asRelativePath(uri);
+
+      if (relativePath?.path) {
+        const pathSegments = relativePath.path.split('/').filter(Boolean);
+
+        // 为每个层级创建路径
+        for (let i = 0; i < pathSegments.length; i++) {
+          const segmentPath = pathSegments.slice(0, i + 1).join('/');
+          const fullPath = workspaceUri.resolve(segmentPath).codeUri.fsPath;
+
+          // 避免添加工作区本身或其上级目录
+          if (fullPath !== workspaceRootPath && !workspaceRootPath.startsWith(fullPath)) {
+            expandedPaths.add(fullPath);
+          }
+        }
+      } else {
+        // 如果无法获取相对路径，直接添加（但仍要过滤工作区路径）
+        if (folderPath !== workspaceRootPath && !workspaceRootPath.startsWith(folderPath)) {
+          expandedPaths.add(folderPath);
+        }
+      }
+    }
+
+    // 转换为 MentionItem 格式
+    return Promise.all(
+      Array.from(expandedPaths).map(async (folderPath) => {
+        const uri = new URI(folderPath);
+        const relativePath = await workspaceService.asRelativePath(uri);
+        return {
+          id: uri.codeUri.fsPath,
+          type: MentionType.FOLDER,
+          text: uri.displayName,
+          value: uri.codeUri.fsPath,
+          description: relativePath?.root ? relativePath.path : '',
+          contextId: uri.codeUri.fsPath,
+          icon: getIcon('folder'),
+        };
+      }),
+    );
+  };
+
+  // ACP 专属：递归加载工作区文件
+  const loadWorkspaceFiles = async (): Promise<MentionItem[]> => {
+    const files: MentionItem[] = [];
+    const collectFiles = async (dirUri: string, limit: number) => {
+      if (files.length >= limit) {
+        return;
+      }
+      const stat = await fileServiceClient.getFileStat(dirUri, true);
+      if (!stat?.children) {
+        return;
+      }
+      for (const child of stat.children) {
+        if (files.length >= limit) {
+          break;
+        }
+        if (child.isDirectory) {
+          await collectFiles(child.uri, limit);
+        } else {
+          const uri = new URI(child.uri);
+          const relativePath = (await workspaceService.asRelativePath(uri.parent))?.path;
+          files.push({
+            id: uri.codeUri.fsPath,
+            type: MentionType.FILE,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            description: relativePath || '',
+            contextId: uri.codeUri.fsPath,
+            icon: labelService.getIcon(uri),
+          });
+        }
+      }
+    };
+    const workspace = workspaceService.workspace;
+    if (workspace) {
+      await collectFiles(workspace.uri, 50);
+    }
+    return files;
+  };
+
+  // ACP 专属：加载工作区根目录下的文件夹
+  const loadWorkspaceFolders = async (): Promise<MentionItem[]> => {
+    const workspace = workspaceService.workspace;
+    if (!workspace) {
+      return [];
+    }
+    const stat = await fileServiceClient.getFileStat(workspace.uri, true);
+    if (!stat?.children) {
+      return [];
+    }
+    return Promise.all(
+      stat.children
+        .filter((child) => child.isDirectory)
+        .map(async (child) => {
+          const uri = new URI(child.uri);
+          const relativePath = await workspaceService.asRelativePath(uri);
+          return {
+            id: uri.codeUri.fsPath,
+            type: MentionType.FOLDER,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            description: relativePath?.root ? relativePath.path : '',
+            contextId: uri.codeUri.fsPath,
+            icon: getIcon('folder'),
+          };
+        }),
+    );
+  };
+
+  // 默认菜单项（ACP 专属版本）
+  const defaultMenuItems: MentionItem[] = [
+    {
+      id: MentionType.FILE,
+      type: MentionType.FILE,
+      text: 'File',
+      icon: getIcon('file'),
+      getHighestLevelItems: () => {
+        const currentEditor = editorService.currentEditor;
+        const currentUri = currentEditor?.currentUri;
+        if (!currentUri) {
+          return [];
+        }
+        return [
+          {
+            id: currentUri.codeUri.fsPath,
+            type: MentionType.FILE,
+            text: currentUri.displayName,
+            value: currentUri.codeUri.fsPath,
+            description: `(${localize('aiNative.chat.defaultContextFile')})`,
+            contextId: currentUri.codeUri.fsPath,
+            icon: labelService.getIcon(currentUri),
+          },
+        ];
+      },
+      getItems: async (searchText: string) => {
+        if (!searchText) {
+          // ACP 专属：无搜索词时递归加载工作区文件
+          try {
+            return await loadWorkspaceFiles();
+          } catch (_e) {
+            return [];
+          }
+        } else {
+          const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
+          const results = await searchService.find(searchText, {
+            rootUris,
+            useGitIgnore: true,
+            noIgnoreParent: true,
+            fuzzyMatch: true,
+            limit: 10,
+          });
+          return Promise.all(
+            results.map(async (file) => {
+              const uri = new URI(file);
+              const relatveParentPath = (await workspaceService.asRelativePath(uri.parent))?.path;
+              return {
+                id: uri.codeUri.fsPath,
+                type: MentionType.FILE,
+                text: uri.displayName,
+                value: uri.codeUri.fsPath,
+                description: relatveParentPath || '',
+                contextId: uri.codeUri.fsPath,
+                icon: labelService.getIcon(uri),
+              };
+            }),
+          );
+        }
+      },
+    },
+    {
+      id: MentionType.FOLDER,
+      type: MentionType.FOLDER,
+      text: 'Folder',
+      icon: getIcon('folder'),
+      getHighestLevelItems: () => {
+        const currentEditor = editorService.currentEditor;
+        const currentFolderUri = currentEditor?.currentUri?.parent;
+        if (!currentFolderUri) {
+          return [];
+        }
+        if (currentFolderUri.toString() === workspaceService.workspace?.uri) {
+          return [];
+        }
+        return [
+          {
+            id: currentFolderUri.codeUri.fsPath,
+            type: MentionType.FOLDER,
+            text: currentFolderUri.displayName,
+            value: currentFolderUri.codeUri.fsPath,
+            description: `(${localize('aiNative.chat.defaultContextFolder')})`,
+            contextId: currentFolderUri.codeUri.fsPath,
+            icon: getIcon('folder'),
+          },
+        ];
+      },
+      getItems: async (searchText: string) => {
+        if (!searchText) {
+          // ACP 专属：无搜索词时加载工作区根目录下的文件夹
+          try {
+            return await loadWorkspaceFolders();
+          } catch (_e) {
+            return [];
+          }
+        } else {
+          const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
+          const files = await searchService.find(searchText, {
+            rootUris,
+            useGitIgnore: true,
+            noIgnoreParent: true,
+            fuzzyMatch: true,
+            excludePatterns: Object.keys(defaultFilesWatcherExcludes),
+            limit: 10,
+          });
+          const folders = Array.from(
+            new Set(
+              files
+                .map((file) => new URI(file).parent.toString())
+                .filter((folder) => folder !== workspaceService.workspace?.uri.toString()),
+            ),
+          );
+          return await expandFolderPaths(folders, workspaceService.workspace?.uri.toString() || '');
+        }
+      },
+    },
+    {
+      id: 'code',
+      type: 'code',
+      text: 'Code',
+      icon: getIcon('codebraces'),
+      getHighestLevelItems: () => [],
+      getItems: async (searchText: string) => {
+        if (!searchText || prevOutlineItems.current.length === 0) {
+          const uri = outlineTreeService.currentUri;
+          if (!uri) {
+            return [];
+          }
+          const treeNodes = await resolveSymbols();
+          prevOutlineItems.current = await Promise.all(
+            treeNodes.map(async (treeNode) => {
+              const relativePath = await workspaceService.asRelativePath(uri);
+              return {
+                id: treeNode.raw.id,
+                type: MentionType.CODE,
+                text: treeNode.raw.name,
+                symbol: treeNode.raw,
+                value: treeNode.raw.id,
+                description: `${relativePath?.root ? relativePath.path : ''}:L${treeNode.raw.range.startLineNumber}-${
+                  treeNode.raw.range.endLineNumber
+                }`,
+                kind: treeNode.raw.kind,
+                contextId: `${outlineTreeService.currentUri?.codeUri.fsPath}:L${treeNode.raw.range.startLineNumber}-${treeNode.raw.range.endLineNumber}`,
+                icon: getSymbolIcon(treeNode.raw.kind) + ' outline-icon',
+              };
+            }),
+          );
+          return prevOutlineItems.current;
+        } else {
+          searchText = searchText.toLocaleLowerCase();
+          return prevOutlineItems.current.sort((a, b) => {
+            if (a.text.toLocaleLowerCase().includes(searchText) && b.text.toLocaleLowerCase().includes(searchText)) {
+              return 0;
+            }
+            if (a.text.toLocaleLowerCase().includes(searchText)) {
+              return -1;
+            } else if (b.text.toLocaleLowerCase().includes(searchText)) {
+              return 1;
+            }
+            return 0;
+          });
+        }
+      },
+    },
+    {
+      id: MentionType.RULE,
+      type: MentionType.RULE,
+      text: 'Rule',
+      icon: getIcon('rules'),
+      getHighestLevelItems: () => [],
+      getItems: async (searchText: string) => {
+        const rules = await rulesService.projectRules;
+        const mappedRules = rules.map((rule) => {
+          const uri = new URI(rule.path);
+          return {
+            id: uri.codeUri.fsPath,
+            type: MentionType.RULE,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            contextId: uri.codeUri.fsPath,
+            description: rule.description,
+            icon: getIcon('rules'),
+          };
+        });
+
+        if (!searchText) {
+          return mappedRules.slice(0, 10);
+        }
+
+        const lowerSearchText = searchText.toLocaleLowerCase();
+        return mappedRules
+          .filter((rule) => rule.text.toLocaleLowerCase().includes(lowerSearchText))
+          .sort((a, b) => {
+            const aTextLower = a.text.toLocaleLowerCase();
+            const bTextLower = b.text.toLocaleLowerCase();
+            const aDescLower = a.description?.toLocaleLowerCase() || '';
+            const bDescLower = b.description?.toLocaleLowerCase() || '';
+
+            const aTextMatch = aTextLower.includes(lowerSearchText);
+            const bTextMatch = bTextLower.includes(lowerSearchText);
+            const aDescMatch = aDescLower.includes(lowerSearchText);
+            const bDescMatch = bDescLower.includes(lowerSearchText);
+
+            if (aTextMatch && bTextMatch) {
+              return aTextLower.localeCompare(bTextLower);
+            }
+            if (aTextMatch && !bTextMatch) {
+              return -1;
+            }
+            if (!aTextMatch && bTextMatch) {
+              return 1;
+            }
+
+            if (aDescMatch && bDescMatch) {
+              return aTextLower.localeCompare(bTextLower);
+            }
+            if (aDescMatch && !bDescMatch) {
+              return -1;
+            }
+            if (!aDescMatch && bDescMatch) {
+              return 1;
+            }
+
+            return aTextLower.localeCompare(bTextLower);
+          })
+          .slice(0, 10);
+      },
+    },
+  ];
+
+  // Mode 选项
+  const modeOptions: ModeOption[] = useMemo(
+    () =>
+      props.agentModes?.length
+        ? props.agentModes
+        : [{ id: 'default', name: 'Default', description: 'Require approval for edits' }],
+    [props.agentModes],
+  );
+
+  const defaultMentionInputFooterOptions: FooterConfig = useMemo(
+    () => ({
+      modeOptions,
+      defaultMode: modeOptions[0]?.id || 'default',
+      currentMode,
+      showModeSelector: modeOptions.length > 1,
+      modelOptions: [
+        {
+          value: 'qwen-plus-latest',
+          label: 'Qwen 3',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01LFMrZj28YrnrzeebY_!!6000000007945-55-tps-16-16.svg',
+            IconType.Background,
+          ),
+          tags: ['思考链', '擅长代码'],
+          description: '高性能代码模型，支持思考链',
+        },
+        {
+          label: 'Claude 4 Sonnet',
+          value: 'claude_sonnet4',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01p0mziz1Nsl40lp1HO_!!6000000001626-55-tps-92-65.svg',
+            IconType.Background,
+          ),
+          tags: ['多模态', '长上下文理解', '思考模式'],
+          description: '高性能模型，支持多模态输入',
+        },
+        {
+          label: 'DeepSeek R1',
+          value: 'DeepSeek-R1-0528',
+          iconClass: iconService.fromIcon(
+            '',
+            'https://img.alicdn.com/imgextra/i3/O1CN01ClcK2w1JwdxcbAB3a_!!6000000001093-55-tps-30-30.svg',
+            IconType.Background,
+          ),
+          tags: ['思考模式', '长上下文理解'],
+          description: '专业创作，支持多模态输入',
+        },
+      ],
+      defaultModel:
+        props.sessionModelId || preferenceService.get<string>(AINativeSettingSectionsId.ModelID) || 'deepseek-r1',
+      buttons: aiNativeConfigService.capabilities.supportsAgentMode
+        ? []
+        : [
+            {
+              id: 'mcp-server',
+              icon: 'mcp',
+              title: 'MCP Server',
+              onClick: handleShowMCPConfig,
+              position: FooterButtonPosition.LEFT,
+            },
+            {
+              id: 'rules',
+              icon: 'rules',
+              title: 'Rules',
+              onClick: handleShowRules,
+              position: FooterButtonPosition.LEFT,
+            },
+            {
+              id: 'upload-image',
+              icon: 'image',
+              title: localize('aiNative.chat.imageUpload'),
+              onClick: () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                  const files = (e.target as HTMLInputElement).files;
+                  if (files?.length) {
+                    handleImageUpload(Array.from(files));
+                  }
+                };
+                input.click();
+              },
+              position: FooterButtonPosition.LEFT,
+            },
+          ],
+      showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? false : true,
+      disableModelSelector: props.disableModelSelector,
+    }),
+    [iconService, handleShowMCPConfig, handleShowRules, props.disableModelSelector, props.sessionModelId],
+  );
+
+  const handleStop = useCallback(() => {
+    aiChatService.cancelRequest();
+  }, []);
+
+  const handleSend = useCallback(
+    async (content: string, option?: { model: string; [key: string]: any }) => {
+      if (disabled) {
+        return;
+      }
+
+      const currentCommand = props.command;
+      const currentAgentId = props.agentId;
+
+      const doSend = (newValue: string = content) => {
+        onSend(
+          newValue,
+          images.map((image) => image.toString()),
+          currentAgentId,
+          currentCommand,
+          option,
+        );
+        // 发送后重置 slash command 状态
+        props.setTheme(null);
+        props.setAgentId('');
+        props.setCommand('');
+        setImages(props.images || []);
+      };
+
+      // 如果有 slash command，调用其 execute handler
+      if (currentCommand) {
+        const chatCommandHandler = chatFeatureRegistry.getSlashCommandHandler(currentCommand);
+        if (chatCommandHandler && chatCommandHandler.execute) {
+          const editor = monacoCommandRegistry.getActiveCodeEditor();
+          await chatCommandHandler.execute(content, (newValue: string) => doSend(newValue), editor);
+          return;
+        }
+      }
+
+      doSend();
+    },
+    [onSend, images, disabled, props.agentId, props.command, chatFeatureRegistry],
+  );
+
+  const handleImageUpload = useCallback(
+    async (files: File[]) => {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
+      const invalidFiles = files.filter((file) => !allowedTypes.includes(file.type));
+      if (invalidFiles.length > 0) {
+        messageService.error('Only JPG, PNG, WebP and GIF images are supported');
+        return;
+      }
+
+      const imageUploadProvider = chatFeatureRegistry.getImageUploadProvider();
+      if (!imageUploadProvider) {
+        messageService.error('No image upload provider found');
+        return;
+      }
+
+      const uploadedData = await Promise.all(files.map((file) => imageUploadProvider.imageUpload(file)));
+
+      const newImages = [...images, ...uploadedData];
+      setImages(newImages);
+    },
+    [images],
+  );
+
+  const handleModeChange = useCallback(
+    async (modeId: string) => {
+      try {
+        await aiChatService.setSessionMode(modeId);
+      } catch (error) {
+        messageService.error('Failed to switch mode: ' + (error instanceof Error ? error.message : String(error)));
+      }
+    },
+    [aiChatService, messageService],
+  );
+
+  const handleDeleteImage = useCallback(
+    (index: number) => {
+      setImages(images.filter((_, i) => i !== index));
+    },
+    [images],
+  );
+
+  return (
+    <div className={styles.chat_input_container}>
+      {props.theme && (
+        <div className={styles.theme_container}>
+          <div className={styles.theme_block}>{props.theme}</div>
+        </div>
+      )}
+      {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
+      <MentionInput
+        mentionItems={defaultMenuItems}
+        onSend={handleSend}
+        onStop={handleStop}
+        loading={disabled}
+        labelService={labelService}
+        workspaceService={workspaceService}
+        placeholder={placeholder}
+        footerConfig={defaultMentionInputFooterOptions}
+        onImageUpload={handleImageUpload}
+        contextService={contextService}
+        onModeChange={handleModeChange}
+      />
+    </div>
+  );
+};
+
+const ImagePreviewer = ({
+  images,
+  onDelete,
+}: {
+  images: Array<DataContent | URL>;
+  onDelete: (index: number) => void;
+}) => (
+  <div>
+    <div className={styles.thumbnail_container}>
+      {images.map((image, index) => (
+        <div key={index} className={styles.thumbnail}>
+          <Image src={image.toString()} />
+          <button onClick={() => onDelete(index)} className={styles.delete_button}>
+            <Icon iconClass='codicon codicon-close' />
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+);

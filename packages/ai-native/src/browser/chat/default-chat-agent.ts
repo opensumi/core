@@ -91,6 +91,12 @@ export class DefaultChatAgent implements IChatAgent {
         const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
         prompt = slashCommandPrompt;
       }
+      // Slash command 自定义路由：handler 有 invoke 时跳过默认 agent，由 handler 自行处理
+      if (commandHandler?.invoke) {
+        await commandHandler.invoke(prompt, progress, token);
+        chatDeferred.resolve();
+        return {};
+      }
     }
 
     const stream = await this.aiBackService.requestStream(

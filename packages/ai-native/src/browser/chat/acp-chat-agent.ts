@@ -132,6 +132,16 @@ export class AcpChatAgent implements IChatAgent {
       }
     }
 
+    // Slash command 自定义路由：handler 有 invoke 时跳过 ACP，由 handler 自行处理
+    if (command) {
+      const commandHandler = this.chatFeatureRegistry.getSlashCommandHandler(command);
+      if (commandHandler?.invoke) {
+        await commandHandler.invoke(prompt, progress, token);
+        chatDeferred.resolve();
+        return {};
+      }
+    }
+
     let sessionId = request.sessionId;
     // 去掉 acp: 前缀（Agent 使用纯 UUID）
     if (sessionId.startsWith('acp:')) {

@@ -60,6 +60,25 @@ export const getToolName = (toolName: string, serverName: string) =>
     ? toolName
     : toClaudeToolName(`mcp${TOOL_NAME_SEPARATOR}${serverName}${TOOL_NAME_SEPARATOR}${toolName}`);
 
+/**
+ * 从消息内容中提取 <user_query> 标签的内容，如果没有则去掉所有 XML 标签返回纯文本
+ */
+export const extractUserQuery = (text: string): string => {
+  if (!text) {
+    return '';
+  }
+  const userQueryMatch = text.match(/<user_query>([\s\S]*?)<\/user_query>/);
+  if (userQueryMatch) {
+    return userQueryMatch[1].trim();
+  }
+  // 去掉完整的 XML 标签对及其内容，再去掉残留的未闭合标签
+  const cleaned = text
+    .replace(/<[^>]+>[\s\S]*?<\/[^>]+>/g, '')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+  return cleaned || text;
+};
+
 export const cleanAttachedTextWrapper = (text: string) => {
   const rgAttachedFile = /`<attached_file>(.*)`/g;
   const rgAttachedFolder = /`<attached_folder>(.*)`/g;
