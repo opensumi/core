@@ -20,6 +20,7 @@ export interface IChatHistoryProps {
   currentId?: string;
   className?: string;
   historyLoading?: boolean;
+  disabled?: boolean;
   onNewChat: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
   onHistoryItemDelete: (item: IChatHistoryItem) => void;
@@ -44,6 +45,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     onHistoryItemChange,
     onHistoryPopoverVisibleChange,
     historyLoading,
+    disabled,
     className,
   }) => {
     const [historyTitleEditable, setHistoryTitleEditable] = useState<{
@@ -63,10 +65,13 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     // 处理历史记录项选择
     const handleHistoryItemSelect = useCallback(
       (item: IChatHistoryItem) => {
+        if (disabled) {
+          return;
+        }
         onHistoryItemSelect(item);
         setSearchValue('');
       },
-      [onHistoryItemSelect, searchValue],
+      [onHistoryItemSelect, searchValue, disabled],
     );
 
     // 处理标题编辑
@@ -102,8 +107,11 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
 
     // 处理新建聊天
     const handleNewChat = useCallback(() => {
+      if (disabled) {
+        return;
+      }
       onNewChat();
-    }, [onNewChat]);
+    }, [onNewChat, disabled]);
 
     useEffect(() => {
       if (historyTitleEditable) {
@@ -218,7 +226,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
             value={searchValue}
             onChange={handleSearchChange}
           />
-          <div className={styles.chat_history_list}>
+          <div className={cls(styles.chat_history_list, disabled && styles.chat_history_list_disabled)}>
             {historyLoading ? (
               <div className={styles.chat_history_loading}>
                 <Loading />
@@ -233,7 +241,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
           </div>
         </div>
       );
-    }, [historyList, searchValue, formatHistory, handleSearchChange, renderHistoryItem, historyLoading]);
+    }, [historyList, searchValue, formatHistory, handleSearchChange, renderHistoryItem, historyLoading, disabled]);
 
     // getPopupContainer 处理函数
     const getPopupContainer = useCallback((triggerNode: HTMLElement) => triggerNode.parentElement!, []);
@@ -265,10 +273,18 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
             position={PopoverPosition.top}
             title={localize('aiNative.operate.newChat.title')}
           >
-            <EnhanceIcon
-              className={cls(styles.chat_history_header_actions_new, getIcon('plus'))}
-              onClick={handleNewChat}
-            />
+            {disabled ? (
+              <div
+                className={cls(styles.chat_history_header_actions_new, styles.chat_history_header_actions_new_disabled)}
+              >
+                <Loading />
+              </div>
+            ) : (
+              <EnhanceIcon
+                className={cls(styles.chat_history_header_actions_new, getIcon('plus'))}
+                onClick={handleNewChat}
+              />
+            )}
           </Popover>
         </div>
       </div>
