@@ -111,13 +111,26 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
 
     // 轮询检查 sessionModel，直到就绪
     let interval: number | null = null;
+    let pollCount = 0;
+    const MAX_POLL_COUNT = 1200; // 120s at 100ms intervals
 
     const checkSession = () => {
+      pollCount++;
       if (aiChatService.sessionModel) {
         setSessionReady(true);
         if (interval) {
           clearInterval(interval);
         }
+        return;
+      }
+      if (pollCount >= MAX_POLL_COUNT) {
+        if (interval) {
+          clearInterval(interval);
+        }
+        setInitState({
+          initialized: true,
+          error: 'Session initialization timed out',
+        });
       }
     };
 

@@ -170,56 +170,59 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
   );
 
   // 拆分目录路径为多个层级的辅助函数
-  const expandFolderPaths = async (folderPaths: string[], workspaceRootPath: string): Promise<MentionItem[]> => {
-    const expandedPaths = new Set<string>();
-    const workspaceUri = new URI(workspaceRootPath);
+  const expandFolderPaths = useCallback(
+    async (folderPaths: string[], workspaceRootPath: string): Promise<MentionItem[]> => {
+      const expandedPaths = new Set<string>();
+      const workspaceUri = new URI(workspaceRootPath);
 
-    // 将所有路径展开为多层级
-    for (const folderPath of folderPaths) {
-      const uri = new URI(folderPath);
-      const relativePath = await workspaceService.asRelativePath(uri);
-
-      if (relativePath?.path) {
-        const pathSegments = relativePath.path.split('/').filter(Boolean);
-
-        // 为每个层级创建路径
-        for (let i = 0; i < pathSegments.length; i++) {
-          const segmentPath = pathSegments.slice(0, i + 1).join('/');
-          const fullPath = workspaceUri.resolve(segmentPath).codeUri.fsPath;
-
-          // 避免添加工作区本身或其上级目录
-          if (fullPath !== workspaceRootPath && !workspaceRootPath.startsWith(fullPath)) {
-            expandedPaths.add(fullPath);
-          }
-        }
-      } else {
-        // 如果无法获取相对路径，直接添加（但仍要过滤工作区路径）
-        if (folderPath !== workspaceRootPath && !workspaceRootPath.startsWith(folderPath)) {
-          expandedPaths.add(folderPath);
-        }
-      }
-    }
-
-    // 转换为 MentionItem 格式
-    return Promise.all(
-      Array.from(expandedPaths).map(async (folderPath) => {
+      // 将所有路径展开为多层级
+      for (const folderPath of folderPaths) {
         const uri = new URI(folderPath);
         const relativePath = await workspaceService.asRelativePath(uri);
-        return {
-          id: uri.codeUri.fsPath,
-          type: MentionType.FOLDER,
-          text: uri.displayName,
-          value: uri.codeUri.fsPath,
-          description: relativePath?.root ? relativePath.path : '',
-          contextId: uri.codeUri.fsPath,
-          icon: getIcon('folder'),
-        };
-      }),
-    );
-  };
+
+        if (relativePath?.path) {
+          const pathSegments = relativePath.path.split('/').filter(Boolean);
+
+          // 为每个层级创建路径
+          for (let i = 0; i < pathSegments.length; i++) {
+            const segmentPath = pathSegments.slice(0, i + 1).join('/');
+            const fullPath = workspaceUri.resolve(segmentPath).codeUri.fsPath;
+
+            // 避免添加工作区本身或其上级目录
+            if (fullPath !== workspaceRootPath && !workspaceRootPath.startsWith(fullPath)) {
+              expandedPaths.add(fullPath);
+            }
+          }
+        } else {
+          // 如果无法获取相对路径，直接添加（但仍要过滤工作区路径）
+          if (folderPath !== workspaceRootPath && !workspaceRootPath.startsWith(folderPath)) {
+            expandedPaths.add(folderPath);
+          }
+        }
+      }
+
+      // 转换为 MentionItem 格式
+      return Promise.all(
+        Array.from(expandedPaths).map(async (folderPath) => {
+          const uri = new URI(folderPath);
+          const relativePath = await workspaceService.asRelativePath(uri);
+          return {
+            id: uri.codeUri.fsPath,
+            type: MentionType.FOLDER,
+            text: uri.displayName,
+            value: uri.codeUri.fsPath,
+            description: relativePath?.root ? relativePath.path : '',
+            contextId: uri.codeUri.fsPath,
+            icon: getIcon('folder'),
+          };
+        }),
+      );
+    },
+    [workspaceService],
+  );
 
   // ACP 专属：递归加载工作区文件
-  const loadWorkspaceFiles = async (): Promise<MentionItem[]> => {
+  const loadWorkspaceFiles = useCallback(async (): Promise<MentionItem[]> => {
     const files: MentionItem[] = [];
     const collectFiles = async (dirUri: string, limit: number) => {
       if (files.length >= limit) {
@@ -255,7 +258,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       await collectFiles(workspace.uri, 50);
     }
     return files;
-  };
+  }, [fileServiceClient, workspaceService, labelService]);
 
   // ACP 专属：加载工作区根目录下的文件夹
   const loadWorkspaceFolders = async (): Promise<MentionItem[]> => {
@@ -606,7 +609,17 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       showModelSelector: aiNativeConfigService.capabilities.supportsAgentMode ? false : true,
       disableModelSelector: props.disableModelSelector,
     }),
-    [iconService, handleShowMCPConfig, handleShowRules, props.disableModelSelector, props.sessionModelId],
+    [
+      iconService,
+      handleShowMCPConfig,
+      handleShowRules,
+      props.disableModelSelector,
+      props.sessionModelId,
+      currentMode,
+      modeOptions,
+      aiNativeConfigService.capabilities.supportsAgentMode,
+      preferenceService,
+    ],
   );
 
   const handleStop = useCallback(() => {

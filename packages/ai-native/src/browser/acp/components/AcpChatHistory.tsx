@@ -23,7 +23,7 @@ export interface IChatHistoryProps {
   disabled?: boolean;
   onNewChat: () => void;
   onHistoryItemSelect: (item: IChatHistoryItem) => void;
-  onHistoryItemDelete: (item: IChatHistoryItem) => void;
+  onHistoryItemDelete?: (item: IChatHistoryItem) => void;
   onHistoryItemChange: (item: IChatHistoryItem, title: string) => void;
   onHistoryPopoverVisibleChange?: (visible: boolean) => void;
 }
@@ -55,12 +55,9 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
     const inputRef = useRef<any>(null);
 
     // 处理搜索输入变化
-    const handleSearchChange = useCallback(
-      (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchValue(event.target.value);
-      },
-      [searchValue],
-    );
+    const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchValue(event.target.value);
+    }, []);
 
     // 处理历史记录项选择
     const handleHistoryItemSelect = useCallback(
@@ -71,18 +68,15 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         onHistoryItemSelect(item);
         setSearchValue('');
       },
-      [onHistoryItemSelect, searchValue, disabled],
+      [onHistoryItemSelect, disabled],
     );
 
     // 处理标题编辑
-    const handleTitleEdit = useCallback(
-      (item: IChatHistoryItem) => {
-        setHistoryTitleEditable({
-          [item.id]: true,
-        });
-      },
-      [historyTitleEditable],
-    );
+    const handleTitleEdit = useCallback((item: IChatHistoryItem) => {
+      setHistoryTitleEditable({
+        [item.id]: true,
+      });
+    }, []);
 
     // 处理标题编辑完成
     const handleTitleEditComplete = useCallback(
@@ -92,18 +86,15 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         });
         onHistoryItemChange(item, newTitle);
       },
-      [onHistoryItemChange, historyTitleEditable],
+      [onHistoryItemChange],
     );
 
     // 处理标题编辑取消
-    const handleTitleEditCancel = useCallback(
-      (item: IChatHistoryItem) => {
-        setHistoryTitleEditable({
-          [item.id]: false,
-        });
-      },
-      [historyTitleEditable],
-    );
+    const handleTitleEditCancel = useCallback((item: IChatHistoryItem) => {
+      setHistoryTitleEditable({
+        [item.id]: false,
+      });
+    }, []);
 
     // 处理新建聊天
     const handleNewChat = useCallback(() => {
@@ -128,7 +119,7 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         const hours = Math.floor(diff / (60 * 60 * 1000));
         return `${hours}h ago`;
       } else if (diff < 7 * 24 * 60 * 60 * 1000) {
-        const days = Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
+        const days = Math.floor(diff / (24 * 60 * 60 * 1000));
         return `${days}d ago`;
       } else if (diff < 30 * 24 * 60 * 60 * 1000) {
         const weeks = Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
@@ -203,7 +194,6 @@ const AcpChatHistory: FC<IChatHistoryProps> = memo(
         handleHistoryItemSelect,
         handleTitleEditComplete,
         handleTitleEditCancel,
-        handleTitleEdit,
         currentId,
         inputRef,
       ],

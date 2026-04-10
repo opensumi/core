@@ -3,7 +3,7 @@ import React from 'react';
 import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { ChatMessageRole, DisposableCollection, localize } from '@opensumi/ide-core-common';
+import { ChatMessageRole, DisposableCollection, IDisposable, localize } from '@opensumi/ide-core-common';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import { IChatInternalService } from '../../../common';
@@ -127,24 +127,21 @@ export function AcpChatViewHeader({
     getHistoryList();
 
     const toDispose = new DisposableCollection();
-    const sessionListenIds = new Set<string>();
+    let previousMessageChangeDisposable: IDisposable | undefined;
 
     toDispose.push(
-      aiChatService.onChangeSession((sessionId) => {
+      aiChatService.onChangeSession(() => {
         getHistoryList();
-        if (sessionListenIds.has(sessionId)) {
-          return;
-        }
-        sessionListenIds.add(sessionId);
+        previousMessageChangeDisposable?.dispose();
         if (aiChatService.sessionModel) {
-          toDispose.push(
-            aiChatService.sessionModel.history.onMessageChange(() => {
-              getHistoryList();
-            }),
-          );
+          previousMessageChangeDisposable = aiChatService.sessionModel.history.onMessageChange(() => {
+            getHistoryList();
+          });
         }
       }),
     );
+
+    toDispose.push({ dispose: () => previousMessageChangeDisposable?.dispose() });
 
     if (aiChatService.sessionModel) {
       toDispose.push(

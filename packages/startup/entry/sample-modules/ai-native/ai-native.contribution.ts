@@ -34,7 +34,7 @@ import {
 import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
 import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
-import { Domain, getIcon } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
   CancelResponse,
@@ -82,6 +82,9 @@ export class AINativeContribution implements AINativeCoreContribution {
 
   @Autowired(ChatServiceToken)
   private readonly aiChatService: ChatService;
+
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
 
   logger = getDebugLogger();
 
@@ -598,8 +601,10 @@ Good: "Instance network interfaces exceeded system limit"`;
   }
 
   registerChatRender(registry: IChatRenderRegistry): void {
-    registry.registerInputRender(AcpChatMentionInput);
-    registry.registerChatViewHeaderRender(AcpChatViewHeader);
+    if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
+      registry.registerInputRender(AcpChatMentionInput);
+      registry.registerChatViewHeaderRender(AcpChatViewHeader);
+    }
   }
 
   registerChatAgentPromptProvider(): void {}
