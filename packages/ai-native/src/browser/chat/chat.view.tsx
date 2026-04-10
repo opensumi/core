@@ -867,7 +867,11 @@ const AIChatViewContent = () => {
   return (
     <div id={styles.ai_chat_view}>
       <div className={styles.header_container}>
-        <HeaderRender handleClear={handleClear} handleCloseChatView={handleCloseChatView}></HeaderRender>
+        <HeaderRender
+          handleClear={handleClear}
+          handleCloseChatView={handleCloseChatView}
+          sessionModel={aiChatService.sessionModel}
+        ></HeaderRender>
       </div>
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>

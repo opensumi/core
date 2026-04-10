@@ -63,15 +63,17 @@ export class ChatInternalService extends Disposable {
   public readonly onSessionLoadingChange: Event<boolean> = this._onSessionLoadingChange.event;
 
   // 委托 chatManagerService 的 storageInit 事件
-  public readonly onStorageInit = this.chatManagerService.onStorageInit;
+  public get onStorageInit() {
+    return this.chatManagerService.onStorageInit;
+  }
 
   private _latestRequestId: string;
   public get latestRequestId(): string {
     return this._latestRequestId;
   }
 
-  #sessionModel: ChatModel | undefined;
-  get sessionModel() {
+  #sessionModel!: ChatModel;
+  get sessionModel(): ChatModel {
     return this.#sessionModel;
   }
 
