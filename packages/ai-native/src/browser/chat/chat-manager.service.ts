@@ -167,11 +167,17 @@ export class ChatManagerService extends Disposable {
       // 只保留最新的 20 个会话
       const recentSessionsData = sessionsModelData.slice(-MAX_SESSION_COUNT);
 
-      const savedSessions = this.fromJSON(recentSessionsData);
+      // 为已有的活跃 session 预留空间，避免被 LRU 淘汰
+      const activeKeys = new Set(this.#sessionModels.keys());
+      const filteredData = recentSessionsData.filter((item) => !activeKeys.has(item.sessionId));
+      const maxIncoming = MAX_SESSION_COUNT - activeKeys.size;
 
-      savedSessions.forEach((session) => {
-        this.#sessionModels.set(session.sessionId, session);
-      });
+      if (maxIncoming > 0) {
+        const savedSessions = this.fromJSON(filteredData.slice(-maxIncoming));
+        savedSessions.forEach((session) => {
+          this.#sessionModels.set(session.sessionId, session);
+        });
+      }
     } catch (error) {
       // 加载失败时清空会话列表，但不抛出错误，让应用可以继续使用空列表
       this.#sessionModels.clear();
