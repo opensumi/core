@@ -940,6 +940,7 @@ const AIChatViewContent = () => {
               ref={chatInputRef}
               disableModelSelector={sessionModelId !== undefined || loading}
               sessionModelId={sessionModelId}
+              agentCwd={appConfig.workspaceDir}
             />
           </div>
         </div>
