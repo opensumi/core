@@ -604,6 +604,7 @@ Good: "Instance network interfaces exceeded system limit"`;
     if (this.aiNativeConfigService.capabilities.supportsAgentMode) {
       registry.registerInputRender(AcpChatMentionInput);
       registry.registerChatViewHeaderRender(AcpChatViewHeader);
+      registry.registerEnabledMentionTypes(['file', 'folder', 'rule']);
     }
   }
 
