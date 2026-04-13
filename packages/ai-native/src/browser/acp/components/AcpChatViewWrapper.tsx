@@ -72,6 +72,10 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
           }
         }
 
+        if (!ready) {
+          throw new Error('ACP backend service is not ready after maximum retries');
+        }
+
         // 先调用 aiChatService.init() 注册 onStorageInit 监听器
         aiChatService.init();
         // 创建新会话
@@ -112,7 +116,7 @@ export function AcpChatViewWrapper({ children, aiChatService }: AcpChatViewWrapp
     // 轮询检查 sessionModel，直到就绪
     let interval: number | null = null;
     let pollCount = 0;
-    const MAX_POLL_COUNT = 1200; // 120s at 100ms intervals
+    const MAX_POLL_COUNT = 12000; // 1200s at 100ms intervals
 
     const checkSession = () => {
       pollCount++;
