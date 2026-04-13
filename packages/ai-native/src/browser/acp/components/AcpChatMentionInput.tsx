@@ -76,6 +76,7 @@ export interface IChatMentionInputProps {
   sessionModelId?: string;
   contextService?: LLMContextService;
   agentModes?: Array<{ id: string; name: string; description?: string }>;
+  agentCwd?: string;
 }
 
 /**
@@ -85,7 +86,7 @@ export interface IChatMentionInputProps {
  * - 文件夹选择器：无搜索词时加载工作区根目录下的文件夹
  */
 export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
-  const { onSend, disabled = false, contextService } = props;
+  const { onSend, disabled = false, contextService, agentCwd } = props;
 
   const [value, setValue] = useState(props.value || '');
   const [images, setImages] = useState(props.images || []);
@@ -253,20 +254,20 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
         }
       }
     };
-    const workspace = workspaceService.workspace;
-    if (workspace) {
-      await collectFiles(workspace.uri, 50);
+    const rootUri = agentCwd ? URI.file(agentCwd).toString() : workspaceService.workspace?.uri;
+    if (rootUri) {
+      await collectFiles(rootUri, 50);
     }
     return files;
-  }, [fileServiceClient, workspaceService, labelService]);
+  }, [fileServiceClient, workspaceService, labelService, agentCwd]);
 
   // ACP 专属：加载工作区根目录下的文件夹
   const loadWorkspaceFolders = async (): Promise<MentionItem[]> => {
-    const workspace = workspaceService.workspace;
-    if (!workspace) {
+    const rootUri = agentCwd ? URI.file(agentCwd).toString() : workspaceService.workspace?.uri;
+    if (!rootUri) {
       return [];
     }
-    const stat = await fileServiceClient.getFileStat(workspace.uri, true);
+    const stat = await fileServiceClient.getFileStat(rootUri, true);
     if (!stat?.children) {
       return [];
     }
@@ -323,7 +324,9 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
             return [];
           }
         } else {
-          const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
+          const rootUris = agentCwd
+            ? [agentCwd]
+            : (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
           const results = await searchService.find(searchText, {
             rootUris,
             useGitIgnore: true,
@@ -384,7 +387,9 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
             return [];
           }
         } else {
-          const rootUris = (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
+          const rootUris = agentCwd
+            ? [agentCwd]
+            : (await workspaceService.roots).map((root) => new URI(root.uri).codeUri.fsPath.toString());
           const files = await searchService.find(searchText, {
             rootUris,
             useGitIgnore: true,
@@ -393,14 +398,15 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
             excludePatterns: Object.keys(defaultFilesWatcherExcludes),
             limit: 10,
           });
+          const rootWorkspaceUri = agentCwd
+            ? URI.file(agentCwd).toString()
+            : workspaceService.workspace?.uri?.toString() || '';
           const folders = Array.from(
             new Set(
-              files
-                .map((file) => new URI(file).parent.toString())
-                .filter((folder) => folder !== workspaceService.workspace?.uri.toString()),
+              files.map((file) => new URI(file).parent.toString()).filter((folder) => folder !== rootWorkspaceUri),
             ),
           );
-          return await expandFolderPaths(folders, workspaceService.workspace?.uri.toString() || '');
+          return await expandFolderPaths(folders, rootWorkspaceUri);
         }
       },
     },
