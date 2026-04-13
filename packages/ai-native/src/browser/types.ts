@@ -232,6 +232,17 @@ export interface IChatRenderRegistry {
   registerInputRender(render: ChatInputRender): void;
 
   /**
+   * 配置启用的 mention 类型（如 'file', 'folder', 'code', 'rule'）
+   * 不调用时默认全部启用
+   */
+  registerEnabledMentionTypes(types: string[]): void;
+
+  /**
+   * 获取启用的 mention 类型，undefined 表示全部启用
+   */
+  enabledMentionTypes?: string[];
+
+  /**
    * 顶部栏渲染
    */
   registerChatViewHeaderRender(render: ChatViewHeaderRender): void;

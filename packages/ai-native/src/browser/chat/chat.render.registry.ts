@@ -86,6 +86,12 @@ export class ChatRenderRegistry extends Disposable implements IChatRenderRegistr
     this.chatInputRender = render;
   }
 
+  public enabledMentionTypes?: string[];
+
+  registerEnabledMentionTypes(types: string[]): void {
+    this.enabledMentionTypes = types;
+  }
+
   registerThinkingResultRender(render: ChatThinkingResultRender): void {
     this.chatThinkingResultRender = render;
   }

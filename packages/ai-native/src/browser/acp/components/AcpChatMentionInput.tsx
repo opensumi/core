@@ -13,6 +13,7 @@ import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import {
   AINativeSettingSectionsId,
   ChatFeatureRegistryToken,
+  ChatRenderRegistryToken,
   RulesServiceToken,
   URI,
   localize,
@@ -34,6 +35,7 @@ import { IChatInternalService, SLASH_SYMBOL } from '../../../common';
 import { LLMContextService } from '../../../common/llm-context';
 import { ChatFeatureRegistry } from '../../chat/chat.feature.registry';
 import { ChatInternalService } from '../../chat/chat.internal.service';
+import { ChatRenderRegistry } from '../../chat/chat.render.registry';
 import styles from '../../components/components.module.less';
 import { MentionInput } from '../../components/mention-input/mention-input';
 import {
@@ -102,6 +104,7 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
   const iconService = useInjectable<IconService>(IconService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const outlineTreeService = useInjectable<OutlineTreeService>(OutlineTreeService);
   const prevOutlineItems = useRef<MentionItem[]>([]);
@@ -723,7 +726,11 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
       )}
       {images.length > 0 && <ImagePreviewer images={images} onDelete={handleDeleteImage} />}
       <MentionInput
-        mentionItems={defaultMenuItems}
+        mentionItems={
+          chatRenderRegistry.enabledMentionTypes
+            ? defaultMenuItems.filter((item) => chatRenderRegistry.enabledMentionTypes!.includes(item.id))
+            : defaultMenuItems
+        }
         onSend={handleSend}
         onStop={handleStop}
         loading={disabled}
