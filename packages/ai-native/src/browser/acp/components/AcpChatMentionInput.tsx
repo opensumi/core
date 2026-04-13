@@ -363,7 +363,8 @@ export const AcpChatMentionInput = (props: IChatMentionInputProps) => {
         if (!currentFolderUri) {
           return [];
         }
-        if (currentFolderUri.toString() === workspaceService.workspace?.uri) {
+        const rootUri = agentCwd ? URI.file(agentCwd).toString() : workspaceService.workspace?.uri;
+        if (currentFolderUri.toString() === rootUri) {
           return [];
         }
         return [
